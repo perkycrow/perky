@@ -125,7 +125,9 @@ function onSetModule (engine, name, module) {
 
     module.engine = engine
 
-    if (!(name in engine)) {
+    if (name in engine) {
+        console.warn(`The key ${name} is already used in the engine`)
+    } else {
         engine[name] = module
     }
 
