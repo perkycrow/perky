@@ -11,6 +11,20 @@ describe(PerkyModule, () => {
     })
 
 
+    test('running', () => {
+        expect(module.running).toBe(false)
+        
+        module.initialized = true
+        expect(module.running).toBe(false)
+        
+        module.started = true
+        expect(module.running).toBe(true)
+        
+        module.paused = true
+        expect(module.running).toBe(false)
+    })
+
+
     test('init', () => {
         const spy = vi.spyOn(module, 'emit')
         
@@ -104,6 +118,12 @@ describe(PerkyModule, () => {
 
 
     test('resume false', () => {
+        expect(module.resume()).toBe(false)
+
+        module.initialized = true
+        expect(module.resume()).toBe(false)
+        
+        module.started = true
         expect(module.resume()).toBe(false)
     })
 

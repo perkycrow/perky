@@ -12,6 +12,11 @@ export default class PerkyModule extends Notifier {
     }
 
 
+    get running () {
+        return this.initialized && this.started && !this.paused
+    }
+
+
     init (...args) {
         if (this.initialized) {
             return false
@@ -25,7 +30,7 @@ export default class PerkyModule extends Notifier {
 
 
     update (...args) {
-        if (!this.started || this.paused) {
+        if (!this.running) {
             return false
         }
 
@@ -61,7 +66,7 @@ export default class PerkyModule extends Notifier {
 
 
     pause (...args) {
-        if (!this.started || this.paused) {
+        if (!this.running) {
             return false
         }
 
@@ -73,7 +78,7 @@ export default class PerkyModule extends Notifier {
 
 
     resume (...args) {
-        if (!this.started || !this.paused) {
+        if (!this.initialized || !this.started || !this.paused) {
             return false
         }
 
