@@ -1,4 +1,4 @@
-import PerkyModule from '../src/perky_module'
+import PerkyModule from './perky_module'
 import {vi} from 'vitest'
 
 

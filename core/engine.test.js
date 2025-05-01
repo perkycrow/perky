@@ -1,8 +1,8 @@
-import Engine from '../src/engine'
-import Manifest from '../src/manifest'
-import PerkyModule from '../src/perky_module'
+import Engine from './engine'
+import Manifest from './manifest'
+import PerkyModule from './perky_module'
+import Registry from './registry'
 import {vi} from 'vitest'
-import Registry from '../src/registry'
 
 
 describe(Engine, () => {

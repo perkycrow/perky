@@ -1,4 +1,4 @@
-import Random from '../src/random'
+import Random from './random'
 
 
 describe(Random, () => {

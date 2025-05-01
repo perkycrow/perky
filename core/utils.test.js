@@ -31,7 +31,7 @@ import {
     setNestedValue,
     uniqueId,
     resetUniqueId
-} from '../src/utils'
+} from './utils'
 
 
 describe('Utils', () => {

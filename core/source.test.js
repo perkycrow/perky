@@ -1,5 +1,5 @@
 import {describe, test, expect} from 'vitest'
-import Source from '../src/source'
+import Source from './source'
 
 
 describe('Source', () => {

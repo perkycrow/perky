@@ -1,5 +1,5 @@
-import Manifest from '../src/manifest'
-import Source from '../src/source'
+import Manifest from './manifest'
+import Source from './source'
 
 
 describe('Manifest', () => {

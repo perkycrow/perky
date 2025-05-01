@@ -125,6 +125,10 @@ function onSetModule (engine, name, module) {
 
     module.engine = engine
 
+    if (!(name in engine)) {
+        engine[name] = module
+    }
+
     engine.emit('module:set', name, module)
     module.emit('registered', engine, name)
 }
@@ -134,6 +138,10 @@ function onDeleteModule (engine, name, module) {
     if (module.engine !== engine) {
         console.warn(`Module ${name} is not registered in this engine`)
         return
+    }
+
+    if (engine[name] === module) {
+        delete engine[name]
     }
 
     engine.emit('module:delete', name, module)

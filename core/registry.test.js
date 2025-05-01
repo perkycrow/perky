@@ -1,4 +1,4 @@
-import Registry from '../src/registry'
+import Registry from './registry'
 import {vi} from 'vitest'
 
 

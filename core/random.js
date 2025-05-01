@@ -1,4 +1,4 @@
-import alea from './libs/alea.js'
+import alea from './libs/alea'
 
 
 const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
