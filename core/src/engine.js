@@ -1,9 +1,9 @@
 import Manifest from './manifest'
-import ActiveModule from './active_module'
-import ActiveRegistry from './active_registry'
+import PerkyModule from './perky_module'
+import Registry from './registry'
 
 
-export default class Engine extends ActiveModule {
+export default class Engine extends PerkyModule {
 
     constructor (manifest = {}) {
         super()
@@ -13,14 +13,14 @@ export default class Engine extends ActiveModule {
         }
 
         this.manifest = manifest
-        this.modules  = new ActiveRegistry()
+        this.modules  = new Registry()
 
         initEvents(this)
     }
 
 
     registerModule (name, module) {
-        if (!(module instanceof ActiveModule)) {
+        if (!(module instanceof PerkyModule)) {
             console.warn(`Attempted to register non-module object as module: ${name}`)
             return this
         }

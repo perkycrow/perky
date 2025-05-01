@@ -1,7 +1,7 @@
 import Notifier from './notifier'
 
 
-export default class ActiveModule extends Notifier {
+export default class PerkyModule extends Notifier {
 
     constructor () {
         super()

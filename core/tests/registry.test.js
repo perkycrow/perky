@@ -1,13 +1,13 @@
-import ActiveRegistry from '../src/active_registry'
+import Registry from '../src/registry'
 import {vi} from 'vitest'
 
 
-describe(ActiveRegistry, () => {
+describe(Registry, () => {
 
     let registry
 
     beforeEach(() => {
-        registry = new ActiveRegistry()
+        registry = new Registry()
     })
 
 

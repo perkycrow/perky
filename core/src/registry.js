@@ -1,7 +1,7 @@
 import Notifier from './notifier'
 
 
-export default class ActiveRegistry extends Notifier {
+export default class Registry extends Notifier {
 
     constructor () {
         super()

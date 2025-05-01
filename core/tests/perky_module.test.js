@@ -1,13 +1,13 @@
-import ActiveModule from '../src/active_module'
+import PerkyModule from '../src/perky_module'
 import {vi} from 'vitest'
 
 
-describe(ActiveModule, () => {
+describe(PerkyModule, () => {
 
     let module
 
     beforeEach(() => {
-        module = new ActiveModule()
+        module = new PerkyModule()
     })
 
 

@@ -1,8 +1,8 @@
 import Engine from '../src/engine'
 import Manifest from '../src/manifest'
-import ActiveModule from '../src/active_module'
+import PerkyModule from '../src/perky_module'
 import {vi} from 'vitest'
-import ActiveRegistry from '../src/active_registry'
+import Registry from '../src/registry'
 
 
 describe(Engine, () => {
@@ -42,7 +42,7 @@ describe(Engine, () => {
 
     test('registerModule', () => {
         const spy = vi.spyOn(engine.modules, 'set')
-        const module = new ActiveModule()
+        const module = new PerkyModule()
         
         engine.registerModule('test', module)
         
@@ -65,7 +65,7 @@ describe(Engine, () => {
 
 
     test('getModule', () => {
-        const module = new ActiveModule()
+        const module = new PerkyModule()
         engine.modules.set('test', module)
         
         expect(engine.getModule('test')).toBe(module)
@@ -187,7 +187,7 @@ describe(Engine, () => {
 
     test('module registration events', () => {
         const engineSpy = vi.spyOn(engine, 'emit')
-        const module = new ActiveModule()
+        const module = new PerkyModule()
         const moduleSpy = vi.spyOn(module, 'emit')
         
         engine.registerModule('test', module)
@@ -199,7 +199,7 @@ describe(Engine, () => {
 
 
     test('module unregistration events', () => {
-        const module = new ActiveModule()
+        const module = new PerkyModule()
         engine.registerModule('test', module)
         
         const engineSpy = vi.spyOn(engine, 'emit')
@@ -214,7 +214,7 @@ describe(Engine, () => {
 
 
     test('module lifecycle events propagation', () => {
-        const module = new ActiveModule()
+        const module = new PerkyModule()
 
         const initSpy = vi.spyOn(module, 'init')
         const startSpy = vi.spyOn(module, 'start')
@@ -254,7 +254,7 @@ describe(Engine, () => {
 
 
     test('module clear event', () => {
-        const registrySpy = vi.spyOn(ActiveRegistry.prototype, 'on')
+        const registrySpy = vi.spyOn(Registry.prototype, 'on')
 
         const testEngine = new Engine()
 
@@ -275,7 +275,7 @@ describe(Engine, () => {
     test('double registration warning', () => {
         const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const engine2 = new Engine()
-        const module = new ActiveModule()
+        const module = new PerkyModule()
         
         engine.registerModule('test', module)
         engine2.registerModule('test', module)
@@ -289,7 +289,7 @@ describe(Engine, () => {
     test('unregistration from wrong engine warning', () => {
         const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const engine2 = new Engine()
-        const module = new ActiveModule()
+        const module = new PerkyModule()
         
         engine.registerModule('test', module)
 
