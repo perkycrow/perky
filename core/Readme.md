@@ -48,7 +48,7 @@ Utility functions organized into categories:
 To use the Perky core in your application:
 
 ```javascript
-import {Engine, PerkyModule} from './core';
+import {Engine} from './core';
 
 // Create a new engine instance
 const engine = new Engine({
