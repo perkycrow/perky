@@ -10,6 +10,7 @@ describe(ActiveModule, () => {
         module = new ActiveModule()
     })
 
+
     test('init', () => {
         const spy = vi.spyOn(module, 'emit')
         
@@ -18,11 +19,13 @@ describe(ActiveModule, () => {
         expect(module.initialized).toBe(true)
         expect(spy).toHaveBeenCalledWith('init', 'param')
     })
-    
+
+
     test('init false', () => {
         module.initialized = true
         expect(module.init()).toBe(false)
     })
+
 
     test('update', () => {
         const spy = vi.spyOn(module, 'emit')
@@ -33,11 +36,13 @@ describe(ActiveModule, () => {
         expect(spy).toHaveBeenCalledWith('update', 'param')
     })
 
+
     test('update false', () => {
         expect(module.update()).toBe(false)
     })
 
-    it('start', () => {
+
+    test('start', () => {
         const spy = vi.spyOn(module, 'emit')
 
         module.initialized = true
@@ -46,11 +51,13 @@ describe(ActiveModule, () => {
         expect(spy).toHaveBeenCalledWith('start', 'param')
     })
 
+
     test('start false', () => {
         module.initialized = true
         module.started = true
         expect(module.start()).toBe(false)
     })
+
 
     test('stop', () => {
         const spy = vi.spyOn(module, 'emit')
@@ -62,8 +69,42 @@ describe(ActiveModule, () => {
         expect(spy).toHaveBeenCalledWith('stop', 'param')
     })
 
+
     test('stop false', () => {
         expect(module.stop()).toBe(false)
+    })
+
+
+    test('pause', () => {
+        const spy = vi.spyOn(module, 'emit')
+
+        module.initialized = true
+        module.started = true
+        expect(module.pause('param')).toBe(true)
+        expect(module.paused).toBe(true)
+        expect(spy).toHaveBeenCalledWith('pause', 'param')
+    })
+
+
+    test('pause false', () => {
+        expect(module.pause()).toBe(false)
+    })
+
+
+    test('resume', () => {
+        const spy = vi.spyOn(module, 'emit')
+
+        module.initialized = true
+        module.started = true
+        module.paused = true
+        expect(module.resume('param')).toBe(true)
+        expect(module.paused).toBe(false)
+        expect(spy).toHaveBeenCalledWith('resume', 'param')
+    })
+
+
+    test('resume false', () => {
+        expect(module.resume()).toBe(false)
     })
 
 })
