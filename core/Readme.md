@@ -43,24 +43,6 @@ Utility functions organized into categories:
 - Math utilities
 - Random utilities
 
-## Getting Started
-
-To use the Perky core in your application:
-
-```javascript
-import Engine from './core/engine';
-
-// Create a new engine instance
-const engine = new Engine({
-  metadata: {
-    name: 'My Application',
-    version: '1.0.0'
-  },
-  config: {
-    // Application configuration
-  }
-});
-```
 
 ## Module Lifecycle
 
