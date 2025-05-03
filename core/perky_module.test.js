@@ -127,4 +127,25 @@ describe(PerkyModule, () => {
         expect(module.resume()).toBe(false)
     })
 
+
+    test('dispose', () => {
+        const spy = vi.spyOn(module, 'emit')
+        const stopSpy = vi.spyOn(module, 'stop')
+        const removeListenersSpy = vi.spyOn(module, 'removeListeners')
+
+        module.initialized = true
+        expect(module.dispose('param')).toBe(true)
+        expect(stopSpy).toHaveBeenCalled()
+        expect(spy).toHaveBeenCalledWith('dispose', 'param')
+        expect(removeListenersSpy).toHaveBeenCalled()
+        expect(module.initialized).toBe(false)
+        expect(module.started).toBe(false)
+        expect(module.paused).toBe(false)
+    })
+
+
+    test('dispose false', () => {
+        expect(module.dispose()).toBe(false)
+    })
+
 })

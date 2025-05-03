@@ -5,10 +5,7 @@ export default class PerkyModule extends Notifier {
 
     constructor () {
         super()
-
-        this.started = false
-        this.initialized = false
-        this.paused = false
+        reset(this)
     }
 
 
@@ -88,4 +85,25 @@ export default class PerkyModule extends Notifier {
         return true
     }
 
+
+    dispose (...args) {
+        if (!this.initialized) {
+            return false
+        }
+
+        this.stop()
+        this.emit('dispose', ...args)
+        this.removeListeners()
+        reset(this)
+
+        return true
+    }
+
+}
+
+
+function reset (module) {
+    module.started = false
+    module.initialized = false
+    module.paused = false
 }
