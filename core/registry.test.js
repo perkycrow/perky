@@ -188,6 +188,48 @@ describe(Registry, () => {
     })
 
 
+    test('keys', () => {
+        registry.set('a', 1)
+        registry.set('b', 2)
+
+        expect(Array.from(registry.keys)).toEqual(['a', 'b'])
+    })
+
+
+    test('values', () => {
+        registry.set('a', 1)
+        registry.set('b', 2)
+
+        expect(Array.from(registry.values)).toEqual([1, 2])
+    })
+
+
+    test('entries', () => {
+        registry.set('a', 1)
+        registry.set('b', 2)
+
+        expect(Array.from(registry.entries)).toEqual([['a', 1], ['b', 2]])
+    })
+
+
+    test('hasValue', () => {
+        registry.set('a', 1)
+        registry.set('b', 2)
+
+        expect(registry.hasValue(1)).toBe(true)
+        expect(registry.hasValue(3)).toBe(false)
+    })
+
+
+    test('keyFor', () => {
+        registry.set('a', 1)
+        registry.set('b', 2)
+
+        expect(registry.keyFor(1)).toBe('a')
+        expect(registry.keyFor(3)).toBe(undefined)
+    })
+
+
     test('Map methods', () => {
         registry.set('a', 1)
         registry.set('b', 2)
@@ -195,9 +237,6 @@ describe(Registry, () => {
         expect(registry.size).toBe(2)
         expect(registry.has('a')).toBe(true)
         expect(registry.has('c')).toBe(false)
-        expect(Array.from(registry.keys())).toEqual(['a', 'b'])
-        expect(Array.from(registry.values())).toEqual([1, 2])
-        expect(Array.from(registry.entries())).toEqual([['a', 1], ['b', 2]])
 
         const results = []
         registry.forEach((value, key) => {

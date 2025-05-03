@@ -9,6 +9,26 @@ export default class Registry extends Notifier {
     }
 
 
+    get size () {
+        return this.map.size
+    }
+
+
+    get entries () {
+        return Array.from(this.map.entries())
+    }
+
+
+    get keys () {
+        return this.map.keys()
+    }
+
+
+    get values () {
+        return this.map.values()
+    }
+
+
     get (key) {
         return this.map.get(key)
     }
@@ -19,28 +39,27 @@ export default class Registry extends Notifier {
     }
 
 
+    hasValue (value) {
+        return this.values.some((val) => val === value)
+    }
+
+
+
+    keyFor (value) {
+        const {entries} = this
+
+        for (const [key, val] of entries) {
+            if (val === value) {
+                return key
+            }
+        }
+
+        return undefined
+    }
+
+
     forEach (callbackFn, thisArg) {
         this.map.forEach(callbackFn, thisArg)
-    }
-
-
-    get size () {
-        return this.map.size
-    }
-
-
-    keys () {
-        return this.map.keys()
-    }
-
-
-    values () {
-        return this.map.values()
-    }
-
-
-    entries () {
-        return this.map.entries()
     }
 
 
