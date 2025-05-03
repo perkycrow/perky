@@ -44,7 +44,6 @@ export default class Registry extends Notifier {
     }
 
 
-
     keyFor (value) {
         const {entries} = this
 
