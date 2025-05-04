@@ -60,7 +60,7 @@ describe(Engine, () => {
         engine.registerModule('test', nonModule)
         
         expect(consoleSpy).toHaveBeenCalled()
-        expect(engine.getModule('test')).toBeNull()
+        expect(engine.getModule('test')).toBeUndefined()
         
         consoleSpy.mockRestore()
     })
@@ -75,7 +75,7 @@ describe(Engine, () => {
 
 
     test('getModule non-existent', () => {
-        expect(engine.getModule('nonexistent')).toBeNull()
+        expect(engine.getModule('nonexistent')).toBeUndefined()
     })
 
 
@@ -336,11 +336,11 @@ describe(Engine, () => {
     })
 
 
-    test('removeController', () => {
+    test('unregisterController', () => {
         const controller = new ActionController()
         engine.registerController('test', controller)
         
-        engine.removeController('test')
+        engine.unregisterController('test')
         
         expect(engine.getController('test')).toBeNull()
     })
@@ -354,6 +354,28 @@ describe(Engine, () => {
         engine.setActiveController('test')
         
         expect(spy).toHaveBeenCalledWith('test')
+    })
+
+
+    test('getActiveController', () => {
+        const controller = new ActionController()
+        engine.registerController('test', controller)
+        
+        engine.setActiveController('test')
+
+        expect(engine.getActiveController()).toBe(controller)
+    })
+
+
+    test('dispatchAction', () => {
+        const actionDispatcherSpy = vi.spyOn(engine.actionDispatcher, 'dispatch')
+        const controller = new ActionController()
+        
+        engine.registerController('test', controller)
+        
+        engine.dispatchAction('testAction', 'param1', 'param2')
+        
+        expect(actionDispatcherSpy).toHaveBeenCalledWith('testAction', 'param1', 'param2')
     })
 
 
@@ -414,7 +436,7 @@ describe(Engine, () => {
         const actionDispatcherSpy = vi.spyOn(engine.actionDispatcher, 'emit')
         const controllerSpy = vi.spyOn(controller, 'emit')
 
-        engine.removeController('test')
+        engine.unregisterController('test')
         
         expect(actionDispatcherSpy).toHaveBeenCalledWith('controller:delete', 'test', controller)
         expect(controllerSpy).toHaveBeenCalledWith('unregistered', engine.actionDispatcher, 'test')

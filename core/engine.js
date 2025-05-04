@@ -38,7 +38,7 @@ export default class Engine extends PerkyModule {
 
 
     getModule (name) {
-        return this.modules.get(name) || null
+        return this.modules.get(name)
     }
 
 
@@ -61,13 +61,23 @@ export default class Engine extends PerkyModule {
     }
 
 
-    removeController (name) {
+    unregisterController (name) {
         return this.actionDispatcher.unregister(name)
     }
 
 
     setActiveController (name) {
         return this.actionDispatcher.setActive(name)
+    }
+
+
+    getActiveController () {
+        return this.actionDispatcher.getActive()
+    }
+
+
+    dispatchAction (actionName, ...args) {
+        return this.actionDispatcher.dispatch(actionName, ...args)
     }
 
 
