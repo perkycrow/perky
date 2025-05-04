@@ -11,6 +11,11 @@ export default class ActionController extends PerkyModule {
     }
 
 
+    get engine () {
+        return this.actionDispatcher.engine
+    }
+
+
     addAction (actionName, action) {
         return this.actions.set(actionName, action)
     }

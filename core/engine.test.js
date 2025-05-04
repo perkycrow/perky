@@ -1,8 +1,10 @@
 import Engine from './engine'
 import Manifest from './manifest'
 import PerkyModule from './perky_module'
-import Registry from './registry'
 import {vi} from 'vitest'
+import ActionController from './action_controller'
+import ActionDispatcher from './action_dispatcher'
+import Notifier from './notifier'
 
 
 describe(Engine, () => {
@@ -254,21 +256,11 @@ describe(Engine, () => {
 
 
     test('module clear event', () => {
-        const registrySpy = vi.spyOn(Registry.prototype, 'on')
-
-        const testEngine = new Engine()
-
-        expect(registrySpy).toHaveBeenCalledWith('clear', expect.any(Function))
-
-        const clearCallback = registrySpy.mock.calls.find(call => call[0] === 'clear')[1]
-
-        const emitSpy = vi.spyOn(testEngine, 'emit')
-
-        clearCallback()
+        const emitSpy = vi.spyOn(engine, 'emit')
+        
+        engine.modules.emit('clear')
 
         expect(emitSpy).toHaveBeenCalledWith('module:clear')
-
-        registrySpy.mockRestore()
     })
 
 
@@ -299,6 +291,149 @@ describe(Engine, () => {
         expect(consoleSpy).toHaveBeenCalled()
         
         consoleSpy.mockRestore()
+    })
+
+
+    test('registerController', () => {
+        const spy = vi.spyOn(engine.actionDispatcher, 'register')
+        const controller = new ActionController()
+        
+        engine.registerController('test', controller)
+        
+        expect(spy).toHaveBeenCalledWith('test', controller)
+        expect(engine.getController('test')).toBe(controller)
+    })
+
+
+    test('registerController non-controller object', () => {
+        class TestController extends Notifier {
+            constructor () {
+                super()
+            }
+        }
+        
+        const nonController = new TestController()
+        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        
+        engine.registerController('test', nonController)
+        
+        expect(engine.getController('test')).toBe(nonController)
+        
+        consoleSpy.mockRestore()
+    })
+
+
+    test('getController', () => {
+        const controller = new ActionController()
+        engine.registerController('test', controller)
+        
+        expect(engine.getController('test')).toBe(controller)
+    })
+
+
+    test('getController non-existent', () => {
+        expect(engine.getController('nonexistent')).toBeNull()
+    })
+
+
+    test('removeController', () => {
+        const controller = new ActionController()
+        engine.registerController('test', controller)
+        
+        engine.removeController('test')
+        
+        expect(engine.getController('test')).toBeNull()
+    })
+
+
+    test('setActiveController', () => {
+        const spy = vi.spyOn(engine.actionDispatcher, 'setActive')
+        const controller = new ActionController()
+        
+        engine.registerController('test', controller)
+        engine.setActiveController('test')
+        
+        expect(spy).toHaveBeenCalledWith('test')
+    })
+
+
+    test('controller lifecycle events propagation', () => {
+        const controller = new ActionController()
+
+        const initSpy = vi.spyOn(controller, 'init')
+        const startSpy = vi.spyOn(controller, 'start')
+        const updateSpy = vi.spyOn(controller, 'update')
+        const pauseSpy = vi.spyOn(controller, 'pause')
+        const resumeSpy = vi.spyOn(controller, 'resume')
+        const stopSpy = vi.spyOn(controller, 'stop')
+        
+        engine.registerController('test', controller)
+
+        engine.init('param')
+        expect(initSpy).toHaveBeenCalledWith('param')
+
+        engine.start('param')
+        
+        engine.update('param')
+        expect(updateSpy).toHaveBeenCalledWith('param')
+
+        engine.pause('param')
+        expect(pauseSpy).toHaveBeenCalledWith('param')
+
+        controller.paused = true
+        
+        engine.resume('param')
+        expect(resumeSpy).toHaveBeenCalledWith('param')
+
+        engine.stop('param')
+        expect(stopSpy).toHaveBeenCalledWith('param')
+
+        engine.start('param')
+        expect(startSpy).toHaveBeenCalledWith('param')
+    })
+
+
+    test('controller registration events', () => {
+        const actionDispatcherSpy = vi.spyOn(engine.actionDispatcher, 'emit')
+        const controller = new ActionController()
+        const controllerSpy = vi.spyOn(controller, 'emit')
+
+        engine.registerController('test', controller)
+
+        expect(actionDispatcherSpy).toHaveBeenCalledWith('controller:set', 'test', controller)
+        expect(controllerSpy).toHaveBeenCalledWith('registered', engine.actionDispatcher, 'test')
+
+        expect(controller.engine).toBe(engine)
+    })
+
+
+    test('controller unregistration events', () => {
+        const controller = new ActionController()
+        engine.registerController('test', controller)
+        
+        const actionDispatcherSpy = vi.spyOn(engine.actionDispatcher, 'emit')
+        const controllerSpy = vi.spyOn(controller, 'emit')
+
+        engine.removeController('test')
+        
+        expect(actionDispatcherSpy).toHaveBeenCalledWith('controller:delete', 'test', controller)
+        expect(controllerSpy).toHaveBeenCalledWith('unregistered', engine.actionDispatcher, 'test')
+    })
+
+
+    test('controller clear event', () => {
+        const actionDispatcherSpy = vi.spyOn(engine.actionDispatcher, 'emit')
+        
+        engine.actionDispatcher.controllers.emit('clear')
+
+        expect(actionDispatcherSpy).toHaveBeenCalledWith('controller:clear')
+    })
+
+
+    test('action dispatcher initialization', () => {
+        expect(engine.actionDispatcher).toBeInstanceOf(ActionDispatcher)
+        expect(engine.getController('application')).toBeInstanceOf(ActionController)
+        expect(engine.actionDispatcher.activeControllerName).toBe('application')
     })
 
 })

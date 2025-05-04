@@ -99,6 +99,10 @@ export default class PerkyModule extends Notifier {
         return true
     }
 
+    static initRegistryEvents (params) {
+        initRegistryEvents(params)
+    }
+
 }
 
 
@@ -106,4 +110,69 @@ function reset (module) {
     module.started = false
     module.initialized = false
     module.paused = false
+}
+
+
+
+
+function initRegistryEvents ({module, moduleName, registryName, registry, bind = false}) {
+
+    registry.on('delete', (name, item) => {
+        if (typeof item.dispose === 'function') {
+            item.dispose()
+        }
+    })
+
+    registry.on('set', (key, item) => {
+        onSetRegistryItem({module, moduleName, registryName, key, item, bind})
+    })
+
+    registry.on('delete', (key, item) => {
+        onDeleteRegistryItem({module, moduleName, registryName, key, item, bind})
+    })
+
+    registry.on('clear', () => {
+        module.emit(`${registryName}:clear`)
+    })
+
+    module.on('init',   registry.invoker('init'))
+    module.on('start',  registry.invoker('start'))
+    module.on('stop',   registry.invoker('stop'))
+    module.on('update', registry.invoker('update'))
+    module.on('pause',  registry.invoker('pause'))
+    module.on('resume', registry.invoker('resume'))
+}
+
+
+function onSetRegistryItem ({module, moduleName, registryName, key, item, bind}) {
+    if (moduleName in item) {
+        console.warn(`[${registryName}] ${key} is already registered in another module`)
+        return
+    }
+
+    item[moduleName] = module
+
+    if (bind) {
+        module[key] = item
+    }
+
+    module.emit(`${registryName}:set`, key, item)
+    item.emit('registered', module, key)
+}
+
+
+function onDeleteRegistryItem ({module, moduleName, registryName, key, item}) {
+    if (item[moduleName] !== module) {
+        console.warn(`[${registryName}] ${key} is not registered in this module`)
+        return
+    }
+
+    if (module[key] === item) {
+        delete module[key]
+    }
+
+    module.emit(`${registryName}:delete`, key, item)
+    item.emit('unregistered', module, key)
+
+    delete item[moduleName]
 }

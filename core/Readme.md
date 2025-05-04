@@ -2,6 +2,7 @@
 
 The `core` directory contains the fundamental components of the Perky engine system. This modular architecture is designed to provide a flexible framework for building and managing interactive applications.
 
+
 ## Core Components
 
 ### Engine
@@ -15,6 +16,12 @@ An event system implementation that provides publish/subscribe capabilities to c
 
 ### Registry
 A Map-like collection class that adds event notifications when items are added, removed, or the collection is cleared. It includes utility methods for invoking methods on all contained items.
+
+### ActionController
+The `ActionController` manages actions and their associated callbacks. It allows registering actions, attaching execution hooks, and invoking them in a controlled manner.
+
+### ActionDispatcher
+The `ActionDispatcher` facilitates communication between different parts of the system. It functions as a router.
 
 ### Manifest
 A configuration and metadata management system. It handles:

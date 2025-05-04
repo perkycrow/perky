@@ -1,5 +1,5 @@
-import PerkyModule from '../core/perky_module'
-import Registry from '../core/registry'
+import PerkyModule from './perky_module'
+import Registry from './registry'
 
 
 export default class ActionDispatcher extends PerkyModule {
@@ -35,7 +35,12 @@ export default class ActionDispatcher extends PerkyModule {
             return false
         }
 
+        const controller = this.controllers.get(name)
         this.controllers.delete(name)
+
+        if (controller && controller.dispatcher) {
+            delete controller.dispatcher
+        }
 
         if (this.activeControllerName === name) {
             this.activeControllerName = null
@@ -107,9 +112,13 @@ export default class ActionDispatcher extends PerkyModule {
 
 
 function initEvents (dispatcher) {
-    dispatcher.controllers.on('delete', (name, controller) => {
-        if (typeof controller.dispose === 'function') {
-            controller.dispose()
-        }
+
+    PerkyModule.initRegistryEvents({
+        module: dispatcher,
+        moduleName: 'actionDispatcher',
+        registry: dispatcher.controllers,
+        registryName: 'controller',
+        bind: false
     })
+
 }

@@ -1,6 +1,8 @@
 import Manifest from './manifest'
 import PerkyModule from './perky_module'
 import Registry from './registry'
+import ActionDispatcher from './action_dispatcher'
+import ActionController from './action_controller'
 
 
 export default class Engine extends PerkyModule {
@@ -16,23 +18,56 @@ export default class Engine extends PerkyModule {
         this.modules  = new Registry()
 
         initEvents(this)
+
+        this.registerModule('actionDispatcher', new ActionDispatcher())
+
+        const applicationController = new ActionController()
+        this.registerController('application', applicationController)
+        this.setActiveController('application')
     }
 
 
     registerModule (name, module) {
         if (!(module instanceof PerkyModule)) {
             console.warn(`Attempted to register non-module object as module: ${name}`)
-            return this
+            return false
         }
 
-        this.modules.set(name, module)
-
-        return this
+        return this.modules.set(name, module)
     }
 
 
     getModule (name) {
         return this.modules.get(name) || null
+    }
+
+
+    removeModule (name) {
+        if (this.modules.has(name)) {
+            return this.modules.delete(name)
+        }
+
+        return false
+    }
+
+
+    registerController (name, controller) {
+        return this.actionDispatcher.register(name, controller)
+    }
+
+
+    getController (name) {
+        return this.actionDispatcher.getController(name) || null
+    }
+
+
+    removeController (name) {
+        return this.actionDispatcher.unregister(name)
+    }
+
+
+    setActiveController (name) {
+        return this.actionDispatcher.setActive(name)
     }
 
 
@@ -71,15 +106,14 @@ export default class Engine extends PerkyModule {
 
 
     getSources (type) {
-        return this.manifest.getSources(type) 
-            ? Object.values(this.manifest.getSources(type))
-            : []
+        const sources = this.manifest.getSources(type)
+
+        return sources ? Object.values(sources) : []
     }
 
 
     addAlias (key, value) {
-        this.manifest.alias(key, value)
-        return this
+        return this.manifest.alias(key, value)
     }
 
 
@@ -94,60 +128,21 @@ export default class Engine extends PerkyModule {
 
 
     importManifest (data) {
-        this.manifest.import(data)
-        return this
+        return this.manifest.import(data)
     }
 
 }
+
 
 
 function initEvents (engine) {
-    const {modules} = engine
 
-    modules.on('set',    (key, module) => onSetModule(engine, key, module))
-    modules.on('delete', (key, module) => onDeleteModule(engine, key, module))
-    modules.on('clear',  () => engine.emit('module:clear'))
+    PerkyModule.initRegistryEvents({
+        module: engine,
+        moduleName: 'engine',
+        registry: engine.modules,
+        registryName: 'module',
+        bind: true
+    })
 
-    engine.on('init',   modules.invoker('init'))
-    engine.on('start',  modules.invoker('start'))
-    engine.on('stop',   modules.invoker('stop'))
-    engine.on('update', modules.invoker('update'))
-    engine.on('pause',  modules.invoker('pause'))
-    engine.on('resume', modules.invoker('resume'))
-}
-
-
-function onSetModule (engine, name, module) {
-    if (module.engine) {
-        console.warn(`Module ${name} is already registered in another engine`)
-        return
-    }
-
-    module.engine = engine
-
-    if (name in engine) {
-        console.warn(`The key ${name} is already used in the engine`)
-    } else {
-        engine[name] = module
-    }
-
-    engine.emit('module:set', name, module)
-    module.emit('registered', engine, name)
-}
-
-
-function onDeleteModule (engine, name, module) {
-    if (module.engine !== engine) {
-        console.warn(`Module ${name} is not registered in this engine`)
-        return
-    }
-
-    if (engine[name] === module) {
-        delete engine[name]
-    }
-
-    engine.emit('module:delete', name, module)
-    module.emit('unregistered', engine, name)
-
-    delete module.engine
 }
