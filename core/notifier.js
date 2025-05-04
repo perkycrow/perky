@@ -1,3 +1,4 @@
+
 export default class Notifier {
 
     constructor () {
@@ -51,6 +52,44 @@ export default class Notifier {
         for (let listener of listeners) {
             listener(...args)
         }
+    }
+
+
+    async emitAsync (name, ...args) {
+        const listeners = this.getListenersFor(name) || []
+
+        for (let listener of listeners) {
+            await Promise.resolve(listener(...args))
+        }
+    }
+
+
+    emitCallbacks (name, ...args) {
+        const listeners = this.getListenersFor(name) || []
+        for (let listener of listeners) {
+            const result = listener(...args)
+
+            if (result === false) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+
+    async emitCallbacksAsync (name, ...args) {
+        const listeners = this.getListenersFor(name) || []
+
+        for (let listener of listeners) {
+            const result = await Promise.resolve(listener(...args))
+
+            if (result === false) {
+                return false
+            }
+        }
+
+        return true
     }
 
 
