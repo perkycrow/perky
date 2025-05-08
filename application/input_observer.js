@@ -6,37 +6,36 @@ export default class InputObserver extends PerkyModule {
     constructor (container = window) {
         super()
         this.container = container
-        this.keyStates = {}
+        this.pressedInputs = {}
         this.mousePosition = {x: 0, y: 0}
-        this.mouseButtons = {}
 
         initEvents(this)
     }
 
 
-    getKeyState (code) {
-        return this.keyStates[code] || false
+    isPressed (code) {
+        return this.pressedInputs[code] || false
+    }
+
+
+    arePressed (codes) {
+        return codes.every(code => this.isPressed(code))
     }
 
 
     getMousePosition () {
-        return {...this.mousePosition}
-    }
-
-
-    getMouseButtonState (button) {
-        return this.mouseButtons[button] || false
+        return Object.assign({}, this.mousePosition)
     }
 
 }
 
 
 function initEvents (observer) {
-    const {keyStates, mousePosition, mouseButtons, container} = observer
+    const {pressedInputs, mousePosition, container} = observer
 
     const listeners = {
         keydown (event) {
-            keyStates[event.code] = true
+            pressedInputs[event.code] = true
             observer.emit('keydown', {
                 code: event.code,
                 key: event.key,
@@ -44,7 +43,7 @@ function initEvents (observer) {
             })
         },
         keyup (event) {
-            keyStates[event.code] = false
+            delete pressedInputs[event.code]
             observer.emit('keyup', {
                 code: event.code,
                 key: event.key,
@@ -54,30 +53,29 @@ function initEvents (observer) {
         mousemove (event) {
             mousePosition.x = event.clientX
             mousePosition.y = event.clientY
+
             observer.emit('mousemove', {
                 x: event.clientX,
                 y: event.clientY,
-                position: {x: event.clientX, y: event.clientY},
                 event: event
             })
         },
         mousedown (event) {
-            mouseButtons[event.button] = true
+            pressedInputs[`Mouse${event.button}`] = true
             observer.emit('mousedown', {
                 button: event.button,
                 x: event.clientX,
                 y: event.clientY,
-                position: {x: event.clientX, y: event.clientY},
                 event: event
             })
         },
         mouseup (event) {
-            mouseButtons[event.button] = false
+            delete pressedInputs[`Mouse${event.button}`]
             observer.emit('mouseup', {
                 button: event.button,
                 x: event.clientX,
                 y: event.clientY,
-                position: {x: event.clientX, y: event.clientY}
+                event: event
             })
         }
     }
@@ -91,9 +89,8 @@ function initEvents (observer) {
             container.removeEventListener(key, listeners[key])
         }
 
-        observer.keyStates = {}
+        observer.pressedInputs = {}
         observer.mousePosition = {x: 0, y: 0}
-        observer.mouseButtons = {}
     })
 
 }

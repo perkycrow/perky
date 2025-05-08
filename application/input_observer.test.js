@@ -37,17 +37,26 @@ describe(InputObserver, () => {
 
     test('initialization', () => {
         expect(inputObserver.container).toBe(mockContainer)
-        expect(inputObserver.keyStates).toEqual({})
+        expect(inputObserver.pressedInputs).toEqual({})
         expect(inputObserver.mousePosition).toEqual({x: 0, y: 0})
-        expect(inputObserver.mouseButtons).toEqual({})
         expect(mockContainer.addEventListener).toHaveBeenCalledTimes(5)
     })
 
-    test('getKeyState', () => {
-        expect(inputObserver.getKeyState('KeyA')).toBe(false)
+    test('isPressed', () => {
+        expect(inputObserver.isPressed('KeyA')).toBe(false)
 
-        inputObserver.keyStates.KeyA = true
-        expect(inputObserver.getKeyState('KeyA')).toBe(true)
+        inputObserver.pressedInputs.KeyA = true
+        expect(inputObserver.isPressed('KeyA')).toBe(true)
+    })
+
+    test('arePressed', () => {
+        expect(inputObserver.arePressed(['KeyA', 'KeyB'])).toBe(false)
+
+        inputObserver.pressedInputs.KeyA = true
+        expect(inputObserver.arePressed(['KeyA', 'KeyB'])).toBe(false)
+
+        inputObserver.pressedInputs.KeyB = true
+        expect(inputObserver.arePressed(['KeyA', 'KeyB'])).toBe(true)
     })
 
     test('getMousePosition', () => {
@@ -61,11 +70,11 @@ describe(InputObserver, () => {
         expect(inputObserver.mousePosition.x).toBe(100)
     })
 
-    test('getMouseButtonState', () => {
-        expect(inputObserver.getMouseButtonState(0)).toBe(false)
+    test('mouse button input', () => {
+        expect(inputObserver.isPressed('Mouse0')).toBe(false)
 
-        inputObserver.mouseButtons[0] = true
-        expect(inputObserver.getMouseButtonState(0)).toBe(true)
+        inputObserver.pressedInputs.Mouse0 = true
+        expect(inputObserver.isPressed('Mouse0')).toBe(true)
     })
 
     test('keydown event', () => {
@@ -74,7 +83,7 @@ describe(InputObserver, () => {
         const event = {code: 'KeyA', key: 'a'}
         keydownHandler(event)
 
-        expect(inputObserver.keyStates.KeyA).toBe(true)
+        expect(inputObserver.pressedInputs.KeyA).toBe(true)
         expect(inputObserver.emit).toHaveBeenCalledWith('keydown', {
             code: 'KeyA',
             key: 'a',
@@ -83,14 +92,14 @@ describe(InputObserver, () => {
     })
 
     test('keyup event', () => {
-        inputObserver.keyStates.KeyA = true
+        inputObserver.pressedInputs.KeyA = true
 
         const keyupHandler = findEventHandler(mockContainer.addEventListener.mock.calls, 'keyup')
 
         const event = {code: 'KeyA', key: 'a'}
         keyupHandler(event)
 
-        expect(inputObserver.keyStates.KeyA).toBe(false)
+        expect(inputObserver.pressedInputs.KeyA).toBe(undefined)
         expect(inputObserver.emit).toHaveBeenCalledWith('keyup', {
             code: 'KeyA',
             key: 'a',
@@ -108,7 +117,6 @@ describe(InputObserver, () => {
         expect(inputObserver.emit).toHaveBeenCalledWith('mousemove', {
             x: 150,
             y: 250,
-            position: {x: 150, y: 250},
             event
         })
     })
@@ -119,30 +127,29 @@ describe(InputObserver, () => {
         const event = {button: 0, clientX: 150, clientY: 250}
         mousedownHandler(event)
 
-        expect(inputObserver.mouseButtons[0]).toBe(true)
+        expect(inputObserver.pressedInputs.Mouse0).toBe(true)
         expect(inputObserver.emit).toHaveBeenCalledWith('mousedown', {
             button: 0,
             x: 150,
             y: 250,
-            position: {x: 150, y: 250},
             event
         })
     })
 
     test('mouseup event', () => {
-        inputObserver.mouseButtons[0] = true
+        inputObserver.pressedInputs.Mouse0 = true
 
         const mouseupHandler = findEventHandler(mockContainer.addEventListener.mock.calls, 'mouseup')
 
         const event = {button: 0, clientX: 150, clientY: 250}
         mouseupHandler(event)
 
-        expect(inputObserver.mouseButtons[0]).toBe(false)
+        expect(inputObserver.pressedInputs.Mouse0).toBe(undefined)
         expect(inputObserver.emit).toHaveBeenCalledWith('mouseup', {
             button: 0,
             x: 150,
             y: 250,
-            position: {x: 150, y: 250}
+            event
         })
     })
 
