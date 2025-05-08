@@ -1,5 +1,6 @@
 import PerkyModule from '../core/perky_module'
 
+
 export default class InputMapper extends PerkyModule {
 
     constructor ({inputObserver} = {}) {
@@ -85,6 +86,7 @@ function initEvents (mapper) {
 
     inputObserver.on('keydown', (data) => {
         const action = mapper.getActionFor(data.code)
+
         if (action) {
             mapper.pressedActions[action] = true
             mapper.emit('action', action)
@@ -93,6 +95,7 @@ function initEvents (mapper) {
 
     inputObserver.on('keyup', (data) => {
         const action = mapper.getActionFor(data.code)
+
         if (action) {
             delete mapper.pressedActions[action]
         }
@@ -101,6 +104,7 @@ function initEvents (mapper) {
     inputObserver.on('mousedown', (data) => {
         const input = `Mouse${data.button}`
         const action = mapper.getActionFor(input)
+
         if (action) {
             mapper.pressedActions[action] = true
             mapper.emit('action', action)
@@ -110,6 +114,7 @@ function initEvents (mapper) {
     inputObserver.on('mouseup', (data) => {
         const input = `Mouse${data.button}`
         const action = mapper.getActionFor(input)
+
         if (action) {
             delete mapper.pressedActions[action]
         }
