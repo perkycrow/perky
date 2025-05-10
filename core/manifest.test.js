@@ -153,6 +153,15 @@ describe('Manifest', () => {
     })
 
 
+    test('getSource', () => {
+        const sourceDescriptorData = {id: 'logo', path: '/assets/logo.png', source: 'fakeImage'}
+        manifest.addSourceDescriptor('images', sourceDescriptorData)
+
+        const source = manifest.getSource('images', 'logo')
+        expect(source).toBe('fakeImage')
+    })
+
+
     test('alias', () => {
         manifest.data.aliases = {mainLogo: 'logo', mainIcon: 'icon'}
         

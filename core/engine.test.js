@@ -157,6 +157,18 @@ describe(Engine, () => {
     })
 
 
+    test('getSource', () => {
+        engine.manifest.data.sourceDescriptors = {
+            images: {
+                logo: {id: 'logo', path: '/assets/logo.png', source: 'fakeImage'}
+            }
+        }
+        
+        const source = engine.getSource('images', 'logo')
+        expect(source).toBe('fakeImage')
+    })
+
+
     test('addAlias and getAlias', () => {
         const spy = vi.spyOn(engine.manifest, 'alias')
         

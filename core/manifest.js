@@ -81,6 +81,17 @@ export default class Manifest {
     }
 
 
+    getSource (type, id) {
+        const sourceDescriptor = this.getSourceDescriptor(type, id)
+
+        if (!sourceDescriptor) {
+            return null
+        }
+
+        return sourceDescriptor.source
+    }
+
+
     getSourceDescriptorsByTag (tag) {
         if (!tag || typeof tag !== 'string') {
             return []

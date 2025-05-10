@@ -10,11 +10,11 @@ describe('SourceDescriptor', () => {
             name: 'example',
             id: 'test_id',
             path: '/path/to/file.jpg',
-            data: {key: 'value'},
+            source: {key: 'value'},
             tags: ['titleScreen', 'mainScene'],
             options: {width: 100, height: 100}
         }
-        
+
         const descriptor = new SourceDescriptor(params)
         
         expect(descriptor.type).toBe('image')
@@ -42,7 +42,7 @@ describe('SourceDescriptor', () => {
         const descriptor = new SourceDescriptor({
             type: 'json',
             id: 'test_id',
-            data: {content: 'data'}
+            source: {content: 'source'}
         })
         
         expect(descriptor.loaded).toBe(true)
@@ -103,16 +103,16 @@ describe('SourceDescriptor', () => {
             tags: ['titleScreen'],
             options: {width: 100}
         })
-        expect(exported.data).toBeUndefined()
+        expect(exported.source).toBeUndefined()
     })
 
 
-    test('export with data', () => {
+    test('export with source', () => {
         const descriptor = new SourceDescriptor({
             type: 'json',
             name: 'config',
             id: 'config_id',
-            data: {settings: true},
+            source: {settings: true},
             tags: ['config', 'settings'],
             options: {parse: true}
         })
@@ -123,7 +123,7 @@ describe('SourceDescriptor', () => {
             type: 'json',
             id: 'config_id',
             name: 'config',
-            data: {settings: true},
+            source: {settings: true},
             tags: ['config', 'settings'],
             options: {parse: true}
         })

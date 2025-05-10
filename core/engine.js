@@ -122,6 +122,11 @@ export default class Engine extends PerkyModule {
     }
 
 
+    getSource (type, id) {
+        return this.manifest.getSource(type, id)
+    }
+
+
     addAlias (key, value) {
         return this.manifest.alias(key, value)
     }
