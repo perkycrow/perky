@@ -245,4 +245,18 @@ describe(Registry, () => {
         expect(results).toEqual([{key: 'a', value: 1}, {key: 'b', value: 2}])
     })
 
+
+    test('constructor with default collection', () => {
+        const collection = {
+            key1: 'value1',
+            key2: 'value2'
+        }
+        
+        const registryWithCollection = new Registry(collection)
+        
+        expect(registryWithCollection.size).toBe(2)
+        expect(registryWithCollection.get('key1')).toBe('value1')
+        expect(registryWithCollection.get('key2')).toBe('value2')
+    })
+
 })

@@ -3,9 +3,13 @@ import Notifier from './notifier'
 
 export default class Registry extends Notifier {
 
-    constructor () {
+    constructor (collection) {
         super()
         this.map = new Map()
+
+        if (collection) {
+            this.addCollection(collection)
+        }
     }
 
 
