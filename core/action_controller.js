@@ -12,7 +12,7 @@ export default class ActionController extends PerkyModule {
 
 
     get engine () {
-        return this.actionDispatcher.engine
+        return this.actionDispatcher && this.actionDispatcher.engine
     }
 
 
