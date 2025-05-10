@@ -94,3 +94,13 @@ export async function loadAudio (params) {
         )
     })
 }
+
+
+export const collection = {
+    image: loadImage,
+    text: loadText,
+    json: loadJson,
+    arrayBuffer: loadArrayBuffer,
+    blob: loadBlob,
+    audio: loadAudio
+}
