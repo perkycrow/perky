@@ -1,5 +1,5 @@
 import Manifest from './manifest'
-import Source from './source'
+import SourceDescriptor from './source_descriptor'
 
 
 describe('Manifest', () => {
@@ -14,7 +14,7 @@ describe('Manifest', () => {
         expect(manifest.data).toEqual({
             metadata: {},
             config: {},
-            sources: {},
+            sourceDescriptors: {},
             aliases: {}
         })
     })
@@ -27,7 +27,7 @@ describe('Manifest', () => {
 
         expect(customManifest.data.metadata.name).toBe('Test Manifest')
         expect(customManifest.data.config).toEqual({})
-        expect(customManifest.data.sources).toEqual({})
+        expect(customManifest.data.sourceDescriptors).toEqual({})
         expect(customManifest.data.aliases).toEqual({})
     })
 
@@ -36,7 +36,7 @@ describe('Manifest', () => {
         const jsonData = JSON.stringify({
             metadata: {version: '1.0.0'},
             config: {debug: true},
-            sources: {images: {logo: {id: 'logo', path: '/assets/logo.png'}}},
+            sourceDescriptors: {images: {logo: {id: 'logo', path: '/assets/logo.png'}}},
             aliases: {mainLogo: 'logo'}
         })
         
@@ -44,7 +44,7 @@ describe('Manifest', () => {
         
         expect(manifest.data.metadata.version).toBe('1.0.0')
         expect(manifest.data.config.debug).toBe(true)
-        expect(manifest.data.sources.images.logo.id).toBe('logo')
+        expect(manifest.data.sourceDescriptors.images.logo.id).toBe('logo')
         expect(manifest.data.aliases.mainLogo).toBe('logo')
     })
 
@@ -113,43 +113,43 @@ describe('Manifest', () => {
     })
 
 
-    test('addSource', () => {
-        manifest.addSource('images', {id: 'logo', path: '/assets/logo.png'})
+    test('addSourceDescriptor', () => {
+        manifest.addSourceDescriptor('images', {id: 'logo', path: '/assets/logo.png'})
         
-        expect(Object.keys(manifest.data.sources.images)).toHaveLength(1)
-        expect(manifest.data.sources.images.logo.id).toBe('logo')
+        expect(Object.keys(manifest.data.sourceDescriptors.images)).toHaveLength(1)
+        expect(manifest.data.sourceDescriptors.images.logo.id).toBe('logo')
     })
 
 
-    test('addSource update existing', () => {
-        manifest.addSource('images', {id: 'logo', path: '/assets/logo.png'})
-        manifest.addSource('images', {id: 'logo', path: '/assets/new-logo.png'})
+    test('addSourceDescriptor update existing', () => {
+        manifest.addSourceDescriptor('images', {id: 'logo', path: '/assets/logo.png'})
+        manifest.addSourceDescriptor('images', {id: 'logo', path: '/assets/new-logo.png'})
 
-        expect(Object.keys(manifest.data.sources.images)).toHaveLength(1)
-        expect(manifest.data.sources.images.logo.path).toBe('/assets/new-logo.png')
+        expect(Object.keys(manifest.data.sourceDescriptors.images)).toHaveLength(1)
+        expect(manifest.data.sourceDescriptors.images.logo.path).toBe('/assets/new-logo.png')
     })
 
 
-    test('getSource null type', () => {
-        expect(manifest.getSource('images', 'logo')).toBeNull()
+    test('getSourceDescriptor null type', () => {
+        expect(manifest.getSourceDescriptor('images', 'logo')).toBeNull()
     })
 
 
-    test('getSource null id', () => {
-        manifest.addSource('images', {id: 'logo', path: '/assets/logo.png'})
+    test('getSourceDescriptor null id', () => {
+        manifest.addSourceDescriptor('images', {id: 'logo', path: '/assets/logo.png'})
         
-        expect(manifest.getSource('images', 'icon')).toBeNull()
+        expect(manifest.getSourceDescriptor('images', 'icon')).toBeNull()
     })
 
 
-    test('getSource', () => {
-        const sourceData = {id: 'logo', path: '/assets/logo.png'}
-        manifest.addSource('images', sourceData)
+    test('getSourceDescriptor', () => {
+        const sourceDescriptorData = {id: 'logo', path: '/assets/logo.png'}
+        manifest.addSourceDescriptor('images', sourceDescriptorData)
         
-        const sourceInstance = manifest.getSource('images', 'logo')
-        expect(sourceInstance).toBeInstanceOf(Source)
-        expect(sourceInstance.id).toBe(sourceData.id)
-        expect(sourceInstance.path).toBe(sourceData.path)
+        const sourceDescriptorInstance = manifest.getSourceDescriptor('images', 'logo')
+        expect(sourceDescriptorInstance).toBeInstanceOf(SourceDescriptor)
+        expect(sourceDescriptorInstance.id).toBe(sourceDescriptorData.id)
+        expect(sourceDescriptorInstance.path).toBe(sourceDescriptorData.path)
     })
 
 
@@ -175,103 +175,103 @@ describe('Manifest', () => {
     })
 
 
-    test('addSourceType', () => {
-        manifest.addSourceType('audio')
+    test('addSourceDescriptorType', () => {
+        manifest.addSourceDescriptorType('audio')
         
-        expect(manifest.data.sources.audio).toEqual({})
+        expect(manifest.data.sourceDescriptors.audio).toEqual({})
     })
 
 
-    test('addSourceType existing', () => {
-        manifest.addSource('images', {id: 'logo', path: '/assets/logo.png'})
-        manifest.addSourceType('images')
+    test('addSourceDescriptorType existing', () => {
+        manifest.addSourceDescriptor('images', {id: 'logo', path: '/assets/logo.png'})
+        manifest.addSourceDescriptorType('images')
         
-        expect(Object.keys(manifest.data.sources.images)).toHaveLength(1)
+        expect(Object.keys(manifest.data.sourceDescriptors.images)).toHaveLength(1)
     })
 
 
-    test('addSourceType key', () => {
-        const result = manifest.addSourceType('audio')
+    test('addSourceDescriptorType key', () => {
+        const result = manifest.addSourceDescriptorType('audio')
         
         expect(result).toEqual({})
     })
 
 
-    test('hasSourceType', () => {
-        manifest.addSourceType('audio')
+    test('hasSourceDescriptorType', () => {
+        manifest.addSourceDescriptorType('audio')
         
-        expect(manifest.hasSourceType('audio')).toBe(true)
+        expect(manifest.hasSourceDescriptorType('audio')).toBe(true)
     })
 
 
-    test('hasSourceType null', () => {
-        expect(manifest.hasSourceType('audio')).toBe(false)
+    test('hasSourceDescriptorType null', () => {
+        expect(manifest.hasSourceDescriptorType('audio')).toBe(false)
     })
 
 
-    test('getSourceTypes', () => {
-        manifest.addSourceType('images')
-        manifest.addSourceType('audio')
+    test('getSourceDescriptorTypes', () => {
+        manifest.addSourceDescriptorType('images')
+        manifest.addSourceDescriptorType('audio')
         
-        expect(manifest.getSourceTypes()).toEqual(['images', 'audio'])
+        expect(manifest.getSourceDescriptorTypes()).toEqual(['images', 'audio'])
     })
 
 
-    test('getSources', () => {
-        manifest.addSource('images', {id: 'logo', path: '/assets/logo.png'})
-        manifest.addSource('images', {id: 'icon', path: '/assets/icon.png'})
+    test('getSourceDescriptors', () => {
+        manifest.addSourceDescriptor('images', {id: 'logo', path: '/assets/logo.png'})
+        manifest.addSourceDescriptor('images', {id: 'icon', path: '/assets/icon.png'})
         
-        const sources = manifest.getSources('images')
-        expect(Object.keys(sources)).toHaveLength(2)
-        expect(sources.logo).toBeInstanceOf(Source)
-        expect(sources.icon).toBeInstanceOf(Source)
+        const sourceDescriptors = manifest.getSourceDescriptors('images')
+        expect(Object.keys(sourceDescriptors)).toHaveLength(2)
+        expect(sourceDescriptors.logo).toBeInstanceOf(SourceDescriptor)
+        expect(sourceDescriptors.icon).toBeInstanceOf(SourceDescriptor)
     })
 
 
-    test('getSources null', () => {
-        expect(manifest.getSources('audio')).toEqual({})
+    test('getSourceDescriptors null', () => {
+        expect(manifest.getSourceDescriptors('audio')).toEqual({})
     })
 
 
-    test('getSourcesByTag', () => {
-        manifest.addSource('images', {id: 'logo', path: '/assets/logo.png', tags: ['titleScreen']})
-        manifest.addSource('images', {id: 'icon', path: '/assets/icon.png', tags: ['mainScene']})
+    test('getSourceDescriptorsByTag', () => {
+        manifest.addSourceDescriptor('images', {id: 'logo', path: '/assets/logo.png', tags: ['titleScreen']})
+        manifest.addSourceDescriptor('images', {id: 'icon', path: '/assets/icon.png', tags: ['mainScene']})
         
-        const tagSources = manifest.getSourcesByTag('titleScreen')
-        expect(tagSources).toHaveLength(1)
-        expect(tagSources[0].id).toBe('logo')
+        const tagSourceDescriptors = manifest.getSourceDescriptorsByTag('titleScreen')
+        expect(tagSourceDescriptors).toHaveLength(1)
+        expect(tagSourceDescriptors[0].id).toBe('logo')
     })
 
 
-    test('getSourcesByTag multiple types', () => {
-        manifest.addSource('images', {id: 'icon', path: '/assets/icon.png', tags: ['titleScreen']})
-        manifest.addSource('audio', {id: 'music', path: '/assets/music.mp3', tags: ['titleScreen']})
+    test('getSourceDescriptorsByTag multiple types', () => {
+        manifest.addSourceDescriptor('images', {id: 'icon', path: '/assets/icon.png', tags: ['titleScreen']})
+        manifest.addSourceDescriptor('audio', {id: 'music', path: '/assets/music.mp3', tags: ['titleScreen']})
 
-        const tagSources = manifest.getSourcesByTag('titleScreen')
-        expect(tagSources).toHaveLength(2)
-        expect(tagSources[0].id).toBe('icon')
-        expect(tagSources[1].id).toBe('music')
+        const tagSourceDescriptors = manifest.getSourceDescriptorsByTag('titleScreen')
+        expect(tagSourceDescriptors).toHaveLength(2)
+        expect(tagSourceDescriptors[0].id).toBe('icon')
+        expect(tagSourceDescriptors[1].id).toBe('music')
     })
 
 
-    test('getSourcesByTag multiple tags', () => {
-        manifest.addSource('images', {id: 'icon', path: '/assets/icon.png', tags: ['titleScreen', 'mainScene', 'endingScene']})
-        manifest.addSource('images', {id: 'logo', path: '/assets/logo.png', tags: ['endingScene']})
+    test('getSourceDescriptorsByTag multiple tags', () => {
+        manifest.addSourceDescriptor('images', {id: 'icon', path: '/assets/icon.png', tags: ['titleScreen', 'mainScene', 'endingScene']})
+        manifest.addSourceDescriptor('images', {id: 'logo', path: '/assets/logo.png', tags: ['endingScene']})
 
-        const titleScreenSources = manifest.getSourcesByTag('titleScreen')
-        expect(titleScreenSources).toHaveLength(1)
-        expect(titleScreenSources[0].id).toBe('icon')
+        const titleScreenSourceDescriptors = manifest.getSourceDescriptorsByTag('titleScreen')
+        expect(titleScreenSourceDescriptors).toHaveLength(1)
+        expect(titleScreenSourceDescriptors[0].id).toBe('icon')
 
-        const endingSceneSources = manifest.getSourcesByTag('endingScene')
-        expect(endingSceneSources).toHaveLength(2)
-        expect(endingSceneSources[0].id).toBe('icon')
-        expect(endingSceneSources[1].id).toBe('logo')
+        const endingSceneSourceDescriptors = manifest.getSourceDescriptorsByTag('endingScene')
+        expect(endingSceneSourceDescriptors).toHaveLength(2)
+        expect(endingSceneSourceDescriptors[0].id).toBe('icon')
+        expect(endingSceneSourceDescriptors[1].id).toBe('logo')
     })
 
 
-    test('getSourcesByTag no sources', () => {
-        const tagSources = manifest.getSourcesByTag('titleScreen')
-        expect(tagSources).toHaveLength(0)
+    test('getSourceDescriptorsByTag no sourceDescriptors', () => {
+        const tagSourceDescriptors = manifest.getSourceDescriptorsByTag('titleScreen')
+        expect(tagSourceDescriptors).toHaveLength(0)
     })
 
 })

@@ -1,7 +1,7 @@
 import {toSnakeCase, uniqueId} from './utils'
 
 
-export default class Source {
+export default class SourceDescriptor {
 
     constructor (params = {}) {
         this.type    = params.type
@@ -10,14 +10,14 @@ export default class Source {
         this.name  ||= this.id
 
         this.path    = params.path
-        this.data    = params.data
+        this.source  = params.data
         this.tags    = params.tags  || []
         this.options = params.options || {}
     }
 
 
     get loaded () {
-        return Boolean(this.data)
+        return Boolean(this.source)
     }
 
 
@@ -37,8 +37,8 @@ export default class Source {
 
         if (this.path) {
             exported.path = this.path
-        } else if (this.data) {
-            exported.data = this.data
+        } else if (this.source) {
+            exported.data = this.source
         }
 
         return exported
@@ -49,4 +49,4 @@ export default class Source {
 
 function guessId (params) {
     return uniqueId('sources', params.id || (params.name ? toSnakeCase(params.name) : params.type))
-}
+} 

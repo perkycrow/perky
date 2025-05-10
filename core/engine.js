@@ -104,21 +104,21 @@ export default class Engine extends PerkyModule {
     }
 
 
-    addSource (type, source) {
-        return this.manifest.addSource(type, source)
+    addSourceDescriptor (type, sourceDescriptor) {
+        return this.manifest.addSourceDescriptor(type, sourceDescriptor)
     }
 
 
-    getSource (type, id) {
-        const sources = this.manifest.data.sources[type]
-        return sources && sources[id] ? sources[id] : null
+    getSourceDescriptor (type, id) {
+        const sourceDescriptors = this.manifest.data.sourceDescriptors[type]
+        return sourceDescriptors && sourceDescriptors[id] ? sourceDescriptors[id] : null
     }
 
 
-    getSources (type) {
-        const sources = this.manifest.getSources(type)
+    getSourceDescriptors (type) {
+        const sourceDescriptors = this.manifest.getSourceDescriptors(type)
 
-        return sources ? Object.values(sources) : []
+        return sourceDescriptors ? Object.values(sourceDescriptors) : []
     }
 
 

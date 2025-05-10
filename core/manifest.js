@@ -1,5 +1,5 @@
 import {setDefaults, getNestedValue, setNestedValue, singularize, deepMerge} from './utils'
-import Source from './source'
+import SourceDescriptorDescriptor from './source_descriptor'
 
 
 export default class Manifest {
@@ -8,7 +8,7 @@ export default class Manifest {
         this.data = setDefaults(data, {
             metadata: {},
             config: {},
-            sources: {},
+            sourceDescriptors: {},
             aliases: {}
         })
     }
@@ -34,7 +34,7 @@ export default class Manifest {
         return deepMerge({}, {
             metadata: this.data.metadata,
             config: this.data.config,
-            sources: exportSources(this.data.sources),
+            sourceDescriptors: exportSourceDescriptors(this.data.sourceDescriptors),
             aliases: this.data.aliases
         })
     }
@@ -60,33 +60,33 @@ export default class Manifest {
     }
 
 
-    addSource (type, source) {
-        validateSourceInput(type, source)
+    addSourceDescriptor (type, sourceDescriptor) {
+        validateSourceDescriptorInput(type, sourceDescriptor)
         
-        this.addSourceType(type)
+        this.addSourceDescriptorType(type)
         
-        source = prepareSource(type, source)
+        sourceDescriptor = prepareSourceDescriptor(type, sourceDescriptor)
 
-        this.data.sources[type][source.id] = source
+        this.data.sourceDescriptors[type][sourceDescriptor.id] = sourceDescriptor
 
-        return source
+        return sourceDescriptor
     }
 
 
-    getSource (type, id) {
-        if (!this.data.sources[type]) {
+    getSourceDescriptor (type, id) {
+        if (!this.data.sourceDescriptors[type]) {
             return null
         }
-        return this.data.sources[type][id] || null
+        return this.data.sourceDescriptors[type][id] || null
     }
 
 
-    getSourcesByTag (tag) {
+    getSourceDescriptorsByTag (tag) {
         if (!tag || typeof tag !== 'string') {
             return []
         }
 
-        return getSourcesByTag(tag, this.data.sources)
+        return getSourceDescriptorsByTag(tag, this.data.sourceDescriptors)
     }
 
 
@@ -99,94 +99,94 @@ export default class Manifest {
         return this
     }
 
-    addSourceType (type) {
+    addSourceDescriptorType (type) {
         if (!type || typeof type !== 'string') {
-            throw new Error('Source type must be a non-empty string')
+            throw new Error('SourceDescriptor type must be a non-empty string')
         }
 
-        if (!this.data.sources[type]) {
-            this.data.sources[type] = {}
+        if (!this.data.sourceDescriptors[type]) {
+            this.data.sourceDescriptors[type] = {}
         }
 
-        return this.data.sources[type]
+        return this.data.sourceDescriptors[type]
     }
 
 
-    hasSourceType (type) {
-        return type in this.data.sources
+    hasSourceDescriptorType (type) {
+        return type in this.data.sourceDescriptors
     }
 
 
-    getSourceTypes () {
-        return Object.keys(this.data.sources)
+    getSourceDescriptorTypes () {
+        return Object.keys(this.data.sourceDescriptors)
     }
 
 
-    getSources (type) {
-        return this.data.sources[type] || {}
+    getSourceDescriptors (type) {
+        return this.data.sourceDescriptors[type] || {}
     }
 
 }
 
 
 
-function validateSourceInput (type, source) {
+function validateSourceDescriptorInput (type, source) {
     if (!type || typeof type !== 'string') {
-        throw new Error('Source type must be a non-empty string')
+        throw new Error('SourceDescriptor type must be a non-empty string')
     }
 
     if (!source || typeof source !== 'object') {
-        throw new Error('Source must be an object or Source instance')
+        throw new Error('SourceDescriptor must be an object or SourceDescriptor instance')
     }
 }
 
 
-function prepareSource (type, source) {
-    if (!source.type) {
-        source.type = singularize(type)
+function prepareSourceDescriptor (type, sourceDescriptor) {
+    if (!sourceDescriptor.type) {
+        sourceDescriptor.type = singularize(type)
     }
 
-    if (!(source instanceof Source)) {
-        source = new Source(source)
+    if (!(sourceDescriptor instanceof SourceDescriptorDescriptor)) {
+        sourceDescriptor = new SourceDescriptorDescriptor(sourceDescriptor)
     }
 
-    if (!source.id) {
-        throw new Error('Source must have an id')
+    if (!sourceDescriptor.id) {
+        throw new Error('SourceDescriptor must have an id')
     }
 
-    return source
+    return sourceDescriptor
 }
 
 
-function getSourcesByTag (tag, sources) {
-    const sourcesByTag = []
+function getSourceDescriptorsByTag (tag, sourceDescriptors) {
+    const sourceDescriptorsByTag = []
 
-    for (const type in sources) {
-        const sourceCollection = sources[type]
+    for (const type in sourceDescriptors) {
+        const sourceCollection = sourceDescriptors[type]
 
         for (const id in sourceCollection) {
-            const source = sourceCollection[id]
+            const sourceDescriptor = sourceCollection[id]
 
-            if (source.hasTag(tag)) {
-                sourcesByTag.push(source)
+            if (sourceDescriptor.hasTag(tag)) {
+                sourceDescriptorsByTag.push(sourceDescriptor)
             }
         }
     }
 
-    return sourcesByTag
+    return sourceDescriptorsByTag
 }
 
 
-function exportSources (sources) {
+function exportSourceDescriptors (sourceDescriptors) {
     const exported = {}
 
-    for (const type in sources) {
-        const sourceList = sources[type]
+    for (const type in sourceDescriptors) {
+        const sourceList = sourceDescriptors[type]
         exported[type] = {}
 
         for (const id in sourceList) {
-            const source = sourceList[id]
-            exported[type][id] = source.export()
+            const sourceDescriptor = sourceList[id]
+            exported[type][id] = sourceDescriptor.export()
         }
     }
 

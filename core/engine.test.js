@@ -101,59 +101,59 @@ describe(Engine, () => {
     })
 
 
-    test('addSource', () => {
-        const spy = vi.spyOn(engine.manifest, 'addSource')
-        const source = {id: 'logo', path: '/assets/logo.png'}
+    test('addSourceDescriptor', () => {
+        const spy = vi.spyOn(engine.manifest, 'addSourceDescriptor')
+        const sourceDescriptor = {id: 'logo', path: '/assets/logo.png'}
         
-        engine.addSource('images', source)
+        engine.addSourceDescriptor('images', sourceDescriptor)
         
-        expect(spy).toHaveBeenCalledWith('images', source)
+        expect(spy).toHaveBeenCalledWith('images', sourceDescriptor)
     })
 
 
-    test('getSource', () => {
-        engine.manifest.data.sources = {
+    test('getSourceDescriptor', () => {
+        engine.manifest.data.sourceDescriptors = {
             images: {
                 logo: {id: 'logo', path: '/assets/logo.png'}
             }
         }
         
-        const source = engine.getSource('images', 'logo')
-        expect(source).toEqual({id: 'logo', path: '/assets/logo.png'})
+        const sourceDescriptor = engine.getSourceDescriptor('images', 'logo')
+        expect(sourceDescriptor).toEqual({id: 'logo', path: '/assets/logo.png'})
     })
 
 
-    test('getSource non-existent type', () => {
-        expect(engine.getSource('nonexistent', 'logo')).toBeNull()
+    test('getSourceDescriptor non-existent type', () => {
+        expect(engine.getSourceDescriptor('nonexistent', 'logo')).toBeNull()
     })
 
 
-    test('getSource non-existent id', () => {
-        engine.manifest.data.sources = {
+    test('getSourceDescriptor non-existent id', () => {
+        engine.manifest.data.sourceDescriptors = {
             images: {}
         }
         
-        expect(engine.getSource('images', 'nonexistent')).toBeNull()
+        expect(engine.getSourceDescriptor('images', 'nonexistent')).toBeNull()
     })
 
 
-    test('getSources', () => {
-        engine.manifest.data.sources = {
+    test('getSourceDescriptors', () => {
+        engine.manifest.data.sourceDescriptors = {
             images: {
                 logo: {id: 'logo', path: '/assets/logo.png'},
                 icon: {id: 'icon', path: '/assets/icon.png'}
             }
         }
         
-        const sources = engine.getSources('images')
-        expect(sources).toHaveLength(2)
-        expect(sources).toContainEqual({id: 'logo', path: '/assets/logo.png'})
-        expect(sources).toContainEqual({id: 'icon', path: '/assets/icon.png'})
+        const sourceDescriptors = engine.getSourceDescriptors('images')
+        expect(sourceDescriptors).toHaveLength(2)
+        expect(sourceDescriptors).toContainEqual({id: 'logo', path: '/assets/logo.png'})
+        expect(sourceDescriptors).toContainEqual({id: 'icon', path: '/assets/icon.png'})
     })
 
 
-    test('getSources non-existent type', () => {
-        expect(engine.getSources('nonexistent')).toEqual([])
+    test('getSourceDescriptors non-existent type', () => {
+        expect(engine.getSourceDescriptors('nonexistent')).toEqual([])
     })
 
 
