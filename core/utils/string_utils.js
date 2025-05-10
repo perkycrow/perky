@@ -82,6 +82,11 @@ export function toSnakeCase (string) {
 const idCounter = {}
 
 export function uniqueId (collection, prefix) {
+    if (!prefix) {
+        prefix = collection
+        collection = 'default'
+    }
+
     if (!idCounter[collection]) {
         idCounter[collection] = {}
     }
@@ -92,6 +97,7 @@ export function uniqueId (collection, prefix) {
 
     const current = idCounter[collection][prefix]
     idCounter[collection][prefix]++
+
     return current === 0 ? prefix : `${prefix}_${current}`
 }
 

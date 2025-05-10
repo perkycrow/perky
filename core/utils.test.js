@@ -345,6 +345,7 @@ describe('Utils', () => {
 
     test('uniqueId', () => {
         resetUniqueId('testCollection')
+        resetUniqueId('default')
         
         const id1 = uniqueId('testCollection', 'item')
         expect(id1).toEqual('item')
@@ -366,6 +367,22 @@ describe('Utils', () => {
         
         const product2 = uniqueId('anotherCollection', 'product')
         expect(product2).toEqual('product_1')
+
+        // Test single parameter cases
+        const single1 = uniqueId('single')
+        expect(single1).toEqual('single')
+        
+        const single2 = uniqueId('single')
+        expect(single2).toEqual('single_1')
+        
+        const single3 = uniqueId('single')
+        expect(single3).toEqual('single_2')
+        
+        const other1 = uniqueId('other')
+        expect(other1).toEqual('other')
+        
+        const other2 = uniqueId('other')
+        expect(other2).toEqual('other_1')
     })
 
 
