@@ -232,7 +232,7 @@ export class Logger {
         this.options = {
             maxEntries: 50,
             position: 'bottom',
-            timestamp: true,
+            timestamp: false,
             collapsible: true,
             initiallyExpanded: true,
             ...options
