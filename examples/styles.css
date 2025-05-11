@@ -1,0 +1,399 @@
+@import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+Pro:wght@400;600&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --paper: #f4f1e4;
+    --grid-line: rgba(0, 0, 0, 0.07);
+    --ink: #2b2b2b;
+    --ink-light: #666666;
+    --accent-blue: #3d7ea6;
+    --accent-red: #b95050;
+    --accent-green: #5a8a72;
+    --accent-orange: #d78d4c;
+    --highlight: rgba(61, 126, 166, 0.4);
+}
+
+body {
+    font-family: 'Source Sans Pro', sans-serif;
+    background-color: var(--paper);
+    color: var(--ink);
+    line-height: 1.6;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background-image: 
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 20px 20px;
+    z-index: -1;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    position: relative;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+    padding: 2rem 0;
+}
+
+h1 {
+    font-family: 'Architects Daughter', cursive;
+    font-size: 3rem;
+    color: var(--ink);
+    text-transform: lowercase;
+    letter-spacing: -1px;
+    margin-bottom: 0.5rem;
+    position: relative;
+    display: inline-block;
+}
+
+/* Highlight effect */
+h1::after {
+    content: '';
+    position: absolute;
+    bottom: 5px;
+    left: -10px;
+    right: -10px;
+    height: 10px;
+    background-color: var(--highlight);
+    z-index: -1;
+    transform: rotate(-1deg);
+}
+
+.tagline {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1rem;
+    color: var(--ink-light);
+    margin-top: 1rem;
+    letter-spacing: -0.5px;
+}
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    justify-content: center;
+    margin: 2rem 0;
+    padding: 1rem;
+    position: relative;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.filter-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    width: 100%;
+}
+
+.filter-section-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--ink-light);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-right: 0.5rem;
+    min-width: 80px;
+}
+
+.filter-tag {
+    background: none;
+    border: 1px solid var(--ink-light);
+    border-radius: 20px;
+    padding: 0.4rem 0.8rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    text-transform: capitalize;
+}
+
+.filter-tag.section-main {
+    font-weight: 500;
+    min-width: 80px;
+    text-align: center;
+    margin-right: 0.5rem;
+}
+
+.filter-tag.family-core, .tag.family-core {
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.filter-tag.tag-action, .tag.tag-action {
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+    opacity: 0.85;
+}
+
+.filter-tag.tag-engine, .tag.tag-engine,
+.filter-tag.tag-manifest, .tag.tag-manifest,
+.filter-tag.tag-module, .tag.tag-module,
+.filter-tag.tag-random, .tag.tag-random,
+.filter-tag.tag-source, .tag.tag-source,
+.filter-tag.tag-utils, .tag.tag-utils {
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+    opacity: 0.75;
+}
+
+.filter-tag.family-application, .tag.family-application {
+    color: var(--accent-green);
+    border-color: var(--accent-green);
+}
+
+.filter-tag.tag-input, .tag.tag-input,
+.filter-tag.tag-loader, .tag.tag-loader,
+.filter-tag.tag-view, .tag.tag-view {
+    color: var(--accent-green);
+    border-color: var(--accent-green);
+    opacity: 0.75;
+}
+
+.filter-tag.family-three, .tag.family-three {
+    color: var(--accent-red);
+    border-color: var(--accent-red);
+}
+
+.filter-tag.family-audio, .tag.family-audio {
+    color: var(--accent-orange);
+    border-color: var(--accent-orange);
+}
+
+.filter-tag.family-game, .tag.family-game {
+    color: #8a5ad7;
+    border-color: #8a5ad7;
+}
+
+.filter-tag:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+    opacity: 1;
+}
+
+.filter-tag.active {
+    background-color: var(--ink);
+    color: white !important;
+    border-color: var(--ink);
+    opacity: 1;
+}
+
+.tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 2px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    position: relative;
+    text-transform: capitalize;
+}
+
+.tag-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.category-core .category-indicator {
+    background-color: var(--accent-blue);
+}
+
+.category-application .category-indicator {
+    background-color: var(--accent-green);
+}
+
+.category-three .category-indicator {
+    background-color: var(--accent-red);
+}
+
+.category-audio .category-indicator {
+    background-color: var(--accent-orange);
+}
+
+.category-game .category-indicator {
+    background-color: #8a5ad7;
+}
+
+.examples-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.example-card {
+    background-color: white;
+    border-radius: 2px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    position: relative;
+    border: 1px solid #e0e0e0;
+}
+
+.example-card::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border: 1px dashed rgba(0, 0, 0, 0.1);
+    pointer-events: none;
+    border-radius: 2px;
+}
+
+.category-indicator {
+    position: absolute;
+    top: 0;
+    right: 20px;
+    width: 15px;
+    height: 40px;
+    z-index: 1;
+}
+
+.card-content {
+    padding: 2rem;
+    position: relative;
+    z-index: 2;
+}
+
+.example-title {
+    font-family: 'Architects Daughter', cursive;
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+    color: var(--ink);
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 0.5rem;
+    position: relative;
+}
+
+.example-desc {
+    margin-bottom: 1.5rem;
+    position: relative;
+    font-size: 0.95rem;
+}
+
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.example-link {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9rem;
+    text-decoration: none;
+    color: var(--ink);
+    background-color: transparent;
+    border: 2px solid var(--ink);
+    padding: 0.6rem 1.2rem;
+    position: relative;
+    transition: all 0.2s;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.example-link::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background-color: var(--ink);
+    transition: width 0.3s;
+    z-index: -1;
+}
+
+.example-link:hover {
+    color: white;
+}
+
+.example-link:hover::after {
+    width: 100%;
+}
+
+footer {
+    text-align: center;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--ink-light);
+}
+
+footer a {
+    color: var(--accent-blue);
+    text-decoration: none;
+    transition: color 0.2s, border-bottom 0.2s;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 2px;
+}
+
+footer a:hover {
+    color: var(--ink);
+    border-bottom: 1px solid var(--ink);
+}
+
+@media (max-width: 1000px) {
+    .examples-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    h1 {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .filters {
+        padding: 1.2rem 0.8rem;
+    }
+    
+    .filter-tag {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.8rem;
+    }
+    
+    .example-title {
+        font-size: 1.4rem;
+    }
+}

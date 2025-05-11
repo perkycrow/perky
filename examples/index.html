@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@perkycrow/perky</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="scripts.js" type="module"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>@perkycrow/perky</h1>
+            <p class="tagline">A modular framework for JavaScript game development.</p>
+        </header>
+        
+        <div id="filters" class="filters"></div>
+        
+        <div id="examples-grid" class="examples-grid"></div>
+
+        <footer>
+            <p>
+                <a href="https://github.com/perkycrow/perky" target="_blank" rel="noopener noreferrer">GitHub</a> | 
+                <a href="https://perkycrow.com/" target="_blank" rel="noopener noreferrer">PerkyCrow</a>
+            </p>
+        </footer>
+    </div>
+    
+    <script type="module">
+        import { generateExamples } from './scripts.js'
+        
+        document.addEventListener('DOMContentLoaded', function () {
+            const examples = [
+                {
+                    mainCategory: 'core',
+                    tags: ['application', 'loader', 'input'],
+                    title: 'Basic Application',
+                    description: 'A simple application setup using Perky.',
+                    link: 'basic_application.html'
+                }
+            ]
+
+            generateExamples(examples)
+        })
+    </script>
+</body>
+</html>
