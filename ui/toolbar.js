@@ -8,8 +8,8 @@ const baseHtml = `
 const baseCss = `
     .perky-toolbar {
         display: flex;
-        gap: 8px;
-        padding: 10px;
+        gap: 6px;
+        padding: 8px;
         border-radius: 6px;
         z-index: 100;
     }
@@ -54,14 +54,16 @@ const baseCss = `
     .perky-toolbar-button {
         display: flex;
         align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
+        gap: 4px;
+        padding: 5px 10px;
         border: none;
         border-radius: 4px;
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 13px;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 12px;
         cursor: pointer;
         transition: all 0.2s ease;
+        line-height: 1.2;
+        white-space: nowrap;
     }
 
     .perky-toolbar-dark .perky-toolbar-button {
@@ -86,6 +88,7 @@ const baseCss = `
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        font-size: 14px;
     }
 `
 
