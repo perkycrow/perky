@@ -368,7 +368,6 @@ describe('Utils', () => {
         const product2 = uniqueId('anotherCollection', 'product')
         expect(product2).toEqual('product_1')
 
-        // Test single parameter cases
         const single1 = uniqueId('single')
         expect(single1).toEqual('single')
         

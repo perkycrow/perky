@@ -94,12 +94,10 @@ describe(Random, () => {
 
         testRandom.random = () => 0.01
         expect(testRandom.weightedChoice(choices)).toEqual('rare')
-        
-        // Mock the second call to return a larger value (picks second option)
+
         testRandom.random = () => 0.9
         expect(testRandom.weightedChoice(choices)).toEqual('common')
-        
-        // Restore original function
+
         testRandom.random = originalRandom
 
         expect(testRandom.weightedChoice([])).toBeUndefined()

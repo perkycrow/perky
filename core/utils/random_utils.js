@@ -6,9 +6,6 @@ export function newRandom (seed = Random.generateSeed()) {
 }
 
 
-// We don't expose the default random instance
-// so nobody can't mess with the global state
-// use newRandom() instead if you need states
 const randomApi = newRandom()
 
 

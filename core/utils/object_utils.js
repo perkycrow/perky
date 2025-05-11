@@ -91,18 +91,15 @@ export function deepMerge (target, source) {
     
     const sourceIsArray = Array.isArray(source)
     const targetIsArray = Array.isArray(target)
-    
-    // Types don't match, return clone of source
+
     if (sourceIsArray !== targetIsArray) {
         return cloneIfNeeded(source)
     }
-    
-    // Both are arrays
+
     if (sourceIsArray) {
         return mergeArrays(target, source)
     }
-    
-    // Both are objects
+
     return mergeObject(target, source)
 }
 

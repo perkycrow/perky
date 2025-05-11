@@ -191,13 +191,10 @@ function formatCode (code) {
         return placeholder
     }
 
-    // Capture string literals first (including template literals with backticks)
-    // and replace them with placeholders to prevent processing their content
     let result = code
         .replace(/(["'`])(?:(?=(\\?))\2.)*?\1/g,
             match => replaceWithPlaceholder(match, 'perky-code-string'))
-        
-    // Then process the rest of the syntax
+
     result = result
         .replace(/\b(import|from|const|let|var|function|class|extends|return|async|await|new)\b/g,
             match => replaceWithPlaceholder(match, 'perky-code-keyword'))
@@ -221,9 +218,7 @@ function formatCode (code) {
                 const propName = match.substring(1)
                 return '.' + replaceWithPlaceholder(propName, 'perky-code-property')
             })
-    
-    // Replace the text "__PLACEHOLDER_x__" inside string literals with a special replacement
-    // so they don't get processed as actual placeholders
+
     placeholders.forEach(item => {
         if (item.replacement.includes('perky-code-string')) {
             item.replacement = item.replacement.replace(/__PLACEHOLDER_(\d+)__/g, 
