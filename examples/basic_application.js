@@ -39,15 +39,18 @@ toolbar.add('Load Assets', async () => {
 
         await app.loadSource('images', 'logo')
         logger.info('Loaded image: logo')
-                
+        logger.info('Image URL:', app.getSourceDescriptor('images', 'logo').url)
+        const img = app.getSource('images', 'logo')
+        const logMessage = `<img src="${img.src}" alt="Logo" height="100" />`
+
+        logger.log(logMessage, 'info', 'html')
+
         await app.loadSource('audio', 'tac')
         logger.info('Loaded audio: tac')
                 
         logger.success('All assets loaded successfully')
-        console.log('Assets loaded successfully')
     } catch (error) {
         logger.error(`Error loading assets: ${error.message}`)
-        console.error('Error loading assets:', error)
     }
 })
 

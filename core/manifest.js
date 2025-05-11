@@ -150,7 +150,6 @@ function initSourceDescriptors (manifest) {
     const {sourceDescriptors} = manifest.data
 
     Object.entries(sourceDescriptors).forEach(([type, descriptors]) => {
-        console.log(type, descriptors)
         Object.entries(descriptors).forEach(([id, descriptor]) => {
             if (!descriptor.id) {
                 descriptor.id = id

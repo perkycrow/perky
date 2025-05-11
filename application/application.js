@@ -92,7 +92,8 @@ export default class Application extends Engine {
 
 
     getSource (type, id) {
-        return this.manifest.getSourceDescriptor(type, id)
+        const sourceDescriptor = this.manifest.getSourceDescriptor(type, id)
+        return sourceDescriptor ? sourceDescriptor.source : null
     }
 
 

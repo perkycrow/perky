@@ -238,7 +238,7 @@ export default class Logger extends Application {
     }
 
 
-    log (message, type = 'info') {
+    log (message, type = 'info', format = 'text') {
         const entry = document.createElement('div')
         entry.className = `perky-logger-entry perky-logger-${type}`
 
@@ -251,7 +251,9 @@ export default class Logger extends Application {
 
         const messageElement = document.createElement('span')
         messageElement.className = 'perky-logger-message'
-        messageElement.textContent = message
+
+        processMessage(messageElement, message, format)
+
         entry.appendChild(messageElement)
 
         this.loggerContent.appendChild(entry)
@@ -270,23 +272,23 @@ export default class Logger extends Application {
     }
 
 
-    info (message) {
-        return this.log(message, 'info')
+    info (...messages) {
+        return this.log(formatMessage(...messages), 'info')
     }
 
 
-    warn (message) {
-        return this.log(message, 'warn')
+    warn (...messages) {
+        return this.log(formatMessage(...messages), 'warn')
     }
 
 
-    error (message) {
-        return this.log(message, 'error')
+    error (...messages) {
+        return this.log(formatMessage(...messages), 'error')
     }
 
 
-    success (message) {
-        return this.log(message, 'success')
+    success (...messages) {
+        return this.log(formatMessage(...messages), 'success')
     }
 
 
@@ -372,4 +374,19 @@ function initEvents (app) {
     app.loggerHeader.addEventListener('click', () => {
         app.toggle()
     })
+}
+
+
+function processMessage (messageElement, message, format) {
+    if (format === 'text') {
+        messageElement.textContent = message
+    } else if (format === 'html') {
+        messageElement.innerHTML = message
+    } else if (format === 'element') {
+        messageElement.appendChild(message)
+    }
+}
+
+function formatMessage (...messages) {
+    return messages.map(m => (typeof m === 'object' ? JSON.stringify(m, null, 2) : m)).join(' ')
 }
