@@ -137,7 +137,6 @@ const baseCss = `
     .perky-logger-content {
         max-height: 160px;
         overflow-y: auto;
-        padding: 8px 0;
     }
 
     .perky-logger-entry {
