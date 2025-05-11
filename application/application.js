@@ -9,13 +9,13 @@ import {loaders} from './loaders'
 
 export default class Application extends Engine {
 
-    constructor (manifest = {}) {
-        super(manifest)
+    constructor (params = {}) {
+        super(params)
 
         this.loaders = new Registry(loaders)
+        this.inputObserver = InputObserver.global
 
         this.registerModule('perkyView', new PerkyView({className: 'perky-application'}))
-        this.registerModule('inputObserver', new InputObserver())
         this.registerModule('inputMapper', new InputMapper({inputObserver: this.inputObserver}))
         this.registerModule('sourceManager', new SourceManager({
             loaders: this.loaders,
