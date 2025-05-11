@@ -26,6 +26,11 @@ export default class Application extends Engine {
     }
 
 
+    get element () {
+        return this.perkyView.element
+    }
+
+
     isInputPressed (code) {
         return this.inputObserver.isPressed(code)
     }
@@ -93,6 +98,21 @@ export default class Application extends Engine {
 
     config (path, value) {
         return this.manifest.config(path, value)
+    }
+
+
+    setHtml (html) {
+        this.perkyView.html = html
+    }
+
+
+    setCss (css) {
+        return this.perkyView.setCss(css)
+    }
+
+
+    appendCss (css) {
+        return this.perkyView.appendCss(css)
     }
 
 }
