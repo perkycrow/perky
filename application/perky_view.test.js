@@ -162,6 +162,56 @@ describe(PerkyView, () => {
         expect(styleElement.tagName).toBe('STYLE')
         expect(styleElement.textContent).toBe(cssText)
     })
+
+    
+    test('getCss returns null when no style is set', () => {
+        shadowRoot.querySelector.mockReturnValue(null)
+        expect(view.getCss()).toBeNull()
+    })
+    
+    
+    test('getCss returns style content when style exists', () => {
+        const cssText = '.test { color: red; }'
+        const styleElement = document.createElement('style')
+        styleElement.textContent = cssText
+        
+        shadowRoot.querySelector.mockReturnValue(styleElement)
+        
+        expect(view.getCss()).toBe(cssText)
+    })
+    
+    
+    test('appendCss adds CSS when no style exists', () => {
+        shadowRoot.querySelector.mockReturnValue(null)
+
+        const setCssSpy = vi.spyOn(view, 'setCss')
+
+        const cssText = '.test { color: blue; }'
+        view.appendCss(cssText)
+
+        expect(setCssSpy).toHaveBeenCalledWith(cssText)
+    })
+    
+    
+    test('appendCss appends to existing CSS', () => {
+        const existingCss = '.container { padding: 10px; }'
+        const styleElement = document.createElement('style')
+        styleElement.textContent = existingCss
+
+        shadowRoot.querySelector.mockReturnValueOnce(styleElement).mockReturnValueOnce(null)
+
+        const setCssSpy = vi.spyOn(view, 'setCss')
+        
+        const newCss = '.button { background: blue; }'
+        view.appendCss(newCss)
+        
+        expect(setCssSpy).toHaveBeenCalledWith(`${existingCss}\n${newCss}`)
+    })
+    
+    
+    test('appendCss returns the view instance for chaining', () => {
+        expect(view.appendCss('.test { color: green; }')).toBe(view)
+    })
     
     
     test('loadCss', () => {

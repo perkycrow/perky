@@ -35,7 +35,24 @@ export default class PerkyView extends PerkyModule {
         
         return this
     }
-    
+
+
+    getCss () {
+        const style = this.shadowRoot.querySelector('style')
+
+        return style && style.textContent
+    }
+
+
+    appendCss (cssText) {
+        const oldStyle = this.getCss()
+
+        const newStyle = oldStyle ? `${oldStyle}\n${cssText}` : cssText
+        this.setCss(newStyle)
+
+        return this
+    }
+
 
     loadCss (cssPath) {
         const link = document.createElement('link')
