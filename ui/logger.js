@@ -177,6 +177,10 @@ const baseCss = `
         color: #0366d6;
     }
 
+    .perky-logger-notice {
+        color: #a1a1aa;
+    }
+
     .perky-logger-warn {
         color: #e2c08d;
     }
@@ -284,6 +288,11 @@ export default class Logger extends Application {
 
     info (...messages) {
         return this.log(formatMessage(...messages), 'info')
+    }
+
+
+    notice (...messages) {
+        return this.log(formatMessage(...messages), 'notice')
     }
 
 

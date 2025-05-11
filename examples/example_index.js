@@ -420,9 +420,15 @@ function generateTagsHTML (tags) {
 
 
 function filterExamples (exampleCards, selectedTag) {
+    const isFamilyTag = Object.keys(tagFamilies).includes(selectedTag)
+
     exampleCards.forEach(card => {
         const cardTags = card.dataset.tags.split(',')
-        if (selectedTag === 'all' || cardTags.includes(selectedTag)) {
+        const cardFamily = card.dataset.family
+
+        if (selectedTag === 'all' || 
+            cardTags.includes(selectedTag) || 
+            (isFamilyTag && cardFamily === selectedTag)) {
             card.style.display = 'block'
         } else {
             card.style.display = 'none'

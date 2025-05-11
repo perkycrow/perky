@@ -61,6 +61,16 @@ export default class Random {
     }
 
 
+    oneChanceIn (chances) {
+        return this.between(0, 1) < 1 / chances
+    }
+
+
+    coinToss () {
+        return this.between(0, 1) < 0.5
+    }
+
+
     // [{value: 'hello', weight: 1}, {value: 'world', weight: 10}]
     weightedChoice (choices) {
         if (!choices || choices.length === 0) {

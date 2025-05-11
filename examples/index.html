@@ -29,10 +29,16 @@
         document.addEventListener('DOMContentLoaded', function () {
             const examples = [{
                 mainCategory: 'application',
-                tags: ['application', 'core', 'loader', 'manifest', 'action', 'input'],
+                tags: ['application', 'loader', 'manifest', 'action', 'input'],
                 title: 'Basic Application',
                 description: 'A simple application setup using Perky.',
                 link: 'basic_application.html'
+            }, {
+                mainCategory: 'core',
+                tags: ['core', 'random'],
+                title: 'Random Number Generator',
+                description: 'A simple random number generator using Perky.',
+                link: 'random.html'
             }]
 
             const exampleIndex = new ExampleIndex({examples})
