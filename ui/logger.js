@@ -17,7 +17,6 @@ const baseHtml = `
 const baseCss = `
     .perky-logger {
         width: calc(100% - 20px);
-        max-height: 200px;
         border-radius: 6px;
         overflow: hidden;
         z-index: 100;
@@ -135,7 +134,7 @@ const baseCss = `
     }
 
     .perky-logger-content {
-        max-height: 160px;
+        max-height: 250px;
         overflow-y: auto;
     }
 
@@ -200,6 +199,17 @@ const baseCss = `
 
     .perky-logger-light .perky-logger-success {
         color: #22863a;
+    }
+
+    .perky-logger-spacer {
+        height: 1px;
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .perky-logger-title {
+        font-weight: 500;
+        font-size: 14px;
+        color: #333;
     }
 `
 
@@ -289,6 +299,23 @@ export default class Logger extends Application {
 
     success (...messages) {
         return this.log(formatMessage(...messages), 'success')
+    }
+
+
+    spacer () {
+        const entry = document.createElement('div')
+        entry.className = 'perky-logger-entry perky-logger-spacer'
+        this.loggerContent.appendChild(entry)
+        this.entries.push(entry)
+    }
+
+
+    title (title) {
+        const entry = document.createElement('div')
+        entry.className = 'perky-logger-entry perky-logger-title'
+        entry.textContent = title
+        this.loggerContent.appendChild(entry)
+        this.entries.push(entry)
     }
 
 
