@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@perkycrow/perky</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="scripts.js" type="module"></script>
 </head>
 <body>
     <div class="container">
@@ -13,10 +12,8 @@
             <h1>@perkycrow/perky</h1>
             <p class="tagline">A modular framework for JavaScript game development.</p>
         </header>
-        
-        <div id="filters" class="filters"></div>
-        
-        <div id="examples-grid" class="examples-grid"></div>
+
+        <div id="examples-grid"></div>
 
         <footer>
             <p>
@@ -27,20 +24,19 @@
     </div>
     
     <script type="module">
-        import { generateExamples } from './scripts.js'
-        
-        document.addEventListener('DOMContentLoaded', function () {
-            const examples = [
-                {
-                    mainCategory: 'core',
-                    tags: ['application', 'loader', 'manifest'],
-                    title: 'Basic Application',
-                    description: 'A simple application setup using Perky.',
-                    link: 'basic_application.html'
-                }
-            ]
+        import ExampleIndex from './example_index.js'
 
-            generateExamples(examples)
+        document.addEventListener('DOMContentLoaded', function () {
+            const examples = [{
+                mainCategory: 'application',
+                tags: ['application', 'loader', 'manifest', 'logger', 'toolbar', 'code_display'],
+                title: 'Basic Application',
+                description: 'A simple application setup using Perky.',
+                link: 'basic_application.html'
+            }]
+
+            const exampleIndex = new ExampleIndex({examples})
+            exampleIndex.mountTo(document.getElementById('examples-grid'))
         })
     </script>
 </body>
