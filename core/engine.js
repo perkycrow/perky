@@ -7,8 +7,10 @@ import ActionController from './action_controller'
 
 export default class Engine extends PerkyModule {
 
-    constructor (manifest = {}) {
+    constructor (params = {}) {
         super()
+
+        let {manifest} = params
 
         if (!(manifest instanceof Manifest)) {
             manifest = new Manifest(manifest)

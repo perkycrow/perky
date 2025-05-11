@@ -23,9 +23,10 @@ describe(Engine, () => {
 
 
     test('constructor with manifest object', () => {
-        const customEngine = new Engine({
+        const manifest = {
             metadata: {name: 'Test Engine'}
-        })
+        }
+        const customEngine = new Engine({manifest})
 
         expect(customEngine.manifest).toBeInstanceOf(Manifest)
         expect(customEngine.manifest.metadata('name')).toBe('Test Engine')
@@ -36,7 +37,7 @@ describe(Engine, () => {
         const manifest = new Manifest({
             metadata: {name: 'Test Engine'}
         })
-        const customEngine = new Engine(manifest)
+        const customEngine = new Engine({manifest})
 
         expect(customEngine.manifest).toBe(manifest)
     })
