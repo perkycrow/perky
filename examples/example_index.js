@@ -43,7 +43,6 @@ const baseCss = `
         font-weight: 500;
         min-width: 80px;
         text-align: center;
-        margin-right: 0.5rem;
     }
 
     .filter-tag[data-family="core"], .tag[data-family="core"] {

@@ -21,9 +21,11 @@ const manifest = ({
     }
 })
 const app = new Application({manifest})
-        
+
 const container = document.querySelector('.example-content')
 app.mountTo(container)
+
+
 
 const toolbar = new Toolbar()
 toolbar.mountTo(container)
@@ -59,3 +61,19 @@ toolbar.add('Get Config', () => {
     const config = app.config()
     logger.info(`Config: ${JSON.stringify(config, null, 2)}`)
 })
+
+
+logger.info('Press "H" to trigger the sayHello action')
+
+app.addAction('sayHello', () => {
+    logger.info('Hello from the application!')
+})
+
+
+toolbar.add('Say Hello', () => {
+    app.dispatchAction('sayHello')
+    logger.info('Dispatched action: sayHello')
+})
+
+
+app.setInputFor('sayHello', 'KeyH')
