@@ -14,7 +14,7 @@ export default class Application extends Engine {
 
         this.loaders = new Registry(loaders)
 
-        this.registerModule('perkyView', new PerkyView())
+        this.registerModule('perkyView', new PerkyView({className: 'perky-application'}))
         this.registerModule('inputObserver', new InputObserver())
         this.registerModule('inputMapper', new InputMapper({inputObserver: this.inputObserver}))
         this.registerModule('sourceManager', new SourceManager({

@@ -13,6 +13,10 @@ export default class PerkyView extends PerkyModule {
             this.mountTo(params.container)
         }
 
+        if (params.className) {
+            this.addClass(params.className)
+        }
+
         setupResizeObserver(this)
     }
 
