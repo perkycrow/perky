@@ -8,6 +8,8 @@ export default class PerkyView extends PerkyModule {
         super()
 
         this.element = params.element ? params.element : this.constructor.defaultElement(params)
+        
+        initShadowDOM(this, params)
 
         if (params.container) {
             this.mountTo(params.container)
@@ -18,6 +20,30 @@ export default class PerkyView extends PerkyModule {
         }
 
         setupResizeObserver(this)
+    }
+
+
+    setCss (cssText) {
+        const oldStyle = this.shadowRoot.querySelector('style')
+        if (oldStyle) {
+            oldStyle.remove()
+        }
+
+        const style = document.createElement('style')
+        style.textContent = cssText
+        this.shadowRoot.insertBefore(style, this.shadowContainer)
+        
+        return this
+    }
+    
+
+    loadCss (cssPath) {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = cssPath
+        this.shadowRoot.insertBefore(link, this.shadowContainer)
+        
+        return this
     }
 
 
@@ -213,23 +239,23 @@ export default class PerkyView extends PerkyModule {
 
 
     get html () {
-        return this.element.innerHTML
+        return this.shadowContainer.innerHTML
     }
 
 
     set html (html) {
-        this.element.innerHTML = html
+        this.shadowContainer.innerHTML = html
         return this
     }
 
 
     get text () {
-        return this.element.innerText
+        return this.shadowContainer.innerText
     }
 
 
     set text (text) {
-        this.element.innerText = text
+        this.shadowContainer.innerText = text
         return this
     }
 
@@ -284,6 +310,23 @@ export default class PerkyView extends PerkyModule {
         return this
     }
 
+}
+
+
+function initShadowDOM (perkyView, params) {
+    perkyView.shadowRoot = perkyView.element.attachShadow({mode: 'open'})
+
+    perkyView.shadowContainer = document.createElement('div')
+    perkyView.shadowContainer.className = 'shadow-container'
+    perkyView.shadowRoot.appendChild(perkyView.shadowContainer)
+
+    if (params.css) {
+        perkyView.setCss(params.css)
+    }
+
+    if (params.cssPath) {
+        perkyView.loadCss(params.cssPath)
+    }
 }
 
 

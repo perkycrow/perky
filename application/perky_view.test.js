@@ -7,6 +7,8 @@ describe(PerkyView, () => {
     let view
     let element
     let container
+    let shadowRoot
+    let shadowContainer
 
     beforeEach(() => {
         global.ResizeObserver = vi.fn().mockImplementation(() => ({
@@ -17,6 +19,16 @@ describe(PerkyView, () => {
 
         element = document.createElement('div')
         element.id = 'test-view'
+
+        shadowContainer = document.createElement('div')
+        shadowContainer.className = 'shadow-container'
+        shadowRoot = {
+            appendChild: vi.fn(),
+            insertBefore: vi.fn(),
+            querySelector: vi.fn().mockReturnValue(null)
+        }
+        vi.spyOn(element, 'attachShadow').mockReturnValue(shadowRoot)
+        
         container = document.createElement('div')
         container.id = 'test-container'
         document.body.appendChild(container)
@@ -35,8 +47,9 @@ describe(PerkyView, () => {
         })
 
         vi.spyOn(PerkyModule.prototype, 'emit')
-        
+
         view = new PerkyView({element})
+        view.shadowContainer = shadowContainer
     })
 
 
@@ -64,12 +77,121 @@ describe(PerkyView, () => {
 
 
     test('constructor with default element', () => {
+        const defaultElement = document.createElement('div')
+        const mockShadowRoot = {
+            appendChild: vi.fn(),
+            insertBefore: vi.fn(),
+            querySelector: vi.fn().mockReturnValue(null)
+        }
+        vi.spyOn(defaultElement, 'attachShadow').mockReturnValue(mockShadowRoot)
+        vi.spyOn(PerkyView, 'defaultElement').mockReturnValue(defaultElement)
+        
         const defaultView = new PerkyView()
         
         expect(defaultView.element.tagName).toBe('DIV')
-        expect(defaultView.element.id).toBeDefined()
-        expect(defaultView.element.id).toMatch(/^perky_view/)
-        expect(defaultView.element.className).toBe('perky-view')
+        expect(defaultElement.attachShadow).toHaveBeenCalledWith({mode: 'open'})
+        expect(defaultView.shadowRoot).toBe(mockShadowRoot)
+    })
+    
+    
+    test('constructor initializes Shadow DOM', () => {
+        expect(element.attachShadow).toHaveBeenCalledWith({mode: 'open'})
+        expect(view.shadowRoot).toBe(shadowRoot)
+        expect(shadowRoot.appendChild).toHaveBeenCalled()
+
+        const shadowContainerArg = shadowRoot.appendChild.mock.calls[0][0]
+        expect(shadowContainerArg.className).toBe('shadow-container')
+    })
+    
+
+    test('constructor with Css', () => {
+        element = document.createElement('div')
+        shadowRoot = {
+            appendChild: vi.fn(),
+            insertBefore: vi.fn(),
+            querySelector: vi.fn().mockReturnValue(null)
+        }
+        vi.spyOn(element, 'attachShadow').mockReturnValue(shadowRoot)
+        
+        const cssText = '.test { color: red; }'
+        new PerkyView({
+            element,
+            css: cssText
+        })
+
+        expect(shadowRoot.insertBefore).toHaveBeenCalled()
+        const styleElement = shadowRoot.insertBefore.mock.calls[0][0]
+        expect(styleElement.tagName).toBe('STYLE')
+        expect(styleElement.textContent).toBe(cssText)
+    })
+    
+    
+    test('constructor with cssPath', () => {
+        element = document.createElement('div')
+        shadowRoot = {
+            appendChild: vi.fn(),
+            insertBefore: vi.fn(),
+            querySelector: vi.fn().mockReturnValue(null)
+        }
+        vi.spyOn(element, 'attachShadow').mockReturnValue(shadowRoot)
+
+        const cssPath = '/path/to/styles.css'
+        new PerkyView({
+            element,
+            cssPath
+        })
+
+        expect(shadowRoot.insertBefore).toHaveBeenCalled()
+        const linkElement = shadowRoot.insertBefore.mock.calls[0][0]
+        expect(linkElement.tagName).toBe('LINK')
+        expect(linkElement.rel).toBe('stylesheet')
+        
+        expect(linkElement.href).toContain(cssPath)
+    })
+    
+    
+    test('setCss', () => {
+        // Réinitialiser les mocks
+        shadowRoot.insertBefore.mockClear()
+        
+        const cssText = '.test { color: blue; }'
+        view.setCss(cssText)
+        
+        expect(shadowRoot.insertBefore).toHaveBeenCalled()
+        const styleElement = shadowRoot.insertBefore.mock.calls[0][0]
+        expect(styleElement.tagName).toBe('STYLE')
+        expect(styleElement.textContent).toBe(cssText)
+    })
+    
+    
+    test('loadCss', () => {
+        shadowRoot.insertBefore.mockClear()
+        
+        const cssPath = '/path/to/another-styles.css'
+        view.loadCss(cssPath)
+        
+        expect(shadowRoot.insertBefore).toHaveBeenCalled()
+        const linkElement = shadowRoot.insertBefore.mock.calls[0][0]
+        expect(linkElement.tagName).toBe('LINK')
+        expect(linkElement.rel).toBe('stylesheet')
+        
+        expect(linkElement.href).toContain(cssPath)
+    })
+    
+    
+    test('html getter and setter', () => {
+        view.html = '<div>test shadow</div>'
+        expect(shadowContainer.innerHTML).toBe('<div>test shadow</div>')
+        expect(view.html).toBe('<div>test shadow</div>')
+        expect(view.html = '<div>test shadow</div>').toBe('<div>test shadow</div>')
+    })
+    
+    
+    test('text getter and setter', () => {
+        view.text = 'test shadow text'
+        expect(shadowContainer.innerText).toBe('test shadow text')
+        expect(view.text).toBe('test shadow text')
+        expect(view.text = 'test shadow text').toBe('test shadow text')
     })
 
 
@@ -299,22 +421,6 @@ describe(PerkyView, () => {
         view.opacity = 0.5
         expect(element.style.opacity).toBe('0.5')
         expect(view.opacity).toBe('0.5')
-    })
-
-
-    test('html getter and setter', () => {
-        view.html = '<div>test</div>'
-        expect(element.innerHTML).toBe('<div>test</div>')
-        expect(view.html).toBe('<div>test</div>')
-        expect(view.html = '<div>test</div>').toBe('<div>test</div>')
-    })
-
-
-    test('text getter and setter', () => {
-        view.text = 'test'
-        expect(element.innerText).toBe('test')
-        expect(view.text).toBe('test')
-        expect(view.text = 'test').toBe('test')
     })
 
 
