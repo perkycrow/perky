@@ -1,4 +1,4 @@
-import CodeDisplay from '../ui/code_display'
+import CodeDisplay from './code_display'
 import {vi, beforeEach, describe, test, expect, afterEach} from 'vitest'
 
 
