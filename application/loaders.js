@@ -1,3 +1,4 @@
+
 function normalizeParams (params) {
     if (typeof params === 'string') {
         return {url: params, config: {}}
@@ -96,11 +97,15 @@ export async function loadAudio (params) {
 }
 
 
-export const collection = {
+
+
+export const loaders = {
+    response: loadResponse,
+    blob: loadBlob,
     image: loadImage,
     text: loadText,
     json: loadJson,
     arrayBuffer: loadArrayBuffer,
-    blob: loadBlob,
     audio: loadAudio
 }
+

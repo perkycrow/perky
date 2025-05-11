@@ -4,7 +4,7 @@ import PerkyView from './perky_view'
 import InputObserver from './input_observer'
 import InputMapper from './input_mapper'
 import SourceManager from './source_manager'
-import * as loaders from './loaders'
+import {loaders} from './loaders'
 
 
 export default class Application extends Engine {
@@ -12,7 +12,7 @@ export default class Application extends Engine {
     constructor (manifest = {}) {
         super(manifest)
 
-        this.loaders = new Registry(loaders.collection)
+        this.loaders = new Registry(loaders)
 
         this.registerModule('perkyView', new PerkyView())
         this.registerModule('inputObserver', new InputObserver())
