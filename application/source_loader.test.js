@@ -33,7 +33,6 @@ describe('SourceLoader', () => {
     test('constructor', () => {
         expect(loader).toBeInstanceOf(PerkyModule)
         expect(loader.sourceDescriptors).toBe(sourceDescriptors)
-        expect(loader.loaders).toBe(loaders)
         expect(loader.loadingPromises).toEqual({})
     })
 

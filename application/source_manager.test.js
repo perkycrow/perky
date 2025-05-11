@@ -27,7 +27,6 @@ describe('SourceManager', () => {
 
     test('constructor', () => {
         expect(manager).toBeInstanceOf(PerkyModule)
-        expect(manager.loaders).toBe(loaders)
         expect(manager.manifest).toBe(manifest)
     })
 
@@ -41,7 +40,6 @@ describe('SourceManager', () => {
         expect(manifest.getSourceDescriptor).toHaveBeenCalledWith('image', 'logo')
         expect(result).toBeInstanceOf(SourceLoader)
         expect(result.sourceDescriptors).toEqual([sourceDescriptor])
-        expect(result.loaders).toBe(loaders)
     })
 
 
@@ -65,7 +63,6 @@ describe('SourceManager', () => {
         expect(manifest.getSourceDescriptorsByTag).toHaveBeenCalledWith('ui')
         expect(result).toBeInstanceOf(SourceLoader)
         expect(result.sourceDescriptors).toBe(sourceDescriptors)
-        expect(result.loaders).toBe(loaders)
     })
 
 
@@ -89,7 +86,6 @@ describe('SourceManager', () => {
         expect(manifest.getSourceDescriptors).toHaveBeenCalled()
         expect(result).toBeInstanceOf(SourceLoader)
         expect(result.sourceDescriptors).toBe(sourceDescriptors)
-        expect(result.loaders).toBe(loaders)
     })
 
 

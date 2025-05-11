@@ -151,12 +151,8 @@ function initSourceDescriptors (manifest) {
             if (!descriptor.id) {
                 descriptor.id = id
             }
-            console.log(descriptor)
 
-            const d = prepareSourceDescriptor(type, descriptor)
-            console.log(d)
-
-            sourceDescriptors[type][id] = d
+            sourceDescriptors[type][id] = prepareSourceDescriptor(type, descriptor)
         })
     })
 }

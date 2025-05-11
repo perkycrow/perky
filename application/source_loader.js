@@ -1,11 +1,11 @@
 import PerkyModule from '../core/perky_module'
-
+import Registry from '../core/registry'
 
 export default class SourceLoader extends PerkyModule {
 
     constructor (sourceDescriptors, loaders) {
         super()
-        this.loaders = loaders
+        this.loaders = loaders instanceof Registry ? loaders : new Registry(loaders)
         this.sourceDescriptors = sourceDescriptors
         this.loadingPromises = {}
     }
@@ -58,7 +58,7 @@ export default class SourceLoader extends PerkyModule {
             return this.loadingPromises[sourceKey]
         }
 
-        const loader = this.loaders[sourceDescriptor.type]
+        const loader = this.loaders.get(sourceDescriptor.type)
 
         if (!loader) {
             throw new Error(`No loader found for source type: ${sourceDescriptor.type}`)
