@@ -6,6 +6,15 @@ const baseHtml = `
     <div class="examples-grid"></div>
 `
 
+const tagFamilies = {
+    core: ['action', 'engine', 'manifest', 'module', 'random', 'source', 'utils'],
+    application: ['input', 'loader', 'asset', 'view'],
+    three: [],
+    game: [],
+    audio: [],
+    ui: ['logger', 'code_display', 'toolbar']
+}
+
 const baseCss = `
     .filter-section {
         display: flex;
@@ -37,34 +46,38 @@ const baseCss = `
         margin-right: 0.5rem;
     }
 
-    .filter-tag.family-core, .tag.family-core {
+    .filter-tag[data-family="core"], .tag[data-family="core"] {
         color: var(--accent-blue);
         border-color: var(--accent-blue);
     }
 
-    .filter-tag.family-application, .tag.family-application {
+    .filter-tag[data-family="application"], .tag[data-family="application"] {
         color: var(--accent-green);
         border-color: var(--accent-green);
     }
 
-    .filter-tag.family-three, .tag.family-three {
+    .filter-tag[data-family="three"], .tag[data-family="three"] {
         color: var(--accent-red);
         border-color: var(--accent-red);
     }
 
-    .filter-tag.family-audio, .tag.family-audio {
+    .filter-tag[data-family="audio"], .tag[data-family="audio"] {
         color: var(--accent-orange);
         border-color: var(--accent-orange);
     }
 
-    .filter-tag.family-game, .tag.family-game {
+    .filter-tag[data-family="game"], .tag[data-family="game"] {
         color: var(--accent-purple);
         border-color: var(--accent-purple);
     }
 
-    .filter-tag.family-ui, .tag.family-ui {
+    .filter-tag[data-family="ui"], .tag[data-family="ui"] {
         color: var(--accent-pink);
         border-color: var(--accent-pink);
+    }
+
+    .filter-tag[class*="tag-"], .tag[class*="tag-"] {
+        opacity: 0.75;
     }
 
     .filter-tag:hover {
@@ -117,6 +130,30 @@ const baseCss = `
         width: 15px;
         height: 40px;
         z-index: 1;
+    }
+
+    .example-card[data-family="core"] .category-indicator {
+        background-color: var(--accent-blue);
+    }
+
+    .example-card[data-family="application"] .category-indicator {
+        background-color: var(--accent-green);
+    }
+
+    .example-card[data-family="three"] .category-indicator {
+        background-color: var(--accent-red);
+    }
+
+    .example-card[data-family="audio"] .category-indicator {
+        background-color: var(--accent-orange);
+    }
+
+    .example-card[data-family="game"] .category-indicator {
+        background-color: var(--accent-purple);
+    }
+
+    .example-card[data-family="ui"] .category-indicator {
+        background-color: var(--accent-pink);
     }
 
     .card-content {
@@ -183,30 +220,6 @@ const baseCss = `
         width: 100%;
     }
 
-    .category-core .category-indicator {
-        background-color: var(--accent-blue);
-    }
-
-    .category-application .category-indicator {
-        background-color: var(--accent-green);
-    }
-
-    .category-three .category-indicator {
-        background-color: var(--accent-red);
-    }
-
-    .category-audio .category-indicator {
-        background-color: var(--accent-orange);
-    }
-
-    .category-game .category-indicator {
-        background-color: var(--accent-purple);
-    }
-
-    .category-ui .category-indicator {
-        background-color: var(--accent-pink);
-    }
-
     .examples-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
@@ -216,14 +229,12 @@ const baseCss = `
     }
 `
 
-const tagFamilies = {
-    core: ['action', 'engine', 'manifest', 'module', 'random', 'source', 'utils'],
-    application: ['input', 'loader', 'asset', 'view'],
-    three: [],
-    game: [],
-    audio: [],
-    ui: ['logger', 'code_display', 'toolbar']
-}
+const tagToFamily = {}
+Object.entries(tagFamilies).forEach(([family, tags]) => {
+    tags.forEach(tag => {
+        tagToFamily[tag] = family
+    })
+})
 
 
 export default class ExampleIndex extends Application {
@@ -303,6 +314,7 @@ export default class ExampleIndex extends Application {
             const familyButton = document.createElement('button')
             familyButton.className = `filter-tag family-${family} section-main`
             familyButton.dataset.tag = family
+            familyButton.dataset.family = family
             familyButton.textContent = toPascalCase(family)
             sectionEl.appendChild(familyButton)
         }
@@ -311,6 +323,7 @@ export default class ExampleIndex extends Application {
             const buttonEl = document.createElement('button')
             buttonEl.className = `filter-tag tag-${tag}`
             buttonEl.dataset.tag = tag
+            buttonEl.dataset.family = family
             buttonEl.textContent = toPascalCase(tag)
             sectionEl.appendChild(buttonEl)
         })
@@ -356,6 +369,7 @@ export default class ExampleIndex extends Application {
             const card = document.createElement('div')
             card.className = `example-card category-${example.mainCategory}`
             card.dataset.tags = example.tags.join(',')
+            card.dataset.family = example.mainCategory
             
             card.innerHTML = `
                 <div class="category-indicator"></div>
@@ -397,7 +411,11 @@ function generateTagsHTML (tags) {
     return tags.map(tag => {
         const isMainCategory = Object.keys(tagFamilies).includes(tag)
         const className = isMainCategory ? `family-${tag}` : `tag-${tag}`
-        return `<span class="tag ${className}">${toPascalCase(tag)}</span>`
+
+        const family = isMainCategory ? tag : tagToFamily[tag]
+        const familyAttr = family ? ` data-family="${family}"` : ''
+
+        return `<span class="tag ${className}"${familyAttr}>${toPascalCase(tag)}</span>`
     }).join('')
 }
 
