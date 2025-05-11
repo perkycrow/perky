@@ -103,8 +103,8 @@ describe(Engine, () => {
 
     test('addSourceDescriptor', () => {
         const spy = vi.spyOn(engine.manifest, 'addSourceDescriptor')
-        const sourceDescriptor = {id: 'logo', path: '/assets/logo.png'}
-        
+        const sourceDescriptor = {id: 'logo', url: '/assets/logo.png'}
+
         engine.addSourceDescriptor('images', sourceDescriptor)
         
         expect(spy).toHaveBeenCalledWith('images', sourceDescriptor)
@@ -114,12 +114,12 @@ describe(Engine, () => {
     test('getSourceDescriptor', () => {
         engine.manifest.data.sourceDescriptors = {
             images: {
-                logo: {id: 'logo', path: '/assets/logo.png'}
+                logo: {id: 'logo', url: '/assets/logo.png'}
             }
         }
         
         const sourceDescriptor = engine.getSourceDescriptor('images', 'logo')
-        expect(sourceDescriptor).toEqual({id: 'logo', path: '/assets/logo.png'})
+        expect(sourceDescriptor).toEqual({id: 'logo', url: '/assets/logo.png'})
     })
 
 
@@ -140,15 +140,15 @@ describe(Engine, () => {
     test('getSourceDescriptors', () => {
         engine.manifest.data.sourceDescriptors = {
             images: {
-                logo: {id: 'logo', path: '/assets/logo.png'},
-                icon: {id: 'icon', path: '/assets/icon.png'}
+                logo: {id: 'logo', url: '/assets/logo.png'},
+                icon: {id: 'icon', url: '/assets/icon.png'}
             }
         }
         
         const sourceDescriptors = engine.getSourceDescriptors('images')
         expect(sourceDescriptors).toHaveLength(2)
-        expect(sourceDescriptors).toContainEqual({id: 'logo', path: '/assets/logo.png'})
-        expect(sourceDescriptors).toContainEqual({id: 'icon', path: '/assets/icon.png'})
+        expect(sourceDescriptors).toContainEqual({id: 'logo', url: '/assets/logo.png'})
+        expect(sourceDescriptors).toContainEqual({id: 'icon', url: '/assets/icon.png'})
     })
 
 
@@ -160,7 +160,7 @@ describe(Engine, () => {
     test('getSource', () => {
         engine.manifest.data.sourceDescriptors = {
             images: {
-                logo: {id: 'logo', path: '/assets/logo.png', source: 'fakeImage'}
+                logo: {id: 'logo', url: '/assets/logo.png', source: 'fakeImage'}
             }
         }
         

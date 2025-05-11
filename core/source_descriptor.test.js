@@ -9,7 +9,7 @@ describe('SourceDescriptor', () => {
             type: 'image',
             name: 'example',
             id: 'test_id',
-            path: '/path/to/file.jpg',
+            url: '/path/to/file.jpg',
             source: {key: 'value'},
             tags: ['titleScreen', 'mainScene'],
             options: {width: 100, height: 100}
@@ -20,7 +20,7 @@ describe('SourceDescriptor', () => {
         expect(descriptor.type).toBe('image')
         expect(descriptor.name).toBe('example')
         expect(descriptor.id).toBe('test_id')
-        expect(descriptor.path).toBe('/path/to/file.jpg')
+        expect(descriptor.url).toBe('/path/to/file.jpg')
         expect(descriptor.source).toEqual({key: 'value'})
         expect(descriptor.tags).toEqual(['titleScreen', 'mainScene'])
         expect(descriptor.options).toEqual({width: 100, height: 100})
@@ -53,7 +53,7 @@ describe('SourceDescriptor', () => {
         const descriptor = new SourceDescriptor({
             type: 'text',
             id: 'test_id',
-            path: '/path/to/text.txt'
+            url: '/path/to/text.txt'
         })
         
         expect(descriptor.loaded).toBe(false)
@@ -83,12 +83,12 @@ describe('SourceDescriptor', () => {
     })
 
 
-    test('export with path', () => {
+    test('export with url', () => {
         const descriptor = new SourceDescriptor({
             type: 'image',
             name: 'example',
             id: 'test_id',
-            path: '/path/to/file.jpg',
+            url: '/path/to/file.jpg',
             tags: ['titleScreen'],
             options: {width: 100}
         })
@@ -99,7 +99,7 @@ describe('SourceDescriptor', () => {
             type: 'image',
             id: 'test_id',
             name: 'example',
-            path: '/path/to/file.jpg',
+            url: '/path/to/file.jpg',
             tags: ['titleScreen'],
             options: {width: 100}
         })

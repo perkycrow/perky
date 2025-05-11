@@ -33,7 +33,7 @@ describe('SourceManager', () => {
 
 
     test('loadSource success', async () => {
-        const sourceDescriptor = {type: 'image', id: 'logo', path: '/assets/logo.png'}
+        const sourceDescriptor = {type: 'image', id: 'logo', url: '/assets/logo.png'}
         manifest.getSourceDescriptor.mockReturnValueOnce(sourceDescriptor)
         
         const result = await manager.loadSource('image', 'logo')
@@ -55,8 +55,8 @@ describe('SourceManager', () => {
 
     test('loadTag success', async () => {
         const sourceDescriptors = [
-            {type: 'image', id: 'logo', path: '/assets/logo.png', tags: ['ui']},
-            {type: 'image', id: 'background', path: '/assets/bg.png', tags: ['ui']}
+            {type: 'image', id: 'logo', url: '/assets/logo.png', tags: ['ui']},
+            {type: 'image', id: 'background', url: '/assets/bg.png', tags: ['ui']}
         ]
         manifest.getSourceDescriptorsByTag.mockReturnValueOnce(sourceDescriptors)
         
@@ -79,8 +79,8 @@ describe('SourceManager', () => {
 
     test('loadAll success', async () => {
         const sourceDescriptors = [
-            {type: 'image', id: 'logo', path: '/assets/logo.png'},
-            {type: 'audio', id: 'music', path: '/assets/music.mp3'}
+            {type: 'image', id: 'logo', url: '/assets/logo.png'},
+            {type: 'audio', id: 'music', url: '/assets/music.mp3'}
         ]
         manifest.getSourceDescriptors.mockReturnValueOnce(sourceDescriptors)
         

@@ -36,7 +36,7 @@ describe('Manifest', () => {
         const jsonData = JSON.stringify({
             metadata: {version: '1.0.0'},
             config: {debug: true},
-            sourceDescriptors: {images: {logo: {id: 'logo', path: '/assets/logo.png'}}},
+            sourceDescriptors: {images: {logo: {id: 'logo', url: '/assets/logo.png'}}},
             aliases: {mainLogo: 'logo'}
         })
         
@@ -114,7 +114,7 @@ describe('Manifest', () => {
 
 
     test('addSourceDescriptor', () => {
-        manifest.addSourceDescriptor('images', {id: 'logo', path: '/assets/logo.png'})
+        manifest.addSourceDescriptor('images', {id: 'logo', url: '/assets/logo.png'})
         
         expect(Object.keys(manifest.data.sourceDescriptors.images)).toHaveLength(1)
         expect(manifest.data.sourceDescriptors.images.logo.id).toBe('logo')
@@ -122,11 +122,11 @@ describe('Manifest', () => {
 
 
     test('addSourceDescriptor update existing', () => {
-        manifest.addSourceDescriptor('images', {id: 'logo', path: '/assets/logo.png'})
-        manifest.addSourceDescriptor('images', {id: 'logo', path: '/assets/new-logo.png'})
+        manifest.addSourceDescriptor('images', {id: 'logo', url: '/assets/logo.png'})
+        manifest.addSourceDescriptor('images', {id: 'logo', url: '/assets/new-logo.png'})
 
         expect(Object.keys(manifest.data.sourceDescriptors.images)).toHaveLength(1)
-        expect(manifest.data.sourceDescriptors.images.logo.path).toBe('/assets/new-logo.png')
+        expect(manifest.data.sourceDescriptors.images.logo.url).toBe('/assets/new-logo.png')
     })
 
 
@@ -136,25 +136,25 @@ describe('Manifest', () => {
 
 
     test('getSourceDescriptor null id', () => {
-        manifest.addSourceDescriptor('images', {id: 'logo', path: '/assets/logo.png'})
+        manifest.addSourceDescriptor('images', {id: 'logo', url: '/assets/logo.png'})
         
         expect(manifest.getSourceDescriptor('images', 'icon')).toBeNull()
     })
 
 
     test('getSourceDescriptor', () => {
-        const sourceDescriptorData = {id: 'logo', path: '/assets/logo.png'}
+        const sourceDescriptorData = {id: 'logo', url: '/assets/logo.png'}
         manifest.addSourceDescriptor('images', sourceDescriptorData)
         
         const sourceDescriptorInstance = manifest.getSourceDescriptor('images', 'logo')
         expect(sourceDescriptorInstance).toBeInstanceOf(SourceDescriptor)
         expect(sourceDescriptorInstance.id).toBe(sourceDescriptorData.id)
-        expect(sourceDescriptorInstance.path).toBe(sourceDescriptorData.path)
+        expect(sourceDescriptorInstance.url).toBe(sourceDescriptorData.url)
     })
 
 
     test('getSource', () => {
-        const sourceDescriptorData = {id: 'logo', path: '/assets/logo.png', source: 'fakeImage'}
+        const sourceDescriptorData = {id: 'logo', url: '/assets/logo.png', source: 'fakeImage'}
         manifest.addSourceDescriptor('images', sourceDescriptorData)
 
         const source = manifest.getSource('images', 'logo')
@@ -192,7 +192,7 @@ describe('Manifest', () => {
 
 
     test('addSourceDescriptorType existing', () => {
-        manifest.addSourceDescriptor('images', {id: 'logo', path: '/assets/logo.png'})
+        manifest.addSourceDescriptor('images', {id: 'logo', url: '/assets/logo.png'})
         manifest.addSourceDescriptorType('images')
         
         expect(Object.keys(manifest.data.sourceDescriptors.images)).toHaveLength(1)
@@ -227,8 +227,8 @@ describe('Manifest', () => {
 
 
     test('getSourceDescriptors', () => {
-        manifest.addSourceDescriptor('images', {id: 'logo', path: '/assets/logo.png'})
-        manifest.addSourceDescriptor('images', {id: 'icon', path: '/assets/icon.png'})
+        manifest.addSourceDescriptor('images', {id: 'logo', url: '/assets/logo.png'})
+        manifest.addSourceDescriptor('images', {id: 'icon', url: '/assets/icon.png'})
         
         const sourceDescriptors = manifest.getSourceDescriptors('images')
         expect(Object.keys(sourceDescriptors)).toHaveLength(2)
@@ -243,8 +243,8 @@ describe('Manifest', () => {
 
 
     test('getSourceDescriptorsByTag', () => {
-        manifest.addSourceDescriptor('images', {id: 'logo', path: '/assets/logo.png', tags: ['titleScreen']})
-        manifest.addSourceDescriptor('images', {id: 'icon', path: '/assets/icon.png', tags: ['mainScene']})
+        manifest.addSourceDescriptor('images', {id: 'logo', url: '/assets/logo.png', tags: ['titleScreen']})
+        manifest.addSourceDescriptor('images', {id: 'icon', url: '/assets/icon.png', tags: ['mainScene']})
         
         const tagSourceDescriptors = manifest.getSourceDescriptorsByTag('titleScreen')
         expect(tagSourceDescriptors).toHaveLength(1)
@@ -253,8 +253,8 @@ describe('Manifest', () => {
 
 
     test('getSourceDescriptorsByTag multiple types', () => {
-        manifest.addSourceDescriptor('images', {id: 'icon', path: '/assets/icon.png', tags: ['titleScreen']})
-        manifest.addSourceDescriptor('audio', {id: 'music', path: '/assets/music.mp3', tags: ['titleScreen']})
+        manifest.addSourceDescriptor('images', {id: 'icon', url: '/assets/icon.png', tags: ['titleScreen']})
+        manifest.addSourceDescriptor('audio', {id: 'music', url: '/assets/music.mp3', tags: ['titleScreen']})
 
         const tagSourceDescriptors = manifest.getSourceDescriptorsByTag('titleScreen')
         expect(tagSourceDescriptors).toHaveLength(2)
@@ -264,8 +264,8 @@ describe('Manifest', () => {
 
 
     test('getSourceDescriptorsByTag multiple tags', () => {
-        manifest.addSourceDescriptor('images', {id: 'icon', path: '/assets/icon.png', tags: ['titleScreen', 'mainScene', 'endingScene']})
-        manifest.addSourceDescriptor('images', {id: 'logo', path: '/assets/logo.png', tags: ['endingScene']})
+        manifest.addSourceDescriptor('images', {id: 'icon', url: '/assets/icon.png', tags: ['titleScreen', 'mainScene', 'endingScene']})
+        manifest.addSourceDescriptor('images', {id: 'logo', url: '/assets/logo.png', tags: ['endingScene']})
 
         const titleScreenSourceDescriptors = manifest.getSourceDescriptorsByTag('titleScreen')
         expect(titleScreenSourceDescriptors).toHaveLength(1)

@@ -9,7 +9,7 @@ export default class SourceDescriptor {
         this.id      = params.id || guessId(params)
         this.name  ||= this.id
 
-        this.path    = params.path
+        this.url     = params.url || params.path
         this.source  = params.source
         this.tags    = params.tags  || []
         this.options = params.options || {}
@@ -35,8 +35,8 @@ export default class SourceDescriptor {
             options: this.options
         }
 
-        if (this.path) {
-            exported.path = this.path
+        if (this.url) {
+            exported.url = this.url
         } else if (this.source) {
             exported.source = this.source
         }

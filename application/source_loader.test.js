@@ -16,9 +16,9 @@ describe('SourceLoader', () => {
         }
 
         sourceDescriptors = [
-            {type: 'image', id: 'logo', path: '/assets/logo.png'},
-            {type: 'audio', id: 'music', path: '/assets/music.mp3'},
-            {type: 'text', id: 'config', path: '/assets/config.json'}
+            {type: 'image', id: 'logo', url: '/assets/logo.png'},
+            {type: 'audio', id: 'music', url: '/assets/music.mp3'},
+            {type: 'text', id: 'config', url: '/assets/config.json'}
         ]
 
         loader = new SourceLoader(sourceDescriptors, loaders)
@@ -137,13 +137,13 @@ describe('SourceLoader', () => {
     })
 
 
-    test('loadSource with path', async () => {
+    test('loadSource with url', async () => {
         const emitSpy = vi.spyOn(loader, 'emit')
-        const sourceDescriptor = {type: 'image', id: 'logo', path: '/assets/logo.png'}
+        const sourceDescriptor = {type: 'image', id: 'logo', url: '/assets/logo.png'}
         
         const result = await loader.loadSource(sourceDescriptor)
         
-        expect(loaders.image).toHaveBeenCalledWith(sourceDescriptor.path)
+        expect(loaders.image).toHaveBeenCalledWith(sourceDescriptor.url)
         expect(sourceDescriptor.source).toBe('loaded image')
         expect(emitSpy).toHaveBeenCalledWith('progress', expect.any(Number), {
             sourceDescriptor, 
@@ -153,7 +153,7 @@ describe('SourceLoader', () => {
     })
 
 
-    test('loadSource without path', async () => {
+    test('loadSource without url', async () => {
         const sourceDescriptor = {type: 'image', id: 'logo'}
         
         await loader.loadSource(sourceDescriptor)
@@ -164,7 +164,7 @@ describe('SourceLoader', () => {
 
     test('loadSource error', async () => {
         const emitSpy = vi.spyOn(loader, 'emit')
-        const sourceDescriptor = {type: 'image', id: 'logo', path: '/assets/logo.png'}
+        const sourceDescriptor = {type: 'image', id: 'logo', url: '/assets/logo.png'}
         const error = new Error('Loading failed')
         loaders.image.mockRejectedValueOnce(error)
         

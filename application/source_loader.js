@@ -64,7 +64,7 @@ export default class SourceLoader extends PerkyModule {
             throw new Error(`No loader found for source type: ${sourceDescriptor.type}`)
         }
 
-        const params = sourceDescriptor.path ? sourceDescriptor.path : sourceDescriptor
+        const params = sourceDescriptor.url ? sourceDescriptor.url : sourceDescriptor
 
         this.loadingPromises[sourceKey] = Promise.resolve()
             .then(() => loader(params))
