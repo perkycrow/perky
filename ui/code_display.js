@@ -85,8 +85,8 @@ const baseCss = `
 
     .perky-code-content pre {
         margin: 0;
-        white-space: pre-wrap;
-        word-break: break-word;
+        white-space: pre;
+        word-break: normal;
     }
 
     .perky-code-display-light .perky-code-content {
@@ -191,7 +191,14 @@ function formatCode (code) {
         return placeholder
     }
 
+    // Capture string literals first (including template literals with backticks)
+    // and replace them with placeholders to prevent processing their content
     let result = code
+        .replace(/(["'`])(?:(?=(\\?))\2.)*?\1/g,
+            match => replaceWithPlaceholder(match, 'perky-code-string'))
+        
+    // Then process the rest of the syntax
+    result = result
         .replace(/\b(import|from|const|let|var|function|class|extends|return|async|await|new)\b/g,
             match => replaceWithPlaceholder(match, 'perky-code-keyword'))
         .replace(/\b(if|else|try|catch)\b/g,
@@ -200,8 +207,6 @@ function formatCode (code) {
             match => replaceWithPlaceholder(match, 'perky-code-boolean'))
         .replace(/\b(\d+(\.\d+)?([eE][+-]?\d+)?)\b/g,
             match => replaceWithPlaceholder(match, 'perky-code-number'))
-        .replace(/(["'`])(?:(?=(\\?))\2.)*?\1/g,
-            match => replaceWithPlaceholder(match, 'perky-code-string'))
         .replace(/\/\/.*$/gm,
             match => replaceWithPlaceholder(match, 'perky-code-comment'))
         .replace(/\b(document|window|console)\b(?=\.)/g,
@@ -216,8 +221,14 @@ function formatCode (code) {
                 const propName = match.substring(1)
                 return '.' + replaceWithPlaceholder(propName, 'perky-code-property')
             })
-
+    
+    // Replace the text "__PLACEHOLDER_x__" inside string literals with a special replacement
+    // so they don't get processed as actual placeholders
     placeholders.forEach(item => {
+        if (item.replacement.includes('perky-code-string')) {
+            item.replacement = item.replacement.replace(/__PLACEHOLDER_(\d+)__/g, 
+                (match) => `<span class="perky-code-string">${match}</span>`)
+        }
         result = result.replace(item.placeholder, item.replacement)
     })
 
