@@ -154,8 +154,8 @@ export default class Registry extends Notifier {
         if (!collection || typeof collection !== 'object') {
             throw new Error('Collection must be an object or Map')
         }
-        
-        if (collection instanceof Map) {
+
+        if (typeof collection.forEach === 'function') {
             collection.forEach((value, key) => {
                 this.set(key, value)
             })
