@@ -123,8 +123,6 @@ export default class CodeDisplay extends Application {
         this.setHtml(baseHtml)
         this.setCss(baseCss)
 
-        console.log(this.element)
-
         this.codeElement = this.element.querySelector('pre')
 
         if (params.code) {
