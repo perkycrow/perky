@@ -54,6 +54,10 @@ export default class Manifest {
 
     config (path, value) {
         if (value === undefined) {
+            if (path === undefined) {
+                return this.data.config
+            }
+
             return getNestedValue(this.data.config, path)
         }
 

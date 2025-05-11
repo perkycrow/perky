@@ -2,7 +2,7 @@ import Application from '/application/application.js'
 import Logger from '/ui/logger.js'
 import Toolbar from '/ui/toolbar.js'
 
-const app = new Application({
+const manifest = ({
     config: {
         name: 'Basic Application Example',
         debug: true
@@ -20,6 +20,7 @@ const app = new Application({
         }
     }
 })
+const app = new Application({manifest})
         
 const container = document.querySelector('.example-content')
 app.mountTo(container)
@@ -48,4 +49,10 @@ toolbar.add('Load Assets', async () => {
         logger.error(`Error loading assets: ${error.message}`)
         console.error('Error loading assets:', error)
     }
+})
+
+
+toolbar.add('Get Config', () => {
+    const config = app.config()
+    logger.info(`Config: ${JSON.stringify(config, null, 2)}`)
 })
