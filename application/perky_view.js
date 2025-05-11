@@ -7,8 +7,8 @@ export default class PerkyView extends PerkyModule {
     constructor (params = {}) {
         super()
 
-        this.element = params.element ? params.element : this.constructor.defaultElement(params)
-        
+        this.host = params.element ? params.element : this.constructor.defaultElement(params)
+
         initShadowDOM(this, params)
 
         if (params.container) {
@@ -31,7 +31,7 @@ export default class PerkyView extends PerkyModule {
 
         const style = document.createElement('style')
         style.textContent = cssText
-        this.shadowRoot.insertBefore(style, this.shadowContainer)
+        this.shadowRoot.insertBefore(style, this.element)
         
         return this
     }
@@ -58,39 +58,39 @@ export default class PerkyView extends PerkyModule {
         const link = document.createElement('link')
         link.rel = 'stylesheet'
         link.href = cssPath
-        this.shadowRoot.insertBefore(link, this.shadowContainer)
+        this.shadowRoot.insertBefore(link, this.element)
         
         return this
     }
 
 
     get id () {
-        return this.element.id
+        return this.host.id
     }
 
 
     get parentElement () {
-        return this.element.parentElement
+        return this.host.parentElement
     }
 
 
-    get style () {
-        return this.element.style
+    get hostStyle () {
+        return this.host.style
     }
 
 
     get width () {
-        return this.element.offsetWidth
+        return this.host.offsetWidth
     }
 
 
     get height () {
-        return this.element.offsetHeight
+        return this.host.offsetHeight
     }
 
 
     get boundingRect () {
-        return this.element.getBoundingClientRect()
+        return this.host.getBoundingClientRect()
     }
 
 
@@ -110,38 +110,38 @@ export default class PerkyView extends PerkyModule {
 
 
     classList () {
-        return this.element.classList
+        return this.host.classList
     }
 
 
     addClass (className) {
-        this.element.classList.add(className)
+        this.host.classList.add(className)
 
         return this
     }
 
 
     removeClass (className) {
-        this.element.classList.remove(className)
+        this.host.classList.remove(className)
 
         return this
     }
 
 
     toggleClass (className, force) {
-        this.element.classList.toggle(className, force)
+        this.host.classList.toggle(className, force)
 
         return this
     }
 
 
     hasClass (className) {
-        return this.element.classList.contains(className)
+        return this.host.classList.contains(className)
     }
 
 
     setSize ({width, height, unit = 'px'}) {
-        Object.assign(this.style, {
+        Object.assign(this.hostStyle, {
             width:  `${width}${unit}`,
             height: `${height}${unit}`
         })
@@ -163,10 +163,10 @@ export default class PerkyView extends PerkyModule {
 
     mountTo (container) {
         if (this.parentElement && this.parentElement !== container) {
-            this.parentElement.removeChild(this.element)
+            this.parentElement.removeChild(this.host)
         }
 
-        container.appendChild(this.element)
+        container.appendChild(this.host)
         this.container = container
 
         this.emit('mount', {container})
@@ -195,7 +195,7 @@ export default class PerkyView extends PerkyModule {
 
 
     isVisible () {
-        return this.element.style.display !== 'none'
+        return this.host.style.display !== 'none'
     }
 
 
@@ -210,7 +210,7 @@ export default class PerkyView extends PerkyModule {
 
 
     setPosition ({x, y, unit = 'px'}) {
-        Object.assign(this.style, {
+        Object.assign(this.hostStyle, {
             left: `${x}${unit}`,
             top: `${y}${unit}`
         })
@@ -220,18 +220,18 @@ export default class PerkyView extends PerkyModule {
 
     setStyle (name, value) {
         if (typeof name === 'object') {
-            Object.assign(this.style, name)
+            Object.assign(this.hostStyle, name)
             return this
         }
 
-        this.style[name] = value
+        this.hostStyle[name] = value
 
         return this
     }
 
 
     getStyle (name) {
-        return this.style[name]
+        return this.hostStyle[name]
     }
 
 
@@ -256,23 +256,23 @@ export default class PerkyView extends PerkyModule {
 
 
     get html () {
-        return this.shadowContainer.innerHTML
+        return this.element.innerHTML
     }
 
 
     set html (html) {
-        this.shadowContainer.innerHTML = html
+        this.element.innerHTML = html
         return this
     }
 
 
     get text () {
-        return this.shadowContainer.innerText
+        return this.element.innerText
     }
 
 
     set text (text) {
-        this.shadowContainer.innerText = text
+        this.element.innerText = text
         return this
     }
 
@@ -312,18 +312,18 @@ export default class PerkyView extends PerkyModule {
 
 
     setAttribute (name, value) {
-        this.element.setAttribute(name, value)
+        this.host.setAttribute(name, value)
         return this
     }
 
 
     getAttribute (name) {
-        return this.element.getAttribute(name)
+        return this.host.getAttribute(name)
     }
 
 
     removeAttribute (name) {
-        this.element.removeAttribute(name)
+        this.host.removeAttribute(name)
         return this
     }
 
@@ -331,11 +331,11 @@ export default class PerkyView extends PerkyModule {
 
 
 function initShadowDOM (perkyView, params) {
-    perkyView.shadowRoot = perkyView.element.attachShadow({mode: 'open'})
+    perkyView.shadowRoot = perkyView.host.attachShadow({mode: 'open'})
 
-    perkyView.shadowContainer = document.createElement('div')
-    perkyView.shadowContainer.className = 'shadow-container'
-    perkyView.shadowRoot.appendChild(perkyView.shadowContainer)
+    perkyView.element = document.createElement('div')
+    perkyView.element.className = 'shadow-container'
+    perkyView.shadowRoot.appendChild(perkyView.element)
 
     if (params.css) {
         perkyView.setCss(params.css)
@@ -356,6 +356,6 @@ function setupResizeObserver (perkyView) {
         }
     })
 
-    perkyView.resizeObserver.observe(perkyView.element)
+    perkyView.resizeObserver.observe(perkyView.host)
 
 }
