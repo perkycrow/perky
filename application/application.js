@@ -1,0 +1,119 @@
+import Engine from '../core/engine'
+import Registry from '../core/registry'
+import PerkyView from './perky_view'
+import InputObserver from './input_observer'
+import InputMapper from './input_mapper'
+import SourceManager from './source_manager'
+import * as loaders from './loaders'
+
+
+export default class Application extends Engine {
+
+    constructor (manifest = {}) {
+        super(manifest)
+
+        this.loaders = new Registry(loaders.collection)
+
+        this.registerModule('perkyView', new PerkyView())
+        this.registerModule('inputObserver', new InputObserver())
+        this.registerModule('inputMapper', new InputMapper({inputObserver: this.inputObserver}))
+        this.registerModule('sourceManager', new SourceManager({
+            loaders: this.loaders,
+            manifest: this.manifest
+        }))
+
+        initEvents(this)
+    }
+
+
+    isInputPressed (code) {
+        return this.inputObserver.isPressed(code)
+    }
+
+
+    areInputsPressed (codes) {
+        return this.inputObserver.arePressed(codes)
+    }
+
+
+    isActionPressed (action) {
+        return this.inputMapper.isActionPressed(action)
+    }
+
+
+    setInputFor (action, input, slot = 0) {
+        return this.inputMapper.setInputFor(action, input, slot)
+    }
+
+
+    setInputsFor (action, inputs) {
+        return this.inputMapper.setInputsFor(action, inputs)
+    }
+
+
+    getInputFor (action, slot = 0) {
+        return this.inputMapper.getInputFor(action, slot)
+    }
+
+
+    getInputsFor (action) {
+        return this.inputMapper.getInputsFor(action)
+    }
+
+
+    get mousePosition () {
+        return this.inputObserver.getMousePosition()
+    }
+
+
+    mountTo (element) {
+        return this.perkyView.mountTo(element)
+    }
+
+
+    async loadSource (type, id) {
+        return this.sourceManager.loadSource(type, id)
+    }
+
+
+    async loadTag (tag) {
+        return this.sourceManager.loadTag(tag)
+    }
+
+
+    async loadAll () {
+        return this.sourceManager.loadAll()
+    }
+
+
+    getSource (type, id) {
+        return this.manifest.getSourceDescriptor(type, id)
+    }
+
+
+    config (path, value) {
+        return this.manifest.config(path, value)
+    }
+
+}
+
+
+function initEvents (application) {
+
+    const {inputObserver, inputMapper, actionDispatcher, perkyView} = application
+
+    inputMapper.on('action', (action, ...args) => actionDispatcher.dispatch(action, ...args))
+
+    inputObserver.on('keydown', application.emitter('keydown'))
+
+    inputObserver.on('keyup', application.emitter('keyup'))
+
+    inputObserver.on('mousemove', application.emitter('mousemove'))
+
+    inputObserver.on('mousedown', application.emitter('mousedown'))
+
+    inputObserver.on('mouseup', application.emitter('mouseup'))
+
+    perkyView.on('resize', application.emitter('resize'))
+
+}
