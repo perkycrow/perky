@@ -27,6 +27,8 @@ export default class InputObserver extends PerkyModule {
         return Object.assign({}, this.mousePosition)
     }
 
+    static global = new InputObserver()
+
 }
 
 
