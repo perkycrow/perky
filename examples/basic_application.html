@@ -5,23 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perky - Basic Application</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        #app {
-            width: 100%;
-            height: 300px;
-            background-color: #fff;
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-        }
 
-        .perky-application {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-        }
-    </style>
 </head>
 <body>
     <div class="example-container">
@@ -35,86 +19,24 @@
         <div class="example-content"></div>
     </div>
 
+    <script type="module" src="basic_application.js"></script>
+
     <script type="module">
-        import Application from '/application/application.js'
-        import ActionController from '/core/action_controller.js'
-        import { Toolbar, Logger } from './scripts.js'
+        import CodeDisplay from '/ui/code_display.js'
 
-        const app = new Application({
-            config: {
-                name: "Basic Application Example",
-                debug: true
-            },
-            sourceDescriptors: {
-                images: {
-                    logo: {
-                        url: "/examples/assets/images/logo.png",
-                    }
-                },
-                audio: {
-                    tac: {
-                        url: "/examples/assets/audio/tac.mp3",
-                    }
-                }
-            }
+        document.addEventListener('DOMContentLoaded', async () => {
+            const scriptContent = await fetch('basic_application.js')
+                .then(response => response.text())
+                .catch(error => {
+                    console.error('Error fetching the script:', error)
+                    return null
+                })
+
+            const exampleContainer = document.querySelector('.example-container')
+            const codeDisplay = new CodeDisplay({code: scriptContent})
+            codeDisplay.mountTo(exampleContainer)
         })
-        
-        const container = document.querySelector('.example-content')
-        app.mountTo(container)
-
-        const toolbar = new Toolbar(container, {
-            position: 'top-right',
-        })
-
-        const logger = new Logger(container, {
-            position: 'bottom',
-            maxEntries: 50,
-            initiallyExpanded: true
-        })
-        
-        logger.info('Application mounted')
-
-        app.setInputFor('jump', 'Space')
-        logger.info('Input mapping set: SPACE → jump')
-
-        app.inputMapper.on('action', action => {
-            if (action === 'jump') {
-                logger.info('Action triggered: jump')
-            }
-        })
-
-        toolbar.add('Load Assets', async () => {
-            try {
-                logger.info('Starting assets loading...')
-
-                await app.loadSource('images', 'logo')
-                logger.info('Loaded image: logo')
-                
-                await app.loadSource('audio', 'tac')
-                logger.info('Loaded audio: tac')
-                
-                logger.success('All assets loaded successfully')
-                console.log('Assets loaded successfully')
-            } catch (error) {
-                logger.error(`Error loading assets: ${error.message}`)
-                console.error('Error loading assets:', error)
-            }
-        })
-
-        toolbar.add('Jump', () => {
-            logger.info('Action triggered: jump (via button)')
-        })
-
-        function gameLoop(timestamp) {
-            app.update(timestamp)
-
-            requestAnimationFrame(gameLoop)
-        }
-
-        requestAnimationFrame(gameLoop)
-        logger.info('Game loop started')
-
-        window.app = app
     </script>
+    
 </body>
 </html>
