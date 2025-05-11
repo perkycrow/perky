@@ -23,8 +23,8 @@ export default class Engine extends PerkyModule {
 
         this.registerModule('actionDispatcher', new ActionDispatcher())
 
-        const applicationController = new ActionController()
-        this.registerController('application', applicationController)
+        this.applicationController = new ActionController()
+        this.registerController('application', this.applicationController)
         this.setActiveController('application')
     }
 
@@ -75,6 +75,11 @@ export default class Engine extends PerkyModule {
 
     getActiveController () {
         return this.actionDispatcher.getActive()
+    }
+
+
+    addAction (actionName, action) {
+        return this.applicationController.addAction(actionName, action)
     }
 
 
