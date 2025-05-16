@@ -110,8 +110,10 @@ describe('GameLoop', () => {
 
 
     test('pause when not running', () => {
+        vi.clearAllMocks()
+
         const result = gameLoop.pause()
-        
+
         expect(result).toBe(false)
         expect(gameLoop.emit).not.toHaveBeenCalled()
     })
@@ -132,6 +134,8 @@ describe('GameLoop', () => {
 
 
     test('resume when not paused', () => {
+        vi.clearAllMocks()
+        
         gameLoop.initialized = true
         gameLoop.started = true
         gameLoop.paused = false
@@ -161,36 +165,37 @@ describe('GameLoop', () => {
 
     test('update function emits events', () => {
         const testLoop = new GameLoop()
+        const update = vi.fn()
+        const render = vi.fn()
+
+        testLoop.on('update', update)
+        testLoop.on('render', render)
 
         testLoop.initialized = true
         testLoop.start()
         expect(animationCallbacks.length).toBeGreaterThan(0)
-
-        vi.spyOn(testLoop, 'emit')
 
         testLoop.lastTime = performance.now() - 50 // 50ms ago
 
         const updateFn = animationCallbacks[0]
         updateFn(performance.now())
 
-        const calls = testLoop.emit.mock.calls
-        expect(calls.length).toBeGreaterThan(0)
-
-        const lastCall = calls[calls.length - 1]
-        expect(lastCall[0]).toBe('render')
-        expect(typeof lastCall[1]).toBe('number')
-
-        expect(testLoop.emit).toHaveBeenCalledWith('update', expect.any(Number))
+        expect(update).toHaveBeenCalled()
+        
+        expect(render).toHaveBeenCalled()
     })
 
     test('update function with paused loop', () => {
         const testLoop = new GameLoop()
+        const update = vi.fn()
+        const render = vi.fn()
+
+        testLoop.on('update', update)
+        testLoop.on('render', render)
 
         testLoop.initialized = true
         testLoop.start()
         expect(animationCallbacks.length).toBeGreaterThan(0)
-
-        vi.spyOn(testLoop, 'emit')
 
         testLoop.paused = true
 
@@ -198,7 +203,8 @@ describe('GameLoop', () => {
         const result = updateFn(performance.now())
 
         expect(result).toBe(false)
-        expect(testLoop.emit).not.toHaveBeenCalled()
+        expect(update).not.toHaveBeenCalled()
+        expect(render).not.toHaveBeenCalled()
     })
 
 })

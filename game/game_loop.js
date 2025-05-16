@@ -5,14 +5,14 @@ export default class GameLoop extends PerkyModule {
     constructor (params = {}) {
         super()
 
-        this.setFps(params.fps || 60)
         this.paused = false
         this.lastTime = 0
         this.accumulator = 0
         this.maxFrameSkip = params.maxFrameSkip || 5
         this.frameCount = 0
-        this.fps = 0
         this.lastFpsUpdate = 0
+
+        this.setFps(params.fps || 60)
     }
 
 
