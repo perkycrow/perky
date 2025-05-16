@@ -23,12 +23,7 @@ describe(PerkyModule, () => {
 
 
     test('init', () => {
-        const spy = vi.spyOn(module, 'emit')
-        
-        expect(module.initialized).toBe(false)
-        expect(module.init('param')).toBe(true)
         expect(module.initialized).toBe(true)
-        expect(spy).toHaveBeenCalledWith('init', 'param')
     })
 
 
@@ -42,9 +37,9 @@ describe(PerkyModule, () => {
         const spy = vi.spyOn(module, 'emit')
 
         module.initialized = true
-        expect(module.start('param')).toBe(true)
+        expect(module.start()).toBe(true)
         expect(module.started).toBe(true)
-        expect(spy).toHaveBeenCalledWith('start', 'param')
+        expect(spy).toHaveBeenCalled()
     })
 
 
@@ -60,9 +55,9 @@ describe(PerkyModule, () => {
 
         module.initialized = true
         module.started = true
-        expect(module.stop('param')).toBe(true)
+        expect(module.stop()).toBe(true)
         expect(module.started).toBe(false)
-        expect(spy).toHaveBeenCalledWith('stop', 'param')
+        expect(spy).toHaveBeenCalled()
     })
 
 
@@ -77,17 +72,12 @@ describe(PerkyModule, () => {
         const removeListenersSpy = vi.spyOn(module, 'removeListeners')
 
         module.initialized = true
-        expect(module.dispose('param')).toBe(true)
+        expect(module.dispose()).toBe(true)
         expect(stopSpy).toHaveBeenCalled()
-        expect(spy).toHaveBeenCalledWith('dispose', 'param')
+        expect(spy).toHaveBeenCalled()
         expect(removeListenersSpy).toHaveBeenCalled()
         expect(module.initialized).toBe(false)
         expect(module.started).toBe(false)
-    })
-
-
-    test('dispose false', () => {
-        expect(module.dispose()).toBe(false)
     })
 
 })

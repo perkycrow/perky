@@ -6,6 +6,7 @@ export default class PerkyModule extends Notifier {
     constructor () {
         super()
         reset(this)
+        this.init()
     }
 
 
@@ -14,61 +15,61 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    init (...args) {
+    init () {
         if (this.initialized) {
             return false
         }
 
         this.initialized = true
-        this.emit('init', ...args)
+        this.emit('init')
 
         return true
     }
 
 
-    start (...args) {
+    start () {
         if (!this.initialized || this.started) {
             return false
         }
 
         this.started = true
-        this.emit('start', ...args)
+        this.emit('start')
 
         return true
     }
 
 
-    stop (...args) {
+    stop () {
         if (!this.initialized || !this.started) {
             return false
         }
 
         this.started = false
-        this.emit('stop', ...args)
+        this.emit('stop')
 
         return true
     }
 
 
-    resume (...args) {
+    resume () {
         if (!this.initialized || !this.started || !this.paused) {
             return false
         }
 
         this.paused = false
-        this.emit('resume', ...args)
+        this.emit('resume')
 
         return true
     }
 
 
-    dispose (...args) {
+    dispose () {
         if (!this.initialized) {
             return false
         }
 
         this.stop()
-        this.emit('dispose', ...args)
+        this.emit('dispose')
         this.removeListeners()
         reset(this)
 
