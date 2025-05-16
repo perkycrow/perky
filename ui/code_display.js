@@ -1,4 +1,4 @@
-import Application from '../application/application'
+import PerkyView from '../application/perky_view'
 
 
 const baseHtml = `
@@ -115,14 +115,16 @@ const baseCss = `
     .perky-code-display-light .perky-code-builtin { color: #e45649; }
 `
 
-export default class CodeDisplay extends Application {
+export default class CodeDisplay extends PerkyView {
 
     constructor (params = {}) {
-        super(params)
+        super({
+            className: 'perky-code-display-container',
+            css: baseCss,
+            ...params
+        })
 
-        this.setHtml(baseHtml)
-        this.setCss(baseCss)
-
+        this.html = baseHtml
         this.codeElement = this.element.querySelector('pre')
 
         if (params.code) {

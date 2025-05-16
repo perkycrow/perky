@@ -1,4 +1,4 @@
-import Application from '../application/application'
+import PerkyView from '../application/perky_view'
 
 
 const baseHtml = `
@@ -93,18 +93,21 @@ const baseCss = `
 `
 
 
-export default class Toolbar extends Application {
+export default class Toolbar extends PerkyView {
 
     constructor (params = {}) {
-        super(params)
+        super({
+            className: 'perky-toolbar-container',
+            css: baseCss,
+            ...params
+        })
+        
         this.options = {
             position: 'top-right',
             ...params
         }
 
-        this.setHtml(baseHtml)
-        this.setCss(baseCss)
-
+        this.html = baseHtml
         this.toolbarElement = this.element.querySelector('.perky-toolbar')
         this.setPosition(this.options.position)
     }

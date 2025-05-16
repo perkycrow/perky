@@ -1,4 +1,4 @@
-import Application from '../application/application'
+import PerkyView from '../application/perky_view'
 
 const baseHtml = `
     <div class="perky-logger perky-logger-light">
@@ -218,13 +218,16 @@ const baseCss = `
 `
 
 
-export default class Logger extends Application {
+export default class Logger extends PerkyView {
 
     constructor (params = {}) {
-        super(params)
+        super({
+            className: 'perky-logger-container',
+            css: baseCss,
+            ...params
+        })
 
-        this.setHtml(baseHtml)
-        this.setCss(baseCss)
+        this.html = baseHtml
 
         this.options = {
             maxEntries: 50,
