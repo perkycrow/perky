@@ -10,7 +10,7 @@ export default class PerkyModule extends Notifier {
 
 
     get running () {
-        return this.initialized && this.started && !this.paused
+        return this.initialized && this.started
     }
 
 
@@ -26,23 +26,11 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    update (...args) {
-        if (!this.running) {
-            return false
-        }
-
-        this.emit('update', ...args)
-
-        return true
-    }
-
-
     start (...args) {
         if (!this.initialized || this.started) {
             return false
         }
 
-        this.paused = false
         this.started = true
         this.emit('start', ...args)
 
@@ -57,18 +45,6 @@ export default class PerkyModule extends Notifier {
 
         this.started = false
         this.emit('stop', ...args)
-
-        return true
-    }
-
-
-    pause (...args) {
-        if (!this.running) {
-            return false
-        }
-
-        this.paused = true
-        this.emit('pause', ...args)
 
         return true
     }
@@ -109,10 +85,7 @@ export default class PerkyModule extends Notifier {
 function reset (module) {
     module.started = false
     module.initialized = false
-    module.paused = false
 }
-
-
 
 
 function initRegistryEvents ({module, moduleName, registryName, registry, bind = false}) {
@@ -138,9 +111,7 @@ function initRegistryEvents ({module, moduleName, registryName, registry, bind =
     module.on('init',   registry.invoker('init'))
     module.on('start',  registry.invoker('start'))
     module.on('stop',   registry.invoker('stop'))
-    module.on('update', registry.invoker('update'))
-    module.on('pause',  registry.invoker('pause'))
-    module.on('resume', registry.invoker('resume'))
+    module.on('dispose', () => registry.clear())
 }
 
 

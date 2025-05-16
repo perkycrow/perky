@@ -19,9 +19,6 @@ describe(PerkyModule, () => {
         
         module.started = true
         expect(module.running).toBe(true)
-        
-        module.paused = true
-        expect(module.running).toBe(false)
     })
 
 
@@ -38,21 +35,6 @@ describe(PerkyModule, () => {
     test('init false', () => {
         module.initialized = true
         expect(module.init()).toBe(false)
-    })
-
-
-    test('update', () => {
-        const spy = vi.spyOn(module, 'emit')
-
-        module.initialized = true
-        module.started = true
-        expect(module.update('param')).toBe(true)
-        expect(spy).toHaveBeenCalledWith('update', 'param')
-    })
-
-
-    test('update false', () => {
-        expect(module.update()).toBe(false)
     })
 
 
@@ -89,45 +71,6 @@ describe(PerkyModule, () => {
     })
 
 
-    test('pause', () => {
-        const spy = vi.spyOn(module, 'emit')
-
-        module.initialized = true
-        module.started = true
-        expect(module.pause('param')).toBe(true)
-        expect(module.paused).toBe(true)
-        expect(spy).toHaveBeenCalledWith('pause', 'param')
-    })
-
-
-    test('pause false', () => {
-        expect(module.pause()).toBe(false)
-    })
-
-
-    test('resume', () => {
-        const spy = vi.spyOn(module, 'emit')
-
-        module.initialized = true
-        module.started = true
-        module.paused = true
-        expect(module.resume('param')).toBe(true)
-        expect(module.paused).toBe(false)
-        expect(spy).toHaveBeenCalledWith('resume', 'param')
-    })
-
-
-    test('resume false', () => {
-        expect(module.resume()).toBe(false)
-
-        module.initialized = true
-        expect(module.resume()).toBe(false)
-        
-        module.started = true
-        expect(module.resume()).toBe(false)
-    })
-
-
     test('dispose', () => {
         const spy = vi.spyOn(module, 'emit')
         const stopSpy = vi.spyOn(module, 'stop')
@@ -140,7 +83,6 @@ describe(PerkyModule, () => {
         expect(removeListenersSpy).toHaveBeenCalled()
         expect(module.initialized).toBe(false)
         expect(module.started).toBe(false)
-        expect(module.paused).toBe(false)
     })
 
 

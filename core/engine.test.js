@@ -233,9 +233,6 @@ describe(Engine, () => {
 
         const initSpy = vi.spyOn(module, 'init')
         const startSpy = vi.spyOn(module, 'start')
-        const updateSpy = vi.spyOn(module, 'update')
-        const pauseSpy = vi.spyOn(module, 'pause')
-        const resumeSpy = vi.spyOn(module, 'resume')
         const stopSpy = vi.spyOn(module, 'stop')
         
         engine.registerModule('test', module)
@@ -245,17 +242,6 @@ describe(Engine, () => {
 
         module.initialized = true
         module.started = true
-        
-        engine.emit('update', 'param')
-        expect(updateSpy).toHaveBeenCalledWith('param')
-
-        engine.emit('pause', 'param')
-        expect(pauseSpy).toHaveBeenCalledWith('param')
-        
-        module.paused = true
-        
-        engine.emit('resume', 'param')
-        expect(resumeSpy).toHaveBeenCalledWith('param')
         
         engine.emit('stop', 'param')
         expect(stopSpy).toHaveBeenCalledWith('param')
@@ -397,9 +383,6 @@ describe(Engine, () => {
 
         const initSpy = vi.spyOn(controller, 'init')
         const startSpy = vi.spyOn(controller, 'start')
-        const updateSpy = vi.spyOn(controller, 'update')
-        const pauseSpy = vi.spyOn(controller, 'pause')
-        const resumeSpy = vi.spyOn(controller, 'resume')
         const stopSpy = vi.spyOn(controller, 'stop')
         
         engine.registerController('test', controller)
@@ -409,17 +392,6 @@ describe(Engine, () => {
 
         engine.start('param')
         
-        engine.update('param')
-        expect(updateSpy).toHaveBeenCalledWith('param')
-
-        engine.pause('param')
-        expect(pauseSpy).toHaveBeenCalledWith('param')
-
-        controller.paused = true
-        
-        engine.resume('param')
-        expect(resumeSpy).toHaveBeenCalledWith('param')
-
         engine.stop('param')
         expect(stopSpy).toHaveBeenCalledWith('param')
 
