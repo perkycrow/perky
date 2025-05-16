@@ -387,11 +387,6 @@ export default class Logger extends PerkyView {
         }
     }
 
-
-    remove () {
-        this.element.remove()
-    }
-
 }
 
 

@@ -229,19 +229,6 @@ describe('Logger', () => {
     })
 
 
-    test('remove removes the element from DOM', () => {
-        const parentElement = document.createElement('div')
-        parentElement.appendChild(logger.element)
-        document.body.appendChild(parentElement)
-        
-        expect(parentElement.contains(logger.element)).toBe(true)
-        
-        logger.remove()
-        
-        expect(parentElement.contains(logger.element)).toBe(false)
-    })
-
-
     test('events trigger corresponding methods', () => {
         const minimizeSpy = vi.spyOn(logger, 'minimize')
         const toggleSpy = vi.spyOn(logger, 'toggle')
