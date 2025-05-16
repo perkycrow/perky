@@ -1,7 +1,7 @@
 {
   "name": "@perkycrow/perky",
   "version": "0.1.0",
-  "description": "No rules, just tools",
+  "description": "A modular framework for JavaScript game development",
   "type": "module",
   "files": [
     "dist",
