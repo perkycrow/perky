@@ -12,7 +12,7 @@ const tagFamilies = {
     three: [],
     game: [],
     audio: [],
-    ui: ['logger', 'code_display', 'toolbar']
+    ui: ['logger', 'code_display', 'toolbar', 'fps_counter']
 }
 
 const baseCss = `
