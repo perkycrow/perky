@@ -128,7 +128,6 @@ describe('Loaders', () => {
         const result = await loadPromise
         
         expect(global.URL.createObjectURL).toHaveBeenCalledWith(blob)
-        expect(global.URL.revokeObjectURL).toHaveBeenCalledWith('blob:test')
         expect(result).toBe(lastCreatedImage)
     })
 

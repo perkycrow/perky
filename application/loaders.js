@@ -31,14 +31,16 @@ export async function loadImage (params) {
     
     return new Promise((resolve, reject) => {
         const img = new Image()
+
         img.onload = function () {
-            URL.revokeObjectURL(url)
             resolve(img)
         }
+
         img.onerror = function () {
             URL.revokeObjectURL(url)
             reject(new Error('Failed to load image'))
         }
+
         img.src = url
     })
 }
