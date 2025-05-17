@@ -1,5 +1,7 @@
 import {
     Texture,
+    SpriteMaterial,
+    Sprite,
     WebGLRenderer,
     PCFSoftShadowMap,
     SRGBColorSpace,
@@ -30,7 +32,7 @@ export function createRenderer ({container} = {}) {
 }
 
 
-export function createSprite ({
+export function createSpriteTexture ({
     source,
     generateMipmaps = true,
     anisotropy = false
@@ -52,4 +54,18 @@ export function createSprite ({
     texture.needsUpdate = true
 
     return texture
+}
+
+
+export function createSprite (params = {}) {
+    const texture = createSpriteTexture(params)
+
+    const spriteMaterial = new SpriteMaterial({
+        map: texture,
+        alphaTest: 0.1,
+        sizeAttenuation: true,
+        color: 0xffffff
+    })
+
+    return new Sprite(spriteMaterial)
 }
