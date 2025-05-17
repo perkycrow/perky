@@ -25,6 +25,7 @@
 - Develop a suite of generic UI elements for custom tool creation
 - Create standard game interface components (settings menus, keybinding interfaces, etc.)
 - Design flexible and reusable UI framework adaptable to different game types
+- Implement mobile-first tools and responsive design utilities for cross-device compatibility
 
 ## PWA Tools
 - Implement service worker management for offline capabilities
@@ -47,3 +48,19 @@
 - Implement standard web application template for non-game projects
 - Build customizable template system with configurable options
 - Design command-line interface for generator invocation
+
+## Architecture
+- Consider an Entity-Component System (ECS) for more flexible game object modeling
+- Implement a game state save/load system
+
+## Game Features
+- Configurable particle system
+- Integrated physics engine or adapter for Box2D/Ammo.js
+- Visual debugging tools (hitboxes, trajectories)
+- WebXR support for VR/AR
+- Artificial intelligence system (pathfinding, behaviors)
+- Visual editing tools (level editor, animation editor)
+
+## Internationalization
+- i18n support for texts and resources
+- Tools for managing translations in games
