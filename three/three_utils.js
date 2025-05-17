@@ -1,7 +1,10 @@
 import {
+    Texture,
     WebGLRenderer,
     PCFSoftShadowMap,
-    SRGBColorSpace
+    SRGBColorSpace,
+    LinearMipmapLinearFilter,
+    LinearFilter
 } from 'three'
 
 
@@ -24,4 +27,29 @@ export function createRenderer ({container} = {}) {
     }
 
     return renderer
+}
+
+
+export function createSprite ({
+    source,
+    generateMipmaps = true,
+    anisotropy = false
+} = {}) {
+    const texture = new Texture(source)
+
+    texture.colorSpace = SRGBColorSpace
+
+    if (generateMipmaps) {
+        texture.minFilter = LinearMipmapLinearFilter
+        texture.magFilter = LinearFilter
+        texture.generateMipmaps = true
+    }
+
+    if (anisotropy) {
+        texture.anisotropy = anisotropy
+    }
+
+    texture.needsUpdate = true
+
+    return texture
 }
