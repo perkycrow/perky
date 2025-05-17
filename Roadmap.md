@@ -25,3 +25,15 @@
 - Develop a suite of generic UI elements for custom tool creation
 - Create standard game interface components (settings menus, keybinding interfaces, etc.)
 - Design flexible and reusable UI framework adaptable to different game types
+
+## PWA Tools
+- Implement service worker management for offline capabilities
+- Create manifest.json generator and configurator
+- Develop cache strategies for assets and application data
+- Build installation prompts and update notification system
+
+## Collision Detection
+- Implement 2D collision detection (AABB, circle, polygon)
+- Develop 3D collision systems (bounding box, sphere, mesh-based)
+- Create spatial partitioning for performance optimization
+- Design collision response and physics reaction framework
