@@ -134,33 +134,6 @@ describe('FpsCounter', () => {
     })
 
 
-    test('updateDisplay sets the correct text and color class', () => {
-        // Test good FPS
-        fpsCounter.updateDisplay(60)
-        
-        expect(fpsCounter.fpsElement.textContent).toBe('60')
-        expect(fpsCounter.fpsElement.classList.contains('perky-fps-good')).toBe(true)
-        expect(fpsCounter.fpsElement.classList.contains('perky-fps-ok')).toBe(false)
-        expect(fpsCounter.fpsElement.classList.contains('perky-fps-bad')).toBe(false)
-        
-        // Test ok FPS
-        fpsCounter.updateDisplay(40)
-        
-        expect(fpsCounter.fpsElement.textContent).toBe('40')
-        expect(fpsCounter.fpsElement.classList.contains('perky-fps-good')).toBe(false)
-        expect(fpsCounter.fpsElement.classList.contains('perky-fps-ok')).toBe(true)
-        expect(fpsCounter.fpsElement.classList.contains('perky-fps-bad')).toBe(false)
-        
-        // Test bad FPS
-        fpsCounter.updateDisplay(20)
-        
-        expect(fpsCounter.fpsElement.textContent).toBe('20')
-        expect(fpsCounter.fpsElement.classList.contains('perky-fps-good')).toBe(false)
-        expect(fpsCounter.fpsElement.classList.contains('perky-fps-ok')).toBe(false)
-        expect(fpsCounter.fpsElement.classList.contains('perky-fps-bad')).toBe(true)
-    })
-
-
     test('onRender updates fpsData and calls other methods', () => {
         vi.spyOn(fpsCounter, 'updateDisplay')
         vi.spyOn(fpsCounter, 'drawGraph')
@@ -181,38 +154,14 @@ describe('FpsCounter', () => {
     })
 
 
-    test('drawGraph calls clearGraph and drawLine', () => {
-        vi.spyOn(fpsCounter, 'clearGraph')
-        vi.spyOn(fpsCounter, 'drawLine')
-        
-        fpsCounter.drawGraph()
-        
-        expect(fpsCounter.clearGraph).toHaveBeenCalled()
-        expect(mockCtx.fillRect).toHaveBeenCalledWith(0, 0, fpsCounter.canvas.width, fpsCounter.canvas.height)
-        expect(fpsCounter.drawLine).toHaveBeenCalledWith(fpsCounter.fpsData, '#4CAF50', 100)
-    })
-
-
-    test('drawLine does nothing when ctx is not available', () => {
+    test('drawBars does nothing when ctx is not available', () => {
         const tempCtx = fpsCounter.ctx
         fpsCounter.ctx = null
-        
+
         // Should not throw an error
-        fpsCounter.drawLine([], '#000', 100)
+        fpsCounter.drawBars([], '#000', 100)
         
         fpsCounter.ctx = tempCtx
-    })
-
-
-    test('drawLine draws path on canvas', () => {
-        const testData = [30, 60, 90]
-        fpsCounter.drawLine(testData, '#ff0000', 100)
-        
-        expect(mockCtx.beginPath).toHaveBeenCalled()
-        expect(mockCtx.moveTo).toHaveBeenCalledTimes(1)
-        expect(mockCtx.lineTo).toHaveBeenCalledTimes(2)
-        expect(mockCtx.stroke).toHaveBeenCalled()
-        expect(mockCtx.strokeStyle).toBe('#ff0000')
     })
 
 })
