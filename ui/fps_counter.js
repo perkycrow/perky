@@ -3,9 +3,6 @@ import PerkyView from '../application/perky_view'
 
 const baseHtml = `
     <div class="perky-fps-counter perky-fps-counter-light perky-fps-top-right">
-        <div class="perky-fps-header">
-            <span class="perky-fps-title">FPS</span>
-        </div>
         <div class="perky-fps-panel">
             <canvas class="perky-fps-graph"></canvas>
             <div class="perky-fps-text">0</div>
@@ -182,21 +179,9 @@ export default class FpsCounter extends PerkyView {
     
     updateDisplay (fps) {
         const fpsText = Math.round(fps || 0)
-
-        let colorClass = ''
-        if (fpsText >= 50) {
-            colorClass = 'perky-fps-good'
-        } else if (fpsText >= 30) {
-            colorClass = 'perky-fps-ok'
-        } else {
-            colorClass = 'perky-fps-bad'
-        }
-        
         this.fpsElement.textContent = fpsText
         
         this.fpsElement.classList.remove('perky-fps-good', 'perky-fps-ok', 'perky-fps-bad')
-
-        this.fpsElement.classList.add(colorClass)
     }
     
     clearGraph () {
@@ -220,10 +205,10 @@ export default class FpsCounter extends PerkyView {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'
         ctx.fillRect(0, 0, width, height)
 
-        this.drawLine(this.fpsData, '#4CAF50', 100)
+        this.drawBars(this.fpsData, 100)
     }
     
-    drawLine (data, color, maxValue) {
+    drawBars (data, maxValue) {
         const ctx = this.ctx
         
         if (!ctx) {
@@ -233,26 +218,25 @@ export default class FpsCounter extends PerkyView {
         const height = this.canvas.height
 
         const dataLength = data.length
-        const step = width / (dataLength - 1)
-        
-        ctx.strokeStyle = color
-        ctx.lineWidth = 1
-        ctx.beginPath()
+        const barWidth = width / dataLength
         
         for (let i = 0; i < dataLength; i++) {
             const value = Math.min(data[i], maxValue)
-
-            const y = height - (value / maxValue) * height
-            const x = i * step
+            const barHeight = (value / maxValue) * height
             
-            if (i === 0) {
-                ctx.moveTo(x, y)
+            if (value >= 50) {
+                ctx.fillStyle = '#4CAF50'
+            } else if (value >= 30) {
+                ctx.fillStyle = '#FF9800'
             } else {
-                ctx.lineTo(x, y)
+                ctx.fillStyle = '#F44336'
             }
+            
+            const x = i * barWidth
+            const y = height - barHeight
+            
+            ctx.fillRect(x, y, barWidth, barHeight)
         }
-        
-        ctx.stroke()
     }
 
 }
