@@ -37,3 +37,13 @@
 - Develop 3D collision systems (bounding box, sphere, mesh-based)
 - Create spatial partitioning for performance optimization
 - Design collision response and physics reaction framework
+
+## Project Generators
+- Develop Rails-inspired project scaffolding system
+- Create game templates with preconfigured settings:
+  - Side-scroller template with platformer physics and camera setup
+  - Third-person shooter (TPS) template with character controls and camera
+  - First-person shooter (FPS) template with movement and weapon systems
+- Implement standard web application template for non-game projects
+- Build customizable template system with configurable options
+- Design command-line interface for generator invocation
