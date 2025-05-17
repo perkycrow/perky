@@ -274,6 +274,15 @@ describe(PerkyView, () => {
     })
 
 
+    test('aspectRatio getter', () => {
+        host.style.width = '300px'
+        host.style.height = '400px'
+        vi.spyOn(host, 'offsetWidth', 'get').mockReturnValue(300)
+        vi.spyOn(host, 'offsetHeight', 'get').mockReturnValue(400)
+        expect(view.aspectRatio).toBe(300 / 400)
+    })
+
+
     test('boundingRect getter', () => {
         const mockRect = {
             left: 0,

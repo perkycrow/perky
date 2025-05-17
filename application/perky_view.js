@@ -109,6 +109,13 @@ export default class PerkyView extends PerkyModule {
     }
 
 
+    get aspectRatio () {
+        const {width, height} = this.size
+
+        return width / height
+    }
+
+
     classList () {
         return this.host.classList
     }
@@ -336,6 +343,7 @@ function initShadowDOM (perkyView, params) {
     perkyView.element = document.createElement('div')
     perkyView.element.className = 'shadow-container'
     perkyView.shadowRoot.appendChild(perkyView.element)
+    perkyView.element.style.height = '100%'
 
     if (params.css) {
         perkyView.setCss(params.css)
