@@ -15,3 +15,13 @@
 
 ## Graphics Foundation
 - Develop ThreeGame class that provides necessary infrastructure for 2D/3D game creation with ThreeJS
+
+## Image Processing Utilities
+- Create Canvas-based image manipulation tools for texture and image generation
+- Implement Photoshop-inspired editing features
+- Integrate concepts from libraries like PaperJS and EaselJS
+
+## UI Components
+- Develop a suite of generic UI elements for custom tool creation
+- Create standard game interface components (settings menus, keybinding interfaces, etc.)
+- Design flexible and reusable UI framework adaptable to different game types
