@@ -26,8 +26,7 @@ function initAnimation () {
     gameLoop.on('render', (frameProgress, fps) => {
         currentFps = fps || 60
 
-        if (currentFps > 20) {
-            // Add more particles when FPS is high enough
+        if (currentFps > 20 && particles.length < 50000) {
             const particlesToAdd = Math.floor((currentFps - 20) / 10) + 1
             
             for (let i = 0; i < particlesToAdd; i++) {
@@ -101,8 +100,8 @@ function displayCircleCount (ctx, count, canvasWidth, canvasHeight) {
 
 function createCanvas () {
     const canvas = document.createElement('canvas')
-    canvas.width = 650
-    canvas.height = 350
+    canvas.width = 660
+    canvas.height = 325
     canvas.style.display = 'block'
     canvas.style.margin = '20px auto'
     canvas.style.border = '1px solid #ddd'
