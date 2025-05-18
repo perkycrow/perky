@@ -1,57 +1,57 @@
-import Keyboard from './keyboard'
+import KeyboardDevice from './keyboard_device'
 import {vi} from 'vitest'
 
 
-describe(Keyboard, () => {
+describe(KeyboardDevice, () => {
 
-    let keyboard
+    let keyboardDevice
 
     beforeEach(() => {
-        keyboard = new Keyboard()
-        keyboard.start()
+        keyboardDevice = new KeyboardDevice()
+        keyboardDevice.start()
     })
 
     afterEach(() => {
-        keyboard.stop()
+        keyboardDevice.stop()
     })
 
 
     test('constructor', () => {
-        expect(keyboard.pressedKeys).toEqual({})
-        expect(keyboard.pressedModifiers).toEqual({})
-        expect(keyboard.name).toBe('Keyboard')
+        expect(keyboardDevice.pressedKeys).toEqual({})
+        expect(keyboardDevice.pressedModifiers).toEqual({})
+        expect(keyboardDevice.name).toBe('KeyboardDevice')
     })
 
 
     test('static properties', () => {
-        expect(Keyboard.controls).toContain('key')
-        expect(Keyboard.methods).toContain('isKeyPressed')
-        expect(Keyboard.methods).toContain('isKeyModifierPressed')
-        expect(Keyboard.methods).toContain('getPressedKeys')
-        expect(Keyboard.methods).toContain('getPressedKeyModifiers')
-        expect(Keyboard.events).toContain('keydown')
-        expect(Keyboard.events).toContain('keyup')
+        expect(KeyboardDevice.controls).toContain('key')
+        expect(KeyboardDevice.methods).toContain('isKeyPressed')
+        expect(KeyboardDevice.methods).toContain('isKeyModifierPressed')
+        expect(KeyboardDevice.methods).toContain('getPressedKeys')
+        expect(KeyboardDevice.methods).toContain('getPressedKeyModifiers')
+        expect(KeyboardDevice.events).toContain('keydown')
+        expect(KeyboardDevice.events).toContain('keyup')
     })
 
 
     test('observe and unobserve', () => {
-        const testKeyboard = new Keyboard()
+        const testKeyboardDevice = new KeyboardDevice()
         
-        expect(testKeyboard.keyboardListeners).toBeUndefined()
+        expect(testKeyboardDevice.keyboardListeners).toBeUndefined()
         
-        testKeyboard.observe()
-        expect(testKeyboard.keyboardListeners).toBeDefined()
-        expect(typeof testKeyboard.keyboardListeners.keydown).toBe('function')
-        expect(typeof testKeyboard.keyboardListeners.keyup).toBe('function')
+        testKeyboardDevice.observe()
+        expect(testKeyboardDevice.keyboardListeners).toBeDefined()
+        expect(typeof testKeyboardDevice.keyboardListeners.keydown).toBe('function')
+        expect(typeof testKeyboardDevice.keyboardListeners.keyup).toBe('function')
         
-        testKeyboard.unobserve()
-        expect(testKeyboard.keyboardListeners).toBeUndefined()
+        testKeyboardDevice.unobserve()
+        expect(testKeyboardDevice.keyboardListeners).toBeUndefined()
     })
 
 
     test('keydown event', () => {
         const listener = vi.fn()
-        keyboard.on('keydown', listener)
+        keyboardDevice.on('keydown', listener)
 
         const event = new KeyboardEvent('keydown', {
             code: 'KeyA',
@@ -65,13 +65,13 @@ describe(Keyboard, () => {
         expect(keyState.key).toBe('a')
         expect(keyState.repeat).toBe(false)
         
-        expect(keyboard.isKeyPressed('KeyA')).toBe(true)
+        expect(keyboardDevice.isKeyPressed('KeyA')).toBe(true)
     })
 
 
     test('keyup event', () => {
         const listener = vi.fn()
-        keyboard.on('keyup', listener)
+        keyboardDevice.on('keyup', listener)
 
         window.dispatchEvent(new KeyboardEvent('keydown', {
             code: 'KeyB',
@@ -88,13 +88,13 @@ describe(Keyboard, () => {
         expect(keyState.code).toBe('KeyB')
         expect(keyState.key).toBe('b')
         
-        expect(keyboard.isKeyPressed('KeyB')).toBe(false)
+        expect(keyboardDevice.isKeyPressed('KeyB')).toBe(false)
     })
 
 
     test('key modifiers', () => {
         const listener = vi.fn()
-        keyboard.on('keydown', listener)
+        keyboardDevice.on('keydown', listener)
 
         const event = new KeyboardEvent('keydown', {
             code: 'ShiftLeft',
@@ -112,8 +112,8 @@ describe(Keyboard, () => {
         const keyState = listener.mock.calls[0][0]
         expect(keyState.modifiers.Shift).toBe(true)
         
-        expect(keyboard.isKeyModifierPressed('Shift')).toBe(true)
-        expect(keyboard.getPressedKeyModifiers()).toContain('Shift')
+        expect(keyboardDevice.isKeyModifierPressed('Shift')).toBe(true)
+        expect(keyboardDevice.getPressedKeyModifiers()).toContain('Shift')
     })
 
 
@@ -128,7 +128,7 @@ describe(Keyboard, () => {
             key: 'b'
         }))
 
-        const pressedKeys = keyboard.getPressedKeys()
+        const pressedKeys = keyboardDevice.getPressedKeys()
         expect(pressedKeys).toContain('KeyA')
         expect(pressedKeys).toContain('KeyB')
         expect(pressedKeys.length).toBe(2)
@@ -137,7 +137,7 @@ describe(Keyboard, () => {
 
     test('repeat flag', () => {
         const listener = vi.fn()
-        keyboard.on('keydown', listener)
+        keyboardDevice.on('keydown', listener)
 
         window.dispatchEvent(new KeyboardEvent('keydown', {
             code: 'KeyC',
@@ -159,7 +159,7 @@ describe(Keyboard, () => {
 
     test('multiple modifiers', () => {
         const keydownListener = vi.fn()
-        keyboard.on('keydown', keydownListener)
+        keyboardDevice.on('keydown', keydownListener)
 
         const event = new KeyboardEvent('keydown', {
             code: 'ControlLeft',
@@ -178,25 +178,25 @@ describe(Keyboard, () => {
         expect(keyState.modifiers.Control).toBe(true)
         expect(keyState.modifiers.Shift).toBe(true)
         
-        expect(keyboard.isKeyModifierPressed('Control')).toBe(true)
-        expect(keyboard.isKeyModifierPressed('Shift')).toBe(true)
+        expect(keyboardDevice.isKeyModifierPressed('Control')).toBe(true)
+        expect(keyboardDevice.isKeyModifierPressed('Shift')).toBe(true)
     })
 
 
     test('isKeyPressed returns boolean', () => {
-        expect(typeof keyboard.isKeyPressed('NonExistentKey')).toBe('boolean')
+        expect(typeof keyboardDevice.isKeyPressed('NonExistentKey')).toBe('boolean')
         
         window.dispatchEvent(new KeyboardEvent('keydown', {
             code: 'KeyD',
             key: 'd'
         }))
         
-        expect(typeof keyboard.isKeyPressed('KeyD')).toBe('boolean')
+        expect(typeof keyboardDevice.isKeyPressed('KeyD')).toBe('boolean')
     })
 
 
     test('isKeyModifierPressed returns boolean', () => {
-        expect(typeof keyboard.isKeyModifierPressed('NonExistentModifier')).toBe('boolean')
+        expect(typeof keyboardDevice.isKeyModifierPressed('NonExistentModifier')).toBe('boolean')
         
         const event = new KeyboardEvent('keydown', {
             code: 'AltLeft',
@@ -209,7 +209,7 @@ describe(Keyboard, () => {
         
         window.dispatchEvent(event)
         
-        expect(typeof keyboard.isKeyModifierPressed('Alt')).toBe('boolean')
+        expect(typeof keyboardDevice.isKeyModifierPressed('Alt')).toBe('boolean')
     })
 
 })

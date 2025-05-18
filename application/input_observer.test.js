@@ -1,6 +1,6 @@
 import InputObserver from './input_observer'
 import InputDevice from './input_device'
-import Keyboard from './input_devices/keyboard'
+import KeyboardDevice from './input_devices/keyboard_device'
 import {vi} from 'vitest'
 
 
@@ -25,7 +25,7 @@ class GamepadDevice extends InputDevice {
 }
 
 
-class TouchDevice extends InputDevice {
+class TouchTestDevice extends InputDevice {
     static controls = ['touch']
     static methods = ['getTouches', 'isKeyPressed']
     static events = ['touchstart', 'touchend']
@@ -52,8 +52,8 @@ describe(InputObserver, () => {
     let keyboard
 
     beforeEach(() => {
-        observer = new InputObserver()
-        keyboard = new Keyboard()
+        observer = new InputObserver({mouse: false, keyboard: false})
+        keyboard = new KeyboardDevice()
     })
 
 
@@ -197,7 +197,7 @@ describe(InputObserver, () => {
 
 
     test('removing one device but keeping another', () => {
-        const touchDevice = new TouchDevice()
+        const touchDevice = new TouchTestDevice()
         
         observer.registerDevice('keyboard', keyboard)
         observer.registerDevice('touch', touchDevice)

@@ -1,7 +1,7 @@
 import InputDevice from '../input_device'
 
 
-export default class Keyboard extends InputDevice {
+export default class KeyboardDevice extends InputDevice {
 
     static controls = [
         'key'

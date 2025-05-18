@@ -1,10 +1,15 @@
 import PerkyModule from '../core/perky_module'
 import ModuleRegistry from '../core/module_registry'
-
+import MouseDevice from './input_devices/mouse_device'
+import KeyboardDevice from './input_devices/keyboard_device'
 
 export default class InputObserver extends PerkyModule {
 
-    constructor () {
+    constructor ({
+        container,
+        mouse = true,
+        keyboard = true
+    } = {}) {
         super()
         this.devices = new ModuleRegistry({
             registryName: 'device',
@@ -18,6 +23,13 @@ export default class InputObserver extends PerkyModule {
         this.methodsMap = {}
 
         initEvents(this)
+
+        if (mouse) {
+            this.registerDevice('mouse', new MouseDevice({container}))
+        }
+        if (keyboard) {
+            this.registerDevice('keyboard', new KeyboardDevice())
+        }
     }
 
 
@@ -33,6 +45,17 @@ export default class InputObserver extends PerkyModule {
 
     get events () {
         return Object.keys(this.eventsMap)
+    }
+
+
+    isPressed (deviceName, code) {
+        const device = this.devices.get(deviceName)
+
+        if (device && typeof device.isPressed === 'function') {
+            return device.isPressed(code)
+        }
+
+        return false
     }
 
 

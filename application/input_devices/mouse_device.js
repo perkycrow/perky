@@ -1,7 +1,7 @@
 import InputDevice from '../input_device'
 
 
-export default class Mouse extends InputDevice {
+export default class MouseDevice extends InputDevice {
 
     static controls = [
         'position',
