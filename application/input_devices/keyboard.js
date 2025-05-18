@@ -38,6 +38,11 @@ export default class Keyboard extends InputDevice {
     }
 
 
+    isPressed (code) {
+        return this.isKeyPressed(code) || this.isKeyModifierPressed(code)
+    }
+
+
     isKeyPressed (code) {
         return code in this.pressedKeys
     }

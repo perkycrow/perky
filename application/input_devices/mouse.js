@@ -43,6 +43,11 @@ export default class Mouse extends InputDevice {
     }
 
 
+    isPressed (button) {
+        return this.isButtonPressed(button)
+    }
+
+    
     isButtonPressed (button) {
         return button in this.pressedButtons
     }
