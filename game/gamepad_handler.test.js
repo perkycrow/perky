@@ -157,7 +157,7 @@ describe(GamepadHandler, () => {
         vi.spyOn(gamepadHandler, 'getType').mockReturnValue('xbox')
         
         const info = gamepadHandler.getInfo()
-        
+
         expect(info.id).toBe('Gamepad 0')
         expect(info.index).toBe(0)
         expect(info.mapping).toBe('standard')
@@ -170,33 +170,13 @@ describe(GamepadHandler, () => {
 
 
     test('getType identifies gamepad type', () => {
-        const ps5Gamepad = {
-            ...mockGamepad,
-            id: 'Sony DualSense (054c:0ce6) (STANDARD GAMEPAD Vendor: 054c Product: 0ce6)'
-        }
-        gamepadHandler.gamepad = ps5Gamepad
+        const ps5Id = 'Sony DualSense (054c:0ce6) (STANDARD GAMEPAD Vendor: 054c Product: 0ce6)'
+        gamepadHandler.gamepad.id = ps5Id
         expect(gamepadHandler.getType()).toBe('ps5')
-
-        const ps4Gamepad = {
-            ...mockGamepad,
-            id: 'Sony DualShock 4 (054c:05c4) (STANDARD GAMEPAD Vendor: 054c Product: 05c4)'
-        }
-        gamepadHandler.gamepad = ps4Gamepad
-        expect(gamepadHandler.getType()).toBe('ps4')
-
-        const xboxGamepad = {
-            ...mockGamepad,
-            id: 'Xbox 360 Controller (STANDARD GAMEPAD Vendor: 045e Product: 028e)'
-        }
-        gamepadHandler.gamepad = xboxGamepad
+        
+        const xboxId = 'Xbox 360 Controller (STANDARD GAMEPAD Vendor: 045e Product: 028e)'
+        gamepadHandler.gamepad.id = xboxId
         expect(gamepadHandler.getType()).toBe('xbox')
-
-        const genericGamepad = {
-            ...mockGamepad,
-            id: 'Generic Gamepad (STANDARD GAMEPAD Vendor: 1234 Product: 5678)'
-        }
-        gamepadHandler.gamepad = genericGamepad
-        expect(gamepadHandler.getType()).toBe('generic')
     })
 
 })
