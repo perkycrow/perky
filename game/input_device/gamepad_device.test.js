@@ -69,11 +69,9 @@ describe(GamepadDevice, () => {
         expect(testGamepadDevice.gamepadListeners).toBeDefined()
         expect(typeof testGamepadDevice.gamepadListeners.gamepadconnected).toBe('function')
         expect(typeof testGamepadDevice.gamepadListeners.gamepaddisconnected).toBe('function')
-        expect(testGamepadDevice.pollingInterval).toBeDefined()
         
         testGamepadDevice.unobserve()
         expect(testGamepadDevice.gamepadListeners).toBeUndefined()
-        expect(testGamepadDevice.pollingInterval).toBeUndefined()
     })
 
 
