@@ -1,171 +1,216 @@
 import InputObserver from './input_observer'
-import PerkyModule from '../core/perky_module'
-import {vi, beforeEach, describe, test, expect, afterEach} from 'vitest'
+import InputDevice from './input_device'
+import Keyboard from './input_devices/keyboard'
+import {vi} from 'vitest'
+
+
+class GamepadDevice extends InputDevice {
+    static controls = ['axis', 'button']
+    static methods = ['getAxisValue', 'isButtonPressed']
+    static events = ['buttondown', 'buttonup']
+
+    constructor () {
+        super()
+        this.getAxisValue = vi.fn()
+        this.isButtonPressed = vi.fn()
+    }
+    
+    observe () { // eslint-disable-line class-methods-use-this
+        return true
+    }
+    
+    unobserve () { // eslint-disable-line class-methods-use-this
+        return true
+    }
+}
+
+
+class TouchDevice extends InputDevice {
+    static controls = ['touch']
+    static methods = ['getTouches', 'isKeyPressed']
+    static events = ['touchstart', 'touchend']
+
+    constructor () {
+        super()
+        this.getTouches = vi.fn()
+        this.isKeyPressed = vi.fn(() => true)
+    }
+    
+    observe () { // eslint-disable-line class-methods-use-this
+        return true
+    }
+    
+    unobserve () { // eslint-disable-line class-methods-use-this
+        return true
+    }
+}
+
 
 describe(InputObserver, () => {
-    let inputObserver
-    let mockContainer
-    let disposeListeners = []
+
+    let observer
+    let keyboard
 
     beforeEach(() => {
-        mockContainer = {
-            addEventListener: vi.fn(),
-            removeEventListener: vi.fn()
-        }
+        observer = new InputObserver()
+        keyboard = new Keyboard()
+    })
 
-        const originalOn = PerkyModule.prototype.on
-        const originalEmit = PerkyModule.prototype.emit
+
+    test('debug controls in GamepadDevice', () => {
+        const gamepad = new GamepadDevice()
         
-        vi.spyOn(PerkyModule.prototype, 'on').mockImplementation(function (event, callback) {
-            if (event === 'dispose') {
-                disposeListeners.push(callback)
-            }
-            return originalOn.call(this, event, callback)
-        })
+        expect(gamepad.controls).toContain('axis')
+        expect(gamepad.controls).toContain('button')
+    })
+
+
+    test('constructor', () => {
+        expect(observer.devices).toBeDefined()
+        expect(observer.eventsMap).toEqual({})
+        expect(observer.controlsMap).toEqual({})
+        expect(observer.methodsMap).toEqual({})
+    })
+
+
+    test('registerDevice', () => {
+        observer.registerDevice('keyboard', keyboard)
         
-        vi.spyOn(PerkyModule.prototype, 'emit').mockImplementation(function (event, ...args) {
-            return originalEmit.call(this, event, ...args)
-        })
+        expect(observer.devices.get('keyboard')).toBe(keyboard)
+
+        expect(observer.keyboard).toBe(keyboard)
+    })
+
+
+    test('unregisterDevice', () => {
+        observer.registerDevice('keyboard', keyboard)
+        const result = observer.unregisterDevice('keyboard')
         
-        inputObserver = new InputObserver(mockContainer)
+        expect(result).toBe(true)
+        expect(observer.devices.get('keyboard')).toBeUndefined()
+        expect(observer.keyboard).toBeUndefined()
     })
 
-    afterEach(() => {
-        vi.restoreAllMocks()
-        disposeListeners = []
+
+    test('unregisterDevice non-existent', () => {
+        const result = observer.unregisterDevice('nonexistent')
+        expect(result).toBe(false)
     })
 
-    test('initialization', () => {
-        expect(inputObserver.container).toBe(mockContainer)
-        expect(inputObserver.pressedInputs).toEqual({})
-        expect(inputObserver.mousePosition).toEqual({x: 0, y: 0})
-        expect(mockContainer.addEventListener).toHaveBeenCalledTimes(5)
+
+    test('methods getter', () => {
+        expect(observer.methods).toEqual([])
+        
+        observer.registerDevice('keyboard', keyboard)
+        
+        expect(observer.methods).toContain('isKeyPressed')
+        expect(observer.methods).toContain('isKeyModifierPressed')
+        expect(observer.methods).toContain('getPressedKeys')
+        expect(observer.methods).toContain('getPressedKeyModifiers')
     })
 
-    test('isPressed', () => {
-        expect(inputObserver.isPressed('KeyA')).toBe(false)
 
-        inputObserver.pressedInputs.KeyA = true
-        expect(inputObserver.isPressed('KeyA')).toBe(true)
+    test('controls getter', () => {
+        expect(observer.controls).toEqual([])
+
+        observer.registerDevice('keyboard', keyboard)
+        
+        expect(observer.controls).toContain('key')
     })
 
-    test('arePressed', () => {
-        expect(inputObserver.arePressed(['KeyA', 'KeyB'])).toBe(false)
 
-        inputObserver.pressedInputs.KeyA = true
-        expect(inputObserver.arePressed(['KeyA', 'KeyB'])).toBe(false)
-
-        inputObserver.pressedInputs.KeyB = true
-        expect(inputObserver.arePressed(['KeyA', 'KeyB'])).toBe(true)
+    test('events getter', () => {
+        expect(observer.events).toEqual([])
+        
+        observer.registerDevice('keyboard', keyboard)
+        
+        expect(observer.events).toContain('keydown')
+        expect(observer.events).toContain('keyup')
     })
 
-    test('getMousePosition', () => {
-        expect(inputObserver.getMousePosition()).toEqual({x: 0, y: 0})
 
-        inputObserver.mousePosition = {x: 100, y: 200}
-        expect(inputObserver.getMousePosition()).toEqual({x: 100, y: 200})
+    test('method proxying', () => {
+        observer.registerDevice('keyboard', keyboard)
 
-        const position = inputObserver.getMousePosition()
-        position.x = 300
-        expect(inputObserver.mousePosition.x).toBe(100)
+        expect(typeof observer.isKeyPressed).toBe('function')
+        expect(typeof observer.isKeyModifierPressed).toBe('function')
+        expect(typeof observer.getPressedKeys).toBe('function')
+        expect(typeof observer.getPressedKeyModifiers).toBe('function')
+
+        const spy = vi.spyOn(keyboard, 'isKeyPressed')
+        observer.isKeyPressed('KeyA')
+        expect(spy).toHaveBeenCalledWith('KeyA')
     })
 
-    test('mouse button input', () => {
-        expect(inputObserver.isPressed('Mouse0')).toBe(false)
 
-        inputObserver.pressedInputs.Mouse0 = true
-        expect(inputObserver.isPressed('Mouse0')).toBe(true)
-    })
+    test('event proxying', () => {
+        const observerListener = vi.fn()
+        observer.on('keydown', observerListener)
+        
+        observer.registerDevice('keyboard', keyboard)
+        keyboard.start()
 
-    test('keydown event', () => {
-        const keydownHandler = findEventHandler(mockContainer.addEventListener.mock.calls, 'keydown')
-
-        const event = {code: 'KeyA', key: 'a'}
-        keydownHandler(event)
-
-        expect(inputObserver.pressedInputs.KeyA).toBe(true)
-        expect(inputObserver.emit).toHaveBeenCalledWith('keydown', {
+        window.dispatchEvent(new KeyboardEvent('keydown', {
             code: 'KeyA',
-            key: 'a',
-            event
-        })
+            key: 'a'
+        }))
+        
+        expect(observerListener).toHaveBeenCalled()
+        expect(observerListener.mock.calls[0][1]).toBe('keyboard')
+        expect(observerListener.mock.calls[0][2]).toBe(keyboard)
+        
+        keyboard.stop()
     })
 
-    test('keyup event', () => {
-        inputObserver.pressedInputs.KeyA = true
 
-        const keyupHandler = findEventHandler(mockContainer.addEventListener.mock.calls, 'keyup')
+    test('adding multiple devices', () => {
+        const gamepad = new GamepadDevice()
 
-        const event = {code: 'KeyA', key: 'a'}
-        keyupHandler(event)
+        expect(gamepad.controls).toContain('axis')
+        expect(gamepad.controls).toContain('button')
+        
+        observer.registerDevice('keyboard', keyboard)
+        observer.registerDevice('gamepad', gamepad)
 
-        expect(inputObserver.pressedInputs.KeyA).toBe(undefined)
-        expect(inputObserver.emit).toHaveBeenCalledWith('keyup', {
-            code: 'KeyA',
-            key: 'a',
-            event
-        })
+        expect(observer.methods).toContain('isKeyPressed')
+        expect(observer.methods).toContain('getAxisValue')
+        expect(observer.methods).toContain('isButtonPressed')
+        
+        expect(observer.events).toContain('keydown')
+        expect(observer.events).toContain('buttondown')
     })
 
-    test('mousemove event', () => {
-        const mousemoveHandler = findEventHandler(mockContainer.addEventListener.mock.calls, 'mousemove')
 
-        const event = {clientX: 150, clientY: 250}
-        mousemoveHandler(event)
-
-        expect(inputObserver.mousePosition).toEqual({x: 150, y: 250})
-        expect(inputObserver.emit).toHaveBeenCalledWith('mousemove', {
-            x: 150,
-            y: 250,
-            event
-        })
+    test('removing devices cleans up maps', () => {
+        observer.registerDevice('keyboard', keyboard)
+        
+        expect(observer.methodsMap.isKeyPressed).toContain('keyboard')
+        expect(observer.controlsMap.key).toContain('keyboard')
+        expect(observer.eventsMap.keydown).toContain('keyboard')
+        
+        observer.unregisterDevice('keyboard')
+        
+        expect(observer.methodsMap.isKeyPressed || []).not.toContain('keyboard')
+        expect(observer.controlsMap.key || []).not.toContain('keyboard')
+        expect(observer.eventsMap.keydown || []).not.toContain('keyboard')
     })
 
-    test('mousedown event', () => {
-        const mousedownHandler = findEventHandler(mockContainer.addEventListener.mock.calls, 'mousedown')
 
-        const event = {button: 0, clientX: 150, clientY: 250}
-        mousedownHandler(event)
+    test('removing one device but keeping another', () => {
+        const touchDevice = new TouchDevice()
+        
+        observer.registerDevice('keyboard', keyboard)
+        observer.registerDevice('touch', touchDevice)
 
-        expect(inputObserver.pressedInputs.Mouse0).toBe(true)
-        expect(inputObserver.emit).toHaveBeenCalledWith('mousedown', {
-            button: 0,
-            x: 150,
-            y: 250,
-            event
-        })
+        expect(observer.methodsMap.isKeyPressed).toContain('keyboard')
+        expect(observer.methodsMap.isKeyPressed).toContain('touch')
+
+        observer.unregisterDevice('keyboard')
+
+        expect(typeof observer.isKeyPressed).toBe('function')
+        expect(observer.methodsMap.isKeyPressed).toEqual(['touch'])
+
+        expect(observer.isKeyModifierPressed).toBeUndefined()
     })
 
-    test('mouseup event', () => {
-        inputObserver.pressedInputs.Mouse0 = true
-
-        const mouseupHandler = findEventHandler(mockContainer.addEventListener.mock.calls, 'mouseup')
-
-        const event = {button: 0, clientX: 150, clientY: 250}
-        mouseupHandler(event)
-
-        expect(inputObserver.pressedInputs.Mouse0).toBe(undefined)
-        expect(inputObserver.emit).toHaveBeenCalledWith('mouseup', {
-            button: 0,
-            x: 150,
-            y: 250,
-            event
-        })
-    })
-
-    test('dispose', () => {
-        inputObserver.emit('dispose')
-
-        expect(mockContainer.removeEventListener).toHaveBeenCalledTimes(5)
-    })
 })
-
-
-function findEventHandler (calls, eventName) {
-    for (let i = 0; i < calls.length; i++) {
-        if (calls[i][0] === eventName) {
-            return calls[i][1]
-        }
-    }
-    return null
-}
