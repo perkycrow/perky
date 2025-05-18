@@ -1,6 +1,6 @@
 import Manifest from './manifest'
 import PerkyModule from './perky_module'
-import Registry from './registry'
+import ModuleRegistry from './module_registry'
 import ActionDispatcher from './action_dispatcher'
 import ActionController from './action_controller'
 
@@ -17,9 +17,12 @@ export default class Engine extends PerkyModule {
         }
 
         this.manifest = manifest
-        this.modules  = new Registry()
-
-        initEvents(this)
+        this.modules  = new ModuleRegistry({
+            registryName: 'module',
+            parentModule: this,
+            parentModuleName: 'engine',
+            bind: true
+        })
 
         this.registerModule('actionDispatcher', new ActionDispatcher())
 
@@ -162,19 +165,5 @@ export default class Engine extends PerkyModule {
     importManifest (data) {
         return this.manifest.import(data)
     }
-
-}
-
-
-
-function initEvents (engine) {
-
-    PerkyModule.initRegistryEvents({
-        module: engine,
-        moduleName: 'engine',
-        registry: engine.modules,
-        registryName: 'module',
-        bind: true
-    })
 
 }

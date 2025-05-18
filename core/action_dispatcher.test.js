@@ -1,6 +1,6 @@
 import ActionDispatcher from './action_dispatcher'
 import ActionController from './action_controller'
-import Notifier from './notifier'
+import PerkyModule from './perky_module'
 import {vi} from 'vitest'
 
 
@@ -151,12 +151,12 @@ describe(ActionDispatcher, () => {
 
 
     test('dispatchTo with method on controller', () => {
-        class TestController extends Notifier {
+        class TestController extends PerkyModule {
             someAction = vi.fn()
         }
         
         const controller = new TestController()
-        
+
         dispatcher.register('main', controller)
         
         const result = dispatcher.dispatchTo('main', 'someAction', 'arg1', 'arg2')
@@ -167,7 +167,7 @@ describe(ActionDispatcher, () => {
 
 
     test('dispatchTo with non-existent method', () => {
-        const controller = new Notifier()
+        const controller = new PerkyModule()
         
         dispatcher.register('main', controller)
         
@@ -185,7 +185,7 @@ describe(ActionDispatcher, () => {
 
 
     test('controller dispose on unregister', () => {
-        class TestController extends Notifier {
+        class TestController extends PerkyModule {
             dispose = vi.fn()
         }
         

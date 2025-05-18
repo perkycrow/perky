@@ -1,16 +1,17 @@
 import PerkyModule from './perky_module'
-import Registry from './registry'
+import ModuleRegistry from './module_registry'
 
 
 export default class ActionDispatcher extends PerkyModule {
 
     constructor () {
         super()
-        this.controllers = new Registry()
+        this.controllers = new ModuleRegistry({
+            registryName: 'controller',
+            parentModule: this,
+            parentModuleName: 'actionDispatcher'
+        })
         this.activeControllerName = null
-
-
-        initEvents(this)
     }
 
 
@@ -107,18 +108,5 @@ export default class ActionDispatcher extends PerkyModule {
 
         return false
     }
-
-}
-
-
-function initEvents (dispatcher) {
-
-    PerkyModule.initRegistryEvents({
-        module: dispatcher,
-        moduleName: 'actionDispatcher',
-        registry: dispatcher.controllers,
-        registryName: 'controller',
-        bind: false
-    })
 
 }

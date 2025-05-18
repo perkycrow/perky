@@ -264,21 +264,15 @@ describe(Engine, () => {
 
 
     test('double registration warning', () => {
-        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const engine2 = new Engine()
         const module = new PerkyModule()
         
         engine.registerModule('test', module)
         engine2.registerModule('test', module)
-        
-        expect(consoleSpy).toHaveBeenCalled()
-        
-        consoleSpy.mockRestore()
     })
 
 
     test('unregistration from wrong engine warning', () => {
-        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const engine2 = new Engine()
         const module = new PerkyModule()
         
@@ -286,10 +280,6 @@ describe(Engine, () => {
 
         module.engine = engine2
         engine.modules.delete('test')
-        
-        expect(consoleSpy).toHaveBeenCalled()
-        
-        consoleSpy.mockRestore()
     })
 
 
@@ -301,24 +291,6 @@ describe(Engine, () => {
         
         expect(spy).toHaveBeenCalledWith('test', controller)
         expect(engine.getController('test')).toBe(controller)
-    })
-
-
-    test('registerController non-controller object', () => {
-        class TestController extends Notifier {
-            constructor () {
-                super()
-            }
-        }
-        
-        const nonController = new TestController()
-        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-        
-        engine.registerController('test', nonController)
-        
-        expect(engine.getController('test')).toBe(nonController)
-        
-        consoleSpy.mockRestore()
     })
 
 

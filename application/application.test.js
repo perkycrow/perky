@@ -104,7 +104,7 @@ describe(Application, () => {
         vi.spyOn(application.inputMapper, 'setInputFor').mockReturnValue(null)
         
         application.setInputFor('jump', 'Space', 0)
-        
+
         expect(application.inputMapper.setInputFor).toHaveBeenCalledWith('jump', 'Space', 0)
     })
 
