@@ -43,6 +43,12 @@ export default class InputDevice extends PerkyModule {
     }
 
 
+    isPressed () { // eslint-disable-line class-methods-use-this
+        // Abstract method to be implemented in subclasses
+        return false
+    }
+
+
     observe () { // eslint-disable-line class-methods-use-this
         // Abstract method to be implemented in subclasses
         return true
