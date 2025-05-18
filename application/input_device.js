@@ -1,12 +1,13 @@
 import PerkyModule from '../core/perky_module'
 
 
+const cache = new Map()
+
 export default class InputDevice extends PerkyModule {
 
     static methods = []
     static controls = []
     static events = []
-    static cache = {}
 
 
     constructor ({container = window, name} = {}) {
@@ -53,23 +54,38 @@ export default class InputDevice extends PerkyModule {
         return true
     }
 
+
+    static clearCache () {
+        cache.clear()
+    }
+
+}
+
+
+function addUniqueItems (result, items) {
+    for (const item of items) {
+        if (!result.includes(item)) {
+            result.push(item)
+        }
+    }
 }
 
 
 function fetchInheritedArray (instance, property) {
     const constructor = instance.constructor
-    
-    if (!constructor.cache[property]) {
-        const uniqueItems = new Set()
+    const cacheKey = constructor.name + '_' + property
+
+    if (!cache.has(cacheKey)) {
+        const result = []
         let currentProto = constructor
         
         while (currentProto && currentProto[property]) {
-            currentProto[property].forEach(item => uniqueItems.add(item))
+            addUniqueItems(result, currentProto[property])
             currentProto = Object.getPrototypeOf(currentProto)
         }
-
-        constructor.cache[property] = Array.from(uniqueItems)
+        
+        cache.set(cacheKey, result)
     }
     
-    return constructor.cache[property]
+    return cache.get(cacheKey)
 }

@@ -7,7 +7,7 @@ describe(InputDevice, () => {
     let device
 
     beforeEach(() => {
-        InputDevice.cache = {}
+        InputDevice.clearCache()
         device = new InputDevice({name: 'TestDevice'})
     })
 
@@ -36,14 +36,11 @@ describe(InputDevice, () => {
             static controls = ['button1', 'button2']
         }
 
-        TestDevice.cache = {}
-
         const testDevice = new TestDevice()
         expect(testDevice.controls).toEqual(['button1', 'button2'])
 
         const controls = testDevice.controls
         expect(controls).toBe(testDevice.controls)
-        expect(TestDevice.cache.controls).toBe(controls)
     })
 
 
@@ -52,14 +49,11 @@ describe(InputDevice, () => {
             static methods = ['method1', 'method2']
         }
 
-        TestDevice.cache = {}
-
         const testDevice = new TestDevice()
         expect(testDevice.methods).toEqual(['method1', 'method2'])
 
         const methods = testDevice.methods
         expect(methods).toBe(testDevice.methods)
-        expect(TestDevice.cache.methods).toBe(methods)
     })
 
 
@@ -68,14 +62,11 @@ describe(InputDevice, () => {
             static events = ['event1', 'event2']
         }
 
-        TestDevice.cache = {}
-
         const testDevice = new TestDevice()
         expect(testDevice.events).toEqual(['event1', 'event2'])
 
         const events = testDevice.events
         expect(events).toBe(testDevice.events)
-        expect(TestDevice.cache.events).toBe(events)
     })
 
 
@@ -91,9 +82,6 @@ describe(InputDevice, () => {
             static methods = ['childMethod']
             static events = ['childEvent']
         }
-
-        BaseDevice.cache = {}
-        ChildDevice.cache = {}
 
         const childDevice = new ChildDevice()
         

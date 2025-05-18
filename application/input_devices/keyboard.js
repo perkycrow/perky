@@ -74,13 +74,13 @@ function observe (device) {
             updateModifiers(device, modifiers)
             device.pressedKeys[event.code] = keyState
 
-            device.emit('keydown', keyState, device)
+            device.emit('keydown', keyState)
         },
         keyup (event) {
             const keyState = createKeyState(event)
 
             delete device.pressedKeys[event.code]
-            device.emit('keyup', keyState, device)
+            device.emit('keyup', keyState)
         }
     }
 
