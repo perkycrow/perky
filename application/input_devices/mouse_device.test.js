@@ -29,10 +29,10 @@ describe(MouseDevice, () => {
     test('static properties', () => {
         expect(MouseDevice.controls).toContain('position')
         expect(MouseDevice.controls).toContain('mouseButton')
-        expect(MouseDevice.methods).toContain('isButtonPressed')
-        expect(MouseDevice.methods).toContain('getPosition')
-        expect(MouseDevice.methods).toContain('getPressedButtons')
-        expect(MouseDevice.methods).toContain('getVelocity')
+        expect(MouseDevice.methods).toContain('isMouseButtonPressed')
+        expect(MouseDevice.methods).toContain('getMousePosition')
+        expect(MouseDevice.methods).toContain('getMousePressedButtons')
+        expect(MouseDevice.methods).toContain('getMouseVelocity')
         expect(MouseDevice.events).toContain('mousedown')
         expect(MouseDevice.events).toContain('mouseup')
         expect(MouseDevice.events).toContain('mousemove')
@@ -72,7 +72,7 @@ describe(MouseDevice, () => {
         expect(mouseState.position.x).toBe(100)
         expect(mouseState.position.y).toBe(200)
         
-        expect(mouseDevice.isButtonPressed(0)).toBe(true)
+        expect(mouseDevice.isMouseButtonPressed(0)).toBe(true)
     })
 
 
@@ -96,7 +96,7 @@ describe(MouseDevice, () => {
         const mouseState = listener.mock.calls[0][0]
         expect(mouseState.button).toBe(0)
         
-        expect(mouseDevice.isButtonPressed(0)).toBe(false)
+        expect(mouseDevice.isMouseButtonPressed(0)).toBe(false)
     })
 
 
@@ -116,7 +116,7 @@ describe(MouseDevice, () => {
         expect(mouseState.position.x).toBe(150)
         expect(mouseState.position.y).toBe(250)
         
-        const position = mouseDevice.getPosition()
+        const position = mouseDevice.getMousePosition()
         expect(position.x).toBe(150)
         expect(position.y).toBe(250)
     })
@@ -158,7 +158,7 @@ describe(MouseDevice, () => {
             button: 2
         }))
 
-        const pressedButtons = mouseDevice.getPressedButtons()
+        const pressedButtons = mouseDevice.getMousePressedButtons()
         expect(pressedButtons).toContain('0')
         expect(pressedButtons).toContain('2')
         expect(pressedButtons.length).toBe(2)
@@ -188,7 +188,7 @@ describe(MouseDevice, () => {
         
         window.dispatchEvent(secondEvent)
         
-        const velocity = mouseDevice.getVelocity()
+        const velocity = mouseDevice.getMouseVelocity()
 
         expect(velocity.x).toBeCloseTo(0.5)
         expect(velocity.y).toBeCloseTo(0.2)
@@ -202,7 +202,7 @@ describe(MouseDevice, () => {
             button: 0
         }))
         
-        expect(mouseDevice.isButtonPressed(0)).toBe(true)
+        expect(mouseDevice.isMouseButtonPressed(0)).toBe(true)
         
         window.dispatchEvent(new MouseEvent('mousedown', {
             clientX: 100,
@@ -210,8 +210,8 @@ describe(MouseDevice, () => {
             button: 2
         }))
         
-        expect(mouseDevice.isButtonPressed(0)).toBe(true)
-        expect(mouseDevice.isButtonPressed(2)).toBe(true)
+        expect(mouseDevice.isMouseButtonPressed(0)).toBe(true)
+        expect(mouseDevice.isMouseButtonPressed(2)).toBe(true)
         
         window.dispatchEvent(new MouseEvent('mouseup', {
             clientX: 100,
@@ -219,8 +219,8 @@ describe(MouseDevice, () => {
             button: 0
         }))
         
-        expect(mouseDevice.isButtonPressed(0)).toBe(false)
-        expect(mouseDevice.isButtonPressed(2)).toBe(true)
+        expect(mouseDevice.isMouseButtonPressed(0)).toBe(false)
+        expect(mouseDevice.isMouseButtonPressed(2)).toBe(true)
     })
 
 

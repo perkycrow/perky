@@ -9,10 +9,10 @@ export default class MouseDevice extends InputDevice {
     ]
 
     static methods = [
-        'isButtonPressed',
-        'getPosition',
-        'getPressedButtons',
-        'getVelocity'
+        'isMouseButtonPressed',
+        'getMousePosition',
+        'getMousePressedButtons',
+        'getMouseVelocity'
     ]
 
     static events = [
@@ -44,26 +44,26 @@ export default class MouseDevice extends InputDevice {
 
 
     isPressed (button) {
-        return this.isButtonPressed(button)
+        return this.isMouseButtonPressed(button)
     }
 
     
-    isButtonPressed (button) {
+    isMouseButtonPressed (button) {
         return button in this.pressedButtons
     }
 
 
-    getPosition () {
+    getMousePosition () {
         return {...this.position}
     }
 
 
-    getPressedButtons () {
+    getMousePressedButtons () {
         return Object.keys(this.pressedButtons)
     }
 
 
-    getVelocity () {
+    getMouseVelocity () {
         return {...this.velocity}
     }
 
