@@ -19,6 +19,7 @@ export default class Keyboard extends InputDevice {
         'keyup'
     ]
 
+
     constructor (params = {}) {
         super(params)
 
@@ -114,9 +115,9 @@ function unobserve (device) {
 
 function createKeyState (event, modifiers = {}) {
     return {
-        code:   event.code,
-        key:    event.key,
-        repeat: event.repeat,
+        code:      event.code,
+        key:       event.key,
+        repeat:    event.repeat,
         modifiers: modifiers
     }
 }
@@ -142,6 +143,7 @@ const MODIFIERS = [
     'NumLock',
     'AltGraph'
 ]
+
 
 function getModifiers (event) {
     const modifiers = {}
