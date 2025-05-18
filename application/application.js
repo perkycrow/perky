@@ -15,7 +15,9 @@ export default class Application extends Engine {
         this.loaders = new Registry(loaders)
 
         this.registerModule('perkyView', new PerkyView({className: 'perky-application'}))
-        this.registerModule('inputObserver', new InputObserver())
+
+        this.registerModule('inputObserver', new InputObserver({container: this.element}))
+
         this.registerModule('inputMapper', new InputMapper({inputObserver: this.inputObserver}))
         this.registerModule('sourceManager', new SourceManager({
             loaders: this.loaders,
@@ -33,11 +35,6 @@ export default class Application extends Engine {
 
     isInputPressed (code) {
         return this.inputObserver.isPressed(code)
-    }
-
-
-    areInputsPressed (codes) {
-        return this.inputObserver.arePressed(codes)
     }
 
 

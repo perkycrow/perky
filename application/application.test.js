@@ -79,17 +79,6 @@ describe(Application, () => {
     })
 
 
-    test('areInputsPressed', () => {
-        vi.spyOn(application.inputObserver, 'arePressed').mockReturnValue(true)
-        const inputs = ['KeyA', 'KeyB']
-        
-        const result = application.areInputsPressed(inputs)
-        
-        expect(application.inputObserver.arePressed).toHaveBeenCalledWith(inputs)
-        expect(result).toBe(true)
-    })
-
-
     test('isActionPressed', () => {
         vi.spyOn(application.inputMapper, 'isActionPressed').mockReturnValue(true)
         
