@@ -4,11 +4,7 @@ import Registry from '../core/registry'
 
 export default class ActionController extends PerkyModule {
 
-    constructor () {
-        super()
-
-        this.actions = new Registry()
-    }
+    #actions = new Registry()
 
 
     get engine () {
@@ -17,17 +13,17 @@ export default class ActionController extends PerkyModule {
 
 
     addAction (actionName, action) {
-        return this.actions.set(actionName, action)
+        return this.#actions.set(actionName, action)
     }
 
 
     getAction (actionName) {
-        return this.actions.get(actionName)
+        return this.#actions.get(actionName)
     }
 
 
     removeAction (actionName) {
-        return this.actions.delete(actionName)
+        return this.#actions.delete(actionName)
     }
 
 

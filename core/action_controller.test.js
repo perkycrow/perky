@@ -12,7 +12,7 @@ describe(ActionController, () => {
 
 
     test('constructor', () => {
-        expect(controller.actions).toBeDefined()
+        expect(controller.getAction('any')).toBeUndefined()
     })
 
 
