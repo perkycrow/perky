@@ -4,6 +4,8 @@ import PerkyModule from '../core/perky_module'
 
 export default class PerkyView extends PerkyModule {
 
+    #resizeObserver
+
     constructor (params = {}) {
         super()
 
@@ -17,7 +19,7 @@ export default class PerkyView extends PerkyModule {
             this.addClass(params.className)
         }
 
-        setupResizeObserver(this)
+        this.#setupResizeObserver()
     }
 
 
@@ -164,9 +166,9 @@ export default class PerkyView extends PerkyModule {
 
 
     dispose (...args) {
-        if (this.resizeObserver) {
-            this.resizeObserver.disconnect()
-            this.resizeObserver = null
+        if (this.#resizeObserver) {
+            this.#resizeObserver.disconnect()
+            this.#resizeObserver = null
         }
 
         super.dispose(...args)
@@ -291,16 +293,16 @@ export default class PerkyView extends PerkyModule {
         return this
     }
 
-}
 
+    #setupResizeObserver () {
+        this.#resizeObserver = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                const {width, height} = entry.contentRect
+                this.emit('resize', {width, height})
+            }
+        })
 
-function setupResizeObserver (perkyView) {
-    perkyView.resizeObserver = new ResizeObserver(entries => {
-        for (const entry of entries) {
-            const {width, height} = entry.contentRect
-            perkyView.emit('resize', {width, height})
-        }
-    })
+        this.#resizeObserver.observe(this.element)
+    }
 
-    perkyView.resizeObserver.observe(perkyView.element)
 }

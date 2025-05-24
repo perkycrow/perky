@@ -393,13 +393,18 @@ describe(PerkyView, () => {
 
     test('ResizeObserver setup', () => {
         expect(global.ResizeObserver).toHaveBeenCalled()
-        expect(view.resizeObserver.observe).toHaveBeenCalledWith(element)
+
+        const mockObserver = global.ResizeObserver.mock.results[0].value
+        expect(mockObserver.observe).toHaveBeenCalledWith(element)
     })
 
 
     test('ResizeObserver cleanup on dispose', () => {
-        const disconnectSpy = vi.spyOn(view.resizeObserver, 'disconnect')
+        const mockObserver = global.ResizeObserver.mock.results[0].value
+        const disconnectSpy = vi.spyOn(mockObserver, 'disconnect')
+        
         view.dispose()
+        
         expect(disconnectSpy).toHaveBeenCalled()
     })
 
