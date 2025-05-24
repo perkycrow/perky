@@ -3,65 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canvas 2D Demo</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-        }
-        
-        #canvas {
-            border: 2px solid #333;
-            background-color: white;
-            display: block;
-            margin: 0 auto;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .controls {
-            text-align: center;
-            margin-top: 20px;
-        }
-        
-        button {
-            padding: 10px 20px;
-            margin: 0 5px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-        
-        button:hover {
-            background-color: #45a049;
-        }
-        
-        .info {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
-        }
-    </style>
+    <title>Perky - Canvas 2D</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="info">
-        <h1>Canvas 2D Library Demo</h1>
-        <p>Testing shapes, transformations, groups, and animations</p>
+    <div class="example-container">
+        <a href="index.html" class="back-link">Back to examples</a>
+        
+        <div class="example-header">
+            <h1>Canvas 2D</h1>
+            <p class="tagline">Testing shapes, transformations, groups, and animations with Canvas 2D library.</p>
+        </div>
+
+        <div class="example-content"></div>
     </div>
-    
-    <canvas id="canvas" width="800" height="600"></canvas>
-    
-    <div class="controls">
-        <button id="animateBtn">Start Animation</button>
-        <button id="resetBtn">Reset</button>
-        <button id="randomBtn">Random Shapes</button>
-    </div>
-    
+
     <script type="module" src="canvas.js"></script>
+
+    <script type="module">
+        import CodeDisplay from '/ui/code_display.js'
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const scriptContent = await fetch('canvas.js')
+                .then(response => response.text())
+                .catch(error => {
+                    console.error('Error fetching the script:', error)
+                    return null
+                })
+
+            const exampleContainer = document.querySelector('.example-container')
+            const codeDisplay = new CodeDisplay({code: scriptContent})
+            codeDisplay.mountTo(exampleContainer)
+        })
+    </script>
+    
 </body>
 </html> 
