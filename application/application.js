@@ -31,8 +31,8 @@ export default class Application extends Engine {
     }
 
 
-    isInputPressed (code) {
-        return this.inputObserver.isPressed(code)
+    isInputPressed (...args) {
+        return this.inputObserver.isPressed(...args)
     }
 
 
