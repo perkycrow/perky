@@ -132,8 +132,7 @@ export default class Engine extends PerkyModule {
 
 
     getSourceDescriptor (type, id) {
-        const sourceDescriptors = this.manifest.data.sourceDescriptors[type]
-        return sourceDescriptors && sourceDescriptors[id] ? sourceDescriptors[id] : null
+        return this.manifest.getSourceDescriptor(type, id)
     }
 
 

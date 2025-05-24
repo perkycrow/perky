@@ -110,14 +110,11 @@ describe(Engine, () => {
 
 
     test('getSourceDescriptor', () => {
-        engine.manifest.data.sourceDescriptors = {
-            images: {
-                logo: {id: 'logo', url: '/assets/logo.png'}
-            }
-        }
+        engine.manifest.addSourceDescriptor('images', {id: 'logo', url: '/assets/logo.png'})
         
         const sourceDescriptor = engine.getSourceDescriptor('images', 'logo')
-        expect(sourceDescriptor).toEqual({id: 'logo', url: '/assets/logo.png'})
+        expect(sourceDescriptor.id).toBe('logo')
+        expect(sourceDescriptor.url).toBe('/assets/logo.png')
     })
 
 
@@ -127,26 +124,20 @@ describe(Engine, () => {
 
 
     test('getSourceDescriptor non-existent id', () => {
-        engine.manifest.data.sourceDescriptors = {
-            images: {}
-        }
+        engine.manifest.addSourceDescriptorType('images')
         
         expect(engine.getSourceDescriptor('images', 'nonexistent')).toBeNull()
     })
 
 
     test('getSourceDescriptors', () => {
-        engine.manifest.data.sourceDescriptors = {
-            images: {
-                logo: {id: 'logo', url: '/assets/logo.png'},
-                icon: {id: 'icon', url: '/assets/icon.png'}
-            }
-        }
+        engine.manifest.addSourceDescriptor('images', {id: 'logo', url: '/assets/logo.png'})
+        engine.manifest.addSourceDescriptor('images', {id: 'icon', url: '/assets/icon.png'})
         
         const sourceDescriptors = engine.getSourceDescriptors('images')
         expect(sourceDescriptors).toHaveLength(2)
-        expect(sourceDescriptors).toContainEqual({id: 'logo', url: '/assets/logo.png'})
-        expect(sourceDescriptors).toContainEqual({id: 'icon', url: '/assets/icon.png'})
+        expect(sourceDescriptors[0].id).toBe('logo')
+        expect(sourceDescriptors[1].id).toBe('icon')
     })
 
 
@@ -156,11 +147,7 @@ describe(Engine, () => {
 
 
     test('getSource', () => {
-        engine.manifest.data.sourceDescriptors = {
-            images: {
-                logo: {id: 'logo', url: '/assets/logo.png', source: 'fakeImage'}
-            }
-        }
+        engine.manifest.addSourceDescriptor('images', {id: 'logo', url: '/assets/logo.png', source: 'fakeImage'})
         
         const source = engine.getSource('images', 'logo')
         expect(source).toBe('fakeImage')

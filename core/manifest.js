@@ -4,27 +4,29 @@ import SourceDescriptorDescriptor from './source_descriptor'
 
 export default class Manifest {
 
+    #data
+
     constructor (data = {}) {
-        this.data = setDefaults(data, {
+        this.#data = setDefaults(data, {
             metadata: {},
             config: {},
             sourceDescriptors: {},
             aliases: {}
         })
 
-        initSourceDescriptors(this)
+        this.#initSourceDescriptors()
     }
 
 
     import (jsonData) {
         if (typeof jsonData === 'string') {
             try {
-                this.data = JSON.parse(jsonData)
+                this.#data = JSON.parse(jsonData)
             } catch (error) {
                 throw new Error(`Failed to parse manifest JSON: ${error.message}`)
             }
         } else if (jsonData && typeof jsonData === 'object') {
-            this.data = jsonData
+            this.#data = jsonData
         } else {
             throw new Error('Invalid manifest data: must be a JSON string or object')
         }
@@ -34,20 +36,20 @@ export default class Manifest {
 
     export () {
         return deepMerge({}, {
-            metadata: this.data.metadata,
-            config: this.data.config,
-            sourceDescriptors: exportSourceDescriptors(this.data.sourceDescriptors),
-            aliases: this.data.aliases
+            metadata: this.#data.metadata,
+            config: this.#data.config,
+            sourceDescriptors: exportSourceDescriptors(this.#data.sourceDescriptors),
+            aliases: this.#data.aliases
         })
     }
 
 
     metadata (key, value) {
         if (value === undefined) {
-            return key ? this.data.metadata[key] : this.data.metadata
+            return key ? this.#data.metadata[key] : this.#data.metadata
         }
         
-        this.data.metadata[key] = value
+        this.#data.metadata[key] = value
         return this
     }
 
@@ -55,13 +57,13 @@ export default class Manifest {
     config (path, value) {
         if (value === undefined) {
             if (path === undefined) {
-                return this.data.config
+                return this.#data.config
             }
 
-            return getNestedValue(this.data.config, path)
+            return getNestedValue(this.#data.config, path)
         }
 
-        setNestedValue(this.data.config, path, value)
+        setNestedValue(this.#data.config, path, value)
         return this
     }
 
@@ -73,17 +75,17 @@ export default class Manifest {
         
         sourceDescriptor = prepareSourceDescriptor(type, sourceDescriptor)
 
-        this.data.sourceDescriptors[type][sourceDescriptor.id] = sourceDescriptor
+        this.#data.sourceDescriptors[type][sourceDescriptor.id] = sourceDescriptor
 
         return sourceDescriptor
     }
 
 
     getSourceDescriptor (type, id) {
-        if (!this.data.sourceDescriptors[type]) {
+        if (!this.#data.sourceDescriptors[type]) {
             return null
         }
-        return this.data.sourceDescriptors[type][id] || null
+        return this.#data.sourceDescriptors[type][id] || null
     }
 
 
@@ -103,16 +105,16 @@ export default class Manifest {
             return []
         }
 
-        return getSourceDescriptorsByTag(tag, this.data.sourceDescriptors)
+        return getSourceDescriptorsByTag(tag, this.#data.sourceDescriptors)
     }
 
 
     alias (key, value) {
         if (value === undefined) {
-            return key ? this.data.aliases[key] : this.data.aliases
+            return key ? this.#data.aliases[key] : this.#data.aliases
         }
         
-        this.data.aliases[key] = value
+        this.#data.aliases[key] = value
         return this
     }
 
@@ -121,43 +123,43 @@ export default class Manifest {
             throw new Error('SourceDescriptor type must be a non-empty string')
         }
 
-        if (!this.data.sourceDescriptors[type]) {
-            this.data.sourceDescriptors[type] = {}
+        if (!this.#data.sourceDescriptors[type]) {
+            this.#data.sourceDescriptors[type] = {}
         }
 
-        return this.data.sourceDescriptors[type]
+        return this.#data.sourceDescriptors[type]
     }
 
 
     hasSourceDescriptorType (type) {
-        return type in this.data.sourceDescriptors
+        return type in this.#data.sourceDescriptors
     }
 
 
     getSourceDescriptorTypes () {
-        return Object.keys(this.data.sourceDescriptors)
+        return Object.keys(this.#data.sourceDescriptors)
     }
 
 
     getSourceDescriptors (type) {
-        return this.data.sourceDescriptors[type] || {}
+        return this.#data.sourceDescriptors[type] || {}
     }
 
-}
 
+    #initSourceDescriptors () {
+        const {sourceDescriptors} = this.#data
 
-function initSourceDescriptors (manifest) {
-    const {sourceDescriptors} = manifest.data
+        Object.entries(sourceDescriptors).forEach(([type, descriptors]) => {
+            Object.entries(descriptors).forEach(([id, descriptor]) => {
+                if (!descriptor.id) {
+                    descriptor.id = id
+                }
 
-    Object.entries(sourceDescriptors).forEach(([type, descriptors]) => {
-        Object.entries(descriptors).forEach(([id, descriptor]) => {
-            if (!descriptor.id) {
-                descriptor.id = id
-            }
-
-            sourceDescriptors[type][id] = prepareSourceDescriptor(type, descriptor)
+                sourceDescriptors[type][id] = prepareSourceDescriptor(type, descriptor)
+            })
         })
-    })
+    }
+
 }
 
 

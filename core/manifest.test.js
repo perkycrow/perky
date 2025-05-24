@@ -11,12 +11,10 @@ describe('Manifest', () => {
 
 
     test('constructor', () => {
-        expect(manifest.data).toEqual({
-            metadata: {},
-            config: {},
-            sourceDescriptors: {},
-            aliases: {}
-        })
+        expect(manifest.metadata()).toEqual({})
+        expect(manifest.config()).toEqual({})
+        expect(manifest.getSourceDescriptorTypes()).toEqual([])
+        expect(manifest.alias()).toEqual({})
     })
 
 
@@ -25,10 +23,10 @@ describe('Manifest', () => {
             metadata: {name: 'Test Manifest'}
         })
 
-        expect(customManifest.data.metadata.name).toBe('Test Manifest')
-        expect(customManifest.data.config).toEqual({})
-        expect(customManifest.data.sourceDescriptors).toEqual({})
-        expect(customManifest.data.aliases).toEqual({})
+        expect(customManifest.metadata('name')).toBe('Test Manifest')
+        expect(customManifest.config()).toEqual({})
+        expect(customManifest.getSourceDescriptorTypes()).toEqual([])
+        expect(customManifest.alias()).toEqual({})
     })
 
 
@@ -42,10 +40,10 @@ describe('Manifest', () => {
         
         manifest.import(jsonData)
         
-        expect(manifest.data.metadata.version).toBe('1.0.0')
-        expect(manifest.data.config.debug).toBe(true)
-        expect(manifest.data.sourceDescriptors.images.logo.id).toBe('logo')
-        expect(manifest.data.aliases.mainLogo).toBe('logo')
+        expect(manifest.metadata('version')).toBe('1.0.0')
+        expect(manifest.config('debug')).toBe(true)
+        expect(manifest.getSourceDescriptor('images', 'logo').id).toBe('logo')
+        expect(manifest.alias('mainLogo')).toBe('logo')
     })
 
 
@@ -56,7 +54,7 @@ describe('Manifest', () => {
         
         manifest.import(data)
         
-        expect(manifest.data.metadata.version).toBe('1.0.0')
+        expect(manifest.metadata('version')).toBe('1.0.0')
     })
 
 
@@ -70,14 +68,16 @@ describe('Manifest', () => {
 
 
     test('metadata', () => {
-        manifest.data.metadata = {version: '1.0.0', author: 'Test'}
+        manifest.metadata('version', '1.0.0')
+        manifest.metadata('author', 'Test')
         
         expect(manifest.metadata()).toEqual({version: '1.0.0', author: 'Test'})
     })
 
 
     test('metadata with key', () => {
-        manifest.data.metadata = {version: '1.0.0', author: 'Test'}
+        manifest.metadata('version', '1.0.0')
+        manifest.metadata('author', 'Test')
         
         expect(manifest.metadata('version')).toBe('1.0.0')
     })
@@ -86,20 +86,22 @@ describe('Manifest', () => {
     test('metadata set', () => {
         const result = manifest.metadata('version', '1.0.0')
         
-        expect(manifest.data.metadata.version).toBe('1.0.0')
+        expect(manifest.metadata('version')).toBe('1.0.0')
         expect(result).toBe(manifest)
     })
 
 
     test('config', () => {
-        manifest.data.config = {debug: true, logging: {level: 'info'}}
+        manifest.config('debug', true)
+        manifest.config('logging.level', 'info')
         
         expect(manifest.config()).toEqual({debug: true, logging: {level: 'info'}})
     })
 
 
     test('config with key', () => {
-        manifest.data.config = {debug: true, logging: {level: 'info'}}
+        manifest.config('debug', true)
+        manifest.config('logging.level', 'info')
         
         expect(manifest.config('logging.level')).toBe('info')
     })
@@ -108,7 +110,7 @@ describe('Manifest', () => {
     test('config set', () => {
         const result = manifest.config('logging.level', 'debug')
         
-        expect(manifest.data.config.logging.level).toBe('debug')
+        expect(manifest.config('logging.level')).toBe('debug')
         expect(result).toBe(manifest)
     })
 
@@ -116,8 +118,8 @@ describe('Manifest', () => {
     test('addSourceDescriptor', () => {
         manifest.addSourceDescriptor('images', {id: 'logo', url: '/assets/logo.png'})
         
-        expect(Object.keys(manifest.data.sourceDescriptors.images)).toHaveLength(1)
-        expect(manifest.data.sourceDescriptors.images.logo.id).toBe('logo')
+        expect(Object.keys(manifest.getSourceDescriptors('images'))).toHaveLength(1)
+        expect(manifest.getSourceDescriptor('images', 'logo').id).toBe('logo')
     })
 
 
@@ -125,8 +127,8 @@ describe('Manifest', () => {
         manifest.addSourceDescriptor('images', {id: 'logo', url: '/assets/logo.png'})
         manifest.addSourceDescriptor('images', {id: 'logo', url: '/assets/new-logo.png'})
 
-        expect(Object.keys(manifest.data.sourceDescriptors.images)).toHaveLength(1)
-        expect(manifest.data.sourceDescriptors.images.logo.url).toBe('/assets/new-logo.png')
+        expect(Object.keys(manifest.getSourceDescriptors('images'))).toHaveLength(1)
+        expect(manifest.getSourceDescriptor('images', 'logo').url).toBe('/assets/new-logo.png')
     })
 
 
@@ -163,14 +165,16 @@ describe('Manifest', () => {
 
 
     test('alias', () => {
-        manifest.data.aliases = {mainLogo: 'logo', mainIcon: 'icon'}
+        manifest.alias('mainLogo', 'logo')
+        manifest.alias('mainIcon', 'icon')
         
         expect(manifest.alias()).toEqual({mainLogo: 'logo', mainIcon: 'icon'})
     })
 
 
     test('alias key', () => {
-        manifest.data.aliases = {mainLogo: 'logo', mainIcon: 'icon'}
+        manifest.alias('mainLogo', 'logo')
+        manifest.alias('mainIcon', 'icon')
         
         expect(manifest.alias('mainLogo')).toBe('logo')
     })
@@ -179,7 +183,7 @@ describe('Manifest', () => {
     test('alias set', () => {
         const result = manifest.alias('mainLogo', 'logo')
         
-        expect(manifest.data.aliases.mainLogo).toBe('logo')
+        expect(manifest.alias('mainLogo')).toBe('logo')
         expect(result).toBe(manifest)
     })
 
@@ -187,7 +191,7 @@ describe('Manifest', () => {
     test('addSourceDescriptorType', () => {
         manifest.addSourceDescriptorType('audio')
         
-        expect(manifest.data.sourceDescriptors.audio).toEqual({})
+        expect(manifest.getSourceDescriptors('audio')).toEqual({})
     })
 
 
@@ -195,7 +199,7 @@ describe('Manifest', () => {
         manifest.addSourceDescriptor('images', {id: 'logo', url: '/assets/logo.png'})
         manifest.addSourceDescriptorType('images')
         
-        expect(Object.keys(manifest.data.sourceDescriptors.images)).toHaveLength(1)
+        expect(Object.keys(manifest.getSourceDescriptors('images'))).toHaveLength(1)
     })
 
 

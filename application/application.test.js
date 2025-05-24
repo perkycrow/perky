@@ -65,7 +65,7 @@ describe(Application, () => {
         const customApp = new Application({manifest: customManifestData})
 
         expect(customApp.manifest).toBeDefined()
-        expect(customApp.manifest.data.metadata.name).toBe('Test App')
+        expect(customApp.manifest.metadata('name')).toBe('Test App')
     })
 
 
