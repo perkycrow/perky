@@ -1,4 +1,4 @@
-import InputDevice from '../../input/input_device'
+import InputDevice from '../input_device'
 import GamepadManager from '../gamepad_manager'
 
 
