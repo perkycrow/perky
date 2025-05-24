@@ -3,11 +3,12 @@ import Registry from '../core/registry'
 
 export default class SourceLoader extends PerkyModule {
 
+    #loadingPromises = {}
+
     constructor (sourceDescriptors, loaders) {
         super()
         this.loaders = loaders instanceof Registry ? loaders : new Registry(loaders)
         this.sourceDescriptors = sourceDescriptors
-        this.loadingPromises = {}
     }
 
 
@@ -54,8 +55,8 @@ export default class SourceLoader extends PerkyModule {
             return sourceDescriptor
         }
 
-        if (this.loadingPromises[sourceKey]) {
-            return this.loadingPromises[sourceKey]
+        if (this.#loadingPromises[sourceKey]) {
+            return this.#loadingPromises[sourceKey]
         }
 
         const loader = this.loaders.get(sourceDescriptor.type)
@@ -66,23 +67,23 @@ export default class SourceLoader extends PerkyModule {
 
         const params = sourceDescriptor.url ? sourceDescriptor.url : sourceDescriptor
 
-        this.loadingPromises[sourceKey] = Promise.resolve()
+        this.#loadingPromises[sourceKey] = Promise.resolve()
             .then(() => loader(params))
             .then(source => {
                 sourceDescriptor.source = source
-                delete this.loadingPromises[sourceKey]
+                delete this.#loadingPromises[sourceKey]
 
                 this.emit('progress', this.progress, {sourceDescriptor, source})
                 return sourceDescriptor
             })
             .catch(error => {
-                delete this.loadingPromises[sourceKey]
+                delete this.#loadingPromises[sourceKey]
 
                 this.emit('error', sourceDescriptor, error)
                 throw error
             })
 
-        return this.loadingPromises[sourceKey]
+        return this.#loadingPromises[sourceKey]
     }
 
 }

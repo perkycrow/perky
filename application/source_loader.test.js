@@ -33,7 +33,7 @@ describe('SourceLoader', () => {
     test('constructor', () => {
         expect(loader).toBeInstanceOf(PerkyModule)
         expect(loader.sourceDescriptors).toBe(sourceDescriptors)
-        expect(loader.loadingPromises).toEqual({})
+        expect(loader.progress).toBe(0)
     })
 
 
@@ -108,24 +108,17 @@ describe('SourceLoader', () => {
 
 
     test('loadSource already loading', async () => {
-        const sourceKey = 'image:logo'
-        const sourceDescriptor = {type: 'image', id: 'logo'}
-        const loadPromise = Promise.resolve(sourceDescriptor)
-
-        loader.loadingPromises[sourceKey] = loadPromise
-
-        const originalLoadSource = loader.loadSource.bind(loader)
-        loader.loadSource = vi.fn().mockImplementation(descriptor => {
-            if (descriptor.type + ':' + descriptor.id === sourceKey) {
-                return loader.loadingPromises[sourceKey]
-            }
-            return originalLoadSource(descriptor)
-        })
+        const sourceDescriptor = {type: 'image', id: 'logo', url: '/assets/logo.png'}
         
-        const result = await loader.loadSource(sourceDescriptor)
+        const loadPromise1 = loader.loadSource(sourceDescriptor)
+        const loadPromise2 = loader.loadSource(sourceDescriptor)
         
-        expect(result).toBe(sourceDescriptor)
-        expect(loader.loadSource).toHaveBeenCalledWith(sourceDescriptor)
+        const result1 = await loadPromise1
+        const result2 = await loadPromise2
+        
+        expect(result1).toBe(result2)
+        expect(loaders.image).toHaveBeenCalledTimes(1)
+        expect(result1.source).toBe('loaded image')
     })
 
 
@@ -169,7 +162,10 @@ describe('SourceLoader', () => {
         
         await expect(loader.loadSource(sourceDescriptor)).rejects.toThrow('Loading failed')
         expect(emitSpy).toHaveBeenCalledWith('error', sourceDescriptor, error)
-        expect(loader.loadingPromises['image:logo']).toBeUndefined()
+        
+        loaders.image.mockResolvedValueOnce('loaded image after error')
+        const result = await loader.loadSource(sourceDescriptor)
+        expect(result.source).toBe('loaded image after error')
     })
 
 })
