@@ -96,6 +96,23 @@ function observe (device) {
             const mouseState = updatePositionState(event, device, modifiers)
 
             device.emit('mousemove', mouseState)
+        },
+        contextmenu (event) {
+            if (2 in device.pressedButtons) {
+                const modifiers = getModifiers(event)
+                const mouseState = createMouseState(event, device, modifiers)
+                mouseState.button = 2
+                
+                delete device.pressedButtons[2]
+                device.emit('mouseup', mouseState)
+            }
+        },
+        blur () {
+            for (const button in device.pressedButtons) {
+                delete device.pressedButtons[button]
+            }
+
+            device.emit('blur')
         }
     }
 
@@ -104,6 +121,8 @@ function observe (device) {
     container.addEventListener('mousedown', listeners.mousedown)
     container.addEventListener('mouseup', listeners.mouseup)
     container.addEventListener('mousemove', listeners.mousemove)
+    container.addEventListener('contextmenu', listeners.contextmenu)
+    window.addEventListener('blur', listeners.blur)
 
     device.mouseListeners = listeners
 
@@ -120,6 +139,8 @@ function unobserve (device) {
         container.removeEventListener('mousedown', listeners.mousedown)
         container.removeEventListener('mouseup', listeners.mouseup)
         container.removeEventListener('mousemove', listeners.mousemove)
+        container.removeEventListener('contextmenu', listeners.contextmenu)
+        window.removeEventListener('blur', listeners.blur)
 
         delete device.mouseListeners
 

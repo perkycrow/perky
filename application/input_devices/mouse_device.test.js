@@ -259,4 +259,70 @@ describe(MouseDevice, () => {
         expect(mouseState.offset.y).toBe(60)
     })
 
+
+    test('contextmenu event clears right button', () => {
+        const mouseupListener = vi.fn()
+        mouseDevice.on('mouseup', mouseupListener)
+        
+        window.dispatchEvent(new MouseEvent('mousedown', {
+            clientX: 100,
+            clientY: 200,
+            button: 2
+        }))
+        
+        expect(mouseDevice.isMouseButtonPressed(2)).toBe(true)
+        
+        window.dispatchEvent(new MouseEvent('contextmenu', {
+            clientX: 100,
+            clientY: 200
+        }))
+        
+        expect(mouseDevice.isMouseButtonPressed(2)).toBe(false)
+        expect(mouseupListener).toHaveBeenCalled()
+        
+        const mouseupEvent = mouseupListener.mock.calls[0][0]
+        expect(mouseupEvent.button).toBe(2)
+    })
+
+
+    test('blur event clears all buttons', () => {
+        const blurListener = vi.fn()
+        mouseDevice.on('blur', blurListener)
+        
+        window.dispatchEvent(new MouseEvent('mousedown', {
+            clientX: 100,
+            clientY: 200,
+            button: 0
+        }))
+        
+        window.dispatchEvent(new MouseEvent('mousedown', {
+            clientX: 100,
+            clientY: 200,
+            button: 2
+        }))
+        
+        expect(mouseDevice.isMouseButtonPressed(0)).toBe(true)
+        expect(mouseDevice.isMouseButtonPressed(2)).toBe(true)
+        
+        window.dispatchEvent(new Event('blur'))
+
+        expect(mouseDevice.isMouseButtonPressed(0)).toBe(false)
+        expect(mouseDevice.isMouseButtonPressed(2)).toBe(false)
+        expect(mouseDevice.getMousePressedButtons()).toEqual([])
+        expect(blurListener).toHaveBeenCalled()
+    })
+
+
+    test('contextmenu does not affect if right button not pressed', () => {
+        const mouseupListener = vi.fn()
+        mouseDevice.on('mouseup', mouseupListener)
+        
+        window.dispatchEvent(new MouseEvent('contextmenu', {
+            clientX: 100,
+            clientY: 200
+        }))
+        
+        expect(mouseupListener).not.toHaveBeenCalled()
+    })
+
 })
