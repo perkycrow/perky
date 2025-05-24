@@ -49,25 +49,4 @@ export default class Object2D extends Object3D {
         return this
     }
 
-
-    animateOpacity (from, to, duration, callback) {
-        const startTime = Date.now()
-        const animate = () => {
-            const elapsed = Date.now() - startTime
-            const progress = Math.min(elapsed / duration, 1)
-            const easedProgress = 0.5 - Math.cos(progress * Math.PI) / 2
-            
-            this.userData.opacity = from + (to - from) * easedProgress
-            
-            if (progress < 1) {
-                requestAnimationFrame(animate)
-            } else if (callback) {
-                callback()
-            }
-        }
-        animate()
-
-        return this
-    }
-
 }

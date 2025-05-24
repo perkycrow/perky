@@ -1,5 +1,5 @@
 import Object2D from './object_2d'
-import {vi, beforeEach, describe, test, expect} from 'vitest'
+import {beforeEach, describe, test, expect} from 'vitest'
 
 
 describe(Object2D, () => {
@@ -90,43 +90,7 @@ describe(Object2D, () => {
     })
 
 
-    test('animateOpacity', () => {
-        vi.useFakeTimers()
-        const requestAnimationFrameSpy = vi.spyOn(global, 'requestAnimationFrame')
-            .mockImplementation(cb => setTimeout(cb, 16))
-        
-        const callback = vi.fn()
-        const result = object2d.animateOpacity(0, 1, 100, callback)
-        
-        expect(result).toBe(object2d)
-        expect(object2d.userData.opacity).toBe(0)
-        
-        vi.advanceTimersByTime(50)
-        expect(object2d.userData.opacity).toBeGreaterThan(0)
-        expect(object2d.userData.opacity).toBeLessThan(1)
-        
-        vi.advanceTimersByTime(70)
-        expect(object2d.userData.opacity).toBeCloseTo(1, 2)
-        expect(callback).toHaveBeenCalled()
-        
-        requestAnimationFrameSpy.mockRestore()
-        vi.useRealTimers()
-    })
 
-
-    test('animateOpacity without callback', () => {
-        vi.useFakeTimers()
-        const requestAnimationFrameSpy = vi.spyOn(global, 'requestAnimationFrame')
-            .mockImplementation(cb => setTimeout(cb, 16))
-        
-        object2d.animateOpacity(1, 0, 100)
-        
-        vi.advanceTimersByTime(120)
-        expect(object2d.userData.opacity).toBeCloseTo(0, 2)
-        
-        requestAnimationFrameSpy.mockRestore()
-        vi.useRealTimers()
-    })
 
 
     test('renderType uses lowercase class name', () => {
