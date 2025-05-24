@@ -3,6 +3,7 @@ import ModuleRegistry from '../core/module_registry'
 import MouseDevice from './input_devices/mouse_device'
 import KeyboardDevice from './input_devices/keyboard_device'
 
+
 export default class InputObserver extends PerkyModule {
 
     constructor ({

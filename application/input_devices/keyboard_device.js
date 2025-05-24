@@ -82,10 +82,23 @@ function observe (device) {
             device.emit('keydown', keyState)
         },
         keyup (event) {
-            const keyState = createKeyState(event)
+            const modifiers = getModifiers(event)
+            const keyState = createKeyState(event, modifiers)
 
             delete device.pressedKeys[event.code]
+            updateModifiers(device, modifiers)
+            
+            // MacOS fix
+            if ((event.code === 'MetaLeft' || event.code === 'MetaRight') && !modifiers.Meta) {
+                clearNonModifierKeys(device)
+            }
+            
             device.emit('keyup', keyState)
+        },
+        blur () {
+            // Tab out fix
+            clearAllKeys(device)
+            device.emit('blur')
         }
     }
 
@@ -93,6 +106,7 @@ function observe (device) {
 
     container.addEventListener('keydown', listeners.keydown)
     container.addEventListener('keyup', listeners.keyup)
+    window.addEventListener('blur', listeners.blur)
 
     device.keyboardListeners = listeners
 
@@ -108,6 +122,7 @@ function unobserve (device) {
 
         container.removeEventListener('keydown', listeners.keydown)
         container.removeEventListener('keyup', listeners.keyup)
+        window.removeEventListener('blur', listeners.blur)
 
         delete device.keyboardListeners
 
@@ -129,13 +144,36 @@ function createKeyState (event, modifiers = {}) {
 
 
 function updateModifiers (device, modifiers) {
+    device.pressedModifiers = {}
+
     for (const key in modifiers) {
         if (modifiers[key]) {
             device.pressedModifiers[key] = true
-        } else {
-            delete device.pressedModifiers[key]
         }
     }
+}
+
+
+function clearNonModifierKeys (device) {
+    const modifierCodes = [
+        'AltLeft', 'AltRight',
+        'ControlLeft', 'ControlRight', 
+        'MetaLeft', 'MetaRight',
+        'ShiftLeft', 'ShiftRight',
+        'CapsLock', 'NumLock'
+    ]
+    
+    for (const code in device.pressedKeys) {
+        if (!modifierCodes.includes(code)) {
+            delete device.pressedKeys[code]
+        }
+    }
+}
+
+
+function clearAllKeys (device) {
+    device.pressedKeys = {}
+    device.pressedModifiers = {}
 }
 
 
