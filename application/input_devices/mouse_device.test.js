@@ -246,8 +246,11 @@ describe(MouseDevice, () => {
         expect(listener).toHaveBeenCalled()
         const mouseState = listener.mock.calls[0][0]
         
-        expect(mouseState.position.x).toBe(100)
-        expect(mouseState.position.y).toBe(200)
+        expect(mouseState.position.x).toBe(50)
+        expect(mouseState.position.y).toBe(60)
+
+        expect(mouseState.client.x).toBe(100)
+        expect(mouseState.client.y).toBe(200)
         
         expect(mouseState.screen.x).toBe(500)
         expect(mouseState.screen.y).toBe(600)
