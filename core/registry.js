@@ -3,9 +3,10 @@ import Notifier from './notifier'
 
 export default class Registry extends Notifier {
 
+    #map = new Map()
+
     constructor (collection) {
         super()
-        this.map = new Map()
 
         if (collection) {
             this.addCollection(collection)
@@ -14,37 +15,37 @@ export default class Registry extends Notifier {
 
 
     get size () {
-        return this.map.size
+        return this.#map.size
     }
 
 
     get entries () {
-        return Array.from(this.map.entries())
+        return Array.from(this.#map.entries())
     }
 
 
     get keys () {
-        return this.map.keys()
+        return this.#map.keys()
     }
 
 
     get values () {
-        return this.map.values()
+        return this.#map.values()
     }
 
 
     get (key) {
-        return this.map.get(key)
+        return this.#map.get(key)
     }
 
 
     has (key) {
-        return this.map.has(key)
+        return this.#map.has(key)
     }
 
 
     hasValue (value) {
-        return this.values.some((val) => val === value)
+        return Array.from(this.values).some((val) => val === value)
     }
 
 
@@ -62,14 +63,14 @@ export default class Registry extends Notifier {
 
 
     forEach (callbackFn, thisArg) {
-        this.map.forEach(callbackFn, thisArg)
+        this.#map.forEach(callbackFn, thisArg)
     }
 
 
     set (key, value) {
-        const exists = this.map.has(key)
-        const oldValue = exists ? this.map.get(key) : undefined
-        this.map.set(key, value)
+        const exists = this.#map.has(key)
+        const oldValue = exists ? this.#map.get(key) : undefined
+        this.#map.set(key, value)
         this.emit('set', key, value, oldValue)
 
         return this
@@ -77,14 +78,14 @@ export default class Registry extends Notifier {
 
 
     delete (key) {
-        const exists = this.map.has(key)
+        const exists = this.#map.has(key)
 
         if (!exists) {
             return false
         }
 
-        const value = this.map.get(key)
-        const deleted = this.map.delete(key)
+        const value = this.#map.get(key)
+        const deleted = this.#map.delete(key)
 
         if (deleted) {
             this.emit('delete', key, value)
@@ -95,13 +96,13 @@ export default class Registry extends Notifier {
 
 
     clear () {
-        if (this.map.size > 0) {
-            const itemsToDelete = Array.from(this.map.entries())
+        if (this.#map.size > 0) {
+            const itemsToDelete = Array.from(this.#map.entries())
             itemsToDelete.forEach(([key, value]) => {
                 this.emit('delete', key, value)
             })
 
-            this.map.clear()
+            this.#map.clear()
             
             this.emit('clear') 
         }
@@ -109,7 +110,7 @@ export default class Registry extends Notifier {
 
 
     invoke (methodName, ...args) {
-        this.map.forEach((item) => {
+        this.#map.forEach((item) => {
             if (item && typeof item[methodName] === 'function') {
                 try {
                     item[methodName](...args)
@@ -122,7 +123,7 @@ export default class Registry extends Notifier {
 
 
     reverseInvoke (methodName, ...args) {
-        const items = Array.from(this.map.values()).reverse()
+        const items = Array.from(this.#map.values()).reverse()
 
         items.forEach((item) => {
             if (item && typeof item[methodName] === 'function') {
@@ -172,7 +173,7 @@ export default class Registry extends Notifier {
 
     toObject () {
         const object = {}
-        this.map.forEach((value, key) => {
+        this.#map.forEach((value, key) => {
             object[key] = value
         })
         return object
