@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic InputObserver</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="example-container">
+        <a href="index.html" class="back-link">Back to examples</a>
+        
+        <div class="example-header">
+            <h1>Basic InputObserver</h1>
+            <p class="tagline">A simple input observer.</p>
+        </div>
+
+        <div class="example-content">
+            <div style="display: flex; justify-content: space-around; align-items: center; height: 70px;">
+                <div id="mouse-position">
+                    Position: x=0, y=0
+                </div>
+                <div class="pressed-keys">
+                    <strong>Currently pressed keys:</strong>
+                    <div id="pressed-keys-list"></div>
+                </div>
+                <div class="key-modifiers">
+                    <strong>Modifiers:</strong>
+                    <div id="modifiers-list"></div>
+                </div>
+                <div class="mouse-buttons">
+                    <strong>Pressed buttons:</strong>
+                    <div id="mouse-buttons-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="input_observer.js"></script>
+
+    <script type="module">
+        import CodeDisplay from '/ui/code_display.js'
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const scriptContent = await fetch('input_observer.js')
+                .then(response => response.text())
+                .catch(error => {
+                    console.error('Error fetching the script:', error)
+                    return null
+                })
+
+            const exampleContainer = document.querySelector('.example-container')
+            const codeDisplay = new CodeDisplay({code: scriptContent})
+            codeDisplay.mountTo(exampleContainer)
+        })
+    </script>
+    
+</body>
+</html>
