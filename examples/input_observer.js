@@ -1,4 +1,4 @@
-import InputObserver from '../application/input_observer.js'
+import InputObserver from '../input/input_observer.js'
 import Logger from '../ui/logger.js'
 
 
