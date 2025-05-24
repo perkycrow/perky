@@ -7,6 +7,8 @@ import ActionController from './action_controller'
 
 export default class Engine extends PerkyModule {
 
+    #modules
+
     constructor (params = {}) {
         super()
 
@@ -17,7 +19,7 @@ export default class Engine extends PerkyModule {
         }
 
         this.manifest = manifest
-        this.modules  = new ModuleRegistry({
+        this.#modules = new ModuleRegistry({
             registryName: 'module',
             parentModule: this,
             parentModuleName: 'engine',
@@ -38,7 +40,7 @@ export default class Engine extends PerkyModule {
             return false
         }
 
-        const result = this.modules.set(name, module)
+        const result = this.#modules.set(name, module)
 
         if (this.initialized) {
             module.init()
@@ -53,13 +55,13 @@ export default class Engine extends PerkyModule {
 
 
     getModule (name) {
-        return this.modules.get(name)
+        return this.#modules.get(name)
     }
 
 
     removeModule (name) {
-        if (this.modules.has(name)) {
-            return this.modules.delete(name)
+        if (this.#modules.has(name)) {
+            return this.#modules.delete(name)
         }
 
         return false

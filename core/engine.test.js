@@ -4,7 +4,6 @@ import PerkyModule from './perky_module'
 import {vi} from 'vitest'
 import ActionController from './action_controller'
 import ActionDispatcher from './action_dispatcher'
-import Notifier from './notifier'
 
 
 describe(Engine, () => {
@@ -18,7 +17,7 @@ describe(Engine, () => {
 
     test('constructor', () => {
         expect(engine.manifest).toBeInstanceOf(Manifest)
-        expect(engine.modules).toBeDefined()
+        expect(engine.getModule('actionDispatcher')).toBeDefined()
     })
 
 
@@ -44,12 +43,10 @@ describe(Engine, () => {
 
 
     test('registerModule', () => {
-        const spy = vi.spyOn(engine.modules, 'set')
         const module = new PerkyModule()
         
         engine.registerModule('test', module)
         
-        expect(spy).toHaveBeenCalledWith('test', module)
         expect(engine.getModule('test')).toBe(module)
     })
 
@@ -69,7 +66,7 @@ describe(Engine, () => {
 
     test('getModule', () => {
         const module = new PerkyModule()
-        engine.modules.set('test', module)
+        engine.registerModule('test', module)
         
         expect(engine.getModule('test')).toBe(module)
     })
@@ -220,7 +217,7 @@ describe(Engine, () => {
         const engineSpy = vi.spyOn(engine, 'emit')
         const moduleSpy = vi.spyOn(module, 'emit')
         
-        engine.modules.delete('test')
+        engine.removeModule('test')
         
         expect(engineSpy).toHaveBeenCalledWith('module:delete', 'test', module)
         expect(moduleSpy).toHaveBeenCalledWith('unregistered', engine, 'test')
@@ -257,9 +254,14 @@ describe(Engine, () => {
     test('module clear event', () => {
         const emitSpy = vi.spyOn(engine, 'emit')
         
-        engine.modules.emit('clear')
+        engine.registerModule('test1', new PerkyModule())
+        engine.registerModule('test2', new PerkyModule())
+        
+        engine.removeModule('test1')
+        engine.removeModule('test2')
 
-        expect(emitSpy).toHaveBeenCalledWith('module:clear')
+        expect(emitSpy).toHaveBeenCalledWith('module:delete', 'test1', expect.any(PerkyModule))
+        expect(emitSpy).toHaveBeenCalledWith('module:delete', 'test2', expect.any(PerkyModule))
     })
 
 
@@ -279,7 +281,7 @@ describe(Engine, () => {
         engine.registerModule('test', module)
 
         module.engine = engine2
-        engine.modules.delete('test')
+        engine.removeModule('test')
     })
 
 
