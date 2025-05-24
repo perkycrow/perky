@@ -155,6 +155,10 @@ function createMouseState (event, device, modifiers = {}) {
     return {
         button: event.button,
         position: {
+            x: event.offsetX,
+            y: event.offsetY
+        },
+        client: {
             x: event.clientX,
             y: event.clientY
         },
@@ -183,7 +187,7 @@ function updatePositionState (event, device, modifiers = {}) {
     const deltaTime = now - device.timestamp
 
     device.previousPosition = {...device.position}
-    device.position = {x: event.clientX, y: event.clientY}
+    device.position = {x: event.offsetX, y: event.offsetY}
 
     if (deltaTime > 0) {
         device.velocity = {
@@ -196,6 +200,10 @@ function updatePositionState (event, device, modifiers = {}) {
 
     return {
         position: {...device.position},
+        client: {
+            x: event.clientX,
+            y: event.clientY
+        },
         offset: {
             x: event.offsetX,
             y: event.offsetY
