@@ -65,8 +65,6 @@ describe(Canvas2D, () => {
         expect(ctx.clearRect).toHaveBeenCalledWith(0, 0, 800, 600)
         expect(ctx.save).toHaveBeenCalled()
         expect(ctx.restore).toHaveBeenCalled()
-        expect(ctx.scale).toHaveBeenCalledWith(1, -1)
-        expect(ctx.translate).toHaveBeenCalledWith(0, -600)
         expect(ctx.translate).toHaveBeenCalledWith(400, 300)
     })
 
@@ -79,8 +77,8 @@ describe(Canvas2D, () => {
         expect(ctx.moveTo).toHaveBeenCalledWith(-400, 0)
         expect(ctx.lineTo).toHaveBeenCalledWith(400, 0)
         expect(ctx.stroke).toHaveBeenCalled()
-        expect(ctx.fillText).toHaveBeenCalledWith('X+', 370, 20)
-        expect(ctx.fillText).toHaveBeenCalledWith('Y+', 10, -270)
+        expect(ctx.fillText).toHaveBeenCalledWith('X+', 370, -20)
+        expect(ctx.fillText).toHaveBeenCalledWith('Y-', 10, 270)
     })
 
 

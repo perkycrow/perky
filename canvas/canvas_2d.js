@@ -11,9 +11,6 @@ export default class Canvas2D {
         
         this.ctx.save()
         
-        this.ctx.scale(1, -1)
-        this.ctx.translate(0, -this.canvas.height)
-        
         this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2)
         
         this.drawAxes()
@@ -45,9 +42,8 @@ export default class Canvas2D {
         
         this.ctx.fillStyle = '#999'
         this.ctx.font = '14px Arial'
-        this.ctx.scale(1, -1)
-        this.ctx.fillText('X+', this.canvas.width / 2 - 30, 20)
-        this.ctx.fillText('Y+', 10, -this.canvas.height / 2 + 30)
+        this.ctx.fillText('X+', this.canvas.width / 2 - 30, -20)
+        this.ctx.fillText('Y-', 10, this.canvas.height / 2 - 30)
         
         this.ctx.restore()
     }
@@ -81,7 +77,9 @@ export default class Canvas2D {
         }
         
         const m = object.matrixWorld.elements
-        this.ctx.transform(m[0], m[1], m[4], m[5], m[12], m[13])
+        
+        // Invert Y components of the matrix to match Canvas coordinate system
+        this.ctx.transform(m[0], -m[1], -m[4], m[5], m[12], -m[13])
     }
 
 
