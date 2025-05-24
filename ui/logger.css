@@ -1,0 +1,200 @@
+.perky-logger {
+    width: calc(100% - 20px);
+    border-radius: 6px;
+    overflow: hidden;
+    z-index: 100;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.perky-logger-light {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.perky-logger-minimized {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: absolute;
+    box-shadow: 0 2px 8px rgba(143, 120, 120, 0.15);
+}
+
+.perky-logger-minimized.perky-logger-light {
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.perky-logger-minimized.perky-logger-bottom {
+    bottom: 10px;
+    right: 10px;
+    left: auto;
+}
+
+.perky-logger-minimized.perky-logger-top {
+    top: 10px;
+    right: 10px;
+    left: auto;
+}
+
+.perky-logger-mini-icon {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.perky-logger-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.perky-logger-bottom {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+}
+
+.perky-logger-top {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+.perky-logger-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    user-select: none;
+    justify-content: space-between;
+}
+
+.perky-logger-light .perky-logger-header {
+    background: rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.perky-logger-title {
+    flex-grow: 1;
+    font-weight: 500;
+}
+
+.perky-logger-minimize,
+.perky-logger-clear {
+    background: none;
+    border: none;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 3px;
+    margin-left: 4px;
+    transition: background 0.2s ease;
+}
+
+.perky-logger-light .perky-logger-minimize,
+.perky-logger-light .perky-logger-clear {
+    color: #333;
+}
+
+.perky-logger-light .perky-logger-minimize:hover,
+.perky-logger-light .perky-logger-clear:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.perky-logger-content {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.perky-logger-entry {
+    padding: 4px 12px;
+    display: flex;
+    align-items: baseline;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.perky-logger-light .perky-logger-entry {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.perky-logger-entry:last-child {
+    border-bottom: none;
+}
+
+.perky-logger-timestamp {
+    color: rgba(255, 255, 255, 0.5);
+    margin-right: 8px;
+    font-size: 11px;
+    min-width: 70px;
+}
+
+.perky-logger-light .perky-logger-timestamp {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.perky-logger-message {
+    flex-grow: 1;
+    word-break: break-word;
+}
+
+.perky-logger-info {
+    color: #8bc8f7;
+}
+
+.perky-logger-light .perky-logger-info {
+    color: #0366d6;
+}
+
+.perky-logger-notice {
+    color: #a1a1aa;
+}
+
+.perky-logger-warn {
+    color: #e2c08d;
+}
+
+.perky-logger-light .perky-logger-warn {
+    color: #b08800;
+}
+
+.perky-logger-error {
+    color: #f97583;
+}
+
+.perky-logger-light .perky-logger-error {
+    color: #d73a49;
+}
+
+.perky-logger-success {
+    color: #85e89d;
+}
+
+.perky-logger-light .perky-logger-success {
+    color: #22863a;
+}
+
+.perky-logger-spacer {
+    height: 1px;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.perky-logger-title {
+    font-weight: 500;
+    font-size: 14px;
+    color: #333;
+}

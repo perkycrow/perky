@@ -1,4 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+Pro:wght@400;600&display=swap');
+@import '../ui/toolbar.css';
+@import '../ui/logger.css';
+@import '../ui/code_display.css';
+@import '../ui/fps_counter.css';
 
 * {
     box-sizing: border-box;

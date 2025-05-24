@@ -9,8 +9,6 @@ export default class PerkyView extends PerkyModule {
 
         this.element = params.element ? params.element : this.constructor.defaultElement(params)
 
-        initContent(this, params)
-
         if (params.container) {
             this.mountTo(params.container)
         }
@@ -20,49 +18,6 @@ export default class PerkyView extends PerkyModule {
         }
 
         setupResizeObserver(this)
-    }
-
-
-    setCss (cssText) {
-        const oldStyle = this.element.querySelector('.perky-view-style')
-        if (oldStyle) {
-            oldStyle.remove()
-        }
-
-        const style = document.createElement('style')
-        style.className = 'perky-view-style'
-        style.textContent = cssText
-        this.element.prepend(style)
-        
-        return this
-    }
-
-
-    getCss () {
-        const style = this.element.querySelector('.perky-view-style')
-
-        return style && style.textContent
-    }
-
-
-    appendCss (cssText) {
-        const oldStyle = this.getCss()
-
-        const newStyle = oldStyle ? `${oldStyle}\n${cssText}` : cssText
-        this.setCss(newStyle)
-
-        return this
-    }
-
-
-    loadCss (cssPath) {
-        const link = document.createElement('link')
-        link.className = 'perky-view-style'
-        link.rel = 'stylesheet'
-        link.href = cssPath
-        this.element.prepend(link)
-        
-        return this
     }
 
 
@@ -336,17 +291,6 @@ export default class PerkyView extends PerkyModule {
         return this
     }
 
-}
-
-
-function initContent (perkyView, params) {
-    if (params.css) {
-        perkyView.setCss(params.css)
-    }
-
-    if (params.cssPath) {
-        perkyView.loadCss(params.cssPath)
-    }
 }
 
 

@@ -103,16 +103,6 @@ export default class Application extends Engine {
         this.perkyView.html = html
     }
 
-
-    setCss (css) {
-        return this.perkyView.setCss(css)
-    }
-
-
-    appendCss (css) {
-        return this.perkyView.appendCss(css)
-    }
-
 }
 
 
