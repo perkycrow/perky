@@ -3,6 +3,13 @@ import Registry from './registry'
 
 export default class ModuleRegistry extends Registry {
 
+    #parentModule
+    #parentModuleName
+    #registryName
+    #bind
+    #autoInit
+    #autoStart
+
     constructor ({
         registryName,
         parentModule,
@@ -13,14 +20,14 @@ export default class ModuleRegistry extends Registry {
     }) {
         super()
 
-        this.parentModule = parentModule
-        this.parentModuleName = parentModuleName
-        this.registryName = registryName
-        this.bind = bind
-        this.autoInit = autoInit
-        this.autoStart = autoStart
+        this.#parentModule = parentModule
+        this.#parentModuleName = parentModuleName
+        this.#registryName = registryName
+        this.#bind = bind
+        this.#autoInit = autoInit
+        this.#autoStart = autoStart
 
-        initEvents(this)
+        this.#initEvents()
     }
 
 
@@ -31,58 +38,69 @@ export default class ModuleRegistry extends Registry {
 
         super.set(moduleName, module)
 
-        module[this.parentModuleName] = this.parentModule
+        module[this.#parentModuleName] = this.#parentModule
 
-        if (this.bind) {
-            this.parentModule[moduleName] = module
+        if (this.#bind) {
+            this.#parentModule[moduleName] = module
         }
 
-        this.parentModule.emit(`${this.registryName}:set`, moduleName, module)
-        module.emit('registered', this.parentModule, moduleName)
+        this.#parentModule.emit(`${this.#registryName}:set`, moduleName, module)
+        module.emit('registered', this.#parentModule, moduleName)
 
-        handleLifecycleEvents(this, module)
+        this.#handleLifecycleEvents(module)
     }
 
-}
 
-
-function handleLifecycleEvents (registry, module) {
-    const {parentModule, autoInit, autoStart} = registry
-
-    if (autoInit && parentModule.initialized) {
-        module.init()
+    get registryName () {
+        return this.#registryName
     }
 
-    if (autoStart && parentModule.started) {
-        module.start()
-    }
-}
 
-
-function initEvents (registry) {
-
-    const {parentModule, parentModuleName, registryName} = registry
-
-    registry.on('delete', (moduleName, module) => {
-        if (parentModule[moduleName] === module) {
-            delete parentModule[moduleName]
+    #handleLifecycleEvents (module) {
+        if (this.#autoInit && this.#parentModule.initialized) {
+            module.init()
         }
 
-        parentModule.emit(`${registryName}:delete`, moduleName, module)
-        module.emit('unregistered', parentModule, moduleName)
-
-        delete module[parentModuleName]
-
-        if (typeof module.dispose === 'function') {
-            module.dispose()
+        if (this.#autoStart && this.#parentModule.started) {
+            module.start()
         }
-    })
+    }
 
 
-    registry.on('clear', parentModule.emitter(`${registryName}:clear`))
+    #initEvents () {
+        this.on('delete', (moduleName, module) => {
+            if (this.#parentModule[moduleName] === module) {
+                delete this.#parentModule[moduleName]
+            }
 
-    parentModule.on('init',  registry.invoker('init'))
-    parentModule.on('start', registry.invoker('start'))
-    parentModule.on('stop',  registry.invoker('stop'))
-    parentModule.on('dispose', () => registry.clear())
+            this.#parentModule.emit(`${this.#registryName}:delete`, moduleName, module)
+            module.emit('unregistered', this.#parentModule, moduleName)
+
+            delete module[this.#parentModuleName]
+
+            if (typeof module.dispose === 'function') {
+                module.dispose()
+            }
+        })
+
+        this.on('clear', this.#parentModule.emitter(`${this.#registryName}:clear`))
+
+        this.#parentModule.on('init',  this.invoker('init'))
+        this.#parentModule.on('start', this.invoker('start'))
+        this.#parentModule.on('stop',  this.invoker('stop'))
+        this.#parentModule.on('dispose', () => this.clear())
+    }
+
+
+    getConfig () {
+        return {
+            parentModule: this.#parentModule,
+            parentModuleName: this.#parentModuleName,
+            registryName: this.#registryName,
+            bind: this.#bind,
+            autoInit: this.#autoInit,
+            autoStart: this.#autoStart
+        }
+    }
+
 }

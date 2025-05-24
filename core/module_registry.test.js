@@ -22,12 +22,71 @@ describe(ModuleRegistry, () => {
 
 
     test('constructor', () => {
-        expect(registry.parentModule).toBe(parentModule)
-        expect(registry.parentModuleName).toBe('parent')
+        // Test configuration via getConfig()
+        const config = registry.getConfig()
+        expect(config.parentModule).toBe(parentModule)
+        expect(config.parentModuleName).toBe('parent')
+        expect(config.registryName).toBe('testRegistry')
+        expect(config.bind).toBe(true)
+        expect(config.autoInit).toBe(true)
+        expect(config.autoStart).toBe(true)
+        
+        // Test that configuration is read-only (returns a copy)
+        config.bind = false
+        expect(registry.getConfig().bind).toBe(true)
+        
+        // Test behavioral verification
+        const module = new PerkyModule()
+        const emitSpy = vi.spyOn(parentModule, 'emit')
+        
+        registry.set('testModule', module)
+        
+        // Test parentModule and parentModuleName configuration
+        expect(module.parent).toBe(parentModule)
+        
+        // Test bind configuration (true)
+        expect(parentModule.testModule).toBe(module)
+        
+        // Test registryName configuration
+        expect(emitSpy).toHaveBeenCalledWith('testRegistry:set', 'testModule', module)
+    })
+
+
+    test('getConfig', () => {
+        const config = registry.getConfig()
+        
+        expect(config).toEqual({
+            parentModule,
+            parentModuleName: 'parent',
+            registryName: 'testRegistry',
+            bind: true,
+            autoInit: true,
+            autoStart: true
+        })
+        
+        // Test immutability - modifying returned object shouldn't affect registry
+        config.bind = false
+        config.autoInit = false
+        
+        const configAfter = registry.getConfig()
+        expect(configAfter.bind).toBe(true)
+        expect(configAfter.autoInit).toBe(true)
+    })
+
+
+    test('registryName getter', () => {
         expect(registry.registryName).toBe('testRegistry')
-        expect(registry.bind).toBe(true)
-        expect(registry.autoInit).toBe(true)
-        expect(registry.autoStart).toBe(true)
+        
+        // Test that it's read-only (no setter) - should throw error
+        expect(() => {
+            registry.registryName = 'modified'
+        }).toThrow()
+        
+        // Confirm the value didn't change
+        expect(registry.registryName).toBe('testRegistry')
+        
+        // Test that private and public don't conflict
+        expect(registry.registryName).toBe(registry.getConfig().registryName)
     })
 
 
