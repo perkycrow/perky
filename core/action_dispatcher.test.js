@@ -14,7 +14,7 @@ describe(ActionDispatcher, () => {
 
 
     test('constructor', () => {
-        expect(dispatcher.controllers).toBeDefined()
+        expect(dispatcher.getController('any')).toBeUndefined()
         expect(dispatcher.activeControllerName).toBeNull()
     })
 
@@ -24,7 +24,7 @@ describe(ActionDispatcher, () => {
         
         dispatcher.register('main', controller)
         
-        expect(dispatcher.controllers.get('main')).toBe(controller)
+        expect(dispatcher.getController('main')).toBe(controller)
     })
 
 
@@ -37,7 +37,7 @@ describe(ActionDispatcher, () => {
         dispatcher.register('main', controller2)
         
         expect(consoleSpy).toHaveBeenCalled()
-        expect(dispatcher.controllers.get('main')).toBe(controller2)
+        expect(dispatcher.getController('main')).toBe(controller2)
         
         consoleSpy.mockRestore()
     })
@@ -50,7 +50,7 @@ describe(ActionDispatcher, () => {
         const result = dispatcher.unregister('main')
         
         expect(result).toBe(true)
-        expect(dispatcher.controllers.has('main')).toBe(false)
+        expect(dispatcher.getController('main')).toBeUndefined()
     })
 
 

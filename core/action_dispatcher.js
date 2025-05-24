@@ -4,9 +4,11 @@ import ModuleRegistry from './module_registry'
 
 export default class ActionDispatcher extends PerkyModule {
 
+    #controllers
+
     constructor () {
         super()
-        this.controllers = new ModuleRegistry({
+        this.#controllers = new ModuleRegistry({
             registryName: 'controller',
             parentModule: this,
             parentModuleName: 'actionDispatcher'
@@ -16,28 +18,28 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     get activeController () {
-        return this.controllers.get(this.activeControllerName)
+        return this.#controllers.get(this.activeControllerName)
     }
 
 
     register (name, controller) {
-        if (this.controllers.has(name)) {
+        if (this.#controllers.has(name)) {
             console.warn(`Controller "${name}" already registered. Overwriting...`)
         }
 
-        this.controllers.set(name, controller)
+        this.#controllers.set(name, controller)
 
         return this
     }
 
 
     unregister (name) {
-        if (!this.controllers.has(name)) {
+        if (!this.#controllers.has(name)) {
             return false
         }
 
-        const controller = this.controllers.get(name)
-        this.controllers.delete(name)
+        const controller = this.#controllers.get(name)
+        this.#controllers.delete(name)
 
         if (controller && controller.dispatcher) {
             delete controller.dispatcher
@@ -52,17 +54,17 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     getController (name) {
-        return this.controllers.get(name)
+        return this.#controllers.get(name)
     }
 
 
     getNameFor (controller) {
-        return this.controllers.keyFor(controller)
+        return this.#controllers.keyFor(controller)
     }
 
 
     setActive (name) {
-        if (!this.controllers.has(name)) {
+        if (!this.#controllers.has(name)) {
             console.warn(`Controller "${name}" not found. Cannot set as active controller.`)
             return false
         }
@@ -89,7 +91,7 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     dispatchTo (name, actionName, ...args) {
-        const controller = this.controllers.get(name)
+        const controller = this.#controllers.get(name)
 
         if (controller) {
 
