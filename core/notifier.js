@@ -1,12 +1,6 @@
-
 export default class Notifier {
 
-    #listenersFor
-
-    constructor () {
-        this.#listenersFor = {}
-    }
-
+    #listenersFor = {}
 
     getListenersFor (name) {
         return this.#listenersFor[name]

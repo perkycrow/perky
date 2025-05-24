@@ -165,4 +165,19 @@ describe(Notifier, () => {
         expect(listener).toHaveBeenCalledWith(1, 2, 3)
     })
 
+
+    test('instances have separate listeners', () => {
+        const notifier1 = new Notifier()
+        const notifier2 = new Notifier()
+
+        notifier1.on('test', () => {})
+        expect(notifier1.getListenersFor('test')).toHaveLength(1)
+        expect(notifier2.getListenersFor('test')).toBeUndefined()
+
+        notifier2.on('test', () => {})
+        notifier2.on('test', () => {})
+        expect(notifier1.getListenersFor('test')).toHaveLength(1)
+        expect(notifier2.getListenersFor('test')).toHaveLength(2)
+    })
+
 })
