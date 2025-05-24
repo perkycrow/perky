@@ -51,7 +51,6 @@ describe(GamepadDevice, () => {
         expect(GamepadDevice.methods).toContain('isButtonPressed')
         expect(GamepadDevice.methods).toContain('getButtonValue')
         expect(GamepadDevice.methods).toContain('getAxisValue')
-        expect(GamepadDevice.methods).toContain('getGamepadType')
         expect(GamepadDevice.events).toContain('gamepadconnected')
         expect(GamepadDevice.events).toContain('gamepaddisconnected')
         expect(GamepadDevice.events).toContain('buttonpress')
@@ -269,27 +268,6 @@ describe(GamepadDevice, () => {
         expect(gamepadDevice.getAxisValue(0, 0)).toBe(-0.8)
 
         expect(gamepadDevice.getAxisValue(5, 0)).toBe(0)
-    })
-
-
-    test('getGamepadType', () => {
-        expect(gamepadDevice.getGamepadType(0)).toBe('unknown')
-
-        const ps5Gamepad = createMockGamepad(0, 'DualSense Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 0ce6)', 16, 4)
-        gamepadDevice.gamepads[0] = ps5Gamepad
-        expect(gamepadDevice.getGamepadType(0)).toBe('ps5')
-
-        const ps4Gamepad = createMockGamepad(1, 'Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 05c4)', 16, 4)
-        gamepadDevice.gamepads[1] = ps4Gamepad
-        expect(gamepadDevice.getGamepadType(1)).toBe('ps4')
-
-        const xboxGamepad = createMockGamepad(2, 'Xbox 360 Controller (XInput STANDARD GAMEPAD)', 16, 4)
-        gamepadDevice.gamepads[2] = xboxGamepad
-        expect(gamepadDevice.getGamepadType(2)).toBe('xbox')
-
-        const genericGamepad = createMockGamepad(3, 'Generic Gamepad (Vendor: 1234)', 8, 2)
-        gamepadDevice.gamepads[3] = genericGamepad
-        expect(gamepadDevice.getGamepadType(3)).toBe('generic')
     })
 
 })

@@ -1,8 +1,8 @@
 import Engine from '../core/engine'
 import Registry from '../core/registry'
 import PerkyView from './perky_view'
-import InputObserver from './input_observer'
-import InputMapper from './input_mapper'
+import InputObserver from '../input/input_observer'
+import InputMapper from '../input/input_mapper'
 import SourceManager from './source_manager'
 import {loaders} from './loaders'
 

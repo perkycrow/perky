@@ -1,4 +1,4 @@
-import InputDevice from '../../application/input_device'
+import InputDevice from '../../input/input_device'
 import GamepadManager from '../gamepad_manager'
 
 
@@ -15,8 +15,7 @@ export default class GamepadDevice extends InputDevice {
         'getGamepadInfo',
         'isButtonPressed',
         'getButtonValue',
-        'getAxisValue',
-        'getGamepadType'
+        'getAxisValue'
     ]
 
     static events = [
@@ -108,8 +107,6 @@ export default class GamepadDevice extends InputDevice {
 
 
     setupEventForwarding () {
-        // Transférer tous les événements du manager vers le device
-        
         this.manager.on('gamepadconnected', (data) => {
             const handler = data.handler
             const index = data.index
@@ -176,7 +173,6 @@ export default class GamepadDevice extends InputDevice {
 
 
     isGamepadConnected (gamepadIndex) {
-        // Pour les tests, vérifier uniquement si l'objet gamepad existe
         return Boolean(this.gamepads[gamepadIndex])
     }
 
@@ -188,10 +184,8 @@ export default class GamepadDevice extends InputDevice {
 
     getGamepadInfo (gamepadIndex) {
         if (this.gamepads[gamepadIndex]) {
-            // Pour les tests, construire un objet info formaté comme attendu
             const gamepad = this.gamepads[gamepadIndex]
-            
-            // Si c'est un objet gamepad de test, le formater correctement
+
             if (gamepad.buttons && Array.isArray(gamepad.buttons)) {
                 return {
                     id: gamepad.id,
@@ -200,18 +194,17 @@ export default class GamepadDevice extends InputDevice {
                     connected: gamepad.connected,
                     timestamp: gamepad.timestamp,
                     buttons: gamepad.buttons.length,
-                    axes: gamepad.axes.length,
-                    type: this.getGamepadType(gamepadIndex)
+                    axes: gamepad.axes.length
                 }
             }
-            
-            // Utiliser le handler si disponible
+
+
             const handler = this.manager.getHandler(gamepadIndex)
             if (handler) {
                 return handler.getInfo()
             }
-            
-            // Sinon, utiliser les propriétés connues
+
+
             return gamepad
         }
         return null
@@ -222,14 +215,12 @@ export default class GamepadDevice extends InputDevice {
         if (!this.gamepads[gamepadIndex]) {
             return false
         }
-        
-        // Pour les tests, utiliser directement l'objet gamepad
+
         const gamepad = this.gamepads[gamepadIndex]
         if (gamepad.buttons && buttonIndex < gamepad.buttons.length) {
             return gamepad.buttons[buttonIndex].pressed || false
         }
-        
-        // Pour le cas réel, utiliser le handler
+
         const handler = this.manager.getHandler(gamepadIndex)
         return handler ? handler.isButtonPressed(buttonIndex) : false
     }
@@ -239,14 +230,12 @@ export default class GamepadDevice extends InputDevice {
         if (!this.gamepads[gamepadIndex]) {
             return 0
         }
-        
-        // Pour les tests, utiliser directement l'objet gamepad
+
         const gamepad = this.gamepads[gamepadIndex]
         if (gamepad.buttons && buttonIndex < gamepad.buttons.length) {
             return gamepad.buttons[buttonIndex].value || 0
         }
-        
-        // Pour le cas réel, utiliser le handler
+
         const handler = this.manager.getHandler(gamepadIndex)
         return handler ? handler.getButtonValue(buttonIndex) : 0
     }
@@ -256,54 +245,15 @@ export default class GamepadDevice extends InputDevice {
         if (!this.gamepads[gamepadIndex]) {
             return 0
         }
-        
-        // Pour les tests, utiliser directement l'objet gamepad
+
         const gamepad = this.gamepads[gamepadIndex]
         if (gamepad.axes && axisIndex < gamepad.axes.length) {
             const value = gamepad.axes[axisIndex]
             return Math.abs(value) < this.deadzone ? 0 : value
         }
-        
-        // Pour le cas réel, utiliser le handler
+
         const handler = this.manager.getHandler(gamepadIndex)
         return handler ? handler.getAxisValue(axisIndex) : 0
-    }
-
-
-    getGamepadType (gamepadIndex = 0) {
-        if (!this.gamepads[gamepadIndex]) {
-            return 'unknown'
-        }
-        
-        // Pour les tests, déterminer le type à partir de l'ID
-        const gamepad = this.gamepads[gamepadIndex]
-        if (gamepad.id) {
-            // Utiliser parseGamepadId pour une détection plus précise
-            const handler = this.manager.getHandler(gamepadIndex)
-            if (handler) {
-                return handler.getType()
-            }
-            
-            // Fallback à notre détection simplifiée
-            const id = gamepad.id.toLowerCase()
-            
-            if (id.includes('dualsense') || (id.includes('054c') && id.includes('0ce6'))) {
-                return 'ps5'
-            }
-            if (id.includes('dualshock 4') || (id.includes('054c') && id.includes('wireless controller'))) {
-                return 'ps4'
-            }
-            if (id.includes('xbox')) {
-                return 'xbox'
-            }
-            if (id.includes('057e') || id.includes('switch')) {
-                return 'switch'
-            }
-            
-            return 'generic'
-        }
-        
-        return 'unknown'
     }
 
 }
