@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 
     const pressedKeysList = document.getElementById('pressed-keys-list')
-    const modifiersList = document.getElementById('modifiers-list')
     const mousePosition = document.getElementById('mouse-position')
     const mouseButtonsList = document.getElementById('mouse-buttons-list')
 
@@ -24,13 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const pressedKeys = inputObserver.getPressedKeys()
         pressedKeysList.textContent = pressedKeys.length > 0 
             ? pressedKeys.join(', ') 
-            : 'None'
-    }
-
-    function updateModifiers () {
-        const modifiers = inputObserver.getPressedKeyModifiers()
-        modifiersList.textContent = modifiers.length > 0 
-            ? modifiers.join(', ') 
             : 'None'
     }
 
@@ -54,13 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
     inputObserver.on('keydown', (event) => {
         logger.info(`Key pressed: ${event.code} (${event.key})`)
         updatePressedKeys()
-        updateModifiers()
     })
 
     inputObserver.on('keyup', (event) => {
-        logger.info(`Key released: ${event.code} (${event.key})`)
+        logger.success(`Key released: ${event.code} (${event.key})`)
         updatePressedKeys()
-        updateModifiers()
     })
 
     inputObserver.on('mousedown', (event) => {
@@ -71,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     inputObserver.on('mouseup', (event) => {
         const buttonName = ['Left', 'Middle', 'Right'][event.button] || 'Unknown'
-        logger.info(`Button released: ${buttonName}`)
+        logger.success(`Button released: ${buttonName}`)
         updateMouseButtons()
     })
 
