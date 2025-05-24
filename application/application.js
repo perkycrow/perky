@@ -18,11 +18,9 @@ export default class Application extends Engine {
 
         this.registerModule('inputObserver', new InputObserver({container: this.element}))
 
-        this.registerModule('inputMapper', new InputMapper({inputObserver: this.inputObserver}))
-        this.registerModule('sourceManager', new SourceManager({
-            loaders: this.loaders,
-            manifest: this.manifest
-        }))
+        this.registerModule('inputMapper', new InputMapper(this))
+
+        this.registerModule('sourceManager', new SourceManager(this))
 
         initEvents(this)
     }
