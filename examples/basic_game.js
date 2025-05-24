@@ -145,8 +145,6 @@ function init () {
     game.perkyView.element.style.width = '100%'
     game.perkyView.element.style.height = '100%'
     game.start()
-
-    console.log(game)
 }
 
 
@@ -374,7 +372,7 @@ function updateGame (game) {
     }
 
     if (moved) {
-        game.updateCameraPosition()
+        updateCameraPosition(game)
     }
 }
 
