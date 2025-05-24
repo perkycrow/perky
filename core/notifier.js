@@ -1,13 +1,15 @@
 
 export default class Notifier {
 
+    #listenersFor
+
     constructor () {
-        this.listenersFor = {}
+        this.#listenersFor = {}
     }
 
 
     getListenersFor (name) {
-        return this.listenersFor[name]
+        return this.#listenersFor[name]
     }
 
 
@@ -16,13 +18,11 @@ export default class Notifier {
             throw new TypeError('Listener must be a function')
         }
 
-        const {listenersFor} = this
-
-        if (!listenersFor[name]) {
-            listenersFor[name] = []
+        if (!this.#listenersFor[name]) {
+            this.#listenersFor[name] = []
         }
 
-        listenersFor[name].push(listener)
+        this.#listenersFor[name].push(listener)
 
         return listener
     }
@@ -99,7 +99,7 @@ export default class Notifier {
 
 
     removeListeners () {
-        Object.keys(this.listenersFor).forEach(name => this.removeListenersFor(name))
+        Object.keys(this.#listenersFor).forEach(name => this.removeListenersFor(name))
     }
 
 
@@ -108,7 +108,7 @@ export default class Notifier {
 
         if (listeners) {
             listeners.length = 0
-            delete this.listenersFor[name]
+            delete this.#listenersFor[name]
             return true
         }
 

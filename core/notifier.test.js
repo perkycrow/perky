@@ -12,15 +12,15 @@ describe(Notifier, () => {
 
 
     test('constructor', () => {
-        expect(notifier.listenersFor).toEqual({})
+        expect(notifier.getListenersFor('any')).toBeUndefined()
     })
 
 
     test('getListenersFor', () => {
         expect(notifier.getListenersFor('foo')).toBeUndefined()
 
-        notifier.listenersFor.foo = []
-        expect(notifier.getListenersFor('foo')).toEqual([])
+        notifier.on('foo', () => {})
+        expect(notifier.getListenersFor('foo')).toHaveLength(1)
     })
 
 
@@ -28,7 +28,7 @@ describe(Notifier, () => {
         const listener = () => {}
 
         expect(notifier.on('foo', listener)).toBe(listener)
-        expect(notifier.listenersFor.foo).toEqual([listener])
+        expect(notifier.getListenersFor('foo')).toEqual([listener])
     })
 
 
@@ -37,16 +37,16 @@ describe(Notifier, () => {
 
         expect(notifier.off('foo', listener)).toBe(false)
 
-        notifier.listenersFor.foo = [listener]
+        notifier.on('foo', listener)
         expect(notifier.off('foo', listener)).toBe(true)
-        expect(notifier.listenersFor.foo).toEqual([])
+        expect(notifier.getListenersFor('foo')).toEqual([])
     })
 
 
     test('emit', () => {
         const listener = vi.fn()
 
-        notifier.listenersFor.foo = [listener]
+        notifier.on('foo', listener)
         notifier.emit('foo', 1, 2, 3)
         expect(listener).toHaveBeenCalledWith(1, 2, 3)
 
@@ -59,7 +59,8 @@ describe(Notifier, () => {
         const listener1 = vi.fn().mockResolvedValue(42)
         const listener2 = vi.fn().mockResolvedValue(24)
 
-        notifier.listenersFor.foo = [listener1, listener2]
+        notifier.on('foo', listener1)
+        notifier.on('foo', listener2)
         await notifier.emitAsync('foo', 1, 2, 3)
         
         expect(listener1).toHaveBeenCalledWith(1, 2, 3)
@@ -76,13 +77,16 @@ describe(Notifier, () => {
         const listener2 = vi.fn().mockReturnValue(false)
         const listener3 = vi.fn()
 
-        notifier.listenersFor.foo = [listener1, listener1]
+        notifier.on('foo', listener1)
+        notifier.on('foo', listener1)
         expect(notifier.emitCallbacks('foo', 1, 2, 3)).toBe(true)
         expect(listener1).toHaveBeenCalledTimes(2)
         expect(listener1).toHaveBeenCalledWith(1, 2, 3)
 
         listener1.mockClear()
-        notifier.listenersFor.bar = [listener1, listener2, listener3]
+        notifier.on('bar', listener1)
+        notifier.on('bar', listener2)
+        notifier.on('bar', listener3)
         expect(notifier.emitCallbacks('bar', 4, 5, 6)).toBe(false)
         expect(listener1).toHaveBeenCalledTimes(1)
         expect(listener2).toHaveBeenCalledTimes(1)
@@ -97,13 +101,16 @@ describe(Notifier, () => {
         const listener2 = vi.fn().mockResolvedValue(false)
         const listener3 = vi.fn()
 
-        notifier.listenersFor.foo = [listener1, listener1]
+        notifier.on('foo', listener1)
+        notifier.on('foo', listener1)
         expect(await notifier.emitCallbacksAsync('foo', 1, 2, 3)).toBe(true)
         expect(listener1).toHaveBeenCalledTimes(2)
         expect(listener1).toHaveBeenCalledWith(1, 2, 3)
 
         listener1.mockClear()
-        notifier.listenersFor.bar = [listener1, listener2, listener3]
+        notifier.on('bar', listener1)
+        notifier.on('bar', listener2)
+        notifier.on('bar', listener3)
         expect(await notifier.emitCallbacksAsync('bar', 4, 5, 6)).toBe(false)
         expect(listener1).toHaveBeenCalledTimes(1)
         expect(listener2).toHaveBeenCalledTimes(1)
@@ -114,20 +121,28 @@ describe(Notifier, () => {
 
 
     test('removeListeners', () => {
-        notifier.listenersFor.foo = [() => {}]
-        notifier.listenersFor.bar = [() => {}]
+        notifier.on('foo', () => {})
+        notifier.on('bar', () => {})
+
+        expect(notifier.getListenersFor('foo')).toHaveLength(1)
+        expect(notifier.getListenersFor('bar')).toHaveLength(1)
 
         notifier.removeListeners()
-        expect(notifier.listenersFor).toEqual({})
+        expect(notifier.getListenersFor('foo')).toBeUndefined()
+        expect(notifier.getListenersFor('bar')).toBeUndefined()
     })
 
 
     test('removeListenersFor', () => {
-        notifier.listenersFor.foo = [() => {}]
-        notifier.listenersFor.bar = [() => {}]
+        notifier.on('foo', () => {})
+        notifier.on('bar', () => {})
+
+        expect(notifier.getListenersFor('foo')).toHaveLength(1)
+        expect(notifier.getListenersFor('bar')).toHaveLength(1)
 
         notifier.removeListenersFor('foo')
-        expect(notifier.listenersFor).toEqual({bar: notifier.listenersFor.bar})
+        expect(notifier.getListenersFor('foo')).toBeUndefined()
+        expect(notifier.getListenersFor('bar')).toHaveLength(1)
     })
 
 
