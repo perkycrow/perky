@@ -78,7 +78,7 @@ export default class Canvas2D {
         
         const m = object.matrixWorld.elements
         
-        // Invert Y components of the matrix to match Canvas coordinate system
+        // Apply transformation with Y-axis inversion
         this.ctx.transform(m[0], -m[1], -m[4], m[5], m[12], -m[13])
     }
 

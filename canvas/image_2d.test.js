@@ -44,7 +44,7 @@ describe(Image2D, () => {
         expect(customImage2d.userData.image).toBe(mockImage)
         expect(customImage2d.userData.width).toBe(200)
         expect(customImage2d.userData.height).toBe(150)
-        expect(customImage2d.rotation.z).toBe(Math.PI / 4)
+        expect(customImage2d.rotation.z).toBe(-(Math.PI / 4))
         expect(customImage2d.userData.opacity).toBe(0.9)
     })
 
@@ -88,7 +88,7 @@ describe(Image2D, () => {
 
         expect(image2d.position.x).toBe(25)
         expect(image2d.position.y).toBe(50)
-        expect(image2d.rotation.z).toBe(Math.PI / 6)
+        expect(image2d.rotation.z).toBe(-(Math.PI / 6))
         expect(image2d.scale.x).toBe(1.5)
         expect(image2d.scale.y).toBe(2)
         expect(image2d.userData.opacity).toBe(0.3)

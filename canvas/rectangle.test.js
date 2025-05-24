@@ -42,7 +42,7 @@ describe(Rectangle, () => {
         expect(customRect.userData.color).toBe('#ff0000')
         expect(customRect.userData.strokeColor).toBe('#00ff00')
         expect(customRect.userData.strokeWidth).toBe(4)
-        expect(customRect.rotation.z).toBe(Math.PI / 4)
+        expect(customRect.rotation.z).toBe(-(Math.PI / 4))
         expect(customRect.userData.opacity).toBe(0.6)
     })
 
@@ -81,7 +81,7 @@ describe(Rectangle, () => {
 
         expect(rectangle.position.x).toBe(25)
         expect(rectangle.position.y).toBe(50)
-        expect(rectangle.rotation.z).toBe(Math.PI / 6)
+        expect(rectangle.rotation.z).toBe(-(Math.PI / 6))
         expect(rectangle.scale.x).toBe(1.5)
         expect(rectangle.scale.y).toBe(2)
         expect(rectangle.userData.opacity).toBe(0.3)

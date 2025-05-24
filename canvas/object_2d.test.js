@@ -14,7 +14,7 @@ describe(Object2D, () => {
         expect(object2d.position.x).toBe(0)
         expect(object2d.position.y).toBe(0)
         expect(object2d.position.z).toBe(0)
-        expect(object2d.rotation.z).toBe(0)
+        expect(object2d.rotation.z).toBe(-0)
         expect(object2d.scale.x).toBe(1)
         expect(object2d.scale.y).toBe(1)
         expect(object2d.userData.opacity).toBe(1)
@@ -36,7 +36,7 @@ describe(Object2D, () => {
 
         expect(customObject.position.x).toBe(100)
         expect(customObject.position.y).toBe(200)
-        expect(customObject.rotation.z).toBe(Math.PI / 2)
+        expect(customObject.rotation.z).toBe(-Math.PI / 2)
         expect(customObject.scale.x).toBe(2)
         expect(customObject.scale.y).toBe(3)
         expect(customObject.userData.opacity).toBe(0.5)
@@ -57,7 +57,7 @@ describe(Object2D, () => {
     test('setRotation', () => {
         const result = object2d.setRotation(Math.PI / 4)
         
-        expect(object2d.rotation.z).toBe(Math.PI / 4)
+        expect(object2d.rotation.z).toBe(-Math.PI / 4)
         expect(result).toBe(object2d)
     })
 
@@ -124,6 +124,9 @@ describe(Object2D, () => {
         const matrix = object2d.matrixWorld
         expect(matrix.elements[12]).toBe(100)
         expect(matrix.elements[13]).toBe(200)
+        
+        // Note: rotation is internally stored as -Math.PI/2
+        expect(object2d.rotation.z).toBe(-Math.PI / 2)
     })
 
 })

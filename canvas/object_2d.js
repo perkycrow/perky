@@ -16,7 +16,7 @@ export default class Object2D extends Object3D {
         } = options
         
         this.position.set(x, y, 0)
-        this.rotation.z = rotation
+        this.rotation.z = -rotation
         this.scale.set(scaleX, scaleY, 1)
         
         this.userData.opacity = opacity
@@ -33,7 +33,9 @@ export default class Object2D extends Object3D {
 
 
     setRotation (rotation) {
-        this.rotation.z = rotation
+        // Invert rotation to maintain counter-clockwise positive rotation
+        // in Canvas coordinate system (Y pointing down)
+        this.rotation.z = -rotation
         return this
     }
 

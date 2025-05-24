@@ -66,7 +66,7 @@ describe(Circle, () => {
 
         expect(circle.position.x).toBe(50)
         expect(circle.position.y).toBe(75)
-        expect(circle.rotation.z).toBe(Math.PI / 3)
+        expect(circle.rotation.z).toBe(-(Math.PI / 3))
         expect(circle.scale.x).toBe(2)
         expect(circle.scale.y).toBe(2)
         expect(circle.userData.opacity).toBe(0.5)

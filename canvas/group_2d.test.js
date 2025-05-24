@@ -29,7 +29,7 @@ describe(Group2D, () => {
 
         expect(customGroup.position.x).toBe(100)
         expect(customGroup.position.y).toBe(200)
-        expect(customGroup.rotation.z).toBe(Math.PI / 2)
+        expect(customGroup.rotation.z).toBe(-(Math.PI / 2))
         expect(customGroup.userData.opacity).toBe(0.5)
         expect(customGroup.userData.renderType).toBeNull()
     })
@@ -76,7 +76,7 @@ describe(Group2D, () => {
 
         expect(group.position.x).toBe(50)
         expect(group.position.y).toBe(100)
-        expect(group.rotation.z).toBe(Math.PI / 3)
+        expect(group.rotation.z).toBe(-(Math.PI / 3))
         expect(group.scale.x).toBe(2)
         expect(group.scale.y).toBe(3)
         expect(group.userData.opacity).toBe(0.7)
