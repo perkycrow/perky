@@ -401,16 +401,21 @@ describe(Engine, () => {
     test('controller clear event', () => {
         const actionDispatcherSpy = vi.spyOn(engine.actionDispatcher, 'emit')
         
-        engine.actionDispatcher.controllers.emit('clear')
+        engine.registerController('test1', new ActionController())
+        engine.registerController('test2', new ActionController())
+        
+        engine.unregisterController('test1')
+        engine.unregisterController('test2')
 
-        expect(actionDispatcherSpy).toHaveBeenCalledWith('controller:clear')
+        expect(actionDispatcherSpy).toHaveBeenCalledWith('controller:delete', 'test1', expect.any(ActionController))
+        expect(actionDispatcherSpy).toHaveBeenCalledWith('controller:delete', 'test2', expect.any(ActionController))
     })
 
 
     test('action dispatcher initialization', () => {
         expect(engine.actionDispatcher).toBeInstanceOf(ActionDispatcher)
         expect(engine.getController('application')).toBeInstanceOf(ActionController)
-        expect(engine.actionDispatcher.activeControllerName).toBe('application')
+        expect(engine.actionDispatcher.getActiveName()).toBe('application')
     })
 
     test('registerModule after initialization calls init on the module', () => {

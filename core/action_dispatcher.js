@@ -5,6 +5,7 @@ import ModuleRegistry from './module_registry'
 export default class ActionDispatcher extends PerkyModule {
 
     #controllers
+    #activeControllerName = null
 
     constructor () {
         super()
@@ -13,12 +14,16 @@ export default class ActionDispatcher extends PerkyModule {
             parentModule: this,
             parentModuleName: 'actionDispatcher'
         })
-        this.activeControllerName = null
     }
 
 
     get activeController () {
-        return this.#controllers.get(this.activeControllerName)
+        return this.#controllers.get(this.#activeControllerName)
+    }
+
+
+    getActiveName () {
+        return this.#activeControllerName
     }
 
 
@@ -45,8 +50,8 @@ export default class ActionDispatcher extends PerkyModule {
             delete controller.dispatcher
         }
 
-        if (this.activeControllerName === name) {
-            this.activeControllerName = null
+        if (this.#activeControllerName === name) {
+            this.#activeControllerName = null
         }
 
         return true
@@ -69,7 +74,7 @@ export default class ActionDispatcher extends PerkyModule {
             return false
         }
 
-        this.activeControllerName = name
+        this.#activeControllerName = name
 
         return true
     }
@@ -81,12 +86,12 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     dispatch (actionName, ...args) {
-        if (!this.activeControllerName) {
+        if (!this.#activeControllerName) {
             console.warn('No active controller set for action dispatch')
             return false
         }
 
-        return this.dispatchTo(this.activeControllerName, actionName, ...args)
+        return this.dispatchTo(this.#activeControllerName, actionName, ...args)
     }
 
 
