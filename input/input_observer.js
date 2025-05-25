@@ -23,7 +23,7 @@ export default class InputObserver extends PerkyModule {
         this.controlsMap = {}
         this.methodsMap = {}
 
-        initEvents(this)
+        this.#initEvents()
 
         if (mouse) {
             this.registerDevice('mouse', new MouseDevice({container}))
@@ -69,128 +69,129 @@ export default class InputObserver extends PerkyModule {
         return this.devices.delete(deviceName)
     }
 
-}
 
+    #initEvents () {
+        this.on('device:set', (deviceName, device) => {
+            this.#addEvents(deviceName, device)
+            this.#addMethods(deviceName, device)
+            this.#addControls(deviceName, device)
+        })
 
-function initEvents (observer) {
-    observer.on('device:set', (deviceName, device) => {
-        addEvents(observer, deviceName, device)
-        addMethods(observer, deviceName, device)
-        addControls(observer, deviceName, device)
-    })
-
-    observer.on('device:delete', (deviceName, device) => {
-        removeEvents(observer, deviceName, device)
-        removeMethods(observer, deviceName, device)
-        removeControls(observer, deviceName, device)
-    })
-}
-
-
-function addEvents (observer, deviceName, device) {
-    const events = device.events || []
-
-    for (const event of events) {
-        device.on(event, (data) => observer.emit(event, data, deviceName, device))
-
-        observer.eventsMap[event] ||= []
-        observer.eventsMap[event].push(deviceName)
+        this.on('device:delete', (deviceName, device) => {
+            this.#removeEvents(deviceName, device)
+            this.#removeMethods(deviceName, device)
+            this.#removeControls(deviceName, device)
+        })
     }
-}
 
 
-function removeEvents (observer, deviceName, device) {
-    const events = device.events || []
+    #addEvents (deviceName, device) {
+        const events = device.events || []
 
-    for (const event of events) {
-        observer.eventsMap[event] ||= []
+        for (const event of events) {
+            device.on(event, (data) => this.emit(event, data, deviceName, device))
 
-        const index = observer.eventsMap[event].indexOf(deviceName)
-
-        if (index !== -1) {
-            observer.eventsMap[event].splice(index, 1)
+            this.eventsMap[event] ||= []
+            this.eventsMap[event].push(deviceName)
         }
     }
-}
 
 
-function addMethods (observer, deviceName, device) {
-    const methods = device.methods || []
+    #removeEvents (deviceName, device) {
+        const events = device.events || []
 
-    for (const method of methods) {
-        addMethod(observer, deviceName, device, method)
-    }
-}
+        for (const event of events) {
+            this.eventsMap[event] ||= []
 
-function addMethod (observer, deviceName, device, method) {
-    if (typeof device[method] === 'function') {
-        if (!(method in observer)) {
-            observer[method] = (...args) => device[method](...args)
-        }
+            const index = this.eventsMap[event].indexOf(deviceName)
 
-        observer.methodsMap[method] ||= []
-        if (!observer.methodsMap[method].includes(deviceName)) {
-            observer.methodsMap[method].push(deviceName)
+            if (index !== -1) {
+                this.eventsMap[event].splice(index, 1)
+            }
         }
     }
-}
 
 
-function updateMethodProxy (observer, method) {
-    if (!observer.methodsMap[method] || observer.methodsMap[method].length === 0) {
-        delete observer[method]
-    } else {
-        const newDeviceName = observer.methodsMap[method][0]
-        const newDevice = observer.devices.get(newDeviceName)
+    #addMethods (deviceName, device) {
+        const methods = device.methods || []
 
-        if (newDevice && typeof newDevice[method] === 'function') {
-            observer[method] = (...args) => newDevice[method](...args)
+        for (const method of methods) {
+            this.#addMethod(deviceName, device, method)
+        }
+    }
+
+
+    #addMethod (deviceName, device, method) {
+        if (typeof device[method] === 'function') {
+            if (!(method in this)) {
+                this[method] = (...args) => device[method](...args)
+            }
+
+            this.methodsMap[method] ||= []
+            if (!this.methodsMap[method].includes(deviceName)) {
+                this.methodsMap[method].push(deviceName)
+            }
+        }
+    }
+
+
+    #updateMethodProxy (method) {
+        if (!this.methodsMap[method] || this.methodsMap[method].length === 0) {
+            delete this[method]
         } else {
-            delete observer[method]
-            observer.methodsMap[method] = []
+            const newDeviceName = this.methodsMap[method][0]
+            const newDevice = this.devices.get(newDeviceName)
+
+            if (newDevice && typeof newDevice[method] === 'function') {
+                this[method] = (...args) => newDevice[method](...args)
+            } else {
+                delete this[method]
+                this.methodsMap[method] = []
+            }
         }
     }
-}
 
 
-function removeMethods (observer, deviceName, device) {
-    const methods = device.methods || []
+    #removeMethods (deviceName, device) {
+        const methods = device.methods || []
 
-    for (const method of methods) {
-        observer.methodsMap[method] ||= []
+        for (const method of methods) {
+            this.methodsMap[method] ||= []
 
-        const index = observer.methodsMap[method].indexOf(deviceName)
+            const index = this.methodsMap[method].indexOf(deviceName)
 
-        if (index !== -1) {
-            observer.methodsMap[method].splice(index, 1)
-            updateMethodProxy(observer, method)
+            if (index !== -1) {
+                this.methodsMap[method].splice(index, 1)
+                this.#updateMethodProxy(method)
+            }
         }
     }
-}
 
 
-function addControls (observer, deviceName, device) {
-    const controls = device.controls || []
+    #addControls (deviceName, device) {
+        const controls = device.controls || []
 
-    for (const control of controls) {
-        observer.controlsMap[control] ||= []
-        if (!observer.controlsMap[control].includes(deviceName)) {
-            observer.controlsMap[control].push(deviceName)
+        for (const control of controls) {
+            this.controlsMap[control] ||= []
+            if (!this.controlsMap[control].includes(deviceName)) {
+                this.controlsMap[control].push(deviceName)
+            }
         }
     }
-}
 
 
-function removeControls (observer, deviceName, device) {
-    const controls = device.controls || []
+    #removeControls (deviceName, device) {
+        const controls = device.controls || []
 
-    for (const control of controls) {
-        observer.controlsMap[control] ||= []
+        for (const control of controls) {
+            this.controlsMap[control] ||= []
 
-        const index = observer.controlsMap[control].indexOf(deviceName)
+            const index = this.controlsMap[control].indexOf(deviceName)
 
-        if (index !== -1) {
-            observer.controlsMap[control].splice(index, 1)
+            if (index !== -1) {
+                this.controlsMap[control].splice(index, 1)
+            }
         }
     }
+
 }
