@@ -29,7 +29,7 @@ export default class CodeDisplay extends PerkyView {
             this.setCode(params.code)
         }
 
-        initEvents(this)
+        this.#initEvents()
     }
 
 
@@ -57,15 +57,14 @@ export default class CodeDisplay extends PerkyView {
         })
     }
 
-}
+    #initEvents () {
+        const copyButton = this.element.querySelector('.perky-code-copy')
 
+        copyButton.addEventListener('click', () => {
+            this.copyToClipboard()
+        })
+    }
 
-function initEvents (app) {
-    const copyButton = app.element.querySelector('.perky-code-copy')
-
-    copyButton.addEventListener('click', () => {
-        app.copyToClipboard()
-    })
 }
 
 
