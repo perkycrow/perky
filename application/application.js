@@ -22,7 +22,7 @@ export default class Application extends Engine {
 
         this.registerModule('sourceManager', new SourceManager(this))
 
-        initEvents(this)
+        this.#initEvents(this)
     }
 
 
@@ -101,25 +101,22 @@ export default class Application extends Engine {
         this.perkyView.html = html
     }
 
-}
+    #initEvents () {
+        const {inputObserver, inputMapper, actionDispatcher, perkyView} = this
 
+        inputMapper.on('action', (action, ...args) => actionDispatcher.dispatch(action, ...args))
 
-function initEvents (application) {
+        inputObserver.on('keydown', this.emitter('keydown'))
 
-    const {inputObserver, inputMapper, actionDispatcher, perkyView} = application
+        inputObserver.on('keyup', this.emitter('keyup'))
 
-    inputMapper.on('action', (action, ...args) => actionDispatcher.dispatch(action, ...args))
+        inputObserver.on('mousemove', this.emitter('mousemove'))
 
-    inputObserver.on('keydown', application.emitter('keydown'))
+        inputObserver.on('mousedown', this.emitter('mousedown'))
 
-    inputObserver.on('keyup', application.emitter('keyup'))
+        inputObserver.on('mouseup', this.emitter('mouseup'))
 
-    inputObserver.on('mousemove', application.emitter('mousemove'))
-
-    inputObserver.on('mousedown', application.emitter('mousedown'))
-
-    inputObserver.on('mouseup', application.emitter('mouseup'))
-
-    perkyView.on('resize', application.emitter('resize'))
+        perkyView.on('resize', this.emitter('resize'))
+    }
 
 }
