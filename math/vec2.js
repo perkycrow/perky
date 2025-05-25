@@ -5,10 +5,13 @@ export default class Vec2 extends Vector2 {
 
     constructor (params, ...args) {
         if (typeof params === 'object') {
-            super(params.x, params.y)
+            if (Array.isArray(params)) {
+                super(...params)
+            } else {
+                super(params.x, params.y)
+            }
         } else {
             super(params, ...args)
         }
     }
-
 }

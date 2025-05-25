@@ -21,6 +21,15 @@ describe('Vec4', () => {
     })
 
 
+    test('constructor with array', () => {
+        const vec = new Vec4([7, 8, 9, 10])
+        expect(vec.x).toBe(7)
+        expect(vec.y).toBe(8)
+        expect(vec.z).toBe(9)
+        expect(vec.w).toBe(10)
+    })
+
+
     test('constructor with no parameters', () => {
         const vec = new Vec4()
         expect(vec.x).toBe(0)

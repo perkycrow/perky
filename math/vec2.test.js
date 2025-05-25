@@ -17,6 +17,13 @@ describe('Vec2', () => {
     })
 
 
+    test('constructor with array', () => {
+        const vec = new Vec2([7, 8])
+        expect(vec.x).toBe(7)
+        expect(vec.y).toBe(8)
+    })
+
+
     test('constructor with no parameters', () => {
         const vec = new Vec2()
         expect(vec.x).toBe(0)
