@@ -43,8 +43,6 @@ describe(GamepadDevice, () => {
 
 
     test('static properties', () => {
-        expect(GamepadDevice.controls).toContain('gamepadButton')
-        expect(GamepadDevice.controls).toContain('gamepadAxis')
         expect(GamepadDevice.methods).toContain('isGamepadConnected')
         expect(GamepadDevice.methods).toContain('getConnectedGamepads')
         expect(GamepadDevice.methods).toContain('getGamepadInfo')

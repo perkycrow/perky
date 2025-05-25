@@ -4,11 +4,6 @@ import GamepadManager from '../gamepad_manager'
 
 export default class GamepadDevice extends InputDevice {
 
-    static controls = [
-        'gamepadButton',
-        'gamepadAxis'
-    ]
-
     static methods = [
         'isGamepadConnected',
         'getConnectedGamepads',
