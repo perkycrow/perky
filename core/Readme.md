@@ -13,6 +13,9 @@ The base class for all modules in the system. It handles initialization, lifecyc
 ### Registry
 A key-value store with event emitting capabilities. Used throughout the system to manage collections of objects with consistent access patterns and lifecycle management.
 
+### ModuleRegistry
+Extends Registry to provide specialized module management capabilities. Handles automatic initialization and lifecycle management of modules, with support for parent-child relationships and automatic binding. Manages module registration, unregistration, and lifecycle events propagation.
+
 ### Manifest
 Stores and manages application metadata, configuration, resource descriptors, and aliases. Handles serialization and deserialization for saving and loading application state.
 
@@ -33,10 +36,10 @@ Implements a predictable random number generator with utility methods for games 
 
 ### Utils
 A collection of utility functions organized in separate files:
-- String utilities
-- Object utilities
-- Math utilities
-- Random utilities
+- **String utilities** (`string_utils.js`) - String manipulation, formatting, and validation functions
+- **Object utilities** (`object_utils.js`) - Object traversal, manipulation, and deep operations
+- **Math utilities** (`math_utils.js`) - Mathematical calculations, geometry, and numeric operations
+- **Random utilities** (`random_utils.js`) - Random generation helpers and probability functions
 
-These utilities provide common operations used throughout the system, such as string manipulation, object traversal, and mathematical calculations.
+These utilities provide common operations used throughout the system, such as string manipulation, object traversal, and mathematical calculations. All utilities are exported through the main `utils.js` file for convenient access.
 
