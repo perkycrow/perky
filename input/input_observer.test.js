@@ -5,7 +5,6 @@ import {vi} from 'vitest'
 
 
 class GamepadDevice extends InputDevice {
-    static controls = ['axis', 'button']
     static methods = ['getAxisValue', 'isButtonPressed']
     static events = ['buttondown', 'buttonup']
 
@@ -26,7 +25,6 @@ class GamepadDevice extends InputDevice {
 
 
 class TouchTestDevice extends InputDevice {
-    static controls = ['touch']
     static methods = ['getTouches', 'isKeyPressed']
     static events = ['touchstart', 'touchend']
 
@@ -57,18 +55,9 @@ describe(InputObserver, () => {
     })
 
 
-    test('debug controls in GamepadDevice', () => {
-        const gamepad = new GamepadDevice()
-        
-        expect(gamepad.controls).toContain('axis')
-        expect(gamepad.controls).toContain('button')
-    })
-
-
     test('constructor', () => {
         expect(observer.devices).toBeDefined()
         expect(observer.eventsMap).toEqual({})
-        expect(observer.controlsMap).toEqual({})
         expect(observer.methodsMap).toEqual({})
     })
 
@@ -107,15 +96,6 @@ describe(InputObserver, () => {
         expect(observer.methods).toContain('isKeyModifierPressed')
         expect(observer.methods).toContain('getPressedKeys')
         expect(observer.methods).toContain('getPressedKeyModifiers')
-    })
-
-
-    test('controls getter', () => {
-        expect(observer.controls).toEqual([])
-
-        observer.registerDevice('keyboard', keyboard)
-        
-        expect(observer.controls).toContain('key')
     })
 
 
@@ -165,9 +145,6 @@ describe(InputObserver, () => {
 
     test('adding multiple devices', () => {
         const gamepad = new GamepadDevice()
-
-        expect(gamepad.controls).toContain('axis')
-        expect(gamepad.controls).toContain('button')
         
         observer.registerDevice('keyboard', keyboard)
         observer.registerDevice('gamepad', gamepad)
@@ -185,13 +162,11 @@ describe(InputObserver, () => {
         observer.registerDevice('keyboard', keyboard)
         
         expect(observer.methodsMap.isKeyPressed).toContain('keyboard')
-        expect(observer.controlsMap.key).toContain('keyboard')
         expect(observer.eventsMap.keydown).toContain('keyboard')
         
         observer.unregisterDevice('keyboard')
         
         expect(observer.methodsMap.isKeyPressed || []).not.toContain('keyboard')
-        expect(observer.controlsMap.key || []).not.toContain('keyboard')
         expect(observer.eventsMap.keydown || []).not.toContain('keyboard')
     })
 

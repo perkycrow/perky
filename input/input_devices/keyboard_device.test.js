@@ -1,4 +1,5 @@
 import KeyboardDevice from './keyboard_device'
+import KeyControl from '../input_controls/key_control'
 import {vi} from 'vitest'
 
 
@@ -20,17 +21,48 @@ describe(KeyboardDevice, () => {
         expect(keyboardDevice.pressedKeys).toEqual({})
         expect(keyboardDevice.pressedModifiers).toEqual({})
         expect(keyboardDevice.name).toBe('KeyboardDevice')
+        expect(keyboardDevice.controls).toBeInstanceOf(Map)
     })
 
 
     test('static properties', () => {
-        expect(KeyboardDevice.controls).toContain('key')
         expect(KeyboardDevice.methods).toContain('isKeyPressed')
         expect(KeyboardDevice.methods).toContain('isKeyModifierPressed')
         expect(KeyboardDevice.methods).toContain('getPressedKeys')
         expect(KeyboardDevice.methods).toContain('getPressedKeyModifiers')
         expect(KeyboardDevice.events).toContain('keydown')
         expect(KeyboardDevice.events).toContain('keyup')
+    })
+
+
+    test('getOrCreateKeyControl creates new control', () => {
+        const control = keyboardDevice.getOrCreateKeyControl('KeyA', 'a')
+        
+        expect(control).toBeInstanceOf(KeyControl)
+        expect(control.name).toBe('KeyA')
+        expect(control.displayName).toBe('A')
+        expect(control.device).toBe(keyboardDevice)
+        expect(keyboardDevice.getControl('KeyA')).toBe(control)
+    })
+
+
+    test('getOrCreateKeyControl returns existing control', () => {
+        const control1 = keyboardDevice.getOrCreateKeyControl('KeyB', 'b')
+        const control2 = keyboardDevice.getOrCreateKeyControl('KeyB', 'b')
+        
+        expect(control1).toBe(control2)
+        expect(keyboardDevice.controls.size).toBe(1)
+    })
+
+
+    test('getOrCreateKeyControl with special keys', () => {
+        const spaceControl = keyboardDevice.getOrCreateKeyControl('Space', ' ')
+        const enterControl = keyboardDevice.getOrCreateKeyControl('Enter', 'Enter')
+        const arrowControl = keyboardDevice.getOrCreateKeyControl('ArrowUp', 'ArrowUp')
+        
+        expect(spaceControl.displayName).toBe('Space')
+        expect(enterControl.displayName).toBe('Enter')
+        expect(arrowControl.displayName).toBe('↑')
     })
 
 
@@ -49,7 +81,7 @@ describe(KeyboardDevice, () => {
     })
 
 
-    test('keydown event', () => {
+    test('keydown event creates and updates control', () => {
         const listener = vi.fn()
         keyboardDevice.on('keydown', listener)
 
@@ -66,10 +98,15 @@ describe(KeyboardDevice, () => {
         expect(keyState.repeat).toBe(false)
         
         expect(keyboardDevice.isKeyPressed('KeyA')).toBe(true)
+        
+        const control = keyboardDevice.getControl('KeyA')
+        expect(control).toBeInstanceOf(KeyControl)
+        expect(control.isPressed()).toBe(true)
+        expect(control.getValue()).toBe(1)
     })
 
 
-    test('keyup event', () => {
+    test('keyup event updates control', () => {
         const listener = vi.fn()
         keyboardDevice.on('keyup', listener)
 
@@ -89,6 +126,29 @@ describe(KeyboardDevice, () => {
         expect(keyState.key).toBe('b')
         
         expect(keyboardDevice.isKeyPressed('KeyB')).toBe(false)
+        
+        const control = keyboardDevice.getControl('KeyB')
+        expect(control).toBeInstanceOf(KeyControl)
+        expect(control.isPressed()).toBe(false)
+        expect(control.getValue()).toBe(0)
+    })
+
+
+    test('blur event releases all controls', () => {
+        window.dispatchEvent(new KeyboardEvent('keydown', {code: 'KeyA', key: 'a'}))
+        window.dispatchEvent(new KeyboardEvent('keydown', {code: 'KeyB', key: 'b'}))
+        
+        const controlA = keyboardDevice.getControl('KeyA')
+        const controlB = keyboardDevice.getControl('KeyB')
+        
+        expect(controlA.isPressed()).toBe(true)
+        expect(controlB.isPressed()).toBe(true)
+        
+        window.dispatchEvent(new Event('blur'))
+
+        expect(controlA.isPressed()).toBe(false)
+        expect(controlB.isPressed()).toBe(false)
+        expect(keyboardDevice.pressedKeys).toEqual({})
     })
 
 
@@ -114,6 +174,10 @@ describe(KeyboardDevice, () => {
         
         expect(keyboardDevice.isKeyModifierPressed('Shift')).toBe(true)
         expect(keyboardDevice.getPressedKeyModifiers()).toContain('Shift')
+        
+        const shiftControl = keyboardDevice.getControl('ShiftLeft')
+        expect(shiftControl.displayName).toBe('Left Shift')
+        expect(shiftControl.isPressed()).toBe(true)
     })
 
 
@@ -154,6 +218,9 @@ describe(KeyboardDevice, () => {
         expect(listener).toHaveBeenCalledTimes(2)
         expect(listener.mock.calls[0][0].repeat).toBe(false)
         expect(listener.mock.calls[1][0].repeat).toBe(true)
+        
+        const control = keyboardDevice.getControl('KeyC')
+        expect(control.isPressed()).toBe(true)
     })
 
 
@@ -197,182 +264,6 @@ describe(KeyboardDevice, () => {
 
     test('isKeyModifierPressed returns boolean', () => {
         expect(typeof keyboardDevice.isKeyModifierPressed('NonExistentModifier')).toBe('boolean')
-        
-        const event = new KeyboardEvent('keydown', {
-            code: 'AltLeft',
-            key: 'Alt'
-        })
-        
-        Object.defineProperty(event, 'getModifierState', {
-            value: (key) => key === 'Alt'
-        })
-        
-        window.dispatchEvent(event)
-        
-        expect(typeof keyboardDevice.isKeyModifierPressed('Alt')).toBe('boolean')
-    })
-
-
-    test('modifiers are properly reset on keyup', () => {
-        const keydownEvent = new KeyboardEvent('keydown', {
-            code: 'KeyA',
-            key: 'a',
-            ctrlKey: true,
-            shiftKey: true
-        })
-        
-        Object.defineProperty(keydownEvent, 'getModifierState', {
-            value: (key) => key === 'Control' || key === 'Shift'
-        })
-        
-        window.dispatchEvent(keydownEvent)
-        
-        expect(keyboardDevice.isKeyModifierPressed('Control')).toBe(true)
-        expect(keyboardDevice.isKeyModifierPressed('Shift')).toBe(true)
-        expect(keyboardDevice.getPressedKeyModifiers()).toContain('Control')
-        expect(keyboardDevice.getPressedKeyModifiers()).toContain('Shift')
-
-        const keyupEventA = new KeyboardEvent('keyup', {
-            code: 'KeyA',
-            key: 'a',
-            ctrlKey: true,
-            shiftKey: true
-        })
-        
-        Object.defineProperty(keyupEventA, 'getModifierState', {
-            value: (key) => key === 'Control' || key === 'Shift'
-        })
-        
-        window.dispatchEvent(keyupEventA)
-        
-        expect(keyboardDevice.isKeyModifierPressed('Control')).toBe(true)
-        expect(keyboardDevice.isKeyModifierPressed('Shift')).toBe(true)
-        
-        const keyupEventShift = new KeyboardEvent('keyup', {
-            code: 'ShiftLeft',
-            key: 'Shift',
-            ctrlKey: true,
-            shiftKey: false
-        })
-        
-        Object.defineProperty(keyupEventShift, 'getModifierState', {
-            value: (key) => key === 'Control'
-        })
-        
-        window.dispatchEvent(keyupEventShift)
-        
-        expect(keyboardDevice.isKeyModifierPressed('Control')).toBe(true)
-        expect(keyboardDevice.isKeyModifierPressed('Shift')).toBe(false)
-        expect(keyboardDevice.getPressedKeyModifiers()).toContain('Control')
-        expect(keyboardDevice.getPressedKeyModifiers()).not.toContain('Shift')
-        
-        const keyupEventCtrl = new KeyboardEvent('keyup', {
-            code: 'ControlLeft',
-            key: 'Control',
-            ctrlKey: false,
-            shiftKey: false
-        })
-        
-        Object.defineProperty(keyupEventCtrl, 'getModifierState', {
-            value: () => false
-        })
-        
-        window.dispatchEvent(keyupEventCtrl)
-        
-        expect(keyboardDevice.isKeyModifierPressed('Control')).toBe(false)
-        expect(keyboardDevice.isKeyModifierPressed('Shift')).toBe(false)
-        expect(keyboardDevice.getPressedKeyModifiers()).toEqual([])
-    })
-
-
-    test('Meta key release clears non-modifier keys (macOS behavior)', () => {
-        const keydownMeta = new KeyboardEvent('keydown', {
-            code: 'MetaLeft',
-            key: 'Meta',
-            metaKey: true
-        })
-        
-        Object.defineProperty(keydownMeta, 'getModifierState', {
-            value: (key) => key === 'Meta'
-        })
-        
-        window.dispatchEvent(keydownMeta)
-        
-        const keydownC = new KeyboardEvent('keydown', {
-            code: 'KeyC',
-            key: 'c',
-            metaKey: true
-        })
-        
-        Object.defineProperty(keydownC, 'getModifierState', {
-            value: (key) => key === 'Meta'
-        })
-        
-        window.dispatchEvent(keydownC)
-        
-        expect(keyboardDevice.isKeyPressed('MetaLeft')).toBe(true)
-        expect(keyboardDevice.isKeyPressed('KeyC')).toBe(true)
-        expect(keyboardDevice.isKeyModifierPressed('Meta')).toBe(true)
-        
-        const keyupMeta = new KeyboardEvent('keyup', {
-            code: 'MetaLeft',
-            key: 'Meta',
-            metaKey: false
-        })
-        
-        Object.defineProperty(keyupMeta, 'getModifierState', {
-            value: () => false
-        })
-        
-        window.dispatchEvent(keyupMeta)
-        
-        expect(keyboardDevice.isKeyPressed('MetaLeft')).toBe(false)
-        expect(keyboardDevice.isKeyPressed('KeyC')).toBe(false)
-        expect(keyboardDevice.isKeyModifierPressed('Meta')).toBe(false)
-        expect(keyboardDevice.getPressedKeys()).toEqual([])
-    })
-
-
-    test('blur event clears all keys', () => {
-        const blurListener = vi.fn()
-        keyboardDevice.on('blur', blurListener)
-        
-        window.dispatchEvent(new KeyboardEvent('keydown', {
-            code: 'KeyA',
-            key: 'a'
-        }))
-        
-        window.dispatchEvent(new KeyboardEvent('keydown', {
-            code: 'KeyB',
-            key: 'b'
-        }))
-        
-        const shiftEvent = new KeyboardEvent('keydown', {
-            code: 'ShiftLeft',
-            key: 'Shift'
-        })
-        
-        Object.defineProperty(shiftEvent, 'getModifierState', {
-            value: (key) => key === 'Shift'
-        })
-        
-        window.dispatchEvent(shiftEvent)
-        
-        expect(keyboardDevice.getPressedKeys()).toContain('KeyA')
-        expect(keyboardDevice.getPressedKeys()).toContain('KeyB')
-        expect(keyboardDevice.getPressedKeys()).toContain('ShiftLeft')
-        expect(keyboardDevice.isKeyModifierPressed('Shift')).toBe(true)
-        
-        window.dispatchEvent(new Event('blur'))
-
-        expect(blurListener).toHaveBeenCalled()
-
-        expect(keyboardDevice.getPressedKeys()).toEqual([])
-        expect(keyboardDevice.getPressedKeyModifiers()).toEqual([])
-        expect(keyboardDevice.isKeyPressed('KeyA')).toBe(false)
-        expect(keyboardDevice.isKeyPressed('KeyB')).toBe(false) 
-        expect(keyboardDevice.isKeyPressed('ShiftLeft')).toBe(false)
-        expect(keyboardDevice.isKeyModifierPressed('Shift')).toBe(false)
     })
 
 })

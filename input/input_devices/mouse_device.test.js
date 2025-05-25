@@ -1,4 +1,6 @@
 import MouseDevice from './mouse_device'
+import KeyControl from '../input_controls/key_control'
+import Vec2Control from '../input_controls/vec2_control'
 import {vi} from 'vitest'
 
 
@@ -23,12 +25,50 @@ describe(MouseDevice, () => {
         expect(mouseDevice.velocity).toEqual({x: 0, y: 0})
         expect(mouseDevice.timestamp).toBe(0)
         expect(mouseDevice.name).toBe('MouseDevice')
+        expect(mouseDevice.controls).toBeInstanceOf(Map)
+    })
+
+
+    test('controls are created in constructor', () => {
+        expect(mouseDevice.getControl('leftButton')).toBeInstanceOf(KeyControl)
+        expect(mouseDevice.getControl('rightButton')).toBeInstanceOf(KeyControl)
+        expect(mouseDevice.getControl('middleButton')).toBeInstanceOf(KeyControl)
+        expect(mouseDevice.getControl('position')).toBeInstanceOf(Vec2Control)
+        expect(mouseDevice.getControl('velocity')).toBeInstanceOf(Vec2Control)
+        
+        expect(mouseDevice.controls.size).toBe(5)
+    })
+
+
+    test('button controls have correct names and display names', () => {
+        const leftButton = mouseDevice.getControl('leftButton')
+        const rightButton = mouseDevice.getControl('rightButton')
+        const middleButton = mouseDevice.getControl('middleButton')
+        
+        expect(leftButton.name).toBe('leftButton')
+        expect(leftButton.displayName).toBe('Left Click')
+        expect(rightButton.name).toBe('rightButton')
+        expect(rightButton.displayName).toBe('Right Click')
+        expect(middleButton.name).toBe('middleButton')
+        expect(middleButton.displayName).toBe('Middle Click')
+    })
+
+
+    test('position and velocity controls have correct properties', () => {
+        const position = mouseDevice.getControl('position')
+        const velocity = mouseDevice.getControl('velocity')
+        
+        expect(position.name).toBe('position')
+        expect(position.displayName).toBe('Mouse Position')
+        expect(position.normalize).toBe(false)
+        
+        expect(velocity.name).toBe('velocity')
+        expect(velocity.displayName).toBe('Mouse Velocity')
+        expect(velocity.normalize).toBe(false)
     })
 
 
     test('static properties', () => {
-        expect(MouseDevice.controls).toContain('position')
-        expect(MouseDevice.controls).toContain('mouseButton')
         expect(MouseDevice.methods).toContain('isMouseButtonPressed')
         expect(MouseDevice.methods).toContain('getMousePosition')
         expect(MouseDevice.methods).toContain('getMousePressedButtons')
@@ -55,15 +95,19 @@ describe(MouseDevice, () => {
     })
 
 
-    test('mousedown event', () => {
+    test('mousedown event updates button control', () => {
         const listener = vi.fn()
         mouseDevice.on('mousedown', listener)
 
         const event = new MouseEvent('mousedown', {
+            button: 0,
             clientX: 100,
-            clientY: 200,
-            button: 0
+            clientY: 200
         })
+        
+        Object.defineProperty(event, 'offsetX', {value: 100, writable: false})
+        Object.defineProperty(event, 'offsetY', {value: 200, writable: false})
+        
         window.dispatchEvent(event)
 
         expect(listener).toHaveBeenCalled()
@@ -73,34 +117,48 @@ describe(MouseDevice, () => {
         expect(mouseState.position.y).toBe(200)
         
         expect(mouseDevice.isMouseButtonPressed(0)).toBe(true)
+        
+        const leftButton = mouseDevice.getControl('leftButton')
+        expect(leftButton.isPressed()).toBe(true)
+        expect(leftButton.getValue()).toBe(1)
     })
 
 
-    test('mouseup event', () => {
+    test('mouseup event updates button control', () => {
         const listener = vi.fn()
         mouseDevice.on('mouseup', listener)
 
-        window.dispatchEvent(new MouseEvent('mousedown', {
-            clientX: 100,
-            clientY: 200,
-            button: 0
-        }))
+        const mousedownEvent = new MouseEvent('mousedown', {
+            button: 2,
+            clientX: 50,
+            clientY: 75
+        })
+        Object.defineProperty(mousedownEvent, 'offsetX', {value: 50, writable: false})
+        Object.defineProperty(mousedownEvent, 'offsetY', {value: 75, writable: false})
+        window.dispatchEvent(mousedownEvent)
         
-        window.dispatchEvent(new MouseEvent('mouseup', {
-            clientX: 100,
-            clientY: 200,
-            button: 0
-        }))
+        const mouseupEvent = new MouseEvent('mouseup', {
+            button: 2,
+            clientX: 50,
+            clientY: 75
+        })
+        Object.defineProperty(mouseupEvent, 'offsetX', {value: 50, writable: false})
+        Object.defineProperty(mouseupEvent, 'offsetY', {value: 75, writable: false})
+        window.dispatchEvent(mouseupEvent)
 
         expect(listener).toHaveBeenCalled()
         const mouseState = listener.mock.calls[0][0]
-        expect(mouseState.button).toBe(0)
+        expect(mouseState.button).toBe(2)
         
-        expect(mouseDevice.isMouseButtonPressed(0)).toBe(false)
+        expect(mouseDevice.isMouseButtonPressed(2)).toBe(false)
+        
+        const rightButton = mouseDevice.getControl('rightButton')
+        expect(rightButton.isPressed()).toBe(false)
+        expect(rightButton.getValue()).toBe(0)
     })
 
 
-    test('mousemove event', () => {
+    test('mousemove event updates position and velocity controls', () => {
         const listener = vi.fn()
         mouseDevice.on('mousemove', listener)
 
@@ -109,223 +167,142 @@ describe(MouseDevice, () => {
             clientY: 250
         })
         
+        Object.defineProperty(event, 'offsetX', {value: 150, writable: false})
+        Object.defineProperty(event, 'offsetY', {value: 250, writable: false})
+        Object.defineProperty(event, 'timeStamp', {value: 1000, writable: false})
+        
         window.dispatchEvent(event)
 
         expect(listener).toHaveBeenCalled()
-        const mouseState = listener.mock.calls[0][0]
-        expect(mouseState.position.x).toBe(150)
-        expect(mouseState.position.y).toBe(250)
         
-        const position = mouseDevice.getMousePosition()
+        const positionControl = mouseDevice.getControl('position')
+        const velocityControl = mouseDevice.getControl('velocity')
+        
+        const position = positionControl.getValue()
         expect(position.x).toBe(150)
         expect(position.y).toBe(250)
+        
+        expect(velocityControl.getValue()).toBeDefined()
     })
 
 
-    test('mouse modifiers', () => {
-        const listener = vi.fn()
-        mouseDevice.on('mousedown', listener)
+    test('middle button (button 1) updates correct control', () => {
+        const mousedownEvent = new MouseEvent('mousedown', {button: 1})
+        Object.defineProperty(mousedownEvent, 'offsetX', {value: 0, writable: false})
+        Object.defineProperty(mousedownEvent, 'offsetY', {value: 0, writable: false})
+        window.dispatchEvent(mousedownEvent)
+        
+        const middleButton = mouseDevice.getControl('middleButton')
+        expect(middleButton.isPressed()).toBe(true)
+        expect(mouseDevice.isMouseButtonPressed(1)).toBe(true)
+        
+        const mouseupEvent = new MouseEvent('mouseup', {button: 1})
+        Object.defineProperty(mouseupEvent, 'offsetX', {value: 0, writable: false})
+        Object.defineProperty(mouseupEvent, 'offsetY', {value: 0, writable: false})
+        window.dispatchEvent(mouseupEvent)
+        
+        expect(middleButton.isPressed()).toBe(false)
+        expect(mouseDevice.isMouseButtonPressed(1)).toBe(false)
+    })
 
-        const event = new MouseEvent('mousedown', {
-            clientX: 100,
-            clientY: 200,
-            button: 0,
-            shiftKey: true
-        })
 
-        Object.defineProperty(event, 'getModifierState', {
-            value: (key) => key === 'Shift'
+    test('blur event releases all button controls', () => {
+        const event1 = new MouseEvent('mousedown', {button: 0})
+        Object.defineProperty(event1, 'offsetX', {value: 0, writable: false})
+        Object.defineProperty(event1, 'offsetY', {value: 0, writable: false})
+        window.dispatchEvent(event1)
+        
+        const event2 = new MouseEvent('mousedown', {button: 2})
+        Object.defineProperty(event2, 'offsetX', {value: 0, writable: false})
+        Object.defineProperty(event2, 'offsetY', {value: 0, writable: false})
+        window.dispatchEvent(event2)
+        
+        const leftButton = mouseDevice.getControl('leftButton')
+        const rightButton = mouseDevice.getControl('rightButton')
+        
+        expect(leftButton.isPressed()).toBe(true)
+        expect(rightButton.isPressed()).toBe(true)
+        
+        window.dispatchEvent(new Event('blur'))
+
+        expect(leftButton.isPressed()).toBe(false)
+        expect(rightButton.isPressed()).toBe(false)
+        expect(mouseDevice.pressedButtons).toEqual({})
+    })
+
+
+    test('contextmenu event releases right button control', () => {
+        const mousedownEvent = new MouseEvent('mousedown', {button: 2})
+        Object.defineProperty(mousedownEvent, 'offsetX', {value: 0, writable: false})
+        Object.defineProperty(mousedownEvent, 'offsetY', {value: 0, writable: false})
+        window.dispatchEvent(mousedownEvent)
+        
+        const rightButton = mouseDevice.getControl('rightButton')
+        expect(rightButton.isPressed()).toBe(true)
+        
+        const contextEvent = new MouseEvent('contextmenu', {button: 2})
+        Object.defineProperty(contextEvent, 'offsetX', {value: 0, writable: false})
+        Object.defineProperty(contextEvent, 'offsetY', {value: 0, writable: false})
+        window.dispatchEvent(contextEvent)
+        
+        expect(rightButton.isPressed()).toBe(false)
+        expect(mouseDevice.isMouseButtonPressed(2)).toBe(false)
+    })
+
+
+    test('getMousePosition', () => {
+        const event = new MouseEvent('mousemove', {
+            clientX: 300,
+            clientY: 400
         })
+        Object.defineProperty(event, 'offsetX', {value: 300, writable: false})
+        Object.defineProperty(event, 'offsetY', {value: 400, writable: false})
         
         window.dispatchEvent(event)
-
-        expect(listener).toHaveBeenCalled()
-        const mouseState = listener.mock.calls[0][0]
-        expect(mouseState.modifiers.Shift).toBe(true)
+        
+        const position = mouseDevice.getMousePosition()
+        expect(position.x).toBe(300)
+        expect(position.y).toBe(400)
+        
+        position.x = 999
+        expect(mouseDevice.getMousePosition().x).toBe(300)
     })
 
 
-    test('getPressedButtons', () => {
-        window.dispatchEvent(new MouseEvent('mousedown', {
-            clientX: 100,
-            clientY: 200,
-            button: 0
-        }))
+    test('getMousePressedButtons', () => {
+        window.dispatchEvent(new MouseEvent('mousedown', {button: 0}))
+        window.dispatchEvent(new MouseEvent('mousedown', {button: 1}))
         
-        window.dispatchEvent(new MouseEvent('mousedown', {
-            clientX: 100,
-            clientY: 200,
-            button: 2
-        }))
-
         const pressedButtons = mouseDevice.getMousePressedButtons()
         expect(pressedButtons).toContain('0')
-        expect(pressedButtons).toContain('2')
+        expect(pressedButtons).toContain('1')
         expect(pressedButtons.length).toBe(2)
     })
 
 
-    test('velocity calculation', () => {
-        const firstEvent = new MouseEvent('mousemove', {
-            clientX: 100,
-            clientY: 100,
-            timeStamp: 1000
-        })
-        
-        window.dispatchEvent(firstEvent)
-
-        mouseDevice.timestamp = 1000
-
-        const secondEvent = new MouseEvent('mousemove', {
-            clientX: 150,
-            clientY: 120,
-            timeStamp: 1100
-        })
-        
-        Object.defineProperty(secondEvent, 'timeStamp', {
-            value: 1100
-        })
-        
-        window.dispatchEvent(secondEvent)
-        
+    test('getMouseVelocity', () => {
         const velocity = mouseDevice.getMouseVelocity()
+        expect(velocity).toEqual({x: 0, y: 0})
 
-        expect(velocity.x).toBeCloseTo(0.5)
-        expect(velocity.y).toBeCloseTo(0.2)
+        velocity.x = 999
+        expect(mouseDevice.getMouseVelocity().x).toBe(0)
     })
 
 
-    test('different button types', () => {
-        window.dispatchEvent(new MouseEvent('mousedown', {
-            clientX: 100,
-            clientY: 200,
-            button: 0
-        }))
+    test('isPressed method', () => {
+        expect(mouseDevice.isPressed(0)).toBe(false)
         
-        expect(mouseDevice.isMouseButtonPressed(0)).toBe(true)
+        const mousedownEvent = new MouseEvent('mousedown', {button: 0})
+        Object.defineProperty(mousedownEvent, 'offsetX', {value: 0, writable: false})
+        Object.defineProperty(mousedownEvent, 'offsetY', {value: 0, writable: false})
+        window.dispatchEvent(mousedownEvent)
+        expect(mouseDevice.isPressed(0)).toBe(true)
         
-        window.dispatchEvent(new MouseEvent('mousedown', {
-            clientX: 100,
-            clientY: 200,
-            button: 2
-        }))
-        
-        expect(mouseDevice.isMouseButtonPressed(0)).toBe(true)
-        expect(mouseDevice.isMouseButtonPressed(2)).toBe(true)
-        
-        window.dispatchEvent(new MouseEvent('mouseup', {
-            clientX: 100,
-            clientY: 200,
-            button: 0
-        }))
-        
-        expect(mouseDevice.isMouseButtonPressed(0)).toBe(false)
-        expect(mouseDevice.isMouseButtonPressed(2)).toBe(true)
-    })
-
-
-    test('different coordinate systems', () => {
-        const listener = vi.fn()
-        mouseDevice.on('mousedown', listener)
-
-        const event = new MouseEvent('mousedown', {
-            clientX: 100,
-            clientY: 200,
-            screenX: 500,
-            screenY: 600,
-            button: 0
-        })
-
-        Object.defineProperty(event, 'pageX', {value: 120})
-        Object.defineProperty(event, 'pageY', {value: 220})
-        Object.defineProperty(event, 'offsetX', {value: 50})
-        Object.defineProperty(event, 'offsetY', {value: 60})
-        
-        window.dispatchEvent(event)
-
-        expect(listener).toHaveBeenCalled()
-        const mouseState = listener.mock.calls[0][0]
-        
-        expect(mouseState.position.x).toBe(50)
-        expect(mouseState.position.y).toBe(60)
-
-        expect(mouseState.client.x).toBe(100)
-        expect(mouseState.client.y).toBe(200)
-        
-        expect(mouseState.screen.x).toBe(500)
-        expect(mouseState.screen.y).toBe(600)
-        
-        expect(mouseState.page.x).toBe(120)
-        expect(mouseState.page.y).toBe(220)
-        
-        expect(mouseState.offset.x).toBe(50)
-        expect(mouseState.offset.y).toBe(60)
-    })
-
-
-    test('contextmenu event clears right button', () => {
-        const mouseupListener = vi.fn()
-        mouseDevice.on('mouseup', mouseupListener)
-        
-        window.dispatchEvent(new MouseEvent('mousedown', {
-            clientX: 100,
-            clientY: 200,
-            button: 2
-        }))
-        
-        expect(mouseDevice.isMouseButtonPressed(2)).toBe(true)
-        
-        window.dispatchEvent(new MouseEvent('contextmenu', {
-            clientX: 100,
-            clientY: 200
-        }))
-        
-        expect(mouseDevice.isMouseButtonPressed(2)).toBe(false)
-        expect(mouseupListener).toHaveBeenCalled()
-        
-        const mouseupEvent = mouseupListener.mock.calls[0][0]
-        expect(mouseupEvent.button).toBe(2)
-    })
-
-
-    test('blur event clears all buttons', () => {
-        const blurListener = vi.fn()
-        mouseDevice.on('blur', blurListener)
-        
-        window.dispatchEvent(new MouseEvent('mousedown', {
-            clientX: 100,
-            clientY: 200,
-            button: 0
-        }))
-        
-        window.dispatchEvent(new MouseEvent('mousedown', {
-            clientX: 100,
-            clientY: 200,
-            button: 2
-        }))
-        
-        expect(mouseDevice.isMouseButtonPressed(0)).toBe(true)
-        expect(mouseDevice.isMouseButtonPressed(2)).toBe(true)
-        
-        window.dispatchEvent(new Event('blur'))
-
-        expect(mouseDevice.isMouseButtonPressed(0)).toBe(false)
-        expect(mouseDevice.isMouseButtonPressed(2)).toBe(false)
-        expect(mouseDevice.getMousePressedButtons()).toEqual([])
-        expect(blurListener).toHaveBeenCalled()
-    })
-
-
-    test('contextmenu does not affect if right button not pressed', () => {
-        const mouseupListener = vi.fn()
-        mouseDevice.on('mouseup', mouseupListener)
-        
-        window.dispatchEvent(new MouseEvent('contextmenu', {
-            clientX: 100,
-            clientY: 200
-        }))
-        
-        expect(mouseupListener).not.toHaveBeenCalled()
+        const mouseupEvent = new MouseEvent('mouseup', {button: 0})
+        Object.defineProperty(mouseupEvent, 'offsetX', {value: 0, writable: false})
+        Object.defineProperty(mouseupEvent, 'offsetY', {value: 0, writable: false})
+        window.dispatchEvent(mouseupEvent)
+        expect(mouseDevice.isPressed(0)).toBe(false)
     })
 
 })

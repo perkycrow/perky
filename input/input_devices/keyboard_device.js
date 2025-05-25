@@ -1,11 +1,8 @@
 import InputDevice from '../input_device'
+import KeyControl from '../input_controls/key_control'
 
 
 export default class KeyboardDevice extends InputDevice {
-
-    static controls = [
-        'key'
-    ]
 
     static methods = [
         'isKeyPressed',
@@ -62,6 +59,22 @@ export default class KeyboardDevice extends InputDevice {
         return Object.keys(this.pressedModifiers)
     }
 
+
+    getOrCreateKeyControl (code, key = null) {
+        let keyControl = this.getControl(code)
+        
+        if (!keyControl) {
+            keyControl = new KeyControl({
+                device: this,
+                name: code,
+                displayName: getKeyDisplayName(code, key)
+            })
+            this.addControl(code, keyControl)
+        }
+        
+        return keyControl
+    }
+
 }
 
 
@@ -79,6 +92,9 @@ function observe (device) {
             updateModifiers(device, modifiers)
             device.pressedKeys[event.code] = keyState
 
+            const keyControl = device.getOrCreateKeyControl(event.code, event.key)
+            keyControl.press()
+
             device.emit('keydown', keyState)
         },
         keyup (event) {
@@ -88,7 +104,9 @@ function observe (device) {
             delete device.pressedKeys[event.code]
             updateModifiers(device, modifiers)
             
-            // MacOS fix
+            const keyControl = device.getOrCreateKeyControl(event.code, event.key)
+            keyControl.release()
+            
             if ((event.code === 'MetaLeft' || event.code === 'MetaRight') && !modifiers.Meta) {
                 clearNonModifierKeys(device)
             }
@@ -96,7 +114,11 @@ function observe (device) {
             device.emit('keyup', keyState)
         },
         blur () {
-            // Tab out fix
+            for (const control of device.getAllControls()) {
+                if (control.release) {
+                    control.release()
+                }
+            }
             clearAllKeys(device)
             device.emit('blur')
         }
@@ -166,6 +188,10 @@ function clearNonModifierKeys (device) {
     for (const code in device.pressedKeys) {
         if (!modifierCodes.includes(code)) {
             delete device.pressedKeys[code]
+            const control = device.getControl(code)
+            if (control && control.release) {
+                control.release()
+            }
         }
     }
 }
@@ -174,6 +200,40 @@ function clearNonModifierKeys (device) {
 function clearAllKeys (device) {
     device.pressedKeys = {}
     device.pressedModifiers = {}
+}
+
+
+function getKeyDisplayName (code, key = null) {
+    const specialKeys = {
+        Space: 'Space',
+        Enter: 'Enter',
+        Escape: 'Esc',
+        Tab: 'Tab',
+        Backspace: 'Backspace',
+        Delete: 'Delete',
+        ArrowUp: '↑',
+        ArrowDown: '↓',
+        ArrowLeft: '←',
+        ArrowRight: '→',
+        ShiftLeft: 'Left Shift',
+        ShiftRight: 'Right Shift',
+        ControlLeft: 'Left Ctrl',
+        ControlRight: 'Right Ctrl',
+        AltLeft: 'Left Alt',
+        AltRight: 'Right Alt',
+        MetaLeft: 'Left Cmd',
+        MetaRight: 'Right Cmd'
+    }
+
+    if (specialKeys[code]) {
+        return specialKeys[code]
+    }
+
+    if (key && key.length === 1 && key !== ' ') {
+        return key.toUpperCase()
+    }
+
+    return code.replace('Key', '').replace('Digit', '')
 }
 
 

@@ -6,7 +6,6 @@ const cache = new Map()
 export default class InputDevice extends PerkyModule {
 
     static methods = []
-    static controls = []
     static events = []
 
 
@@ -15,11 +14,9 @@ export default class InputDevice extends PerkyModule {
 
         this.container = container
         this.name      = name || this.constructor.name
-    }
-
-
-    get controls () {
-        return fetchInheritedArray(this, 'controls')
+        this.controls = new Map()
+        
+        this.createControls()
     }
 
 
@@ -58,6 +55,36 @@ export default class InputDevice extends PerkyModule {
     unobserve () { // eslint-disable-line class-methods-use-this
         // Abstract method to be implemented in subclasses
         return true
+    }
+
+
+    createControls () { // eslint-disable-line class-methods-use-this
+        // To be implemented in subclasses
+    }
+
+
+    getControl (name) {
+        return this.controls.get(name)
+    }
+
+
+    getAllControls () {
+        return Array.from(this.controls.values())
+    }
+
+
+    addControl (name, control) {
+        this.controls.set(name, control)
+        return control
+    }
+
+
+    removeControl (name) {
+        const control = this.controls.get(name)
+        if (control) {
+            this.controls.delete(name)
+        }
+        return control
     }
 
 

@@ -1,4 +1,5 @@
 import InputDevice from './input_device'
+import InputControl from './input_control'
 import {vi} from 'vitest'
 
 
@@ -12,35 +13,34 @@ describe(InputDevice, () => {
     })
 
 
-    test('static properties initialization', () => {
-        expect(InputDevice.methods).toEqual([])
-        expect(InputDevice.controls).toEqual([])
-        expect(InputDevice.events).toEqual([])
-    })
-
-
     test('constructor', () => {
         expect(device.container).toBe(window)
         expect(device.name).toBe('TestDevice')
+        expect(device.controls).toBeInstanceOf(Map)
+        expect(device.controls.size).toBe(0)
         
         const customContainer = {}
         const customDevice = new InputDevice({container: customContainer})
         
         expect(customDevice.container).toBe(customContainer)
         expect(customDevice.name).toBe('InputDevice')
+        expect(customDevice.controls).toBeInstanceOf(Map)
     })
 
 
-    test('controls getter', () => {
-        class TestDevice extends InputDevice {
-            static controls = ['button1', 'button2']
-        }
+    test('controls getter returns control names', () => {
+        const control1 = new InputControl({device: device, name: 'control1'})
+        const control2 = new InputControl({device: device, name: 'control2'})
 
-        const testDevice = new TestDevice()
-        expect(testDevice.controls).toEqual(['button1', 'button2'])
+        device.addControl('control1', control1)
+        device.addControl('control2', control2)
 
-        const controls = testDevice.controls
-        expect(controls).toBe(testDevice.controls)
+        const controlNames = Array.from(device.controls.keys())
+        
+        expect(controlNames).toHaveLength(2)
+        expect(controlNames).toContain('control1')
+        expect(controlNames).toContain('control2')
+        expect(Array.isArray(controlNames)).toBe(true)
     })
 
 
@@ -72,22 +72,102 @@ describe(InputDevice, () => {
 
     test('inheritance in getters', () => {
         class BaseDevice extends InputDevice {
-            static controls = ['baseControl']
             static methods = ['baseMethod']
             static events = ['baseEvent']
         }
 
         class ChildDevice extends BaseDevice {
-            static controls = ['childControl']
             static methods = ['childMethod']
             static events = ['childEvent']
         }
 
         const childDevice = new ChildDevice()
         
-        expect(childDevice.controls).toEqual(['childControl', 'baseControl'])
         expect(childDevice.methods).toEqual(['childMethod', 'baseMethod'])
         expect(childDevice.events).toEqual(['childEvent', 'baseEvent'])
+    })
+
+
+    test('addControl', () => {
+        const control = new InputControl({
+            device: device,
+            name: 'testControl',
+            displayName: 'Test Control'
+        })
+
+        const result = device.addControl('testControl', control)
+        
+        expect(result).toBe(control)
+        expect(device.controls.get('testControl')).toBe(control)
+        expect(device.controls.size).toBe(1)
+    })
+
+
+    test('getControl', () => {
+        const control = new InputControl({
+            device: device,
+            name: 'testControl'
+        })
+
+        device.addControl('testControl', control)
+        
+        expect(device.getControl('testControl')).toBe(control)
+        expect(device.getControl('nonExistent')).toBeUndefined()
+    })
+
+
+    test('getAllControls', () => {
+        const control1 = new InputControl({device: device, name: 'control1'})
+        const control2 = new InputControl({device: device, name: 'control2'})
+
+        device.addControl('control1', control1)
+        device.addControl('control2', control2)
+
+        const allControls = device.getAllControls()
+        
+        expect(allControls).toHaveLength(2)
+        expect(allControls).toContain(control1)
+        expect(allControls).toContain(control2)
+        expect(Array.isArray(allControls)).toBe(true)
+    })
+
+
+    test('removeControl', () => {
+        const control = new InputControl({device: device, name: 'testControl'})
+
+        device.addControl('testControl', control)
+        expect(device.controls.size).toBe(1)
+
+        const removed = device.removeControl('testControl')
+        
+        expect(removed).toBe(control)
+        expect(device.controls.size).toBe(0)
+        expect(device.getControl('testControl')).toBeUndefined()
+    })
+
+
+    test('removeControl with non-existent control', () => {
+        const removed = device.removeControl('nonExistent')
+        
+        expect(removed).toBeUndefined()
+        expect(device.controls.size).toBe(0)
+    })
+
+
+    test('createControls is called in constructor', () => {
+        class TestDevice extends InputDevice {
+            createControls () {
+                this.addControl('autoCreated', new InputControl({
+                    device: this,
+                    name: 'autoCreated'
+                }))
+            }
+        }
+
+        const testDevice = new TestDevice()
+        
+        expect(testDevice.getControl('autoCreated')).toBeDefined()
+        expect(testDevice.controls.size).toBe(1)
     })
 
 

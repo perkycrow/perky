@@ -20,7 +20,6 @@ export default class InputObserver extends PerkyModule {
         })
 
         this.eventsMap = {}
-        this.controlsMap = {}
         this.methodsMap = {}
 
         this.#initEvents()
@@ -31,11 +30,6 @@ export default class InputObserver extends PerkyModule {
         if (keyboard) {
             this.registerDevice('keyboard', new KeyboardDevice())
         }
-    }
-
-
-    get controls () {
-        return Object.keys(this.controlsMap)
     }
 
 
@@ -74,13 +68,11 @@ export default class InputObserver extends PerkyModule {
         this.on('device:set', (deviceName, device) => {
             this.#addEvents(deviceName, device)
             this.#addMethods(deviceName, device)
-            this.#addControls(deviceName, device)
         })
 
         this.on('device:delete', (deviceName, device) => {
             this.#removeEvents(deviceName, device)
             this.#removeMethods(deviceName, device)
-            this.#removeControls(deviceName, device)
         })
     }
 
@@ -163,33 +155,6 @@ export default class InputObserver extends PerkyModule {
             if (index !== -1) {
                 this.methodsMap[method].splice(index, 1)
                 this.#updateMethodProxy(method)
-            }
-        }
-    }
-
-
-    #addControls (deviceName, device) {
-        const controls = device.controls || []
-
-        for (const control of controls) {
-            this.controlsMap[control] ||= []
-            if (!this.controlsMap[control].includes(deviceName)) {
-                this.controlsMap[control].push(deviceName)
-            }
-        }
-    }
-
-
-    #removeControls (deviceName, device) {
-        const controls = device.controls || []
-
-        for (const control of controls) {
-            this.controlsMap[control] ||= []
-
-            const index = this.controlsMap[control].indexOf(deviceName)
-
-            if (index !== -1) {
-                this.controlsMap[control].splice(index, 1)
             }
         }
     }

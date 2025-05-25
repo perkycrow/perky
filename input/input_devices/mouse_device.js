@@ -1,12 +1,9 @@
 import InputDevice from '../input_device'
+import KeyControl from '../input_controls/key_control'
+import Vec2Control from '../input_controls/vec2_control'
 
 
 export default class MouseDevice extends InputDevice {
-
-    static controls = [
-        'position',
-        'mouseButton'
-    ]
 
     static methods = [
         'isMouseButtonPressed',
@@ -30,6 +27,41 @@ export default class MouseDevice extends InputDevice {
         this.previousPosition = {x: 0, y: 0}
         this.velocity = {x: 0, y: 0}
         this.timestamp = 0
+    }
+
+
+    createControls () {
+        this.addControl('leftButton', new KeyControl({
+            device: this,
+            name: 'leftButton',
+            displayName: 'Left Click'
+        }))
+
+        this.addControl('rightButton', new KeyControl({
+            device: this,
+            name: 'rightButton',
+            displayName: 'Right Click'
+        }))
+
+        this.addControl('middleButton', new KeyControl({
+            device: this,
+            name: 'middleButton',
+            displayName: 'Middle Click'
+        }))
+
+        this.addControl('position', new Vec2Control({
+            device: this,
+            name: 'position',
+            displayName: 'Mouse Position',
+            normalize: false
+        }))
+
+        this.addControl('velocity', new Vec2Control({
+            device: this,
+            name: 'velocity',
+            displayName: 'Mouse Velocity',
+            normalize: false
+        }))
     }
 
 
@@ -82,6 +114,12 @@ function observe (device) {
             const mouseState = createMouseState(event, device, modifiers)
 
             device.pressedButtons[event.button] = mouseState
+
+            const buttonControl = getButtonControl(device, event.button)
+            if (buttonControl) {
+                buttonControl.press()
+            }
+
             device.emit('mousedown', mouseState)
         },
         mouseup (event) {
@@ -89,11 +127,28 @@ function observe (device) {
             const mouseState = createMouseState(event, device, modifiers)
 
             delete device.pressedButtons[event.button]
+
+            const buttonControl = getButtonControl(device, event.button)
+            if (buttonControl) {
+                buttonControl.release()
+            }
+
             device.emit('mouseup', mouseState)
         },
         mousemove (event) {
             const modifiers = getModifiers(event)
             const mouseState = updatePositionState(event, device, modifiers)
+
+            const positionControl = device.getControl('position')
+            const velocityControl = device.getControl('velocity')
+
+            if (positionControl) {
+                positionControl.setValue({x: event.offsetX, y: event.offsetY})
+            }
+
+            if (velocityControl) {
+                velocityControl.setValue(device.velocity)
+            }
 
             device.emit('mousemove', mouseState)
         },
@@ -104,12 +159,25 @@ function observe (device) {
                 mouseState.button = 2
                 
                 delete device.pressedButtons[2]
+
+                const buttonControl = getButtonControl(device, 2)
+                if (buttonControl) {
+                    buttonControl.release()
+                }
+
                 device.emit('mouseup', mouseState)
             }
         },
         blur () {
             for (const button in device.pressedButtons) {
                 delete device.pressedButtons[button]
+            }
+
+            // Relâcher tous les boutons
+            for (const control of device.getAllControls()) {
+                if (control.release) {
+                    control.release()
+                }
             }
 
             device.emit('blur')
@@ -221,6 +289,16 @@ function updatePositionState (event, device, modifiers = {}) {
         timestamp: now,
         modifiers: modifiers
     }
+}
+
+
+function getButtonControl (device, buttonIndex) {
+    const buttonNames = {
+        0: 'leftButton',
+        1: 'middleButton',
+        2: 'rightButton'
+    }
+    return device.getControl(buttonNames[buttonIndex])
 }
 
 
