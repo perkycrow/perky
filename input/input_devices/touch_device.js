@@ -3,11 +3,6 @@ import InputDevice from '../input_device'
 
 export default class TouchDevice extends InputDevice {
 
-    static controls = [
-        'touch',
-        'gesture'
-    ]
-
     static methods = [
         'getTouches',
         'getActiveTouches',

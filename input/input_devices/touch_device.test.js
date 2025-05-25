@@ -46,8 +46,6 @@ describe(TouchDevice, () => {
 
 
     test('static properties', () => {
-        expect(TouchDevice.controls).toContain('touch')
-        expect(TouchDevice.controls).toContain('gesture')
         expect(TouchDevice.methods).toContain('getTouches')
         expect(TouchDevice.methods).toContain('getActiveTouches')
         expect(TouchDevice.methods).toContain('getTouchById')
