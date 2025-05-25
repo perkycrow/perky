@@ -11,7 +11,7 @@ export default class InputMapper extends PerkyModule {
         this.inputToAction = {}
         this.pressedActions = {}
 
-        initEvents(this)
+        this.#initEvents(this)
     }
 
 
@@ -78,45 +78,45 @@ export default class InputMapper extends PerkyModule {
         return this.inputObserver.isPressed(input)
     }
 
-}
 
+    #initEvents () {
+        const {inputObserver} = this
 
-function initEvents (mapper) {
-    const {inputObserver} = mapper
+        inputObserver.on('keydown', (data) => {
+            const action = this.getActionFor(data.code)
 
-    inputObserver.on('keydown', (data) => {
-        const action = mapper.getActionFor(data.code)
+            if (action) {
+                this.pressedActions[action] = true
+                this.emit('action', action)
+            }
+        })
 
-        if (action) {
-            mapper.pressedActions[action] = true
-            mapper.emit('action', action)
-        }
-    })
+        inputObserver.on('keyup', (data) => {
+            const action = this.getActionFor(data.code)
 
-    inputObserver.on('keyup', (data) => {
-        const action = mapper.getActionFor(data.code)
+            if (action) {
+                delete this.pressedActions[action]
+            }
+        })
 
-        if (action) {
-            delete mapper.pressedActions[action]
-        }
-    })
+        inputObserver.on('mousedown', (data) => {
+            const input = `Mouse${data.button}`
+            const action = this.getActionFor(input)
 
-    inputObserver.on('mousedown', (data) => {
-        const input = `Mouse${data.button}`
-        const action = mapper.getActionFor(input)
+            if (action) {
+                this.pressedActions[action] = true
+                this.emit('action', action)
+            }
+        })
 
-        if (action) {
-            mapper.pressedActions[action] = true
-            mapper.emit('action', action)
-        }
-    })
+        inputObserver.on('mouseup', (data) => {
+            const input = `Mouse${data.button}`
+            const action = this.getActionFor(input)
 
-    inputObserver.on('mouseup', (data) => {
-        const input = `Mouse${data.button}`
-        const action = mapper.getActionFor(input)
+            if (action) {
+                delete this.pressedActions[action]
+            }
+        })
+    }
 
-        if (action) {
-            delete mapper.pressedActions[action]
-        }
-    })
 }
