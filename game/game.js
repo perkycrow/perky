@@ -12,7 +12,7 @@ export default class Game extends Application {
             maxFrameSkip: params.maxFrameSkip || 5
         }))
 
-        initEvents(this)
+        this.#initEvents()
     }
 
 
@@ -28,6 +28,7 @@ export default class Game extends Application {
 
         return this.gameLoop.pause(...args)
     }
+
 
     resume (...args) {
         if (!this.initialized || !this.started || !this.gameLoop.paused) {
@@ -52,20 +53,19 @@ export default class Game extends Application {
         return this.gameLoop.getCurrentFps()
     }
 
-}
 
+    #initEvents () {
+        const {gameLoop} = this
 
+        gameLoop.on('update', this.emitter('update'))
 
-function initEvents (game) {
-    const {gameLoop} = game
-    
-    gameLoop.on('update', game.emitter('update'))
+        gameLoop.on('render', this.emitter('render'))
 
-    gameLoop.on('render', game.emitter('render'))
+        gameLoop.on('pause', this.emitter('pause'))
 
-    gameLoop.on('pause', game.emitter('pause'))
+        gameLoop.on('resume', this.emitter('resume'))
 
-    gameLoop.on('resume', game.emitter('resume'))
+        gameLoop.on('changed:fps', this.emitter('changed:fps'))
+    }
 
-    gameLoop.on('changed:fps', game.emitter('changed:fps'))
 }
