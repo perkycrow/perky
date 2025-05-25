@@ -48,7 +48,7 @@ export default class Logger extends PerkyView {
         this.isMinimized = false
         this.isCollapsed = false
 
-        initEvents(this)
+        this.#initEvents()
     }
 
 
@@ -184,27 +184,27 @@ export default class Logger extends PerkyView {
         }
     }
 
-}
 
+    #initEvents () {
+        this.minimizeButton.addEventListener('click', (e) => {
+            e.stopPropagation()
+            this.minimize()
+        })
 
-function initEvents (app) {
-    app.minimizeButton.addEventListener('click', (e) => {
-        e.stopPropagation()
-        app.minimize()
-    })
-    
-    app.miniIcon.addEventListener('click', () => {
-        app.toggle()
-    })
+        this.miniIcon.addEventListener('click', () => {
+            this.toggle()
+        })
 
-    app.clearButton.addEventListener('click', (e) => {
-        e.stopPropagation()
-        app.clear()
-    })
+        this.clearButton.addEventListener('click', (e) => {
+            e.stopPropagation()
+            this.clear()
+        })
 
-    app.loggerHeader.addEventListener('click', () => {
-        app.toggle()
-    })
+        this.loggerHeader.addEventListener('click', () => {
+            this.toggle()
+        })
+    }
+
 }
 
 
