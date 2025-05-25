@@ -22,7 +22,7 @@ export default class Application extends Engine {
 
         this.registerModule('sourceManager', new SourceManager(this))
 
-        this.#initEvents(this)
+        this.#initEvents()
     }
 
 
