@@ -5,7 +5,7 @@ The `application` directory contains the concrete implementation of the Perky en
 ## Application Modules
 
 ### Application
-The main class that extends the core Engine. It integrates all application components and provides a unified API for creating interactive applications. Handles mounting to DOM, input management, and resource loading.
+The main class that extends the core Engine. It integrates all application components and provides a unified API for creating interactive applications. Handles mounting to DOM, input management (via input modules), and resource loading.
 
 ### PerkyView
 Manages the application's visual representation using Shadow DOM. Provides methods for manipulating styles, content, and the application's position and size in the browser window.
@@ -15,12 +15,6 @@ Coordinates the loading of external resources defined in the manifest. Works wit
 
 ### SourceLoader
 Handles the actual loading of individual resources. Uses appropriate loaders for different resource types and tracks loading progress.
-
-### InputObserver
-Monitors and normalizes keyboard and mouse events from the browser. Maintains the current state of keys and mouse buttons, and tracks mouse position.
-
-### InputMapper
-Maps physical inputs (keyboard keys, mouse buttons) to logical actions. Allows applications to work with semantic actions instead of specific input devices.
 
 ### Loaders
 A collection of utility functions for loading different types of resources:
