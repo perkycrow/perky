@@ -8,17 +8,15 @@ describe(InputControl, () => {
     beforeEach(() => {
         control = new InputControl({
             device: null,
-            name: 'testControl',
-            displayName: 'Test Control'
+            name: 'testControl'
         })
     })
 
 
     test('constructor', () => {
         expect(control.name).toBe('testControl')
-        expect(control.displayName).toBe('Test Control')
         expect(control.device).toBeNull()
-        expect(control.getValue()).toBeNull()
+        expect(control.getValue()).toBe(0)
     })
 
 
@@ -33,23 +31,13 @@ describe(InputControl, () => {
     })
 
 
-    test('constructor with displayName fallback', () => {
-        const control2 = new InputControl({
-            device: null,
-            name: 'fallback'
-        })
-
-        expect(control2.displayName).toBe('fallback')
-    })
-
-
     test('getDefaultValue', () => {
-        expect(control.getDefaultValue()).toBeNull()
+        expect(control.getDefaultValue()).toBe(0)
     })
 
 
     test('getValue and setValue', () => {
-        expect(control.getValue()).toBeNull()
+        expect(control.getValue()).toBe(0)
 
         control.setValue(123)
         expect(control.getValue()).toBe(123)
@@ -64,7 +52,7 @@ describe(InputControl, () => {
         expect(control.getValue()).toBe(456)
 
         control.reset()
-        expect(control.getValue()).toBeNull()
+        expect(control.getValue()).toBe(0)
     })
 
 
@@ -75,4 +63,3 @@ describe(InputControl, () => {
     })
 
 })
-
