@@ -37,4 +37,16 @@ describe('Vec2', () => {
         expect(vec.y).toBe(0)
     })
 
+
+    test('equals method', () => {
+        const vec1 = new Vec2(1, 2)
+        const vec2 = new Vec2(1, 2)
+        const vec3 = new Vec2(3, 4)
+        const vec4 = {x: 1, y: 2, z: 0} // Object with extra property
+
+        expect(vec1.equals(vec2)).toBe(true)
+        expect(vec1.equals(vec3)).toBe(false)
+        expect(vec1.equals(vec4)).toBe(true)
+    })
+
 })
