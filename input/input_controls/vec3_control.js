@@ -1,6 +1,7 @@
 import InputControl from '../input_control'
 import Vec3 from '../../math/vec3'
 
+
 const {VALUE, OLD_VALUE} = InputControl
 
 export default class Vec3Control extends InputControl {

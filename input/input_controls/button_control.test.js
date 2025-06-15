@@ -1,6 +1,7 @@
 import ButtonControl from './button_control'
-import FloatControl from './float_control'
+import InputControl from '../input_control'
 import {vi} from 'vitest'
+
 
 describe(ButtonControl, () => {
     let control
@@ -20,7 +21,7 @@ describe(ButtonControl, () => {
 
 
     test('constructor', () => {
-        expect(control).toBeInstanceOf(FloatControl)
+        expect(control).toBeInstanceOf(InputControl)
         expect(control.name).toBe('testButton')
         expect(control.value).toBe(0)
         expect(control.pressThreshold).toBe(0.1)

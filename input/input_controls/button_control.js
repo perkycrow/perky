@@ -1,7 +1,7 @@
-import FloatControl from './float_control'
+import InputControl from '../input_control'
 
 
-export default class ButtonControl extends FloatControl {
+export default class ButtonControl extends InputControl {
 
     static defaultPressThreshold = 0.1
 
