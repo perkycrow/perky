@@ -20,11 +20,11 @@ describe(InputControl, () => {
     })
 
 
-    test('constructor with defaultValue', () => {
+    test('constructor with value', () => {
         const customControl = new InputControl({
             device: null,
             name: 'custom',
-            defaultValue: 42
+            value: 42
         })
 
         expect(customControl.getValue()).toBe(42)

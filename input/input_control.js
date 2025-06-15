@@ -1,11 +1,14 @@
+import Notifier from '../core/notifier'
 
-export default class InputControl {
+
+export default class InputControl extends Notifier {
 
 
-    constructor ({device, name, defaultValue}) {
+    constructor ({device, name, value}) {
+        super()
         this.device = device
-        this.name = name
-        this.value = defaultValue || this.getDefaultValue()
+        this.name   = name
+        this.value  = value ?? this.getDefaultValue()
     }
 
 
