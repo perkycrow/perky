@@ -1,65 +1,33 @@
 import PerkyModule from '../core/perky_module'
+import Registry from '../core/registry'
 
-
-const cache = new Map()
 
 export default class InputDevice extends PerkyModule {
-
-    static methods = []
-    static events = []
-
 
     constructor ({container = window, name} = {}) {
         super()
 
-        this.container = container
-        this.name      = name || this.constructor.name
-        this.controls = new Map()
-        
-        this.createControls()
+        this.container    = container
+        this.name         = name || this.constructor.name
+        this.controls     = new Registry()
+        this.pressedNames = new Set()
+
+        this.#initEvents()
     }
 
 
-    get methods () {
-        return fetchInheritedArray(this, 'methods')
-    }
+    registerControl (control) {
+        if (!(control && control.name)) {
+            throw new Error('Control must have a name')
+        }
 
+        if (this.controls.has(control.name)) {
+            return false
+        }
 
-    get events () {
-        return fetchInheritedArray(this, 'events')
-    }
+        this.controls.set(control.name, control)
 
-
-    start () {
-        return super.start() && this.observe()
-    }
-
-
-    stop () {
-        return super.stop() && this.unobserve()
-    }
-
-
-    isPressed () { // eslint-disable-line class-methods-use-this
-        // Abstract method to be implemented in subclasses
-        return false
-    }
-
-
-    observe () { // eslint-disable-line class-methods-use-this
-        // Abstract method to be implemented in subclasses
         return true
-    }
-
-
-    unobserve () { // eslint-disable-line class-methods-use-this
-        // Abstract method to be implemented in subclasses
-        return true
-    }
-
-
-    createControls () { // eslint-disable-line class-methods-use-this
-        // To be implemented in subclasses
     }
 
 
@@ -68,57 +36,74 @@ export default class InputDevice extends PerkyModule {
     }
 
 
-    getAllControls () {
-        return Array.from(this.controls.values())
+    getValueFor (controlName) {
+        const control = this.getControl(controlName)
+        return control ? control.value : undefined
     }
 
 
-    addControl (name, control) {
-        this.controls.set(name, control)
-        return control
+    isPressed (controlName) {
+        return this.pressedNames.has(controlName)
     }
 
 
-    removeControl (name) {
-        const control = this.controls.get(name)
+    findOrCreateControl (Control, params = {}) {
+        const controlName = params.name
+
+        if (!controlName) {
+            throw new Error('Control must have a name')
+        }
+
+        let control = this.controls.get(controlName)
+
         if (control) {
-            this.controls.delete(name)
+            return control
         }
-        return control
-    }
 
+        control = new Control({
+            device: this,
+            name: controlName,
+            ...params
+        })
 
-    static clearCache () {
-        cache.clear()
-    }
-
-}
-
-
-function addUniqueItems (result, items) {
-    for (const item of items) {
-        if (!result.includes(item)) {
-            result.push(item)
+        if (this.registerControl(control)) {
+            return control
         }
+
+        return null
     }
-}
 
 
-function fetchInheritedArray (instance, property) {
-    const constructor = instance.constructor
-    const cacheKey = constructor.name + '_' + property
+    #initEvents () {
+        const device = this
 
-    if (!cache.has(cacheKey)) {
-        const result = []
-        let currentProto = constructor
-        
-        while (currentProto && currentProto[property]) {
-            addUniqueItems(result, currentProto[property])
-            currentProto = Object.getPrototypeOf(currentProto)
+        const listeners = {
+            pressed () {
+                device.pressedNames.add(this.name)
+                device.emit('control:pressed', this)
+            },
+            released () {
+                device.pressedNames.delete(this.name)
+                device.emit('control:released', this)
+            },
+            updated (value, oldValue) {
+                device.emit('control:updated', this, value, oldValue)
+            }
         }
-        
-        cache.set(cacheKey, result)
+
+        this.controls.on('set', (key, control) => {
+            control.on('pressed',  listeners.pressed.bind(control))
+            control.on('released', listeners.released.bind(control))
+            control.on('updated',  listeners.updated.bind(control))
+        })
+
+        this.controls.on('delete', (key, control) => {
+            control.off('pressed',  listeners.pressed)
+            control.off('released', listeners.released)
+            control.off('updated',  listeners.updated)
+
+            device.pressedNames.delete(control.name)
+        })
     }
-    
-    return cache.get(cacheKey)
+
 }
