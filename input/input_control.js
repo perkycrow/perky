@@ -1,24 +1,38 @@
 import Notifier from '../core/notifier'
 
+const VALUE = Symbol('value')
+const OLD_VALUE = Symbol('oldValue')
+
 
 export default class InputControl extends Notifier {
+
+    static VALUE = VALUE
+    static OLD_VALUE = OLD_VALUE
 
 
     constructor ({device, name, value}) {
         super()
-        this.device = device
-        this.name   = name
-        this.value  = value ?? this.getDefaultValue()
+        this.device     = device
+        this.name       = name
+        this[OLD_VALUE] = null
+        this[VALUE]     = value ?? this.getDefaultValue()
     }
 
 
-    setValue (value) {
-        this.value = value
+    set value (value) {
+        if (value === this[VALUE]) {
+            return
+        }
+
+        this[OLD_VALUE] = this[VALUE]
+        this[VALUE] = value
+
+        this.emit('updated', this[VALUE], this[OLD_VALUE])
     }
 
 
-    getValue () {
-        return this.value
+    get value () {
+        return this[InputControl.VALUE]
     }
 
 
@@ -28,7 +42,7 @@ export default class InputControl extends Notifier {
 
 
     reset () {
-        this.setValue(this.getDefaultValue())
+        this.value = this.getDefaultValue()
     }
 
 }

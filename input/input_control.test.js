@@ -1,8 +1,9 @@
 import InputControl from './input_control'
+import {vi} from 'vitest'
 
+const {VALUE, OLD_VALUE} = InputControl
 
 describe(InputControl, () => {
-
     let control
 
     beforeEach(() => {
@@ -16,7 +17,7 @@ describe(InputControl, () => {
     test('constructor', () => {
         expect(control.name).toBe('testControl')
         expect(control.device).toBeNull()
-        expect(control.getValue()).toBe(0)
+        expect(control.value).toBe(0)
     })
 
 
@@ -27,7 +28,7 @@ describe(InputControl, () => {
             value: 42
         })
 
-        expect(customControl.getValue()).toBe(42)
+        expect(customControl.value).toBe(42)
     })
 
 
@@ -36,30 +37,76 @@ describe(InputControl, () => {
     })
 
 
-    test('getValue and setValue', () => {
-        expect(control.getValue()).toBe(0)
+    test('value property access', () => {
+        expect(control.value).toBe(0)
 
-        control.setValue(123)
-        expect(control.getValue()).toBe(123)
+        control.value = 123
+        expect(control.value).toBe(123)
 
-        control.setValue('test')
-        expect(control.getValue()).toBe('test')
+        control.value = 'test'
+        expect(control.value).toBe('test')
+    })
+
+
+    test('value change notification', () => {
+        const listener = vi.fn()
+        control.on('updated', listener)
+
+        control.value = 456
+        expect(listener).toHaveBeenCalledWith(456, 0)
+
+        control.value = 789
+        expect(listener).toHaveBeenCalledWith(789, 456)
+    })
+
+
+    test('no notification when value unchanged', () => {
+        const listener = vi.fn()
+        control.on('updated', listener)
+
+        control.value = 123
+        expect(listener).toHaveBeenCalledTimes(1)
+
+        control.value = 123
+        expect(listener).toHaveBeenCalledTimes(1)
     })
 
 
     test('reset', () => {
-        control.setValue(456)
-        expect(control.getValue()).toBe(456)
+        control.value = 456
+        expect(control.value).toBe(456)
 
         control.reset()
-        expect(control.getValue()).toBe(0)
+        expect(control.value).toBe(0)
     })
 
 
-    test('value property access', () => {
-        control.value = 789
-        expect(control.getValue()).toBe(789)
-        expect(control.value).toBe(789)
+    test('direct symbol access', () => {
+        expect(control[VALUE]).toBe(0)
+        expect(control[OLD_VALUE]).toBeNull()
+
+        control.value = 123
+        expect(control[VALUE]).toBe(123)
+        expect(control[OLD_VALUE]).toBe(0)
+
+        control.value = 456
+        expect(control[VALUE]).toBe(456)
+        expect(control[OLD_VALUE]).toBe(123)
+    })
+
+
+    test('symbols are shared across instances', () => {
+        const control1 = new InputControl({device: null, name: 'control1'})
+        const control2 = new InputControl({device: null, name: 'control2'})
+
+        expect(VALUE).toBe(VALUE)
+        expect(OLD_VALUE).toBe(OLD_VALUE)
+
+        control1.value = 123
+        control2.value = 456
+
+        expect(control1[VALUE]).toBe(123)
+        expect(control2[VALUE]).toBe(456)
     })
 
 })
