@@ -48,6 +48,20 @@ describe(InputControl, () => {
     })
 
 
+    test('oldValue property access', () => {
+        expect(control.oldValue).toBeNull()
+
+        control.value = 123
+        expect(control.oldValue).toBe(0)
+
+        control.value = 456
+        expect(control.oldValue).toBe(123)
+
+        control.value = 'test'
+        expect(control.oldValue).toBe(456)
+    })
+
+
     test('value change notification', () => {
         const listener = vi.fn()
         control.on('updated', listener)

@@ -20,19 +20,31 @@ export default class InputControl extends Notifier {
 
 
     set value (value) {
+        this.setValue(value)
+    }
+
+
+    setValue (value) {
         if (value === this[VALUE]) {
-            return
+            return false
         }
 
         this[OLD_VALUE] = this[VALUE]
         this[VALUE] = value
 
         this.emit('updated', this[VALUE], this[OLD_VALUE])
+
+        return true
     }
 
 
     get value () {
-        return this[InputControl.VALUE]
+        return this[VALUE]
+    }
+
+
+    get oldValue () {
+        return this[OLD_VALUE]
     }
 
 
