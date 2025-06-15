@@ -1,7 +1,9 @@
 import Vec2Control from './vec2_control'
 import InputControl from '../input_control'
 import Vec2 from '../../math/vec2'
+import {vi} from 'vitest'
 
+const {VALUE, OLD_VALUE} = InputControl
 
 describe(Vec2Control, () => {
 
@@ -10,8 +12,7 @@ describe(Vec2Control, () => {
     beforeEach(() => {
         control = new Vec2Control({
             device: null,
-            name: 'testVec2',
-            displayName: 'Test Vec2'
+            name: 'testVec2'
         })
     })
 
@@ -19,27 +20,23 @@ describe(Vec2Control, () => {
     test('constructor', () => {
         expect(control).toBeInstanceOf(InputControl)
         expect(control.name).toBe('testVec2')
-        expect(control.displayName).toBe('Test Vec2')
-        expect(control.getValue()).toBeInstanceOf(Vec2)
-        expect(control.getValue().x).toBe(0)
-        expect(control.getValue().y).toBe(0)
-        expect(control.normalize).toBe(false)
-        expect(control.range).toEqual({min: -1, max: 1})
+        expect(control.value).toBeInstanceOf(Vec2)
+        expect(control.value.x).toBe(0)
+        expect(control.value.y).toBe(0)
     })
 
 
-    test('constructor with custom options', () => {
+    test('constructor with Vec2 value', () => {
         const customControl = new Vec2Control({
             device: null,
             name: 'custom',
-            normalize: true,
-            range: {min: -10, max: 10}
+            value: new Vec2(3, 4)
         })
 
-        expect(customControl.normalize).toBe(true)
-        expect(customControl.range).toEqual({min: -10, max: 10})
+        expect(customControl.value).toBeInstanceOf(Vec2)
+        expect(customControl.value.x).toBe(3)
+        expect(customControl.value.y).toBe(4)
     })
-
 
     test('getDefaultValue', () => {
         const defaultValue = control.getDefaultValue()
@@ -49,109 +46,110 @@ describe(Vec2Control, () => {
     })
 
 
-    test('setValue with Vec2 instance', () => {
-        const vec = new Vec2(3, 4)
-        control.setValue(vec)
-        
-        expect(control.getValue()).toBeInstanceOf(Vec2)
-        expect(control.getValue().x).toBe(3)
-        expect(control.getValue().y).toBe(4)
-        expect(control.getValue()).not.toBe(vec)
+    test('setValue with Vec2', () => {
+        const newVec = new Vec2(5, 6)
+        expect(control.setValue(newVec)).toBe(true)
+        expect(control.value.x).toBe(5)
+        expect(control.value.y).toBe(6)
+        expect(control.value).not.toBe(newVec) // Should be a new instance
+    })
+
+    test('setValue with object', () => {
+        expect(control.setValue({x: 7, y: 8})).toBe(true)
+        expect(control.value).toBeInstanceOf(Vec2)
+        expect(control.value.x).toBe(7)
+        expect(control.value.y).toBe(8)
     })
 
 
     test('setValue with array', () => {
-        control.setValue([5, -2])
+        expect(control.setValue([9, 10])).toBe(true)
+        expect(control.value).toBeInstanceOf(Vec2)
+        expect(control.value.x).toBe(9)
+        expect(control.value.y).toBe(10)
+    })
+
+
+    test('setValue with single number', () => {
+        expect(control.setValue(11)).toBe(true)
+        expect(control.value).toBeInstanceOf(Vec2)
+        expect(control.value.x).toBe(11)
+        expect(control.value.y).toBe(0)
+    })
+
+
+    test('setValue return value', () => {
+        expect(control.setValue(new Vec2(1, 2))).toBe(true)
+        expect(control.setValue(new Vec2(1, 2))).toBe(false) // Same value
+        expect(control.setValue(new Vec2(3, 4))).toBe(true)
+    })
+
+
+    test('value change notification', () => {
+        const listener = vi.fn()
+        control.on('updated', listener)
+
+        const newVec = new Vec2(13, 14)
+        control.setValue(newVec)
         
-        expect(control.getValue().x).toBe(5)
-        expect(control.getValue().y).toBe(-2)
+        expect(listener).toHaveBeenCalledTimes(1)
+        expect(listener).toHaveBeenCalledWith(
+            expect.objectContaining({x: 13, y: 14}),
+            expect.objectContaining({x: 0, y: 0})
+        )
     })
 
 
-    test('setValue with object', () => {
-        control.setValue({x: -1, y: 7})
-        
-        expect(control.getValue().x).toBe(-1)
-        expect(control.getValue().y).toBe(7)
+    test('no notification when value unchanged', () => {
+        const listener = vi.fn()
+        control.on('updated', listener)
+
+        control.setValue(new Vec2(15, 16))
+        expect(listener).toHaveBeenCalledTimes(1)
+
+        control.setValue(new Vec2(15, 16))
+        expect(listener).toHaveBeenCalledTimes(1) // No additional call
     })
 
 
-    test('setValue with normalization', () => {
-        control.normalize = true
-        control.range = {min: -1, max: 1}
+    test('oldValue tracking', () => {
+        control.setValue(new Vec2(17, 18))
+        expect(control.oldValue.x).toBe(0)
+        expect(control.oldValue.y).toBe(0)
 
-        control.setValue({x: 0.5, y: -0.3})
-        expect(control.getValue().x).toBe(0.5)
-        expect(control.getValue().y).toBe(-0.3)
-
-        control.setValue({x: 2, y: -2})
-        expect(control.getValue().x).toBe(1)
-        expect(control.getValue().y).toBe(-1)
-
-        control.setValue({x: -1.5, y: 1.5})
-        expect(control.getValue().x).toBe(-1)
-        expect(control.getValue().y).toBe(1)
+        control.setValue(new Vec2(19, 20))
+        expect(control.oldValue.x).toBe(17)
+        expect(control.oldValue.y).toBe(18)
     })
 
 
-    test('setValue with custom range normalization', () => {
-        control.normalize = true
-        control.range = {min: 0, max: 100}
-
-        control.setValue({x: 50, y: 75})
-        expect(control.getValue().x).toBe(50)
-        expect(control.getValue().y).toBe(75)
-
-        control.setValue({x: -10, y: 150})
-        expect(control.getValue().x).toBe(0)
-        expect(control.getValue().y).toBe(100)
-    })
-
-
-    test('x getter', () => {
-        control.setValue({x: 10, y: 20})
-        expect(control.x).toBe(10)
-    })
-
-
-    test('y getter', () => {
-        control.setValue({x: 10, y: 20})
-        expect(control.y).toBe(20)
-    })
-
-
-    test('magnitude getter', () => {
-        control.setValue({x: 3, y: 4})
-        expect(control.magnitude).toBe(5)
-
-        control.setValue({x: 0, y: 0})
-        expect(control.magnitude).toBe(0)
-    })
-
-
-    test('normalized getter', () => {
-        control.setValue({x: 3, y: 4})
-        const normalized = control.normalized
-        
-        expect(normalized).toBeInstanceOf(Vec2)
-        expect(normalized.x).toBeCloseTo(0.6)
-        expect(normalized.y).toBeCloseTo(0.8)
-
-        control.setValue({x: 0, y: 0})
-        const zeroNormalized = control.normalized
-        expect(zeroNormalized.x).toBe(0)
-        expect(zeroNormalized.y).toBe(0)
+    test('value property setter', () => {
+        control.value = new Vec2(21, 22)
+        expect(control.value.x).toBe(21)
+        expect(control.value.y).toBe(22)
     })
 
 
     test('reset', () => {
-        control.setValue({x: 10, y: 20})
-        expect(control.getValue().x).toBe(10)
-        expect(control.getValue().y).toBe(20)
+        control.setValue(new Vec2(23, 24))
+        expect(control.value.x).toBe(23)
+        expect(control.value.y).toBe(24)
 
         control.reset()
-        expect(control.getValue().x).toBe(0)
-        expect(control.getValue().y).toBe(0)
+        expect(control.value.x).toBe(0)
+        expect(control.value.y).toBe(0)
+    })
+
+
+    test('direct symbol access', () => {
+        expect(control[VALUE]).toBeInstanceOf(Vec2)
+        expect(control[OLD_VALUE]).toBeNull()
+
+        control.setValue(new Vec2(25, 26))
+        expect(control[VALUE].x).toBe(25)
+        expect(control[VALUE].y).toBe(26)
+        expect(control[OLD_VALUE].x).toBe(0)
+        expect(control[OLD_VALUE].y).toBe(0)
     })
 
 })
