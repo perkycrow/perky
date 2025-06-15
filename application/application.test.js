@@ -128,18 +128,7 @@ describe(Application, () => {
         expect(result).toBe(inputs)
     })
 
-
-    test('mousePosition', () => {
-        const position = {x: 100, y: 200}
-        vi.spyOn(application.inputObserver, 'getMousePosition').mockReturnValue(position)
-        
-        const result = application.mousePosition
-        
-        expect(application.inputObserver.getMousePosition).toHaveBeenCalled()
-        expect(result).toBe(position)
-    })
-
-
+    
     test('mountTo', () => {
         const element = document.createElement('div')
         

@@ -59,12 +59,7 @@ export default class Application extends Engine {
     getInputsFor (action) {
         return this.inputMapper.getInputsFor(action)
     }
-
-
-    get mousePosition () {
-        return this.inputObserver.getMousePosition()
-    }
-
+    
 
     mountTo (element) {
         return this.perkyView.mountTo(element)
