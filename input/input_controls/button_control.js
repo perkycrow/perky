@@ -3,31 +3,51 @@ import FloatControl from './float_control'
 
 export default class ButtonControl extends FloatControl {
 
-    pressThreshold = 0.5
+    static defaultPressThreshold = 0.1
 
 
     constructor (params = {}) {
-        super({
-            ...params, 
-            normalize: true,
-            range: {min: 0, max: 1}
-        })
-        this.pressThreshold = params.pressThreshold ?? 0.5
+        super(params)
+
+        this.pressThreshold = params.pressThreshold ?? this.constructor.defaultPressThreshold
     }
 
 
-    isPressed () {
-        return this.getValue() > this.pressThreshold
+    setValue (value) {
+        if (super.setValue(value)) {
+
+            if (this.isPressed && !this.wasPressed) {
+                this.emit('pressed')
+            }
+
+            if (!this.isPressed && this.wasPressed) {
+                this.emit('released')
+            }
+
+            return true
+        }
+
+        return false
+    }
+
+
+    get isPressed () {
+        return this.value >= this.pressThreshold
+    }
+
+
+    get wasPressed () {
+        return this.oldValue >= this.pressThreshold
     }
 
 
     press () {
-        this.setValue(1.0)
+        this.setValue(1)
     }
 
-
+    
     release () {
-        this.setValue(0.0)
+        this.setValue(0)
     }
 
 }
