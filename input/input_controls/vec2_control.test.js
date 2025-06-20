@@ -95,7 +95,8 @@ describe(Vec2Control, () => {
         expect(listener).toHaveBeenCalledTimes(1)
         expect(listener).toHaveBeenCalledWith(
             expect.objectContaining({x: 13, y: 14}),
-            expect.objectContaining({x: 0, y: 0})
+            expect.objectContaining({x: 0, y: 0}),
+            null
         )
     })
 

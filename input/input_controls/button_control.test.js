@@ -70,6 +70,7 @@ describe(ButtonControl, () => {
 
         control.value = 0.15
         expect(pressedListener).toHaveBeenCalledTimes(1)
+        expect(pressedListener).toHaveBeenCalledWith(null)
 
         control.value = 0.5
         expect(pressedListener).toHaveBeenCalledTimes(1)
@@ -153,6 +154,28 @@ describe(ButtonControl, () => {
         expect(control.value).toBe(1)
         expect(control.isPressed).toBe(true)
         expect(pressedListener).toHaveBeenCalledTimes(1)
+        expect(pressedListener).toHaveBeenCalledWith(null)
+    })
+
+    test('press method with event', () => {
+        const pressedListener = vi.fn()
+        control.on('pressed', pressedListener)
+        
+        const mockEvent = {preventDefault: vi.fn()}
+        control.press(mockEvent)
+        
+        expect(pressedListener).toHaveBeenCalledWith(mockEvent)
+    })
+
+
+    test('setValue with event', () => {
+        const pressedListener = vi.fn()
+        control.on('pressed', pressedListener)
+        
+        const mockEvent = {preventDefault: vi.fn()}
+        control.setValue(1, mockEvent)
+        
+        expect(pressedListener).toHaveBeenCalledWith(mockEvent)
     })
 
 

@@ -13,15 +13,17 @@ export default class ButtonControl extends InputControl {
     }
 
 
-    setValue (value) {
+    setValue (value, event = null) {
+        this.lastEvent = event
+        
         if (super.setValue(value)) {
 
             if (this.isPressed && !this.wasPressed) {
-                this.emit('pressed')
+                this.emit('pressed', this.lastEvent)
             }
 
             if (!this.isPressed && this.wasPressed) {
-                this.emit('released')
+                this.emit('released', this.lastEvent)
             }
 
             return true
@@ -41,13 +43,13 @@ export default class ButtonControl extends InputControl {
     }
 
 
-    press () {
-        this.setValue(1)
+    press (event = null) {
+        this.setValue(1, event)
     }
 
     
-    release () {
-        this.setValue(0)
+    release (event = null) {
+        this.setValue(0, event)
     }
 
 }

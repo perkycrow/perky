@@ -103,7 +103,25 @@ describe(Vec3Control, () => {
         expect(listener).toHaveBeenCalledTimes(1)
         expect(listener).toHaveBeenCalledWith(
             expect.objectContaining({x: 13, y: 14, z: 15}),
-            expect.objectContaining({x: 0, y: 0, z: 0})
+            expect.objectContaining({x: 0, y: 0, z: 0}),
+            null
+        )
+    })
+
+
+    test('value change notification with event', () => {
+        const listener = vi.fn()
+        control.on('updated', listener)
+
+        const event = {type: 'test'}
+        const newVec = new Vec3(13, 14, 15)
+        control.setValue(newVec, event)
+        
+        expect(listener).toHaveBeenCalledTimes(1)
+        expect(listener).toHaveBeenCalledWith(
+            expect.objectContaining({x: 13, y: 14, z: 15}),
+            expect.objectContaining({x: 0, y: 0, z: 0}),
+            event
         )
     })
 

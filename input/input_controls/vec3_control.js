@@ -11,7 +11,7 @@ export default class Vec3Control extends InputControl {
     }
 
 
-    setValue (value) {
+    setValue (value, event = null) {
         if (!(value instanceof Vec3)) {
             value = new Vec3(value)
         }
@@ -23,7 +23,7 @@ export default class Vec3Control extends InputControl {
         this[OLD_VALUE] = this[VALUE]
         this[VALUE] = new Vec3(value)
 
-        this.emit('updated', this[VALUE], this[OLD_VALUE])
+        this.emit('updated', this[VALUE], this[OLD_VALUE], event)
 
         return true
     }
