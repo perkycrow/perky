@@ -180,7 +180,7 @@ describe(InputDevice, () => {
 
         button.press()
 
-        expect(controlPressedListener).toHaveBeenCalledWith(button)
+        expect(controlPressedListener).toHaveBeenCalledWith(button, null)
         expect(device.pressedNames.has('testButton')).toBe(true)
     })
 
@@ -197,7 +197,7 @@ describe(InputDevice, () => {
         expect(device.pressedNames.has('testButton')).toBe(true)
 
         button.release()
-        expect(controlReleasedListener).toHaveBeenCalledWith(button)
+        expect(controlReleasedListener).toHaveBeenCalledWith(button, null)
         expect(device.pressedNames.has('testButton')).toBe(false)
     })
 
@@ -212,7 +212,7 @@ describe(InputDevice, () => {
 
         control.value = 42
 
-        expect(controlUpdatedListener).toHaveBeenCalledWith(control, 42, 0)
+        expect(controlUpdatedListener).toHaveBeenCalledWith(control, 42, 0, undefined)
     })
 
 
@@ -245,6 +245,89 @@ describe(InputDevice, () => {
         device.controls.delete('removeTest')
 
         expect(device.pressedNames.has('removeTest')).toBe(false)
+    })
+
+
+    test('shouldPreventDefaultFor with undefined/false', () => {
+        const event = {preventDefault: vi.fn()}
+        const control = {name: 'test'}
+
+        expect(device.shouldPreventDefaultFor(event, control)).toBe(false)
+        
+        device.shouldPreventDefault = false
+        expect(device.shouldPreventDefaultFor(event, control)).toBe(false)
+    })
+
+
+    test('shouldPreventDefaultFor with true', () => {
+        const event = {preventDefault: vi.fn()}
+        const control = {name: 'test'}
+        
+        device.shouldPreventDefault = true
+        expect(device.shouldPreventDefaultFor(event, control)).toBe(true)
+    })
+
+
+    test('shouldPreventDefaultFor with function', () => {
+        const event = {preventDefault: vi.fn(), ctrlKey: true}
+        const control = {name: 'KeyR'}
+        
+        device.shouldPreventDefault = (evt, ctrl, dev) => {
+            expect(dev).toBe(device)
+            return ctrl.name === 'KeyR' && evt.ctrlKey
+        }
+        
+        expect(device.shouldPreventDefaultFor(event, control)).toBe(true)
+        
+        const anotherEvent = {preventDefault: vi.fn(), ctrlKey: false}
+        expect(device.shouldPreventDefaultFor(anotherEvent, control)).toBe(false)
+    })
+
+
+    test('preventDefault when shouldPreventDefaultFor returns true', () => {
+        const event = {preventDefault: vi.fn(), stopPropagation: vi.fn()}
+        const control = {name: 'test'}
+        
+        device.shouldPreventDefault = true
+        device.preventDefault(event, control)
+        
+        expect(event.preventDefault).toHaveBeenCalledTimes(1)
+        expect(event.stopPropagation).toHaveBeenCalledTimes(1)
+    })
+
+
+    test('preventDefault when shouldPreventDefaultFor returns false', () => {
+        const event = {preventDefault: vi.fn(), stopPropagation: vi.fn()}
+        const control = {name: 'test'}
+        
+        device.shouldPreventDefault = false
+        device.preventDefault(event, control)
+        
+        expect(event.preventDefault).not.toHaveBeenCalled()
+        expect(event.stopPropagation).not.toHaveBeenCalled()
+    })
+
+
+    test('preventDefault with null control', () => {
+        const event = {preventDefault: vi.fn(), stopPropagation: vi.fn()}
+        
+        device.shouldPreventDefault = true
+        device.preventDefault(event, null)
+        
+        expect(event.preventDefault).not.toHaveBeenCalled()
+        expect(event.stopPropagation).not.toHaveBeenCalled()
+    })
+
+
+    test('preventDefault with function condition', () => {
+        const event = {preventDefault: vi.fn(), stopPropagation: vi.fn(), ctrlKey: true}
+        const control = {name: 'KeyR'}
+        
+        device.shouldPreventDefault = (evt, ctrl) => ctrl.name === 'KeyR' && evt.ctrlKey
+        device.preventDefault(event, control)
+        
+        expect(event.preventDefault).toHaveBeenCalledTimes(1)
+        expect(event.stopPropagation).toHaveBeenCalledTimes(1)
     })
 
 })

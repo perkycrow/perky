@@ -74,20 +74,41 @@ export default class InputDevice extends PerkyModule {
     }
 
 
+    shouldPreventDefaultFor (event, control) {
+        if (!this.shouldPreventDefault) {
+            return false
+        }
+
+        if (typeof this.shouldPreventDefault === 'function') {
+            return this.shouldPreventDefault(event, control, this)
+        }
+
+        return true
+    }
+
+
+    preventDefault (event, control) {
+        if (control && event && this.shouldPreventDefaultFor(event, control)) {
+            event.preventDefault()
+            event.stopPropagation()
+        }
+    }
+
+
     #initEvents () {
         const device = this
 
         const listeners = {
-            pressed () {
+            pressed (event) {
                 device.pressedNames.add(this.name)
-                device.emit('control:pressed', this)
+                device.emit('control:pressed', this, event)
             },
-            released () {
+            released (event) {
                 device.pressedNames.delete(this.name)
-                device.emit('control:released', this)
+                device.emit('control:released', this, event)
             },
-            updated (value, oldValue) {
-                device.emit('control:updated', this, value, oldValue)
+            updated (value, oldValue, event) {
+                device.emit('control:updated', this, value, oldValue, event)
             }
         }
 
