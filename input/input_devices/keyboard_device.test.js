@@ -41,8 +41,8 @@ describe(KeyboardDevice, () => {
     test('start attaches event listeners', () => {
         device.start()
 
-        expect(mockContainer.addEventListener).toHaveBeenCalledWith('keydown', device.keydownListener)
-        expect(mockContainer.addEventListener).toHaveBeenCalledWith('keyup', device.keyupListener)
+        expect(mockContainer.addEventListener).toHaveBeenCalledWith('keydown', device.keydownListener, true)
+        expect(mockContainer.addEventListener).toHaveBeenCalledWith('keyup', device.keyupListener, true)
         expect(mockContainer.addEventListener).toHaveBeenCalledWith('blur', device.blurListener)
         expect(mockContainer.addEventListener).toHaveBeenCalledTimes(3)
     })
@@ -52,8 +52,8 @@ describe(KeyboardDevice, () => {
         device.start()
         device.stop()
 
-        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('keydown', device.keydownListener)
-        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('keyup', device.keyupListener)
+        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('keydown', device.keydownListener, true)
+        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('keyup', device.keyupListener, true)
         expect(mockContainer.removeEventListener).toHaveBeenCalledWith('blur', device.blurListener)
         expect(mockContainer.removeEventListener).toHaveBeenCalledTimes(3)
     })

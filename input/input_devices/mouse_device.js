@@ -11,11 +11,14 @@ export default class MouseDevice extends InputDevice {
             name: params.name || 'MouseDevice'
         })
 
+        this.shouldPreventDefault = params.shouldPreventDefault
+
         this.#createControls()
 
         this.mousedownListener = this.#handleMousedown.bind(this)
         this.mouseupListener = this.#handleMouseup.bind(this)
         this.mousemoveListener = this.#handleMousemove.bind(this)
+        this.contextmenuListener = this.#handleContextmenu.bind(this)
     }
 
 
@@ -27,6 +30,7 @@ export default class MouseDevice extends InputDevice {
         this.container.addEventListener('mousedown', this.mousedownListener)
         this.container.addEventListener('mouseup', this.mouseupListener)
         this.container.addEventListener('mousemove', this.mousemoveListener)
+        this.container.addEventListener('contextmenu', this.contextmenuListener)
 
         return true
     }
@@ -40,6 +44,7 @@ export default class MouseDevice extends InputDevice {
         this.container.removeEventListener('mousedown', this.mousedownListener)
         this.container.removeEventListener('mouseup', this.mouseupListener)
         this.container.removeEventListener('mousemove', this.mousemoveListener)
+        this.container.removeEventListener('contextmenu', this.contextmenuListener)
 
         return true
     }
@@ -88,8 +93,10 @@ export default class MouseDevice extends InputDevice {
         const buttonName = getButtonName(event.button)
         const control = this.getControl(buttonName)
 
+        this.preventDefault(event, control)
+
         if (control && !control.isPressed) {
-            control.press()
+            control.press(event)
         }
     }
 
@@ -98,19 +105,29 @@ export default class MouseDevice extends InputDevice {
         const buttonName = getButtonName(event.button)
         const control = this.getControl(buttonName)
 
+        this.preventDefault(event, control)
+
         if (control && control.isPressed) {
-            control.release()
+            control.release(event)
         }
     }
 
 
     #handleMousemove (event) {
         const positionControl = this.getControl('position')
-        positionControl.value = {
+        positionControl.setValue({
             x: event.clientX,
             y: event.clientY
-        }
+        }, event)
     }
+
+
+    #handleContextmenu (event) {
+        const rightButtonControl = this.getControl('rightButton')
+        
+        this.preventDefault(event, rightButtonControl)
+    }
+
 
 }
 

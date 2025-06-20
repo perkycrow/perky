@@ -10,6 +10,8 @@ export default class KeyboardDevice extends InputDevice {
             name: params.name || 'KeyboardDevice'
         })
 
+        this.shouldPreventDefault = params.shouldPreventDefault
+
         this.keydownListener = this.#handleKeydown.bind(this)
         this.keyupListener = this.#handleKeyup.bind(this)
         this.blurListener = this.#handleBlur.bind(this)
@@ -21,8 +23,8 @@ export default class KeyboardDevice extends InputDevice {
             return false
         }
 
-        this.container.addEventListener('keydown', this.keydownListener)
-        this.container.addEventListener('keyup', this.keyupListener)
+        this.container.addEventListener('keydown', this.keydownListener, true)
+        this.container.addEventListener('keyup', this.keyupListener, true)
         this.container.addEventListener('blur', this.blurListener)
 
         return true
@@ -34,8 +36,8 @@ export default class KeyboardDevice extends InputDevice {
             return false
         }
 
-        this.container.removeEventListener('keydown', this.keydownListener)
-        this.container.removeEventListener('keyup', this.keyupListener)
+        this.container.removeEventListener('keydown', this.keydownListener, true)
+        this.container.removeEventListener('keyup', this.keyupListener, true)
         this.container.removeEventListener('blur', this.blurListener)
 
         return true
@@ -54,8 +56,10 @@ export default class KeyboardDevice extends InputDevice {
             name: keyName
         })
 
+        this.preventDefault(event, control)
+
         if (!control.isPressed) {
-            control.press()
+            control.press(event)
         }
     }
 
@@ -64,8 +68,10 @@ export default class KeyboardDevice extends InputDevice {
         const keyName = getKeyName(event)
         const control = this.getControl(keyName)
 
+        this.preventDefault(event, control)
+
         if (control && control.isPressed) {
-            control.release()
+            control.release(event)
         }
     }
 

@@ -56,7 +56,8 @@ describe(MouseDevice, () => {
         expect(mockContainer.addEventListener).toHaveBeenCalledWith('mousedown', device.mousedownListener)
         expect(mockContainer.addEventListener).toHaveBeenCalledWith('mouseup', device.mouseupListener)
         expect(mockContainer.addEventListener).toHaveBeenCalledWith('mousemove', device.mousemoveListener)
-        expect(mockContainer.addEventListener).toHaveBeenCalledTimes(3)
+        expect(mockContainer.addEventListener).toHaveBeenCalledWith('contextmenu', device.contextmenuListener)
+        expect(mockContainer.addEventListener).toHaveBeenCalledTimes(4)
     })
 
 
@@ -67,7 +68,8 @@ describe(MouseDevice, () => {
         expect(mockContainer.removeEventListener).toHaveBeenCalledWith('mousedown', device.mousedownListener)
         expect(mockContainer.removeEventListener).toHaveBeenCalledWith('mouseup', device.mouseupListener)
         expect(mockContainer.removeEventListener).toHaveBeenCalledWith('mousemove', device.mousemoveListener)
-        expect(mockContainer.removeEventListener).toHaveBeenCalledTimes(3)
+        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('contextmenu', device.contextmenuListener)
+        expect(mockContainer.removeEventListener).toHaveBeenCalledTimes(4)
     })
 
 
