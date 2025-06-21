@@ -19,10 +19,9 @@ export default class Application extends Engine {
         this.loaders = new Registry(loaders)
 
         this.registerModule('perkyView', new PerkyView({className: 'perky-application'}))
-
         this.registerModule('sourceManager', new SourceManager(this))
-
-        this.#initInputSystem(inputManager, inputBinder)
+        this.registerModule('inputBinder', getInputBinder(inputBinder))
+        this.registerModule('inputManager', getInputManager(inputManager))
 
         this.registerDevice('keyboard', new KeyboardDevice())
         this.registerDevice('mouse', new MouseDevice())
@@ -171,43 +170,13 @@ export default class Application extends Engine {
     }
 
 
-    #initInputSystem (inputManager, inputBinder) {
-        this.#initInputBinder(inputBinder)
-        this.#initInputManager(inputManager)
-        this.#setupInputBinding()
-    }
+    #initEvents () {
+        const {perkyView, inputManager} = this
 
+        perkyView.on('resize', this.emitter('resize'))
 
-    #initInputBinder (inputBinder) {
-        if (inputBinder && typeof inputBinder === 'object' && !(inputBinder instanceof InputBinder)) {
-            this.inputBinder = new InputBinder(inputBinder)
-        } else if (inputBinder instanceof InputBinder) {
-            this.inputBinder = inputBinder
-        } else {
-            this.inputBinder = new InputBinder()
-        }
-    }
-
-    #initInputManager (inputManager) {
-        if (inputManager === false) {
-            this.inputManager = null
-        } else if (inputManager && typeof inputManager === 'object' && !(inputManager instanceof InputManager)) {
-            this.inputManager = new InputManager(inputManager)
-        } else if (inputManager instanceof InputManager) {
-            this.inputManager = inputManager
-        } else {
-            this.inputManager = new InputManager()
-        }
-    }
-
-
-    #setupInputBinding () {
-        if (!this.inputManager) {
-            return
-        }
-
-        this.inputManager.on('control:pressed', this.#handleInputEvent.bind(this, 'pressed'))
-        this.inputManager.on('control:released', this.#handleInputEvent.bind(this, 'released'))
+        inputManager.on('control:pressed', this.#handleInputEvent.bind(this, 'pressed'))
+        inputManager.on('control:released', this.#handleInputEvent.bind(this, 'released'))
     }
 
 
@@ -228,11 +197,32 @@ export default class Application extends Engine {
         })
     }
 
+}
 
-    #initEvents () {
-        const {perkyView} = this
 
-        perkyView.on('resize', this.emitter('resize'))
+
+function getInputBinder (inputBinder) {
+    if (inputBinder && typeof inputBinder === 'object' && !(inputBinder instanceof InputBinder)) {
+        return new InputBinder(inputBinder)
     }
 
+    if (inputBinder instanceof InputBinder) {
+        return inputBinder
+    }
+
+    return new InputBinder()
+}
+
+
+
+function getInputManager (inputManager) {
+    if (inputManager && typeof inputManager === 'object' && !(inputManager instanceof InputManager)) {
+        return new InputManager(inputManager)
+    }
+
+    if (inputManager instanceof InputManager) {
+        return inputManager
+    }
+
+    return new InputManager()
 }

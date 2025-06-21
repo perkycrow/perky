@@ -164,14 +164,6 @@ describe(Application, () => {
     })
 
 
-    test('constructor with inputManager disabled', () => {
-        const disabledApp = new Application({inputManager: false})
-        
-        expect(disabledApp.inputManager).toBeNull()
-        expect(disabledApp.inputBinder).toBeDefined()
-    })
-
-
     test('input event handling integration', async () => {
         class TestController extends PerkyModule {
             jump = vi.fn()
