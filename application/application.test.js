@@ -5,6 +5,9 @@ import Registry from '../core/registry'
 import Manifest from '../core/manifest'
 import KeyboardDevice from '../input/input_devices/keyboard_device'
 import MouseDevice from '../input/input_devices/mouse_device'
+import ButtonControl from '../input/input_controls/button_control'
+import PerkyModule from '../core/perky_module'
+import InputManager from '../input/input_manager'
 import {vi} from 'vitest'
 
 
@@ -143,6 +146,188 @@ describe(Application, () => {
         application.setHtml('<div>test</div>')
         
         expect(htmlSetter).toHaveBeenCalledWith('<div>test</div>')
+    })
+
+
+    test('constructor with custom inputManager and inputBinder', () => {
+        const customInputManager = new InputManager()
+        const customBindings = [{deviceName: 'keyboard', controlName: 'Space', actionName: 'jump'}]
+        
+        const customApp = new Application({
+            inputManager: customInputManager,
+            inputBinder: customBindings
+        })
+
+        expect(customApp.inputManager).toBe(customInputManager)
+        expect(customApp.getAllBindings()).toHaveLength(1)
+        expect(customApp.getAllBindings()[0].actionName).toBe('jump')
+    })
+
+
+    test('constructor with inputManager disabled', () => {
+        const disabledApp = new Application({inputManager: false})
+        
+        expect(disabledApp.inputManager).toBeNull()
+        expect(disabledApp.inputBinder).toBeDefined()
+    })
+
+
+    test('input event handling integration', async () => {
+        class TestController extends PerkyModule {
+            jump = vi.fn()
+        }
+        
+        const testApp = new Application()
+        const controller = new TestController()
+        
+        testApp.registerController('game', controller)
+        testApp.bind({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump',
+            controllerName: 'game'
+        })
+
+        const keyboardDevice = testApp.getDevice('keyboard')
+        expect(keyboardDevice).toBeDefined()
+
+        const spaceControl = keyboardDevice.getControl('Space') || keyboardDevice.findOrCreateControl(ButtonControl, {name: 'Space'})
+        
+        spaceControl.press({code: 'Space'})
+        
+        await new Promise(resolve => setTimeout(resolve, 0))
+        
+        expect(controller.jump).toHaveBeenCalled()
+    })
+
+
+    test('inputManager and inputBinder getters', () => {
+        expect(application.inputManager).toBeDefined()
+        expect(application.inputBinder).toBeDefined()
+    })
+
+
+    test('bind and unbind', () => {
+        const binding = application.bind({
+            deviceName: 'keyboard',
+            controlName: 'Enter',
+            actionName: 'select'
+        })
+        
+        expect(binding).toBeDefined()
+        expect(binding.actionName).toBe('select')
+        expect(application.getAllBindings()).toHaveLength(1)
+        
+        const result = application.unbind({actionName: 'select'})
+        expect(result).toBe(true)
+        expect(application.getAllBindings()).toHaveLength(0)
+    })
+
+
+    test('getBinding and hasBinding', () => {
+        application.bind({
+            deviceName: 'keyboard',
+            controlName: 'Tab',
+            actionName: 'nextTab'
+        })
+        
+        expect(application.hasBinding({actionName: 'nextTab'})).toBe(true)
+        
+        const binding = application.getBinding({actionName: 'nextTab'})
+        expect(binding).toBeDefined()
+        expect(binding.actionName).toBe('nextTab')
+        
+        expect(application.hasBinding({actionName: 'nonExistent'})).toBe(false)
+        expect(application.getBinding({actionName: 'nonExistent'})).toBeNull()
+    })
+
+
+    test('getBindingsForInput', () => {
+        application.bind({
+            deviceName: 'keyboard',
+            controlName: 'F1',
+            actionName: 'help'
+        })
+        
+        const bindings = application.getBindingsForInput({
+            deviceName: 'keyboard',
+            controlName: 'F1',
+            eventType: 'pressed'
+        })
+        
+        expect(bindings).toHaveLength(1)
+        expect(bindings[0].actionName).toBe('help')
+    })
+
+
+    test('clearBindings', () => {
+        application.bind({deviceName: 'keyboard', controlName: 'A', actionName: 'action1'})
+        application.bind({deviceName: 'keyboard', controlName: 'B', actionName: 'action2'})
+        
+        expect(application.getAllBindings()).toHaveLength(2)
+        
+        application.clearBindings()
+        
+        expect(application.getAllBindings()).toHaveLength(0)
+    })
+
+
+    test('device management', () => {
+        const keyboardDevice = application.getDevice('keyboard')
+        const mouseDevice = application.getDevice('mouse')
+        
+        expect(keyboardDevice).toBeInstanceOf(KeyboardDevice)
+        expect(mouseDevice).toBeInstanceOf(MouseDevice)
+        expect(application.getDevice('nonExistent')).toBeUndefined()
+    })
+
+
+    test('input state queries', () => {
+        expect(application.isPressed('keyboard', 'Space')).toBe(false)
+        expect(application.isPressedAny('Jump')).toBe(false)
+        expect(application.getInputValue('mouse', 'leftButton')).toBe(0)
+        expect(application.getInputValueAny('Fire')).toBeUndefined()
+        expect(application.getControl('keyboard', 'Space')).toBeUndefined()
+        expect(application.getControlAny('Jump')).toBeNull()
+    })
+
+
+    test('bindKey convenience method', () => {
+        const binding = application.bindKey('Escape', 'pause')
+        
+        expect(binding).toBeDefined()
+        expect(binding.deviceName).toBe('keyboard')
+        expect(binding.controlName).toBe('Escape')
+        expect(binding.actionName).toBe('pause')
+        expect(binding.eventType).toBe('pressed')
+        
+        const releasedBinding = application.bindKey('Escape', 'resume', 'released')
+        expect(releasedBinding.eventType).toBe('released')
+    })
+
+
+    test('bindMouse convenience method', () => {
+        const binding = application.bindMouse('leftButton', 'shoot')
+        
+        expect(binding).toBeDefined()
+        expect(binding.deviceName).toBe('mouse')
+        expect(binding.controlName).toBe('leftButton')
+        expect(binding.actionName).toBe('shoot')
+        expect(binding.eventType).toBe('pressed')
+        
+        const releasedBinding = application.bindMouse('rightButton', 'aim', 'released')
+        expect(releasedBinding.eventType).toBe('released')
+    })
+
+
+    test('addControl', () => {
+        const control = application.addControl('keyboard', ButtonControl, {name: 'CustomKey'})
+        
+        expect(control).toBeInstanceOf(ButtonControl)
+        expect(control.name).toBe('CustomKey')
+        
+        const keyboardDevice = application.getDevice('keyboard')
+        expect(keyboardDevice.getControl('CustomKey')).toBe(control)
     })
 
 })
