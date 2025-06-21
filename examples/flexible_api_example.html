@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flexible API Example</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Flexible bindKey & bindMouse API</h1>
+        
+        <div class="demo-section">
+            <h2>New API Formats</h2>
+            <p><em>Demonstrates both parameter and object formats for bindKey/bindMouse</em></p>
+            
+            <div class="api-examples">
+                <div class="format-group">
+                    <h3>Parameter Format (Classic)</h3>
+                    <pre><code>app.bindKey('KeyW', 'moveUp')
+app.bindKey('Space', 'jump', 'pressed')
+app.bindMouse('leftButton', 'attack', 'pressed', 'player1')</code></pre>
+                </div>
+                
+                <div class="format-group">
+                    <h3>Object Format (New)</h3>
+                    <pre><code>app.bindKey('KeyW', { actionName: 'moveUp' })
+app.bindKey('Space', { actionName: 'jump', eventType: 'pressed' })
+app.bindMouse('leftButton', { 
+    actionName: 'attack',
+    eventType: 'pressed',
+    controllerName: 'player1'
+})</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Live Demo</h2>
+            <div class="controls-layout">
+                <div class="control-section">
+                    <h3>Parameter Format Bindings</h3>
+                    <ul>
+                        <li><strong>W, A, S, D</strong>: Movement (classic format)</li>
+                        <li><strong>Space</strong>: Jump (classic + eventType)</li>
+                        <li><strong>Left Click</strong>: Attack (classic + eventType + controller)</li>
+                    </ul>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Object Format Bindings</h3>
+                    <ul>
+                        <li><strong>Arrow Keys</strong>: Alt movement (object format)</li>
+                        <li><strong>Enter</strong>: Alt jump (object + eventType)</li>
+                        <li><strong>Right Click</strong>: Special attack (object + all options)</li>
+                    </ul>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Mixed Examples</h3>
+                    <ul>
+                        <li><strong>R</strong>: Reset (parameter format)</li>
+                        <li><strong>P</strong>: Pause (object format)</li>
+                        <li><strong>Shift</strong>: Boost (both pressed/released)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="output-section">
+            <h3>Action Log:</h3>
+            <div id="actions-log"></div>
+        </div>
+
+        <div class="binding-info-section">
+            <h3>Current Bindings:</h3>
+            <div id="bindings-list"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import Application from '../application/application.js'
+
+        const app = new Application({
+            keyboard: {
+                shouldPreventDefault: (event, control) => {
+                    return ['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(control.name)
+                }
+            }
+        })
+
+        // ===================
+        // ACTIONS
+        // ===================
+        app.addAction('moveUp', () => logAction('Move UP', 'movement'))
+        app.addAction('moveDown', () => logAction('Move DOWN', 'movement'))
+        app.addAction('moveLeft', () => logAction('Move LEFT', 'movement'))
+        app.addAction('moveRight', () => logAction('Move RIGHT', 'movement'))
+
+        app.addAction('altMoveUp', () => logAction('Alt Move UP', 'alt-movement'))
+        app.addAction('altMoveDown', () => logAction('Alt Move DOWN', 'alt-movement'))
+        app.addAction('altMoveLeft', () => logAction('Alt Move LEFT', 'alt-movement'))
+        app.addAction('altMoveRight', () => logAction('Alt Move RIGHT', 'alt-movement'))
+
+        app.addAction('jump', () => logAction('JUMP!', 'action'))
+        app.addAction('altJump', () => logAction('ALT JUMP!', 'action'))
+
+        app.addAction('attack', () => logAction('Attack!', 'combat'))
+        app.addAction('specialAttack', () => logAction('Special Attack!', 'combat'))
+
+        app.addAction('boost', () => logAction('Boost ON', 'modifier'))
+        app.addAction('boostOff', () => logAction('Boost OFF', 'modifier'))
+
+        app.addAction('reset', () => {
+            logAction('Game RESET', 'system')
+            clearLog()
+        })
+        app.addAction('pause', () => logAction('Game PAUSED', 'system'))
+
+        // ===================
+        // PARAMETER FORMAT BINDINGS
+        // ===================
+        app.bindKey('KeyW', 'moveUp')
+        app.bindKey('KeyA', 'moveLeft')
+        app.bindKey('KeyS', 'moveDown')
+        app.bindKey('KeyD', 'moveRight')
+        app.bindKey('Space', 'jump', 'pressed')
+        app.bindMouse('leftButton', 'attack', 'pressed')
+
+        // ===================
+        // OBJECT FORMAT BINDINGS
+        // ===================
+        app.bindKey('ArrowUp', { actionName: 'altMoveUp' })
+        app.bindKey('ArrowLeft', { actionName: 'altMoveLeft' })
+        app.bindKey('ArrowDown', { actionName: 'altMoveDown' })
+        app.bindKey('ArrowRight', { actionName: 'altMoveRight' })
+        
+        app.bindKey('Enter', { 
+            actionName: 'altJump', 
+            eventType: 'pressed' 
+        })
+        
+        app.bindMouse('rightButton', { 
+            actionName: 'specialAttack',
+            eventType: 'pressed'
+        })
+
+        // ===================
+        // MIXED FORMAT EXAMPLES
+        // ===================
+        app.bindKey('KeyR', 'reset')  // Parameter format
+        
+        app.bindKey('KeyP', { actionName: 'pause' })  // Object format
+        
+        // Both formats for pressed/released
+        app.bindKey('ShiftLeft', 'boost', 'pressed')  // Parameter format
+        app.bindKey('ShiftLeft', { 
+            actionName: 'boostOff', 
+            eventType: 'released' 
+        })  // Object format
+
+        function logAction(message, category = 'general') {
+            const log = document.getElementById('actions-log')
+            const entry = document.createElement('div')
+            const time = new Date().toLocaleTimeString()
+            
+            entry.innerHTML = `
+                <span class="time">${time}</span>
+                <span class="category category-${category}">[${category.toUpperCase()}]</span>
+                ${message}
+            `
+            entry.className = `log-entry log-${category}`
+            log.insertBefore(entry, log.firstChild)
+
+            while (log.children.length > 12) {
+                log.removeChild(log.lastChild)
+            }
+
+            updateBindingsList()
+        }
+
+        function clearLog() {
+            document.getElementById('actions-log').innerHTML = ''
+        }
+
+        function updateBindingsList() {
+            const bindingsList = document.getElementById('bindings-list')
+            const bindings = app.getAllBindings()
+            
+            let html = `<div class="bindings-count">Total bindings: <strong>${bindings.length}</strong></div>`
+            html += '<div class="bindings-grid">'
+            
+            bindings.forEach((binding, index) => {
+                // Alternating visual format for demonstration (not based on actual format used)
+                const isEvenIndex = index % 2 === 0
+                const formatLabel = isEvenIndex ? 'Style A' : 'Style B'
+                const eventLabel = binding.eventType || 'pressed'
+                
+                html += `
+                    <div class="binding-item ${isEvenIndex ? 'parameter-format' : 'object-format'}">
+                        <div class="binding-header">
+                            <strong>${binding.deviceName === 'keyboard' ? '⌨️' : '🖱️'} ${binding.controlName}</strong>
+                            <span class="format-badge">${formatLabel}</span>
+                        </div>
+                        <div class="binding-details">
+                            <div>Action: <code>${binding.actionName}</code></div>
+                            <div>Event: <code>${eventLabel}</code></div>
+                            ${binding.controllerName ? `<div>Controller: <code>${binding.controllerName}</code></div>` : ''}
+                        </div>
+                    </div>
+                `
+            })
+            
+            html += '</div>'
+            bindingsList.innerHTML = html
+        }
+
+        app.start()
+        app.mountTo(document.body)
+
+        // Initial setup
+        logAction('Flexible API Demo started!', 'system')
+        logAction('Try both WASD (parameter format) and Arrow keys (object format)', 'system')
+        updateBindingsList()
+    </script>
+
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .demo-section, .output-section, .binding-info-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+
+        .api-examples {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .format-group {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .format-group h3 {
+            margin-top: 0;
+            color: #2c5aa0;
+        }
+
+        .format-group pre {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+
+        .controls-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .control-section {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .control-section h3 {
+            margin-top: 0;
+            color: #2c5aa0;
+            font-size: 16px;
+        }
+
+        .control-section ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .control-section li {
+            margin: 8px 0;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 3px solid #007bff;
+            font-size: 13px;
+        }
+
+        #actions-log {
+            height: 250px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .log-entry {
+            margin: 3px 0;
+            padding: 5px;
+            font-size: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .time {
+            color: #666;
+            font-size: 10px;
+        }
+
+        .category {
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin: 0 5px;
+        }
+
+        .category-movement { background: #e8f5e8; color: #2d5a2d; }
+        .category-alt-movement { background: #e8f0ff; color: #1a365d; }
+        .category-action { background: #fff2e8; color: #c05621; }
+        .category-combat { background: #ffe8e8; color: #c53030; }
+        .category-modifier { background: #f0e8ff; color: #553c9a; }
+        .category-system { background: #e8e8e8; color: #4a5568; }
+
+        .bindings-count {
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .bindings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 10px;
+        }
+
+        .binding-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            font-size: 12px;
+        }
+
+        .binding-item.parameter-format {
+            border-left: 4px solid #28a745;
+        }
+
+        .binding-item.object-format {
+            border-left: 4px solid #007bff;
+        }
+
+        .binding-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .format-badge {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .parameter-format .format-badge {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .object-format .format-badge {
+            background: #cce7ff;
+            color: #004085;
+        }
+
+        .binding-details div {
+            margin: 2px 0;
+        }
+
+        .binding-details code {
+            background: #f8f9fa;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        p {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 15px;
+        }
+    </style>
+</body>
+</html> 
