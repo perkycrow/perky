@@ -150,23 +150,65 @@ export default class Application extends Engine {
     }
 
 
-    bindKey (keyName, actionName, eventType = 'pressed') {
-        return this.bind({
-            deviceName: 'keyboard',
-            controlName: keyName,
-            actionName,
-            eventType
-        })
+    bindKey (keyName, actionNameOrOptions, eventType = 'pressed', controllerName = null) {
+        if (typeof actionNameOrOptions === 'object') {
+            const {actionName, eventType: objEventType = 'pressed', controllerName: objControllerName = null} = actionNameOrOptions
+            
+            if (!actionName || typeof actionName !== 'string') {
+                throw new Error('actionName is required and must be a string')
+            }
+            
+            return this.bind({
+                deviceName: 'keyboard',
+                controlName: keyName,
+                actionName,
+                eventType: objEventType,
+                controllerName: objControllerName
+            })
+        } else {
+            if (!actionNameOrOptions || typeof actionNameOrOptions !== 'string') {
+                throw new Error('actionName is required and must be a string')
+            }
+            
+            return this.bind({
+                deviceName: 'keyboard',
+                controlName: keyName,
+                actionName: actionNameOrOptions,
+                eventType,
+                controllerName
+            })
+        }
     }
 
 
-    bindMouse (buttonName, actionName, eventType = 'pressed') {
-        return this.bind({
-            deviceName: 'mouse',
-            controlName: buttonName,
-            actionName,
-            eventType
-        })
+    bindMouse (buttonName, actionNameOrOptions, eventType = 'pressed', controllerName = null) {
+        if (typeof actionNameOrOptions === 'object') {
+            const {actionName, eventType: objEventType = 'pressed', controllerName: objControllerName = null} = actionNameOrOptions
+            
+            if (!actionName || typeof actionName !== 'string') {
+                throw new Error('actionName is required and must be a string')
+            }
+            
+            return this.bind({
+                deviceName: 'mouse',
+                controlName: buttonName,
+                actionName,
+                eventType: objEventType,
+                controllerName: objControllerName
+            })
+        } else {
+            if (!actionNameOrOptions || typeof actionNameOrOptions !== 'string') {
+                throw new Error('actionName is required and must be a string')
+            }
+            
+            return this.bind({
+                deviceName: 'mouse',
+                controlName: buttonName,
+                actionName: actionNameOrOptions,
+                eventType,
+                controllerName
+            })
+        }
     }
 
 

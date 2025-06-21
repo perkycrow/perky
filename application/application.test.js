@@ -322,4 +322,266 @@ describe(Application, () => {
         expect(keyboardDevice.getControl('CustomKey')).toBe(control)
     })
 
+
+    describe('bindKey flexible API', () => {
+        
+        test('parameter format with controllerName', () => {
+            const binding = application.bindKey('KeyF', 'fire', 'pressed', 'player1')
+            
+            expect(binding).toBeDefined()
+            expect(binding.deviceName).toBe('keyboard')
+            expect(binding.controlName).toBe('KeyF')
+            expect(binding.actionName).toBe('fire')
+            expect(binding.eventType).toBe('pressed')
+            expect(binding.controllerName).toBe('player1')
+        })
+
+        test('parameter format with eventType and no controllerName', () => {
+            const binding = application.bindKey('KeyG', 'grenade', 'released')
+            
+            expect(binding).toBeDefined()
+            expect(binding.deviceName).toBe('keyboard')
+            expect(binding.controlName).toBe('KeyG')
+            expect(binding.actionName).toBe('grenade')
+            expect(binding.eventType).toBe('released')
+            expect(binding.controllerName).toBeNull()
+        })
+
+        test('object format with actionName only', () => {
+            const binding = application.bindKey('KeyH', {actionName: 'heal'})
+            
+            expect(binding).toBeDefined()
+            expect(binding.deviceName).toBe('keyboard')
+            expect(binding.controlName).toBe('KeyH')
+            expect(binding.actionName).toBe('heal')
+            expect(binding.eventType).toBe('pressed')
+            expect(binding.controllerName).toBeNull()
+        })
+
+        test('object format with actionName and eventType', () => {
+            const binding = application.bindKey('KeyI', { 
+                actionName: 'inventory', 
+                eventType: 'released' 
+            })
+            
+            expect(binding).toBeDefined()
+            expect(binding.deviceName).toBe('keyboard')
+            expect(binding.controlName).toBe('KeyI')
+            expect(binding.actionName).toBe('inventory')
+            expect(binding.eventType).toBe('released')
+            expect(binding.controllerName).toBeNull()
+        })
+
+        test('object format with all options', () => {
+            const binding = application.bindKey('KeyJ', { 
+                actionName: 'jump',
+                eventType: 'pressed',
+                controllerName: 'player2'
+            })
+            
+            expect(binding).toBeDefined()
+            expect(binding.deviceName).toBe('keyboard')
+            expect(binding.controlName).toBe('KeyJ')
+            expect(binding.actionName).toBe('jump')
+            expect(binding.eventType).toBe('pressed')
+            expect(binding.controllerName).toBe('player2')
+        })
+
+        test('object format with partial options uses defaults', () => {
+            const binding = application.bindKey('KeyK', { 
+                actionName: 'kick',
+                controllerName: 'player3'
+            })
+            
+            expect(binding).toBeDefined()
+            expect(binding.deviceName).toBe('keyboard')
+            expect(binding.controlName).toBe('KeyK')
+            expect(binding.actionName).toBe('kick')
+            expect(binding.eventType).toBe('pressed')  // default
+            expect(binding.controllerName).toBe('player3')
+        })
+
+        test('backwards compatibility - original format still works', () => {
+            const binding = application.bindKey('KeyL', 'look')
+            
+            expect(binding).toBeDefined()
+            expect(binding.deviceName).toBe('keyboard')
+            expect(binding.controlName).toBe('KeyL')
+            expect(binding.actionName).toBe('look')
+            expect(binding.eventType).toBe('pressed')
+            expect(binding.controllerName).toBeNull()
+        })
+
+    })
+
+
+    describe('bindMouse flexible API', () => {
+        
+        test('parameter format with controllerName', () => {
+            const binding = application.bindMouse('middleButton', 'zoom', 'pressed', 'camera')
+            
+            expect(binding).toBeDefined()
+            expect(binding.deviceName).toBe('mouse')
+            expect(binding.controlName).toBe('middleButton')
+            expect(binding.actionName).toBe('zoom')
+            expect(binding.eventType).toBe('pressed')
+            expect(binding.controllerName).toBe('camera')
+        })
+
+        test('parameter format with eventType and no controllerName', () => {
+            const binding = application.bindMouse('rightButton', 'context', 'released')
+            
+            expect(binding).toBeDefined()
+            expect(binding.deviceName).toBe('mouse')
+            expect(binding.controlName).toBe('rightButton')
+            expect(binding.actionName).toBe('context')
+            expect(binding.eventType).toBe('released')
+            expect(binding.controllerName).toBeNull()
+        })
+
+        test('object format with actionName only', () => {
+            const binding = application.bindMouse('leftButton', {actionName: 'select'})
+            
+            expect(binding).toBeDefined()
+            expect(binding.deviceName).toBe('mouse')
+            expect(binding.controlName).toBe('leftButton')
+            expect(binding.actionName).toBe('select')
+            expect(binding.eventType).toBe('pressed')
+            expect(binding.controllerName).toBeNull()
+        })
+
+        test('object format with actionName and eventType', () => {
+            const binding = application.bindMouse('rightButton', { 
+                actionName: 'menu', 
+                eventType: 'released' 
+            })
+            
+            expect(binding).toBeDefined()
+            expect(binding.deviceName).toBe('mouse')
+            expect(binding.controlName).toBe('rightButton')
+            expect(binding.actionName).toBe('menu')
+            expect(binding.eventType).toBe('released')
+            expect(binding.controllerName).toBeNull()
+        })
+
+        test('object format with all options', () => {
+            const binding = application.bindMouse('leftButton', { 
+                actionName: 'fire',
+                eventType: 'pressed',
+                controllerName: 'weapon'
+            })
+            
+            expect(binding).toBeDefined()
+            expect(binding.deviceName).toBe('mouse')
+            expect(binding.controlName).toBe('leftButton')
+            expect(binding.actionName).toBe('fire')
+            expect(binding.eventType).toBe('pressed')
+            expect(binding.controllerName).toBe('weapon')
+        })
+
+        test('object format with partial options uses defaults', () => {
+            const binding = application.bindMouse('middleButton', { 
+                actionName: 'special',
+                controllerName: 'ui'
+            })
+            
+            expect(binding).toBeDefined()
+            expect(binding.deviceName).toBe('mouse')
+            expect(binding.controlName).toBe('middleButton')
+            expect(binding.actionName).toBe('special')
+            expect(binding.eventType).toBe('pressed')  // default
+            expect(binding.controllerName).toBe('ui')
+        })
+
+        test('backwards compatibility - original format still works', () => {
+            const binding = application.bindMouse('rightButton', 'aim')
+            
+            expect(binding).toBeDefined()
+            expect(binding.deviceName).toBe('mouse')
+            expect(binding.controlName).toBe('rightButton')
+            expect(binding.actionName).toBe('aim')
+            expect(binding.eventType).toBe('pressed')
+            expect(binding.controllerName).toBeNull()
+        })
+
+        test('object format validation - empty object should throw', () => {
+            expect(() => {
+                application.bindMouse('leftButton', {})
+            }).toThrow()
+        })
+
+        test('object format validation - undefined actionName should throw', () => {
+            expect(() => {
+                application.bindMouse('rightButton', {actionName: undefined})
+            }).toThrow()
+        })
+
+        test('parameter format validation - undefined actionName should throw', () => {
+            expect(() => {
+                application.bindMouse('middleButton', undefined)
+            }).toThrow()
+        })
+
+    })
+
+
+    describe('flexible API edge cases', () => {
+        
+        test('mixed usage in same application', () => {
+            const binding1 = application.bindKey('Digit1', 'slot1', 'pressed', 'inventory')
+
+            const binding2 = application.bindKey('Digit2', { 
+                actionName: 'slot2',
+                eventType: 'pressed',
+                controllerName: 'inventory'
+            })
+
+            expect(binding1.actionName).toBe('slot1')
+            expect(binding1.controllerName).toBe('inventory')
+            expect(binding2.actionName).toBe('slot2')
+            expect(binding2.controllerName).toBe('inventory')
+
+            const allBindings = application.getAllBindings()
+            const inventoryBindings = allBindings.filter(b => b.controllerName === 'inventory')
+            expect(inventoryBindings).toHaveLength(2)
+        })
+
+        test('object format with empty object defaults everything', () => {
+            expect(() => {
+                application.bindKey('KeyEmpty', {})
+            }).toThrow()
+        })
+
+        test('object format with undefined actionName', () => {
+            expect(() => {
+                application.bindKey('KeyUndef', {actionName: undefined})
+            }).toThrow()
+        })
+
+        test('object format with null actionName', () => {
+            expect(() => {
+                application.bindKey('KeyNull', {actionName: null})
+            }).toThrow()
+        })
+
+        test('object format with empty string actionName', () => {
+            expect(() => {
+                application.bindKey('KeyEmpty', {actionName: ''})
+            }).toThrow()
+        })
+
+        test('parameter format with undefined actionName', () => {
+            expect(() => {
+                application.bindKey('KeyParamUndef', undefined)
+            }).toThrow()
+        })
+
+        test('parameter format with null actionName', () => {
+            expect(() => {
+                application.bindKey('KeyParamNull', null)
+            }).toThrow()
+        })
+
+    })
+
 })
