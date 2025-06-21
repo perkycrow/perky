@@ -14,7 +14,7 @@ export default class Application extends Engine {
     constructor (params = {}) {
         super(params)
 
-        const {inputManager, inputBinder} = params
+        const {inputManager, inputBinder, keyboard = {}, mouse = {}} = params
 
         this.loaders = new Registry(loaders)
 
@@ -23,8 +23,8 @@ export default class Application extends Engine {
         this.registerModule('inputBinder', getInputBinder(inputBinder))
         this.registerModule('inputManager', getInputManager(inputManager))
 
-        this.registerDevice('keyboard', new KeyboardDevice())
-        this.registerDevice('mouse', new MouseDevice())
+        this.registerDevice('keyboard', new KeyboardDevice(keyboard))
+        this.registerDevice('mouse', new MouseDevice(mouse))
 
         this.#initEvents()
     }
