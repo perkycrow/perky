@@ -313,7 +313,7 @@ describe(InputManager, () => {
 
 
     test('addControl - shortcut form with no devices', () => {
-        const manager = new InputManager({mouse: false, keyboard: false})
+        const manager = new InputManager()
 
         expect(() => {
             manager.addControl(ButtonControl, {name: 'test'})
@@ -351,7 +351,7 @@ describe(InputManager, () => {
 
 
     test('addControlToFirst with no devices', () => {
-        const manager = new InputManager({mouse: false, keyboard: false})
+        const manager = new InputManager()
 
         expect(() => {
             manager.addControlToFirst(ButtonControl, {name: 'test'})
@@ -400,39 +400,12 @@ describe(InputManager, () => {
     })
 
 
-    test('constructor - default devices creation', () => {
-        const defaultManager = new InputManager()
-        
-        expect(defaultManager.devices.size).toBe(2)
-        expect(defaultManager.getDevice('keyboard')).toBeDefined()
-        expect(defaultManager.getDevice('mouse')).toBeDefined()
-    })
-
-
-    test('constructor - keyboard only', () => {
-        const keyboardOnlyManager = new InputManager({mouse: false})
-        
-        expect(keyboardOnlyManager.devices.size).toBe(1)
-        expect(keyboardOnlyManager.getDevice('keyboard')).toBeDefined()
-        expect(keyboardOnlyManager.getDevice('mouse')).toBeUndefined()
-    })
-
-
-    test('constructor - mouse only', () => {
-        const mouseOnlyManager = new InputManager({keyboard: false})
-        
-        expect(mouseOnlyManager.devices.size).toBe(1)
-        expect(mouseOnlyManager.getDevice('mouse')).toBeDefined()
-        expect(mouseOnlyManager.getDevice('keyboard')).toBeUndefined()
-    })
-
-
     test('constructor - no default devices', () => {
-        const emptyManager = new InputManager({mouse: false, keyboard: false})
+        const manager = new InputManager()
         
-        expect(emptyManager.devices.size).toBe(0)
-        expect(emptyManager.getDevice('keyboard')).toBeUndefined()
-        expect(emptyManager.getDevice('mouse')).toBeUndefined()
+        expect(manager.devices.size).toBe(0)
+        expect(manager.getDevice('keyboard')).toBeUndefined()
+        expect(manager.getDevice('mouse')).toBeUndefined()
     })
 
 })
