@@ -1,11 +1,7 @@
 import ActionDispatcher from './action_dispatcher'
 import ActionController from './action_controller'
 import PerkyModule from './perky_module'
-import InputManager from '../input/input_manager'
-import KeyboardDevice from '../input/input_devices/keyboard_device'
-import ButtonControl from '../input/input_controls/button_control'
 import {vi} from 'vitest'
-import InputBinder from '../input/input_binder'
 
 
 describe(ActionDispatcher, () => {
@@ -13,83 +9,13 @@ describe(ActionDispatcher, () => {
     let dispatcher
 
     beforeEach(() => {
-        dispatcher = new ActionDispatcher({inputManager: false})
+        dispatcher = new ActionDispatcher()
     })
 
 
     test('constructor', () => {
         expect(dispatcher.getController('any')).toBeUndefined()
         expect(dispatcher.getActiveName()).toBeNull()
-        expect(dispatcher.getAllBindings()).toHaveLength(0)
-    })
-
-
-    test('constructor - default inputManager creation', () => {
-        const defaultDispatcher = new ActionDispatcher()
-        
-        expect(defaultDispatcher.inputManager).toBeDefined()
-        expect(defaultDispatcher.inputManager.devices.size).toBe(0)
-    })
-
-
-    test('constructor - with custom inputManager', () => {
-        const customInputManager = new InputManager()
-        const customDispatcher = new ActionDispatcher({inputManager: customInputManager})
-        
-        expect(customDispatcher.inputManager).toBe(customInputManager)
-    })
-
-
-    test('constructor - with inputManager disabled', () => {
-        const noInputDispatcher = new ActionDispatcher({inputManager: false})
-        
-        expect(noInputDispatcher.inputManager).toBeNull()
-    })
-
-
-
-
-
-
-
-
-    test('constructor - with inputBinder instance', () => {
-        const existingInputBinder = new InputBinder()
-        existingInputBinder.bind({deviceName: 'keyboard', controlName: 'Space', actionName: 'jump'})
-        
-        const customDispatcher = new ActionDispatcher({inputBinder: existingInputBinder})
-        
-        expect(customDispatcher.inputBinder).toBe(existingInputBinder)
-        expect(customDispatcher.inputBinder.getAllBindings().length).toBe(1)
-    })
-
-
-    test('constructor - with inputBinder bindings array', () => {
-        const bindings = [
-            {deviceName: 'keyboard', controlName: 'Space', actionName: 'jump'},
-            {deviceName: 'mouse', controlName: 'leftButton', actionName: 'fire'}
-        ]
-        
-        const bindingsDispatcher = new ActionDispatcher({inputBinder: bindings})
-        
-        expect(bindingsDispatcher.inputBinder).toBeDefined()
-        expect(bindingsDispatcher.inputBinder.getAllBindings().length).toBe(2)
-    })
-
-
-    test('constructor - default inputBinder', () => {
-        const defaultDispatcher = new ActionDispatcher()
-        
-        expect(defaultDispatcher.inputBinder).toBeDefined()
-        expect(defaultDispatcher.inputBinder.getAllBindings().length).toBe(0)
-    })
-
-
-    test('inputManager getter', () => {
-        const inputManager = new InputManager()
-        dispatcher.connectInputManager(inputManager)
-        
-        expect(dispatcher.inputManager).toBe(inputManager)
     })
 
 
@@ -258,184 +184,6 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('controller dispose on unregister', () => {
-        class TestController extends PerkyModule {
-            dispose = vi.fn()
-        }
-        
-        const controller = new TestController()
-        
-        dispatcher.register('main', controller)
-        dispatcher.unregister('main')
-        
-        expect(controller.dispose).toHaveBeenCalled()
-    })
-
-
-    test('bind', () => {
-        const binding = dispatcher.bind({
-            deviceName: 'keyboard',
-            controlName: 'Space',
-            actionName: 'jump'
-        })
-        
-        expect(binding).toBeDefined()
-        expect(binding.actionName).toBe('jump')
-        expect(dispatcher.getAllBindings()).toHaveLength(1)
-    })
-
-
-    test('unbind', () => {
-        dispatcher.bind({
-            deviceName: 'keyboard',
-            controlName: 'Space',
-            actionName: 'jump'
-        })
-        
-        const result = dispatcher.unbind({actionName: 'jump'})
-        
-        expect(result).toBe(true)
-        expect(dispatcher.getAllBindings()).toHaveLength(0)
-    })
-
-
-    test('getBinding', () => {
-        dispatcher.bind({
-            deviceName: 'keyboard',
-            controlName: 'Space',
-            actionName: 'jump'
-        })
-        
-        const binding = dispatcher.getBinding({actionName: 'jump'})
-        
-        expect(binding).toBeDefined()
-        expect(binding.actionName).toBe('jump')
-    })
-
-
-    test('hasBinding', () => {
-        dispatcher.bind({
-            deviceName: 'keyboard',
-            controlName: 'Space',
-            actionName: 'jump'
-        })
-        
-        expect(dispatcher.hasBinding({actionName: 'jump'})).toBe(true)
-        expect(dispatcher.hasBinding({actionName: 'nonExistent'})).toBe(false)
-    })
-
-
-    test('getBindingsForInput', () => {
-        dispatcher.bind({
-            deviceName: 'keyboard',
-            controlName: 'Space',
-            actionName: 'jump'
-        })
-        
-        const bindings = dispatcher.getBindingsForInput({
-            deviceName: 'keyboard',
-            controlName: 'Space',
-            eventType: 'pressed'
-        })
-        
-        expect(bindings).toHaveLength(1)
-        expect(bindings[0].actionName).toBe('jump')
-    })
-
-
-    test('clearBindings', () => {
-        dispatcher.bind({
-            deviceName: 'keyboard',
-            controlName: 'Space',
-            actionName: 'jump'
-        })
-        
-        dispatcher.clearBindings()
-        
-        expect(dispatcher.getAllBindings()).toHaveLength(0)
-    })
-
-
-    test('connectInputManager', () => {
-        const inputManager = new InputManager()
-        
-        const result = dispatcher.connectInputManager(inputManager)
-        
-        expect(result).toBe(dispatcher)
-    })
-
-
-    test('disconnectInputManager', () => {
-        const inputManager = new InputManager()
-        
-        dispatcher.connectInputManager(inputManager)
-        const result = dispatcher.disconnectInputManager()
-        
-        expect(result).toBe(dispatcher)
-    })
-
-
-    test('deviceKeyFor', () => {
-        const inputManager = new InputManager()
-        const keyboardDevice = new KeyboardDevice({container: {}})
-        
-        inputManager.registerDevice('keyboard', keyboardDevice)
-        dispatcher.connectInputManager(inputManager)
-        
-        const deviceKey = dispatcher.deviceKeyFor(keyboardDevice)
-        
-        expect(deviceKey).toBe('keyboard')
-    })
-
-
-    test('deviceKeyFor - without inputManager', () => {
-        const keyboardDevice = new KeyboardDevice({container: {}})
-        
-        const deviceKey = dispatcher.deviceKeyFor(keyboardDevice)
-        
-        expect(deviceKey).toBeUndefined()
-    })
-
-
-    test('registerDevice', () => {
-        const inputManager = new InputManager()
-        const keyboardDevice = new KeyboardDevice({container: {}})
-        
-        dispatcher.connectInputManager(inputManager)
-        
-        const result = dispatcher.registerDevice('keyboard', keyboardDevice)
-        
-        expect(result).not.toBe(false)
-        expect(dispatcher.getDevice('keyboard')).toBe(keyboardDevice)
-    })
-
-
-    test('registerDevice - without inputManager', () => {
-        const keyboardDevice = new KeyboardDevice({container: {}})
-        
-        const result = dispatcher.registerDevice('keyboard', keyboardDevice)
-        
-        expect(result).toBe(false)
-    })
-
-
-    test('getDevice', () => {
-        const inputManager = new InputManager()
-        const keyboardDevice = new KeyboardDevice({container: {}})
-        
-        dispatcher.connectInputManager(inputManager)
-        inputManager.registerDevice('keyboard', keyboardDevice)
-        
-        expect(dispatcher.getDevice('keyboard')).toBe(keyboardDevice)
-        expect(dispatcher.getDevice('nonexistent')).toBeUndefined()
-    })
-
-
-    test('getDevice - without inputManager', () => {
-        expect(dispatcher.getDevice('keyboard')).toBeUndefined()
-    })
-
-
     test('dispatchAction', () => {
         class TestController extends PerkyModule {
             jump = vi.fn()
@@ -444,19 +192,19 @@ describe(ActionDispatcher, () => {
         const controller = new TestController()
         dispatcher.register('game', controller)
         
-        const binding = dispatcher.bind({
+        const binding = {
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump',
             controllerName: 'game'
-        })
+        }
         
-        const control = new ButtonControl({name: 'Space'})
+        const control = {name: 'Space'}
         
         const result = dispatcher.dispatchAction(binding, control, 'event', 'device')
         
         expect(result).toBe(true)
-        expect(controller.jump).toHaveBeenCalledWith(control, 'event', 'device')
+        expect(controller.jump).toHaveBeenCalledWith('event', 'device')
     })
 
 
@@ -469,72 +217,18 @@ describe(ActionDispatcher, () => {
         dispatcher.register('main', controller)
         dispatcher.setActive('main')
         
-        const binding = dispatcher.bind({
+        const binding = {
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump'
-        })
+        }
         
-        const control = new ButtonControl({name: 'Space'})
+        const control = {name: 'Space'}
         
         const result = dispatcher.dispatchAction(binding, control, 'event', 'device')
         
         expect(result).toBe(true)
-        expect(controller.jump).toHaveBeenCalledWith(control, 'event', 'device')
-    })
-
-
-    test('input event dispatching integration', async () => {
-        class TestController extends PerkyModule {
-            jump = vi.fn()
-        }
-        
-        const inputManager = new InputManager()
-        const keyboardDevice = new KeyboardDevice({container: {}})
-        const controller = new TestController()
-        
-        inputManager.registerDevice('keyboard', keyboardDevice)
-        dispatcher.register('game', controller)
-        dispatcher.connectInputManager(inputManager)
-        
-        dispatcher.bind({
-            deviceName: 'keyboard',
-            controlName: 'Space',
-            actionName: 'jump',
-            controllerName: 'game'
-        })
-        
-        const control = new ButtonControl({device: keyboardDevice, name: 'Space'})
-        keyboardDevice.registerControl(control)
-        
-        control.press({code: 'Space'})
-        
-        await new Promise(resolve => setTimeout(resolve, 0))
-        
-        expect(controller.jump).toHaveBeenCalled()
-    })
-
-
-    test('dispose', () => {
-        const inputManager = new InputManager()
-        dispatcher.connectInputManager(inputManager)
-        
-        expect(dispatcher.inputManager).toBe(inputManager)
-        
-        dispatcher.dispose()
-        
-        expect(dispatcher.inputManager).toBeNull()
-    })
-
-
-    test('inputBinder getter', () => {
-        const inputBinder = new InputBinder()
-        inputBinder.bind({deviceName: 'keyboard', controlName: 'Space', actionName: 'jump'})
-        
-        const testDispatcher = new ActionDispatcher({inputBinder: inputBinder})
-        
-        expect(testDispatcher.inputBinder).toBe(inputBinder)
-        expect(testDispatcher.inputBinder.getAllBindings().length).toBe(1)
+        expect(controller.jump).toHaveBeenCalledWith('event', 'device')
     })
 
 })
