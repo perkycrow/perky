@@ -166,6 +166,122 @@ describe(InputBinder, () => {
     })
 
 
+    test('getBindingsForInput - single binding', () => {
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump'
+        })
+        
+        const bindings = binder.getBindingsForInput({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            eventType: 'pressed'
+        })
+        
+        expect(bindings).toHaveLength(1)
+        expect(bindings[0].actionName).toBe('jump')
+    })
+
+
+    test('getBindingsForInput - multiple bindings', () => {
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump',
+            controllerName: 'game'
+        })
+        
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'select',
+            controllerName: 'menu'
+        })
+
+        const bindings = binder.getBindingsForInput({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            eventType: 'pressed'
+        })
+        
+        expect(bindings).toHaveLength(2)
+        expect(bindings.map(b => b.actionName)).toContain('jump')
+        expect(bindings.map(b => b.actionName)).toContain('select')
+    })
+
+
+    test('getBindingsForInput - different event types', () => {
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump',
+            eventType: 'pressed'
+        })
+        
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'stopJump',
+            eventType: 'released'
+        })
+
+        const pressedBindings = binder.getBindingsForInput({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            eventType: 'pressed'
+        })
+        
+        const releasedBindings = binder.getBindingsForInput({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            eventType: 'released'
+        })
+        
+        expect(pressedBindings).toHaveLength(1)
+        expect(pressedBindings[0].actionName).toBe('jump')
+        
+        expect(releasedBindings).toHaveLength(1)
+        expect(releasedBindings[0].actionName).toBe('stopJump')
+    })
+
+
+    test('getBindingsForInput - non-existent', () => {
+        const bindings = binder.getBindingsForInput({
+            deviceName: 'keyboard',
+            controlName: 'NonExistent',
+            eventType: 'pressed'
+        })
+        
+        expect(bindings).toHaveLength(0)
+    })
+
+
+    test('unbind - updates input index', () => {
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump'
+        })
+
+        let bindings = binder.getBindingsForInput({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            eventType: 'pressed'
+        })
+        expect(bindings).toHaveLength(1)
+
+        binder.unbind({actionName: 'jump'})
+
+        bindings = binder.getBindingsForInput({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            eventType: 'pressed'
+        })
+        expect(bindings).toHaveLength(0)
+    })
+
+
     test('clearBindings', () => {
         binder.bind({
             deviceName: 'keyboard',
@@ -180,10 +296,24 @@ describe(InputBinder, () => {
         })
         
         expect(binder.getAllBindings()).toHaveLength(2)
+
+        const spaceBindings = binder.getBindingsForInput({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            eventType: 'pressed'
+        })
+        expect(spaceBindings).toHaveLength(1)
         
         binder.clearBindings()
         
         expect(binder.getAllBindings()).toHaveLength(0)
+
+        const bindingsAfterClear = binder.getBindingsForInput({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            eventType: 'pressed'
+        })
+        expect(bindingsAfterClear).toHaveLength(0)
     })
 
 
@@ -201,12 +331,12 @@ describe(InputBinder, () => {
             controllerName: 'game',
             eventType: 'released'
         })
-        
+
         const exported = binder.export()
         
         expect(exported).toHaveProperty('bindings')
         expect(exported.bindings).toHaveLength(2)
-        
+
         const jumpBinding = exported.bindings.find(b => b.actionName === 'jump')
         expect(jumpBinding.deviceName).toBe('keyboard')
         expect(jumpBinding.controlName).toBe('Space')
@@ -252,6 +382,13 @@ describe(InputBinder, () => {
         })
         expect(fireBinding.deviceName).toBe('mouse')
         expect(fireBinding.controllerName).toBe('game')
+
+        const spaceBindings = binderFromImport.getBindingsForInput({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            eventType: 'pressed'
+        })
+        expect(spaceBindings).toHaveLength(1)
     })
 
 
