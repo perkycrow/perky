@@ -1,10 +1,12 @@
 import PerkyModule from '../core/perky_module'
 import ModuleRegistry from '../core/module_registry'
+import KeyboardDevice from './input_devices/keyboard_device'
+import MouseDevice from './input_devices/mouse_device'
 
 
 export default class InputManager extends PerkyModule {
 
-    constructor () {
+    constructor ({mouse = true, keyboard = true} = {}) {
         super()
         
         this.devices = new ModuleRegistry({
@@ -17,6 +19,7 @@ export default class InputManager extends PerkyModule {
         })
 
         this.#initEvents()
+        this.#createDefaultDevices({mouse, keyboard})
     }
 
 
@@ -148,6 +151,19 @@ export default class InputManager extends PerkyModule {
 
     deviceKeyFor (device) {
         return this.devices.keyFor(device)
+    }
+
+
+    #createDefaultDevices ({mouse, keyboard}) {
+        if (keyboard) {
+            const keyboardDevice = new KeyboardDevice()
+            this.registerDevice('keyboard', keyboardDevice)
+        }
+        
+        if (mouse) {
+            const mouseDevice = new MouseDevice()
+            this.registerDevice('mouse', mouseDevice)
+        }
     }
 
 
