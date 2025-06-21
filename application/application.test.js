@@ -3,6 +3,8 @@ import Engine from '../core/engine'
 import PerkyView from './perky_view'
 import Registry from '../core/registry'
 import Manifest from '../core/manifest'
+import KeyboardDevice from '../input/input_devices/keyboard_device'
+import MouseDevice from '../input/input_devices/mouse_device'
 import {vi} from 'vitest'
 
 
@@ -64,6 +66,14 @@ describe(Application, () => {
         expect(customApp.manifest.metadata('name')).toBe('Test App')
     })
 
+
+    test('constructor registers keyboard and mouse devices', () => {
+        const testApp = new Application()
+        
+        expect(testApp.getDevice('keyboard')).toBeInstanceOf(KeyboardDevice)
+        expect(testApp.getDevice('mouse')).toBeInstanceOf(MouseDevice)
+    })
+
     
     test('mountTo', () => {
         const element = document.createElement('div')
@@ -71,6 +81,11 @@ describe(Application, () => {
         application.mountTo(element)
         
         expect(application.perkyView.mountTo).toHaveBeenCalledWith(element)
+    })
+
+
+    test('element getter', () => {
+        expect(application.element).toBe(application.perkyView.element)
     })
 
 
@@ -115,6 +130,19 @@ describe(Application, () => {
         application.config('debug', true)
 
         expect(mockManifest.config).toHaveBeenCalledWith('debug', true)
+    })
+
+
+    test('setHtml', () => {
+        const htmlSetter = vi.fn()
+        Object.defineProperty(application.perkyView, 'html', {
+            set: htmlSetter,
+            configurable: true
+        })
+        
+        application.setHtml('<div>test</div>')
+        
+        expect(htmlSetter).toHaveBeenCalledWith('<div>test</div>')
     })
 
 })

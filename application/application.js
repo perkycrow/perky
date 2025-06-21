@@ -3,6 +3,8 @@ import Registry from '../core/registry'
 import PerkyView from './perky_view'
 import SourceManager from './source_manager'
 import {loaders} from './loaders'
+import KeyboardDevice from '../input/input_devices/keyboard_device'
+import MouseDevice from '../input/input_devices/mouse_device'
 
 
 export default class Application extends Engine {
@@ -15,6 +17,9 @@ export default class Application extends Engine {
         this.registerModule('perkyView', new PerkyView({className: 'perky-application'}))
 
         this.registerModule('sourceManager', new SourceManager(this))
+
+        this.registerDevice('keyboard', new KeyboardDevice())
+        this.registerDevice('mouse', new MouseDevice())
 
         this.#initEvents()
     }

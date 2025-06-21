@@ -28,9 +28,7 @@ describe(ActionDispatcher, () => {
         const defaultDispatcher = new ActionDispatcher()
         
         expect(defaultDispatcher.inputManager).toBeDefined()
-        expect(defaultDispatcher.inputManager.devices.size).toBe(2) // keyboard + mouse
-        expect(defaultDispatcher.inputManager.getDevice('keyboard')).toBeDefined()
-        expect(defaultDispatcher.inputManager.getDevice('mouse')).toBeDefined()
+        expect(defaultDispatcher.inputManager.devices.size).toBe(0)
     })
 
 
@@ -49,34 +47,10 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('constructor - with inputManager options', () => {
-        const optionsDispatcher = new ActionDispatcher({inputManager: {mouse: false}})
-        
-        expect(optionsDispatcher.inputManager).toBeDefined()
-        expect(optionsDispatcher.inputManager.devices.size).toBe(1) // only keyboard
-        expect(optionsDispatcher.inputManager.getDevice('keyboard')).toBeDefined()
-        expect(optionsDispatcher.inputManager.getDevice('mouse')).toBeUndefined()
-    })
 
 
-    test('constructor - with inputManager options keyboard only', () => {
-        const keyboardOnlyDispatcher = new ActionDispatcher({inputManager: {keyboard: false}})
-        
-        expect(keyboardOnlyDispatcher.inputManager).toBeDefined()
-        expect(keyboardOnlyDispatcher.inputManager.devices.size).toBe(1) // only mouse
-        expect(keyboardOnlyDispatcher.inputManager.getDevice('mouse')).toBeDefined()
-        expect(keyboardOnlyDispatcher.inputManager.getDevice('keyboard')).toBeUndefined()
-    })
 
 
-    test('constructor - with inputManager options both disabled', () => {
-        const emptyDispatcher = new ActionDispatcher({inputManager: {mouse: false, keyboard: false}})
-        
-        expect(emptyDispatcher.inputManager).toBeDefined()
-        expect(emptyDispatcher.inputManager.devices.size).toBe(0)
-        expect(emptyDispatcher.inputManager.getDevice('keyboard')).toBeUndefined()
-        expect(emptyDispatcher.inputManager.getDevice('mouse')).toBeUndefined()
-    })
 
 
     test('constructor - with inputBinder instance', () => {
@@ -424,7 +398,7 @@ describe(ActionDispatcher, () => {
 
 
     test('registerDevice', () => {
-        const inputManager = new InputManager({mouse: false, keyboard: false})
+        const inputManager = new InputManager()
         const keyboardDevice = new KeyboardDevice({container: {}})
         
         dispatcher.connectInputManager(inputManager)
@@ -446,7 +420,7 @@ describe(ActionDispatcher, () => {
 
 
     test('getDevice', () => {
-        const inputManager = new InputManager({mouse: false, keyboard: false})
+        const inputManager = new InputManager()
         const keyboardDevice = new KeyboardDevice({container: {}})
         
         dispatcher.connectInputManager(inputManager)
