@@ -146,6 +146,11 @@ export default class InputManager extends PerkyModule {
     }
 
 
+    deviceKeyFor (device) {
+        return this.devices.keyFor(device)
+    }
+
+
     #initEvents () {
         this.devices.on('set', (deviceName, device) => {
             this.#forwardDeviceEvents(device)

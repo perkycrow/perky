@@ -383,4 +383,20 @@ describe(InputManager, () => {
         expect(mouse.getControl('SharedControl')).toBe(results[1].control)
     })
 
+
+    test('deviceKeyFor', () => {
+        const manager = new InputManager()
+        const keyboard = new InputDevice({name: 'KeyboardDevice'})
+        const mouse = new InputDevice({name: 'MouseDevice'})
+
+        manager.registerDevice('keyboard', keyboard)
+        manager.registerDevice('mouse', mouse)
+
+        expect(manager.deviceKeyFor(keyboard)).toBe('keyboard')
+        expect(manager.deviceKeyFor(mouse)).toBe('mouse')
+        
+        const unknownDevice = new InputDevice({name: 'Unknown'})
+        expect(manager.deviceKeyFor(unknownDevice)).toBeUndefined()
+    })
+
 })
