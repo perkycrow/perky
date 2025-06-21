@@ -8,10 +8,10 @@ export default class ActionDispatcher extends PerkyModule {
 
     #controllers
     #activeControllerName = null
-    #inputBinder = new InputBinder()
+    #inputBinder = null
     #inputManager = null
 
-    constructor ({inputManager} = {}) {
+    constructor ({inputManager, inputBinder} = {}) {
         super()
         this.#controllers = new ModuleRegistry({
             registryName: 'controller',
@@ -19,17 +19,8 @@ export default class ActionDispatcher extends PerkyModule {
             parentModuleName: 'actionDispatcher'
         })
 
-        if (inputManager === false) {
-            this.#inputManager = null
-        } else if (inputManager && typeof inputManager === 'object' && !(inputManager instanceof InputManager)) {
-            this.#inputManager = new InputManager(inputManager)
-            this.#setupInputListeners()
-        } else if (inputManager) {
-            this.connectInputManager(inputManager)
-        } else {
-            this.#inputManager = new InputManager()
-            this.#setupInputListeners()
-        }
+        this.#initInputBinder(inputBinder)
+        this.#initInputManager(inputManager)
     }
 
 
@@ -40,6 +31,11 @@ export default class ActionDispatcher extends PerkyModule {
 
     get inputManager () {
         return this.#inputManager
+    }
+
+
+    get inputBinder () {
+        return this.#inputBinder
     }
 
 
@@ -258,6 +254,32 @@ export default class ActionDispatcher extends PerkyModule {
         matchingBindings.forEach(binding => {
             this.dispatchAction(binding, control, event, device)
         })
+    }
+
+
+    #initInputBinder (inputBinder) {
+        if (inputBinder && typeof inputBinder === 'object' && !(inputBinder instanceof InputBinder)) {
+            this.#inputBinder = new InputBinder(inputBinder)
+        } else if (inputBinder instanceof InputBinder) {
+            this.#inputBinder = inputBinder
+        } else {
+            this.#inputBinder = new InputBinder()
+        }
+    }
+
+
+    #initInputManager (inputManager) {
+        if (inputManager === false) {
+            this.#inputManager = null
+        } else if (inputManager && typeof inputManager === 'object' && !(inputManager instanceof InputManager)) {
+            this.#inputManager = new InputManager(inputManager)
+            this.#setupInputListeners()
+        } else if (inputManager instanceof InputManager) {
+            this.connectInputManager(inputManager)
+        } else {
+            this.#inputManager = new InputManager()
+            this.#setupInputListeners()
+        }
     }
 
 }

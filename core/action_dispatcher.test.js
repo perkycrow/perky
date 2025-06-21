@@ -5,6 +5,7 @@ import InputManager from '../input/input_manager'
 import KeyboardDevice from '../input/input_devices/keyboard_device'
 import ButtonControl from '../input/input_controls/button_control'
 import {vi} from 'vitest'
+import InputBinder from '../input/input_binder'
 
 
 describe(ActionDispatcher, () => {
@@ -75,6 +76,38 @@ describe(ActionDispatcher, () => {
         expect(emptyDispatcher.inputManager.devices.size).toBe(0)
         expect(emptyDispatcher.inputManager.getDevice('keyboard')).toBeUndefined()
         expect(emptyDispatcher.inputManager.getDevice('mouse')).toBeUndefined()
+    })
+
+
+    test('constructor - with inputBinder instance', () => {
+        const existingInputBinder = new InputBinder()
+        existingInputBinder.bind({deviceName: 'keyboard', controlName: 'Space', actionName: 'jump'})
+        
+        const customDispatcher = new ActionDispatcher({inputBinder: existingInputBinder})
+        
+        expect(customDispatcher.inputBinder).toBe(existingInputBinder)
+        expect(customDispatcher.inputBinder.getAllBindings().length).toBe(1)
+    })
+
+
+    test('constructor - with inputBinder bindings array', () => {
+        const bindings = [
+            {deviceName: 'keyboard', controlName: 'Space', actionName: 'jump'},
+            {deviceName: 'mouse', controlName: 'leftButton', actionName: 'fire'}
+        ]
+        
+        const bindingsDispatcher = new ActionDispatcher({inputBinder: bindings})
+        
+        expect(bindingsDispatcher.inputBinder).toBeDefined()
+        expect(bindingsDispatcher.inputBinder.getAllBindings().length).toBe(2)
+    })
+
+
+    test('constructor - default inputBinder', () => {
+        const defaultDispatcher = new ActionDispatcher()
+        
+        expect(defaultDispatcher.inputBinder).toBeDefined()
+        expect(defaultDispatcher.inputBinder.getAllBindings().length).toBe(0)
     })
 
 
@@ -517,6 +550,17 @@ describe(ActionDispatcher, () => {
         dispatcher.dispose()
         
         expect(dispatcher.inputManager).toBeNull()
+    })
+
+
+    test('inputBinder getter', () => {
+        const inputBinder = new InputBinder()
+        inputBinder.bind({deviceName: 'keyboard', controlName: 'Space', actionName: 'jump'})
+        
+        const testDispatcher = new ActionDispatcher({inputBinder: inputBinder})
+        
+        expect(testDispatcher.inputBinder).toBe(inputBinder)
+        expect(testDispatcher.inputBinder.getAllBindings().length).toBe(1)
     })
 
 })
