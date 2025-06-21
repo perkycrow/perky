@@ -128,7 +128,7 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('dispatch with no active controller', () => {
+    test('dispatch', () => {
         const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
         
         const result = dispatcher.dispatch('someAction')
@@ -140,7 +140,7 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('dispatch to controller with execute method', () => {
+    test('dispatch - to controller with execute method', () => {
         const controller = new ActionController()
         const executeSpy = vi.spyOn(controller, 'execute').mockImplementation(() => true)
         
@@ -154,7 +154,7 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('dispatchTo with method on controller', () => {
+    test('dispatchTo', () => {
         class TestController extends PerkyModule {
             someAction = vi.fn()
         }
@@ -170,7 +170,7 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('dispatchTo with non-existent method', () => {
+    test('dispatchTo - non-existent method', () => {
         const controller = new PerkyModule()
         
         dispatcher.register('main', controller)
@@ -181,7 +181,7 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('dispatchTo with non-existent controller', () => {
+    test('dispatchTo - non-existent controller', () => {
         const result = dispatcher.dispatchTo('nonExistent', 'someAction')
         
         expect(result).toBe(false)
@@ -305,7 +305,29 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('dispatchAction with specific controller', () => {
+    test('deviceKeyFor', () => {
+        const inputManager = new InputManager()
+        const keyboardDevice = new KeyboardDevice({container: {}})
+        
+        inputManager.registerDevice('keyboard', keyboardDevice)
+        dispatcher.connectInputManager(inputManager)
+        
+        const deviceKey = dispatcher.deviceKeyFor(keyboardDevice)
+        
+        expect(deviceKey).toBe('keyboard')
+    })
+
+
+    test('deviceKeyFor - without inputManager', () => {
+        const keyboardDevice = new KeyboardDevice({container: {}})
+        
+        const deviceKey = dispatcher.deviceKeyFor(keyboardDevice)
+        
+        expect(deviceKey).toBeNull()
+    })
+
+
+    test('dispatchAction', () => {
         class TestController extends PerkyModule {
             jump = vi.fn()
         }
@@ -329,7 +351,7 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('dispatchAction with active controller fallback', () => {
+    test('dispatchAction - active controller fallback', () => {
         class TestController extends PerkyModule {
             jump = vi.fn()
         }
@@ -361,8 +383,7 @@ describe(ActionDispatcher, () => {
         const inputManager = new InputManager()
         const keyboardDevice = new KeyboardDevice({container: {}})
         const controller = new TestController()
-        
-        // Setup
+
         inputManager.registerDevice('keyboard', keyboardDevice)
         dispatcher.register('game', controller)
         dispatcher.connectInputManager(inputManager)
@@ -373,15 +394,12 @@ describe(ActionDispatcher, () => {
             actionName: 'jump',
             controllerName: 'game'
         })
-        
-        // Simulate key press
+
         const control = new ButtonControl({device: keyboardDevice, name: 'Space'})
         keyboardDevice.registerControl(control)
-        
-        // Trigger the event manually since we don't have real DOM events
+
         control.press({code: 'Space'})
-        
-        // Small delay to allow event processing
+
         await new Promise(resolve => setTimeout(resolve, 0))
         
         expect(controller.jump).toHaveBeenCalled()

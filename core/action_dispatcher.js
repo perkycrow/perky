@@ -82,6 +82,11 @@ export default class ActionDispatcher extends PerkyModule {
     }
 
 
+    deviceKeyFor (device) {
+        return this.#inputManager ? this.#inputManager.deviceKeyFor(device) : null
+    }
+
+
     register (name, controller) {
         if (this.#controllers.has(name)) {
             console.warn(`Controller "${name}" already registered. Overwriting...`)
@@ -209,8 +214,8 @@ export default class ActionDispatcher extends PerkyModule {
             return
         }
 
-        const deviceName = this.#inputManager.deviceKeyFor(device)
-        const matchingBindings = this.#inputBinder.getBindingsForInput({
+        const deviceName = this.deviceKeyFor(device)
+        const matchingBindings = this.getBindingsForInput({
             deviceName, 
             controlName: control.name, 
             eventType
