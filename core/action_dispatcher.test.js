@@ -12,7 +12,7 @@ describe(ActionDispatcher, () => {
     let dispatcher
 
     beforeEach(() => {
-        dispatcher = new ActionDispatcher()
+        dispatcher = new ActionDispatcher({inputManager: false})
     })
 
 
@@ -20,6 +20,69 @@ describe(ActionDispatcher, () => {
         expect(dispatcher.getController('any')).toBeUndefined()
         expect(dispatcher.getActiveName()).toBeNull()
         expect(dispatcher.getAllBindings()).toHaveLength(0)
+    })
+
+
+    test('constructor - default inputManager creation', () => {
+        const defaultDispatcher = new ActionDispatcher()
+        
+        expect(defaultDispatcher.inputManager).toBeDefined()
+        expect(defaultDispatcher.inputManager.devices.size).toBe(2) // keyboard + mouse
+        expect(defaultDispatcher.inputManager.getDevice('keyboard')).toBeDefined()
+        expect(defaultDispatcher.inputManager.getDevice('mouse')).toBeDefined()
+    })
+
+
+    test('constructor - with custom inputManager', () => {
+        const customInputManager = new InputManager()
+        const customDispatcher = new ActionDispatcher({inputManager: customInputManager})
+        
+        expect(customDispatcher.inputManager).toBe(customInputManager)
+    })
+
+
+    test('constructor - with inputManager disabled', () => {
+        const noInputDispatcher = new ActionDispatcher({inputManager: false})
+        
+        expect(noInputDispatcher.inputManager).toBeNull()
+    })
+
+
+    test('constructor - with inputManager options', () => {
+        const optionsDispatcher = new ActionDispatcher({inputManager: {mouse: false}})
+        
+        expect(optionsDispatcher.inputManager).toBeDefined()
+        expect(optionsDispatcher.inputManager.devices.size).toBe(1) // only keyboard
+        expect(optionsDispatcher.inputManager.getDevice('keyboard')).toBeDefined()
+        expect(optionsDispatcher.inputManager.getDevice('mouse')).toBeUndefined()
+    })
+
+
+    test('constructor - with inputManager options keyboard only', () => {
+        const keyboardOnlyDispatcher = new ActionDispatcher({inputManager: {keyboard: false}})
+        
+        expect(keyboardOnlyDispatcher.inputManager).toBeDefined()
+        expect(keyboardOnlyDispatcher.inputManager.devices.size).toBe(1) // only mouse
+        expect(keyboardOnlyDispatcher.inputManager.getDevice('mouse')).toBeDefined()
+        expect(keyboardOnlyDispatcher.inputManager.getDevice('keyboard')).toBeUndefined()
+    })
+
+
+    test('constructor - with inputManager options both disabled', () => {
+        const emptyDispatcher = new ActionDispatcher({inputManager: {mouse: false, keyboard: false}})
+        
+        expect(emptyDispatcher.inputManager).toBeDefined()
+        expect(emptyDispatcher.inputManager.devices.size).toBe(0)
+        expect(emptyDispatcher.inputManager.getDevice('keyboard')).toBeUndefined()
+        expect(emptyDispatcher.inputManager.getDevice('mouse')).toBeUndefined()
+    })
+
+
+    test('inputManager getter', () => {
+        const inputManager = new InputManager()
+        dispatcher.connectInputManager(inputManager)
+        
+        expect(dispatcher.inputManager).toBe(inputManager)
     })
 
 
@@ -323,7 +386,46 @@ describe(ActionDispatcher, () => {
         
         const deviceKey = dispatcher.deviceKeyFor(keyboardDevice)
         
-        expect(deviceKey).toBeNull()
+        expect(deviceKey).toBeUndefined()
+    })
+
+
+    test('registerDevice', () => {
+        const inputManager = new InputManager({mouse: false, keyboard: false})
+        const keyboardDevice = new KeyboardDevice({container: {}})
+        
+        dispatcher.connectInputManager(inputManager)
+        
+        const result = dispatcher.registerDevice('keyboard', keyboardDevice)
+        
+        expect(result).not.toBe(false)
+        expect(dispatcher.getDevice('keyboard')).toBe(keyboardDevice)
+    })
+
+
+    test('registerDevice - without inputManager', () => {
+        const keyboardDevice = new KeyboardDevice({container: {}})
+        
+        const result = dispatcher.registerDevice('keyboard', keyboardDevice)
+        
+        expect(result).toBe(false)
+    })
+
+
+    test('getDevice', () => {
+        const inputManager = new InputManager({mouse: false, keyboard: false})
+        const keyboardDevice = new KeyboardDevice({container: {}})
+        
+        dispatcher.connectInputManager(inputManager)
+        inputManager.registerDevice('keyboard', keyboardDevice)
+        
+        expect(dispatcher.getDevice('keyboard')).toBe(keyboardDevice)
+        expect(dispatcher.getDevice('nonexistent')).toBeUndefined()
+    })
+
+
+    test('getDevice - without inputManager', () => {
+        expect(dispatcher.getDevice('keyboard')).toBeUndefined()
     })
 
 
@@ -383,7 +485,7 @@ describe(ActionDispatcher, () => {
         const inputManager = new InputManager()
         const keyboardDevice = new KeyboardDevice({container: {}})
         const controller = new TestController()
-
+        
         inputManager.registerDevice('keyboard', keyboardDevice)
         dispatcher.register('game', controller)
         dispatcher.connectInputManager(inputManager)
@@ -394,15 +496,27 @@ describe(ActionDispatcher, () => {
             actionName: 'jump',
             controllerName: 'game'
         })
-
+        
         const control = new ButtonControl({device: keyboardDevice, name: 'Space'})
         keyboardDevice.registerControl(control)
-
+        
         control.press({code: 'Space'})
-
+        
         await new Promise(resolve => setTimeout(resolve, 0))
         
         expect(controller.jump).toHaveBeenCalled()
+    })
+
+
+    test('dispose', () => {
+        const inputManager = new InputManager()
+        dispatcher.connectInputManager(inputManager)
+        
+        expect(dispatcher.inputManager).toBe(inputManager)
+        
+        dispatcher.dispose()
+        
+        expect(dispatcher.inputManager).toBeNull()
     })
 
 })

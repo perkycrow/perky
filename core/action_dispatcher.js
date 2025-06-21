@@ -1,6 +1,7 @@
 import PerkyModule from './perky_module'
 import ModuleRegistry from './module_registry'
 import InputBinder from '../input/input_binder'
+import InputManager from '../input/input_manager'
 
 
 export default class ActionDispatcher extends PerkyModule {
@@ -10,18 +11,35 @@ export default class ActionDispatcher extends PerkyModule {
     #inputBinder = new InputBinder()
     #inputManager = null
 
-    constructor () {
+    constructor ({inputManager} = {}) {
         super()
         this.#controllers = new ModuleRegistry({
             registryName: 'controller',
             parentModule: this,
             parentModuleName: 'actionDispatcher'
         })
+
+        if (inputManager === false) {
+            this.#inputManager = null
+        } else if (inputManager && typeof inputManager === 'object' && !(inputManager instanceof InputManager)) {
+            this.#inputManager = new InputManager(inputManager)
+            this.#setupInputListeners()
+        } else if (inputManager) {
+            this.connectInputManager(inputManager)
+        } else {
+            this.#inputManager = new InputManager()
+            this.#setupInputListeners()
+        }
     }
 
 
     get activeController () {
         return this.#controllers.get(this.#activeControllerName)
+    }
+
+
+    get inputManager () {
+        return this.#inputManager
     }
 
 
@@ -44,6 +62,16 @@ export default class ActionDispatcher extends PerkyModule {
     disconnectInputManager () {
         this.#disconnectInputManager()
         return this
+    }
+
+
+    registerDevice (name, device) {
+        return this.#inputManager ? this.#inputManager.registerDevice(name, device) : false
+    }
+
+
+    getDevice (name) {
+        return this.#inputManager ? this.#inputManager.getDevice(name) : undefined
     }
 
 
@@ -83,7 +111,7 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     deviceKeyFor (device) {
-        return this.#inputManager ? this.#inputManager.deviceKeyFor(device) : null
+        return this.#inputManager ? this.#inputManager.deviceKeyFor(device) : undefined
     }
 
 
@@ -185,6 +213,12 @@ export default class ActionDispatcher extends PerkyModule {
         } else {
             return this.dispatch(binding.actionName, control, ...args)
         }
+    }
+
+
+    dispose () {
+        this.#disconnectInputManager()
+        return super.dispose()
     }
 
 
