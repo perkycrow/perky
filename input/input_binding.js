@@ -1,4 +1,3 @@
-
 export default class InputBinding {
 
     constructor ({
@@ -17,11 +16,20 @@ export default class InputBinding {
 
 
     get key () {
-        if (this.controllerName) {
-            return `${this.eventType}:${this.actionName}:${this.controllerName}`
+        return InputBinding.keyFor({
+            actionName: this.actionName,
+            controllerName: this.controllerName,
+            eventType: this.eventType
+        })
+    }
+
+
+    static keyFor ({actionName, controllerName = null, eventType = 'pressed'}) {
+        if (controllerName) {
+            return `${eventType}:${actionName}:${controllerName}`
         }
 
-        return `${this.eventType}:${this.actionName}`
+        return `${eventType}:${actionName}`
     }
 
 

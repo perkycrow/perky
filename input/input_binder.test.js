@@ -1,32 +1,44 @@
 import {describe, beforeEach} from 'vitest'
 import InputBinder from './input_binder'
 import InputBinding from './input_binding'
-import InputManager from './input_manager'
-import ActionDispatcher from '../core/action_dispatcher'
-import ActionController from '../core/action_controller'
-
 
 
 describe(InputBinder, () => {
 
     let binder
-    let inputManager
-    let actionDispatcher
-    let gameController
 
     beforeEach(() => {
-        inputManager = new InputManager()
-        actionDispatcher = new ActionDispatcher()
-        gameController = new ActionController()
         binder = new InputBinder()
     })
 
 
-    test('constructor', () => {
-        const customBinder = new InputBinder({inputManager, actionDispatcher})
+    test('constructor - empty', () => {
+        const emptyBinder = new InputBinder()
+        expect(emptyBinder.getAllBindings()).toHaveLength(0)
+    })
 
-        expect(customBinder.inputManager).toBe(inputManager)
-        expect(customBinder.actionDispatcher).toBe(actionDispatcher)
+
+    test('constructor - with bindings', () => {
+        const bindings = [
+            {
+                deviceName: 'keyboard',
+                controlName: 'Space',
+                actionName: 'jump'
+            },
+            {
+                deviceName: 'keyboard',
+                controlName: 'Enter',
+                actionName: 'select',
+                controllerName: 'menu'
+            }
+        ]
+
+        const binderWithData = new InputBinder(bindings)
+        expect(binderWithData.getAllBindings()).toHaveLength(2)
+        
+        const jumpBinding = binderWithData.getBinding({actionName: 'jump'})
+        expect(jumpBinding.deviceName).toBe('keyboard')
+        expect(jumpBinding.controlName).toBe('Space')
     })
 
 
@@ -126,7 +138,7 @@ describe(InputBinder, () => {
             actionName: 'nonexistent'
         })
         
-        expect(binding).toBeUndefined()
+        expect(binding).toBeNull()
     })
 
 
@@ -154,65 +166,6 @@ describe(InputBinder, () => {
     })
 
 
-    test('findBindingByInput', () => {
-        binder.bind({
-            deviceName: 'keyboard',
-            controlName: 'Space',
-            actionName: 'jump'
-        })
-        
-        const binding = binder.findBindingByInput({
-            deviceName: 'keyboard',
-            controlName: 'Space'
-        })
-        
-        expect(binding).toBeDefined()
-        expect(binding.actionName).toBe('jump')
-    })
-
-
-    test('findBindingByInput - non-existent', () => {
-        const binding = binder.findBindingByInput({
-            deviceName: 'mouse',
-            controlName: 'LeftButton'
-        })
-        
-        expect(binding).toBeNull()
-    })
-
-
-    test('rebindAction', () => {
-        binder.bind({
-            deviceName: 'keyboard',
-            controlName: 'Space',
-            actionName: 'jump'
-        })
-        
-        const result = binder.rebindAction({
-            actionName: 'jump',
-            deviceName: 'mouse',
-            controlName: 'LeftButton'
-        })
-        
-        expect(result).toBe(true)
-        
-        const binding = binder.getBinding({actionName: 'jump'})
-        expect(binding.deviceName).toBe('mouse')
-        expect(binding.controlName).toBe('LeftButton')
-    })
-
-
-    test('rebindAction - non-existent', () => {
-        const result = binder.rebindAction({
-            actionName: 'nonexistent',
-            deviceName: 'mouse',
-            controlName: 'LeftButton'
-        })
-        
-        expect(result).toBe(false)
-    })
-
-
     test('clearBindings', () => {
         binder.bind({
             deviceName: 'keyboard',
@@ -234,18 +187,93 @@ describe(InputBinder, () => {
     })
 
 
-    test('getActiveControllerName', () => {
-        actionDispatcher.register('game', gameController)
-        actionDispatcher.setActive('game')
+    test('export', () => {
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump'
+        })
         
-        const binderWithDispatcher = new InputBinder({actionDispatcher})
+        binder.bind({
+            deviceName: 'mouse',
+            controlName: 'LeftButton',
+            actionName: 'fire',
+            controllerName: 'game',
+            eventType: 'released'
+        })
         
-        expect(binderWithDispatcher.getActiveControllerName()).toBe('game')
+        const exported = binder.export()
+        
+        expect(exported).toHaveProperty('bindings')
+        expect(exported.bindings).toHaveLength(2)
+        
+        const jumpBinding = exported.bindings.find(b => b.actionName === 'jump')
+        expect(jumpBinding.deviceName).toBe('keyboard')
+        expect(jumpBinding.controlName).toBe('Space')
+        expect(jumpBinding.controllerName).toBeNull()
+        expect(jumpBinding.eventType).toBe('pressed')
+        
+        const fireBinding = exported.bindings.find(b => b.actionName === 'fire')
+        expect(fireBinding.controllerName).toBe('game')
+        expect(fireBinding.eventType).toBe('released')
     })
 
 
-    test('getActiveControllerName - non-existent', () => {
-        expect(binder.getActiveControllerName()).toBeNull()
+    test('import - static method', () => {
+        const data = {
+            bindings: [
+                {
+                    deviceName: 'keyboard',
+                    controlName: 'Space',
+                    actionName: 'jump'
+                },
+                {
+                    deviceName: 'mouse',
+                    controlName: 'LeftButton',
+                    actionName: 'fire',
+                    controllerName: 'game',
+                    eventType: 'released'
+                }
+            ]
+        }
+        
+        const binderFromImport = InputBinder.import(data)
+        
+        expect(binderFromImport.getAllBindings()).toHaveLength(2)
+        
+        const jumpBinding = binderFromImport.getBinding({actionName: 'jump'})
+        expect(jumpBinding.deviceName).toBe('keyboard')
+        expect(jumpBinding.controlName).toBe('Space')
+        
+        const fireBinding = binderFromImport.getBinding({
+            actionName: 'fire', 
+            controllerName: 'game', 
+            eventType: 'released'
+        })
+        expect(fireBinding.deviceName).toBe('mouse')
+        expect(fireBinding.controllerName).toBe('game')
+    })
+
+
+    test('import - instance method', () => {
+        const bindings = [
+            {
+                deviceName: 'keyboard',
+                controlName: 'Enter',
+                actionName: 'select'
+            }
+        ]
+        
+        binder.import(bindings)
+        
+        expect(binder.getAllBindings()).toHaveLength(1)
+        expect(binder.hasBinding({actionName: 'select'})).toBe(true)
+    })
+
+
+    test('import - empty data', () => {
+        const binderFromImport = InputBinder.import({})
+        expect(binderFromImport.getAllBindings()).toHaveLength(0)
     })
 
 })
