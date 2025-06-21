@@ -102,10 +102,14 @@ export default class InputDevice extends PerkyModule {
             pressed (event) {
                 device.pressedNames.add(this.name)
                 device.emit('control:pressed', this, event)
+
+                device.preventDefault(event, this)
             },
             released (event) {
                 device.pressedNames.delete(this.name)
                 device.emit('control:released', this, event)
+
+                device.preventDefault(event, this)
             },
             updated (value, oldValue, event) {
                 device.emit('control:updated', this, value, oldValue, event)
