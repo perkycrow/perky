@@ -78,6 +78,7 @@
     "node": ">=16.0.0"
   },
   "devDependencies": {
+    "@tweakpane/plugin-essentials": "^0.2.1",
     "canvas": "^3.1.0",
     "chokidar-cli": "^3.0.0",
     "esbuild": "^0.25.0",
@@ -85,6 +86,7 @@
     "jsdom": "^26.1.0",
     "three": "^0.176.0",
     "tone": "^15.1.22",
+    "tweakpane": "^4.0.5",
     "vite": "^6.2.7",
     "vitest": "^3.1.3"
   }
