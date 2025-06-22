@@ -1,6 +1,10 @@
 import {Pane} from 'tweakpane'
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials'
 import Vec2 from '../math/vec2.js'
+import Stats from 'three/addons/libs/stats.module.js'
+
+const stats = new Stats()
+document.body.appendChild(stats.dom)
 
 // Configuration Tweakpane principal
 const pane = new Pane({title: 'Perky + Tweakpane Demo'})
@@ -163,6 +167,7 @@ let lastTime = performance.now()
 let frameCount = 0
 
 function animate (currentTime) {
+    stats.begin()
     fpsGraph.begin()
     
     const deltaTime = (currentTime - lastTime) / 1000
@@ -211,6 +216,7 @@ function animate (currentTime) {
     }
     
     fpsGraph.end()
+    stats.end()
     requestAnimationFrame(animate)
 }
 
