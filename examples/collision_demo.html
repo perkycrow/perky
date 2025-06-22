@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collision Demo - Perky Framework</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <div class="example-container">
+        <h1>Collision Demo</h1>
+        <p>Demonstration of the 2D collision module integrated into the Perky framework</p>
+        
+        <div class="example-content">
+            <canvas id="collisionCanvas" width="800" height="600"></canvas>
+        </div>
+        
+        <div class="controls">
+            <p><strong>Controls:</strong></p>
+            <ul>
+                <li><kbd>WASD</kbd> - Move the red player</li>
+                <li><kbd>Space</kbd> - Jump</li>
+                <li><kbd>Click</kbd> - Add a ball</li>
+                <li><kbd>R</kbd> - Reset</li>
+            </ul>
+        </div>
+        
+        <div class="info">
+            <p>This demo shows:</p>
+            <ul>
+                <li>Automatic collisions between Canvas2D objects</li>
+                <li>Basic physics (gravity, bouncing, friction)</li>
+                <li>Static and dynamic objects</li>
+                <li>Visual debugging of collision shapes</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script type="module" src="./collision_demo.js"></script>
+</body>
+</html> 
