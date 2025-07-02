@@ -335,4 +335,119 @@ describe('CollisionSystem', () => {
         }).not.toThrow()
     })
 
+
+    test('queryRadius finds bodies within radius', () => {
+        const bodyA = createTestBody({x: 0, y: 0})
+        const bodyB = createTestBody({x: 50, y: 0})
+        const bodyC = createTestBody({x: 150, y: 0})
+
+        collisionSystem.addBody(bodyA)
+        collisionSystem.addBody(bodyB)
+        collisionSystem.addBody(bodyC)
+
+        const results = collisionSystem.queryRadius(0, 0, 75)
+
+        expect(results).toContain(bodyA)
+        expect(results).toContain(bodyB)
+        expect(results).not.toContain(bodyC)
+    })
+
+
+    test('addThreeJSObject detects sprite dimensions', () => {
+        const sprite = {
+            isSprite: true,
+            scale: {x: 32, y: 24},
+            userData: {},
+            position: {x: 0, y: 0}
+        }
+
+        collisionSystem.addThreeJSObject(sprite)
+
+        expect(sprite.userData.width).toBe(64) // 32 * 2
+        expect(sprite.userData.height).toBe(48) // 24 * 2
+        expect(sprite.userData.radius).toBe(32) // Math.max(32, 24)
+        expect(collisionSystem.collisionBodies).toContain(sprite)
+    })
+
+
+    test('addThreeJSObject detects geometry dimensions', () => {
+        const mesh = {
+            geometry: {
+                parameters: {
+                    width: 40,
+                    height: 60,
+                    radius: 25
+                }
+            },
+            userData: {},
+            position: {x: 0, y: 0}
+        }
+
+        collisionSystem.addThreeJSObject(mesh)
+
+        expect(mesh.userData.width).toBe(40)
+        expect(mesh.userData.height).toBe(60)
+        expect(mesh.userData.radius).toBe(25)
+    })
+
+
+    test('pauseBody and resumeBody', () => {
+        const body = createTestBody({x: 0, y: 0})
+        collisionSystem.addBody(body, {velocity: {x: 100, y: 50}})
+
+        collisionSystem.pauseBody(body)
+
+        expect(body._paused).toBe(true)
+        expect(body.velocity.x).toBe(0)
+        expect(body.velocity.y).toBe(0)
+        expect(body._pausedVelocity).toEqual({x: 100, y: 50})
+
+        collisionSystem.resumeBody(body)
+
+        expect(body._paused).toBe(false)
+        expect(body.velocity.x).toBe(100)
+        expect(body.velocity.y).toBe(50)
+    })
+
+
+    test('collision callback is called on collision', () => {
+        const callback = vi.fn()
+        collisionSystem.setCollisionCallback(callback)
+
+        const bodyA = createTestBody({x: 0, y: 0})
+        const bodyB = createTestBody({x: 10, y: 0}) // Overlapping
+
+        collisionSystem.addBody(bodyA, {velocity: {x: 1, y: 0}})
+        collisionSystem.addBody(bodyB, {velocity: {x: -1, y: 0}})
+
+        collisionSystem.detectCollisions()
+
+        expect(callback).toHaveBeenCalled()
+        expect(callback).toHaveBeenCalledWith(
+            expect.objectContaining({collisionShape: expect.any(Object)}),
+            expect.objectContaining({collisionShape: expect.any(Object)}),
+            expect.any(Object)
+        )
+    })
+
+
+    test('enableDebugDraw sets debug properties', () => {
+        const mockScene = {}
+        
+        const result = collisionSystem.enableDebugDraw(mockScene)
+
+        expect(collisionSystem.debugScene).toBe(mockScene)
+        expect(collisionSystem.debugEnabled).toBe(true)
+        expect(result).toBe(collisionSystem) // Chainable
+    })
+
 })
+
+
+function createTestBody (position = {x: 0, y: 0}) {
+    return {
+        constructor: {name: 'TestBody'},
+        userData: {width: 32, height: 32},
+        position
+    }
+}

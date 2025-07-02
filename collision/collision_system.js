@@ -166,6 +166,10 @@ export default class CollisionSystem {
         const collision = detectCollision(bodyA.collisionShape, bodyB.collisionShape)
         if (collision) {
             this.resolver.resolve(bodyA, bodyB, collision)
+
+            if (this.onCollision) {
+                this.onCollision(bodyA, bodyB, collision)
+            }
         }
     }
 
@@ -242,33 +246,102 @@ export default class CollisionSystem {
 
 
     queryAABB (bounds) {
-        const results = []
-        const queryShape = new BoxShape({
-            x: bounds.x,
-            y: bounds.y,
-            width: bounds.width,
-            height: bounds.height
-        })
+
+        this.updateShapes()
         
+        const overlappingBodies = []
         const allBodies = [...this.collisionBodies, ...this.staticBodies]
         
-        allBodies.forEach(body => {
-            const collision = detectCollision(queryShape, body.collisionShape)
-            if (collision) {
-                results.push(body)
-            }
-        })
+
+        const queryBounds = {
+            left: bounds.x,
+            right: bounds.x + bounds.width,
+            top: bounds.y,
+            bottom: bounds.y + bounds.height
+        }
         
-        return results
+        for (const body of allBodies) {
+            const bodyBounds = body.collisionShape.getBounds()
+            
+            if (boundsOverlap(queryBounds, bodyBounds)) {
+                overlappingBodies.push(body)
+            }
+        }
+        
+        return overlappingBodies
     }
 
 
     queryPoint (x, y) {
+
+        this.updateShapes()
+        
         const allBodies = [...this.collisionBodies, ...this.staticBodies]
         return allBodies.filter(body => body.collisionShape.containsPoint(x, y))
     }
 
 
+    queryRadius (x, y, radius) {
+
+        this.updateShapes()
+        
+        const allBodies = [...this.collisionBodies, ...this.staticBodies]
+        return allBodies.filter(body => {
+            const bounds = body.collisionShape.getBounds()
+            const dx = x - bounds.centerX
+            const dy = y - bounds.centerY
+            const distance = Math.sqrt(dx * dx + dy * dy)
+            return distance <= radius
+        })
+    }
+
+    
+    addThreeJSObject (threeObject, options = {}) {
+        if (!threeObject.userData) {
+            threeObject.userData = {}
+        }
+        
+        const detectedSize = autoDetectThreeJSSize(threeObject)
+        Object.assign(threeObject.userData, detectedSize)
+        
+        return this.addBody(threeObject, options)
+    }
+
+    
+    enableDebugDraw (scene) {
+        this.debugScene = scene
+        this.debugEnabled = true
+        return this
+    }
+
+    
+    pauseBody (body) {
+        if (body.velocity) {
+            body._pausedVelocity = {...body.velocity}
+            body.velocity.x = 0
+            body.velocity.y = 0
+        }
+        body._paused = true
+        return this
+    }
+
+    
+    resumeBody (body) {
+        if (body._pausedVelocity) {
+            body.velocity = body._pausedVelocity
+            delete body._pausedVelocity
+        }
+        body._paused = false
+        return this
+    }
+
+    
+    setCollisionCallback (callback) {
+        this.onCollision = callback
+        return this
+    }
+
+    
     setGravity (x, y) {
         this.gravity.x = x
         this.gravity.y = y
@@ -281,11 +354,42 @@ export default class CollisionSystem {
 function getBodyOptions (options) {
     return {
         velocity: options.velocity || {x: 0, y: 0},
-        isStatic: options.isStatic || false,
         mass: options.mass || 1,
         restitution: options.restitution || 0.5,
-        friction: options.friction || 0.3
+        friction: options.friction || 0.8,
+        isStatic: options.isStatic || false
     }
+}
+
+
+function boundsOverlap (boundsA, boundsB) {
+    return boundsA.left < boundsB.right &&
+           boundsA.right > boundsB.left &&
+           boundsA.top < boundsB.bottom &&
+           boundsA.bottom > boundsB.top
+}
+
+
+function autoDetectThreeJSSize (threeObject) {
+    if (threeObject.isSprite) {
+        const scale = threeObject.scale
+        return {
+            width: scale.x * 2,
+            height: scale.y * 2,
+            radius: Math.max(scale.x, scale.y)
+        }
+    }
+    
+    if (threeObject.geometry?.parameters) {
+        const params = threeObject.geometry.parameters
+        return {
+            width: params.width || params.radiusTop * 2,
+            height: params.height || params.radiusBottom * 2,
+            radius: params.radius
+        }
+    }
+    
+    return {}
 }
 
 
@@ -320,3 +424,14 @@ function drawBoxDebug (ctx, bounds) {
     const height = bounds.height
     ctx.strokeRect(-width / 2, -height / 2, width, height)
 }
+
+
+function getCollisionInfo (bodyA, bodyB) {
+    if (!bodyA.collisionShape || !bodyB.collisionShape) {
+        return null
+    }
+    return detectCollision(bodyA.collisionShape, bodyB.collisionShape)
+}
+
+
+export {getCollisionInfo}
