@@ -284,6 +284,89 @@ describe(Application, () => {
     })
 
 
+    test('input state shortcuts - isKeyPressed and isMousePressed', () => {
+        expect(application.isKeyPressed('Space')).toBe(false)
+        expect(application.isKeyPressed('ArrowLeft')).toBe(false)
+        expect(application.isKeyPressed('KeyW')).toBe(false)
+
+        expect(application.isMousePressed('leftButton')).toBe(false)
+        expect(application.isMousePressed('rightButton')).toBe(false)
+        expect(application.isMousePressed('middleButton')).toBe(false)
+
+        expect(application.isKeyPressed('Space')).toBe(application.isPressed('keyboard', 'Space'))
+        expect(application.isMousePressed('leftButton')).toBe(application.isPressed('mouse', 'leftButton'))
+    })
+
+
+    test('input value shortcuts - getKeyValue and getMouseValue', () => {
+        expect(application.getKeyValue('Space')).toBeUndefined()
+        expect(application.getKeyValue('ArrowLeft')).toBeUndefined()
+        expect(application.getKeyValue('KeyW')).toBeUndefined()
+        
+        expect(application.getMouseValue('leftButton')).toBe(application.getInputValue('mouse', 'leftButton'))
+        expect(application.getMouseValue('rightButton')).toBe(application.getInputValue('mouse', 'rightButton'))
+        expect(application.getMouseValue('position')).toBe(application.getInputValue('mouse', 'position'))
+
+        expect(application.getKeyValue('Space')).toBe(application.getInputValue('keyboard', 'Space'))
+        expect(application.getMouseValue('leftButton')).toBe(application.getInputValue('mouse', 'leftButton'))
+        expect(application.getMouseValue('unknownControl')).toBe(application.getInputValue('mouse', 'unknownControl'))
+    })
+
+
+    test('input shortcuts with simulated key presses', () => {
+        const keyboardDevice = application.getDevice('keyboard')
+        const mouseDevice = application.getDevice('mouse')
+
+        const spaceControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'Space'})
+        spaceControl.press()
+
+        expect(application.isKeyPressed('Space')).toBe(true)
+        expect(application.getKeyValue('Space')).toBe(1)
+        expect(application.isPressed('keyboard', 'Space')).toBe(true)
+
+        const leftButtonControl = mouseDevice.findOrCreateControl(ButtonControl, {name: 'leftButton'})
+        leftButtonControl.press()
+
+        expect(application.isMousePressed('leftButton')).toBe(true)
+        expect(application.getMouseValue('leftButton')).toBe(1)
+        expect(application.isPressed('mouse', 'leftButton')).toBe(true)
+
+        spaceControl.release()
+        leftButtonControl.release()
+
+        expect(application.isKeyPressed('Space')).toBe(false)
+        expect(application.getKeyValue('Space')).toBe(0)
+        expect(application.isMousePressed('leftButton')).toBe(false)
+        expect(application.getMouseValue('leftButton')).toBe(0)
+    })
+
+
+    test('input shortcuts consistency verification', () => {
+        const testCases = [
+            {key: 'Space', device: 'keyboard'},
+            {key: 'ArrowLeft', device: 'keyboard'}, 
+            {key: 'KeyW', device: 'keyboard'},
+            {key: 'leftButton', device: 'mouse'},
+            {key: 'rightButton', device: 'mouse'},
+            {key: 'unknownControl', device: 'keyboard'},
+            {key: 'unknownControl', device: 'mouse'}
+        ]
+        
+        testCases.forEach(({key, device}) => {
+            if (device === 'keyboard') {
+                expect(application.isKeyPressed(key)).toBe(application.isPressed('keyboard', key))
+                expect(application.getKeyValue(key)).toBe(application.getInputValue('keyboard', key))
+            } else {
+                expect(application.isMousePressed(key)).toBe(application.isPressed('mouse', key))
+                expect(application.getMouseValue(key)).toBe(application.getInputValue('mouse', key))
+            }
+        })
+
+        expect(application.isKeyPressed('NonExistentKey')).toBe(false)
+        expect(application.isMousePressed('NonExistentButton')).toBe(false)
+    })
+
+
     test('bindKey convenience method', () => {
         const binding = application.bindKey('Escape', 'pause')
         

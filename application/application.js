@@ -110,6 +110,16 @@ export default class Application extends Engine {
     }
 
 
+    isKeyPressed (keyName) {
+        return this.isPressed('keyboard', keyName)
+    }
+
+
+    isMousePressed (buttonName) {
+        return this.isPressed('mouse', buttonName)
+    }
+
+
     isPressedAny (controlName) {
         return this.inputManager ? this.inputManager.isPressedAny(controlName) : false
     }
@@ -117,6 +127,16 @@ export default class Application extends Engine {
 
     getInputValue (deviceName, controlName) {
         return this.inputManager ? this.inputManager.getValueFor(deviceName, controlName) : undefined
+    }
+
+
+    getKeyValue (keyName) {
+        return this.getInputValue('keyboard', keyName)
+    }
+
+
+    getMouseValue (buttonName) {
+        return this.getInputValue('mouse', buttonName)
     }
 
 
