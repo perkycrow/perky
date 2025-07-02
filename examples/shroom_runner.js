@@ -10,6 +10,7 @@ import {
 
 import OrthographicCamera from '../three/cameras/orthographic_camera.js'
 import {createRenderer, createSprite} from '../three/three_utils.js'
+import SimpleCollisionDetector from '../collision/simple_collision_detector.js'
 
 const manifest = {
     config: {
@@ -28,7 +29,7 @@ const manifest = {
     }
 }
 
-class ShroomRunner extends Game {
+export default class ShroomRunner extends Game {
     constructor (params = {}) {
         super(params)
         
@@ -54,6 +55,7 @@ class ShroomRunner extends Game {
 
     async initGame () {
         this.setupThreeJS()
+        this.setupCollisionDetector()
         await this.loadAssets()
         this.setupPlayer()
         this.assetsLoaded = true
@@ -127,12 +129,25 @@ class ShroomRunner extends Game {
             
             // Add to scene
             this.scene.add(this.shroom)
+            
+            // Add to collision detector
+            this.collisionDetector.addBody(this.shroom, {
+                type: 'player',
+                radius: 1.5 // Collision radius
+            })
         } else {
             console.error('Failed to load shroom image')
         }
     }
 
-
+    setupCollisionDetector () {
+        this.collisionDetector = new SimpleCollisionDetector()
+        
+        // Set up collision between player and spores
+        this.collisionDetector.onCollision('player', 'spore', (player, spore) => {
+            this.collectSpore(spore)
+        })
+    }
 
     updateGame (deltaTime) {
         if (!this.assetsLoaded || !this.shroom) {
@@ -159,7 +174,9 @@ class ShroomRunner extends Game {
         // Update spore system
         this.updateSpores(deltaTime)
         this.spawnSpores(deltaTime)
-        this.checkCollisions()
+        
+        // Check for collisions
+        this.collisionDetector.detectCollisions()
     }
 
     renderGame () {
@@ -196,10 +213,16 @@ class ShroomRunner extends Game {
         
         this.scene.add(spore)
         this.spores.push(spore)
+        
+        // Add to collision detector
+        this.collisionDetector.addBody(spore, {
+            type: 'spore',
+            radius: 0.8 // Smaller radius for spores
+        })
     }
 
     updateSpores (deltaTime) {
-        // Update spore positions and remove fallen spores
+        // Update spore positions
         for (let i = this.spores.length - 1; i >= 0; i--) {
             const spore = this.spores[i]
             
@@ -208,12 +231,41 @@ class ShroomRunner extends Game {
             
             // Remove spores that fell below the screen
             if (spore.position.y < -8) {
-                this.scene.remove(spore)
-                this.spores.splice(i, 1)
+                this.removeSpore(spore, i)
             }
         }
     }
 
+    removeSpore (spore, index) {
+        this.collisionDetector.removeBody(spore)
+        this.scene.remove(spore)
+        this.spores.splice(index, 1)
+    }
+
+    collectSpore (spore) {
+        // Remove spore from collision detector
+        this.collisionDetector.removeBody(spore)
+        
+        // Remove spore from scene
+        this.scene.remove(spore)
+        
+        // Remove from spores array
+        const index = this.spores.indexOf(spore)
+        if (index > -1) {
+            this.spores.splice(index, 1)
+        }
+        
+        // Increase score
+        this.score += 10
+        
+        // Show score update (we could emit an event here for UI updates)
+        if (this.score % 50 === 0) {
+            console.log(`🍄 Great! Score: ${this.score}`)
+        }
+    }
+
+    /*
+    // OLD MANUAL COLLISION DETECTION - kept for reference
     checkCollisions () {
         const shroomPos = this.shroom.position
         const collisionRadius = 2 // Collision detection distance
@@ -233,22 +285,7 @@ class ShroomRunner extends Game {
             }
         }
     }
-
-    collectSpore (sporeIndex) {
-        const spore = this.spores[sporeIndex]
-        
-        // Remove spore from scene and array
-        this.scene.remove(spore)
-        this.spores.splice(sporeIndex, 1)
-        
-        // Increase score
-        this.score += 10
-        
-        // Show score update (we could emit an event here for UI updates)
-        if (this.score % 50 === 0) {
-            console.log(`🍄 Great! Score: ${this.score}`)
-        }
-    }
+    */
 }
 
 function init () {
