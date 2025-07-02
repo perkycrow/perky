@@ -128,13 +128,13 @@ class ShroomRunner extends Game {
             return
         }
 
-        // Move shroom based on input using your input system
+        // Move shroom based on input using convenient shortcuts
         let movement = 0
         
-        if (this.isPressed('keyboard', 'ArrowLeft')) {
+        if (this.isKeyPressed('ArrowLeft')) {
             movement -= this.shroomSpeed * deltaTime
         }
-        if (this.isPressed('keyboard', 'ArrowRight')) {
+        if (this.isKeyPressed('ArrowRight')) {
             movement += this.shroomSpeed * deltaTime
         }
         
