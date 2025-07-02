@@ -20,6 +20,9 @@ const manifest = {
         images: {
             shroom: {
                 url: '/examples/assets/images/shroom.png'
+            },
+            spore: {
+                url: '/examples/assets/images/spore.png'
             }
         }
     }
@@ -35,6 +38,13 @@ class ShroomRunner extends Game {
         this.shroom = null
         this.shroomSpeed = 5
         this.assetsLoaded = false
+        
+        // Spore system
+        this.spores = []
+        this.sporeSpawnRate = 2 // spores per second
+        this.sporeSpawnTimer = 0
+        this.sporeFallSpeed = 3
+        this.score = 0
 
         this.initGame()
 
@@ -94,6 +104,7 @@ class ShroomRunner extends Game {
     async loadAssets () {
         try {
             await this.loadSource('images', 'shroom')
+            await this.loadSource('images', 'spore')
             console.log('Assets loaded successfully')
         } catch (error) {
             console.error('Failed to load assets:', error)
@@ -144,11 +155,98 @@ class ShroomRunner extends Game {
         // Keep shroom within bounds (adjust based on camera view)
         const maxX = 8 // Half of view width minus sprite size
         this.shroom.position.x = Math.max(-maxX, Math.min(maxX, this.shroom.position.x))
+        
+        // Update spore system
+        this.updateSpores(deltaTime)
+        this.spawnSpores(deltaTime)
+        this.checkCollisions()
     }
 
     renderGame () {
         if (this.renderer && this.scene && this.camera) {
             this.renderer.render(this.scene, this.camera)
+        }
+    }
+
+    spawnSpores (deltaTime) {
+        this.sporeSpawnTimer += deltaTime
+        
+        const spawnInterval = 1 / this.sporeSpawnRate
+        
+        if (this.sporeSpawnTimer >= spawnInterval) {
+            this.sporeSpawnTimer = 0
+            this.createSpore()
+        }
+    }
+
+    createSpore () {
+        const sporeImage = this.getSource('images', 'spore')
+        if (!sporeImage) {
+            return
+        }
+
+        const spore = createSprite({source: sporeImage})
+        
+        // Scale the spore
+        spore.scale.set(1.5, 1.5, 1)
+        
+        // Random horizontal position within camera bounds
+        const spawnX = (Math.random() - 0.5) * 16 // Camera width
+        spore.position.set(spawnX, 8, 0) // Start above camera view
+        
+        this.scene.add(spore)
+        this.spores.push(spore)
+    }
+
+    updateSpores (deltaTime) {
+        // Update spore positions and remove fallen spores
+        for (let i = this.spores.length - 1; i >= 0; i--) {
+            const spore = this.spores[i]
+            
+            // Make spore fall
+            spore.position.y -= this.sporeFallSpeed * deltaTime
+            
+            // Remove spores that fell below the screen
+            if (spore.position.y < -8) {
+                this.scene.remove(spore)
+                this.spores.splice(i, 1)
+            }
+        }
+    }
+
+    checkCollisions () {
+        const shroomPos = this.shroom.position
+        const collisionRadius = 2 // Collision detection distance
+        
+        for (let i = this.spores.length - 1; i >= 0; i--) {
+            const spore = this.spores[i]
+            const sporePos = spore.position
+            
+            // Simple distance-based collision detection
+            const dx = shroomPos.x - sporePos.x
+            const dy = shroomPos.y - sporePos.y
+            const distance = Math.sqrt(dx * dx + dy * dy)
+            
+            if (distance < collisionRadius) {
+                // Collision detected - collect the spore
+                this.collectSpore(i)
+            }
+        }
+    }
+
+    collectSpore (sporeIndex) {
+        const spore = this.spores[sporeIndex]
+        
+        // Remove spore from scene and array
+        this.scene.remove(spore)
+        this.spores.splice(sporeIndex, 1)
+        
+        // Increase score
+        this.score += 10
+        
+        // Show score update (we could emit an event here for UI updates)
+        if (this.score % 50 === 0) {
+            console.log(`🍄 Great! Score: ${this.score}`)
         }
     }
 }
@@ -172,6 +270,7 @@ function init () {
 
     logger.info('Shroom Runner initialized')
     logger.info('Use LEFT and RIGHT arrow keys to move the mushroom')
+    logger.info('Collect falling spores to increase your score!')
 
     // Add toolbar buttons
     toolbar.add('Start Game', () => {
@@ -193,10 +292,22 @@ function init () {
         }
     })
 
-    toolbar.add('Reset Position', () => {
+    toolbar.add('Show Score', () => {
+        logger.info(`Current Score: ${game.score}`)
+    })
+
+    toolbar.add('Reset Game', () => {
         if (game.shroom) {
             game.shroom.position.x = 0
-            logger.info('Mushroom position reset')
+            
+            // Clear all spores
+            game.spores.forEach(spore => game.scene.remove(spore))
+            game.spores = []
+            
+            // Reset score
+            game.score = 0
+            
+            logger.info(`Game reset - Score: ${game.score}`)
         }
     })
 
