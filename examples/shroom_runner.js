@@ -571,7 +571,7 @@ export default class ShroomRunner extends Game {
 
         // Use shared material for performance optimization
         const spore = new Sprite({material: this.sporeMaterial})
-        
+
         // Scale the spore
         spore.scale.set(1.5, 1.5, 1)
         
