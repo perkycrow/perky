@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perky - Example Utils Demo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="example-container">
+        <a href="index.html" class="back-link">Back to examples</a>
+        
+        <div class="example-header">
+            <h1>Example Utils Demo</h1>
+            <p class="tagline">Démonstration des utilitaires pour simplifier l'utilisation de Tweakpane.</p>
+        </div>
+
+        <div class="example-content">
+            <div class="info" style="max-width: 800px; margin: 0 auto 20px auto;">
+                <h3>🎛️ Présentation des utilitaires</h3>
+                <p>Cet exemple montre toutes les fonctions utilitaires d'<code>example_utils.js</code> :</p>
+                <ul style="text-align: left; margin-top: 10px;">
+                    <li><strong>Top-Left:</strong> <code>createControlPanel()</code> + <code>addButtonFolder()</code></li>
+                    <li><strong>Top-Right:</strong> <code>createGameControlPanel()</code> avec FPS intégré</li>
+                    <li><strong>Bottom-Left:</strong> <code>addReadonlyBinding()</code> + <code>addSliderBinding()</code></li>
+                    <li><strong>Bottom-Right:</strong> <code>createDebugPanel()</code> (auto-détecte les propriétés)</li>
+                </ul>
+                <p style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 5px;">
+                    💡 <strong>Astuce:</strong> Les valeurs X/Y s'animent automatiquement, les sliders sont interactifs, 
+                    et le monitoring FPS fonctionne en temps réel !
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="example_utils_demo.js"></script>
+
+    <script type="module">
+        import CodeDisplay from '/ui/code_display.js'
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const scriptContent = await fetch('example_utils_demo.js')
+                .then(response => response.text())
+                .catch(error => {
+                    console.error('Error fetching the script:', error)
+                    return null
+                })
+
+            const exampleContainer = document.querySelector('.example-container')
+            const codeDisplay = new CodeDisplay({code: scriptContent})
+            codeDisplay.mountTo(exampleContainer)
+        })
+    </script>
+    
+</body>
+</html> 

@@ -4,7 +4,7 @@ import Rectangle from '../canvas/rectangle.js'
 import Group2D from '../canvas/group_2d.js'
 import Image2D from '../canvas/image_2d.js'
 import Logger from '../ui/logger.js'
-import {Pane} from 'tweakpane'
+import {createControlPanel, addButtonFolder} from './example_utils.js'
 
 let canvas = null
 let renderer = null
@@ -53,47 +53,32 @@ function setupUI (container) {
     logger.info('Canvas 2D demo initialized')
     logger.info('Click buttons to control animations and shapes')
     
-    // Create Tweakpane for controls
-    const controlPane = new Pane({
+    // Create control panel with utilities (much cleaner!)
+    const controlPane = createControlPanel({
         title: 'Canvas Controls',
-        container: container
+        container,
+        position: 'top-right'
     })
     
-    // Position the control panel
-    controlPane.element.style.position = 'absolute'
-    controlPane.element.style.top = '10px'
-    controlPane.element.style.right = '10px'
-    controlPane.element.style.zIndex = '1000'
-    controlPane.element.style.width = '250px'
+    // Add animation controls
+    addButtonFolder(controlPane, 'Animation', [
+        {
+            title: 'Start/Stop Animation',
+            action: () => toggleAnimation()
+        },
+        {
+            title: 'Reset',
+            action: () => resetScene()
+        }
+    ])
     
-    // Add control buttons
-    const animationFolder = controlPane.addFolder({
-        title: 'Animation',
-        expanded: true
-    })
-    
-    animationFolder.addButton({
-        title: 'Start/Stop Animation'
-    }).on('click', () => {
-        toggleAnimation()
-    })
-    
-    animationFolder.addButton({
-        title: 'Reset'
-    }).on('click', () => {
-        resetScene()
-    })
-    
-    const shapesFolder = controlPane.addFolder({
-        title: 'Shapes',
-        expanded: true
-    })
-    
-    shapesFolder.addButton({
-        title: 'Add Random Shapes'
-    }).on('click', () => {
-        addRandomShapes()
-    })
+    // Add shape controls
+    addButtonFolder(controlPane, 'Shapes', [
+        {
+            title: 'Add Random Shapes',
+            action: () => addRandomShapes()
+        }
+    ])
 }
 
 function createScene () {
