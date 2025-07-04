@@ -42,6 +42,11 @@
     border-color: var(--accent-red);
 }
 
+.filter-tag[data-family="three"], .tag[data-family="canvas"] {
+    color: var(--accent-red);
+    border-color: var(--accent-red);
+}
+
 .filter-tag[data-family="audio"], .tag[data-family="audio"] {
     color: var(--accent-orange);
     border-color: var(--accent-orange);

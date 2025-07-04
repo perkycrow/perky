@@ -9,10 +9,10 @@ const baseHtml = `
 const tagFamilies = {
     core: ['action', 'engine', 'manifest', 'module', 'random', 'source', 'utils'],
     application: ['input', 'loader', 'asset', 'view'],
-    three: [],
-    game: [],
-    audio: [],
-    ui: ['logger', 'code_display', 'toolbar', 'fps_counter']
+    canvas: ['canvas', '2d'],
+    three: ['three', '3d', 'webgl'],
+    game: ['game', 'sprite', 'physics', 'collision', 'input'],
+    audio: ['audio', 'sound', 'music']
 }
 
 
