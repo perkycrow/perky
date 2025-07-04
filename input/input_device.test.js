@@ -330,4 +330,30 @@ describe(InputDevice, () => {
         expect(event.stopPropagation).toHaveBeenCalledTimes(1)
     })
 
+
+    test('event listeners are properly removed when control is deleted from registry', () => {
+        const button = new ButtonControl({device: device, name: 'listenerTest'})
+        
+        const onSpy = vi.spyOn(button, 'on')
+        const offSpy = vi.spyOn(button, 'off')
+        
+        device.registerControl(button)
+        
+        expect(onSpy).toHaveBeenCalledTimes(3)
+        expect(onSpy).toHaveBeenCalledWith('pressed', expect.any(Function))
+        expect(onSpy).toHaveBeenCalledWith('released', expect.any(Function))
+        expect(onSpy).toHaveBeenCalledWith('updated', expect.any(Function))
+        
+        const pressedListener = onSpy.mock.calls.find(call => call[0] === 'pressed')[1]
+        const releasedListener = onSpy.mock.calls.find(call => call[0] === 'released')[1]
+        const updatedListener = onSpy.mock.calls.find(call => call[0] === 'updated')[1]
+        
+        device.controls.delete('listenerTest')
+        
+        expect(offSpy).toHaveBeenCalledTimes(3)
+        expect(offSpy).toHaveBeenCalledWith('pressed', pressedListener)
+        expect(offSpy).toHaveBeenCalledWith('released', releasedListener)
+        expect(offSpy).toHaveBeenCalledWith('updated', updatedListener)
+    })
+
 })

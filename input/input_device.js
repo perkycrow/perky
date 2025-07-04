@@ -97,35 +97,43 @@ export default class InputDevice extends PerkyModule {
 
     #initEvents () {
         const device = this
+        const controlListeners = new WeakMap()
 
-        const listeners = {
+        const createListeners = (control) => ({
             pressed (event) {
-                device.pressedNames.add(this.name)
-                device.emit('control:pressed', this, event)
-
-                device.preventDefault(event, this)
+                device.pressedNames.add(control.name)
+                device.emit('control:pressed', control, event)
+                device.preventDefault(event, control)
             },
             released (event) {
-                device.pressedNames.delete(this.name)
-                device.emit('control:released', this, event)
-
-                device.preventDefault(event, this)
+                device.pressedNames.delete(control.name)
+                device.emit('control:released', control, event)
+                device.preventDefault(event, control)
             },
             updated (value, oldValue, event) {
-                device.emit('control:updated', this, value, oldValue, event)
+                device.emit('control:updated', control, value, oldValue, event)
             }
-        }
+        })
 
         this.controls.on('set', (key, control) => {
-            control.on('pressed',  listeners.pressed.bind(control))
-            control.on('released', listeners.released.bind(control))
-            control.on('updated',  listeners.updated.bind(control))
+            const listeners = createListeners(control)
+            controlListeners.set(control, listeners)
+
+            control.on('pressed',  listeners.pressed)
+            control.on('released', listeners.released)
+            control.on('updated',  listeners.updated)
         })
 
         this.controls.on('delete', (key, control) => {
-            control.off('pressed',  listeners.pressed)
-            control.off('released', listeners.released)
-            control.off('updated',  listeners.updated)
+            const listeners = controlListeners.get(control)
+            
+            if (listeners) {
+                control.off('pressed',  listeners.pressed)
+                control.off('released', listeners.released)
+                control.off('updated',  listeners.updated)
+                
+                controlListeners.delete(control)
+            }
 
             device.pressedNames.delete(control.name)
         })
