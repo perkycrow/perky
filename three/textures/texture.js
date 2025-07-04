@@ -1,4 +1,13 @@
-import {Texture as OriginalTexture, ClampToEdgeWrapping, LinearFilter, LinearMipmapLinearFilter, RGBAFormat, UnsignedByteType, NoColorSpace, UVMapping} from 'three'
+import {
+    Texture as OriginalTexture,
+    ClampToEdgeWrapping,
+    LinearFilter,
+    LinearMipmapLinearFilter,
+    RGBAFormat,
+    UnsignedByteType,
+    NoColorSpace,
+    UVMapping
+} from 'three'
 
 
 export default class Texture extends OriginalTexture {

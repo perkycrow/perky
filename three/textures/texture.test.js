@@ -1,6 +1,18 @@
 import Texture from './texture'
 import {describe, test, expect} from 'vitest'
-import {RepeatWrapping, ClampToEdgeWrapping, LinearFilter, LinearMipmapLinearFilter, NearestFilter, RGBAFormat, UnsignedByteType, NoColorSpace, SRGBColorSpace, UVMapping, Vector2} from 'three'
+import {
+    RepeatWrapping,
+    ClampToEdgeWrapping,
+    LinearFilter,
+    LinearMipmapLinearFilter,
+    NearestFilter,
+    RGBAFormat,
+    UnsignedByteType,
+    NoColorSpace,
+    SRGBColorSpace,
+    UVMapping,
+    Vector2
+} from 'three'
 
 
 describe('Texture', () => {

@@ -1,6 +1,13 @@
 import SpriteTexture from './sprite_texture.js'
 import {describe, test, expect} from 'vitest'
-import {SRGBColorSpace, NoColorSpace, LinearMipmapLinearFilter, LinearFilter, NearestFilter, Vector2} from 'three'
+import {
+    SRGBColorSpace,
+    NoColorSpace,
+    LinearMipmapLinearFilter,
+    LinearFilter,
+    NearestFilter,
+    Vector2
+} from 'three'
 
 
 describe('SpriteTexture', () => {
