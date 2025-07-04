@@ -10,7 +10,9 @@ import {
 
 import {Pane} from 'tweakpane'
 import OrthographicCamera from '../three/cameras/orthographic_camera.js'
-import {createRenderer, createSprite} from '../three/three_utils.js'
+import {createRenderer} from '../three/three_utils.js'
+import Sprite from '../three/objects/sprite.js'
+import SpriteMaterial from '../three/materials/sprite_material.js'
 import SimpleCollisionDetector from '../collision/simple_collision_detector.js'
 import RenderComposer from '../three/effects/render_composer.js'
 import VignettePass from '../three/effects/vignette_pass.js'
@@ -60,6 +62,7 @@ export default class ShroomRunner extends Game {
         this.sporeSpawnTimer = 0
         this.sporeFallSpeed = 3
         this.score = 0
+        this.sporeMaterial = null // Shared material for all spores
 
         this.initGame()
 
@@ -74,6 +77,7 @@ export default class ShroomRunner extends Game {
         await this.loadAssets()
         this.setupBackground()
         this.setupPlayer()
+        this.setupSporeSystem()
         this.assetsLoaded = true
     }
 
@@ -144,7 +148,7 @@ export default class ShroomRunner extends Game {
         
         if (backgroundImage) {
             // Create sprite from the image
-            this.background = createSprite({source: backgroundImage})
+            this.background = new Sprite({source: backgroundImage})
             
             // Position behind everything else to avoid z-fighting
             this.background.position.set(0, 0, -5)
@@ -208,7 +212,7 @@ export default class ShroomRunner extends Game {
         
         if (shroomImage) {
             // Create sprite from the image
-            this.shroom = createSprite({source: shroomImage})
+            this.shroom = new Sprite({source: shroomImage})
             
             // Scale the sprite appropriately
             this.shroom.scale.set(3, 3, 1)
@@ -226,6 +230,24 @@ export default class ShroomRunner extends Game {
             })
         } else {
             console.error('Failed to load shroom image')
+        }
+    }
+
+    setupSporeSystem () {
+        // Create shared material for all spores (performance optimization)
+        const sporeImage = this.getSource('images', 'spore')
+        
+        if (sporeImage) {
+            this.sporeMaterial = new SpriteMaterial({
+                texture: {
+                    source: sporeImage,
+                    generateMipmaps: true
+                },
+                transparent: true
+            })
+            console.log('Shared spore material created')
+        } else {
+            console.error('Failed to load spore image for shared material')
         }
     }
 
@@ -542,12 +564,13 @@ export default class ShroomRunner extends Game {
     }
 
     createSpore () {
-        const sporeImage = this.getSource('images', 'spore')
-        if (!sporeImage) {
+        if (!this.sporeMaterial) {
+            console.error('Shared spore material not available')
             return
         }
 
-        const spore = createSprite({source: sporeImage})
+        // Use shared material for performance optimization
+        const spore = new Sprite({material: this.sporeMaterial})
         
         // Scale the spore
         spore.scale.set(1.5, 1.5, 1)
