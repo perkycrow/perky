@@ -1,16 +1,7 @@
 import {Pane} from 'tweakpane'
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials'
 
-/**
- * Creates a positioned control panel with common settings
- * @param {Object} options - Configuration options
- * @param {string} options.title - Panel title
- * @param {HTMLElement} options.container - Container element
- * @param {string} options.position - Position: 'top-left', 'top-right', 'bottom-left', 'bottom-right'
- * @param {string} options.width - Panel width (default: '250px')
- * @param {boolean} options.expanded - Whether panel is expanded (default: true)
- * @returns {Pane} The created Tweakpane instance
- */
+
 export function createControlPanel ({title, container, position = 'top-right', width = '250px', expanded = true}) {
     const pane = new Pane({
         title,
@@ -40,16 +31,7 @@ export function createControlPanel ({title, container, position = 'top-right', w
     return pane
 }
 
-/**
- * Adds FPS monitoring to a control panel
- * @param {Pane} pane - The Tweakpane instance
- * @param {Object} gameOrLoop - Game instance or GameLoop with 'on' method for 'render' events
- * @param {Object} options - Configuration options
- * @param {string} options.title - Folder title (default: 'Performance')
- * @param {boolean} options.expanded - Whether folder is expanded (default: true)
- * @param {number} options.resetInterval - Stats reset interval in ms (default: 5000)
- * @returns {Object} FPS monitoring object with graph and stats
- */
+
 export function addFpsMonitoring (pane, gameOrLoop, {title = 'Performance', expanded = true, resetInterval = 5000} = {}) {
     const fpsFolder = pane.addFolder({
         title,
@@ -131,15 +113,7 @@ export function addFpsMonitoring (pane, gameOrLoop, {title = 'Performance', expa
     }
 }
 
-/**
- * Adds a folder with buttons to a control panel
- * @param {Pane} pane - The Tweakpane instance
- * @param {string} title - Folder title
- * @param {Array} buttons - Array of button objects {title, action}
- * @param {Object} options - Configuration options
- * @param {boolean} options.expanded - Whether folder is expanded (default: true)
- * @returns {Object} The created folder
- */
+
 export function addButtonFolder (pane, title, buttons, {expanded = true} = {}) {
     const folder = pane.addFolder({
         title,
@@ -155,35 +129,20 @@ export function addButtonFolder (pane, title, buttons, {expanded = true} = {}) {
     return folder
 }
 
-/**
- * Quick helper to add a single button to a folder
- * @param {Object} folder - The folder to add the button to
- * @param {string} title - Button title
- * @param {Function} action - Button action
- * @returns {Object} The created button
- */
+
 export function addButton (folder, title, action) {
     return folder.addButton({
         title
     }).on('click', action)
 }
 
-/**
- * Creates a simple control panel with common game controls
- * @param {Object} options - Configuration options
- * @param {string} options.title - Panel title
- * @param {HTMLElement} options.container - Container element
- * @param {Object} options.game - Game instance with start/pause/resume methods
- * @param {Object} options.logger - Logger instance for feedback
- * @param {string} options.position - Panel position (default: 'top-right')
- * @param {boolean} options.includeFps - Whether to include FPS monitoring (default: true)
- * @returns {Pane} The created control panel
- */
-export function createGameControlPanel ({title, container, game, logger, position = 'top-right', includeFps = true}) {
+
+export function createGameControlPanel ({title, container, game, logger, position = 'top-right', includeFps = true, expanded}) {
     const pane = createControlPanel({
         title,
         container,
-        position
+        position,
+        expanded: expanded ?? false
     })
 
     // Add FPS monitoring if requested
@@ -231,16 +190,7 @@ export function createGameControlPanel ({title, container, game, logger, positio
     return pane
 }
 
-/**
- * Adds a binding with common readonly display formatting
- * @param {Object} options - Configuration options
- * @param {Object} options.folder - The folder to add the binding to
- * @param {Object} options.object - The object to bind to
- * @param {string} options.property - The property to bind
- * @param {string} options.label - The label to display
- * @param {Function} options.formatter - Optional formatter function
- * @returns {Object} The created binding
- */
+
 export function addReadonlyBinding ({folder, object, property, label, formatter}) {
     const options = {
         label,
@@ -254,30 +204,14 @@ export function addReadonlyBinding ({folder, object, property, label, formatter}
     return folder.addBinding(object, property, options)
 }
 
-/**
- * Capitalizes the first letter and replaces camelCase with spaces
- * @param {string} str - The string to format
- * @returns {string} Formatted label
- */
+
 function formatLabel (str) {
     return str
         .replace(/([a-z])([A-Z])/g, '$1 $2') // camelCase to spaces
         .replace(/^./, (char) => char.toUpperCase()) // capitalize first letter
 }
 
-/**
- * Adds a slider binding with common settings
- * @param {Object} options - Configuration options
- * @param {Object} options.folder - The folder to add the binding to
- * @param {Object} options.object - The object to bind to
- * @param {string} options.property - The property to bind
- * @param {string} options.label - The label to display (defaults to formatted property name)
- * @param {number} options.min - Minimum value
- * @param {number} options.max - Maximum value
- * @param {number} options.step - Step size (default: 0.01)
- * @param {Function} options.onChange - Optional change handler
- * @returns {Object} The created binding
- */
+
 export function addSliderBinding ({folder, object, property, label, min, max, step = 0.01, onChange}) {
     const binding = folder.addBinding(object, property, {
         label: label || formatLabel(property),
@@ -293,13 +227,7 @@ export function addSliderBinding ({folder, object, property, label, min, max, st
     return binding
 }
 
-/**
- * Adds multiple slider bindings at once
- * @param {Object} folder - The folder to add bindings to
- * @param {Object} object - The object to bind to
- * @param {Array} sliders - Array of slider configs {property, min, max, step?, label?, onChange?}
- * @returns {Array} Array of created bindings
- */
+
 export function addSliders (folder, object, sliders) {
     return sliders.map(config => addSliderBinding({
         folder,
@@ -308,23 +236,14 @@ export function addSliders (folder, object, sliders) {
     }))
 }
 
-/**
- * Adds a toggle binding for enable/disable
- * @param {Object} folder - The folder to add the binding to
- * @param {Object} object - The object to bind to
- * @param {string} property - The property to bind (default: 'enabled')
- * @param {string} label - The label to display (default: formatted property)
- * @returns {Object} The created binding
- */
+
 export function addToggle (folder, object, property = 'enabled', label) {
     return folder.addBinding(object, property, {
         label: label || formatLabel(property)
     })
 }
 
-/**
- * Common slider presets
- */
+
 export const RANGES = {
     UNIT: {min: 0, max: 1, step: 0.01},           // 0-1
     PERCENT: {min: 0, max: 100, step: 1},         // 0-100
@@ -334,17 +253,7 @@ export const RANGES = {
     CONTRAST: {min: 0.5, max: 2, step: 0.01}      // contrast range
 }
 
-/**
- * Adds a slider with a preset range
- * @param {Object} options - Configuration options
- * @param {Object} options.folder - The folder to add the binding to
- * @param {Object} options.object - The object to bind to
- * @param {string} options.property - The property to bind
- * @param {string} options.range - Preset range key from RANGES
- * @param {string} options.label - Optional custom label
- * @param {Function} options.onChange - Optional change handler
- * @returns {Object} The created binding
- */
+
 export function addSliderWithRange ({folder, object, property, range, label, onChange}) {
     const preset = RANGES[range]
     if (!preset) {
@@ -361,13 +270,7 @@ export function addSliderWithRange ({folder, object, property, range, label, onC
     })
 }
 
-/**
- * Creates a quick debug panel for development
- * @param {HTMLElement} container - Container element
- * @param {Object} debugObject - Object with debug properties
- * @param {string} position - Panel position (default: 'bottom-right')
- * @returns {Pane} The created debug panel
- */
+
 export function createDebugPanel (container, debugObject, position = 'bottom-right') {
     const pane = createControlPanel({
         title: 'Debug',

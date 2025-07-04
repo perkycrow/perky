@@ -1,7 +1,7 @@
 import Game from '/game/game'
 import Logger from '/ui/logger'
 import {
-    createGameControlPanel, 
+    createGameControlPanel,
     createControlPanel, 
     addButtonFolder, 
     addSliders,
@@ -593,28 +593,6 @@ export default class ShroomRunner extends Game {
         }
     }
 
-    /*
-    // OLD MANUAL COLLISION DETECTION - kept for reference
-    checkCollisions () {
-        const shroomPos = this.shroom.position
-        const collisionRadius = 2 // Collision detection distance
-        
-        for (let i = this.spores.length - 1; i >= 0; i--) {
-            const spore = this.spores[i]
-            const sporePos = spore.position
-            
-            // Simple distance-based collision detection
-            const dx = shroomPos.x - sporePos.x
-            const dy = shroomPos.y - sporePos.y
-            const distance = Math.sqrt(dx * dx + dy * dy)
-            
-            if (distance < collisionRadius) {
-                // Collision detected - collect the spore
-                this.collectSpore(i)
-            }
-        }
-    }
-    */
 }
 
 function init () {
@@ -643,12 +621,6 @@ function init () {
 
     // Add extra game-specific controls
     addButtonFolder(controlPane, 'Game Actions', [
-        {
-            title: 'Show Score',
-            action: () => {
-                logger.info(`Current Score: ${game.score}`)
-            }
-        },
         {
             title: 'Reset Game',
             action: () => {
