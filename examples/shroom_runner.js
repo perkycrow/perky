@@ -72,12 +72,12 @@ export default class ShroomRunner extends Game {
 
     async initGame () {
         this.setupThreeJS()
-        this.setupPostProcessing()
         this.setupCollisionDetector()
         await this.loadAssets()
         this.setupBackground()
         this.setupPlayer()
         this.setupSporeSystem()
+        this.setupPostProcessing()
         this.assetsLoaded = true
     }
 
