@@ -10,7 +10,7 @@ import {
 
 import {Pane} from 'tweakpane'
 import OrthographicCamera from '../three/cameras/orthographic_camera.js'
-import {createRenderer} from '../three/three_utils.js'
+import WebGLRenderer from '../three/renderers/webgl_renderer.js'
 import Sprite from '../three/objects/sprite.js'
 import SpriteMaterial from '../three/materials/sprite_material.js'
 import SimpleCollisionDetector from '../collision/simple_collision_detector.js'
@@ -99,7 +99,7 @@ export default class ShroomRunner extends Game {
         this.camera.lookAt(0, 0, 0)
         
         // Create renderer
-        this.renderer = createRenderer({
+        this.renderer = new WebGLRenderer({
             container: this.perkyView.element
         })
         
