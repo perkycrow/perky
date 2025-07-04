@@ -233,12 +233,16 @@ export default class Application extends Engine {
 
 
     #initEvents () {
-        const {perkyView, inputManager} = this
+        const {perkyView, inputManager, sourceManager} = this
 
         perkyView.on('resize', this.emitter('resize'))
 
         inputManager.on('control:pressed', this.#handleInputEvent.bind(this, 'pressed'))
         inputManager.on('control:released', this.#handleInputEvent.bind(this, 'released'))
+
+        sourceManager.on('loader:progress', this.emitter('loader:progress'))
+        sourceManager.on('loader:complete', this.emitter('loader:complete'))
+        sourceManager.on('loader:error', this.emitter('loader:error'))
     }
 
 

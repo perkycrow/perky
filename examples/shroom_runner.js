@@ -1,23 +1,18 @@
-import Game from '/game/game.js'
-import Logger from '/ui/logger.js'
-import Toolbar from '/ui/toolbar.js'
-import FpsCounter from '/ui/fps_counter.js'
-
-import {
-    Scene, 
-    Color
-} from 'three'
-
+import Game from '/game/game'
+import Logger from '/ui/logger'
+import Toolbar from '/ui/toolbar'
+import FpsCounter from '/ui/fps_counter'
+import {Scene, Color} from 'three'
 import {Pane} from 'tweakpane'
-import OrthographicCamera from '../three/cameras/orthographic_camera.js'
-import WebGLRenderer from '../three/renderers/webgl_renderer.js'
-import Sprite from '../three/objects/sprite.js'
-import SpriteMaterial from '../three/materials/sprite_material.js'
-import SimpleCollisionDetector from '../collision/simple_collision_detector.js'
-import RenderComposer from '../three/effects/render_composer.js'
-import VignettePass from '../three/effects/vignette_pass.js'
-import AmberLUTPass from '../three/effects/amber_lut_pass.js'
-import CRTPass from '../three/effects/crt_pass.js'
+import OrthographicCamera from '../three/cameras/orthographic_camera'
+import WebGLRenderer from '../three/renderers/webgl_renderer'
+import Sprite from '../three/objects/sprite'
+import SpriteMaterial from '../three/materials/sprite_material'
+import SimpleCollisionDetector from '../collision/simple_collision_detector'
+import RenderComposer from '../three/effects/render_composer'
+import VignettePass from '../three/effects/vignette_pass'
+import AmberLUTPass from '../three/effects/amber_lut_pass'
+import CRTPass from '../three/effects/crt_pass'
 
 const manifest = {
     config: {
@@ -27,13 +22,16 @@ const manifest = {
     sourceDescriptors: {
         images: {
             shroom: {
-                url: '/examples/assets/images/shroom.png'
+                url: '/examples/assets/images/shroom.png',
+                tags: ['game']
             },
             spore: {
-                url: '/examples/assets/images/spore.png'
+                url: '/examples/assets/images/spore.png',
+                tags: ['game']
             },
             background: {
-                url: '/examples/assets/images/background.png'
+                url: '/examples/assets/images/background.png',
+                tags: ['game']
             }
         }
     }
@@ -133,12 +131,15 @@ export default class ShroomRunner extends Game {
 
     async loadAssets () {
         try {
-            await this.loadSource('images', 'shroom')
-            await this.loadSource('images', 'spore')
-            await this.loadSource('images', 'background')
-            console.log('Assets loaded successfully')
+            // Version UX pro avec progress tracking automatique
+            this.on('loader:progress', (loader, progress, {sourceDescriptor}) => {
+                console.log(`📦 Loading ${sourceDescriptor.id}... ${Math.round(progress * 100)}%`)
+            })
+            
+            await this.loadTag('game')
+            console.log('🎮 Assets loaded successfully')
         } catch (error) {
-            console.error('Failed to load assets:', error)
+            console.error('❌ Failed to load assets:', error)
         }
     }
 
