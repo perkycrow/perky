@@ -15,6 +15,7 @@ import SimpleCollisionDetector from '../collision/simple_collision_detector.js'
 import PostProcessingComposer from '../three/effects/post_processing_composer.js'
 import VignettePass from '../three/effects/vignette_pass.js'
 import AmberLUTPass from '../three/effects/amber_lut_pass.js'
+import CRTPass from '../three/effects/crt_pass.js'
 
 const manifest = {
     config: {
@@ -46,6 +47,7 @@ export default class ShroomRunner extends Game {
         this.postProcessingComposer = null
         this.vignettePass = null
         this.amberLUTPass = null
+        this.crtPass = null
         this.postProcessingPane = null
         this.background = null
         this.shroom = null
@@ -262,6 +264,11 @@ export default class ShroomRunner extends Game {
         this.updateSpores(deltaTime)
         this.spawnSpores(deltaTime)
         
+        // Update CRT effect time for flicker
+        if (this.crtPass) {
+            this.crtPass.update(deltaTime)
+        }
+        
         // Check for collisions
         this.collisionDetector.detectCollisions()
     }
@@ -277,10 +284,12 @@ export default class ShroomRunner extends Game {
         // Create effect passes
         this.vignettePass = new VignettePass()
         this.amberLUTPass = new AmberLUTPass()
+        this.crtPass = new CRTPass()
         
         // Add passes in desired order
         this.postProcessingComposer.insertPass(this.amberLUTPass, 1) // After render pass
         this.postProcessingComposer.insertPass(this.vignettePass, 2) // After LUT
+        this.postProcessingComposer.insertPass(this.crtPass, 3) // After vignette
         
         this.setupPostProcessingControls()
     }
@@ -301,6 +310,7 @@ export default class ShroomRunner extends Game {
 
         this.setupVignetteControls()
         this.setupAmberLUTControls()
+        this.setupCRTControls()
     }
 
     setupVignetteControls () {
@@ -425,6 +435,85 @@ export default class ShroomRunner extends Game {
 
         // Store reference for updates
         this.amberControls = amberControls
+    }
+
+    setupCRTControls () {
+        const crtFolder = this.postProcessingPane.addFolder({
+            title: 'CRT Effect',
+            expanded: false
+        })
+
+        // Toggle to enable/disable
+        crtFolder.addBinding(this.crtPass, 'enabled', {
+            label: 'Enabled'
+        })
+
+        // Scanlines controls
+        const scanlinesFolder = crtFolder.addFolder({
+            title: 'Scanlines',
+            expanded: false
+        })
+
+        scanlinesFolder.addBinding(this.crtPass, 'scanlineIntensity', {
+            label: 'Intensity',
+            min: 0,
+            max: 0.2,
+            step: 0.001
+        }).on('change', (ev) => {
+            this.crtPass.setScanlineIntensity(ev.value)
+        })
+
+        scanlinesFolder.addBinding(this.crtPass, 'scanlineCount', {
+            label: 'Count',
+            min: 200,
+            max: 1200,
+            step: 1
+        }).on('change', (ev) => {
+            this.crtPass.setScanlineCount(ev.value)
+        })
+
+        // Screen curvature controls
+        const curvatureFolder = crtFolder.addFolder({
+            title: 'Screen Curvature',
+            expanded: false
+        })
+
+        curvatureFolder.addBinding(this.crtPass, 'screenCurvature', {
+            label: 'Barrel Distortion',
+            min: 0,
+            max: 0.5,
+            step: 0.001
+        }).on('change', (ev) => {
+            this.crtPass.setScreenCurvature(ev.value)
+        })
+
+        curvatureFolder.addBinding(this.crtPass, 'vignetteIntensity', {
+            label: 'Edge Vignette',
+            min: 0,
+            max: 1,
+            step: 0.01
+        }).on('change', (ev) => {
+            this.crtPass.setVignetteIntensity(ev.value)
+        })
+
+        // Additional CRT effects
+        crtFolder.addBinding(this.crtPass, 'brightness', {
+            label: 'Brightness',
+            min: 0.5,
+            max: 1.5,
+            step: 0.01
+        }).on('change', (ev) => {
+            this.crtPass.setBrightness(ev.value)
+        })
+
+        crtFolder.addBinding(this.crtPass, 'flickerIntensity', {
+            label: 'Flicker',
+            min: 0,
+            max: 0.02,
+            step: 0.001
+        }).on('change', (ev) => {
+            this.crtPass.setFlickerIntensity(ev.value)
+        })
     }
 
     updateAmberTint (controls) {
@@ -590,10 +679,11 @@ function init () {
     })
 
     toolbar.add('Toggle Post-FX', () => {
-        if (game.amberLUTPass && game.vignettePass) {
+        if (game.amberLUTPass && game.vignettePass && game.crtPass) {
             const enabled = !game.amberLUTPass.enabled
             game.amberLUTPass.enabled = enabled
             game.vignettePass.enabled = enabled
+            game.crtPass.enabled = enabled
             logger.info(`Post-processing ${enabled ? 'enabled' : 'disabled'}`)
         }
     })
