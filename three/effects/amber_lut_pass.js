@@ -30,22 +30,22 @@ const AmberLUTShader = {
 
         varying vec2 vUv;
 
-        // Fonction pour appliquer l'effet "vieux moniteur"
+        // Function to apply "old monitor" effect
         vec3 applyAmberLUT(vec3 color) {
-            // Conversion en luminance
+            // Convert to luminance
             float luma = dot(color, vec3(0.299, 0.587, 0.114));
             
-            // Application de la teinte ambre
+            // Apply amber tint
             vec3 tinted = mix(color, color * amberTint, intensity);
             
-            // Ajustement du contraste
+            // Adjust contrast
             tinted = (tinted - 0.5) * contrast + 0.5 + brightness;
             
-            // Effet vintage (désaturation partielle)
+            // Vintage effect (partial desaturation)
             vec3 gray = vec3(luma);
             tinted = mix(tinted, gray * amberTint, vintage * intensity);
             
-            // Léger effet de grain/scanlines
+            // Subtle grain/scanlines effect
             float noise = fract(sin(dot(vUv, vec2(12.9898, 78.233))) * 43758.5453) * 0.1;
             tinted += noise * intensity * 0.05;
             
@@ -57,7 +57,7 @@ const AmberLUTShader = {
             
             vec3 processedColor = applyAmberLUT(texelColor.rgb);
             
-            // Mix entre l'original et le traité
+            // Mix between original and processed
             vec3 finalColor = mix(texelColor.rgb, processedColor, intensity);
             
             gl_FragColor = vec4(finalColor, texelColor.a);

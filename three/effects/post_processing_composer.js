@@ -15,11 +15,11 @@ export default class PostProcessingComposer {
     }
 
     setupBasicPasses () {
-        // Pass de rendu principal
+        // Main render pass
         this.renderPass = new RenderPass(this.scene, this.camera)
         this.addPass(this.renderPass)
         
-        // Pass de sortie final
+        // Final output pass
         this.outputPass = new OutputPass()
     }
 
@@ -37,7 +37,7 @@ export default class PostProcessingComposer {
     }
 
     insertPass (pass, index) {
-        // Retire temporairement le OutputPass s'il existe
+        // Temporarily remove OutputPass if it exists
         if (this.outputPass && this.composer.passes.includes(this.outputPass)) {
             this.composer.removePass(this.outputPass)
         }
@@ -45,7 +45,7 @@ export default class PostProcessingComposer {
         this.passes.splice(index, 0, pass)
         this.composer.insertPass(pass, index)
         
-        // Remet le OutputPass en dernière position
+        // Put OutputPass back in last position
         if (this.outputPass) {
             this.composer.addPass(this.outputPass)
         }

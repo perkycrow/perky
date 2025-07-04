@@ -8,10 +8,13 @@ import {
     Color
 } from 'three'
 
+import {Pane} from 'tweakpane'
 import OrthographicCamera from '../three/cameras/orthographic_camera.js'
 import {createRenderer, createSprite} from '../three/three_utils.js'
 import SimpleCollisionDetector from '../collision/simple_collision_detector.js'
-import PostProcessingManager from '../three/effects/post_processing_manager.js'
+import PostProcessingComposer from '../three/effects/post_processing_composer.js'
+import VignettePass from '../three/effects/vignette_pass.js'
+import AmberLUTPass from '../three/effects/amber_lut_pass.js'
 
 const manifest = {
     config: {
@@ -37,7 +40,10 @@ export default class ShroomRunner extends Game {
         this.scene = null
         this.camera = null
         this.renderer = null
-        this.postProcessing = null
+        this.postProcessingComposer = null
+        this.vignettePass = null
+        this.amberLUTPass = null
+        this.postProcessingPane = null
         this.shroom = null
         this.shroomSpeed = 5
         this.assetsLoaded = false
@@ -105,8 +111,8 @@ export default class ShroomRunner extends Game {
             this.renderer.setSize(containerWidth, containerHeight)
             
             // Update post-processing
-            if (this.postProcessing) {
-                this.postProcessing.setSize(containerWidth, containerHeight)
+            if (this.postProcessingComposer) {
+                this.postProcessingComposer.setSize(containerWidth, containerHeight)
             }
         })
     }
@@ -188,17 +194,177 @@ export default class ShroomRunner extends Game {
     }
 
     setupPostProcessing () {
-        this.postProcessing = new PostProcessingManager({
+        // Create post-processing composer
+        this.postProcessingComposer = new PostProcessingComposer({
             renderer: this.renderer,
             scene: this.scene,
-            camera: this.camera,
-            container: this.perkyView.element
+            camera: this.camera
+        })
+        
+        // Create effect passes
+        this.vignettePass = new VignettePass()
+        this.amberLUTPass = new AmberLUTPass()
+        
+        // Add passes in desired order
+        this.postProcessingComposer.insertPass(this.amberLUTPass, 1) // After render pass
+        this.postProcessingComposer.insertPass(this.vignettePass, 2) // After LUT
+        
+        this.setupPostProcessingControls()
+    }
+
+    setupPostProcessingControls () {
+        // Create Tweakpane panel
+        this.postProcessingPane = new Pane({
+            title: 'Post-Processing',
+            expanded: false
+        })
+
+        // Add to container with positioning
+        this.perkyView.element.appendChild(this.postProcessingPane.element)
+        this.postProcessingPane.element.style.position = 'absolute'
+        this.postProcessingPane.element.style.top = '10px'
+        this.postProcessingPane.element.style.right = '10px'
+        this.postProcessingPane.element.style.zIndex = '1000'
+
+        this.setupVignetteControls()
+        this.setupAmberLUTControls()
+    }
+
+    setupVignetteControls () {
+        const vignetteFolder = this.postProcessingPane.addFolder({
+            title: 'Vignette',
+            expanded: false
+        })
+
+        // Toggle to enable/disable
+        vignetteFolder.addBinding(this.vignettePass, 'enabled', {
+            label: 'Enabled'
+        })
+
+        // Intensity controls
+        vignetteFolder.addBinding(this.vignettePass, 'intensity', {
+            label: 'Intensity',
+            min: 0,
+            max: 1,
+            step: 0.01
+        }).on('change', (ev) => {
+            this.vignettePass.setIntensity(ev.value)
+        })
+
+        // Dropoff controls
+        vignetteFolder.addBinding(this.vignettePass, 'dropoff', {
+            label: 'Dropoff',
+            min: 0,
+            max: 1,
+            step: 0.01
+        }).on('change', (ev) => {
+            this.vignettePass.setDropoff(ev.value)
         })
     }
 
+    setupAmberLUTControls () {
+        const lutFolder = this.postProcessingPane.addFolder({
+            title: 'Amber LUT',
+            expanded: true
+        })
+
+        // Toggle to enable/disable
+        lutFolder.addBinding(this.amberLUTPass, 'enabled', {
+            label: 'Enabled'
+        })
+
+        // General intensity
+        lutFolder.addBinding(this.amberLUTPass, 'intensity', {
+            label: 'Intensity',
+            min: 0,
+            max: 1,
+            step: 0.01
+        }).on('change', (ev) => {
+            this.amberLUTPass.setIntensity(ev.value)
+        })
+
+        // Amber color (RGB)
+        const amberControls = {
+            red: this.amberLUTPass.amberTint.x,
+            green: this.amberLUTPass.amberTint.y,
+            blue: this.amberLUTPass.amberTint.z
+        }
+
+        const colorFolder = lutFolder.addFolder({
+            title: 'Amber Tint',
+            expanded: false
+        })
+
+        colorFolder.addBinding(amberControls, 'red', {
+            label: 'Red',
+            min: 0,
+            max: 2,
+            step: 0.01
+        }).on('change', () => {
+            this.updateAmberTint(amberControls)
+        })
+
+        colorFolder.addBinding(amberControls, 'green', {
+            label: 'Green',
+            min: 0,
+            max: 2,
+            step: 0.01
+        }).on('change', () => {
+            this.updateAmberTint(amberControls)
+        })
+
+        colorFolder.addBinding(amberControls, 'blue', {
+            label: 'Blue',
+            min: 0,
+            max: 2,
+            step: 0.01
+        }).on('change', () => {
+            this.updateAmberTint(amberControls)
+        })
+
+        // Additional controls
+        lutFolder.addBinding(this.amberLUTPass, 'contrast', {
+            label: 'Contrast',
+            min: 0.5,
+            max: 2,
+            step: 0.01
+        }).on('change', (ev) => {
+            this.amberLUTPass.setContrast(ev.value)
+        })
+
+        lutFolder.addBinding(this.amberLUTPass, 'brightness', {
+            label: 'Brightness',
+            min: -0.3,
+            max: 0.3,
+            step: 0.01
+        }).on('change', (ev) => {
+            this.amberLUTPass.setBrightness(ev.value)
+        })
+
+        lutFolder.addBinding(this.amberLUTPass, 'vintage', {
+            label: 'Vintage',
+            min: 0,
+            max: 1,
+            step: 0.01
+        }).on('change', (ev) => {
+            this.amberLUTPass.setVintage(ev.value)
+        })
+
+        // Store reference for updates
+        this.amberControls = amberControls
+    }
+
+    updateAmberTint (controls) {
+        this.amberLUTPass.setAmberTint(
+            controls.red,
+            controls.green,
+            controls.blue
+        )
+    }
+
     renderGame () {
-        if (this.postProcessing && this.scene && this.camera) {
-            this.postProcessing.render()
+        if (this.postProcessingComposer && this.scene && this.camera) {
+            this.postProcessingComposer.render()
         }
     }
 
@@ -351,10 +517,10 @@ function init () {
     })
 
     toolbar.add('Toggle Post-FX', () => {
-        if (game.postProcessing) {
-            const enabled = !game.postProcessing.amberLUTPass.enabled
-            game.postProcessing.amberLUTPass.enabled = enabled
-            game.postProcessing.vignettePass.enabled = enabled
+        if (game.amberLUTPass && game.vignettePass) {
+            const enabled = !game.amberLUTPass.enabled
+            game.amberLUTPass.enabled = enabled
+            game.vignettePass.enabled = enabled
             logger.info(`Post-processing ${enabled ? 'enabled' : 'disabled'}`)
         }
     })
