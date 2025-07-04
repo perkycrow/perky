@@ -19,6 +19,7 @@ export default class SourceManager extends PerkyModule {
         }
 
         const sourceLoader = new SourceLoader([sourceDescriptor], this.loaders)
+        this.#setupLoaderEvents(sourceLoader)
 
         await sourceLoader.load()
 
@@ -34,25 +35,41 @@ export default class SourceManager extends PerkyModule {
         }
 
         const sourceLoader = new SourceLoader(sourceDescriptors, this.loaders)
+        this.#setupLoaderEvents(sourceLoader)
 
         await sourceLoader.load()
 
         return sourceLoader
-
     }
+    
 
     async loadAll () {
-        const sourceDescriptors = this.manifest.getSourceDescriptors()
+        const sourceDescriptors = this.manifest.getAllSourceDescriptors()
 
         if (!sourceDescriptors.length) {
             throw new Error('No sources found')
         }
 
         const sourceLoader = new SourceLoader(sourceDescriptors, this.loaders)
+        this.#setupLoaderEvents(sourceLoader)
 
         await sourceLoader.load()
 
         return sourceLoader
+    }
+
+    #setupLoaderEvents (loader) {
+        loader.on('progress', (...args) => {
+            this.emit('loader:progress', loader, ...args)
+        })
+
+        loader.on('complete', (...args) => {
+            this.emit('loader:complete', loader, ...args)
+        })
+
+        loader.on('error', (...args) => {
+            this.emit('loader:error', loader, ...args)
+        })
     }
 
 }

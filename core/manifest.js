@@ -145,6 +145,20 @@ export default class Manifest {
         return this.#data.sourceDescriptors[type] || {}
     }
 
+    getSourceDescriptorsByType (type) {
+        const descriptors = this.getSourceDescriptors(type)
+        return Object.values(descriptors)
+    }
+
+    getAllSourceDescriptors () {
+        const allDescriptors = []
+        for (const descriptorType in this.#data.sourceDescriptors) {
+            const descriptors = this.#data.sourceDescriptors[descriptorType]
+            allDescriptors.push(...Object.values(descriptors))
+        }
+        return allDescriptors
+    }
+
 
     #initSourceDescriptors () {
         const {sourceDescriptors} = this.#data

@@ -18,7 +18,8 @@ describe('SourceManager', () => {
         manifest = {
             getSourceDescriptor: vi.fn(),
             getSourceDescriptorsByTag: vi.fn(),
-            getSourceDescriptors: vi.fn()
+            getSourceDescriptors: vi.fn(),
+            getAllSourceDescriptors: vi.fn()
         }
 
         manager = new SourceManager({loaders, manifest})
@@ -79,21 +80,21 @@ describe('SourceManager', () => {
             {type: 'image', id: 'logo', url: '/assets/logo.png'},
             {type: 'audio', id: 'music', url: '/assets/music.mp3'}
         ]
-        manifest.getSourceDescriptors.mockReturnValueOnce(sourceDescriptors)
+        manifest.getAllSourceDescriptors.mockReturnValueOnce(sourceDescriptors)
         
         const result = await manager.loadAll()
         
-        expect(manifest.getSourceDescriptors).toHaveBeenCalled()
+        expect(manifest.getAllSourceDescriptors).toHaveBeenCalled()
         expect(result).toBeInstanceOf(SourceLoader)
         expect(result.sourceDescriptors).toBe(sourceDescriptors)
     })
 
 
     test('loadAll not found', async () => {
-        manifest.getSourceDescriptors.mockReturnValueOnce([])
+        manifest.getAllSourceDescriptors.mockReturnValueOnce([])
         
         await expect(manager.loadAll()).rejects.toThrow('No sources found')
-        expect(manifest.getSourceDescriptors).toHaveBeenCalled()
+        expect(manifest.getAllSourceDescriptors).toHaveBeenCalled()
     })
 
 })
