@@ -1,9 +1,8 @@
 import Game from '/game/game'
 import Logger from '/ui/logger'
-import Toolbar from '/ui/toolbar'
-import FpsCounter from '/ui/fps_counter'
-import {Scene, Color} from 'three'
 import {Pane} from 'tweakpane'
+import * as EssentialsPlugin from '@tweakpane/plugin-essentials'
+import {Scene, Color} from 'three'
 import OrthographicCamera from '../three/cameras/orthographic_camera'
 import WebGLRenderer from '../three/renderers/webgl_renderer'
 import Sprite from '../three/objects/sprite'
@@ -663,23 +662,94 @@ function init () {
     const container = document.querySelector('.example-content')
     game.mountTo(container)
 
-    // Add UI components
-    const toolbar = new Toolbar()
-    toolbar.mountTo(container)
-
     const logger = new Logger()
     logger.mountTo(container)
     logger.minimize()
-
-    const fpsCounter = new FpsCounter(game)
-    fpsCounter.mountTo(container)
 
     logger.info('Shroom Runner initialized')
     logger.info('Use LEFT and RIGHT arrow keys to move the mushroom')
     logger.info('Collect falling spores to increase your score!')
 
-    // Add toolbar buttons
-    toolbar.add('Start Game', () => {
+    // Create main controls Tweakpane
+    const controlPane = new Pane({
+        title: 'Game Controls',
+        container: container
+    })
+    controlPane.registerPlugin(EssentialsPlugin)
+
+    // Position the control panel (left side to avoid conflict with post-processing)
+    controlPane.element.style.position = 'absolute'
+    controlPane.element.style.top = '10px'
+    controlPane.element.style.left = '10px'
+    controlPane.element.style.zIndex = '1000'
+    controlPane.element.style.width = '250px'
+
+    // Create FPS monitoring
+    const fpsFolder = controlPane.addFolder({
+        title: 'Performance',
+        expanded: true
+    })
+
+    const fpsGraph = fpsFolder.addBlade({
+        view: 'fpsgraph',
+        label: 'FPS',
+        rows: 2
+    })
+
+    // FPS tracking
+    const fpsStats = {
+        current: 0,
+        average: 0
+    }
+
+    fpsFolder.addBinding(fpsStats, 'current', {
+        label: 'Current FPS',
+        readonly: true,
+        format: (v) => v.toFixed(0)
+    })
+
+    fpsFolder.addBinding(fpsStats, 'average', {
+        label: 'Average FPS',
+        readonly: true,
+        format: (v) => v.toFixed(1)
+    })
+
+    // FPS tracking variables
+    let frameCount = 0
+    let fpsSum = 0
+    let lastReset = performance.now()
+
+    // Monitor FPS
+    game.on('render', (frameProgress, fps) => {
+        fpsGraph.begin()
+        
+        const currentFps = fps || 60
+        fpsStats.current = currentFps
+        
+        // Update stats
+        frameCount++
+        fpsSum += currentFps
+        fpsStats.average = fpsSum / frameCount
+        
+        // Reset stats every 5 seconds
+        if (performance.now() - lastReset > 5000) {
+            frameCount = 0
+            fpsSum = 0
+            lastReset = performance.now()
+        }
+        
+        fpsGraph.end()
+    })
+
+    // Game control buttons
+    const gameFolder = controlPane.addFolder({
+        title: 'Game Controls',
+        expanded: true
+    })
+
+    gameFolder.addButton({
+        title: 'Start Game'
+    }).on('click', () => {
         if (game.started) {
             logger.warn('Game already started')
         } else {
@@ -688,7 +758,9 @@ function init () {
         }
     })
 
-    toolbar.add('Pause/Resume', () => {
+    gameFolder.addButton({
+        title: 'Pause/Resume'
+    }).on('click', () => {
         if (game.paused) {
             game.resume()
             logger.info('Game resumed')
@@ -698,21 +770,15 @@ function init () {
         }
     })
 
-    toolbar.add('Show Score', () => {
+    gameFolder.addButton({
+        title: 'Show Score'
+    }).on('click', () => {
         logger.info(`Current Score: ${game.score}`)
     })
 
-    toolbar.add('Toggle Post-FX', () => {
-        if (game.amberLUTPass && game.vignettePass && game.crtPass) {
-            const enabled = !game.amberLUTPass.enabled
-            game.amberLUTPass.enabled = enabled
-            game.vignettePass.enabled = enabled
-            game.crtPass.enabled = enabled
-            logger.info(`Post-processing ${enabled ? 'enabled' : 'disabled'}`)
-        }
-    })
-
-    toolbar.add('Reset Game', () => {
+    gameFolder.addButton({
+        title: 'Reset Game'
+    }).on('click', () => {
         if (game.shroom) {
             game.shroom.position.x = 0
             
@@ -724,6 +790,24 @@ function init () {
             game.score = 0
             
             logger.info(`Game reset - Score: ${game.score}`)
+        }
+    })
+
+    // Post-processing controls
+    const postFxFolder = controlPane.addFolder({
+        title: 'Post Effects',
+        expanded: true
+    })
+
+    postFxFolder.addButton({
+        title: 'Toggle All Effects'
+    }).on('click', () => {
+        if (game.amberLUTPass && game.vignettePass && game.crtPass) {
+            const enabled = !game.amberLUTPass.enabled
+            game.amberLUTPass.enabled = enabled
+            game.vignettePass.enabled = enabled
+            game.crtPass.enabled = enabled
+            logger.info(`Post-processing ${enabled ? 'enabled' : 'disabled'}`)
         }
     })
 

@@ -4,7 +4,7 @@ import Rectangle from '../canvas/rectangle.js'
 import Group2D from '../canvas/group_2d.js'
 import Image2D from '../canvas/image_2d.js'
 import Logger from '../ui/logger.js'
-import Toolbar from '../ui/toolbar.js'
+import {Pane} from 'tweakpane'
 
 let canvas = null
 let renderer = null
@@ -46,9 +46,6 @@ function setupCanvas (container) {
 }
 
 function setupUI (container) {
-    const toolbar = new Toolbar()
-    toolbar.mountTo(container)
-    
     const logger = new Logger()
     logger.mountTo(container)
     logger.minimize()
@@ -56,15 +53,45 @@ function setupUI (container) {
     logger.info('Canvas 2D demo initialized')
     logger.info('Click buttons to control animations and shapes')
     
-    toolbar.add('Start/Stop Animation', () => {
+    // Create Tweakpane for controls
+    const controlPane = new Pane({
+        title: 'Canvas Controls',
+        container: container
+    })
+    
+    // Position the control panel
+    controlPane.element.style.position = 'absolute'
+    controlPane.element.style.top = '10px'
+    controlPane.element.style.right = '10px'
+    controlPane.element.style.zIndex = '1000'
+    controlPane.element.style.width = '250px'
+    
+    // Add control buttons
+    const animationFolder = controlPane.addFolder({
+        title: 'Animation',
+        expanded: true
+    })
+    
+    animationFolder.addButton({
+        title: 'Start/Stop Animation'
+    }).on('click', () => {
         toggleAnimation()
     })
     
-    toolbar.add('Reset', () => {
+    animationFolder.addButton({
+        title: 'Reset'
+    }).on('click', () => {
         resetScene()
     })
     
-    toolbar.add('Add Random Shapes', () => {
+    const shapesFolder = controlPane.addFolder({
+        title: 'Shapes',
+        expanded: true
+    })
+    
+    shapesFolder.addButton({
+        title: 'Add Random Shapes'
+    }).on('click', () => {
         addRandomShapes()
     })
 }

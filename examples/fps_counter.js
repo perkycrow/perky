@@ -1,69 +1,152 @@
 import GameLoop from '/game/game_loop.js'
-import FpsCounter from '/ui/fps_counter.js'
+import {Pane} from 'tweakpane'
+import * as EssentialsPlugin from '@tweakpane/plugin-essentials'
 
 const container = document.querySelector('.example-content')
 
 const gameLoop = new GameLoop()
 
-const fpsCounter = new FpsCounter({gameLoop})
-fpsCounter.mountTo(container)
+// Create Tweakpane for FPS monitoring
+const fpsPane = new Pane({
+    title: 'Performance Monitor',
+    container: container
+})
+fpsPane.registerPlugin(EssentialsPlugin)
+
+// Create FPS graph
+const fpsGraph = fpsPane.addBlade({
+    view: 'fpsgraph',
+    label: 'FPS',
+    rows: 2
+})
+
+// Position the FPS panel
+fpsPane.element.style.position = 'absolute'
+fpsPane.element.style.top = '10px'
+fpsPane.element.style.right = '10px'
+fpsPane.element.style.zIndex = '1000'
+fpsPane.element.style.width = '200px'
+
+// FPS monitoring
+let currentFps = 60
+const fpsStats = {
+    current: 0,
+    average: 0,
+    min: 999,
+    max: 0
+}
+
+// Add FPS display bindings
+const fpsFolder = fpsPane.addFolder({
+    title: 'FPS Stats',
+    expanded: true
+})
+
+fpsFolder.addBinding(fpsStats, 'current', {
+    label: 'Current',
+    readonly: true,
+    format: (v) => v.toFixed(0)
+})
+
+fpsFolder.addBinding(fpsStats, 'average', {
+    label: 'Average',
+    readonly: true,
+    format: (v) => v.toFixed(1)
+})
+
+fpsFolder.addBinding(fpsStats, 'min', {
+    label: 'Min',
+    readonly: true,
+    format: (v) => v.toFixed(0)
+})
+
+fpsFolder.addBinding(fpsStats, 'max', {
+    label: 'Max',
+    readonly: true,
+    format: (v) => v.toFixed(0)
+})
+
+// FPS tracking
+let frameCount = 0
+let fpsSum = 0
+let lastReset = performance.now()
+
+// Global variables for animation
+let particles = []
+let canvas = null
+let ctx = null
+
+// Monitor FPS
+gameLoop.on('render', (frameProgress, fps) => {
+    fpsGraph.begin()
+    
+    currentFps = fps || 60
+    fpsStats.current = currentFps
+    
+    // Update stats
+    frameCount++
+    fpsSum += currentFps
+    fpsStats.average = fpsSum / frameCount
+    fpsStats.min = Math.min(fpsStats.min, currentFps)
+    fpsStats.max = Math.max(fpsStats.max, currentFps)
+    
+    // Reset stats every 5 seconds
+    if (performance.now() - lastReset > 5000) {
+        frameCount = 0
+        fpsSum = 0
+        fpsStats.min = 999
+        fpsStats.max = 0
+        lastReset = performance.now()
+    }
+
+    if (currentFps > 20 && particles.length < 50000) {
+        const particlesToAdd = Math.floor((currentFps - 20) / 10) + 1
+        
+        for (let i = 0; i < particlesToAdd; i++) {
+            addParticle()
+        }
+    }
+    
+    updateAnimation()
+    fpsGraph.end()
+})
 
 initAnimation()
 gameLoop.start()
 
-
 function initAnimation () {
-    const {canvas, ctx} = createCanvas()
-    container.appendChild(canvas)
-
-    const particles = []
-    let currentFps = 60
+    const canvasData = createCanvas()
+    canvas = canvasData.canvas
+    ctx = canvasData.ctx
 
     for (let i = 0; i < 100; i++) {
-        addParticle(particles, canvas)
+        addParticle()
     }
-
-    gameLoop.on('render', (frameProgress, fps) => {
-        currentFps = fps || 60
-
-        if (currentFps > 20 && particles.length < 50000) {
-            const particlesToAdd = Math.floor((currentFps - 20) / 10) + 1
-            
-            for (let i = 0; i < particlesToAdd; i++) {
-                addParticle(particles, canvas)
-            }
-        }
-        
-        updateAnimation(particles, canvas, ctx)
-    })
 }
 
-
-function addParticle (particles, canvas) {
+function addParticle () {
     particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        radius: Math.random() * 10 + 2, // Taille minimale réduite de 5 à 2
+        radius: Math.random() * 10 + 2,
         vx: Math.random() * 2 - 1,
         vy: Math.random() * 2 - 1,
         color: `hsl(${Math.random() * 360}, 70%, 60%)`
     })
 }
 
-
-function updateAnimation (particles, canvas, ctx) {
+function updateAnimation () {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     ctx.fillStyle = '#000000'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    drawParticles(particles, canvas, ctx)
+    drawParticles()
 
-    displayCircleCount(ctx, particles.length, canvas.width, canvas.height)
+    displayCircleCount()
 }
 
-
-function drawParticles (particles, canvas, ctx) {
+function drawParticles () {
     for (const p of particles) {
         p.x += p.vx
         p.y += p.vy
@@ -85,28 +168,26 @@ function drawParticles (particles, canvas, ctx) {
     }
 }
 
-
-function displayCircleCount (ctx, count, canvasWidth, canvasHeight) {
+function displayCircleCount () {
     ctx.fillStyle = '#FFFFFF'
     ctx.textAlign = 'center'
 
     ctx.font = '36px Arial'
-    ctx.fillText(count, canvasWidth / 2, canvasHeight / 2)
+    ctx.fillText(particles.length, canvas.width / 2, canvas.height / 2)
 
     ctx.font = '24px Arial'
-    ctx.fillText('Circles', canvasWidth / 2, canvasHeight / 2 + 30)
+    ctx.fillText('Circles', canvas.width / 2, canvas.height / 2 + 30)
 }
 
-
 function createCanvas () {
-    const canvas = document.createElement('canvas')
-    canvas.width = 660
-    canvas.height = 325
-    canvas.style.display = 'block'
-    canvas.style.margin = '20px auto'
-    canvas.style.border = '1px solid #ddd'
-    container.appendChild(canvas)
-    const ctx = canvas.getContext('2d')
+    const canvasElement = document.createElement('canvas')
+    canvasElement.width = 660
+    canvasElement.height = 325
+    canvasElement.style.display = 'block'
+    canvasElement.style.margin = '20px auto'
+    canvasElement.style.border = '1px solid #ddd'
+    container.appendChild(canvasElement)
+    const canvasContext = canvasElement.getContext('2d')
     
-    return {canvas, ctx}
+    return {canvas: canvasElement, ctx: canvasContext}
 }

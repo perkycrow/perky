@@ -1,7 +1,7 @@
 import Game from '/game/game.js'
 import Logger from '/ui/logger.js'
-import Toolbar from '/ui/toolbar.js'
-import FpsCounter from '/ui/fps_counter.js'
+import {Pane} from 'tweakpane'
+import * as EssentialsPlugin from '@tweakpane/plugin-essentials'
 
 import {
     Scene, 
@@ -19,7 +19,6 @@ import {
     Vector3
 } from 'three'
 
-
 import {createRenderer, createSprite} from '../three/three_utils'
 
 const manifest = ({
@@ -35,7 +34,6 @@ const manifest = ({
         }
     }
 })
-
 
 class StylizedGame extends Game {
     constructor (params = {}) {
@@ -60,23 +58,18 @@ class StylizedGame extends Game {
         this.on('render', (...args) => renderGame(this, ...args))
     }
 
-
     zoomIn () {
         this.cameraOffset = Math.max(this.minZoom, this.cameraOffset - this.zoomStep)
         updateCameraPosition(this)
         return this.cameraOffset
     }
 
-
     zoomOut () {
         this.cameraOffset = Math.min(this.maxZoom, this.cameraOffset + this.zoomStep)
         updateCameraPosition(this)
         return this.cameraOffset
     }
-
 }
-
-
 
 function init () {
     const game = new StylizedGame({manifest})
@@ -84,20 +77,93 @@ function init () {
     const container = document.querySelector('.example-content')
     game.mountTo(container)
 
-    const toolbar = new Toolbar()
-    toolbar.mountTo(container)
-
     const logger = new Logger()
     logger.mountTo(container)
     logger.minimize()
 
-    const fpsCounter = new FpsCounter(game)
-    fpsCounter.mountTo(container)
-
     logger.info('Stylized 2.5D Game initialized')
     logger.info('Use WASD keys to move the character')
 
-    toolbar.add('Start Game', () => {
+    // Create Tweakpane for controls
+    const controlPane = new Pane({
+        title: 'Game Controls',
+        container: container
+    })
+    controlPane.registerPlugin(EssentialsPlugin)
+
+    // Position the control panel
+    controlPane.element.style.position = 'absolute'
+    controlPane.element.style.top = '10px'
+    controlPane.element.style.right = '10px'
+    controlPane.element.style.zIndex = '1000'
+    controlPane.element.style.width = '250px'
+
+    // Create FPS monitoring
+    const fpsFolder = controlPane.addFolder({
+        title: 'Performance',
+        expanded: true
+    })
+
+    const fpsGraph = fpsFolder.addBlade({
+        view: 'fpsgraph',
+        label: 'FPS',
+        rows: 2
+    })
+
+    // FPS tracking
+    const fpsStats = {
+        current: 0,
+        average: 0
+    }
+
+    fpsFolder.addBinding(fpsStats, 'current', {
+        label: 'Current FPS',
+        readonly: true,
+        format: (v) => v.toFixed(0)
+    })
+
+    fpsFolder.addBinding(fpsStats, 'average', {
+        label: 'Average FPS',
+        readonly: true,
+        format: (v) => v.toFixed(1)
+    })
+
+    // FPS tracking variables
+    let frameCount = 0
+    let fpsSum = 0
+    let lastReset = performance.now()
+
+    // Monitor FPS
+    game.on('render', (frameProgress, fps) => {
+        fpsGraph.begin()
+        
+        const currentFps = fps || 60
+        fpsStats.current = currentFps
+        
+        // Update stats
+        frameCount++
+        fpsSum += currentFps
+        fpsStats.average = fpsSum / frameCount
+        
+        // Reset stats every 5 seconds
+        if (performance.now() - lastReset > 5000) {
+            frameCount = 0
+            fpsSum = 0
+            lastReset = performance.now()
+        }
+        
+        fpsGraph.end()
+    })
+
+    // Game control buttons
+    const gameFolder = controlPane.addFolder({
+        title: 'Game Controls',
+        expanded: true
+    })
+
+    gameFolder.addButton({
+        title: 'Start Game'
+    }).on('click', () => {
         if (game.started) {
             logger.warn('Game already started')
         } else {
@@ -106,7 +172,9 @@ function init () {
         }
     })
 
-    toolbar.add('Pause/Resume', () => {
+    gameFolder.addButton({
+        title: 'Pause/Resume'
+    }).on('click', () => {
         if (game.paused) {
             game.resume()
             logger.info('Game resumed')
@@ -116,7 +184,9 @@ function init () {
         }
     })
 
-    toolbar.add('Reset Position', () => {
+    gameFolder.addButton({
+        title: 'Reset Position'
+    }).on('click', () => {
         if (game.player) {
             game.player.position.set(0, 1, 0)
             if (game.playerShadow) {
@@ -127,15 +197,24 @@ function init () {
         }
     })
 
-    // Add zoom controls
-    toolbar.add('Zoom In', () => {
+    // Camera controls
+    const cameraFolder = controlPane.addFolder({
+        title: 'Camera',
+        expanded: true
+    })
+
+    cameraFolder.addButton({
+        title: 'Zoom In'
+    }).on('click', () => {
         if (game.player) {
             const newOffset = game.zoomIn()
             logger.info(`Zoomed in: Distance = ${newOffset} (best rendering between 7-10)`)
         }
     })
 
-    toolbar.add('Zoom Out', () => {
+    cameraFolder.addButton({
+        title: 'Zoom Out'
+    }).on('click', () => {
         if (game.player) {
             const newOffset = game.zoomOut()
             logger.info(`Zoomed out: Distance = ${newOffset} (best rendering between 7-10)`)
@@ -147,7 +226,6 @@ function init () {
     game.start()
 }
 
-
 async function initGame (game) {
     setupThreeJS(game)
     await loadAssets(game)
@@ -156,7 +234,6 @@ async function initGame (game) {
     setupLights(game)
     setupCamera(game)
 }
-
 
 function setupThreeJS (game) {
     // Create scene
@@ -195,7 +272,6 @@ function setupThreeJS (game) {
     })
 }
 
-
 async function loadAssets (game) {
     try {
         await game.loadSource('images', 'shroom')
@@ -204,7 +280,6 @@ async function loadAssets (game) {
         console.error('Error loading assets:', error)
     }
 }
-
 
 function setupTerrain (game) {
     const groundGeometry = new PlaneGeometry(40, 40, 20, 20)
@@ -223,7 +298,6 @@ function setupTerrain (game) {
 
     addTerrainDetails(game)
 }
-
 
 function addTerrainDetails (game) {
     const rockGeometry = new DodecahedronGeometry(0.5, 0)
@@ -252,7 +326,6 @@ function addTerrainDetails (game) {
         game.scene.add(rock)
     }
 }
-
 
 function setupPlayer (game) {
     if (game.assetsLoaded) {
@@ -285,7 +358,6 @@ function setupPlayer (game) {
     game.scene.add(game.player)
 }
 
-
 function setupLights (game) {
     game.lights.sun = new DirectionalLight(0xFFFAF0, 1.2) // Slightly warm color
     game.lights.sun.position.set(5, 15, 8)
@@ -313,7 +385,6 @@ function setupLights (game) {
     game.scene.add(game.lights.hemisphere)
 }
 
-
 function setupCamera (game) {
     game.camera.position.set(
         game.cameraOffset,
@@ -322,7 +393,6 @@ function setupCamera (game) {
     )
     game.camera.lookAt(0, 0, 0)
 }
-
 
 function handlePlayerMovement (game, moved) {
     const moveVectors = {
@@ -356,7 +426,6 @@ function handlePlayerMovement (game, moved) {
     return moved
 }
 
-
 function updateGame (game) {
     if (!game.player) {
         return
@@ -376,20 +445,16 @@ function updateGame (game) {
     }
 }
 
-
-
 function renderGame (game) {
     if (game.renderer) {
         game.renderer.render(game.scene, game.camera)
     }
 }
 
-
 function updateCameraPosition (game) {
     game.camera.position.x = game.player.position.x + game.cameraOffset
     game.camera.position.z = game.player.position.z + game.cameraOffset
     game.camera.lookAt(game.player.position)
 }
-
 
 init()

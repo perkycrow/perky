@@ -1,6 +1,6 @@
 import Application from '/application/application.js'
 import Logger from '/ui/logger.js'
-import Toolbar from '/ui/toolbar.js'
+import {Pane} from 'tweakpane'
 
 const manifest = ({
     config: {
@@ -26,23 +26,56 @@ const app = new Application({manifest})
 const container = document.querySelector('.example-content')
 app.mountTo(container)
 
-const toolbar = new Toolbar()
-toolbar.mountTo(container)
-
 const logger = new Logger()
 logger.mountTo(container)
 
+// Create Tweakpane for controls
+const controlPane = new Pane({
+    title: 'Application Controls',
+    container: container
+})
 
+// Position the control panel
+controlPane.element.style.position = 'absolute'
+controlPane.element.style.top = '10px'
+controlPane.element.style.right = '10px'
+controlPane.element.style.zIndex = '1000'
+controlPane.element.style.width = '250px'
 
 logger.info('Application mounted')
 
-toolbar.add('Load Assets', loadAssets)
+// Add control buttons
+const assetsFolder = controlPane.addFolder({
+    title: 'Assets',
+    expanded: true
+})
 
-toolbar.add('Config API', displayConfig)
+assetsFolder.addButton({
+    title: 'Load Assets'
+}).on('click', loadAssets)
+
+const configFolder = controlPane.addFolder({
+    title: 'Configuration',
+    expanded: true
+})
+
+configFolder.addButton({
+    title: 'Config API'
+}).on('click', displayConfig)
+
+const actionFolder = controlPane.addFolder({
+    title: 'Actions',
+    expanded: true
+})
+
+actionFolder.addButton({
+    title: 'Say Hello'
+}).on('click', () => {
+    app.dispatchAction('sayHello')
+    logger.info('Dispatched action: sayHello')
+})
 
 actionExample()
-
-
 
 function displayConfig () {
     logger.spacer()
@@ -54,7 +87,6 @@ function displayConfig () {
     logger.info('Debug:', app.config('debug'))
     logger.info(`Config: ${JSON.stringify(app.config(), null, 2)}`)
 }
-
 
 async function loadAssets () {
     logger.spacer()
@@ -79,7 +111,6 @@ async function loadAssets () {
     }
 }
 
-
 function actionExample () {
     logger.spacer()
     logger.title('Action Example')
@@ -88,11 +119,6 @@ function actionExample () {
 
     app.addAction('sayHello', () => {
         logger.info('Hello from the application!')
-    })
-
-    toolbar.add('Say Hello', () => {
-        app.dispatchAction('sayHello')
-        logger.info('Dispatched action: sayHello')
     })
 
     app.setInputFor('sayHello', 'KeyH')
