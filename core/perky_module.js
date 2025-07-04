@@ -51,18 +51,6 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    resume () {
-        if (!this.initialized || !this.started || !this.paused) {
-            return false
-        }
-
-        this.paused = false
-        this.emit('resume')
-
-        return true
-    }
-
-
     dispose () {
         if (!this.initialized) {
             return false
