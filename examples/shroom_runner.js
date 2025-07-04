@@ -12,7 +12,7 @@ import {Pane} from 'tweakpane'
 import OrthographicCamera from '../three/cameras/orthographic_camera.js'
 import {createRenderer, createSprite} from '../three/three_utils.js'
 import SimpleCollisionDetector from '../collision/simple_collision_detector.js'
-import PostProcessingComposer from '../three/effects/post_processing_composer.js'
+import RenderComposer from '../three/effects/render_composer.js'
 import VignettePass from '../three/effects/vignette_pass.js'
 import AmberLUTPass from '../three/effects/amber_lut_pass.js'
 import CRTPass from '../three/effects/crt_pass.js'
@@ -44,7 +44,7 @@ export default class ShroomRunner extends Game {
         this.scene = null
         this.camera = null
         this.renderer = null
-        this.postProcessingComposer = null
+        this.renderComposer = null
         this.vignettePass = null
         this.amberLUTPass = null
         this.crtPass = null
@@ -120,9 +120,9 @@ export default class ShroomRunner extends Game {
             // Update background scale to maintain cover
             this.updateBackgroundScale()
             
-            // Update post-processing
-            if (this.postProcessingComposer) {
-                this.postProcessingComposer.setSize(containerWidth, containerHeight)
+            // Update render composer
+            if (this.renderComposer) {
+                this.renderComposer.setSize(containerWidth, containerHeight)
             }
         })
     }
@@ -274,8 +274,8 @@ export default class ShroomRunner extends Game {
     }
 
     setupPostProcessing () {
-        // Create post-processing composer
-        this.postProcessingComposer = new PostProcessingComposer({
+        // Create render composer
+        this.renderComposer = new RenderComposer({
             renderer: this.renderer,
             scene: this.scene,
             camera: this.camera
@@ -287,9 +287,9 @@ export default class ShroomRunner extends Game {
         this.crtPass = new CRTPass()
         
         // Add passes in desired order
-        this.postProcessingComposer.insertPass(this.amberLUTPass, 1) // After render pass
-        this.postProcessingComposer.insertPass(this.vignettePass, 2) // After LUT
-        this.postProcessingComposer.insertPass(this.crtPass, 3) // After vignette
+        this.renderComposer.insertPass(this.amberLUTPass, 1) // After render pass
+        this.renderComposer.insertPass(this.vignettePass, 2) // After LUT
+        this.renderComposer.insertPass(this.crtPass, 3) // After vignette
         
         this.setupPostProcessingControls()
     }
@@ -525,8 +525,8 @@ export default class ShroomRunner extends Game {
     }
 
     renderGame () {
-        if (this.postProcessingComposer && this.scene && this.camera) {
-            this.postProcessingComposer.render()
+        if (this.renderComposer && this.scene && this.camera) {
+            this.renderComposer.render()
         }
     }
 

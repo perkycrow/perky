@@ -2,7 +2,8 @@ import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js'
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js'
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js'
 
-export default class PostProcessingComposer {
+
+export default class RenderComposer {
     constructor ({renderer, scene, camera}) {
         this.renderer = renderer
         this.scene = scene
@@ -15,11 +16,9 @@ export default class PostProcessingComposer {
     }
 
     setupBasicPasses () {
-        // Main render pass
         this.renderPass = new RenderPass(this.scene, this.camera)
         this.addPass(this.renderPass)
-        
-        // Final output pass
+
         this.outputPass = new OutputPass()
     }
 
@@ -37,15 +36,13 @@ export default class PostProcessingComposer {
     }
 
     insertPass (pass, index) {
-        // Temporarily remove OutputPass if it exists
         if (this.outputPass && this.composer.passes.includes(this.outputPass)) {
             this.composer.removePass(this.outputPass)
         }
         
         this.passes.splice(index, 0, pass)
         this.composer.insertPass(pass, index)
-        
-        // Put OutputPass back in last position
+
         if (this.outputPass) {
             this.composer.addPass(this.outputPass)
         }
@@ -62,4 +59,5 @@ export default class PostProcessingComposer {
     dispose () {
         this.composer.dispose()
     }
-} 
+
+}
