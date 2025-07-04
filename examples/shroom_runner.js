@@ -11,6 +11,7 @@ import {
 import OrthographicCamera from '../three/cameras/orthographic_camera.js'
 import {createRenderer, createSprite} from '../three/three_utils.js'
 import SimpleCollisionDetector from '../collision/simple_collision_detector.js'
+import PostProcessingManager from '../three/effects/post_processing_manager.js'
 
 const manifest = {
     config: {
@@ -36,6 +37,7 @@ export default class ShroomRunner extends Game {
         this.scene = null
         this.camera = null
         this.renderer = null
+        this.postProcessing = null
         this.shroom = null
         this.shroomSpeed = 5
         this.assetsLoaded = false
@@ -55,6 +57,7 @@ export default class ShroomRunner extends Game {
 
     async initGame () {
         this.setupThreeJS()
+        this.setupPostProcessing()
         this.setupCollisionDetector()
         await this.loadAssets()
         this.setupPlayer()
@@ -100,6 +103,11 @@ export default class ShroomRunner extends Game {
             
             this.camera.updateProjectionMatrix()
             this.renderer.setSize(containerWidth, containerHeight)
+            
+            // Update post-processing
+            if (this.postProcessing) {
+                this.postProcessing.setSize(containerWidth, containerHeight)
+            }
         })
     }
 
@@ -179,9 +187,18 @@ export default class ShroomRunner extends Game {
         this.collisionDetector.detectCollisions()
     }
 
+    setupPostProcessing () {
+        this.postProcessing = new PostProcessingManager({
+            renderer: this.renderer,
+            scene: this.scene,
+            camera: this.camera,
+            container: this.perkyView.element
+        })
+    }
+
     renderGame () {
-        if (this.renderer && this.scene && this.camera) {
-            this.renderer.render(this.scene, this.camera)
+        if (this.postProcessing && this.scene && this.camera) {
+            this.postProcessing.render()
         }
     }
 
@@ -331,6 +348,15 @@ function init () {
 
     toolbar.add('Show Score', () => {
         logger.info(`Current Score: ${game.score}`)
+    })
+
+    toolbar.add('Toggle Post-FX', () => {
+        if (game.postProcessing) {
+            const enabled = !game.postProcessing.amberLUTPass.enabled
+            game.postProcessing.amberLUTPass.enabled = enabled
+            game.postProcessing.vignettePass.enabled = enabled
+            logger.info(`Post-processing ${enabled ? 'enabled' : 'disabled'}`)
+        }
     })
 
     toolbar.add('Reset Game', () => {
