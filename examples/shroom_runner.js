@@ -28,6 +28,9 @@ const manifest = {
             },
             spore: {
                 url: '/examples/assets/images/spore.png'
+            },
+            background: {
+                url: '/examples/assets/images/background.png'
             }
         }
     }
@@ -44,6 +47,7 @@ export default class ShroomRunner extends Game {
         this.vignettePass = null
         this.amberLUTPass = null
         this.postProcessingPane = null
+        this.background = null
         this.shroom = null
         this.shroomSpeed = 5
         this.assetsLoaded = false
@@ -66,6 +70,7 @@ export default class ShroomRunner extends Game {
         this.setupPostProcessing()
         this.setupCollisionDetector()
         await this.loadAssets()
+        this.setupBackground()
         this.setupPlayer()
         this.assetsLoaded = true
     }
@@ -110,6 +115,9 @@ export default class ShroomRunner extends Game {
             this.camera.updateProjectionMatrix()
             this.renderer.setSize(containerWidth, containerHeight)
             
+            // Update background scale to maintain cover
+            this.updateBackgroundScale()
+            
             // Update post-processing
             if (this.postProcessingComposer) {
                 this.postProcessingComposer.setSize(containerWidth, containerHeight)
@@ -121,10 +129,75 @@ export default class ShroomRunner extends Game {
         try {
             await this.loadSource('images', 'shroom')
             await this.loadSource('images', 'spore')
+            await this.loadSource('images', 'background')
             console.log('Assets loaded successfully')
         } catch (error) {
             console.error('Failed to load assets:', error)
         }
+    }
+
+    setupBackground () {
+        // Get the loaded background image
+        const backgroundImage = this.getSource('images', 'background')
+        
+        if (backgroundImage) {
+            // Create sprite from the image
+            this.background = createSprite({source: backgroundImage})
+            
+            // Position behind everything else to avoid z-fighting
+            this.background.position.set(0, 0, -5)
+            
+            // Scale to cover the entire view
+            this.updateBackgroundScale()
+            
+            // Add to scene
+            this.scene.add(this.background)
+        } else {
+            console.error('Failed to load background image')
+        }
+    }
+
+    updateBackgroundScale () {
+        if (!this.background) {
+            return
+        }
+
+        // Get container dimensions
+        const containerWidth = this.perkyView.element.clientWidth
+        const containerHeight = this.perkyView.element.clientHeight
+        const containerAspect = containerWidth / containerHeight
+
+        // Get camera view dimensions
+        const viewHeight = 15
+        const viewWidth = viewHeight * containerAspect
+
+        // Get background image dimensions
+        const backgroundImage = this.getSource('images', 'background')
+        if (!backgroundImage) {
+            return
+        }
+
+        const imageAspect = backgroundImage.width / backgroundImage.height
+
+        // Calculate scale to cover the entire view (like CSS background-size: cover)
+        let scaleX
+        let scaleY
+        if (containerAspect > imageAspect) {
+            // Container is wider than image, scale by width
+            scaleX = viewWidth / backgroundImage.width
+            scaleY = scaleX
+        } else {
+            // Container is taller than image, scale by height
+            scaleY = viewHeight / backgroundImage.height
+            scaleX = scaleY
+        }
+
+        // Apply the scale to cover the entire view
+        this.background.scale.set(
+            scaleX * backgroundImage.width,
+            scaleY * backgroundImage.height,
+            1
+        )
     }
 
     setupPlayer () {
@@ -138,8 +211,8 @@ export default class ShroomRunner extends Game {
             // Scale the sprite appropriately
             this.shroom.scale.set(3, 3, 1)
             
-            // Position at center bottom
-            this.shroom.position.set(0, -5, 0)
+            // Position at center bottom, slightly forward to avoid z-fighting
+            this.shroom.position.set(0, -5, 0.1)
             
             // Add to scene
             this.scene.add(this.shroom)
@@ -392,7 +465,7 @@ export default class ShroomRunner extends Game {
         
         // Random horizontal position within camera bounds
         const spawnX = (Math.random() - 0.5) * 16 // Camera width
-        spore.position.set(spawnX, 8, 0) // Start above camera view
+        spore.position.set(spawnX, 8, 0.05) // Start above camera view, slightly forward
         
         this.scene.add(spore)
         this.spores.push(spore)
