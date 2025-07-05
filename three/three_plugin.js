@@ -60,12 +60,12 @@ function onInstall (plugin, engine) {
     plugin.renderer = renderer
     plugin.renderComposer = renderComposer
 
-    engine.threeScene = scene
-    engine.threeCamera = camera
-    engine.threeRenderer = renderer
+    engine.scene = scene
+    engine.camera = camera
+    engine.renderer = renderer
     
     if (renderComposer) {
-        engine.threeRenderComposer = renderComposer
+        engine.renderComposer = renderComposer
     }
 
     addThreeMethods(plugin, engine)
@@ -85,10 +85,10 @@ function onUninstall (plugin, engine) {
         plugin.renderer.dispose()
     }
 
-    delete engine.threeScene
-    delete engine.threeCamera
-    delete engine.threeRenderer
-    delete engine.threeRenderComposer
+    delete engine.scene
+    delete engine.camera
+    delete engine.renderer
+    delete engine.renderComposer
 
     plugin.scene = null
     plugin.camera = null
@@ -136,10 +136,10 @@ function createRenderer (rendererOptions = {}, engine) {
 
 function addThreeMethods (plugin, engine) {
     plugin.addMethod('render', function () {
-        if (this.threeRenderComposer) {
-            this.threeRenderComposer.render()
-        } else if (this.threeRenderer && this.threeScene && this.threeCamera) {
-            this.threeRenderer.render(this.threeScene, this.threeCamera)
+        if (this.renderComposer) {
+            this.renderComposer.render()
+        } else if (this.renderer && this.scene && this.camera) {
+            this.renderer.render(this.scene, this.camera)
         }
     })
 

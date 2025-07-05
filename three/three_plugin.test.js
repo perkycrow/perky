@@ -115,10 +115,10 @@ describe('ThreePlugin', () => {
         plugin = new ThreePlugin()
         plugin.install(app)
         
-        expect(app.threeScene).toBe(plugin.scene)
-        expect(app.threeCamera).toBe(plugin.camera)
-        expect(app.threeRenderer).toBe(plugin.renderer)
-        expect(app.threeRenderComposer).toBe(plugin.renderComposer)
+        expect(app.scene).toBe(plugin.scene)
+        expect(app.camera).toBe(plugin.camera)
+        expect(app.renderer).toBe(plugin.renderer)
+        expect(app.renderComposer).toBe(plugin.renderComposer)
     })
 
 
@@ -195,7 +195,7 @@ describe('ThreePlugin', () => {
         plugin.install(app)
         
         expect(plugin.renderComposer).toBeNull()
-        expect(app.threeRenderComposer).toBeUndefined()
+        expect(app.renderComposer).toBeUndefined()
     })
 
 
@@ -329,9 +329,9 @@ describe('ThreePlugin', () => {
         expect(plugin.scene).not.toBeNull()
         expect(plugin.camera).not.toBeNull()
         expect(plugin.renderer).not.toBeNull()
-        expect(app.threeScene).toBeDefined()
-        expect(app.threeCamera).toBeDefined()
-        expect(app.threeRenderer).toBeDefined()
+        expect(app.scene).toBeDefined()
+        expect(app.camera).toBeDefined()
+        expect(app.renderer).toBeDefined()
         
         plugin.uninstall()
         
@@ -341,9 +341,9 @@ describe('ThreePlugin', () => {
         expect(plugin.renderer).toBeNull()
         expect(plugin.renderComposer).toBeNull()
         expect(plugin.resizeHandlers).toEqual([])
-        expect(app.threeScene).toBeUndefined()
-        expect(app.threeCamera).toBeUndefined()
-        expect(app.threeRenderer).toBeUndefined()
+        expect(app.scene).toBeUndefined()
+        expect(app.camera).toBeUndefined()
+        expect(app.renderer).toBeUndefined()
     })
 
 
