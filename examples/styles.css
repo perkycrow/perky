@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+Pro:wght@400;600&display=swap');
 @import '../ui/logger.css';
 @import '../ui/code_display.css';
+@import '../application/perky_view.css';
 
 * {
     box-sizing: border-box;
@@ -31,6 +32,10 @@ body {
     overflow-x: hidden;
 }
 
+.example-content {
+    overflow: hidden;
+}
+
 body::before {
     content: '';
     position: fixed;
@@ -44,6 +49,11 @@ body::before {
         linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
     background-size: 20px 20px;
     z-index: -1;
+}
+
+body.viewport-mode::before,
+body.fullscreen-mode::before {
+    display: none;
 }
 
 .container {

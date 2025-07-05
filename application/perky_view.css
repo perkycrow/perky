@@ -1,0 +1,17 @@
+body.viewport-mode,
+body.fullscreen-mode {
+    overflow: hidden;
+}
+
+.perky-view {
+    overflow: hidden;
+}
+
+.perky-view:fullscreen {
+    width: 100vw !important;
+    height: 100vh !important;
+}
+
+.perky-view-container {
+    overflow: hidden;
+}
