@@ -34,8 +34,14 @@ export default class Application extends Engine {
         return this.perkyView.element
     }
 
+
     mountTo (element) {
         return this.perkyView.mountTo(element)
+    }
+
+
+    get mounted () {
+        return this.perkyView && this.perkyView.mounted
     }
 
 
@@ -286,6 +292,7 @@ export default class Application extends Engine {
         const {perkyView, inputManager, sourceManager} = this
 
         perkyView.on('resize', this.emitter('resize'))
+        perkyView.on('mount', this.emitter('mount'))
 
         inputManager.on('control:pressed', this.#handleInputEvent.bind(this, 'pressed'))
         inputManager.on('control:released', this.#handleInputEvent.bind(this, 'released'))
