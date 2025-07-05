@@ -22,19 +22,19 @@ export default class ThreePlugin extends Plugin {
     }
 
 
-    onInstall (engine) {
-        onInstall(this, engine)
+    onInstall (app) {
+        onInstall(this, app)
     }
 
 
-    onUninstall (engine) {
-        onUninstall(this, engine)
+    onUninstall (app) {
+        onUninstall(this, app)
     }
 
 }
 
 
-function onInstall (plugin, engine) {
+function onInstall (plugin, app) {
     const options = plugin.options
 
     const scene = new Scene()
@@ -44,7 +44,7 @@ function onInstall (plugin, engine) {
 
     const camera = createCamera(options.camera)
 
-    const renderer = createRenderer(options.renderer, engine)
+    const renderer = createRenderer(options.renderer)
 
     let renderComposer = null
     if (options.postProcessing !== false) {
@@ -60,24 +60,31 @@ function onInstall (plugin, engine) {
     plugin.renderer = renderer
     plugin.renderComposer = renderComposer
 
-    engine.scene = scene
-    engine.camera = camera
-    engine.renderer = renderer
+    app.scene = scene
+    app.camera = camera
+    app.renderer = renderer
     
     if (renderComposer) {
-        engine.renderComposer = renderComposer
+        app.renderComposer = renderComposer
     }
 
-    addThreeMethods(plugin, engine)
-    setupEventHandlers(plugin, engine)
+    addThreeMethods(plugin, app)
+    setupEventHandlers(plugin, app)
+
+
+    if (app.mounted) {
+        attachCanvas(plugin, app)
+    }
+
+    app.on('mount', () => attachCanvas(plugin, app))
 }
 
 
-function onUninstall (plugin, engine) {
+function onUninstall (plugin, app) {
 
     plugin.resizeHandlers.forEach(handler => {
-        engine.off('resize', handler)
-        engine.off('displayMode:changed', handler)
+        app.off('resize', handler)
+        app.off('displayMode:changed', handler)
     })
     plugin.resizeHandlers = []
 
@@ -85,10 +92,10 @@ function onUninstall (plugin, engine) {
         plugin.renderer.dispose()
     }
 
-    delete engine.scene
-    delete engine.camera
-    delete engine.renderer
-    delete engine.renderComposer
+    delete app.scene
+    delete app.camera
+    delete app.renderer
+    delete app.renderComposer
 
     plugin.scene = null
     plugin.camera = null
@@ -123,18 +130,20 @@ function createCamera (cameraOptions = {}) {
 }
 
 
-function createRenderer (rendererOptions = {}, engine) {
-    const container = rendererOptions.container || engine.perkyView?.element
+function createRenderer (rendererOptions = {}) {
+    // Don't pass container initially since perkyView might not be mounted yet
     
-    return new WebGLRenderer({
+    // Canvas will be attached later via the mount event
+    const renderer = new WebGLRenderer({
         antialias: true,
-        ...rendererOptions,
-        container
+        ...rendererOptions
     })
+    
+    return renderer
 }
 
 
-function addThreeMethods (plugin, engine) {
+function addThreeMethods (plugin, app) {
     plugin.addMethod('render', function () {
         if (this.renderComposer) {
             this.renderComposer.render()
@@ -144,43 +153,43 @@ function addThreeMethods (plugin, engine) {
     })
 
     plugin.addMethod('resizeThree', function () {
-        handleResize(plugin, engine)
+        handleResize(plugin, app)
     })
 
     plugin.addMethod('getThreeContainerSize', function () {
-        return getContainerSize(engine)
+        return getContainerSize(app)
     })
 }
 
 
-function setupEventHandlers (plugin, engine) {
+function setupEventHandlers (plugin, app) {
     const resizeHandler = () => {
         setTimeout(() => {
-            handleResize(plugin, engine)
+            handleResize(plugin, app)
         }, 50)
     }
 
-    engine.on('resize', resizeHandler)
-    engine.on('displayMode:changed', resizeHandler)
+    app.on('resize', resizeHandler)
+    app.on('displayMode:changed', resizeHandler)
 
     plugin.resizeHandlers.push(resizeHandler)
 
-    if (engine.gameLoop) {
-        engine.on('render', () => {
-            engine.render()
+    if (app.gameLoop) {
+        app.on('render', () => {
+            app.render()
         })
     }
 }
 
 
-function handleResize (plugin, engine) {
+function handleResize (plugin, app) {
     const {camera, renderer, renderComposer} = plugin
     
     if (!camera || !renderer) {
         return
     }
 
-    const containerSize = getContainerSize(engine)
+    const containerSize = getContainerSize(app)
     
     if (containerSize.width <= 0 || containerSize.height <= 0) {
         return
@@ -194,7 +203,7 @@ function handleResize (plugin, engine) {
         renderComposer.setSize(containerSize.width, containerSize.height)
     }
 
-    engine.emit('three:resize', {
+    app.emit('three:resize', {
         width: containerSize.width,
         height: containerSize.height,
         aspectRatio: containerSize.width / containerSize.height
@@ -219,8 +228,8 @@ function updateCamera (camera, containerSize) {
 }
 
 
-function getContainerSize (engine) {
-    const container = engine.perkyView?.element
+function getContainerSize (app) {
+    const container = app.perkyView?.element
     
     if (!container) {
         return {width: 800, height: 600}
@@ -229,5 +238,18 @@ function getContainerSize (engine) {
     return {
         width: container.clientWidth,
         height: container.clientHeight
+    }
+}
+
+
+function attachCanvas (plugin, app) {
+    const container = app.perkyView.element
+    const canvas = plugin.renderer.domElement
+
+    if (canvas.parentElement === null) {
+        container.appendChild(canvas)
+
+        plugin.renderer.setSize(container.clientWidth, container.clientHeight)
+        handleResize(plugin, app)
     }
 }
