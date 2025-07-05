@@ -425,17 +425,7 @@ export default class PerkyView extends PerkyModule {
 
 
     #requestFullscreen () {
-        const element = this.element
-        
-        if (element.requestFullscreen) {
-            element.requestFullscreen()
-        } else if (element.webkitRequestFullscreen) {
-            element.webkitRequestFullscreen()
-        } else if (element.mozRequestFullScreen) {
-            element.mozRequestFullScreen()
-        } else if (element.msRequestFullscreen) {
-            element.msRequestFullscreen()
-        }
+        this.element.requestFullscreen()
     }
 
 
@@ -454,9 +444,6 @@ export default class PerkyView extends PerkyModule {
         }
 
         document.addEventListener('fullscreenchange', onFullscreenChange)
-        document.addEventListener('webkitfullscreenchange', onFullscreenChange)
-        document.addEventListener('mozfullscreenchange', onFullscreenChange)
-        document.addEventListener('msfullscreenchange', onFullscreenChange)
     }
 
 }
