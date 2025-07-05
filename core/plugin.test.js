@@ -1,5 +1,6 @@
 import Plugin from './plugin'
 import Engine from './engine'
+import PerkyModule from './perky_module'
 import {vi} from 'vitest'
 
 
@@ -73,13 +74,13 @@ describe(Plugin, () => {
 
 
     test('registerModule', () => {
-        const mockModule = {name: 'testModule'}
+        const testModule = new PerkyModule()
         const registerSpy = vi.spyOn(engine, 'registerModule')
         
         plugin.install(engine)
-        const result = plugin.registerModule('test', mockModule)
+        const result = plugin.registerModule('test', testModule)
 
-        expect(registerSpy).toHaveBeenCalledWith('test', mockModule)
+        expect(registerSpy).toHaveBeenCalledWith('test', testModule)
         expect(result).toBe(registerSpy.mock.results[0].value)
     })
 
