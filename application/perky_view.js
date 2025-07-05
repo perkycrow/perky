@@ -145,6 +145,11 @@ export default class PerkyView extends PerkyModule {
     }
 
 
+    get mounted () {
+        return Boolean(this.container && this.container.contains(this.element))
+    }
+
+
     static defaultElement (params) {
         const element = document.createElement('div')
         
