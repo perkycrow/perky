@@ -668,3 +668,142 @@ describe(Application, () => {
     })
 
 })
+
+
+describe('displayMode', () => {
+    let application
+    let mockPerkyView
+
+    beforeEach(() => {
+        global.ResizeObserver = vi.fn().mockImplementation(() => ({
+            observe: vi.fn(),
+            unobserve: vi.fn(),
+            disconnect: vi.fn()
+        }))
+
+        mockPerkyView = {
+            displayMode: 'normal',
+            setDisplayMode: vi.fn(),
+            enterViewportMode: vi.fn(),
+            enterFullscreenMode: vi.fn(),
+            exitFullscreenMode: vi.fn(),
+            on: vi.fn(),
+            emit: vi.fn()
+        }
+
+        vi.spyOn(PerkyView.prototype, 'mountTo').mockReturnValue(null)
+        vi.spyOn(Engine.prototype, 'registerModule').mockImplementation(function (name, module) {
+            if (name === 'perkyView') {
+                this[name] = mockPerkyView
+            } else {
+                this[name] = module
+            }
+        })
+
+        application = new Application()
+    })
+
+
+    afterEach(() => {
+        vi.restoreAllMocks()
+    })
+
+
+    test('displayMode getter', () => {
+        mockPerkyView.displayMode = 'fullscreen'
+        expect(application.displayMode).toBe('fullscreen')
+    })
+
+
+    test('setDisplayMode', () => {
+        application.setDisplayMode('viewport')
+        expect(mockPerkyView.setDisplayMode).toHaveBeenCalledWith('viewport')
+        expect(application.setDisplayMode('viewport')).toBe(application)
+    })
+
+
+    test('enterViewportMode', () => {
+        application.enterViewportMode()
+        expect(mockPerkyView.enterViewportMode).toHaveBeenCalled()
+        expect(application.enterViewportMode()).toBe(application)
+    })
+
+
+    test('enterFullscreenMode', () => {
+        application.enterFullscreenMode()
+        expect(mockPerkyView.enterFullscreenMode).toHaveBeenCalled()
+        expect(application.enterFullscreenMode()).toBe(application)
+    })
+
+
+    test('exitFullscreenMode', () => {
+        application.exitFullscreenMode()
+        expect(mockPerkyView.exitFullscreenMode).toHaveBeenCalled()
+        expect(application.exitFullscreenMode()).toBe(application)
+    })
+
+
+    test('toggleFullscreen from normal to fullscreen', () => {
+        mockPerkyView.displayMode = 'normal'
+        application.toggleFullscreen()
+        expect(mockPerkyView.enterFullscreenMode).toHaveBeenCalled()
+        expect(application.toggleFullscreen()).toBe(application)
+    })
+
+
+    test('toggleFullscreen from fullscreen to normal', () => {
+        mockPerkyView.displayMode = 'fullscreen'
+        application.toggleFullscreen()
+        expect(mockPerkyView.exitFullscreenMode).toHaveBeenCalled()
+    })
+
+
+    test('toggleFullscreen from viewport to fullscreen', () => {
+        mockPerkyView.displayMode = 'viewport'
+        application.toggleFullscreen()
+        expect(mockPerkyView.enterFullscreenMode).toHaveBeenCalled()
+    })
+
+
+    test('toggleViewport from normal to viewport', () => {
+        mockPerkyView.displayMode = 'normal'
+        application.toggleViewport()
+        expect(mockPerkyView.enterViewportMode).toHaveBeenCalled()
+        expect(application.toggleViewport()).toBe(application)
+    })
+
+
+    test('toggleViewport from viewport to normal', () => {
+        mockPerkyView.displayMode = 'viewport'
+        application.toggleViewport()
+        expect(mockPerkyView.exitFullscreenMode).toHaveBeenCalled()
+    })
+
+
+    test('toggleViewport from fullscreen to viewport', () => {
+        mockPerkyView.displayMode = 'fullscreen'
+        application.toggleViewport()
+        expect(mockPerkyView.enterViewportMode).toHaveBeenCalled()
+    })
+
+
+    test('displayMode:changed event is registered', () => {
+        expect(mockPerkyView.on).toHaveBeenCalledWith('displayMode:changed', expect.any(Function))
+    })
+
+
+    test('displayMode:changed event is emitted', () => {
+        const eventHandler = vi.fn()
+        application.on('displayMode:changed', eventHandler)
+        
+        const displayModeChangeCall = mockPerkyView.on.mock.calls.find(call => 
+            call[0] === 'displayMode:changed')
+        expect(displayModeChangeCall).toBeDefined()
+
+        const emittedHandler = displayModeChangeCall[1]
+        emittedHandler({mode: 'fullscreen'})
+        
+        expect(eventHandler).toHaveBeenCalledWith({mode: 'fullscreen'})
+    })
+
+})

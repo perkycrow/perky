@@ -170,6 +170,56 @@ export default class Application extends Engine {
     }
 
 
+    get displayMode () {
+        return this.perkyView.displayMode
+    }
+
+
+    setDisplayMode (mode) {
+        this.perkyView.setDisplayMode(mode)
+        return this
+    }
+
+
+    enterViewportMode () {
+        this.perkyView.enterViewportMode()
+        return this
+    }
+
+
+    enterFullscreenMode () {
+        this.perkyView.enterFullscreenMode()
+        return this
+    }
+
+    exitFullscreenMode () {
+        this.perkyView.exitFullscreenMode()
+        return this
+    }
+
+
+    toggleFullscreen () {
+        const mode = this.displayMode
+        if (mode === 'fullscreen') {
+            this.exitFullscreenMode()
+        } else {
+            this.enterFullscreenMode()
+        }
+        return this
+    }
+
+
+    toggleViewport () {
+        const mode = this.displayMode
+        if (mode === 'viewport') {
+            this.exitFullscreenMode()
+        } else {
+            this.enterViewportMode()
+        }
+        return this
+    }
+
+
     bindKey (keyName, actionNameOrOptions, eventType = 'pressed', controllerName = null) {
         if (typeof actionNameOrOptions === 'object') {
             const {actionName, eventType: objEventType = 'pressed', controllerName: objControllerName = null} = actionNameOrOptions
@@ -243,6 +293,8 @@ export default class Application extends Engine {
         sourceManager.on('loader:progress', this.emitter('loader:progress'))
         sourceManager.on('loader:complete', this.emitter('loader:complete'))
         sourceManager.on('loader:error', this.emitter('loader:error'))
+
+        perkyView.on('displayMode:changed', this.emitter('displayMode:changed'))
     }
 
 
