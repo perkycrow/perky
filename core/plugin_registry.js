@@ -71,18 +71,18 @@ export default class PluginRegistry extends Registry {
 
 
     getAllPlugins () {
-        return Array.from(this.values())
+        return Array.from(this.values)
     }
 
 
     getPluginNames () {
-        return Array.from(this.keys())
+        return Array.from(this.keys)
     }
 
 
     #initEvents () {
         this.on('clear', () => {
-            this.getAllPlugins().forEach(plugin => plugin.uninstall())
+            Array.from(this.values).forEach(plugin => plugin.uninstall())
         })
     }
 
