@@ -54,6 +54,56 @@ export default class Game extends Application {
     }
 
 
+    get displayMode () {
+        return this.perkyView.displayMode
+    }
+
+
+    setDisplayMode (mode) {
+        this.perkyView.setDisplayMode(mode)
+        return this
+    }
+
+
+    enterViewportMode () {
+        this.perkyView.enterViewportMode()
+        return this
+    }
+
+
+    enterFullscreenMode () {
+        this.perkyView.enterFullscreenMode()
+        return this
+    }
+
+    exitFullscreenMode () {
+        this.perkyView.exitFullscreenMode()
+        return this
+    }
+
+
+    toggleFullscreen () {
+        const mode = this.displayMode
+        if (mode === 'fullscreen') {
+            this.exitFullscreenMode()
+        } else {
+            this.enterFullscreenMode()
+        }
+        return this
+    }
+
+
+    toggleViewport () {
+        const mode = this.displayMode
+        if (mode === 'viewport') {
+            this.exitFullscreenMode()
+        } else {
+            this.enterViewportMode()
+        }
+        return this
+    }
+
+
     #initEvents () {
         const {gameLoop} = this
 
@@ -66,6 +116,8 @@ export default class Game extends Application {
         gameLoop.on('resume', this.emitter('resume'))
 
         gameLoop.on('changed:fps', this.emitter('changed:fps'))
+
+        this.perkyView.on('displayMode:changed', this.emitter('displayMode:changed'))
     }
 
 }
