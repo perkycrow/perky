@@ -1,5 +1,6 @@
 import Application from '/application/application'
 import GamePlugin from '/game/game_plugin'
+import ThreePlugin from '/three/three_plugin'
 import Logger from '/ui/logger'
 import {
     createGameControlPanel,
@@ -10,13 +11,9 @@ import {
     addSliderWithRange,
     RANGES
 } from './example_utils.js'
-import {Scene, Color} from 'three'
-import OrthographicCamera from '../three/cameras/orthographic_camera'
-import WebGLRenderer from '../three/renderers/webgl_renderer'
 import Sprite from '../three/objects/sprite'
 import SpriteMaterial from '../three/materials/sprite_material'
 import SimpleCollisionDetector from '../collision/simple_collision_detector'
-import RenderComposer from '../three/effects/render_composer'
 import VignettePass from '../three/effects/vignette_pass'
 import AmberLUTPass from '../three/effects/amber_lut_pass'
 import CRTPass from '../three/effects/crt_pass'
@@ -53,14 +50,21 @@ export default class ShroomRunner extends Application {
                 new GamePlugin({
                     fps: params.fps || 60,
                     maxFrameSkip: params.maxFrameSkip || 5
+                }),
+                new ThreePlugin({
+                    backgroundColor: 0x87CEEB,
+                    camera: {
+                        type: 'orthographic',
+                        width: 20,
+                        height: 15,
+                        near: 0.1,
+                        far: 1000
+                    },
+                    postProcessing: true
                 })
             ]
         })
         
-        this.scene = null
-        this.camera = null
-        this.renderer = null
-        this.renderComposer = null
         this.vignettePass = null
         this.amberLUTPass = null
         this.crtPass = null
@@ -85,7 +89,7 @@ export default class ShroomRunner extends Application {
     }
 
     async initGame () {
-        this.setupThreeJS()
+        this.setupCamera()
         this.setupCollisionDetector()
         await this.loadAssets()
         this.setupBackground()
@@ -93,75 +97,20 @@ export default class ShroomRunner extends Application {
         this.setupSporeSystem()
         this.setupPostProcessing()
         this.assetsLoaded = true
-    }
 
-    setupThreeJS () {
-        // Create scene with a nice sky blue background
-        this.scene = new Scene()
-        this.scene.background = new Color(0x87CEEB)
-        
-        // Orthographic camera for 2D-style view
-        this.camera = new OrthographicCamera({
-            width: 20,  // View width in world units
-            height: 15, // View height in world units
-            near: 0.1,
-            far: 1000
-        })
-        
+    }
+    
+    setupCamera () {
+        if (!this.camera) {
+            return
+        }
+
         // Position camera to look at the scene from the front
         this.camera.position.set(0, 0, 10)
         this.camera.lookAt(0, 0, 0)
-        
-        // Create renderer
-        this.renderer = new WebGLRenderer({
-            container: this.perkyView.element
-        })
-        
-        // Handle window resize
-        this.on('resize', () => {
-            this.handleResize()
-        })
-
-        // Listen for display mode changes
-        this.on('displayMode:changed', () => {
-            // Wait for DOM to update, then resize
-            setTimeout(() => {
-                this.handleResize()
-            }, 50)
-        })
     }
 
-    handleResize () {
-        const containerWidth = this.perkyView.element.clientWidth
-        const containerHeight = this.perkyView.element.clientHeight
-        
-        // Prevent resize with invalid dimensions
-        if (containerWidth <= 0 || containerHeight <= 0) {
-            return
-        }
-        
-        const aspectRatio = containerWidth / containerHeight
-        
-        // Update orthographic camera
-        const viewHeight = 15
-        const viewWidth = viewHeight * aspectRatio
-        
-        this.camera.left = -viewWidth / 2
-        this.camera.right = viewWidth / 2
-        this.camera.top = viewHeight / 2
-        this.camera.bottom = -viewHeight / 2
-        
-        this.camera.updateProjectionMatrix()
-        this.renderer.setSize(containerWidth, containerHeight)
-        
-        // Update background scale to maintain cover
-        this.updateBackgroundScale()
 
-        // Update render composer
-        if (this.renderComposer) {
-            this.renderComposer.setSize(containerWidth, containerHeight)
-        }
-    }
 
     async loadAssets () {
         try {
@@ -171,7 +120,6 @@ export default class ShroomRunner extends Application {
             })
             
             await this.loadTag('game')
-            console.log('🎮 Assets loaded successfully')
         } catch (error) {
             console.error('❌ Failed to load assets:', error)
         }
@@ -180,11 +128,11 @@ export default class ShroomRunner extends Application {
     setupBackground () {
         // Get the loaded background image
         const backgroundImage = this.getSource('images', 'background')
-        
+
         if (backgroundImage) {
             // Create sprite from the image
             this.background = new Sprite({source: backgroundImage})
-            
+
             // Position behind everything else to avoid z-fighting
             this.background.position.set(0, 0, -5)
             
@@ -193,23 +141,27 @@ export default class ShroomRunner extends Application {
             
             // Add to scene
             this.scene.add(this.background)
+
+            // Listen for resize to update background scale
+            this.on('three:resize', () => {
+                this.updateBackgroundScale()
+            })
         } else {
             console.error('Failed to load background image')
         }
     }
 
     updateBackgroundScale () {
-        if (!this.background) {
+        if (!this.background || !this.camera) {
             return
         }
 
         // Get container dimensions
-        const containerWidth = this.perkyView.element.clientWidth
-        const containerHeight = this.perkyView.element.clientHeight
-        const containerAspect = containerWidth / containerHeight
+        const containerSize = this.getThreeContainerSize()
+        const containerAspect = containerSize.width / containerSize.height
 
         // Get camera view dimensions
-        const viewHeight = 15
+        const viewHeight = this.camera.top - this.camera.bottom
         const viewWidth = viewHeight * containerAspect
 
         // Get background image dimensions
@@ -244,10 +196,11 @@ export default class ShroomRunner extends Application {
     setupPlayer () {
         // Get the loaded shroom image
         const shroomImage = this.getSource('images', 'shroom')
-        
+
         if (shroomImage) {
             // Create sprite from the image
             this.shroom = new Sprite({source: shroomImage})
+            console.log('Shroom sprite created:', this.shroom)
             
             // Scale the sprite appropriately
             this.shroom.scale.set(3, 3, 1)
@@ -257,7 +210,7 @@ export default class ShroomRunner extends Application {
             
             // Add to scene
             this.scene.add(this.shroom)
-            
+
             // Add to collision detector
             this.collisionDetector.addBody(this.shroom, {
                 type: 'player',
@@ -280,7 +233,6 @@ export default class ShroomRunner extends Application {
                 },
                 transparent: true
             })
-            console.log('Shared spore material created')
         } else {
             console.error('Failed to load spore image for shared material')
         }
@@ -331,13 +283,12 @@ export default class ShroomRunner extends Application {
     }
 
     setupPostProcessing () {
-        // Create render composer
-        this.renderComposer = new RenderComposer({
-            renderer: this.renderer,
-            scene: this.scene,
-            camera: this.camera
-        })
-        
+        // Use the render composer from ThreePlugin
+        if (!this.renderComposer) {
+            console.error('RenderComposer not available from ThreePlugin')
+            return
+        }
+
         // Create effect passes
         this.vignettePass = new VignettePass()
         this.amberLUTPass = new AmberLUTPass()
@@ -536,9 +487,22 @@ export default class ShroomRunner extends Application {
     }
 
     renderGame () {
-        if (this.renderComposer && this.scene && this.camera) {
-            this.renderComposer.render()
+        if (!this.render) {
+            console.error('❌ Render method not available!')
+            return
         }
+        
+        // Log first few renders
+        if (!this.renderCount) {
+            this.renderCount = 0
+        }
+        this.renderCount++
+        
+        if (this.renderCount <= 3) {
+            console.log(`🎨 Rendering frame ${this.renderCount}...`)
+        }
+        
+        this.render()
     }
 
     spawnSpores (deltaTime) {
@@ -624,9 +588,10 @@ export default class ShroomRunner extends Application {
 }
 
 function init () {
-    const game = new ShroomRunner({manifest})
 
+    const game = new ShroomRunner({manifest})
     const container = document.querySelector('.example-content')
+
     game.mountTo(container)
 
     const logger = new Logger()
@@ -647,7 +612,6 @@ function init () {
         includeFps: true
     })
 
-    console.log(controlPane)
     window.pane = controlPane // For debugging in console
 
     // Add extra game-specific controls
@@ -732,6 +696,7 @@ function init () {
     // Style the game view
     game.perkyView.element.style.width = '100%'
     game.perkyView.element.style.height = '100%'
+
     
     // Start the game
     game.start()
