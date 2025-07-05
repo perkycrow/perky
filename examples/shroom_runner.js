@@ -109,30 +109,48 @@ export default class ShroomRunner extends Game {
         
         // Handle window resize
         this.on('resize', () => {
-            const containerWidth = this.perkyView.element.clientWidth
-            const containerHeight = this.perkyView.element.clientHeight
-            const aspectRatio = containerWidth / containerHeight
-            
-            // Update orthographic camera
-            const viewHeight = 15
-            const viewWidth = viewHeight * aspectRatio
-            
-            this.camera.left = -viewWidth / 2
-            this.camera.right = viewWidth / 2
-            this.camera.top = viewHeight / 2
-            this.camera.bottom = -viewHeight / 2
-            
-            this.camera.updateProjectionMatrix()
-            this.renderer.setSize(containerWidth, containerHeight)
-            
-            // Update background scale to maintain cover
-            this.updateBackgroundScale()
-            
-            // Update render composer
-            if (this.renderComposer) {
-                this.renderComposer.setSize(containerWidth, containerHeight)
-            }
+            this.handleResize()
         })
+
+        // Listen for display mode changes
+        this.on('displayMode:changed', () => {
+            // Wait for DOM to update, then resize
+            setTimeout(() => {
+                this.handleResize()
+            }, 50)
+        })
+    }
+
+    handleResize () {
+        const containerWidth = this.perkyView.element.clientWidth
+        const containerHeight = this.perkyView.element.clientHeight
+        
+        // Prevent resize with invalid dimensions
+        if (containerWidth <= 0 || containerHeight <= 0) {
+            return
+        }
+        
+        const aspectRatio = containerWidth / containerHeight
+        
+        // Update orthographic camera
+        const viewHeight = 15
+        const viewWidth = viewHeight * aspectRatio
+        
+        this.camera.left = -viewWidth / 2
+        this.camera.right = viewWidth / 2
+        this.camera.top = viewHeight / 2
+        this.camera.bottom = -viewHeight / 2
+        
+        this.camera.updateProjectionMatrix()
+        this.renderer.setSize(containerWidth, containerHeight)
+        
+        // Update background scale to maintain cover
+        this.updateBackgroundScale()
+
+        // Update render composer
+        if (this.renderComposer) {
+            this.renderComposer.setSize(containerWidth, containerHeight)
+        }
     }
 
     async loadAssets () {
@@ -619,6 +637,9 @@ function init () {
         includeFps: true
     })
 
+    console.log(controlPane)
+    window.pane = controlPane // For debugging in console
+
     // Add extra game-specific controls
     addButtonFolder(controlPane, 'Game Actions', [
         {
@@ -640,6 +661,38 @@ function init () {
         }
     ])
 
+    // Add display mode controls
+    addButtonFolder(controlPane, 'Display Mode', [
+        {
+            title: 'Normal Size',
+            action: () => {
+                game.setDisplayMode('normal')
+                logger.info('Display mode: Normal')
+            }
+        },
+        {
+            title: 'Fill Viewport',
+            action: () => {
+                game.setDisplayMode('viewport')
+                logger.info('Display mode: Viewport')
+            }
+        },
+        {
+            title: 'Fullscreen',
+            action: () => {
+                game.setDisplayMode('fullscreen')
+                logger.info('Display mode: Fullscreen')
+            }
+        },
+        {
+            title: 'Toggle Fullscreen',
+            action: () => {
+                game.toggleFullscreen()
+                logger.info(`Display mode: ${game.displayMode}`)
+            }
+        }
+    ])
+
     // Add post-processing toggle
     addButtonFolder(controlPane, 'Post Effects', [
         {
@@ -655,6 +708,16 @@ function init () {
             }
         }
     ])
+
+    // Listen for display mode changes
+    game.on('displayMode:changed', ({mode}) => {
+        logger.info(`Display mode changed to: ${mode}`)
+        
+        // Update the renderer and camera when display mode changes
+        setTimeout(() => {
+            game.emit('resize')
+        }, 100)
+    })
 
     // Style the game view
     game.perkyView.element.style.width = '100%'
