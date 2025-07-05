@@ -25,47 +25,46 @@ function onInstall (plugin, engine) {
         maxFrameSkip: plugin.options.maxFrameSkip || 5
     })
 
-
-    plugin.registerModule('gameLoop', gameLoop)
+    engine.registerModule('gameLoop', gameLoop)
 
 
     plugin.addProperty('paused', {
         get () {
-            return plugin.gameLoop.paused
+            return this.gameLoop.paused
         }
     })
 
 
     plugin.addMethod('pause', function (...args) {
-        if (!plugin.running) {
+        if (!this.running) {
             return false
         }
 
-        return plugin.gameLoop.pause(...args)
+        return this.gameLoop.pause(...args)
     })
 
 
     plugin.addMethod('resume', function (...args) {
-        if (!plugin.initialized || !plugin.started || !plugin.gameLoop.paused) {
+        if (!this.initialized || !this.started || !this.gameLoop.paused) {
             return false
         }
 
-        return plugin.gameLoop.resume(...args)
+        return this.gameLoop.resume(...args)
     })
 
 
     plugin.addMethod('setFps', function (fps) {
-        return plugin.gameLoop.setFps(fps)
+        return this.gameLoop.setFps(fps)
     })
 
 
     plugin.addMethod('getFps', function () {
-        return plugin.gameLoop.getFps()
+        return this.gameLoop.getFps()
     })
 
 
     plugin.addMethod('getCurrentFps', function () {
-        return plugin.gameLoop.getCurrentFps()
+        return this.gameLoop.getCurrentFps()
     })
 
 
