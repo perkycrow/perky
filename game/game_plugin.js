@@ -69,13 +69,7 @@ function onInstall (plugin, engine) {
     })
 
 
-    plugin.bindEvents({
-        'module:set': (moduleName, module) => {
-            if (moduleName === 'gameLoop') {
-                initGameLoopEvents(engine, module)
-            }
-        }
-    })
+    initGameLoopEvents(engine, gameLoop)
 }
 
 
