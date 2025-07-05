@@ -1,4 +1,5 @@
-import Game from '/game/game'
+import Application from '/application/application'
+import GamePlugin from '/game/game_plugin'
 import Logger from '/ui/logger'
 import {
     createGameControlPanel,
@@ -43,9 +44,18 @@ const manifest = {
     }
 }
 
-export default class ShroomRunner extends Game {
+export default class ShroomRunner extends Application {
     constructor (params = {}) {
-        super(params)
+
+        super({
+            ...params,
+            plugins: [
+                new GamePlugin({
+                    fps: params.fps || 60,
+                    maxFrameSkip: params.maxFrameSkip || 5
+                })
+            ]
+        })
         
         this.scene = null
         this.camera = null
