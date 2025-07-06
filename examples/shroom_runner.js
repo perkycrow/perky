@@ -113,42 +113,33 @@ export default class ShroomRunner extends Application {
 
 
     async loadAssets () {
-        try {
-            // Version UX pro avec progress tracking automatique
-            this.on('loader:progress', (loader, progress, {sourceDescriptor}) => {
-                console.log(`📦 Loading ${sourceDescriptor.id}... ${Math.round(progress * 100)}%`)
-            })
-            
-            await this.loadTag('game')
-        } catch (error) {
-            console.error('❌ Failed to load assets:', error)
-        }
+        this.on('loader:progress', (loader, progress, {sourceDescriptor}) => {
+            console.log(`📦 Loading ${sourceDescriptor.id}... ${Math.round(progress * 100)}%`)
+        })
+
+        await this.loadTag('game')
     }
 
     setupBackground () {
         // Get the loaded background image
         const backgroundImage = this.getSource('images', 'background')
 
-        if (backgroundImage) {
-            // Create sprite from the image
-            this.background = new Sprite({source: backgroundImage})
+        // Create sprite from the image
+        this.background = new Sprite({source: backgroundImage})
 
-            // Position behind everything else to avoid z-fighting
-            this.background.position.set(0, 0, -5)
-            
-            // Scale to cover the entire view
+        // Position behind everything else to avoid z-fighting
+        this.background.position.set(0, 0, -5)
+        
+        // Scale to cover the entire view
+        this.updateBackgroundScale()
+        
+        // Add to scene
+        this.scene.add(this.background)
+
+        // Listen for resize to update background scale
+        this.on('three:resize', () => {
             this.updateBackgroundScale()
-            
-            // Add to scene
-            this.scene.add(this.background)
-
-            // Listen for resize to update background scale
-            this.on('three:resize', () => {
-                this.updateBackgroundScale()
-            })
-        } else {
-            console.error('Failed to load background image')
-        }
+        })
     }
 
     updateBackgroundScale () {
@@ -197,45 +188,37 @@ export default class ShroomRunner extends Application {
         // Get the loaded shroom image
         const shroomImage = this.getSource('images', 'shroom')
 
-        if (shroomImage) {
-            // Create sprite from the image
-            this.shroom = new Sprite({source: shroomImage})
-            console.log('Shroom sprite created:', this.shroom)
-            
-            // Scale the sprite appropriately
-            this.shroom.scale.set(3, 3, 1)
-            
-            // Position at center bottom, slightly forward to avoid z-fighting
-            this.shroom.position.set(0, -5, 0.1)
-            
-            // Add to scene
-            this.scene.add(this.shroom)
+        // Create sprite from the image
+        this.shroom = new Sprite({source: shroomImage})
+        console.log('Shroom sprite created:', this.shroom)
+        
+        // Scale the sprite appropriately
+        this.shroom.scale.set(3, 3, 1)
+        
+        // Position at center bottom, slightly forward to avoid z-fighting
+        this.shroom.position.set(0, -5, 0.1)
+        
+        // Add to scene
+        this.scene.add(this.shroom)
 
-            // Add to collision detector
-            this.collisionDetector.addBody(this.shroom, {
-                type: 'player',
-                radius: 1.5 // Collision radius
-            })
-        } else {
-            console.error('Failed to load shroom image')
-        }
+        // Add to collision detector
+        this.collisionDetector.addBody(this.shroom, {
+            type: 'player',
+            radius: 1.5 // Collision radius
+        })
     }
 
     setupSporeSystem () {
         // Create shared material for all spores (performance optimization)
         const sporeImage = this.getSource('images', 'spore')
         
-        if (sporeImage) {
-            this.sporeMaterial = new SpriteMaterial({
-                texture: {
-                    source: sporeImage,
-                    generateMipmaps: true
-                },
-                transparent: true
-            })
-        } else {
-            console.error('Failed to load spore image for shared material')
-        }
+        this.sporeMaterial = new SpriteMaterial({
+            texture: {
+                source: sporeImage,
+                generateMipmaps: true
+            },
+            transparent: true
+        })
     }
 
     setupCollisionDetector () {
@@ -283,12 +266,6 @@ export default class ShroomRunner extends Application {
     }
 
     setupPostProcessing () {
-        // Use the render composer from ThreePlugin
-        if (!this.renderComposer) {
-            console.error('RenderComposer not available from ThreePlugin')
-            return
-        }
-
         // Create effect passes
         this.vignettePass = new VignettePass()
         this.amberLUTPass = new AmberLUTPass()
@@ -487,21 +464,6 @@ export default class ShroomRunner extends Application {
     }
 
     renderGame () {
-        if (!this.render) {
-            console.error('❌ Render method not available!')
-            return
-        }
-        
-        // Log first few renders
-        if (!this.renderCount) {
-            this.renderCount = 0
-        }
-        this.renderCount++
-        
-        if (this.renderCount <= 3) {
-            console.log(`🎨 Rendering frame ${this.renderCount}...`)
-        }
-        
         this.render()
     }
 
@@ -517,11 +479,6 @@ export default class ShroomRunner extends Application {
     }
 
     createSpore () {
-        if (!this.sporeMaterial) {
-            console.error('Shared spore material not available')
-            return
-        }
-
         // Use shared material for performance optimization
         const spore = new Sprite({material: this.sporeMaterial})
 
