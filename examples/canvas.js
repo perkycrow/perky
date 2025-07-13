@@ -3,7 +3,7 @@ import Circle from '../canvas/circle.js'
 import Rectangle from '../canvas/rectangle.js'
 import Group2D from '../canvas/group_2d.js'
 import Image2D from '../canvas/image_2d.js'
-import Logger from '../ui/logger.js'
+import Logger from '../editor/logger.js'
 import {createControlPanel, addButtonFolder} from './example_utils.js'
 
 let canvas = null

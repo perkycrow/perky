@@ -1,5 +1,5 @@
 import GameLoop from '/game/game_loop.js'
-import Logger from '/ui/logger.js'
+import Logger from '/editor/logger.js'
 import {
     createControlPanel,
     createGameControlPanel,

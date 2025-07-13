@@ -1,7 +1,7 @@
 import Application from '/application/application'
 import GamePlugin from '/game/game_plugin'
 import ThreePlugin from '/three/three_plugin'
-import PerkyLogger from '/ui/perky_logger'
+import PerkyLogger from '/editor/perky_logger'
 import {
     createGameControlPanel,
     createControlPanel, 
