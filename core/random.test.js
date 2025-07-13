@@ -42,6 +42,27 @@ describe(Random, () => {
     })
     
     
+    test('setState & getState - sequence reproduction', () => {
+        const initialState = random.getState()
+        
+        const firstSequence = [
+            random.between(0, 100),
+            random.between(10, 50),
+            random.between(-10, 10)
+        ]
+        
+        random.setState(initialState)
+        
+        const secondSequence = [
+            random.between(0, 100),
+            random.between(10, 50),
+            random.between(-10, 10)
+        ]
+        
+        expect(secondSequence).toEqual(firstSequence)
+    })
+    
+    
     test('fork', () => {
         random.between(0, 10)
         
