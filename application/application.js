@@ -187,12 +187,6 @@ export default class Application extends Engine {
     }
 
 
-    enterViewportMode () {
-        this.perkyView.enterViewportMode()
-        return this
-    }
-
-
     enterFullscreenMode () {
         this.perkyView.enterFullscreenMode()
         return this
@@ -215,15 +209,7 @@ export default class Application extends Engine {
     }
 
 
-    toggleViewport () {
-        const mode = this.displayMode
-        if (mode === 'viewport') {
-            this.exitFullscreenMode()
-        } else {
-            this.enterViewportMode()
-        }
-        return this
-    }
+
 
 
     bindKey (keyName, actionNameOrOptions, eventType = 'pressed', controllerName = null) {

@@ -9,7 +9,6 @@ export default class PerkyElement extends LitElement {
 
     static properties = {
         displayMode: {type: String, reflect: true},
-        viewportMode: {type: Boolean, reflect: true},
         fullscreenMode: {type: Boolean, reflect: true}
     }
 
@@ -20,15 +19,6 @@ export default class PerkyElement extends LitElement {
             position: relative;
             width: 100%;
             height: 100%;
-        }
-
-        :host([viewport-mode]) {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 9999 !important;
         }
 
         :host([fullscreen-mode]) {
@@ -46,7 +36,6 @@ export default class PerkyElement extends LitElement {
             overflow: hidden;
         }
 
-        :host([viewport-mode]) ~ body,
         :host([fullscreen-mode]) ~ body {
             overflow: hidden;
         }
@@ -57,7 +46,6 @@ export default class PerkyElement extends LitElement {
         super()
         
         this.displayMode = 'normal'
-        this.viewportMode = false
         this.fullscreenMode = false
         
         this.id = this.id || uniqueId('perky_element', 'perky_element')
@@ -134,7 +122,6 @@ export default class PerkyElement extends LitElement {
     setDisplayMode (mode) {
         const modes = {
             normal: () => this.exitFullscreenMode(),
-            viewport: () => this.enterViewportMode(),
             fullscreen: () => this.enterFullscreenMode()
         }
 
@@ -147,33 +134,12 @@ export default class PerkyElement extends LitElement {
     }
 
 
-    enterViewportMode () {
-        if (this.displayMode === 'viewport') {
-            return this
-        }
-
-        this.exitFullscreenMode()
-        
-        this.displayMode = 'viewport'
-        this.viewportMode = true
-        this.fullscreenMode = false
-        
-        document.body.style.overflow = 'hidden'
-        document.body.classList.add('viewport-mode')
-        
-        this.#dispatchDisplayModeChanged('viewport')
-        
-        return this
-    }
-
-
     enterFullscreenMode () {
         if (this.displayMode === 'fullscreen') {
             return this
         }
 
         this.displayMode = 'fullscreen'
-        this.viewportMode = false
         this.fullscreenMode = true
         
         document.body.classList.add('fullscreen-mode')
@@ -182,7 +148,6 @@ export default class PerkyElement extends LitElement {
         
         return this
     }
-
 
     exitFullscreenMode () {
         if (this.displayMode === 'normal') {
@@ -194,14 +159,13 @@ export default class PerkyElement extends LitElement {
         }
 
         this.displayMode = 'normal'
-        this.viewportMode = false
         this.fullscreenMode = false
         
         document.body.style.overflow = ''
-        document.body.classList.remove('viewport-mode', 'fullscreen-mode')
+        document.body.classList.remove('fullscreen-mode')
         
         this.#dispatchDisplayModeChanged('normal')
-
+        
         return this
     }
 

@@ -317,12 +317,6 @@ export default class PerkyView extends PerkyModule {
     }
 
 
-    enterViewportMode () {
-        this.element.enterViewportMode()
-        return this
-    }
-
-
     enterFullscreenMode () {
         this.element.enterFullscreenMode()
         return this

@@ -684,7 +684,6 @@ describe('displayMode', () => {
         mockPerkyView = {
             displayMode: 'normal',
             setDisplayMode: vi.fn(),
-            enterViewportMode: vi.fn(),
             enterFullscreenMode: vi.fn(),
             exitFullscreenMode: vi.fn(),
             on: vi.fn(),
@@ -716,16 +715,9 @@ describe('displayMode', () => {
 
 
     test('setDisplayMode', () => {
-        application.setDisplayMode('viewport')
-        expect(mockPerkyView.setDisplayMode).toHaveBeenCalledWith('viewport')
-        expect(application.setDisplayMode('viewport')).toBe(application)
-    })
-
-
-    test('enterViewportMode', () => {
-        application.enterViewportMode()
-        expect(mockPerkyView.enterViewportMode).toHaveBeenCalled()
-        expect(application.enterViewportMode()).toBe(application)
+        application.setDisplayMode('fullscreen')
+        expect(mockPerkyView.setDisplayMode).toHaveBeenCalledWith('fullscreen')
+        expect(application.setDisplayMode('fullscreen')).toBe(application)
     })
 
 
@@ -765,26 +757,7 @@ describe('displayMode', () => {
     })
 
 
-    test('toggleViewport from normal to viewport', () => {
-        mockPerkyView.displayMode = 'normal'
-        application.toggleViewport()
-        expect(mockPerkyView.enterViewportMode).toHaveBeenCalled()
-        expect(application.toggleViewport()).toBe(application)
-    })
 
-
-    test('toggleViewport from viewport to normal', () => {
-        mockPerkyView.displayMode = 'viewport'
-        application.toggleViewport()
-        expect(mockPerkyView.exitFullscreenMode).toHaveBeenCalled()
-    })
-
-
-    test('toggleViewport from fullscreen to viewport', () => {
-        mockPerkyView.displayMode = 'fullscreen'
-        application.toggleViewport()
-        expect(mockPerkyView.enterViewportMode).toHaveBeenCalled()
-    })
 
 
     test('displayMode:changed event is registered', () => {

@@ -35,7 +35,6 @@ describe(PerkyElement, () => {
         expect(element).toBeInstanceOf(PerkyElement)
         expect(element.tagName).toBe('PERKY-ELEMENT')
         expect(element.displayMode).toBe('normal')
-        expect(element.viewportMode).toBe(false)
         expect(element.fullscreenMode).toBe(false)
     })
 
@@ -107,33 +106,16 @@ describe(PerkyElement, () => {
     })
 
 
-    test('enterViewportMode', () => {
-        element.enterViewportMode()
-        
-        expect(element.displayMode).toBe('viewport')
-        expect(element.viewportMode).toBe(true)
-        expect(element.fullscreenMode).toBe(false)
-        expect(document.body.style.overflow).toBe('hidden')
-        expect(document.body.classList.contains('viewport-mode')).toBe(true)
-        expect(element.dispatchEvent).toHaveBeenCalledWith(
-            expect.objectContaining({
-                type: 'displayMode:changed',
-                detail: {mode: 'viewport'}
-            })
-        )
-    })
-
-
-    test('exitFullscreenMode from viewport', () => {
-        element.enterViewportMode()
+    test('exitFullscreenMode', () => {
+        element.displayMode = 'fullscreen'
+        element.fullscreenMode = true
 
         element.exitFullscreenMode()
         
         expect(element.displayMode).toBe('normal')
-        expect(element.viewportMode).toBe(false)
         expect(element.fullscreenMode).toBe(false)
         expect(document.body.style.overflow).toBe('')
-        expect(document.body.classList.contains('viewport-mode')).toBe(false)
+        expect(document.body.classList.contains('fullscreen-mode')).toBe(false)
         expect(element.dispatchEvent).toHaveBeenCalledWith(
             expect.objectContaining({
                 type: 'displayMode:changed',
@@ -144,12 +126,8 @@ describe(PerkyElement, () => {
 
 
     test('setDisplayMode', () => {
-        vi.spyOn(element, 'enterViewportMode')
         vi.spyOn(element, 'enterFullscreenMode')
         vi.spyOn(element, 'exitFullscreenMode')
-        
-        element.setDisplayMode('viewport')
-        expect(element.enterViewportMode).toHaveBeenCalled()
         
         element.setDisplayMode('fullscreen')
         expect(element.enterFullscreenMode).toHaveBeenCalled()
