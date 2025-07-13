@@ -650,11 +650,7 @@ function init () {
         }, 100)
     })
 
-    // Style the game view
-    game.perkyView.element.style.width = '100%'
-    game.perkyView.element.style.height = '100%'
 
-    
     // Start the game
     game.start()
 }
