@@ -1,5 +1,6 @@
 import PerkyView from './perky_view'
 import PerkyModule from '../core/perky_module'
+import PerkyElement from './perky_element'
 import {vi, beforeEach, describe, test, expect, afterEach} from 'vitest'
 
 
@@ -15,7 +16,7 @@ describe(PerkyView, () => {
             disconnect: vi.fn()
         }))
 
-        element = document.createElement('div')
+        element = new PerkyElement()
         element.id = 'test-view'
         
         container = document.createElement('div')
@@ -65,13 +66,14 @@ describe(PerkyView, () => {
 
 
     test('constructor with default element', () => {
-        const defaultElement = document.createElement('div')
+        const defaultElement = new PerkyElement()
         vi.spyOn(PerkyView, 'defaultElement').mockReturnValue(defaultElement)
         
         const defaultView = new PerkyView()
         
-        expect(defaultView.element.tagName).toBe('DIV')
+        expect(defaultView.element.tagName).toBe('PERKY-ELEMENT')
     })
+
 
     test('html getter and setter', () => {
         view.html = '<div>test content</div>'
@@ -79,7 +81,7 @@ describe(PerkyView, () => {
         expect(view.html).toBe('<div>test content</div>')
         expect(view.html = '<div>test content</div>').toBe('<div>test content</div>')
     })
-    
+
     
     test('text getter and setter', () => {
         view.text = 'test content text'
@@ -213,7 +215,6 @@ describe(PerkyView, () => {
         
         expect(element.style.width).toBe('100px')
         expect(element.style.height).toBe('200px')
-        expect(view.emit).toHaveBeenCalledWith('resize', {width: 100, height: 200})
         expect(view.setSize({width: 100, height: 200})).toBe(view)
     })
 
@@ -246,7 +247,6 @@ describe(PerkyView, () => {
         
         expect(element.style.width).toBe('500px')
         expect(element.style.height).toBe('600px')
-        expect(view.emit).toHaveBeenCalledWith('resize', {width: 500, height: 600})
         expect(view.fit()).toBe(view)
     })
 
@@ -388,24 +388,6 @@ describe(PerkyView, () => {
         view.dispose()
         
         expect(disposeSpy).toHaveBeenCalled()
-    })
-
-
-    test('ResizeObserver setup', () => {
-        expect(global.ResizeObserver).toHaveBeenCalled()
-
-        const mockObserver = global.ResizeObserver.mock.results[0].value
-        expect(mockObserver.observe).toHaveBeenCalledWith(element)
-    })
-
-
-    test('ResizeObserver cleanup on dispose', () => {
-        const mockObserver = global.ResizeObserver.mock.results[0].value
-        const disconnectSpy = vi.spyOn(mockObserver, 'disconnect')
-        
-        view.dispose()
-        
-        expect(disconnectSpy).toHaveBeenCalled()
     })
 
 })
