@@ -1,11 +1,11 @@
 import Random from '/core/random.js'
-import Logger from '/ui/logger.js'
+import PerkyLogger from '/ui/perky_logger.js'
 import {createControlPanel, addButtonFolder} from './example_utils.js'
 
 const container = document.querySelector('.example-content')
 
-const logger = new Logger()
-logger.mountTo(container)
+const logger = new PerkyLogger()
+container.appendChild(logger)
 
 // Create control panel with utilities (much simpler!)
 const controlPane = createControlPanel({

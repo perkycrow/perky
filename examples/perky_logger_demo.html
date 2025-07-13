@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perky - PerkyLogger Demo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="example-container">
+        <a href="index.html" class="back-link">Back to examples</a>
+        
+        <div class="example-header">
+            <h1>PerkyLogger Demo</h1>
+            <p class="tagline">New LitElement logger component with Tweakpane styling - Use as a DOM element!</p>
+        </div>
+
+        <div class="example-content">
+            <div style="margin-bottom: 20px;">
+                <button id="info-btn">Info Message</button>
+                <button id="warn-btn">Warning</button>
+                <button id="error-btn">Error</button>
+                <button id="success-btn">Success</button>
+                <button id="notice-btn">Notice</button>
+                <button id="spacer-btn">Add Spacer</button>
+                <button id="title-btn">Add Title</button>
+                <button id="clear-btn">Clear All</button>
+                <button id="theme-btn">Toggle Theme</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import PerkyLogger from '/ui/perky_logger.js'
+        
+        // Create logger as a DOM element
+        const logger = new PerkyLogger()
+        logger.position = 'bottom'
+        logger.timestamp = true
+        
+        // Append to container like any DOM element
+        const container = document.querySelector('.example-content')
+        container.appendChild(logger)
+        
+        // But you can still use it like the old logger!
+        logger.info('PerkyLogger initialized!')
+        logger.notice('This is a LitElement component that you can use as a DOM element')
+        logger.spacer()
+        logger.title('Try the buttons above')
+        
+        // Event listeners for demo buttons
+        document.getElementById('info-btn').addEventListener('click', () => {
+            logger.info('This is an info message', new Date().toISOString())
+        })
+        
+        document.getElementById('warn-btn').addEventListener('click', () => {
+            logger.warn('This is a warning message!')
+        })
+        
+        document.getElementById('error-btn').addEventListener('click', () => {
+            logger.error('This is an error message!')
+        })
+        
+        document.getElementById('success-btn').addEventListener('click', () => {
+            logger.success('This is a success message!')
+        })
+        
+        document.getElementById('notice-btn').addEventListener('click', () => {
+            logger.notice('This is a notice message!')
+        })
+        
+        document.getElementById('spacer-btn').addEventListener('click', () => {
+            logger.spacer()
+        })
+        
+        document.getElementById('title-btn').addEventListener('click', () => {
+            logger.title('New Section - ' + new Date().toLocaleTimeString())
+        })
+        
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            logger.clear()
+        })
+        
+        document.getElementById('theme-btn').addEventListener('click', () => {
+            logger.theme = logger.theme === 'light' ? '' : 'light'
+            logger.info('Theme changed to:', logger.theme || 'auto')
+        })
+    </script>
+</body>
+</html> 
