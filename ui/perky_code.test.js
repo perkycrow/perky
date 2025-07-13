@@ -124,6 +124,8 @@ describe('PerkyCode', () => {
 
 
     test('error state', async () => {
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+        
         global.fetch.mockRejectedValue(new Error('Network error'))
         
         element.src = 'test.js'
@@ -136,10 +138,14 @@ describe('PerkyCode', () => {
         const error = element.shadowRoot.querySelector('.error')
         expect(error).toBeTruthy()
         expect(error.textContent).toContain('Network error')
+        
+        consoleErrorSpy.mockRestore()
     })
 
 
     test('http error handling', async () => {
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+        
         global.fetch.mockResolvedValue({
             ok: false,
             status: 404,
@@ -156,6 +162,8 @@ describe('PerkyCode', () => {
         const error = element.shadowRoot.querySelector('.error')
         expect(error).toBeTruthy()
         expect(error.textContent).toContain('HTTP 404: Not Found')
+        
+        consoleErrorSpy.mockRestore()
     })
 
 

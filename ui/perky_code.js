@@ -225,13 +225,15 @@ export default class PerkyCode extends LitElement {
     }
 
 
+    willUpdate (changedProperties) {
+        if (changedProperties.has('code')) {
+            this.formatCode()
+        }
+    }
+
     updated (changedProperties) {
         if (changedProperties.has('src') && this.src) {
             this.loadCode()
-        }
-        
-        if (changedProperties.has('code')) {
-            this.formatCode()
         }
     }
 

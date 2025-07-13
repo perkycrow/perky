@@ -1,7 +1,7 @@
 import Application from '/application/application'
 import GamePlugin from '/game/game_plugin'
 import ThreePlugin from '/three/three_plugin'
-import Logger from '/ui/logger'
+import PerkyLogger from '/ui/perky_logger'
 import {
     createGameControlPanel,
     createControlPanel, 
@@ -551,8 +551,8 @@ function init () {
 
     game.mountTo(container)
 
-    const logger = new Logger()
-    logger.mountTo(container)
+    const logger = new PerkyLogger()
+    container.appendChild(logger)
     logger.minimize()
 
     logger.info('Shroom Runner initialized')
