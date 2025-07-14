@@ -37,6 +37,9 @@ export default class WorldBuilder extends Application {
     constructor (params = {}) {
         super({
             ...params,
+            mouse: {
+                shouldPreventDefault: true
+            },
             plugins: [
                 new GamePlugin({
                     fps: params.fps || 60,

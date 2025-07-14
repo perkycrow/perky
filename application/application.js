@@ -26,8 +26,7 @@ export default class Application extends Engine {
         this.registerDevice('keyboard', new KeyboardDevice(keyboard))
         this.registerDevice('mouse', new MouseDevice({
             ...mouse,
-            container: this.perkyView.element,
-            shouldPreventDefault: mouse.shouldPreventDefault ?? true
+            container: this.perkyView.element
         }))
 
         this.#initEvents()
