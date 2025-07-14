@@ -4,7 +4,9 @@ import ThreePlugin from '/three/three_plugin'
 import PerkyLogger from '/editor/perky_logger'
 import {
     createGameControlPanel,
-    addButtonFolder
+    createControlPanel,
+    addButtonFolder,
+    addSliderBinding
 } from './example_utils.js'
 import Sprite from '../three/objects/sprite'
 
@@ -57,6 +59,11 @@ export default class ShroomDrag extends Application {
         // Drag state
         this.isDragging = false
         this.dragOffset = {x: 0, y: 0}
+        
+        // Zoom state
+        this.zoomLevel = 1
+        this.baseViewWidth = 20
+        this.baseViewHeight = 15
 
         this.initGame()
 
@@ -72,6 +79,7 @@ export default class ShroomDrag extends Application {
         this.setupBackground()
         this.setupPlayer()
         this.setupMouseEvents()
+        this.setupCameraControls()
         this.assetsLoaded = true
     }
     
@@ -173,6 +181,87 @@ export default class ShroomDrag extends Application {
         })
     }
 
+    setupCameraControls () {
+        // Créer un panneau de contrôle pour la caméra
+        this.cameraPane = createControlPanel({
+            title: 'Camera Controls',
+            container: this.perkyView.element,
+            position: 'top-right',
+            expanded: true
+        })
+
+        // Ajouter le slider de zoom
+        addSliderBinding({
+            folder: this.cameraPane,
+            object: this,
+            property: 'zoomLevel',
+            label: 'Zoom',
+            min: 0.1,
+            max: 5,
+            step: 0.1,
+            onChange: () => this.updateCameraZoom()
+        })
+
+        // Boutons de zoom prédéfinis
+        addButtonFolder(this.cameraPane, 'Zoom Presets', [
+            {
+                title: 'Zoom Out (0.5x)',
+                action: () => {
+                    this.zoomLevel = 0.5
+                    this.updateCameraZoom()
+                }
+            },
+            {
+                title: 'Normal (1x)',
+                action: () => {
+                    this.zoomLevel = 1
+                    this.updateCameraZoom()
+                }
+            },
+            {
+                title: 'Zoom In (2x)',
+                action: () => {
+                    this.zoomLevel = 2
+                    this.updateCameraZoom()
+                }
+            },
+            {
+                title: 'Max Zoom (5x)',
+                action: () => {
+                    this.zoomLevel = 5
+                    this.updateCameraZoom()
+                }
+            }
+        ])
+    }
+
+    updateCameraZoom () {
+        if (!this.camera) {
+            return
+        }
+
+        // Obtenir la taille du conteneur pour calculer l'aspect ratio
+        const containerSize = this.getThreeContainerSize()
+        const aspectRatio = containerSize.width / containerSize.height
+
+        // Calculer la hauteur de vue basée sur le zoom
+        const viewHeight = this.baseViewHeight / this.zoomLevel
+        
+        // Calculer la largeur en respectant l'aspect ratio du conteneur
+        const viewWidth = viewHeight * aspectRatio
+
+        // Mettre à jour la caméra orthographique
+        this.camera.left = -viewWidth / 2
+        this.camera.right = viewWidth / 2
+        this.camera.top = viewHeight / 2
+        this.camera.bottom = -viewHeight / 2
+
+        this.camera.updateProjectionMatrix()
+
+        // Mettre à jour le background scale aussi
+        this.updateBackgroundScale()
+    }
+
     onMouseDown (event) {
         const worldPos = this.screenToWorld(event.clientX, event.clientY)
         
@@ -252,13 +341,14 @@ function init () {
 
     logger.info('Shroom Drag initialized')
     logger.info('Click and drag the mushroom to move it around!')
+    logger.info('Use camera controls to zoom in/out and test drag behavior')
 
     const controlPane = createGameControlPanel({
         title: 'Game Controls',
         container,
         game,
         logger,
-        position: 'top-left',
+        position: 'bottom-left',
         includeFps: true
     })
 
