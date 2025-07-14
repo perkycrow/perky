@@ -286,25 +286,6 @@ export default class ShroomDrag extends Application {
         }
     }
 
-    screenToWorld (screenX, screenY) {
-        const containerSize = this.getThreeContainerSize()
-        const containerRect = this.perkyView.element.getBoundingClientRect()
-        
-        // Convertir les coordonnées d'écran en coordonnées normalisées (-1 à 1)
-        const normalizedX = ((screenX - containerRect.left) / containerSize.width) * 2 - 1
-        const normalizedY = -((screenY - containerRect.top) / containerSize.height) * 2 + 1
-        
-        // Convertir en coordonnées monde basées sur la caméra orthographique
-        const containerAspect = containerSize.width / containerSize.height
-        const viewHeight = this.camera.top - this.camera.bottom
-        const viewWidth = viewHeight * containerAspect
-        
-        const worldX = normalizedX * (viewWidth / 2)
-        const worldY = normalizedY * (viewHeight / 2)
-        
-        return {x: worldX, y: worldY}
-    }
-
     isPointOnShroom (worldPos) {
         if (!this.shroom) {
             return false

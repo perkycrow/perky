@@ -159,6 +159,10 @@ function addThreeMethods (plugin, app) {
     plugin.addMethod('getThreeContainerSize', function () {
         return getContainerSize(app)
     })
+
+    plugin.addMethod('screenToWorld', function (screenX, screenY, depth = 0, camera = null) {
+        return screenToWorld(app, {screenX, screenY, camera, depth})
+    })
 }
 
 
@@ -239,6 +243,49 @@ function getContainerSize (app) {
         width: container.clientWidth,
         height: container.clientHeight
     }
+}
+
+
+function screenToWorld (app, {screenX, screenY, camera, depth = 0}) {
+    const activeCamera = camera || app.camera
+
+    if (!activeCamera) {
+        return {x: 0, y: 0, z: depth}
+    }
+
+    const containerSize = getContainerSize(app)
+    const containerRect = app.perkyView?.element?.getBoundingClientRect()
+    
+    if (!containerRect) {
+        return {x: 0, y: 0, z: depth}
+    }
+
+    const normalizedX = ((screenX - containerRect.left) / containerSize.width) * 2 - 1
+    const normalizedY = -((screenY - containerRect.top) / containerSize.height) * 2 + 1
+    
+    if (activeCamera.isOrthographicCamera) {
+        const containerAspect = containerSize.width / containerSize.height
+        const viewHeight = activeCamera.top - activeCamera.bottom
+        const viewWidth = viewHeight * containerAspect
+        
+        const worldX = normalizedX * (viewWidth / 2)
+        const worldY = normalizedY * (viewHeight / 2)
+        
+        return {x: worldX, y: worldY, z: depth}
+    } else if (activeCamera.isPerspectiveCamera) {
+        const fov = activeCamera.fov * Math.PI / 180
+        const distance = Math.abs(activeCamera.position.z - depth)
+        
+        const viewHeight = 2 * Math.tan(fov / 2) * distance
+        const viewWidth = viewHeight * activeCamera.aspect
+        
+        const worldX = normalizedX * (viewWidth / 2)
+        const worldY = normalizedY * (viewHeight / 2)
+        
+        return {x: worldX, y: worldY, z: depth}
+    }
+    
+    return {x: 0, y: 0, z: depth}
 }
 
 

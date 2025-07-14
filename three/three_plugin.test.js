@@ -372,4 +372,86 @@ describe('ThreePlugin', () => {
         expect(plugin.renderer.render).toHaveBeenCalledWith(plugin.scene, plugin.camera)
     })
 
+
+    test('screenToWorld method for orthographic camera', () => {
+        plugin = new ThreePlugin({
+            camera: {
+                type: 'orthographic',
+                width: 20,
+                height: 15
+            }
+        })
+        plugin.install(app)
+
+        expect(typeof app.screenToWorld).toBe('function')
+
+        // Test center of screen
+        const centerWorld = app.screenToWorld(400, 300) // Center of 800x600 screen
+        expect(centerWorld.x).toBeCloseTo(0, 1)
+        expect(centerWorld.y).toBeCloseTo(0, 1)
+        expect(centerWorld.z).toBe(0)
+
+        // Test with depth
+        const worldWithDepth = app.screenToWorld(400, 300, 5)
+        expect(worldWithDepth.z).toBe(5)
+    })
+
+
+    test('screenToWorld method for perspective camera', () => {
+        plugin = new ThreePlugin({
+            camera: {
+                type: 'perspective',
+                fov: 75
+            }
+        })
+        plugin.install(app)
+
+        // Position camera at z=10 for predictable calculations
+        plugin.camera.position.set(0, 0, 10)
+
+        const centerWorld = app.screenToWorld(400, 300) // Center of 800x600 screen
+        expect(centerWorld.x).toBeCloseTo(0, 1)
+        expect(centerWorld.y).toBeCloseTo(0, 1)
+        expect(centerWorld.z).toBe(0)
+    })
+
+
+    test('screenToWorld handles missing camera gracefully', () => {
+        plugin = new ThreePlugin()
+        plugin.install(app)
+        
+        const originalCamera = app.camera
+        app.camera = null
+
+        const result = app.screenToWorld(400, 300)
+        expect(result).toEqual({x: 0, y: 0, z: 0})
+
+        app.camera = originalCamera
+    })
+
+
+    test('screenToWorld with custom camera parameter', () => {
+        plugin = new ThreePlugin({
+            camera: {
+                type: 'orthographic',
+                width: 40,
+                height: 30
+            }
+        })
+        plugin.install(app)
+
+        const customCamera = {
+            isOrthographicCamera: true,
+            top: 5,
+            bottom: -5,
+            left: -10,
+            right: 10
+        }
+
+        const result = app.screenToWorld(400, 300, 0, customCamera)
+        expect(result.x).toBeCloseTo(0, 1)
+        expect(result.y).toBeCloseTo(0, 1)
+        expect(result.z).toBe(0)
+    })
+
 })
