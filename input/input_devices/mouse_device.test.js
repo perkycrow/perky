@@ -5,6 +5,13 @@ import Vec2Control from '../input_controls/vec2_control'
 import WheelControl from '../input_controls/wheel_control'
 import {vi} from 'vitest'
 
+function createMockEvent (props = {}) {
+    return {
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+        ...props
+    }
+}
 
 describe(MouseDevice, () => {
 
@@ -90,13 +97,13 @@ describe(MouseDevice, () => {
         const mousedownListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'mousedown')[1]
 
-        mousedownListener({button: 0})
+        mousedownListener(createMockEvent({button: 0}))
         expect(device.isPressed('leftButton')).toBe(true)
 
-        mousedownListener({button: 2})
+        mousedownListener(createMockEvent({button: 2}))
         expect(device.isPressed('rightButton')).toBe(true)
 
-        mousedownListener({button: 1})
+        mousedownListener(createMockEvent({button: 1}))
         expect(device.isPressed('middleButton')).toBe(true)
     })
 
@@ -109,10 +116,10 @@ describe(MouseDevice, () => {
         const mouseupListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'mouseup')[1]
 
-        mousedownListener({button: 0})
+        mousedownListener(createMockEvent({button: 0}))
         expect(device.isPressed('leftButton')).toBe(true)
 
-        mouseupListener({button: 0})
+        mouseupListener(createMockEvent({button: 0}))
         expect(device.isPressed('leftButton')).toBe(false)
     })
 
@@ -123,10 +130,10 @@ describe(MouseDevice, () => {
         const mousedownListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'mousedown')[1]
 
-        mousedownListener({button: 3})
+        mousedownListener(createMockEvent({button: 3}))
         expect(device.isPressed('backButton')).toBe(true)
 
-        mousedownListener({button: 4})
+        mousedownListener(createMockEvent({button: 4}))
         expect(device.isPressed('forwardButton')).toBe(true)
     })
 
@@ -141,11 +148,11 @@ describe(MouseDevice, () => {
         expect(positionControl.value.x).toBe(0)
         expect(positionControl.value.y).toBe(0)
 
-        mousemoveListener({clientX: 100, clientY: 200})
+        mousemoveListener(createMockEvent({clientX: 100, clientY: 200}))
         expect(positionControl.value.x).toBe(100)
         expect(positionControl.value.y).toBe(200)
 
-        mousemoveListener({clientX: 300, clientY: 400})
+        mousemoveListener(createMockEvent({clientX: 300, clientY: 400}))
         expect(positionControl.value.x).toBe(300)
         expect(positionControl.value.y).toBe(400)
     })
@@ -157,11 +164,11 @@ describe(MouseDevice, () => {
         const mousedownListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'mousedown')[1]
 
-        mousedownListener({button: 0})
+        mousedownListener(createMockEvent({button: 0}))
         const leftButton = device.getControl('leftButton')
         const pressSpy = vi.spyOn(leftButton, 'press')
 
-        mousedownListener({button: 0})
+        mousedownListener(createMockEvent({button: 0}))
         expect(pressSpy).not.toHaveBeenCalled()
     })
 
@@ -175,7 +182,7 @@ describe(MouseDevice, () => {
         const wheelControl = device.getControl('wheel')
         expect(wheelControl.value).toEqual({deltaX: 0, deltaY: 0, deltaZ: 0})
 
-        wheelListener({deltaX: 10, deltaY: -50, deltaZ: 0})
+        wheelListener(createMockEvent({deltaX: 10, deltaY: -50, deltaZ: 0}))
         expect(wheelControl.value).toEqual({deltaX: 10, deltaY: -50, deltaZ: 0})
     })
 
@@ -198,14 +205,14 @@ describe(MouseDevice, () => {
         const mousemoveListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'mousemove')[1]
 
-        mousemoveListener({clientX: 50, clientY: 75})
+        mousemoveListener(createMockEvent({clientX: 50, clientY: 75}))
         expect(controlUpdatedListener).toHaveBeenCalledTimes(1)
 
-        mousedownListener({button: 0})
+        mousedownListener(createMockEvent({button: 0}))
         expect(controlPressedListener).toHaveBeenCalledTimes(1)
         expect(device.isPressed('leftButton')).toBe(true)
 
-        mouseupListener({button: 0})
+        mouseupListener(createMockEvent({button: 0}))
         expect(controlReleasedListener).toHaveBeenCalledTimes(1)
         expect(device.isPressed('leftButton')).toBe(false)
     })

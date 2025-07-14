@@ -24,7 +24,11 @@ export default class Application extends Engine {
         this.registerModule('inputManager', getInputManager(inputManager))
 
         this.registerDevice('keyboard', new KeyboardDevice(keyboard))
-        this.registerDevice('mouse', new MouseDevice(mouse))
+        this.registerDevice('mouse', new MouseDevice({
+            ...mouse,
+            container: this.perkyView.element,
+            shouldPreventDefault: mouse.shouldPreventDefault ?? true
+        }))
 
         this.#initEvents()
     }

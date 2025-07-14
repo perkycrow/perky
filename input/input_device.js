@@ -89,8 +89,12 @@ export default class InputDevice extends PerkyModule {
 
     preventDefault (event, control) {
         if (control && event && this.shouldPreventDefaultFor(event, control)) {
-            event.preventDefault()
-            event.stopPropagation()
+            if (typeof event.preventDefault === 'function') {
+                event.preventDefault()
+            }
+            if (typeof event.stopPropagation === 'function') {
+                event.stopPropagation()
+            }
         }
     }
 
