@@ -4,7 +4,7 @@ import WebGLRenderer from './renderers/webgl_renderer'
 import OrthographicCamera from './cameras/orthographic_camera'
 import PerspectiveCamera from './cameras/perspective_camera'
 import RenderComposer from './effects/render_composer'
-import {screenToWorld} from './viewport_utils'
+import {screenToWorld, worldToScreen, getViewDimensions, getScreenBounds} from './viewport_utils'
 
 
 export default class ThreePlugin extends Plugin {
@@ -172,15 +172,27 @@ function addThreeMethods (plugin, app) {
     })
 
     plugin.addMethod('worldToScreen', function (worldX, worldY, worldZ = 0, camera = null) {
-        return worldToScreen(app, {worldX, worldY, worldZ, camera})
+        return worldToScreen({
+            camera: camera || this.camera,
+            container: app.perkyView.element,
+            worldX,
+            worldY,
+            worldZ
+        })
     })
 
     plugin.addMethod('getViewDimensions', function (camera = null) {
-        return getViewDimensions(app, camera)
+        return getViewDimensions({
+            camera: camera || this.camera,
+            container: app.perkyView.element
+        })
     })
 
     plugin.addMethod('getScreenBounds', function (camera = null) {
-        return getScreenBounds(app, camera)
+        return getScreenBounds({
+            camera: camera || this.camera,
+            container: app.perkyView.element
+        })
     })
 }
 
@@ -264,96 +276,6 @@ function getContainerSize (app) {
     }
 }
 
-
-function worldToScreen (app, {worldX, worldY, worldZ = 0, camera}) {
-    const activeCamera = camera || app.camera
-    
-    if (!activeCamera) {
-        return {x: 0, y: 0}
-    }
-
-    const containerSize = getContainerSize(app)
-    const containerRect = app.perkyView?.element?.getBoundingClientRect()
-    
-    if (!containerRect) {
-        return {x: 0, y: 0}
-    }
-    
-    if (activeCamera.isOrthographicCamera) {
-        const containerAspect = containerSize.width / containerSize.height
-        const viewHeight = activeCamera.top - activeCamera.bottom
-        const viewWidth = viewHeight * containerAspect
-        
-        const normalizedX = worldX / (viewWidth / 2)
-        const normalizedY = worldY / (viewHeight / 2)
-        
-        const screenX = ((normalizedX + 1) / 2) * containerSize.width + containerRect.left
-        const screenY = ((-normalizedY + 1) / 2) * containerSize.height + containerRect.top
-        
-        return {x: screenX, y: screenY}
-    } else if (activeCamera.isPerspectiveCamera) {
-        const distance = Math.abs(activeCamera.position.z - worldZ)
-        const fov = activeCamera.fov * Math.PI / 180
-        
-        const viewHeight = 2 * Math.tan(fov / 2) * distance
-        const viewWidth = viewHeight * activeCamera.aspect
-        
-        const normalizedX = worldX / (viewWidth / 2)
-        const normalizedY = worldY / (viewHeight / 2)
-        
-        const screenX = ((normalizedX + 1) / 2) * containerSize.width + containerRect.left
-        const screenY = ((-normalizedY + 1) / 2) * containerSize.height + containerRect.top
-        
-        return {x: screenX, y: screenY}
-    }
-    
-    return {x: 0, y: 0}
-}
-
-
-function getViewDimensions (app, camera) {
-    const activeCamera = camera || app.camera
-    
-    if (!activeCamera) {
-        return {width: 0, height: 0}
-    }
-    
-    if (activeCamera.isOrthographicCamera) {
-        const containerSize = getContainerSize(app)
-        const containerAspect = containerSize.width / containerSize.height
-        const viewHeight = activeCamera.top - activeCamera.bottom
-        const viewWidth = viewHeight * containerAspect
-        
-        return {width: viewWidth, height: viewHeight}
-    } else if (activeCamera.isPerspectiveCamera) {
-        // Pour une caméra perspective, on utilise la distance actuelle
-        const distance = Math.abs(activeCamera.position.z)
-        const fov = activeCamera.fov * Math.PI / 180
-        
-        const viewHeight = 2 * Math.tan(fov / 2) * distance
-        const viewWidth = viewHeight * activeCamera.aspect
-        
-        return {width: viewWidth, height: viewHeight}
-    }
-    
-    return {width: 0, height: 0}
-}
-
-
-function getScreenBounds (app, camera) {
-    const dimensions = getViewDimensions(app, camera)
-    
-    if (dimensions.width === 0 || dimensions.height === 0) {
-        return {left: 0, right: 0, top: 0, bottom: 0}
-    }
-    
-    return {
-        left: -dimensions.width / 2,
-        right: dimensions.width / 2,
-        top: dimensions.height / 2,
-        bottom: -dimensions.height / 2
-    }
-}
 
 
 function attachCanvas (plugin, app) {
