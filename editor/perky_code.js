@@ -69,12 +69,12 @@ export default class PerkyCode extends LitElement {
             --bg-content: #29292E;
             --bg-headers: #38383D;
             --fg-fields: #8D8E94;
-            --fg-content: #8C8C93;
+            --fg-content: #bebecf;
             --fg-headers: #BBBCC3;
             --hl-keyword: #5BA7F7;
             --hl-string: #4BB74A;
             --hl-comment: #6A6A6A;
-            --hl-constant: #FF6B6B;
+            --hl-constant: #ffce6b;
         }
 
         .perky-code-display {
