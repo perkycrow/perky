@@ -276,30 +276,15 @@ export default class WorldBuilder extends Application {
             if (device && control.name === 'position' && this.isPanning) {
                 this.onPanMove(event)
             }
-        })
-
-        // Zoom avec la molette - gestion directe de l'événement wheel
-        this.setupWheelListener()
-    }
-
-    setupWheelListener () {
-        this.wheelListener = (event) => {
-            event.preventDefault()
-            this.onZoom(event)
-        }
-        
-        // Ajouter l'event listener directement sur le conteneur Three.js
-        this.on('three:mounted', () => {
-            if (this.renderer && this.renderer.domElement) {
-                this.renderer.domElement.addEventListener('wheel', this.wheelListener, {passive: false})
+            
+            // Zoom avec la molette via le système d'input unifié
+            if (device && control.name === 'wheel') {
+                this.onZoom(value, event)
             }
         })
-        
-        // Si le renderer est déjà monté
-        if (this.renderer && this.renderer.domElement) {
-            this.renderer.domElement.addEventListener('wheel', this.wheelListener, {passive: false})
-        }
     }
+
+
 
     onPanStart (event) {
         this.isPanning = true
@@ -338,9 +323,9 @@ export default class WorldBuilder extends Application {
         this.lastPanPosition.y = event.clientY
     }
 
-    onZoom (event) {
+    onZoom (wheelDeltas, event) {
         const zoomSpeed = 0.1
-        const zoomDirection = event.deltaY > 0 ? -1 : 1
+        const zoomDirection = wheelDeltas.deltaY > 0 ? -1 : 1
         
         // Position de la souris en coordonnées monde avant le zoom
         const mouseWorldPos = this.screenToWorld(event.clientX, event.clientY)
@@ -418,11 +403,6 @@ export default class WorldBuilder extends Application {
     }
 
     dispose () {
-        // Nettoyer l'event listener de la molette
-        if (this.wheelListener && this.renderer && this.renderer.domElement) {
-            this.renderer.domElement.removeEventListener('wheel', this.wheelListener)
-        }
-        
         super.dispose()
     }
 }

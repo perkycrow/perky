@@ -1,6 +1,7 @@
 import InputDevice from '../input_device'
 import ButtonControl from '../input_controls/button_control'
 import Vec2Control from '../input_controls/vec2_control'
+import WheelControl from '../input_controls/wheel_control'
 
 
 export default class MouseDevice extends InputDevice {
@@ -19,6 +20,7 @@ export default class MouseDevice extends InputDevice {
         this.mouseupListener = this.#handleMouseup.bind(this)
         this.mousemoveListener = this.#handleMousemove.bind(this)
         this.contextmenuListener = this.#handleContextmenu.bind(this)
+        this.wheelListener = this.#handleWheel.bind(this)
     }
 
 
@@ -31,6 +33,7 @@ export default class MouseDevice extends InputDevice {
         this.container.addEventListener('mouseup', this.mouseupListener)
         this.container.addEventListener('mousemove', this.mousemoveListener)
         this.container.addEventListener('contextmenu', this.contextmenuListener)
+        this.container.addEventListener('wheel', this.wheelListener, {passive: false})
 
         return true
     }
@@ -45,6 +48,7 @@ export default class MouseDevice extends InputDevice {
         this.container.removeEventListener('mouseup', this.mouseupListener)
         this.container.removeEventListener('mousemove', this.mousemoveListener)
         this.container.removeEventListener('contextmenu', this.contextmenuListener)
+        this.container.removeEventListener('wheel', this.wheelListener)
 
         return true
     }
@@ -86,6 +90,11 @@ export default class MouseDevice extends InputDevice {
             device: this,
             name: 'position'
         }))
+
+        this.registerControl(new WheelControl({
+            device: this,
+            name: 'wheel'
+        }))
     }
 
 
@@ -126,6 +135,15 @@ export default class MouseDevice extends InputDevice {
         const rightButtonControl = this.getControl('rightButton')
         
         this.preventDefault(event, rightButtonControl)
+    }
+
+
+    #handleWheel (event) {
+        const wheelControl = this.getControl('wheel')
+        
+        this.preventDefault(event, wheelControl)
+        
+        wheelControl.setValue(event, event)
     }
 
 

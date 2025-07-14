@@ -2,6 +2,7 @@ import MouseDevice from './mouse_device'
 import InputDevice from '../input_device'
 import ButtonControl from '../input_controls/button_control'
 import Vec2Control from '../input_controls/vec2_control'
+import WheelControl from '../input_controls/wheel_control'
 import {vi} from 'vitest'
 
 
@@ -47,6 +48,7 @@ describe(MouseDevice, () => {
         expect(device.getControl('backButton')).toBeInstanceOf(ButtonControl)
         expect(device.getControl('forwardButton')).toBeInstanceOf(ButtonControl)
         expect(device.getControl('position')).toBeInstanceOf(Vec2Control)
+        expect(device.getControl('wheel')).toBeInstanceOf(WheelControl)
     })
 
 
@@ -57,7 +59,8 @@ describe(MouseDevice, () => {
         expect(mockContainer.addEventListener).toHaveBeenCalledWith('mouseup', device.mouseupListener)
         expect(mockContainer.addEventListener).toHaveBeenCalledWith('mousemove', device.mousemoveListener)
         expect(mockContainer.addEventListener).toHaveBeenCalledWith('contextmenu', device.contextmenuListener)
-        expect(mockContainer.addEventListener).toHaveBeenCalledTimes(4)
+        expect(mockContainer.addEventListener).toHaveBeenCalledWith('wheel', device.wheelListener, {passive: false})
+        expect(mockContainer.addEventListener).toHaveBeenCalledTimes(5)
     })
 
 
@@ -69,7 +72,8 @@ describe(MouseDevice, () => {
         expect(mockContainer.removeEventListener).toHaveBeenCalledWith('mouseup', device.mouseupListener)
         expect(mockContainer.removeEventListener).toHaveBeenCalledWith('mousemove', device.mousemoveListener)
         expect(mockContainer.removeEventListener).toHaveBeenCalledWith('contextmenu', device.contextmenuListener)
-        expect(mockContainer.removeEventListener).toHaveBeenCalledTimes(4)
+        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('wheel', device.wheelListener)
+        expect(mockContainer.removeEventListener).toHaveBeenCalledTimes(5)
     })
 
 
@@ -159,6 +163,20 @@ describe(MouseDevice, () => {
 
         mousedownListener({button: 0})
         expect(pressSpy).not.toHaveBeenCalled()
+    })
+
+
+    test('wheel event updates wheel control', () => {
+        device.start()
+
+        const wheelListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'wheel')[1]
+
+        const wheelControl = device.getControl('wheel')
+        expect(wheelControl.value).toEqual({deltaX: 0, deltaY: 0, deltaZ: 0})
+
+        wheelListener({deltaX: 10, deltaY: -50, deltaZ: 0})
+        expect(wheelControl.value).toEqual({deltaX: 10, deltaY: -50, deltaZ: 0})
     })
 
 
