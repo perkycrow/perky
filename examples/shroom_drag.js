@@ -64,6 +64,10 @@ export default class ShroomDrag extends Application {
         this.zoomLevel = 1
         this.baseViewWidth = 20
         this.baseViewHeight = 15
+        
+        // Demo state
+        this.shroomLabel = null
+        this.labelFollowEnabled = false
 
         this.initGame()
 
@@ -260,6 +264,9 @@ export default class ShroomDrag extends Application {
 
         // Mettre à jour le background scale aussi
         this.updateBackgroundScale()
+        
+        // Mettre à jour le label position si activé
+        this.updateShroomLabel()
     }
 
     onMouseDown (event) {
@@ -283,6 +290,75 @@ export default class ShroomDrag extends Application {
             
             this.shroom.position.x = worldPos.x - this.dragOffset.x
             this.shroom.position.y = worldPos.y - this.dragOffset.y
+            
+            // Mettre à jour le label si activé
+            this.updateShroomLabel()
+        }
+    }
+
+    createShroomLabel () {
+        if (this.shroomLabel) {
+            return
+        }
+
+        this.shroomLabel = document.createElement('div')
+        this.shroomLabel.textContent = '🍄 SHROOM'
+        this.shroomLabel.style.cssText = `
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 1000;
+            transform: translate(-50%, -100%);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            border: 2px solid #4CAF50;
+            margin-top: -10px;
+        `
+        
+        this.perkyView.element.appendChild(this.shroomLabel)
+        this.updateShroomLabel()
+    }
+
+    updateShroomLabel () {
+        if (!this.shroomLabel || !this.shroom || !this.labelFollowEnabled) {
+            return
+        }
+
+        const screenPos = this.worldToScreen(this.shroom.position.x, this.shroom.position.y)
+        const containerRect = this.perkyView.element.getBoundingClientRect()
+        
+        // Convertir les coordonnées absolutes en coordonnées relatives au conteneur
+        const relativeX = screenPos.x - containerRect.left
+        const relativeY = screenPos.y - containerRect.top
+        
+        this.shroomLabel.style.left = `${relativeX}px`
+        this.shroomLabel.style.top = `${relativeY}px`
+    }
+
+    toggleShroomLabel () {
+        this.labelFollowEnabled = !this.labelFollowEnabled
+        
+        if (this.labelFollowEnabled) {
+            this.createShroomLabel()
+            this.updateShroomLabel()
+            this.shroomLabel.style.display = 'block'
+        } else if (this.shroomLabel) {
+            this.shroomLabel.style.display = 'none'
+        }
+        
+        return this.labelFollowEnabled
+    }
+
+    removeShroomLabel () {
+        if (this.shroomLabel) {
+            this.shroomLabel.remove()
+            this.shroomLabel = null
+            this.labelFollowEnabled = false
         }
     }
 
@@ -308,6 +384,11 @@ export default class ShroomDrag extends Application {
     renderGame () {
         this.render()
     }
+
+    dispose () {
+        this.removeShroomLabel()
+        super.dispose()
+    }
 }
 
 function init () {
@@ -323,6 +404,8 @@ function init () {
     logger.info('Shroom Drag initialized')
     logger.info('Click and drag the mushroom to move it around!')
     logger.info('Use camera controls to zoom in/out and test drag behavior')
+    logger.info('Try the Three.js Utils Demo buttons to test coordinate conversions!')
+    logger.info('Click "Toggle Shroom Label" to see a div follow the mushroom in real-time!')
 
     const controlPane = createGameControlPanel({
         title: 'Game Controls',
@@ -340,6 +423,7 @@ function init () {
             action: () => {
                 if (game.shroom) {
                     game.shroom.position.set(0, 0, 0.1)
+                    game.updateShroomLabel()
                     logger.info('Champignon centré')
                 }
             }
@@ -351,6 +435,7 @@ function init () {
                     const randomX = (Math.random() - 0.5) * 16
                     const randomY = (Math.random() - 0.5) * 12
                     game.shroom.position.set(randomX, randomY, 0.1)
+                    game.updateShroomLabel()
                     logger.info(`Champignon déplacé vers (${randomX.toFixed(1)}, ${randomY.toFixed(1)})`)
                 }
             }
@@ -377,6 +462,56 @@ function init () {
             action: () => {
                 game.setDisplayMode('fullscreen')
                 logger.info('Display mode: Fullscreen')
+            }
+        }
+    ])
+
+    // Ajouter des boutons de démonstration des nouvelles fonctions Three.js
+    addButtonFolder(controlPane, 'Three.js Utils Demo', [
+        {
+            title: 'Show View Dimensions',
+            action: () => {
+                const dimensions = game.getViewDimensions()
+                logger.info(`View dimensions: ${dimensions.width.toFixed(2)} x ${dimensions.height.toFixed(2)} unités monde`)
+            }
+        },
+        {
+            title: 'Show Screen Bounds',
+            action: () => {
+                const bounds = game.getScreenBounds()
+                logger.info(`Screen bounds: left=${bounds.left.toFixed(2)}, right=${bounds.right.toFixed(2)}, top=${bounds.top.toFixed(2)}, bottom=${bounds.bottom.toFixed(2)}`)
+            }
+        },
+        {
+            title: 'Toggle Shroom Label',
+            action: () => {
+                const enabled = game.toggleShroomLabel()
+                if (enabled) {
+                    logger.info('🍄 Label activé - Le div suit maintenant le champignon!')
+                    logger.info('Déplacez le champignon pour voir worldToScreen en action!')
+                } else {
+                    logger.info('Label désactivé')
+                }
+            }
+        },
+        {
+            title: 'Mouse → World Test',
+            action: () => {
+                // Utiliser le centre de l'écran comme exemple
+                const containerSize = game.getThreeContainerSize()
+                const centerX = containerSize.width / 2
+                const centerY = containerSize.height / 2
+                
+                const worldPos = game.screenToWorld(centerX, centerY)
+                logger.info(`Centre écran (${centerX}, ${centerY}) → monde (${worldPos.x.toFixed(2)}, ${worldPos.y.toFixed(2)})`)
+            }
+        },
+        {
+            title: 'World → Screen Test',
+            action: () => {
+                // Tester avec le centre du monde (0, 0)
+                const screenPos = game.worldToScreen(0, 0)
+                logger.info(`Centre monde (0, 0) → écran (${screenPos.x.toFixed(0)}, ${screenPos.y.toFixed(0)})`)
             }
         }
     ])

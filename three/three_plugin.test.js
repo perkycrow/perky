@@ -454,4 +454,80 @@ describe('ThreePlugin', () => {
         expect(result.z).toBe(0)
     })
 
+
+    test('worldToScreen method for orthographic camera', () => {
+        plugin = new ThreePlugin({
+            camera: {
+                type: 'orthographic',
+                width: 20,
+                height: 15
+            }
+        })
+        plugin.install(app)
+
+        expect(typeof app.worldToScreen).toBe('function')
+
+        const screenPos = app.worldToScreen(0, 0)
+        expect(screenPos.x).toBeCloseTo(400, 1)
+        expect(screenPos.y).toBeCloseTo(300, 1)
+    })
+
+
+    test('getViewDimensions method for orthographic camera', () => {
+        plugin = new ThreePlugin({
+            camera: {
+                type: 'orthographic',
+                width: 20,
+                height: 15
+            }
+        })
+        plugin.install(app)
+
+        expect(typeof app.getViewDimensions).toBe('function')
+
+        const dimensions = app.getViewDimensions()
+        expect(dimensions.height).toBe(15) // Original height
+        expect(dimensions.width).toBeCloseTo(20, 1) // Adjusted for aspect ratio
+    })
+
+
+    test('getScreenBounds method', () => {
+        plugin = new ThreePlugin({
+            camera: {
+                type: 'orthographic',
+                width: 20,
+                height: 15
+            }
+        })
+        plugin.install(app)
+
+        expect(typeof app.getScreenBounds).toBe('function')
+
+        const bounds = app.getScreenBounds()
+        expect(bounds.top).toBe(7.5)
+        expect(bounds.bottom).toBe(-7.5)
+        expect(bounds.left).toBeCloseTo(-10, 1)
+        expect(bounds.right).toBeCloseTo(10, 1)
+    })
+
+
+    test('screenToWorld and worldToScreen are inverse operations', () => {
+        plugin = new ThreePlugin({
+            camera: {
+                type: 'orthographic',
+                width: 20,
+                height: 15
+            }
+        })
+        plugin.install(app)
+
+        // Test round-trip conversion
+        const originalWorld = {x: 5, y: 3}
+        const screenPos = app.worldToScreen(originalWorld.x, originalWorld.y)
+        const backToWorld = app.screenToWorld(screenPos.x, screenPos.y)
+
+        expect(backToWorld.x).toBeCloseTo(originalWorld.x, 2)
+        expect(backToWorld.y).toBeCloseTo(originalWorld.y, 2)
+    })
+
 })
