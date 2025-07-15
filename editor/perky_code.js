@@ -64,7 +64,6 @@ export default class PerkyCode extends LitElement {
         }
 
         :host([theme="dark"]) {
-            /* Vraies couleurs Tweakpane (dark theme forcé) */
             --bg-fields: #212125;
             --bg-content: #29292E;
             --bg-headers: #38383D;
