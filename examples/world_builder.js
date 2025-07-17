@@ -280,9 +280,9 @@ export default class WorldBuilder extends Application {
                 this.onPanMove(event)
             }
             
-            // Zoom avec la molette via le système d'input unifié
+            // Gérer les événements wheel (molette et gestes trackpad)
             if (device && control.name === 'wheel') {
-                this.onZoom(value, event)
+                this.onWheelEvent(value, event)
             }
         })
     }
@@ -326,8 +326,16 @@ export default class WorldBuilder extends Application {
         this.lastPanPosition.y = event.clientY
     }
 
+    onWheelEvent (wheelDeltas, event) {
+        if (isZoomGesture(wheelDeltas, event)) {
+            this.onZoom(wheelDeltas, event)
+        } else if (isPanGesture(wheelDeltas)) {
+            this.onTrackpadPan(wheelDeltas)
+        }
+    }
+
     onZoom (wheelDeltas, event) {
-        const zoomSpeed = 0.1
+        const zoomSpeed = event.ctrlKey || event.metaKey ? 0.01 : 0.1 // Plus fin avec pinch
         const zoomDirection = wheelDeltas.deltaY > 0 ? -1 : 1
         
         // Position de la souris en coordonnées monde avant le zoom
@@ -352,6 +360,27 @@ export default class WorldBuilder extends Application {
             this.updateCameraAspect()
             this.updateBackgroundScale()
         }
+    }
+
+    onTrackpadPan (wheelDeltas) {
+        // Sensibilité du pan trackpad
+        const panSpeed = 0.003
+        
+        // Convertir les deltas en mouvement monde
+        const containerSize = this.getThreeContainerSize()
+        const aspectRatio = containerSize.width / containerSize.height
+        const viewHeight = this.WORLD_HEIGHT / this.zoomLevel
+        const viewWidth = viewHeight * aspectRatio
+
+        // Appliquer le mouvement (inverser Y pour correspondre aux attentes naturelles)
+        const worldDeltaX = (wheelDeltas.deltaX * panSpeed) * viewWidth
+        const worldDeltaY = -(wheelDeltas.deltaY * panSpeed) * viewHeight
+
+        this.cameraPosition.x += worldDeltaX
+        this.cameraPosition.y += worldDeltaY
+
+        this.updateCameraAspect()
+        this.updateBackgroundScale()
     }
 
     resetCamera () {
@@ -410,6 +439,23 @@ export default class WorldBuilder extends Application {
     }
 }
 
+function isZoomGesture (wheelDeltas, event) {
+    // Pinch trackpad Mac (priorité absolue)
+    if (event.ctrlKey || event.metaKey) {
+        return true
+    }
+    
+    // Molette souris classique : mouvement vertical significatif (>= 10) et pas de mouvement horizontal
+    const isVerticalOnly = Math.abs(wheelDeltas.deltaX) <= 0.1
+    const isSignificantVertical = Math.abs(wheelDeltas.deltaY) >= 10
+    
+    return isVerticalOnly && isSignificantVertical
+}
+
+function isPanGesture (wheelDeltas) {
+    return Math.abs(wheelDeltas.deltaX) > 0.1 || Math.abs(wheelDeltas.deltaY) > 0.1
+}
+
 function init () {
     const game = new WorldBuilder({manifest})
     const container = document.querySelector('.example-content')
@@ -425,7 +471,7 @@ function init () {
     logger.info('🖼️ Board frame: 10 units height, centered')
     logger.info('🍄 Shroom: 1 unit height (reference unit)')
     logger.info('📐 Scene graph ready for parent/child relationships')
-    logger.info('🖱️ Mouse controls: Drag to pan, wheel to zoom at cursor position')
+    logger.info('🖱️ Mouse: Drag to pan, wheel to zoom | 🍃 Trackpad: Two-finger pan, pinch to zoom')
 
     const controlPane = createGameControlPanel({
         title: 'World Builder Controls',
