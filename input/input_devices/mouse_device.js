@@ -1,7 +1,7 @@
 import InputDevice from '../input_device'
 import ButtonControl from '../input_controls/button_control'
 import Vec2Control from '../input_controls/vec2_control'
-import WheelControl from '../input_controls/wheel_control'
+import NavigationControl from '../input_controls/navigation_control'
 
 
 export default class MouseDevice extends InputDevice {
@@ -91,9 +91,9 @@ export default class MouseDevice extends InputDevice {
             name: 'position'
         }))
 
-        this.registerControl(new WheelControl({
+        this.registerControl(new NavigationControl({
             device: this,
-            name: 'wheel'
+            name: 'navigation'
         }))
     }
 
@@ -139,11 +139,11 @@ export default class MouseDevice extends InputDevice {
 
 
     #handleWheel (event) {
-        const wheelControl = this.getControl('wheel')
+        const navigationControl = this.getControl('navigation')
         
-        this.preventDefault(event, wheelControl)
+        this.preventDefault(event, navigationControl)
         
-        wheelControl.setValue(event, event)
+        navigationControl.setValue(event, event)
     }
 
 

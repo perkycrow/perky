@@ -2,7 +2,7 @@ import MouseDevice from './mouse_device'
 import InputDevice from '../input_device'
 import ButtonControl from '../input_controls/button_control'
 import Vec2Control from '../input_controls/vec2_control'
-import WheelControl from '../input_controls/wheel_control'
+import NavigationControl from '../input_controls/navigation_control'
 import {vi} from 'vitest'
 
 function createMockEvent (props = {}) {
@@ -55,7 +55,7 @@ describe(MouseDevice, () => {
         expect(device.getControl('backButton')).toBeInstanceOf(ButtonControl)
         expect(device.getControl('forwardButton')).toBeInstanceOf(ButtonControl)
         expect(device.getControl('position')).toBeInstanceOf(Vec2Control)
-        expect(device.getControl('wheel')).toBeInstanceOf(WheelControl)
+        expect(device.getControl('navigation')).toBeInstanceOf(NavigationControl)
     })
 
 
@@ -173,17 +173,18 @@ describe(MouseDevice, () => {
     })
 
 
-    test('wheel event updates wheel control', () => {
+    test('wheel event updates navigation control', () => {
         device.start()
 
         const wheelListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'wheel')[1]
 
-        const wheelControl = device.getControl('wheel')
-        expect(wheelControl.value).toEqual({deltaX: 0, deltaY: 0, deltaZ: 0})
+        const navigationControl = device.getControl('navigation')
+        expect(navigationControl.value).toEqual({deltaX: 0, deltaY: 0, deltaZ: 0, event: null})
 
-        wheelListener(createMockEvent({deltaX: 10, deltaY: -50, deltaZ: 0}))
-        expect(wheelControl.value).toEqual({deltaX: 10, deltaY: -50, deltaZ: 0})
+        const mockEvent = createMockEvent({deltaX: 10, deltaY: -50, deltaZ: 0})
+        wheelListener(mockEvent)
+        expect(navigationControl.value).toEqual({deltaX: 10, deltaY: -50, deltaZ: 0, event: mockEvent})
     })
 
 

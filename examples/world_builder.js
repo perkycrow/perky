@@ -280,9 +280,9 @@ export default class WorldBuilder extends Application {
                 this.onPanMove(event)
             }
             
-            // Gérer les événements wheel (molette et gestes trackpad)
-            if (device && control.name === 'wheel') {
-                this.onWheelEvent(value, event)
+            // Gérer les événements de navigation (molette et gestes trackpad)
+            if (device && control.name === 'navigation') {
+                this.onNavigationEvent(control, event)
             }
         })
     }
@@ -326,17 +326,17 @@ export default class WorldBuilder extends Application {
         this.lastPanPosition.y = event.clientY
     }
 
-    onWheelEvent (wheelDeltas, event) {
-        if (isZoomGesture(wheelDeltas, event)) {
-            this.onZoom(wheelDeltas, event)
-        } else if (isPanGesture(wheelDeltas)) {
-            this.onTrackpadPan(wheelDeltas)
+    onNavigationEvent (control, event) {
+        if (control.isTrackpadPinchZoom || control.isMouseWheelZoom) {
+            this.onZoom(control, event)
+        } else if (control.isTrackpadPan) {
+            this.onTrackpadPan(control)
         }
     }
 
-    onZoom (wheelDeltas, event) {
-        const zoomSpeed = event.ctrlKey || event.metaKey ? 0.01 : 0.1 // Plus fin avec pinch
-        const zoomDirection = wheelDeltas.deltaY > 0 ? -1 : 1
+    onZoom (control, event) {
+        const zoomSpeed = control.isTrackpadPinchZoom ? 0.01 : 0.1 // Plus fin avec pinch
+        const zoomDirection = control.deltaY > 0 ? -1 : 1
         
         // Position de la souris en coordonnées monde avant le zoom
         const mouseWorldPos = this.screenToWorld(event.clientX, event.clientY)
@@ -362,7 +362,7 @@ export default class WorldBuilder extends Application {
         }
     }
 
-    onTrackpadPan (wheelDeltas) {
+    onTrackpadPan (control) {
         // Sensibilité du pan trackpad
         const panSpeed = 0.003
         
@@ -373,8 +373,8 @@ export default class WorldBuilder extends Application {
         const viewWidth = viewHeight * aspectRatio
 
         // Appliquer le mouvement (inverser Y pour correspondre aux attentes naturelles)
-        const worldDeltaX = (wheelDeltas.deltaX * panSpeed) * viewWidth
-        const worldDeltaY = -(wheelDeltas.deltaY * panSpeed) * viewHeight
+        const worldDeltaX = (control.deltaX * panSpeed) * viewWidth
+        const worldDeltaY = -(control.deltaY * panSpeed) * viewHeight
 
         this.cameraPosition.x += worldDeltaX
         this.cameraPosition.y += worldDeltaY
@@ -439,22 +439,7 @@ export default class WorldBuilder extends Application {
     }
 }
 
-function isZoomGesture (wheelDeltas, event) {
-    // Pinch trackpad Mac (priorité absolue)
-    if (event.ctrlKey || event.metaKey) {
-        return true
-    }
-    
-    // Molette souris classique : mouvement vertical significatif (>= 10) et pas de mouvement horizontal
-    const isVerticalOnly = Math.abs(wheelDeltas.deltaX) <= 0.1
-    const isSignificantVertical = Math.abs(wheelDeltas.deltaY) >= 10
-    
-    return isVerticalOnly && isSignificantVertical
-}
 
-function isPanGesture (wheelDeltas) {
-    return Math.abs(wheelDeltas.deltaX) > 0.1 || Math.abs(wheelDeltas.deltaY) > 0.1
-}
 
 function init () {
     const game = new WorldBuilder({manifest})

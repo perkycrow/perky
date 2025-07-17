@@ -1,9 +1,9 @@
-import WheelControl from './wheel_control'
+import NavigationControl from './navigation_control'
 import InputControl from '../input_control'
 import {vi} from 'vitest'
 
 
-describe(WheelControl, () => {
+describe(NavigationControl, () => {
 
     let control
     let mockDevice
@@ -11,9 +11,9 @@ describe(WheelControl, () => {
 
     beforeEach(() => {
         mockDevice = {name: 'testDevice'}
-        control = new WheelControl({
+        control = new NavigationControl({
             device: mockDevice,
-            name: 'wheel'
+            name: 'navigation'
         })
     })
 
@@ -21,18 +21,18 @@ describe(WheelControl, () => {
     test('constructor', () => {
         expect(control).toBeInstanceOf(InputControl)
         expect(control.device).toBe(mockDevice)
-        expect(control.name).toBe('wheel')
+        expect(control.name).toBe('navigation')
     })
 
 
     test('getDefaultValue returns zero deltas', () => {
         const defaultValue = control.getDefaultValue()
-        expect(defaultValue).toEqual({deltaX: 0, deltaY: 0, deltaZ: 0})
+        expect(defaultValue).toEqual({deltaX: 0, deltaY: 0, deltaZ: 0, event: null})
     })
 
 
     test('initial value is zero deltas', () => {
-        expect(control.value).toEqual({deltaX: 0, deltaY: 0, deltaZ: 0})
+        expect(control.value).toEqual({deltaX: 0, deltaY: 0, deltaZ: 0, event: null})
         expect(control.deltaX).toBe(0)
         expect(control.deltaY).toBe(0)
         expect(control.deltaZ).toBe(0)
@@ -44,7 +44,7 @@ describe(WheelControl, () => {
         
         control.setValue(wheelEvent)
         
-        expect(control.value).toEqual({deltaX: 10, deltaY: -5, deltaZ: 2})
+        expect(control.value).toEqual({deltaX: 10, deltaY: -5, deltaZ: 2, event: wheelEvent})
         expect(control.deltaX).toBe(10)
         expect(control.deltaY).toBe(-5)
         expect(control.deltaZ).toBe(2)
@@ -56,7 +56,7 @@ describe(WheelControl, () => {
         
         control.setValue(wheelEvent)
         
-        expect(control.value).toEqual({deltaX: 0, deltaY: 100, deltaZ: 0})
+        expect(control.value).toEqual({deltaX: 0, deltaY: 100, deltaZ: 0, event: wheelEvent})
         expect(control.deltaY).toBe(100)
     })
 
@@ -71,8 +71,8 @@ describe(WheelControl, () => {
         control.setValue(wheelEvent, mockEvent)
         
         expect(listener).toHaveBeenCalledWith(
-            {deltaX: 0, deltaY: 50, deltaZ: 0},
-            {deltaX: 0, deltaY: 0, deltaZ: 0},
+            {deltaX: 0, deltaY: 50, deltaZ: 0, event: wheelEvent},
+            {deltaX: 0, deltaY: 0, deltaZ: 0, event: null},
             mockEvent
         )
     })
@@ -97,12 +97,12 @@ describe(WheelControl, () => {
         const wheelEvent1 = {deltaY: 75}
         control.setValue(wheelEvent1)
         
-        expect(control.value).toEqual({deltaX: 0, deltaY: 75, deltaZ: 0})
+        expect(control.value).toEqual({deltaX: 0, deltaY: 75, deltaZ: 0, event: wheelEvent1})
         
         const wheelEvent2 = {deltaY: 100}
         control.setValue(wheelEvent2)
         
-        expect(control.value).toEqual({deltaX: 0, deltaY: 100, deltaZ: 0})
+        expect(control.value).toEqual({deltaX: 0, deltaY: 100, deltaZ: 0, event: wheelEvent2})
     })
 
 
@@ -111,10 +111,10 @@ describe(WheelControl, () => {
         const wheelEvent2 = {deltaY: 20}
         
         control.setValue(wheelEvent1)
-        expect(control.oldValue).toEqual({deltaX: 0, deltaY: 0, deltaZ: 0})
+        expect(control.oldValue).toEqual({deltaX: 0, deltaY: 0, deltaZ: 0, event: null})
         
         control.setValue(wheelEvent2)
-        expect(control.oldValue).toEqual({deltaX: 0, deltaY: 10, deltaZ: 0})
+        expect(control.oldValue).toEqual({deltaX: 0, deltaY: 10, deltaZ: 0, event: wheelEvent1})
     })
 
 })
