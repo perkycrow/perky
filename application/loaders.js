@@ -99,6 +99,57 @@ export async function loadAudio (params) {
 }
 
 
+export async function loadSpritesheetData (params) {
+    const {url} = normalizeParams(params)
+    const spritesheetData = {frames: [], meta: []}
+
+    const baseJson = await loadJson(params)
+    addToSpritesheetData(spritesheetData, baseJson)
+
+    const multipacks = Array.from(baseJson.meta?.related_multi_packs || [])
+
+    if (Array.isArray(multipacks)) {
+
+        while (multipacks.length) {
+            const multipack = multipacks.shift()
+            const newJson = await loadJson({url: replaceUrlFilename(url, multipack)})
+
+            addToSpritesheetData(spritesheetData, newJson)
+        }
+    }
+
+    return spritesheetData
+
+}
+
+
+export function addToSpritesheetData (spritesheetData, newData) {
+    newData.frames.forEach(frame => {
+        if (newData.meta?.image) {
+            frame.baseImage = newData.meta.image
+        }
+
+        if (frame.filename) {
+            frame.imageName = removeFileExtension(frame.filename)
+        }
+    })
+
+    spritesheetData.frames.push(...newData.frames)
+    spritesheetData.meta.push(newData.meta)
+}
+
+
+export function replaceUrlFilename (url, filename) {
+    let splitted = url.split('/')
+    splitted.pop()
+    splitted.push(filename)
+    return splitted.join('/')
+}
+
+
+export function removeFileExtension (filename) {
+    return filename.replace(/\.[^/.]+$/, '')
+}
 
 
 export const loaders = {
@@ -108,6 +159,7 @@ export const loaders = {
     text: loadText,
     json: loadJson,
     arrayBuffer: loadArrayBuffer,
-    audio: loadAudio
+    audio: loadAudio,
+    spritesheetData: loadSpritesheetData
 }
 
