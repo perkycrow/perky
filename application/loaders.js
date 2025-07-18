@@ -1,3 +1,5 @@
+import Spritesheet from './spritesheet'
+
 
 function normalizeParams (params) {
     if (typeof params === 'string') {
@@ -152,6 +154,36 @@ export function removeFileExtension (filename) {
 }
 
 
+export async function loadSpritesheet (params) {
+    const spritesheetData = await loadSpritesheetData(params)
+    const spritesheet = new Spritesheet(spritesheetData)
+
+    const imagePaths = new Set()
+    spritesheetData.meta.forEach(meta => {
+        if (meta?.image) {
+            imagePaths.add(meta.image)
+        }
+    })
+
+    if (imagePaths.size > 0) {
+        const {url} = normalizeParams(params)
+        const imagePromises = Array.from(imagePaths).map(async imagePath => {
+            const imageUrl = replaceUrlFilename(url, imagePath)
+            const image = await loadImage({url: imageUrl})
+            return {key: imagePath, image}
+        })
+        
+        const loadedImages = await Promise.all(imagePromises)
+
+        loadedImages.forEach(({key, image}) => {
+            spritesheet.addImage(key, image)
+        })
+    }
+    
+    return spritesheet
+}
+
+
 export const loaders = {
     response: loadResponse,
     blob: loadBlob,
@@ -160,6 +192,7 @@ export const loaders = {
     json: loadJson,
     arrayBuffer: loadArrayBuffer,
     audio: loadAudio,
-    spritesheetData: loadSpritesheetData
+    spritesheetData: loadSpritesheetData,
+    spritesheet: loadSpritesheet
 }
 

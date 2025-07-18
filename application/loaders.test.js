@@ -7,6 +7,7 @@ import {
     loadArrayBuffer,
     loadAudio,
     loadSpritesheetData,
+    loadSpritesheet,
     addToSpritesheetData,
     replaceUrlFilename,
     removeFileExtension
@@ -346,6 +347,79 @@ describe('Loaders', () => {
             expect(removeFileExtension('noextension')).toBe('noextension')
             expect(removeFileExtension('path/to/file.txt')).toBe('path/to/file')
             expect(removeFileExtension('')).toBe('')
+        })
+    })
+
+    describe('loadSpritesheet', () => {
+        beforeEach(() => {
+            global.Image = vi.fn(() => {
+                const img = {}
+                Object.defineProperty(img, 'src', {
+                    set () {
+                        if (img.onload) {
+                            setTimeout(img.onload, 0)
+                        }
+                    }
+                })
+                img.onload = null
+                img.onerror = null
+                return img
+            })
+        })
+
+        test('loadSpritesheet success', async () => {
+            const spritesheetJson = {
+                frames: [
+                    {filename: 'sprite1.png', frame: {x: 0, y: 0, w: 50, h: 50}}
+                ],
+                meta: {
+                    image: 'spritesheet.png'
+                }
+            }
+
+            mockResponse.json.mockResolvedValue(spritesheetJson)
+            mockResponse.blob.mockResolvedValue(mockBlob)
+
+            const result = await loadSpritesheet('http://example.com/spritesheet.json')
+
+            expect(result.getFrameCount()).toBe(1)
+            expect(result.hasFrame('sprite1')).toBe(true)
+            expect(result.getImage('spritesheet.png')).toBeDefined()
+            expect(mockFetch).toHaveBeenCalledTimes(2) // JSON + image
+        })
+
+        test('loadSpritesheet with multipacks', async () => {
+            const baseJson = {
+                frames: [
+                    {filename: 'sprite1.png', frame: {x: 0, y: 0, w: 50, h: 50}}
+                ],
+                meta: {
+                    image: 'sheet1.png',
+                    related_multi_packs: ['sheet2.json']
+                }
+            }
+
+            const multipackJson = {
+                frames: [
+                    {filename: 'sprite2.png', frame: {x: 0, y: 0, w: 50, h: 50}}
+                ],
+                meta: {
+                    image: 'sheet2.png'
+                }
+            }
+
+            mockResponse.json
+                .mockResolvedValueOnce(baseJson)
+                .mockResolvedValueOnce(multipackJson)
+            mockResponse.blob.mockResolvedValue(mockBlob)
+
+            const result = await loadSpritesheet('http://example.com/sheet1.json')
+
+            expect(result.getFrameCount()).toBe(2)
+            expect(result.hasFrame('sprite1')).toBe(true)
+            expect(result.hasFrame('sprite2')).toBe(true)
+            expect(result.getImage('sheet1.png')).toBeDefined()
+            expect(result.getImage('sheet2.png')).toBeDefined()
         })
     })
 
