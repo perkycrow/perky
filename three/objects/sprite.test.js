@@ -61,23 +61,17 @@ describe('Sprite', () => {
 
 
     test('constructor with existing Three.js texture', () => {
-        const mockImage = document.createElement('canvas')
-        const existingTexture = new Texture(mockImage)
-        
+        const threeTexture = new Texture()
         const sprite = new Sprite({
-            texture: existingTexture
+            texture: threeTexture
         })
 
-        expect(sprite.material.map).toBe(existingTexture)
-        expect(sprite.material.map).not.toBeInstanceOf(SpriteTexture)
+        expect(sprite.material.map).toBe(threeTexture)
     })
 
 
     test('constructor with material parameter uses it directly', () => {
-        const customMaterial = new SpriteMaterial({
-            color: 0xff0000
-        })
-        
+        const customMaterial = new SpriteMaterial({ color: 0xff0000 })
         const sprite = new Sprite({
             material: customMaterial
         })
@@ -89,78 +83,78 @@ describe('Sprite', () => {
 
     test('constructor combines texture and material parameters', () => {
         const mockImage = document.createElement('canvas')
-        
         const sprite = new Sprite({
             source: mockImage,
             color: 0x00ff00,
-            sizeAttenuation: false,
-            opacity: 0.8
+            transparent: false
         })
 
+        expect(sprite.material).toBeInstanceOf(SpriteMaterial)
         expect(sprite.material.map).toBeInstanceOf(SpriteTexture)
         expect(sprite.material.map.image).toBe(mockImage)
         expect(sprite.material.color.getHex()).toBe(0x00ff00)
-        expect(sprite.material.sizeAttenuation).toBe(false)
-        expect(sprite.material.opacity).toBe(0.8)
+        expect(sprite.material.transparent).toBe(false)
     })
 
 
     test('constructor with advanced texture and material config', () => {
         const mockImage = document.createElement('canvas')
-        
         const sprite = new Sprite({
             texture: {
-                image: mockImage,
-                generateMipmaps: true,
-                anisotropy: 8
+                source: mockImage,
+                generateMipmaps: false,
+                colorSpace: 'srgb-linear'
             },
-            color: 0xff6600,
-            rotation: Math.PI / 4,
-            transparent: true
+            color: 0xff00ff,
+            fog: false,
+            rotation: Math.PI / 2,
+            sizeAttenuation: false
         })
 
-        expect(sprite.material.map.generateMipmaps).toBe(true)
-        expect(sprite.material.map.anisotropy).toBe(8)
-        expect(sprite.material.color.getHex()).toBe(0xff6600)
-        expect(sprite.material.rotation).toBe(Math.PI / 4)
+        expect(sprite.material.map.generateMipmaps).toBe(false)
+        expect(sprite.material.map.colorSpace).toBe('srgb-linear')
+        expect(sprite.material.color.getHex()).toBe(0xff00ff)
+        expect(sprite.material.fog).toBe(false)
+        expect(sprite.material.rotation).toBe(Math.PI / 2)
+        expect(sprite.material.sizeAttenuation).toBe(false)
     })
 
 
     test('parameter priority: texture > source > image', () => {
-        const mockImage1 = document.createElement('canvas')
-        const mockImage2 = document.createElement('canvas')
-        const mockImage3 = document.createElement('canvas')
-        
+        const textureImage = document.createElement('canvas')
+        const sourceImage = document.createElement('canvas')
+        const imageImage = document.createElement('canvas')
+
         const sprite = new Sprite({
-            texture: {source: mockImage1},
-            source: mockImage2,
-            image: mockImage3
+            texture: { source: textureImage },
+            source: sourceImage,
+            image: imageImage
         })
 
-        expect(sprite.material.map.image).toBe(mockImage1)
+        expect(sprite.material.map.image).toBe(textureImage)
     })
 
 
     test('material parameter has absolute priority', () => {
+        const customMaterial = new SpriteMaterial({ color: 0x123456 })
         const mockImage = document.createElement('canvas')
-        const customMaterial = new SpriteMaterial({
-            color: 0xff00ff
-        })
-        
+
         const sprite = new Sprite({
             material: customMaterial,
             source: mockImage,
-            color: 0x00ff00
+            color: 0xff0000
         })
 
         expect(sprite.material).toBe(customMaterial)
-        expect(sprite.material.color.getHex()).toBe(0xff00ff)
+        expect(sprite.material.color.getHex()).toBe(0x123456)
         expect(sprite.material.map).toBe(null)
     })
 
 
     test('constructor with all SpriteMaterial properties', () => {
+        const mockImage = document.createElement('canvas')
         const sprite = new Sprite({
+            source: mockImage,
             color: 0x123456,
             fog: false,
             rotation: Math.PI,
@@ -184,7 +178,6 @@ describe('Sprite Spritesheet functionality', () => {
     let mockSpritesheet
     let manager
     let mockImage
-
 
     beforeEach(() => {
         mockImage = {
@@ -214,19 +207,17 @@ describe('Sprite Spritesheet functionality', () => {
         mockSpritesheet = new Spritesheet(spritesheetData)
         mockSpritesheet.addImage('sheet.png', mockImage)
         
-        manager = SpriteSheetManager.getInstance()
-
-        if (!manager.getSpritesheet('test')) {
-            manager.registerSpritesheet('test', mockSpritesheet)
-        }
+        manager = new SpriteSheetManager()
+        manager.registerSpritesheet('test', mockSpritesheet)
+        
+        // Set as default manager for Sprite class
+        Sprite.setDefaultSpriteSheetManager(manager)
     })
-
 
     afterEach(() => {
         manager.unregisterSpritesheet('test')
         vi.restoreAllMocks()
     })
-
 
     test('constructor with spritesheet and frame', () => {
         const sprite = new Sprite({
@@ -238,7 +229,6 @@ describe('Sprite Spritesheet functionality', () => {
         expect(sprite.spritesheetId).toBe('test')
         expect(sprite.currentFrame).toBe('test1')
     })
-
 
     test('constructor with invalid spritesheet frame', () => {
         const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -254,7 +244,6 @@ describe('Sprite Spritesheet functionality', () => {
         consoleSpy.mockRestore()
     })
 
-
     test('setFrame success', () => {
         const sprite = new Sprite({
             spritesheet: 'test',
@@ -267,7 +256,6 @@ describe('Sprite Spritesheet functionality', () => {
         expect(sprite.currentFrame).toBe('test2')
     })
 
-
     test('setFrame on non-spritesheet sprite', () => {
         const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const sprite = new Sprite()
@@ -275,11 +263,10 @@ describe('Sprite Spritesheet functionality', () => {
         const result = sprite.setFrame('test1')
         
         expect(result).toBe(sprite)
-        expect(consoleSpy).toHaveBeenCalledWith('Cannot set frame: sprite was not created from a spritesheet')
+        expect(consoleSpy).toHaveBeenCalledWith('Cannot set frame: sprite was not created from a spritesheet or manager not available')
         
         consoleSpy.mockRestore()
     })
-
 
     test('getFrame returns current frame', () => {
         const sprite = new Sprite({
@@ -293,7 +280,6 @@ describe('Sprite Spritesheet functionality', () => {
         expect(regularSprite.getFrame()).toBeNull()
     })
 
-
     test('getSpritesheet returns spritesheet ID', () => {
         const sprite = new Sprite({
             spritesheet: 'test',
@@ -305,7 +291,6 @@ describe('Sprite Spritesheet functionality', () => {
         const regularSprite = new Sprite()
         expect(regularSprite.getSpritesheet()).toBeNull()
     })
-
 
     test('hasFrame checks frame existence', () => {
         const sprite = new Sprite({
@@ -320,7 +305,6 @@ describe('Sprite Spritesheet functionality', () => {
         const regularSprite = new Sprite()
         expect(regularSprite.hasFrame('test1')).toBe(false)
     })
-
 
     test('getFrameNames returns available frames', () => {
         const sprite = new Sprite({

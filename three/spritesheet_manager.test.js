@@ -195,15 +195,6 @@ describe('SpriteSheetManager', () => {
     })
 
 
-    test('singleton pattern', () => {
-        const instance1 = SpriteSheetManager.getInstance()
-        const instance2 = SpriteSheetManager.getInstance()
-        
-        expect(instance1).toBe(instance2)
-        expect(instance1).toBeInstanceOf(SpriteSheetManager)
-    })
-
-
     test('texture creation events', () => {
         manager.registerSpritesheet('test', mockSpritesheet)
         

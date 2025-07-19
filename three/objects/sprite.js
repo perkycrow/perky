@@ -1,21 +1,33 @@
 import {Sprite as OriginalSprite, Texture as OriginalTexture} from 'three'
 import SpriteMaterial from '../materials/sprite_material.js'
-import SpriteSheetManager from '../spritesheet_manager.js'
 
 
 export default class Sprite extends OriginalSprite {
 
+    static #defaultManager = null
+    #manager = null
+    
+    static setDefaultSpriteSheetManager (manager) {
+        Sprite.#defaultManager = manager
+    }
+    
+    static getDefaultSpriteSheetManager () {
+        return Sprite.#defaultManager
+    }
+
     constructor (params = {}) { // eslint-disable-line complexity
-        const {spritesheet, frame, ...otherParams} = params
+        const {spritesheet, frame, spritesheetManager, ...otherParams} = params
         
         if (spritesheet && frame) {
-            const material = createSpritesheetMaterial(spritesheet, frame, otherParams)
+            const manager = spritesheetManager || Sprite.#defaultManager
+            const material = createSpritesheetMaterial(spritesheet, frame, otherParams, manager)
             
             super(material)
             
             if (material) {
                 this.spritesheetId = spritesheet
                 this.currentFrame = frame
+                this.#manager = manager
             }
         } else {
             const material = createClassicMaterial(otherParams)
@@ -25,13 +37,12 @@ export default class Sprite extends OriginalSprite {
 
 
     setFrame (frameId) {
-        if (!this.spritesheetId) {
-            console.warn('Cannot set frame: sprite was not created from a spritesheet')
+        if (!this.spritesheetId || !this.#manager) {
+            console.warn('Cannot set frame: sprite was not created from a spritesheet or manager not available')
             return this
         }
         
-        const manager = SpriteSheetManager.getInstance()
-        const frameTexture = manager.createFrameTexture(this.spritesheetId, frameId)
+        const frameTexture = this.#manager.createFrameTexture(this.spritesheetId, frameId)
         
         if (!frameTexture) {
             console.warn(`Frame ${frameId} not found in spritesheet ${this.spritesheetId}`)
@@ -57,36 +68,38 @@ export default class Sprite extends OriginalSprite {
 
 
     hasFrame (frameId) {
-        if (!this.spritesheetId) {
+        if (!this.spritesheetId || !this.#manager) {
             return false
         }
         
-        const manager = SpriteSheetManager.getInstance()
-        return manager.hasFrame(this.spritesheetId, frameId)
+        return this.#manager.hasFrame(this.spritesheetId, frameId)
     }
 
 
     getFrameNames () {
-        if (!this.spritesheetId) {
+        if (!this.spritesheetId || !this.#manager) {
             return []
         }
 
-        const manager = SpriteSheetManager.getInstance()
-        return manager.getFrameNames(this.spritesheetId)
+        return this.#manager.getFrameNames(this.spritesheetId)
     }
 
 }
 
 
-function createSpritesheetMaterial (spritesheet, frame, otherParams) {
-    const manager = SpriteSheetManager.getInstance()
+function createSpritesheetMaterial (spritesheet, frame, otherParams, manager) {
+    if (!manager) {
+        console.warn('SpriteSheetManager not available')
+        return null
+    }
+    
     const frameTexture = manager.createFrameTexture(spritesheet, frame)
     
     if (!frameTexture) {
         console.warn(`Frame ${frame} not found in spritesheet ${spritesheet}`)
         return null
     }
-
+    
     return new SpriteMaterial({
         texture: frameTexture,
         ...otherParams

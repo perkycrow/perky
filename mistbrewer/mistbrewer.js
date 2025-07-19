@@ -67,6 +67,12 @@ export default class Mistbrewer extends Application {
         this.background = null
         this.assetsLoaded = false
         
+        // Initialize spritesheet manager
+        this.registerModule('spritesheetManager', new SpriteSheetManager())
+        
+        // Configure Sprite to use our manager
+        Sprite.setDefaultSpriteSheetManager(this.spritesheetManager)
+        
         // Initialize scene manager
         this.sceneManager = new SceneManager(this)
         this.sceneManager.addScene('title', TitleScene)
@@ -110,8 +116,7 @@ export default class Mistbrewer extends Application {
             console.log(`🗃️ Images: ${notebookSpritesheet.getImageKeys().join(', ')}`)
             
             // Enregistrer le spritesheet dans le manager
-            const manager = SpriteSheetManager.getInstance()
-            manager.registerSpritesheet('notebook', notebookSpritesheet)
+            this.spritesheetManager.registerSpritesheet('notebook', notebookSpritesheet)
             console.log('🎨 Spritesheet enregistré dans le manager')
             
             // Test de création d'un sprite avec spritesheet

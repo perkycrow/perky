@@ -166,15 +166,4 @@ export default class SpriteSheetManager extends PerkyModule {
         })
     }
 
-
-    static #instance = null
-
-    
-    static getInstance () {
-        if (!SpriteSheetManager.#instance) {
-            SpriteSheetManager.#instance = new SpriteSheetManager()
-        }
-        return SpriteSheetManager.#instance
-    }
-
-} 
+}
