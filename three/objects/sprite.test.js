@@ -1,7 +1,9 @@
-import {describe, test, expect} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import Sprite from './sprite.js'
 import SpriteMaterial from '../materials/sprite_material.js'
 import SpriteTexture from '../textures/sprite_texture.js'
+import SpriteSheetManager from '../spritesheet_manager.js'
+import Spritesheet from '../../application/spritesheet.js'
 import {Texture} from 'three'
 
 
@@ -173,6 +175,165 @@ describe('Sprite', () => {
         expect(sprite.material.sizeAttenuation).toBe(false)
         expect(sprite.material.transparent).toBe(false)
         expect(sprite.material.opacity).toBe(0.5)
+    })
+
+})
+
+
+describe('Sprite Spritesheet functionality', () => {
+    let mockSpritesheet
+    let manager
+    let mockImage
+
+
+    beforeEach(() => {
+        mockImage = {
+            width: 100,
+            height: 100
+        }
+
+        // Setup mock spritesheet
+        const spritesheetData = {
+            frames: [
+                {
+                    filename: 'test1.png',
+                    imageName: 'test1',
+                    baseImage: 'sheet.png',
+                    frame: {x: 0, y: 0, w: 50, h: 50}
+                },
+                {
+                    filename: 'test2.png',
+                    imageName: 'test2',
+                    baseImage: 'sheet.png',
+                    frame: {x: 50, y: 0, w: 50, h: 50}
+                }
+            ],
+            meta: [{image: 'sheet.png'}]
+        }
+        
+        mockSpritesheet = new Spritesheet(spritesheetData)
+        mockSpritesheet.addImage('sheet.png', mockImage)
+        
+        manager = SpriteSheetManager.getInstance()
+
+        if (!manager.getSpritesheet('test')) {
+            manager.registerSpritesheet('test', mockSpritesheet)
+        }
+    })
+
+
+    afterEach(() => {
+        manager.unregisterSpritesheet('test')
+        vi.restoreAllMocks()
+    })
+
+
+    test('constructor with spritesheet and frame', () => {
+        const sprite = new Sprite({
+            spritesheet: 'test',
+            frame: 'test1'
+        })
+        
+        expect(sprite.material).toBeInstanceOf(SpriteMaterial)
+        expect(sprite.spritesheetId).toBe('test')
+        expect(sprite.currentFrame).toBe('test1')
+    })
+
+
+    test('constructor with invalid spritesheet frame', () => {
+        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        
+        const sprite = new Sprite({
+            spritesheet: 'test',
+            frame: 'nonexistent'
+        })
+        
+        expect(consoleSpy).toHaveBeenCalledWith('Frame nonexistent not found in spritesheet test')
+        expect(sprite.spritesheetId).toBeUndefined()
+        
+        consoleSpy.mockRestore()
+    })
+
+
+    test('setFrame success', () => {
+        const sprite = new Sprite({
+            spritesheet: 'test',
+            frame: 'test1'
+        })
+        
+        const result = sprite.setFrame('test2')
+        
+        expect(result).toBe(sprite)
+        expect(sprite.currentFrame).toBe('test2')
+    })
+
+
+    test('setFrame on non-spritesheet sprite', () => {
+        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const sprite = new Sprite()
+        
+        const result = sprite.setFrame('test1')
+        
+        expect(result).toBe(sprite)
+        expect(consoleSpy).toHaveBeenCalledWith('Cannot set frame: sprite was not created from a spritesheet')
+        
+        consoleSpy.mockRestore()
+    })
+
+
+    test('getFrame returns current frame', () => {
+        const sprite = new Sprite({
+            spritesheet: 'test',
+            frame: 'test1'
+        })
+        
+        expect(sprite.getFrame()).toBe('test1')
+        
+        const regularSprite = new Sprite()
+        expect(regularSprite.getFrame()).toBeNull()
+    })
+
+
+    test('getSpritesheet returns spritesheet ID', () => {
+        const sprite = new Sprite({
+            spritesheet: 'test',
+            frame: 'test1'
+        })
+        
+        expect(sprite.getSpritesheet()).toBe('test')
+        
+        const regularSprite = new Sprite()
+        expect(regularSprite.getSpritesheet()).toBeNull()
+    })
+
+
+    test('hasFrame checks frame existence', () => {
+        const sprite = new Sprite({
+            spritesheet: 'test',
+            frame: 'test1'
+        })
+        
+        expect(sprite.hasFrame('test1')).toBe(true)
+        expect(sprite.hasFrame('test2')).toBe(true)
+        expect(sprite.hasFrame('nonexistent')).toBe(false)
+        
+        const regularSprite = new Sprite()
+        expect(regularSprite.hasFrame('test1')).toBe(false)
+    })
+
+
+    test('getFrameNames returns available frames', () => {
+        const sprite = new Sprite({
+            spritesheet: 'test',
+            frame: 'test1'
+        })
+        
+        const names = sprite.getFrameNames()
+        expect(names).toContain('test1')
+        expect(names).toContain('test2')
+        
+        const regularSprite = new Sprite()
+        expect(regularSprite.getFrameNames()).toEqual([])
     })
 
 })
