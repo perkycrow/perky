@@ -29,6 +29,12 @@ const manifest = {
                 url: '/assets/images/commencer_hover.png',
                 tags: ['core']
             }
+        },
+        spritesheets: {
+            notebook: {
+                url: '/assets/spritesheets/notebook-0.json',
+                tags: ['core']
+            }
         }
     }
 }
@@ -92,6 +98,17 @@ export default class Mistbrewer extends Application {
         })
 
         await this.loadTag('core')
+        
+        // Test du chargement du spritesheet
+        const notebookSpritesheet = this.getSource('spritesheets', 'notebook')
+        if (notebookSpritesheet) {
+            console.log('✅ Spritesheet notebook chargé avec succès')
+            console.log(`📊 Nombre de frames: ${notebookSpritesheet.getFrameCount()}`)
+            console.log(`🖼️ Frames disponibles: ${notebookSpritesheet.getFrameNames().join(', ')}`)
+            console.log(`🗃️ Images: ${notebookSpritesheet.getImageKeys().join(', ')}`)
+        } else {
+            console.warn('❌ Spritesheet notebook non trouvé')
+        }
     }
 
     setupBackground () {
