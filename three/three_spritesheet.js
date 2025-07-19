@@ -74,54 +74,65 @@ export default class ThreeSpritesheet extends PerkyModule {
     }
 
 
-    getFrameTexture (frameId) {
+    getFrameMaterial (frameId, options = {}) {
         const frame = this.getFrame(frameId)
         if (!frame) {
             return null
         }
         
         const imageKey = frame.baseImage
-        const texture = this.getTexture(imageKey)
-        
-        if (!texture) {
-            return null
-        }
-        
-        // Clone texture with frame-specific UV mapping
-        const frameTexture = texture.clone()
-        frameTexture.repeat.set(
-            frame.frame.w / texture.image.width,
-            frame.frame.h / texture.image.height
-        )
-        frameTexture.offset.set(
-            frame.frame.x / texture.image.width,
-            1 - (frame.frame.y + frame.frame.h) / texture.image.height
-        )
-        frameTexture.needsUpdate = true
-        
-        return frameTexture
-    }
-
-
-    getFrameMaterial (frameId, options = {}) {
-        const frameTexture = this.getFrameTexture(frameId)
-        if (!frameTexture) {
+        const baseTexture = this.getTexture(imageKey)
+        if (!baseTexture) {
             return null
         }
         
         const materialKey = ThreeSpritesheet.#getMaterialKey(`frame:${frameId}`, options)
         
         if (!this.materials.has(materialKey)) {
+            // Create a material with the shared texture
             const material = new SpriteMaterial({
-                map: frameTexture,
+                map: baseTexture,
                 ...options
             })
+            
+            // Configure UV mapping for this specific frame
+            ThreeSpritesheet.#applyFrameUVMapping(material.map, frame)
             
             this.materials.set(materialKey, material)
             this.emit('material:created', frameId, material, options)
         }
         
         return this.materials.get(materialKey)
+    }
+    
+    
+    updateSpriteFrame (sprite, frameId) {
+        if (!sprite.material || !sprite.material.map) {
+            return false
+        }
+        
+        const frame = this.getFrame(frameId)
+        if (!frame) {
+            return false
+        }
+        
+        // Update UV mapping on the existing texture (shared efficiently)
+        ThreeSpritesheet.#applyFrameUVMapping(sprite.material.map, frame)
+        
+        return true
+    }
+    
+    
+    static #applyFrameUVMapping (texture, frame) {
+        texture.repeat.set(
+            frame.frame.w / texture.image.width,
+            frame.frame.h / texture.image.height
+        )
+        texture.offset.set(
+            frame.frame.x / texture.image.width,
+            1 - (frame.frame.y + frame.frame.h) / texture.image.height
+        )
+        texture.needsUpdate = true
     }
 
 

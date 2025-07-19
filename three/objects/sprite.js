@@ -33,11 +33,12 @@ export default class Sprite extends OriginalSprite {
             console.warn(`Frame ${frameId} not found in spritesheet`)
             return this
         }
+
+        const success = this.threeSpritesheet.updateSpriteFrame(this, frameId)
         
-        const frameTexture = this.threeSpritesheet.getFrameTexture(frameId)
-        this.material.map = frameTexture
-        this.material.needsUpdate = true
-        this.currentFrame = frameId
+        if (success) {
+            this.currentFrame = frameId
+        }
         
         return this
     }

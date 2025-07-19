@@ -137,30 +137,23 @@ describe('ThreeSpritesheet', () => {
     })
 
 
-    test('getFrameTexture creates texture with correct UV mapping', () => {
-        const frameTexture = threeSpritesheet.getFrameTexture('test1')
-        
-        expect(frameTexture).toBeInstanceOf(SpriteTexture)
-        expect(frameTexture.repeat.x).toBe(0.5) // 50/100
-        expect(frameTexture.repeat.y).toBe(0.5) // 50/100
-        expect(frameTexture.offset.x).toBe(0) // 0/100
-        expect(frameTexture.offset.y).toBe(0.5) // 1 - (0 + 50)/100
-    })
-
-
-    test('getFrameTexture with non-existent frame returns null', () => {
-        const frameTexture = threeSpritesheet.getFrameTexture('nonexistent')
-        
-        expect(frameTexture).toBeNull()
-    })
-
-
-    test('getFrameMaterial creates material with frame texture', () => {
+    test('getFrameMaterial creates material with shared texture and correct UV mapping', () => {
         const material = threeSpritesheet.getFrameMaterial('test1')
+        const baseTexture = threeSpritesheet.getTexture('sheet.png')
         
         expect(material).toBeInstanceOf(SpriteMaterial)
-        expect(material.map).toBeInstanceOf(SpriteTexture)
-        expect(material.map.repeat.x).toBe(0.5)
+        expect(material.map).toBe(baseTexture) // Same texture instance (shared!)
+        expect(material.map.repeat.x).toBe(0.5) // 50/100
+        expect(material.map.repeat.y).toBe(0.5) // 50/100
+        expect(material.map.offset.x).toBe(0) // 0/100
+        expect(material.map.offset.y).toBe(0.5) // 1 - (0 + 50)/100
+    })
+
+
+    test('getFrameMaterial with non-existent frame returns null', () => {
+        const material = threeSpritesheet.getFrameMaterial('nonexistent')
+        
+        expect(material).toBeNull()
     })
 
 
@@ -176,6 +169,30 @@ describe('ThreeSpritesheet', () => {
         const material2 = threeSpritesheet.getFrameMaterial('test1')
         
         expect(material1).toBe(material2)
+    })
+
+    test('updateSpriteFrame updates UV mapping efficiently', () => {
+        const material = threeSpritesheet.getFrameMaterial('test1')
+        const mockSprite = {material}
+        
+        // Initially on test1 frame
+        expect(material.map.repeat.x).toBe(0.5)
+        expect(material.map.offset.x).toBe(0)
+        
+        // Update to test2 frame
+        const success = threeSpritesheet.updateSpriteFrame(mockSprite, 'test2')
+        
+        expect(success).toBe(true)
+        expect(material.map.repeat.x).toBe(0.5) // 50/100
+        expect(material.map.offset.x).toBe(0.5) // 50/100 (test2 is at x=50)
+    })
+
+    test('updateSpriteFrame with invalid sprite returns false', () => {
+        const mockSprite = {material: null}
+        
+        const success = threeSpritesheet.updateSpriteFrame(mockSprite, 'test1')
+        
+        expect(success).toBe(false)
     })
 
 
