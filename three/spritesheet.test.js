@@ -204,4 +204,4 @@ describe('Spritesheet', () => {
         expect(result).toBe(null)
     })
 
-}) 
+})

@@ -2,7 +2,7 @@ import Application from '../application/application.js'
 import GamePlugin from '../game/game_plugin.js'
 import ThreePlugin from '../three/three_plugin.js'
 import Sprite from '../three/objects/sprite.js'
-import SpriteSheetManager from '../three/spritesheet_manager.js'
+import ThreeSpritesheet from '../three/three_spritesheet.js'
 import SpriteAnimation from '../three/sprite_animation.js'
 import SceneManager from './scene_manager.js'
 import TitleScene from './title_scene.js'
@@ -67,12 +67,6 @@ export default class Mistbrewer extends Application {
         this.background = null
         this.assetsLoaded = false
         
-        // Initialize spritesheet manager
-        this.registerModule('spritesheetManager', new SpriteSheetManager())
-        
-        // Configure Sprite to use our manager
-        Sprite.setDefaultSpriteSheetManager(this.spritesheetManager)
-        
         // Initialize scene manager
         this.sceneManager = new SceneManager(this)
         this.sceneManager.addScene('title', TitleScene)
@@ -115,9 +109,9 @@ export default class Mistbrewer extends Application {
             console.log(`🖼️ Frames disponibles: ${notebookSpritesheet.getFrameNames().join(', ')}`)
             console.log(`🗃️ Images: ${notebookSpritesheet.getImageKeys().join(', ')}`)
             
-            // Enregistrer le spritesheet dans le manager
-            this.spritesheetManager.registerSpritesheet('notebook', notebookSpritesheet)
-            console.log('🎨 Spritesheet enregistré dans le manager')
+            // Créer le ThreeSpritesheet
+            this.notebookThreeSpritesheet = new ThreeSpritesheet(notebookSpritesheet)
+            console.log('🎨 ThreeSpritesheet créé')
             
             // Test de création d'un sprite avec spritesheet
             this.testSpritesheetSprite()
@@ -224,7 +218,7 @@ export default class Mistbrewer extends Application {
         
         // Créer un sprite depuis le spritesheet
         const notebookSprite = new Sprite({
-            spritesheet: 'notebook',
+            spritesheet: this.notebookThreeSpritesheet,
             frame: 'notebook1'
         })
         

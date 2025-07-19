@@ -2,8 +2,8 @@ import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import Sprite from './sprite.js'
 import SpriteMaterial from '../materials/sprite_material.js'
 import SpriteTexture from '../textures/sprite_texture.js'
-import SpriteSheetManager from '../spritesheet_manager.js'
-import Spritesheet from '../../application/spritesheet.js'
+import ThreeSpritesheet from '../three_spritesheet.js'
+import Spritesheet from '../spritesheet.js'
 import {Texture} from 'three'
 
 
@@ -71,7 +71,7 @@ describe('Sprite', () => {
 
 
     test('constructor with material parameter uses it directly', () => {
-        const customMaterial = new SpriteMaterial({ color: 0xff0000 })
+        const customMaterial = new SpriteMaterial({color: 0xff0000})
         const sprite = new Sprite({
             material: customMaterial
         })
@@ -126,7 +126,7 @@ describe('Sprite', () => {
         const imageImage = document.createElement('canvas')
 
         const sprite = new Sprite({
-            texture: { source: textureImage },
+            texture: {source: textureImage},
             source: sourceImage,
             image: imageImage
         })
@@ -136,7 +136,7 @@ describe('Sprite', () => {
 
 
     test('material parameter has absolute priority', () => {
-        const customMaterial = new SpriteMaterial({ color: 0x123456 })
+        const customMaterial = new SpriteMaterial({color: 0x123456})
         const mockImage = document.createElement('canvas')
 
         const sprite = new Sprite({
@@ -174,9 +174,9 @@ describe('Sprite', () => {
 })
 
 
-describe('Sprite Spritesheet functionality', () => {
+describe('Sprite ThreeSpritesheet functionality', () => {
     let mockSpritesheet
-    let manager
+    let threeSpritesheet
     let mockImage
 
     beforeEach(() => {
@@ -207,26 +207,22 @@ describe('Sprite Spritesheet functionality', () => {
         mockSpritesheet = new Spritesheet(spritesheetData)
         mockSpritesheet.addImage('sheet.png', mockImage)
         
-        manager = new SpriteSheetManager()
-        manager.registerSpritesheet('test', mockSpritesheet)
-        
-        // Set as default manager for Sprite class
-        Sprite.setDefaultSpriteSheetManager(manager)
+        threeSpritesheet = new ThreeSpritesheet(mockSpritesheet)
     })
 
     afterEach(() => {
-        manager.unregisterSpritesheet('test')
+        threeSpritesheet.dispose()
         vi.restoreAllMocks()
     })
 
     test('constructor with spritesheet and frame', () => {
         const sprite = new Sprite({
-            spritesheet: 'test',
+            spritesheet: threeSpritesheet,
             frame: 'test1'
         })
         
         expect(sprite.material).toBeInstanceOf(SpriteMaterial)
-        expect(sprite.spritesheetId).toBe('test')
+        expect(sprite.threeSpritesheet).toBe(threeSpritesheet)
         expect(sprite.currentFrame).toBe('test1')
     })
 
@@ -234,19 +230,19 @@ describe('Sprite Spritesheet functionality', () => {
         const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
         
         const sprite = new Sprite({
-            spritesheet: 'test',
+            spritesheet: threeSpritesheet,
             frame: 'nonexistent'
         })
         
-        expect(consoleSpy).toHaveBeenCalledWith('Frame nonexistent not found in spritesheet test')
-        expect(sprite.spritesheetId).toBeUndefined()
+        expect(consoleSpy).toHaveBeenCalledWith('Frame nonexistent not found in spritesheet')
+        expect(sprite.threeSpritesheet).toBeUndefined()
         
         consoleSpy.mockRestore()
     })
 
     test('setFrame success', () => {
         const sprite = new Sprite({
-            spritesheet: 'test',
+            spritesheet: threeSpritesheet,
             frame: 'test1'
         })
         
@@ -263,14 +259,14 @@ describe('Sprite Spritesheet functionality', () => {
         const result = sprite.setFrame('test1')
         
         expect(result).toBe(sprite)
-        expect(consoleSpy).toHaveBeenCalledWith('Cannot set frame: sprite was not created from a spritesheet or manager not available')
+        expect(consoleSpy).toHaveBeenCalledWith('Cannot set frame: sprite was not created from a spritesheet')
         
         consoleSpy.mockRestore()
     })
 
     test('getFrame returns current frame', () => {
         const sprite = new Sprite({
-            spritesheet: 'test',
+            spritesheet: threeSpritesheet,
             frame: 'test1'
         })
         
@@ -280,13 +276,13 @@ describe('Sprite Spritesheet functionality', () => {
         expect(regularSprite.getFrame()).toBeNull()
     })
 
-    test('getSpritesheet returns spritesheet ID', () => {
+    test('getSpritesheet returns ThreeSpritesheet instance', () => {
         const sprite = new Sprite({
-            spritesheet: 'test',
+            spritesheet: threeSpritesheet,
             frame: 'test1'
         })
         
-        expect(sprite.getSpritesheet()).toBe('test')
+        expect(sprite.getSpritesheet()).toBe(threeSpritesheet)
         
         const regularSprite = new Sprite()
         expect(regularSprite.getSpritesheet()).toBeNull()
@@ -294,7 +290,7 @@ describe('Sprite Spritesheet functionality', () => {
 
     test('hasFrame checks frame existence', () => {
         const sprite = new Sprite({
-            spritesheet: 'test',
+            spritesheet: threeSpritesheet,
             frame: 'test1'
         })
         
@@ -308,7 +304,7 @@ describe('Sprite Spritesheet functionality', () => {
 
     test('getFrameNames returns available frames', () => {
         const sprite = new Sprite({
-            spritesheet: 'test',
+            spritesheet: threeSpritesheet,
             frame: 'test1'
         })
         

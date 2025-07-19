@@ -1,4 +1,4 @@
-import Spritesheet from './spritesheet'
+import Spritesheet from '../three/spritesheet'
 
 
 function normalizeParams (params) {

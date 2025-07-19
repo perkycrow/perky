@@ -4,30 +4,17 @@ import SpriteMaterial from '../materials/sprite_material.js'
 
 export default class Sprite extends OriginalSprite {
 
-    static #defaultManager = null
-    #manager = null
-    
-    static setDefaultSpriteSheetManager (manager) {
-        Sprite.#defaultManager = manager
-    }
-    
-    static getDefaultSpriteSheetManager () {
-        return Sprite.#defaultManager
-    }
-
     constructor (params = {}) { // eslint-disable-line complexity
-        const {spritesheet, frame, spritesheetManager, ...otherParams} = params
+        const {spritesheet, frame, ...otherParams} = params
         
         if (spritesheet && frame) {
-            const manager = spritesheetManager || Sprite.#defaultManager
-            const material = createSpritesheetMaterial(spritesheet, frame, otherParams, manager)
+            const material = createSpritesheetMaterial(spritesheet, frame, otherParams)
             
             super(material)
             
             if (material) {
-                this.spritesheetId = spritesheet
+                this.threeSpritesheet = spritesheet
                 this.currentFrame = frame
-                this.#manager = manager
             }
         } else {
             const material = createClassicMaterial(otherParams)
@@ -37,18 +24,17 @@ export default class Sprite extends OriginalSprite {
 
 
     setFrame (frameId) {
-        if (!this.spritesheetId || !this.#manager) {
-            console.warn('Cannot set frame: sprite was not created from a spritesheet or manager not available')
+        if (!this.threeSpritesheet) {
+            console.warn('Cannot set frame: sprite was not created from a spritesheet')
             return this
         }
         
-        const frameTexture = this.#manager.createFrameTexture(this.spritesheetId, frameId)
-        
-        if (!frameTexture) {
-            console.warn(`Frame ${frameId} not found in spritesheet ${this.spritesheetId}`)
+        if (!this.threeSpritesheet.hasFrame(frameId)) {
+            console.warn(`Frame ${frameId} not found in spritesheet`)
             return this
         }
         
+        const frameTexture = this.threeSpritesheet.getFrameTexture(frameId)
         this.material.map = frameTexture
         this.material.needsUpdate = true
         this.currentFrame = frameId
@@ -63,47 +49,44 @@ export default class Sprite extends OriginalSprite {
 
 
     getSpritesheet () {
-        return this.spritesheetId || null
+        return this.threeSpritesheet || null
     }
 
 
     hasFrame (frameId) {
-        if (!this.spritesheetId || !this.#manager) {
+        if (!this.threeSpritesheet) {
             return false
         }
         
-        return this.#manager.hasFrame(this.spritesheetId, frameId)
+        return this.threeSpritesheet.hasFrame(frameId)
     }
 
 
     getFrameNames () {
-        if (!this.spritesheetId || !this.#manager) {
+        if (!this.threeSpritesheet) {
             return []
         }
 
-        return this.#manager.getFrameNames(this.spritesheetId)
+        return this.threeSpritesheet.getFrameNames()
     }
 
 }
 
 
-function createSpritesheetMaterial (spritesheet, frame, otherParams, manager) {
-    if (!manager) {
-        console.warn('SpriteSheetManager not available')
+function createSpritesheetMaterial (threeSpritesheet, frame, otherParams) {
+    if (!threeSpritesheet || typeof threeSpritesheet.getFrameMaterial !== 'function') {
+        console.warn('Invalid ThreeSpritesheet provided')
         return null
     }
     
-    const frameTexture = manager.createFrameTexture(spritesheet, frame)
+    const material = threeSpritesheet.getFrameMaterial(frame, otherParams)
     
-    if (!frameTexture) {
-        console.warn(`Frame ${frame} not found in spritesheet ${spritesheet}`)
+    if (!material) {
+        console.warn(`Frame ${frame} not found in spritesheet`)
         return null
     }
     
-    return new SpriteMaterial({
-        texture: frameTexture,
-        ...otherParams
-    })
+    return material
 }
 
 
