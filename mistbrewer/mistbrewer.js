@@ -2,6 +2,8 @@ import Application from '../application/application.js'
 import GamePlugin from '../game/game_plugin.js'
 import ThreePlugin from '../three/three_plugin.js'
 import Sprite from '../three/objects/sprite.js'
+import SpriteSheetManager from '../three/spritesheet_manager.js'
+import SpriteAnimation from '../three/sprite_animation.js'
 import SceneManager from './scene_manager.js'
 import TitleScene from './title_scene.js'
 import GameScene from './game_scene.js'
@@ -87,7 +89,7 @@ export default class Mistbrewer extends Application {
         
         // Start with title scene
         await this.sceneManager.switchTo('title')
-        
+
         // Masquer le loading screen
         hideLoadingScreen()
     }
@@ -106,6 +108,14 @@ export default class Mistbrewer extends Application {
             console.log(`📊 Nombre de frames: ${notebookSpritesheet.getFrameCount()}`)
             console.log(`🖼️ Frames disponibles: ${notebookSpritesheet.getFrameNames().join(', ')}`)
             console.log(`🗃️ Images: ${notebookSpritesheet.getImageKeys().join(', ')}`)
+            
+            // Enregistrer le spritesheet dans le manager
+            const manager = SpriteSheetManager.getInstance()
+            manager.registerSpritesheet('notebook', notebookSpritesheet)
+            console.log('🎨 Spritesheet enregistré dans le manager')
+            
+            // Test de création d'un sprite avec spritesheet
+            this.testSpritesheetSprite()
         } else {
             console.warn('❌ Spritesheet notebook non trouvé')
         }
@@ -202,6 +212,56 @@ export default class Mistbrewer extends Application {
 
     renderGame () {
         this.render()
+    }
+    
+    testSpritesheetSprite () {
+        console.log('🧪 Test de création d\'un sprite avec spritesheet')
+        
+        // Créer un sprite depuis le spritesheet
+        const notebookSprite = new Sprite({
+            spritesheet: 'notebook',
+            frame: 'notebook1'
+        })
+        
+        console.log('🔍 Sprite créé:', notebookSprite)
+        console.log('🎨 Material:', notebookSprite.material)
+        console.log('🖼️ Texture:', notebookSprite.material.map)
+        
+        // Positionner le sprite
+        notebookSprite.position.set(0, 0, 0)
+        notebookSprite.scale.set(2, 2, 1) // Taille plus grande pour être sûr
+        
+        // Ajouter à la scène
+        this.scene.add(notebookSprite)
+        
+        console.log('📝 Sprite notebook ajouté à la scène')
+        console.log('📐 Position:', notebookSprite.position)
+        console.log('📏 Scale:', notebookSprite.scale)
+        console.log('👁️ Caméra position:', this.camera.position)
+        console.log('🎯 Nombre d\'objets dans la scène:', this.scene.children.length)
+        
+        // Créer une animation simple
+        const frames = ['notebook1', 'notebook2', 'notebook3', 'notebook4']
+        const animation = new SpriteAnimation(notebookSprite, frames, {
+            fps: 2,
+            loop: true,
+            autoStart: true
+        })
+        
+        console.log('🎬 Animation créée et démarrée')
+        
+        // Stocker pour debugging
+        this.notebookSprite = notebookSprite
+        this.notebookAnimation = animation
+        
+        // Log des événements d'animation
+        animation.on('frameChanged', (frame, index) => {
+            console.log(`Frame changée: ${frame} (index: ${index})`)
+        })
+        
+        animation.on('loop', () => {
+            console.log('🔄 Animation bouclée')
+        })
     }
 }
 
