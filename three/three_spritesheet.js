@@ -11,7 +11,6 @@ export default class ThreeSpritesheet extends PerkyModule {
         
         this.spritesheet = spritesheet
         this.textures = new Registry()
-        this.materials = new Registry()
         
         this.#createTextures()
     }
@@ -52,29 +51,7 @@ export default class ThreeSpritesheet extends PerkyModule {
     }
 
 
-    getMaterial (imageKey, options = {}) {
-        const materialKey = ThreeSpritesheet.#getMaterialKey(imageKey, options)
-        
-        if (!this.materials.has(materialKey)) {
-            const texture = this.getTexture(imageKey)
-            if (!texture) {
-                return null
-            }
-            
-            const material = new SpriteMaterial({
-                map: texture,
-                ...options
-            })
-            
-            this.materials.set(materialKey, material)
-            this.emit('material:created', imageKey, material, options)
-        }
-        
-        return this.materials.get(materialKey)
-    }
-
-
-    getFrameMaterial (frameId, options = {}) {
+    createSpriteMaterial (frameId, options = {}) {
         const frame = this.getFrame(frameId)
         if (!frame) {
             return null
@@ -86,23 +63,22 @@ export default class ThreeSpritesheet extends PerkyModule {
             return null
         }
         
-        const materialKey = ThreeSpritesheet.#getMaterialKey(`frame:${frameId}`, options)
+        // Clone the texture for this specific sprite to have independent UV mapping
+        const frameTexture = baseTexture.clone()
+        frameTexture.needsUpdate = true
         
-        if (!this.materials.has(materialKey)) {
-            // Create a material with the shared texture
-            const material = new SpriteMaterial({
-                map: baseTexture,
-                ...options
-            })
-            
-            // Configure UV mapping for this specific frame
-            ThreeSpritesheet.#applyFrameUVMapping(material.map, frame)
-            
-            this.materials.set(materialKey, material)
-            this.emit('material:created', frameId, material, options)
-        }
+        // Create a new material for this sprite with its own texture
+        const material = new SpriteMaterial({
+            map: frameTexture,
+            ...options
+        })
         
-        return this.materials.get(materialKey)
+        // Configure UV mapping for this specific frame
+        ThreeSpritesheet.#applyFrameUVMapping(frameTexture, frame)
+        
+        this.emit('material:created', frameId, material, options)
+        
+        return material
     }
     
     
@@ -116,8 +92,27 @@ export default class ThreeSpritesheet extends PerkyModule {
             return false
         }
         
-        // Update UV mapping on the existing texture (shared efficiently)
-        ThreeSpritesheet.#applyFrameUVMapping(sprite.material.map, frame)
+        const newImageKey = frame.baseImage
+        const baseTexture = this.getTexture(newImageKey)
+        if (!baseTexture) {
+            return false
+        }
+        
+        // Always clone texture to maintain independent UV mapping per sprite
+        const newFrameTexture = baseTexture.clone()
+        newFrameTexture.needsUpdate = true
+        
+        // Dispose old texture to avoid memory leaks
+        if (sprite.material.map) {
+            sprite.material.map.dispose()
+        }
+        
+        // Update material with new cloned texture
+        sprite.material.map = newFrameTexture
+        sprite.material.needsUpdate = true
+        
+        // Update UV mapping for the frame
+        ThreeSpritesheet.#applyFrameUVMapping(newFrameTexture, frame)
         
         return true
     }
@@ -143,12 +138,6 @@ export default class ThreeSpritesheet extends PerkyModule {
         })
         this.textures.clear()
         
-        // Dispose of all materials
-        this.materials.forEach(material => {
-            material.dispose()
-        })
-        this.materials.clear()
-        
         this.emit('disposed')
     }
 
@@ -167,9 +156,6 @@ export default class ThreeSpritesheet extends PerkyModule {
     }
 
 
-    static #getMaterialKey (imageKey, options) {
-        const optionsHash = JSON.stringify(options)
-        return `${imageKey}:${optionsHash}`
-    }
+
 
 }

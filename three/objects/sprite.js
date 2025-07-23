@@ -75,12 +75,12 @@ export default class Sprite extends OriginalSprite {
 
 
 function createSpritesheetMaterial (threeSpritesheet, frame, otherParams) {
-    if (!threeSpritesheet || typeof threeSpritesheet.getFrameMaterial !== 'function') {
+    if (!threeSpritesheet || typeof threeSpritesheet.createSpriteMaterial !== 'function') {
         console.warn('Invalid ThreeSpritesheet provided')
         return null
     }
     
-    const material = threeSpritesheet.getFrameMaterial(frame, otherParams)
+    const material = threeSpritesheet.createSpriteMaterial(frame, otherParams)
     
     if (!material) {
         console.warn(`Frame ${frame} not found in spritesheet`)

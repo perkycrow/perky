@@ -53,7 +53,6 @@ describe('ThreeSpritesheet', () => {
         expect(threeSpritesheet).toBeInstanceOf(PerkyModule)
         expect(threeSpritesheet.spritesheet).toBe(mockSpritesheet)
         expect(threeSpritesheet.textures).toBeDefined()
-        expect(threeSpritesheet.materials).toBeDefined()
         
         // Should have created textures automatically
         expect(threeSpritesheet.getTexture('sheet.png')).toBeInstanceOf(SpriteTexture)
@@ -111,38 +110,13 @@ describe('ThreeSpritesheet', () => {
     })
 
 
-    test('getMaterial creates and caches material', () => {
-        const material1 = threeSpritesheet.getMaterial('sheet.png')
-        const material2 = threeSpritesheet.getMaterial('sheet.png')
-        
-        expect(material1).toBeInstanceOf(SpriteMaterial)
-        expect(material1).toBe(material2) // Should be cached
-        expect(material1.map).toBe(threeSpritesheet.getTexture('sheet.png'))
-    })
-
-
-    test('getMaterial with options creates different materials', () => {
-        const material1 = threeSpritesheet.getMaterial('sheet.png')
-        const material2 = threeSpritesheet.getMaterial('sheet.png', {color: 0xff0000})
-        
-        expect(material1).not.toBe(material2)
-        expect(material2.color.getHex()).toBe(0xff0000)
-    })
-
-
-    test('getMaterial with non-existent image returns null', () => {
-        const material = threeSpritesheet.getMaterial('nonexistent.png')
-        
-        expect(material).toBeNull()
-    })
-
-
-    test('getFrameMaterial creates material with shared texture and correct UV mapping', () => {
-        const material = threeSpritesheet.getFrameMaterial('test1')
+    test('createSpriteMaterial creates new material with cloned texture and correct UV mapping', () => {
+        const material = threeSpritesheet.createSpriteMaterial('test1')
         const baseTexture = threeSpritesheet.getTexture('sheet.png')
         
         expect(material).toBeInstanceOf(SpriteMaterial)
-        expect(material.map).toBe(baseTexture) // Same texture instance (shared!)
+        expect(material.map).not.toBe(baseTexture) // Different texture instance (cloned!)
+        expect(material.map.image).toBe(baseTexture.image) // But same image data
         expect(material.map.repeat.x).toBe(0.5) // 50/100
         expect(material.map.repeat.y).toBe(0.5) // 50/100
         expect(material.map.offset.x).toBe(0) // 0/100
@@ -150,36 +124,38 @@ describe('ThreeSpritesheet', () => {
     })
 
 
-    test('getFrameMaterial with non-existent frame returns null', () => {
-        const material = threeSpritesheet.getFrameMaterial('nonexistent')
+    test('createSpriteMaterial with non-existent frame returns null', () => {
+        const material = threeSpritesheet.createSpriteMaterial('nonexistent')
         
         expect(material).toBeNull()
     })
 
 
-    test('getFrameMaterial with options', () => {
-        const material = threeSpritesheet.getFrameMaterial('test1', {color: 0x00ff00})
+    test('createSpriteMaterial with options', () => {
+        const material = threeSpritesheet.createSpriteMaterial('test1', {color: 0x00ff00})
         
         expect(material.color.getHex()).toBe(0x00ff00)
     })
 
 
-    test('getFrameMaterial caches materials', () => {
-        const material1 = threeSpritesheet.getFrameMaterial('test1')
-        const material2 = threeSpritesheet.getFrameMaterial('test1')
+    test('createSpriteMaterial creates NEW instance each time (no caching)', () => {
+        const material1 = threeSpritesheet.createSpriteMaterial('test1')
+        const material2 = threeSpritesheet.createSpriteMaterial('test1')
         
-        expect(material1).toBe(material2)
+        expect(material1).not.toBe(material2) // Different instances
+        expect(material1.map).not.toBe(material2.map) // Different textures (cloned!)
+        expect(material1.map.image).toBe(material2.map.image) // But same image data
     })
 
     test('updateSpriteFrame updates UV mapping efficiently', () => {
-        const material = threeSpritesheet.getFrameMaterial('test1')
+        const material = threeSpritesheet.createSpriteMaterial('test1')
         const mockSprite = {material}
         
         // Initially on test1 frame
         expect(material.map.repeat.x).toBe(0.5)
         expect(material.map.offset.x).toBe(0)
         
-        // Update to test2 frame
+        // Update to test2 frame (same texture)
         const success = threeSpritesheet.updateSpriteFrame(mockSprite, 'test2')
         
         expect(success).toBe(true)
@@ -195,20 +171,31 @@ describe('ThreeSpritesheet', () => {
         expect(success).toBe(false)
     })
 
+    test('updateSpriteFrame disposes old texture to avoid memory leaks', () => {
+        const material = threeSpritesheet.createSpriteMaterial('test1')
+        const mockSprite = {material}
+        const oldTexture = material.map
+        
+        const disposeSpy = vi.spyOn(oldTexture, 'dispose')
+        
+        const success = threeSpritesheet.updateSpriteFrame(mockSprite, 'test2')
+        
+        expect(success).toBe(true)
+        expect(disposeSpy).toHaveBeenCalled()
+        expect(material.map).not.toBe(oldTexture) // New texture
+        expect(material.map.offset.x).toBe(0.5) // test2 position
+    })
 
-    test('dispose cleans up resources', () => {
+
+    test('dispose cleans up textures', () => {
         const texture = threeSpritesheet.getTexture('sheet.png')
-        const material = threeSpritesheet.getMaterial('sheet.png')
         
         const textureSpy = vi.spyOn(texture, 'dispose')
-        const materialSpy = vi.spyOn(material, 'dispose')
         
         threeSpritesheet.dispose()
         
         expect(textureSpy).toHaveBeenCalled()
-        expect(materialSpy).toHaveBeenCalled()
         expect(threeSpritesheet.textures.size).toBe(0)
-        expect(threeSpritesheet.materials.size).toBe(0)
     })
 
 
@@ -234,9 +221,9 @@ describe('ThreeSpritesheet', () => {
         const spy = vi.fn()
         threeSpritesheet.on('material:created', spy)
         
-        threeSpritesheet.getMaterial('sheet.png', {color: 0xff0000})
+        threeSpritesheet.createSpriteMaterial('test1', {color: 0xff0000})
         
-        expect(spy).toHaveBeenCalledWith('sheet.png', expect.any(SpriteMaterial), {color: 0xff0000})
+        expect(spy).toHaveBeenCalledWith('test1', expect.any(SpriteMaterial), {color: 0xff0000})
     })
 
 
