@@ -63,6 +63,20 @@ export default class Application extends Engine {
     }
 
 
+    registerLoader (name, loaderFunction) {
+        if (!name || typeof name !== 'string') {
+            throw new Error('Loader name must be a non-empty string')
+        }
+
+        if (!loaderFunction || typeof loaderFunction !== 'function') {
+            throw new Error('Loader must be a function')
+        }
+
+        this.loaders.set(name, loaderFunction)
+        return this
+    }
+
+
     getSource (type, id) {
         const sourceDescriptor = this.manifest.getSourceDescriptor(type, id)
         return sourceDescriptor ? sourceDescriptor.source : null
