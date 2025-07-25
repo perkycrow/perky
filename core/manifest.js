@@ -118,6 +118,7 @@ export default class Manifest {
         return this
     }
 
+
     addSourceDescriptorType (type) {
         if (!type || typeof type !== 'string') {
             throw new Error('SourceDescriptor type must be a non-empty string')
@@ -145,10 +146,12 @@ export default class Manifest {
         return this.#data.sourceDescriptors[type] || {}
     }
 
+
     getSourceDescriptorsByType (type) {
         const descriptors = this.getSourceDescriptors(type)
         return Object.values(descriptors)
     }
+
 
     getAllSourceDescriptors () {
         const allDescriptors = []
