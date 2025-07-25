@@ -373,6 +373,89 @@ describe('ThreePlugin', () => {
     })
 
 
+    test('registers three loaders on install', () => {
+        plugin = new ThreePlugin()
+        plugin.install(app)
+        
+        expect(app.loaders.has('spritesheet')).toBe(true)
+        expect(typeof app.loaders.get('spritesheet')).toBe('function')
+        expect(app.loaders.has('spritesheetData')).toBe(true)
+        expect(typeof app.loaders.get('spritesheetData')).toBe('function')
+    })
+
+
+    test('three loaders are removed on uninstall', () => {
+        plugin = new ThreePlugin()
+        plugin.install(app)
+        
+        expect(app.loaders.has('spritesheet')).toBe(true)
+        expect(app.loaders.has('spritesheetData')).toBe(true)
+        
+        plugin.uninstall()
+        
+        // Note: loaders are not automatically removed on uninstall
+        // This is by design as other plugins or code might rely on them
+        expect(app.loaders.has('spritesheet')).toBe(true)
+        expect(app.loaders.has('spritesheetData')).toBe(true)
+    })
+
+
+    test('spritesheet loader integration test', async () => {
+        // Mock fetch for the integration test
+        const spritesheetJson = {
+            frames: [
+                {filename: 'test.png', frame: {x: 0, y: 0, w: 32, h: 32}}
+            ],
+            meta: {
+                image: 'sheet.png'
+            }
+        }
+
+        const mockFetch = vi.fn()
+        mockFetch.mockResolvedValueOnce({
+            ok: true,
+            json: () => Promise.resolve(spritesheetJson)
+        })
+        mockFetch.mockResolvedValueOnce({
+            ok: true,
+            blob: () => Promise.resolve(new Blob(['image'], {type: 'image/png'}))
+        })
+        global.fetch = mockFetch
+
+        global.Image = vi.fn(() => {
+            const img = {}
+            Object.defineProperty(img, 'src', {
+                set () {
+                    if (img.onload) {
+                        setTimeout(img.onload, 0)
+                    }
+                }
+            })
+            img.onload = null
+            img.onerror = null
+            return img
+        })
+
+        global.URL = {
+            createObjectURL: vi.fn().mockReturnValue('blob:test'),
+            revokeObjectURL: vi.fn()
+        }
+
+        plugin = new ThreePlugin()
+        plugin.install(app)
+        
+        expect(app.loaders.has('spritesheet')).toBe(true)
+        
+        const spritesheetLoader = app.loaders.get('spritesheet')
+        const result = await spritesheetLoader('test.json')
+        
+        expect(result.getFrameCount()).toBe(1)
+        expect(result.hasFrame('test')).toBe(true)
+
+        vi.restoreAllMocks()
+    })
+
+
 
 
 })

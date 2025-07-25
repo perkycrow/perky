@@ -5,6 +5,7 @@ import OrthographicCamera from './cameras/orthographic_camera'
 import PerspectiveCamera from './cameras/perspective_camera'
 import RenderComposer from './effects/render_composer'
 import {screenToWorld, worldToScreen, getViewDimensions, getScreenBounds} from './viewport_utils'
+import {threeLoaders} from './loaders'
 
 
 export default class ThreePlugin extends Plugin {
@@ -71,6 +72,7 @@ function onInstall (plugin, app) {
 
     addThreeMethods(plugin, app)
     setupEventHandlers(plugin, app)
+    registerThreeLoaders(app)
 
 
     if (app.mounted) {
@@ -276,6 +278,13 @@ function getContainerSize (app) {
     }
 }
 
+
+
+function registerThreeLoaders (app) {
+    Object.entries(threeLoaders).forEach(([name, loaderFunction]) => {
+        app.registerLoader(name, loaderFunction)
+    })
+}
 
 
 function attachCanvas (plugin, app) {
