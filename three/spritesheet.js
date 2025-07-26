@@ -1,4 +1,6 @@
 import PerkyModule from '../core/perky_module'
+import Registry from '../core/registry'
+import SpriteTexture from './textures/sprite_texture'
 
 
 export default class Spritesheet extends PerkyModule {
@@ -9,6 +11,8 @@ export default class Spritesheet extends PerkyModule {
         this.framesList = []
         this.framesMap = new Map()
         this.images = new Map()
+        this.textures = new Registry()
+        this.frameTextures = new Registry()
         this.metadata = spritesheetData.meta || []
         
         this.#initializeFrames(spritesheetData.frames)
@@ -43,8 +47,46 @@ export default class Spritesheet extends PerkyModule {
                 frame.image = image
             }
         })
+
+        if (image) {
+            const texture = new SpriteTexture({image})
+            this.textures.set(imageKey, texture)
+            this.emit('texture:created', imageKey, texture)
+
+            this.#createFrameTexturesForImage(imageKey)
+        }
         
         return this
+    }
+
+
+    #createFrameTexturesForImage (imageKey) {
+        this.framesList.forEach(frame => {
+            if (frame.baseImage === imageKey && frame.image) {
+                this.#createFrameTexture(frame)
+            }
+        })
+    }
+
+
+    #createFrameTexture (frame) {
+        const baseTexture = this.textures.get(frame.baseImage)
+        if (!baseTexture) {
+            return null
+        }
+
+        const frameTexture = new SpriteTexture({
+            image: frame.image,
+            frame: frame
+        })
+
+        const frameName = frame.imageName || frame.filename
+        if (frameName) {
+            this.frameTextures.set(frameName, frameTexture)
+            this.emit('frame:texture:created', frameName, frameTexture, frame)
+        }
+        
+        return frameTexture
     }
 
 
@@ -103,6 +145,21 @@ export default class Spritesheet extends PerkyModule {
 
     getImageKeys () {
         return Array.from(this.images.keys())
+    }
+
+
+    getTexture (imageKey) {
+        return this.textures.get(imageKey)
+    }
+
+
+    getFrameTexture (frameName) {
+        return this.frameTextures.get(frameName)
+    }
+
+
+    getAllFrameTextures () {
+        return this.frameTextures.toObject()
     }
 
 
