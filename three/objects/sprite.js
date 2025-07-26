@@ -4,90 +4,11 @@ import SpriteMaterial from '../materials/sprite_material.js'
 
 export default class Sprite extends OriginalSprite {
 
-    constructor (params = {}) { // eslint-disable-line complexity
-        const {spritesheet, frame, ...otherParams} = params
-        
-        if (spritesheet && frame) {
-            const material = createSpritesheetMaterial(spritesheet, frame, otherParams)
-            
-            super(material)
-            
-            if (material) {
-                this.threeSpritesheet = spritesheet
-                this.currentFrame = frame
-            }
-        } else {
-            const material = createClassicMaterial(otherParams)
-            super(material)
-        }
+    constructor (params = {}) {
+        const material = createMaterial(params)
+        super(material)
     }
 
-
-    setFrame (frameId) {
-        if (!this.threeSpritesheet) {
-            console.warn('Cannot set frame: sprite was not created from a spritesheet')
-            return this
-        }
-        
-        if (!this.threeSpritesheet.hasFrame(frameId)) {
-            console.warn(`Frame ${frameId} not found in spritesheet`)
-            return this
-        }
-
-        const success = this.threeSpritesheet.updateSpriteFrame(this, frameId)
-        
-        if (success) {
-            this.currentFrame = frameId
-        }
-        
-        return this
-    }
-
-
-    getFrame () {
-        return this.currentFrame || null
-    }
-
-
-    getSpritesheet () {
-        return this.threeSpritesheet || null
-    }
-
-
-    hasFrame (frameId) {
-        if (!this.threeSpritesheet) {
-            return false
-        }
-        
-        return this.threeSpritesheet.hasFrame(frameId)
-    }
-
-
-    getFrameNames () {
-        if (!this.threeSpritesheet) {
-            return []
-        }
-
-        return this.threeSpritesheet.getFrameNames()
-    }
-
-}
-
-
-function createSpritesheetMaterial (threeSpritesheet, frame, otherParams) {
-    if (!threeSpritesheet || typeof threeSpritesheet.createSpriteMaterial !== 'function') {
-        console.warn('Invalid ThreeSpritesheet provided')
-        return null
-    }
-    
-    const material = threeSpritesheet.createSpriteMaterial(frame, otherParams)
-    
-    if (!material) {
-        console.warn(`Frame ${frame} not found in spritesheet`)
-        return null
-    }
-    
-    return material
 }
 
 
@@ -108,7 +29,7 @@ function createTextureConfig (textureParam) {
 }
 
 
-function createClassicMaterial (params) {
+function createMaterial (params) {
     let {
         material,
         source,

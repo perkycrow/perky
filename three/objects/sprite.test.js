@@ -2,7 +2,6 @@ import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import Sprite from './sprite.js'
 import SpriteMaterial from '../materials/sprite_material.js'
 import SpriteTexture from '../textures/sprite_texture.js'
-import ThreeSpritesheet from '../three_spritesheet.js'
 import Spritesheet from '../spritesheet.js'
 import {Texture} from 'three'
 
@@ -174,9 +173,8 @@ describe('Sprite', () => {
 })
 
 
-describe('Sprite ThreeSpritesheet functionality', () => {
-    let mockSpritesheet
-    let threeSpritesheet
+describe('Sprite avec Frame Texture', () => {
+    let spritesheet
     let mockImage
 
     beforeEach(() => {
@@ -185,7 +183,6 @@ describe('Sprite ThreeSpritesheet functionality', () => {
             height: 100
         }
 
-        // Setup mock spritesheet
         const spritesheetData = {
             frames: [
                 {
@@ -204,116 +201,40 @@ describe('Sprite ThreeSpritesheet functionality', () => {
             meta: [{image: 'sheet.png'}]
         }
         
-        mockSpritesheet = new Spritesheet(spritesheetData)
-        mockSpritesheet.addImage('sheet.png', mockImage)
-        
-        threeSpritesheet = new ThreeSpritesheet(mockSpritesheet)
+        spritesheet = new Spritesheet(spritesheetData)
+        spritesheet.addImage('sheet.png', mockImage)
     })
 
     afterEach(() => {
-        threeSpritesheet.dispose()
+        spritesheet.dispose()
         vi.restoreAllMocks()
     })
 
-    test('constructor with spritesheet and frame', () => {
+    test('constructor with frame texture directly', () => {
+        const frameTexture = spritesheet.getFrameTexture('test1')
         const sprite = new Sprite({
-            spritesheet: threeSpritesheet,
-            frame: 'test1'
+            texture: frameTexture
         })
         
         expect(sprite.material).toBeInstanceOf(SpriteMaterial)
-        expect(sprite.threeSpritesheet).toBe(threeSpritesheet)
-        expect(sprite.currentFrame).toBe('test1')
+        expect(sprite.material.map).toBe(frameTexture)
+        expect(sprite.material.map.repeat.x).toBe(0.5) // 50/100
+        expect(sprite.material.map.repeat.y).toBe(0.5) // 50/100
     })
 
-    test('constructor with invalid spritesheet frame', () => {
-        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    test('can create multiple sprites with different frame textures', () => {
+        const frameTexture1 = spritesheet.getFrameTexture('test1')
+        const frameTexture2 = spritesheet.getFrameTexture('test2')
         
-        const sprite = new Sprite({
-            spritesheet: threeSpritesheet,
-            frame: 'nonexistent'
-        })
+        const sprite1 = new Sprite({texture: frameTexture1})
+        const sprite2 = new Sprite({texture: frameTexture2})
         
-        expect(consoleSpy).toHaveBeenCalledWith('Frame nonexistent not found in spritesheet')
-        expect(sprite.threeSpritesheet).toBeUndefined()
-        
-        consoleSpy.mockRestore()
-    })
+        expect(sprite1.material.map).toBe(frameTexture1)
+        expect(sprite2.material.map).toBe(frameTexture2)
+        expect(sprite1.material.map).not.toBe(sprite2.material.map)
 
-    test('setFrame success', () => {
-        const sprite = new Sprite({
-            spritesheet: threeSpritesheet,
-            frame: 'test1'
-        })
-        
-        const result = sprite.setFrame('test2')
-        
-        expect(result).toBe(sprite)
-        expect(sprite.currentFrame).toBe('test2')
-    })
-
-    test('setFrame on non-spritesheet sprite', () => {
-        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-        const sprite = new Sprite()
-        
-        const result = sprite.setFrame('test1')
-        
-        expect(result).toBe(sprite)
-        expect(consoleSpy).toHaveBeenCalledWith('Cannot set frame: sprite was not created from a spritesheet')
-        
-        consoleSpy.mockRestore()
-    })
-
-    test('getFrame returns current frame', () => {
-        const sprite = new Sprite({
-            spritesheet: threeSpritesheet,
-            frame: 'test1'
-        })
-        
-        expect(sprite.getFrame()).toBe('test1')
-        
-        const regularSprite = new Sprite()
-        expect(regularSprite.getFrame()).toBeNull()
-    })
-
-    test('getSpritesheet returns ThreeSpritesheet instance', () => {
-        const sprite = new Sprite({
-            spritesheet: threeSpritesheet,
-            frame: 'test1'
-        })
-        
-        expect(sprite.getSpritesheet()).toBe(threeSpritesheet)
-        
-        const regularSprite = new Sprite()
-        expect(regularSprite.getSpritesheet()).toBeNull()
-    })
-
-    test('hasFrame checks frame existence', () => {
-        const sprite = new Sprite({
-            spritesheet: threeSpritesheet,
-            frame: 'test1'
-        })
-        
-        expect(sprite.hasFrame('test1')).toBe(true)
-        expect(sprite.hasFrame('test2')).toBe(true)
-        expect(sprite.hasFrame('nonexistent')).toBe(false)
-        
-        const regularSprite = new Sprite()
-        expect(regularSprite.hasFrame('test1')).toBe(false)
-    })
-
-    test('getFrameNames returns available frames', () => {
-        const sprite = new Sprite({
-            spritesheet: threeSpritesheet,
-            frame: 'test1'
-        })
-        
-        const names = sprite.getFrameNames()
-        expect(names).toContain('test1')
-        expect(names).toContain('test2')
-        
-        const regularSprite = new Sprite()
-        expect(regularSprite.getFrameNames()).toEqual([])
+        expect(sprite1.material.map.offset.x).toBe(0)
+        expect(sprite2.material.map.offset.x).toBe(0.5)
     })
 
 })
