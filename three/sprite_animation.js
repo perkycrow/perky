@@ -14,6 +14,9 @@ export default class SpriteAnimation extends PerkyModule {
         this.fps = options.fps || 12
         this.loop = options.loop !== false
         this.autoStart = options.autoStart || false
+
+        // TODO: Remove this dependency on app
+        this.app = options.app || null  // Needed to resolve texture names
         
         this.currentIndex = 0
         this.playing = false
@@ -181,9 +184,27 @@ export default class SpriteAnimation extends PerkyModule {
 
     
     #updateSpriteFrame () {
-        if (this.sprite && this.currentFrame) {
-            this.sprite.setFrame(this.currentFrame)
+        if (!this.sprite || !this.currentFrame) {
+            return
         }
+        
+        const texture = this.#resolveTexture(this.currentFrame)
+        if (texture && this.sprite.material) {
+            this.sprite.material.map = texture
+            this.sprite.material.needsUpdate = true
+        }
+    }
+
+
+    #resolveTexture (frame) {
+        if (typeof frame === 'string' && this.app) {
+            const texture = this.app.getSource('texture', frame)
+            if (!texture) {
+                console.warn(`SpriteAnimation: Texture '${frame}' not found`)
+            }
+            return texture
+        }
+        return frame
     }
 
 

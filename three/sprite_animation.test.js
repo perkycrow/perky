@@ -14,7 +14,10 @@ describe('SpriteAnimation', () => {
         vi.useFakeTimers()
         
         mockSprite = {
-            setFrame: vi.fn()
+            material: {
+                map: null,
+                needsUpdate: false
+            }
         }
         
         frames = ['frame1', 'frame2', 'frame3', 'frame4']
@@ -143,7 +146,7 @@ describe('SpriteAnimation', () => {
         expect(animation.currentIndex).toBe(0)
         expect(animation.completed).toBe(false)
         expect(stopSpy).toHaveBeenCalledWith('stop')
-        expect(mockSprite.setFrame).toHaveBeenCalledWith('frame1')
+        expect(mockSprite.material.map).toBe('frame1') // Should be set to first frame
     })
 
 
@@ -165,17 +168,19 @@ describe('SpriteAnimation', () => {
         
         expect(result).toBe(animation)
         expect(animation.currentIndex).toBe(2)
-        expect(mockSprite.setFrame).toHaveBeenCalledWith('frame3')
+        expect(mockSprite.material.map).toBe('frame3') // Should be set to the correct frame
         expect(frameChangedSpy).toHaveBeenCalledWith('frameChanged', 'frame3', 2)
     })
 
 
     test('setFrame ignores invalid index', () => {
+        const originalMap = mockSprite.material.map
+        
         animation.setFrame(-1)
         animation.setFrame(10)
         
         expect(animation.currentIndex).toBe(0)
-        expect(mockSprite.setFrame).not.toHaveBeenCalled()
+        expect(mockSprite.material.map).toBe(originalMap) // Should not change
     })
 
 

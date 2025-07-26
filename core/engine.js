@@ -1,20 +1,18 @@
-import Manifest from './manifest'
-import PerkyModule from './perky_module'
-import ModuleRegistry from './module_registry'
-import ActionDispatcher from './action_dispatcher'
-import ActionController from './action_controller'
-import PluginRegistry from './plugin_registry'
+import PerkyModule from './perky_module.js'
+import Manifest from './manifest.js'
+import ModuleRegistry from './module_registry.js'
+import ActionDispatcher from './action_dispatcher.js'
+import ActionController from './action_controller.js'
 
 
 export default class Engine extends PerkyModule {
 
-    #modules
-    #plugins
+    #modules = null
 
     constructor (params = {}) {
-        super()
+        let {manifest = {}} = params
 
-        let {manifest, plugins = []} = params
+        super()
 
         if (!(manifest instanceof Manifest)) {
             manifest = new Manifest(manifest)
@@ -27,53 +25,12 @@ export default class Engine extends PerkyModule {
             parentModuleName: 'engine',
             bind: true
         })
-        this.#plugins = new PluginRegistry(this)
 
         this.registerModule('actionDispatcher', new ActionDispatcher())
 
         this.applicationController = new ActionController()
         this.registerController('application', this.applicationController)
         this.setActiveController('application')
-
-        this.#installPlugins(plugins)
-    }
-
-
-    #installPlugins (plugins) {
-        plugins.forEach(plugin => {
-            const pluginName = plugin.name || plugin.constructor.name
-            this.installPlugin(pluginName, plugin)
-        })
-    }
-
-
-    installPlugin (pluginName, plugin) {
-        return this.#plugins.install(pluginName, plugin)
-    }
-
-
-    uninstallPlugin (pluginName) {
-        return this.#plugins.uninstall(pluginName)
-    }
-
-
-    getPlugin (pluginName) {
-        return this.#plugins.getPlugin(pluginName)
-    }
-
-
-    isPluginInstalled (pluginName) {
-        return this.#plugins.isInstalled(pluginName)
-    }
-
-
-    getAllPlugins () {
-        return this.#plugins.getAllPlugins()
-    }
-
-
-    getPluginNames () {
-        return this.#plugins.getPluginNames()
     }
 
 

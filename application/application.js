@@ -1,25 +1,32 @@
-import Engine from '../core/engine'
-import Registry from '../core/registry'
-import PerkyView from './perky_view'
-import SourceManager from './source_manager'
-import {loaders} from './loaders'
-import InputBinder from '../input/input_binder'
-import InputManager from '../input/input_manager'
-import KeyboardDevice from '../input/input_devices/keyboard_device'
-import MouseDevice from '../input/input_devices/mouse_device'
+import Engine from '../core/engine.js'
+import Registry from '../core/registry.js'
+import PerkyView from './perky_view.js'
+import SourceManager from './source_manager.js'
+import PluginRegistry from '../core/plugin_registry.js'
+import {loaders} from './loaders.js'
+import InputBinder from '../input/input_binder.js'
+import InputManager from '../input/input_manager.js'
+import KeyboardDevice from '../input/input_devices/keyboard_device.js'
+import MouseDevice from '../input/input_devices/mouse_device.js'
 
 
 export default class Application extends Engine {
 
+    #plugins = null
+
     constructor (params = {}) {
+        const {plugins = [], inputManager, inputBinder, keyboard = {}, mouse = {}} = params
+        
         super(params)
 
-        const {inputManager, inputBinder, keyboard = {}, mouse = {}} = params
-
         this.loaders = new Registry(loaders)
+        this.#plugins = new PluginRegistry(this)
 
         this.registerModule('perkyView', new PerkyView({className: 'perky-application'}))
-        this.registerModule('sourceManager', new SourceManager(this))
+        this.registerModule('sourceManager', new SourceManager({
+            loaders: this.loaders,
+            manifest: this.manifest
+        }))
         this.registerModule('inputBinder', getInputBinder(inputBinder))
         this.registerModule('inputManager', getInputManager(inputManager))
 
@@ -30,6 +37,46 @@ export default class Application extends Engine {
         }))
 
         this.#initEvents()
+        
+        this.#installPlugins(plugins)
+    }
+
+
+    #installPlugins (plugins) {
+        plugins.forEach(plugin => {
+            const pluginName = plugin.name || plugin.constructor.name
+            this.installPlugin(pluginName, plugin)
+        })
+    }
+
+
+    installPlugin (pluginName, plugin) {
+        return this.#plugins.install(pluginName, plugin)
+    }
+
+
+    uninstallPlugin (pluginName) {
+        return this.#plugins.uninstall(pluginName)
+    }
+
+
+    getPlugin (pluginName) {
+        return this.#plugins.getPlugin(pluginName)
+    }
+
+
+    isPluginInstalled (pluginName) {
+        return this.#plugins.isInstalled(pluginName)
+    }
+
+
+    getAllPlugins () {
+        return this.#plugins.getAllPlugins()
+    }
+
+
+    getPluginNames () {
+        return this.#plugins.getPluginNames()
     }
 
 

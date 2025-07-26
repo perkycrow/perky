@@ -297,8 +297,8 @@ function registerThreeLoaders (app) {
 
 
 function setupSpritesheetIntegration (plugin, app) {
-    const spritesheetHandler = (progress, {sourceDescriptor, source}) => {
-        if (sourceDescriptor.type === 'spritesheet' && source && typeof source.getFrameTexture === 'function') {
+    const spritesheetHandler = (loader, progress, {sourceDescriptor, source}) => {
+        if (sourceDescriptor && sourceDescriptor.type === 'spritesheet' && source && typeof source.getFrameTexture === 'function') {
             handleSpritesheetLoaded(source, sourceDescriptor, app)
         }
     }

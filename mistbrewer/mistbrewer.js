@@ -2,7 +2,6 @@ import Application from '../application/application.js'
 import GamePlugin from '../game/game_plugin.js'
 import ThreePlugin from '../three/three_plugin.js'
 import Sprite from '../three/objects/sprite.js'
-import ThreeSpritesheet from '../three/three_spritesheet.js'
 import SpriteAnimation from '../three/sprite_animation.js'
 import SceneManager from './scene_manager.js'
 import TitleScene from './title_scene.js'
@@ -113,9 +112,9 @@ export default class Mistbrewer extends Application {
             console.log(`🖼️ Frames disponibles: ${notebookSpritesheet.getFrameNames().join(', ')}`)
             console.log(`🗃️ Images: ${notebookSpritesheet.getImageKeys().join(', ')}`)
             
-            // Créer le ThreeSpritesheet
-            this.notebookThreeSpritesheet = new ThreeSpritesheet(notebookSpritesheet)
-            console.log('🎨 ThreeSpritesheet notebook créé')
+            // Le spritesheet unifié gère déjà les textures
+            this.notebookSpritesheet = notebookSpritesheet
+            console.log('🎨 Spritesheet notebook créé avec textures')
             
             // Test de création d'un sprite avec spritesheet
             this.testNotebookSprite()
@@ -131,9 +130,9 @@ export default class Mistbrewer extends Application {
             console.log(`🖼️ Frames disponibles: ${reagentsSpritesheet.getFrameNames().slice(0, 5).join(', ')}...`)
             console.log(`🗃️ Images: ${reagentsSpritesheet.getImageKeys().join(', ')}`)
             
-            // Créer le ThreeSpritesheet
-            this.reagentsThreeSpritesheet = new ThreeSpritesheet(reagentsSpritesheet)
-            console.log('🎨 ThreeSpritesheet reagents créé')
+            // Le spritesheet unifié gère déjà les textures
+            this.reagentsSpritesheet = reagentsSpritesheet
+            console.log('🎨 Spritesheet reagents créé avec textures')
             
             // Test de création de sprites avec différents reagents
             this.testReagentsSprites()
@@ -236,12 +235,19 @@ export default class Mistbrewer extends Application {
     }
     
     testNotebookSprite () {
-        console.log('🧪 Test de création d\'un sprite avec spritesheet notebook')
+        console.log('🧪 Test de création d\'un sprite avec texture notebook')
         
-        // Créer un sprite depuis le spritesheet
+        // 🎯 NOUVELLE API : Récupérer directement la texture depuis le manifest
+        const frameTexture = this.getSource('texture', 'notebook_notebook1')
+        if (!frameTexture) {
+            console.warn('❌ Texture notebook_notebook1 non trouvée dans le manifest')
+            console.log('📋 Textures disponibles:', this.manifest.getSourceDescriptorsByType('texture').map(t => t.id))
+            return
+        }
+        
+        // Créer un sprite avec la texture directement
         const notebookSprite = new Sprite({
-            spritesheet: this.notebookThreeSpritesheet,
-            frame: 'notebook1'
+            texture: frameTexture  // ✨ UV déjà configurées automatiquement !
         })
         
         console.log('🔍 Sprite créé:', notebookSprite)
@@ -250,21 +256,20 @@ export default class Mistbrewer extends Application {
         
         // Positionner le sprite
         notebookSprite.position.set(-6, 0, 0)
-        notebookSprite.scale.set(2, 2, 1) // Taille plus grande pour être sûr
+        notebookSprite.scale.set(2, 2, 1)
         
         // Ajouter à la scène
         this.scene.add(notebookSprite)
         
         console.log('📝 Sprite notebook ajouté à la scène')
-        console.log('📐 Position:', notebookSprite.position)
-        console.log('📏 Scale:', notebookSprite.scale)
         
         // Créer une animation simple avec les pages du notebook
-        const frames = ['notebook1', 'notebook2', 'notebook3', 'notebook4']
+        const frames = ['notebook_notebook1', 'notebook_notebook2', 'notebook_notebook3', 'notebook_notebook4']
         const animation = new SpriteAnimation(notebookSprite, frames, {
             fps: 2,
             loop: true,
-            autoStart: true
+            autoStart: true,
+            app: this  // 🎯 Passer l'app pour résoudre les textures
         })
         
         console.log('🎬 Animation notebook créée et démarrée')
@@ -291,32 +296,31 @@ export default class Mistbrewer extends Application {
         
         // Configuration des sprites - chaque sprite affiche UNE fleur différente
         const flowerConfigs = [
-            {position: [-3, 3, 0], flower: 'flower_01.png'},
-            {position: [0, 3, 0], flower: 'flower_02.png'},
-            {position: [3, 3, 0], flower: 'flower_03.png'},
-            {position: [-3, 0, 0], flower: 'flower_04.png'},
-            {position: [0, 0, 0], flower: 'flower_05.png'},
-            {position: [3, 0, 0], flower: 'flower_06.png'},
-            {position: [-3, -3, 0], flower: 'flower_07.png'},
-            {position: [0, -3, 0], flower: 'flower_08.png'},
-            {position: [3, -3, 0], flower: 'flower_09.png'}
+            {position: [-3, 3, 0], flower: 'reagents_flower_01'},
+            {position: [0, 3, 0], flower: 'reagents_flower_02'},
+            {position: [3, 3, 0], flower: 'reagents_flower_03'},
+            {position: [-3, 0, 0], flower: 'reagents_flower_04'},
+            {position: [0, 0, 0], flower: 'reagents_flower_05'},
+            {position: [3, 0, 0], flower: 'reagents_flower_06'},
+            {position: [-3, -3, 0], flower: 'reagents_flower_07'},
+            {position: [0, -3, 0], flower: 'reagents_flower_08'},
+            {position: [3, -3, 0], flower: 'reagents_flower_09'}
         ]
         
         flowerConfigs.forEach((config, index) => {
-            // Debug: Vérifier que la frame existe
-            const frame = this.reagentsThreeSpritesheet.getFrame(config.flower)
-            if (!frame) {
-                console.warn(`❌ Frame ${config.flower} n'existe pas dans le spritesheet !`)
-                console.log(`🔍 Frames disponibles: ${this.reagentsThreeSpritesheet.getFrameNames().slice(0, 10).join(', ')}...`)
+            // 🎯 NOUVELLE API : Récupérer directement la texture depuis le manifest
+            const frameTexture = this.getSource('texture', config.flower)
+            if (!frameTexture) {
+                console.warn(`❌ Texture ${config.flower} n'existe pas dans le manifest !`)
+                console.log(`🔍 Textures disponibles: ${this.manifest.getSourceDescriptorsByType('texture').slice(0, 10).map(t => t.id).join(', ')}...`)
                 return
             }
             
-            console.log(`✅ Frame ${config.flower} trouvée: x=${frame.frame.x}, y=${frame.frame.y}, w=${frame.frame.w}, h=${frame.frame.h}`)
+            console.log(`✅ Texture ${config.flower} trouvée`)
             
-            // Créer un sprite depuis le spritesheet - CHAQUE sprite affiche UNE fleur
+            // Créer un sprite avec la texture directement
             const flowerSprite = new Sprite({
-                spritesheet: this.reagentsThreeSpritesheet,
-                frame: config.flower
+                texture: frameTexture  // ✨ UV déjà configurées automatiquement !
             })
             
             // Debug: Vérifier les UV coordinates
@@ -326,7 +330,7 @@ export default class Mistbrewer extends Application {
             
             // Positionner le sprite
             flowerSprite.position.set(...config.position)
-            flowerSprite.scale.set(1, 1, 1) // Les frames font 300x300px, on les réduit
+            flowerSprite.scale.set(1, 1, 1)
             
             // Ajouter à la scène
             this.scene.add(flowerSprite)
@@ -348,8 +352,12 @@ export default class Mistbrewer extends Application {
         
         // Démo du changement vers une autre fleur après 5 secondes
         setTimeout(() => {
-            console.log('🎭 Changement de la fleur centrale vers flower_36.png')
-            this.flowerSprites[4].setFrame('flower_36.png')
+            console.log('🎭 Changement de la texture de la fleur centrale')
+            const newTexture = this.getSource('texture', 'reagents_flower_36')
+            if (newTexture && this.flowerSprites[4]) {
+                this.flowerSprites[4].material.map = newTexture
+                this.flowerSprites[4].material.needsUpdate = true
+            }
         }, 5000)
     }
 }

@@ -1,7 +1,8 @@
-import PluginRegistry from './plugin_registry'
-import Plugin from './plugin'
-import Engine from './engine'
-import {vi} from 'vitest'
+import PluginRegistry from './plugin_registry.js'
+import Plugin from './plugin.js'
+import Engine from './engine.js'
+import Application from '../application/application.js'
+import {vi, beforeEach, describe, test, expect} from 'vitest'
 
 
 describe(PluginRegistry, () => {
@@ -220,7 +221,13 @@ describe(PluginRegistry, () => {
 describe('PluginRegistry integration', () => {
 
     test('plugins can access each other through registry', () => {
-        const engine = new Engine()
+        global.ResizeObserver = vi.fn().mockImplementation(() => ({
+            observe: vi.fn(),
+            unobserve: vi.fn(),
+            disconnect: vi.fn()
+        }))
+
+        const app = new Application()
         
         class FirstPlugin extends Plugin {
             constructor () {
@@ -251,16 +258,24 @@ describe('PluginRegistry integration', () => {
         const firstPlugin = new FirstPlugin()
         const secondPlugin = new SecondPlugin()
         
-        engine.installPlugin('first', firstPlugin)
-        engine.installPlugin('second', secondPlugin)
+        app.installPlugin('first', firstPlugin)
+        app.installPlugin('second', secondPlugin)
         
-        expect(engine.firstMethod()).toBe('first result')
-        expect(engine.secondMethod()).toBe('second calling first result')
+        expect(app.firstMethod()).toBe('first result')
+        expect(app.secondMethod()).toBe('second calling first result')
+        
+        global.ResizeObserver = undefined
     })
 
 
     test('plugin dependency requirement failure', () => {
-        const engine = new Engine()
+        global.ResizeObserver = vi.fn().mockImplementation(() => ({
+            observe: vi.fn(),
+            unobserve: vi.fn(),
+            disconnect: vi.fn()
+        }))
+
+        const app = new Application()
         
         class DependentPlugin extends Plugin {
             constructor () {
@@ -275,13 +290,22 @@ describe('PluginRegistry integration', () => {
         const dependentPlugin = new DependentPlugin()
         
         expect(() => {
-            engine.installPlugin('dependent', dependentPlugin)
+            app.installPlugin('dependent', dependentPlugin)
         }).toThrow("Plugin 'dependent' requires plugin 'nonExistent' but it is not installed")
+        
+        global.ResizeObserver = undefined
     })
 
 
     test('plugin installation with method conflicts', () => {
-        const engine = new Engine()
+        // Mock ResizeObserver for Application
+        global.ResizeObserver = vi.fn().mockImplementation(() => ({
+            observe: vi.fn(),
+            unobserve: vi.fn(),
+            disconnect: vi.fn()
+        }))
+
+        const app = new Application()
         
         class FirstPlugin extends Plugin {
             onInstall () {
@@ -302,10 +326,12 @@ describe('PluginRegistry integration', () => {
         const firstPlugin = new FirstPlugin()
         const secondPlugin = new SecondPlugin()
         
-        engine.installPlugin('first', firstPlugin)
-        engine.installPlugin('second', secondPlugin)
+        app.installPlugin('first', firstPlugin)
+        app.installPlugin('second', secondPlugin)
         
-        expect(engine.conflictMethod()).toBe('second')
+        expect(app.conflictMethod()).toBe('second')
+        
+        global.ResizeObserver = undefined
     })
 
 }) 

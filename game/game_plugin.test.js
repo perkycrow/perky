@@ -1,5 +1,6 @@
 import GamePlugin from './game_plugin'
 import Engine from '../core/engine'
+import Application from '../application/application'
 import {vi, beforeEach, afterEach, describe, test, expect} from 'vitest'
 
 
@@ -220,13 +221,21 @@ describe(GamePlugin, () => {
 
 
     test('plugin works with Engine plugin system', () => {
-        const pluginEngine = new Engine({
+        global.ResizeObserver = vi.fn().mockImplementation(() => ({
+            observe: vi.fn(),
+            unobserve: vi.fn(),
+            disconnect: vi.fn()
+        }))
+
+        const pluginEngine = new Application({
             plugins: [new GamePlugin({fps: 45})]
         })
 
         expect(pluginEngine.getFps()).toBe(45)
         expect(typeof pluginEngine.pause).toBe('function')
         expect(typeof pluginEngine.resume).toBe('function')
+        
+        global.ResizeObserver = undefined
     })
 
 }) 

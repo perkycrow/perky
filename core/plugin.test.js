@@ -1,7 +1,8 @@
-import Plugin from './plugin'
-import Engine from './engine'
-import PerkyModule from './perky_module'
-import {vi} from 'vitest'
+import Plugin from './plugin.js'
+import Engine from './engine.js'
+import Application from '../application/application.js'
+import PerkyModule from './perky_module.js'
+import {vi, beforeEach, describe, test, expect} from 'vitest'
 
 
 describe(Plugin, () => {
@@ -269,23 +270,41 @@ describe(Plugin, () => {
 
 
     test('requirePlugin success', () => {
-        plugin.install(engine)
+        global.ResizeObserver = vi.fn().mockImplementation(() => ({
+            observe: vi.fn(),
+            unobserve: vi.fn(),
+            disconnect: vi.fn()
+        }))
+
+        const app = new Application()
+        plugin.install(app)
         
         const requiredPlugin = new Plugin({name: 'required'})
-        engine.installPlugin('required', requiredPlugin)
+        app.installPlugin('required', requiredPlugin)
         
         const result = plugin.requirePlugin('required')
         
         expect(result).toBe(requiredPlugin)
+        
+        global.ResizeObserver = undefined
     })
 
 
     test('requirePlugin not installed', () => {
-        plugin.install(engine)
+        global.ResizeObserver = vi.fn().mockImplementation(() => ({
+            observe: vi.fn(),
+            unobserve: vi.fn(),
+            disconnect: vi.fn()
+        }))
+
+        const app = new Application()
+        plugin.install(app)
         
         expect(() => {
             plugin.requirePlugin('nonExistentPlugin')
         }).toThrow("Plugin 'Plugin' requires plugin 'nonExistentPlugin' but it is not installed")
+        
+        global.ResizeObserver = undefined
     })
 
 })
