@@ -8,6 +8,7 @@ export default class SpriteTexture extends Texture {
         let {
             image,
             source,
+            frame,
             generateMipmaps = true,
             anisotropy = false,
             minFilter,
@@ -36,7 +37,32 @@ export default class SpriteTexture extends Texture {
             ...otherParams
         })
 
+        if (frame && textureImage) {
+            this.cropFrame(frame)
+        }
+
         this.needsUpdate = true
+    }
+
+
+    cropFrame (frame) {
+        if (!this.image || !frame || !frame.frame) {
+            return this
+        }
+
+        const {x, y, w, h} = frame.frame
+        
+        this.repeat.set(
+            w / this.image.width,
+            h / this.image.height
+        )
+        this.offset.set(
+            x / this.image.width,
+            1 - (y + h) / this.image.height
+        )
+        
+        this.needsUpdate = true
+        return this
     }
 
 }
