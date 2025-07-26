@@ -451,6 +451,7 @@ describe('ThreePlugin', () => {
         
         expect(result.getFrameCount()).toBe(1)
         expect(result.hasFrame('test')).toBe(true)
+        expect(result.getFrameTexture('test')).toBeDefined()
 
         vi.restoreAllMocks()
     })

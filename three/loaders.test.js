@@ -64,6 +64,7 @@ describe('Three Loaders', () => {
         expect(result.getFrameCount()).toBe(1)
         expect(result.hasFrame('sprite1')).toBe(true)
         expect(result.getImage('spritesheet.png')).toBeDefined()
+        expect(result.getFrameTexture('sprite1')).toBeDefined()
         expect(mockFetch).toHaveBeenCalledTimes(2) // JSON + image
     })
 
@@ -99,6 +100,8 @@ describe('Three Loaders', () => {
         expect(result.hasFrame('sprite2')).toBe(true)
         expect(result.getImage('sheet1.png')).toBeDefined()
         expect(result.getImage('sheet2.png')).toBeDefined()
+        expect(result.getFrameTexture('sprite1')).toBeDefined()
+        expect(result.getFrameTexture('sprite2')).toBeDefined()
     })
 
     describe('Spritesheet Data Loading', () => {

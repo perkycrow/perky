@@ -73,6 +73,7 @@ function onInstall (plugin, app) {
     addThreeMethods(plugin, app)
     setupEventHandlers(plugin, app)
     registerThreeLoaders(app)
+    setupSpritesheetIntegration(plugin, app)
 
 
     if (app.mounted) {
@@ -90,6 +91,14 @@ function onUninstall (plugin, app) {
         app.off('displayMode:changed', handler)
     })
     plugin.resizeHandlers = []
+
+    // Nettoyer les handlers de spritesheet
+    if (plugin.spritesheetHandlers) {
+        plugin.spritesheetHandlers.forEach(handler => {
+            app.off('loader:progress', handler)
+        })
+        plugin.spritesheetHandlers = []
+    }
 
     if (plugin.renderer) {
         plugin.renderer.dispose()
@@ -283,6 +292,44 @@ function getContainerSize (app) {
 function registerThreeLoaders (app) {
     Object.entries(threeLoaders).forEach(([name, loaderFunction]) => {
         app.registerLoader(name, loaderFunction)
+    })
+}
+
+
+function setupSpritesheetIntegration (plugin, app) {
+    const spritesheetHandler = (progress, {sourceDescriptor, source}) => {
+        if (sourceDescriptor.type === 'spritesheet' && source && typeof source.getFrameTexture === 'function') {
+            handleSpritesheetLoaded(source, sourceDescriptor, app)
+        }
+    }
+    
+    app.on('loader:progress', spritesheetHandler)
+
+    if (!plugin.spritesheetHandlers) {
+        plugin.spritesheetHandlers = []
+    }
+    plugin.spritesheetHandlers.push(spritesheetHandler)
+}
+
+
+function handleSpritesheetLoaded (spritesheet, sourceDescriptor, app) {
+    const spritesheetId = sourceDescriptor.id
+    const frameNames = spritesheet.getFrameNames()
+    
+    frameNames.forEach(frameName => {
+        const frameTexture = spritesheet.getFrameTexture(frameName)
+        if (frameTexture) {
+            const frameId = `${spritesheetId}_${frameName}`
+            
+            app.addSourceDescriptor('texture', {
+                id: frameId,
+                type: 'texture',
+                source: frameTexture,
+                spritesheetId,
+                frameName,
+                tags: sourceDescriptor.tags || []
+            })
+        }
     })
 }
 
