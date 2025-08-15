@@ -46,34 +46,39 @@ const manifest = {
 
 export default class Mistbrewer extends Application {
     constructor (params = {}) {
+
+        const gamePlugin = new GamePlugin({
+            fps: params.fps || 60,
+            maxFrameSkip: params.maxFrameSkip || 5
+        })
+
+        const threePlugin = new ThreePlugin({
+            backgroundColor: 0x1a1a1a,
+            camera: {
+                type: 'orthographic',
+                width: 20,
+                height: 15,
+                near: 0.1,
+                far: 1000
+            },
+            postProcessing: false
+        })
+
         super({
             ...params,
             plugins: [
-                new GamePlugin({
-                    fps: params.fps || 60,
-                    maxFrameSkip: params.maxFrameSkip || 5
-                }),
-                new ThreePlugin({
-                    backgroundColor: 0x1a1a1a,
-                    camera: {
-                        type: 'orthographic',
-                        width: 20,
-                        height: 15,
-                        near: 0.1,
-                        far: 1000
-                    },
-                    postProcessing: false
-                })
+                gamePlugin,
+                threePlugin
             ]
         })
-        
+
         this.background = null
         this.assetsLoaded = false
         
         this.sceneManager = new SceneManager(this)
         this.sceneManager.addScene('title', TitleScene)
         this.sceneManager.addScene('game', GameScene)
-        
+
         this.initGame()
         this.on('update', (deltaTime) => this.updateGame(deltaTime))
         this.on('render', () => this.renderGame())
