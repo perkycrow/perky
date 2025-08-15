@@ -111,39 +111,49 @@ describe('Grid', () => {
 
     test('neighbourOf', () => {
         const grid = new Grid()
+        grid.setCell({x: 6, y: 3}, 'test1')
+        grid.setCell({x: 4, y: 4}, 'test2')
+        
         const coords = {x: 5, y: 3}
         
-        expect(grid.neighbourOf(coords, {x: 1, y: 0})).toEqual({x: 6, y: 3})
-        expect(grid.neighbourOf(coords, {x: -1, y: 1})).toEqual({x: 4, y: 4})
-        expect(grid.neighbourOf(coords, {x: 0, y: -2})).toEqual({x: 5, y: 1})
+        expect(grid.neighbourOf(coords, {x: 1, y: 0})).toEqual({x: 6, y: 3, cell: 'test1'})
+        expect(grid.neighbourOf(coords, {x: -1, y: 1})).toEqual({x: 4, y: 4, cell: 'test2'})
+        expect(grid.neighbourOf(coords, {x: 0, y: -2})).toEqual({x: 5, y: 1, cell: undefined})
     })
 
 
     test('fourNeighboursOf', () => {
         const grid = new Grid()
+        grid.setCell({x: 2, y: 4}, 'up')
+        grid.setCell({x: 3, y: 3}, 'right')
+        
         const neighbours = grid.fourNeighboursOf({x: 2, y: 3})
         
         expect(neighbours).toHaveLength(4)
-        expect(neighbours).toContainEqual({x: 2, y: 4})
-        expect(neighbours).toContainEqual({x: 3, y: 3})
-        expect(neighbours).toContainEqual({x: 2, y: 2})
-        expect(neighbours).toContainEqual({x: 1, y: 3})
+        expect(neighbours).toContainEqual({x: 2, y: 4, cell: 'up'})
+        expect(neighbours).toContainEqual({x: 3, y: 3, cell: 'right'})
+        expect(neighbours).toContainEqual({x: 2, y: 2, cell: undefined})
+        expect(neighbours).toContainEqual({x: 1, y: 3, cell: undefined})
     })
 
 
     test('eightNeighboursOf', () => {
         const grid = new Grid()
+        grid.setCell({x: 2, y: 4}, 'up')
+        grid.setCell({x: 3, y: 4}, 'upRight')
+        grid.setCell({x: 1, y: 2}, 'downLeft')
+        
         const neighbours = grid.eightNeighboursOf({x: 2, y: 3})
         
         expect(neighbours).toHaveLength(8)
-        expect(neighbours).toContainEqual({x: 2, y: 4})
-        expect(neighbours).toContainEqual({x: 3, y: 4})
-        expect(neighbours).toContainEqual({x: 3, y: 3})
-        expect(neighbours).toContainEqual({x: 3, y: 2})
-        expect(neighbours).toContainEqual({x: 2, y: 2})
-        expect(neighbours).toContainEqual({x: 1, y: 2})
-        expect(neighbours).toContainEqual({x: 1, y: 3})
-        expect(neighbours).toContainEqual({x: 1, y: 4})
+        expect(neighbours).toContainEqual({x: 2, y: 4, cell: 'up'})
+        expect(neighbours).toContainEqual({x: 3, y: 4, cell: 'upRight'})
+        expect(neighbours).toContainEqual({x: 3, y: 3, cell: undefined})
+        expect(neighbours).toContainEqual({x: 3, y: 2, cell: undefined})
+        expect(neighbours).toContainEqual({x: 2, y: 2, cell: undefined})
+        expect(neighbours).toContainEqual({x: 1, y: 2, cell: 'downLeft'})
+        expect(neighbours).toContainEqual({x: 1, y: 3, cell: undefined})
+        expect(neighbours).toContainEqual({x: 1, y: 4, cell: undefined})
     })
 
 
