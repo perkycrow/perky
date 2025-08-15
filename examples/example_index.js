@@ -7,11 +7,11 @@ const baseHtml = `
 `
 
 const tagFamilies = {
-    core: ['action', 'engine', 'manifest', 'module', 'random', 'source', 'utils'],
+    core: ['action', 'engine', 'manifest', 'module', 'random', 'source', 'utils', 'math', 'grid', 'pathfinding', 'algorithm'],
     application: ['input', 'loader', 'asset', 'view'],
     canvas: ['canvas', '2d'],
     three: ['three', '3d', 'webgl'],
-    game: ['game', 'sprite', 'physics', 'collision', 'input'],
+    game: ['game', 'sprite', 'physics', 'collision', 'input', 'mouse', 'drag', 'world', 'level', 'scene-graph'],
     audio: ['audio', 'sound', 'music']
 }
 

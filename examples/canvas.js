@@ -3,7 +3,6 @@ import Circle from '../canvas/circle.js'
 import Rectangle from '../canvas/rectangle.js'
 import Group2D from '../canvas/group_2d.js'
 import Image2D from '../canvas/image_2d.js'
-import Logger from '../editor/logger.js'
 import {createControlPanel, addButtonFolder} from './example_utils.js'
 
 let canvas = null
@@ -46,13 +45,7 @@ function setupCanvas (container) {
 }
 
 function setupUI (container) {
-    const logger = new Logger()
-    logger.mountTo(container)
-    logger.minimize()
-    
-    logger.info('Canvas 2D demo initialized')
-    logger.info('Click buttons to control animations and shapes')
-    
+
     // Create control panel with utilities (much cleaner!)
     const controlPane = createControlPanel({
         title: 'Canvas Controls',
