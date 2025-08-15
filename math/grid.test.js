@@ -84,9 +84,9 @@ describe('Grid', () => {
 
     test('forEachCell with infinite grid throws error', () => {
         const grid = new Grid()
-        
+        const callback = () => {}
         expect(() => {
-            grid.forEachCell(() => {})
+            grid.forEachCell(callback)
         }).toThrow('Cannot iterate over infinite grid')
     })
 
@@ -200,98 +200,6 @@ describe('Grid', () => {
         expect(() => {
             grid.getRow(0)
         }).toThrow('Cannot get row from infinite grid')
-    })
-
-
-    test('findInSequence basic', () => {
-        const grid = new Grid()
-        grid.setCell({x: 0, y: 0}, 'a')
-        grid.setCell({x: 1, y: 0}, 'b')
-        grid.setCell({x: 2, y: 0}, 'c')
-        
-        const result = grid.findInSequence({
-            x: 0,
-            y: 0,
-            step: {x: 1, y: 0}
-        })
-        
-        expect(result).toHaveLength(3)
-        expect(result[0]).toEqual({coords: {x: 0, y: 0}, value: 'a'})
-        expect(result[1]).toEqual({coords: {x: 1, y: 0}, value: 'b'})
-        expect(result[2]).toEqual({coords: {x: 2, y: 0}, value: 'c'})
-    })
-
-
-    test('findInSequence with filter', () => {
-        const grid = new Grid()
-        grid.setCell({x: 0, y: 0}, 1)
-        grid.setCell({x: 1, y: 0}, 2)
-        grid.setCell({x: 2, y: 0}, 3)
-        grid.setCell({x: 3, y: 0}, 4)
-        
-        const result = grid.findInSequence({
-            x: 0,
-            y: 0,
-            step: {x: 1, y: 0},
-            filter: (coords, value) => value % 2 === 0
-        })
-        
-        expect(result).toHaveLength(2)
-        expect(result[0]).toEqual({coords: {x: 1, y: 0}, value: 2})
-        expect(result[1]).toEqual({coords: {x: 3, y: 0}, value: 4})
-    })
-
-
-    test('findInSequence with range and finite grid', () => {
-        const grid = new Grid({width: 5, height: 5})
-        grid.setCell({x: 0, y: 0}, 'a')
-        grid.setCell({x: 1, y: 0}, 'b')
-        
-        const result = grid.findInSequence({
-            x: 0,
-            y: 0,
-            step: {x: 1, y: 0},
-            range: true
-        })
-        
-        expect(result).toHaveLength(2)
-    })
-
-
-    test('findInSequence excludeStart', () => {
-        const grid = new Grid()
-        grid.setCell({x: 0, y: 0}, 'start')
-        grid.setCell({x: 1, y: 0}, 'next')
-        
-        const result = grid.findInSequence({
-            x: 0,
-            y: 0,
-            step: {x: 1, y: 0},
-            includeStart: false
-        })
-        
-        expect(result[0]).toEqual({coords: {x: 1, y: 0}, value: 'next'})
-        expect(result.find(r => r.value === 'start')).toBeUndefined()
-    })
-
-
-    test('findInSequence with includeUndefined on finite grid', () => {
-        const grid = new Grid({width: 4, height: 1})
-        grid.setCell({x: 0, y: 0}, 'a')
-        grid.setCell({x: 2, y: 0}, 'c')
-        
-        const result = grid.findInSequence({
-            x: 0,
-            y: 0,
-            step: {x: 1, y: 0},
-            includeUndefined: true
-        })
-        
-        expect(result).toHaveLength(4)
-        expect(result[0]).toEqual({coords: {x: 0, y: 0}, value: 'a'})
-        expect(result[1]).toEqual({coords: {x: 1, y: 0}, value: undefined})
-        expect(result[2]).toEqual({coords: {x: 2, y: 0}, value: 'c'})
-        expect(result[3]).toEqual({coords: {x: 3, y: 0}, value: undefined})
     })
 
 

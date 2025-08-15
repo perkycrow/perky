@@ -16,6 +16,7 @@ export const eightDirections = {
     upLeft:    {x: -1, y:  1}
 }
 
+
 export default class Grid {
 
     constructor (options = {}) {
@@ -27,11 +28,11 @@ export default class Grid {
     }
 
 
-
     getCell (coords) {
         const key = getCellKey(coords)
         return this.cells.get(key)
     }
+
 
     setCell (coords, value) {
         const key = getCellKey(coords)
@@ -43,6 +44,7 @@ export default class Grid {
         }
     }
 
+
     isInside (coords) {
         if (this.width === null || this.height === null) {
             return true
@@ -51,6 +53,7 @@ export default class Grid {
         return coords.x >= 0 && coords.x < this.width &&
                coords.y >= 0 && coords.y < this.height
     }
+
 
     forEachCell (callback) {
         if (this.width === null || this.height === null) {
@@ -65,6 +68,7 @@ export default class Grid {
             }
         }
     }
+
 
     forEachDefinedCell (callback) {
         for (const [key, value] of this.cells) {
@@ -84,17 +88,20 @@ export default class Grid {
         }
     }
 
+
     fourNeighboursOf (coords) {
         return Object.values(fourDirections).map(direction => {
             return this.neighbourOf(coords, direction)
         })
     }
 
+
     eightNeighboursOf (coords) {
         return Object.values(eightDirections).map(direction => {
             return this.neighbourOf(coords, direction)
         })
     }
+
 
     getCol (x) {
         if (this.height === null) {
@@ -108,6 +115,7 @@ export default class Grid {
         return result
     }
 
+
     getRow (y) {
         if (this.width === null) {
             throw new Error('Cannot get row from infinite grid')
@@ -120,73 +128,18 @@ export default class Grid {
         return result
     }
 
-    findInSequence (options) {
-        const {
-            x,
-            y,
-            step,
-            filter,
-            range = false,
-            includeStart = true,
-            includeUndefined = false
-        } = options
-
-        const result = []
-        let currentX = includeStart ? x : x + step.x
-        let currentY = includeStart ? y : y + step.y
-        let maxIterations = 1000
-
-        while (maxIterations > 0) {
-            const coords = {x: currentX, y: currentY}
-            
-            if (!this.isInside(coords) && this.width !== null && this.height !== null) {
-                break
-            }
-
-            const value = this.getCell(coords)
-            let shouldAdd = false
-            let shouldContinue = true
-            
-            if (value === undefined && !includeUndefined) {
-                if (range) {
-                    break
-                }
-                shouldContinue = false
-            } else if (filter) {
-                if (filter(coords, value)) {
-                    shouldAdd = true
-                } else if (range) {
-                    break
-                }
-            } else {
-                shouldAdd = true
-            }
-
-            if (shouldAdd) {
-                result.push({coords, value})
-            }
-
-            if (!shouldContinue && this.width === null && this.height === null) {
-                break
-            }
-
-            currentX += step.x
-            currentY += step.y
-            maxIterations--
-        }
-
-        return result
-    }
 
     clear () {
         this.cells.clear()
     }
+
 
     clone () {
         const newGrid = new Grid({width: this.width, height: this.height})
         newGrid.cells = new Map(this.cells)
         return newGrid
     }
+
 
     getBounds () {
         if (this.cells.size === 0) {
@@ -222,6 +175,7 @@ export default class Grid {
 function getCellKey (coords) {
     return `${coords.x},${coords.y}`
 }
+
 
 function parseCellKey (key) {
     const [x, y] = key.split(',').map(Number)
