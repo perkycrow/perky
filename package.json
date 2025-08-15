@@ -12,6 +12,7 @@
     "input/**/*.js",
     "application/**/*.js",
     "game/**/*.js",
+    "math/**/*.js",
     "**/*.css",
     "README.md",
     "LICENSE"
@@ -41,6 +42,9 @@
     },
     "./game/*": {
       "import": "./game/*.js"
+    },
+    "./math/*": {
+      "import": "./math/*.js"
     },
     "./**/*.css": "./**/*.css"
   },
