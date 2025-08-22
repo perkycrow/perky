@@ -99,4 +99,19 @@ export default class ServiceClient extends Notifier {
         })
     }
 
+
+    static fromWorker (servicePath, config = {}) {
+        const workerUrl = new URL('./service_worker.js', import.meta.url)
+        const worker = new Worker(workerUrl, {type: 'module'})
+        const client = new ServiceClient({target: worker})
+        
+        worker.postMessage({
+            type: 'init-service',
+            servicePath,
+            config
+        })
+        
+        return client
+    }
+
 }
