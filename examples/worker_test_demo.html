@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Service Test - Perky</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .demo-container {
+            max-width: 700px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        
+        .demo-section {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .demo-controls {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        
+        .demo-button {
+            padding: 8px 16px;
+            background: #007acc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .demo-button:hover {
+            background: #005a9e;
+        }
+        
+        .demo-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .demo-input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        
+        .demo-output {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            min-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-loading {
+            background: orange;
+            animation: pulse 1s infinite;
+        }
+        
+        .status-ready {
+            background: green;
+        }
+        
+        .status-error {
+            background: red;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>🧪 Worker Service Test</h1>
+        <p>Testing ServiceClient.fromWorker() with live math service</p>
+        
+        <div class="demo-section">
+            <h2>📡 Service Status</h2>
+            <div id="serviceStatus">
+                <span class="status-indicator status-loading"></span>
+                <span id="statusText">Starting service...</span>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🧮 Math Operations</h2>
+            <div class="demo-controls">
+                <input type="number" id="num1" class="demo-input" placeholder="Number 1" value="15">
+                <input type="number" id="num2" class="demo-input" placeholder="Number 2" value="25">
+                <button id="addBtn" class="demo-button" disabled>Add</button>
+                <button id="multiplyBtn" class="demo-button" disabled>Multiply</button>
+            </div>
+            <div class="demo-controls">
+                <input type="number" id="fibNum" class="demo-input" placeholder="Fibonacci N" value="30">
+                <button id="fibBtn" class="demo-button" disabled>Calculate Fibonacci</button>
+                <button id="infoBtn" class="demo-button" disabled>Service Info</button>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>📝 Results & Log</h2>
+            <button id="clearLogBtn" class="demo-button">Clear Log</button>
+            <div id="resultLog" class="demo-output">Initializing worker service test...\n</div>
+        </div>
+    </div>
+    
+    <script type="module" src="worker_test_demo.js"></script>
+</body>
+</html>

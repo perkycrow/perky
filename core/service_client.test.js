@@ -371,4 +371,162 @@ describe(ServiceClient, () => {
         expect(clientEventHandler).toHaveBeenCalledWith('Process completed', 'success')
     })
 
+
+    test('fromService creates client and host with paired transport', async () => {
+        class TestService extends ServiceHost {
+            static serviceMethods = ['test']
+            
+            test (req, res) { // eslint-disable-line class-methods-use-this
+                res.send({message: 'direct service'})
+            }
+        }
+
+        const clientA = await ServiceClient.fromService(TestService, {config: 'test'})
+
+        expect(clientA).toBeInstanceOf(ServiceClient)
+        expect(clientA.host).toBeInstanceOf(TestService)
+
+        const result = await clientA.request('test')
+        expect(result.message).toBe('direct service')
+    })
+
+
+    test('fromPath imports and creates service', async () => {
+        class MockService extends ServiceHost {
+            static serviceMethods = ['mock']
+            
+            mock (req, res) { // eslint-disable-line class-methods-use-this
+                res.send({type: 'mocked'})
+            }
+        }
+        
+        vi.doMock('./mock-service.js', () => ({
+            default: MockService
+        }))
+
+        const clientA = await ServiceClient.fromPath('./mock-service.js')
+
+        expect(clientA).toBeInstanceOf(ServiceClient)
+        expect(clientA.host).toBeInstanceOf(MockService)
+ 
+        const result = await clientA.request('mock')
+        expect(result.type).toBe('mocked')
+        
+        vi.doUnmock('./mock-service.js')
+    })
+
+
+    test('fromPath handles module without default export', async () => {
+        class TestService extends ServiceHost {
+            static serviceMethods = ['test']
+            
+            test (req, res) { // eslint-disable-line class-methods-use-this
+                res.send({exported: 'named'})
+            }
+        }
+        
+        vi.doMock('./named-export-service.js', () => ({
+            default: undefined,
+            TestService
+        }))
+
+        const clientA = await ServiceClient.fromPath('./named-export-service.js')
+
+        const result = await clientA.request('test')
+        expect(result.exported).toBe('named')
+        
+        vi.doUnmock('./named-export-service.js')
+    })
+
+
+    test('from() with worker option', () => {
+        const mockWorker = {
+            postMessage: vi.fn(),
+            onmessage: null
+        }
+        
+        global.Worker = vi.fn().mockReturnValue(mockWorker)
+        global.URL = vi.fn().mockReturnValue('mocked-url')
+ 
+        const clientA = ServiceClient.from({
+            worker: './test-service.js',
+            config: {precision: 'high'}
+        })
+ 
+        expect(clientA).toBeInstanceOf(ServiceClient)
+        expect(global.Worker).toHaveBeenCalled()
+        expect(mockWorker.postMessage).toHaveBeenCalledWith({
+            type: 'init-service',
+            servicePath: './test-service.js',
+            config: {precision: 'high'}
+        })
+        
+        global.Worker.mockRestore()
+        global.URL.mockRestore()
+    })
+
+
+    test('from() with service option', async () => {
+        class TestService extends ServiceHost {
+            static serviceMethods = ['test']
+            test (req, res) { // eslint-disable-line class-methods-use-this
+                res.send({type: 'unified'})
+            }
+        }
+        
+        const clientA = await ServiceClient.from({
+            service: TestService,
+            config: {mode: 'test'}
+        })
+        
+        expect(clientA).toBeInstanceOf(ServiceClient)
+        expect(clientA.host).toBeInstanceOf(TestService)
+
+        const result = await clientA.request('test')
+        expect(result.type).toBe('unified')
+    })
+
+
+    test('from() with path option', async () => {
+        class PathService extends ServiceHost {
+            static serviceMethods = ['pathTest']
+            pathTest (req, res) { // eslint-disable-line class-methods-use-this
+                res.send({loaded: 'dynamically'})
+            }
+        }
+        
+        vi.doMock('./dynamic-service.js', () => ({
+            default: PathService
+        }))
+
+        const clientA = await ServiceClient.from({
+            path: './dynamic-service.js',
+            config: {dynamic: true}
+        })
+ 
+        const result = await clientA.request('pathTest')
+        expect(result.loaded).toBe('dynamically')
+        
+        vi.doUnmock('./dynamic-service.js')
+    })
+
+
+    test('from() throws error with no options', () => {
+        expect(() => ServiceClient.from({})).toThrow(
+            'ServiceClient.from() requires one of: worker, service, or path'
+        )
+    })
+
+
+    test('from() throws error with multiple options', () => {
+        class TestService extends ServiceHost {}
+        
+        expect(() => ServiceClient.from({
+            worker: './worker.js',
+            service: TestService
+        })).toThrow(
+            'ServiceClient.from() requires exactly one option: worker, service, or path'
+        )
+    })
+
 })

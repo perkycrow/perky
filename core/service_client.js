@@ -114,4 +114,51 @@ export default class ServiceClient extends Notifier {
         return client
     }
 
+
+    static async fromService (ServiceClass, config = {}) {
+        const [transportA, transportB] = ServiceTransport.pair()
+        
+        const host = new ServiceClass({...config, transport: transportA})
+        const client = new ServiceClient({transport: transportB})
+        
+        client.host = host
+        return client
+    }
+
+
+    static async fromPath (servicePath, config = {}) {
+        const module = await import(servicePath)
+        
+        const ServiceClass = module.default || Object.values(module).find(value => {
+            return typeof value === 'function' && value.prototype
+        })
+
+        return ServiceClient.fromService(ServiceClass, config)
+    }
+
+
+    static from (options) {
+        const {worker, service, path, config = {}} = options
+        
+        const optionCount = [worker, service, path].filter(Boolean).length
+        
+        if (optionCount === 0) {
+            throw new Error('ServiceClient.from() requires one of: worker, service, or path')
+        }
+        
+        if (optionCount > 1) {
+            throw new Error('ServiceClient.from() requires exactly one option: worker, service, or path')
+        }
+        
+        if (worker) {
+            return ServiceClient.fromWorker(worker, config)
+        }
+        
+        if (service) {
+            return ServiceClient.fromService(service, config)
+        }
+        
+        return ServiceClient.fromPath(path, config)
+    }
+
 }
