@@ -1,5 +1,4 @@
 import ServiceClient from '../core/service_client.js'
-import PathfindingService from '../math/services/pathfinding_service.js'
 import Grid from '../math/grid.js'
 
 class PathfindingServiceDemo {
@@ -29,16 +28,20 @@ class PathfindingServiceDemo {
 
     async initializeService () {
         try {
-            this.log('🚀 Initializing PathfindingService...')
+            this.log('🚀 Initializing PathfindingService in worker...')
             
-            // Create service client using direct service approach
-            this.client = await ServiceClient.fromService(PathfindingService, {
+            // Create service client using worker approach
+            this.client = ServiceClient.fromWorker('../math/services/pathfinding_service.js', {
                 maxCacheSize: 500,
                 allowDiagonal: true,
                 heuristic: 'manhattan'
             })
             
-            this.log(`✅ Service ready with diagonal movement enabled`)
+            // Wait a bit for worker initialization
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            this.log(`✅ Worker service ready with diagonal movement enabled`)
+            this.log(`   Running in dedicated worker thread`)
             this.log(`   Walkable logic: simple (undefined/null=walkable, objects.walkable, 0=blocked, "wall"=blocked)`)
             
         } catch (error) {
@@ -232,7 +235,7 @@ class PathfindingServiceDemo {
     }
 
 
-    handleCanvasClick (event) {
+    async handleCanvasClick (event) {
         const rect = this.canvas.getBoundingClientRect()
         const x = Math.floor((event.clientX - rect.left) / this.CELL_SIZE)
         const y = Math.floor((event.clientY - rect.top) / this.CELL_SIZE)
@@ -240,15 +243,29 @@ class PathfindingServiceDemo {
         if (x >= 0 && x < this.GRID_WIDTH && y >= 0 && y < this.GRID_HEIGHT) {
             // Toggle wall
             const currentValue = this.grid.getCell({x, y})
-            if (currentValue === 'wall') {
-                this.grid.setCell({x, y}, undefined)
-                this.log(`🧱 Removed wall at (${x}, ${y})`)
-            } else {
-                this.grid.setCell({x, y}, 'wall')
-                this.log(`🧱 Added wall at (${x}, ${y})`)
+            const newValue = currentValue === 'wall' ? undefined : 'wall'
+            
+            // Update local grid
+            this.grid.setCell({x, y}, newValue)
+            
+            // Update service grid via setCell (this will clear cache)
+            if (this.client) {
+                try {
+                    await this.client.request('setCell', {
+                        coords: {x, y},
+                        value: newValue
+                    })
+                    
+                    if (newValue === 'wall') {
+                        this.log(`🧱 Added wall at (${x}, ${y}) - cache cleared`)
+                    } else {
+                        this.log(`🧱 Removed wall at (${x}, ${y}) - cache cleared`)
+                    }
+                } catch (error) {
+                    this.log(`❌ Failed to update cell: ${error.message}`)
+                }
             }
             
-            this.updateServiceGrid()
             this.drawGrid()
         }
     }
@@ -316,9 +333,10 @@ class PathfindingServiceDemo {
             
             if (result.found) {
                 this.log(`✅ Path found! Length: ${result.length} steps`)
-                this.log(`   Service calculation: ${result.calculationTime.toFixed(2)}ms`)
+                this.log(`   Worker calculation: ${result.calculationTime.toFixed(2)}ms`)
+                this.log(`   Communication overhead: ${(totalTime - result.calculationTime).toFixed(2)}ms`)
                 this.log(`   Total time: ${totalTime.toFixed(2)}ms`)
-                this.log(`   Cached: ${result.cached ? 'Yes' : 'No'}`)
+                this.log(`   Cached: ${result.cached ? 'Yes (no worker roundtrip!)' : 'No'}`)
                 
                 // Redraw grid and path
                 this.drawGrid()
@@ -334,11 +352,11 @@ class PathfindingServiceDemo {
     }
 
 
-    clearGrid () {
+    async clearGrid () {
         this.grid.clear()
-        this.updateServiceGrid()
+        await this.updateServiceGrid()
         this.drawGrid()
-        this.log('🧹 Grid cleared')
+        this.log('🧹 Grid cleared and cache reset')
     }
 
 
