@@ -1,8 +1,8 @@
 import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
-import Sprite from './sprite.js'
-import SpriteMaterial from '../materials/sprite_material.js'
-import SpriteTexture from '../textures/sprite_texture.js'
-import Spritesheet from '../spritesheet.js'
+import Sprite from './sprite'
+import SpriteMaterial from '../materials/sprite_material'
+import SpriteTexture from '../textures/sprite_texture'
+import Spritesheet from '../spritesheet'
 import {Texture} from 'three'
 
 

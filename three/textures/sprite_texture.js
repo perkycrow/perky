@@ -1,4 +1,4 @@
-import Texture from './texture.js'
+import Texture from './texture'
 import {SRGBColorSpace, LinearMipmapLinearFilter, LinearFilter} from 'three'
 
 

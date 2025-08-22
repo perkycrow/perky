@@ -1,5 +1,5 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
-import WebGLRenderer from './webgl_renderer.js'
+import WebGLRenderer from './webgl_renderer'
 import {PCFSoftShadowMap, BasicShadowMap, NoColorSpace} from 'three'
 
 

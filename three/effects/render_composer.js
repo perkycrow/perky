@@ -1,6 +1,6 @@
-import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js'
-import {RenderPass} from 'three/addons/postprocessing/RenderPass.js'
-import {OutputPass} from 'three/addons/postprocessing/OutputPass.js'
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer'
+import {RenderPass} from 'three/addons/postprocessing/RenderPass'
+import {OutputPass} from 'three/addons/postprocessing/OutputPass'
 
 
 export default class RenderComposer {

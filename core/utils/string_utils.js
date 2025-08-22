@@ -1,4 +1,4 @@
-import pluralizeLib from '../libs/pluralize.js'
+import pluralizeLib from '../libs/pluralize'
 
 
 export function getUrlExt (url) {

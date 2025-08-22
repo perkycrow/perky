@@ -1,11 +1,11 @@
-import Canvas2D from '../canvas/canvas_2d.js'
-import Rectangle from '../canvas/rectangle.js'
-import Circle from '../canvas/circle.js'
-import Group2D from '../canvas/group_2d.js'
-import Grid from '../math/grid.js'
-import Pathfinder, {heuristics} from '../math/pathfinder.js'
-import PerkyLogger from '../editor/perky_logger.js'
-import {createControlPanel, addButtonFolder} from './example_utils.js'
+import Canvas2D from '../canvas/canvas_2d'
+import Rectangle from '../canvas/rectangle'
+import Circle from '../canvas/circle'
+import Group2D from '../canvas/group_2d'
+import Grid from '../math/grid'
+import Pathfinder, {heuristics} from '../math/pathfinder'
+import PerkyLogger from '../editor/perky_logger'
+import {createControlPanel, addButtonFolder} from './example_utils'
 
 let canvas = null
 let renderer = null

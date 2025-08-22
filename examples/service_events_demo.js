@@ -1,4 +1,4 @@
-import ServiceClient from '../core/service_client.js'
+import ServiceClient from '../core/service_client'
 
 class ServiceEventsDemo {
 

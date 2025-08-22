@@ -1,7 +1,7 @@
-import PluginRegistry from './plugin_registry.js'
-import Plugin from './plugin.js'
-import Engine from './engine.js'
-import Application from '../application/application.js'
+import PluginRegistry from './plugin_registry'
+import Plugin from './plugin'
+import Engine from './engine'
+import Application from '../application/application'
 import {vi, beforeEach, describe, test, expect} from 'vitest'
 
 

@@ -1,7 +1,7 @@
-import {detectCollision} from './collision_detector.js'
-import CollisionResolver from './collision_resolver.js'
-import BoxShape from './shapes/box_shape.js'
-import CircleShape from './shapes/circle_shape.js'
+import {detectCollision} from './collision_detector'
+import CollisionResolver from './collision_resolver'
+import BoxShape from './shapes/box_shape'
+import CircleShape from './shapes/circle_shape'
 
 
 const SHAPE_CREATORS = {

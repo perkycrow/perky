@@ -22,15 +22,15 @@ const mockOutputPass = {
     enabled: true
 }
 
-vi.mock('three/addons/postprocessing/EffectComposer.js', () => ({
+vi.mock('three/addons/postprocessing/EffectComposer', () => ({
     EffectComposer: vi.fn(() => mockEffectComposer)
 }))
 
-vi.mock('three/addons/postprocessing/RenderPass.js', () => ({
+vi.mock('three/addons/postprocessing/RenderPass', () => ({
     RenderPass: vi.fn(() => mockRenderPass)
 }))
 
-vi.mock('three/addons/postprocessing/OutputPass.js', () => ({
+vi.mock('three/addons/postprocessing/OutputPass', () => ({
     OutputPass: vi.fn(() => mockOutputPass)
 }))
 

@@ -1,6 +1,6 @@
-import Random from '/core/random.js'
-import PerkyLogger from '/editor/perky_logger.js'
-import {createControlPanel, addButtonFolder} from './example_utils.js'
+import Random from '/core/random'
+import PerkyLogger from '/editor/perky_logger'
+import {createControlPanel, addButtonFolder} from './example_utils'
 
 const container = document.querySelector('.example-content')
 

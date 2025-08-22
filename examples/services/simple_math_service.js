@@ -1,4 +1,4 @@
-import ServiceHost from '../../core/service_host.js'
+import ServiceHost from '../../core/service_host'
 
 export default class SimpleMathService extends ServiceHost {
 

@@ -1,5 +1,5 @@
-import ServiceClient from '../core/service_client.js'
-import SimpleMathService from './services/simple_math_service.js'
+import ServiceClient from '../core/service_client'
+import SimpleMathService from './services/simple_math_service'
 
 class DirectServiceDemo {
 

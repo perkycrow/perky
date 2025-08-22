@@ -1,13 +1,13 @@
-import Engine from '../core/engine.js'
-import Registry from '../core/registry.js'
-import PerkyView from './perky_view.js'
-import SourceManager from './source_manager.js'
-import PluginRegistry from '../core/plugin_registry.js'
-import {loaders} from './loaders.js'
-import InputBinder from '../input/input_binder.js'
-import InputManager from '../input/input_manager.js'
-import KeyboardDevice from '../input/input_devices/keyboard_device.js'
-import MouseDevice from '../input/input_devices/mouse_device.js'
+import Engine from '../core/engine'
+import Registry from '../core/registry'
+import PerkyView from './perky_view'
+import SourceManager from './source_manager'
+import PluginRegistry from '../core/plugin_registry'
+import {loaders} from './loaders'
+import InputBinder from '../input/input_binder'
+import InputManager from '../input/input_manager'
+import KeyboardDevice from '../input/input_devices/keyboard_device'
+import MouseDevice from '../input/input_devices/mouse_device'
 
 
 export default class Application extends Engine {

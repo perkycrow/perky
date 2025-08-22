@@ -1,5 +1,5 @@
-import GameLoop from '/game/game_loop.js'
-import Logger from '/editor/logger.js'
+import GameLoop from '/game/game_loop'
+import Logger from '/editor/logger'
 import {
     createControlPanel,
     createGameControlPanel,
@@ -7,7 +7,7 @@ import {
     addReadonlyBinding,
     addSliderBinding,
     createDebugPanel
-} from './example_utils.js'
+} from './example_utils'
 
 const container = document.querySelector('.example-content')
 
@@ -51,7 +51,7 @@ const fakeGame = {
 }
 
 logger.info('Example Utils Demo initialized!')
-logger.info('This demonstrates all utility functions from example_utils.js')
+logger.info('This demonstrates all utility functions from example_utils')
 
 // 1. Basic control panel (top-left)
 const basicPane = createControlPanel({

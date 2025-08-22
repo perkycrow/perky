@@ -1,8 +1,8 @@
-import PerkyModule from './perky_module.js'
-import Manifest from './manifest.js'
-import ModuleRegistry from './module_registry.js'
-import ActionDispatcher from './action_dispatcher.js'
-import ActionController from './action_controller.js'
+import PerkyModule from './perky_module'
+import Manifest from './manifest'
+import ModuleRegistry from './module_registry'
+import ActionDispatcher from './action_dispatcher'
+import ActionController from './action_controller'
 
 
 export default class Engine extends PerkyModule {

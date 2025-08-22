@@ -1,11 +1,11 @@
-import Application from '../application/application.js'
-import GamePlugin from '../game/game_plugin.js'
-import ThreePlugin from '../three/three_plugin.js'
-import Sprite from '../three/objects/sprite.js'
-import SpriteAnimation from '../three/sprite_animation.js'
-import SceneManager from './scene_manager.js'
-import TitleScene from './title_scene.js'
-import GameScene from './game_scene.js'
+import Application from '../application/application'
+import GamePlugin from '../game/game_plugin'
+import ThreePlugin from '../three/three_plugin'
+import Sprite from '../three/objects/sprite'
+import SpriteAnimation from '../three/sprite_animation'
+import SceneManager from './scene_manager'
+import TitleScene from './title_scene'
+import GameScene from './game_scene'
 
 const manifest = {
     config: {

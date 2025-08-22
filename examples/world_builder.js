@@ -6,7 +6,7 @@ import {
     createGameControlPanel,
     createControlPanel,
     addButtonFolder
-} from './example_utils.js'
+} from './example_utils'
 import Sprite from '../three/objects/sprite'
 import {Group} from 'three'
 

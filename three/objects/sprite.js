@@ -1,5 +1,5 @@
 import {Sprite as OriginalSprite, Texture as OriginalTexture} from 'three'
-import SpriteMaterial from '../materials/sprite_material.js'
+import SpriteMaterial from '../materials/sprite_material'
 
 
 export default class Sprite extends OriginalSprite {

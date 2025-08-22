@@ -1,4 +1,4 @@
-import Scene from './scene.js'
+import Scene from './scene'
 
 export default class GameScene extends Scene {
     constructor (game) {

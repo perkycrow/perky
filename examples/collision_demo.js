@@ -1,8 +1,8 @@
-import CollisionSystem from '../collision/collision_system.js'
-import {detectCollision} from '../collision/collision_detector.js'
-import Canvas2D from '../canvas/canvas_2d.js'
-import Circle from '../canvas/circle.js'
-import Rectangle from '../canvas/rectangle.js'
+import CollisionSystem from '../collision/collision_system'
+import {detectCollision} from '../collision/collision_detector'
+import Canvas2D from '../canvas/canvas_2d'
+import Circle from '../canvas/circle'
+import Rectangle from '../canvas/rectangle'
 import {Object3D} from 'three'
 
 class CollisionDemo {

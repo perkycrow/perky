@@ -1,9 +1,9 @@
-import Canvas2D from '../canvas/canvas_2d.js'
-import Circle from '../canvas/circle.js'
-import Rectangle from '../canvas/rectangle.js'
-import Group2D from '../canvas/group_2d.js'
-import Image2D from '../canvas/image_2d.js'
-import {createControlPanel, addButtonFolder} from './example_utils.js'
+import Canvas2D from '../canvas/canvas_2d'
+import Circle from '../canvas/circle'
+import Rectangle from '../canvas/rectangle'
+import Group2D from '../canvas/group_2d'
+import Image2D from '../canvas/image_2d'
+import {createControlPanel, addButtonFolder} from './example_utils'
 
 let canvas = null
 let renderer = null

@@ -10,7 +10,7 @@ import {
     addToggle,
     addSliderWithRange,
     RANGES
-} from './example_utils.js'
+} from './example_utils'
 import Sprite from '../three/objects/sprite'
 import SpriteMaterial from '../three/materials/sprite_material'
 import SimpleCollisionDetector from '../collision/simple_collision_detector'

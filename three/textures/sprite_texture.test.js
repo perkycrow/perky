@@ -1,4 +1,4 @@
-import SpriteTexture from './sprite_texture.js'
+import SpriteTexture from './sprite_texture'
 import {describe, test, expect} from 'vitest'
 import {
     SRGBColorSpace,

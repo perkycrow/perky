@@ -1,4 +1,4 @@
-import Random from '../random.js'
+import Random from '../random'
 
 
 export function newRandom (seed = Random.generateSeed()) {

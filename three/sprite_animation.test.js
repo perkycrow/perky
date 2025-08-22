@@ -1,5 +1,5 @@
-import SpriteAnimation from './sprite_animation.js'
-import PerkyModule from '../core/perky_module.js'
+import SpriteAnimation from './sprite_animation'
+import PerkyModule from '../core/perky_module'
 import {vi, beforeEach, describe, test, expect, afterEach} from 'vitest'
 
 

@@ -7,7 +7,7 @@ import {
     createControlPanel,
     addButtonFolder,
     addSliderBinding
-} from './example_utils.js'
+} from './example_utils'
 import Sprite from '../three/objects/sprite'
 
 const manifest = {

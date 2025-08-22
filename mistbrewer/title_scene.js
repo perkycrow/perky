@@ -1,5 +1,5 @@
-import Scene from './scene.js'
-import Sprite from '../three/objects/sprite.js'
+import Scene from './scene'
+import Sprite from '../three/objects/sprite'
 
 export default class TitleScene extends Scene {
     constructor (game) {

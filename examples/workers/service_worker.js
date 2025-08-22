@@ -1,4 +1,4 @@
-import ServiceHost from '../../core/service_host.js'
+import ServiceHost from '../../core/service_host'
 
 class ServiceWorker {
 

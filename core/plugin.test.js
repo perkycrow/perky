@@ -1,7 +1,7 @@
-import Plugin from './plugin.js'
-import Engine from './engine.js'
-import Application from '../application/application.js'
-import PerkyModule from './perky_module.js'
+import Plugin from './plugin'
+import Engine from './engine'
+import Application from '../application/application'
+import PerkyModule from './perky_module'
 import {vi, beforeEach, describe, test, expect} from 'vitest'
 
 

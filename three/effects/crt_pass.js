@@ -1,4 +1,4 @@
-import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js'
+import {ShaderPass} from 'three/addons/postprocessing/ShaderPass'
 
 const CRTShader = {
     uniforms: {
