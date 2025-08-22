@@ -60,7 +60,7 @@ export default class ServiceHost extends Notifier {
             return
         }
 
-        const request = ServiceRequest.fromJSON(message.request)
+        const request = ServiceRequest.import(message.request)
         const response = new ServiceResponse(request.id)
 
         if (!this.actions.has(request.action)) {

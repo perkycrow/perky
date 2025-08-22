@@ -18,7 +18,7 @@ export default class ServiceRequest {
     }
 
 
-    static fromJSON (data) {
+    static import (data) {
         const req = new ServiceRequest(data.action, data.params)
         req.id = data.id
         req.timestamp = data.timestamp

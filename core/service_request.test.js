@@ -46,7 +46,7 @@ describe(ServiceRequest, () => {
     })
 
 
-    test('fromJSON', () => {
+    test('import', () => {
         const data = {
             id: 'test-id',
             action: 'testAction',
@@ -54,7 +54,7 @@ describe(ServiceRequest, () => {
             timestamp: 1234567890
         }
         
-        const request = ServiceRequest.fromJSON(data)
+        const request = ServiceRequest.import(data)
         
         expect(request.id).toBe('test-id')
         expect(request.action).toBe('testAction')
@@ -63,7 +63,7 @@ describe(ServiceRequest, () => {
     })
 
 
-    test('fromJSON creates new instance', () => {
+    test('import creates new instance', () => {
         const data = {
             id: 'test-id',
             action: 'testAction',
@@ -71,16 +71,16 @@ describe(ServiceRequest, () => {
             timestamp: 1234567890
         }
         
-        const request = ServiceRequest.fromJSON(data)
+        const request = ServiceRequest.import(data)
         
         expect(request).toBeInstanceOf(ServiceRequest)
     })
 
 
-    test('export and fromJSON roundtrip', () => {
+    test('export and import roundtrip', () => {
         const originalRequest = new ServiceRequest('testAction', {param1: 'value1'})
         const json = originalRequest.export()
-        const restoredRequest = ServiceRequest.fromJSON(json)
+        const restoredRequest = ServiceRequest.import(json)
         
         expect(restoredRequest.id).toBe(originalRequest.id)
         expect(restoredRequest.action).toBe(originalRequest.action)
