@@ -127,7 +127,7 @@ export default class ServiceClient extends Notifier {
 
 
     static async fromPath (servicePath, config = {}) {
-        const module = await import(servicePath)
+        const module = await import(/* @vite-ignore */ servicePath)
         
         const ServiceClass = module.default || Object.values(module).find(value => {
             return typeof value === 'function' && value.prototype

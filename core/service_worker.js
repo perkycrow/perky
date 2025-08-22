@@ -8,7 +8,7 @@ self.addEventListener('message', async (event) => {
     }
     
     try {
-        const module = await import(servicePath)
+        const module = await import(/* @vite-ignore */ servicePath)
         const ServiceClass = module.default || module[Object.keys(module)[0]]
         
         service = new ServiceClass(config)
