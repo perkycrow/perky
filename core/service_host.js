@@ -95,6 +95,7 @@ export default class ServiceHost extends Notifier {
         }
     }
 
+    
     handleEvent (message) {
         const {eventName, args, direction} = message
         

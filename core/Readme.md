@@ -13,6 +13,7 @@ The core system follows a modular, event-driven architecture:
 - **ActionController**: Handles action execution with before/after callback support
 - **Notifier**: Event system foundation providing pub/sub capabilities
 - **Manifest**: Application metadata, configuration, and resource management
+- **Service System**: Inter-context communication system for workers and plugins
 
 ## Core Files
 
@@ -363,6 +364,154 @@ const loot = weightedChoice([
 const id = uuid() // Generate unique identifier
 ```
 
+## Service System
+
+The service system provides a robust architecture for inter-context communication, enabling seamless communication between main thread, web workers, and different application contexts.
+
+### ServiceHost (`service_host.js`)
+
+Base class for creating services that can handle requests and emit events.
+
+```javascript
+import ServiceHost from './core/service_host'
+
+class MathService extends ServiceHost {
+    static serviceMethods = ['add', 'multiply', 'getInfo']
+    
+    constructor (config = {}) {
+        super(config)
+        this.precision = config.precision || 'standard'
+    }
+    
+    add (req, res) {
+        const {a, b} = req.params
+        const result = a + b
+        
+        res.send({
+            result,
+            operation: 'addition',
+            precision: this.precision
+        })
+    }
+    
+    multiply (req, res) {
+        const {a, b} = req.params
+        res.send({result: a * b})
+    }
+    
+    getInfo (req, res) {
+        res.send({
+            serviceName: 'MathService',
+            version: '1.0.0',
+            precision: this.precision
+        })
+    }
+}
+```
+
+### ServiceClient (`service_client.js`)
+
+Client for communicating with services across different contexts.
+
+```javascript
+import ServiceClient from './core/service_client'
+import MathService from './services/math_service'
+
+// Direct service (same thread)
+const directClient = await ServiceClient.fromService(MathService, {
+    precision: 'high'
+})
+
+// Worker service (separate thread)
+const workerClient = ServiceClient.fromWorker('./services/math_service.js', {
+    precision: 'ultra'
+})
+
+// Service from path (dynamic loading)
+const pathClient = await ServiceClient.fromPath('./services/math_service.js')
+
+// Use the service
+const result = await directClient.request('add', {a: 5, b: 3})
+console.log(result) // {result: 8, operation: 'addition', precision: 'high'}
+
+// Event communication
+workerClient.emitToHost('clientReady')
+workerClient.on('host:dataUpdated', (data) => {
+    console.log('Host sent updated data:', data)
+})
+```
+
+### ServiceTransport (`service_transport.js`)
+
+Handles message transport between different contexts with multiple transport types.
+
+```javascript
+import ServiceTransport from './core/service_transport'
+
+// Auto-detect transport type
+const autoTransport = ServiceTransport.auto(worker)
+
+// Specific transport types
+const workerTransport = ServiceTransport.worker(worker)
+const channelTransport = ServiceTransport.channel(messageChannel.port1)
+const localTransport = ServiceTransport.local()
+
+// Paired transports for direct communication
+const [transportA, transportB] = ServiceTransport.pair()
+
+// Custom transport
+const customTransport = ServiceTransport.create({
+    send: (message) => customSend(message),
+    receive: (handler) => customReceive(handler)
+})
+```
+
+### ServiceRequest & ServiceResponse
+
+Message objects for structured service communication.
+
+```javascript
+import ServiceRequest from './core/service_request'
+import ServiceResponse from './core/service_response'
+
+// Create a request
+const request = new ServiceRequest('calculatePath', {
+    start: {x: 0, y: 0},
+    goal: {x: 10, y: 10}
+})
+
+// Handle in service
+someService.register('calculatePath', (req, res) => {
+    const {start, goal} = req.params
+    
+    try {
+        const path = calculatePath(start, goal)
+        res.send({path, length: path.length})
+    } catch (error) {
+        res.error(`Pathfinding failed: ${error.message}`)
+    }
+})
+```
+
+### ServiceWorker (`service_worker.js`)
+
+Built-in worker script for running services in web workers.
+
+```javascript
+// In main thread
+const worker = new Worker('./core/service_worker.js', {type: 'module'})
+
+// Initialize service in worker
+worker.postMessage({
+    type: 'init-service',
+    servicePath: './services/my_service.js',
+    config: {option1: 'value1'}
+})
+
+// Create client
+const client = new ServiceClient({target: worker})
+```
+
 ## Usage Examples
 
 ### Basic Application Setup
@@ -427,5 +576,52 @@ gameModule.on('scoreChanged', (score) => {
 })
 ```
 
-This core system provides a robust foundation for building complex, modular applications with clear separation of concerns and powerful event-driven communication.
+### Service-Based Architecture Example
+
+```javascript
+import Engine from './core/engine'
+import ServiceClient from './core/service_client'
+
+class GameEngine extends Engine {
+    async init () {
+        super.init()
+        
+        // Initialize services
+        this.pathfindingService = ServiceClient.fromWorker('./services/pathfinding_service.js', {
+            allowDiagonal: true,
+            maxCacheSize: 1000
+        })
+        
+        this.physicsService = await ServiceClient.fromService(PhysicsService, {
+            gravity: 9.81,
+            timeStep: 1/60
+        })
+        
+        // Setup cross-service communication
+        this.physicsService.on('host:collision', (event) => {
+            this.handleCollision(event)
+        })
+    }
+    
+    async moveNPC (npc, target) {
+        // Use pathfinding service
+        const pathResult = await this.pathfindingService.request('findPath', {
+            start: npc.position,
+            goal: target,
+            options: {heuristic: 'euclidean'}
+        })
+        
+        if (pathResult.found) {
+            npc.followPath(pathResult.path)
+        }
+    }
+    
+    async updatePhysics (deltaTime) {
+        // Update physics in service
+        await this.physicsService.request('step', {deltaTime})
+    }
+}
+```
+
+This core system provides a robust foundation for building complex, modular applications with clear separation of concerns, powerful event-driven communication, and scalable service-based architecture for high-performance gaming and interactive applications.
 
