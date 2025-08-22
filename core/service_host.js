@@ -19,11 +19,27 @@ export default class ServiceHost extends Notifier {
 
         this.actions = new Map()
         this.transport.onMessage(this.handleMessage.bind(this))
+
+        if (this.constructor.serviceMethods && Array.isArray(this.constructor.serviceMethods)) {
+            this.constructor.serviceMethods.forEach(methodName => {
+                this.registerMethod(methodName)
+            })
+        }
     }
 
 
     register (action, handler) {
         this.actions.set(action, handler)
+        return this
+    }
+
+
+    registerMethod (methodName) {
+        if (typeof this[methodName] !== 'function') {
+            throw new Error(`Method '${methodName}' not found on service`)
+        }
+        
+        this.actions.set(methodName, this[methodName].bind(this))
         return this
     }
 

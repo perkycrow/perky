@@ -357,4 +357,116 @@ describe(ServiceHost, () => {
         expect(clientEventHandler).toHaveBeenCalledWith('dataUpdate', {id: 1, name: 'test'})
     })
 
+
+    test('registerMethod registers method by name', () => {
+        const [transportA] = ServiceTransport.pair()
+        new ServiceHost({transport: transportA})
+
+        host.testMethod = vi.fn()
+        host.registerMethod('testMethod')
+
+        expect(host.actions.has('testMethod')).toBe(true)
+        expect(typeof host.actions.get('testMethod')).toBe('function')
+    })
+
+
+    test('registerMethod throws error for non-existent method', () => {
+        const [transportA] = ServiceTransport.pair()
+        new ServiceHost({transport: transportA})
+
+        expect(() => {
+            host.registerMethod('nonExistentMethod')
+        }).toThrow("Method 'nonExistentMethod' not found on service")
+    })
+
+
+    test('registerMethod with method call', async () => {
+        const [transportA, transportB] = ServiceTransport.pair()
+        const host = new ServiceHost({transport: transportA})
+
+        host.echo = (req, res) => {
+            res.send({message: req.params.text})
+        }
+
+        host.registerMethod('echo')
+
+        const request = new ServiceRequest('echo', {text: 'hello'})
+        const responseHandler = vi.fn()
+        transportB.onMessage(responseHandler)
+
+        transportB.send({
+            type: 'service-request',
+            request: request.toJSON()
+        })
+
+        expect(responseHandler).toHaveBeenCalledWith({
+            type: 'service-response',
+            response: expect.objectContaining({
+                requestId: request.id,
+                success: true,
+                data: {message: 'hello'}
+            })
+        })
+    })
+
+
+    test('auto-registers methods from static serviceMethods', () => {
+        class TestService extends ServiceHost {
+            static serviceMethods = ['methodA', 'methodB']
+
+            methodA () {
+                return this
+            }
+            methodB () {
+                return this
+            }
+        }
+
+        const [transportA] = ServiceTransport.pair()
+        const service = new TestService({transport: transportA})
+
+        expect(service.actions.has('methodA')).toBe(true)
+        expect(service.actions.has('methodB')).toBe(true)
+        expect(service.actions.size).toBe(2)
+    })
+
+
+    test('ignores invalid serviceMethods', () => {
+        class TestService extends ServiceHost {
+            static serviceMethods = 'not an array'
+        }
+
+        const [transportA] = ServiceTransport.pair()
+        
+        expect(() => {
+            new TestService({transport: transportA})
+        }).not.toThrow()
+    })
+
+
+    test('serviceMethods works with inheritance', () => {
+        class BaseService extends ServiceHost {
+            static serviceMethods = ['baseMethod']
+            
+            baseMethod () {
+                return this
+            }
+        }
+        
+        class ChildService extends BaseService {
+            static serviceMethods = ['childMethod']
+            
+            childMethod () {
+                return this
+            }
+        }
+
+        const [transportA] = ServiceTransport.pair()
+        const childService = new ChildService({transport: transportA})
+
+        expect(childService.actions.has('childMethod')).toBe(true)
+        expect(childService.actions.has('baseMethod')).toBe(false) // Child overrides parent
+        expect(childService.actions.size).toBe(1)
+    })
+
 })
