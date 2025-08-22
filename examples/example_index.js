@@ -7,7 +7,7 @@ const baseHtml = `
 `
 
 const tagFamilies = {
-    core: ['action', 'engine', 'manifest', 'module', 'random', 'source', 'utils', 'math', 'grid', 'pathfinding', 'algorithm'],
+    core: ['action', 'engine', 'manifest', 'module', 'random', 'source', 'utils', 'math', 'grid', 'pathfinding', 'algorithm', 'service', 'worker', 'communication', 'performance'],
     application: ['input', 'loader', 'asset', 'view'],
     canvas: ['canvas', '2d'],
     three: ['three', '3d', 'webgl'],
