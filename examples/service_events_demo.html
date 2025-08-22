@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Events Demo - Perky</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .demo-container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        
+        .demo-section {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .demo-button {
+            padding: 8px 16px;
+            background: #007acc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .demo-button:hover {
+            background: #005a9e;
+        }
+        
+        .demo-output {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            min-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>🎪 Service Events Demo</h1>
+        <p>Real-time bidirectional events between main thread and worker using the Perky service system</p>
+        
+        <div class="demo-section">
+            <h2>📡 Connection & Events</h2>
+            <button id="connectBtn" class="demo-button">Connect Worker</button>
+            <button id="sendToWorkerBtn" class="demo-button" disabled>Send Event to Worker</button>
+            <button id="requestFromWorkerBtn" class="demo-button" disabled>Request Worker Status</button>
+            <button id="clearLogBtn" class="demo-button">Clear Log</button>
+        </div>
+        
+        <div class="demo-section">
+            <h2>📝 Event Log</h2>
+            <div id="eventLog" class="demo-output">Starting events demo...\n</div>
+        </div>
+    </div>
+    
+    <script type="module" src="service_events_demo.js"></script>
+</body>
+</html>

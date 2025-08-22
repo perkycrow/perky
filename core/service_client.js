@@ -1,10 +1,12 @@
 import ServiceTransport from './service_transport'
 import ServiceRequest from './service_request'
+import Notifier from './notifier'
 
 
-export default class ServiceClient {
+export default class ServiceClient extends Notifier {
 
     constructor ({transport, target} = {}) {
+        super()
 
         if (transport) {
             this.transport = transport
@@ -55,6 +57,11 @@ export default class ServiceClient {
 
 
     handleMessage (message) {
+        if (message.type === 'service-event') {
+            this.handleEvent(message)
+            return
+        }
+
         if (message.type !== 'service-response') {
             return
         }
@@ -71,6 +78,25 @@ export default class ServiceClient {
         } else {
             pending.reject(new Error(response.error))
         }
+    }
+
+
+    handleEvent (message) {
+        const {eventName, args, direction} = message
+        
+        if (direction === 'host-to-client') {
+            this.emit(`host:${eventName}`, ...args)
+        }
+    }
+
+
+    emitToHost (eventName, ...args) {
+        this.transport.send({
+            type: 'service-event',
+            eventName,
+            args,
+            direction: 'client-to-host'
+        })
     }
 
 }

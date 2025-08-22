@@ -295,4 +295,80 @@ describe(ServiceClient, () => {
         transportSpy.mockRestore()
     })
 
+
+    test('inherits from Notifier', () => {
+        expect(typeof client.on).toBe('function')
+        expect(typeof client.emit).toBe('function')
+        expect(typeof client.off).toBe('function')
+    })
+
+
+    test('emitToHost sends service-event message', () => {
+        const transportSpy = vi.spyOn(transport, 'send')
+        
+        client.emitToHost('userAction', 'click', {x: 100, y: 200})
+        
+        expect(transportSpy).toHaveBeenCalledWith({
+            type: 'service-event',
+            eventName: 'userAction',
+            args: ['click', {x: 100, y: 200}],
+            direction: 'client-to-host'
+        })
+        
+        transportSpy.mockRestore()
+    })
+
+
+    test('handleEvent from host triggers local event with prefix', () => {
+        const eventHandler = vi.fn()
+        client.on('host:statusUpdate', eventHandler)
+        
+        const message = {
+            type: 'service-event',
+            eventName: 'statusUpdate',
+            args: ['connected', 'ready'],
+            direction: 'host-to-client'
+        }
+        
+        client.handleMessage(message)
+        
+        expect(eventHandler).toHaveBeenCalledWith('connected', 'ready')
+    })
+
+
+    test('handleEvent ignores wrong direction', () => {
+        const eventHandler = vi.fn()
+        client.on('host:statusUpdate', eventHandler)
+        
+        const message = {
+            type: 'service-event',
+            eventName: 'statusUpdate',
+            args: ['connected', 'ready'],
+            direction: 'client-to-host'
+        }
+        
+        client.handleMessage(message)
+        
+        expect(eventHandler).not.toHaveBeenCalled()
+    })
+
+
+    test('full event communication with host', () => {
+        const [transportA, transportB] = ServiceTransport.pair()
+        const clientA = new ServiceClient({transport: transportA})
+        const hostB = new ServiceHost({transport: transportB})
+        
+        const clientEventHandler = vi.fn()
+        const hostEventHandler = vi.fn()
+        
+        clientA.on('host:notification', clientEventHandler)
+        hostB.on('client:userInput', hostEventHandler)
+        
+        clientA.emitToHost('userInput', 'keypress', 'Enter')
+        hostB.emitToClient('notification', 'Process completed', 'success')
+        
+        expect(hostEventHandler).toHaveBeenCalledWith('keypress', 'Enter')
+        expect(clientEventHandler).toHaveBeenCalledWith('Process completed', 'success')
+    })
+
 })

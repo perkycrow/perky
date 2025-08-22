@@ -283,4 +283,78 @@ describe(ServiceHost, () => {
         expect(host.actions.get('testAction')).toBe(handler2)
     })
 
+
+    test('inherits from Notifier', () => {
+        expect(typeof host.on).toBe('function')
+        expect(typeof host.emit).toBe('function')
+        expect(typeof host.off).toBe('function')
+    })
+
+
+    test('emitToClient sends service-event message', () => {
+        const transportSpy = vi.spyOn(transport, 'send')
+        
+        host.emitToClient('testEvent', 'arg1', 'arg2', 42)
+        
+        expect(transportSpy).toHaveBeenCalledWith({
+            type: 'service-event',
+            eventName: 'testEvent',
+            args: ['arg1', 'arg2', 42],
+            direction: 'host-to-client'
+        })
+        
+        transportSpy.mockRestore()
+    })
+
+
+    test('handleEvent from client triggers local event with prefix', () => {
+        const eventHandler = vi.fn()
+        host.on('client:testEvent', eventHandler)
+        
+        const message = {
+            type: 'service-event',
+            eventName: 'testEvent',
+            args: ['hello', 'world'],
+            direction: 'client-to-host'
+        }
+        
+        host.handleMessage(message)
+        
+        expect(eventHandler).toHaveBeenCalledWith('hello', 'world')
+    })
+
+
+    test('handleEvent ignores wrong direction', () => {
+        const eventHandler = vi.fn()
+        host.on('client:testEvent', eventHandler)
+        
+        const message = {
+            type: 'service-event',
+            eventName: 'testEvent',
+            args: ['hello', 'world'],
+            direction: 'host-to-client'
+        }
+        
+        host.handleMessage(message)
+        
+        expect(eventHandler).not.toHaveBeenCalled()
+    })
+
+
+    test('event communication with client', () => {
+        const [transportA, transportB] = ServiceTransport.pair()
+        const hostA = new ServiceHost({transport: transportA})
+        
+        const clientEventHandler = vi.fn()
+        transportB.onMessage((message) => {
+            if (message.type === 'service-event' && message.direction === 'host-to-client') {
+                clientEventHandler(message.eventName, ...message.args)
+            }
+        })
+        
+        hostA.emitToClient('dataUpdate', {id: 1, name: 'test'})
+        
+        expect(clientEventHandler).toHaveBeenCalledWith('dataUpdate', {id: 1, name: 'test'})
+    })
+
 })

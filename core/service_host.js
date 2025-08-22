@@ -1,11 +1,13 @@
 import ServiceTransport from './service_transport'
 import ServiceRequest from './service_request'
 import ServiceResponse from './service_response'
+import Notifier from './notifier'
 
 
-export default class ServiceHost {
+export default class ServiceHost extends Notifier {
 
     constructor ({transport, target} = {}) {
+        super()
 
         if (transport) {
             this.transport = transport
@@ -33,6 +35,11 @@ export default class ServiceHost {
 
 
     handleMessage (message) {
+        if (message.type === 'service-event') {
+            this.handleEvent(message)
+            return
+        }
+
         if (message.type !== 'service-request') {
             return
         }
@@ -72,10 +79,29 @@ export default class ServiceHost {
         }
     }
 
+    handleEvent (message) {
+        const {eventName, args, direction} = message
+        
+        if (direction === 'client-to-host') {
+            this.emit(`client:${eventName}`, ...args)
+        }
+    }
+
+
     sendResponse (response) {
         this.transport.send({
             type: 'service-response',
             response: response.toJSON()
+        })
+    }
+
+
+    emitToClient (eventName, ...args) {
+        this.transport.send({
+            type: 'service-event',
+            eventName,
+            args,
+            direction: 'host-to-client'
         })
     }
 
