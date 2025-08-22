@@ -14,9 +14,7 @@
 - Integrate concepts from libraries like PaperJS and EaselJS
 
 ## Web Workers & Performance
-- Develop WorkerManager for managing multiple worker threads
 - Create specialized workers for common game tasks:
-  - PathfindingWorker for A* and navigation algorithms
   - ProceduralWorker for texture/terrain/level generation
   - PhysicsWorker for intensive collision detection and simulation
   - AIWorker for behavior trees and tactical calculations
