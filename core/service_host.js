@@ -107,7 +107,7 @@ export default class ServiceHost extends Notifier {
     sendResponse (response) {
         this.transport.send({
             type: 'service-response',
-            response: response.toJSON()
+            response: response.export()
         })
     }
 

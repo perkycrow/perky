@@ -73,12 +73,12 @@ describe(ServiceResponse, () => {
     })
 
 
-    test('toJSON success response', () => {
+    test('export success response', () => {
         const response = new ServiceResponse('test-request-id')
         const testData = {result: 'success'}
         
         response.send(testData)
-        const json = response.toJSON()
+        const json = response.export()
         
         expect(json).toEqual({
             requestId: 'test-request-id',
@@ -89,12 +89,12 @@ describe(ServiceResponse, () => {
     })
 
 
-    test('toJSON error response', () => {
+    test('export error response', () => {
         const response = new ServiceResponse('test-request-id')
         const errorMessage = 'Test error'
         
         response.fail(errorMessage)
-        const json = response.toJSON()
+        const json = response.export()
         
         expect(json).toEqual({
             requestId: 'test-request-id',
@@ -105,9 +105,9 @@ describe(ServiceResponse, () => {
     })
 
 
-    test('toJSON default response', () => {
+    test('export default response', () => {
         const response = new ServiceResponse('test-request-id')
-        const json = response.toJSON()
+        const json = response.export()
         
         expect(json).toEqual({
             requestId: 'test-request-id',

@@ -87,7 +87,7 @@ describe(ServiceHost, () => {
         const request = new ServiceRequest('testAction', {param1: 'value1'})
         const message = {
             type: 'service-request',
-            request: request.toJSON()
+            request: request.export()
         }
         
         host.handleMessage(message)
@@ -115,7 +115,7 @@ describe(ServiceHost, () => {
         const request = new ServiceRequest('unknownAction')
         const message = {
             type: 'service-request',
-            request: request.toJSON()
+            request: request.export()
         }
         
         host.handleMessage(message)
@@ -142,7 +142,7 @@ describe(ServiceHost, () => {
         const request = new ServiceRequest('testAction', {input: 'test data'})
         const message = {
             type: 'service-request',
-            request: request.toJSON()
+            request: request.export()
         }
         
         host.handleMessage(message)
@@ -169,7 +169,7 @@ describe(ServiceHost, () => {
         const request = new ServiceRequest('testAction')
         const message = {
             type: 'service-request',
-            request: request.toJSON()
+            request: request.export()
         }
         
         host.handleMessage(message)
@@ -196,7 +196,7 @@ describe(ServiceHost, () => {
         const request = new ServiceRequest('testAction')
         const message = {
             type: 'service-request',
-            request: request.toJSON()
+            request: request.export()
         }
         
         host.handleMessage(message)
@@ -222,7 +222,7 @@ describe(ServiceHost, () => {
         
         expect(transportSpy).toHaveBeenCalledWith({
             type: 'service-response',
-            response: response.toJSON()
+            response: response.export()
         })
         
         transportSpy.mockRestore()
@@ -243,7 +243,7 @@ describe(ServiceHost, () => {
         const request = new ServiceRequest('echo', {message: 'hello world'})
         const message = {
             type: 'service-request',
-            request: request.toJSON()
+            request: request.export()
         }
         
         transportB.send(message)
@@ -396,7 +396,7 @@ describe(ServiceHost, () => {
 
         transportB.send({
             type: 'service-request',
-            request: request.toJSON()
+            request: request.export()
         })
 
         expect(responseHandler).toHaveBeenCalledWith({

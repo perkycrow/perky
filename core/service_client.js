@@ -50,7 +50,7 @@ export default class ServiceClient extends Notifier {
 
             this.transport.send({
                 type: 'service-request',
-                request: request.toJSON()
+                request: request.export()
             })
         })
     }

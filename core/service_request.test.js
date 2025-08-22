@@ -33,9 +33,9 @@ describe(ServiceRequest, () => {
     })
 
 
-    test('toJSON', () => {
+    test('export', () => {
         const request = new ServiceRequest('testAction', {param1: 'value1'})
-        const json = request.toJSON()
+        const json = request.export()
         
         expect(json).toEqual({
             id: request.id,
@@ -77,9 +77,9 @@ describe(ServiceRequest, () => {
     })
 
 
-    test('toJSON and fromJSON roundtrip', () => {
+    test('export and fromJSON roundtrip', () => {
         const originalRequest = new ServiceRequest('testAction', {param1: 'value1'})
-        const json = originalRequest.toJSON()
+        const json = originalRequest.export()
         const restoredRequest = ServiceRequest.fromJSON(json)
         
         expect(restoredRequest.id).toBe(originalRequest.id)

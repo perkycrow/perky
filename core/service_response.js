@@ -22,7 +22,7 @@ export default class ServiceResponse {
     }
 
 
-    toJSON () {
+    export () {
         return {
             requestId: this.requestId,
             success: this.success,

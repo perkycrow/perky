@@ -8,7 +8,7 @@ export default class ServiceRequest {
     }
 
 
-    toJSON () {
+    export () {
         return {
             id: this.id,
             action: this.action,
