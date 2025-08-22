@@ -145,3 +145,27 @@ export function setNestedValue (obj, path, value) {
 }
 
 
+export function exportValue (value) { // eslint-disable-line complexity
+
+    if (value && typeof value === 'object') {
+        if (typeof value.export === 'function') {
+            return value.export()
+        }
+
+        if (Array.isArray(value)) {
+            return value.map(item => exportValue(item))
+        }
+        
+        const result = {}
+        for (const key in value) {
+            if (value.hasOwnProperty(key)) {
+                result[key] = exportValue(value[key])
+            }
+        }
+        return result
+    }
+    
+    return value
+}
+
+

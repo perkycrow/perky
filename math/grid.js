@@ -1,3 +1,5 @@
+import {exportValue} from '../core/utils'
+
 export const fourDirections = {
     up:    {x:  0, y:  1},
     right: {x:  1, y:  0},
@@ -166,6 +168,22 @@ export default class Grid {
             maxY,
             width: maxX - minX + 1,
             height: maxY - minY + 1
+        }
+    }
+
+
+    export () {
+        const cells = {}
+
+        this.forEachDefinedCell((coords, value) => {
+            const key = getCellKey(coords)
+            cells[key] = exportValue(value)
+        })
+
+        return {
+            width: this.width,
+            height: this.height,
+            cells
         }
     }
 

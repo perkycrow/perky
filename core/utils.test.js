@@ -29,6 +29,7 @@ import {
     setDefaults,
     getNestedValue,
     setNestedValue,
+    exportValue,
     uniqueId,
     resetUniqueId
 } from './utils'
@@ -340,6 +341,92 @@ describe('Utils', () => {
         obj = {a: {}}
         setNestedValue(obj, 'a.b.c', 4)
         expect(obj.a.b.c).toBe(4)
+    })
+
+
+    test('exportValue with primitives', () => {
+        expect(exportValue(null)).toBeNull()
+        expect(exportValue(undefined)).toBeUndefined()
+        expect(exportValue(42)).toBe(42)
+        expect(exportValue('hello')).toBe('hello')
+        expect(exportValue(true)).toBe(true)
+        expect(exportValue(false)).toBe(false)
+    })
+
+
+    test('exportValue with simple objects', () => {
+        const obj = {a: 1, b: 'test', c: true}
+        const exported = exportValue(obj)
+        
+        expect(exported).toEqual({a: 1, b: 'test', c: true})
+        expect(exported).not.toBe(obj)
+    })
+
+
+    test('exportValue with arrays', () => {
+        const arr = [1, 'test', {a: 2}]
+        const exported = exportValue(arr)
+        
+        expect(exported).toEqual([1, 'test', {a: 2}])
+        expect(exported).not.toBe(arr)
+        expect(exported[2]).not.toBe(arr[2])
+    })
+
+
+    test('exportValue with nested objects', () => {
+        const obj = {
+            a: 1,
+            b: {
+                c: 2,
+                d: {
+                    e: 3
+                }
+            }
+        }
+        const exported = exportValue(obj)
+        
+        expect(exported).toEqual(obj)
+        expect(exported).not.toBe(obj)
+        expect(exported.b).not.toBe(obj.b)
+        expect(exported.b.d).not.toBe(obj.b.d)
+    })
+
+
+    test('exportValue with export method', () => {
+        const objWithExport = {
+            data: 'private',
+            export () {
+                return {exported: this.data}
+            }
+        }
+        
+        const exported = exportValue(objWithExport)
+        expect(exported).toEqual({exported: 'private'})
+    })
+
+
+    test('exportValue with mixed content', () => {
+        const objWithExport = {
+            export () {
+                return {custom: 'export'}
+            }
+        }
+
+        const complex = {
+            primitive: 42,
+            array: [1, {nested: 'value'}],
+            objWithExport,
+            regularObject: {a: 1, b: 2}
+        }
+        
+        const exported = exportValue(complex)
+        
+        expect(exported).toEqual({
+            primitive: 42,
+            array: [1, {nested: 'value'}],
+            objWithExport: {custom: 'export'},
+            regularObject: {a: 1, b: 2}
+        })
     })
 
 
