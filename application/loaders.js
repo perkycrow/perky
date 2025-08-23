@@ -40,7 +40,8 @@ export async function loadImage (params) {
 
         img.onerror = function () {
             URL.revokeObjectURL(url)
-            reject(new Error('Failed to load image'))
+            const normalizedParams = normalizeParams(params)
+            reject(new Error(`Failed to load image: ${normalizedParams.url}`))
         }
 
         img.src = url
