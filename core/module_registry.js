@@ -7,7 +7,6 @@ export default class ModuleRegistry extends Registry {
     #parentModuleName
     #registryName
     #bind
-    #autoInit
     #autoStart
 
     constructor ({
@@ -15,7 +14,6 @@ export default class ModuleRegistry extends Registry {
         parentModule,
         parentModuleName,
         bind = false,
-        autoInit = true,
         autoStart = true
     }) {
         super()
@@ -24,7 +22,6 @@ export default class ModuleRegistry extends Registry {
         this.#parentModuleName = parentModuleName
         this.#registryName = registryName
         this.#bind = bind
-        this.#autoInit = autoInit
         this.#autoStart = autoStart
 
         this.#initEvents()
@@ -57,10 +54,6 @@ export default class ModuleRegistry extends Registry {
 
 
     #handleLifecycleEvents (module) {
-        if (this.#autoInit && this.#parentModule.initialized) {
-            module.init()
-        }
-
         if (this.#autoStart && this.#parentModule.started) {
             module.start()
         }
@@ -85,7 +78,6 @@ export default class ModuleRegistry extends Registry {
 
         this.on('clear', this.#parentModule.emitter(`${this.#registryName}:clear`))
 
-        this.#parentModule.on('init',  this.invoker('init'))
         this.#parentModule.on('start', this.invoker('start'))
         this.#parentModule.on('stop',  this.invoker('stop'))
         this.#parentModule.on('dispose', () => this.clear())
@@ -98,7 +90,6 @@ export default class ModuleRegistry extends Registry {
             parentModuleName: this.#parentModuleName,
             registryName: this.#registryName,
             bind: this.#bind,
-            autoInit: this.#autoInit,
             autoStart: this.#autoStart
         }
     }

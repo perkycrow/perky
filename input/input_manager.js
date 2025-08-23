@@ -12,7 +12,6 @@ export default class InputManager extends PerkyModule {
             parentModule: this,
             parentModuleName: 'inputManager',
             bind: true,
-            autoInit: true,
             autoStart: true
         })
 

@@ -60,10 +60,7 @@ describe('GameLoop', () => {
 
     test('running getter', () => {
         expect(gameLoop.running).toBe(false)
-        
-        gameLoop.initialized = true
-        expect(gameLoop.running).toBe(false)
-        
+
         gameLoop.started = true
         expect(gameLoop.running).toBe(true)
         
@@ -73,8 +70,6 @@ describe('GameLoop', () => {
 
 
     test('start', () => {
-        gameLoop.initialized = true
-        
         gameLoop.start('param')
         
         expect(gameLoop.started).toBe(true)
@@ -86,7 +81,6 @@ describe('GameLoop', () => {
 
 
     test('start with already started', () => {
-        gameLoop.initialized = true
         gameLoop.started = true
         
         const result = gameLoop.start()
@@ -97,7 +91,6 @@ describe('GameLoop', () => {
 
 
     test('pause', () => {
-        gameLoop.initialized = true
         gameLoop.started = true
         gameLoop.paused = false
         
@@ -120,7 +113,6 @@ describe('GameLoop', () => {
 
 
     test('resume', () => {
-        gameLoop.initialized = true
         gameLoop.started = true
         gameLoop.paused = true
         
@@ -135,8 +127,7 @@ describe('GameLoop', () => {
 
     test('resume when not paused', () => {
         vi.clearAllMocks()
-        
-        gameLoop.initialized = true
+
         gameLoop.started = true
         gameLoop.paused = false
         
@@ -171,7 +162,6 @@ describe('GameLoop', () => {
         testLoop.on('update', update)
         testLoop.on('render', render)
 
-        testLoop.initialized = true
         testLoop.start()
         expect(animationCallbacks.length).toBeGreaterThan(0)
 
@@ -193,7 +183,6 @@ describe('GameLoop', () => {
         testLoop.on('update', update)
         testLoop.on('render', render)
 
-        testLoop.initialized = true
         testLoop.start()
         expect(animationCallbacks.length).toBeGreaterThan(0)
 

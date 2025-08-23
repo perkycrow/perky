@@ -42,10 +42,6 @@ export default class Engine extends PerkyModule {
 
         const result = this.#modules.set(name, module)
 
-        if (this.initialized) {
-            module.init()
-        }
-
         if (this.started) {
             module.start()
         }

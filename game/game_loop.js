@@ -39,7 +39,7 @@ export default class GameLoop extends PerkyModule {
 
 
     pause (...args) {
-        if (!this.initialized || !this.started || this.paused) {
+        if (!this.started || this.paused) {
             return false
         }
 
@@ -51,7 +51,7 @@ export default class GameLoop extends PerkyModule {
 
 
     resume (...args) {
-        if (!this.initialized || !this.started || !this.paused) {
+        if (!this.started || !this.paused) {
             return false
         }
 
@@ -85,7 +85,7 @@ export default class GameLoop extends PerkyModule {
 
 
 function update (gameLoop, currentTime) {
-    if (!gameLoop.initialized || !gameLoop.started || gameLoop.paused) {
+    if (!gameLoop.started || gameLoop.paused) {
         return false
     }
 

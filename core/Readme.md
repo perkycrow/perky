@@ -125,7 +125,6 @@ class GameEngine extends PerkyModule {
             parentModule: this,
             parentModuleName: 'engine',
             bind: true, // Auto-bind modules as properties
-            autoInit: true,
             autoStart: true
         })
     }

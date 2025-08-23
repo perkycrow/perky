@@ -96,15 +96,12 @@ describe(InputManager, () => {
         const manager = new InputManager()
         const device = new InputDevice({name: 'TestDevice'})
 
-        device.init = vi.fn()
         device.start = vi.fn()
 
-        manager.init()
         manager.start()
 
         manager.registerDevice('auto', device)
 
-        expect(device.init).toHaveBeenCalled()
         expect(device.start).toHaveBeenCalled()
     })
 

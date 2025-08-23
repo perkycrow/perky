@@ -45,7 +45,7 @@ function onInstall (plugin, engine) {
 
 
     plugin.addMethod('resume', function (...args) {
-        if (!this.initialized || !this.started || !this.gameLoop.paused) {
+        if (!this.started || !this.gameLoop.paused) {
             return false
         }
 

@@ -215,22 +215,16 @@ describe(Engine, () => {
     test('module lifecycle events propagation', () => {
         const module = new PerkyModule()
 
-        const initSpy = vi.spyOn(module, 'init')
         const startSpy = vi.spyOn(module, 'start')
         const stopSpy = vi.spyOn(module, 'stop')
         
         engine.registerModule('test', module)
 
-        engine.emit('init')
-        expect(initSpy).toHaveBeenCalled()
-
-        module.initialized = true
         module.started = true
         
         engine.emit('stop')
         expect(stopSpy).toHaveBeenCalled()
 
-        module.initialized = true
         module.started = false
         
         engine.emit('start')
@@ -405,28 +399,15 @@ describe(Engine, () => {
         expect(engine.actionDispatcher.getActiveName()).toBe('application')
     })
 
-    test('registerModule after initialization calls init on the module', () => {
-        engine.initialized = true
-        
-        const module = new PerkyModule()
-        const initSpy = vi.spyOn(module, 'init')
-        
-        engine.registerModule('newModule', module)
-        
-        expect(initSpy).toHaveBeenCalled()
-    })
     
     test('registerModule after start calls both init and start on the module', () => {
-        engine.initialized = true
         engine.started = true
         
         const module = new PerkyModule()
-        const initSpy = vi.spyOn(module, 'init')
         const startSpy = vi.spyOn(module, 'start')
         
         engine.registerModule('newModule', module)
         
-        expect(initSpy).toHaveBeenCalled()
         expect(startSpy).toHaveBeenCalled()
     })
 
