@@ -37,6 +37,27 @@ export default class Notifier {
         return listener
     }
 
+    
+    /**
+     * Registers a listener function for a specific event name that will be called only once.
+     * @param {string} name - The event name to listen to
+     * @param {Function} listener - The function to call when the event is emitted
+     * @returns {Function} The listener function that was added
+     * @throws {TypeError} If listener is not a function
+     */
+    once (name, listener) {
+        if (typeof listener !== 'function') {
+            throw new TypeError('Listener must be a function')
+        }
+
+        const onceWrapper = (...args) => {
+            listener(...args)
+            this.off(name, onceWrapper)
+        }
+
+        return this.on(name, onceWrapper)
+    }
+
 
     /**
      * Removes a listener for a specific event. If no listener is provided, removes all listeners for the event.

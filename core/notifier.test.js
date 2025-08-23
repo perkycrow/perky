@@ -32,6 +32,19 @@ describe(Notifier, () => {
     })
 
 
+    test('once', () => {
+        const listener = vi.fn()
+        const wrapper = notifier.once('foo', listener)
+
+        expect(wrapper).not.toBe(listener)
+        expect(notifier.getListenersFor('foo')).toEqual([wrapper])
+
+        notifier.emit('foo', 1, 2, 3)
+        expect(listener).toHaveBeenCalledWith(1, 2, 3)
+        expect(notifier.getListenersFor('foo')).toEqual([])
+    })
+
+
     test('off', () => {
         const listener = () => {}
 
