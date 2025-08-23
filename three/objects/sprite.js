@@ -9,6 +9,14 @@ export default class Sprite extends OriginalSprite {
         super(material)
     }
 
+    get texture () {
+        return this.material?.map
+    }
+
+    get image () {
+        return this.texture?.image
+    }
+
 }
 
 
@@ -20,7 +28,7 @@ function createTextureConfig (textureParam) {
     if (textureParam instanceof OriginalTexture) {
         return textureParam
     }
-    
+
     if (typeof textureParam === 'object' && textureParam.constructor === Object) {
         return textureParam
     }
