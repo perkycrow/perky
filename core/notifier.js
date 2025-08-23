@@ -37,7 +37,7 @@ export default class Notifier {
         return listener
     }
 
-    
+
     /**
      * Registers a listener function for a specific event name that will be called only once.
      * @param {string} name - The event name to listen to
@@ -92,7 +92,7 @@ export default class Notifier {
         const listeners = this.getListenersFor(name) || []
 
         for (let listener of listeners) {
-            listener(...args)
+            listener.call(this, ...args)
         }
     }
 
@@ -107,7 +107,7 @@ export default class Notifier {
         const listeners = this.getListenersFor(name) || []
 
         for (let listener of listeners) {
-            await Promise.resolve(listener(...args))
+            await Promise.resolve(listener.call(this, ...args))
         }
     }
 

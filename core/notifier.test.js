@@ -193,4 +193,18 @@ describe(Notifier, () => {
         expect(notifier2.getListenersFor('test')).toHaveLength(2)
     })
 
+
+    test('emit passes notifier as this context to listeners', () => {
+        let receivedContext
+
+        function listener () {
+            receivedContext = this
+        }
+
+        notifier.on('test', listener)
+        notifier.emit('test', 'arg1', 'arg2')
+
+        expect(receivedContext).toBe(notifier)
+    })
+
 })
