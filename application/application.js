@@ -130,6 +130,11 @@ export default class Application extends Engine {
     }
 
 
+    getImage (id) {
+        return this.getSource('images', id)
+    }
+
+
     config (path, value) {
         return this.manifest.config(path, value)
     }
