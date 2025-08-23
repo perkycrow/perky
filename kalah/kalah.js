@@ -66,21 +66,29 @@ export default class Kalah extends Application {
         )
     }
 
+    resize () {
+        const {background, camera} = this
+        const containerSize = this.getThreeContainerSize()
+
+        if (background && camera) {
+            background.resize(containerSize, camera)
+        }
+    }
+
 }
 
 
 
 function start (app) {
-    const backgroundImage = app.getImage('background')
-    const imageAspect = backgroundImage.width / backgroundImage.height
-    app.background = new BackgroundImage({source: backgroundImage})
+    app.background = new BackgroundImage({
+        source: app.getImage('background')
+    })
+
     app.background.position.set(0, 0, -10)
     app.scene.add(app.background)
-    app.background.resize(app.getThreeContainerSize(), app.camera)
 
-    app.on('three:resize', () => {
-        app.background.resize(app.getThreeContainerSize(), app.camera)
-    })
+    app.on('three:resize', app.resize)
+    app.resize()
 }
 
 
