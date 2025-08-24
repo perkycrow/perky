@@ -21,20 +21,18 @@ export default class TitleMenu extends PerkyComponent {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(0, 0, 0, 0.7);
             z-index: 1000;
         }
 
         title-menu .menu-container {
             text-align: center;
-            color: #D9AB7A;
-            font-family: 'Cinzel Decorative', serif;
+            color: #000000;
+            font-family: sans-serif;
         }
 
         title-menu .game-title {
-            font-size: 4rem;
+            font-size: 3rem;
             margin-bottom: 2rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
             font-weight: 700;
         }
 
@@ -45,36 +43,21 @@ export default class TitleMenu extends PerkyComponent {
         }
 
         title-menu .menu-button {
-            background: rgba(217, 171, 122, 0.2);
-            border: 2px solid #D9AB7A;
-            color: #D9AB7A;
-            font-family: 'Cinzel Decorative', serif;
-            font-size: 1.5rem;
-            padding: 1rem 2rem;
+            color: inherit;
+            font-family: inherit;
+            font-size: 1.2rem;
+            padding: 0.8rem 1.5rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border-radius: 8px;
-        }
-
-        title-menu .menu-button:hover {
-            background: #D9AB7A;
-            color: #0a0a0a;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(217, 171, 122, 0.3);
-        }
-
-        title-menu .menu-button:active {
-            transform: translateY(0);
         }
 
         @media (max-width: 768px) {
             title-menu .game-title {
-                font-size: 2.5rem;
+                font-size: 2rem;
             }
             
             title-menu .menu-button {
-                font-size: 1.2rem;
-                padding: 0.8rem 1.5rem;
+                font-size: 1rem;
+                padding: 0.6rem 1.2rem;
             }
         }
     `

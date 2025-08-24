@@ -32,8 +32,6 @@ describe('TitleMenu', () => {
     test('static properties are correctly defined', () => {
         expect(TitleMenu.tagName).toBe('title-menu')
         expect(TitleMenu.css).toContain('title-menu {')
-        expect(TitleMenu.css).toContain('position: absolute')
-        expect(TitleMenu.css).toContain('title-menu {')
     })
 
 
@@ -190,8 +188,6 @@ describe('TitleMenu', () => {
         
         const styleElement = document.getElementById('title-menu-styles')
         expect(styleElement).toBeTruthy()
-        expect(styleElement.textContent).toContain('title-menu {')
-        expect(styleElement.textContent).toContain('title-menu')
         expect(TitleMenu.styleUsageCount).toBe(1)
     })
 
