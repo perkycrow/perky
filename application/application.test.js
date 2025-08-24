@@ -560,7 +560,7 @@ describe(Application, () => {
             expect(binding.deviceName).toBe('keyboard')
             expect(binding.controlName).toBe('KeyK')
             expect(binding.actionName).toBe('kick')
-            expect(binding.eventType).toBe('pressed')  // default
+            expect(binding.eventType).toBe('pressed')
             expect(binding.controllerName).toBe('player3')
         })
 
@@ -652,7 +652,7 @@ describe(Application, () => {
             expect(binding.deviceName).toBe('mouse')
             expect(binding.controlName).toBe('middleButton')
             expect(binding.actionName).toBe('special')
-            expect(binding.eventType).toBe('pressed')  // default
+            expect(binding.eventType).toBe('pressed')
             expect(binding.controllerName).toBe('ui')
         })
 

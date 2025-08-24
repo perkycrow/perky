@@ -265,7 +265,7 @@ describe('PathfindingService', () => {
 
         const setCellReq3 = {
             params: {
-                coords: {x: 1}, // Missing y
+                coords: {x: 1},
                 value: 'wall'
             }
         }

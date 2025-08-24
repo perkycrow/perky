@@ -88,15 +88,13 @@ describe(KeyboardDevice, () => {
         
         const keydownListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'keydown')[1]
-        
-        // First keydown
+
         const event = {code: 'KeyA'}
         keydownListener(event)
         
         const control = device.getControl('KeyA')
         const pressSpy = vi.spyOn(control, 'press')
-        
-        // Second keydown should not press again
+
         keydownListener(event)
         expect(pressSpy).not.toHaveBeenCalled()
     })
@@ -109,13 +107,11 @@ describe(KeyboardDevice, () => {
             .find(call => call[0] === 'keydown')[1]
         const keyupListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'keyup')[1]
-        
-        // First press the key
+
         const event = {code: 'KeyA'}
         keydownListener(event)
         expect(device.isPressed('KeyA')).toBe(true)
-        
-        // Then release it
+
         keyupListener(event)
         expect(device.isPressed('KeyA')).toBe(false)
     })
@@ -126,8 +122,7 @@ describe(KeyboardDevice, () => {
         
         const keyupListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'keyup')[1]
-        
-        // Try to release a key that was never pressed
+
         const event = {code: 'KeyA'}
         expect(() => keyupListener(event)).not.toThrow()
         expect(device.getControl('KeyA')).toBeUndefined()
@@ -141,14 +136,12 @@ describe(KeyboardDevice, () => {
             .find(call => call[0] === 'keydown')[1]
         const blurListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'blur')[1]
-        
-        // Press multiple keys
+
         keydownListener({code: 'KeyA'})
         keydownListener({code: 'KeyB'})
         expect(device.isPressed('KeyA')).toBe(true)
         expect(device.isPressed('KeyB')).toBe(true)
-        
-        // Blur should release all
+
         blurListener()
         expect(device.isPressed('KeyA')).toBe(false)
         expect(device.isPressed('KeyB')).toBe(false)
@@ -170,13 +163,11 @@ describe(KeyboardDevice, () => {
             .find(call => call[0] === 'keyup')[1]
         
         const event = {code: 'Space'}
-        
-        // Press
+
         keydownListener(event)
         expect(controlPressedListener).toHaveBeenCalledTimes(1)
         expect(device.isPressed('Space')).toBe(true)
         
-        // Release
         keyupListener(event)
         expect(controlReleasedListener).toHaveBeenCalledTimes(1)
         expect(device.isPressed('Space')).toBe(false)

@@ -49,7 +49,6 @@ describe('ServiceClient.fromWorker', () => {
 
 
     test('service worker message handling', async () => {
-        // Mock du service worker environnement
         const mockSelf = {
             addEventListener: vi.fn(),
             console: {error: vi.fn()}
@@ -57,11 +56,9 @@ describe('ServiceClient.fromWorker', () => {
         
         global.self = mockSelf
         global.console = mockSelf.console
-        
-        // Import du service worker code
+
         await import('./service_worker.js')
         
-        // Vérifier que l'event listener est ajouté
         expect(mockSelf.addEventListener).toHaveBeenCalledWith('message', expect.any(Function))
     })
 

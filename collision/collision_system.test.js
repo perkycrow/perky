@@ -415,7 +415,7 @@ describe('CollisionSystem', () => {
         collisionSystem.setCollisionCallback(callback)
 
         const bodyA = createTestBody({x: 0, y: 0})
-        const bodyB = createTestBody({x: 10, y: 0}) // Overlapping
+        const bodyB = createTestBody({x: 10, y: 0})
 
         collisionSystem.addBody(bodyA, {velocity: {x: 1, y: 0}})
         collisionSystem.addBody(bodyB, {velocity: {x: -1, y: 0}})
@@ -438,7 +438,7 @@ describe('CollisionSystem', () => {
 
         expect(collisionSystem.debugScene).toBe(mockScene)
         expect(collisionSystem.debugEnabled).toBe(true)
-        expect(result).toBe(collisionSystem) // Chainable
+        expect(result).toBe(collisionSystem)
     })
 
 })

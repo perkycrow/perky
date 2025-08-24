@@ -174,7 +174,6 @@ describe(GamePlugin, () => {
         engine.on('resume', resume)
         engine.on('changed:fps', changedFps)
 
-        // Simulate gameLoop events
         engine.gameLoop.emit('update', 0.016)
         expect(update).toHaveBeenCalledWith(0.016)
 

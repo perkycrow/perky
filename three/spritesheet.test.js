@@ -66,8 +66,7 @@ describe('Spritesheet', () => {
         
         expect(spritesheet.getImage('sheet1.png')).toBe(mockImage1)
         expect(spritesheet.getImage('sheet2.png')).toBe(mockImage2)
-        
-        // Check that frames are updated with correct images
+
         const frame1 = spritesheet.getFrame('sprite1')
         const frame3 = spritesheet.getFrame('sprite3')
         
@@ -78,21 +77,17 @@ describe('Spritesheet', () => {
 
     test('getFrame', () => {
         const spritesheet = new Spritesheet(spritesheetData)
-        
-        // By name
+
         const frame1 = spritesheet.getFrame('sprite1')
         expect(frame1.imageName).toBe('sprite1')
         expect(frame1.frame).toEqual({x: 0, y: 0, w: 50, h: 50})
-        
-        // By filename  
+
         const frame2 = spritesheet.getFrame('sprite2.png')
         expect(frame2.imageName).toBe('sprite2')
-        
-        // By index
+
         const frame3 = spritesheet.getFrame(2)
         expect(frame3.imageName).toBe('sprite3')
         
-        // Invalid
         expect(spritesheet.getFrame('nonexistent')).toBe(null)
         expect(spritesheet.getFrame(10)).toBe(null)
         expect(spritesheet.getFrame({})).toBe(null)

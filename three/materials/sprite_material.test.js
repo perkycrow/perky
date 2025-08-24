@@ -42,7 +42,7 @@ describe('SpriteMaterial', () => {
 
         const material = new SpriteMaterial({
             map: existingTexture,
-            texture: textureParams  // Should be ignored
+            texture: textureParams
         })
 
         expect(material.map).toBe(existingTexture)
@@ -115,8 +115,8 @@ describe('SpriteMaterial', () => {
     test('constructor with additional material properties', () => {
         const material = new SpriteMaterial({
             opacity: 0.5,
-            blending: 2, // AdditiveBlending
-            side: 2      // DoubleSide
+            blending: 2,
+            side: 2
         })
 
         expect(material.opacity).toBe(0.5)
@@ -165,7 +165,7 @@ describe('SpriteMaterial', () => {
 
         const material = new SpriteMaterial({
             texture: {
-                source: mockImage,  // SpriteTexture supports both image and source
+                source: mockImage,
                 generateMipmaps: true,
                 anisotropy: 16,
                 colorSpace: 'srgb'

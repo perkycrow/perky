@@ -146,7 +146,7 @@ describe('SpriteAnimation', () => {
         expect(animation.currentIndex).toBe(0)
         expect(animation.completed).toBe(false)
         expect(stopSpy).toHaveBeenCalledWith('stop')
-        expect(mockSprite.material.map).toBe('frame1') // Should be set to first frame
+        expect(mockSprite.material.map).toBe('frame1')
     })
 
 
@@ -168,7 +168,7 @@ describe('SpriteAnimation', () => {
         
         expect(result).toBe(animation)
         expect(animation.currentIndex).toBe(2)
-        expect(mockSprite.material.map).toBe('frame3') // Should be set to the correct frame
+        expect(mockSprite.material.map).toBe('frame3')
         expect(frameChangedSpy).toHaveBeenCalledWith('frameChanged', 'frame3', 2)
     })
 
@@ -180,7 +180,7 @@ describe('SpriteAnimation', () => {
         animation.setFrame(10)
         
         expect(animation.currentIndex).toBe(0)
-        expect(mockSprite.material.map).toBe(originalMap) // Should not change
+        expect(mockSprite.material.map).toBe(originalMap)
     })
 
 

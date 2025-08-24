@@ -70,7 +70,7 @@ describe('SimpleCollisionDetector', () => {
         const callback = vi.fn()
         
         const player = createMockObject(0, 0, 1)
-        const spore = createMockObject(1, 0, 1) // Overlapping
+        const spore = createMockObject(1, 0, 1)
         
         detector.addBody(player, {type: 'player'})
         detector.addBody(spore, {type: 'spore'})
@@ -95,7 +95,7 @@ describe('SimpleCollisionDetector', () => {
         const callback = vi.fn()
         
         const player = createMockObject(0, 0, 1)
-        const spore = createMockObject(10, 0, 1) // Far apart
+        const spore = createMockObject(10, 0, 1)
         
         detector.addBody(player, {type: 'player'})
         detector.addBody(spore, {type: 'spore'})

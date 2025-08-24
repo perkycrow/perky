@@ -92,7 +92,6 @@ function onUninstall (plugin, app) {
     })
     plugin.resizeHandlers = []
 
-    // Nettoyer les handlers de spritesheet
     if (plugin.spritesheetHandlers) {
         plugin.spritesheetHandlers.forEach(handler => {
             app.off('loader:progress', handler)
@@ -143,9 +142,6 @@ function createCamera (cameraOptions = {}) {
 
 
 function createRenderer (rendererOptions = {}) {
-    // Don't pass container initially since perkyView might not be mounted yet
-    
-    // Canvas will be attached later via the mount event
     const renderer = new WebGLRenderer({
         antialias: true,
         ...rendererOptions

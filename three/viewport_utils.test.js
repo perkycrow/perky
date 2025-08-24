@@ -193,8 +193,8 @@ describe('viewport_utils', () => {
                 camera: orthographicCamera
             })
 
-            expect(dimensions.height).toBe(15) // Original height
-            expect(dimensions.width).toBeCloseTo(20, 1) // Adjusted for aspect ratio
+            expect(dimensions.height).toBe(15)
+            expect(dimensions.width).toBeCloseTo(20, 1)
         })
 
 

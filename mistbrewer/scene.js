@@ -15,7 +15,6 @@ export default class Scene {
             return
         }
         
-        // Update all scene objects
         for (const object of this.objects) {
             if (object.update) {
                 object.update(deltaTime)

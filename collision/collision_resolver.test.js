@@ -79,8 +79,6 @@ describe('CollisionResolver', () => {
 
             resolver.separateBodies(bodyA, bodyB, collision)
 
-            // ratioA = 3/4, ratioB = 1/4
-            // separationDistance = 8 * 0.5 = 4
             expect(bodyA.position.x).toBe(-3) // -1 * 4 * 3/4
             expect(bodyB.position.x).toBe(1)  // 1 * 4 * 1/4
         })
@@ -141,7 +139,6 @@ describe('CollisionResolver', () => {
 
             resolver.resolveVelocity(bodyA, bodyB, collision)
 
-            // Should reverse velocities with restitution
             expect(bodyA.velocity.x).toBeLessThan(10)
             expect(bodyB.velocity.x).toBeGreaterThan(-10)
         })
@@ -163,7 +160,6 @@ describe('CollisionResolver', () => {
 
             resolver.resolveVelocity(bodyA, bodyB, collision)
 
-            // Velocities should remain unchanged
             expect(bodyA.velocity.x).toBe(-10)
             expect(bodyB.velocity.x).toBe(10)
         })
@@ -185,7 +181,6 @@ describe('CollisionResolver', () => {
 
             resolver.resolveVelocity(bodyA, bodyB, collision)
 
-            // Perfect elastic collision
             expect(bodyA.velocity.x).toBeCloseTo(0)
             expect(bodyB.velocity.x).toBeCloseTo(10)
         })
@@ -287,10 +282,8 @@ describe('CollisionResolver', () => {
 
             resolver.resolve(bodyA, bodyB, collision)
 
-            // Position should change (separation)
             expect(bodyA.position.x).not.toBe(initialPosA.x)
-            
-            // Velocity should change (velocity resolution)
+
             expect(bodyA.velocity.x).not.toBe(initialVelA.x)
         })
 
@@ -312,7 +305,6 @@ describe('CollisionResolver', () => {
 
             resolver.resolve(bodyA, bodyB, collision)
 
-            // Position should change (separation only)
             expect(bodyA.position.x).not.toBe(initialPosA.x)
         })
     })

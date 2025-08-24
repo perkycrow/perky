@@ -12,7 +12,6 @@ let animationId = null
 let time = 0
 let isAnimating = false
 
-// Scene elements
 let sun = null
 let centerGroup = null
 let orbitGroup = null

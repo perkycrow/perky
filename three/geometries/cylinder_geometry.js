@@ -7,7 +7,6 @@ export default class CylinderGeometry extends OriginalCylinderGeometry {
         if (typeof params === 'object' && params !== null) {
             let {radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength, size, radius} = params
 
-            // Apply defaults based on size (lowest priority)
             if (size !== undefined) {
                 if (radiusTop === undefined && radius === undefined) {
                     radiusTop = size
@@ -18,13 +17,10 @@ export default class CylinderGeometry extends OriginalCylinderGeometry {
                 height = height ?? size * 2
             }
 
-            // Apply radius (medium priority)
             if (radius !== undefined) {
                 radiusTop = radiusTop ?? radius
                 radiusBottom = radiusBottom ?? radius
             }
-
-            // Explicit radiusTop/radiusBottom have highest priority and are already set
 
             radiusTop = radiusTop ?? 1
             radiusBottom = radiusBottom ?? 1

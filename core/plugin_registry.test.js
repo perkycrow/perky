@@ -298,7 +298,6 @@ describe('PluginRegistry integration', () => {
 
 
     test('plugin installation with method conflicts', () => {
-        // Mock ResizeObserver for Application
         global.ResizeObserver = vi.fn().mockImplementation(() => ({
             observe: vi.fn(),
             unobserve: vi.fn(),

@@ -382,13 +382,13 @@ describe(ServiceHost, () => {
 
     test('registerMethod with method call', async () => {
         const [transportA, transportB] = ServiceTransport.pair()
-        const host = new ServiceHost({transport: transportA})
+        const hostA = new ServiceHost({transport: transportA})
 
-        host.echo = (req, res) => {
+        hostA.echo = (req, res) => {
             res.send({message: req.params.text})
         }
 
-        host.registerMethod('echo')
+        hostA.registerMethod('echo')
 
         const request = new ServiceRequest('echo', {text: 'hello'})
         const responseHandler = vi.fn()
@@ -465,7 +465,7 @@ describe(ServiceHost, () => {
         const childService = new ChildService({transport: transportA})
 
         expect(childService.actions.has('childMethod')).toBe(true)
-        expect(childService.actions.has('baseMethod')).toBe(false) // Child overrides parent
+        expect(childService.actions.has('baseMethod')).toBe(false)
         expect(childService.actions.size).toBe(1)
     })
 

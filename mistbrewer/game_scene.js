@@ -15,7 +15,6 @@ export default class GameScene extends Scene {
     }
 
     setupInputHandlers () {
-        // Handle ESC key to return to title
         this.game.inputManager.on('control:pressed', (control, event, device) => {
             if (device.name === 'KeyboardDevice' && control.name === 'Escape') {
                 console.log('🏠 Returning to title...')
@@ -26,13 +25,10 @@ export default class GameScene extends Scene {
 
     update (deltaTime) {
         super.update(deltaTime)
-        
-        // Game logic will be implemented here step by step
     }
 
     async cleanup () {
-        // Remove input handlers (inputManager handles cleanup automatically when game changes)
-        
         await super.cleanup()
     }
-} 
+
+}

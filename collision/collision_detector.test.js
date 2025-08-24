@@ -214,7 +214,7 @@ describe('collision_detector', () => {
             
             const collision = detectCollision(box1, box2)
             
-            expect(collision.normal.x).toBe(-1) // box1 is to the left
+            expect(collision.normal.x).toBe(-1)
         })
 
     })
@@ -249,8 +249,8 @@ describe('collision_detector', () => {
             const circle2 = createCircleShape(20, 0, 10)
             
             const collision = detectCollision(circle1, circle2)
-            
-            expect(collision).toBeNull() // Exactly touching should not collide
+
+            expect(collision).toBeNull()
         })
 
 
@@ -259,8 +259,8 @@ describe('collision_detector', () => {
             const circle2 = createCircleShape(0, 0, 10)
             
             const collision = detectCollision(circle1, circle2)
-            
-            expect(collision).toBeNull() // Distance is 0, should not collide
+
+            expect(collision).toBeNull()
         })
     })
 
@@ -269,8 +269,8 @@ describe('collision_detector', () => {
         
         test('circle touching box side', () => {
             const box = createBoxShape(0, 0, 20, 20)
-            const circle = createCircleShape(12, 0, 3) // Circle overlapping box edge
-            
+            const circle = createCircleShape(12, 0, 3)
+
             const collision = detectCollision(box, circle)
             
             expect(collision).not.toBeNull()
@@ -280,7 +280,7 @@ describe('collision_detector', () => {
 
         test('circle touching box corner', () => {
             const box = createBoxShape(0, 0, 20, 20)
-            const circle = createCircleShape(12, 12, 4) // Further diagonal to ensure corner collision
+            const circle = createCircleShape(12, 12, 4)
             
             const collision = detectCollision(box, circle)
             
@@ -297,7 +297,6 @@ describe('collision_detector', () => {
             
             expect(collision).not.toBeNull()
 
-            // When inside, depth is negative (distance to exit)
             expect(Math.abs(collision.depth)).toBeGreaterThan(0)
         })
 
@@ -315,7 +314,7 @@ describe('collision_detector', () => {
     describe('circle vs box with normal flipping', () => {
 
         test('normal is flipped when circle is first shape', () => {
-            const circle = createCircleShape(12, 0, 3) // Same as box test above
+            const circle = createCircleShape(12, 0, 3)
             const box = createBoxShape(0, 0, 20, 20)
             
             const circleVsBox = detectCollision(circle, box)
@@ -324,7 +323,6 @@ describe('collision_detector', () => {
             expect(circleVsBox).not.toBeNull()
             expect(boxVsCircle).not.toBeNull()
 
-            // Normals should be opposite
             expect(circleVsBox.normal.x).toBe(-boxVsCircle.normal.x)
             expect(circleVsBox.normal.y).toBe(-boxVsCircle.normal.y)
         })
