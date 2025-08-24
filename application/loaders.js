@@ -1,11 +1,11 @@
-
-
-
 export function normalizeParams (params) {
     if (typeof params === 'string') {
         return {url: params, config: {}}
     }
-    return {url: params.url, config: params.config || {}}
+    return {
+        url: params.url,
+        config: params.config || {}
+    }
 }
 
 
@@ -102,7 +102,22 @@ export async function loadAudio (params) {
 }
 
 
+export function loadFont (params) {
+    const {url, config} = normalizeParams(params)
+    const {
+        name,
+        family = name,
+        style = 'normal',
+        weight = 'normal'
+    } = config
 
+    const font = new FontFace(family || name, `url(${url})`, {style, weight})
+
+    return font.load().then(() => {
+        document.fonts.add(font)
+        return font
+    })
+}
 
 
 export function replaceUrlFilename (url, filename) {
@@ -128,6 +143,7 @@ export const loaders = {
     text: loadText,
     json: loadJson,
     arrayBuffer: loadArrayBuffer,
-    audio: loadAudio
+    audio: loadAudio,
+    font: loadFont
 }
 
