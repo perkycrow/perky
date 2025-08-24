@@ -56,19 +56,20 @@ function addActions (app) {
     })
 
     app.addAction('titleScreen', () => {
-        app.titleMenuElement = new TitleMenu()
-        app.titleMenuElement.gameTitle = 'Kalah'
+        const titleMenuElement = new TitleMenu()
+        titleMenuElement.gameTitle = 'Kalah'
 
-        app.titleMenuElement
+        titleMenuElement
             .addButton({label: 'New Game', action: 'newGame', cssClass: 'new-game'})
             .addButton({label: 'Load Game', action: 'loadGame', cssClass: 'load-game'})
             .addButton({label: 'System', action: 'system', cssClass: 'system'})
 
-        app.titleMenuElement.addEventListener('menu:action', (event) => {
+        titleMenuElement.addEventListener('menu:action', (event) => {
             app.dispatchAction(event.detail.action)
         })
 
-        app.element.appendChild(app.titleMenuElement)
+        app.element.appendChild(titleMenuElement)
+        app.titleMenuElement = titleMenuElement
     })
 
 }
