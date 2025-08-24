@@ -28,100 +28,12 @@ export default class Kalah extends Application {
             plugins: [gamePlugin, threePlugin]
         })
 
-        this.showTitleMenu()
+        addActions(this)
+
         this.once('loader:complete', () => start(this))
+
         this.loadAll()
-    }
-
-    showTitleMenu () {
-        this.titleMenuElement = new TitleMenu()
-        this.titleMenuElement.gameTitle = 'Kalah'
-        
-        this.titleMenuElement
-            .addButton({label: 'New Game', action: 'new-game', cssClass: 'new-game'})
-            .addButton({label: 'Load Game', action: 'load-game'})
-            .addButton({label: 'System', action: 'system'})
-        
-        this.titleMenuElement.addEventListener('menu:action', (event) => {
-            this.handleMenuAction(event.detail.action)
-        })
-        
-        this.element.appendChild(this.titleMenuElement)
-    }
-
-    hideTitleMenu () {
-        if (this.titleMenuElement) {
-            this.titleMenuElement.remove()
-            this.titleMenuElement = null
-        }
-    }
-
-    handleMenuAction (action) {
-        switch (action) {
-        case 'new-game':
-            this.startNewGame()
-            break
-        case 'load-game':
-            this.loadGame()
-            break
-        case 'system':
-            this.showSystemMenu()
-            break
-        default:
-            console.warn(`Unknown menu action: ${action}`)
-        }
-    }
-
-    startNewGame () {
-        console.log('Starting new game...')
-        this.hideTitleMenu()
-    }
-
-    loadGame () {
-        console.log('Loading game...')
-        
-        this.emit('game:load-requested')
-    }
-
-    showSystemMenu () {
-        console.log('Showing system menu...')
-        
-        this.emit('system:menu-requested')
-    }
-
-    updateBackgroundScale () {
-        if (!this.background || !this.camera) {
-            return
-        }
-
-        const containerSize = this.getThreeContainerSize()
-        const containerAspect = containerSize.width / containerSize.height
-
-        const viewHeight = this.camera.top - this.camera.bottom
-        const viewWidth = viewHeight * containerAspect
-
-        const backgroundImage = this.getSource('images', 'background')
-        if (!backgroundImage) {
-            return
-        }
-
-        const imageAspect = backgroundImage.width / backgroundImage.height
-
-        let scaleX
-        let scaleY
-        if (containerAspect > imageAspect) {
-            scaleX = viewWidth / backgroundImage.width
-            scaleY = scaleX
-        } else {
-            scaleY = viewHeight / backgroundImage.height
-            scaleX = scaleY
-        }
-
-        this.background.scale.set(
-            scaleX * backgroundImage.width,
-            scaleY * backgroundImage.height,
-            1
-        )
+        this.dispatchAction('titleScreen')
     }
 
     resize () {
@@ -137,6 +49,31 @@ export default class Kalah extends Application {
 
 
 
+function addActions (app) {
+
+    app.addAction('newGame', () => {
+        console.log('New Game')
+    })
+
+    app.addAction('titleScreen', () => {
+        app.titleMenuElement = new TitleMenu()
+        app.titleMenuElement.gameTitle = 'Kalah'
+
+        app.titleMenuElement
+            .addButton({label: 'New Game', action: 'newGame', cssClass: 'new-game'})
+            .addButton({label: 'Load Game', action: 'loadGame', cssClass: 'load-game'})
+            .addButton({label: 'System', action: 'system', cssClass: 'system'})
+
+        app.titleMenuElement.addEventListener('menu:action', (event) => {
+            app.dispatchAction(event.detail.action)
+        })
+
+        app.element.appendChild(app.titleMenuElement)
+    })
+
+}
+
+
 function start (app) {
     app.background = new BackgroundImage({
         source: app.getImage('background')
@@ -148,5 +85,3 @@ function start (app) {
     app.on('three:resize', app.resize)
     app.resize()
 }
-
-
