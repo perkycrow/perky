@@ -2,6 +2,7 @@ import Application from '../application/application'
 import GamePlugin from '../game/game_plugin'
 import ThreePlugin from '../three/three_plugin'
 import BackgroundImage from '../three/objects/background_image'
+import TitleMenu from '../components/title_menu.js'
 
 
 export default class Kalah extends Application {
@@ -27,8 +28,65 @@ export default class Kalah extends Application {
             plugins: [gamePlugin, threePlugin]
         })
 
+        this.showTitleMenu()
         this.once('loader:complete', () => start(this))
         this.loadAll()
+    }
+
+    showTitleMenu () {
+        this.titleMenuElement = new TitleMenu()
+        this.titleMenuElement.gameTitle = 'Kalah'
+        
+        this.titleMenuElement
+            .addButton({label: 'New Game', action: 'new-game', cssClass: 'new-game'})
+            .addButton({label: 'Load Game', action: 'load-game'})
+            .addButton({label: 'System', action: 'system'})
+        
+        this.titleMenuElement.addEventListener('menu:action', (event) => {
+            this.handleMenuAction(event.detail.action)
+        })
+        
+        this.element.appendChild(this.titleMenuElement)
+    }
+
+    hideTitleMenu () {
+        if (this.titleMenuElement) {
+            this.titleMenuElement.remove()
+            this.titleMenuElement = null
+        }
+    }
+
+    handleMenuAction (action) {
+        switch (action) {
+        case 'new-game':
+            this.startNewGame()
+            break
+        case 'load-game':
+            this.loadGame()
+            break
+        case 'system':
+            this.showSystemMenu()
+            break
+        default:
+            console.warn(`Unknown menu action: ${action}`)
+        }
+    }
+
+    startNewGame () {
+        console.log('Starting new game...')
+        this.hideTitleMenu()
+    }
+
+    loadGame () {
+        console.log('Loading game...')
+        
+        this.emit('game:load-requested')
+    }
+
+    showSystemMenu () {
+        console.log('Showing system menu...')
+        
+        this.emit('system:menu-requested')
     }
 
     updateBackgroundScale () {

@@ -12,6 +12,32 @@ export default {
             symbol: {
                 url: '/assets/images/symbol.png'
             }
+        },
+        fonts: {
+            cinzelDecorativeRegular: {
+                url: '/assets/fonts/cinzel-decorative-v18-latin-regular.woff2',
+                config: {
+                    family: 'Cinzel Decorative',
+                    style: 'normal',
+                    weight: '400'
+                }
+            },
+            cinzelDecorative700: {
+                url: '/assets/fonts/cinzel-decorative-v18-latin-700.woff2',
+                config: {
+                    family: 'Cinzel Decorative',
+                    style: 'normal',
+                    weight: '700'
+                }
+            },
+            cinzelDecorative900: {
+                url: '/assets/fonts/cinzel-decorative-v18-latin-900.woff2',
+                config: {
+                    family: 'Cinzel Decorative',
+                    style: 'normal',
+                    weight: '900'
+                }
+            }
         }
     }
 }
