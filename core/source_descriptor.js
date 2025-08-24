@@ -12,7 +12,7 @@ export default class SourceDescriptor {
         this.url     = params.url || params.path
         this.source  = params.source
         this.tags    = params.tags  || []
-        this.options = params.options || {}
+        this.config  = params.config || {}
     }
 
 
@@ -32,7 +32,7 @@ export default class SourceDescriptor {
             id: this.id,
             name: this.name,
             tags: this.tags,
-            options: this.options
+            config: this.config
         }
 
         if (this.url) {

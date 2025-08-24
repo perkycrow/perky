@@ -135,7 +135,10 @@ describe('SourceLoader', () => {
         
         const result = await loader.loadSource(sourceDescriptor)
         
-        expect(loaders.image).toHaveBeenCalledWith(sourceDescriptor.url)
+        expect(loaders.image).toHaveBeenCalledWith({
+            url: sourceDescriptor.url,
+            config: {}
+        })
         expect(sourceDescriptor.source).toBe('loaded image')
         expect(emitSpy).toHaveBeenCalledWith('progress', expect.any(Number), {
             sourceDescriptor, 

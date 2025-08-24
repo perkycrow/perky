@@ -12,7 +12,7 @@ describe('SourceDescriptor', () => {
             url: '/path/to/file.jpg',
             source: {key: 'value'},
             tags: ['titleScreen', 'mainScene'],
-            options: {width: 100, height: 100}
+            config: {width: 100, height: 100}
         }
 
         const descriptor = new SourceDescriptor(params)
@@ -23,7 +23,7 @@ describe('SourceDescriptor', () => {
         expect(descriptor.url).toBe('/path/to/file.jpg')
         expect(descriptor.source).toEqual({key: 'value'})
         expect(descriptor.tags).toEqual(['titleScreen', 'mainScene'])
-        expect(descriptor.options).toEqual({width: 100, height: 100})
+        expect(descriptor.config).toEqual({width: 100, height: 100})
     })
 
 
@@ -90,7 +90,7 @@ describe('SourceDescriptor', () => {
             id: 'test_id',
             url: '/path/to/file.jpg',
             tags: ['titleScreen'],
-            options: {width: 100}
+            config: {width: 100}
         })
         
         const exported = descriptor.export()
@@ -101,7 +101,7 @@ describe('SourceDescriptor', () => {
             name: 'example',
             url: '/path/to/file.jpg',
             tags: ['titleScreen'],
-            options: {width: 100}
+            config: {width: 100}
         })
         expect(exported.source).toBeUndefined()
     })
@@ -114,7 +114,7 @@ describe('SourceDescriptor', () => {
             id: 'config_id',
             source: {settings: true},
             tags: ['config', 'settings'],
-            options: {parse: true}
+            config: {parse: true}
         })
         
         const exported = descriptor.export()
@@ -125,7 +125,7 @@ describe('SourceDescriptor', () => {
             name: 'config',
             source: {settings: true},
             tags: ['config', 'settings'],
-            options: {parse: true}
+            config: {parse: true}
         })
         expect(exported.path).toBeUndefined()
     })
@@ -138,7 +138,7 @@ describe('SourceDescriptor', () => {
         })
         
         expect(descriptor.tags).toEqual([])
-        expect(descriptor.options).toEqual({})
+        expect(descriptor.config).toEqual({})
     })
 
 }) 
