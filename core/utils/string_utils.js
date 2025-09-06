@@ -8,8 +8,8 @@ export function getUrlExt (url) {
 
 
 
-export function formatNumber (number) {
-    return number.toLocaleString(undefined, {})
+export function formatNumber (number, locale = 'fr-FR') {
+    return number.toLocaleString(locale, {})
 }
 
 
