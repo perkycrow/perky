@@ -372,6 +372,8 @@ export default class Application extends Engine {
             return
         }
 
+        this.emit(`control:${eventType}`, control, event, device)
+
         const deviceName = this.inputManager.deviceKeyFor(device)
         const matchingBindings = this.inputBinder.getBindingsForInput({
             deviceName,

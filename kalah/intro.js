@@ -8,60 +8,39 @@ export default class Intro extends Application {
         
         this.fadeInDuration = params.fadeInDuration || 2000
         this.fadeOutDuration = params.fadeOutDuration || 1000
-        this.minimumDisplayTime = params.minimumDisplayTime || 3000
-        
-        this.startTime = null
+
         this.isReady = false
-        this.keyPressed = false
-        
-        this.onKeyPress = this.onKeyPress.bind(this)
+
+        this.on('control:pressed', this.onKeyPress)
+
+        this.on('start', () => {
+            this.dispatchAction('showLogo')
+
+            if (this.onPreloadComplete) {
+                this.once('preload:complete', this.onPreloadComplete)
+            }
+        })
+
         this.onPreloadComplete = this.onPreloadComplete.bind(this)
-        
+
         addActions(this)
     }
 
-    start () {
-        super.start()
-        this.startTime = Date.now()
-        this.setupInputListeners()
-        this.dispatchAction('showLogo')
-        
-        if (this.onPreloadComplete) {
-            this.once('preload:complete', this.onPreloadComplete)
-        }
-    }
-
-    stop () {
-        this.removeInputListeners()
-        super.stop()
-    }
-
-    setupInputListeners () {
-        document.addEventListener('keydown', this.onKeyPress)
-        document.addEventListener('click', this.onKeyPress)
-        document.addEventListener('touchstart', this.onKeyPress)
-    }
-
-    removeInputListeners () {
-        document.removeEventListener('keydown', this.onKeyPress)
-        document.removeEventListener('click', this.onKeyPress)
-        document.removeEventListener('touchstart', this.onKeyPress)
-    }
 
     onKeyPress () {
-        if (!this.isReady || this.keyPressed) return
-        
-        const elapsedTime = Date.now() - this.startTime
-        if (elapsedTime < this.minimumDisplayTime) return
-        
-        this.keyPressed = true
+        if (!this.isReady) {
+            return
+        }
+
         this.dispatchAction('fadeOut')
     }
+
 
     onPreloadComplete () {
         this.isReady = true
         this.dispatchAction('showPressAnyKey')
     }
+
 
     notifyPreloadComplete () {
         this.emit('preload:complete')
