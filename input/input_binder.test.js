@@ -1,6 +1,7 @@
 import {describe, beforeEach} from 'vitest'
 import InputBinder from './input_binder'
 import InputBinding from './input_binding'
+import CompositeBinding from './composite_binding'
 
 
 describe(InputBinder, () => {
@@ -411,6 +412,128 @@ describe(InputBinder, () => {
     test('import - empty data', () => {
         const binderFromImport = InputBinder.import({})
         expect(binderFromImport.getAllBindings()).toHaveLength(0)
+    })
+
+
+    test('accepts string format with auto-detection', () => {
+        const binding = binder.bindCombo(['ControlLeft', 'leftButton'], 'smartCombo')
+        
+        expect(binding).toBeInstanceOf(CompositeBinding)
+        expect(binding.controls).toHaveLength(2)
+        expect(binding.controls[0].deviceName).toBe('keyboard')
+        expect(binding.controls[0].controlName).toBe('ControlLeft')
+        expect(binding.controls[1].deviceName).toBe('mouse')
+        expect(binding.controls[1].controlName).toBe('leftButton')
+        expect(binding.actionName).toBe('smartCombo')
+    })
+
+
+    test('accepts object format', () => {
+        const binding = binder.bindCombo([
+            {deviceName: 'keyboard', controlName: 'ShiftLeft'},
+            {deviceName: 'mouse', controlName: 'rightButton'}
+        ], 'objectCombo')
+        
+        expect(binding).toBeInstanceOf(CompositeBinding)
+        expect(binding.controls).toHaveLength(2)
+        expect(binding.controls[0].deviceName).toBe('keyboard')
+        expect(binding.controls[0].controlName).toBe('ShiftLeft')
+        expect(binding.controls[1].deviceName).toBe('mouse')
+        expect(binding.controls[1].controlName).toBe('rightButton')
+    })
+
+
+    test('accepts mixed string and object formats', () => {
+        const binding = binder.bindCombo([
+            'ControlLeft',
+            {deviceName: 'mouse', controlName: 'leftButton'},
+            'KeyA'
+        ], 'mixedCombo')
+        
+        expect(binding.controls).toHaveLength(3)
+        expect(binding.controls[0].deviceName).toBe('keyboard')
+        expect(binding.controls[0].controlName).toBe('ControlLeft')
+        expect(binding.controls[1].deviceName).toBe('mouse')
+        expect(binding.controls[1].controlName).toBe('leftButton')
+        expect(binding.controls[2].deviceName).toBe('keyboard')
+        expect(binding.controls[2].controlName).toBe('KeyA')
+    })
+
+
+    test('auto-detects all device types correctly', () => {
+        const binding = binder.bindCombo([
+            'KeyA',
+            'leftButton',
+            'button0',
+            'unknownControl'
+        ], 'deviceTypes')
+        
+        expect(binding.controls[0].deviceName).toBe('keyboard')
+        expect(binding.controls[1].deviceName).toBe('mouse')
+        expect(binding.controls[2].deviceName).toBe('gamepad')
+        expect(binding.controls[3].deviceName).toBe('keyboard')
+    })
+
+
+    test('allows explicit device override with objects', () => {
+        const binding = binder.bindCombo([
+            'leftButton',
+            {deviceName: 'keyboard', controlName: 'leftButton'}
+        ], 'explicitOverride')
+        
+        expect(binding.controls[0].deviceName).toBe('mouse')
+        expect(binding.controls[1].deviceName).toBe('keyboard')
+        expect(binding.controls[0].controlName).toBe('leftButton')
+        expect(binding.controls[1].controlName).toBe('leftButton')
+    })
+
+
+    test('validates controls array', () => {
+        expect(() => {
+            binder.bindCombo(['single'], 'invalid')
+        }).toThrow('Controls must be an array with at least 2 controls')
+        
+        expect(() => {
+            binder.bindCombo([], 'empty')
+        }).toThrow('Controls must be an array with at least 2 controls')
+        
+        expect(() => {
+            binder.bindCombo('not-array', 'invalid')
+        }).toThrow('Controls must be an array with at least 2 controls')
+    })
+
+
+    test('validates control formats', () => {
+        expect(() => {
+            binder.bindCombo(['KeyA', null], 'invalid')
+        }).toThrow('Control at index 1 must be a string or object with deviceName and controlName properties')
+
+        expect(() => {
+            binder.bindCombo(['KeyA', {}], 'invalid')
+        }).toThrow('Control at index 1 must be a string or object with deviceName and controlName properties')
+
+        expect(() => {
+            binder.bindCombo(['KeyA', {deviceName: 'keyboard'}], 'invalid')
+        }).toThrow('Control at index 1 must be a string or object with deviceName and controlName properties')
+    })
+
+
+    test('validates actionName', () => {
+        expect(() => {
+            binder.bindCombo(['KeyA', 'KeyB'], '')
+        }).toThrow('actionName is required and must be a string')
+        
+        expect(() => {
+            binder.bindCombo(['KeyA', 'KeyB'], null)
+        }).toThrow('actionName is required and must be a string')
+    })
+
+
+    test('supports controller and eventType', () => {
+        const binding = binder.bindCombo(['KeyA', 'leftButton'], 'comboAction', 'player', 'released')
+        
+        expect(binding.controllerName).toBe('player')
+        expect(binding.eventType).toBe('released')
     })
 
 })

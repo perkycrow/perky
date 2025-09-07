@@ -1,6 +1,7 @@
 import PerkyModule from '../core/perky_module'
 import Registry from '../core/registry'
 import InputBinding from './input_binding'
+import CompositeBinding from './composite_binding'
 
 
 export default class InputBinder extends PerkyModule {
@@ -26,15 +27,27 @@ export default class InputBinder extends PerkyModule {
         controlName,
         actionName,
         controllerName = null,
-        eventType = 'pressed'
+        eventType = 'pressed',
+        controls = null
     }) {
-        const binding = new InputBinding({
-            deviceName,
-            controlName,
-            actionName,
-            controllerName,
-            eventType
-        })
+        let binding
+
+        if (controls && Array.isArray(controls)) {
+            binding = new CompositeBinding({
+                controls,
+                actionName,
+                controllerName,
+                eventType
+            })
+        } else {
+            binding = new InputBinding({
+                deviceName,
+                controlName,
+                actionName,
+                controllerName,
+                eventType
+            })
+        }
         
         this.#bindings.set(binding.key, binding)
         this.#addToInputIndex(binding)
@@ -68,7 +81,17 @@ export default class InputBinder extends PerkyModule {
 
     getBindingsForInput ({deviceName, controlName, eventType}) {
         const inputKey = buildInputKey(deviceName, controlName, eventType)
-        return this.#inputIndex.get(inputKey) || []
+        const directBindings = this.#inputIndex.get(inputKey) || []
+
+        const compositeBindings = []
+        for (const binding of this.#bindings.values) {
+            if (binding instanceof CompositeBinding && 
+                binding.matches({deviceName, controlName, eventType})) {
+                compositeBindings.push(binding)
+            }
+        }
+        
+        return [...directBindings, ...compositeBindings]
     }
 
 
@@ -80,6 +103,35 @@ export default class InputBinder extends PerkyModule {
     clearBindings () {
         this.#bindings.clear()
         this.#inputIndex.clear()
+    }
+
+
+    bindCombo (controls, actionName, controllerName = null, eventType = 'pressed') {
+        if (!Array.isArray(controls) || controls.length < 2) {
+            throw new Error('Controls must be an array with at least 2 controls')
+        }
+        
+        if (!actionName || typeof actionName !== 'string') {
+            throw new Error('actionName is required and must be a string')
+        }
+
+        const normalizedControls = controls.map((control, index) => {
+            if (typeof control === 'string') {
+                const deviceName = detectDeviceFromControlName(control)
+                return {deviceName, controlName: control}
+            } else if (control && typeof control === 'object' && control.deviceName && control.controlName) {
+                return control
+            } else {
+                throw new Error(`Control at index ${index} must be a string or object with deviceName and controlName properties`)
+            }
+        })
+
+        return this.bind({
+            controls: normalizedControls,
+            actionName,
+            controllerName,
+            eventType
+        })
     }
 
 
@@ -138,4 +190,26 @@ function keyFor ({actionName, controllerName = null, eventType = 'pressed'}) {
 
 function buildInputKey (deviceName, controlName, eventType) {
     return `${deviceName}:${controlName}:${eventType}`
+}
+
+
+const MOUSE_CONTROLS = [
+    'leftButton', 'rightButton', 'middleButton', 'backButton', 'forwardButton',
+    'position', 'navigation'
+]
+
+const GAMEPAD_CONTROL_PATTERNS = [
+    /^button\d+$/, /^axis\d+$/, /^dpad/, /^stick/
+]
+
+function detectDeviceFromControlName (controlName) {
+    if (MOUSE_CONTROLS.includes(controlName)) {
+        return 'mouse'
+    }
+
+    if (GAMEPAD_CONTROL_PATTERNS.some(pattern => pattern.test(controlName))) {
+        return 'gamepad'
+    }
+
+    return 'keyboard'
 }
