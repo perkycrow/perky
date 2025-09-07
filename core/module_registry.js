@@ -45,6 +45,7 @@ export default class ModuleRegistry extends Registry {
         module.emit('registered', this.#parentModule, moduleName)
 
         this.#handleLifecycleEvents(module)
+        this.#handleModuleDisposeEvent(module, moduleName)
     }
 
 
@@ -57,6 +58,16 @@ export default class ModuleRegistry extends Registry {
         if (this.#autoStart && this.#parentModule.started) {
             module.start()
         }
+    }
+
+
+    #handleModuleDisposeEvent (module) {
+        module.once('dispose', () => {
+            const moduleKey = this.keyFor(module)
+            if (moduleKey !== undefined && this.get(moduleKey) === module) {
+                this.delete(moduleKey)
+            }
+        })
     }
 
 

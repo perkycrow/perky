@@ -409,4 +409,20 @@ describe(ApplicationManager, () => {
         expect(appManager.instances.has(app.id)).toBe(false)
     })
 
+
+    test('app self-dispose should be intercepted by manager', () => {
+        appManager.register('testApp', MockApp)
+        
+        const app = appManager.create('testApp')
+        const appId = app.id
+        
+        expect(appManager.instances.has(appId)).toBe(true)
+        expect(appManager.list()).toHaveLength(1)
+        
+        app.dispose()
+        
+        expect(appManager.instances.has(appId)).toBe(false)
+        expect(appManager.list()).toHaveLength(0)
+    })
+
 })

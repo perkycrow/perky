@@ -5,7 +5,7 @@ export default class PerkyModule extends Notifier {
 
     constructor () {
         super()
-        reset(this)
+        this.started = false
     }
 
 
@@ -39,17 +39,16 @@ export default class PerkyModule extends Notifier {
 
 
     dispose () {
+        if (this.disposed) {
+            return false
+        }
+
+        this.disposed = true
         this.stop()
         this.emit('dispose')
         this.removeListeners()
-        reset(this)
 
         return true
     }
 
-}
-
-
-function reset (module) {
-    module.started = false
 }

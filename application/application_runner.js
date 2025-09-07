@@ -27,6 +27,8 @@ export default class ApplicationRunner {
     static run (...args) {
         const runner = new ApplicationRunner(...args)
         runner.run()
+
+        return runner
     }
 
 }

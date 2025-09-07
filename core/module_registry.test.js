@@ -212,4 +212,59 @@ describe(ModuleRegistry, () => {
         expect(unregisteredListener).toHaveBeenCalledWith(parentModule, 'testModule')
     })
 
+
+    test('module self-dispose removes it from registry', () => {
+        const module = new PerkyModule()
+        const unregisteredListener = vi.fn()
+        
+        module.on('unregistered', unregisteredListener)
+        registry.set('testModule', module)
+        
+        expect(registry.has('testModule')).toBe(true)
+        expect(registry.size).toBe(1)
+        
+        module.dispose()
+        
+        expect(registry.has('testModule')).toBe(false)
+        expect(registry.size).toBe(0)
+        expect(unregisteredListener).toHaveBeenCalledWith(parentModule, 'testModule')
+    })
+
+
+    test('module self-dispose with numeric keys', () => {
+        const module1 = new PerkyModule()
+        const module2 = new PerkyModule()
+        
+        registry.set(1, module1)
+        registry.set(2, module2)
+        
+        expect(registry.size).toBe(2)
+        
+        module1.dispose()
+        
+        expect(registry.has(1)).toBe(false)
+        expect(registry.has(2)).toBe(true)
+        expect(registry.size).toBe(1)
+        
+        module2.dispose()
+        
+        expect(registry.has(2)).toBe(false)
+        expect(registry.size).toBe(0)
+    })
+
+
+    test('module dispose called by registry', () => {
+        const module = new PerkyModule()
+        registry.set('testModule', module)
+
+        const firstResult = module.dispose()
+        
+        expect(firstResult).toBe(true)
+        expect(module.disposed).toBe(true)
+        expect(registry.has('testModule')).toBe(false)
+        
+        const secondResult = module.dispose()
+        expect(secondResult).toBe(false)
+    })
+
 })

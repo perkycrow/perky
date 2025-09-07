@@ -62,4 +62,25 @@ describe(PerkyModule, () => {
         expect(module.started).toBe(false)
     })
 
+
+    test('dispose multiple calls', () => {
+        const emitSpy = vi.spyOn(module, 'emit')
+        const stopSpy = vi.spyOn(module, 'stop')
+        const removeListenersSpy = vi.spyOn(module, 'removeListeners')
+
+        expect(module.dispose()).toBe(true)
+        expect(emitSpy).toHaveBeenCalledWith('dispose')
+        expect(stopSpy).toHaveBeenCalledTimes(1)
+        expect(removeListenersSpy).toHaveBeenCalledTimes(1)
+
+        emitSpy.mockClear()
+        stopSpy.mockClear()
+        removeListenersSpy.mockClear()
+
+        expect(module.dispose()).toBe(false)
+        expect(emitSpy).not.toHaveBeenCalledWith('dispose')
+        expect(stopSpy).not.toHaveBeenCalled()
+        expect(removeListenersSpy).not.toHaveBeenCalled()
+    })
+
 })
