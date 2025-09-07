@@ -758,6 +758,105 @@ describe(Application, () => {
 
     })
 
+
+    describe('bindCombo', () => {
+
+        test('accepts string format with auto-detection', () => {
+            const combo = application.bindCombo(['ShiftLeft', 'leftButton'], 'shiftClick')
+            
+            expect(combo).toBeDefined()
+            expect(combo.controls).toHaveLength(2)
+            expect(combo.controls[0].deviceName).toBe('keyboard')
+            expect(combo.controls[0].controlName).toBe('ShiftLeft')
+            expect(combo.controls[1].deviceName).toBe('mouse')
+            expect(combo.controls[1].controlName).toBe('leftButton')
+            expect(combo.actionName).toBe('shiftClick')
+        })
+
+
+        test('accepts object format', () => {
+            const combo = application.bindCombo([
+                {deviceName: 'keyboard', controlName: 'ControlLeft'},
+                {deviceName: 'mouse', controlName: 'rightButton'}
+            ], 'ctrlRightClick')
+            
+            expect(combo.controls).toHaveLength(2)
+            expect(combo.controls[0].deviceName).toBe('keyboard')
+            expect(combo.controls[1].deviceName).toBe('mouse')
+        })
+
+
+        test('accepts mixed string and object formats', () => {
+            const combo = application.bindCombo([
+                'ControlLeft',
+                {deviceName: 'mouse', controlName: 'leftButton'}
+            ], 'mixedCombo')
+
+            expect(combo.controls).toHaveLength(2)
+            expect(combo.controls[0].deviceName).toBe('keyboard')
+            expect(combo.controls[0].controlName).toBe('ControlLeft')
+            expect(combo.controls[1].deviceName).toBe('mouse')
+            expect(combo.controls[1].controlName).toBe('leftButton')
+        })
+
+
+        test('works with keyboard-only combinations', () => {
+            const combo = application.bindCombo(['ControlLeft', 'KeyS'], 'save')
+            
+            expect(combo.controls).toHaveLength(2)
+            expect(combo.controls.every(c => c.deviceName === 'keyboard')).toBe(true)
+        })
+
+
+        test('works with mouse-only combinations', () => {
+            const combo = application.bindCombo(['leftButton', 'rightButton'], 'bothButtons')
+            
+            expect(combo.controls).toHaveLength(2)
+            expect(combo.controls.every(c => c.deviceName === 'mouse')).toBe(true)
+        })
+
+
+        test('supports controller and eventType', () => {
+            const combo = application.bindCombo(
+                ['AltLeft', 'middleButton'], 
+                'special', 
+                'editor', 
+                'released'
+            )
+            
+            expect(combo.controllerName).toBe('editor')
+            expect(combo.eventType).toBe('released')
+        })
+
+
+        test('integration test - triggers when all controls are pressed', async () => {
+            class TestController extends PerkyModule {
+                smartCombo = vi.fn()
+            }
+            
+            const testApp = new Application()
+            const controller = new TestController()
+            
+            testApp.registerController('editor', controller)
+            testApp.bindCombo(['ControlLeft', 'leftButton'], 'smartCombo', 'editor')
+
+            const keyboardDevice = testApp.getDevice('keyboard')
+            const mouseDevice = testApp.getDevice('mouse')
+
+            const ctrlControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'ControlLeft'})
+            const leftButtonControl = mouseDevice.findOrCreateControl(ButtonControl, {name: 'leftButton'})
+
+            ctrlControl.press({code: 'ControlLeft'})
+            await new Promise(resolve => setTimeout(resolve, 0))
+            expect(controller.smartCombo).not.toHaveBeenCalled()
+
+            leftButtonControl.press()
+            await new Promise(resolve => setTimeout(resolve, 0))
+            expect(controller.smartCombo).toHaveBeenCalled()
+        })
+
+    })
+
 })
 
 
@@ -846,9 +945,6 @@ describe('displayMode', () => {
         application.toggleFullscreen()
         expect(mockPerkyView.enterFullscreenMode).toHaveBeenCalled()
     })
-
-
-
 
 
     test('displayMode:changed event is registered', () => {

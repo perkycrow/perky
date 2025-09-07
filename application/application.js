@@ -350,6 +350,11 @@ export default class Application extends Engine {
     }
 
 
+    bindCombo (controls, actionName, controllerName = null, eventType = 'pressed') {
+        return this.inputBinder.bindCombo(controls, actionName, controllerName, eventType)
+    }
+
+
     #initEvents () {
         const {perkyView, inputManager, sourceManager} = this
 
@@ -382,7 +387,9 @@ export default class Application extends Engine {
         })
 
         matchingBindings.forEach(binding => {
-            this.actionDispatcher.dispatchAction(binding, control, event, device)
+            if (typeof binding.shouldTrigger !== 'function' || binding.shouldTrigger(this.inputManager)) {
+                this.actionDispatcher.dispatchAction(binding, control, event, device)
+            }
         })
     }
 
