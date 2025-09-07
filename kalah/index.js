@@ -9,7 +9,5 @@ const manager = new ApplicationManager()
 manager.register('Kalah', Kalah)
 
 documentReady(async () => {
-    console.log('Spawning Kalah application...')
     await manager.spawn('Kalah', {container, manifest})
-    console.log('Kalah application started.')
 })

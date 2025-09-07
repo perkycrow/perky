@@ -32,7 +32,6 @@ export default class Kalah extends Application {
 
         this.once('loader:complete', () => start(this))
 
-        this.loadAll()
         this.dispatchAction('titleScreen')
     }
 

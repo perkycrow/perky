@@ -7,10 +7,12 @@ export default {
     sourceDescriptors: {
         images: {
             background: {
-                url: '/assets/images/background.jpg'
+                url: '/assets/images/background.jpg',
+                tags: ['preload']
             },
             symbol: {
-                url: '/assets/images/symbol.png'
+                url: '/assets/images/symbol.png',
+                tags: ['preload']
             }
         },
         fonts: {
@@ -20,7 +22,8 @@ export default {
                     family: 'Cinzel Decorative',
                     style: 'normal',
                     weight: '400'
-                }
+                },
+                tags: ['preload']
             },
             cinzelDecorative700: {
                 url: '/assets/fonts/cinzel-decorative-v18-latin-700.woff2',
@@ -28,7 +31,8 @@ export default {
                     family: 'Cinzel Decorative',
                     style: 'normal',
                     weight: '700'
-                }
+                },
+                tags: ['preload']
             },
             cinzelDecorative900: {
                 url: '/assets/fonts/cinzel-decorative-v18-latin-900.woff2',
@@ -36,7 +40,8 @@ export default {
                     family: 'Cinzel Decorative',
                     style: 'normal',
                     weight: '900'
-                }
+                },
+                tags: ['preload']
             }
         }
     }
