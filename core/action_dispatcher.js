@@ -1,5 +1,6 @@
 import PerkyModule from './perky_module'
 import ModuleRegistry from './module_registry'
+import ActionController from './action_controller'
 
 
 export default class ActionDispatcher extends PerkyModule {
@@ -30,6 +31,10 @@ export default class ActionDispatcher extends PerkyModule {
     register (name, controller) {
         if (this.#controllers.has(name)) {
             console.warn(`Controller "${name}" already registered. Overwriting...`)
+        }
+
+        if (!(controller instanceof ActionController) && controller?.constructor === Object) {
+            controller = new ActionController(controller)
         }
 
         this.#controllers.set(name, controller)
@@ -101,9 +106,7 @@ export default class ActionDispatcher extends PerkyModule {
         if (controller) {
 
             if  (typeof controller.execute === 'function') {
-                controller.execute(actionName, ...args)
-
-                return true
+                return controller.execute(actionName, ...args)
             } else if (typeof controller[actionName] === 'function') {
                 controller[actionName](...args)
 

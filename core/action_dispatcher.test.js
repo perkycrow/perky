@@ -43,6 +43,24 @@ describe(ActionDispatcher, () => {
     })
 
 
+    test('register with plain object auto-wraps in ActionController', () => {
+        const plainController = {
+            action1: vi.fn(),
+            action2: vi.fn(),
+            notAFunction: 'not a function'
+        }
+        
+        dispatcher.register('plain', plainController)
+        
+        const registeredController = dispatcher.getController('plain')
+        
+        expect(registeredController).toBeInstanceOf(ActionController)
+        expect(registeredController.getAction('action1')).toBe(plainController.action1)
+        expect(registeredController.getAction('action2')).toBe(plainController.action2)
+        expect(registeredController.getAction('notAFunction')).toBeUndefined()
+    })
+
+
     test('unregister', () => {
         const controller = new ActionController()
         
