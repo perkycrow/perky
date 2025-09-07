@@ -52,8 +52,12 @@ export default class ApplicationManager extends PerkyModule {
     }
 
 
-    spawn (name, params = {}) {
+    async spawn (name, params = {}) {
         const app = this.create(name, params)
+        await app.preload()
+        if (params.container) {
+            app.mountTo(params.container)
+        }
         app.start()
         return app
     }
@@ -93,7 +97,10 @@ export default class ApplicationManager extends PerkyModule {
 
 
     list (grep = null) {
-        const apps = Array.from(this.instances.values)
+        const apps = []
+        this.instances.forEach((app) => {
+            apps.push(app)
+        })
 
         if (grep) {
             return apps.filter(app => app.name.includes(grep))

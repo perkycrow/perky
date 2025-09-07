@@ -67,11 +67,14 @@ describe('SourceManager', () => {
     })
 
 
-    test('loadTag not found', async () => {
+    test('loadTag empty result', async () => {
         manifest.getSourceDescriptorsByTag.mockReturnValueOnce([])
         
-        await expect(manager.loadTag('nonexistent')).rejects.toThrow('No sources found for tag: nonexistent')
+        const result = await manager.loadTag('nonexistent')
+        
         expect(manifest.getSourceDescriptorsByTag).toHaveBeenCalledWith('nonexistent')
+        expect(result).toBeInstanceOf(SourceLoader)
+        expect(result.sourceDescriptors).toEqual([])
     })
 
 
@@ -90,11 +93,14 @@ describe('SourceManager', () => {
     })
 
 
-    test('loadAll not found', async () => {
+    test('loadAll empty result', async () => {
         manifest.getAllSourceDescriptors.mockReturnValueOnce([])
         
-        await expect(manager.loadAll()).rejects.toThrow('No sources found')
+        const result = await manager.loadAll()
+        
         expect(manifest.getAllSourceDescriptors).toHaveBeenCalled()
+        expect(result).toBeInstanceOf(SourceLoader)
+        expect(result.sourceDescriptors).toEqual([])
     })
 
 })

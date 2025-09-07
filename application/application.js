@@ -110,6 +110,11 @@ export default class Application extends Engine {
     }
 
 
+    async preload () {
+        return this.loadTag('preload')
+    }
+
+
     registerLoader (name, loaderFunction) {
         if (!name || typeof name !== 'string') {
             throw new Error('Loader name must be a non-empty string')
@@ -277,7 +282,7 @@ export default class Application extends Engine {
         return this
     }
 
-    
+
     bindKey (keyName, actionNameOrOptions, eventType = 'pressed', controllerName = null) {
         if (typeof actionNameOrOptions === 'object') {
             const {actionName, eventType: objEventType = 'pressed', controllerName: objControllerName = null} = actionNameOrOptions

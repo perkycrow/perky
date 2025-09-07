@@ -30,10 +30,6 @@ export default class SourceManager extends PerkyModule {
     async loadTag (tag) {
         const sourceDescriptors = this.manifest.getSourceDescriptorsByTag(tag)
 
-        if (!sourceDescriptors.length) {
-            throw new Error(`No sources found for tag: ${tag}`)
-        }
-
         const sourceLoader = new SourceLoader(sourceDescriptors, this.loaders)
         this.#setupLoaderEvents(sourceLoader)
 
@@ -45,10 +41,6 @@ export default class SourceManager extends PerkyModule {
 
     async loadAll () {
         const sourceDescriptors = this.manifest.getAllSourceDescriptors()
-
-        if (!sourceDescriptors.length) {
-            throw new Error('No sources found')
-        }
 
         const sourceLoader = new SourceLoader(sourceDescriptors, this.loaders)
         this.#setupLoaderEvents(sourceLoader)

@@ -152,10 +152,10 @@ describe(ApplicationManager, () => {
     })
 
 
-    test('spawn', () => {
+    test('spawn', async () => {
         appManager.register('testApp', MockApp)
         
-        const app = appManager.spawn('testApp', {name: 'SpawnedApp'})
+        const app = await appManager.spawn('testApp', {name: 'SpawnedApp'})
         
         expect(app).toBeInstanceOf(MockApp)
         expect(app.id).toBe(1)
@@ -182,9 +182,9 @@ describe(ApplicationManager, () => {
     })
 
 
-    test('stop', () => {
+    test('stop', async () => {
         appManager.register('testApp', MockApp)
-        const app = appManager.spawn('testApp')
+        const app = await appManager.spawn('testApp')
         
         appManager.stop(app.id)
         
@@ -216,9 +216,9 @@ describe(ApplicationManager, () => {
     })
 
 
-    test('dispose', () => {
+    test('dispose', async () => {
         appManager.register('testApp', MockApp)
-        const app = appManager.spawn('testApp')
+        const app = await appManager.spawn('testApp')
         const appId = app.id
         
         appManager.dispose(appId)
@@ -293,7 +293,7 @@ describe(ApplicationManager, () => {
     })
 
 
-    test('integration scenario - preload then title then game', () => {
+    test('integration scenario - preload then title then game', async () => {
         class PreloadApp extends MockApp {
             constructor (params) {
                 super({...params, name: 'Preload'})
@@ -316,17 +316,17 @@ describe(ApplicationManager, () => {
         appManager.register('title', TitleApp)
         appManager.register('game', GameApp)
         
-        const preload = appManager.spawn('preload')
+        const preload = await appManager.spawn('preload')
         expect(preload.mockStart).toHaveBeenCalled()
         
         appManager.stop(preload.id)
         expect(preload.mockStop).toHaveBeenCalled()
         
-        const title = appManager.spawn('title')
+        const title = await appManager.spawn('title')
         expect(title.mockStart).toHaveBeenCalled()
         
         appManager.stop(title.id)
-        appManager.spawn('game')
+        await appManager.spawn('game')
         
         expect(appManager.list()).toHaveLength(3)
         expect(appManager.list('Game')).toHaveLength(1)
@@ -334,7 +334,7 @@ describe(ApplicationManager, () => {
     })
 
 
-    test('integration scenario - settings overlay', () => {
+    test('integration scenario - settings overlay', async () => {
         class GameApp extends MockApp {
             constructor (params) {
                 super({...params, name: 'Game'})
@@ -350,8 +350,8 @@ describe(ApplicationManager, () => {
         appManager.register('game', GameApp)
         appManager.register('settings', SettingsApp)
         
-        const game = appManager.spawn('game')
-        const settings = appManager.spawn('settings')
+        const game = await appManager.spawn('game')
+        const settings = await appManager.spawn('settings')
         
         expect(game.mockStart).toHaveBeenCalled()
         expect(settings.mockStart).toHaveBeenCalled()
