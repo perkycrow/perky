@@ -16,6 +16,21 @@ describe(ActionController, () => {
     })
 
 
+    test('constructor with actions object', () => {
+        const actions = {
+            action1: vi.fn(),
+            action2: vi.fn(),
+            notAFunction: 'not a function'
+        }
+        
+        const controllerWithActions = new ActionController(actions)
+        
+        expect(controllerWithActions.getAction('action1')).toBe(actions.action1)
+        expect(controllerWithActions.getAction('action2')).toBe(actions.action2)
+        expect(controllerWithActions.getAction('notAFunction')).toBeUndefined()
+    })
+
+
     test('addAction and getAction', () => {
         const action = vi.fn()
         
