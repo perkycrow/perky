@@ -78,7 +78,10 @@ export default class ModuleRegistry extends Registry {
             }
 
             this.#parentModule.emit(`${this.#registryName}:delete`, moduleName, module)
-            module.emit('unregistered', this.#parentModule, moduleName)
+
+            if (typeof module.emit === 'function') {
+                module.emit('unregistered', this.#parentModule, moduleName)
+            }
 
             delete module[this.#parentModuleName]
 
