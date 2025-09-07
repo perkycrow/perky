@@ -1,3 +1,5 @@
+import {vi} from 'vitest'
+
 import {
     getUrlExt,
     filterKeys,
@@ -31,7 +33,8 @@ import {
     setNestedValue,
     exportValue,
     uniqueId,
-    resetUniqueId
+    resetUniqueId,
+    documentReady
 } from './utils'
 
 
@@ -494,6 +497,43 @@ describe('Utils', () => {
         
         const resetUser = uniqueId('testCollection', 'user')
         expect(resetUser).toEqual('user')
+    })
+
+
+    test('documentReady', () => {
+        const callback = vi.fn()
+
+        const originalDocument = global.document
+        global.document = {
+            readyState: 'loading',
+            addEventListener: vi.fn()
+        }
+        
+        documentReady(callback)
+        
+        expect(global.document.addEventListener).toHaveBeenCalledWith('DOMContentLoaded', callback)
+        expect(callback).not.toHaveBeenCalled()
+
+        global.document = {
+            readyState: 'complete',
+            addEventListener: vi.fn()
+        }
+        
+        documentReady(callback)
+        
+        expect(callback).toHaveBeenCalledTimes(1)
+
+        callback.mockClear()
+        global.document = {
+            readyState: 'interactive',
+            addEventListener: vi.fn()
+        }
+        
+        documentReady(callback)
+        
+        expect(callback).toHaveBeenCalledTimes(1)
+        
+        global.document = originalDocument
     })
 
 })
