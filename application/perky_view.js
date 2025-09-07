@@ -32,6 +32,11 @@ export default class PerkyView extends PerkyModule {
     }
 
 
+    get container () {
+        return this.parentElement
+    }
+
+
     get style () {
         return this.element.style
     }
@@ -132,9 +137,18 @@ export default class PerkyView extends PerkyModule {
         }
 
         container.appendChild(this.element)
-        this.container = container
 
         this.emit('mount', {container})
+
+        return this
+    }
+
+
+    dismount () {
+        if (this.parentElement) {
+            this.parentElement.removeChild(this.element)
+            this.emit('dismount', {container: this.parentElement})
+        }
 
         return this
     }
@@ -151,7 +165,7 @@ export default class PerkyView extends PerkyModule {
         element.id = params.id || uniqueId('perky_view', 'perky_view')
         
         element.className = params.className || 'perky-view'
-        
+
         const styles = this.defaultStyles(params)
         Object.assign(element.style, styles)
         
@@ -171,6 +185,7 @@ export default class PerkyView extends PerkyModule {
 
     dispose (...args) {
         this.exitFullscreenMode()
+        this.dismount()
         
         super.dispose(...args)
     }

@@ -90,7 +90,7 @@ export default class ApplicationManager extends PerkyModule {
     dispose (appId) {
         if (this.instances.has(appId)) {
             const app = this.instances.get(appId)
-            app.stop()
+            app.dispose()
             this.instances.delete(appId)
         }
     }

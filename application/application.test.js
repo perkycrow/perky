@@ -244,6 +244,17 @@ describe(Application, () => {
     })
 
 
+    test('dispose calls perkyView.dispose() which dismounts', () => {
+        vi.spyOn(application.perkyView, 'dispose')
+        vi.spyOn(application.perkyView, 'dismount')
+        
+        application.dispose()
+        
+        expect(application.perkyView.dispose).toHaveBeenCalled()
+        expect(application.perkyView.dismount).toHaveBeenCalled()
+    })
+
+
     test('input event handling integration', async () => {
         class TestController extends PerkyModule {
             jump = vi.fn()

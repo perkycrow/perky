@@ -88,6 +88,11 @@ export default class Application extends Engine {
     mountTo (element) {
         return this.perkyView.mountTo(element)
     }
+    
+
+    dismount () {
+        return this.perkyView.dismount()
+    }
 
 
     get mounted () {
@@ -377,6 +382,14 @@ export default class Application extends Engine {
         matchingBindings.forEach(binding => {
             this.actionDispatcher.dispatchAction(binding, control, event, device)
         })
+    }
+
+
+    dispose () {
+        if (this.perkyView) {
+            this.perkyView.dispose()
+        }
+        return super.dispose()
     }
 
 }

@@ -13,6 +13,8 @@ class MockApplication extends Application {
         this.mockStart = vi.fn()
         this.mockStop = vi.fn()
         this.mockDispatchAction = vi.fn()
+        this.mockDispose = vi.fn()
+        this.mockDismount = vi.fn()
     }
 
     start () {
@@ -28,6 +30,14 @@ class MockApplication extends Application {
     dispatchAction (...args) {
         this.mockDispatchAction(...args)
         return super.dispatchAction(...args)
+    }
+
+    dispose () {
+        this.mockDispose()
+        if (this.perkyView && this.perkyView.mounted) {
+            this.mockDismount()
+        }
+        return super.dispose()
     }
 }
 
@@ -223,7 +233,7 @@ describe(ApplicationManager, () => {
         
         appManager.dispose(appId)
         
-        expect(app.mockStop).toHaveBeenCalled()
+        expect(app.mockDispose).toHaveBeenCalled()
         expect(appManager.instances.has(appId)).toBe(false)
     })
 
@@ -232,6 +242,41 @@ describe(ApplicationManager, () => {
         expect(() => {
             appManager.dispose(999)
         }).not.toThrow()
+    })
+
+
+    test('dispose calls app.dispose() which triggers dismount', async () => {
+        appManager.register('testApp', MockApp)
+        const container = document.createElement('div')
+        const app = await appManager.spawn('testApp', {container})
+        const appId = app.id
+        
+        expect(app.perkyView.mounted).toBe(true)
+        
+        appManager.dispose(appId)
+        
+        expect(app.mockDispose).toHaveBeenCalled()
+        expect(app.mockDismount).toHaveBeenCalledTimes(1)
+        expect(appManager.instances.has(appId)).toBe(false)
+    })
+
+
+    test('dispose vs stop - dispose should call app.dispose(), not just stop()', async () => {
+        appManager.register('testApp', MockApp)
+        const container = document.createElement('div')
+        const app = await appManager.spawn('testApp', {container})
+        const appId = app.id
+        
+        appManager.stop(appId)
+        expect(app.mockStop).toHaveBeenCalledTimes(1)
+        expect(app.mockDispose).not.toHaveBeenCalled()
+        expect(app.mockDismount).not.toHaveBeenCalled()
+        expect(appManager.instances.has(appId)).toBe(true)
+        
+        appManager.dispose(appId)
+        expect(app.mockDispose).toHaveBeenCalled()
+        expect(app.mockDismount).toHaveBeenCalledTimes(1)
+        expect(appManager.instances.has(appId)).toBe(false)
     })
 
 
@@ -360,7 +405,7 @@ describe(ApplicationManager, () => {
         expect(runningApps).toHaveLength(2)
         
         appManager.dispose(settings.id)
-        expect(settings.mockStop).toHaveBeenCalled()
+        expect(settings.mockDispose).toHaveBeenCalled()
         expect(appManager.instances.has(settings.id)).toBe(false)
         expect(appManager.instances.has(game.id)).toBe(true)
     })
@@ -405,7 +450,7 @@ describe(ApplicationManager, () => {
         expect(app.mockStart).toHaveBeenCalledTimes(2)
         
         appManager.dispose(app.id)
-        expect(app.mockStop).toHaveBeenCalledTimes(3)
+        expect(app.mockDispose).toHaveBeenCalled()
         expect(appManager.instances.has(app.id)).toBe(false)
     })
 
