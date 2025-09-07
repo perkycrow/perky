@@ -83,6 +83,7 @@ export default class ShroomRunner extends Application {
         this.sporeMaterial = null // Shared material for all spores
 
         this.initGame()
+        this.setupKeyBindings()
 
         this.on('update', (deltaTime) => this.updateGame(deltaTime))
         this.on('render', () => this.renderGame())
@@ -98,6 +99,72 @@ export default class ShroomRunner extends Application {
         this.setupPostProcessing()
         this.assetsLoaded = true
 
+    }
+
+    setupKeyBindings () {
+        // Unified bindCombo API - flexible format support
+        this.bindCombo(['MetaLeft', 'ShiftLeft', 'KeyP'], 'openPalette')
+        this.bindCombo(['ControlLeft', 'KeyR'], 'resetGame')
+        this.bindCombo(['AltLeft', 'KeyF'], 'toggleFullscreen')
+        
+        // Cross-device combinations (keyboard + mouse)
+        this.bindCombo(['ShiftLeft', 'leftButton'], 'shiftClick')
+        this.bindCombo(['ControlLeft', 'rightButton'], 'contextMenu')
+        this.bindCombo(['AltLeft', 'middleButton'], 'specialAction')
+        
+        // Register controller to handle these actions
+        this.registerController('gameActions', {
+            openPalette: () => {
+                console.log('🎨 Command Palette opened! (Cmd+Shift+P)')
+                // Here you could show a UI overlay, pause the game, etc.
+            },
+            
+            resetGame: () => {
+                console.log('🔄 Game reset via Ctrl+R!')
+                this.resetGameState()
+            },
+            
+            toggleFullscreen: () => {
+                console.log('🖥️  Fullscreen toggled via Alt+F!')
+                this.toggleFullscreen()
+            },
+            
+            shiftClick: (control, event) => {
+                console.log('⚡ Shift+Click detected!', {
+                    mouseX: event?.clientX || 'unknown',
+                    mouseY: event?.clientY || 'unknown'
+                })
+                // Could be used for multi-selection, special attacks, etc.
+            },
+            
+            contextMenu: () => {
+                console.log('📋 Ctrl+Right Click - Context menu!')
+                // Show context menu, special options, etc.
+            },
+            
+            specialAction: () => {
+                console.log('✨ Alt+Middle Click - Special action!')
+                // Some advanced feature
+            }
+        })
+    }
+
+    resetGameState () {
+        if (this.shroom) {
+            this.shroom.position.x = 0
+            
+            // Clear all spores
+            this.spores.forEach(spore => {
+                this.collisionDetector.removeBody(spore)
+                this.scene.remove(spore)
+            })
+            this.spores = []
+            
+            // Reset score
+            this.score = 0
+            
+            console.log(`🍄 Game reset - Score: ${this.score}`)
+        }
     }
     
     setupCamera () {
