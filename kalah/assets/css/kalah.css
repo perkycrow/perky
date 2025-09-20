@@ -5,6 +5,19 @@
     font-family: 'Cinzel Decorative';
 }
 
+gate-component {
+    .gate-title {
+        font-family: 'Cinzel Decorative', serif;
+        color: #D9AB7A;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    }
+
+    .gate-instructions {
+        font-family: 'Cinzel Decorative', serif;
+        color: #D9AB7A;
+    }
+}
+
 .kalah-game {
     title-menu {
         .menu-container {
