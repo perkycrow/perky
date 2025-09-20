@@ -21,7 +21,6 @@ export default class Gate extends Application {
         this.addAction('closeGate', () => {
             if (this.readyToClose) {
                 hideGate(this)
-                this.emit('closed')
             }
         })
 
@@ -57,23 +56,30 @@ function showGate (app) {
 
 
 function showInstructions (app) {
-    if (!app.gateComponent) return
+    if (!app.gateComponent) {
+        return
+    }
     
     app.gateComponent.showInstructions = true
 }
 
 
 function hideGate (app) {
-    if (!app.gateComponent) return
+    if (!app.gateComponent) {
+        return
+    }
     
-    app.gateComponent.style.transition = `opacity ${app.fadeDuration}ms ease-in-out`
-    app.gateComponent.style.opacity = '0'
-    
-    setTimeout(() => {
+    const handleTransitionEnd = () => {
         if (app.gateComponent) {
+            app.gateComponent.removeEventListener('transitionend', handleTransitionEnd)
             app.gateComponent.remove()
             app.gateComponent = null
+            app.emit('closed')
         }
-    }, app.fadeDuration)
+    }
+    
+    app.gateComponent.addEventListener('transitionend', handleTransitionEnd)
+    app.gateComponent.style.transition = `opacity ${app.fadeDuration}ms ease-in-out`
+    app.gateComponent.style.opacity = '0'
 }
 

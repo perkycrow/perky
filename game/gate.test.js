@@ -101,10 +101,10 @@ describe('Gate', () => {
         
         gate.dispatchAction('closeGate')
         
-        expect(closedSpy).toHaveBeenCalledWith('closed')
         expect(gate.gateComponent.style.opacity).toBe('0')
         
         setTimeout(() => {
+            expect(closedSpy).toHaveBeenCalledWith('closed')
             expect(gate.gateComponent).toBe(null)
             done()
         }, 600)
@@ -149,13 +149,10 @@ describe('Gate', () => {
         
         expect(gate.gateComponent.style.opacity).toBe('0')
         
-        requestAnimationFrame(() => {
-            // Use setTimeout to ensure the opacity change has been applied
-            setTimeout(() => {
-                expect(gate.gateComponent.style.opacity).toBe('1')
-                done()
-            }, 10)
-        })
+        setTimeout(() => {
+            expect(gate.gateComponent.style.opacity).toBe('1')
+            done()
+        }, 50)
     })
 
 
@@ -173,9 +170,9 @@ describe('Gate', () => {
         expect(readySpy).toHaveBeenCalledWith('readyToClose')
         
         gate.dispatchAction('closeGate')
-        expect(closedSpy).toHaveBeenCalledWith('closed')
         
         setTimeout(() => {
+            expect(closedSpy).toHaveBeenCalledWith('closed')
             expect(gate.gateComponent).toBe(null)
             done()
         }, 600)
