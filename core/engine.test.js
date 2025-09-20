@@ -333,6 +333,43 @@ describe(Engine, () => {
     })
 
 
+    test('actionCaller', () => {
+        const dispatchActionSpy = vi.spyOn(engine, 'dispatchAction')
+        
+        const actionFunction = engine.actionCaller('testAction', 'param1', 'param2')
+        expect(typeof actionFunction).toBe('function')
+        
+        actionFunction()
+        
+        expect(dispatchActionSpy).toHaveBeenCalledWith('testAction', 'param1', 'param2')
+    })
+
+
+    test('eventToAction', () => {
+        const dispatchActionSpy = vi.spyOn(engine, 'dispatchAction')
+        
+        engine.eventToAction('testEvent', 'testAction', 'param1', 'param2')
+        engine.emit('testEvent')
+        
+        expect(dispatchActionSpy).toHaveBeenCalledWith('testAction', 'param1', 'param2')
+    })
+
+
+    test('onceToAction', () => {
+        const dispatchActionSpy = vi.spyOn(engine, 'dispatchAction')
+        
+        engine.onceToAction('testEvent', 'testAction', 'param1', 'param2')
+        
+        engine.emit('testEvent')
+        expect(dispatchActionSpy).toHaveBeenCalledWith('testAction', 'param1', 'param2')
+        
+        dispatchActionSpy.mockClear()
+        
+        engine.emit('testEvent')
+        expect(dispatchActionSpy).not.toHaveBeenCalled()
+    })
+
+
     test('controller lifecycle events propagation', () => {
         const controller = new ActionController()
 

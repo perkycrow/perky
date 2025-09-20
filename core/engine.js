@@ -99,6 +99,21 @@ export default class Engine extends PerkyModule {
     }
 
 
+    eventToAction (eventName, actionName, ...args) {
+        return this.on(eventName, this.actionCaller(actionName, ...args))
+    }
+
+
+    onceToAction (eventName, actionName, ...args) {
+        return this.once(eventName, this.actionCaller(actionName, ...args))
+    }
+
+
+    actionCaller (actionName, ...args) {
+        return () => this.dispatchAction(actionName, ...args)
+    }
+
+
     getMetadata (key) {
         return this.manifest.metadata(key)
     }
