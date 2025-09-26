@@ -31,10 +31,6 @@ export default class Gate extends Application {
         })
     }
 
-    notifyPreloadComplete () {
-        this.dispatchAction('setReadyToClose')
-    }
-
 }
 
 

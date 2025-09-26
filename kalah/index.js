@@ -18,10 +18,8 @@ documentReady(async () => {
     })
     const kalah = manager.create('Kalah', {container, manifest})
 
-    kalah.preload().then(() => {
-        gate.notifyPreloadComplete()
-    })
-    
+    kalah.preload().then(gate.actionCaller('setReadyToClose'))
+
     gate.once('closed', () => {
         manager.dispose(gate.id)
         kalah.mountTo(container)

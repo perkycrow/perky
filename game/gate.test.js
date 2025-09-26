@@ -122,16 +122,7 @@ describe('Gate', () => {
         expect(readySpy).toHaveBeenCalledWith('readyToClose')
     })
 
-
-    test('notifyPreloadComplete triggers setReadyToClose', () => {
-        const actionSpy = vi.spyOn(gate, 'dispatchAction')
-        
-        gate.notifyPreloadComplete()
-        
-        expect(actionSpy).toHaveBeenCalledWith('setReadyToClose')
-    })
-
-
+    
     test('fade transitions use correct duration', () => {
         gate.dispatchAction('startGate')
         
