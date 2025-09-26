@@ -1,5 +1,5 @@
 import Application from '../application/application'
-import PerkyGate from '../components/perky_gate'
+import PerkyGate from './components/perky_gate'
 
 
 export default class Gate extends Application {

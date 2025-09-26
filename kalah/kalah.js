@@ -2,7 +2,7 @@ import Application from '../application/application'
 import GamePlugin from '../game/game_plugin'
 import ThreePlugin from '../three/three_plugin'
 import BackgroundImage from '../three/objects/background_image'
-import TitleMenu from '../components/title_menu.js'
+import TitleMenu from '../game/components/title_menu'
 
 
 export default class Kalah extends Application {

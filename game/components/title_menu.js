@@ -1,5 +1,5 @@
 import {html} from 'lit'
-import PerkyComponent from './perky_component.js'
+import PerkyComponent from '../../application/perky_component'
 
 
 export default class TitleMenu extends PerkyComponent {

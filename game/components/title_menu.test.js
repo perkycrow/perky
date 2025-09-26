@@ -1,5 +1,5 @@
 import TitleMenu from './title_menu'
-import PerkyComponent from './perky_component'
+import PerkyComponent from '../../application/perky_component'
 import {vi, beforeEach, describe, test, expect, afterEach} from 'vitest'
 
 

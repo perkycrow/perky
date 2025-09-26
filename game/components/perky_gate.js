@@ -1,11 +1,11 @@
 import {html} from 'lit'
-import PerkyComponent from './perky_component.js'
+import PerkyComponent from '../../application/perky_component'
 
 
 export default class PerkyGate extends PerkyComponent {
 
     static tagName = 'perky-gate'
-    
+
     static properties = {
         title: {type: String},
         showInstructions: {type: Boolean}

@@ -1,5 +1,5 @@
 import PerkyGate from './perky_gate'
-import PerkyComponent from './perky_component'
+import PerkyComponent from '../../application/perky_component'
 import {vi, beforeEach, describe, test, expect, afterEach} from 'vitest'
 
 
