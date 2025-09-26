@@ -2,9 +2,9 @@ import {html} from 'lit'
 import PerkyComponent from './perky_component.js'
 
 
-export default class GateComponent extends PerkyComponent {
+export default class PerkyGate extends PerkyComponent {
 
-    static tagName = 'gate-component'
+    static tagName = 'perky-gate'
     
     static properties = {
         title: {type: String},
@@ -12,7 +12,7 @@ export default class GateComponent extends PerkyComponent {
     }
 
     static css = `
-        gate-component {
+        perky-gate {
             position: absolute;
             top: 0;
             left: 0;
@@ -26,7 +26,7 @@ export default class GateComponent extends PerkyComponent {
             z-index: 1000;
         }
 
-        gate-component .gate-title {
+        perky-gate .gate-title {
             font-family: 'Arial', sans-serif;
             font-size: 4rem;
             font-weight: 700;
@@ -36,7 +36,7 @@ export default class GateComponent extends PerkyComponent {
             letter-spacing: 0.2em;
         }
 
-        gate-component .gate-instructions {
+        perky-gate .gate-instructions {
             font-family: 'Arial', sans-serif;
             font-size: 1.2rem;
             font-weight: 400;
@@ -56,12 +56,12 @@ export default class GateComponent extends PerkyComponent {
         }
 
         @media (max-width: 768px) {
-            gate-component .gate-title {
+            perky-gate .gate-title {
                 font-size: 2.5rem;
                 margin-bottom: 1.5rem;
             }
             
-            gate-component .gate-instructions {
+            perky-gate .gate-instructions {
                 font-size: 1rem;
             }
         }
@@ -87,4 +87,4 @@ export default class GateComponent extends PerkyComponent {
 }
 
 
-GateComponent.define()
+PerkyGate.define()

@@ -1,5 +1,5 @@
 import Application from '../application/application'
-import GateComponent from '../components/gate_component'
+import PerkyGate from '../components/perky_gate'
 
 
 export default class Gate extends Application {
@@ -39,47 +39,47 @@ export default class Gate extends Application {
 
 
 function showGate (app) {
-    const gateComponent = new GateComponent()
-    gateComponent.title = app.title
-    gateComponent.showInstructions = false
+    const perkyGate = new PerkyGate()
+    perkyGate.title = app.title
+    perkyGate.showInstructions = false
     
-    app.element.appendChild(gateComponent)
-    app.gateComponent = gateComponent
+    app.element.appendChild(perkyGate)
+    app.perkyGate = perkyGate
     
-    gateComponent.style.opacity = '0'
-    gateComponent.style.transition = `opacity ${app.fadeDuration}ms ease-in-out`
+    perkyGate.style.opacity = '0'
+    perkyGate.style.transition = `opacity ${app.fadeDuration}ms ease-in-out`
     
     requestAnimationFrame(() => {
-        gateComponent.style.opacity = '1'
+        perkyGate.style.opacity = '1'
     })
 }
 
 
 function showInstructions (app) {
-    if (!app.gateComponent) {
+    if (!app.perkyGate) {
         return
     }
     
-    app.gateComponent.showInstructions = true
+    app.perkyGate.showInstructions = true
 }
 
 
 function hideGate (app) {
-    if (!app.gateComponent) {
+    if (!app.perkyGate) {
         return
     }
     
     const handleTransitionEnd = () => {
-        if (app.gateComponent) {
-            app.gateComponent.removeEventListener('transitionend', handleTransitionEnd)
-            app.gateComponent.remove()
-            app.gateComponent = null
+        if (app.perkyGate) {
+            app.perkyGate.removeEventListener('transitionend', handleTransitionEnd)
+            app.perkyGate.remove()
+            app.perkyGate = null
             app.emit('closed')
         }
     }
     
-    app.gateComponent.addEventListener('transitionend', handleTransitionEnd)
-    app.gateComponent.style.transition = `opacity ${app.fadeDuration}ms ease-in-out`
-    app.gateComponent.style.opacity = '0'
+    app.perkyGate.addEventListener('transitionend', handleTransitionEnd)
+    app.perkyGate.style.transition = `opacity ${app.fadeDuration}ms ease-in-out`
+    app.perkyGate.style.opacity = '0'
 }
 

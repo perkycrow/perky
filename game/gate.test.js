@@ -1,6 +1,6 @@
 import Gate from './gate'
 import Application from '../application/application'
-import GateComponent from '../components/gate_component'
+import PerkyGate from '../components/perky_gate'
 import {vi, beforeEach, describe, test, expect, afterEach} from 'vitest'
 
 
@@ -75,10 +75,10 @@ describe('Gate', () => {
     test('startGate action creates and shows gate component', () => {
         gate.dispatchAction('startGate')
         
-        expect(gate.gateComponent).toBeInstanceOf(GateComponent)
-        expect(gate.gateComponent.title).toBe('Test Gate')
-        expect(gate.gateComponent.showInstructions).toBe(false)
-        expect(gate.element.contains(gate.gateComponent)).toBe(true)
+        expect(gate.perkyGate).toBeInstanceOf(PerkyGate)
+        expect(gate.perkyGate.title).toBe('Test Gate')
+        expect(gate.perkyGate.showInstructions).toBe(false)
+        expect(gate.element.contains(gate.perkyGate)).toBe(true)
     })
 
 
@@ -89,7 +89,7 @@ describe('Gate', () => {
         gate.dispatchAction('closeGate')
         
         expect(closedSpy).not.toHaveBeenCalledWith('closed')
-        expect(gate.gateComponent).toBeTruthy()
+        expect(gate.perkyGate).toBeTruthy()
     })
 
 
@@ -101,11 +101,11 @@ describe('Gate', () => {
         
         gate.dispatchAction('closeGate')
         
-        expect(gate.gateComponent.style.opacity).toBe('0')
+        expect(gate.perkyGate.style.opacity).toBe('0')
         
         setTimeout(() => {
             expect(closedSpy).toHaveBeenCalledWith('closed')
-            expect(gate.gateComponent).toBe(null)
+            expect(gate.perkyGate).toBe(null)
             done()
         }, 600)
     })
@@ -118,7 +118,7 @@ describe('Gate', () => {
         gate.dispatchAction('setReadyToClose')
         
         expect(gate.readyToClose).toBe(true)
-        expect(gate.gateComponent.showInstructions).toBe(true)
+        expect(gate.perkyGate.showInstructions).toBe(true)
         expect(readySpy).toHaveBeenCalledWith('readyToClose')
     })
 
@@ -135,22 +135,22 @@ describe('Gate', () => {
     test('fade transitions use correct duration', () => {
         gate.dispatchAction('startGate')
         
-        expect(gate.gateComponent.style.transition).toContain('500ms')
+        expect(gate.perkyGate.style.transition).toContain('500ms')
         
         gate.dispatchAction('setReadyToClose')
         gate.dispatchAction('closeGate')
         
-        expect(gate.gateComponent.style.transition).toContain('500ms')
+        expect(gate.perkyGate.style.transition).toContain('500ms')
     })
 
 
     test('gate component fades in on show', (done) => {
         gate.dispatchAction('startGate')
         
-        expect(gate.gateComponent.style.opacity).toBe('0')
+        expect(gate.perkyGate.style.opacity).toBe('0')
         
         setTimeout(() => {
-            expect(gate.gateComponent.style.opacity).toBe('1')
+            expect(gate.perkyGate.style.opacity).toBe('1')
             done()
         }, 50)
     })
@@ -161,19 +161,19 @@ describe('Gate', () => {
         const closedSpy = vi.spyOn(gate, 'emit')
         
         gate.dispatchAction('startGate')
-        expect(gate.gateComponent).toBeTruthy()
-        expect(gate.gateComponent.showInstructions).toBe(false)
+        expect(gate.perkyGate).toBeTruthy()
+        expect(gate.perkyGate.showInstructions).toBe(false)
         
         gate.dispatchAction('setReadyToClose')
         expect(gate.readyToClose).toBe(true)
-        expect(gate.gateComponent.showInstructions).toBe(true)
+        expect(gate.perkyGate.showInstructions).toBe(true)
         expect(readySpy).toHaveBeenCalledWith('readyToClose')
         
         gate.dispatchAction('closeGate')
         
         setTimeout(() => {
             expect(closedSpy).toHaveBeenCalledWith('closed')
-            expect(gate.gateComponent).toBe(null)
+            expect(gate.perkyGate).toBe(null)
             done()
         }, 600)
     })
@@ -194,14 +194,14 @@ describe('Gate', () => {
         gate.dispatchAction('startGate')
         gate.dispatchAction('setReadyToClose')
         
-        const gateComponent = gate.gateComponent
-        expect(gateComponent.parentNode).toBe(gate.element)
+        const perkyGate = gate.perkyGate
+        expect(perkyGate.parentNode).toBe(gate.element)
         
         gate.dispatchAction('closeGate')
         
         setTimeout(() => {
-            expect(gateComponent.parentNode).toBe(null)
-            expect(gate.gateComponent).toBe(null)
+            expect(perkyGate.parentNode).toBe(null)
+            expect(gate.perkyGate).toBe(null)
             done()
         }, 600)
     })
