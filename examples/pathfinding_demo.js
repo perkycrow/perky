@@ -4,7 +4,7 @@ import Circle from '../canvas/circle'
 import Group2D from '../canvas/group_2d'
 import Grid from '../math/grid'
 import Pathfinder, {heuristics} from '../math/pathfinder'
-import PerkyLogger from '../editor/perky_logger'
+import PerkyLogger from '../editor/components/perky_logger'
 import {createControlPanel, addButtonFolder} from './example_utils'
 
 let canvas = null

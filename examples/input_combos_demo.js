@@ -1,5 +1,5 @@
 import Application from '/application/application'
-import PerkyLogger from '/editor/perky_logger'
+import PerkyLogger from '/editor/components/perky_logger'
 import PerkyModule from '/core/perky_module'
 
 

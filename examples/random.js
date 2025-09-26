@@ -1,5 +1,5 @@
 import Random from '/core/random'
-import PerkyLogger from '/editor/perky_logger'
+import PerkyLogger from '/editor/components/perky_logger'
 import {createControlPanel, addButtonFolder} from './example_utils'
 
 const container = document.querySelector('.example-content')
