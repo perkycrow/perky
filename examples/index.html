@@ -25,89 +25,21 @@
     </div>
 
     <script type="module">
-        import ExampleIndex from './example_index'
+        import ExampleIndex from './example_index.js'
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const examples = [{
-                mainCategory: 'core',
-                tags: ['core', 'random'],
-                title: 'Random Number Generator',
-                description: 'A simple random number generator using Perky.',
-                link: 'random.html'
-            }, {
-                mainCategory: 'game',
-                tags: ['ui', 'canvas', '2d', 'animation'],
-                title: 'Canvas 2D',
-                description: 'Testing shapes, transformations, groups, and animations with Canvas 2D library.',
-                link: 'canvas.html'
-            }, {
-                mainCategory: 'game',
-                tags: ['collision', 'physics', '2d', 'canvas'],
-                title: 'Collision Demo',
-                description: 'Démonstration du module de collision 2D léger avec détection automatique et physique basique.',
-                link: 'collision_demo.html'
-            }, {
-                mainCategory: 'input',
-                tags: ['input', 'keyboard', 'mouse', 'combinations', 'demo'],
-                title: 'Input Combinations Demo',
-                description: 'Comprehensive demo of keyboard, mouse, and cross-device input combinations with visual feedback.',
-                link: 'input_combos_demo.html'
-            }, {
-                mainCategory: 'game',
-                tags: ['game', 'three', '2d', 'sprite', 'input'],
-                title: 'Shroom Runner',
-                description: 'Simple 2D game with Three.js - Move a mushroom sprite with arrow keys.',
-                link: 'shroom_runner.html'
-            }, {
-                mainCategory: 'game',
-                tags: ['game', 'three', '2d', 'sprite', 'mouse', 'drag'],
-                title: 'Shroom Drag & Drop',
-                description: 'Click and drag a mushroom sprite with the mouse - Simple drag and drop demo.',
-                link: 'shroom_drag.html'
-            }, {
-                mainCategory: 'game',
-                tags: ['game', 'three', '2d', 'sprite', 'world', 'level', 'scene-graph'],
-                title: 'World Builder',
-                description: 'Level design with scene graph and unit-based scaling. Explore parent/child relationships.',
-                link: 'world_builder.html'
-            }, {
-                mainCategory: 'core',
-                tags: ['core', 'service', 'worker', 'communication', 'performance'],
-                title: 'Service System Demo',
-                description: 'Complete demonstration of the Perky service system - Main thread ↔ Worker communication with calculations, benchmarks and statistics.',
-                link: 'service_demo.html'
-            }, {
-                mainCategory: 'core',
-                tags: ['core', 'math', 'pathfinding', 'algorithm', 'grid', 'canvas', '2d'],
-                title: 'Pathfinding Demo',
-                description: 'Interactive A* pathfinding visualization with Grid and Canvas 2D. Place walls, move start/goal.',
-                link: 'pathfinding_demo.html'
-            }, {
-                mainCategory: 'core',
-                tags: ['core', 'worker', 'threading', 'background'],
-                title: 'ActiveWorker Demo',
-                description: 'Testing the ActiveWorker class with a simple worker for background processing.',
-                link: 'worker_demo.html'
-            }, {
-                mainCategory: 'core',
-                tags: ['core', 'worker', 'promise', 'async', 'request'],
-                title: 'ActiveWorker Request Demo',
-                description: 'Testing the Promise-based Request API alongside Event-based messaging.',
-                link: 'worker_request_demo.html'
-            }, {
-                mainCategory: 'core',
-                tags: ['core', 'service', 'worker', 'dynamic', 'test', 'vite'],
-                title: 'Worker Service Test',
-                description: 'Live test of ServiceClient.fromWorker() - Dynamic service loading with Vite compatibility.',
-                link: 'worker_test_demo.html'
-            }, {
-                mainCategory: 'core',
-                tags: ['core', 'service', 'direct', 'performance', 'benchmark'],
-                title: 'Direct Service Demo',
-                description: 'Compare ServiceClient.fromWorker() vs fromService() vs fromPath() - Performance benchmark between worker and direct services.',
-                link: 'direct_service_demo.html'
-            }]
+        async function loadExamples () {
+            try {
+                const response = await fetch('./examples.json')
+                const data = await response.json()
+                return data.examples
+            } catch (error) {
+                console.error('Failed to load examples.json:', error)
+                return []
+            }
+        }
 
+        document.addEventListener('DOMContentLoaded', async function () {
+            const examples = await loadExamples()
             const exampleIndex = new ExampleIndex({examples})
             exampleIndex.mountTo(document.getElementById('examples-grid'))
         })

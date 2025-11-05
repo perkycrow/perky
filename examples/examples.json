@@ -1,0 +1,125 @@
+{
+  "examples": [
+    {
+      "id": "random",
+      "file": "random.html",
+      "category": "core",
+      "tags": ["core", "random"],
+      "title": "Random Number Generator",
+      "description": "A simple random number generator using Perky."
+    },
+    {
+      "id": "canvas",
+      "file": "canvas.html",
+      "category": "game",
+      "tags": ["ui", "canvas", "2d", "animation"],
+      "title": "Canvas 2D",
+      "description": "Testing shapes, transformations, groups, and animations with Canvas 2D library."
+    },
+    {
+      "id": "collision-demo",
+      "file": "collision_demo.html",
+      "category": "game",
+      "tags": ["collision", "physics", "2d", "canvas"],
+      "title": "Collision Demo",
+      "description": "Démonstration du module de collision 2D léger avec détection automatique et physique basique."
+    },
+    {
+      "id": "input-combos",
+      "file": "input_combos_demo.html",
+      "category": "input",
+      "tags": ["input", "keyboard", "mouse", "combinations", "demo"],
+      "title": "Input Combinations Demo",
+      "description": "Comprehensive demo of keyboard, mouse, and cross-device input combinations with visual feedback."
+    },
+    {
+      "id": "shroom-runner",
+      "file": "shroom_runner.html",
+      "category": "game",
+      "tags": ["game", "three", "2d", "sprite", "input"],
+      "title": "Shroom Runner",
+      "description": "Simple 2D game with Three.js - Move a mushroom sprite with arrow keys."
+    },
+    {
+      "id": "shroom-drag",
+      "file": "shroom_drag.html",
+      "category": "game",
+      "tags": ["game", "three", "2d", "sprite", "mouse", "drag"],
+      "title": "Shroom Drag & Drop",
+      "description": "Click and drag a mushroom sprite with the mouse - Simple drag and drop demo."
+    },
+    {
+      "id": "world-builder",
+      "file": "world_builder.html",
+      "category": "game",
+      "tags": ["game", "three", "2d", "sprite", "world", "level", "scene-graph"],
+      "title": "World Builder",
+      "description": "Level design with scene graph and unit-based scaling. Explore parent/child relationships."
+    },
+    {
+      "id": "service-demo",
+      "file": "service_demo.html",
+      "category": "core",
+      "tags": ["core", "service", "worker", "communication", "performance"],
+      "title": "Service System Demo",
+      "description": "Complete demonstration of the Perky service system - Main thread ↔ Worker communication with calculations, benchmarks and statistics."
+    },
+    {
+      "id": "pathfinding-demo",
+      "file": "pathfinding_demo.html",
+      "category": "core",
+      "tags": ["core", "math", "pathfinding", "algorithm", "grid", "canvas", "2d"],
+      "title": "Pathfinding Demo",
+      "description": "Interactive A* pathfinding visualization with Grid and Canvas 2D. Place walls, move start/goal."
+    },
+    {
+      "id": "worker-test",
+      "file": "worker_test_demo.html",
+      "category": "core",
+      "tags": ["core", "service", "worker", "dynamic", "test", "vite"],
+      "title": "Worker Service Test",
+      "description": "Live test of ServiceClient.fromWorker() - Dynamic service loading with Vite compatibility."
+    },
+    {
+      "id": "direct-service",
+      "file": "direct_service_demo.html",
+      "category": "core",
+      "tags": ["core", "service", "direct", "performance", "benchmark"],
+      "title": "Direct Service Demo",
+      "description": "Compare ServiceClient.fromWorker() vs fromService() vs fromPath() - Performance benchmark between worker and direct services."
+    },
+    {
+      "id": "perky-logger",
+      "file": "perky_logger_demo.html",
+      "category": "application",
+      "tags": ["application", "ui", "logger", "component"],
+      "title": "PerkyLogger Demo",
+      "description": "New LitElement logger component with Tweakpane styling - Use as a DOM element!"
+    },
+    {
+      "id": "service-events",
+      "file": "service_events_demo.html",
+      "category": "core",
+      "tags": ["core", "service", "events", "communication"],
+      "title": "Service Events Demo",
+      "description": "Demonstration of event-based communication in the Perky service system."
+    },
+    {
+      "id": "pathfinding-service",
+      "file": "pathfinding_service_demo.html",
+      "category": "core",
+      "tags": ["core", "service", "pathfinding", "math", "algorithm", "worker"],
+      "title": "Pathfinding Service Demo",
+      "description": "Pathfinding algorithm running as a service worker - Background computation with async results."
+    },
+    {
+      "id": "example-utils",
+      "file": "example_utils_demo.html",
+      "category": "application",
+      "tags": ["application", "ui", "tweakpane", "utils", "tools"],
+      "title": "Example Utils Demo",
+      "description": "Démonstration des utilitaires pour simplifier l'utilisation de Tweakpane."
+    }
+  ]
+}
+
