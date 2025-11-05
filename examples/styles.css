@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+Pro:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
 
 * {
     box-sizing: border-box;
@@ -7,26 +7,36 @@
 }
 
 :root {
-    --paper: #f4f1e4;
-    --grid-line: rgba(0, 0, 0, 0.07);
-    --ink: #2b2b2b;
-    --ink-light: #666666;
-    --accent-blue: #3d7ea6;
-    --accent-red: #b95050;
-    --accent-green: #5a8a72;
-    --accent-orange: #d78d4c;
-    --accent-purple: #8a5ad7;
-    --accent-pink: #d78c8c;
-    --highlight: rgba(61, 126, 166, 0.4);
+    --bg-primary: #fafafa;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f5f5f5;
+    --grid-line: rgba(0, 0, 0, 0.03);
+    --ink: #1a1a1a;
+    --ink-light: #6b7280;
+    --ink-lighter: #9ca3af;
+    --border: rgba(0, 0, 0, 0.08);
+    --border-light: rgba(0, 0, 0, 0.04);
+    --accent-blue: #3b82f6;
+    --accent-red: #ef4444;
+    --accent-green: #10b981;
+    --accent-orange: #f59e0b;
+    --accent-purple: #8b5cf6;
+    --accent-pink: #ec4899;
+    --highlight: rgba(59, 130, 246, 0.15);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 body {
-    font-family: 'Source Sans Pro', sans-serif;
-    background-color: var(--paper);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: var(--bg-primary);
     color: var(--ink);
     line-height: 1.6;
     position: relative;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .example-content {
@@ -44,8 +54,9 @@ body::before {
     background-image: 
         linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
         linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-    background-size: 20px 20px;
+    background-size: 24px 24px;
     z-index: -1;
+    opacity: 0.5;
 }
 
 body.viewport-mode::before,
@@ -85,9 +96,11 @@ h1::after {
     left: -6px;
     right: -6px;
     height: 6px;
-    background-color: var(--highlight);
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+    opacity: 0.4;
     z-index: -1;
     transform: rotate(-1deg);
+    border-radius: 2px;
 }
 
 .tagline {
@@ -96,40 +109,7 @@ h1::after {
     color: var(--ink-light);
     margin-top: 0.25rem;
     letter-spacing: -0.3px;
-}
-
-.filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.2rem;
-    justify-content: center;
-    margin: 2rem 0;
-    padding: 1rem;
-    position: relative;
-    max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-
-.example-card {
-    background-color: white;
-    border-radius: 2px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    position: relative;
-    border: 1px solid #e0e0e0;
-}
-
-.example-card::before {
-    content: '';
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
-    border: 1px dashed rgba(0, 0, 0, 0.1);
-    pointer-events: none;
-    border-radius: 2px;
+    font-weight: 400;
 }
 
 footer {
@@ -145,14 +125,12 @@ footer {
 footer a {
     color: var(--accent-blue);
     text-decoration: none;
-    transition: color 0.2s, border-bottom 0.2s;
-    border-bottom: 1px solid transparent;
-    padding-bottom: 2px;
+    transition: color 0.2s ease;
+    font-weight: 500;
 }
 
 footer a:hover {
     color: var(--ink);
-    border-bottom: 1px solid var(--ink);
 }
 
 @media (max-width: 600px) {
@@ -170,73 +148,89 @@ footer a:hover {
 }
 
 .example-container {
-    max-width: 90vw;
-    margin: 2rem auto;
-    padding: 2rem;
+    max-width: 95vw;
+    margin: 1.5rem auto;
+    padding: 1.5rem;
 }
 
 .example-header {
     text-align: center;
     margin-bottom: 2rem;
     position: relative;
-    padding: 1rem 0;
+    padding: 0.75rem 0;
 }
 
 .example-header h1 {
+    font-size: 2rem;
     margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--ink) 0%, var(--ink-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.example-header h1::after {
+    display: none;
+}
+
+.example-header .tagline {
+    font-size: 0.9rem;
+    color: var(--ink-light);
+    font-weight: 400;
 }
 
 .example-content {
-    background-color: white;
-    border-radius: 2px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
     position: relative;
-    border: 1px solid #e0e0e0;
-    padding: 1rem;
+    border: 1px solid var(--border-light);
+    padding: 0;
     margin-bottom: 2rem;
     height: 80vh;
+    overflow: hidden;
 }
 
 .example-content::before {
-    content: '';
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
-    border: 1px dashed rgba(0, 0, 0, 0.1);
-    pointer-events: none;
-    border-radius: 2px;
+    display: none;
 }
 
 .back-link {
-    display: inline-block;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
     text-decoration: none;
-    color: var(--ink);
-    margin-bottom: 1rem;
-    position: relative;
-    padding-left: 1.2rem;
+    color: var(--ink-light);
+    margin-bottom: 1.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-weight: 500;
 }
 
 .back-link::before {
     content: '←';
-    position: absolute;
-    left: 0;
-    transition: transform 0.2s;
+    font-size: 1rem;
+    transition: transform 0.2s ease;
 }
 
 .back-link:hover {
-    color: var(--accent-blue);
+    color: var(--ink);
+    background: var(--bg-tertiary);
 }
 
 .back-link:hover::before {
-    transform: translateX(-3px);
+    transform: translateX(-2px);
 }
 
 @media (max-width: 850px) {
     .example-container {
         padding: 1rem;
+    }
+    
+    .example-header h1 {
+        font-size: 1.5rem;
     }
 }
