@@ -58,6 +58,48 @@ export default class Canvas2D {
     }
 
 
+    resize (width, height) {
+        this.displayWidth = width
+        this.displayHeight = height
+        this.applyPixelRatio()
+        return this
+    }
+
+
+    resizeToContainer () {
+        const parent = this.canvas.parentElement
+        if (!parent) {
+            return this
+        }
+        
+        const rect = parent.getBoundingClientRect()
+        return this.resize(rect.width, rect.height)
+    }
+
+
+    enableAutoResize (options = {}) {
+        const resizeToContainer = options.container ?? false
+        
+        const handleResize = () => {
+            if (resizeToContainer) {
+                this.resizeToContainer()
+            } else {
+                this.resize(window.innerWidth, window.innerHeight)
+            }
+        }
+        
+        window.addEventListener('resize', handleResize)
+        
+        this.disableAutoResize = () => {
+            window.removeEventListener('resize', handleResize)
+        }
+        
+        handleResize()
+        
+        return this
+    }
+
+
     render (scene) {
         const ctx = this.ctx
         

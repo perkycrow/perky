@@ -39,7 +39,7 @@ function setupCanvas (container) {
     canvas.style.border = '2px solid #333'
     canvas.style.backgroundColor = 'white'
     canvas.style.display = 'block'
-    canvas.style.margin = '20px auto'
+    canvas.style.margin = '0 auto'
     canvas.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)'
     
     container.appendChild(canvas)
@@ -227,6 +227,43 @@ function setupUI (container) {
             title: 'Auto (Device)',
             action: () => {
                 renderer.setPixelRatio(window.devicePixelRatio || 1)
+                updateStats()
+            }
+        }
+    ])
+    
+    addButtonFolder(controlPane, 'Resize', [
+        {
+            title: 'Fixed 800x600',
+            action: () => {
+                if (renderer.disableAutoResize) {
+                    renderer.disableAutoResize()
+                }
+                renderer.resize(800, 600)
+                updateStats()
+            }
+        },
+        {
+            title: 'Fixed 1200x800',
+            action: () => {
+                if (renderer.disableAutoResize) {
+                    renderer.disableAutoResize()
+                }
+                renderer.resize(1200, 800)
+                updateStats()
+            }
+        },
+        {
+            title: 'Auto Resize Container',
+            action: () => {
+                renderer.enableAutoResize({container: true})
+                updateStats()
+            }
+        },
+        {
+            title: 'Auto Resize Window',
+            action: () => {
+                renderer.enableAutoResize({container: false})
                 updateStats()
             }
         }
