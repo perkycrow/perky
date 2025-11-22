@@ -59,8 +59,21 @@ export default class Camera2D {
 
     worldToScreen (worldX, worldY) {
         const ppu = this.pixelsPerUnit
-        const screenX = (worldX - this.x) * ppu + this.viewportWidth / 2
-        const screenY = -(worldY - this.y) * ppu + this.viewportHeight / 2
+
+        let dx = worldX - this.x
+        let dy = worldY - this.y
+
+        if (this.rotation !== 0) {
+            const cos = Math.cos(-this.rotation)
+            const sin = Math.sin(-this.rotation)
+            const rotatedX = dx * cos - dy * sin
+            const rotatedY = dx * sin + dy * cos
+            dx = rotatedX
+            dy = rotatedY
+        }
+        
+        const screenX = dx * ppu + this.viewportWidth / 2
+        const screenY = -dy * ppu + this.viewportHeight / 2
         return {x: screenX, y: screenY}
     }
 
@@ -72,8 +85,21 @@ export default class Camera2D {
 
     screenToWorld (screenX, screenY) {
         const ppu = this.pixelsPerUnit
-        const worldX = (screenX - this.viewportWidth / 2) / ppu + this.x
-        const worldY = -((screenY - this.viewportHeight / 2) / ppu) + this.y
+
+        let dx = (screenX - this.viewportWidth / 2) / ppu
+        let dy = -((screenY - this.viewportHeight / 2) / ppu)
+        
+        if (this.rotation !== 0) {
+            const cos = Math.cos(this.rotation)
+            const sin = Math.sin(this.rotation)
+            const rotatedX = dx * cos - dy * sin
+            const rotatedY = dx * sin + dy * cos
+            dx = rotatedX
+            dy = rotatedY
+        }
+        
+        const worldX = dx + this.x
+        const worldY = dy + this.y
         return {x: worldX, y: worldY}
     }
 

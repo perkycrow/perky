@@ -222,5 +222,66 @@ describe(Camera2D, () => {
         expect(camera.isVisible(bounds)).toBe(false)
     })
 
+
+    test('rotation defaults to 0', () => {
+        expect(camera.rotation).toBe(0)
+    })
+
+
+    test('rotation can be set', () => {
+        camera.rotation = Math.PI / 4
+        expect(camera.rotation).toBeCloseTo(Math.PI / 4)
+    })
+
+
+    test('worldToScreen with rotation', () => {
+        camera.x = 0
+        camera.y = 0
+        camera.rotation = Math.PI / 2
+        camera.viewportWidth = 800
+        camera.viewportHeight = 600
+        camera.unitsInView = 10
+        camera.zoom = 1
+
+        const result = camera.worldToScreen(1, 0)
+
+        expect(result.x).toBeCloseTo(400)
+        expect(result.y).toBeCloseTo(360)
+    })
+
+
+    test('screenToWorld with rotation', () => {
+        camera.x = 0
+        camera.y = 0
+        camera.rotation = Math.PI / 2
+        camera.viewportWidth = 800
+        camera.viewportHeight = 600
+        camera.unitsInView = 10
+        camera.zoom = 1
+
+        const result = camera.screenToWorld(400, 240)
+
+        expect(result.x).toBeCloseTo(-1, 0.01)
+        expect(result.y).toBeCloseTo(0, 0.01)
+    })
+
+
+    test('worldToScreen and screenToWorld are inverse operations with rotation', () => {
+        camera.x = 5
+        camera.y = 3
+        camera.rotation = Math.PI / 3
+        camera.viewportWidth = 800
+        camera.viewportHeight = 600
+        camera.unitsInView = 10
+        camera.zoom = 1.5
+
+        const worldPoint = {x: 10, y: 7}
+        const screen = camera.worldToScreen(worldPoint.x, worldPoint.y)
+        const backToWorld = camera.screenToWorld(screen.x, screen.y)
+
+        expect(backToWorld.x).toBeCloseTo(worldPoint.x, 0.01)
+        expect(backToWorld.y).toBeCloseTo(worldPoint.y, 0.01)
+    })
+
 })
 

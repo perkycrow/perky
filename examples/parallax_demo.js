@@ -49,9 +49,6 @@ function setupLayers (container) {
     const width = container.clientWidth
     const height = container.clientHeight
     
-    console.log('Container dimensions:', width, 'x', height)
-    console.log('Canvas will be:', width, 'x', height)
-    
     layerManager = new LayerManager({
         container,
         width,
