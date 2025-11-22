@@ -58,11 +58,9 @@ describe(CanvasLayer, () => {
             pixelRatio: 2
         })
 
-        // Internal canvas should be 2x larger
         expect(l.canvas.width).toBe(1600)
         expect(l.canvas.height).toBe(1200)
-        
-        // CSS size should remain 800x600
+
         expect(l.canvas.style.width).toBe('800px')
         expect(l.canvas.style.height).toBe('600px')
     })
@@ -108,8 +106,7 @@ describe(CanvasLayer, () => {
     test('render calls renderer.render when dirty', () => {
         const scene = new Group2D()
         layer.setContent(scene)
-        
-        // Should render when dirty
+
         layer.render()
         expect(layer.dirty).toBe(false)
     })
@@ -119,11 +116,9 @@ describe(CanvasLayer, () => {
         const scene = new Group2D()
         layer.setContent(scene)
         layer.render()
-        
-        // Mark clean manually
+
         layer.markClean()
-        
-        // Should not render (no error)
+
         expect(() => layer.render()).not.toThrow()
     })
 
@@ -178,8 +173,7 @@ describe(CanvasLayer, () => {
         })
         
         l.resize(1000, 800)
-        
-        // Viewport should be 50% of container
+
         expect(l.canvas.width).toBe(500)
         expect(l.canvas.height).toBe(400)
     })
@@ -214,8 +208,7 @@ describe(CanvasLayer, () => {
         
         layer.setContent(scene)
         layer.render()
-        
-        // Should not throw and should mark as clean
+
         expect(layer.dirty).toBe(false)
     })
 
@@ -234,7 +227,6 @@ describe(CanvasLayer, () => {
             camera
         })
         
-        // Camera should be updated to match layer dimensions
         expect(camera.viewportWidth).toBe(1600) // 800 * 2
         expect(camera.viewportHeight).toBe(1200) // 600 * 2
         expect(camera.pixelRatio).toBe(2)

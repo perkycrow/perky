@@ -118,8 +118,7 @@ export default class LayerManager {
             height: this.height,
             layerManager: this
         }
-        
-        // Resolve camera ID to camera instance
+
         if (layerOptions.camera) {
             layerOptions.camera = this.resolveCamera(layerOptions.camera)
         }
@@ -196,7 +195,6 @@ export default class LayerManager {
         this.container.style.width = `${width}px`
         this.container.style.height = `${height}px`
         
-        // Update camera viewports
         this.cameras.forEach(camera => {
             camera.viewportWidth = width * (camera.pixelRatio || 1)
             camera.viewportHeight = height * (camera.pixelRatio || 1)

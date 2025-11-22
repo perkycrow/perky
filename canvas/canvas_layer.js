@@ -10,7 +10,7 @@ export default class CanvasLayer extends Layer {
         
         this.canvas = document.createElement('canvas')
         this.element = this.canvas
-        
+
         this.applyStyles()
         
         const width = options.width ?? 800
@@ -51,7 +51,6 @@ export default class CanvasLayer extends Layer {
         this.content = null
         this.autoRender = options.autoRender ?? true
         
-        // Apply initial viewport
         this.applyViewport()
     }
 

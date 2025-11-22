@@ -184,8 +184,7 @@ describe(HTMLLayer, () => {
     test('updateWorldElements without camera does nothing', () => {
         layer.camera = null
         layer.createWorldElement('<div>No camera</div>', 10, 10)
-        
-        // Should not throw
+
         expect(() => layer.updateWorldElements()).not.toThrow()
     })
 
@@ -205,8 +204,7 @@ describe(HTMLLayer, () => {
         const el = layer.createWorldElement('<div>Position me</div>', 0, 0)
         
         layer.updateWorldElements(true)
-        
-        // Element should be positioned at center of screen (0,0 world = center)
+
         expect(el.style.transform).toContain('translate')
     })
 
@@ -235,7 +233,7 @@ describe(HTMLLayer, () => {
         const target = {
             x: 0,
             y: 0,
-            rotation: Math.PI / 4, // 45 degrees
+            rotation: Math.PI / 4,
             scaleX: 2,
             scaleY: 2
         }
@@ -246,8 +244,7 @@ describe(HTMLLayer, () => {
         })
         
         layer.updateWorldElements(true)
-        
-        // Should apply rotation and scale
+
         expect(el.style.transform).toContain('rotate')
         expect(el.style.transform).toContain('scale')
     })
@@ -264,8 +261,7 @@ describe(HTMLLayer, () => {
             pixelRatio: 1
         })
         layer.camera = camera
-        
-        // Element far offscreen
+
         const el = layer.createWorldElement('<div>Offscreen</div>', 1000, 1000)
         
         layer.updateWorldElements(true)
@@ -284,8 +280,7 @@ describe(HTMLLayer, () => {
             pixelRatio: 1
         })
         layer.camera = camera
-        
-        // pixelsPerUnit = 600 / 10 = 60
+
         const units = layer.cssToWorldUnits(120)
         
         expect(units).toBe(2)
@@ -301,7 +296,6 @@ describe(HTMLLayer, () => {
         })
         layer.camera = camera
         
-        // pixelsPerUnit = 600 / 10 = 60
         const pixels = layer.worldUnitsToCss(3)
         
         expect(pixels).toBe(180)

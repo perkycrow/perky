@@ -4,7 +4,6 @@ import PerkyGate from './components/perky_gate'
 import {vi, beforeEach, describe, test, expect, afterEach} from 'vitest'
 
 
-// Mock ResizeObserver for tests
 global.ResizeObserver = vi.fn().mockImplementation(() => ({
     observe: vi.fn(),
     unobserve: vi.fn(),
