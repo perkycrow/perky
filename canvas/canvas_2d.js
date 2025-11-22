@@ -3,7 +3,7 @@ import Camera2D from './camera_2d'
 
 export default class Canvas2D {
 
-    constructor (canvas, options = {}) {
+    constructor (canvas, options = {}) { // eslint-disable-line complexity
         this.canvas = canvas
         this.ctx = canvas.getContext('2d')
         
@@ -13,6 +13,13 @@ export default class Canvas2D {
         })
         
         this.showAxes = options.showAxes ?? false
+        this.showGrid = options.showGrid ?? false
+        this.gridOptions = {
+            step: options.gridStep ?? 1,
+            opacity: options.gridOpacity ?? 0.5,
+            color: options.gridColor ?? '#000000',
+            lineWidth: options.gridLineWidth ?? 1
+        }
         this.backgroundColor = options.backgroundColor ?? null
         this.enableCulling = options.enableCulling ?? false
         
@@ -50,6 +57,10 @@ export default class Canvas2D {
         scene.updateWorldMatrix(true)
         
         renderObject(ctx, scene, 1.0, this)
+        
+        if (this.showGrid) {
+            drawGrid(ctx, this.camera, this.gridOptions)
+        }
         
         ctx.restore()
     }
@@ -119,5 +130,39 @@ function drawAxes (ctx, camera) {
     ctx.fillText('Y+', 0.1, -maxUnits + 0.8)
     ctx.restore()
     
+    ctx.restore()
+}
+
+
+function drawGrid (ctx, camera, options) {
+    ctx.save()
+    
+    const ppu = camera.pixelsPerUnit
+    const step = options.step
+    const halfWidth = camera.viewportWidth / (2 * ppu)
+    const halfHeight = camera.viewportHeight / (2 * ppu)
+    
+    const minX = Math.floor(camera.x - halfWidth)
+    const maxX = Math.ceil(camera.x + halfWidth)
+    const minY = Math.floor(camera.y - halfHeight)
+    const maxY = Math.ceil(camera.y + halfHeight)
+    
+    ctx.strokeStyle = options.color
+    ctx.lineWidth = options.lineWidth / ppu
+    ctx.globalAlpha = options.opacity
+    
+    ctx.beginPath()
+    
+    for (let x = Math.floor(minX / step) * step; x <= maxX; x += step) {
+        ctx.moveTo(x, minY)
+        ctx.lineTo(x, maxY)
+    }
+    
+    for (let y = Math.floor(minY / step) * step; y <= maxY; y += step) {
+        ctx.moveTo(minX, y)
+        ctx.lineTo(maxX, y)
+    }
+    
+    ctx.stroke()
     ctx.restore()
 }

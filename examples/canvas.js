@@ -55,6 +55,10 @@ function setupCanvas (container) {
     renderer = new Canvas2D(canvas, {
         camera,
         showAxes: true,
+        showGrid: true,
+        gridStep: 1,
+        gridOpacity: 0.15,
+        gridColor: '#666666',
         backgroundColor: '#f9f9f9',
         enableCulling: true
     })
@@ -162,6 +166,27 @@ function setupUI (container) {
         {
             title: 'Add Random Shapes',
             action: () => addRandomShapes()
+        }
+    ])
+    
+    addButtonFolder(controlPane, 'Display', [
+        {
+            title: 'Toggle Grid',
+            action: () => {
+                renderer.showGrid = !renderer.showGrid
+            }
+        },
+        {
+            title: 'Toggle Axes',
+            action: () => {
+                renderer.showAxes = !renderer.showAxes
+            }
+        },
+        {
+            title: 'Toggle Culling',
+            action: () => {
+                renderer.enableCulling = !renderer.enableCulling
+            }
         }
     ])
 }
