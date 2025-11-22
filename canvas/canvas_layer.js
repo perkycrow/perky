@@ -13,14 +13,21 @@ export default class CanvasLayer extends Layer {
         
         this.applyStyles()
         
+        const width = options.width ?? 800
+        const height = options.height ?? 600
+        const pixelRatio = options.pixelRatio ?? 1
+        
         const camera = options.camera ?? new Camera2D({
-            unitsInView: options.unitsInView ?? 10
+            unitsInView: options.unitsInView ?? 10,
+            viewportWidth: width * pixelRatio,
+            viewportHeight: height * pixelRatio,
+            pixelRatio
         })
         
         this.renderer = new Canvas2D(this.canvas, {
-            width: options.width ?? 800,
-            height: options.height ?? 600,
-            pixelRatio: options.pixelRatio ?? 1,
+            width,
+            height,
+            pixelRatio,
             camera,
             showAxes: options.showAxes ?? false,
             showGrid: options.showGrid ?? false,
@@ -31,7 +38,7 @@ export default class CanvasLayer extends Layer {
             enableCulling: options.enableCulling ?? false
         })
         
-        this.scene = null
+        this.content = null
         this.autoRender = options.autoRender ?? true
     }
 
@@ -47,16 +54,16 @@ export default class CanvasLayer extends Layer {
     }
 
 
-    setScene (scene) {
-        this.scene = scene
+    setContent (content) {
+        this.content = content
         this.markDirty()
         return this
     }
 
 
     render () {
-        if (this.scene && this.dirty) {
-            this.renderer.render(this.scene)
+        if (this.content && this.dirty) {
+            this.renderer.render(this.content)
             this.markClean()
         }
         return this

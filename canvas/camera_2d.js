@@ -1,6 +1,6 @@
 export default class Camera2D {
 
-    constructor (options = {}) {
+    constructor (options = {}) { // eslint-disable-line complexity
         this.x = options.x ?? 0
         this.y = options.y ?? 0
         this.zoom = options.zoom ?? 1
@@ -8,6 +8,7 @@ export default class Camera2D {
         this.unitsInView = options.unitsInView ?? 10
         this.viewportWidth = options.viewportWidth ?? 800
         this.viewportHeight = options.viewportHeight ?? 600
+        this.pixelRatio = options.pixelRatio ?? 1
         
         this.followTarget = null
         this.followSpeed = 0.1
@@ -60,6 +61,15 @@ export default class Camera2D {
         const screenX = (worldX - this.x) * ppu + this.viewportWidth / 2
         const screenY = -(worldY - this.y) * ppu + this.viewportHeight / 2
         return {x: screenX, y: screenY}
+    }
+
+
+    worldToScreenCSS (worldX, worldY) {
+        const screen = this.worldToScreen(worldX, worldY)
+        return {
+            x: screen.x / this.pixelRatio,
+            y: screen.y / this.pixelRatio
+        }
     }
 
 

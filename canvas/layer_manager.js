@@ -172,6 +172,9 @@ export default class LayerManager {
             if (layer instanceof CanvasLayer && layer.autoRender) {
                 layer.render()
             }
+            if (layer instanceof HTMLLayer && layer.autoUpdate) {
+                layer.updateWorldElements()
+            }
         })
         return this
     }

@@ -13,6 +13,12 @@ let backgroundScene = null
 let gameScene = null
 let effectsScene = null
 
+const cameraControls = {
+    panSpeed: 0.1,
+    zoomSpeed: 0.05,
+    keys: {}
+}
+
 
 async function init () {
     const container = document.querySelector('.example-content')
@@ -20,6 +26,7 @@ async function init () {
     setupLayers(container)
     setupUI(container)
     await createScenes()
+    setupCameraControls()
     
     layerManager.renderAll()
 }
@@ -60,7 +67,6 @@ function setupLayers (container) {
                 name: 'ui-ingame',
                 type: 'html',
                 zIndex: 20,
-                content: '<div style="padding: 20px; color: white; font-family: Arial;"></div>',
                 pointerEvents: 'none'
             },
             {
@@ -98,6 +104,25 @@ function setupUI (container) {
         {
             title: 'Reset',
             action: () => resetScenes()
+        }
+    ])
+    
+    addButtonFolder(controlPane, 'Camera Controls', [
+        {
+            title: 'WASD / Arrows: Pan',
+            action: () => {}
+        },
+        {
+            title: 'Q/E or -/+: Zoom',
+            action: () => {}
+        },
+        {
+            title: 'Mouse Wheel: Zoom',
+            action: () => {}
+        },
+        {
+            title: 'Reset Camera',
+            action: () => resetCamera()
         }
     ])
     
@@ -178,11 +203,91 @@ async function createScenes () {
     createGameObjects()
     createEffects()
     
-    layerManager.getCanvas('background').setScene(backgroundScene)
-    layerManager.getCanvas('game').setScene(gameScene)
-    layerManager.getCanvas('effects').setScene(effectsScene)
+    layerManager.getCanvas('background').setContent(backgroundScene)
+    layerManager.getCanvas('game').setContent(gameScene)
+    layerManager.getCanvas('effects').setContent(effectsScene)
     
+    setupWorldHTML()
     updateUI()
+    
+    layerManager.renderAll()
+    
+    const htmlLayer = layerManager.getHTML('ui-ingame')
+    htmlLayer.updateWorldElements(true)
+}
+
+
+function setupCameraControls () {
+    document.addEventListener('keydown', (e) => {
+        cameraControls.keys[e.key.toLowerCase()] = true
+    })
+    
+    document.addEventListener('keyup', (e) => {
+        cameraControls.keys[e.key.toLowerCase()] = false
+    })
+    
+    document.addEventListener('wheel', (e) => {
+        e.preventDefault()
+        const gameLayer = layerManager.getCanvas('game')
+        const camera = gameLayer.renderer.camera
+        const zoomDelta = e.deltaY > 0 ? -0.1 : 0.1
+        camera.zoom = Math.max(0.2, Math.min(5, camera.zoom + zoomDelta))
+        layerManager.markAllDirty()
+        layerManager.renderAll()
+    }, { passive: false })
+}
+
+
+function updateCameraControls () {
+    const gameLayer = layerManager.getCanvas('game')
+    const camera = gameLayer.renderer.camera
+    
+    let moved = false
+    
+    if (cameraControls.keys['w'] || cameraControls.keys['arrowup']) {
+        camera.y += cameraControls.panSpeed
+        moved = true
+    }
+    if (cameraControls.keys['s'] || cameraControls.keys['arrowdown']) {
+        camera.y -= cameraControls.panSpeed
+        moved = true
+    }
+    if (cameraControls.keys['a'] || cameraControls.keys['arrowleft']) {
+        camera.x -= cameraControls.panSpeed
+        moved = true
+    }
+    if (cameraControls.keys['d'] || cameraControls.keys['arrowright']) {
+        camera.x += cameraControls.panSpeed
+        moved = true
+    }
+    
+    if (cameraControls.keys['q'] || cameraControls.keys['-']) {
+        camera.zoom = Math.max(0.2, camera.zoom - cameraControls.zoomSpeed)
+        moved = true
+    }
+    if (cameraControls.keys['e'] || cameraControls.keys['+'] || cameraControls.keys['=']) {
+        camera.zoom = Math.min(5, camera.zoom + cameraControls.zoomSpeed)
+        moved = true
+    }
+    
+    return moved
+}
+
+
+function updateUI () {
+    // Cette fonction met à jour l'affichage des stats
+    // Pour l'instant on ne fait rien, les stats sont dans le control panel
+}
+
+
+function resetCamera () {
+    const gameLayer = layerManager.getCanvas('game')
+    gameLayer.renderer.camera.x = 0
+    gameLayer.renderer.camera.y = 0
+    gameLayer.renderer.camera.zoom = 1
+    
+    layerManager.markAllDirty()
+    layerManager.renderAll()
 }
 
 
@@ -244,31 +349,59 @@ function createEffects () {
 }
 
 
-function updateUI () {
-    const uiLayer = layerManager.getHTML('ui-ingame')
-    uiLayer.setContent(`
-        <div style="padding: 20px; color: white; font-family: monospace; text-shadow: 1px 1px 2px black;">
-            <div><strong>Layer System Demo</strong></div>
-            <div>Time: ${time.toFixed(2)}s</div>
-            <div>FPS: ${isAnimating ? '60' : '0'}</div>
-            <div style="margin-top: 10px; font-size: 12px;">
-                <div>Background: Static layer</div>
-                <div>Game: Main game layer</div>
-                <div>UI: This HTML layer!</div>
-                <div>Effects: Particles layer</div>
-            </div>
-        </div>
-    `)
+function setupWorldHTML () {
+    const htmlLayer = layerManager.getHTML('ui-ingame')
+    htmlLayer.setCamera(layerManager.getCanvas('game').renderer.camera)
+    
+    const player = gameScene.children[0]
+    const enemy = gameScene.children[1]
+    
+    // Tooltip classique (pas de transform hérité)
+    const playerTooltip = htmlLayer.createWorldElement(
+        '<div style="background: rgba(65,105,225,0.9); color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; white-space: nowrap; font-family: Arial;">Player 🛡️</div>',
+        player.x,
+        player.y,
+        { 
+            worldOffsetY: 1,
+            autoCenter: 'x',
+            targetObject: player,
+            pointerEvents: 'none'
+        }
+    )
+    
+    // Label qui hérite des transformations (rotation + scale)
+    const enemyLabel = htmlLayer.createWorldElement(
+        '<div style="background: rgba(255,255,255,0.95); color: #DC143C; padding: 8px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; font-family: Arial; border: 2px solid #DC143C;">⚔️ ENEMY</div>',
+        enemy.x,
+        enemy.y,
+        { 
+            worldOffsetY: 0,
+            worldScaleX: 1.2,      // 1.2x plus large en unités du monde
+            worldScaleY: 1.2,      // 1.2x plus haut en unités du monde
+            autoCenter: true,
+            inheritTransform: true,
+            targetObject: enemy,
+            pointerEvents: 'none'
+        }
+    )
 }
 
 
 function animate () {
     time += 0.016
     
-    gameScene.children.forEach((obj, i) => {
-        obj.setRotation(time + i)
-        obj.y = Math.sin(time + i) * 2
-    })
+    const cameraMoved = updateCameraControls()
+    
+    const player = gameScene.children[0]
+    const enemy = gameScene.children[1]
+    
+    player.setRotation(time)
+    player.y = Math.sin(time) * 2
+    
+    enemy.setRotation(time + Math.PI)
+    enemy.y = Math.sin(time + Math.PI) * 2 + 1
+    
+    // No need to manually update positions, targetObject does it automatically
     
     effectsScene.children.forEach((particle, i) => {
         particle.x += Math.sin(time * 2 + i) * 0.02
@@ -276,9 +409,14 @@ function animate () {
         particle.setOpacity(0.3 + Math.abs(Math.sin(time * 2 + i)) * 0.7)
     })
     
-    layerManager.getCanvas('game').markDirty().render()
-    layerManager.getCanvas('effects').markDirty().render()
+    if (cameraMoved) {
+        layerManager.markAllDirty()
+    } else {
+        layerManager.getCanvas('game').markDirty()
+        layerManager.getCanvas('effects').markDirty()
+    }
     
+    layerManager.renderAll()
     updateUI()
 
     if (isAnimating) {
@@ -312,6 +450,11 @@ function resetScenes () {
         obj.setRotation(0)
         obj.y = obj === gameScene.children[0] ? 0 : 1
     })
+    
+    const gameLayer = layerManager.getCanvas('game')
+    gameLayer.renderer.camera.x = 0
+    gameLayer.renderer.camera.y = 0
+    gameLayer.renderer.camera.zoom = 1
     
     layerManager.markAllDirty()
     layerManager.renderAll()

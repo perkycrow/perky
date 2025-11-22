@@ -15,7 +15,8 @@ export default class Canvas2D {
         
         this.camera = options.camera ?? new Camera2D({
             viewportWidth: this.canvas.width,
-            viewportHeight: this.canvas.height
+            viewportHeight: this.canvas.height,
+            pixelRatio: this.pixelRatio
         })
         
         this.showAxes = options.showAxes ?? false
