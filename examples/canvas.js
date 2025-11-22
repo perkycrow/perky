@@ -36,8 +36,6 @@ async function init () {
 
 function setupCanvas (container) {
     canvas = document.createElement('canvas')
-    canvas.width = 800
-    canvas.height = 600
     canvas.style.border = '2px solid #333'
     canvas.style.backgroundColor = 'white'
     canvas.style.display = 'block'
@@ -47,12 +45,13 @@ function setupCanvas (container) {
     container.appendChild(canvas)
     
     camera = new Camera2D({
-        viewportWidth: canvas.width,
-        viewportHeight: canvas.height,
         unitsInView: 7
     })
     
     renderer = new Canvas2D(canvas, {
+        width: 800,
+        height: 600,
+        pixelRatio: window.devicePixelRatio || 1,
         camera,
         showAxes: true,
         showGrid: true,
@@ -93,8 +92,13 @@ function updateStats () {
     if (statsDiv && renderer) {
         const s = renderer.stats
         const cullingRate = s.totalObjects > 0 ? ((s.culledObjects / s.totalObjects) * 100).toFixed(1) : 0
+        const resolution = `${renderer.canvas.width}x${renderer.canvas.height}`
+        const display = `${renderer.displayWidth}x${renderer.displayHeight}`
         statsDiv.innerHTML = `
-            <div><strong>Culling Stats:</strong></div>
+            <div><strong>Render Stats:</strong></div>
+            <div>Resolution: ${resolution}</div>
+            <div>Display: ${display}</div>
+            <div>Pixel Ratio: ${renderer.pixelRatio.toFixed(2)}x</div>
             <div>Total: ${s.totalObjects}</div>
             <div>Rendered: ${s.renderedObjects}</div>
             <div>Culled: ${s.culledObjects} (${cullingRate}%)</div>
@@ -186,6 +190,44 @@ function setupUI (container) {
             title: 'Toggle Culling',
             action: () => {
                 renderer.enableCulling = !renderer.enableCulling
+            }
+        }
+    ])
+    
+    addButtonFolder(controlPane, 'Quality', [
+        {
+            title: 'Pixel Ratio: 0.5x',
+            action: () => {
+                renderer.setPixelRatio(0.5)
+                updateStats()
+            }
+        },
+        {
+            title: 'Pixel Ratio: 1x',
+            action: () => {
+                renderer.setPixelRatio(1)
+                updateStats()
+            }
+        },
+        {
+            title: 'Pixel Ratio: 2x',
+            action: () => {
+                renderer.setPixelRatio(2)
+                updateStats()
+            }
+        },
+        {
+            title: 'Pixel Ratio: 3x',
+            action: () => {
+                renderer.setPixelRatio(3)
+                updateStats()
+            }
+        },
+        {
+            title: 'Auto (Device)',
+            action: () => {
+                renderer.setPixelRatio(window.devicePixelRatio || 1)
+                updateStats()
             }
         }
     ])

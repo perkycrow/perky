@@ -7,9 +7,15 @@ export default class Canvas2D {
         this.canvas = canvas
         this.ctx = canvas.getContext('2d')
         
+        this.pixelRatio = options.pixelRatio ?? 1
+        this.displayWidth = options.width ?? canvas.width
+        this.displayHeight = options.height ?? canvas.height
+        
+        this.applyPixelRatio()
+        
         this.camera = options.camera ?? new Camera2D({
-            viewportWidth: canvas.width,
-            viewportHeight: canvas.height
+            viewportWidth: this.canvas.width,
+            viewportHeight: this.canvas.height
         })
         
         this.showAxes = options.showAxes ?? false
@@ -28,6 +34,27 @@ export default class Canvas2D {
             renderedObjects: 0,
             culledObjects: 0
         }
+    }
+
+
+    applyPixelRatio () {
+        this.canvas.width = this.displayWidth * this.pixelRatio
+        this.canvas.height = this.displayHeight * this.pixelRatio
+        
+        this.canvas.style.width = `${this.displayWidth}px`
+        this.canvas.style.height = `${this.displayHeight}px`
+        
+        if (this.camera) {
+            this.camera.viewportWidth = this.canvas.width
+            this.camera.viewportHeight = this.canvas.height
+        }
+    }
+
+
+    setPixelRatio (ratio) {
+        this.pixelRatio = ratio
+        this.applyPixelRatio()
+        return this
     }
 
 
