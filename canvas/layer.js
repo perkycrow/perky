@@ -10,6 +10,68 @@ export default class Layer {
         
         this.element = null
         this.container = null
+
+        this.viewport = options.viewport ?? {
+            x: 0,
+            y: 0,
+            width: '100%',
+            height: '100%',
+            anchor: 'top-left'
+        }
+
+        this.resolvedViewport = {x: 0, y: 0, width: 0, height: 0}
+    }
+
+
+    calculateViewport (containerWidth, containerHeight) { // eslint-disable-line complexity
+        const vp = this.viewport
+
+        const width = typeof vp.width === 'string' && vp.width.endsWith('%')
+            ? (parseFloat(vp.width) / 100) * containerWidth
+            : parseFloat(vp.width)
+
+        const height = typeof vp.height === 'string' && vp.height.endsWith('%')
+            ? (parseFloat(vp.height) / 100) * containerHeight
+            : parseFloat(vp.height)
+
+        let x = typeof vp.x === 'string' && vp.x.endsWith('%')
+            ? (parseFloat(vp.x) / 100) * containerWidth
+            : parseFloat(vp.x)
+
+        let y = typeof vp.y === 'string' && vp.y.endsWith('%')
+            ? (parseFloat(vp.y) / 100) * containerHeight
+            : parseFloat(vp.y)
+        
+        const anchor = vp.anchor || 'top-left'
+        if (anchor.includes('right')) {
+            x = containerWidth - width - x
+        }
+        if (anchor.includes('bottom')) {
+            y = containerHeight - height - y
+        }
+        
+        this.resolvedViewport.x = x
+        this.resolvedViewport.y = y
+        this.resolvedViewport.width = width
+        this.resolvedViewport.height = height
+        
+        return this.resolvedViewport
+    }
+
+
+    applyViewport () {
+        if (!this.element) {
+            return this
+        }
+        
+        const vp = this.resolvedViewport
+        
+        this.element.style.left = `${vp.x}px`
+        this.element.style.top = `${vp.y}px`
+        this.element.style.width = `${vp.width}px`
+        this.element.style.height = `${vp.height}px`
+        
+        return this
     }
 
 
@@ -79,7 +141,9 @@ export default class Layer {
     }
 
 
-    resize () {
+    resize (width, height) {
+        this.calculateViewport(width, height)
+        this.applyViewport()
         return this
     }
 

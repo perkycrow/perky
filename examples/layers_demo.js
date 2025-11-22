@@ -1,4 +1,5 @@
 import LayerManager from '../canvas/layer_manager'
+import Camera2D from '../canvas/camera_2d'
 import Circle from '../canvas/circle'
 import Rectangle from '../canvas/rectangle'
 import Group2D from '../canvas/group_2d'
@@ -12,6 +13,7 @@ let isAnimating = false
 let backgroundScene = null
 let gameScene = null
 let effectsScene = null
+let minimapScene = null
 
 const cameraControls = {
     panSpeed: 0.1,
@@ -41,13 +43,16 @@ function setupLayers (container) {
         container,
         width: 800,
         height: 600,
+        cameras: {
+            minimap: new Camera2D({unitsInView: 30, zoom: 0.5})
+        },
         layers: [
             {
                 name: 'background',
                 type: 'canvas',
                 zIndex: 0,
+                camera: 'main',
                 pixelRatio: 1,
-                unitsInView: 10,
                 showGrid: true,
                 gridStep: 1,
                 gridOpacity: 0.1,
@@ -58,8 +63,8 @@ function setupLayers (container) {
                 name: 'game',
                 type: 'canvas',
                 zIndex: 10,
+                camera: 'main',
                 pixelRatio: window.devicePixelRatio || 1,
-                unitsInView: 10,
                 showAxes: true,
                 enableCulling: true
             },
@@ -67,20 +72,41 @@ function setupLayers (container) {
                 name: 'ui-ingame',
                 type: 'html',
                 zIndex: 20,
+                camera: 'main',
                 pointerEvents: 'none'
             },
             {
                 name: 'effects',
                 type: 'canvas',
                 zIndex: 30,
+                camera: 'main',
                 pixelRatio: 1,
-                unitsInView: 10,
                 pointerEvents: 'none'
+            },
+            {
+                name: 'minimap',
+                type: 'canvas',
+                zIndex: 50,
+                camera: 'minimap',
+                viewport: {
+                    x: 10,        // 10px margin from anchor edge
+                    y: 10,        // 10px margin from top
+                    width: 200,
+                    height: 200,
+                    anchor: 'top-right'  // Position in top-right corner
+                },
+                pixelRatio: 1,
+                showGrid: true,
+                gridStep: 5,
+                gridOpacity: 0.2,
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                enableCulling: true
             },
             {
                 name: 'ui-menu',
                 type: 'html',
-                zIndex: 40,
+                zIndex: 100,
+                camera: null,
                 visible: false
             }
         ],
@@ -198,14 +224,17 @@ async function createScenes () {
     backgroundScene = new Group2D()
     gameScene = new Group2D()
     effectsScene = new Group2D()
+    minimapScene = new Group2D()
     
     createBackground()
     createGameObjects()
     createEffects()
+    createMinimap()
     
     layerManager.getCanvas('background').setContent(backgroundScene)
     layerManager.getCanvas('game').setContent(gameScene)
     layerManager.getCanvas('effects').setContent(effectsScene)
+    layerManager.getCanvas('minimap').setContent(minimapScene)
     
     setupWorldHTML()
     updateUI()
@@ -234,7 +263,7 @@ function setupCameraControls () {
         camera.zoom = Math.max(0.2, Math.min(5, camera.zoom + zoomDelta))
         layerManager.markAllDirty()
         layerManager.renderAll()
-    }, { passive: false })
+    }, {passive: false})
 }
 
 
@@ -244,28 +273,28 @@ function updateCameraControls () {
     
     let moved = false
     
-    if (cameraControls.keys['w'] || cameraControls.keys['arrowup']) {
+    if (cameraControls.keys.w || cameraControls.keys.arrowup) {
         camera.y += cameraControls.panSpeed
         moved = true
     }
-    if (cameraControls.keys['s'] || cameraControls.keys['arrowdown']) {
+    if (cameraControls.keys.s || cameraControls.keys.arrowdown) {
         camera.y -= cameraControls.panSpeed
         moved = true
     }
-    if (cameraControls.keys['a'] || cameraControls.keys['arrowleft']) {
+    if (cameraControls.keys.a || cameraControls.keys.arrowleft) {
         camera.x -= cameraControls.panSpeed
         moved = true
     }
-    if (cameraControls.keys['d'] || cameraControls.keys['arrowright']) {
+    if (cameraControls.keys.d || cameraControls.keys.arrowright) {
         camera.x += cameraControls.panSpeed
         moved = true
     }
     
-    if (cameraControls.keys['q'] || cameraControls.keys['-']) {
+    if (cameraControls.keys.q || cameraControls.keys['-']) {
         camera.zoom = Math.max(0.2, camera.zoom - cameraControls.zoomSpeed)
         moved = true
     }
-    if (cameraControls.keys['e'] || cameraControls.keys['+'] || cameraControls.keys['=']) {
+    if (cameraControls.keys.e || cameraControls.keys['+'] || cameraControls.keys['=']) {
         camera.zoom = Math.min(5, camera.zoom + cameraControls.zoomSpeed)
         moved = true
     }
@@ -349,6 +378,41 @@ function createEffects () {
 }
 
 
+function createMinimap () {
+    // Border
+    const border = new Rectangle({
+        x: 0,
+        y: 0,
+        width: 28,
+        height: 28,
+        color: 'transparent',
+        strokeColor: '#ffffff',
+        strokeWidth: 0.5
+    })
+    minimapScene.addChild(border)
+    
+    // Add small markers for player and enemy (will be synced in animate)
+    const playerMarker = new Circle({
+        x: 0,
+        y: 0,
+        radius: 0.6,
+        color: '#4169E1',
+        strokeWidth: 0
+    })
+    
+    const enemyMarker = new Rectangle({
+        x: 3,
+        y: 1,
+        width: 1,
+        height: 1,
+        color: '#DC143C',
+        strokeWidth: 0
+    })
+    
+    minimapScene.addChild(playerMarker, enemyMarker)
+}
+
+
 function setupWorldHTML () {
     const htmlLayer = layerManager.getHTML('ui-ingame')
     htmlLayer.setCamera(layerManager.getCanvas('game').renderer.camera)
@@ -401,7 +465,13 @@ function animate () {
     enemy.setRotation(time + Math.PI)
     enemy.y = Math.sin(time + Math.PI) * 2 + 1
     
-    // No need to manually update positions, targetObject does it automatically
+    // Sync minimap markers
+    const playerMarker = minimapScene.children[1]
+    const enemyMarker = minimapScene.children[2]
+    playerMarker.x = player.x
+    playerMarker.y = player.y
+    enemyMarker.x = enemy.x
+    enemyMarker.y = enemy.y
     
     effectsScene.children.forEach((particle, i) => {
         particle.x += Math.sin(time * 2 + i) * 0.02
@@ -414,6 +484,7 @@ function animate () {
     } else {
         layerManager.getCanvas('game').markDirty()
         layerManager.getCanvas('effects').markDirty()
+        layerManager.getCanvas('minimap').markDirty()
     }
     
     layerManager.renderAll()

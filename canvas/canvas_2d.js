@@ -113,12 +113,12 @@ export default class Canvas2D {
         this.stats.totalObjects = 0
         this.stats.renderedObjects = 0
         this.stats.culledObjects = 0
-        
-        if (this.backgroundColor) {
+
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
+        if (this.backgroundColor && this.backgroundColor !== 'transparent') {
             ctx.fillStyle = this.backgroundColor
             ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
-        } else {
-            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         }
         
         this.camera.update()

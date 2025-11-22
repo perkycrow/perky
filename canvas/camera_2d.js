@@ -4,6 +4,7 @@ export default class Camera2D {
         this.x = options.x ?? 0
         this.y = options.y ?? 0
         this.zoom = options.zoom ?? 1
+        this.rotation = options.rotation ?? 0  // radians
         
         this.unitsInView = options.unitsInView ?? 10
         this.viewportWidth = options.viewportWidth ?? 800
@@ -105,6 +106,10 @@ export default class Camera2D {
 
     applyToContext (ctx) {
         ctx.translate(this.viewportWidth / 2, this.viewportHeight / 2)
+
+        if (this.rotation !== 0) {
+            ctx.rotate(-this.rotation)
+        }
         
         const ppu = this.pixelsPerUnit
         ctx.scale(ppu, -ppu)

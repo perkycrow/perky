@@ -20,9 +20,11 @@ export default class HTMLLayer extends Layer {
         }
         
         this.worldElements = []
-        this.camera = null
+        this.camera = options.camera ?? null
         this.autoUpdate = options.autoUpdate ?? true
         this.updateThreshold = options.updateThreshold ?? 0.5
+        
+        this.applyViewport()
     }
 
 
@@ -69,8 +71,10 @@ export default class HTMLLayer extends Layer {
 
 
     resize (width, height) {
-        this.div.style.width = `${width}px`
-        this.div.style.height = `${height}px`
+        const vp = this.calculateViewport(width, height)
+        this.div.style.width = `${vp.width}px`
+        this.div.style.height = `${vp.height}px`
+        this.applyViewport()
         return this
     }
 

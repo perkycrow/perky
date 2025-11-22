@@ -16,17 +16,27 @@ export default class CanvasLayer extends Layer {
         const width = options.width ?? 800
         const height = options.height ?? 600
         const pixelRatio = options.pixelRatio ?? 1
-        
-        const camera = options.camera ?? new Camera2D({
-            unitsInView: options.unitsInView ?? 10,
-            viewportWidth: width * pixelRatio,
-            viewportHeight: height * pixelRatio,
-            pixelRatio
-        })
+
+        const vp = this.calculateViewport(width, height)
+
+        let camera
+        if (options.camera) {
+            camera = options.camera
+            camera.viewportWidth = vp.width * pixelRatio
+            camera.viewportHeight = vp.height * pixelRatio
+            camera.pixelRatio = pixelRatio
+        } else {
+            camera = new Camera2D({
+                unitsInView: options.unitsInView ?? 10,
+                viewportWidth: vp.width * pixelRatio,
+                viewportHeight: vp.height * pixelRatio,
+                pixelRatio
+            })
+        }
         
         this.renderer = new Canvas2D(this.canvas, {
-            width,
-            height,
+            width: vp.width,
+            height: vp.height,
             pixelRatio,
             camera,
             showAxes: options.showAxes ?? false,
@@ -40,6 +50,9 @@ export default class CanvasLayer extends Layer {
         
         this.content = null
         this.autoRender = options.autoRender ?? true
+        
+        // Apply initial viewport
+        this.applyViewport()
     }
 
 
@@ -71,7 +84,9 @@ export default class CanvasLayer extends Layer {
 
 
     resize (width, height) {
-        this.renderer.resize(width, height)
+        const vp = this.calculateViewport(width, height)
+        this.renderer.resize(vp.width, vp.height)
+        this.applyViewport()
         this.markDirty()
         return this
     }
