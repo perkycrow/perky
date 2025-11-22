@@ -13,22 +13,16 @@ export default class GameExtension extends PerkyModule {
 
 
     onInstall (host, options) {
-        const gameLoop = new GameLoop({
+        this.use(GameLoop, {
+            $bind: 'gameLoop',
             fps: options.fps || 60,
             maxFrameSkip: options.maxFrameSkip || 5
         })
 
-        this.use(GameLoop, {
-            instance: gameLoop,
-            $name: 'gameLoop',
-            $category: 'module',
-            $bind: 'gameLoop'
-        })
+        this.delegateProperties(this.gameLoop, ['paused'], true)
+        this.delegateTo(this.gameLoop, ['pause', 'resume', 'setFps', 'getFps', 'getCurrentFps'])
 
-        this.delegateProperties(gameLoop, ['paused'], true)
-        this.delegateTo(gameLoop, ['pause', 'resume', 'setFps', 'getFps', 'getCurrentFps'])
-
-        initGameLoopEvents(host, gameLoop)
+        initGameLoopEvents(host, this.gameLoop)
     }
 
 }

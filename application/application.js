@@ -19,15 +19,11 @@ export default class Application extends Engine {
         this.loaders = new Registry(loaders)
 
         this.use(PerkyView, {
-            $name: 'perkyView',
-            $category: 'module',
             $bind: 'perkyView',
             className: 'perky-application'
         })
 
         this.use(SourceManager, {
-            $name: 'sourceManager',
-            $category: 'module',
             $bind: 'sourceManager',
             loaders: this.loaders,
             manifest: this.manifest
@@ -35,15 +31,11 @@ export default class Application extends Engine {
 
         this.use(InputBinder, {
             instance: getInputBinder(inputBinder),
-            $name: 'inputBinder',
-            $category: 'module',
             $bind: 'inputBinder'
         })
 
         this.use(InputManager, {
             instance: getInputManager(inputManager),
-            $name: 'inputManager',
-            $category: 'module',
             $bind: 'inputManager'
         })
 
@@ -65,7 +57,7 @@ export default class Application extends Engine {
         this.inputManager.registerDevice('mouse', this.mouse)
 
         this.#initEvents()
-        
+
         if (typeof this.configure === 'function') {
             this.configure()
         }

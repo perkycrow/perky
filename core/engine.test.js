@@ -17,7 +17,7 @@ describe(Engine, () => {
 
     test('constructor', () => {
         expect(engine.manifest).toBeInstanceOf(Manifest)
-        expect(engine.getExtension('actionDispatcher')).toBeDefined()
+        expect(engine.getExtension('ActionDispatcher')).toBeDefined()
     })
 
 
@@ -206,7 +206,7 @@ describe(Engine, () => {
             $name: 'test',
             $category: 'module'
         })
-        
+
         expect(engineSpy).toHaveBeenCalledWith('module:set', 'test', extension)
         expect(extensionSpy).toHaveBeenCalledWith('registered', engine, 'test')
         expect(extension.host).toBe(engine)

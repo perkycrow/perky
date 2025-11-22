@@ -21,14 +21,10 @@ export default class Engine extends PerkyModule {
         this.manifest = manifest
 
         this.use(ActionDispatcher, {
-            $name: 'actionDispatcher',
-            $category: 'module',
             $bind: 'actionDispatcher'
         })
 
         this.use(ActionController, {
-            $name: 'application',
-            $category: 'controller',
             $bind: 'applicationController',
             $lifecycle: false
         })
