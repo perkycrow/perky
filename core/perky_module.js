@@ -78,7 +78,7 @@ export default class PerkyModule extends Notifier {
         setupLifecycle(this, extension, extensionName, options)
         emitRegistrationEvents(this, extension, extensionName, options)
 
-        return this
+        return extension
     }
 
 

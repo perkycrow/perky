@@ -85,7 +85,8 @@ describe(PerkyModule, () => {
             $category: 'test'
         })
         
-        expect(result).toBe(extension)
+        expect(result).toBeInstanceOf(TestExtension)
+        expect(result).toBe(extension.getExtension('test'))
         expect(extension.hasExtension('test')).toBe(true)
     })
 
@@ -100,7 +101,7 @@ describe(PerkyModule, () => {
             $category: 'test'
         })
         
-        expect(result).toBe(extension)
+        expect(result).toBe(instance)
         expect(extension.getExtension('test')).toBe(instance)
     })
 
