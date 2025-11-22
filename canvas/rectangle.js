@@ -2,35 +2,30 @@ import Object2D from './object_2d'
 
 
 export default class Rectangle extends Object2D {
+
     constructor (options = {}) {
         super(options)
         
-        const {
-            width = 100,
-            height = 100,
-            color = '#4444ff',
-            strokeColor = '#333333',
-            strokeWidth = 2
-        } = options
+        this.width = options.width ?? 10
+        this.height = options.height ?? 10
+        this.color = options.color ?? '#000000'
+        this.strokeColor = options.strokeColor ?? '#000000'
+        this.strokeWidth = options.strokeWidth ?? 0
+    }
+
+
+    render (ctx) {
+        const offsetX = -this.width * this.anchorX
+        const offsetY = -this.height * this.anchorY
         
-        this.userData.width = width
-        this.userData.height = height
-        this.userData.color = color
-        this.userData.strokeColor = strokeColor
-        this.userData.strokeWidth = strokeWidth
-    }
-
-
-    setSize (width, height = width) {
-        this.userData.width = width
-        this.userData.height = height
-        return this
-    }
-
-
-    setColor (color) {
-        this.userData.color = color
-        return this
+        ctx.fillStyle = this.color
+        ctx.fillRect(offsetX, offsetY, this.width, this.height)
+        
+        if (this.strokeWidth > 0) {
+            ctx.strokeStyle = this.strokeColor
+            ctx.lineWidth = this.strokeWidth
+            ctx.strokeRect(offsetX, offsetY, this.width, this.height)
+        }
     }
 
 }

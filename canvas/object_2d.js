@@ -1,54 +1,72 @@
-import {Object3D} from 'three'
+import Transform2D from './transform_2d'
 
 
-export default class Object2D extends Object3D {
+export default class Object2D extends Transform2D {
+
     constructor (options = {}) {
         super()
         
-        const {
-            x = 0,
-            y = 0,
-            rotation = 0,
-            scaleX = 1,
-            scaleY = 1,
-            opacity = 1,
-            visible = true
-        } = options
+        this.visible = options.visible ?? true
+        this.opacity = options.opacity ?? 1
+        this.anchorX = options.anchorX ?? 0.5
+        this.anchorY = options.anchorY ?? 0.5
         
-        this.position.set(x, y, 0)
-        this.rotation.z = -rotation
-        this.scale.set(scaleX, scaleY, 1)
-        
-        this.userData.opacity = opacity
-        this.visible = visible
-        
-        this.userData.renderType = this.constructor.name.toLowerCase()
+        if (options.x !== undefined) this.x = options.x
+        if (options.y !== undefined) this.y = options.y
+        if (options.rotation !== undefined) this.rotation = options.rotation
+        if (options.scaleX !== undefined) this.scaleX = options.scaleX
+        if (options.scaleY !== undefined) this.scaleY = options.scaleY
+        if (options.pivotX !== undefined) this.pivotX = options.pivotX
+        if (options.pivotY !== undefined) this.pivotY = options.pivotY
     }
 
 
     setPosition (x, y) {
-        this.position.set(x, y, 0)
+        this.x = x
+        this.y = y
+        this.markDirty()
         return this
     }
 
 
     setRotation (rotation) {
-        // Invert rotation to maintain counter-clockwise positive rotation
-        // in Canvas coordinate system (Y pointing down)
-        this.rotation.z = -rotation
+        this.rotation = rotation
+        this.markDirty()
         return this
     }
 
 
     setScale (scaleX, scaleY = scaleX) {
-        this.scale.set(scaleX, scaleY, 1)
+        this.scaleX = scaleX
+        this.scaleY = scaleY
+        this.markDirty()
         return this
     }
 
 
     setOpacity (opacity) {
-        this.userData.opacity = opacity
+        this.opacity = opacity
         return this
+    }
+
+
+    setAnchor (x, y = x) {
+        this.anchorX = x
+        this.anchorY = y
+        this.markDirty()
+        return this
+    }
+
+
+    setPivot (x, y) {
+        this.pivotX = x
+        this.pivotY = y
+        this.markDirty()
+        return this
+    }
+
+
+    render (ctx) {
     }
 
 }

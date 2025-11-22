@@ -1,11 +1,10 @@
+import {describe, test, expect, beforeEach} from 'vitest'
 import Group2D from './group_2d'
 import Object2D from './object_2d'
-import Circle from './circle'
-import Rectangle from './rectangle'
-import {beforeEach, describe, test, expect} from 'vitest'
 
 
 describe(Group2D, () => {
+
     let group
 
     beforeEach(() => {
@@ -13,100 +12,97 @@ describe(Group2D, () => {
     })
 
 
-    test('constructor with default options', () => {
+    test('constructor', () => {
         expect(group).toBeInstanceOf(Object2D)
-        expect(group.userData.renderType).toBeNull()
+        expect(group.children).toEqual([])
     })
 
 
-    test('constructor with custom options', () => {
-        const customGroup = new Group2D({
-            x: 100,
-            y: 200,
-            rotation: Math.PI / 2,
-            opacity: 0.5
+    test('constructor with options', () => {
+        const g = new Group2D({
+            x: 10,
+            y: 20,
+            rotation: Math.PI,
+            scaleX: 2,
+            scaleY: 3,
+            opacity: 0.5,
+            visible: false
         })
 
-        expect(customGroup.position.x).toBe(100)
-        expect(customGroup.position.y).toBe(200)
-        expect(customGroup.rotation.z).toBe(-(Math.PI / 2))
-        expect(customGroup.userData.opacity).toBe(0.5)
-        expect(customGroup.userData.renderType).toBeNull()
+        expect(g.x).toBe(10)
+        expect(g.y).toBe(20)
+        expect(g.rotation).toBe(Math.PI)
+        expect(g.scaleX).toBe(2)
+        expect(g.scaleY).toBe(3)
+        expect(g.opacity).toBe(0.5)
+        expect(g.visible).toBe(false)
     })
 
 
-    test('addChild with single object', () => {
-        const circle = new Circle()
-        const result = group.addChild(circle)
-        
-        expect(group.children).toContain(circle)
-        expect(circle.parent).toBe(group)
+    test('addChild', () => {
+        const child1 = new Object2D()
+        const child2 = new Object2D()
+
+        const result = group.addChild(child1, child2)
+
+        expect(group.children).toEqual([child1, child2])
+        expect(child1.parent).toBe(group)
+        expect(child2.parent).toBe(group)
         expect(result).toBe(group)
     })
 
 
-    test('addChild with multiple objects', () => {
-        const circle = new Circle()
-        const rectangle = new Rectangle()
-        const subGroup = new Group2D()
-        
-        const result = group.addChild(circle, rectangle, subGroup)
-        
-        expect(group.children.length).toBe(3)
-        expect(group.children).toContain(circle)
-        expect(group.children).toContain(rectangle)
-        expect(group.children).toContain(subGroup)
-        expect(circle.parent).toBe(group)
-        expect(rectangle.parent).toBe(group)
-        expect(subGroup.parent).toBe(group)
+    test('addChild with single child', () => {
+        const child = new Object2D()
+
+        group.addChild(child)
+
+        expect(group.children).toEqual([child])
+        expect(child.parent).toBe(group)
+    })
+
+
+    test('addChild is fluent', () => {
+        const child = new Object2D()
+
+        const result = group.addChild(child).setPosition(10, 20)
+
         expect(result).toBe(group)
-    })
-
-
-    test('renderType is null for groups', () => {
-        expect(group.userData.renderType).toBeNull()
-    })
-
-
-    test('inherited methods from Object2D', () => {
-        group.setPosition(50, 100)
-        group.setRotation(Math.PI / 3)
-        group.setScale(2, 3)
-        group.setOpacity(0.7)
-
-        expect(group.position.x).toBe(50)
-        expect(group.position.y).toBe(100)
-        expect(group.rotation.z).toBe(-(Math.PI / 3))
-        expect(group.scale.x).toBe(2)
-        expect(group.scale.y).toBe(3)
-        expect(group.userData.opacity).toBe(0.7)
+        expect(group.x).toBe(10)
+        expect(group.y).toBe(20)
     })
 
 
     test('nested groups', () => {
-        const childGroup = new Group2D()
-        const circle = new Circle()
-        
-        childGroup.addChild(circle)
-        group.addChild(childGroup)
-        
-        expect(group.children).toContain(childGroup)
-        expect(childGroup.children).toContain(circle)
-        expect(childGroup.parent).toBe(group)
-        expect(circle.parent).toBe(childGroup)
+        const parent = new Group2D()
+        const child = new Group2D()
+        const grandchild = new Object2D()
+
+        parent.addChild(child)
+        child.addChild(grandchild)
+
+        expect(parent.children).toEqual([child])
+        expect(child.children).toEqual([grandchild])
+        expect(child.parent).toBe(parent)
+        expect(grandchild.parent).toBe(child)
     })
 
 
-    test('group transformations affect children', () => {
-        const circle = new Circle({x: 100, y: 0})
-        group.addChild(circle)
-        
-        group.setPosition(50, 50)
-        group.updateMatrixWorld(true)
-        
-        const worldPosition = circle.getWorldPosition(circle.position.clone())
-        expect(worldPosition.x).toBe(150)
-        expect(worldPosition.y).toBe(50)
+    test('world matrix propagation', () => {
+        const parent = new Group2D()
+        parent.x = 10
+        parent.y = 20
+
+        const child = new Group2D()
+        child.x = 5
+        child.y = 5
+
+        parent.addChild(child)
+        parent.updateWorldMatrix()
+
+        const m = child.worldMatrix
+        expect(m[4]).toBeCloseTo(15)
+        expect(m[5]).toBeCloseTo(25)
     })
 
 })

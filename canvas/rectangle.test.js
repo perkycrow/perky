@@ -1,9 +1,9 @@
+import {describe, test, expect, beforeEach, vi} from 'vitest'
 import Rectangle from './rectangle'
-import Object2D from './object_2d'
-import {beforeEach, describe, test, expect} from 'vitest'
 
 
 describe(Rectangle, () => {
+
     let rectangle
 
     beforeEach(() => {
@@ -11,94 +11,112 @@ describe(Rectangle, () => {
     })
 
 
-    test('constructor with default options', () => {
-        expect(rectangle).toBeInstanceOf(Object2D)
-        expect(rectangle.userData.width).toBe(100)
-        expect(rectangle.userData.height).toBe(100)
-        expect(rectangle.userData.color).toBe('#4444ff')
-        expect(rectangle.userData.strokeColor).toBe('#333333')
-        expect(rectangle.userData.strokeWidth).toBe(2)
-        expect(rectangle.userData.renderType).toBe('rectangle')
+    test('constructor defaults', () => {
+        expect(rectangle.width).toBe(10)
+        expect(rectangle.height).toBe(10)
+        expect(rectangle.color).toBe('#000000')
+        expect(rectangle.strokeColor).toBe('#000000')
+        expect(rectangle.strokeWidth).toBe(0)
     })
 
 
-    test('constructor with custom options', () => {
-        const customRect = new Rectangle({
-            x: 50,
-            y: 100,
-            width: 200,
-            height: 150,
+    test('constructor with options', () => {
+        const r = new Rectangle({
+            x: 10,
+            y: 20,
+            width: 100,
+            height: 50,
             color: '#ff0000',
             strokeColor: '#00ff00',
-            strokeWidth: 4,
-            rotation: Math.PI / 4,
-            opacity: 0.6
+            strokeWidth: 2,
+            opacity: 0.5,
+            rotation: Math.PI / 4
         })
 
-        expect(customRect.position.x).toBe(50)
-        expect(customRect.position.y).toBe(100)
-        expect(customRect.userData.width).toBe(200)
-        expect(customRect.userData.height).toBe(150)
-        expect(customRect.userData.color).toBe('#ff0000')
-        expect(customRect.userData.strokeColor).toBe('#00ff00')
-        expect(customRect.userData.strokeWidth).toBe(4)
-        expect(customRect.rotation.z).toBe(-(Math.PI / 4))
-        expect(customRect.userData.opacity).toBe(0.6)
+        expect(r.x).toBe(10)
+        expect(r.y).toBe(20)
+        expect(r.width).toBe(100)
+        expect(r.height).toBe(50)
+        expect(r.color).toBe('#ff0000')
+        expect(r.strokeColor).toBe('#00ff00')
+        expect(r.strokeWidth).toBe(2)
+        expect(r.opacity).toBe(0.5)
+        expect(r.rotation).toBeCloseTo(Math.PI / 4)
     })
 
 
-    test('setSize with two parameters', () => {
-        const result = rectangle.setSize(200, 150)
-        
-        expect(rectangle.userData.width).toBe(200)
-        expect(rectangle.userData.height).toBe(150)
-        expect(result).toBe(rectangle)
+    test('render without stroke', () => {
+        const ctx = {
+            fillRect: vi.fn(),
+            strokeRect: vi.fn()
+        }
+
+        rectangle.width = 100
+        rectangle.height = 50
+        rectangle.color = '#ff0000'
+        rectangle.anchorX = 0.5
+        rectangle.anchorY = 0.5
+        rectangle.strokeWidth = 0
+
+        rectangle.render(ctx)
+
+        expect(ctx.fillRect).toHaveBeenCalledWith(-50, -25, 100, 50)
+        expect(ctx.strokeRect).not.toHaveBeenCalled()
     })
 
 
-    test('setSize with one parameter creates square', () => {
-        const result = rectangle.setSize(200)
-        
-        expect(rectangle.userData.width).toBe(200)
-        expect(rectangle.userData.height).toBe(200)
-        expect(result).toBe(rectangle)
+    test('render with stroke', () => {
+        const ctx = {
+            fillRect: vi.fn(),
+            strokeRect: vi.fn()
+        }
+
+        rectangle.width = 100
+        rectangle.height = 50
+        rectangle.color = '#ff0000'
+        rectangle.strokeColor = '#0000ff'
+        rectangle.strokeWidth = 2
+        rectangle.anchorX = 0.5
+        rectangle.anchorY = 0.5
+
+        rectangle.render(ctx)
+
+        expect(ctx.fillRect).toHaveBeenCalledWith(-50, -25, 100, 50)
+        expect(ctx.strokeRect).toHaveBeenCalledWith(-50, -25, 100, 50)
     })
 
 
-    test('setColor', () => {
-        const result = rectangle.setColor('#abcdef')
-        
-        expect(rectangle.userData.color).toBe('#abcdef')
-        expect(result).toBe(rectangle)
+    test('render with custom anchor', () => {
+        const ctx = {
+            fillRect: vi.fn(),
+            strokeRect: vi.fn()
+        }
+
+        rectangle.width = 100
+        rectangle.height = 50
+        rectangle.anchorX = 0
+        rectangle.anchorY = 0
+
+        rectangle.render(ctx)
+
+        expect(ctx.fillRect).toHaveBeenCalledWith(-0, -0, 100, 50)
     })
 
 
-    test('inherited methods from Object2D', () => {
-        rectangle.setPosition(25, 50)
-        rectangle.setRotation(Math.PI / 6)
-        rectangle.setScale(1.5, 2)
-        rectangle.setOpacity(0.3)
+    test('render with top-left anchor', () => {
+        const ctx = {
+            fillRect: vi.fn(),
+            strokeRect: vi.fn()
+        }
 
-        expect(rectangle.position.x).toBe(25)
-        expect(rectangle.position.y).toBe(50)
-        expect(rectangle.rotation.z).toBe(-(Math.PI / 6))
-        expect(rectangle.scale.x).toBe(1.5)
-        expect(rectangle.scale.y).toBe(2)
-        expect(rectangle.userData.opacity).toBe(0.3)
-    })
+        rectangle.width = 100
+        rectangle.height = 50
+        rectangle.anchorX = 1
+        rectangle.anchorY = 1
 
+        rectangle.render(ctx)
 
-    test('renderType is properly set', () => {
-        expect(rectangle.userData.renderType).toBe('rectangle')
-    })
-
-
-    test('can be added to parent', () => {
-        const parent = new Object2D()
-        parent.add(rectangle)
-        
-        expect(rectangle.parent).toBe(parent)
-        expect(parent.children).toContain(rectangle)
+        expect(ctx.fillRect).toHaveBeenCalledWith(-100, -50, 100, 50)
     })
 
 })

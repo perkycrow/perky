@@ -1,143 +1,148 @@
+import Camera2D from './camera_2d'
+
 
 export default class Canvas2D {
-    constructor (canvas) {
+
+    constructor (canvas, options = {}) {
         this.canvas = canvas
         this.ctx = canvas.getContext('2d')
+        
+        this.camera = options.camera ?? new Camera2D({
+            viewportWidth: canvas.width,
+            viewportHeight: canvas.height
+        })
+        
+        this.showAxes = options.showAxes ?? false
+        this.backgroundColor = options.backgroundColor ?? null
     }
 
 
     render (scene) {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        const ctx = this.ctx
         
-        this.ctx.save()
+        if (this.backgroundColor) {
+            ctx.fillStyle = this.backgroundColor
+            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+        } else {
+            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        }
         
-        this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2)
+        this.camera.update()
         
-        this.drawAxes()
+        ctx.save()
+        this.camera.applyToContext(ctx)
         
-        scene.updateMatrixWorld(true)
+        if (this.showAxes) {
+            drawAxes(ctx, this.camera)
+        }
         
-        this.updateOpacity(scene, 1.0)
+        scene.updateWorldMatrix(true)
         
-        this.renderObject(scene)
+        renderObject(ctx, scene, 1.0, this)
         
-        this.ctx.restore()
+        ctx.restore()
     }
 
+}
 
-    drawAxes () {
-        this.ctx.save()
-        this.ctx.strokeStyle = '#ccc'
-        this.ctx.lineWidth = 1
-        
-        this.ctx.beginPath()
-        this.ctx.moveTo(-this.canvas.width / 2, 0)
-        this.ctx.lineTo(this.canvas.width / 2, 0)
-        this.ctx.stroke()
-        
-        this.ctx.beginPath()
-        this.ctx.moveTo(0, -this.canvas.height / 2)
-        this.ctx.lineTo(0, this.canvas.height / 2)
-        this.ctx.stroke()
-        
-        this.ctx.fillStyle = '#999'
-        this.ctx.font = '14px Arial'
-        this.ctx.fillText('X+', this.canvas.width / 2 - 30, -20)
-        this.ctx.fillText('Y-', 10, this.canvas.height / 2 - 30)
-        
-        this.ctx.restore()
+
+function renderObject (ctx, object, parentOpacity, renderer) {
+    if (!object.visible) {
+        return
     }
-
-
-    updateOpacity (object, parentOpacity = 1.0) {
-        const localOpacity = object.userData.opacity === undefined ? 1.0 : object.userData.opacity
-        
-        object.userData._computedOpacity = parentOpacity * localOpacity
+    
+    const effectiveOpacity = parentOpacity * object.opacity
+    
+    ctx.save()
+    
+    const m = object.worldMatrix
+    ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5])
+    
+    if (object.opacity < 1 && object.children.length > 0) {
+        renderObjectWithGroupOpacity(ctx, object, effectiveOpacity, renderer)
+    } else {
+        ctx.globalAlpha = effectiveOpacity
+        object.render(ctx)
         
         object.children.forEach(child => {
-            this.updateOpacity(child, object.userData._computedOpacity)
+            renderObject(ctx, child, effectiveOpacity, renderer)
         })
     }
+    
+    ctx.restore()
+}
 
 
-    renderObject (object) {
-        if (object.visible) {
-            this.ctx.save()
-            this.applyTransformations(object)
-            this.renderObjectType(object)
-            this.renderChildren(object)
-            this.ctx.restore()
-        }
+function renderObjectWithGroupOpacity (ctx, object, effectiveOpacity, renderer) {
+    const bounds = calculateBounds(object)
+    
+    if (!bounds) {
+        ctx.globalAlpha = effectiveOpacity
+        object.render(ctx)
+        object.children.forEach(child => {
+            renderObject(ctx, child, effectiveOpacity, renderer)
+        })
+        return
     }
-
-
-    applyTransformations (object) {
-        if (object.userData._computedOpacity !== undefined) {
-            this.ctx.globalAlpha = object.userData._computedOpacity
-        }
-        
-        const m = object.matrixWorld.elements
-        
-        // Apply transformation with Y-axis inversion
-        this.ctx.transform(m[0], -m[1], -m[4], m[5], m[12], -m[13])
+    
+    const width = Math.ceil(bounds.width)
+    const height = Math.ceil(bounds.height)
+    
+    if (width <= 0 || height <= 0) {
+        return
     }
+    
+    const offCanvas = document.createElement('canvas')
+    offCanvas.width = width
+    offCanvas.height = height
+    const offCtx = offCanvas.getContext('2d')
+    
+    offCtx.save()
+    offCtx.translate(-bounds.minX, -bounds.minY)
+    
+    object.render(offCtx)
+    object.children.forEach(child => {
+        renderObject(offCtx, child, 1.0, renderer)
+    })
+    
+    offCtx.restore()
+    
+    ctx.globalAlpha = effectiveOpacity
+    ctx.drawImage(offCanvas, bounds.minX, bounds.minY)
+}
 
 
-    renderObjectType (object) {
-        if (object.userData.renderType) {
-            const renderers = {
-                circle: this.renderCircle.bind(this),
-                rectangle: this.renderRectangle.bind(this),
-                image: this.renderImage.bind(this)
-            }
-            
-            const renderer = renderers[object.userData.renderType]
-            if (renderer) {
-                renderer(object.userData)
-            }
-        }
-    }
+function calculateBounds (object) {
+    return null
+}
 
 
-    renderChildren (object) {
-        object.children.forEach(child => this.renderObject(child))
-    }
-
-
-    renderCircle (data) {
-        this.ctx.beginPath()
-        this.ctx.arc(0, 0, data.radius, 0, Math.PI * 2)
-        this.ctx.fillStyle = data.color
-        this.ctx.fill()
-        if (data.strokeWidth > 0) {
-            this.ctx.strokeStyle = data.strokeColor
-            this.ctx.lineWidth = data.strokeWidth
-            this.ctx.stroke()
-        }
-    }
-
-
-    renderRectangle (data) {
-        this.ctx.fillStyle = data.color
-        this.ctx.fillRect(-data.width / 2, -data.height / 2, data.width, data.height)
-        if (data.strokeWidth > 0) {
-            this.ctx.strokeStyle = data.strokeColor
-            this.ctx.lineWidth = data.strokeWidth
-            this.ctx.strokeRect(-data.width / 2, -data.height / 2, data.width, data.height)
-        }
-    }
-
-
-    renderImage (data) {
-        if (data.image && data.image.complete) {
-            this.ctx.drawImage(
-                data.image, 
-                -data.width / 2, 
-                -data.height / 2, 
-                data.width, 
-                data.height
-            )
-        }
-    }
-
+function drawAxes (ctx, camera) {
+    ctx.save()
+    
+    const ppu = camera.pixelsPerUnit
+    const maxUnits = Math.max(camera.viewportWidth, camera.viewportHeight) / ppu
+    
+    ctx.strokeStyle = '#cccccc'
+    ctx.lineWidth = 1 / ppu
+    
+    ctx.beginPath()
+    ctx.moveTo(-maxUnits, 0)
+    ctx.lineTo(maxUnits, 0)
+    ctx.stroke()
+    
+    ctx.beginPath()
+    ctx.moveTo(0, -maxUnits)
+    ctx.lineTo(0, maxUnits)
+    ctx.stroke()
+    
+    ctx.save()
+    ctx.scale(1, -1)
+    ctx.font = `${0.5}px Arial`
+    ctx.fillStyle = '#999999'
+    ctx.fillText('X+', maxUnits - 1, 0.3)
+    ctx.fillText('Y+', 0.1, -maxUnits + 0.8)
+    ctx.restore()
+    
+    ctx.restore()
 }
