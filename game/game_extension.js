@@ -29,10 +29,6 @@ export default class GameExtension extends PerkyModule {
 
 
 function initGameLoopEvents (host, gameLoop) {
-    gameLoop.on('update', host.emitter('update'))
-    gameLoop.on('render', host.emitter('render'))
-    gameLoop.on('pause', host.emitter('pause'))
-    gameLoop.on('resume', host.emitter('resume'))
-    gameLoop.on('changed:fps', host.emitter('changed:fps'))
+    gameLoop.pipeTo(host, ['update', 'render', 'pause', 'resume', 'changed:fps'])
 }
 

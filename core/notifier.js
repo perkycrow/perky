@@ -164,6 +164,46 @@ export default class Notifier {
 
 
     /**
+     * Pipes events from this notifier to a target notifier.
+     * @param {Notifier} target - The target notifier to pipe events to
+     * @param {string[]|Object<string, string>} events - Array of event names or object mapping source events to target events
+     * @param {string} [namespace] - Optional namespace to prefix target event names
+     * @returns {this} Returns this notifier for chaining
+     * @example
+     * // Pipe events with same names
+     * source.pipeTo(target, ['update', 'render'])
+     * 
+     * // Pipe events with namespace
+     * source.pipeTo(target, ['update', 'render'], 'gameLoop')
+     * // Results in: 'gameLoop:update', 'gameLoop:render'
+     * 
+     * // Pipe events with custom mapping
+     * source.pipeTo(target, {update: 'gameUpdate', render: 'gameRender'})
+     */
+    pipeTo (target, events, namespace) {
+        if (!target || typeof target.emit !== 'function') {
+            throw new TypeError('Target must be a Notifier instance')
+        }
+
+        if (Array.isArray(events)) {
+            events.forEach(eventName => {
+                const targetEventName = namespace ? `${namespace}:${eventName}` : eventName
+                this.on(eventName, target.emitter(targetEventName))
+            })
+        } else if (events && typeof events === 'object') {
+            Object.entries(events).forEach(([sourceEvent, targetEvent]) => {
+                const finalTargetEvent = namespace ? `${namespace}:${targetEvent}` : targetEvent
+                this.on(sourceEvent, target.emitter(finalTargetEvent))
+            })
+        } else {
+            throw new TypeError('Events must be an array or an object')
+        }
+
+        return this
+    }
+
+
+    /**
      * Removes all listeners for all events.
      */
     removeListeners () {
@@ -193,7 +233,7 @@ export default class Notifier {
      * Array of method names that can be added to target objects via addCapabilitiesTo.
      * @type {string[]}
      */
-    static notifierMethods = ['on', 'off', 'emit', 'emitter', 'removeListeners', 'removeListenersFor']
+    static notifierMethods = ['on', 'off', 'emit', 'emitter', 'pipeTo', 'removeListeners', 'removeListenersFor']
 
 
     /**

@@ -207,4 +207,107 @@ describe(Notifier, () => {
         expect(receivedContext).toBe(notifier)
     })
 
+
+    test('pipeTo with array of events', () => {
+        const target = new Notifier()
+        const listener1 = vi.fn()
+        const listener2 = vi.fn()
+
+        target.on('update', listener1)
+        target.on('render', listener2)
+
+        notifier.pipeTo(target, ['update', 'render'])
+        notifier.emit('update', 1, 2, 3)
+        notifier.emit('render', 'a', 'b')
+
+        expect(listener1).toHaveBeenCalledWith(1, 2, 3)
+        expect(listener2).toHaveBeenCalledWith('a', 'b')
+    })
+
+
+    test('pipeTo with namespace', () => {
+        const target = new Notifier()
+        const listener1 = vi.fn()
+        const listener2 = vi.fn()
+
+        target.on('gameLoop:update', listener1)
+        target.on('gameLoop:render', listener2)
+
+        notifier.pipeTo(target, ['update', 'render'], 'gameLoop')
+        notifier.emit('update', 1)
+        notifier.emit('render', 2)
+
+        expect(listener1).toHaveBeenCalledWith(1)
+        expect(listener2).toHaveBeenCalledWith(2)
+    })
+
+
+    test('pipeTo with namespace and existing colons in event names', () => {
+        const target = new Notifier()
+        const listener = vi.fn()
+
+        target.on('gameLoop:changed:fps', listener)
+
+        notifier.pipeTo(target, ['changed:fps'], 'gameLoop')
+        notifier.emit('changed:fps', 60)
+
+        expect(listener).toHaveBeenCalledWith(60)
+    })
+
+
+    test('pipeTo with event mapping object', () => {
+        const target = new Notifier()
+        const listener1 = vi.fn()
+        const listener2 = vi.fn()
+
+        target.on('gameUpdate', listener1)
+        target.on('gameRender', listener2)
+
+        notifier.pipeTo(target, {update: 'gameUpdate', render: 'gameRender'})
+        notifier.emit('update', 1)
+        notifier.emit('render', 2)
+
+        expect(listener1).toHaveBeenCalledWith(1)
+        expect(listener2).toHaveBeenCalledWith(2)
+    })
+
+
+    test('pipeTo with event mapping object and namespace', () => {
+        const target = new Notifier()
+        const listener1 = vi.fn()
+        const listener2 = vi.fn()
+
+        target.on('gameLoop:gameUpdate', listener1)
+        target.on('gameLoop:gameRender', listener2)
+
+        notifier.pipeTo(target, {update: 'gameUpdate', render: 'gameRender'}, 'gameLoop')
+        notifier.emit('update', 1)
+        notifier.emit('render', 2)
+
+        expect(listener1).toHaveBeenCalledWith(1)
+        expect(listener2).toHaveBeenCalledWith(2)
+    })
+
+
+    test('pipeTo returns this for chaining', () => {
+        const target = new Notifier()
+        const result = notifier.pipeTo(target, ['test'])
+
+        expect(result).toBe(notifier)
+    })
+
+
+    test('pipeTo throws error if target is not a Notifier', () => {
+        expect(() => notifier.pipeTo(null, ['test'])).toThrow(TypeError)
+        expect(() => notifier.pipeTo({}, ['test'])).toThrow(TypeError)
+    })
+
+
+    test('pipeTo throws error if events is invalid', () => {
+        const target = new Notifier()
+
+        expect(() => notifier.pipeTo(target, null)).toThrow(TypeError)
+        expect(() => notifier.pipeTo(target, 'invalid')).toThrow(TypeError)
+    })
+
 })
