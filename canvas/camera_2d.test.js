@@ -80,7 +80,7 @@ describe(Camera2D, () => {
 
 
     test('follow', () => {
-        const target = { x: 100, y: 200 }
+        const target = {x: 100, y: 200}
         const result = camera.follow(target, 0.2)
 
         expect(camera.followTarget).toBe(target)
@@ -101,7 +101,7 @@ describe(Camera2D, () => {
 
 
     test('update with follow', () => {
-        const target = { x: 100, y: 200 }
+        const target = {x: 100, y: 200}
         camera.follow(target, 0.1)
         camera.x = 0
         camera.y = 0
@@ -168,6 +168,58 @@ describe(Camera2D, () => {
         expect(ctx.translate).toHaveBeenNthCalledWith(1, 400, 300)
         expect(ctx.translate).toHaveBeenNthCalledWith(2, -5, -10)
         expect(ctx.scale).toHaveBeenCalledWith(60, -60)
+    })
+
+
+    test('isVisible with visible bounds', () => {
+        camera.x = 0
+        camera.y = 0
+        camera.viewportWidth = 800
+        camera.viewportHeight = 600
+        camera.unitsInView = 10
+        camera.zoom = 1
+
+        const bounds = {minX: -1, minY: -1, maxX: 1, maxY: 1, width: 2, height: 2}
+        expect(camera.isVisible(bounds)).toBe(true)
+    })
+
+
+    test('isVisible with bounds outside camera', () => {
+        camera.x = 0
+        camera.y = 0
+        camera.viewportWidth = 800
+        camera.viewportHeight = 600
+        camera.unitsInView = 10
+        camera.zoom = 1
+
+        const bounds = {minX: 100, minY: 100, maxX: 110, maxY: 110, width: 10, height: 10}
+        expect(camera.isVisible(bounds)).toBe(false)
+    })
+
+
+    test('isVisible with partially visible bounds', () => {
+        camera.x = 0
+        camera.y = 0
+        camera.viewportWidth = 800
+        camera.viewportHeight = 600
+        camera.unitsInView = 10
+        camera.zoom = 1
+
+        const bounds = {minX: 5, minY: -1, maxX: 10, maxY: 1, width: 5, height: 2}
+        expect(camera.isVisible(bounds)).toBe(true)
+    })
+
+
+    test('isVisible with empty bounds', () => {
+        camera.x = 0
+        camera.y = 0
+        camera.viewportWidth = 800
+        camera.viewportHeight = 600
+        camera.unitsInView = 10
+        camera.zoom = 1
+
+        const bounds = {minX: 0, minY: 0, maxX: 0, maxY: 0, width: 0, height: 0}
+        expect(camera.isVisible(bounds)).toBe(false)
     })
 
 })

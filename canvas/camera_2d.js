@@ -59,7 +59,7 @@ export default class Camera2D {
         const ppu = this.pixelsPerUnit
         const screenX = (worldX - this.x) * ppu + this.viewportWidth / 2
         const screenY = -(worldY - this.y) * ppu + this.viewportHeight / 2
-        return { x: screenX, y: screenY }
+        return {x: screenX, y: screenY}
     }
 
 
@@ -67,7 +67,29 @@ export default class Camera2D {
         const ppu = this.pixelsPerUnit
         const worldX = (screenX - this.viewportWidth / 2) / ppu + this.x
         const worldY = -((screenY - this.viewportHeight / 2) / ppu) + this.y
-        return { x: worldX, y: worldY }
+        return {x: worldX, y: worldY}
+    }
+
+
+    isVisible (bounds) { // eslint-disable-line complexity
+        if (!bounds || (bounds.width === 0 && bounds.height === 0)) {
+            return false
+        }
+
+        const halfWidth = this.viewportWidth / (2 * this.pixelsPerUnit)
+        const halfHeight = this.viewportHeight / (2 * this.pixelsPerUnit)
+        
+        const cameraMinX = this.x - halfWidth
+        const cameraMaxX = this.x + halfWidth
+        const cameraMinY = this.y - halfHeight
+        const cameraMaxY = this.y + halfHeight
+        
+        return !(
+            bounds.maxX < cameraMinX ||
+            bounds.minX > cameraMaxX ||
+            bounds.maxY < cameraMinY ||
+            bounds.minY > cameraMaxY
+        )
     }
 
 

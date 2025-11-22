@@ -14,6 +14,21 @@ export default class Rectangle extends Object2D {
     }
 
 
+    getBounds () {
+        const offsetX = -this.width * this.anchorX
+        const offsetY = -this.height * this.anchorY
+        
+        return {
+            minX: offsetX,
+            minY: offsetY,
+            maxX: offsetX + this.width,
+            maxY: offsetY + this.height,
+            width: this.width,
+            height: this.height
+        }
+    }
+
+
     render (ctx) {
         const offsetX = -this.width * this.anchorX
         const offsetY = -this.height * this.anchorY

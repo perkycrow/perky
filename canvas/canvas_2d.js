@@ -14,11 +14,22 @@ export default class Canvas2D {
         
         this.showAxes = options.showAxes ?? false
         this.backgroundColor = options.backgroundColor ?? null
+        this.enableCulling = options.enableCulling ?? false
+        
+        this.stats = {
+            totalObjects: 0,
+            renderedObjects: 0,
+            culledObjects: 0
+        }
     }
 
 
     render (scene) {
         const ctx = this.ctx
+        
+        this.stats.totalObjects = 0
+        this.stats.renderedObjects = 0
+        this.stats.culledObjects = 0
         
         if (this.backgroundColor) {
             ctx.fillStyle = this.backgroundColor
@@ -51,6 +62,18 @@ function renderObject (ctx, object, parentOpacity, renderer) {
         return
     }
     
+    renderer.stats.totalObjects++
+    
+    if (renderer.enableCulling) {
+        const worldBounds = object.getWorldBounds()
+        if (!renderer.camera.isVisible(worldBounds)) {
+            renderer.stats.culledObjects++
+            return
+        }
+    }
+    
+    renderer.stats.renderedObjects++
+    
     const effectiveOpacity = parentOpacity * object.opacity
     
     ctx.save()
@@ -58,62 +81,14 @@ function renderObject (ctx, object, parentOpacity, renderer) {
     const m = object.worldMatrix
     ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5])
     
-    if (object.opacity < 1 && object.children.length > 0) {
-        renderObjectWithGroupOpacity(ctx, object, effectiveOpacity, renderer)
-    } else {
-        ctx.globalAlpha = effectiveOpacity
-        object.render(ctx)
-        
-        object.children.forEach(child => {
-            renderObject(ctx, child, effectiveOpacity, renderer)
-        })
-    }
+    ctx.globalAlpha = effectiveOpacity
+    object.render(ctx)
     
-    ctx.restore()
-}
-
-
-function renderObjectWithGroupOpacity (ctx, object, effectiveOpacity, renderer) {
-    const bounds = calculateBounds(object)
-    
-    if (!bounds) {
-        ctx.globalAlpha = effectiveOpacity
-        object.render(ctx)
-        object.children.forEach(child => {
-            renderObject(ctx, child, effectiveOpacity, renderer)
-        })
-        return
-    }
-    
-    const width = Math.ceil(bounds.width)
-    const height = Math.ceil(bounds.height)
-    
-    if (width <= 0 || height <= 0) {
-        return
-    }
-    
-    const offCanvas = document.createElement('canvas')
-    offCanvas.width = width
-    offCanvas.height = height
-    const offCtx = offCanvas.getContext('2d')
-    
-    offCtx.save()
-    offCtx.translate(-bounds.minX, -bounds.minY)
-    
-    object.render(offCtx)
     object.children.forEach(child => {
-        renderObject(offCtx, child, 1.0, renderer)
+        renderObject(ctx, child, effectiveOpacity, renderer)
     })
     
-    offCtx.restore()
-    
-    ctx.globalAlpha = effectiveOpacity
-    ctx.drawImage(offCanvas, bounds.minX, bounds.minY)
-}
-
-
-function calculateBounds (object) {
-    return null
+    ctx.restore()
 }
 
 

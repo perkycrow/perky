@@ -112,4 +112,36 @@ describe(Circle, () => {
         expect(ctx.arc).toHaveBeenCalledWith(20, 20, 20, 0, Math.PI * 2)
     })
 
+
+    test('getBounds', () => {
+        circle.radius = 20
+        circle.anchorX = 0.5
+        circle.anchorY = 0.5
+
+        const bounds = circle.getBounds()
+
+        expect(bounds.minX).toBeCloseTo(-20)
+        expect(bounds.minY).toBeCloseTo(-20)
+        expect(bounds.maxX).toBeCloseTo(20)
+        expect(bounds.maxY).toBeCloseTo(20)
+        expect(bounds.width).toBe(40)
+        expect(bounds.height).toBe(40)
+    })
+
+
+    test('getBounds with custom anchor', () => {
+        circle.radius = 10
+        circle.anchorX = 0
+        circle.anchorY = 0
+
+        const bounds = circle.getBounds()
+
+        expect(bounds.minX).toBeCloseTo(0)
+        expect(bounds.minY).toBeCloseTo(0)
+        expect(bounds.maxX).toBeCloseTo(20)
+        expect(bounds.maxY).toBeCloseTo(20)
+        expect(bounds.width).toBe(20)
+        expect(bounds.height).toBe(20)
+    })
+
 })

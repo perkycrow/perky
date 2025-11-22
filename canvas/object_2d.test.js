@@ -150,4 +150,44 @@ describe(Object2D, () => {
         expect(object.pivotY).toBe(10)
     })
 
+
+    test('getBounds default', () => {
+        const bounds = object.getBounds()
+
+        expect(bounds.minX).toBe(0)
+        expect(bounds.minY).toBe(0)
+        expect(bounds.maxX).toBe(0)
+        expect(bounds.maxY).toBe(0)
+        expect(bounds.width).toBe(0)
+        expect(bounds.height).toBe(0)
+    })
+
+
+    test('getWorldBounds with translation', () => {
+        object.x = 10
+        object.y = 20
+        object.getBounds = () => ({ minX: 0, minY: 0, maxX: 10, maxY: 10, width: 10, height: 10 })
+        object.updateWorldMatrix()
+
+        const bounds = object.getWorldBounds()
+
+        expect(bounds.minX).toBeCloseTo(10)
+        expect(bounds.minY).toBeCloseTo(20)
+        expect(bounds.maxX).toBeCloseTo(20)
+        expect(bounds.maxY).toBeCloseTo(30)
+    })
+
+
+    test('getWorldBounds with scale', () => {
+        object.scaleX = 2
+        object.scaleY = 2
+        object.getBounds = () => ({ minX: 0, minY: 0, maxX: 10, maxY: 10, width: 10, height: 10 })
+        object.updateWorldMatrix()
+
+        const bounds = object.getWorldBounds()
+
+        expect(bounds.width).toBeCloseTo(20)
+        expect(bounds.height).toBeCloseTo(20)
+    })
+
 })

@@ -55,8 +55,49 @@ function setupCanvas (container) {
     renderer = new Canvas2D(canvas, {
         camera,
         showAxes: true,
-        backgroundColor: '#f9f9f9'
+        backgroundColor: '#f9f9f9',
+        enableCulling: true
     })
+    
+    createStatsDisplay(container)
+}
+
+
+function createStatsDisplay (container) {
+    const statsDiv = document.createElement('div')
+    statsDiv.id = 'culling-stats'
+    statsDiv.style.cssText = `
+        position: absolute;
+        top: 80px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.7);
+        color: #00ff00;
+        padding: 10px;
+        font-family: monospace;
+        font-size: 12px;
+        border-radius: 4px;
+        line-height: 1.5;
+    `
+    container.style.position = 'relative'
+    container.appendChild(statsDiv)
+    updateStats()
+}
+
+
+function updateStats () {
+    const statsDiv = document.getElementById('culling-stats')
+    if (statsDiv && renderer) {
+        const s = renderer.stats
+        const cullingRate = s.totalObjects > 0 ? ((s.culledObjects / s.totalObjects) * 100).toFixed(1) : 0
+        statsDiv.innerHTML = `
+            <div><strong>Culling Stats:</strong></div>
+            <div>Total: ${s.totalObjects}</div>
+            <div>Rendered: ${s.renderedObjects}</div>
+            <div>Culled: ${s.culledObjects} (${cullingRate}%)</div>
+            <div>Camera: (${camera.x.toFixed(2)}, ${camera.y.toFixed(2)})</div>
+            <div>Zoom: ${camera.zoom.toFixed(2)}x</div>
+        `
+    }
 }
 
 
@@ -81,17 +122,38 @@ function setupUI (container) {
     addButtonFolder(controlPane, 'Camera', [
         {
             title: 'Zoom In',
-            action: () => camera.setZoom(camera.zoom * 1.2)
+            action: () => {
+                camera.setZoom(camera.zoom * 1.2)
+                updateStats()
+            }
         },
         {
             title: 'Zoom Out',
-            action: () => camera.setZoom(camera.zoom / 1.2)
+            action: () => {
+                camera.setZoom(camera.zoom / 1.2)
+                updateStats()
+            }
         },
         {
             title: 'Reset Camera',
             action: () => {
                 camera.setPosition(0, 0)
                 camera.setZoom(1)
+                updateStats()
+            }
+        },
+        {
+            title: 'Move Right',
+            action: () => {
+                camera.setPosition(camera.x + 2, camera.y)
+                updateStats()
+            }
+        },
+        {
+            title: 'Move Left',
+            action: () => {
+                camera.setPosition(camera.x - 2, camera.y)
+                updateStats()
             }
         }
     ])
@@ -293,6 +355,7 @@ function animate () {
     logoObject.setRotation(-time * 0.5)
     
     renderer.render(scene)
+    updateStats()
 
     if (isAnimating) {
         animationId = requestAnimationFrame(animate)
@@ -339,6 +402,7 @@ function resetScene () {
     camera.setZoom(1)
     
     renderer.render(scene)
+    updateStats()
     logger?.info('Scene reset to initial state')
 }
 
@@ -386,12 +450,15 @@ function addRandomShapes () {
     
     scene.addChild(randomGroup)
     
+    renderer.render(scene)
+    updateStats()
+    
     setTimeout(() => {
         scene.remove(randomGroup)
         renderer.render(scene)
+        updateStats()
     }, 3000)
     
-    renderer.render(scene)
     logger?.info('Added 10 random shapes (will disappear in 3 seconds)')
 }
 
