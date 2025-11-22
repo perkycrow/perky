@@ -72,8 +72,14 @@ export default class Canvas2D {
             return this
         }
         
-        const rect = parent.getBoundingClientRect()
-        return this.resize(rect.width, rect.height)
+        const width = parent.clientWidth
+        const height = parent.clientHeight
+        
+        if (width > 0 && height > 0) {
+            return this.resize(width, height)
+        }
+        
+        return this
     }
 
 
