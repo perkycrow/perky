@@ -4,6 +4,8 @@ import Registry from '../core/registry'
 
 export default class ActionController extends PerkyModule {
 
+    static propagable = []
+
     #actions = new Registry()
 
     constructor (actions) {
@@ -39,6 +41,43 @@ export default class ActionController extends PerkyModule {
     }
 
 
+    hasAction (actionName) {
+        return this.getAction(actionName) !== undefined || typeof this[actionName] === 'function'
+    }
+
+
+    shouldPropagate (actionName) {
+        const ControllerClass = this.constructor
+        return ControllerClass.propagable && Array.isArray(ControllerClass.propagable) 
+            ? ControllerClass.propagable.includes(actionName)
+            : false
+    }
+
+
+    listActions () { // eslint-disable-line complexity
+        const actions = new Set()
+        
+        for (const actionName of this.#actions.keys) {
+            actions.add(actionName)
+        }
+        
+        const proto = Object.getPrototypeOf(this)
+        const methods = Object.getOwnPropertyNames(proto)
+        
+        for (const method of methods) {
+            if (method !== 'constructor' && 
+                typeof this[method] === 'function' &&
+                !method.startsWith('_') &&
+                !method.startsWith('#') &&
+                !isInternalMethod(method)) {
+                actions.add(method)
+            }
+        }
+        
+        return Array.from(actions)
+    }
+
+
     addCallback (callbackName, actionName, callback) {
         this.on(`${callbackName}Action:${actionName}`, callback)
     }
@@ -68,7 +107,30 @@ export default class ActionController extends PerkyModule {
             return result
         }
 
+        if (typeof this[actionName] === 'function') {
+            if (!this.emitCallbacks(`beforeAction:${actionName}`, ...args)) {
+                return false
+            }
+
+            const result = this[actionName](...args)
+            this.emitCallbacks(`afterAction:${actionName}`, ...args)
+
+            return result
+        }
+
         return false
     }
 
+}
+
+
+const INTERNAL_METHODS = new Set([
+    'start', 'stop', 'dispose', 'use', 'on', 'once', 'off', 'emit', 
+    'emitCallbacks', 'emitter', 'addAction', 'getAction', 'removeAction',
+    'hasAction', 'shouldPropagate', 'listActions', 'addCallback',
+    'beforeAction', 'afterAction', 'execute'
+])
+
+function isInternalMethod (methodName) {
+    return INTERNAL_METHODS.has(methodName)
 }

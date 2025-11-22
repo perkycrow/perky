@@ -39,6 +39,11 @@ export default class Engine extends PerkyModule {
     }
 
 
+    registerContext (name, controller) {
+        return this.registerController(name, controller)
+    }
+
+
     getController (name) {
         return this.actionDispatcher.getController(name) || null
     }
@@ -49,8 +54,18 @@ export default class Engine extends PerkyModule {
     }
 
 
+    unregisterContext (name) {
+        return this.unregisterController(name)
+    }
+
+
     setActiveController (name) {
         return this.actionDispatcher.setActive(name)
+    }
+
+
+    activateContext (name) {
+        return this.setActiveController(name)
     }
 
 
@@ -59,13 +74,70 @@ export default class Engine extends PerkyModule {
     }
 
 
+    getActiveContext () {
+        return this.actionDispatcher.getActiveName()
+    }
+
+
+    pushContext (name) {
+        return this.actionDispatcher.push(name)
+    }
+
+
+    popContext () {
+        return this.actionDispatcher.pop()
+    }
+
+
+    getContextStack () {
+        return this.actionDispatcher.getStack()
+    }
+
+
+    clearContextStack () {
+        return this.actionDispatcher.clearStack()
+    }
+
+
+    isStackMode () {
+        return this.actionDispatcher.isStackMode()
+    }
+
+
     addAction (actionName, action) {
         return this.applicationController.addAction(actionName, action)
     }
 
 
+    removeAction (actionName) {
+        return this.applicationController.removeAction(actionName)
+    }
+
+
     dispatchAction (actionName, ...args) {
         return this.actionDispatcher.dispatch(actionName, ...args)
+    }
+
+
+    dispatch (actionName, ...args) {
+        return this.dispatchAction(actionName, ...args)
+    }
+
+
+    listContexts () {
+        return this.actionDispatcher.listControllers()
+    }
+
+
+    listActions (contextName = null) {
+        if (contextName) {
+            const controller = this.actionDispatcher.getController(contextName)
+            return controller && typeof controller.listActions === 'function'
+                ? controller.listActions()
+                : []
+        }
+        
+        return this.actionDispatcher.listAllActions()
     }
 
 

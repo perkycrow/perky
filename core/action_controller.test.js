@@ -50,6 +50,82 @@ describe(ActionController, () => {
     })
 
 
+    test('hasAction - registered action', () => {
+        const action = vi.fn()
+        controller.addAction('testAction', action)
+        
+        expect(controller.hasAction('testAction')).toBe(true)
+    })
+
+
+    test('hasAction - method action', () => {
+        class TestController extends ActionController {
+            testMethod () {} // eslint-disable-line class-methods-use-this
+        }
+        
+        const testController = new TestController()
+        expect(testController.hasAction('testMethod')).toBe(true)
+    })
+
+
+    test('hasAction - non-existent action', () => {
+        expect(controller.hasAction('nonExistent')).toBe(false)
+    })
+
+
+    test('shouldPropagate - default (no propagable)', () => {
+        expect(controller.shouldPropagate('anyAction')).toBe(false)
+    })
+
+
+    test('shouldPropagate - with propagable whitelist', () => {
+        class TestController extends ActionController {
+            static propagable = ['move', 'look']
+        }
+        
+        const testController = new TestController()
+        
+        expect(testController.shouldPropagate('move')).toBe(true)
+        expect(testController.shouldPropagate('look')).toBe(true)
+        expect(testController.shouldPropagate('shoot')).toBe(false)
+    })
+
+
+    test('listActions - registered actions', () => {
+        controller.addAction('action1', vi.fn())
+        controller.addAction('action2', vi.fn())
+        
+        const actions = controller.listActions()
+        
+        expect(actions).toContain('action1')
+        expect(actions).toContain('action2')
+    })
+
+
+    test('listActions - method actions', () => {
+        class TestController extends ActionController {
+            jump () {} // eslint-disable-line class-methods-use-this
+            move () {} // eslint-disable-line class-methods-use-this
+        }
+        
+        const testController = new TestController()
+        const actions = testController.listActions()
+        
+        expect(actions).toContain('jump')
+        expect(actions).toContain('move')
+    })
+
+
+    test('listActions - excludes internal methods', () => {
+        const actions = controller.listActions()
+        
+        expect(actions).not.toContain('start')
+        expect(actions).not.toContain('stop')
+        expect(actions).not.toContain('addAction')
+        expect(actions).not.toContain('execute')
+    })
+
+
     test('beforeAction', () => {
         const callback = vi.fn()
         const spy = vi.spyOn(controller, 'on')
@@ -70,7 +146,7 @@ describe(ActionController, () => {
     })
 
 
-    test('execute with existing action', () => {
+    test('execute with existing registered action', () => {
         const action = vi.fn().mockReturnValue('result')
         const beforeCallback = vi.fn().mockReturnValue(true)
         const afterCallback = vi.fn()
@@ -85,6 +161,19 @@ describe(ActionController, () => {
         expect(action).toHaveBeenCalledWith('arg1', 'arg2')
         expect(afterCallback).toHaveBeenCalledWith('arg1', 'arg2')
         expect(result).toBe('result')
+    })
+
+
+    test('execute with method action', () => {
+        class TestController extends ActionController {
+            testMethod = vi.fn().mockReturnValue('method result')
+        }
+        
+        const testController = new TestController()
+        const result = testController.execute('testMethod', 'arg1')
+        
+        expect(testController.testMethod).toHaveBeenCalledWith('arg1')
+        expect(result).toBe('method result')
     })
 
 
