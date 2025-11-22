@@ -120,7 +120,7 @@ export default class HTMLLayer extends Layer {
             requestAnimationFrame(() => {
                 const rect = el.getBoundingClientRect()
                 if (this.camera) {
-                    const ppu = this.camera.pixelsPerUnit / this.camera.pixelRatio
+                    const ppu = this.camera.pixelsPerUnit
                     if (worldEl.autoCenter === true || worldEl.autoCenter === 'x') {
                         worldEl.worldOffsetX = -(rect.width / 2) / ppu
                     }
@@ -171,7 +171,8 @@ export default class HTMLLayer extends Layer {
             return this
         }
         
-        const ppu = this.camera.pixelsPerUnit / this.camera.pixelRatio
+        // Camera now works in logical (CSS) coordinates, so ppu is already in CSS pixels
+        const ppu = this.camera.pixelsPerUnit
         const zoomChanged = force || this.worldElements.some(el => el.lastZoom !== this.camera.zoom)
 
         this.worldElements.forEach(worldEl => { // eslint-disable-line complexity
@@ -199,8 +200,9 @@ export default class HTMLLayer extends Layer {
             const finalX = screen.x + worldEl.offsetX + worldOffsetXPx
             const finalY = screen.y + worldEl.offsetY + worldOffsetYPx
             
-            const cssWidth = this.camera.viewportWidth / this.camera.pixelRatio
-            const cssHeight = this.camera.viewportHeight / this.camera.pixelRatio
+            // Camera viewport is already in CSS coordinates
+            const cssWidth = this.camera.viewportWidth
+            const cssHeight = this.camera.viewportHeight
             
             const isVisible = (
                 finalX >= -100 && finalX <= cssWidth + 100 &&
@@ -274,7 +276,8 @@ export default class HTMLLayer extends Layer {
         if (!this.camera) {
             return 0
         }
-        const ppu = this.camera.pixelsPerUnit / this.camera.pixelRatio
+        // Camera pixelsPerUnit is already in CSS coordinates
+        const ppu = this.camera.pixelsPerUnit
         return pixels / ppu
     }
 
@@ -283,7 +286,8 @@ export default class HTMLLayer extends Layer {
         if (!this.camera) {
             return 0
         }
-        const ppu = this.camera.pixelsPerUnit / this.camera.pixelRatio
+        // Camera pixelsPerUnit is already in CSS coordinates
+        const ppu = this.camera.pixelsPerUnit
         return units * ppu
     }
 

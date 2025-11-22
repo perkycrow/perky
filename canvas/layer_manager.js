@@ -194,12 +194,7 @@ export default class LayerManager {
         
         this.container.style.width = `${width}px`
         this.container.style.height = `${height}px`
-        
-        this.cameras.forEach(camera => {
-            camera.viewportWidth = width * (camera.pixelRatio || 1)
-            camera.viewportHeight = height * (camera.pixelRatio || 1)
-        })
-        
+
         this.layers.forEach(layer => {
             layer.resize(width, height)
         })

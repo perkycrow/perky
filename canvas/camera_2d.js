@@ -66,11 +66,7 @@ export default class Camera2D {
 
 
     worldToScreenCSS (worldX, worldY) {
-        const screen = this.worldToScreen(worldX, worldY)
-        return {
-            x: screen.x / this.pixelRatio,
-            y: screen.y / this.pixelRatio
-        }
+        return this.worldToScreen(worldX, worldY)
     }
 
 
@@ -104,14 +100,17 @@ export default class Camera2D {
     }
 
 
-    applyToContext (ctx) {
-        ctx.translate(this.viewportWidth / 2, this.viewportHeight / 2)
+    applyToContext (ctx, pixelRatio = 1) {
+        const physicalWidth = this.viewportWidth * pixelRatio
+        const physicalHeight = this.viewportHeight * pixelRatio
+
+        ctx.translate(physicalWidth / 2, physicalHeight / 2)
 
         if (this.rotation !== 0) {
             ctx.rotate(-this.rotation)
         }
         
-        const ppu = this.pixelsPerUnit
+        const ppu = this.pixelsPerUnit * pixelRatio
         ctx.scale(ppu, -ppu)
         
         ctx.translate(-this.x, -this.y)

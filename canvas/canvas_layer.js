@@ -22,15 +22,17 @@ export default class CanvasLayer extends Layer {
         let camera
         if (options.camera) {
             camera = options.camera
-            camera.viewportWidth = vp.width * pixelRatio
-            camera.viewportHeight = vp.height * pixelRatio
-            camera.pixelRatio = pixelRatio
+            camera.viewportWidth = vp.width
+            camera.viewportHeight = vp.height
+            if (camera.pixelRatio === undefined) {
+                camera.pixelRatio = 1
+            }
         } else {
             camera = new Camera2D({
                 unitsInView: options.unitsInView ?? 10,
-                viewportWidth: vp.width * pixelRatio,
-                viewportHeight: vp.height * pixelRatio,
-                pixelRatio
+                viewportWidth: vp.width,
+                viewportHeight: vp.height,
+                pixelRatio: 1
             })
         }
         

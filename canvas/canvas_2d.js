@@ -11,13 +11,13 @@ export default class Canvas2D {
         this.displayWidth = options.width ?? canvas.width
         this.displayHeight = options.height ?? canvas.height
         
-        this.applyPixelRatio()
-        
         this.camera = options.camera ?? new Camera2D({
-            viewportWidth: this.canvas.width,
-            viewportHeight: this.canvas.height,
-            pixelRatio: this.pixelRatio
+            viewportWidth: this.displayWidth,
+            viewportHeight: this.displayHeight,
+            pixelRatio: 1
         })
+
+        this.applyPixelRatio()
         
         this.showAxes = options.showAxes ?? false
         this.showGrid = options.showGrid ?? false
@@ -46,8 +46,8 @@ export default class Canvas2D {
         this.canvas.style.height = `${this.displayHeight}px`
         
         if (this.camera) {
-            this.camera.viewportWidth = this.canvas.width
-            this.camera.viewportHeight = this.canvas.height
+            this.camera.viewportWidth = this.displayWidth
+            this.camera.viewportHeight = this.displayHeight
         }
     }
 
@@ -124,7 +124,7 @@ export default class Canvas2D {
         this.camera.update()
         
         ctx.save()
-        this.camera.applyToContext(ctx)
+        this.camera.applyToContext(ctx, this.pixelRatio)
         
         if (this.showAxes) {
             drawAxes(ctx, this.camera)

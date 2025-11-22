@@ -227,9 +227,9 @@ describe(CanvasLayer, () => {
             camera
         })
         
-        expect(camera.viewportWidth).toBe(1600) // 800 * 2
-        expect(camera.viewportHeight).toBe(1200) // 600 * 2
-        expect(camera.pixelRatio).toBe(2)
+        expect(camera.viewportWidth).toBe(800)
+        expect(camera.viewportHeight).toBe(600)
+        expect(camera.pixelRatio).toBe(1)
     })
 
 
