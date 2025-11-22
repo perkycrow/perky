@@ -28,44 +28,10 @@ function onInstall (plugin, engine) {
     engine.registerModule('gameLoop', gameLoop)
 
 
-    plugin.addProperty('paused', {
-        get () {
-            return this.gameLoop.paused
-        }
-    })
+    plugin.delegateProperties(gameLoop, ['paused'], true)
 
 
-    plugin.addMethod('pause', function (...args) {
-        if (!this.running) {
-            return false
-        }
-
-        return this.gameLoop.pause(...args)
-    })
-
-
-    plugin.addMethod('resume', function (...args) {
-        if (!this.started || !this.gameLoop.paused) {
-            return false
-        }
-
-        return this.gameLoop.resume(...args)
-    })
-
-
-    plugin.addMethod('setFps', function (fps) {
-        return this.gameLoop.setFps(fps)
-    })
-
-
-    plugin.addMethod('getFps', function () {
-        return this.gameLoop.getFps()
-    })
-
-
-    plugin.addMethod('getCurrentFps', function () {
-        return this.gameLoop.getCurrentFps()
-    })
+    plugin.delegateTo(gameLoop, ['pause', 'resume', 'setFps', 'getFps', 'getCurrentFps'])
 
 
     initGameLoopEvents(engine, gameLoop)
@@ -78,4 +44,4 @@ function initGameLoopEvents (engine, gameLoop) {
     gameLoop.on('pause', engine.emitter('pause'))
     gameLoop.on('resume', engine.emitter('resume'))
     gameLoop.on('changed:fps', engine.emitter('changed:fps'))
-} 
+}

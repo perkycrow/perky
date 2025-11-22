@@ -125,4 +125,38 @@ export default class Plugin {
         })
     }
 
+
+    delegateTo (target, methodNames) {
+        if (!target || !Array.isArray(methodNames)) {
+            return
+        }
+
+        methodNames.forEach(methodName => {
+            if (typeof target[methodName] === 'function') {
+                this.addMethod(methodName, target[methodName].bind(target))
+            }
+        })
+    }
+
+
+    delegateProperties (target, propertyNames, readOnly = false) {
+        if (!target || !Array.isArray(propertyNames)) {
+            return
+        }
+
+        propertyNames.forEach(propertyName => {
+            const descriptor = {
+                get: () => target[propertyName]
+            }
+
+            if (!readOnly) {
+                descriptor.set = (value) => {
+                    target[propertyName] = value
+                }
+            }
+
+            this.addProperty(propertyName, descriptor)
+        })
+    }
+
 }

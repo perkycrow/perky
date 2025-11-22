@@ -30,27 +30,35 @@ const manifest = {
 }
 
 export default class ShroomDrag extends Application {
-    constructor (params = {}) {
-        super({
-            ...params,
-            plugins: [
-                new GamePlugin({
-                    fps: params.fps || 60,
-                    maxFrameSkip: params.maxFrameSkip || 5
-                }),
-                new ThreePlugin({
-                    backgroundColor: 0x87CEEB,
-                    camera: {
-                        type: 'orthographic',
-                        width: 20,
-                        height: 15,
-                        near: 0.1,
-                        far: 1000
-                    },
-                    postProcessing: false
-                })
-            ]
+
+    configure () {
+        this.use(GamePlugin, {
+            fps: 60,
+            maxFrameSkip: 5
         })
+
+        this.use(ThreePlugin, {
+            backgroundColor: 0x87CEEB,
+            camera: {
+                type: 'orthographic',
+                width: 20,
+                height: 15,
+                near: 0.1,
+                far: 1000
+            },
+            postProcessing: false
+        })
+    }
+
+    constructor (params = {}) {
+        // On extrait fps et maxFrameSkip des params s'ils existent pour les garder disponibles
+        // mais on laisse configure() gérer les defaults
+        const {fps, maxFrameSkip, ...rest} = params
+        
+        // Si fps ou maxFrameSkip sont passés via params, on pourrait vouloir surcharger la config
+        // Mais ici pour l'exemple on suit la structure Rails-like pure
+        
+        super(rest)
         
         this.background = null
         this.shroom = null
@@ -532,4 +540,4 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init)
 } else {
     init()
-} 
+}

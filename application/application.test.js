@@ -8,6 +8,7 @@ import MouseDevice from '../input/input_devices/mouse_device'
 import ButtonControl from '../input/input_controls/button_control'
 import PerkyModule from '../core/perky_module'
 import InputManager from '../input/input_manager'
+import Plugin from '../core/plugin'
 import {vi} from 'vitest'
 
 
@@ -75,6 +76,22 @@ describe(Application, () => {
         
         expect(testApp.getDevice('keyboard')).toBeInstanceOf(KeyboardDevice)
         expect(testApp.getDevice('mouse')).toBeInstanceOf(MouseDevice)
+    })
+
+
+    test('constructor calls configure if defined', () => {
+        class ConfiguredApp extends Application {
+            constructor () {
+                super()
+            }
+
+            configure () {
+                this.configureCalled = true
+            }
+        }
+
+        const app = new ConfiguredApp()
+        expect(app.configureCalled).toBe(true)
     })
 
     
@@ -494,6 +511,47 @@ describe(Application, () => {
         
         const keyboardDevice = application.getDevice('keyboard')
         expect(keyboardDevice.getControl('CustomKey')).toBe(control)
+    })
+
+
+    test('use method installs plugin class', () => {
+        class TestPlugin extends Plugin {
+            constructor (options) {
+                super({...options, name: 'testPlugin'})
+            }
+        }
+
+        application.use(TestPlugin)
+        
+        expect(application.isPluginInstalled('testPlugin')).toBe(true)
+    })
+
+
+    test('use method installs plugin instance', () => {
+        class TestPlugin extends Plugin {
+            constructor (options) {
+                super({...options, name: 'testPlugin'})
+            }
+        }
+
+        const plugin = new TestPlugin()
+        application.use(plugin)
+        
+        expect(application.isPluginInstalled('testPlugin')).toBe(true)
+    })
+
+
+    test('use method with options', () => {
+        class TestPlugin extends Plugin {
+            constructor (options) {
+                super({...options, name: 'testPlugin'})
+            }
+        }
+
+        application.use(TestPlugin, {someOption: true})
+        
+        const plugin = application.getPlugin('testPlugin')
+        expect(plugin.options.someOption).toBe(true)
     })
 
 

@@ -38,7 +38,27 @@ export default class Application extends Engine {
 
         this.#initEvents()
         
+        if (typeof this.configure === 'function') {
+            this.configure()
+        }
+
         this.#installPlugins(plugins)
+    }
+
+
+    use (PluginClassOrInstance, options = {}) {
+        let plugin
+
+        if (typeof PluginClassOrInstance === 'function') {
+            plugin = new PluginClassOrInstance(options)
+        } else {
+            plugin = PluginClassOrInstance
+        }
+
+        const pluginName = plugin.name || plugin.constructor.name
+        this.installPlugin(pluginName, plugin)
+        
+        return this
     }
 
 

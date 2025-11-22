@@ -269,6 +269,65 @@ describe(Plugin, () => {
     })
 
 
+    test('delegateTo', () => {
+        plugin.install(engine)
+
+        const target = {
+            method1: () => 'result1',
+            method2: () => 'result2',
+            prop: 'value'
+        }
+        
+        plugin.delegateTo(target, ['method1', 'method2', 'prop']) // prop should be ignored
+
+        expect(engine.method1).toBeDefined()
+        expect(engine.method2).toBeDefined()
+        expect(engine.prop).toBeUndefined()
+        
+        expect(engine.method1()).toBe('result1')
+        expect(engine.method2()).toBe('result2')
+    })
+
+
+    test('delegateProperties', () => {
+        plugin.install(engine)
+
+        const target = {
+            prop1: 'value1',
+            prop2: 'value2'
+        }
+        
+        plugin.delegateProperties(target, ['prop1'])
+
+        expect(engine.prop1).toBe('value1')
+        
+        // Check setter
+        engine.prop1 = 'newValue'
+        expect(target.prop1).toBe('newValue')
+        expect(engine.prop1).toBe('newValue')
+    })
+
+
+    test('delegateProperties readOnly', () => {
+        plugin.install(engine)
+
+        const target = {
+            prop1: 'value1'
+        }
+        
+        plugin.delegateProperties(target, ['prop1'], true)
+
+        expect(engine.prop1).toBe('value1')
+        
+        // Check setter throws or does nothing (depending on strict mode, here usually throws in strict mode)
+        expect(() => {
+            engine.prop1 = 'newValue'
+        }).toThrow()
+        
+        expect(target.prop1).toBe('value1')
+    })
+
+
     test('requirePlugin success', () => {
         global.ResizeObserver = vi.fn().mockImplementation(() => ({
             observe: vi.fn(),
