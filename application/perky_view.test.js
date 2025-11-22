@@ -1,5 +1,5 @@
 import PerkyView from './perky_view'
-import Extension from '../core/extension'
+import PerkyModule from '../core/perky_module'
 import PerkyElement from './perky_element'
 import {vi, beforeEach, describe, test, expect, afterEach} from 'vitest'
 
@@ -36,7 +36,7 @@ describe(PerkyView, () => {
             y: 0
         })
 
-        vi.spyOn(Extension.prototype, 'emit')
+        vi.spyOn(PerkyModule.prototype, 'emit')
 
         view = new PerkyView({element})
     })
@@ -383,7 +383,7 @@ describe(PerkyView, () => {
 
 
     test('dispose', () => {
-        const disposeSpy = vi.spyOn(Extension.prototype, 'dispose')
+        const disposeSpy = vi.spyOn(PerkyModule.prototype, 'dispose')
         
         view.dispose()
         

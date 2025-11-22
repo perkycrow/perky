@@ -1,8 +1,8 @@
-import Extension from '../core/extension'
+import PerkyModule from '../core/perky_module'
 import SourceLoader from './source_loader'
 
 
-export default class SourceManager extends Extension {
+export default class SourceManager extends PerkyModule {
 
     constructor ({loaders, manifest}) {
         super()

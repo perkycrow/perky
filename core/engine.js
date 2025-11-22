@@ -1,10 +1,10 @@
-import Extension from './extension'
+import PerkyModule from './perky_module'
 import Manifest from './manifest'
 import ActionDispatcher from './action_dispatcher'
 import ActionController from './action_controller'
 
 
-export default class Engine extends Extension {
+export default class Engine extends PerkyModule {
 
     constructor (params = {}) {
         let {manifest = {}} = params

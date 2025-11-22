@@ -1,6 +1,6 @@
 import Engine from './engine'
 import Manifest from './manifest'
-import Extension from './extension'
+import PerkyModule from './perky_module'
 import {vi} from 'vitest'
 import ActionController from './action_controller'
 import ActionDispatcher from './action_dispatcher'
@@ -43,7 +43,7 @@ describe(Engine, () => {
 
 
     test('use registers extension', () => {
-        class TestExtension extends Extension {}
+        class TestExtension extends PerkyModule {}
         
         engine.use(TestExtension, {
             $name: 'test',
@@ -73,7 +73,7 @@ describe(Engine, () => {
 
 
     test('getExtension', () => {
-        class TestExtension extends Extension {}
+        class TestExtension extends PerkyModule {}
         engine.use(TestExtension, {
             $name: 'test',
             $category: 'module'
@@ -196,7 +196,7 @@ describe(Engine, () => {
 
 
     test('extension registration events', () => {
-        class TestExtension extends Extension {}
+        class TestExtension extends PerkyModule {}
         const engineSpy = vi.spyOn(engine, 'emit')
         const extension = new TestExtension()
         const extensionSpy = vi.spyOn(extension, 'emit')
@@ -214,7 +214,7 @@ describe(Engine, () => {
 
 
     test('extension unregistration events', () => {
-        class TestExtension extends Extension {}
+        class TestExtension extends PerkyModule {}
         const extension = new TestExtension()
         engine.use(TestExtension, {
             instance: extension,
@@ -233,7 +233,7 @@ describe(Engine, () => {
 
 
     test('extension lifecycle events propagation', () => {
-        class TestExtension extends Extension {}
+        class TestExtension extends PerkyModule {}
         const extension = new TestExtension()
         const startSpy = vi.spyOn(extension, 'start')
         const stopSpy = vi.spyOn(extension, 'stop')
@@ -427,7 +427,7 @@ describe(Engine, () => {
     test('use after start calls start on the extension', () => {
         engine.start()
         
-        class TestExtension extends Extension {}
+        class TestExtension extends PerkyModule {}
         const extension = new TestExtension()
         const startSpy = vi.spyOn(extension, 'start')
         

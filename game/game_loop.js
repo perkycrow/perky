@@ -1,7 +1,7 @@
-import Extension from '../core/extension'
+import PerkyModule from '../core/perky_module'
 
 
-export default class GameLoop extends Extension {
+export default class GameLoop extends PerkyModule {
     constructor (params = {}) {
         super()
 

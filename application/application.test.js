@@ -8,7 +8,6 @@ import MouseDevice from '../input/input_devices/mouse_device'
 import ButtonControl from '../input/input_controls/button_control'
 import PerkyModule from '../core/perky_module'
 import InputManager from '../input/input_manager'
-import Extension from '../core/extension'
 import {vi} from 'vitest'
 
 
@@ -549,7 +548,7 @@ describe(Application, () => {
 
 
     test('use method installs extension class', () => {
-        class TestExtension extends Extension {
+        class TestExtension extends PerkyModule {
             constructor (options) {
                 super({...options, name: 'testExtension'})
             }
@@ -562,7 +561,7 @@ describe(Application, () => {
 
 
     test('use method installs extension instance', () => {
-        class TestExtension extends Extension {
+        class TestExtension extends PerkyModule {
             constructor (options) {
                 super({...options, name: 'testExtension'})
             }
@@ -580,7 +579,7 @@ describe(Application, () => {
 
 
     test('use method with options', () => {
-        class TestExtension extends Extension {
+        class TestExtension extends PerkyModule {
             constructor (options) {
                 super({...options, name: 'testExtension'})
             }

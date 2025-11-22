@@ -1,9 +1,9 @@
 import {uniqueId} from '../core/utils'
-import Extension from '../core/extension'
+import PerkyModule from '../core/perky_module'
 import PerkyElement from './perky_element'
 
 
-export default class PerkyView extends Extension {
+export default class PerkyView extends PerkyModule {
 
     constructor (params = {}) {
         super()

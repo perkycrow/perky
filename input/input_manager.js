@@ -1,8 +1,8 @@
-import Extension from '../core/extension'
+import PerkyModule from '../core/perky_module'
 import Registry from '../core/registry'
 
 
-export default class InputManager extends Extension {
+export default class InputManager extends PerkyModule {
 
     constructor () {
         super()

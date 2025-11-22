@@ -1,8 +1,8 @@
-import Extension from '../core/extension'
+import PerkyModule from '../core/perky_module'
 import Registry from '../core/registry'
 
 
-export default class InputDevice extends Extension {
+export default class InputDevice extends PerkyModule {
 
     constructor ({container = window, name} = {}) {
         super({name})

@@ -1,9 +1,9 @@
-import Extension from './extension'
+import PerkyModule from './perky_module'
 import Registry from './registry'
 import ActionController from './action_controller'
 
 
-export default class ActionDispatcher extends Extension {
+export default class ActionDispatcher extends PerkyModule {
 
     #controllers = null
     #activeControllerName = null

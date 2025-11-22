@@ -1,8 +1,8 @@
-import Extension from '../core/extension'
+import PerkyModule from '../core/perky_module'
 import Registry from '../core/registry'
 
 
-export default class ActionController extends Extension {
+export default class ActionController extends PerkyModule {
 
     #actions = new Registry()
 

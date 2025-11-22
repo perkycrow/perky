@@ -1,4 +1,4 @@
-import Extension from '../core/extension'
+import PerkyModule from '../core/perky_module'
 import {Scene, Color} from 'three'
 import WebGLRenderer from './renderers/webgl_renderer'
 import OrthographicCamera from './cameras/orthographic_camera'
@@ -8,7 +8,7 @@ import {screenToWorld, worldToScreen, getViewDimensions, getScreenBounds} from '
 import {threeLoaders} from './loaders'
 
 
-export default class ThreePlugin extends Extension {
+export default class ThreePlugin extends PerkyModule {
 
     constructor (options = {}) {
         super({
