@@ -1,14 +1,13 @@
-import PerkyModule from '../core/perky_module'
+import Extension from '../core/extension'
 import Registry from '../core/registry'
 
 
-export default class InputDevice extends PerkyModule {
+export default class InputDevice extends Extension {
 
     constructor ({container = window, name} = {}) {
-        super()
+        super({name})
 
         this.container    = container
-        this.name         = name || this.constructor.name
         this.controls     = new Registry()
         this.pressedNames = new Set()
 

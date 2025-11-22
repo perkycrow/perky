@@ -1,9 +1,9 @@
 import {uniqueId} from '../core/utils'
-import PerkyModule from '../core/perky_module'
+import Extension from '../core/extension'
 import PerkyElement from './perky_element'
 
 
-export default class PerkyView extends PerkyModule {
+export default class PerkyView extends Extension {
 
     constructor (params = {}) {
         super()
@@ -339,7 +339,9 @@ export default class PerkyView extends PerkyModule {
 
 
     exitFullscreenMode () {
-        this.element.exitFullscreenMode()
+        if (this.element && typeof this.element.exitFullscreenMode === 'function') {
+            this.element.exitFullscreenMode()
+        }
         return this
     }
 

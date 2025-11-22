@@ -1,5 +1,5 @@
 import Application from '/application/application'
-import GamePlugin from '/game/game_plugin'
+import GameExtension from '/game/game_extension'
 import ThreePlugin from '/three/three_plugin'
 import PerkyLogger from '/editor/components/perky_logger'
 import {
@@ -32,7 +32,7 @@ const manifest = {
 export default class ShroomDrag extends Application {
 
     configure () {
-        this.use(GamePlugin, {
+        this.use(GameExtension, {
             fps: 60,
             maxFrameSkip: 5
         })
@@ -51,14 +51,7 @@ export default class ShroomDrag extends Application {
     }
 
     constructor (params = {}) {
-        // On extrait fps et maxFrameSkip des params s'ils existent pour les garder disponibles
-        // mais on laisse configure() gérer les defaults
-        const {fps, maxFrameSkip, ...rest} = params
-        
-        // Si fps ou maxFrameSkip sont passés via params, on pourrait vouloir surcharger la config
-        // Mais ici pour l'exemple on suit la structure Rails-like pure
-        
-        super(rest)
+        super(params)
         
         this.background = null
         this.shroom = null

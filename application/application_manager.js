@@ -1,5 +1,4 @@
 import Registry from '../core/registry'
-import ModuleRegistry from '../core/module_registry'
 import PerkyModule from '../core/perky_module'
 
 
@@ -9,15 +8,7 @@ export default class ApplicationManager extends PerkyModule {
         super()
 
         this.constructors = new Registry()
-
-        this.instances = new ModuleRegistry({
-            parentModule: this,
-            parentModuleName: 'appManager',
-            registryName: 'applications',
-            bind: false,
-            autoStart: false
-        })
-
+        this.instances = new Registry()
         this.lastAppId = 0
     }
 
@@ -46,7 +37,19 @@ export default class ApplicationManager extends PerkyModule {
         const Application = this.constructors.get(name)
         const app = new Application(params)
         app.id = ++this.lastAppId
+        app.host = this
         this.instances.set(app.id, app)
+
+        app.once('dispose', () => {
+            if (this.instances.get(app.id) === app) {
+                this.instances.delete(app.id)
+                this.emit('applications:delete', app.id, app)
+                app.emit('unregistered', this, app.id)
+            }
+        })
+
+        this.emit('applications:set', app.id, app)
+        app.emit('registered', this, app.id)
 
         return app
     }
@@ -90,8 +93,11 @@ export default class ApplicationManager extends PerkyModule {
     dispose (appId) {
         if (this.instances.has(appId)) {
             const app = this.instances.get(appId)
-            app.dispose()
             this.instances.delete(appId)
+            
+            this.emit('applications:delete', appId, app)
+            app.emit('unregistered', this, appId)
+            app.dispose()
         }
     }
 

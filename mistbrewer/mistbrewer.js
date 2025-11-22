@@ -1,5 +1,5 @@
 import Application from '../application/application'
-import GamePlugin from '../game/game_plugin'
+import GameExtension from '../game/game_extension'
 import ThreePlugin from '../three/three_plugin'
 import Sprite from '../three/objects/sprite'
 import SpriteAnimation from '../three/sprite_animation'
@@ -47,7 +47,7 @@ const manifest = {
 export default class Mistbrewer extends Application {
     constructor (params = {}) {
 
-        const gamePlugin = new GamePlugin({
+        const gameExtension = new GameExtension({
             fps: params.fps || 60,
             maxFrameSkip: params.maxFrameSkip || 5
         })
@@ -66,8 +66,8 @@ export default class Mistbrewer extends Application {
 
         super({
             ...params,
-            plugins: [
-                gamePlugin,
+            extensions: [
+                gameExtension,
                 threePlugin
             ]
         })

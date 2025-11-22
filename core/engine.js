@@ -1,66 +1,40 @@
-import PerkyModule from './perky_module'
+import Extension from './extension'
 import Manifest from './manifest'
-import ModuleRegistry from './module_registry'
 import ActionDispatcher from './action_dispatcher'
 import ActionController from './action_controller'
 
 
-export default class Engine extends PerkyModule {
-
-    #modules = null
+export default class Engine extends Extension {
 
     constructor (params = {}) {
         let {manifest = {}} = params
 
-        super()
+        super({
+            name: 'engine',
+            ...params
+        })
 
         if (!(manifest instanceof Manifest)) {
             manifest = new Manifest(manifest)
         }
 
         this.manifest = manifest
-        this.#modules = new ModuleRegistry({
-            registryName: 'module',
-            parentModule: this,
-            parentModuleName: 'engine',
-            bind: true
+
+        this.use(ActionDispatcher, {
+            $name: 'actionDispatcher',
+            $category: 'module',
+            $bind: 'actionDispatcher'
         })
 
-        this.registerModule('actionDispatcher', new ActionDispatcher())
+        this.use(ActionController, {
+            $name: 'application',
+            $category: 'controller',
+            $bind: 'applicationController',
+            $lifecycle: false
+        })
 
-        this.applicationController = new ActionController()
-        this.registerController('application', this.applicationController)
-        this.setActiveController('application')
-    }
-
-
-    registerModule (name, module) {
-        if (!(module instanceof PerkyModule)) {
-            console.warn(`Attempted to register non-module object as module: ${name}`)
-            return false
-        }
-
-        const result = this.#modules.set(name, module)
-
-        if (this.started) {
-            module.start()
-        }
-
-        return result
-    }
-
-
-    getModule (name) {
-        return this.#modules.get(name)
-    }
-
-
-    removeModule (name) {
-        if (this.#modules.has(name)) {
-            return this.#modules.delete(name)
-        }
-
-        return false
+        this.actionDispatcher.register('application', this.applicationController)
+        this.actionDispatcher.setActive('application')
     }
 
 

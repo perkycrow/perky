@@ -1,4 +1,4 @@
-import Plugin from '../core/plugin'
+import Extension from '../core/extension'
 import {Scene, Color} from 'three'
 import WebGLRenderer from './renderers/webgl_renderer'
 import OrthographicCamera from './cameras/orthographic_camera'
@@ -8,7 +8,7 @@ import {screenToWorld, worldToScreen, getViewDimensions, getScreenBounds} from '
 import {threeLoaders} from './loaders'
 
 
-export default class ThreePlugin extends Plugin {
+export default class ThreePlugin extends Extension {
 
     constructor (options = {}) {
         super({
@@ -24,19 +24,19 @@ export default class ThreePlugin extends Plugin {
     }
 
 
-    onInstall (app) {
-        onInstall(this, app)
+    onInstall (host, options) {
+        onInstall(this, host)
     }
 
 
-    onUninstall (app) {
-        onUninstall(this, app)
+    onUninstall (host) {
+        onUninstall(this, host)
     }
 
 }
 
 
-function onInstall (plugin, app) {
+function onInstall (plugin, host) {
     const options = plugin.options
 
     const scene = new Scene()
@@ -62,39 +62,39 @@ function onInstall (plugin, app) {
     plugin.renderer = renderer
     plugin.renderComposer = renderComposer
 
-    app.scene = scene
-    app.camera = camera
-    app.renderer = renderer
+    host.scene = scene
+    host.camera = camera
+    host.renderer = renderer
     
     if (renderComposer) {
-        app.renderComposer = renderComposer
+        host.renderComposer = renderComposer
     }
 
-    addThreeMethods(plugin, app)
-    setupEventHandlers(plugin, app)
-    registerThreeLoaders(app)
-    setupSpritesheetIntegration(plugin, app)
+    addThreeMethods(plugin, host)
+    setupEventHandlers(plugin, host)
+    registerThreeLoaders(host)
+    setupSpritesheetIntegration(plugin, host)
 
 
-    if (app.mounted) {
-        attachCanvas(plugin, app)
+    if (host.mounted) {
+        attachCanvas(plugin, host)
     }
 
-    app.on('mount', () => attachCanvas(plugin, app))
+    host.on('mount', () => attachCanvas(plugin, host))
 }
 
 
-function onUninstall (plugin, app) {
+function onUninstall (plugin, host) {
 
     plugin.resizeHandlers.forEach(handler => {
-        app.off('resize', handler)
-        app.off('displayMode:changed', handler)
+        host.off('resize', handler)
+        host.off('displayMode:changed', handler)
     })
     plugin.resizeHandlers = []
 
     if (plugin.spritesheetHandlers) {
         plugin.spritesheetHandlers.forEach(handler => {
-            app.off('loader:progress', handler)
+            host.off('loader:progress', handler)
         })
         plugin.spritesheetHandlers = []
     }
@@ -103,10 +103,10 @@ function onUninstall (plugin, app) {
         plugin.renderer.dispose()
     }
 
-    delete app.scene
-    delete app.camera
-    delete app.renderer
-    delete app.renderComposer
+    delete host.scene
+    delete host.camera
+    delete host.renderer
+    delete host.renderComposer
 
     plugin.scene = null
     plugin.camera = null
@@ -151,7 +151,7 @@ function createRenderer (rendererOptions = {}) {
 }
 
 
-function addThreeMethods (plugin, app) {
+function addThreeMethods (plugin, host) {
     plugin.addMethod('render', function () {
         if (this.renderComposer) {
             this.renderComposer.render()
@@ -161,17 +161,17 @@ function addThreeMethods (plugin, app) {
     })
 
     plugin.addMethod('resizeThree', function () {
-        handleResize(plugin, app)
+        handleResize(plugin, host)
     })
 
     plugin.addMethod('getThreeContainerSize', function () {
-        return getContainerSize(app)
+        return getContainerSize(host)
     })
 
     plugin.addMethod('screenToWorld', function (screenX, screenY, depth = 0, camera = null) {
         return screenToWorld({
             camera: camera || this.camera,
-            container: app.perkyView.element,
+            container: host.perkyView.element,
             screenX,
             screenY,
             depth
@@ -181,7 +181,7 @@ function addThreeMethods (plugin, app) {
     plugin.addMethod('worldToScreen', function (worldX, worldY, worldZ = 0, camera = null) {
         return worldToScreen({
             camera: camera || this.camera,
-            container: app.perkyView.element,
+            container: host.perkyView.element,
             worldX,
             worldY,
             worldZ
@@ -191,47 +191,47 @@ function addThreeMethods (plugin, app) {
     plugin.addMethod('getViewDimensions', function (camera = null) {
         return getViewDimensions({
             camera: camera || this.camera,
-            container: app.perkyView.element
+            container: host.perkyView.element
         })
     })
 
     plugin.addMethod('getScreenBounds', function (camera = null) {
         return getScreenBounds({
             camera: camera || this.camera,
-            container: app.perkyView.element
+            container: host.perkyView.element
         })
     })
 }
 
 
-function setupEventHandlers (plugin, app) {
+function setupEventHandlers (plugin, host) {
     const resizeHandler = () => {
         setTimeout(() => {
-            handleResize(plugin, app)
+            handleResize(plugin, host)
         }, 50)
     }
 
-    app.on('resize', resizeHandler)
-    app.on('displayMode:changed', resizeHandler)
+    host.on('resize', resizeHandler)
+    host.on('displayMode:changed', resizeHandler)
 
     plugin.resizeHandlers.push(resizeHandler)
 
-    if (app.gameLoop) {
-        app.on('render', () => {
-            app.render()
+    if (host.gameLoop) {
+        host.on('render', () => {
+            host.render()
         })
     }
 }
 
 
-function handleResize (plugin, app) {
+function handleResize (plugin, host) {
     const {camera, renderer, renderComposer} = plugin
     
     if (!camera || !renderer) {
         return
     }
 
-    const containerSize = getContainerSize(app)
+    const containerSize = getContainerSize(host)
     
     if (containerSize.width <= 0 || containerSize.height <= 0) {
         return
@@ -245,7 +245,7 @@ function handleResize (plugin, app) {
         renderComposer.setSize(containerSize.width, containerSize.height)
     }
 
-    app.emit('three:resize', {
+    host.emit('three:resize', {
         width: containerSize.width,
         height: containerSize.height,
         aspectRatio: containerSize.width / containerSize.height
@@ -270,8 +270,8 @@ function updateCamera (camera, containerSize) {
 }
 
 
-function getContainerSize (app) {
-    const container = app.perkyView?.element
+function getContainerSize (host) {
+    const container = host.perkyView?.element
     
     if (!container) {
         return {width: 800, height: 600}
@@ -285,21 +285,21 @@ function getContainerSize (app) {
 
 
 
-function registerThreeLoaders (app) {
+function registerThreeLoaders (host) {
     Object.entries(threeLoaders).forEach(([name, loaderFunction]) => {
-        app.registerLoader(name, loaderFunction)
+        host.registerLoader(name, loaderFunction)
     })
 }
 
 
-function setupSpritesheetIntegration (plugin, app) {
+function setupSpritesheetIntegration (plugin, host) {
     const spritesheetHandler = (loader, progress, {sourceDescriptor, source}) => {
         if (sourceDescriptor && sourceDescriptor.type === 'spritesheet' && source && typeof source.getFrameTexture === 'function') {
-            handleSpritesheetLoaded(source, sourceDescriptor, app)
+            handleSpritesheetLoaded(source, sourceDescriptor, host)
         }
     }
     
-    app.on('loader:progress', spritesheetHandler)
+    host.on('loader:progress', spritesheetHandler)
 
     if (!plugin.spritesheetHandlers) {
         plugin.spritesheetHandlers = []
@@ -308,7 +308,7 @@ function setupSpritesheetIntegration (plugin, app) {
 }
 
 
-function handleSpritesheetLoaded (spritesheet, sourceDescriptor, app) {
+function handleSpritesheetLoaded (spritesheet, sourceDescriptor, host) {
     const spritesheetId = sourceDescriptor.id
     const frameNames = spritesheet.getFrameNames()
     
@@ -317,7 +317,7 @@ function handleSpritesheetLoaded (spritesheet, sourceDescriptor, app) {
         if (frameTexture) {
             const frameId = `${spritesheetId}_${frameName}`
             
-            app.addSourceDescriptor('texture', {
+            host.addSourceDescriptor('texture', {
                 id: frameId,
                 type: 'texture',
                 source: frameTexture,
@@ -330,14 +330,14 @@ function handleSpritesheetLoaded (spritesheet, sourceDescriptor, app) {
 }
 
 
-function attachCanvas (plugin, app) {
-    const container = app.perkyView.element
+function attachCanvas (plugin, host) {
+    const container = host.perkyView.element
     const canvas = plugin.renderer.domElement
 
     if (canvas.parentElement === null) {
         container.appendChild(canvas)
 
         plugin.renderer.setSize(container.clientWidth, container.clientHeight)
-        handleResize(plugin, app)
+        handleResize(plugin, host)
     }
 }

@@ -10,7 +10,7 @@ describe(InputManager, () => {
         const manager = new InputManager()
 
         expect(manager.devices).toBeDefined()
-        expect(manager.devices.registryName).toBe('device')
+        expect(manager.devices.size).toBe(0)
     })
 
 
@@ -20,7 +20,7 @@ describe(InputManager, () => {
 
         manager.registerDevice('keyboard', device)
         expect(manager.getDevice('keyboard')).toBe(device)
-        expect(device.inputManager).toBe(manager)
+        expect(device.host).toBe(manager)
         expect(manager.keyboard).toBe(device)
     })
 
@@ -159,8 +159,8 @@ describe(InputManager, () => {
 
         expect(manager.keyboard).toBe(keyboard)
         expect(manager.mouse).toBe(mouse)
-        expect(keyboard.inputManager).toBe(manager)
-        expect(mouse.inputManager).toBe(manager)
+        expect(keyboard.host).toBe(manager)
+        expect(mouse.host).toBe(manager)
     })
 
 

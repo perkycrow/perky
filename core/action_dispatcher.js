@@ -1,20 +1,16 @@
-import PerkyModule from './perky_module'
-import ModuleRegistry from './module_registry'
+import Extension from './extension'
+import Registry from './registry'
 import ActionController from './action_controller'
 
 
-export default class ActionDispatcher extends PerkyModule {
+export default class ActionDispatcher extends Extension {
 
-    #controllers
+    #controllers = null
     #activeControllerName = null
 
     constructor () {
         super()
-        this.#controllers = new ModuleRegistry({
-            registryName: 'controller',
-            parentModule: this,
-            parentModuleName: 'actionDispatcher'
-        })
+        this.#controllers = new Registry()
     }
 
 
@@ -37,7 +33,22 @@ export default class ActionDispatcher extends PerkyModule {
             controller = new ActionController(controller)
         }
 
+        controller.host = this
         this.#controllers.set(name, controller)
+
+        if (this.started) {
+            controller.start()
+        }
+
+        this.on('start', () => controller.start())
+        this.on('stop', () => controller.stop())
+        this.on('dispose', () => {
+            this.#controllers.delete(name)
+            controller.dispose()
+        })
+
+        this.emit('controller:set', name, controller)
+        controller.emit('registered', this, name)
 
         return this
     }
@@ -58,6 +69,10 @@ export default class ActionDispatcher extends PerkyModule {
         if (this.#activeControllerName === name) {
             this.#activeControllerName = null
         }
+
+        this.emit('controller:delete', name, controller)
+        controller.emit('unregistered', this, name)
+        controller.dispose()
 
         return true
     }

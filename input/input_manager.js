@@ -1,20 +1,13 @@
-import PerkyModule from '../core/perky_module'
-import ModuleRegistry from '../core/module_registry'
+import Extension from '../core/extension'
+import Registry from '../core/registry'
 
 
-export default class InputManager extends PerkyModule {
+export default class InputManager extends Extension {
 
     constructor () {
         super()
         
-        this.devices = new ModuleRegistry({
-            registryName: 'device',
-            parentModule: this,
-            parentModuleName: 'inputManager',
-            bind: true,
-            autoStart: true
-        })
-
+        this.devices = new Registry()
         this.#initEvents()
     }
 
@@ -24,7 +17,40 @@ export default class InputManager extends PerkyModule {
             throw new Error('Device must have a name')
         }
 
-        return this.devices.set(name, device)
+        if (this.devices.has(name)) {
+            this.devices.delete(name)
+        }
+
+        device.host = this
+        this.devices.set(name, device)
+
+        this[name] = device
+
+        if (this.started) {
+            device.start()
+        }
+
+        this.on('start', () => device.start())
+        this.on('stop', () => device.stop())
+        this.on('dispose', () => {
+            this.devices.delete(name)
+            delete this[name]
+            device.dispose()
+        })
+
+        device.once('dispose', () => {
+            if (this.devices.get(name) === device) {
+                this.devices.delete(name)
+                delete this[name]
+            }
+        })
+
+        this.emit('device:set', name, device)
+        device.emit('registered', this, name)
+
+        this.#forwardDeviceEvents(device)
+
+        return this
     }
 
 
@@ -151,9 +177,7 @@ export default class InputManager extends PerkyModule {
 
 
     #initEvents () {
-        this.devices.on('set', (deviceName, device) => {
-            this.#forwardDeviceEvents(device)
-        })
+        // Events are handled in registerDevice
     }
 
 

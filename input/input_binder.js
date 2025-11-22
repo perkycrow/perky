@@ -1,10 +1,10 @@
-import PerkyModule from '../core/perky_module'
+import Extension from '../core/extension'
 import Registry from '../core/registry'
 import InputBinding from './input_binding'
 import CompositeBinding from './composite_binding'
 
 
-export default class InputBinder extends PerkyModule {
+export default class InputBinder extends Extension {
 
     #bindings = new Registry()
     #inputIndex = new Map()

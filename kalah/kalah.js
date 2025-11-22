@@ -1,5 +1,5 @@
 import Application from '../application/application'
-import GamePlugin from '../game/game_plugin'
+import GameExtension from '../game/game_extension'
 import ThreePlugin from '../three/three_plugin'
 import BackgroundImage from '../three/objects/background_image'
 import TitleMenu from '../game/components/title_menu'
@@ -9,7 +9,7 @@ export default class Kalah extends Application {
 
     constructor (params = {}) {
 
-        const gamePlugin = new GamePlugin()
+        const gameExtension = new GameExtension()
 
         const threePlugin = new ThreePlugin({
             backgroundColor: 0x0a0a0a,
@@ -25,7 +25,7 @@ export default class Kalah extends Application {
 
         super({
             ...params,
-            plugins: [gamePlugin, threePlugin]
+            extensions: [gameExtension, threePlugin]
         })
 
         addActions(this)

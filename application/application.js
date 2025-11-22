@@ -2,7 +2,6 @@ import Engine from '../core/engine'
 import Registry from '../core/registry'
 import PerkyView from './perky_view'
 import SourceManager from './source_manager'
-import PluginRegistry from '../core/plugin_registry'
 import {loaders} from './loaders'
 import InputBinder from '../input/input_binder'
 import InputManager from '../input/input_manager'
@@ -12,29 +11,58 @@ import MouseDevice from '../input/input_devices/mouse_device'
 
 export default class Application extends Engine {
 
-    #plugins = null
-
     constructor (params = {}) {
-        const {plugins = [], inputManager, inputBinder, keyboard = {}, mouse = {}} = params
+        const {extensions = [], inputManager, inputBinder, keyboard = {}, mouse = {}} = params
         
         super(params)
 
         this.loaders = new Registry(loaders)
-        this.#plugins = new PluginRegistry(this)
 
-        this.registerModule('perkyView', new PerkyView({className: 'perky-application'}))
-        this.registerModule('sourceManager', new SourceManager({
+        this.use(PerkyView, {
+            $name: 'perkyView',
+            $category: 'module',
+            $bind: 'perkyView',
+            className: 'perky-application'
+        })
+
+        this.use(SourceManager, {
+            $name: 'sourceManager',
+            $category: 'module',
+            $bind: 'sourceManager',
             loaders: this.loaders,
             manifest: this.manifest
-        }))
-        this.registerModule('inputBinder', getInputBinder(inputBinder))
-        this.registerModule('inputManager', getInputManager(inputManager))
+        })
 
-        this.registerDevice('keyboard', new KeyboardDevice(keyboard))
-        this.registerDevice('mouse', new MouseDevice({
+        this.use(InputBinder, {
+            instance: getInputBinder(inputBinder),
+            $name: 'inputBinder',
+            $category: 'module',
+            $bind: 'inputBinder'
+        })
+
+        this.use(InputManager, {
+            instance: getInputManager(inputManager),
+            $name: 'inputManager',
+            $category: 'module',
+            $bind: 'inputManager'
+        })
+
+        this.use(KeyboardDevice, {
+            $name: 'keyboard',
+            $category: 'device',
+            $bind: 'keyboard',
+            ...keyboard
+        })
+        this.inputManager.registerDevice('keyboard', this.keyboard)
+
+        this.use(MouseDevice, {
+            $name: 'mouse',
+            $category: 'device',
+            $bind: 'mouse',
             ...mouse,
             container: this.perkyView.element
-        }))
+        })
+        this.inputManager.registerDevice('mouse', this.mouse)
 
         this.#initEvents()
         
@@ -42,61 +70,15 @@ export default class Application extends Engine {
             this.configure()
         }
 
-        this.#installPlugins(plugins)
+        this.#installExtensions(extensions)
     }
 
 
-    use (PluginClassOrInstance, options = {}) {
-        let plugin
-
-        if (typeof PluginClassOrInstance === 'function') {
-            plugin = new PluginClassOrInstance(options)
-        } else {
-            plugin = PluginClassOrInstance
-        }
-
-        const pluginName = plugin.name || plugin.constructor.name
-        this.installPlugin(pluginName, plugin)
-        
-        return this
-    }
-
-
-    #installPlugins (plugins) {
-        plugins.forEach(plugin => {
-            const pluginName = plugin.name || plugin.constructor.name
-            this.installPlugin(pluginName, plugin)
+    #installExtensions (extensions) {
+        extensions.forEach(extension => {
+            const extensionName = extension.name || extension.constructor.name
+            this.use(extension, {$name: extensionName, $category: 'extension'})
         })
-    }
-
-
-    installPlugin (pluginName, plugin) {
-        return this.#plugins.install(pluginName, plugin)
-    }
-
-
-    uninstallPlugin (pluginName) {
-        return this.#plugins.uninstall(pluginName)
-    }
-
-
-    getPlugin (pluginName) {
-        return this.#plugins.getPlugin(pluginName)
-    }
-
-
-    isPluginInstalled (pluginName) {
-        return this.#plugins.isInstalled(pluginName)
-    }
-
-
-    getAllPlugins () {
-        return this.#plugins.getAllPlugins()
-    }
-
-
-    getPluginNames () {
-        return this.#plugins.getPluginNames()
     }
 
 

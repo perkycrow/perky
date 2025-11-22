@@ -1,5 +1,5 @@
 import Application from '/application/application'
-import GamePlugin from '/game/game_plugin'
+import GameExtension from '/game/game_extension'
 import ThreePlugin from '/three/three_plugin'
 import PerkyLogger from '/editor/components/perky_logger'
 import {
@@ -46,8 +46,8 @@ export default class ShroomRunner extends Application {
 
         super({
             ...params,
-            plugins: [
-                new GamePlugin({
+            extensions: [
+                new GameExtension({
                     fps: params.fps || 60,
                     maxFrameSkip: params.maxFrameSkip || 5
                 }),

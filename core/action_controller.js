@@ -1,8 +1,8 @@
-import PerkyModule from '../core/perky_module'
+import Extension from '../core/extension'
 import Registry from '../core/registry'
 
 
-export default class ActionController extends PerkyModule {
+export default class ActionController extends Extension {
 
     #actions = new Registry()
 
@@ -20,7 +20,7 @@ export default class ActionController extends PerkyModule {
 
 
     get engine () {
-        return this.actionDispatcher && this.actionDispatcher.engine
+        return (this.host && this.host.engine) || (this.actionDispatcher && this.actionDispatcher.host)
     }
 
 

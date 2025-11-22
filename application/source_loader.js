@@ -1,7 +1,7 @@
-import PerkyModule from '../core/perky_module'
+import Extension from '../core/extension'
 import Registry from '../core/registry'
 
-export default class SourceLoader extends PerkyModule {
+export default class SourceLoader extends Extension {
 
     #loadingPromises = {}
 

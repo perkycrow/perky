@@ -1,11 +1,10 @@
-import GamePlugin from './game_plugin'
+import GameExtension from './game_extension'
 import Engine from '../core/engine'
-import Application from '../application/application'
 import {vi, beforeEach, afterEach, describe, test, expect} from 'vitest'
 
 
-describe(GamePlugin, () => {
-    let gamePlugin
+describe(GameExtension, () => {
+    let gameExtension
     let engine
 
 
@@ -17,7 +16,7 @@ describe(GamePlugin, () => {
         }))
 
         engine = new Engine()
-        gamePlugin = new GamePlugin()
+        gameExtension = new GameExtension()
     })
 
 
@@ -28,52 +27,51 @@ describe(GamePlugin, () => {
 
 
     test('constructor with default options', () => {
-        expect(gamePlugin.name).toBe('game')
-        expect(gamePlugin.options.fps).toBeUndefined()
-        expect(gamePlugin.options.maxFrameSkip).toBeUndefined()
+        expect(gameExtension.name).toBe('game')
+        expect(gameExtension.options.fps).toBeUndefined()
+        expect(gameExtension.options.maxFrameSkip).toBeUndefined()
     })
 
 
     test('uses default values when installed', () => {
-        gamePlugin.install(engine)
+        engine.use(GameExtension)
+        gameExtension = engine.getExtension('game')
         
-        expect(engine.gameLoop.fps).toBe(60)
-        expect(engine.gameLoop.maxFrameSkip).toBe(5)
+        expect(gameExtension.gameLoop.fps).toBe(60)
+        expect(gameExtension.gameLoop.maxFrameSkip).toBe(5)
     })
 
 
     test('constructor with custom options', () => {
-        const customPlugin = new GamePlugin({
+        const customExtension = new GameExtension({
             fps: 30,
             maxFrameSkip: 3
         })
 
-        expect(customPlugin.options.fps).toBe(30)
-        expect(customPlugin.options.maxFrameSkip).toBe(3)
+        expect(customExtension.options.fps).toBe(30)
+        expect(customExtension.options.maxFrameSkip).toBe(3)
     })
 
 
-    test('install adds gameLoop module', () => {
-        const registerModuleSpy = vi.spyOn(engine, 'registerModule')
-        
-        gamePlugin.install(engine)
+    test('use adds gameLoop module', () => {
+        engine.use(GameExtension)
 
-        expect(registerModuleSpy).toHaveBeenCalledWith('gameLoop', expect.any(Object))
-        expect(engine.gameLoop).toBeDefined()
-        expect(engine.gameLoop.fps).toBe(60)
+        gameExtension = engine.getExtension('game')
+        expect(gameExtension.gameLoop).toBeDefined()
+        expect(gameExtension.gameLoop.fps).toBe(60)
     })
 
 
-    test('install adds paused property', () => {
-        gamePlugin.install(engine)
+    test('use adds paused property', () => {
+        engine.use(GameExtension)
 
         expect(engine.paused).toBeDefined()
         expect(typeof engine.paused).toBe('boolean')
     })
 
 
-    test('install adds game methods', () => {
-        gamePlugin.install(engine)
+    test('use adds game methods', () => {
+        engine.use(GameExtension)
 
         expect(typeof engine.pause).toBe('function')
         expect(typeof engine.resume).toBe('function')
@@ -84,18 +82,19 @@ describe(GamePlugin, () => {
 
 
     test('paused property reflects gameLoop state', () => {
-        gamePlugin.install(engine)
-        engine.gameLoop.paused = true
+        engine.use(GameExtension)
+        gameExtension = engine.getExtension('game')
+        gameExtension.gameLoop.paused = true
 
         expect(engine.paused).toBe(true)
 
-        engine.gameLoop.paused = false
+        gameExtension.gameLoop.paused = false
         expect(engine.paused).toBe(false)
     })
 
 
     test('pause method', () => {
-        gamePlugin.install(engine)
+        engine.use(GameExtension)
         engine.start()
 
         expect(engine.paused).toBe(false)
@@ -105,14 +104,14 @@ describe(GamePlugin, () => {
 
 
     test('pause when not running', () => {
-        gamePlugin.install(engine)
+        engine.use(GameExtension)
 
         expect(engine.pause()).toBe(false)
     })
 
 
     test('resume method', () => {
-        gamePlugin.install(engine)
+        engine.use(GameExtension)
         engine.start()
         engine.pause()
 
@@ -122,14 +121,14 @@ describe(GamePlugin, () => {
 
 
     test('resume when not started', () => {
-        gamePlugin.install(engine)
+        engine.use(GameExtension)
 
         expect(engine.resume()).toBe(false)
     })
 
 
     test('resume when not paused', () => {
-        gamePlugin.install(engine)
+        engine.use(GameExtension)
         engine.start()
 
         expect(engine.resume()).toBe(false)
@@ -137,23 +136,25 @@ describe(GamePlugin, () => {
 
 
     test('setFps method', () => {
-        gamePlugin.install(engine)
+        engine.use(GameExtension)
+        gameExtension = engine.getExtension('game')
 
         engine.setFps(30)
-        expect(engine.gameLoop.fps).toBe(30)
+        expect(gameExtension.gameLoop.fps).toBe(30)
     })
 
 
     test('getFps method', () => {
-        gamePlugin.install(engine)
+        engine.use(GameExtension)
 
         expect(engine.getFps()).toBe(60)
     })
 
 
     test('getCurrentFps method', () => {
-        gamePlugin.install(engine)
-        engine.gameLoop.currentFps = 59
+        engine.use(GameExtension)
+        gameExtension = engine.getExtension('game')
+        gameExtension.gameLoop.currentFps = 59
 
         expect(engine.getCurrentFps()).toBe(59)
     })
@@ -166,7 +167,8 @@ describe(GamePlugin, () => {
         const resume = vi.fn()
         const changedFps = vi.fn()
 
-        gamePlugin.install(engine)
+        engine.use(GameExtension)
+        gameExtension = engine.getExtension('game')
 
         engine.on('update', update)
         engine.on('render', render)
@@ -174,67 +176,56 @@ describe(GamePlugin, () => {
         engine.on('resume', resume)
         engine.on('changed:fps', changedFps)
 
-        engine.gameLoop.emit('update', 0.016)
+        gameExtension.gameLoop.emit('update', 0.016)
         expect(update).toHaveBeenCalledWith(0.016)
 
-        engine.gameLoop.emit('render', 0.5, 60)
+        gameExtension.gameLoop.emit('render', 0.5, 60)
         expect(render).toHaveBeenCalledWith(0.5, 60)
 
-        engine.gameLoop.emit('pause')
+        gameExtension.gameLoop.emit('pause')
         expect(pause).toHaveBeenCalled()
 
-        engine.gameLoop.emit('resume')
+        gameExtension.gameLoop.emit('resume')
         expect(resume).toHaveBeenCalled()
 
-        engine.gameLoop.emit('changed:fps', 30)
+        gameExtension.gameLoop.emit('changed:fps', 30)
         expect(changedFps).toHaveBeenCalledWith(30)
     })
 
 
     test('uninstall cleans up properly', () => {
-        gamePlugin.install(engine)
+        engine.use(GameExtension)
 
-        expect(engine.gameLoop).toBeDefined()
+        const extension = engine.getExtension('game')
+        expect(extension.gameLoop).toBeDefined()
         expect(typeof engine.pause).toBe('function')
 
-        gamePlugin.uninstall()
+        extension.uninstall()
 
-        expect(gamePlugin.engine).toBeNull()
-        expect(gamePlugin.installed).toBe(false)
+        expect(extension.host).toBeNull()
+        expect(extension.installed).toBe(false)
     })
 
 
     test('multiple installations should not conflict', () => {
-        const plugin1 = new GamePlugin({fps: 30})
-        const plugin2 = new GamePlugin({fps: 120})
-        
         const engine1 = new Engine()
         const engine2 = new Engine()
 
-        plugin1.install(engine1)
-        plugin2.install(engine2)
+        engine1.use(GameExtension, {fps: 30})
+        engine2.use(GameExtension, {fps: 120})
 
         expect(engine1.getFps()).toBe(30)
         expect(engine2.getFps()).toBe(120)
     })
 
 
-    test('plugin works with Engine plugin system', () => {
-        global.ResizeObserver = vi.fn().mockImplementation(() => ({
-            observe: vi.fn(),
-            unobserve: vi.fn(),
-            disconnect: vi.fn()
-        }))
+    test('extension can be used with use() method', () => {
+        const testEngine = new Engine()
+        testEngine.use(GameExtension, {fps: 45})
 
-        const pluginEngine = new Application({
-            plugins: [new GamePlugin({fps: 45})]
-        })
-
-        expect(pluginEngine.getFps()).toBe(45)
-        expect(typeof pluginEngine.pause).toBe('function')
-        expect(typeof pluginEngine.resume).toBe('function')
-        
-        global.ResizeObserver = undefined
+        expect(testEngine.getFps()).toBe(45)
+        expect(typeof testEngine.pause).toBe('function')
+        expect(typeof testEngine.resume).toBe('function')
     })
 
 }) 

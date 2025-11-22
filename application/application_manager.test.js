@@ -2,7 +2,6 @@ import ApplicationManager from './application_manager'
 import Application from './application'
 import PerkyModule from '../core/perky_module'
 import Registry from '../core/registry'
-import ModuleRegistry from '../core/module_registry'
 import {vi} from 'vitest'
 
 
@@ -65,19 +64,14 @@ describe(ApplicationManager, () => {
     test('constructor', () => {
         expect(appManager).toBeInstanceOf(PerkyModule)
         expect(appManager.constructors).toBeInstanceOf(Registry)
-        expect(appManager.instances).toBeInstanceOf(ModuleRegistry)
+        expect(appManager.instances).toBeInstanceOf(Registry)
         expect(appManager.lastAppId).toBe(0)
     })
 
 
-    test('constructor initializes ModuleRegistry with correct options', () => {
-        const config = appManager.instances.getConfig()
-        
-        expect(config.parentModule).toBe(appManager)
-        expect(config.parentModuleName).toBe('appManager')
-        expect(config.registryName).toBe('applications')
-        expect(config.bind).toBe(false)
-        expect(config.autoStart).toBe(false)
+    test('constructor initializes Registry', () => {
+        expect(appManager.instances).toBeInstanceOf(Registry)
+        expect(appManager.instances.size).toBe(0)
     })
 
 

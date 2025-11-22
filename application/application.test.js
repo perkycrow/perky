@@ -8,7 +8,7 @@ import MouseDevice from '../input/input_devices/mouse_device'
 import ButtonControl from '../input/input_controls/button_control'
 import PerkyModule from '../core/perky_module'
 import InputManager from '../input/input_manager'
-import Plugin from '../core/plugin'
+import Extension from '../core/extension'
 import {vi} from 'vitest'
 
 
@@ -37,9 +37,43 @@ describe(Application, () => {
             return mockManifest.config(...args)
         })
 
+        const mockPerkyViewElement = document.createElement('div')
+        mockPerkyViewElement.exitFullscreenMode = vi.fn()
+        mockPerkyViewElement.enterFullscreenMode = vi.fn()
         vi.spyOn(PerkyView.prototype, 'mountTo').mockReturnValue(null)
-        vi.spyOn(Engine.prototype, 'registerModule').mockImplementation(function (name, module) {
-            this[name] = module
+        vi.spyOn(PerkyView, 'defaultElement').mockReturnValue(mockPerkyViewElement)
+
+        // FIXME: Complexity
+        vi.spyOn(Engine.prototype, 'use').mockImplementation(function (ExtensionClass, options) { // eslint-disable-line complexity
+            let instance = options.instance
+            if (!instance) {
+                if (ExtensionClass === KeyboardDevice || ExtensionClass === MouseDevice) {
+                    const container = options.container || (ExtensionClass === MouseDevice && this.perkyView ? this.perkyView.element : window)
+                    instance = new ExtensionClass({...options, container})
+                } else if (ExtensionClass === PerkyView) {
+                    instance = new ExtensionClass({...options, element: mockPerkyViewElement})
+                } else {
+                    instance = new ExtensionClass(options)
+                }
+            }
+            
+            if (instance.install) {
+                instance.install(this, options)
+            }
+            
+            if (options.$bind) {
+                this[options.$bind] = instance
+            }
+            
+            const extensionsRegistry = this.getExtensionsRegistry()
+            const extensionName = options.$name || instance.name || instance.constructor.name
+            extensionsRegistry.set(extensionName, instance)
+            
+            if ((ExtensionClass === KeyboardDevice || ExtensionClass === MouseDevice) && this.inputManager) {
+                this.inputManager.registerDevice(options.$name, instance)
+            }
+            
+            return this
         })
 
         application = new Application()
@@ -514,44 +548,52 @@ describe(Application, () => {
     })
 
 
-    test('use method installs plugin class', () => {
-        class TestPlugin extends Plugin {
+    test('use method installs extension class', () => {
+        class TestExtension extends Extension {
             constructor (options) {
-                super({...options, name: 'testPlugin'})
+                super({...options, name: 'testExtension'})
             }
         }
 
-        application.use(TestPlugin)
+        application.use(TestExtension, {$name: 'testExtension', $category: 'extension'})
         
-        expect(application.isPluginInstalled('testPlugin')).toBe(true)
+        expect(application.hasExtension('testExtension')).toBe(true)
     })
 
 
-    test('use method installs plugin instance', () => {
-        class TestPlugin extends Plugin {
+    test('use method installs extension instance', () => {
+        class TestExtension extends Extension {
             constructor (options) {
-                super({...options, name: 'testPlugin'})
+                super({...options, name: 'testExtension'})
             }
         }
 
-        const plugin = new TestPlugin()
-        application.use(plugin)
+        const extension = new TestExtension()
+        application.use(TestExtension, {
+            instance: extension,
+            $name: 'testExtension',
+            $category: 'extension'
+        })
         
-        expect(application.isPluginInstalled('testPlugin')).toBe(true)
+        expect(application.hasExtension('testExtension')).toBe(true)
     })
 
 
     test('use method with options', () => {
-        class TestPlugin extends Plugin {
+        class TestExtension extends Extension {
             constructor (options) {
-                super({...options, name: 'testPlugin'})
+                super({...options, name: 'testExtension'})
             }
         }
 
-        application.use(TestPlugin, {someOption: true})
+        application.use(TestExtension, {
+            $name: 'testExtension',
+            $category: 'extension',
+            someOption: true
+        })
         
-        const plugin = application.getPlugin('testPlugin')
-        expect(plugin.options.someOption).toBe(true)
+        const extension = application.getExtension('testExtension')
+        expect(extension.options.someOption).toBe(true)
     })
 
 
@@ -939,12 +981,16 @@ describe('displayMode', () => {
         }
 
         vi.spyOn(PerkyView.prototype, 'mountTo').mockReturnValue(null)
-        vi.spyOn(Engine.prototype, 'registerModule').mockImplementation(function (name, module) {
-            if (name === 'perkyView') {
-                this[name] = mockPerkyView
+        vi.spyOn(Engine.prototype, 'use').mockImplementation(function (ExtensionClass, options) {
+            if (options.$bind === 'perkyView') {
+                this[options.$bind] = mockPerkyView
             } else {
-                this[name] = module
+                const instance = options.instance || new ExtensionClass(options)
+                if (options.$bind) {
+                    this[options.$bind] = instance
+                }
             }
+            return this
         })
 
         application = new Application()
