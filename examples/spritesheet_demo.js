@@ -1,9 +1,11 @@
 import Canvas2D from '../canvas/canvas_2d.js'
-import Spritesheet2D from '../canvas/spritesheet_2d.js'
+import Spritesheet from '../canvas/spritesheet.js'
+import Sprite2D from '../canvas/sprite_2d.js'
+import SpriteAnimation2D from '../canvas/sprite_animation_2d.js'
 import Group2D from '../canvas/group_2d.js'
-import {createExampleContainer} from './example_utils.js'
+import { createExampleContainer } from './example_utils.js'
 
-const {canvas} = createExampleContainer()
+const { canvas } = createExampleContainer()
 
 const app = new Canvas2D(canvas, {
     width: 800,
@@ -29,30 +31,28 @@ Promise.all([
 
     const scene = new Group2D()
 
-    const spritesheet = new Spritesheet2D({
-        image,
-        data,
-        x: 0,
-        y: 0,
-        width: 5
+    const sheet = new Spritesheet(image, data)
+
+    // Create sprite with initial frame
+    const sprite = new Sprite2D({
+        frame: sheet.getFrame('notebook-0.png'), // Using actual filename from JSON
+        width: 7
     })
 
-    scene.addChild(spritesheet)
+    scene.addChild(sprite)
 
-    // Animation loop
-    const frames = data.frames.map(f => f.filename)
-    let frameIndex = 0
-    let lastTime = 0
-    const fps = 12
-    const interval = 1000 / fps
+    // Create animation
+    const animation = new SpriteAnimation2D({
+        sprite,
+        frames: sheet.getFrames(),
+        fps: 12,
+        loop: true
+    })
 
-    function animate (timestamp) {
-        if (timestamp - lastTime > interval) {
-            lastTime = timestamp
-            frameIndex = (frameIndex + 1) % frames.length
-            spritesheet.setFrame(frames[frameIndex])
-        }
+    sprite.addAnimation('idle', animation)
+    sprite.play('idle')
 
+    function animate(timestamp) {
         app.render(scene)
         requestAnimationFrame(animate)
     }

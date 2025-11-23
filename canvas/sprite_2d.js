@@ -1,57 +1,44 @@
-import Object2D from './object_2d'
+import Object2D from './object_2d.js'
 
-
-export default class Spritesheet2D extends Object2D {
+export default class Sprite2D extends Object2D {
 
     constructor (options = {}) {
         super(options)
 
-        this.image = options.image ?? null
-        this.data = options.data ?? {frames: [], meta: {}}
-        this.framesMap = new Map()
-        this.currentFrame = null
-
+        this.image = options.image || null
+        this.currentFrame = options.frame || null
         this.width = options.width ?? null
         this.height = options.height ?? null
 
-        this.#initializeFrames(this.data.frames, options)
+        this.animations = new Map()
+        this.currentAnimation = null
     }
 
+    setFrame (frame) {
+        this.currentFrame = frame
+    }
 
-    #initializeFrames (frames, options) {
-        if (!Array.isArray(frames)) {
-            return
-        }
+    addAnimation (name, animation) {
+        this.animations.set(name, animation)
+    }
 
-        frames.forEach(frameData => {
-            if (frameData.filename) {
-                this.framesMap.set(frameData.filename, frameData)
+    play (name) {
+        const animation = this.animations.get(name)
+        if (animation) {
+            if (this.currentAnimation && this.currentAnimation !== animation) {
+                this.currentAnimation.stop()
             }
-        })
-
-        if (options.frame) {
-            this.setFrame(options.frame)
-        } else if (this.data.frames.length > 0) {
-            const firstFrameName = this.data.frames[0].filename
-            this.setFrame(firstFrameName)
+            this.currentAnimation = animation
+            this.currentAnimation.play()
         }
     }
 
-
-    setFrame (frameName) {
-        const frame = this.framesMap.get(frameName)
-        if (frame) {
-            this.currentFrame = frame
-            this.markDirty()
+    stop () {
+        if (this.currentAnimation) {
+            this.currentAnimation.stop()
+            this.currentAnimation = null
         }
-        return this
     }
-
-
-    getFrame () {
-        return this.currentFrame
-    }
-
 
     getBounds () {
         if (!this.currentFrame) {
@@ -84,9 +71,10 @@ export default class Spritesheet2D extends Object2D {
         }
     }
 
+    render (ctx) { // eslint-disable-line complexity
+        const img = this.image || (this.currentFrame ? this.currentFrame.image : null)
 
-    render (ctx) {
-        if (this.image && this.image.complete && this.currentFrame) {
+        if (img && img.complete && this.currentFrame) {
             const {x, y, w, h} = this.currentFrame.frame
 
             let renderW = w
@@ -104,11 +92,12 @@ export default class Spritesheet2D extends Object2D {
             const offsetY = -renderH * this.anchorY
 
             ctx.save()
+
             ctx.scale(1, -1)
 
             ctx.drawImage(
-                this.image,
-                x, y, w, h, 
+                img,
+                x, y, w, h,
                 offsetX,
                 -offsetY - renderH,
                 renderW, renderH
@@ -117,5 +106,4 @@ export default class Spritesheet2D extends Object2D {
             ctx.restore()
         }
     }
-
 }
