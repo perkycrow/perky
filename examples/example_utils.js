@@ -20,7 +20,7 @@ export function createControlPanel ({title, container, position = 'top-right', w
     }
 
     const pos = positions[position] || positions['top-right']
-    
+
     Object.assign(pane.element.style, {
         position: 'absolute',
         zIndex: '1000',
@@ -83,17 +83,17 @@ export function addFpsMonitoring (pane, gameOrLoop, {title = 'Performance', expa
     // Monitor FPS
     gameOrLoop.on('render', (frameProgress, fps) => {
         fpsGraph.begin()
-        
+
         const currentFps = fps || 60
         fpsStats.current = currentFps
-        
+
         // Update stats
         frameCount++
         fpsSum += currentFps
         fpsStats.average = fpsSum / frameCount
         fpsStats.min = Math.min(fpsStats.min, currentFps)
         fpsStats.max = Math.max(fpsStats.max, currentFps)
-        
+
         // Reset stats at interval
         if (performance.now() - lastReset > resetInterval) {
             frameCount = 0
@@ -102,7 +102,7 @@ export function addFpsMonitoring (pane, gameOrLoop, {title = 'Performance', expa
             fpsStats.max = 0
             lastReset = performance.now()
         }
-        
+
         fpsGraph.end()
     })
 
@@ -259,7 +259,7 @@ export function addSliderWithRange ({folder, object, property, range, label, onC
     if (!preset) {
         throw new Error(`Unknown range preset: ${range}`)
     }
-    
+
     return addSliderBinding({
         folder,
         object,
@@ -288,7 +288,7 @@ export function createDebugPanel (container, debugObject, position = 'bottom-rig
 
     // Common debug properties
     const commonProps = ['x', 'y', 'z', 'rotation', 'scale', 'speed', 'health', 'score', 'level']
-    
+
     commonProps.forEach(prop => {
         if (debugObject && typeof debugObject[prop] !== 'undefined') {
             debugFolder.addBinding(debugObject, prop, {
@@ -301,4 +301,20 @@ export function createDebugPanel (container, debugObject, position = 'bottom-rig
     })
 
     return pane
+}
+
+
+export function createExampleContainer () {
+    const container = document.querySelector('.example-content')
+    const canvas = document.createElement('canvas')
+
+    canvas.style.border = '2px solid #333'
+    canvas.style.backgroundColor = 'white'
+    canvas.style.display = 'block'
+    canvas.style.margin = '0 auto'
+    canvas.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)'
+
+    container.appendChild(canvas)
+
+    return {container, canvas}
 }
