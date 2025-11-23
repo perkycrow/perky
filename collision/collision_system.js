@@ -317,21 +317,21 @@ export default class CollisionSystem {
     
     pauseBody (body) {
         if (body.velocity) {
-            body._pausedVelocity = {...body.velocity}
+            body.pausedVelocity = {...body.velocity}
             body.velocity.x = 0
             body.velocity.y = 0
         }
-        body._paused = true
+        body.paused = true
         return this
     }
 
     
     resumeBody (body) {
-        if (body._pausedVelocity) {
-            body.velocity = body._pausedVelocity
-            delete body._pausedVelocity
+        if (body.pausedVelocity) {
+            body.velocity = body.pausedVelocity
+            delete body.pausedVelocity
         }
-        body._paused = false
+        body.paused = false
         return this
     }
 

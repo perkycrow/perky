@@ -185,8 +185,8 @@ function generateTagsHTML (tags) {
 
 
 function hideCard (card) {
-    if (card._transitionHandler) {
-        card.removeEventListener('transitionend', card._transitionHandler)
+    if (card.transitionHandler) {
+        card.removeEventListener('transitionend', card.transitionHandler)
     }
     
     card.classList.remove('card-visible')
@@ -196,11 +196,11 @@ function hideCard (card) {
         if (event.target === card && event.propertyName === 'opacity') {
             card.style.display = 'none'
             card.removeEventListener('transitionend', handleTransitionEnd)
-            delete card._transitionHandler
+            delete card.transitionHandler
         }
     }
     
-    card._transitionHandler = handleTransitionEnd
+    card.transitionHandler = handleTransitionEnd
     card.addEventListener('transitionend', handleTransitionEnd)
 }
 

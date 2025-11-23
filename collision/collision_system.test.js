@@ -397,14 +397,14 @@ describe('CollisionSystem', () => {
 
         collisionSystem.pauseBody(body)
 
-        expect(body._paused).toBe(true)
+        expect(body.paused).toBe(true)
         expect(body.velocity.x).toBe(0)
         expect(body.velocity.y).toBe(0)
-        expect(body._pausedVelocity).toEqual({x: 100, y: 50})
+        expect(body.pausedVelocity).toEqual({x: 100, y: 50})
 
         collisionSystem.resumeBody(body)
 
-        expect(body._paused).toBe(false)
+        expect(body.paused).toBe(false)
         expect(body.velocity.x).toBe(100)
         expect(body.velocity.y).toBe(50)
     })

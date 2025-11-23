@@ -61,7 +61,7 @@ class CollisionDemo {
         // Listen to player collisions
         this.player.on = (event, callback) => {
             if (event === 'collision') {
-                this.player._collisionCallback = callback
+                this.player.collisionCallback = callback
             }
         }
         
