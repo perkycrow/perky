@@ -19,8 +19,7 @@ export default class GameExtension extends PerkyModule {
             maxFrameSkip: options.maxFrameSkip || 5
         })
 
-        this.delegateProperties(this.gameLoop, ['paused'], true)
-        this.delegateTo(this.gameLoop, ['pause', 'resume', 'setFps', 'getFps', 'getCurrentFps'])
+        this.delegate(this.gameLoop, ['paused', 'pause', 'resume', 'setFps', 'getFps', 'getCurrentFps'])
 
         initGameLoopEvents(host, this.gameLoop)
     }

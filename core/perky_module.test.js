@@ -256,31 +256,64 @@ describe(PerkyModule, () => {
     })
 
 
-    test('delegateTo', () => {
+    test('delegate with methods', () => {
         extension.install(host, {})
         const target = {
             method1: vi.fn(),
             method2: vi.fn()
         }
         
-        extension.delegateTo(target, ['method1', 'method2'])
+        extension.delegate(target, ['method1', 'method2'])
         
         expect(host.method1).toBeDefined()
         expect(host.method2).toBeDefined()
+        expect(typeof host.method1).toBe('function')
+        expect(typeof host.method2).toBe('function')
     })
 
 
-    test('delegateProperties', () => {
+    test('delegate with properties', () => {
         extension.install(host, {})
         const target = {
             prop1: 'value1',
             prop2: 'value2'
         }
         
-        extension.delegateProperties(target, ['prop1', 'prop2'])
+        extension.delegate(target, ['prop1', 'prop2'])
         
         expect(host.prop1).toBe('value1')
         expect(host.prop2).toBe('value2')
+        
+        host.prop1 = 'newValue'
+        expect(target.prop1).toBe('newValue')
+    })
+
+
+    test('delegate with mixed methods and properties', () => {
+        extension.install(host, {})
+        const target = {
+            count: 0,
+            increment () {
+                this.count++
+            },
+            decrement () {
+                this.count--
+            }
+        }
+        
+        extension.delegate(target, ['count', 'increment', 'decrement'])
+        
+        expect(host.count).toBe(0)
+        expect(typeof host.increment).toBe('function')
+        expect(typeof host.decrement).toBe('function')
+        
+        host.increment()
+        expect(target.count).toBe(1)
+        expect(host.count).toBe(1)
+        
+        host.decrement()
+        expect(target.count).toBe(0)
+        expect(host.count).toBe(0)
     })
 
 })

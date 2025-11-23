@@ -246,36 +246,23 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    delegateTo (target, methodNames) {
-        if (!target || !Array.isArray(methodNames)) {
+    delegate (target, names) {
+        if (!target || !Array.isArray(names)) {
             return
         }
 
-        methodNames.forEach(methodName => {
-            if (typeof target[methodName] === 'function') {
-                this.addMethod(methodName, target[methodName].bind(target))
-            }
-        })
-    }
-
-
-    delegateProperties (target, propertyNames, readOnly = false) {
-        if (!target || !Array.isArray(propertyNames)) {
-            return
-        }
-
-        propertyNames.forEach(propertyName => {
-            const descriptor = {
-                get: () => target[propertyName]
-            }
-
-            if (!readOnly) {
-                descriptor.set = (value) => {
-                    target[propertyName] = value
+        names.forEach(name => {
+            if (typeof target[name] === 'function') {
+                this.addMethod(name, target[name].bind(target))
+            } else {
+                const descriptor = {
+                    get: () => target[name],
+                    set: (value) => {
+                        target[name] = value
+                    }
                 }
+                this.addProperty(name, descriptor)
             }
-
-            this.addProperty(propertyName, descriptor)
         })
     }
 
