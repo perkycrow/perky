@@ -354,6 +354,7 @@ export default class Application extends Engine {
 
         perkyView.on('resize', this.emitter('resize'))
         perkyView.on('mount', this.emitter('mount'))
+        perkyView.on('displayMode:changed', this.emitter('displayMode:changed'))
 
         inputManager.on('control:pressed', this.#handleInputEvent.bind(this, 'pressed'))
         inputManager.on('control:released', this.#handleInputEvent.bind(this, 'released'))
@@ -361,8 +362,6 @@ export default class Application extends Engine {
         sourceManager.on('loader:progress', this.emitter('loader:progress'))
         sourceManager.on('loader:complete', this.emitter('loader:complete'))
         sourceManager.on('loader:error', this.emitter('loader:error'))
-
-        perkyView.on('displayMode:changed', this.emitter('displayMode:changed'))
     }
 
 
