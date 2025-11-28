@@ -1,9 +1,11 @@
 import {uniqueId} from '../core/utils'
 import PerkyModule from '../core/perky_module'
-import PerkyElement from './perky_element'
 
 
 export default class PerkyView extends PerkyModule {
+
+    #resizeObserver = null
+    #previousStyles = {}
 
     constructor (params = {}) {
         super()
@@ -18,7 +20,9 @@ export default class PerkyView extends PerkyModule {
             this.addClass(params.className)
         }
 
-        this.#setupEventDelegation()
+
+        this.#setupResizeObserver()
+        this.#setupFullscreenEvents()
     }
 
 
@@ -66,7 +70,7 @@ export default class PerkyView extends PerkyModule {
 
     get size () {
         return {
-            width:  this.width,
+            width: this.width,
             height: this.height
         }
     }
@@ -112,7 +116,7 @@ export default class PerkyView extends PerkyModule {
 
     setSize ({width, height, unit = 'px'}) {
         Object.assign(this.style, {
-            width:  `${width}${unit}`,
+            width: `${width}${unit}`,
             height: `${height}${unit}`
         })
 
@@ -140,6 +144,11 @@ export default class PerkyView extends PerkyModule {
 
         this.emit('mount', {container})
 
+        // Re-observe if we were disconnected
+        if (this.#resizeObserver) {
+            this.#resizeObserver.observe(this.element)
+        }
+
         return this
     }
 
@@ -148,6 +157,10 @@ export default class PerkyView extends PerkyModule {
         if (this.parentElement) {
             this.parentElement.removeChild(this.element)
             this.emit('dismount', {container: this.parentElement})
+        }
+
+        if (this.#resizeObserver) {
+            this.#resizeObserver.disconnect()
         }
 
         return this
@@ -160,15 +173,23 @@ export default class PerkyView extends PerkyModule {
 
 
     static defaultElement (params) {
-        const element = new PerkyElement()
+        const element = document.createElement('div')
 
         element.id = params.id || uniqueId('perky_view', 'perky_view')
-        
+
         element.className = params.className || 'perky-view'
 
-        const styles = this.defaultStyles(params)
+        const styles = {
+            display: 'block',
+            overflow: 'hidden',
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            ...this.defaultStyles(params)
+        }
+
         Object.assign(element.style, styles)
-        
+
         return element
     }
 
@@ -185,8 +206,18 @@ export default class PerkyView extends PerkyModule {
 
     dispose (...args) {
         this.exitFullscreenMode()
+
+        if (this.#resizeObserver) {
+            this.#resizeObserver.disconnect()
+            this.#resizeObserver = null
+        }
+
+        if (this._onFullscreenChange) {
+            document.removeEventListener('fullscreenchange', this._onFullscreenChange)
+        }
+
         this.dismount()
-        
+
         super.dispose(...args)
     }
 
@@ -310,39 +341,138 @@ export default class PerkyView extends PerkyModule {
     }
 
 
-    #setupEventDelegation () {
-        this.element.addEventListener('resize', (event) => {
-            this.emit('resize', event.detail)
-        })
-
-        this.element.addEventListener('displayMode:changed', (event) => {
-            this.emit('displayMode:changed', event.detail)
-        })
-    }
 
 
     get displayMode () {
-        return this.element.displayMode
+        return this._displayMode || 'normal'
+    }
+
+    set displayMode (mode) {
+        this._displayMode = mode
     }
 
 
     setDisplayMode (mode) {
-        this.element.setDisplayMode(mode)
+        const modes = {
+            normal: () => this.exitFullscreenMode(),
+            fullscreen: () => this.enterFullscreenMode()
+        }
+
+        if (modes[mode]) {
+            return modes[mode]()
+        }
+
+        console.warn(`Unknown display mode: ${mode}`)
         return this
     }
 
 
     enterFullscreenMode () {
-        this.element.enterFullscreenMode()
+        if (this.displayMode === 'fullscreen') {
+            return this
+        }
+
+        this.displayMode = 'fullscreen'
+        this.fullscreenMode = true
+
+        document.body.classList.add('fullscreen-mode')
+
+        // Apply fullscreen styles
+        this.#previousStyles = {
+            position: this.element.style.position,
+            top: this.element.style.top,
+            left: this.element.style.left,
+            width: this.element.style.width,
+            height: this.element.style.height,
+            zIndex: this.element.style.zIndex
+        }
+
+        Object.assign(this.element.style, {
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            width: '100vw',
+            height: '100vh',
+            zIndex: '10000'
+        })
+
+        this.#requestFullscreen()
+
         return this
     }
 
 
     exitFullscreenMode () {
-        if (this.element && typeof this.element.exitFullscreenMode === 'function') {
-            this.element.exitFullscreenMode()
+        if (this.displayMode === 'normal') {
+            return this
         }
+
+        if (document.fullscreenElement) {
+            document.exitFullscreen()
+        }
+
+        this.displayMode = 'normal'
+        this.fullscreenMode = false
+
+        document.body.style.overflow = ''
+        document.body.classList.remove('fullscreen-mode')
+
+        // Restore styles
+        Object.assign(this.element.style, this.#previousStyles)
+        this.#previousStyles = {}
+
+        this.#dispatchDisplayModeChanged('normal')
+
         return this
+    }
+
+
+    #setupResizeObserver () {
+        this.#resizeObserver = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                const {width, height} = entry.contentRect
+                this.emit('resize', {width, height})
+            }
+        })
+
+        if (this.element) {
+            this.#resizeObserver.observe(this.element)
+        }
+    }
+
+
+    #setupFullscreenEvents () {
+        const onFullscreenChange = () => {
+            if (document.fullscreenElement === this.element) {
+                this.displayMode = 'fullscreen'
+                this.fullscreenMode = true
+                document.body.style.overflow = 'hidden'
+                this.#dispatchDisplayModeChanged('fullscreen')
+            } else if (this.displayMode === 'fullscreen') {
+                // If we were in fullscreen but now document.fullscreenElement is not us,
+                // it means we exited fullscreen (e.g. via ESC key)
+                this.exitFullscreenMode()
+            }
+        }
+
+        document.addEventListener('fullscreenchange', onFullscreenChange)
+
+        // Cleanup listener on dispose is tricky without binding, 
+        // but since we are modifying the class, we should probably store the bound function
+        this._onFullscreenChange = onFullscreenChange
+    }
+
+
+
+    #requestFullscreen () {
+        if (this.element.requestFullscreen) {
+            this.element.requestFullscreen()
+        }
+    }
+
+
+    #dispatchDisplayModeChanged (mode) {
+        this.emit('displayMode:changed', {mode})
     }
 
 }

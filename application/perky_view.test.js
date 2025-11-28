@@ -1,6 +1,5 @@
 import PerkyView from './perky_view'
 import PerkyModule from '../core/perky_module'
-import PerkyElement from './perky_element'
 import {vi, beforeEach, describe, test, expect, afterEach} from 'vitest'
 
 
@@ -16,9 +15,9 @@ describe(PerkyView, () => {
             disconnect: vi.fn()
         }))
 
-        element = new PerkyElement()
+        element = document.createElement('div')
         element.id = 'test-view'
-        
+
         container = document.createElement('div')
         container.id = 'test-container'
         document.body.appendChild(container)
@@ -59,19 +58,17 @@ describe(PerkyView, () => {
             element,
             container
         })
-        
+
         expect(container.contains(element)).toBe(true)
         expect(viewWithContainer.container).toBe(container)
     })
 
 
     test('constructor with default element', () => {
-        const defaultElement = new PerkyElement()
-        vi.spyOn(PerkyView, 'defaultElement').mockReturnValue(defaultElement)
-        
         const defaultView = new PerkyView()
-        
-        expect(defaultView.element.tagName).toBe('PERKY-ELEMENT')
+
+        expect(defaultView.element.tagName).toBe('DIV')
+        expect(defaultView.element.className).toBe('perky-view')
     })
 
 
@@ -82,7 +79,7 @@ describe(PerkyView, () => {
         expect(view.html = '<div>test content</div>').toBe('<div>test content</div>')
     })
 
-    
+
     test('text getter and setter', () => {
         view.text = 'test content text'
         expect(element.innerText).toBe('test content text')
@@ -212,7 +209,7 @@ describe(PerkyView, () => {
 
     test('setSize', () => {
         view.setSize({width: 100, height: 200})
-        
+
         expect(element.style.width).toBe('100px')
         expect(element.style.height).toBe('200px')
         expect(view.setSize({width: 100, height: 200})).toBe(view)
@@ -221,7 +218,7 @@ describe(PerkyView, () => {
 
     test('setSize with custom unit', () => {
         view.setSize({width: 100, height: 200, unit: '%'})
-        
+
         expect(element.style.width).toBe('100%')
         expect(element.style.height).toBe('200%')
     })
@@ -231,7 +228,7 @@ describe(PerkyView, () => {
         container.style.width = '500px'
         container.style.height = '600px'
         container.appendChild(element)
-        
+
         vi.spyOn(container, 'getBoundingClientRect').mockReturnValue({
             width: 500,
             height: 600,
@@ -242,9 +239,9 @@ describe(PerkyView, () => {
             x: 0,
             y: 0
         })
-        
+
         view.fit()
-        
+
         expect(element.style.width).toBe('500px')
         expect(element.style.height).toBe('600px')
         expect(view.fit()).toBe(view)
@@ -253,7 +250,7 @@ describe(PerkyView, () => {
 
     test('mountTo', () => {
         view.mountTo(container)
-        
+
         expect(container.contains(element)).toBe(true)
         expect(view.container).toBe(container)
         expect(view.emit).toHaveBeenCalledWith('mount', {container})
@@ -264,7 +261,7 @@ describe(PerkyView, () => {
     test('isVisible', () => {
         element.style.display = 'block'
         expect(view.isVisible()).toBe(true)
-        
+
         element.style.display = 'none'
         expect(view.isVisible()).toBe(false)
     })
@@ -272,7 +269,7 @@ describe(PerkyView, () => {
 
     test('setPosition', () => {
         view.setPosition({x: 100, y: 200})
-        
+
         expect(element.style.left).toBe('100px')
         expect(element.style.top).toBe('200px')
         expect(view.setPosition({x: 100, y: 200})).toBe(view)
@@ -281,7 +278,7 @@ describe(PerkyView, () => {
 
     test('setPosition with custom unit', () => {
         view.setPosition({x: 100, y: 200, unit: '%'})
-        
+
         expect(element.style.left).toBe('100%')
         expect(element.style.top).toBe('200%')
     })
@@ -289,7 +286,7 @@ describe(PerkyView, () => {
 
     test('setStyle', () => {
         view.setStyle('backgroundColor', 'red')
-        
+
         expect(element.style.backgroundColor).toBe('red')
         expect(view.setStyle('backgroundColor', 'red')).toBe(view)
     })
@@ -300,7 +297,7 @@ describe(PerkyView, () => {
             backgroundColor: 'red',
             color: 'blue'
         })
-        
+
         expect(element.style.backgroundColor).toBe('red')
         expect(element.style.color).toBe('blue')
         expect(view.setStyle({})).toBe(view)
@@ -338,7 +335,7 @@ describe(PerkyView, () => {
     test('hide', () => {
         element.style.display = 'flex'
         view.hide()
-        
+
         expect(element.style.display).toBe('none')
         expect(view.previousDisplay).toBe('flex')
         expect(view.hide()).toBe(view)
@@ -348,7 +345,7 @@ describe(PerkyView, () => {
     test('show', () => {
         view.previousDisplay = 'flex'
         view.show()
-        
+
         expect(element.style.display).toBe('flex')
         expect(view.previousDisplay).toBeUndefined()
         expect(view.show()).toBe(view)
@@ -384,9 +381,9 @@ describe(PerkyView, () => {
 
     test('dispose', () => {
         const disposeSpy = vi.spyOn(PerkyModule.prototype, 'dispose')
-        
+
         view.dispose()
-        
+
         expect(disposeSpy).toHaveBeenCalled()
     })
 
