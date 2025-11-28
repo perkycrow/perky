@@ -6,6 +6,7 @@ export default class PerkyView extends PerkyModule {
 
     #resizeObserver = null
     #previousStyles = {}
+    displayMode = 'normal'
 
     constructor (params = {}) {
         super()
@@ -144,7 +145,6 @@ export default class PerkyView extends PerkyModule {
 
         this.emit('mount', {container})
 
-        // Re-observe if we were disconnected
         if (this.#resizeObserver) {
             this.#resizeObserver.observe(this.element)
         }
@@ -212,8 +212,8 @@ export default class PerkyView extends PerkyModule {
             this.#resizeObserver = null
         }
 
-        if (this._onFullscreenChange) {
-            document.removeEventListener('fullscreenchange', this._onFullscreenChange)
+        if (this.onFullscreenChange) {
+            document.removeEventListener('fullscreenchange', this.onFullscreenChange)
         }
 
         this.dismount()
@@ -341,17 +341,6 @@ export default class PerkyView extends PerkyModule {
     }
 
 
-
-
-    get displayMode () {
-        return this._displayMode || 'normal'
-    }
-
-    set displayMode (mode) {
-        this._displayMode = mode
-    }
-
-
     setDisplayMode (mode) {
         const modes = {
             normal: () => this.exitFullscreenMode(),
@@ -377,7 +366,6 @@ export default class PerkyView extends PerkyModule {
 
         document.body.classList.add('fullscreen-mode')
 
-        // Apply fullscreen styles
         this.#previousStyles = {
             position: this.element.style.position,
             top: this.element.style.top,
@@ -417,7 +405,6 @@ export default class PerkyView extends PerkyModule {
         document.body.style.overflow = ''
         document.body.classList.remove('fullscreen-mode')
 
-        // Restore styles
         Object.assign(this.element.style, this.#previousStyles)
         this.#previousStyles = {}
 
@@ -449,19 +436,14 @@ export default class PerkyView extends PerkyModule {
                 document.body.style.overflow = 'hidden'
                 this.#dispatchDisplayModeChanged('fullscreen')
             } else if (this.displayMode === 'fullscreen') {
-                // If we were in fullscreen but now document.fullscreenElement is not us,
-                // it means we exited fullscreen (e.g. via ESC key)
                 this.exitFullscreenMode()
             }
         }
 
         document.addEventListener('fullscreenchange', onFullscreenChange)
 
-        // Cleanup listener on dispose is tricky without binding, 
-        // but since we are modifying the class, we should probably store the bound function
-        this._onFullscreenChange = onFullscreenChange
+        this.onFullscreenChange = onFullscreenChange
     }
-
 
 
     #requestFullscreen () {
