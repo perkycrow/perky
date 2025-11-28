@@ -6,6 +6,7 @@ export default class PerkyView extends PerkyModule {
 
     #resizeObserver = null
     #previousStyles = {}
+    #onFullscreenChange = null
     displayMode = 'normal'
 
     constructor (params = {}) {
@@ -27,23 +28,8 @@ export default class PerkyView extends PerkyModule {
     }
 
 
-    get id () {
-        return this.element.id
-    }
-
-
-    get parentElement () {
-        return this.element.parentElement
-    }
-
-
     get container () {
-        return this.parentElement
-    }
-
-
-    get style () {
-        return this.element.style
+        return this.element.parentElement
     }
 
 
@@ -54,18 +40,6 @@ export default class PerkyView extends PerkyModule {
 
     get height () {
         return this.element.offsetHeight
-    }
-
-
-    get boundingRect () {
-        return this.element.getBoundingClientRect()
-    }
-
-
-    get position () {
-        const {left, top} = this.boundingRect
-
-        return {x: left, y: top}
     }
 
 
@@ -84,11 +58,6 @@ export default class PerkyView extends PerkyModule {
     }
 
 
-    classList () {
-        return this.element.classList
-    }
-
-
     addClass (className) {
         this.element.classList.add(className)
 
@@ -98,13 +67,6 @@ export default class PerkyView extends PerkyModule {
 
     removeClass (className) {
         this.element.classList.remove(className)
-
-        return this
-    }
-
-
-    toggleClass (className, force) {
-        this.element.classList.toggle(className, force)
 
         return this
     }
@@ -212,59 +174,13 @@ export default class PerkyView extends PerkyModule {
             this.#resizeObserver = null
         }
 
-        if (this.onFullscreenChange) {
-            document.removeEventListener('fullscreenchange', this.onFullscreenChange)
+        if (this.#onFullscreenChange) {
+            document.removeEventListener('fullscreenchange', this.#onFullscreenChange)
         }
 
         this.dismount()
 
         super.dispose(...args)
-    }
-
-
-    setPosition ({x, y, unit = 'px'}) {
-        Object.assign(this.style, {
-            left: `${x}${unit}`,
-            top: `${y}${unit}`
-        })
-        return this
-    }
-
-
-    setStyle (name, value) {
-        if (typeof name === 'object') {
-            Object.assign(this.style, name)
-            return this
-        }
-
-        this.style[name] = value
-
-        return this
-    }
-
-
-    getStyle (name) {
-        return this.style[name]
-    }
-
-
-    get zIndex () {
-        return this.getStyle('zIndex')
-    }
-
-
-    set zIndex (zIndex) {
-        return this.setStyle('zIndex', zIndex)
-    }
-
-
-    get opacity () {
-        return this.getStyle('opacity')
-    }
-
-
-    set opacity (opacity) {
-        return this.setStyle('opacity', opacity)
     }
 
 
@@ -275,29 +191,16 @@ export default class PerkyView extends PerkyModule {
 
     set html (html) {
         this.element.innerHTML = html
-        return this
-    }
-
-
-    get text () {
-        return this.element.innerText
-    }
-
-
-    set text (text) {
-        this.element.innerText = text
-        return this
     }
 
 
     get display () {
-        return this.getStyle('display')
+        return this.element.style.display
     }
 
 
     set display (display) {
-        this.setStyle('display', display)
-        return this
+        this.element.style.display = display
     }
 
 
@@ -324,21 +227,7 @@ export default class PerkyView extends PerkyModule {
     }
 
 
-    setAttribute (name, value) {
-        this.element.setAttribute(name, value)
-        return this
-    }
 
-
-    getAttribute (name) {
-        return this.element.getAttribute(name)
-    }
-
-
-    removeAttribute (name) {
-        this.element.removeAttribute(name)
-        return this
-    }
 
 
     setDisplayMode (mode) {
@@ -362,7 +251,6 @@ export default class PerkyView extends PerkyModule {
         }
 
         this.displayMode = 'fullscreen'
-        this.fullscreenMode = true
 
         document.body.classList.add('fullscreen-mode')
 
@@ -400,7 +288,6 @@ export default class PerkyView extends PerkyModule {
         }
 
         this.displayMode = 'normal'
-        this.fullscreenMode = false
 
         document.body.style.overflow = ''
         document.body.classList.remove('fullscreen-mode')
@@ -432,7 +319,6 @@ export default class PerkyView extends PerkyModule {
         const onFullscreenChange = () => {
             if (document.fullscreenElement === this.element) {
                 this.displayMode = 'fullscreen'
-                this.fullscreenMode = true
                 document.body.style.overflow = 'hidden'
                 this.#dispatchDisplayModeChanged('fullscreen')
             } else if (this.displayMode === 'fullscreen') {
@@ -442,7 +328,7 @@ export default class PerkyView extends PerkyModule {
 
         document.addEventListener('fullscreenchange', onFullscreenChange)
 
-        this.onFullscreenChange = onFullscreenChange
+        this.#onFullscreenChange = onFullscreenChange
     }
 
 

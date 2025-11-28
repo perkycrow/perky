@@ -80,30 +80,6 @@ describe(PerkyView, () => {
     })
 
 
-    test('text getter and setter', () => {
-        view.text = 'test content text'
-        expect(element.innerText).toBe('test content text')
-        expect(view.text).toBe('test content text')
-        expect(view.text = 'test content text').toBe('test content text')
-    })
-
-
-    test('id getter', () => {
-        expect(view.id).toBe('test-view')
-    })
-
-
-    test('parentElement getter', () => {
-        container.appendChild(element)
-        expect(view.parentElement).toBe(container)
-    })
-
-
-    test('style getter', () => {
-        expect(view.style).toBe(element.style)
-    })
-
-
     test('width getter', () => {
         element.style.width = '300px'
         vi.spyOn(element, 'offsetWidth', 'get').mockReturnValue(300)
@@ -127,41 +103,6 @@ describe(PerkyView, () => {
     })
 
 
-    test('boundingRect getter', () => {
-        const mockRect = {
-            left: 0,
-            top: 0,
-            width: 0,
-            height: 0,
-            right: 0,
-            bottom: 0,
-            x: 0,
-            y: 0
-        }
-        vi.spyOn(element, 'getBoundingClientRect').mockReturnValue(mockRect)
-        const rect = view.boundingRect
-        expect(rect).toEqual(mockRect)
-    })
-
-
-    test('position getter', () => {
-        element.style.position = 'absolute'
-        element.style.left = '100px'
-        element.style.top = '200px'
-        vi.spyOn(element, 'getBoundingClientRect').mockReturnValue({
-            left: 100,
-            top: 200,
-            width: 0,
-            height: 0,
-            right: 0,
-            bottom: 0,
-            x: 100,
-            y: 200
-        })
-        expect(view.position).toEqual({x: 100, y: 200})
-    })
-
-
     test('size getter', () => {
         element.style.width = '300px'
         element.style.height = '400px'
@@ -171,11 +112,6 @@ describe(PerkyView, () => {
             width: 300,
             height: 400
         })
-    })
-
-
-    test('classList', () => {
-        expect(view.classList()).toBe(element.classList)
     })
 
 
@@ -191,13 +127,6 @@ describe(PerkyView, () => {
         view.removeClass('test-class')
         expect(element.classList.contains('test-class')).toBe(false)
         expect(view.removeClass('test-class')).toBe(view)
-    })
-
-
-    test('toggleClass', () => {
-        view.toggleClass('test-class', true)
-        expect(element.classList.contains('test-class')).toBe(true)
-        expect(view.toggleClass('test-class')).toBe(view)
     })
 
 
@@ -267,63 +196,6 @@ describe(PerkyView, () => {
     })
 
 
-    test('setPosition', () => {
-        view.setPosition({x: 100, y: 200})
-
-        expect(element.style.left).toBe('100px')
-        expect(element.style.top).toBe('200px')
-        expect(view.setPosition({x: 100, y: 200})).toBe(view)
-    })
-
-
-    test('setPosition with custom unit', () => {
-        view.setPosition({x: 100, y: 200, unit: '%'})
-
-        expect(element.style.left).toBe('100%')
-        expect(element.style.top).toBe('200%')
-    })
-
-
-    test('setStyle', () => {
-        view.setStyle('backgroundColor', 'red')
-
-        expect(element.style.backgroundColor).toBe('red')
-        expect(view.setStyle('backgroundColor', 'red')).toBe(view)
-    })
-
-
-    test('setStyle with object', () => {
-        view.setStyle({
-            backgroundColor: 'red',
-            color: 'blue'
-        })
-
-        expect(element.style.backgroundColor).toBe('red')
-        expect(element.style.color).toBe('blue')
-        expect(view.setStyle({})).toBe(view)
-    })
-
-
-    test('getStyle', () => {
-        element.style.backgroundColor = 'red'
-        expect(view.getStyle('backgroundColor')).toBe('red')
-    })
-
-
-    test('zIndex getter and setter', () => {
-        view.zIndex = 100
-        expect(element.style.zIndex).toBe('100')
-        expect(view.zIndex).toBe('100')
-    })
-
-
-    test('opacity getter and setter', () => {
-        view.opacity = 0.5
-        expect(element.style.opacity).toBe('0.5')
-        expect(view.opacity).toBe('0.5')
-    })
-
-
     test('display getter and setter', () => {
         view.display = 'flex'
         expect(element.style.display).toBe('flex')
@@ -355,27 +227,6 @@ describe(PerkyView, () => {
     test('show without previous display', () => {
         view.show()
         expect(element.style.display).toBe('')
-    })
-
-
-    test('setAttribute', () => {
-        view.setAttribute('data-test', 'value')
-        expect(element.getAttribute('data-test')).toBe('value')
-        expect(view.setAttribute('data-test', 'value')).toBe(view)
-    })
-
-
-    test('getAttribute', () => {
-        element.setAttribute('data-test', 'value')
-        expect(view.getAttribute('data-test')).toBe('value')
-    })
-
-
-    test('removeAttribute', () => {
-        element.setAttribute('data-test', 'value')
-        view.removeAttribute('data-test')
-        expect(element.hasAttribute('data-test')).toBe(false)
-        expect(view.removeAttribute('data-test')).toBe(view)
     })
 
 
