@@ -78,7 +78,7 @@ export default class PerkyView extends PerkyModule {
 
 
     setSize ({width, height, unit = 'px'}) {
-        Object.assign(this.style, {
+        Object.assign(this.element.style, {
             width: `${width}${unit}`,
             height: `${height}${unit}`
         })
@@ -89,7 +89,7 @@ export default class PerkyView extends PerkyModule {
     }
 
 
-    fit (element = this.parentElement) {
+    fit (element = this.container) {
         const {width, height} = element.getBoundingClientRect()
 
         this.setSize({width, height})

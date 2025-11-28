@@ -63,7 +63,7 @@
     "build:watch": "chokidar 'src/**/*' -c 'yarn build' --initial",
     "test": "vitest run",
     "test:watch": "vitest",
-    "mist": "vite serve mistbrewer --port 3000",
+    "mist": "vite serve mistbrewer --port 3000"
   },
   "keywords": [
     "javascript",
