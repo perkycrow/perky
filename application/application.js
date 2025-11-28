@@ -13,7 +13,7 @@ export default class Application extends Engine {
 
     constructor (params = {}) {
         const {extensions = [], inputManager, inputBinder, keyboard = {}, mouse = {}} = params
-        
+
         super(params)
 
         this.loaders = new Registry(loaders)
@@ -30,12 +30,12 @@ export default class Application extends Engine {
         })
 
         this.use(InputBinder, {
-            instance: getInputBinder(inputBinder),
+            instance: getOrCreate(InputBinder, inputBinder),
             $bind: 'inputBinder'
         })
 
         this.use(InputManager, {
-            instance: getInputManager(inputManager),
+            instance: getOrCreate(InputManager, inputManager),
             $bind: 'inputManager'
         })
 
@@ -82,7 +82,7 @@ export default class Application extends Engine {
     mountTo (element) {
         return this.perkyView.mountTo(element)
     }
-    
+
 
     dismount () {
         return this.perkyView.dismount()
@@ -285,11 +285,11 @@ export default class Application extends Engine {
     bindKey (keyName, actionNameOrOptions, eventType = 'pressed', controllerName = null) {
         if (typeof actionNameOrOptions === 'object') {
             const {actionName, eventType: objEventType = 'pressed', controllerName: objControllerName = null} = actionNameOrOptions
-            
+
             if (!actionName || typeof actionName !== 'string') {
                 throw new Error('actionName is required and must be a string')
             }
-            
+
             return this.bind({
                 deviceName: 'keyboard',
                 controlName: keyName,
@@ -301,7 +301,7 @@ export default class Application extends Engine {
             if (!actionNameOrOptions || typeof actionNameOrOptions !== 'string') {
                 throw new Error('actionName is required and must be a string')
             }
-            
+
             return this.bind({
                 deviceName: 'keyboard',
                 controlName: keyName,
@@ -316,11 +316,11 @@ export default class Application extends Engine {
     bindMouse (buttonName, actionNameOrOptions, eventType = 'pressed', controllerName = null) {
         if (typeof actionNameOrOptions === 'object') {
             const {actionName, eventType: objEventType = 'pressed', controllerName: objControllerName = null} = actionNameOrOptions
-            
+
             if (!actionName || typeof actionName !== 'string') {
                 throw new Error('actionName is required and must be a string')
             }
-            
+
             return this.bind({
                 deviceName: 'mouse',
                 controlName: buttonName,
@@ -332,7 +332,7 @@ export default class Application extends Engine {
             if (!actionNameOrOptions || typeof actionNameOrOptions !== 'string') {
                 throw new Error('actionName is required and must be a string')
             }
-            
+
             return this.bind({
                 deviceName: 'mouse',
                 controlName: buttonName,
@@ -399,28 +399,14 @@ export default class Application extends Engine {
 
 
 
-function getInputBinder (inputBinder) {
-    if (inputBinder && typeof inputBinder === 'object' && !(inputBinder instanceof InputBinder)) {
-        return new InputBinder(inputBinder)
+function getOrCreate (Class, instanceOrOptions) {
+    if (instanceOrOptions && typeof instanceOrOptions === 'object' && !(instanceOrOptions instanceof Class)) {
+        return new Class(instanceOrOptions)
     }
 
-    if (inputBinder instanceof InputBinder) {
-        return inputBinder
+    if (instanceOrOptions instanceof Class) {
+        return instanceOrOptions
     }
 
-    return new InputBinder()
-}
-
-
-
-function getInputManager (inputManager) {
-    if (inputManager && typeof inputManager === 'object' && !(inputManager instanceof InputManager)) {
-        return new InputManager(inputManager)
-    }
-
-    if (inputManager instanceof InputManager) {
-        return inputManager
-    }
-
-    return new InputManager()
+    return new Class()
 }
