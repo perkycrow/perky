@@ -227,9 +227,6 @@ export default class PerkyView extends PerkyModule {
     }
 
 
-
-
-
     setDisplayMode (mode) {
         const modes = {
             normal: () => this.exitFullscreenMode(),
@@ -240,7 +237,6 @@ export default class PerkyView extends PerkyModule {
             return modes[mode]()
         }
 
-        console.warn(`Unknown display mode: ${mode}`)
         return this
     }
 
