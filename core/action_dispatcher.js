@@ -24,7 +24,6 @@ export default class ActionDispatcher extends PerkyModule {
             list: 'listControllers',
             setActive: 'setActiveController',
             getActive: 'getActiveController',
-            activeController: 'getActiveController',
             push: 'pushContext',
             pop: 'popContext',
             getStack: 'getContextStack',

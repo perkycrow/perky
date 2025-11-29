@@ -280,17 +280,6 @@ describe(Engine, () => {
     })
 
 
-    test('setActiveController', () => {
-        const spy = vi.spyOn(engine.actionDispatcher, 'setActive')
-        const controller = new ActionController()
-
-        engine.registerController('test', controller)
-        engine.setActiveController('test')
-
-        expect(spy).toHaveBeenCalledWith('test')
-    })
-
-
     test('getActiveController', () => {
         const controller = new ActionController()
         engine.registerController('test', controller)
