@@ -133,19 +133,6 @@ describe(Application, () => {
     })
 
 
-    test('mount', () => {
-        const element = document.createElement('div')
-
-        application.mount(element)
-
-        expect(application.perkyView.mount).toHaveBeenCalledWith(element)
-    })
-
-
-    test('element getter', () => {
-        expect(application.element).toBe(application.perkyView.element)
-    })
-
 
     test('loadSource', async () => {
         vi.spyOn(application, 'loadSource').mockResolvedValue('loaded')
@@ -270,18 +257,6 @@ describe(Application, () => {
         expect(mockManifest.setConfig).toHaveBeenCalledWith('debug', true)
     })
 
-
-    test('html', () => {
-        const htmlSetter = vi.fn()
-        Object.defineProperty(application.perkyView, 'html', {
-            set: htmlSetter,
-            configurable: true
-        })
-
-        application.html = '<div>test</div>'
-
-        expect(htmlSetter).toHaveBeenCalledWith('<div>test</div>')
-    })
 
 
     test('constructor with custom inputManager and inputBinder', () => {

@@ -314,6 +314,50 @@ describe(PerkyModule, () => {
     })
 
 
+    test('delegate with getters and setters', () => {
+        const target = {
+            _value: 10,
+            get value () {
+                return this._value
+            },
+            set value (newValue) {
+                this._value = newValue
+            }
+        }
+
+        extension.delegate(target, ['value'])
+
+        expect(extension.value).toBe(10)
+
+        extension.value = 20
+        expect(target.value).toBe(20)
+        expect(extension.value).toBe(20)
+    })
+
+
+    test('delegate with object-based aliasing', () => {
+        const target = {
+            originalMethod: vi.fn(() => 'result'),
+            originalProp: 'value'
+        }
+
+        extension.delegate(target, {
+            originalMethod: 'aliasedMethod',
+            originalProp: 'aliasedProp'
+        })
+
+        expect(extension.aliasedMethod).toBeDefined()
+        expect(typeof extension.aliasedMethod).toBe('function')
+        expect(extension.aliasedMethod()).toBe('result')
+        expect(target.originalMethod).toHaveBeenCalled()
+
+        expect(extension.aliasedProp).toBe('value')
+
+        extension.aliasedProp = 'new value'
+        expect(target.originalProp).toBe('new value')
+    })
+
+
     test('dispose calls dispose on all extensions in cascade', () => {
         class ChildExtension1 extends PerkyModule { }
         class ChildExtension2 extends PerkyModule { }
