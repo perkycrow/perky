@@ -56,6 +56,11 @@ export default class Application extends Engine {
         })
         this.inputManager.registerDevice('mouse', this.mouse)
 
+        this.delegate(this.perkyView, ['element', 'mount', 'dismount', 'mounted', 'displayMode'])
+        this.delegate(this.sourceManager, ['loadSource', 'loadTag', 'loadAll'])
+        this.delegate(this.inputBinder, ['bind', 'unbind', 'getBinding', 'hasBinding', 'getBindingsForInput', 'getAllBindings', 'clearBindings', 'bindCombo'])
+        this.delegate(this.inputManager, ['isPressed', 'isPressedAny', 'getControl', 'getControlAny', 'addControl', 'registerDevice', 'getDevice'])
+
         this.#initEvents()
 
         if (typeof this.configure === 'function') {
@@ -74,38 +79,34 @@ export default class Application extends Engine {
     }
 
 
-    get element () {
-        return this.perkyView.element
+
+
+
+    setDisplayMode (mode) {
+        this.perkyView.setDisplayMode(mode)
+        return this
     }
 
 
-    mount (element) {
-        return this.perkyView.mount(element)
+    enterFullscreenMode () {
+        this.perkyView.enterFullscreenMode()
+        return this
     }
 
 
-    dismount () {
-        return this.perkyView.dismount()
+    exitFullscreenMode () {
+        this.perkyView.exitFullscreenMode()
+        return this
     }
 
 
-    get mounted () {
-        return this.perkyView && this.perkyView.mounted
+    getInputValue (deviceName, controlName) {
+        return this.inputManager ? this.inputManager.getValueFor(deviceName, controlName) : undefined
     }
 
 
-    async loadSource (type, id) {
-        return this.sourceManager.loadSource(type, id)
-    }
-
-
-    async loadTag (tag) {
-        return this.sourceManager.loadTag(tag)
-    }
-
-
-    async loadAll () {
-        return this.sourceManager.loadAll()
+    getInputValueAny (controlName) {
+        return this.inputManager ? this.inputManager.getValueAny(controlName) : undefined
     }
 
 
@@ -149,44 +150,7 @@ export default class Application extends Engine {
     }
 
 
-    bind (bindingData) {
-        return this.inputBinder.bind(bindingData)
-    }
 
-
-    unbind (params) {
-        return this.inputBinder.unbind(params)
-    }
-
-
-    getBinding (params) {
-        return this.inputBinder.getBinding(params)
-    }
-
-
-    hasBinding (params) {
-        return this.inputBinder.hasBinding(params)
-    }
-
-
-    getBindingsForInput (params) {
-        return this.inputBinder.getBindingsForInput(params)
-    }
-
-
-    getAllBindings () {
-        return this.inputBinder.getAllBindings()
-    }
-
-
-    clearBindings () {
-        return this.inputBinder.clearBindings()
-    }
-
-
-    isPressed (deviceName, controlName) {
-        return this.inputManager ? this.inputManager.isPressed(deviceName, controlName) : false
-    }
 
 
     isKeyPressed (keyName) {
@@ -196,16 +160,6 @@ export default class Application extends Engine {
 
     isMousePressed (buttonName) {
         return this.isPressed('mouse', buttonName)
-    }
-
-
-    isPressedAny (controlName) {
-        return this.inputManager ? this.inputManager.isPressedAny(controlName) : false
-    }
-
-
-    getInputValue (deviceName, controlName) {
-        return this.inputManager ? this.inputManager.getValueFor(deviceName, controlName) : undefined
     }
 
 
@@ -219,56 +173,7 @@ export default class Application extends Engine {
     }
 
 
-    getInputValueAny (controlName) {
-        return this.inputManager ? this.inputManager.getValueAny(controlName) : undefined
-    }
 
-
-    getControl (deviceName, controlName) {
-        return this.inputManager ? this.inputManager.getControl(deviceName, controlName) : null
-    }
-
-
-    getControlAny (controlName) {
-        return this.inputManager ? this.inputManager.getControlAny(controlName) : null
-    }
-
-
-    addControl (deviceNameOrControl, ControlOrParams, params) {
-        return this.inputManager ? this.inputManager.addControl(deviceNameOrControl, ControlOrParams, params) : null
-    }
-
-
-    registerDevice (name, device) {
-        return this.inputManager ? this.inputManager.registerDevice(name, device) : false
-    }
-
-
-    getDevice (name) {
-        return this.inputManager ? this.inputManager.getDevice(name) : undefined
-    }
-
-
-    get displayMode () {
-        return this.perkyView.displayMode
-    }
-
-
-    setDisplayMode (mode) {
-        this.perkyView.setDisplayMode(mode)
-        return this
-    }
-
-
-    enterFullscreenMode () {
-        this.perkyView.enterFullscreenMode()
-        return this
-    }
-
-    exitFullscreenMode () {
-        this.perkyView.exitFullscreenMode()
-        return this
-    }
 
 
     toggleFullscreen () {
@@ -344,9 +249,7 @@ export default class Application extends Engine {
     }
 
 
-    bindCombo (controls, actionName, controllerName = null, eventType = 'pressed') {
-        return this.inputBinder.bindCombo(controls, actionName, controllerName, eventType)
-    }
+
 
 
     #initEvents () {
