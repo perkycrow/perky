@@ -124,12 +124,6 @@ export default class Application extends Engine {
     }
 
 
-    getSource (type, id) {
-        const sourceDescriptor = this.manifest.getSourceDescriptor(type, id)
-        return sourceDescriptor ? sourceDescriptor.source : null
-    }
-
-
     getImage (id) {
         return this.getSource('images', id)
     }
@@ -138,14 +132,6 @@ export default class Application extends Engine {
     config (path, value) {
         return this.manifest.config(path, value)
     }
-
-
-    setHtml (html) {
-        this.perkyView.html = html
-    }
-
-
-
 
 
     isKeyPressed (keyName) {
@@ -166,9 +152,6 @@ export default class Application extends Engine {
     getMouseValue (buttonName) {
         return this.getInputValue('mouse', buttonName)
     }
-
-
-
 
 
     toggleFullscreen () {
@@ -244,18 +227,11 @@ export default class Application extends Engine {
     }
 
 
-
-
-
     #initEvents () {
-        const {inputManager, sourceManager} = this
+        const {inputManager} = this
 
         inputManager.on('control:pressed', this.#handleInputEvent.bind(this, 'pressed'))
         inputManager.on('control:released', this.#handleInputEvent.bind(this, 'released'))
-
-        sourceManager.on('loader:progress', this.emitter('loader:progress'))
-        sourceManager.on('loader:complete', this.emitter('loader:complete'))
-        sourceManager.on('loader:error', this.emitter('loader:error'))
     }
 
 

@@ -29,7 +29,7 @@ export default class PerkyView extends PerkyModule {
 
 
     onInstall (host) {
-        host.delegate(this, ['element', 'mount', 'dismount', 'mounted', 'displayMode'])
+        host.delegate(this, ['element', 'mount', 'dismount', 'mounted', 'displayMode', 'html'])
         host.delegateEvents(this, ['resize', 'mount', 'dismount', 'displayMode:changed'])
     }
 

@@ -266,14 +266,14 @@ describe(Application, () => {
     })
 
 
-    test('setHtml', () => {
+    test('html', () => {
         const htmlSetter = vi.fn()
         Object.defineProperty(application.perkyView, 'html', {
             set: htmlSetter,
             configurable: true
         })
 
-        application.setHtml('<div>test</div>')
+        application.html = '<div>test</div>'
 
         expect(htmlSetter).toHaveBeenCalledWith('<div>test</div>')
     })

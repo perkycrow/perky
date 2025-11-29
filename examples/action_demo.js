@@ -157,7 +157,7 @@ export default class ActionDemo extends Application {
             </div>
         `
         
-        this.setHtml(html)
+        this.html = html
         
         this.logElement = this.element.querySelector('#logContainer')
         this.statusElement = {
