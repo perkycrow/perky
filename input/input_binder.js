@@ -15,6 +15,11 @@ export default class InputBinder extends PerkyModule {
     }
 
 
+    onInstall (host) {
+        host.delegate(this, ['bind', 'unbind', 'getBinding', 'hasBinding', 'getBindingsForInput', 'getAllBindings', 'clearBindings', 'bindCombo'])
+    }
+
+
     import (bindings) {
         if (Array.isArray(bindings)) {
             bindings.forEach(bindingData => this.bind(bindingData))
@@ -48,7 +53,7 @@ export default class InputBinder extends PerkyModule {
                 eventType
             })
         }
-        
+
         this.#bindings.set(binding.key, binding)
         this.#addToInputIndex(binding)
 
@@ -59,12 +64,12 @@ export default class InputBinder extends PerkyModule {
     unbind (params) {
         const key = keyFor(params)
         const binding = this.#bindings.get(key)
-        
+
         if (binding) {
             this.#removeFromInputIndex(binding)
             return this.#bindings.delete(key)
         }
-        
+
         return false
     }
 
@@ -85,12 +90,12 @@ export default class InputBinder extends PerkyModule {
 
         const compositeBindings = []
         for (const binding of this.#bindings.values) {
-            if (binding instanceof CompositeBinding && 
+            if (binding instanceof CompositeBinding &&
                 binding.matches({deviceName, controlName, eventType})) {
                 compositeBindings.push(binding)
             }
         }
-        
+
         return [...directBindings, ...compositeBindings]
     }
 
@@ -110,7 +115,7 @@ export default class InputBinder extends PerkyModule {
         if (!Array.isArray(controls) || controls.length < 2) {
             throw new Error('Controls must be an array with at least 2 controls')
         }
-        
+
         if (!actionName || typeof actionName !== 'string') {
             throw new Error('actionName is required and must be a string')
         }
@@ -155,11 +160,11 @@ export default class InputBinder extends PerkyModule {
 
     #addToInputIndex (binding) {
         const inputKey = buildInputKey(binding.deviceName, binding.controlName, binding.eventType)
-        
+
         if (!this.#inputIndex.has(inputKey)) {
             this.#inputIndex.set(inputKey, [])
         }
-        
+
         this.#inputIndex.get(inputKey).push(binding)
     }
 
@@ -167,12 +172,12 @@ export default class InputBinder extends PerkyModule {
     #removeFromInputIndex (binding) {
         const inputKey = buildInputKey(binding.deviceName, binding.controlName, binding.eventType)
         const bindings = this.#inputIndex.get(inputKey)
-        
+
         if (bindings) {
             const index = bindings.indexOf(binding)
             if (index !== -1) {
                 bindings.splice(index, 1)
-                
+
                 if (bindings.length === 0) {
                     this.#inputIndex.delete(inputKey)
                 }

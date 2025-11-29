@@ -11,6 +11,11 @@ export default class SourceManager extends PerkyModule {
     }
 
 
+    onInstall (host) {
+        host.delegate(this, ['loadSource', 'loadTag', 'loadAll'])
+    }
+
+
     async loadSource (type, id) {
         const sourceDescriptor = this.manifest.getSourceDescriptor(type, id)
 
@@ -37,7 +42,7 @@ export default class SourceManager extends PerkyModule {
 
         return sourceLoader
     }
-    
+
 
     async loadAll () {
         const sourceDescriptors = this.manifest.getAllSourceDescriptors()

@@ -6,9 +6,14 @@ export default class InputManager extends PerkyModule {
 
     constructor () {
         super()
-        
+
         this.devices = new Registry()
         this.#initEvents()
+    }
+
+
+    onInstall (host) {
+        host.delegate(this, ['isPressed', 'isPressedAny', 'getControl', 'getControlAny', 'addControl', 'registerDevice', 'getDevice'])
     }
 
 
@@ -173,11 +178,6 @@ export default class InputManager extends PerkyModule {
 
     deviceKeyFor (device) {
         return this.devices.keyFor(device)
-    }
-
-
-    #initEvents () {
-        // Events are handled in registerDevice
     }
 
 

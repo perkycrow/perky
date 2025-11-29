@@ -982,11 +982,25 @@ describe('displayMode', () => {
         }
 
         vi.spyOn(PerkyView.prototype, 'mount').mockReturnValue(null)
-        vi.spyOn(Engine.prototype, 'use').mockImplementation(function (ExtensionClass, options) {
+        vi.spyOn(Engine.prototype, 'use').mockImplementation(function (ExtensionClass, options) { // eslint-disable-line complexity
             if (options.$bind === 'perkyView') {
                 this[options.$bind] = mockPerkyView
+
+                if (mockPerkyView.install) {
+                    mockPerkyView.install(this, options)
+                }
+
+                if (mockPerkyView.displayMode !== undefined) {
+                    Object.defineProperty(this, 'displayMode', {
+                        get: () => mockPerkyView.displayMode,
+                        configurable: true
+                    })
+                }
             } else {
                 const instance = options.instance || new ExtensionClass(options)
+                if (instance.install) {
+                    instance.install(this, options)
+                }
                 if (options.$bind) {
                     this[options.$bind] = instance
                 }

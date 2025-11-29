@@ -28,6 +28,11 @@ export default class PerkyView extends PerkyModule {
     }
 
 
+    onInstall (host) {
+        host.delegate(this, ['element', 'mount', 'dismount', 'mounted', 'displayMode'])
+    }
+
+
     get container () {
         return this.element.parentElement
     }

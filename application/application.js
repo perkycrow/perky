@@ -56,11 +56,6 @@ export default class Application extends Engine {
         })
         this.inputManager.registerDevice('mouse', this.mouse)
 
-        this.delegate(this.perkyView, ['element', 'mount', 'dismount', 'mounted', 'displayMode'])
-        this.delegate(this.sourceManager, ['loadSource', 'loadTag', 'loadAll'])
-        this.delegate(this.inputBinder, ['bind', 'unbind', 'getBinding', 'hasBinding', 'getBindingsForInput', 'getAllBindings', 'clearBindings', 'bindCombo'])
-        this.delegate(this.inputManager, ['isPressed', 'isPressedAny', 'getControl', 'getControlAny', 'addControl', 'registerDevice', 'getDevice'])
-
         this.#initEvents()
 
         if (typeof this.configure === 'function') {
