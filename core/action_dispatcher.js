@@ -16,6 +16,27 @@ export default class ActionDispatcher extends PerkyModule {
     }
 
 
+    onInstall (host) {
+        host.delegate(this, {
+            register: 'registerController',
+            unregister: 'unregisterController',
+            getController: 'getController',
+            list: 'listControllers',
+            setActive: 'setActiveController',
+            getActive: 'getActiveController',
+            activeController: 'getActiveController',
+            push: 'pushContext',
+            pop: 'popContext',
+            getStack: 'getContextStack',
+            clearStack: 'clearContextStack',
+            isStackMode: 'isStackMode',
+            dispatch: 'dispatchAction',
+            addAction: 'addActionToController',
+            listActions: 'listActions'
+        })
+    }
+
+
     get activeController () {
         return this.#controllers.get(this.#activeControllerName)
     }
@@ -115,11 +136,11 @@ export default class ActionDispatcher extends PerkyModule {
 
     enableStackMode () {
         this.#useStackMode = true
-        
+
         if (this.#activeControllerName && !this.#contextStack.includes(this.#activeControllerName)) {
             this.#contextStack.push(this.#activeControllerName)
         }
-        
+
         this.emit('stackMode:enabled')
     }
 
@@ -128,7 +149,7 @@ export default class ActionDispatcher extends PerkyModule {
         this.#useStackMode = false
         this.#activeControllerName = this.#contextStack[this.#contextStack.length - 1] || null
         this.#contextStack = []
-        
+
         this.emit('stackMode:disabled')
     }
 
@@ -143,18 +164,18 @@ export default class ActionDispatcher extends PerkyModule {
             console.warn(`Context "${name}" not found`)
             return false
         }
-        
+
         if (this.#contextStack.length > 0 && this.#contextStack[this.#contextStack.length - 1] === name) {
             return false
         }
-        
+
         if (!this.#useStackMode) {
             this.enableStackMode()
         }
-        
+
         this.#contextStack.push(name)
         this.emit('context:pushed', name, this.#contextStack.length)
-        
+
         return true
     }
 
@@ -164,14 +185,14 @@ export default class ActionDispatcher extends PerkyModule {
             console.warn('Context stack is empty')
             return null
         }
-        
+
         const popped = this.#contextStack.pop()
         this.emit('context:popped', popped, this.#contextStack.length)
-        
+
         if (this.#contextStack.length === 0) {
             this.disableStackMode()
         }
-        
+
         return popped
     }
 
@@ -223,19 +244,19 @@ export default class ActionDispatcher extends PerkyModule {
 
     dispatchAction (binding, control, ...args) {
         const targetController = binding.controllerName || this.#activeControllerName
-        
+
         if (targetController) {
             if (!this.#isControllerActive(targetController)) {
                 return false
             }
-            
+
             return this.dispatchTo(targetController, binding.actionName, ...args)
         } else {
             return this.dispatch(binding.actionName, ...args)
         }
     }
-    
-    
+
+
     #isControllerActive (controllerName) {
         if (this.#useStackMode) {
             return this.#contextStack.includes(controllerName)
@@ -252,13 +273,13 @@ export default class ActionDispatcher extends PerkyModule {
 
     listAllActions () {
         const allActions = new Map()
-        
+
         for (const [name, controller] of this.#controllers.entries) {
             if (controller && typeof controller.listActions === 'function') {
                 allActions.set(name, controller.listActions())
             }
         }
-        
+
         return allActions
     }
 
@@ -268,7 +289,7 @@ export default class ActionDispatcher extends PerkyModule {
             console.warn('No active context')
             return false
         }
-        
+
         return this.dispatchTo(this.#activeControllerName, actionName, ...args)
     }
 
@@ -277,46 +298,46 @@ export default class ActionDispatcher extends PerkyModule {
         for (let i = this.#contextStack.length - 1; i >= 0; i--) {
             const controllerName = this.#contextStack[i]
             const controller = this.#controllers.get(controllerName)
-            
+
             if (!controller) {
                 continue
             }
-            
+
             const hasAction = controller.hasAction(actionName)
-            
+
             if (hasAction) {
                 const result = controller.execute(actionName, ...args)
-                
+
                 if (!controller.shouldPropagate(actionName)) {
                     return result
                 }
             } else {
                 const canPropagate = this.#canPropagateFromLowerContexts(actionName, i - 1)
-                
+
                 if (!canPropagate) {
                     return false
                 }
             }
         }
-        
+
         return false
     }
-    
-    
+
+
     #canPropagateFromLowerContexts (actionName, startIndex) {
         for (let i = startIndex; i >= 0; i--) {
             const controllerName = this.#contextStack[i]
             const controller = this.#controllers.get(controllerName)
-            
+
             if (!controller) {
                 continue
             }
-            
+
             if (controller.hasAction(actionName) && controller.shouldPropagate(actionName)) {
                 return true
             }
         }
-        
+
         return false
     }
 

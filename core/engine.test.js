@@ -249,12 +249,10 @@ describe(Engine, () => {
 
 
     test('registerController', () => {
-        const spy = vi.spyOn(engine.actionDispatcher, 'register')
         const controller = new ActionController()
 
         engine.registerController('test', controller)
 
-        expect(spy).toHaveBeenCalledWith('test', controller)
         expect(engine.getController('test')).toBe(controller)
     })
 
@@ -268,7 +266,7 @@ describe(Engine, () => {
 
 
     test('getController non-existent', () => {
-        expect(engine.getController('nonexistent')).toBeNull()
+        expect(engine.getController('nonexistent')).toBeUndefined()
     })
 
 
@@ -278,7 +276,7 @@ describe(Engine, () => {
 
         engine.unregisterController('test')
 
-        expect(engine.getController('test')).toBeNull()
+        expect(engine.getController('test')).toBeUndefined()
     })
 
 
@@ -304,14 +302,12 @@ describe(Engine, () => {
 
 
     test('dispatchAction', () => {
-        const actionDispatcherSpy = vi.spyOn(engine.actionDispatcher, 'dispatch')
-        const controller = new ActionController()
-
-        engine.registerController('test', controller)
+        const controllerSpy = vi.fn()
+        engine.applicationController.testAction = controllerSpy
 
         engine.dispatchAction('testAction', 'param1', 'param2')
 
-        expect(actionDispatcherSpy).toHaveBeenCalledWith('testAction', 'param1', 'param2')
+        expect(controllerSpy).toHaveBeenCalledWith('param1', 'param2')
     })
 
 

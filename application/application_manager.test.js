@@ -77,7 +77,7 @@ describe(ApplicationManager, () => {
 
     test('register', () => {
         appManager.register('testApp', MockApp)
-        
+
         expect(appManager.constructors.has('testApp')).toBe(true)
         expect(appManager.constructors.get('testApp')).toBe(MockApp)
     })
@@ -85,7 +85,7 @@ describe(ApplicationManager, () => {
 
     test('register duplicate name throws error', () => {
         appManager.register('testApp', MockApp)
-        
+
         expect(() => {
             appManager.register('testApp', MockApp)
         }).toThrow('Application "testApp" is already registered.')
@@ -95,7 +95,7 @@ describe(ApplicationManager, () => {
     test('unregister', () => {
         appManager.register('testApp', MockApp)
         expect(appManager.constructors.has('testApp')).toBe(true)
-        
+
         appManager.unregister('testApp')
         expect(appManager.constructors.has('testApp')).toBe(false)
     })
@@ -105,16 +105,16 @@ describe(ApplicationManager, () => {
         expect(() => {
             appManager.unregister('nonExistent')
         }).not.toThrow()
-        
+
         expect(appManager.constructors.has('nonExistent')).toBe(false)
     })
 
 
     test('create', () => {
         appManager.register('testApp', MockApp)
-        
+
         const app = appManager.create('testApp', {name: 'TestInstance'})
-        
+
         expect(app).toBeInstanceOf(MockApp)
         expect(app.id).toBe(1)
         expect(app.name).toBe('TestInstance')
@@ -126,9 +126,9 @@ describe(ApplicationManager, () => {
 
     test('create with default params', () => {
         appManager.register('testApp', MockApp)
-        
+
         const app = appManager.create('testApp')
-        
+
         expect(app).toBeInstanceOf(MockApp)
         expect(app.id).toBe(1)
         expect(app.name).toBe('MockApp')
@@ -137,11 +137,11 @@ describe(ApplicationManager, () => {
 
     test('create increments lastAppId', () => {
         appManager.register('testApp', MockApp)
-        
+
         const app1 = appManager.create('testApp')
         const app2 = appManager.create('testApp')
         const app3 = appManager.create('testApp')
-        
+
         expect(app1.id).toBe(1)
         expect(app2.id).toBe(2)
         expect(app3.id).toBe(3)
@@ -158,9 +158,9 @@ describe(ApplicationManager, () => {
 
     test('spawn', async () => {
         appManager.register('testApp', MockApp)
-        
+
         const app = await appManager.spawn('testApp', {name: 'SpawnedApp'})
-        
+
         expect(app).toBeInstanceOf(MockApp)
         expect(app.id).toBe(1)
         expect(app.name).toBe('SpawnedApp')
@@ -172,9 +172,9 @@ describe(ApplicationManager, () => {
     test('start', () => {
         appManager.register('testApp', MockApp)
         const app = appManager.create('testApp')
-        
+
         appManager.start(app.id)
-        
+
         expect(app.mockStart).toHaveBeenCalled()
     })
 
@@ -189,9 +189,9 @@ describe(ApplicationManager, () => {
     test('stop', async () => {
         appManager.register('testApp', MockApp)
         const app = await appManager.spawn('testApp')
-        
+
         appManager.stop(app.id)
-        
+
         expect(app.mockStop).toHaveBeenCalled()
     })
 
@@ -204,12 +204,16 @@ describe(ApplicationManager, () => {
 
 
     test('execute', () => {
-        appManager.register('testApp', MockApp)
-        const app = appManager.create('testApp')
-        
+        appManager = new ApplicationManager()
+        appManager.register('TestApp', Application)
+
+        const app = appManager.create('TestApp')
+        const actionSpy = vi.fn()
+        app.applicationController.testAction = actionSpy
+
         appManager.execute(app.id, 'testAction', 'arg1', 'arg2')
-        
-        expect(app.mockDispatchAction).toHaveBeenCalledWith('testAction', 'arg1', 'arg2')
+
+        expect(actionSpy).toHaveBeenCalledWith('arg1', 'arg2')
     })
 
 
@@ -224,9 +228,9 @@ describe(ApplicationManager, () => {
         appManager.register('testApp', MockApp)
         const app = await appManager.spawn('testApp')
         const appId = app.id
-        
+
         appManager.dispose(appId)
-        
+
         expect(app.mockDispose).toHaveBeenCalled()
         expect(appManager.instances.has(appId)).toBe(false)
     })
@@ -244,11 +248,11 @@ describe(ApplicationManager, () => {
         const container = document.createElement('div')
         const app = await appManager.spawn('testApp', {container})
         const appId = app.id
-        
+
         expect(app.perkyView.mounted).toBe(true)
-        
+
         appManager.dispose(appId)
-        
+
         expect(app.mockDispose).toHaveBeenCalled()
         expect(app.mockDismount).toHaveBeenCalledTimes(1)
         expect(appManager.instances.has(appId)).toBe(false)
@@ -260,13 +264,13 @@ describe(ApplicationManager, () => {
         const container = document.createElement('div')
         const app = await appManager.spawn('testApp', {container})
         const appId = app.id
-        
+
         appManager.stop(appId)
         expect(app.mockStop).toHaveBeenCalledTimes(1)
         expect(app.mockDispose).not.toHaveBeenCalled()
         expect(app.mockDismount).not.toHaveBeenCalled()
         expect(appManager.instances.has(appId)).toBe(true)
-        
+
         appManager.dispose(appId)
         expect(app.mockDispose).toHaveBeenCalled()
         expect(app.mockDismount).toHaveBeenCalledTimes(1)
@@ -276,13 +280,13 @@ describe(ApplicationManager, () => {
 
     test('list all apps', () => {
         appManager.register('testApp', MockApp)
-        
+
         const app1 = appManager.create('testApp', {name: 'App1'})
         const app2 = appManager.create('testApp', {name: 'App2'})
         const app3 = appManager.create('testApp', {name: 'Different'})
-        
+
         const allApps = appManager.list()
-        
+
         expect(allApps).toHaveLength(3)
         expect(allApps).toContain(app1)
         expect(allApps).toContain(app2)
@@ -292,21 +296,21 @@ describe(ApplicationManager, () => {
 
     test('list with grep filter', () => {
         appManager.register('testApp', MockApp)
-        
+
         const app1 = appManager.create('testApp', {name: 'GameApp'})
         const app2 = appManager.create('testApp', {name: 'MenuApp'})
         const app3 = appManager.create('testApp', {name: 'SettingsApp'})
-        
+
         const gameApps = appManager.list('Game')
         const menuApps = appManager.list('Menu')
         const appApps = appManager.list('App')
-        
+
         expect(gameApps).toHaveLength(1)
         expect(gameApps).toContain(app1)
-        
+
         expect(menuApps).toHaveLength(1)
         expect(menuApps).toContain(app2)
-        
+
         expect(appApps).toHaveLength(3)
         expect(appApps).toContain(app1)
         expect(appApps).toContain(app2)
@@ -317,16 +321,16 @@ describe(ApplicationManager, () => {
     test('list with no matches', () => {
         appManager.register('testApp', MockApp)
         appManager.create('testApp', {name: 'TestApp'})
-        
+
         const noMatches = appManager.list('NonExistent')
-        
+
         expect(noMatches).toHaveLength(0)
     })
 
 
     test('list empty registry', () => {
         const emptyList = appManager.list()
-        
+
         expect(emptyList).toHaveLength(0)
         expect(emptyList).toEqual([])
     })
@@ -338,35 +342,35 @@ describe(ApplicationManager, () => {
                 super({...params, name: 'Preload'})
             }
         }
-        
+
         class TitleApp extends MockApp {
             constructor (params) {
                 super({...params, name: 'TitleScreen'})
             }
         }
-        
+
         class GameApp extends MockApp {
             constructor (params) {
                 super({...params, name: 'Game'})
             }
         }
-        
+
         appManager.register('preload', PreloadApp)
         appManager.register('title', TitleApp)
         appManager.register('game', GameApp)
-        
+
         const preload = await appManager.spawn('preload')
         expect(preload.mockStart).toHaveBeenCalled()
-        
+
         appManager.stop(preload.id)
         expect(preload.mockStop).toHaveBeenCalled()
-        
+
         const title = await appManager.spawn('title')
         expect(title.mockStart).toHaveBeenCalled()
-        
+
         appManager.stop(title.id)
         await appManager.spawn('game')
-        
+
         expect(appManager.list()).toHaveLength(3)
         expect(appManager.list('Game')).toHaveLength(1)
         expect(appManager.list('Title')).toHaveLength(1)
@@ -379,25 +383,25 @@ describe(ApplicationManager, () => {
                 super({...params, name: 'Game'})
             }
         }
-        
+
         class SettingsApp extends MockApp {
             constructor (params) {
                 super({...params, name: 'Settings'})
             }
         }
-        
+
         appManager.register('game', GameApp)
         appManager.register('settings', SettingsApp)
-        
+
         const game = await appManager.spawn('game')
         const settings = await appManager.spawn('settings')
-        
+
         expect(game.mockStart).toHaveBeenCalled()
         expect(settings.mockStart).toHaveBeenCalled()
-        
+
         const runningApps = appManager.list()
         expect(runningApps).toHaveLength(2)
-        
+
         appManager.dispose(settings.id)
         expect(settings.mockDispose).toHaveBeenCalled()
         expect(appManager.instances.has(settings.id)).toBe(false)
@@ -407,18 +411,18 @@ describe(ApplicationManager, () => {
 
     test('multiple instances of same app type', () => {
         appManager.register('dialog', MockApp)
-        
+
         const dialog1 = appManager.create('dialog', {name: 'ConfirmDialog'})
         const dialog2 = appManager.create('dialog', {name: 'AlertDialog'})
         const dialog3 = appManager.create('dialog', {name: 'InputDialog'})
-        
+
         expect(dialog1.id).toBe(1)
         expect(dialog2.id).toBe(2)
         expect(dialog3.id).toBe(3)
-        
+
         expect(appManager.list()).toHaveLength(3)
         expect(appManager.list('Dialog')).toHaveLength(3)
-        
+
         appManager.dispose(dialog2.id)
         expect(appManager.list()).toHaveLength(2)
         expect(appManager.instances.has(dialog1.id)).toBe(true)
@@ -429,20 +433,20 @@ describe(ApplicationManager, () => {
 
     test('app lifecycle management', () => {
         appManager.register('testApp', MockApp)
-        
+
         const app = appManager.create('testApp')
         expect(app.mockStart).not.toHaveBeenCalled()
         expect(app.mockStop).not.toHaveBeenCalled()
-        
+
         appManager.start(app.id)
         expect(app.mockStart).toHaveBeenCalledTimes(1)
-        
+
         appManager.stop(app.id)
         expect(app.mockStop).toHaveBeenCalledTimes(1)
-        
+
         appManager.start(app.id)
         expect(app.mockStart).toHaveBeenCalledTimes(2)
-        
+
         appManager.dispose(app.id)
         expect(app.mockDispose).toHaveBeenCalled()
         expect(appManager.instances.has(app.id)).toBe(false)
@@ -451,15 +455,15 @@ describe(ApplicationManager, () => {
 
     test('app self-dispose should be intercepted by manager', () => {
         appManager.register('testApp', MockApp)
-        
+
         const app = appManager.create('testApp')
         const appId = app.id
-        
+
         expect(appManager.instances.has(appId)).toBe(true)
         expect(appManager.list()).toHaveLength(1)
-        
+
         app.dispose()
-        
+
         expect(appManager.instances.has(appId)).toBe(false)
         expect(appManager.list()).toHaveLength(0)
     })

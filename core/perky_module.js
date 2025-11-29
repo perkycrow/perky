@@ -212,24 +212,46 @@ export default class PerkyModule extends Notifier {
 
 
     delegate (target, names) {
-        if (!target || !Array.isArray(names)) {
-            return
+        if (!target) {
+            throw new Error('Target is required for delegation')
         }
 
-        names.forEach(name => {
-            if (typeof target[name] === 'function') {
-                this[name] = target[name].bind(target)
-            } else {
-                Object.defineProperty(this, name, {
-                    get: () => target[name],
-                    set: (value) => {
-                        target[name] = value
-                    },
-                    enumerable: true,
-                    configurable: true
-                })
-            }
-        })
+        if (Array.isArray(names)) {
+            names.forEach(name => {
+                this.#delegateProperty(target, name, name)
+            })
+        } else if (typeof names === 'object') {
+            Object.entries(names).forEach(([sourceName, hostName]) => {
+                this.#delegateProperty(target, sourceName, hostName)
+            })
+        } else {
+            throw new Error('Names must be an array or object')
+        }
+    }
+
+
+    #delegateProperty (target, sourceName, hostName) { // eslint-disable-line complexity
+        const descriptor = Object.getOwnPropertyDescriptor(target, sourceName)
+
+        if (descriptor && (descriptor.get || descriptor.set)) {
+            Object.defineProperty(this, hostName, {
+                get: descriptor.get ? descriptor.get.bind(target) : undefined,
+                set: descriptor.set ? descriptor.set.bind(target) : undefined,
+                enumerable: true,
+                configurable: true
+            })
+        } else if (typeof target[sourceName] === 'function') {
+            this[hostName] = target[sourceName].bind(target)
+        } else {
+            Object.defineProperty(this, hostName, {
+                get: () => target[sourceName],
+                set: (value) => {
+                    target[sourceName] = value
+                },
+                enumerable: true,
+                configurable: true
+            })
+        }
     }
 
 
