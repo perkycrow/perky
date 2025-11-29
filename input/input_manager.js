@@ -8,7 +8,6 @@ export default class InputManager extends PerkyModule {
         super()
 
         this.devices = new Registry()
-        this.#initEvents()
     }
 
 
