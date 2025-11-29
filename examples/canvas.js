@@ -25,11 +25,11 @@ let redCircle = null
 
 async function init () {
     const container = document.querySelector('.example-content')
-    
+
     setupCanvas(container)
     setupUI(container)
     await createScene()
-    
+
     renderer.render(scene)
 }
 
@@ -41,14 +41,15 @@ function setupCanvas (container) {
     canvas.style.display = 'block'
     canvas.style.margin = '0 auto'
     canvas.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)'
-    
+
     container.appendChild(canvas)
-    
+
     camera = new Camera2D({
         unitsInView: 7
     })
-    
-    renderer = new Canvas2D(canvas, {
+
+    renderer = new Canvas2D({
+        canvas,
         width: 800,
         height: 600,
         pixelRatio: window.devicePixelRatio || 1,
@@ -61,7 +62,7 @@ function setupCanvas (container) {
         backgroundColor: '#f9f9f9',
         enableCulling: true
     })
-    
+
     createStatsDisplay(container)
 }
 
@@ -115,7 +116,7 @@ function setupUI (container) {
         container,
         position: 'top-right'
     })
-    
+
     addButtonFolder(controlPane, 'Animation', [
         {
             title: 'Start/Stop Animation',
@@ -126,7 +127,7 @@ function setupUI (container) {
             action: () => resetScene()
         }
     ])
-    
+
     addButtonFolder(controlPane, 'Camera', [
         {
             title: 'Zoom In',
@@ -165,14 +166,14 @@ function setupUI (container) {
             }
         }
     ])
-    
+
     addButtonFolder(controlPane, 'Shapes', [
         {
             title: 'Add Random Shapes',
             action: () => addRandomShapes()
         }
     ])
-    
+
     addButtonFolder(controlPane, 'Display', [
         {
             title: 'Toggle Grid',
@@ -193,7 +194,7 @@ function setupUI (container) {
             }
         }
     ])
-    
+
     addButtonFolder(controlPane, 'Quality', [
         {
             title: 'Pixel Ratio: 0.5x',
@@ -231,14 +232,11 @@ function setupUI (container) {
             }
         }
     ])
-    
+
     addButtonFolder(controlPane, 'Resize', [
         {
             title: 'Fixed 800x600',
             action: () => {
-                if (renderer.disableAutoResize) {
-                    renderer.disableAutoResize()
-                }
                 renderer.resize(800, 600)
                 updateStats()
             }
@@ -246,25 +244,14 @@ function setupUI (container) {
         {
             title: 'Fixed 1200x800',
             action: () => {
-                if (renderer.disableAutoResize) {
-                    renderer.disableAutoResize()
-                }
                 renderer.resize(1200, 800)
                 updateStats()
             }
         },
         {
-            title: 'Auto Resize Container',
+            title: 'Auto Resize (deprecated)',
             action: () => {
-                renderer.enableAutoResize({container: true})
-                updateStats()
-            }
-        },
-        {
-            title: 'Auto Resize Window',
-            action: () => {
-                renderer.enableAutoResize({container: false})
-                updateStats()
+                logger?.warning('Auto resize has been replaced by the autoFit option in constructor')
             }
         }
     ])
@@ -273,7 +260,7 @@ function setupUI (container) {
 
 async function createScene () {
     scene = new Group2D()
-    
+
     createSun()
     createCenterGroup()
     createOrbitGroup()
@@ -395,7 +382,7 @@ function createRotatingSquares () {
 
 async function createImageObject () {
     const shroomImage = new Image()
-    
+
     await new Promise((resolve, reject) => {
         shroomImage.onload = resolve
         shroomImage.onerror = reject
@@ -415,7 +402,7 @@ async function createImageObject () {
 
 async function createLogoObject () {
     const logoImage = new Image()
-    
+
     await new Promise((resolve, reject) => {
         logoImage.onload = resolve
         logoImage.onerror = reject
@@ -440,24 +427,24 @@ async function createLogoObject () {
 
 function animate () {
     time += 0.016
-    
+
     centerGroup.setRotation(time * 0.5)
     centerGroup.setScale(1 + Math.sin(time) * 0.2)
-    
+
     orbitGroup.setRotation(time * 0.3)
-    
+
     rotatingSquares.setRotation(time * 2)
     rotatingSquares.children.forEach((square, i) => {
         square.setScale(1 + Math.sin(time * 2 + i) * 0.3)
     })
-    
+
     sun.setRadius(0.6 + Math.sin(time * 3) * 0.1)
-    
+
     redCircle.setOpacity(0.3 + Math.abs(Math.sin(time * 2)) * 0.7)
 
     imageObject.setRotation(time)
     logoObject.setRotation(-time * 0.5)
-    
+
     renderer.render(scene)
     updateStats()
 
@@ -469,7 +456,7 @@ function animate () {
 
 function toggleAnimation () {
     const logger = document.querySelector('.logger')?.logger
-    
+
     if (isAnimating) {
         isAnimating = false
         if (animationId) {
@@ -486,12 +473,12 @@ function toggleAnimation () {
 
 function resetScene () {
     const logger = document.querySelector('.logger')?.logger
-    
+
     isAnimating = false
     if (animationId) {
         cancelAnimationFrame(animationId)
     }
-    
+
     time = 0
     centerGroup.setRotation(0).setScale(1)
     orbitGroup.setRotation(0)
@@ -501,10 +488,10 @@ function resetScene () {
     redCircle.setOpacity(0.8)
     imageObject.setRotation(0)
     logoObject.setRotation(0)
-    
+
     camera.setPosition(0, 0)
     camera.setZoom(1)
-    
+
     renderer.render(scene)
     updateStats()
     logger?.info('Scene reset to initial state')
@@ -516,7 +503,7 @@ function createRandomShape () {
     const x = (Math.random() - 0.5) * 10
     const y = (Math.random() - 0.5) * 7
     const color = `hsl(${Math.random() * 360}, 70%, 50%)`
-    
+
     if (shapeType === 'circle') {
         return new Circle({
             x,
@@ -546,23 +533,23 @@ function createRandomShape () {
 function addRandomShapes () {
     const logger = document.querySelector('.logger')?.logger
     const randomGroup = new Group2D()
-    
+
     for (let i = 0; i < 10; i++) {
         const shape = createRandomShape()
         randomGroup.addChild(shape)
     }
-    
+
     scene.addChild(randomGroup)
-    
+
     renderer.render(scene)
     updateStats()
-    
+
     setTimeout(() => {
         scene.remove(randomGroup)
         renderer.render(scene)
         updateStats()
     }, 3000)
-    
+
     logger?.info('Added 10 random shapes (will disappear in 3 seconds)')
 }
 

@@ -7,12 +7,12 @@ export default class CanvasLayer extends Layer {
 
     constructor (name, options = {}) { // eslint-disable-line complexity
         super(name, options)
-        
+
         this.canvas = document.createElement('canvas')
         this.element = this.canvas
 
         this.applyStyles()
-        
+
         const width = options.width ?? 800
         const height = options.height ?? 600
         const pixelRatio = options.pixelRatio ?? 1
@@ -35,8 +35,9 @@ export default class CanvasLayer extends Layer {
                 pixelRatio: 1
             })
         }
-        
-        this.renderer = new Canvas2D(this.canvas, {
+
+        this.renderer = new Canvas2D({
+            canvas: this.canvas,
             width: vp.width,
             height: vp.height,
             pixelRatio,
@@ -49,10 +50,10 @@ export default class CanvasLayer extends Layer {
             backgroundColor: options.backgroundColor,
             enableCulling: options.enableCulling ?? false
         })
-        
+
         this.content = null
         this.autoRender = options.autoRender ?? true
-        
+
         this.applyViewport()
     }
 
@@ -94,11 +95,10 @@ export default class CanvasLayer extends Layer {
 
 
     destroy () {
-        if (this.renderer.disableAutoResize) {
-            this.renderer.disableAutoResize()
+        if (this.renderer) {
+            this.renderer.dispose()
         }
         super.destroy()
     }
 
 }
-

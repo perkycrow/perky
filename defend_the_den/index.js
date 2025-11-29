@@ -5,7 +5,6 @@ function init () {
     const container = document.getElementById('defend_the_den')
 
     app.mount(container)
-
     app.start()
 
     window.defendTheDen = app

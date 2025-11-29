@@ -3,11 +3,12 @@ import Spritesheet from '../canvas/spritesheet.js'
 import Sprite2D from '../canvas/sprite_2d.js'
 import SpriteAnimation2D from '../canvas/sprite_animation_2d.js'
 import Group2D from '../canvas/group_2d.js'
-import { createExampleContainer } from './example_utils.js'
+import {createExampleContainer} from './example_utils.js'
 
-const { canvas } = createExampleContainer()
+const {canvas} = createExampleContainer()
 
-const app = new Canvas2D(canvas, {
+const app = new Canvas2D({
+    canvas,
     width: 800,
     height: 600,
     pixelRatio: window.devicePixelRatio
@@ -52,7 +53,7 @@ Promise.all([
     sprite.addAnimation('idle', animation)
     sprite.play('idle')
 
-    function animate(timestamp) {
+    function animate () {
         app.render(scene)
         requestAnimationFrame(animate)
     }
