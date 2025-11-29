@@ -13,6 +13,12 @@ export default class SourceManager extends PerkyModule {
 
     onInstall (host) {
         host.delegate(this, ['loadSource', 'loadTag', 'loadAll'])
+
+        host.delegateEvents(this, [
+            'loader:progress',
+            'loader:complete',
+            'loader:error'
+        ])
     }
 
 
