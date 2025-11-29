@@ -26,6 +26,14 @@ export default class GameLoop extends PerkyModule {
             'getFps',
             'getCurrentFps'
         ])
+
+        this.pipeTo(host, [
+            'update',
+            'render',
+            'pause',
+            'resume',
+            'changed:fps'
+        ])
     }
 
 

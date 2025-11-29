@@ -1,5 +1,5 @@
 import Application from '../application/application'
-import GameExtension from '../game/game_extension'
+import GameLoop from '../game/game_extension'
 import Canvas2D from '../canvas/canvas_2d'
 import manifest from './manifest'
 
@@ -11,7 +11,7 @@ export default class DefendTheDen extends Application {
     }
 
     configure () {
-        this.use(GameExtension, {$bind: 'game'})
+        this.use(GameLoop, {$bind: 'gameLoop'})
 
         console.log(this)
     }

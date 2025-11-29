@@ -1,5 +1,5 @@
 import Application from '/application/application'
-import GameExtension from '/game/game_extension'
+import GameLoop from '/game/game_loop'
 import ThreePlugin from '/three/three_plugin'
 import PerkyLogger from '/editor/components/perky_logger'
 import {
@@ -32,7 +32,7 @@ const manifest = {
 export default class ShroomDrag extends Application {
 
     configure () {
-        this.use(GameExtension, {
+        this.use(GameLoop, {
             fps: 60,
             maxFrameSkip: 5
         })
