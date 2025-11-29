@@ -7,18 +7,18 @@ import ActionController from './action_controller'
 export default class Engine extends PerkyModule {
 
     constructor (params = {}) {
-        let {manifest = {}} = params
+        const {manifest = {}, ...superParams} = params
 
         super({
             name: 'engine',
-            ...params
+            ...superParams
         })
 
-        if (!(manifest instanceof Manifest)) {
-            manifest = new Manifest(manifest)
-        }
-
-        this.manifest = manifest
+        this.use(Manifest, {
+            $bind: 'manifest',
+            $lifecycle: false,
+            data: manifest instanceof Manifest ? manifest.export() : manifest
+        })
 
         this.use(ActionDispatcher, {
             $bind: 'actionDispatcher'
@@ -136,7 +136,7 @@ export default class Engine extends PerkyModule {
                 ? controller.listActions()
                 : []
         }
-        
+
         return this.actionDispatcher.listAllActions()
     }
 
@@ -156,56 +156,8 @@ export default class Engine extends PerkyModule {
     }
 
 
-    getMetadata (key) {
-        return this.manifest.metadata(key)
-    }
-
-
-    setMetadata (key, value) {
-        this.manifest.metadata(key, value)
-        return this
-    }
-
-
-    getConfig (path) {
-        return this.manifest.config(path)
-    }
-
-
-    setConfig (path, value) {
-        this.manifest.config(path, value)
-
-        return this
-    }
-
-
-    addSourceDescriptor (type, sourceDescriptor) {
-        return this.manifest.addSourceDescriptor(type, sourceDescriptor)
-    }
-
-
-    getSourceDescriptor (type, id) {
-        return this.manifest.getSourceDescriptor(type, id)
-    }
-
-
-    getSourceDescriptors (type) {
-        return this.manifest.getSourceDescriptorsByType(type)
-    }
-
-
-    getSource (type, id) {
-        return this.manifest.getSource(type, id)
-    }
-
-
     addAlias (key, value) {
-        return this.manifest.alias(key, value)
-    }
-
-
-    getAlias (key) {
-        return this.manifest.alias(key)
+        return this.manifest.setAlias(key, value)
     }
 
 

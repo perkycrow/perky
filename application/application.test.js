@@ -25,15 +25,20 @@ describe(Application, () => {
 
         mockManifest = {
             getSourceDescriptor: vi.fn(),
-            config: vi.fn()
+            getConfig: vi.fn(),
+            setConfig: vi.fn()
         }
 
         vi.spyOn(Manifest.prototype, 'getSourceDescriptor').mockImplementation((...args) => {
             return mockManifest.getSourceDescriptor(...args)
         })
 
-        vi.spyOn(Manifest.prototype, 'config').mockImplementation((...args) => {
-            return mockManifest.config(...args)
+        vi.spyOn(Manifest.prototype, 'getConfig').mockImplementation((path) => {
+            return mockManifest.getConfig(path)
+        })
+
+        vi.spyOn(Manifest.prototype, 'setConfig').mockImplementation((path, value) => {
+            return mockManifest.setConfig(path, value)
         })
 
         const mockPerkyViewElement = document.createElement('div')
@@ -100,7 +105,7 @@ describe(Application, () => {
         const customApp = new Application({manifest: customManifestData})
 
         expect(customApp.manifest).toBeDefined()
-        expect(customApp.manifest.metadata('name')).toBe('Test App')
+        expect(customApp.manifest.getMetadata('name')).toBe('Test App')
     })
 
 
@@ -260,9 +265,9 @@ describe(Application, () => {
 
 
     test('config', () => {
-        application.config('debug', true)
+        application.setConfig('debug', true)
 
-        expect(mockManifest.config).toHaveBeenCalledWith('debug', true)
+        expect(mockManifest.setConfig).toHaveBeenCalledWith('debug', true)
     })
 
 

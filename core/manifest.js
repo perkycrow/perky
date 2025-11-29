@@ -1,12 +1,20 @@
+import PerkyModule from './perky_module'
 import {setDefaults, getNestedValue, setNestedValue, singularize, deepMerge} from './utils'
 import SourceDescriptorDescriptor from './source_descriptor'
 
 
-export default class Manifest {
+export default class Manifest extends PerkyModule {
 
     #data
 
-    constructor (data = {}) {
+    constructor (params = {}) {
+        const {data = {}, ...moduleParams} = params
+
+        super({
+            name: 'manifest',
+            ...moduleParams
+        })
+
         this.#data = setDefaults(data, {
             metadata: {},
             config: {},
@@ -15,6 +23,23 @@ export default class Manifest {
         })
 
         this.#initSourceDescriptors()
+    }
+
+
+    onInstall (host) {
+        host.delegate(this, [
+            'getMetadata',
+            'setMetadata',
+            'getConfig',
+            'setConfig',
+            'addSourceDescriptor',
+            'getSourceDescriptor',
+            'getSourceDescriptors',
+            'getSourceDescriptorsByType',
+            'getSource',
+            'getAlias',
+            'setAlias'
+        ])
     }
 
 
@@ -44,25 +69,27 @@ export default class Manifest {
     }
 
 
-    metadata (key, value) {
-        if (value === undefined) {
-            return key ? this.#data.metadata[key] : this.#data.metadata
-        }
-        
+    getMetadata (key) {
+        return key ? this.#data.metadata[key] : this.#data.metadata
+    }
+
+
+    setMetadata (key, value) {
         this.#data.metadata[key] = value
         return this
     }
 
 
-    config (path, value) {
-        if (value === undefined) {
-            if (path === undefined) {
-                return this.#data.config
-            }
-
-            return getNestedValue(this.#data.config, path)
+    getConfig (path) {
+        if (path === undefined) {
+            return this.#data.config
         }
 
+        return getNestedValue(this.#data.config, path)
+    }
+
+
+    setConfig (path, value) {
         setNestedValue(this.#data.config, path, value)
         return this
     }
@@ -70,9 +97,9 @@ export default class Manifest {
 
     addSourceDescriptor (type, sourceDescriptor) {
         validateSourceDescriptorInput(type, sourceDescriptor)
-        
+
         this.addSourceDescriptorType(type)
-        
+
         sourceDescriptor = prepareSourceDescriptor(type, sourceDescriptor)
 
         this.#data.sourceDescriptors[type][sourceDescriptor.id] = sourceDescriptor
@@ -109,11 +136,12 @@ export default class Manifest {
     }
 
 
-    alias (key, value) {
-        if (value === undefined) {
-            return key ? this.#data.aliases[key] : this.#data.aliases
-        }
-        
+    getAlias (key) {
+        return key ? this.#data.aliases[key] : this.#data.aliases
+    }
+
+
+    setAlias (key, value) {
         this.#data.aliases[key] = value
         return this
     }
@@ -142,14 +170,19 @@ export default class Manifest {
     }
 
 
-    getSourceDescriptors (type) {
+    getSourceDescriptorMap (type) {
         return this.#data.sourceDescriptors[type] || {}
     }
 
 
     getSourceDescriptorsByType (type) {
-        const descriptors = this.getSourceDescriptors(type)
+        const descriptors = this.getSourceDescriptorMap(type)
         return Object.values(descriptors)
+    }
+
+
+    getSourceDescriptors (type) {
+        return this.getSourceDescriptorsByType(type)
     }
 
 
