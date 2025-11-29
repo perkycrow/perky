@@ -40,6 +40,11 @@ export default class Manifest extends PerkyModule {
             'getAlias',
             'setAlias'
         ])
+
+        host.delegate(this, {
+            export: 'exportManifest',
+            import: 'importManifest'
+        })
     }
 
 

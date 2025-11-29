@@ -163,8 +163,8 @@ describe(Engine, () => {
     })
 
 
-    test('addAlias and getAlias', () => {
-        engine.addAlias('mainLogo', 'logo')
+    test('setAlias and getAlias', () => {
+        engine.setAlias('mainLogo', 'logo')
 
         expect(engine.getAlias('mainLogo')).toBe('logo')
         expect(engine.manifest.getAlias('mainLogo')).toBe('logo')
@@ -172,21 +172,12 @@ describe(Engine, () => {
 
 
     test('exportManifest', () => {
-        const spy = vi.spyOn(engine.manifest, 'export')
+        engine.setMetadata('version', '1.0.0')
 
-        engine.exportManifest(true)
+        const exported = engine.exportManifest()
 
-        expect(spy).toHaveBeenCalledWith(true)
-    })
+        expect(exported.metadata.version).toBe('1.0.0')
 
-
-    test('importManifest', () => {
-        const spy = vi.spyOn(engine.manifest, 'import')
-        const data = {metadata: {name: 'Test'}}
-
-        engine.importManifest(data)
-
-        expect(spy).toHaveBeenCalledWith(data)
     })
 
 

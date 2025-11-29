@@ -58,19 +58,4 @@ export default class Engine extends PerkyModule {
         return () => this.dispatchAction(actionName, ...args)
     }
 
-
-    addAlias (key, value) {
-        return this.manifest.setAlias(key, value)
-    }
-
-
-    exportManifest (pretty = true) {
-        return this.manifest.export(pretty)
-    }
-
-
-    importManifest (data) {
-        return this.manifest.import(data)
-    }
-
 }
