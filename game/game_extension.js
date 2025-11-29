@@ -4,22 +4,30 @@ import GameLoop from './game_loop'
 
 export default class GameExtension extends PerkyModule {
 
-    constructor (options = {}) {
+    constructor (params = {}) {
         super({
             name: 'game',
-            ...options
+            ...params
+        })
+
+        this.use(GameLoop, {
+            $bind: 'gameLoop',
+            fps: params.fps || 60,
+            maxFrameSkip: params.maxFrameSkip || 5
+        })
+    }
+
+    configure (params) {
+        this.use(GameLoop, {
+            $bind: 'gameLoop',
+            fps: params.fps || 60,
+            maxFrameSkip: params.maxFrameSkip || 5
         })
     }
 
 
-    onInstall (host, options) {
-        this.use(GameLoop, {
-            $bind: 'gameLoop',
-            fps: options.fps || 60,
-            maxFrameSkip: options.maxFrameSkip || 5
-        })
-
-        this.host.delegate(this.gameLoop, [
+    onInstall (host) {
+        host.delegate(this, [
             'paused',
             'pause',
             'resume',

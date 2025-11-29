@@ -2,6 +2,7 @@ import PerkyModule from '../core/perky_module'
 
 
 export default class GameLoop extends PerkyModule {
+
     constructor (params = {}) {
         super()
 
@@ -13,6 +14,18 @@ export default class GameLoop extends PerkyModule {
         this.lastFpsUpdate = 0
 
         this.setFps(params.fps || 60)
+    }
+
+
+    onInstall (host) {
+        host.delegate(this, [
+            'paused',
+            'pause',
+            'resume',
+            'setFps',
+            'getFps',
+            'getCurrentFps'
+        ])
     }
 
 

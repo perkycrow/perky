@@ -59,7 +59,7 @@ export default class Application extends Engine {
         this.#initEvents()
 
         if (typeof this.configure === 'function') {
-            this.configure()
+            this.configure(params)
         }
 
         this.#installExtensions(extensions)
