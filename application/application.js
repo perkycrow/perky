@@ -74,27 +74,6 @@ export default class Application extends Engine {
     }
 
 
-
-
-
-    setDisplayMode (mode) {
-        this.perkyView.setDisplayMode(mode)
-        return this
-    }
-
-
-    enterFullscreenMode () {
-        this.perkyView.enterFullscreenMode()
-        return this
-    }
-
-
-    exitFullscreenMode () {
-        this.perkyView.exitFullscreenMode()
-        return this
-    }
-
-
     getInputValue (deviceName, controlName) {
         return this.inputManager ? this.inputManager.getValueFor(deviceName, controlName) : undefined
     }
@@ -129,11 +108,6 @@ export default class Application extends Engine {
     }
 
 
-    config (path, value) {
-        return this.manifest.config(path, value)
-    }
-
-
     isKeyPressed (keyName) {
         return this.isPressed('keyboard', keyName)
     }
@@ -151,17 +125,6 @@ export default class Application extends Engine {
 
     getMouseValue (buttonName) {
         return this.getInputValue('mouse', buttonName)
-    }
-
-
-    toggleFullscreen () {
-        const mode = this.displayMode
-        if (mode === 'fullscreen') {
-            this.exitFullscreenMode()
-        } else {
-            this.enterFullscreenMode()
-        }
-        return this
     }
 
 
@@ -254,14 +217,6 @@ export default class Application extends Engine {
                 this.actionDispatcher.dispatchAction(binding, control, event, device)
             }
         })
-    }
-
-
-    dispose () {
-        if (this.perkyView) {
-            this.perkyView.dispose()
-        }
-        return super.dispose()
     }
 
 }

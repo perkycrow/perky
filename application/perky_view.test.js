@@ -118,7 +118,6 @@ describe(PerkyView, () => {
     test('addClass', () => {
         view.addClass('test-class')
         expect(element.classList.contains('test-class')).toBe(true)
-        expect(view.addClass('test-class')).toBe(view)
     })
 
 
@@ -126,7 +125,6 @@ describe(PerkyView, () => {
         element.classList.add('test-class')
         view.removeClass('test-class')
         expect(element.classList.contains('test-class')).toBe(false)
-        expect(view.removeClass('test-class')).toBe(view)
     })
 
 
@@ -141,7 +139,6 @@ describe(PerkyView, () => {
 
         expect(element.style.width).toBe('100px')
         expect(element.style.height).toBe('200px')
-        expect(view.setSize({width: 100, height: 200})).toBe(view)
     })
 
 
@@ -173,7 +170,6 @@ describe(PerkyView, () => {
 
         expect(element.style.width).toBe('500px')
         expect(element.style.height).toBe('600px')
-        expect(view.fit()).toBe(view)
     })
 
 
@@ -183,7 +179,6 @@ describe(PerkyView, () => {
         expect(container.contains(element)).toBe(true)
         expect(view.container).toBe(container)
         expect(view.emit).toHaveBeenCalledWith('mount', {container})
-        expect(view.mount(container)).toBe(view)
     })
 
 
@@ -210,7 +205,6 @@ describe(PerkyView, () => {
 
         expect(element.style.display).toBe('none')
         expect(view.previousDisplay).toBe('flex')
-        expect(view.hide()).toBe(view)
     })
 
 
@@ -220,7 +214,6 @@ describe(PerkyView, () => {
 
         expect(element.style.display).toBe('flex')
         expect(view.previousDisplay).toBeUndefined()
-        expect(view.show()).toBe(view)
     })
 
 

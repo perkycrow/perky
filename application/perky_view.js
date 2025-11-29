@@ -29,8 +29,25 @@ export default class PerkyView extends PerkyModule {
 
 
     onInstall (host) {
-        host.delegate(this, ['element', 'mount', 'dismount', 'mounted', 'displayMode', 'html'])
-        host.delegateEvents(this, ['resize', 'mount', 'dismount', 'displayMode:changed'])
+        host.delegate(this, [
+            'element',
+            'mount',
+            'dismount',
+            'mounted',
+            'displayMode',
+            'setDisplayMode',
+            'html',
+            'enterFullscreenMode',
+            'exitFullscreenMode',
+            'toggleFullscreen'
+        ])
+
+        host.delegateEvents(this, [
+            'resize',
+            'mount',
+            'dismount',
+            'displayMode:changed'
+        ])
     }
 
 
@@ -66,15 +83,11 @@ export default class PerkyView extends PerkyModule {
 
     addClass (className) {
         this.element.classList.add(className)
-
-        return this
     }
 
 
     removeClass (className) {
         this.element.classList.remove(className)
-
-        return this
     }
 
 
@@ -90,8 +103,6 @@ export default class PerkyView extends PerkyModule {
         })
 
         this.emit('resize', {width, height})
-
-        return this
     }
 
 
@@ -99,8 +110,6 @@ export default class PerkyView extends PerkyModule {
         const {width, height} = element.getBoundingClientRect()
 
         this.setSize({width, height})
-
-        return this
     }
 
 
@@ -116,8 +125,6 @@ export default class PerkyView extends PerkyModule {
         if (this.#resizeObserver) {
             this.#resizeObserver.observe(this.element)
         }
-
-        return this
     }
 
 
@@ -130,8 +137,6 @@ export default class PerkyView extends PerkyModule {
         if (this.#resizeObserver) {
             this.#resizeObserver.disconnect()
         }
-
-        return this
     }
 
 
@@ -216,8 +221,6 @@ export default class PerkyView extends PerkyModule {
         }
 
         this.display = 'none'
-
-        return this
     }
 
 
@@ -228,8 +231,6 @@ export default class PerkyView extends PerkyModule {
         } else {
             this.display = ''
         }
-
-        return this
     }
 
 
@@ -240,16 +241,14 @@ export default class PerkyView extends PerkyModule {
         }
 
         if (modes[mode]) {
-            return modes[mode]()
+            modes[mode]()
         }
-
-        return this
     }
 
 
     enterFullscreenMode () {
         if (this.displayMode === 'fullscreen') {
-            return this
+            return
         }
 
         this.displayMode = 'fullscreen'
@@ -275,14 +274,12 @@ export default class PerkyView extends PerkyModule {
         })
 
         this.#requestFullscreen()
-
-        return this
     }
 
 
     exitFullscreenMode () {
         if (this.displayMode === 'normal') {
-            return this
+            return
         }
 
         if (document.fullscreenElement) {
@@ -298,7 +295,17 @@ export default class PerkyView extends PerkyModule {
         this.#previousStyles = {}
 
         this.#dispatchDisplayModeChanged('normal')
+    }
 
+
+    toggleFullscreen () {
+        const mode = this.displayMode
+
+        if (mode === 'fullscreen') {
+            this.exitFullscreenMode()
+        } else {
+            this.enterFullscreenMode()
+        }
         return this
     }
 
