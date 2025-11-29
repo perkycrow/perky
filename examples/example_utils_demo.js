@@ -13,7 +13,7 @@ const container = document.querySelector('.example-content')
 
 // Setup basic demo objects
 const logger = new Logger()
-logger.mountTo(container)
+logger.mount(container)
 
 const gameLoop = new GameLoop()
 

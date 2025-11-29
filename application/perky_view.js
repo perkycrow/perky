@@ -15,7 +15,7 @@ export default class PerkyView extends PerkyModule {
         this.element = params.element ? params.element : this.constructor.defaultElement(params)
 
         if (params.container) {
-            this.mountTo(params.container)
+            this.mount(params.container)
         }
 
         if (params.className) {
@@ -98,7 +98,7 @@ export default class PerkyView extends PerkyModule {
     }
 
 
-    mountTo (container) {
+    mount (container) {
         if (this.parentElement && this.parentElement !== container) {
             this.parentElement.removeChild(this.element)
         }

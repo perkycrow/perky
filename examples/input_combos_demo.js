@@ -262,7 +262,7 @@ function init () {
     const demo = new InputCombosDemo()
     const container = document.querySelector('.example-content')
 
-    demo.mountTo(container)
+    demo.mount(container)
 
     // Set up logger
     const logger = new PerkyLogger()

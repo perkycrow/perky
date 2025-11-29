@@ -79,8 +79,8 @@ export default class Application extends Engine {
     }
 
 
-    mountTo (element) {
-        return this.perkyView.mountTo(element)
+    mount (element) {
+        return this.perkyView.mount(element)
     }
 
 

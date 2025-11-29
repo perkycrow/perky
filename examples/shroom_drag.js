@@ -396,7 +396,7 @@ function init () {
     const game = new ShroomDrag({manifest})
     const container = document.querySelector('.example-content')
 
-    game.mountTo(container)
+    game.mount(container)
 
     const logger = new PerkyLogger()
     container.appendChild(logger)

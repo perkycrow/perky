@@ -177,13 +177,13 @@ describe(PerkyView, () => {
     })
 
 
-    test('mountTo', () => {
-        view.mountTo(container)
+    test('mount', () => {
+        view.mount(container)
 
         expect(container.contains(element)).toBe(true)
         expect(view.container).toBe(container)
         expect(view.emit).toHaveBeenCalledWith('mount', {container})
-        expect(view.mountTo(container)).toBe(view)
+        expect(view.mount(container)).toBe(view)
     })
 
 

@@ -280,7 +280,7 @@ function init () {
     const game = new Mistbrewer({manifest})
     const container = document.getElementById('game-container')
 
-    game.mountTo(container)
+    game.mount(container)
     
     game.start()
     

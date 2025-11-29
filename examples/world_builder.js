@@ -445,7 +445,7 @@ function init () {
     const game = new WorldBuilder({manifest})
     const container = document.querySelector('.example-content')
 
-    game.mountTo(container)
+    game.mount(container)
 
     const logger = new PerkyLogger()
     container.appendChild(logger)

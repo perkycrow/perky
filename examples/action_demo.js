@@ -228,7 +228,7 @@ function init () {
     const game = new ActionDemo()
     const container = document.querySelector('.example-content')
     
-    game.mountTo(container)
+    game.mount(container)
     game.start()
     
     const style = document.createElement('style')

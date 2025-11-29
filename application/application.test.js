@@ -39,7 +39,7 @@ describe(Application, () => {
         const mockPerkyViewElement = document.createElement('div')
         mockPerkyViewElement.exitFullscreenMode = vi.fn()
         mockPerkyViewElement.enterFullscreenMode = vi.fn()
-        vi.spyOn(PerkyView.prototype, 'mountTo').mockReturnValue(null)
+        vi.spyOn(PerkyView.prototype, 'mount').mockReturnValue(null)
         vi.spyOn(PerkyView, 'defaultElement').mockReturnValue(mockPerkyViewElement)
 
         // FIXME: Complexity
@@ -128,12 +128,12 @@ describe(Application, () => {
     })
 
     
-    test('mountTo', () => {
+    test('mount', () => {
         const element = document.createElement('div')
         
-        application.mountTo(element)
+        application.mount(element)
         
-        expect(application.perkyView.mountTo).toHaveBeenCalledWith(element)
+        expect(application.perkyView.mount).toHaveBeenCalledWith(element)
     })
 
 
@@ -981,7 +981,7 @@ describe('displayMode', () => {
             emit: vi.fn()
         }
 
-        vi.spyOn(PerkyView.prototype, 'mountTo').mockReturnValue(null)
+        vi.spyOn(PerkyView.prototype, 'mount').mockReturnValue(null)
         vi.spyOn(Engine.prototype, 'use').mockImplementation(function (ExtensionClass, options) {
             if (options.$bind === 'perkyView') {
                 this[options.$bind] = mockPerkyView

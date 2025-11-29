@@ -59,7 +59,7 @@ export default class ApplicationManager extends PerkyModule {
         const app = this.create(name, params)
         await app.preload()
         if (params.container) {
-            app.mountTo(params.container)
+            app.mount(params.container)
         }
         app.start()
         return app

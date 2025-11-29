@@ -19,7 +19,14 @@ export default class GameExtension extends PerkyModule {
             maxFrameSkip: options.maxFrameSkip || 5
         })
 
-        this.delegate(this.gameLoop, ['paused', 'pause', 'resume', 'setFps', 'getFps', 'getCurrentFps'])
+        this.delegate(this.gameLoop, [
+            'paused',
+            'pause',
+            'resume',
+            'setFps',
+            'getFps',
+            'getCurrentFps'
+        ])
 
         initGameLoopEvents(host, this.gameLoop)
     }
@@ -28,6 +35,11 @@ export default class GameExtension extends PerkyModule {
 
 
 function initGameLoopEvents (host, gameLoop) {
-    gameLoop.pipeTo(host, ['update', 'render', 'pause', 'resume', 'changed:fps'])
+    gameLoop.pipeTo(host, [
+        'update',
+        'render',
+        'pause',
+        'resume',
+        'changed:fps'
+    ])
 }
-

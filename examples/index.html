@@ -41,7 +41,7 @@
         document.addEventListener('DOMContentLoaded', async function () {
             const examples = await loadExamples()
             const exampleIndex = new ExampleIndex({examples})
-            exampleIndex.mountTo(document.getElementById('examples-grid'))
+            exampleIndex.mount(document.getElementById('examples-grid'))
         })
     </script>
 </body>
