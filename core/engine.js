@@ -7,11 +7,11 @@ import ActionController from './action_controller'
 export default class Engine extends PerkyModule {
 
     constructor (params = {}) {
-        const {manifest = {}, ...superParams} = params
+        const {manifest = {}} = params
 
         super({
             name: 'engine',
-            ...superParams
+            ...params
         })
 
         this.use(Manifest, {
