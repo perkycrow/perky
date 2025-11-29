@@ -12,7 +12,7 @@ import MouseDevice from '../input/input_devices/mouse_device'
 export default class Application extends Engine {
 
     constructor (params = {}) {
-        const {extensions = [], inputManager, inputBinder, keyboard = {}, mouse = {}} = params
+        const {inputManager, inputBinder, keyboard = {}, mouse = {}} = params
 
         super(params)
 

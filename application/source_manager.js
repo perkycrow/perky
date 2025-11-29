@@ -61,6 +61,7 @@ export default class SourceManager extends PerkyModule {
         return sourceLoader
     }
 
+    
     #setupLoaderEvents (loader) {
         loader.on('progress', (...args) => {
             this.emit('loader:progress', loader, ...args)
