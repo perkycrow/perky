@@ -232,6 +232,15 @@ export default class PerkyModule extends Notifier {
         })
     }
 
+
+    delegateEvents (target, events, namespace) {
+        if (!target || (!Array.isArray(events) && typeof events !== 'object')) {
+            return
+        }
+
+        target.pipeTo(this, events, namespace)
+    }
+
 }
 
 

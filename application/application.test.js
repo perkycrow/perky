@@ -978,7 +978,11 @@ describe('displayMode', () => {
             enterFullscreenMode: vi.fn(),
             exitFullscreenMode: vi.fn(),
             on: vi.fn(),
-            emit: vi.fn()
+            emit: vi.fn(),
+            pipeTo: vi.fn(),
+            onInstall: vi.fn(function (host) {
+                host.delegateEvents(this, ['resize', 'mount', 'dismount', 'displayMode:changed'])
+            })
         }
 
         vi.spyOn(PerkyView.prototype, 'mount').mockReturnValue(null)
@@ -988,6 +992,10 @@ describe('displayMode', () => {
 
                 if (mockPerkyView.install) {
                     mockPerkyView.install(this, options)
+                }
+
+                if (mockPerkyView.onInstall) {
+                    mockPerkyView.onInstall(this, options)
                 }
 
                 if (mockPerkyView.displayMode !== undefined) {
@@ -1067,7 +1075,11 @@ describe('displayMode', () => {
 
 
     test('displayMode:changed event is registered', () => {
-        expect(mockPerkyView.on).toHaveBeenCalledWith('displayMode:changed', expect.any(Function))
+        expect(mockPerkyView.pipeTo).toHaveBeenCalledWith(
+            application,
+            ['resize', 'mount', 'dismount', 'displayMode:changed'],
+            undefined
+        )
     })
 
 
@@ -1075,12 +1087,7 @@ describe('displayMode', () => {
         const eventHandler = vi.fn()
         application.on('displayMode:changed', eventHandler)
 
-        const displayModeChangeCall = mockPerkyView.on.mock.calls.find(call =>
-            call[0] === 'displayMode:changed')
-        expect(displayModeChangeCall).toBeDefined()
-
-        const emittedHandler = displayModeChangeCall[1]
-        emittedHandler({mode: 'fullscreen'})
+        application.emit('displayMode:changed', {mode: 'fullscreen'})
 
         expect(eventHandler).toHaveBeenCalledWith({mode: 'fullscreen'})
     })
