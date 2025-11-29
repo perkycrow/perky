@@ -313,5 +313,110 @@ describe(PerkyModule, () => {
         expect(extension.count).toBe(0)
     })
 
+
+    test('dispose calls dispose on all extensions in cascade', () => {
+        class ChildExtension1 extends PerkyModule { }
+        class ChildExtension2 extends PerkyModule { }
+
+        const child1 = new ChildExtension1()
+        const child2 = new ChildExtension2()
+
+        const child1DisposeSpy = vi.spyOn(child1, 'dispose')
+        const child2DisposeSpy = vi.spyOn(child2, 'dispose')
+
+        extension.use(ChildExtension1, {
+            instance: child1,
+            $name: 'child1'
+        })
+
+        extension.use(ChildExtension2, {
+            instance: child2,
+            $name: 'child2'
+        })
+
+        extension.dispose()
+
+        expect(child1DisposeSpy).toHaveBeenCalled()
+        expect(child2DisposeSpy).toHaveBeenCalled()
+        expect(child1.disposed).toBe(true)
+        expect(child2.disposed).toBe(true)
+        expect(extension.disposed).toBe(true)
+    })
+
+
+    test('dispose with multiple nested extensions', () => {
+        class Level1Extension extends PerkyModule { }
+        class Level2Extension extends PerkyModule { }
+
+        const level1 = new Level1Extension()
+        const level2 = new Level2Extension()
+
+        level1.use(Level2Extension, {
+            instance: level2,
+            $name: 'level2'
+        })
+
+        extension.use(Level1Extension, {
+            instance: level1,
+            $name: 'level1'
+        })
+
+        const level1DisposeSpy = vi.spyOn(level1, 'dispose')
+        const level2DisposeSpy = vi.spyOn(level2, 'dispose')
+
+        extension.dispose()
+
+        expect(level1DisposeSpy).toHaveBeenCalled()
+        expect(level2DisposeSpy).toHaveBeenCalled()
+        expect(level2.disposed).toBe(true)
+        expect(level1.disposed).toBe(true)
+        expect(extension.disposed).toBe(true)
+    })
+
+
+    test('dispose skips already disposed extensions', () => {
+        class ChildExtension extends PerkyModule { }
+
+        const child = new ChildExtension()
+        const childDisposeSpy = vi.spyOn(child, 'dispose')
+
+        extension.use(ChildExtension, {
+            instance: child,
+            $name: 'child'
+        })
+
+        child.dispose()
+        expect(childDisposeSpy).toHaveBeenCalledTimes(1)
+        expect(child.disposed).toBe(true)
+
+        childDisposeSpy.mockClear()
+
+        extension.dispose()
+
+        expect(childDisposeSpy).not.toHaveBeenCalled()
+        expect(extension.disposed).toBe(true)
+    })
+
+
+    test('dispose clears extensions registry after disposing all extensions', () => {
+        class ChildExtension extends PerkyModule { }
+
+        const child = new ChildExtension()
+
+        extension.use(ChildExtension, {
+            instance: child,
+            $name: 'child'
+        })
+
+        expect(extension.hasExtension('child')).toBe(true)
+
+        extension.dispose()
+
+        expect(extension.hasExtension('child')).toBe(false)
+        expect(extension.getExtensionsRegistry().size).toBe(0)
+    })
+
 })
+
+
 
