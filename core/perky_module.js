@@ -143,6 +143,11 @@ export default class PerkyModule extends Notifier {
         this.disposed = true
         this.stop()
 
+        this.#extensions.forEach(extension => {
+            if (extension && !extension.disposed) {
+                extension.dispose()
+            }
+        })
         this.#extensions.clear()
 
         this.emit('dispose')
