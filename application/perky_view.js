@@ -306,7 +306,6 @@ export default class PerkyView extends PerkyModule {
         } else {
             this.enterFullscreenMode()
         }
-        return this
     }
 
 
