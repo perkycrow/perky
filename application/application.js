@@ -61,16 +61,6 @@ export default class Application extends Engine {
         if (typeof this.configure === 'function') {
             this.configure(params)
         }
-
-        this.#installExtensions(extensions)
-    }
-
-
-    #installExtensions (extensions) {
-        extensions.forEach(extension => {
-            const extensionName = extension.name || extension.constructor.name
-            this.use(extension, {$name: extensionName, $category: 'extension'})
-        })
     }
 
 

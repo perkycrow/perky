@@ -47,12 +47,10 @@ const manifest = {
 export default class Mistbrewer extends Application {
     constructor (params = {}) {
 
-        const gameLoop = new GameLoop({
-            fps: params.fps || 60,
-            maxFrameSkip: params.maxFrameSkip || 5
-        })
+        super(params)
 
-        const threePlugin = new ThreePlugin({
+        this.use(GameLoop)
+        this.use(ThreePlugin, {
             backgroundColor: 0x1a1a1a,
             camera: {
                 type: 'orthographic',
@@ -62,14 +60,6 @@ export default class Mistbrewer extends Application {
                 far: 1000
             },
             postProcessing: false
-        })
-
-        super({
-            ...params,
-            extensions: [
-                gameLoop,
-                threePlugin
-            ]
         })
 
         this.background = null

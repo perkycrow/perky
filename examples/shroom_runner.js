@@ -44,26 +44,10 @@ const manifest = {
 export default class ShroomRunner extends Application {
     constructor (params = {}) {
 
-        super({
-            ...params,
-            extensions: [
-                new GameLoop({
-                    fps: params.fps || 60,
-                    maxFrameSkip: params.maxFrameSkip || 5
-                }),
-                new ThreePlugin({
-                    backgroundColor: 0x87CEEB,
-                    camera: {
-                        type: 'orthographic',
-                        width: 20,
-                        height: 15,
-                        near: 0.1,
-                        far: 1000
-                    },
-                    postProcessing: true
-                })
-            ]
-        })
+        super(params)
+
+        this.use(GameLoop, {$bind: 'gameLoop'})
+        this.use(ThreePlugin, {$bind: 'threePlugin'})
         
         this.vignettePass = null
         this.amberLUTPass = null

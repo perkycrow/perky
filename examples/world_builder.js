@@ -39,25 +39,11 @@ export default class WorldBuilder extends Application {
             ...params,
             mouse: {
                 shouldPreventDefault: true
-            },
-            extensions: [
-                new GameLoop({
-                    fps: params.fps || 60,
-                    maxFrameSkip: params.maxFrameSkip || 5
-                }),
-                new ThreePlugin({
-                    backgroundColor: 0x87CEEB,
-                    camera: {
-                        type: 'orthographic',
-                        width: 16,  // Will be calculated based on aspect ratio
-                        height: 12, // 12 units - can fit 12 shroms vertically
-                        near: 0.1,
-                        far: 1000
-                    },
-                    postProcessing: false
-                })
-            ]
+            }
         })
+
+        this.use(GameLoop, {$bind: 'gameLoop'})
+        this.use(ThreePlugin, {$bind: 'threePlugin'})
         
         // World constants
         this.WORLD_HEIGHT = 12 // Camera height in world units
