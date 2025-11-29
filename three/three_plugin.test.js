@@ -39,7 +39,7 @@ describe('ThreePlugin', () => {
 
         const container = document.createElement('div')
         document.body.appendChild(container)
-        app.mountTo(container)
+        app.mount(container)
 
         Object.defineProperty(app.perkyView.element, 'clientWidth', {
             value: 800,
