@@ -16,8 +16,6 @@ export default class Application extends Engine {
 
         super(params)
 
-        this.loaders = new Registry(loaders)
-
         this.use(PerkyView, {
             $bind: 'perkyView',
             className: 'perky-application'
@@ -25,7 +23,7 @@ export default class Application extends Engine {
 
         this.use(SourceManager, {
             $bind: 'sourceManager',
-            loaders: this.loaders,
+            loaders: new Registry(loaders),
             manifest: this.manifest
         })
 

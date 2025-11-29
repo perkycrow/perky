@@ -12,7 +12,7 @@ export default class SourceManager extends PerkyModule {
 
 
     onInstall (host) {
-        host.delegate(this, ['loadSource', 'loadTag', 'loadAll'])
+        host.delegate(this, ['loadSource', 'loadTag', 'loadAll', 'loaders'])
 
         host.delegateEvents(this, [
             'loader:progress',
@@ -61,7 +61,7 @@ export default class SourceManager extends PerkyModule {
         return sourceLoader
     }
 
-    
+
     #setupLoaderEvents (loader) {
         loader.on('progress', (...args) => {
             this.emit('loader:progress', loader, ...args)
