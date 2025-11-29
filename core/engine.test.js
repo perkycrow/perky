@@ -283,7 +283,7 @@ describe(Engine, () => {
 
     test('dispatchAction', () => {
         const controllerSpy = vi.fn()
-        engine.applicationController.testAction = controllerSpy
+        engine.mainController.testAction = controllerSpy
 
         engine.dispatchAction('testAction', 'param1', 'param2')
 
@@ -390,8 +390,8 @@ describe(Engine, () => {
 
     test('action dispatcher initialization', () => {
         expect(engine.actionDispatcher).toBeInstanceOf(ActionDispatcher)
-        expect(engine.getController('application')).toBeInstanceOf(ActionController)
-        expect(engine.actionDispatcher.getActiveName()).toBe('application')
+        expect(engine.getController('main')).toBeInstanceOf(ActionController)
+        expect(engine.actionDispatcher.getActiveName()).toBe('main')
     })
 
 

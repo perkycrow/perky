@@ -209,7 +209,7 @@ describe(ApplicationManager, () => {
 
         const app = appManager.create('TestApp')
         const actionSpy = vi.fn()
-        app.applicationController.testAction = actionSpy
+        app.mainController.testAction = actionSpy
 
         appManager.execute(app.id, 'testAction', 'arg1', 'arg2')
 

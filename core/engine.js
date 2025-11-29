@@ -17,7 +17,7 @@ export default class Engine extends PerkyModule {
         this.use(Manifest, {
             $bind: 'manifest',
             $lifecycle: false,
-            data: manifest instanceof Manifest ? manifest.export() : manifest
+            data: manifest.export ? manifest.export() : manifest
         })
 
         this.use(ActionDispatcher, {
@@ -25,22 +25,22 @@ export default class Engine extends PerkyModule {
         })
 
         this.use(ActionController, {
-            $bind: 'applicationController',
+            $bind: 'mainController',
             $lifecycle: false
         })
 
-        this.actionDispatcher.register('application', this.applicationController)
-        this.actionDispatcher.setActive('application')
+        this.registerController('main', this.mainController)
+        this.setActiveController('main')
     }
 
 
     addAction (actionName, action) {
-        return this.applicationController.addAction(actionName, action)
+        return this.mainController.addAction(actionName, action)
     }
 
 
     removeAction (actionName) {
-        return this.applicationController.removeAction(actionName)
+        return this.mainController.removeAction(actionName)
     }
 
 
