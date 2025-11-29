@@ -63,7 +63,7 @@ export default class PerkyModule extends Notifier {
     use (ExtensionClassOrInstance, options = {}) {
         const extension = prepareExtension(ExtensionClassOrInstance, options)
         const extensionName = getExtensionName(extension, options)
-        
+
         if (!validateExtension(extension, extensionName)) {
             return false
         }
@@ -142,9 +142,9 @@ export default class PerkyModule extends Notifier {
 
         this.disposed = true
         this.stop()
-        
+
         this.#extensions.clear()
-        
+
         this.emit('dispose')
         this.removeListeners()
 
@@ -193,41 +193,6 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    wrapMethod (methodName, method) {
-        if (typeof method !== 'function') {
-            throw new Error('Method must be a function')
-        }
-
-        if (!this.host) {
-            throw new Error('Cannot wrap method: extension has no host')
-        }
-
-        const originalMethod = this.host[methodName]
-        const originalFunction = typeof originalMethod === 'function' ? originalMethod : () => {}
-
-        this.host[methodName] = function (...args) {
-            return method.call(this, originalFunction.bind(this), ...args)
-        }
-
-        return true
-    }
-
-
-    addProperty (propertyName, descriptor) {
-        if (!this.host) {
-            throw new Error('Cannot add property: extension has no host')
-        }
-
-        if (this.host.hasOwnProperty(propertyName)) {
-            console.warn(`Property ${propertyName} already exists on host`)
-            return false
-        }
-
-        Object.defineProperty(this.host, propertyName, descriptor)
-        return true
-    }
-
-
     bindEvents (eventBindings) {
         if (!eventBindings || typeof eventBindings !== 'object') {
             return
@@ -253,15 +218,16 @@ export default class PerkyModule extends Notifier {
 
         names.forEach(name => {
             if (typeof target[name] === 'function') {
-                this.addMethod(name, target[name].bind(target))
+                this[name] = target[name].bind(target)
             } else {
-                const descriptor = {
+                Object.defineProperty(this, name, {
                     get: () => target[name],
                     set: (value) => {
                         target[name] = value
-                    }
-                }
-                this.addProperty(name, descriptor)
+                    },
+                    enumerable: true,
+                    configurable: true
+                })
             }
         })
     }

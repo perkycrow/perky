@@ -19,7 +19,7 @@ export default class GameExtension extends PerkyModule {
             maxFrameSkip: options.maxFrameSkip || 5
         })
 
-        this.delegate(this.gameLoop, [
+        this.host.delegate(this.gameLoop, [
             'paused',
             'pause',
             'resume',
