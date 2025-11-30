@@ -97,6 +97,20 @@ export default class PerkyModule extends Notifier {
     }
 
 
+    getExtensionsByCategory (category) {
+        const registry = this.getExtensionsRegistry()
+        const names = []
+
+        for (const [name, extension] of registry.entries) {
+            if (extension.$category === category) {
+                names.push(name)
+            }
+        }
+
+        return names
+    }
+
+
     removeExtension (name) {
         const extension = this.#extensions.get(name)
         if (!extension) {

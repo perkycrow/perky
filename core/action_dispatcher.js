@@ -1,22 +1,15 @@
 import PerkyModule from './perky_module'
-import Registry from './registry'
 import ActionController from './action_controller'
 
 
 export default class ActionDispatcher extends PerkyModule {
 
-    #controllers = null
     #activeControllerName = null
     #contextStack = []
     #useStackMode = false
+    mainControllerName = null
 
-    constructor () {
-        super()
-        this.#controllers = new Registry()
-    }
-
-
-    onInstall (host) {
+    onInstall (host, options) {
         host.delegate(this, {
             register: 'registerController',
             unregister: 'unregisterController',
@@ -33,11 +26,27 @@ export default class ActionDispatcher extends PerkyModule {
             addAction: 'addActionToController',
             listActions: 'listActions'
         })
+
+        // Setup main controller
+        const mainOption = options.main ?? true
+
+        if (mainOption !== false) {
+            const mainName = typeof mainOption === 'string' ? mainOption : 'main'
+            this.mainControllerName = mainName
+
+            this.register(mainName, ActionController)
+            this.setActive(mainName)
+        }
+    }
+
+
+    get mainController () {
+        return this.mainControllerName ? this.getController(this.mainControllerName) : null
     }
 
 
     get activeController () {
-        return this.#controllers.get(this.#activeControllerName)
+        return this.getExtension(this.#activeControllerName)
     }
 
 
@@ -46,46 +55,25 @@ export default class ActionDispatcher extends PerkyModule {
     }
 
 
-    register (name, controller) {
-        if (this.#controllers.has(name)) {
+    register (name, ControllerClass) {
+        if (this.hasExtension(name)) {
             console.warn(`Controller "${name}" already registered. Overwriting...`)
         }
 
-        if (!(controller instanceof ActionController) && controller?.constructor === Object) {
-            controller = new ActionController(controller)
-        }
-
-        controller.host = this
-        this.#controllers.set(name, controller)
-
-        if (this.started) {
-            controller.start()
-        }
-
-        this.on('start', () => controller.start())
-        this.on('stop', () => controller.stop())
-        this.on('dispose', () => {
-            this.#controllers.delete(name)
-            controller.dispose()
+        this.use(ControllerClass, {
+            $name: name,
+            $category: 'controller'
         })
-
-        this.emit('controller:set', name, controller)
-        controller.emit('registered', this, name)
 
         return this
     }
 
 
     unregister (name) {
-        if (!this.#controllers.has(name)) {
+        const controller = this.getExtension(name)
+
+        if (!controller) {
             return false
-        }
-
-        const controller = this.#controllers.get(name)
-        this.#controllers.delete(name)
-
-        if (controller && controller.dispatcher) {
-            delete controller.dispatcher
         }
 
         if (this.#activeControllerName === name) {
@@ -97,26 +85,22 @@ export default class ActionDispatcher extends PerkyModule {
             this.#contextStack.splice(stackIndex, 1)
         }
 
-        this.emit('controller:delete', name, controller)
-        controller.emit('unregistered', this, name)
-        controller.dispose()
-
-        return true
+        return this.removeExtension(name)
     }
 
 
     getController (name) {
-        return this.#controllers.get(name)
+        return this.getExtension(name)
     }
 
 
     getNameFor (controller) {
-        return this.#controllers.keyFor(controller)
+        return this.getExtensionsRegistry().keyFor(controller)
     }
 
 
     setActive (name) {
-        if (!this.#controllers.has(name)) {
+        if (!this.hasExtension(name)) {
             console.warn(`Controller "${name}" not found. Cannot set as active controller.`)
             return false
         }
@@ -159,7 +143,7 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     push (name) {
-        if (!this.#controllers.has(name)) {
+        if (!this.hasExtension(name)) {
             console.warn(`Context "${name}" not found`)
             return false
         }
@@ -224,7 +208,7 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     dispatchTo (name, actionName, ...args) {
-        const controller = this.#controllers.get(name)
+        const controller = this.getExtension(name)
 
         if (controller) {
             if (typeof controller.execute === 'function') {
@@ -266,15 +250,16 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     listControllers () {
-        return Array.from(this.#controllers.keys)
+        return this.getExtensionsByCategory('controller')
     }
 
 
     listAllActions () {
         const allActions = new Map()
+        const registry = this.getExtensionsRegistry()
 
-        for (const [name, controller] of this.#controllers.entries) {
-            if (controller && typeof controller.listActions === 'function') {
+        for (const [name, controller] of registry.entries) {
+            if (controller instanceof ActionController && typeof controller.listActions === 'function') {
                 allActions.set(name, controller.listActions())
             }
         }
@@ -294,9 +279,11 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     #dispatchWithStack (actionName, ...args) {
+        const registry = this.getExtensionsRegistry()
+
         for (let i = this.#contextStack.length - 1; i >= 0; i--) {
             const controllerName = this.#contextStack[i]
-            const controller = this.#controllers.get(controllerName)
+            const controller = registry.get(controllerName)
 
             if (!controller) {
                 continue
@@ -324,9 +311,11 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     #canPropagateFromLowerContexts (actionName, startIndex) {
+        const registry = this.getExtensionsRegistry()
+
         for (let i = startIndex; i >= 0; i--) {
             const controllerName = this.#contextStack[i]
-            const controller = this.#controllers.get(controllerName)
+            const controller = registry.get(controllerName)
 
             if (!controller) {
                 continue

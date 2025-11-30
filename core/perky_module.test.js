@@ -106,6 +106,75 @@ describe(PerkyModule, () => {
     })
 
 
+    test('getExtensionsByCategory - single category', () => {
+        class TestExtension1 extends PerkyModule { }
+        class TestExtension2 extends PerkyModule { }
+
+        extension.use(TestExtension1, {
+            $name: 'ext1',
+            $category: 'module'
+        })
+
+        extension.use(TestExtension2, {
+            $name: 'ext2',
+            $category: 'module'
+        })
+
+        const modules = extension.getExtensionsByCategory('module')
+
+        expect(modules).toHaveLength(2)
+        expect(modules).toContain('ext1')
+        expect(modules).toContain('ext2')
+    })
+
+
+    test('getExtensionsByCategory - mixed categories', () => {
+        class TestExtension1 extends PerkyModule { }
+        class TestExtension2 extends PerkyModule { }
+        class TestExtension3 extends PerkyModule { }
+
+        extension.use(TestExtension1, {
+            $name: 'ext1',
+            $category: 'module'
+        })
+
+        extension.use(TestExtension2, {
+            $name: 'ext2',
+            $category: 'service'
+        })
+
+        extension.use(TestExtension3, {
+            $name: 'ext3',
+            $category: 'module'
+        })
+
+        const modules = extension.getExtensionsByCategory('module')
+        const services = extension.getExtensionsByCategory('service')
+
+        expect(modules).toHaveLength(2)
+        expect(modules).toContain('ext1')
+        expect(modules).toContain('ext3')
+
+        expect(services).toHaveLength(1)
+        expect(services).toContain('ext2')
+    })
+
+
+    test('getExtensionsByCategory - empty category', () => {
+        class TestExtension extends PerkyModule { }
+
+        extension.use(TestExtension, {
+            $name: 'ext1',
+            $category: 'module'
+        })
+
+        const services = extension.getExtensionsByCategory('service')
+
+        expect(services).toHaveLength(0)
+        expect(services).toEqual([])
+    })
+
+
     test('use with binding', () => {
         class TestExtension extends PerkyModule { }
 

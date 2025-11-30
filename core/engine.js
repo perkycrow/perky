@@ -23,14 +23,11 @@ export default class Engine extends PerkyModule {
         this.use(ActionDispatcher, {
             $bind: 'actionDispatcher'
         })
+    }
 
-        this.use(ActionController, {
-            $bind: 'mainController',
-            $lifecycle: false
-        })
 
-        this.registerController('main', this.mainController)
-        this.setActiveController('main')
+    get mainController () {
+        return this.actionDispatcher.mainController
     }
 
 
