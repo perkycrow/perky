@@ -28,12 +28,11 @@ export default class Application extends Engine {
         })
 
         this.create(InputBinder, {
-            instance: getOrCreate(InputBinder, inputBinder),
-            $bind: 'inputBinder'
+            $bind: 'inputBinder',
+            inputBinder
         })
 
         this.create(InputManager, {
-            instance: getOrCreate(InputManager, inputManager),
             $bind: 'inputManager'
         })
 
@@ -207,18 +206,4 @@ export default class Application extends Engine {
         })
     }
 
-}
-
-
-
-function getOrCreate (Class, instanceOrOptions) {
-    if (instanceOrOptions && typeof instanceOrOptions === 'object' && !(instanceOrOptions instanceof Class)) {
-        return new Class(instanceOrOptions)
-    }
-
-    if (instanceOrOptions instanceof Class) {
-        return instanceOrOptions
-    }
-
-    return new Class()
 }

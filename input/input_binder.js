@@ -9,9 +9,12 @@ export default class InputBinder extends PerkyModule {
     #bindings = new Registry()
     #inputIndex = new Map()
 
-    constructor (bindings = []) {
+    constructor ({bindings = [], inputBinder} = {}) {
         super()
-        this.import(bindings)
+        if (inputBinder) {
+            this.import(inputBinder)
+        }
+        this.import({bindings})
     }
 
 
@@ -20,10 +23,19 @@ export default class InputBinder extends PerkyModule {
     }
 
 
-    import (bindings) {
-        if (Array.isArray(bindings)) {
-            bindings.forEach(bindingData => this.bind(bindingData))
+    import (inputBinder) {
+        if (typeof inputBinder.export === 'function') {
+            inputBinder = inputBinder.export()
         }
+
+        if (Array.isArray(inputBinder?.bindings)) {
+            this.importBindings(inputBinder.bindings)
+        }
+    }
+
+
+    importBindings (bindings) {
+        bindings.forEach(bindingData => this.bind(bindingData))
     }
 
 
@@ -153,8 +165,8 @@ export default class InputBinder extends PerkyModule {
     }
 
 
-    static import (data) {
-        return new InputBinder(data.bindings || [])
+    static import (params) {
+        return new InputBinder(params)
     }
 
 

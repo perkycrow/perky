@@ -34,9 +34,9 @@ describe(InputBinder, () => {
             }
         ]
 
-        const binderWithData = new InputBinder(bindings)
+        const binderWithData = new InputBinder({bindings})
         expect(binderWithData.getAllBindings()).toHaveLength(2)
-        
+
         const jumpBinding = binderWithData.getBinding({actionName: 'jump'})
         expect(jumpBinding.deviceName).toBe('keyboard')
         expect(jumpBinding.controlName).toBe('Space')
@@ -49,10 +49,10 @@ describe(InputBinder, () => {
             controlName: 'Space',
             actionName: 'jump'
         })
-        
+
         expect(result).toBeInstanceOf(InputBinding)
         expect(binder.getAllBindings()).toHaveLength(1)
-        
+
         const binding = binder.getAllBindings()[0]
         expect(binding.deviceName).toBe('keyboard')
         expect(binding.controlName).toBe('Space')
@@ -69,7 +69,7 @@ describe(InputBinder, () => {
             actionName: 'openMenu',
             controllerName: 'game'
         })
-        
+
         const binding = binder.getAllBindings()[0]
         expect(binding.controllerName).toBe('game')
         expect(binding.key).toBe('pressed:openMenu:game')
@@ -83,7 +83,7 @@ describe(InputBinder, () => {
             actionName: 'stopJump',
             eventType: 'released'
         })
-        
+
         const binding = binder.getAllBindings()[0]
         expect(binding.eventType).toBe('released')
         expect(binding.key).toBe('released:stopJump')
@@ -96,7 +96,7 @@ describe(InputBinder, () => {
             controlName: 'Space',
             actionName: 'jump'
         })
-        
+
         const result = binder.unbind({
             actionName: 'jump'
         })
@@ -110,7 +110,7 @@ describe(InputBinder, () => {
         const result = binder.unbind({
             actionName: 'nonexistent'
         })
-        
+
         expect(result).toBe(false)
     })
 
@@ -122,12 +122,12 @@ describe(InputBinder, () => {
             actionName: 'jump',
             controllerName: 'game'
         })
-        
+
         const binding = binder.getBinding({
             actionName: 'jump',
             controllerName: 'game'
         })
-        
+
         expect(binding).toBeDefined()
         expect(binding.actionName).toBe('jump')
         expect(binding.controllerName).toBe('game')
@@ -138,7 +138,7 @@ describe(InputBinder, () => {
         const binding = binder.getBinding({
             actionName: 'nonexistent'
         })
-        
+
         expect(binding).toBeNull()
     })
 
@@ -149,11 +149,11 @@ describe(InputBinder, () => {
             controlName: 'Space',
             actionName: 'jump'
         })
-        
+
         const hasBinding = binder.hasBinding({
             actionName: 'jump'
         })
-        
+
         expect(hasBinding).toBe(true)
     })
 
@@ -162,7 +162,7 @@ describe(InputBinder, () => {
         const hasBinding = binder.hasBinding({
             actionName: 'nonexistent'
         })
-        
+
         expect(hasBinding).toBe(false)
     })
 
@@ -173,13 +173,13 @@ describe(InputBinder, () => {
             controlName: 'Space',
             actionName: 'jump'
         })
-        
+
         const bindings = binder.getBindingsForInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             eventType: 'pressed'
         })
-        
+
         expect(bindings).toHaveLength(1)
         expect(bindings[0].actionName).toBe('jump')
     })
@@ -192,7 +192,7 @@ describe(InputBinder, () => {
             actionName: 'jump',
             controllerName: 'game'
         })
-        
+
         binder.bind({
             deviceName: 'keyboard',
             controlName: 'Space',
@@ -205,7 +205,7 @@ describe(InputBinder, () => {
             controlName: 'Space',
             eventType: 'pressed'
         })
-        
+
         expect(bindings).toHaveLength(2)
         expect(bindings.map(b => b.actionName)).toContain('jump')
         expect(bindings.map(b => b.actionName)).toContain('select')
@@ -219,7 +219,7 @@ describe(InputBinder, () => {
             actionName: 'jump',
             eventType: 'pressed'
         })
-        
+
         binder.bind({
             deviceName: 'keyboard',
             controlName: 'Space',
@@ -232,16 +232,16 @@ describe(InputBinder, () => {
             controlName: 'Space',
             eventType: 'pressed'
         })
-        
+
         const releasedBindings = binder.getBindingsForInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             eventType: 'released'
         })
-        
+
         expect(pressedBindings).toHaveLength(1)
         expect(pressedBindings[0].actionName).toBe('jump')
-        
+
         expect(releasedBindings).toHaveLength(1)
         expect(releasedBindings[0].actionName).toBe('stopJump')
     })
@@ -253,7 +253,7 @@ describe(InputBinder, () => {
             controlName: 'NonExistent',
             eventType: 'pressed'
         })
-        
+
         expect(bindings).toHaveLength(0)
     })
 
@@ -289,13 +289,13 @@ describe(InputBinder, () => {
             controlName: 'Space',
             actionName: 'jump'
         })
-        
+
         binder.bind({
             deviceName: 'keyboard',
             controlName: 'Enter',
             actionName: 'select'
         })
-        
+
         expect(binder.getAllBindings()).toHaveLength(2)
 
         const spaceBindings = binder.getBindingsForInput({
@@ -304,9 +304,9 @@ describe(InputBinder, () => {
             eventType: 'pressed'
         })
         expect(spaceBindings).toHaveLength(1)
-        
+
         binder.clearBindings()
-        
+
         expect(binder.getAllBindings()).toHaveLength(0)
 
         const bindingsAfterClear = binder.getBindingsForInput({
@@ -324,7 +324,7 @@ describe(InputBinder, () => {
             controlName: 'Space',
             actionName: 'jump'
         })
-        
+
         binder.bind({
             deviceName: 'mouse',
             controlName: 'LeftButton',
@@ -334,7 +334,7 @@ describe(InputBinder, () => {
         })
 
         const exported = binder.export()
-        
+
         expect(exported).toHaveProperty('bindings')
         expect(exported.bindings).toHaveLength(2)
 
@@ -343,7 +343,7 @@ describe(InputBinder, () => {
         expect(jumpBinding.controlName).toBe('Space')
         expect(jumpBinding.controllerName).toBeNull()
         expect(jumpBinding.eventType).toBe('pressed')
-        
+
         const fireBinding = exported.bindings.find(b => b.actionName === 'fire')
         expect(fireBinding.controllerName).toBe('game')
         expect(fireBinding.eventType).toBe('released')
@@ -367,18 +367,18 @@ describe(InputBinder, () => {
                 }
             ]
         }
-        
+
         const binderFromImport = InputBinder.import(data)
-        
+
         expect(binderFromImport.getAllBindings()).toHaveLength(2)
-        
+
         const jumpBinding = binderFromImport.getBinding({actionName: 'jump'})
         expect(jumpBinding.deviceName).toBe('keyboard')
         expect(jumpBinding.controlName).toBe('Space')
-        
+
         const fireBinding = binderFromImport.getBinding({
-            actionName: 'fire', 
-            controllerName: 'game', 
+            actionName: 'fire',
+            controllerName: 'game',
             eventType: 'released'
         })
         expect(fireBinding.deviceName).toBe('mouse')
@@ -401,9 +401,9 @@ describe(InputBinder, () => {
                 actionName: 'select'
             }
         ]
-        
-        binder.import(bindings)
-        
+
+        binder.import({bindings})
+
         expect(binder.getAllBindings()).toHaveLength(1)
         expect(binder.hasBinding({actionName: 'select'})).toBe(true)
     })
@@ -417,7 +417,7 @@ describe(InputBinder, () => {
 
     test('accepts string format with auto-detection', () => {
         const binding = binder.bindCombo(['ControlLeft', 'leftButton'], 'smartCombo')
-        
+
         expect(binding).toBeInstanceOf(CompositeBinding)
         expect(binding.controls).toHaveLength(2)
         expect(binding.controls[0].deviceName).toBe('keyboard')
@@ -433,7 +433,7 @@ describe(InputBinder, () => {
             {deviceName: 'keyboard', controlName: 'ShiftLeft'},
             {deviceName: 'mouse', controlName: 'rightButton'}
         ], 'objectCombo')
-        
+
         expect(binding).toBeInstanceOf(CompositeBinding)
         expect(binding.controls).toHaveLength(2)
         expect(binding.controls[0].deviceName).toBe('keyboard')
@@ -449,7 +449,7 @@ describe(InputBinder, () => {
             {deviceName: 'mouse', controlName: 'leftButton'},
             'KeyA'
         ], 'mixedCombo')
-        
+
         expect(binding.controls).toHaveLength(3)
         expect(binding.controls[0].deviceName).toBe('keyboard')
         expect(binding.controls[0].controlName).toBe('ControlLeft')
@@ -467,7 +467,7 @@ describe(InputBinder, () => {
             'button0',
             'unknownControl'
         ], 'deviceTypes')
-        
+
         expect(binding.controls[0].deviceName).toBe('keyboard')
         expect(binding.controls[1].deviceName).toBe('mouse')
         expect(binding.controls[2].deviceName).toBe('gamepad')
@@ -480,7 +480,7 @@ describe(InputBinder, () => {
             'leftButton',
             {deviceName: 'keyboard', controlName: 'leftButton'}
         ], 'explicitOverride')
-        
+
         expect(binding.controls[0].deviceName).toBe('mouse')
         expect(binding.controls[1].deviceName).toBe('keyboard')
         expect(binding.controls[0].controlName).toBe('leftButton')
@@ -492,11 +492,11 @@ describe(InputBinder, () => {
         expect(() => {
             binder.bindCombo(['single'], 'invalid')
         }).toThrow('Controls must be an array with at least 2 controls')
-        
+
         expect(() => {
             binder.bindCombo([], 'empty')
         }).toThrow('Controls must be an array with at least 2 controls')
-        
+
         expect(() => {
             binder.bindCombo('not-array', 'invalid')
         }).toThrow('Controls must be an array with at least 2 controls')
@@ -522,7 +522,7 @@ describe(InputBinder, () => {
         expect(() => {
             binder.bindCombo(['KeyA', 'KeyB'], '')
         }).toThrow('actionName is required and must be a string')
-        
+
         expect(() => {
             binder.bindCombo(['KeyA', 'KeyB'], null)
         }).toThrow('actionName is required and must be a string')
@@ -531,7 +531,7 @@ describe(InputBinder, () => {
 
     test('supports controller and eventType', () => {
         const binding = binder.bindCombo(['KeyA', 'leftButton'], 'comboAction', 'player', 'released')
-        
+
         expect(binding.controllerName).toBe('player')
         expect(binding.eventType).toBe('released')
     })

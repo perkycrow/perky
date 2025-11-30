@@ -258,22 +258,6 @@ describe(Application, () => {
     })
 
 
-
-    test('constructor with custom inputManager and inputBinder', () => {
-        const customInputManager = new InputManager()
-        const customBindings = [{deviceName: 'keyboard', controlName: 'Space', actionName: 'jump'}]
-
-        const customApp = new Application({
-            inputManager: customInputManager,
-            inputBinder: customBindings
-        })
-
-        expect(customApp.inputManager).toBe(customInputManager)
-        expect(customApp.getAllBindings()).toHaveLength(1)
-        expect(customApp.getAllBindings()[0].actionName).toBe('jump')
-    })
-
-
     test('dispose calls perkyView.dispose() which dismounts', () => {
         vi.spyOn(application.perkyView, 'dispose')
         vi.spyOn(application.perkyView, 'dismount')
