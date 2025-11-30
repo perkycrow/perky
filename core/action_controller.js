@@ -151,7 +151,7 @@ export default class ActionController extends PerkyModule {
 
 
 const INTERNAL_METHODS = new Set([
-    'start', 'stop', 'dispose', 'use', 'on', 'once', 'off', 'emit', 
+    'start', 'stop', 'dispose', 'create', 'on', 'once', 'off', 'emit', 
     'emitCallbacks', 'emitter', 'addAction', 'getAction', 'removeAction',
     'hasAction', 'shouldPropagate', 'listActions', 'addCallback',
     'beforeAction', 'afterAction', 'execute',

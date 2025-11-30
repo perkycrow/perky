@@ -46,8 +46,8 @@ export default class ShroomRunner extends Application {
 
         super(params)
 
-        this.use(GameLoop, {$bind: 'gameLoop'})
-        this.use(ThreePlugin, {$bind: 'threePlugin'})
+        this.create(GameLoop, {$bind: 'gameLoop'})
+        this.create(ThreePlugin, {$bind: 'threePlugin'})
         
         this.vignettePass = null
         this.amberLUTPass = null

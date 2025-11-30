@@ -113,7 +113,7 @@ export default class ActionDispatcher extends PerkyModule {
             console.warn(`Controller "${name}" already registered. Overwriting...`)
         }
 
-        this.use(ControllerClass, {
+        this.create(ControllerClass, {
             $name: name,
             $category: 'controller'
         })

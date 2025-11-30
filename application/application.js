@@ -16,28 +16,28 @@ export default class Application extends Engine {
 
         super(params)
 
-        this.use(PerkyView, {
+        this.create(PerkyView, {
             $bind: 'perkyView',
             className: 'perky-application'
         })
 
-        this.use(SourceManager, {
+        this.create(SourceManager, {
             $bind: 'sourceManager',
             loaders: new Registry(loaders),
             manifest: this.manifest
         })
 
-        this.use(InputBinder, {
+        this.create(InputBinder, {
             instance: getOrCreate(InputBinder, inputBinder),
             $bind: 'inputBinder'
         })
 
-        this.use(InputManager, {
+        this.create(InputManager, {
             instance: getOrCreate(InputManager, inputManager),
             $bind: 'inputManager'
         })
 
-        this.use(KeyboardDevice, {
+        this.create(KeyboardDevice, {
             $name: 'keyboard',
             $category: 'device',
             $bind: 'keyboard',
@@ -45,7 +45,7 @@ export default class Application extends Engine {
         })
         this.inputManager.registerDevice('keyboard', this.keyboard)
 
-        this.use(MouseDevice, {
+        this.create(MouseDevice, {
             $name: 'mouse',
             $category: 'device',
             $bind: 'mouse',

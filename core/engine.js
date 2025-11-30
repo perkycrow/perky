@@ -13,13 +13,13 @@ export default class Engine extends PerkyModule {
             ...params
         })
 
-        this.use(Manifest, {
+        this.create(Manifest, {
             $bind: 'manifest',
             $lifecycle: false,
             data: manifest.export ? manifest.export() : manifest
         })
 
-        this.use(ActionDispatcher, {
+        this.create(ActionDispatcher, {
             $bind: 'actionDispatcher'
         })
     }

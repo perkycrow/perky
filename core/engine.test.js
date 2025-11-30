@@ -49,7 +49,7 @@ describe(Engine, () => {
     test('use registers child', () => {
         class TestChild extends PerkyModule { }
 
-        engine.use(TestChild, {
+        engine.create(TestChild, {
             $name: 'test',
             $category: 'module',
             $bind: 'test'
@@ -64,7 +64,7 @@ describe(Engine, () => {
         const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { })
         const nonChild = {}
 
-        engine.use(nonChild.constructor, {
+        engine.create(nonChild.constructor, {
             instance: nonChild,
             $name: 'test'
         })
@@ -78,7 +78,7 @@ describe(Engine, () => {
 
     test('getChild', () => {
         class TestChild extends PerkyModule { }
-        engine.use(TestChild, {
+        engine.create(TestChild, {
             $name: 'test',
             $category: 'module'
         })
@@ -187,7 +187,7 @@ describe(Engine, () => {
         const child = new TestChild()
         const childSpy = vi.spyOn(child, 'emit')
 
-        engine.use(TestChild, {
+        engine.create(TestChild, {
             instance: child,
             $name: 'test',
             $category: 'module'
@@ -202,7 +202,7 @@ describe(Engine, () => {
     test('child unregistration events', () => {
         class TestChild extends PerkyModule { }
         const child = new TestChild()
-        engine.use(TestChild, {
+        engine.create(TestChild, {
             instance: child,
             $name: 'test',
             $category: 'module'
@@ -224,7 +224,7 @@ describe(Engine, () => {
         const startSpy = vi.spyOn(child, 'start')
         const stopSpy = vi.spyOn(child, 'stop')
 
-        engine.use(TestChild, {
+        engine.create(TestChild, {
             instance: child,
             $name: 'test',
             $category: 'module',
@@ -366,7 +366,7 @@ describe(Engine, () => {
         const child = new TestChild()
         const startSpy = vi.spyOn(child, 'start')
 
-        engine.use(TestChild, {
+        engine.create(TestChild, {
             instance: child,
             $name: 'newChild',
             $category: 'module',

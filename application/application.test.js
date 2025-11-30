@@ -48,7 +48,7 @@ describe(Application, () => {
         vi.spyOn(PerkyView, 'defaultElement').mockReturnValue(mockPerkyViewElement)
 
         // FIXME: Complexity
-        vi.spyOn(Engine.prototype, 'use').mockImplementation(function (ChildClass, options) { // eslint-disable-line complexity
+        vi.spyOn(Engine.prototype, 'create').mockImplementation(function (ChildClass, options) { // eslint-disable-line complexity
             let instance = options.instance
             if (!instance) {
                 if (ChildClass === KeyboardDevice || ChildClass === MouseDevice) {
@@ -535,7 +535,7 @@ describe(Application, () => {
             }
         }
 
-        application.use(TestChild, {$name: 'testChild', $category: 'child'})
+        application.create(TestChild, {$name: 'testChild', $category: 'child'})
 
         expect(application.hasChild('testChild')).toBe(true)
     })
@@ -549,7 +549,7 @@ describe(Application, () => {
         }
 
         const child = new TestChild()
-        application.use(TestChild, {
+        application.create(TestChild, {
             instance: child,
             $name: 'testChild',
             $category: 'child'
@@ -566,7 +566,7 @@ describe(Application, () => {
             }
         }
 
-        application.use(TestChild, {
+        application.create(TestChild, {
             $name: 'testChild',
             $category: 'child',
             someOption: true

@@ -49,8 +49,8 @@ export default class Mistbrewer extends Application {
 
         super(params)
 
-        this.use(GameLoop)
-        this.use(ThreePlugin, {
+        this.create(GameLoop)
+        this.create(ThreePlugin, {
             backgroundColor: 0x1a1a1a,
             camera: {
                 type: 'orthographic',

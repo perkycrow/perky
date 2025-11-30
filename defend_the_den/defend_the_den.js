@@ -13,7 +13,7 @@ export default class DefendTheDen extends Application {
     }
 
     configure () {
-        this.use(GameLoop, {$bind: 'gameLoop'})
+        this.create(GameLoop, {$bind: 'gameLoop'})
 
         this.canvas = new Canvas2D({
             container: this.element,

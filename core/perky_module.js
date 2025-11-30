@@ -60,7 +60,7 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    use (ChildClassOrInstance, options = {}) {
+    create (ChildClassOrInstance, options = {}) {
         const child = prepareChild(ChildClassOrInstance, options)
         const childName = getChildName(child, options)
 

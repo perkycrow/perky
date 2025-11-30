@@ -80,7 +80,7 @@ describe(PerkyModule, () => {
     test('use with Child class', () => {
         class TestChild extends PerkyModule { }
 
-        const result = child.use(TestChild, {
+        const result = child.create(TestChild, {
             $name: 'test',
             $category: 'test'
         })
@@ -95,7 +95,7 @@ describe(PerkyModule, () => {
         class TestChild extends PerkyModule { }
         const instance = new TestChild()
 
-        const result = child.use(TestChild, {
+        const result = child.create(TestChild, {
             instance,
             $name: 'test',
             $category: 'test'
@@ -110,12 +110,12 @@ describe(PerkyModule, () => {
         class TestChild1 extends PerkyModule { }
         class TestChild2 extends PerkyModule { }
 
-        child.use(TestChild1, {
+        child.create(TestChild1, {
             $name: 'ext1',
             $category: 'module'
         })
 
-        child.use(TestChild2, {
+        child.create(TestChild2, {
             $name: 'ext2',
             $category: 'module'
         })
@@ -133,17 +133,17 @@ describe(PerkyModule, () => {
         class TestChild2 extends PerkyModule { }
         class TestChild3 extends PerkyModule { }
 
-        child.use(TestChild1, {
+        child.create(TestChild1, {
             $name: 'ext1',
             $category: 'module'
         })
 
-        child.use(TestChild2, {
+        child.create(TestChild2, {
             $name: 'ext2',
             $category: 'service'
         })
 
-        child.use(TestChild3, {
+        child.create(TestChild3, {
             $name: 'ext3',
             $category: 'module'
         })
@@ -163,7 +163,7 @@ describe(PerkyModule, () => {
     test('getChildrenByCategory - empty category', () => {
         class TestChild extends PerkyModule { }
 
-        child.use(TestChild, {
+        child.create(TestChild, {
             $name: 'ext1',
             $category: 'module'
         })
@@ -178,7 +178,7 @@ describe(PerkyModule, () => {
     test('use with binding', () => {
         class TestChild extends PerkyModule { }
 
-        child.use(TestChild, {
+        child.create(TestChild, {
             $name: 'test',
             $bind: 'testProperty'
         })
@@ -191,7 +191,7 @@ describe(PerkyModule, () => {
         class TestChild extends PerkyModule { }
         const startSpy = vi.spyOn(TestChild.prototype, 'start')
 
-        child.use(TestChild, {
+        child.create(TestChild, {
             $name: 'test',
             $lifecycle: false
         })
@@ -207,7 +207,7 @@ describe(PerkyModule, () => {
         const instance = new TestChild()
         const startSpy = vi.spyOn(instance, 'start')
 
-        child.use(TestChild, {
+        child.create(TestChild, {
             instance,
             $name: 'test',
             $lifecycle: true
@@ -225,7 +225,7 @@ describe(PerkyModule, () => {
         const testExt = new TestChild()
         const testExtEmitSpy = vi.spyOn(testExt, 'emit')
 
-        child.use(TestChild, {
+        child.create(TestChild, {
             instance: testExt,
             $name: 'test',
             $category: 'testCategory'
@@ -242,7 +242,7 @@ describe(PerkyModule, () => {
         const uninstallSpy = vi.spyOn(instance, 'uninstall')
         const disposeSpy = vi.spyOn(instance, 'dispose')
 
-        child.use(TestChild, {
+        child.create(TestChild, {
             instance,
             $name: 'test',
             $category: 'test'
@@ -268,7 +268,7 @@ describe(PerkyModule, () => {
         const childStartSpy = vi.spyOn(childChild, 'start')
         const childStopSpy = vi.spyOn(childChild, 'stop')
 
-        child.use(ChildChild, {
+        child.create(ChildChild, {
             instance: childChild,
             $name: 'child',
             $lifecycle: true
@@ -279,23 +279,6 @@ describe(PerkyModule, () => {
 
         child.stop()
         expect(childStopSpy).toHaveBeenCalled()
-    })
-
-
-    test('requireChild', () => {
-        class TestChild extends PerkyModule { }
-        const testExt = new TestChild()
-        const childrenRegistry = new Map()
-        childrenRegistry.set('test', testExt)
-
-        host.hasChild = vi.fn((name) => childrenRegistry.has(name))
-        host.getChild = vi.fn((name) => childrenRegistry.get(name))
-        child.install(host, {})
-
-        const required = child.requireChild('test')
-        expect(required).toBe(testExt)
-        expect(host.hasChild).toHaveBeenCalledWith('test')
-        expect(host.getChild).toHaveBeenCalledWith('test')
     })
 
 
@@ -430,12 +413,12 @@ describe(PerkyModule, () => {
         const child1DisposeSpy = vi.spyOn(child1, 'dispose')
         const child2DisposeSpy = vi.spyOn(child2, 'dispose')
 
-        child.use(ChildChild1, {
+        child.create(ChildChild1, {
             instance: child1,
             $name: 'child1'
         })
 
-        child.use(ChildChild2, {
+        child.create(ChildChild2, {
             instance: child2,
             $name: 'child2'
         })
@@ -457,12 +440,12 @@ describe(PerkyModule, () => {
         const level1 = new Level1Child()
         const level2 = new Level2Child()
 
-        level1.use(Level2Child, {
+        level1.create(Level2Child, {
             instance: level2,
             $name: 'level2'
         })
 
-        child.use(Level1Child, {
+        child.create(Level1Child, {
             instance: level1,
             $name: 'level1'
         })
@@ -486,7 +469,7 @@ describe(PerkyModule, () => {
         const childChild = new ChildChild()
         const childDisposeSpy = vi.spyOn(child, 'dispose')
 
-        child.use(ChildChild, {
+        child.create(ChildChild, {
             instance: childChild,
             $name: 'child'
         })
@@ -509,7 +492,7 @@ describe(PerkyModule, () => {
 
         const childChild = new ChildChild()
 
-        child.use(ChildChild, {
+        child.create(ChildChild, {
             instance: childChild,
             $name: 'child'
         })

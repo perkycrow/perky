@@ -42,8 +42,8 @@ export default class WorldBuilder extends Application {
             }
         })
 
-        this.use(GameLoop, {$bind: 'gameLoop'})
-        this.use(ThreePlugin, {$bind: 'threePlugin'})
+        this.create(GameLoop, {$bind: 'gameLoop'})
+        this.create(ThreePlugin, {$bind: 'threePlugin'})
         
         // World constants
         this.WORLD_HEIGHT = 12 // Camera height in world units

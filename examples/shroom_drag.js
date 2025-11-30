@@ -32,12 +32,12 @@ const manifest = {
 export default class ShroomDrag extends Application {
 
     configure () {
-        this.use(GameLoop, {
+        this.create(GameLoop, {
             fps: 60,
             maxFrameSkip: 5
         })
 
-        this.use(ThreePlugin, {
+        this.create(ThreePlugin, {
             backgroundColor: 0x87CEEB,
             camera: {
                 type: 'orthographic',
