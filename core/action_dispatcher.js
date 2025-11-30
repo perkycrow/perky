@@ -24,7 +24,11 @@ export default class ActionDispatcher extends PerkyModule {
             listActions: 'listActions',
             mainController: 'mainController',
             addAction: 'addAction',
-            removeAction: 'removeAction'
+            removeAction: 'removeAction',
+            setContext: 'setContext',
+            clearContext: 'clearContext',
+            setContextFor: 'setContextFor',
+            clearContextFor: 'clearContextFor'
         })
     }
 
@@ -59,6 +63,38 @@ export default class ActionDispatcher extends PerkyModule {
 
     removeAction (actionName) {
         return this.mainController?.removeAction(actionName)
+    }
+
+
+    setContext (newContext, value) {
+        return this.mainController?.setContext(newContext, value)
+    }
+
+
+    clearContext (key) {
+        return this.mainController?.clearContext(key)
+    }
+
+
+    setContextFor (controllerName, newContext, value) {
+        const controller = this.getController(controllerName)
+
+        if (controller) {
+            return controller.setContext(newContext, value)
+        }
+
+        return null
+    }
+
+
+    clearContextFor (controllerName, key) {
+        const controller = this.getController(controllerName)
+
+        if (controller) {
+            return controller.clearContext(key)
+        }
+
+        return null
     }
 
 

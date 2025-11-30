@@ -11,6 +11,8 @@ export default class ActionController extends PerkyModule {
     constructor (actions) {
         super()
 
+        this.context = {}
+
         if (actions && typeof actions === 'object') {
             Object.keys(actions).forEach(actionName => {
                 if (typeof actions[actionName] === 'function') {
@@ -23,6 +25,30 @@ export default class ActionController extends PerkyModule {
 
     get engine () {
         return this.host?.engine
+    }
+
+
+    setContext (newContext, value) {
+        if (typeof newContext === 'string') {
+            this.context[newContext] = value
+        } else if (typeof newContext === 'object') {
+            Object.assign(this.context, newContext)
+        }
+
+        return this.context
+    }
+
+
+    clearContext (key) {
+        if (key) {
+            delete this.context[key]
+        } else {
+            for (key of Object.keys(this.context)) {
+                delete this.context[key]
+            }
+        }
+
+        return this.context
     }
 
 
@@ -128,7 +154,8 @@ const INTERNAL_METHODS = new Set([
     'start', 'stop', 'dispose', 'use', 'on', 'once', 'off', 'emit', 
     'emitCallbacks', 'emitter', 'addAction', 'getAction', 'removeAction',
     'hasAction', 'shouldPropagate', 'listActions', 'addCallback',
-    'beforeAction', 'afterAction', 'execute'
+    'beforeAction', 'afterAction', 'execute',
+    'context', 'setContext', 'clearContext'
 ])
 
 function isInternalMethod (methodName) {
