@@ -22,7 +22,7 @@ export default class ActionController extends PerkyModule {
 
 
     get engine () {
-        return (this.host && this.host.engine) || (this.actionDispatcher && this.actionDispatcher.host)
+        return this.host?.engine
     }
 
 

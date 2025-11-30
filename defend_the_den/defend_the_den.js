@@ -1,6 +1,8 @@
 import Application from '../application/application'
-import GameLoop from '../game/game_extension'
+import GameLoop from '../game/game_loop'
 import Canvas2D from '../canvas/canvas_2d'
+import GameController from './controllers/game_controller'
+
 import manifest from './manifest'
 
 
@@ -13,7 +15,17 @@ export default class DefendTheDen extends Application {
     configure () {
         this.use(GameLoop, {$bind: 'gameLoop'})
 
-        console.log(this)
+        this.canvas = new Canvas2D({
+            container: this.element,
+            autoFit: true
+        })
+
+        this.registerController('game', GameController)
+        this.setActiveController('game')
+
+        this.bindKey('ArrowUp', 'moveUp')
+        this.bindKey('ArrowDown', 'moveDown')
+        this.bindKey('Space', 'shoot')
     }
 
 }

@@ -33,6 +33,11 @@ export default class ActionDispatcher extends PerkyModule {
     }
 
 
+    get engine () {
+        return this.host
+    }
+
+
     #setupMainController (options) {
         const mainOption = options.main ?? true
 
