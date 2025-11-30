@@ -21,7 +21,7 @@ export default class DefendTheDen extends Application {
         })
 
         this.registerController('game', GameController)
-        this.setActiveController('game')
+        this.setActiveControllers('game')
 
         this.bindKey('ArrowUp', 'moveUp')
         this.bindKey('ArrowDown', 'moveDown')

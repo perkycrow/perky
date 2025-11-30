@@ -4,42 +4,42 @@ import ActionController from '/core/action_controller'
 
 class GameController extends ActionController {
     static propagable = ['move', 'look']
-    
+
     constructor (game) {
         super()
         this.game = game
     }
-    
+
     jump () {
         console.log('🦘 Player jumps!')
         this.game.log('Jump action executed')
     }
-    
+
     move (direction) {
         console.log(`🚶 Player moves ${direction}`)
         this.game.log(`Move action: ${direction}`)
     }
-    
+
     look (direction) {
         console.log(`👀 Player looks ${direction}`)
         this.game.log(`Look action: ${direction}`)
     }
-    
+
     shoot () {
         console.log('🔫 Player shoots!')
         this.game.log('Shoot action executed')
     }
-    
+
     pause () {
-        const stack = this.game.getContextStack()
-        
+        const stack = this.game.getActive()
+
         if (stack.includes('pause')) {
             console.log('▶️  Resuming game...')
-            this.game.popContext()
+            this.game.popActive()
             this.game.log('Game resumed')
         } else {
             console.log('⏸️  Opening pause menu...')
-            this.game.pushContext('pause')
+            this.game.pushActive('pause')
             this.game.log('Pause menu opened')
         }
     }
@@ -51,18 +51,18 @@ class PauseMenuController extends ActionController {
         super()
         this.game = game
     }
-    
+
     resume () {
         console.log('▶️  Resuming game...')
-        this.game.popContext()
+        this.game.popActive()
         this.game.log('Game resumed')
     }
-    
+
     navigate (direction) {
         console.log(`📋 Menu navigation: ${direction}`)
         this.game.log(`Menu navigate: ${direction}`)
     }
-    
+
     select () {
         console.log('✅ Menu item selected')
         this.game.log('Menu item selected')
@@ -73,23 +73,23 @@ class PauseMenuController extends ActionController {
 export default class ActionDemo extends Application {
     constructor (params = {}) {
         super(params)
-        
+
         this.logs = []
         this.logElement = null
         this.statusElement = null
-        
+
         this.setupContexts()
         this.setupKeyBindings()
         this.setupUI()
     }
-    
+
     setupContexts () {
         this.registerContext('game', new GameController(this))
         this.registerContext('pause', new PauseMenuController(this))
-        
+
         this.activateContext('game')
     }
-    
+
     setupKeyBindings () {
         this.bindKey('Space', 'jump')
         this.bindKey('ArrowUp', {actionName: 'move', controllerName: 'game'})
@@ -98,22 +98,20 @@ export default class ActionDemo extends Application {
         this.bindKey('ArrowRight', {actionName: 'look', controllerName: 'game'})
         this.bindKey('KeyF', 'shoot')
         this.bindKey('Escape', 'pause')
-        
+
         this.bindKey('KeyW', {actionName: 'navigate', controllerName: 'pause'})
         this.bindKey('KeyS', {actionName: 'navigate', controllerName: 'pause'})
         this.bindKey('Enter', {actionName: 'select', controllerName: 'pause'})
         this.bindKey('KeyR', {actionName: 'resume', controllerName: 'pause'})
     }
-    
+
     setupUI () {
         const html = `
             <div class="action-demo">
                 <div class="action-demo-header">
                     <h1>🎮 Action System Demo</h1>
                     <div class="status" id="status">
-                        <strong>Active Context:</strong> <span id="activeContext">game</span>
-                        <strong>Stack Mode:</strong> <span id="stackMode">false</span>
-                        <strong>Stack:</strong> <span id="contextStack">[]</span>
+                        <strong>Active Controllers:</strong> <span id="activeControllers">[]</span>
                     </div>
                 </div>
                 
@@ -156,70 +154,69 @@ export default class ActionDemo extends Application {
                 </div>
             </div>
         `
-        
+
         this.html = html
-        
+
         this.logElement = this.element.querySelector('#logContainer')
         this.statusElement = {
-            activeContext: this.element.querySelector('#activeContext'),
-            stackMode: this.element.querySelector('#stackMode'),
-            contextStack: this.element.querySelector('#contextStack')
+            activeControllers: this.element.querySelector('#activeControllers')
         }
-        
+
         this.element.querySelector('#clearLogsBtn').addEventListener('click', () => {
             this.logs = []
             this.updateLogDisplay()
         })
-        
+
         this.element.querySelector('#listActionsBtn').addEventListener('click', () => {
             const allActions = this.listActions()
             const actionsList = this.element.querySelector('#actionsList')
-            
+
             let output = ''
             for (const [contextName, actions] of allActions) {
                 output += `\n${contextName}:\n`
                 output += actions.map(a => `  - ${a}`).join('\n')
                 output += '\n'
             }
-            
+
             actionsList.textContent = output
         })
-        
-        this.actionDispatcher.on('context:pushed', () => this.updateStatus())
-        this.actionDispatcher.on('context:popped', () => this.updateStatus())
-        this.actionDispatcher.on('context:activated', () => this.updateStatus())
-        
+
+        this.actionDispatcher.on('controller:pushed', () => this.updateStatus())
+        this.actionDispatcher.on('controller:popped', () => this.updateStatus())
+        this.actionDispatcher.on('controllers:activated', () => this.updateStatus())
+
         this.updateStatus()
     }
-    
+
     log (message) {
         const timestamp = new Date().toLocaleTimeString()
         this.logs.push({timestamp, message})
-        
+
         if (this.logs.length > 20) {
             this.logs.shift()
         }
-        
+
         this.updateLogDisplay()
     }
-    
+
     updateLogDisplay () {
-        if (!this.logElement) return
-        
+        if (!this.logElement) {
+            return
+        }
+
         this.logElement.innerHTML = this.logs
-            .map(({timestamp, message}) => 
-                `<div class="log-entry"><span class="timestamp">${timestamp}</span> ${message}</div>`
-            )
+            .map(({timestamp, message}) =>
+                `<div class="log-entry"><span class="timestamp">${timestamp}</span> ${message}</div>`)
             .reverse()
             .join('')
     }
-    
+
     updateStatus () {
-        if (!this.statusElement) return
-        
-        this.statusElement.activeContext.textContent = this.getActiveContext() || 'none'
-        this.statusElement.stackMode.textContent = this.isStackMode() ? 'true' : 'false'
-        this.statusElement.contextStack.textContent = JSON.stringify(this.getContextStack())
+        if (!this.statusElement) {
+            return
+        }
+
+        this.statusElement.activeControllers.textContent = JSON.stringify(this.getActive())
     }
 }
 
@@ -227,10 +224,10 @@ export default class ActionDemo extends Application {
 function init () {
     const game = new ActionDemo()
     const container = document.querySelector('.example-content')
-    
+
     game.mount(container)
     game.start()
-    
+
     const style = document.createElement('style')
     style.textContent = `
         .action-demo {

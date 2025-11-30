@@ -4,9 +4,7 @@ import ActionController from './action_controller'
 
 export default class ActionDispatcher extends PerkyModule {
 
-    #activeControllerName = null
-    #contextStack = []
-    #useStackMode = false
+    #activeControllers = []
     mainControllerName = null
 
     onInstall (host, options) {
@@ -17,13 +15,11 @@ export default class ActionDispatcher extends PerkyModule {
             unregister: 'unregisterController',
             getController: 'getController',
             list: 'listControllers',
-            setActive: 'setActiveController',
-            getActive: 'getActiveController',
-            push: 'pushContext',
-            pop: 'popContext',
-            getStack: 'getContextStack',
-            clearStack: 'clearContextStack',
-            isStackMode: 'isStackMode',
+            setActive: 'setActiveControllers',
+            getActive: 'getActiveControllers',
+            pushActive: 'pushActiveController',
+            popActive: 'popActiveController',
+            clearActive: 'clearActiveControllers',
             dispatch: 'dispatchAction',
             listActions: 'listActions',
             mainController: 'mainController',
@@ -66,13 +62,13 @@ export default class ActionDispatcher extends PerkyModule {
     }
 
 
-    get activeController () {
-        return this.getExtension(this.#activeControllerName)
+    get activeControllers () {
+        return this.#activeControllers.map(name => this.getExtension(name)).filter(Boolean)
     }
 
 
-    getActiveName () {
-        return this.#activeControllerName
+    getActiveNames () {
+        return [...this.#activeControllers]
     }
 
 
@@ -97,13 +93,10 @@ export default class ActionDispatcher extends PerkyModule {
             return false
         }
 
-        if (this.#activeControllerName === name) {
-            this.#activeControllerName = null
-        }
-
-        const stackIndex = this.#contextStack.indexOf(name)
+        // Remove from active controllers stack
+        const stackIndex = this.#activeControllers.indexOf(name)
         if (stackIndex !== -1) {
-            this.#contextStack.splice(stackIndex, 1)
+            this.#activeControllers.splice(stackIndex, 1)
         }
 
         return this.removeExtension(name)
@@ -120,111 +113,66 @@ export default class ActionDispatcher extends PerkyModule {
     }
 
 
-    setActive (name) {
-        if (!this.hasExtension(name)) {
-            console.warn(`Controller "${name}" not found. Cannot set as active controller.`)
-            return false
+    setActive (names) {
+        const nameArray = Array.isArray(names) ? names : [names]
+
+        for (const name of nameArray) {
+            if (!this.hasExtension(name)) {
+                console.warn(`Controller "${name}" not found. Cannot set as active controller.`)
+                return false
+            }
         }
 
-        this.#activeControllerName = name
-        this.emit('context:activated', name)
+        this.#activeControllers = [...nameArray]
+        this.emit('controllers:activated', nameArray)
 
         return true
     }
 
 
     getActive () {
-        return this.activeController
+        return [...this.#activeControllers]
     }
 
 
-    enableStackMode () {
-        this.#useStackMode = true
-
-        if (this.#activeControllerName && !this.#contextStack.includes(this.#activeControllerName)) {
-            this.#contextStack.push(this.#activeControllerName)
-        }
-
-        this.emit('stackMode:enabled')
-    }
-
-
-    disableStackMode () {
-        this.#useStackMode = false
-        this.#activeControllerName = this.#contextStack[this.#contextStack.length - 1] || null
-        this.#contextStack = []
-
-        this.emit('stackMode:disabled')
-    }
-
-
-    isStackMode () {
-        return this.#useStackMode
-    }
-
-
-    push (name) {
+    pushActive (name) {
         if (!this.hasExtension(name)) {
-            console.warn(`Context "${name}" not found`)
+            console.warn(`Controller "${name}" not found`)
             return false
         }
 
-        if (this.#contextStack.length > 0 && this.#contextStack[this.#contextStack.length - 1] === name) {
+        if (this.#activeControllers.length > 0 && this.#activeControllers[this.#activeControllers.length - 1] === name) {
             return false
         }
 
-        if (!this.#useStackMode) {
-            this.enableStackMode()
-        }
-
-        this.#contextStack.push(name)
-        this.emit('context:pushed', name, this.#contextStack.length)
+        this.#activeControllers.push(name)
+        this.emit('controller:pushed', name, this.#activeControllers.length)
 
         return true
     }
 
 
-    pop () {
-        if (this.#contextStack.length === 0) {
-            console.warn('Context stack is empty')
+    popActive () {
+        if (this.#activeControllers.length === 0) {
+            console.warn('Active controllers stack is empty')
             return null
         }
 
-        const popped = this.#contextStack.pop()
-        this.emit('context:popped', popped, this.#contextStack.length)
-
-        if (this.#contextStack.length === 0) {
-            this.disableStackMode()
-        }
+        const popped = this.#activeControllers.pop()
+        this.emit('controller:popped', popped, this.#activeControllers.length)
 
         return popped
     }
 
 
-    getStack () {
-        if (this.#useStackMode) {
-            return [...this.#contextStack]
-        } else if (this.#activeControllerName) {
-            return [this.#activeControllerName]
-        } else {
-            return []
-        }
-    }
-
-
-    clearStack () {
-        this.#contextStack = []
-        this.#useStackMode = false
-        this.emit('stack:cleared')
+    clearActive () {
+        this.#activeControllers = []
+        this.emit('controllers:cleared')
     }
 
 
     dispatch (actionName, ...args) {
-        if (this.#useStackMode) {
-            return this.#dispatchWithStack(actionName, ...args)
-        } else {
-            return this.#dispatchSingle(actionName, ...args)
-        }
+        return this.#dispatchAction(actionName, ...args)
     }
 
 
@@ -247,7 +195,7 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     dispatchAction (binding, control, ...args) {
-        const targetController = binding.controllerName || this.#activeControllerName
+        const targetController = binding.controllerName
 
         if (targetController) {
             if (!this.#isControllerActive(targetController)) {
@@ -262,11 +210,7 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     #isControllerActive (controllerName) {
-        if (this.#useStackMode) {
-            return this.#contextStack.includes(controllerName)
-        } else {
-            return this.#activeControllerName === controllerName
-        }
+        return this.#activeControllers.includes(controllerName)
     }
 
 
@@ -289,21 +233,16 @@ export default class ActionDispatcher extends PerkyModule {
     }
 
 
-    #dispatchSingle (actionName, ...args) {
-        if (!this.#activeControllerName) {
-            console.warn('No active context')
+    #dispatchAction (actionName, ...args) { // eslint-disable-line complexity
+        if (this.#activeControllers.length === 0) {
+            console.warn('No active controllers')
             return false
         }
 
-        return this.dispatchTo(this.#activeControllerName, actionName, ...args)
-    }
-
-
-    #dispatchWithStack (actionName, ...args) {
         const registry = this.getExtensionsRegistry()
 
-        for (let i = this.#contextStack.length - 1; i >= 0; i--) {
-            const controllerName = this.#contextStack[i]
+        for (let i = this.#activeControllers.length - 1; i >= 0; i--) {
+            const controllerName = this.#activeControllers[i]
             const controller = registry.get(controllerName)
 
             if (!controller) {
@@ -319,7 +258,7 @@ export default class ActionDispatcher extends PerkyModule {
                     return result
                 }
             } else {
-                const canPropagate = this.#canPropagateFromLowerContexts(actionName, i - 1)
+                const canPropagate = this.#canPropagate(actionName, i - 1)
 
                 if (!canPropagate) {
                     return false
@@ -331,11 +270,11 @@ export default class ActionDispatcher extends PerkyModule {
     }
 
 
-    #canPropagateFromLowerContexts (actionName, startIndex) {
+    #canPropagate (actionName, startIndex) {
         const registry = this.getExtensionsRegistry()
 
         for (let i = startIndex; i >= 0; i--) {
-            const controllerName = this.#contextStack[i]
+            const controllerName = this.#activeControllers[i]
             const controller = registry.get(controllerName)
 
             if (!controller) {

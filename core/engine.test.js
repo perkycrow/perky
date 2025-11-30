@@ -271,13 +271,14 @@ describe(Engine, () => {
     })
 
 
-    test('getActiveController', () => {
+    test('getActiveControllers', () => {
         const controller = new ActionController()
         engine.registerController('test', controller)
 
-        engine.setActiveController('test')
+        engine.setActiveControllers('test')
 
-        expect(engine.getActiveController()).toBe(controller)
+        const active = engine.getActiveControllers()
+        expect(active).toEqual(['test'])
     })
 
 
@@ -354,7 +355,7 @@ describe(Engine, () => {
     test('action dispatcher initialization', () => {
         expect(engine.actionDispatcher).toBeInstanceOf(ActionDispatcher)
         expect(engine.getController('main')).toBeInstanceOf(ActionController)
-        expect(engine.actionDispatcher.getActiveName()).toBe('main')
+        expect(engine.actionDispatcher.getActiveNames()).toEqual(['main'])
     })
 
 

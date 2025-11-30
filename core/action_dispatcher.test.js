@@ -15,7 +15,7 @@ describe(ActionDispatcher, () => {
 
     test('constructor', () => {
         expect(dispatcher.getController('any')).toBeNull()
-        expect(dispatcher.getActiveName()).toBeNull()
+        expect(dispatcher.getActiveNames()).toEqual([])
     })
 
 
@@ -51,7 +51,7 @@ describe(ActionDispatcher, () => {
 
         expect(newDispatcher.mainControllerName).toBe('main')
         expect(newDispatcher.getController('main')).toBeInstanceOf(ActionController)
-        expect(newDispatcher.getActiveName()).toBe('main')
+        expect(newDispatcher.getActiveNames()).toEqual(['main'])
         expect(newDispatcher.mainController).toBeInstanceOf(ActionController)
     })
 
@@ -64,7 +64,7 @@ describe(ActionDispatcher, () => {
 
         expect(newDispatcher.mainControllerName).toBe('base')
         expect(newDispatcher.getController('base')).toBeInstanceOf(ActionController)
-        expect(newDispatcher.getActiveName()).toBe('base')
+        expect(newDispatcher.getActiveNames()).toEqual(['base'])
         expect(newDispatcher.mainController).toBeInstanceOf(ActionController)
     })
 
@@ -76,10 +76,9 @@ describe(ActionDispatcher, () => {
         newDispatcher.install(host, {main: false})
 
         expect(newDispatcher.mainControllerName).toBeNull()
-        expect(newDispatcher.getActiveName()).toBeNull()
+        expect(newDispatcher.getActiveNames()).toEqual([])
         expect(newDispatcher.mainController).toBeNull()
     })
-
 
 
     test('unregister', () => {
@@ -107,7 +106,7 @@ describe(ActionDispatcher, () => {
         dispatcher.setActive('main')
         dispatcher.unregister('main')
 
-        expect(dispatcher.getActiveName()).toBeNull()
+        expect(dispatcher.getActiveNames()).toEqual([])
     })
 
 
@@ -115,13 +114,13 @@ describe(ActionDispatcher, () => {
         const controller = new ActionController()
 
         dispatcher.register('main', controller)
-        dispatcher.push('main')
+        dispatcher.pushActive('main')
 
-        expect(dispatcher.getStack()).toContain('main')
+        expect(dispatcher.getActive()).toContain('main')
 
         dispatcher.unregister('main')
 
-        expect(dispatcher.getStack()).not.toContain('main')
+        expect(dispatcher.getActive()).not.toContain('main')
     })
 
 
@@ -150,7 +149,7 @@ describe(ActionDispatcher, () => {
         const result = dispatcher.setActive('main')
 
         expect(result).toBe(true)
-        expect(dispatcher.getActiveName()).toBe('main')
+        expect(dispatcher.getActiveNames()).toEqual(['main'])
     })
 
 
@@ -160,26 +159,44 @@ describe(ActionDispatcher, () => {
         const result = dispatcher.setActive('nonExistent')
 
         expect(result).toBe(false)
-        expect(dispatcher.getActiveName()).toBeNull()
+        expect(dispatcher.getActiveNames()).toEqual([])
         expect(consoleSpy).toHaveBeenCalled()
 
         consoleSpy.mockRestore()
     })
 
 
-    test('getActive', () => {
+    test('setActive with array', () => {
+        const controller1 = new ActionController()
+        const controller2 = new ActionController()
+
+        dispatcher.register('main', controller1)
+        dispatcher.register('pause', controller2)
+
+        const result = dispatcher.setActive(['main', 'pause'])
+
+        expect(result).toBe(true)
+        expect(dispatcher.getActive()).toEqual(['main', 'pause'])
+    })
+
+
+    test('getActive returns array', () => {
         const controller = new ActionController()
 
         dispatcher.register('main', controller)
         dispatcher.setActive('main')
 
-        expect(dispatcher.getActive()).toBe(controller)
+        const active = dispatcher.getActive()
+        expect(active).toEqual(['main'])
+        expect(Array.isArray(active)).toBe(true)
     })
 
 
     test('dispatch - single mode (default)', () => {
-        const controller = new ActionController()
-        const executeSpy = vi.spyOn(controller, 'execute').mockImplementation(() => true)
+        class TestController extends ActionController {
+            someAction = vi.fn(() => true)
+        }
+        const controller = new TestController()
 
         dispatcher.register('main', controller)
         dispatcher.setActive('main')
@@ -187,7 +204,7 @@ describe(ActionDispatcher, () => {
         const result = dispatcher.dispatch('someAction', 'arg1', 'arg2')
 
         expect(result).toBe(true)
-        expect(executeSpy).toHaveBeenCalledWith('someAction', 'arg1', 'arg2')
+        expect(controller.someAction).toHaveBeenCalledWith('arg1', 'arg2')
     })
 
 
@@ -298,8 +315,8 @@ describe(ActionDispatcher, () => {
         const pauseController = new ActionController()
         dispatcher.register('game', gameController)
         dispatcher.register('pause', pauseController)
-        dispatcher.push('game')
-        dispatcher.push('pause')
+        dispatcher.pushActive('game')
+        dispatcher.pushActive('pause')
 
         const binding = {
             deviceName: 'keyboard',
@@ -318,8 +335,8 @@ describe(ActionDispatcher, () => {
 
 
     test('dispatchAction - active controller fallback', () => {
-        class TestController extends PerkyModule {
-            jump = vi.fn()
+        class TestController extends ActionController {
+            jump = vi.fn(() => true)
         }
 
         const controller = new TestController()
@@ -341,23 +358,20 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('push - enables stack mode automatically', () => {
+    test('pushActive', () => {
         const controller = new ActionController()
         dispatcher.register('main', controller)
 
-        expect(dispatcher.isStackMode()).toBe(false)
+        dispatcher.pushActive('main')
 
-        dispatcher.push('main')
-
-        expect(dispatcher.isStackMode()).toBe(true)
-        expect(dispatcher.getStack()).toEqual(['main'])
+        expect(dispatcher.getActive()).toEqual(['main'])
     })
 
 
-    test('push - non-existent context', () => {
+    test('pushActive - non-existent controller', () => {
         const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { })
 
-        const result = dispatcher.push('nonExistent')
+        const result = dispatcher.pushActive('nonExistent')
 
         expect(result).toBe(false)
         expect(consoleSpy).toHaveBeenCalled()
@@ -366,50 +380,50 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('push - prevents duplicate context on top', () => {
+    test('pushActive - prevents duplicate controller on top', () => {
         const controller = new ActionController()
         dispatcher.register('main', controller)
 
-        dispatcher.push('main')
-        expect(dispatcher.getStack()).toEqual(['main'])
+        dispatcher.pushActive('main')
+        expect(dispatcher.getActive()).toEqual(['main'])
 
-        const result = dispatcher.push('main')
+        const result = dispatcher.pushActive('main')
 
         expect(result).toBe(false)
-        expect(dispatcher.getStack()).toEqual(['main'])
+        expect(dispatcher.getActive()).toEqual(['main'])
     })
 
 
-    test('push - allows same context if not on top', () => {
+    test('pushActive - allows same controller if not on top', () => {
         const controller1 = new ActionController()
         const controller2 = new ActionController()
         dispatcher.register('main', controller1)
         dispatcher.register('other', controller2)
 
-        dispatcher.push('main')
-        dispatcher.push('other')
-        dispatcher.push('main')
+        dispatcher.pushActive('main')
+        dispatcher.pushActive('other')
+        dispatcher.pushActive('main')
 
-        expect(dispatcher.getStack()).toEqual(['main', 'other', 'main'])
+        expect(dispatcher.getActive()).toEqual(['main', 'other', 'main'])
     })
 
 
-    test('pop - returns popped context', () => {
+    test('popActive - returns popped controller', () => {
         const controller = new ActionController()
         dispatcher.register('main', controller)
 
-        dispatcher.push('main')
-        const popped = dispatcher.pop()
+        dispatcher.pushActive('main')
+        const popped = dispatcher.popActive()
 
         expect(popped).toBe('main')
-        expect(dispatcher.getStack()).toEqual([])
+        expect(dispatcher.getActive()).toEqual([])
     })
 
 
-    test('pop - empty stack', () => {
+    test('popActive - empty stack', () => {
         const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { })
 
-        const result = dispatcher.pop()
+        const result = dispatcher.popActive()
 
         expect(result).toBeNull()
         expect(consoleSpy).toHaveBeenCalled()
@@ -418,61 +432,37 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('pop - disables stack mode when empty', () => {
+    test('getActive - returns copy', () => {
         const controller = new ActionController()
         dispatcher.register('main', controller)
 
-        dispatcher.push('main')
-        expect(dispatcher.isStackMode()).toBe(true)
-
-        dispatcher.pop()
-        expect(dispatcher.isStackMode()).toBe(false)
-    })
-
-
-    test('getStack - returns copy', () => {
-        const controller = new ActionController()
-        dispatcher.register('main', controller)
-
-        dispatcher.push('main')
-        const stack = dispatcher.getStack()
+        dispatcher.pushActive('main')
+        const stack = dispatcher.getActive()
 
         stack.push('other')
 
-        expect(dispatcher.getStack()).toEqual(['main'])
+        expect(dispatcher.getActive()).toEqual(['main'])
     })
 
 
-    test('getStack - returns active context in single mode', () => {
-        const controller = new ActionController()
-        dispatcher.register('main', controller)
-
-        dispatcher.setActive('main')
-
-        expect(dispatcher.isStackMode()).toBe(false)
-        expect(dispatcher.getStack()).toEqual(['main'])
+    test('getActive - returns empty array when no active controllers', () => {
+        expect(dispatcher.getActive()).toEqual([])
     })
 
 
-    test('getStack - returns empty array when no active context', () => {
-        expect(dispatcher.getStack()).toEqual([])
-    })
-
-
-    test('clearStack', () => {
+    test('clearActive', () => {
         const controller1 = new ActionController()
         const controller2 = new ActionController()
 
         dispatcher.register('main', controller1)
         dispatcher.register('pause', controller2)
 
-        dispatcher.push('main')
-        dispatcher.push('pause')
+        dispatcher.pushActive('main')
+        dispatcher.pushActive('pause')
 
-        dispatcher.clearStack()
+        dispatcher.clearActive()
 
-        expect(dispatcher.getStack()).toEqual([])
-        expect(dispatcher.isStackMode()).toBe(false)
+        expect(dispatcher.getActive()).toEqual([])
     })
 
 
@@ -494,8 +484,8 @@ describe(ActionDispatcher, () => {
         dispatcher.register('game', gameController)
         dispatcher.register('pause', pauseController)
 
-        dispatcher.push('game')
-        dispatcher.push('pause')
+        dispatcher.pushActive('game')
+        dispatcher.pushActive('pause')
 
         dispatcher.dispatch('move')
         expect(gameController.move).toHaveBeenCalled()
@@ -508,7 +498,7 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('dispatch - stack mode propagates to lower context', () => {
+    test('dispatch - stack mode propagates to lower controller', () => {
         class GameController extends ActionController {
             static propagable = ['move']
 
@@ -525,8 +515,8 @@ describe(ActionDispatcher, () => {
         dispatcher.register('game', gameController)
         dispatcher.register('pause', pauseController)
 
-        dispatcher.push('game')
-        dispatcher.push('pause')
+        dispatcher.pushActive('game')
+        dispatcher.pushActive('pause')
 
         dispatcher.dispatch('move')
 
