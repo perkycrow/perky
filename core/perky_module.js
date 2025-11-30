@@ -83,7 +83,7 @@ export default class PerkyModule extends Notifier {
 
 
     getExtension (name) {
-        return this.#extensions.get(name)
+        return this.#extensions.get(name) || null
     }
 
 

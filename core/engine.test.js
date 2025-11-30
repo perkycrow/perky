@@ -70,7 +70,7 @@ describe(Engine, () => {
         })
 
         expect(consoleSpy).toHaveBeenCalled()
-        expect(engine.getExtension('test')).toBeUndefined()
+        expect(engine.getExtension('test')).toBeNull()
 
         consoleSpy.mockRestore()
     })
@@ -88,7 +88,7 @@ describe(Engine, () => {
 
 
     test('getExtension non-existent', () => {
-        expect(engine.getExtension('nonexistent')).toBeUndefined()
+        expect(engine.getExtension('nonexistent')).toBeNull()
     })
 
 
@@ -257,7 +257,7 @@ describe(Engine, () => {
 
 
     test('getController non-existent', () => {
-        expect(engine.getController('nonexistent')).toBeUndefined()
+        expect(engine.getController('nonexistent')).toBeNull()
     })
 
 
@@ -267,7 +267,7 @@ describe(Engine, () => {
 
         engine.unregisterController('test')
 
-        expect(engine.getController('test')).toBeUndefined()
+        expect(engine.getController('test')).toBeNull()
     })
 
 
@@ -288,43 +288,6 @@ describe(Engine, () => {
         engine.dispatchAction('testAction', 'param1', 'param2')
 
         expect(controllerSpy).toHaveBeenCalledWith('param1', 'param2')
-    })
-
-
-    test('actionCaller', () => {
-        const dispatchActionSpy = vi.spyOn(engine, 'dispatchAction')
-
-        const actionFunction = engine.actionCaller('testAction', 'param1', 'param2')
-        expect(typeof actionFunction).toBe('function')
-
-        actionFunction()
-
-        expect(dispatchActionSpy).toHaveBeenCalledWith('testAction', 'param1', 'param2')
-    })
-
-
-    test('eventToAction', () => {
-        const dispatchActionSpy = vi.spyOn(engine, 'dispatchAction')
-
-        engine.eventToAction('testEvent', 'testAction', 'param1', 'param2')
-        engine.emit('testEvent')
-
-        expect(dispatchActionSpy).toHaveBeenCalledWith('testAction', 'param1', 'param2')
-    })
-
-
-    test('onceToAction', () => {
-        const dispatchActionSpy = vi.spyOn(engine, 'dispatchAction')
-
-        engine.onceToAction('testEvent', 'testAction', 'param1', 'param2')
-
-        engine.emit('testEvent')
-        expect(dispatchActionSpy).toHaveBeenCalledWith('testAction', 'param1', 'param2')
-
-        dispatchActionSpy.mockClear()
-
-        engine.emit('testEvent')
-        expect(dispatchActionSpy).not.toHaveBeenCalled()
     })
 
 

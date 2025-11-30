@@ -14,7 +14,7 @@ describe(ActionDispatcher, () => {
 
 
     test('constructor', () => {
-        expect(dispatcher.getController('any')).toBeUndefined()
+        expect(dispatcher.getController('any')).toBeNull()
         expect(dispatcher.getActiveName()).toBeNull()
     })
 
@@ -89,7 +89,7 @@ describe(ActionDispatcher, () => {
         const result = dispatcher.unregister('main')
 
         expect(result).toBe(true)
-        expect(dispatcher.getController('main')).toBeUndefined()
+        expect(dispatcher.getController('main')).toBeNull()
     })
 
 

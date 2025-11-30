@@ -10,6 +10,8 @@ export default class ActionDispatcher extends PerkyModule {
     mainControllerName = null
 
     onInstall (host, options) {
+        this.#setupMainController(options)
+
         host.delegate(this, {
             register: 'registerController',
             unregister: 'unregisterController',
@@ -23,11 +25,15 @@ export default class ActionDispatcher extends PerkyModule {
             clearStack: 'clearContextStack',
             isStackMode: 'isStackMode',
             dispatch: 'dispatchAction',
-            addAction: 'addActionToController',
-            listActions: 'listActions'
+            listActions: 'listActions',
+            mainController: 'mainController',
+            addAction: 'addAction',
+            removeAction: 'removeAction'
         })
+    }
 
-        // Setup main controller
+
+    #setupMainController (options) {
         const mainOption = options.main ?? true
 
         if (mainOption !== false) {
@@ -41,7 +47,17 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     get mainController () {
-        return this.mainControllerName ? this.getController(this.mainControllerName) : null
+        return this.getController(this.mainControllerName)
+    }
+
+
+    addAction (actionName, action) {
+        return this.mainController?.addAction(actionName, action)
+    }
+
+
+    removeAction (actionName) {
+        return this.mainController?.removeAction(actionName)
     }
 
 
