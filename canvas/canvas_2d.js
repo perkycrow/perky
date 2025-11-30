@@ -21,7 +21,6 @@ export default class Canvas2D {
 
         this.applyPixelRatio()
 
-        this.showAxes = options.showAxes ?? false
         this.showGrid = options.showGrid ?? false
         this.gridOptions = {
             step: options.gridStep ?? 1,
@@ -196,10 +195,6 @@ export default class Canvas2D {
         ctx.save()
         this.camera.applyToContext(ctx, this.pixelRatio)
 
-        if (this.showAxes) {
-            drawAxes(ctx, this.camera)
-        }
-
         scene.updateWorldMatrix(true)
 
         renderObject(ctx, scene, 1.0, this)
@@ -244,37 +239,6 @@ function renderObject (ctx, object, parentOpacity, renderer) {
     object.children.forEach(child => {
         renderObject(ctx, child, effectiveOpacity, renderer)
     })
-
-    ctx.restore()
-}
-
-
-function drawAxes (ctx, camera) {
-    ctx.save()
-
-    const ppu = camera.pixelsPerUnit
-    const maxUnits = Math.max(camera.viewportWidth, camera.viewportHeight) / ppu
-
-    ctx.strokeStyle = '#cccccc'
-    ctx.lineWidth = 1 / ppu
-
-    ctx.beginPath()
-    ctx.moveTo(-maxUnits, 0)
-    ctx.lineTo(maxUnits, 0)
-    ctx.stroke()
-
-    ctx.beginPath()
-    ctx.moveTo(0, -maxUnits)
-    ctx.lineTo(0, maxUnits)
-    ctx.stroke()
-
-    ctx.save()
-    ctx.scale(1, -1)
-    ctx.font = `${0.5}px Arial`
-    ctx.fillStyle = '#999999'
-    ctx.fillText('X+', maxUnits - 1, 0.3)
-    ctx.fillText('Y+', 0.1, -maxUnits + 0.8)
-    ctx.restore()
 
     ctx.restore()
 }

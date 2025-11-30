@@ -66,12 +66,6 @@ describe(CanvasLayer, () => {
     })
 
 
-    test('constructor with showAxes option', () => {
-        const l = new CanvasLayer('test', {showAxes: true})
-        expect(l.renderer.showAxes).toBe(true)
-    })
-
-
     test('constructor with showGrid option', () => {
         const l = new CanvasLayer('test', {showGrid: true})
         expect(l.renderer.showGrid).toBe(true)

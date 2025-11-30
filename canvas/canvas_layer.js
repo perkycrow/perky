@@ -42,7 +42,6 @@ export default class CanvasLayer extends Layer {
             height: vp.height,
             pixelRatio,
             camera,
-            showAxes: options.showAxes ?? false,
             showGrid: options.showGrid ?? false,
             gridStep: options.gridStep,
             gridOpacity: options.gridOpacity,

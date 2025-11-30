@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, vi } from 'vitest'
+import {describe, test, expect, beforeEach, vi} from 'vitest'
 import Canvas2D from './canvas_2d'
 import Camera2D from './camera_2d'
 import Group2D from './group_2d'
@@ -7,10 +7,10 @@ import Rectangle from './rectangle'
 
 
 global.ResizeObserver = class ResizeObserver {
-    constructor(callback) {
+    constructor (callback) {
         this.callback = callback
     }
-    observe(target) {
+    observe (target) {
         this.callback([{
             target,
             contentRect: {
@@ -19,8 +19,8 @@ global.ResizeObserver = class ResizeObserver {
             }
         }])
     }
-    disconnect() { } // eslint-disable-line class-methods-use-this
-    unobserve() { } // eslint-disable-line class-methods-use-this
+    disconnect () { } // eslint-disable-line class-methods-use-this
+    unobserve () { } // eslint-disable-line class-methods-use-this
 }
 
 
@@ -33,7 +33,7 @@ describe(Canvas2D, () => {
         canvas = document.createElement('canvas')
         canvas.width = 800
         canvas.height = 600
-        renderer = new Canvas2D({ canvas })
+        renderer = new Canvas2D({canvas})
     })
 
 
@@ -41,14 +41,13 @@ describe(Canvas2D, () => {
         expect(renderer.canvas).toBe(canvas)
         expect(renderer.ctx).toBe(canvas.getContext('2d'))
         expect(renderer.camera).toBeInstanceOf(Camera2D)
-        expect(renderer.showAxes).toBe(false)
         expect(renderer.backgroundColor).toBe(null)
     })
 
 
     test('constructor with container', () => {
         const container = document.createElement('div')
-        const r = new Canvas2D({ container, width: 400, height: 300 })
+        const r = new Canvas2D({container, width: 400, height: 300})
 
         expect(r.canvas).toBeInstanceOf(HTMLCanvasElement)
         expect(r.container).toBe(container)
@@ -61,12 +60,10 @@ describe(Canvas2D, () => {
         const r = new Canvas2D({
             canvas,
             camera,
-            showAxes: true,
             backgroundColor: '#ffffff'
         })
 
         expect(r.camera).toBe(camera)
-        expect(r.showAxes).toBe(true)
         expect(r.backgroundColor).toBe('#ffffff')
     })
 
@@ -74,10 +71,10 @@ describe(Canvas2D, () => {
     test('autoFit observes container resize', () => {
         const container = document.createElement('div')
 
-        Object.defineProperty(container, 'clientWidth', { value: 400, writable: true })
-        Object.defineProperty(container, 'clientHeight', { value: 300, writable: true })
+        Object.defineProperty(container, 'clientWidth', {value: 400, writable: true})
+        Object.defineProperty(container, 'clientHeight', {value: 300, writable: true})
 
-        const r = new Canvas2D({ container, autoFit: true })
+        const r = new Canvas2D({container, autoFit: true})
 
         expect(r.displayWidth).toBe(400)
         expect(r.displayHeight).toBe(300)
@@ -88,10 +85,10 @@ describe(Canvas2D, () => {
 
     test('dispose cleans up autoFit observer', () => {
         const container = document.createElement('div')
-        Object.defineProperty(container, 'clientWidth', { value: 400, writable: true })
-        Object.defineProperty(container, 'clientHeight', { value: 300, writable: true })
+        Object.defineProperty(container, 'clientWidth', {value: 400, writable: true})
+        Object.defineProperty(container, 'clientHeight', {value: 300, writable: true})
 
-        const r = new Canvas2D({ container, autoFit: true })
+        const r = new Canvas2D({container, autoFit: true})
 
         expect(r.canvas).toBeInstanceOf(HTMLCanvasElement)
         expect(r.ctx).toBeDefined()
@@ -105,10 +102,10 @@ describe(Canvas2D, () => {
 
     test('autoFitEnabled can be toggled dynamically', () => {
         const container = document.createElement('div')
-        Object.defineProperty(container, 'clientWidth', { value: 400, writable: true })
-        Object.defineProperty(container, 'clientHeight', { value: 300, writable: true })
+        Object.defineProperty(container, 'clientWidth', {value: 400, writable: true})
+        Object.defineProperty(container, 'clientHeight', {value: 300, writable: true})
 
-        const r = new Canvas2D({ container, autoFit: true })
+        const r = new Canvas2D({container, autoFit: true})
 
         expect(r.autoFitEnabled).toBe(true)
         expect(r.displayWidth).toBe(400)
@@ -130,12 +127,12 @@ describe(Canvas2D, () => {
         const container1 = document.createElement('div')
         const container2 = document.createElement('div')
 
-        Object.defineProperty(container1, 'clientWidth', { value: 400, writable: true })
-        Object.defineProperty(container1, 'clientHeight', { value: 300, writable: true })
-        Object.defineProperty(container2, 'clientWidth', { value: 800, writable: true })
-        Object.defineProperty(container2, 'clientHeight', { value: 600, writable: true })
+        Object.defineProperty(container1, 'clientWidth', {value: 400, writable: true})
+        Object.defineProperty(container1, 'clientHeight', {value: 300, writable: true})
+        Object.defineProperty(container2, 'clientWidth', {value: 800, writable: true})
+        Object.defineProperty(container2, 'clientHeight', {value: 600, writable: true})
 
-        const r = new Canvas2D({ container: container1, autoFit: true })
+        const r = new Canvas2D({container: container1, autoFit: true})
 
         expect(r.displayWidth).toBe(400)
         expect(r.displayHeight).toBe(300)
@@ -156,12 +153,12 @@ describe(Canvas2D, () => {
         const container1 = document.createElement('div')
         const container2 = document.createElement('div')
 
-        Object.defineProperty(container1, 'clientWidth', { value: 400, writable: true })
-        Object.defineProperty(container1, 'clientHeight', { value: 300, writable: true })
-        Object.defineProperty(container2, 'clientWidth', { value: 800, writable: true })
-        Object.defineProperty(container2, 'clientHeight', { value: 600, writable: true })
+        Object.defineProperty(container1, 'clientWidth', {value: 400, writable: true})
+        Object.defineProperty(container1, 'clientHeight', {value: 300, writable: true})
+        Object.defineProperty(container2, 'clientWidth', {value: 800, writable: true})
+        Object.defineProperty(container2, 'clientHeight', {value: 600, writable: true})
 
-        const r = new Canvas2D({ container: container1, width: 400, height: 300 })
+        const r = new Canvas2D({container: container1, width: 400, height: 300})
 
         expect(r.displayWidth).toBe(400)
         expect(r.displayHeight).toBe(300)
@@ -214,7 +211,7 @@ describe(Canvas2D, () => {
 
     test('render with visible object', () => {
         const scene = new Group2D()
-        const circle = new Circle({ radius: 10, color: '#ff0000' })
+        const circle = new Circle({radius: 10, color: '#ff0000'})
         scene.addChild(circle)
 
         expect(() => renderer.render(scene)).not.toThrow()
@@ -223,7 +220,7 @@ describe(Canvas2D, () => {
 
     test('render with invisible object', () => {
         const scene = new Group2D()
-        const circle = new Circle({ radius: 10, color: '#ff0000', visible: false })
+        const circle = new Circle({radius: 10, color: '#ff0000', visible: false})
         scene.addChild(circle)
 
         vi.spyOn(circle, 'render')
@@ -236,9 +233,9 @@ describe(Canvas2D, () => {
 
     test('render with nested groups', () => {
         const scene = new Group2D()
-        const group1 = new Group2D({ x: 10, y: 20 })
-        const group2 = new Group2D({ x: 5, y: 5 })
-        const circle = new Circle({ radius: 10, color: '#ff0000' })
+        const group1 = new Group2D({x: 10, y: 20})
+        const group2 = new Group2D({x: 5, y: 5})
+        const circle = new Circle({radius: 10, color: '#ff0000'})
 
         scene.addChild(group1)
         group1.addChild(group2)
@@ -250,7 +247,7 @@ describe(Canvas2D, () => {
 
     test('render with opacity', () => {
         const scene = new Group2D()
-        const circle = new Circle({ radius: 10, color: '#ff0000', opacity: 0.5 })
+        const circle = new Circle({radius: 10, color: '#ff0000', opacity: 0.5})
         scene.addChild(circle)
 
         expect(() => renderer.render(scene)).not.toThrow()
@@ -259,7 +256,7 @@ describe(Canvas2D, () => {
 
     test('render respects camera transformations', () => {
         const scene = new Group2D()
-        const circle = new Circle({ x: 0, y: 0, radius: 10, color: '#ff0000' })
+        const circle = new Circle({x: 0, y: 0, radius: 10, color: '#ff0000'})
         scene.addChild(circle)
 
         renderer.camera.setPosition(5, 5)
@@ -268,21 +265,13 @@ describe(Canvas2D, () => {
         expect(() => renderer.render(scene)).not.toThrow()
     })
 
-
-    test('render with showAxes', () => {
-        const scene = new Group2D()
-        renderer.showAxes = true
-
-        expect(() => renderer.render(scene)).not.toThrow()
-    })
-
-
+    
     test('render multiple objects', () => {
         const scene = new Group2D()
         scene.addChild(
-            new Circle({ x: 0, y: 0, radius: 10, color: '#ff0000' }),
-            new Rectangle({ x: 50, y: 50, width: 20, height: 20, color: '#00ff00' }),
-            new Circle({ x: -50, y: -50, radius: 15, color: '#0000ff' })
+            new Circle({x: 0, y: 0, radius: 10, color: '#ff0000'}),
+            new Rectangle({x: 50, y: 50, width: 20, height: 20, color: '#00ff00'}),
+            new Circle({x: -50, y: -50, radius: 15, color: '#0000ff'})
         )
 
         expect(() => renderer.render(scene)).not.toThrow()

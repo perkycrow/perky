@@ -276,6 +276,7 @@ export default class HTMLLayer extends Layer {
         if (!this.camera) {
             return 0
         }
+
         // Camera pixelsPerUnit is already in CSS coordinates
         const ppu = this.camera.pixelsPerUnit
         return pixels / ppu
@@ -286,6 +287,7 @@ export default class HTMLLayer extends Layer {
         if (!this.camera) {
             return 0
         }
+        
         // Camera pixelsPerUnit is already in CSS coordinates
         const ppu = this.camera.pixelsPerUnit
         return units * ppu
