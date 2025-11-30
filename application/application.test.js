@@ -48,16 +48,16 @@ describe(Application, () => {
         vi.spyOn(PerkyView, 'defaultElement').mockReturnValue(mockPerkyViewElement)
 
         // FIXME: Complexity
-        vi.spyOn(Engine.prototype, 'use').mockImplementation(function (ExtensionClass, options) { // eslint-disable-line complexity
+        vi.spyOn(Engine.prototype, 'use').mockImplementation(function (ChildClass, options) { // eslint-disable-line complexity
             let instance = options.instance
             if (!instance) {
-                if (ExtensionClass === KeyboardDevice || ExtensionClass === MouseDevice) {
-                    const container = options.container || (ExtensionClass === MouseDevice && this.perkyView ? this.perkyView.element : window)
-                    instance = new ExtensionClass({...options, container})
-                } else if (ExtensionClass === PerkyView) {
-                    instance = new ExtensionClass({...options, element: mockPerkyViewElement})
+                if (ChildClass === KeyboardDevice || ChildClass === MouseDevice) {
+                    const container = options.container || (ChildClass === MouseDevice && this.perkyView ? this.perkyView.element : window)
+                    instance = new ChildClass({...options, container})
+                } else if (ChildClass === PerkyView) {
+                    instance = new ChildClass({...options, element: mockPerkyViewElement})
                 } else {
-                    instance = new ExtensionClass(options)
+                    instance = new ChildClass(options)
                 }
             }
 
@@ -69,11 +69,11 @@ describe(Application, () => {
                 this[options.$bind] = instance
             }
 
-            const extensionsRegistry = this.getExtensionsRegistry()
-            const extensionName = options.$name || instance.name || instance.constructor.name
-            extensionsRegistry.set(extensionName, instance)
+            const childrenRegistry = this.getChildrenRegistry()
+            const childName = options.$name || instance.name || instance.constructor.name
+            childrenRegistry.set(childName, instance)
 
-            if ((ExtensionClass === KeyboardDevice || ExtensionClass === MouseDevice) && this.inputManager) {
+            if ((ChildClass === KeyboardDevice || ChildClass === MouseDevice) && this.inputManager) {
                 this.inputManager.registerDevice(options.$name, instance)
             }
 
@@ -528,52 +528,52 @@ describe(Application, () => {
     })
 
 
-    test('use method installs extension class', () => {
-        class TestExtension extends PerkyModule {
+    test('use method installs child class', () => {
+        class TestChild extends PerkyModule {
             constructor (options) {
-                super({...options, name: 'testExtension'})
+                super({...options, name: 'testChild'})
             }
         }
 
-        application.use(TestExtension, {$name: 'testExtension', $category: 'extension'})
+        application.use(TestChild, {$name: 'testChild', $category: 'child'})
 
-        expect(application.hasExtension('testExtension')).toBe(true)
+        expect(application.hasChild('testChild')).toBe(true)
     })
 
 
-    test('use method installs extension instance', () => {
-        class TestExtension extends PerkyModule {
+    test('use method installs child instance', () => {
+        class TestChild extends PerkyModule {
             constructor (options) {
-                super({...options, name: 'testExtension'})
+                super({...options, name: 'testChild'})
             }
         }
 
-        const extension = new TestExtension()
-        application.use(TestExtension, {
-            instance: extension,
-            $name: 'testExtension',
-            $category: 'extension'
+        const child = new TestChild()
+        application.use(TestChild, {
+            instance: child,
+            $name: 'testChild',
+            $category: 'child'
         })
 
-        expect(application.hasExtension('testExtension')).toBe(true)
+        expect(application.hasChild('testChild')).toBe(true)
     })
 
 
     test('use method with options', () => {
-        class TestExtension extends PerkyModule {
+        class TestChild extends PerkyModule {
             constructor (options) {
-                super({...options, name: 'testExtension'})
+                super({...options, name: 'testChild'})
             }
         }
 
-        application.use(TestExtension, {
-            $name: 'testExtension',
-            $category: 'extension',
+        application.use(TestChild, {
+            $name: 'testChild',
+            $category: 'child',
             someOption: true
         })
 
-        const extension = application.getExtension('testExtension')
-        expect(extension.options.someOption).toBe(true)
+        const child = application.getChild('testChild')
+        expect(child.options.someOption).toBe(true)
     })
 
 

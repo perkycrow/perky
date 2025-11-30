@@ -99,7 +99,7 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     get activeControllers () {
-        return this.#activeControllers.map(name => this.getExtension(name)).filter(Boolean)
+        return this.#activeControllers.map(name => this.getChild(name)).filter(Boolean)
     }
 
 
@@ -109,7 +109,7 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     register (name, ControllerClass) {
-        if (this.hasExtension(name)) {
+        if (this.hasChild(name)) {
             console.warn(`Controller "${name}" already registered. Overwriting...`)
         }
 
@@ -123,7 +123,7 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     unregister (name) {
-        const controller = this.getExtension(name)
+        const controller = this.getChild(name)
 
         if (!controller) {
             return false
@@ -135,17 +135,17 @@ export default class ActionDispatcher extends PerkyModule {
             this.#activeControllers.splice(stackIndex, 1)
         }
 
-        return this.removeExtension(name)
+        return this.removeChild(name)
     }
 
 
     getController (name) {
-        return this.getExtension(name)
+        return this.getChild(name)
     }
 
 
     getNameFor (controller) {
-        return this.getExtensionsRegistry().keyFor(controller)
+        return this.getChildrenRegistry().keyFor(controller)
     }
 
 
@@ -153,7 +153,7 @@ export default class ActionDispatcher extends PerkyModule {
         const nameArray = Array.isArray(names) ? names : [names]
 
         for (const name of nameArray) {
-            if (!this.hasExtension(name)) {
+            if (!this.hasChild(name)) {
                 console.warn(`Controller "${name}" not found. Cannot set as active controller.`)
                 return false
             }
@@ -172,7 +172,7 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     pushActive (name) {
-        if (!this.hasExtension(name)) {
+        if (!this.hasChild(name)) {
             console.warn(`Controller "${name}" not found`)
             return false
         }
@@ -213,7 +213,7 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     dispatchTo (name, actionName, ...args) {
-        const controller = this.getExtension(name)
+        const controller = this.getChild(name)
 
         if (controller) {
             if (typeof controller.execute === 'function') {
@@ -251,13 +251,13 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     listControllers () {
-        return this.getExtensionsByCategory('controller')
+        return this.getChildrenByCategory('controller')
     }
 
 
     listAllActions () {
         const allActions = new Map()
-        const registry = this.getExtensionsRegistry()
+        const registry = this.getChildrenRegistry()
 
         for (const [name, controller] of registry.entries) {
             if (controller instanceof ActionController && typeof controller.listActions === 'function') {
@@ -275,7 +275,7 @@ export default class ActionDispatcher extends PerkyModule {
             return false
         }
 
-        const registry = this.getExtensionsRegistry()
+        const registry = this.getChildrenRegistry()
 
         for (let i = this.#activeControllers.length - 1; i >= 0; i--) {
             const controllerName = this.#activeControllers[i]
@@ -307,7 +307,7 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     #canPropagate (actionName, startIndex) {
-        const registry = this.getExtensionsRegistry()
+        const registry = this.getChildrenRegistry()
 
         for (let i = startIndex; i >= 0; i--) {
             const controllerName = this.#activeControllers[i]

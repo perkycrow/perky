@@ -17,7 +17,7 @@ describe(Engine, () => {
 
     test('constructor', () => {
         expect(engine.manifest).toBeInstanceOf(Manifest)
-        expect(engine.getExtension('ActionDispatcher')).toBeDefined()
+        expect(engine.getChild('ActionDispatcher')).toBeDefined()
     })
 
 
@@ -46,49 +46,49 @@ describe(Engine, () => {
     })
 
 
-    test('use registers extension', () => {
-        class TestExtension extends PerkyModule { }
+    test('use registers child', () => {
+        class TestChild extends PerkyModule { }
 
-        engine.use(TestExtension, {
+        engine.use(TestChild, {
             $name: 'test',
             $category: 'module',
             $bind: 'test'
         })
 
-        expect(engine.getExtension('test')).toBeInstanceOf(TestExtension)
-        expect(engine.test).toBeInstanceOf(TestExtension)
+        expect(engine.getChild('test')).toBeInstanceOf(TestChild)
+        expect(engine.test).toBeInstanceOf(TestChild)
     })
 
 
-    test('use with non-extension object', () => {
+    test('use with non-child object', () => {
         const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { })
-        const nonExtension = {}
+        const nonChild = {}
 
-        engine.use(nonExtension.constructor, {
-            instance: nonExtension,
+        engine.use(nonChild.constructor, {
+            instance: nonChild,
             $name: 'test'
         })
 
         expect(consoleSpy).toHaveBeenCalled()
-        expect(engine.getExtension('test')).toBeNull()
+        expect(engine.getChild('test')).toBeNull()
 
         consoleSpy.mockRestore()
     })
 
 
-    test('getExtension', () => {
-        class TestExtension extends PerkyModule { }
-        engine.use(TestExtension, {
+    test('getChild', () => {
+        class TestChild extends PerkyModule { }
+        engine.use(TestChild, {
             $name: 'test',
             $category: 'module'
         })
 
-        expect(engine.getExtension('test')).toBeInstanceOf(TestExtension)
+        expect(engine.getChild('test')).toBeInstanceOf(TestChild)
     })
 
 
-    test('getExtension non-existent', () => {
-        expect(engine.getExtension('nonexistent')).toBeNull()
+    test('getChild non-existent', () => {
+        expect(engine.getChild('nonexistent')).toBeNull()
     })
 
 
@@ -181,51 +181,51 @@ describe(Engine, () => {
     })
 
 
-    test('extension registration events', () => {
-        class TestExtension extends PerkyModule { }
+    test('child registration events', () => {
+        class TestChild extends PerkyModule { }
         const engineSpy = vi.spyOn(engine, 'emit')
-        const extension = new TestExtension()
-        const extensionSpy = vi.spyOn(extension, 'emit')
+        const child = new TestChild()
+        const childSpy = vi.spyOn(child, 'emit')
 
-        engine.use(TestExtension, {
-            instance: extension,
+        engine.use(TestChild, {
+            instance: child,
             $name: 'test',
             $category: 'module'
         })
 
-        expect(engineSpy).toHaveBeenCalledWith('module:set', 'test', extension)
-        expect(extensionSpy).toHaveBeenCalledWith('registered', engine, 'test')
-        expect(extension.host).toBe(engine)
+        expect(engineSpy).toHaveBeenCalledWith('module:set', 'test', child)
+        expect(childSpy).toHaveBeenCalledWith('registered', engine, 'test')
+        expect(child.host).toBe(engine)
     })
 
 
-    test('extension unregistration events', () => {
-        class TestExtension extends PerkyModule { }
-        const extension = new TestExtension()
-        engine.use(TestExtension, {
-            instance: extension,
+    test('child unregistration events', () => {
+        class TestChild extends PerkyModule { }
+        const child = new TestChild()
+        engine.use(TestChild, {
+            instance: child,
             $name: 'test',
             $category: 'module'
         })
 
         const engineSpy = vi.spyOn(engine, 'emit')
-        const extensionSpy = vi.spyOn(extension, 'emit')
+        const childSpy = vi.spyOn(child, 'emit')
 
-        engine.removeExtension('test')
+        engine.removeChild('test')
 
-        expect(engineSpy).toHaveBeenCalledWith('module:delete', 'test', extension)
-        expect(extensionSpy).toHaveBeenCalledWith('unregistered', engine, 'test')
+        expect(engineSpy).toHaveBeenCalledWith('module:delete', 'test', child)
+        expect(childSpy).toHaveBeenCalledWith('unregistered', engine, 'test')
     })
 
 
-    test('extension lifecycle events propagation', () => {
-        class TestExtension extends PerkyModule { }
-        const extension = new TestExtension()
-        const startSpy = vi.spyOn(extension, 'start')
-        const stopSpy = vi.spyOn(extension, 'stop')
+    test('child lifecycle events propagation', () => {
+        class TestChild extends PerkyModule { }
+        const child = new TestChild()
+        const startSpy = vi.spyOn(child, 'start')
+        const stopSpy = vi.spyOn(child, 'stop')
 
-        engine.use(TestExtension, {
-            instance: extension,
+        engine.use(TestChild, {
+            instance: child,
             $name: 'test',
             $category: 'module',
             $lifecycle: true
@@ -359,16 +359,16 @@ describe(Engine, () => {
     })
 
 
-    test('use after start calls start on the extension', () => {
+    test('use after start calls start on the child', () => {
         engine.start()
 
-        class TestExtension extends PerkyModule { }
-        const extension = new TestExtension()
-        const startSpy = vi.spyOn(extension, 'start')
+        class TestChild extends PerkyModule { }
+        const child = new TestChild()
+        const startSpy = vi.spyOn(child, 'start')
 
-        engine.use(TestExtension, {
-            instance: extension,
-            $name: 'newExtension',
+        engine.use(TestChild, {
+            instance: child,
+            $name: 'newChild',
             $category: 'module',
             $lifecycle: true
         })

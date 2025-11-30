@@ -4,22 +4,22 @@ import {vi, describe, test, expect, beforeEach, afterEach} from 'vitest'
 
 
 describe(PerkyModule, () => {
-    let extension
+    let child
     let host
 
 
     beforeEach(() => {
-        const extensionsRegistry = new Registry()
+        const childrenRegistry = new Registry()
         host = {
             started: false,
             on: vi.fn(),
             emit: vi.fn(),
-            getExtensionsRegistry: vi.fn(() => extensionsRegistry),
-            hasExtension: vi.fn((name) => extensionsRegistry.has(name)),
-            getExtension: vi.fn((name) => extensionsRegistry.get(name))
+            getChildrenRegistry: vi.fn(() => childrenRegistry),
+            hasChild: vi.fn((name) => childrenRegistry.has(name)),
+            getChild: vi.fn((name) => childrenRegistry.get(name))
         }
 
-        extension = new PerkyModule({name: 'testExtension'})
+        child = new PerkyModule({name: 'testChild'})
     })
 
 
@@ -29,98 +29,98 @@ describe(PerkyModule, () => {
 
 
     test('constructor', () => {
-        expect(extension).toBeInstanceOf(PerkyModule)
-        expect(extension.name).toBe('testExtension')
-        expect(extension.options).toEqual({name: 'testExtension'})
-        expect(extension.host).toBeNull()
-        expect(extension.installed).toBe(false)
+        expect(child).toBeInstanceOf(PerkyModule)
+        expect(child.name).toBe('testChild')
+        expect(child.options).toEqual({name: 'testChild'})
+        expect(child.host).toBeNull()
+        expect(child.installed).toBe(false)
     })
 
 
     test('constructor with default name', () => {
-        class TestExtension extends PerkyModule { }
-        const ext = new TestExtension()
-        expect(ext.name).toBe('TestExtension')
+        class TestChild extends PerkyModule { }
+        const ext = new TestChild()
+        expect(ext.name).toBe('TestChild')
     })
 
 
     test('install', () => {
-        const result = extension.install(host, {})
+        const result = child.install(host, {})
 
         expect(result).toBe(true)
-        expect(extension.host).toBe(host)
-        expect(extension.installed).toBe(true)
+        expect(child.host).toBe(host)
+        expect(child.installed).toBe(true)
     })
 
 
     test('install when already installed', () => {
-        extension.install(host, {})
-        const result = extension.install(host, {})
+        child.install(host, {})
+        const result = child.install(host, {})
 
         expect(result).toBe(false)
     })
 
 
     test('uninstall', () => {
-        extension.install(host, {})
-        const result = extension.uninstall()
+        child.install(host, {})
+        const result = child.uninstall()
 
         expect(result).toBe(true)
-        expect(extension.host).toBeNull()
-        expect(extension.installed).toBe(false)
+        expect(child.host).toBeNull()
+        expect(child.installed).toBe(false)
     })
 
 
     test('uninstall when not installed', () => {
-        const result = extension.uninstall()
+        const result = child.uninstall()
         expect(result).toBe(false)
     })
 
 
-    test('use with Extension class', () => {
-        class TestExtension extends PerkyModule { }
+    test('use with Child class', () => {
+        class TestChild extends PerkyModule { }
 
-        const result = extension.use(TestExtension, {
+        const result = child.use(TestChild, {
             $name: 'test',
             $category: 'test'
         })
 
-        expect(result).toBeInstanceOf(TestExtension)
-        expect(result).toBe(extension.getExtension('test'))
-        expect(extension.hasExtension('test')).toBe(true)
+        expect(result).toBeInstanceOf(TestChild)
+        expect(result).toBe(child.getChild('test'))
+        expect(child.hasChild('test')).toBe(true)
     })
 
 
-    test('use with Extension instance', () => {
-        class TestExtension extends PerkyModule { }
-        const instance = new TestExtension()
+    test('use with Child instance', () => {
+        class TestChild extends PerkyModule { }
+        const instance = new TestChild()
 
-        const result = extension.use(TestExtension, {
+        const result = child.use(TestChild, {
             instance,
             $name: 'test',
             $category: 'test'
         })
 
         expect(result).toBe(instance)
-        expect(extension.getExtension('test')).toBe(instance)
+        expect(child.getChild('test')).toBe(instance)
     })
 
 
-    test('getExtensionsByCategory - single category', () => {
-        class TestExtension1 extends PerkyModule { }
-        class TestExtension2 extends PerkyModule { }
+    test('getChildrenByCategory - single category', () => {
+        class TestChild1 extends PerkyModule { }
+        class TestChild2 extends PerkyModule { }
 
-        extension.use(TestExtension1, {
+        child.use(TestChild1, {
             $name: 'ext1',
             $category: 'module'
         })
 
-        extension.use(TestExtension2, {
+        child.use(TestChild2, {
             $name: 'ext2',
             $category: 'module'
         })
 
-        const modules = extension.getExtensionsByCategory('module')
+        const modules = child.getChildrenByCategory('module')
 
         expect(modules).toHaveLength(2)
         expect(modules).toContain('ext1')
@@ -128,28 +128,28 @@ describe(PerkyModule, () => {
     })
 
 
-    test('getExtensionsByCategory - mixed categories', () => {
-        class TestExtension1 extends PerkyModule { }
-        class TestExtension2 extends PerkyModule { }
-        class TestExtension3 extends PerkyModule { }
+    test('getChildrenByCategory - mixed categories', () => {
+        class TestChild1 extends PerkyModule { }
+        class TestChild2 extends PerkyModule { }
+        class TestChild3 extends PerkyModule { }
 
-        extension.use(TestExtension1, {
+        child.use(TestChild1, {
             $name: 'ext1',
             $category: 'module'
         })
 
-        extension.use(TestExtension2, {
+        child.use(TestChild2, {
             $name: 'ext2',
             $category: 'service'
         })
 
-        extension.use(TestExtension3, {
+        child.use(TestChild3, {
             $name: 'ext3',
             $category: 'module'
         })
 
-        const modules = extension.getExtensionsByCategory('module')
-        const services = extension.getExtensionsByCategory('service')
+        const modules = child.getChildrenByCategory('module')
+        const services = child.getChildrenByCategory('service')
 
         expect(modules).toHaveLength(2)
         expect(modules).toContain('ext1')
@@ -160,15 +160,15 @@ describe(PerkyModule, () => {
     })
 
 
-    test('getExtensionsByCategory - empty category', () => {
-        class TestExtension extends PerkyModule { }
+    test('getChildrenByCategory - empty category', () => {
+        class TestChild extends PerkyModule { }
 
-        extension.use(TestExtension, {
+        child.use(TestChild, {
             $name: 'ext1',
             $category: 'module'
         })
 
-        const services = extension.getExtensionsByCategory('service')
+        const services = child.getChildrenByCategory('service')
 
         expect(services).toHaveLength(0)
         expect(services).toEqual([])
@@ -176,79 +176,79 @@ describe(PerkyModule, () => {
 
 
     test('use with binding', () => {
-        class TestExtension extends PerkyModule { }
+        class TestChild extends PerkyModule { }
 
-        extension.use(TestExtension, {
+        child.use(TestChild, {
             $name: 'test',
             $bind: 'testProperty'
         })
 
-        expect(extension.testProperty).toBeInstanceOf(TestExtension)
+        expect(child.testProperty).toBeInstanceOf(TestChild)
     })
 
 
     test('use with lifecycle disabled', () => {
-        class TestExtension extends PerkyModule { }
-        const startSpy = vi.spyOn(TestExtension.prototype, 'start')
+        class TestChild extends PerkyModule { }
+        const startSpy = vi.spyOn(TestChild.prototype, 'start')
 
-        extension.use(TestExtension, {
+        child.use(TestChild, {
             $name: 'test',
             $lifecycle: false
         })
 
-        extension.start()
+        child.start()
 
         expect(startSpy).not.toHaveBeenCalled()
     })
 
 
     test('use with lifecycle enabled', () => {
-        class TestExtension extends PerkyModule { }
-        const instance = new TestExtension()
+        class TestChild extends PerkyModule { }
+        const instance = new TestChild()
         const startSpy = vi.spyOn(instance, 'start')
 
-        extension.use(TestExtension, {
+        child.use(TestChild, {
             instance,
             $name: 'test',
             $lifecycle: true
         })
 
-        extension.start()
+        child.start()
 
         expect(startSpy).toHaveBeenCalled()
     })
 
 
     test('use emits registration events', () => {
-        class TestExtension extends PerkyModule { }
-        const emitSpy = vi.spyOn(extension, 'emit')
-        const testExt = new TestExtension()
+        class TestChild extends PerkyModule { }
+        const emitSpy = vi.spyOn(child, 'emit')
+        const testExt = new TestChild()
         const testExtEmitSpy = vi.spyOn(testExt, 'emit')
 
-        extension.use(TestExtension, {
+        child.use(TestChild, {
             instance: testExt,
             $name: 'test',
             $category: 'testCategory'
         })
 
         expect(emitSpy).toHaveBeenCalledWith('testCategory:set', 'test', testExt)
-        expect(testExtEmitSpy).toHaveBeenCalledWith('registered', extension, 'test')
+        expect(testExtEmitSpy).toHaveBeenCalledWith('registered', child, 'test')
     })
 
 
-    test('removeExtension', () => {
-        class TestExtension extends PerkyModule { }
-        const instance = new TestExtension()
+    test('removeChild', () => {
+        class TestChild extends PerkyModule { }
+        const instance = new TestChild()
         const uninstallSpy = vi.spyOn(instance, 'uninstall')
         const disposeSpy = vi.spyOn(instance, 'dispose')
 
-        extension.use(TestExtension, {
+        child.use(TestChild, {
             instance,
             $name: 'test',
             $category: 'test'
         })
 
-        const result = extension.removeExtension('test')
+        const result = child.removeChild('test')
 
         expect(result).toBe(true)
         expect(uninstallSpy).toHaveBeenCalled()
@@ -256,61 +256,54 @@ describe(PerkyModule, () => {
     })
 
 
-    test('removeExtension non-existent', () => {
-        const result = extension.removeExtension('nonexistent')
+    test('removeChild non-existent', () => {
+        const result = child.removeChild('nonexistent')
         expect(result).toBe(false)
     })
 
 
     test('lifecycle cascade', () => {
-        class ChildExtension extends PerkyModule { }
-        const child = new ChildExtension()
-        const childStartSpy = vi.spyOn(child, 'start')
-        const childStopSpy = vi.spyOn(child, 'stop')
+        class ChildChild extends PerkyModule { }
+        const childChild = new ChildChild()
+        const childStartSpy = vi.spyOn(childChild, 'start')
+        const childStopSpy = vi.spyOn(childChild, 'stop')
 
-        extension.use(ChildExtension, {
-            instance: child,
+        child.use(ChildChild, {
+            instance: childChild,
             $name: 'child',
             $lifecycle: true
         })
 
-        extension.start()
+        child.start()
         expect(childStartSpy).toHaveBeenCalled()
 
-        extension.stop()
+        child.stop()
         expect(childStopSpy).toHaveBeenCalled()
     })
 
 
-    test('requireExtension', () => {
-        class TestExtension extends PerkyModule { }
-        const testExt = new TestExtension()
-        const extensionsRegistry = new Map()
-        extensionsRegistry.set('test', testExt)
+    test('requireChild', () => {
+        class TestChild extends PerkyModule { }
+        const testExt = new TestChild()
+        const childrenRegistry = new Map()
+        childrenRegistry.set('test', testExt)
 
-        host.hasExtension = vi.fn((name) => extensionsRegistry.has(name))
-        host.getExtension = vi.fn((name) => extensionsRegistry.get(name))
-        extension.install(host, {})
+        host.hasChild = vi.fn((name) => childrenRegistry.has(name))
+        host.getChild = vi.fn((name) => childrenRegistry.get(name))
+        child.install(host, {})
 
-        const required = extension.requireExtension('test')
+        const required = child.requireChild('test')
         expect(required).toBe(testExt)
-        expect(host.hasExtension).toHaveBeenCalledWith('test')
-        expect(host.getExtension).toHaveBeenCalledWith('test')
-    })
-
-
-    test('requireExtension throws when not found', () => {
-        expect(() => {
-            extension.requireExtension('nonexistent')
-        }).toThrow("Extension 'testExtension' requires extension 'nonexistent' but it is not installed")
+        expect(host.hasChild).toHaveBeenCalledWith('test')
+        expect(host.getChild).toHaveBeenCalledWith('test')
     })
 
 
     test('addMethod', () => {
-        extension.install(host, {})
+        child.install(host, {})
         const testMethod = vi.fn()
 
-        const result = extension.addMethod('testMethod', testMethod)
+        const result = child.addMethod('testMethod', testMethod)
 
         expect(result).toBe(true)
         expect(host.testMethod).toBeDefined()
@@ -320,8 +313,8 @@ describe(PerkyModule, () => {
 
     test('addMethod without host throws', () => {
         expect(() => {
-            extension.addMethod('test', vi.fn())
-        }).toThrow('Cannot add method: extension has no host')
+            child.addMethod('test', vi.fn())
+        }).toThrow('Cannot add method: child has no host')
     })
 
 
@@ -331,12 +324,12 @@ describe(PerkyModule, () => {
             method2: vi.fn()
         }
 
-        extension.delegate(target, ['method1', 'method2'])
+        child.delegate(target, ['method1', 'method2'])
 
-        expect(extension.method1).toBeDefined()
-        expect(extension.method2).toBeDefined()
-        expect(typeof extension.method1).toBe('function')
-        expect(typeof extension.method2).toBe('function')
+        expect(child.method1).toBeDefined()
+        expect(child.method2).toBeDefined()
+        expect(typeof child.method1).toBe('function')
+        expect(typeof child.method2).toBe('function')
     })
 
 
@@ -346,12 +339,12 @@ describe(PerkyModule, () => {
             prop2: 'value2'
         }
 
-        extension.delegate(target, ['prop1', 'prop2'])
+        child.delegate(target, ['prop1', 'prop2'])
 
-        expect(extension.prop1).toBe('value1')
-        expect(extension.prop2).toBe('value2')
+        expect(child.prop1).toBe('value1')
+        expect(child.prop2).toBe('value2')
 
-        extension.prop1 = 'newValue'
+        child.prop1 = 'newValue'
         expect(target.prop1).toBe('newValue')
     })
 
@@ -367,19 +360,19 @@ describe(PerkyModule, () => {
             }
         }
 
-        extension.delegate(target, ['count', 'increment', 'decrement'])
+        child.delegate(target, ['count', 'increment', 'decrement'])
 
-        expect(extension.count).toBe(0)
-        expect(typeof extension.increment).toBe('function')
-        expect(typeof extension.decrement).toBe('function')
+        expect(child.count).toBe(0)
+        expect(typeof child.increment).toBe('function')
+        expect(typeof child.decrement).toBe('function')
 
-        extension.increment()
+        child.increment()
         expect(target.count).toBe(1)
-        expect(extension.count).toBe(1)
+        expect(child.count).toBe(1)
 
-        extension.decrement()
+        child.decrement()
         expect(target.count).toBe(0)
-        expect(extension.count).toBe(0)
+        expect(child.count).toBe(0)
     })
 
 
@@ -394,13 +387,13 @@ describe(PerkyModule, () => {
             }
         }
 
-        extension.delegate(target, ['value'])
+        child.delegate(target, ['value'])
 
-        expect(extension.value).toBe(10)
+        expect(child.value).toBe(10)
 
-        extension.value = 20
+        child.value = 20
         expect(target.value).toBe(20)
-        expect(extension.value).toBe(20)
+        expect(child.value).toBe(20)
     })
 
 
@@ -410,66 +403,66 @@ describe(PerkyModule, () => {
             originalProp: 'value'
         }
 
-        extension.delegate(target, {
+        child.delegate(target, {
             originalMethod: 'aliasedMethod',
             originalProp: 'aliasedProp'
         })
 
-        expect(extension.aliasedMethod).toBeDefined()
-        expect(typeof extension.aliasedMethod).toBe('function')
-        expect(extension.aliasedMethod()).toBe('result')
+        expect(child.aliasedMethod).toBeDefined()
+        expect(typeof child.aliasedMethod).toBe('function')
+        expect(child.aliasedMethod()).toBe('result')
         expect(target.originalMethod).toHaveBeenCalled()
 
-        expect(extension.aliasedProp).toBe('value')
+        expect(child.aliasedProp).toBe('value')
 
-        extension.aliasedProp = 'new value'
+        child.aliasedProp = 'new value'
         expect(target.originalProp).toBe('new value')
     })
 
 
-    test('dispose calls dispose on all extensions in cascade', () => {
-        class ChildExtension1 extends PerkyModule { }
-        class ChildExtension2 extends PerkyModule { }
+    test('dispose calls dispose on all children in cascade', () => {
+        class ChildChild1 extends PerkyModule { }
+        class ChildChild2 extends PerkyModule { }
 
-        const child1 = new ChildExtension1()
-        const child2 = new ChildExtension2()
+        const child1 = new ChildChild1()
+        const child2 = new ChildChild2()
 
         const child1DisposeSpy = vi.spyOn(child1, 'dispose')
         const child2DisposeSpy = vi.spyOn(child2, 'dispose')
 
-        extension.use(ChildExtension1, {
+        child.use(ChildChild1, {
             instance: child1,
             $name: 'child1'
         })
 
-        extension.use(ChildExtension2, {
+        child.use(ChildChild2, {
             instance: child2,
             $name: 'child2'
         })
 
-        extension.dispose()
+        child.dispose()
 
         expect(child1DisposeSpy).toHaveBeenCalled()
         expect(child2DisposeSpy).toHaveBeenCalled()
         expect(child1.disposed).toBe(true)
         expect(child2.disposed).toBe(true)
-        expect(extension.disposed).toBe(true)
+        expect(child.disposed).toBe(true)
     })
 
 
-    test('dispose with multiple nested extensions', () => {
-        class Level1Extension extends PerkyModule { }
-        class Level2Extension extends PerkyModule { }
+    test('dispose with multiple nested children', () => {
+        class Level1Child extends PerkyModule { }
+        class Level2Child extends PerkyModule { }
 
-        const level1 = new Level1Extension()
-        const level2 = new Level2Extension()
+        const level1 = new Level1Child()
+        const level2 = new Level2Child()
 
-        level1.use(Level2Extension, {
+        level1.use(Level2Child, {
             instance: level2,
             $name: 'level2'
         })
 
-        extension.use(Level1Extension, {
+        child.use(Level1Child, {
             instance: level1,
             $name: 'level1'
         })
@@ -477,24 +470,24 @@ describe(PerkyModule, () => {
         const level1DisposeSpy = vi.spyOn(level1, 'dispose')
         const level2DisposeSpy = vi.spyOn(level2, 'dispose')
 
-        extension.dispose()
+        child.dispose()
 
         expect(level1DisposeSpy).toHaveBeenCalled()
         expect(level2DisposeSpy).toHaveBeenCalled()
         expect(level2.disposed).toBe(true)
         expect(level1.disposed).toBe(true)
-        expect(extension.disposed).toBe(true)
+        expect(child.disposed).toBe(true)
     })
 
 
-    test('dispose skips already disposed extensions', () => {
-        class ChildExtension extends PerkyModule { }
+    test('dispose skips already disposed children', () => {
+        class ChildChild extends PerkyModule { }
 
-        const child = new ChildExtension()
+        const childChild = new ChildChild()
         const childDisposeSpy = vi.spyOn(child, 'dispose')
 
-        extension.use(ChildExtension, {
-            instance: child,
+        child.use(ChildChild, {
+            instance: childChild,
             $name: 'child'
         })
 
@@ -504,29 +497,29 @@ describe(PerkyModule, () => {
 
         childDisposeSpy.mockClear()
 
-        extension.dispose()
+        childChild.dispose()
 
         expect(childDisposeSpy).not.toHaveBeenCalled()
-        expect(extension.disposed).toBe(true)
+        expect(childChild.disposed).toBe(true)
     })
 
 
-    test('dispose clears extensions registry after disposing all extensions', () => {
-        class ChildExtension extends PerkyModule { }
+    test('dispose clears children registry after disposing all children', () => {
+        class ChildChild extends PerkyModule { }
 
-        const child = new ChildExtension()
+        const childChild = new ChildChild()
 
-        extension.use(ChildExtension, {
-            instance: child,
+        child.use(ChildChild, {
+            instance: childChild,
             $name: 'child'
         })
 
-        expect(extension.hasExtension('child')).toBe(true)
+        expect(child.hasChild('child')).toBe(true)
 
-        extension.dispose()
+        child.dispose()
 
-        expect(extension.hasExtension('child')).toBe(false)
-        expect(extension.getExtensionsRegistry().size).toBe(0)
+        expect(child.hasChild('child')).toBe(false)
+        expect(child.getChildrenRegistry().size).toBe(0)
     })
 
 })

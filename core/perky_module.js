@@ -4,7 +4,7 @@ import Registry from './registry'
 
 export default class PerkyModule extends Notifier {
 
-    #extensions = null
+    #children = null
 
     constructor (options = {}) {
         super()
@@ -13,7 +13,7 @@ export default class PerkyModule extends Notifier {
         this.name = options.name || this.constructor.name
         this.host = null
         this.installed = false
-        this.#extensions = new Registry()
+        this.#children = new Registry()
     }
 
 
@@ -60,49 +60,49 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    use (ExtensionClassOrInstance, options = {}) {
-        const extension = prepareExtension(ExtensionClassOrInstance, options)
-        const extensionName = getExtensionName(extension, options)
+    use (ChildClassOrInstance, options = {}) {
+        const child = prepareChild(ChildClassOrInstance, options)
+        const childName = getChildName(child, options)
 
-        if (!validateExtension(extension, extensionName)) {
+        if (!validateChild(child, childName)) {
             return false
         }
 
-        unregisterExisting(this, extensionName, options)
+        unregisterExisting(this, childName, options)
 
-        if (!registerExtension(this, extension, extensionName, options)) {
+        if (!registerChild(this, child, childName, options)) {
             return false
         }
 
-        setupBinding(this, extension, options)
-        setupLifecycle(this, extension, extensionName, options)
-        emitRegistrationEvents(this, extension, extensionName, options)
+        setupBinding(this, child, options)
+        setupLifecycle(this, child, childName, options)
+        emitRegistrationEvents(this, child, childName, options)
 
-        return extension
+        return child
     }
 
 
-    getExtension (name) {
-        return this.#extensions.get(name) || null
+    getChild (name) {
+        return this.#children.get(name) || null
     }
 
 
-    hasExtension (name) {
-        return this.#extensions.has(name)
+    hasChild (name) {
+        return this.#children.has(name)
     }
 
 
-    getExtensionsRegistry () {
-        return this.#extensions
+    getChildrenRegistry () {
+        return this.#children
     }
 
 
-    getExtensionsByCategory (category) {
-        const registry = this.getExtensionsRegistry()
+    getChildrenByCategory (category) {
+        const registry = this.getChildrenRegistry()
         const names = []
 
-        for (const [name, extension] of registry.entries) {
-            if (extension.$category === category) {
+        for (const [name, child] of registry.entries) {
+            if (child.$category === category) {
                 names.push(name)
             }
         }
@@ -111,16 +111,16 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    removeExtension (name) {
-        const extension = this.#extensions.get(name)
-        if (!extension) {
+    removeChild (name) {
+        const child = this.#children.get(name)
+        if (!child) {
             return false
         }
 
-        const category = extension.$category || 'extension'
-        const bind = extension.$bind
+        const category = child.$category || 'child'
+        const bind = child.$bind
 
-        unregisterExtension(this, name, extension, category, bind)
+        unregisterChild(this, name, child, category, bind)
         return true
     }
 
@@ -157,25 +157,17 @@ export default class PerkyModule extends Notifier {
         this.disposed = true
         this.stop()
 
-        this.#extensions.forEach(extension => {
-            if (extension && !extension.disposed) {
-                extension.dispose()
+        this.#children.forEach(child => {
+            if (child && !child.disposed) {
+                child.dispose()
             }
         })
-        this.#extensions.clear()
+        this.#children.clear()
 
         this.emit('dispose')
         this.removeListeners()
 
         return true
-    }
-
-
-    requireExtension (extensionName) {
-        if (!this.host || !this.host.hasExtension(extensionName)) {
-            throw new Error(`Extension '${this.name}' requires extension '${extensionName}' but it is not installed`)
-        }
-        return this.host.getExtension(extensionName)
     }
 
 
@@ -185,26 +177,12 @@ export default class PerkyModule extends Notifier {
         }
 
         if (!this.host) {
-            throw new Error('Cannot add method: extension has no host')
+            throw new Error('Cannot add method: child has no host')
         }
 
         if (this.host[methodName]) {
             console.warn(`Method ${methodName} already exists on host`)
             return false
-        }
-
-        this.host[methodName] = method.bind(this.host)
-        return true
-    }
-
-
-    overrideMethod (methodName, method) {
-        if (typeof method !== 'function') {
-            throw new Error('Method must be a function')
-        }
-
-        if (!this.host) {
-            throw new Error('Cannot override method: extension has no host')
         }
 
         this.host[methodName] = method.bind(this.host)
@@ -218,7 +196,7 @@ export default class PerkyModule extends Notifier {
         }
 
         if (!this.host) {
-            throw new Error('Cannot bind events: extension has no host')
+            throw new Error('Cannot bind events: child has no host')
         }
 
         Object.keys(eventBindings).forEach(eventName => {
@@ -285,29 +263,29 @@ export default class PerkyModule extends Notifier {
 }
 
 
-function prepareExtension (ExtensionClassOrInstance, options) {
+function prepareChild (ChildClassOrInstance, options) {
     const {instance, ...instanceOptions} = options
 
     if (instance) {
         return instance
     }
 
-    if (typeof ExtensionClassOrInstance === 'function') {
-        return new ExtensionClassOrInstance(instanceOptions)
+    if (typeof ChildClassOrInstance === 'function') {
+        return new ChildClassOrInstance(instanceOptions)
     }
 
-    return ExtensionClassOrInstance
+    return ChildClassOrInstance
 }
 
 
-function getExtensionName (extension, options) {
-    return options.$name || extension.name || extension.constructor.name
+function getChildName (child, options) {
+    return options.$name || child.name || child.constructor.name
 }
 
 
-function validateExtension (extension, extensionName) {
-    if (!(extension instanceof PerkyModule)) {
-        console.warn(`Attempted to use non-extension object: ${extensionName}`)
+function validateChild (child, childName) {
+    if (!(child instanceof PerkyModule)) {
+        console.warn(`Attempted to use non-child object: ${childName}`)
         return false
     }
 
@@ -315,108 +293,108 @@ function validateExtension (extension, extensionName) {
 }
 
 
-function unregisterExisting (host, extensionName, options) {
-    const extensions = host.getExtensionsRegistry()
-    if (extensions.has(extensionName)) {
-        const existing = extensions.get(extensionName)
-        const category = existing.$category || options.$category || 'extension'
+function unregisterExisting (host, childName, options) {
+    const children = host.getChildrenRegistry()
+    if (children.has(childName)) {
+        const existing = children.get(childName)
+        const category = existing.$category || options.$category || 'child'
         const bind = existing.$bind
 
-        unregisterExtension(host, extensionName, existing, category, bind)
+        unregisterChild(host, childName, existing, category, bind)
     }
 }
 
 
-function registerExtension (host, extension, extensionName, options) {
-    extension.host = host
+function registerChild (host, child, childName, options) {
+    child.host = host
 
-    if (!extension.install(host, options)) {
-        console.warn(`Failed to install extension: ${extensionName}`)
+    if (!child.install(host, options)) {
+        console.warn(`Failed to install child: ${childName}`)
         return false
     }
 
-    const extensions = host.getExtensionsRegistry()
-    extensions.set(extensionName, extension)
+    const children = host.getChildrenRegistry()
+    children.set(childName, child)
 
-    extension.$category = options.$category || 'extension'
-    extension.$bind = options.$bind
+    child.$category = options.$category || 'child'
+    child.$bind = options.$bind
 
     return true
 }
 
 
-function setupBinding (host, extension, options) {
+function setupBinding (host, child, options) {
     if (options.$bind) {
-        host[options.$bind] = extension
+        host[options.$bind] = child
     }
 }
 
 
-function setupLifecycle (host, extension, extensionName, options) {
+function setupLifecycle (host, child, childName, options) {
     const {$lifecycle = true} = options
 
     if (!$lifecycle) {
         return
     }
 
-    const extensions = host.getExtensionsRegistry()
+    const children = host.getChildrenRegistry()
 
     if (host.started) {
-        extension.start()
+        child.start()
     }
 
     host.on('start', () => {
-        if (extensions.get(extensionName) === extension) {
-            extension.start()
+        if (children.get(childName) === child) {
+            child.start()
         }
     })
 
     host.on('stop', () => {
-        if (extensions.get(extensionName) === extension) {
-            extension.stop()
+        if (children.get(childName) === child) {
+            child.stop()
         }
     })
 
     host.on('dispose', () => {
-        if (extensions.get(extensionName) === extension) {
-            const category = extension.$category || 'extension'
-            const bind = extension.$bind
-            unregisterExtension(host, extensionName, extension, category, bind)
+        if (children.get(childName) === child) {
+            const category = child.$category || 'child'
+            const bind = child.$bind
+            unregisterChild(host, childName, child, category, bind)
         }
     })
 
-    extension.once('dispose', () => {
-        if (extensions.get(extensionName) === extension) {
-            const category = extension.$category || 'extension'
-            const bind = extension.$bind
-            unregisterExtension(host, extensionName, extension, category, bind)
+    child.once('dispose', () => {
+        if (children.get(childName) === child) {
+            const category = child.$category || 'child'
+            const bind = child.$bind
+            unregisterChild(host, childName, child, category, bind)
         }
     })
 }
 
 
-function emitRegistrationEvents (host, extension, extensionName, options) {
-    const category = options.$category || 'extension'
+function emitRegistrationEvents (host, child, childName, options) {
+    const category = options.$category || 'child'
 
-    host.emit(`${category}:set`, extensionName, extension)
-    extension.emit('registered', host, extensionName)
+    host.emit(`${category}:set`, childName, child)
+    child.emit('registered', host, childName)
 }
 
 
-function unregisterExtension (host, extensionName, extension, category, bind) { // eslint-disable-line max-params
-    const extensions = host.getExtensionsRegistry()
-    extensions.delete(extensionName)
+function unregisterChild (host, childName, child, category, bind) { // eslint-disable-line max-params
+    const children = host.getChildrenRegistry()
+    children.delete(childName)
 
-    if (bind && host[bind] === extension) {
+    if (bind && host[bind] === child) {
         delete host[bind]
     }
 
-    extension.uninstall()
+    child.uninstall()
 
-    host.emit(`${category}:delete`, extensionName, extension)
-    extension.emit('unregistered', host, extensionName)
+    host.emit(`${category}:delete`, childName, child)
+    child.emit('unregistered', host, childName)
 
-    if (!extension.disposed) {
-        extension.dispose()
+    if (!child.disposed) {
+        child.dispose()
     }
 }
