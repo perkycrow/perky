@@ -4,7 +4,7 @@ import Camera2D from './camera_2d'
 export default class Canvas2D {
 
     #resizeObserver = null
-    #autoFitTarget = null
+    #autoFitEnabled = false
 
     constructor (options = {}) { // eslint-disable-line complexity
         this.#setupCanvas(options)
@@ -45,26 +45,58 @@ export default class Canvas2D {
 
 
     #setupCanvas (options) {
-        if (options.canvas) {
-            this.canvas = options.canvas
-            this.container = options.canvas.parentElement
-        } else if (options.container) {
-            this.canvas = document.createElement('canvas')
+        this.canvas = options.canvas || document.createElement('canvas')
+
+        if (options.container) {
             this.container = options.container
-            this.container.appendChild(this.canvas)
-        } else {
-            throw new Error('Canvas2D requires either a "canvas" or "container" option')
         }
 
         this.ctx = this.canvas.getContext('2d')
     }
 
 
-    #setupAutoFit (options) {
-        this.#autoFitTarget = options.container ?? this.container ?? this.canvas.parentElement
+    get container () {
+        return this.canvas?.parentElement
+    }
 
-        if (!this.#autoFitTarget) {
-            console.warn('Canvas2D: autoFit enabled but no container found')
+
+    set container (value) {
+        if (value) {
+            value.appendChild(this.canvas)
+
+            if (this.#autoFitEnabled) {
+                this.#updateAutoFitObserver()
+            }
+        }
+    }
+
+
+    get autoFitEnabled () {
+        return this.#autoFitEnabled
+    }
+
+
+    set autoFitEnabled (value) {
+        if (this.#autoFitEnabled === value) {
+            return
+        }
+        this.#autoFitEnabled = value
+        this.#updateAutoFitObserver()
+    }
+
+
+    #setupAutoFit () {
+        this.autoFitEnabled = true
+    }
+
+
+    #updateAutoFitObserver () {
+        if (this.#resizeObserver) {
+            this.#resizeObserver.disconnect()
+            this.#resizeObserver = null
+        }
+
+        if (!this.#autoFitEnabled || !this.container) {
             return
         }
 
@@ -77,21 +109,12 @@ export default class Canvas2D {
             }
         })
 
-        this.#resizeObserver.observe(this.#autoFitTarget)
+        this.#resizeObserver.observe(this.container)
 
-        const {clientWidth, clientHeight} = this.#autoFitTarget
+        const {clientWidth, clientHeight} = this.container
         if (clientWidth > 0 && clientHeight > 0) {
             this.resize(clientWidth, clientHeight)
         }
-    }
-
-
-    #cleanupAutoFit () {
-        if (this.#resizeObserver) {
-            this.#resizeObserver.disconnect()
-            this.#resizeObserver = null
-        }
-        this.#autoFitTarget = null
     }
 
 
@@ -142,7 +165,7 @@ export default class Canvas2D {
 
 
     dispose () {
-        this.#cleanupAutoFit()
+        this.autoFitEnabled = false
 
         if (this.canvas && this.canvas.parentElement) {
             this.canvas.parentElement.removeChild(this.canvas)
