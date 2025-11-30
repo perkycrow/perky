@@ -21,11 +21,16 @@ export default class DefendTheDen extends Application {
         })
 
         this.registerController('game', GameController)
-        this.setActiveControllers('game')
+        this.setActiveControllers(['game'])
 
+        this.bindKey('KeyW', 'moveUp')
         this.bindKey('ArrowUp', 'moveUp')
+        this.bindKey('KeyS', 'moveDown')
         this.bindKey('ArrowDown', 'moveDown')
         this.bindKey('Space', 'shoot')
+
+        const player = {name: 'Player 1'}
+        this.setContextFor('game', {player, y: 0})
     }
 
 }

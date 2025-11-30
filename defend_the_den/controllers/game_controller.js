@@ -4,7 +4,6 @@ import ActionController from '../../core/action_controller'
 export default class GameController extends ActionController {
 
     moveUp () {
-        console.log(this.engine)
         console.log('Move Up')
     }
 
