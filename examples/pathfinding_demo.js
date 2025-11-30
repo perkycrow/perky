@@ -75,9 +75,6 @@ function setupCanvas (container) {
     container.appendChild(canvas)
     renderer = new Canvas2D({canvas})
 
-    // Disable axes drawing for pathfinding demo
-    renderer.drawAxes = () => { }
-
     // Add mouse interaction
     canvas.addEventListener('click', handleClick)
     canvas.addEventListener('contextmenu', handleRightClick)

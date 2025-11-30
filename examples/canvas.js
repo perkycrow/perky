@@ -54,7 +54,6 @@ function setupCanvas (container) {
         height: 600,
         pixelRatio: window.devicePixelRatio || 1,
         camera,
-        showAxes: true,
         showGrid: true,
         gridStep: 1,
         gridOpacity: 0.15,
@@ -179,12 +178,6 @@ function setupUI (container) {
             title: 'Toggle Grid',
             action: () => {
                 renderer.showGrid = !renderer.showGrid
-            }
-        },
-        {
-            title: 'Toggle Axes',
-            action: () => {
-                renderer.showAxes = !renderer.showAxes
             }
         },
         {

@@ -65,7 +65,6 @@ function setupLayers (container) {
                 zIndex: 10,
                 camera: 'main',
                 pixelRatio: window.devicePixelRatio || 1,
-                showAxes: true,
                 enableCulling: true
             },
             {
