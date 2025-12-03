@@ -28,6 +28,17 @@ export default class ActionController extends PerkyModule {
     }
 
 
+    get (key) {
+        return this.context[key]
+    }
+
+
+    set (key, value) {
+        this.context[key] = value
+        return this.context[key]
+    }
+
+
     setContext (newContext, value) {
         if (typeof newContext === 'string') {
             this.context[newContext] = value

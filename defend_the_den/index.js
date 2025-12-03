@@ -1,10 +1,11 @@
 import DefendTheDen from './defend_the_den'
 
-function init () {
+async function init () {
     const app = new DefendTheDen()
     const container = document.getElementById('defend_the_den')
 
     app.mount(container)
+    await app.loadAll()
     app.start()
 
     window.defendTheDen = app

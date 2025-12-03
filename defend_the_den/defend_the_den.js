@@ -1,7 +1,11 @@
 import Application from '../application/application'
 import GameLoop from '../game/game_loop'
-import Canvas2D from '../canvas/canvas_2d'
 import GameController from './controllers/game_controller'
+import Canvas2D from '../canvas/canvas_2d'
+import Camera2D from '../canvas/camera_2d'
+import Group2D from '../canvas/group_2d'
+import Image2D from '../canvas/image_2d'
+import Circle from '../canvas/circle'
 
 import manifest from './manifest'
 
@@ -15,9 +19,21 @@ export default class DefendTheDen extends Application {
     configure () {
         this.create(GameLoop, {$bind: 'gameLoop'})
 
+        this.camera = new Camera2D({
+            unitsInView: 7
+        })
+
         this.canvas = new Canvas2D({
             container: this.element,
-            autoFit: true
+            autoFit: true,
+            camera: this.camera,
+            showGrid: true,
+            pixelRatio: window.devicePixelRatio || 1,
+            gridStep: 1,
+            gridOpacity: 0.15,
+            gridColor: '#666666',
+            backgroundColor: '#f9f9f9',
+            enableCulling: true
         })
 
         this.registerController('game', GameController)
@@ -29,8 +45,46 @@ export default class DefendTheDen extends Application {
         this.bindKey('ArrowDown', 'moveDown')
         this.bindKey('Space', 'shoot')
 
-        const player = {name: 'Player 1'}
-        this.setContextFor('game', {player, y: 0})
+        this.player = {name: 'Player 1', x: 0, y: 0}
+        this.setContextFor('game', {player: this.player, y: 0})
+
+        const rootGroup = new Group2D({name: 'root'})
+
+
+
+        this.on('start', () => {
+            this.wolfSprite = new Image2D({
+                image: this.getImage('wolf'),
+                x: 0,
+                y: 0,
+                width: 1,
+                height: 1
+            })
+            rootGroup.addChild(this.wolfSprite)
+
+            const circle = new Circle({
+                x: 2,
+                y: 2,
+                radius: 0.5,
+                color: '#ff0000'
+            })
+
+            rootGroup.addChild(circle)
+        })
+
+        this.on('update', () => {
+            if (this.get('moving') === 'up') {
+                this.player.y += 0.1
+            } else if (this.get('moving') === 'down') {
+                this.player.y -= 0.1
+            }
+        })
+
+        this.on('render', () => {
+            this.wolfSprite.x = this.player.x
+            this.wolfSprite.y = this.player.y
+            this.canvas.render(rootGroup)
+        })
     }
 
 }

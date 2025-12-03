@@ -4,11 +4,15 @@ import ActionController from '../../core/action_controller'
 export default class GameController extends ActionController {
 
     moveUp () {
-        console.log('Move Up')
+        this.set('moving', 'up')
     }
 
     moveDown () {
-        console.log('Move Down')
+        this.set('moving', 'down')
+    }
+
+    stopMove () {
+        this.set('moving', null)
     }
 
     shoot () {
