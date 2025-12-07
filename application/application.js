@@ -194,25 +194,32 @@ export default class Application extends Engine {
     }
 
 
-    getActionControls (actionName, controllerName = null) { // eslint-disable-line complexity
+    getActionControls (actionName, controllerName = null) {
         const bindings = this.getBindingsForAction(actionName, controllerName, 'pressed')
         const controls = []
 
         for (const binding of bindings) {
-            if (binding.controls && Array.isArray(binding.controls)) {
-                // CompositeBinding
-                for (const {deviceName, controlName} of binding.controls) {
-                    const control = this.getControl(deviceName, controlName)
-                    if (control) {
-                        controls.push(control)
-                    }
-                }
-            } else {
-                // Simple InputBinding
-                const control = this.getControl(binding.deviceName, binding.controlName)
+            controls.push(...this.#getControlsFromBinding(binding))
+        }
+
+        return controls
+    }
+
+
+    #getControlsFromBinding (binding) {
+        const controls = []
+
+        if (binding.controls && Array.isArray(binding.controls)) {
+            for (const {deviceName, controlName} of binding.controls) {
+                const control = this.getControl(deviceName, controlName)
                 if (control) {
                     controls.push(control)
                 }
+            }
+        } else {
+            const control = this.getControl(binding.deviceName, binding.controlName)
+            if (control) {
+                controls.push(control)
             }
         }
 
