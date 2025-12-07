@@ -7,8 +7,8 @@ export default class InputDevice extends PerkyModule {
     constructor ({container = window, name} = {}) {
         super({name})
 
-        this.container    = container
-        this.controls     = new Registry()
+        this.container = container
+        this.controls = new Registry()
         this.pressedNames = new Set()
 
         this.#initEvents()
@@ -43,6 +43,18 @@ export default class InputDevice extends PerkyModule {
 
     isPressed (controlName) {
         return this.pressedNames.has(controlName)
+    }
+
+
+    getPressedControls () {
+        const results = []
+        for (const controlName of this.pressedNames) {
+            const control = this.getControl(controlName)
+            if (control) {
+                results.push(control)
+            }
+        }
+        return results
     }
 
 
@@ -122,19 +134,19 @@ export default class InputDevice extends PerkyModule {
             const listeners = createListeners(control)
             controlListeners.set(control, listeners)
 
-            control.on('pressed',  listeners.pressed)
+            control.on('pressed', listeners.pressed)
             control.on('released', listeners.released)
-            control.on('updated',  listeners.updated)
+            control.on('updated', listeners.updated)
         })
 
         this.controls.on('delete', (key, control) => {
             const listeners = controlListeners.get(control)
-            
+
             if (listeners) {
-                control.off('pressed',  listeners.pressed)
+                control.off('pressed', listeners.pressed)
                 control.off('released', listeners.released)
-                control.off('updated',  listeners.updated)
-                
+                control.off('updated', listeners.updated)
+
                 controlListeners.delete(control)
             }
 

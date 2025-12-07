@@ -50,7 +50,7 @@ export default class DefendTheDen extends Application {
 
         const rootGroup = new Group2D({name: 'root'})
 
-
+        window.d = this
 
         this.on('start', () => {
             this.wolfSprite = new Image2D({
@@ -72,12 +72,11 @@ export default class DefendTheDen extends Application {
             rootGroup.addChild(circle)
         })
 
+
+        console.log(this.getBinding({actionName: 'moveUp'}))
+
         this.on('update', () => {
-            if (this.get('moving') === 'up') {
-                this.player.y += 0.1
-            } else if (this.get('moving') === 'down') {
-                this.player.y -= 0.1
-            }
+            console.log(this.getPressedControls('keyboard'))
         })
 
         this.on('render', () => {

@@ -12,7 +12,17 @@ export default class InputManager extends PerkyModule {
 
 
     onInstall (host) {
-        host.delegate(this, ['isPressed', 'isPressedAny', 'getControl', 'getControlAny', 'addControl', 'registerDevice', 'getDevice'])
+        host.delegate(this, [
+            'isPressed',
+            'isPressedAny',
+            'getAllPressed',
+            'getPressedControls',
+            'getControl',
+            'getControlAny',
+            'addControl',
+            'registerDevice',
+            'getDevice'
+        ])
     }
 
 
@@ -121,6 +131,12 @@ export default class InputManager extends PerkyModule {
             }
         }
         return results
+    }
+
+
+    getPressedControls (deviceName) {
+        const device = this.getDevice(deviceName)
+        return device ? device.getPressedControls() : []
     }
 
 
