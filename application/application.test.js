@@ -7,7 +7,6 @@ import KeyboardDevice from '../input/input_devices/keyboard_device'
 import MouseDevice from '../input/input_devices/mouse_device'
 import ButtonControl from '../input/input_controls/button_control'
 import PerkyModule from '../core/perky_module'
-import InputManager from '../input/input_manager'
 import {vi} from 'vitest'
 
 
@@ -922,7 +921,170 @@ describe(Application, () => {
 
     })
 
+
+    describe('isActionPressed and getActionControls', () => {
+
+        test('isActionPressed - returns false when action not bound', () => {
+            expect(application.isActionPressed('nonExistent')).toBe(false)
+        })
+
+
+        test('isActionPressed - returns false when control not pressed', () => {
+            application.bindKey('Space', 'jump')
+            expect(application.isActionPressed('jump')).toBe(false)
+        })
+
+
+        test('isActionPressed - returns true when control is pressed', () => {
+            application.bindKey('Space', 'jump')
+
+            const keyboardDevice = application.getDevice('keyboard')
+            const spaceControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'Space'})
+            spaceControl.press()
+
+            expect(application.isActionPressed('jump')).toBe(true)
+        })
+
+
+        test('isActionPressed - works with multiple bindings for same action', () => {
+            application.bindKey('Space', 'jump')
+            application.bindKey('KeyW', 'jump')
+
+            const keyboardDevice = application.getDevice('keyboard')
+            const wControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'KeyW'})
+            wControl.press()
+
+            expect(application.isActionPressed('jump')).toBe(true)
+        })
+
+
+        test('isActionPressed - filters by controllerName', () => {
+            application.bindKey('Space', 'jump', 'pressed', 'player1')
+            application.bindKey('KeyW', 'jump', 'pressed', 'player2')
+
+            const keyboardDevice = application.getDevice('keyboard')
+            const spaceControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'Space'})
+            spaceControl.press()
+
+            expect(application.isActionPressed('jump', 'player1')).toBe(true)
+            expect(application.isActionPressed('jump', 'player2')).toBe(false)
+            expect(application.isActionPressed('jump')).toBe(true)
+        })
+
+
+        test('isActionPressed - works with composite bindings', () => {
+            application.bindCombo(['ControlLeft', 'KeyS'], 'save')
+
+            const keyboardDevice = application.getDevice('keyboard')
+            const ctrlControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'ControlLeft'})
+            const sControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'KeyS'})
+
+            ctrlControl.press()
+            expect(application.isActionPressed('save')).toBe(false)
+
+            sControl.press()
+            expect(application.isActionPressed('save')).toBe(true)
+
+            ctrlControl.release()
+            expect(application.isActionPressed('save')).toBe(false)
+        })
+
+
+        test('getActionControls - returns empty array when action not bound', () => {
+            const controls = application.getActionControls('nonExistent')
+            expect(controls).toHaveLength(0)
+        })
+
+
+        test('getActionControls - returns control for simple binding', () => {
+            application.bindKey('Space', 'jump')
+
+            const keyboardDevice = application.getDevice('keyboard')
+            const spaceControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'Space'})
+
+            const controls = application.getActionControls('jump')
+            expect(controls).toHaveLength(1)
+            expect(controls[0]).toBe(spaceControl)
+        })
+
+
+        test('getActionControls - returns multiple controls for multiple bindings', () => {
+            application.bindKey('Space', 'jump', 'pressed', 'player1')
+            application.bindKey('KeyW', 'jump', 'pressed', 'player2')
+
+            const keyboardDevice = application.getDevice('keyboard')
+            const spaceControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'Space'})
+            const wControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'KeyW'})
+
+            const controls = application.getActionControls('jump')
+            expect(controls).toHaveLength(2)
+            expect(controls).toContain(spaceControl)
+            expect(controls).toContain(wControl)
+        })
+
+
+        test('getActionControls - filters by controllerName', () => {
+            application.bindKey('Space', 'jump', 'pressed', 'player1')
+            application.bindKey('KeyW', 'jump', 'pressed', 'player2')
+
+            const keyboardDevice = application.getDevice('keyboard')
+            keyboardDevice.findOrCreateControl(ButtonControl, {name: 'Space'})
+            keyboardDevice.findOrCreateControl(ButtonControl, {name: 'KeyW'})
+
+            const player1Controls = application.getActionControls('jump', 'player1')
+            expect(player1Controls).toHaveLength(1)
+            expect(player1Controls[0].name).toBe('Space')
+
+            const player2Controls = application.getActionControls('jump', 'player2')
+            expect(player2Controls).toHaveLength(1)
+            expect(player2Controls[0].name).toBe('KeyW')
+
+            const allControls = application.getActionControls('jump')
+            expect(allControls).toHaveLength(2)
+        })
+
+
+        test('getActionControls - works with composite bindings', () => {
+            application.bindCombo(['ControlLeft', 'KeyS'], 'save')
+
+            const keyboardDevice = application.getDevice('keyboard')
+            const ctrlControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'ControlLeft'})
+            const sControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'KeyS'})
+
+            const controls = application.getActionControls('save')
+            expect(controls).toHaveLength(2)
+            expect(controls).toContain(ctrlControl)
+            expect(controls).toContain(sControl)
+        })
+
+
+        test('getActionControls - handles non-existent controls gracefully', () => {
+            application.bindKey('Space', 'jump')
+
+            const controls = application.getActionControls('jump')
+            expect(controls).toHaveLength(0)
+        })
+
+
+        test('getActionControls - works with cross-device bindings', () => {
+            application.bindKey('Space', 'action', 'pressed', 'keyboard-input')
+            application.bindMouse('leftButton', 'action', 'pressed', 'mouse-input')
+
+            const keyboardDevice = application.getDevice('keyboard')
+            const mouseDevice = application.getDevice('mouse')
+            const spaceControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'Space'})
+            const leftButtonControl = mouseDevice.findOrCreateControl(ButtonControl, {name: 'leftButton'})
+
+            const controls = application.getActionControls('action')
+            expect(controls).toHaveLength(2)
+            expect(controls).toContain(spaceControl)
+            expect(controls).toContain(leftButtonControl)
+        })
+
+    })
+
 })
+
 
 
 

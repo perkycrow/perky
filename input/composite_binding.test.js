@@ -21,7 +21,7 @@ describe(CompositeBinding, () => {
         inputManager = new InputManager()
         keyboardDevice = new KeyboardDevice()
         inputManager.registerDevice('keyboard', keyboardDevice)
-        
+
         compositeBinding = new CompositeBinding({
             controls: [
                 {deviceName: 'keyboard', controlName: 'ControlLeft'},
@@ -53,7 +53,7 @@ describe(CompositeBinding, () => {
             {deviceName: 'keyboard', controlName: 'ControlLeft'},
             {deviceName: 'keyboard', controlName: 'KeyS'}
         ]
-        
+
         const controlName = CompositeBinding.generateControlName(controls)
         expect(controlName).toBe('combo(keyboard:ControlLeft+keyboard:KeyS)')
     })
@@ -65,7 +65,7 @@ describe(CompositeBinding, () => {
             controlName: compositeBinding.controlName,
             eventType: 'pressed'
         })
-        
+
         expect(result).toBe(true)
     })
 
@@ -76,15 +76,15 @@ describe(CompositeBinding, () => {
             controlName: 'ControlLeft',
             eventType: 'pressed'
         })
-        
+
         expect(result).toBe(true)
-        
+
         const result2 = compositeBinding.matches({
             deviceName: 'keyboard',
             controlName: 'KeyS',
             eventType: 'pressed'
         })
-        
+
         expect(result2).toBe(true)
     })
 
@@ -95,7 +95,7 @@ describe(CompositeBinding, () => {
             controlName: 'KeyA',
             eventType: 'pressed'
         })
-        
+
         expect(result).toBe(false)
     })
 
@@ -115,7 +115,7 @@ describe(CompositeBinding, () => {
 
 
     test('key generation', () => {
-        expect(compositeBinding.key).toBe('pressed:save:editor')
+        expect(compositeBinding.key).toBe('composite:combo(keyboard:ControlLeft+keyboard:KeyS):pressed:save:editor')
     })
 
 })

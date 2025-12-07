@@ -72,7 +72,7 @@ describe(InputBinder, () => {
 
         const binding = binder.getAllBindings()[0]
         expect(binding.controllerName).toBe('game')
-        expect(binding.key).toBe('pressed:openMenu:game')
+        expect(binding.key).toBe('keyboard:Escape:pressed:openMenu:game')
     })
 
 
@@ -86,7 +86,7 @@ describe(InputBinder, () => {
 
         const binding = binder.getAllBindings()[0]
         expect(binding.eventType).toBe('released')
-        expect(binding.key).toBe('released:stopJump')
+        expect(binding.key).toBe('keyboard:Space:released:stopJump')
     })
 
 
@@ -254,6 +254,109 @@ describe(InputBinder, () => {
             eventType: 'pressed'
         })
 
+        expect(bindings).toHaveLength(0)
+    })
+
+
+    test('getBindingsForAction - single binding', () => {
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump'
+        })
+
+        const bindings = binder.getBindingsForAction('jump')
+
+        expect(bindings).toHaveLength(1)
+        expect(bindings[0].deviceName).toBe('keyboard')
+        expect(bindings[0].controlName).toBe('Space')
+    })
+
+
+    test('getBindingsForAction - multiple bindings for same action', () => {
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump',
+            controllerName: 'player1'
+        })
+
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'KeyW',
+            actionName: 'jump',
+            controllerName: 'player2'
+        })
+
+        const bindings = binder.getBindingsForAction('jump')
+
+        expect(bindings).toHaveLength(2)
+        expect(bindings.map(b => b.controlName)).toContain('Space')
+        expect(bindings.map(b => b.controlName)).toContain('KeyW')
+    })
+
+
+    test('getBindingsForAction - filter by controllerName', () => {
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump',
+            controllerName: 'player1'
+        })
+
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'KeyW',
+            actionName: 'jump',
+            controllerName: 'player2'
+        })
+
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'Enter',
+            actionName: 'jump'
+        })
+
+        const player1Bindings = binder.getBindingsForAction('jump', 'player1')
+        expect(player1Bindings).toHaveLength(1)
+        expect(player1Bindings[0].controlName).toBe('Space')
+
+        const player2Bindings = binder.getBindingsForAction('jump', 'player2')
+        expect(player2Bindings).toHaveLength(1)
+        expect(player2Bindings[0].controlName).toBe('KeyW')
+
+        const allBindings = binder.getBindingsForAction('jump', null)
+        expect(allBindings).toHaveLength(3)
+    })
+
+
+    test('getBindingsForAction - filter by eventType', () => {
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump',
+            eventType: 'pressed'
+        })
+
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump',
+            eventType: 'released'
+        })
+
+        const pressedBindings = binder.getBindingsForAction('jump', null, 'pressed')
+        expect(pressedBindings).toHaveLength(1)
+        expect(pressedBindings[0].eventType).toBe('pressed')
+
+        const releasedBindings = binder.getBindingsForAction('jump', null, 'released')
+        expect(releasedBindings).toHaveLength(1)
+        expect(releasedBindings[0].eventType).toBe('released')
+    })
+
+
+    test('getBindingsForAction - non-existent action', () => {
+        const bindings = binder.getBindingsForAction('nonExistent')
         expect(bindings).toHaveLength(0)
     })
 

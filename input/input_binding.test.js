@@ -9,7 +9,7 @@ describe(InputBinding, () => {
             controlName: 'Space',
             actionName: 'jump'
         })
-        
+
         expect(binding.deviceName).toBe('keyboard')
         expect(binding.controlName).toBe('Space')
         expect(binding.actionName).toBe('jump')
@@ -26,7 +26,7 @@ describe(InputBinding, () => {
             controllerName: 'game',
             eventType: 'released'
         })
-        
+
         expect(binding.deviceName).toBe('mouse')
         expect(binding.controlName).toBe('LeftButton')
         expect(binding.actionName).toBe('fire')
@@ -43,8 +43,8 @@ describe(InputBinding, () => {
             controllerName: 'game',
             eventType: 'pressed'
         })
-        
-        expect(binding.key).toBe('pressed:openMenu:game')
+
+        expect(binding.key).toBe('keyboard:Escape:pressed:openMenu:game')
     })
 
 
@@ -55,8 +55,8 @@ describe(InputBinding, () => {
             actionName: 'jump',
             eventType: 'released'
         })
-        
-        expect(binding.key).toBe('released:jump')
+
+        expect(binding.key).toBe('keyboard:Space:released:jump')
     })
 
 
@@ -67,7 +67,7 @@ describe(InputBinding, () => {
             actionName: 'jump',
             eventType: 'pressed'
         })
-        
+
         expect(binding.matches({deviceName: 'keyboard', controlName: 'Space', eventType: 'pressed'})).toBe(true)
     })
 
@@ -79,7 +79,7 @@ describe(InputBinding, () => {
             actionName: 'jump',
             eventType: 'pressed'
         })
-        
+
         expect(binding.matches({deviceName: 'mouse', controlName: 'Space', eventType: 'pressed'})).toBe(false)
     })
 
@@ -91,7 +91,7 @@ describe(InputBinding, () => {
             actionName: 'jump',
             eventType: 'pressed'
         })
-        
+
         expect(binding.matches({deviceName: 'keyboard', controlName: 'Enter', eventType: 'pressed'})).toBe(false)
     })
 
@@ -103,7 +103,7 @@ describe(InputBinding, () => {
             actionName: 'jump',
             eventType: 'pressed'
         })
-        
+
         expect(binding.matches({deviceName: 'keyboard', controlName: 'Space', eventType: 'released'})).toBe(false)
     })
 
@@ -114,13 +114,13 @@ describe(InputBinding, () => {
             controlName: 'Space',
             actionName: 'jump'
         })
-        
+
         binding.updateInput({deviceName: 'mouse', controlName: 'LeftButton'})
-        
+
         expect(binding.deviceName).toBe('mouse')
         expect(binding.controlName).toBe('LeftButton')
         expect(binding.actionName).toBe('jump')
-        expect(binding.key).toBe('pressed:jump')
+        expect(binding.key).toBe('mouse:LeftButton:pressed:jump')
     })
 
 })

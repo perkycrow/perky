@@ -177,6 +177,49 @@ export default class Application extends Engine {
     }
 
 
+    isActionPressed (actionName, controllerName = null) {
+        const bindings = this.getBindingsForAction(actionName, controllerName, 'pressed')
+
+        for (const binding of bindings) {
+            if (typeof binding.shouldTrigger === 'function') {
+                if (binding.shouldTrigger(this.inputManager)) {
+                    return true
+                }
+            } else if (this.isPressed(binding.deviceName, binding.controlName)) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+
+    getActionControls (actionName, controllerName = null) { // eslint-disable-line complexity
+        const bindings = this.getBindingsForAction(actionName, controllerName, 'pressed')
+        const controls = []
+
+        for (const binding of bindings) {
+            if (binding.controls && Array.isArray(binding.controls)) {
+                // CompositeBinding
+                for (const {deviceName, controlName} of binding.controls) {
+                    const control = this.getControl(deviceName, controlName)
+                    if (control) {
+                        controls.push(control)
+                    }
+                }
+            } else {
+                // Simple InputBinding
+                const control = this.getControl(binding.deviceName, binding.controlName)
+                if (control) {
+                    controls.push(control)
+                }
+            }
+        }
+
+        return controls
+    }
+
+
     #initEvents () {
         const {inputManager} = this
 

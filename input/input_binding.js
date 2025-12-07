@@ -17,6 +17,8 @@ export default class InputBinding {
 
     get key () {
         return InputBinding.keyFor({
+            deviceName: this.deviceName,
+            controlName: this.controlName,
             actionName: this.actionName,
             controllerName: this.controllerName,
             eventType: this.eventType
@@ -24,19 +26,19 @@ export default class InputBinding {
     }
 
 
-    static keyFor ({actionName, controllerName = null, eventType = 'pressed'}) {
+    static keyFor ({deviceName, controlName, actionName, controllerName = null, eventType = 'pressed'}) {
         if (controllerName) {
-            return `${eventType}:${actionName}:${controllerName}`
+            return `${deviceName}:${controlName}:${eventType}:${actionName}:${controllerName}`
         }
 
-        return `${eventType}:${actionName}`
+        return `${deviceName}:${controlName}:${eventType}:${actionName}`
     }
 
 
     matches ({deviceName, controlName, eventType}) {
-        return this.deviceName === deviceName && 
-               this.controlName === controlName &&
-               this.eventType === eventType
+        return this.deviceName === deviceName &&
+            this.controlName === controlName &&
+            this.eventType === eventType
     }
 
 

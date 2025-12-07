@@ -76,7 +76,9 @@ export default class DefendTheDen extends Application {
         console.log(this.getBinding({actionName: 'moveUp'}))
 
         this.on('update', () => {
-            console.log(this.getPressedControls('keyboard'))
+            if (this.isActionPressed('moveUp')) {
+                console.log('moveUp is pressed!')
+            }
         })
 
         this.on('render', () => {

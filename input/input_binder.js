@@ -19,7 +19,7 @@ export default class InputBinder extends PerkyModule {
 
 
     onInstall (host) {
-        host.delegate(this, ['bind', 'unbind', 'getBinding', 'hasBinding', 'getBindingsForInput', 'getAllBindings', 'clearBindings', 'bindCombo'])
+        host.delegate(this, ['bind', 'unbind', 'getBinding', 'hasBinding', 'getBindingsForInput', 'getBindingsForAction', 'getAllBindings', 'clearBindings', 'bindCombo'])
     }
 
 
@@ -74,12 +74,11 @@ export default class InputBinder extends PerkyModule {
 
 
     unbind (params) {
-        const key = keyFor(params)
-        const binding = this.#bindings.get(key)
+        const binding = this.getBinding(params)
 
         if (binding) {
             this.#removeFromInputIndex(binding)
-            return this.#bindings.delete(key)
+            return this.#bindings.delete(binding.key)
         }
 
         return false
@@ -87,7 +86,15 @@ export default class InputBinder extends PerkyModule {
 
 
     getBinding (params) {
-        return this.#bindings.get(keyFor(params)) || null
+        const {deviceName, controlName, actionName, controllerName = null, eventType = 'pressed'} = params
+
+        if (deviceName && controlName) {
+            const key = keyFor(params)
+            return this.#bindings.get(key) || null
+        }
+
+        const bindings = this.getBindingsForAction(actionName, controllerName, eventType)
+        return bindings.length > 0 ? bindings[0] : null
     }
 
 
@@ -109,6 +116,19 @@ export default class InputBinder extends PerkyModule {
         }
 
         return [...directBindings, ...compositeBindings]
+    }
+
+
+    getBindingsForAction (actionName, controllerName = null, eventType = 'pressed') {
+        const results = []
+        for (const binding of this.#bindings.values) {
+            if (binding.actionName === actionName &&
+                (controllerName === null || binding.controllerName === controllerName) &&
+                binding.eventType === eventType) {
+                results.push(binding)
+            }
+        }
+        return results
     }
 
 
@@ -200,8 +220,8 @@ export default class InputBinder extends PerkyModule {
 }
 
 
-function keyFor ({actionName, controllerName = null, eventType = 'pressed'}) {
-    return InputBinding.keyFor({actionName, controllerName, eventType})
+function keyFor ({deviceName, controlName, actionName, controllerName = null, eventType = 'pressed'}) {
+    return InputBinding.keyFor({deviceName, controlName, actionName, controllerName, eventType})
 }
 
 
