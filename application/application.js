@@ -3,10 +3,7 @@ import Registry from '../core/registry'
 import PerkyView from './perky_view'
 import SourceManager from './source_manager'
 import {loaders} from './loaders'
-import InputBinder from '../input/input_binder'
-import InputManager from '../input/input_manager'
-import KeyboardDevice from '../input/input_devices/keyboard_device'
-import MouseDevice from '../input/input_devices/mouse_device'
+import InputSystem from '../input/input_system'
 
 
 export default class Application extends Engine {
@@ -27,33 +24,13 @@ export default class Application extends Engine {
             manifest: this.manifest
         })
 
-        this.create(InputBinder, {
-            $bind: 'inputBinder',
-            inputBinder
+        this.create(InputSystem, {
+            $bind: 'inputSystem',
+            inputBinder,
+            keyboard,
+            mouse,
+            perkyView: this.perkyView
         })
-
-        this.create(InputManager, {
-            $bind: 'inputManager'
-        })
-
-        this.create(KeyboardDevice, {
-            $name: 'keyboard',
-            $category: 'device',
-            $bind: 'keyboard',
-            ...keyboard
-        })
-        this.inputManager.registerDevice('keyboard', this.keyboard)
-
-        this.create(MouseDevice, {
-            $name: 'mouse',
-            $category: 'device',
-            $bind: 'mouse',
-            ...mouse,
-            container: this.perkyView.element
-        })
-        this.inputManager.registerDevice('mouse', this.mouse)
-
-        this.#initEvents()
 
         if (typeof this.configure === 'function') {
             this.configure(params)
@@ -61,13 +38,13 @@ export default class Application extends Engine {
     }
 
 
-    getInputValue (deviceName, controlName) {
-        return this.inputManager ? this.inputManager.getValueFor(deviceName, controlName) : undefined
+    get inputManager () {
+        return this.inputSystem?.inputManager
     }
 
 
-    getInputValueAny (controlName) {
-        return this.inputManager ? this.inputManager.getValueAny(controlName) : undefined
+    get inputBinder () {
+        return this.inputSystem?.inputBinder
     }
 
 
@@ -92,168 +69,6 @@ export default class Application extends Engine {
 
     getImage (id) {
         return this.getSource('images', id)
-    }
-
-
-    isKeyPressed (keyName) {
-        return this.isPressed('keyboard', keyName)
-    }
-
-
-    isMousePressed (buttonName) {
-        return this.isPressed('mouse', buttonName)
-    }
-
-
-    getKeyValue (keyName) {
-        return this.getInputValue('keyboard', keyName)
-    }
-
-
-    getMouseValue (buttonName) {
-        return this.getInputValue('mouse', buttonName)
-    }
-
-
-    bindKey (keyName, actionNameOrOptions, eventType = 'pressed', controllerName = null) {
-        if (typeof actionNameOrOptions === 'object') {
-            const {actionName, eventType: objEventType = 'pressed', controllerName: objControllerName = null} = actionNameOrOptions
-
-            if (!actionName || typeof actionName !== 'string') {
-                throw new Error('actionName is required and must be a string')
-            }
-
-            return this.bind({
-                deviceName: 'keyboard',
-                controlName: keyName,
-                actionName,
-                eventType: objEventType,
-                controllerName: objControllerName
-            })
-        } else {
-            if (!actionNameOrOptions || typeof actionNameOrOptions !== 'string') {
-                throw new Error('actionName is required and must be a string')
-            }
-
-            return this.bind({
-                deviceName: 'keyboard',
-                controlName: keyName,
-                actionName: actionNameOrOptions,
-                eventType,
-                controllerName
-            })
-        }
-    }
-
-
-    bindMouse (buttonName, actionNameOrOptions, eventType = 'pressed', controllerName = null) {
-        if (typeof actionNameOrOptions === 'object') {
-            const {actionName, eventType: objEventType = 'pressed', controllerName: objControllerName = null} = actionNameOrOptions
-
-            if (!actionName || typeof actionName !== 'string') {
-                throw new Error('actionName is required and must be a string')
-            }
-
-            return this.bind({
-                deviceName: 'mouse',
-                controlName: buttonName,
-                actionName,
-                eventType: objEventType,
-                controllerName: objControllerName
-            })
-        } else {
-            if (!actionNameOrOptions || typeof actionNameOrOptions !== 'string') {
-                throw new Error('actionName is required and must be a string')
-            }
-
-            return this.bind({
-                deviceName: 'mouse',
-                controlName: buttonName,
-                actionName: actionNameOrOptions,
-                eventType,
-                controllerName
-            })
-        }
-    }
-
-
-    isActionPressed (actionName, controllerName = null) {
-        const bindings = this.getBindingsForAction(actionName, controllerName, 'pressed')
-
-        for (const binding of bindings) {
-            if (typeof binding.shouldTrigger === 'function') {
-                if (binding.shouldTrigger(this.inputManager)) {
-                    return true
-                }
-            } else if (this.isPressed(binding.deviceName, binding.controlName)) {
-                return true
-            }
-        }
-
-        return false
-    }
-
-
-    getActionControls (actionName, controllerName = null) {
-        const bindings = this.getBindingsForAction(actionName, controllerName, 'pressed')
-        const controls = []
-
-        for (const binding of bindings) {
-            controls.push(...this.#getControlsFromBinding(binding))
-        }
-
-        return controls
-    }
-
-
-    #getControlsFromBinding (binding) {
-        const controls = []
-
-        if (binding.controls && Array.isArray(binding.controls)) {
-            for (const {deviceName, controlName} of binding.controls) {
-                const control = this.getControl(deviceName, controlName)
-                if (control) {
-                    controls.push(control)
-                }
-            }
-        } else {
-            const control = this.getControl(binding.deviceName, binding.controlName)
-            if (control) {
-                controls.push(control)
-            }
-        }
-
-        return controls
-    }
-
-
-    #initEvents () {
-        const {inputManager} = this
-
-        inputManager.on('control:pressed', this.#handleInputEvent.bind(this, 'pressed'))
-        inputManager.on('control:released', this.#handleInputEvent.bind(this, 'released'))
-    }
-
-
-    #handleInputEvent (eventType, control, event, device) {
-        if (!this.inputManager || !this.inputBinder) {
-            return
-        }
-
-        this.emit(`control:${eventType}`, control, event, device)
-
-        const deviceName = this.inputManager.deviceKeyFor(device)
-        const matchingBindings = this.inputBinder.getBindingsForInput({
-            deviceName,
-            controlName: control.name,
-            eventType
-        })
-
-        matchingBindings.forEach(binding => {
-            if (typeof binding.shouldTrigger !== 'function' || binding.shouldTrigger(this.inputManager)) {
-                this.actionDispatcher.dispatchAction(binding, control, event, device)
-            }
-        })
     }
 
 }

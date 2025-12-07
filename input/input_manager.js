@@ -13,15 +13,18 @@ export default class InputManager extends PerkyModule {
 
     onInstall (host) {
         host.delegate(this, [
+            'registerDevice',
+            'unregisterDevice',
+            'getDevice',
             'isPressed',
             'isPressedAny',
             'getAllPressed',
-            'getPressedControls',
+            'getValueFor',
+            'getValueAny',
+            'addControl',
             'getControl',
             'getControlAny',
-            'addControl',
-            'registerDevice',
-            'getDevice'
+            'getPressedControls'
         ])
     }
 

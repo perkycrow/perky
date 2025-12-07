@@ -20,7 +20,7 @@ export default class DefendTheDen extends Application {
         this.create(GameLoop, {$bind: 'gameLoop'})
 
         this.camera = new Camera2D({
-            unitsInView: 7
+            unitsInView: 6.5
         })
 
         this.canvas = new Canvas2D({
@@ -72,12 +72,13 @@ export default class DefendTheDen extends Application {
             rootGroup.addChild(circle)
         })
 
-
-        console.log(this.getBinding({actionName: 'moveUp'}))
-
-        this.on('update', () => {
+        this.on('update', (deltaTime) => {
             if (this.isActionPressed('moveUp')) {
-                console.log('moveUp is pressed!')
+                this.player.y += 3 * deltaTime
+            }
+
+            if (this.isActionPressed('moveDown')) {
+                this.player.y -= 3 * deltaTime
             }
         })
 

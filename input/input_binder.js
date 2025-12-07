@@ -19,7 +19,17 @@ export default class InputBinder extends PerkyModule {
 
 
     onInstall (host) {
-        host.delegate(this, ['bind', 'unbind', 'getBinding', 'hasBinding', 'getBindingsForInput', 'getBindingsForAction', 'getAllBindings', 'clearBindings', 'bindCombo'])
+        host.delegate(this, [
+            'bind',
+            'unbind',
+            'getBinding',
+            'hasBinding',
+            'getBindingsForInput',
+            'getBindingsForAction',
+            'getAllBindings',
+            'clearBindings',
+            'bindCombo'
+        ])
     }
 
 
