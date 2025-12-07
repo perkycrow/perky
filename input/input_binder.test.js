@@ -639,4 +639,92 @@ describe(InputBinder, () => {
         expect(binding.eventType).toBe('released')
     })
 
+
+    test('maintains action index when bindings are added', () => {
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'KeyW',
+            actionName: 'moveUp',
+            controllerName: 'player1'
+        })
+
+        const bindings = binder.getBindingsForAction('moveUp', 'player1')
+        expect(bindings).toHaveLength(1)
+        expect(bindings[0].controlName).toBe('KeyW')
+    })
+
+
+    test('maintains action index when bindings are removed', () => {
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'KeyW',
+            actionName: 'moveUp',
+            controllerName: 'player1'
+        })
+
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'ArrowUp',
+            actionName: 'moveUp',
+            controllerName: 'player1'
+        })
+
+        expect(binder.getBindingsForAction('moveUp', 'player1')).toHaveLength(2)
+
+        binder.unbind({
+            deviceName: 'keyboard',
+            controlName: 'KeyW',
+            actionName: 'moveUp',
+            controllerName: 'player1'
+        })
+
+        const remaining = binder.getBindingsForAction('moveUp', 'player1')
+        expect(remaining).toHaveLength(1)
+        expect(remaining[0].controlName).toBe('ArrowUp')
+    })
+
+
+    test('clearBindings clears action index', () => {
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump'
+        })
+
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'KeyW',
+            actionName: 'moveUp'
+        })
+
+        expect(binder.getBindingsForAction('jump')).toHaveLength(1)
+        expect(binder.getBindingsForAction('moveUp')).toHaveLength(1)
+
+        binder.clearBindings()
+
+        expect(binder.getBindingsForAction('jump')).toHaveLength(0)
+        expect(binder.getBindingsForAction('moveUp')).toHaveLength(0)
+    })
+
+
+    test('action index handles multiple controllers', () => {
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump',
+            controllerName: 'player1'
+        })
+
+        binder.bind({
+            deviceName: 'keyboard',
+            controlName: 'KeyW',
+            actionName: 'jump',
+            controllerName: 'player2'
+        })
+
+        expect(binder.getBindingsForAction('jump', 'player1')).toHaveLength(1)
+        expect(binder.getBindingsForAction('jump', 'player2')).toHaveLength(1)
+        expect(binder.getBindingsForAction('jump', null)).toHaveLength(2)
+    })
+
 })

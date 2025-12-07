@@ -1,16 +1,32 @@
 import PerkyModule from '../core/perky_module'
-import Registry from '../core/registry'
+import IndexedRegistry from '../core/indexed_registry'
 import InputBinding from './input_binding'
 import CompositeBinding from './composite_binding'
 
 
 export default class InputBinder extends PerkyModule {
 
-    #bindings = new Registry()
-    #inputIndex = new Map()
+    #bindings = new IndexedRegistry()
 
     constructor ({bindings = [], inputBinder} = {}) {
         super()
+
+        this.#bindings.addIndex('input', (binding) => {
+            if (binding instanceof CompositeBinding) {
+                return null
+            }
+            return `${binding.deviceName}:${binding.controlName}:${binding.eventType}`
+        })
+
+        this.#bindings.addIndex('action', (binding) => {
+            const controller = binding.controllerName || ''
+            return `${binding.actionName}:${binding.eventType}:${controller}`
+        })
+
+        this.#bindings.addIndex('actionAll', (binding) => {
+            return `${binding.actionName}:${binding.eventType}`
+        })
+
         if (inputBinder) {
             this.import(inputBinder)
         }
@@ -77,8 +93,6 @@ export default class InputBinder extends PerkyModule {
         }
 
         this.#bindings.set(binding.key, binding)
-        this.#addToInputIndex(binding)
-
         return binding
     }
 
@@ -87,10 +101,13 @@ export default class InputBinder extends PerkyModule {
         const binding = this.getBinding(params)
 
         if (binding) {
-            this.#removeFromInputIndex(binding)
-            return this.#bindings.delete(binding.key)
-        }
+            this.#bindings.delete(binding.key)
 
+            // Emit event for reactive indexing
+            this.emit('binding:removed', binding)
+
+            return true
+        }
         return false
     }
 
@@ -114,8 +131,8 @@ export default class InputBinder extends PerkyModule {
 
 
     getBindingsForInput ({deviceName, controlName, eventType}) {
-        const inputKey = buildInputKey(deviceName, controlName, eventType)
-        const directBindings = this.#inputIndex.get(inputKey) || []
+        const key = `${deviceName}:${controlName}:${eventType}`
+        const directBindings = this.#bindings.lookup('input', key)
 
         const compositeBindings = []
         for (const binding of this.#bindings.values) {
@@ -130,15 +147,14 @@ export default class InputBinder extends PerkyModule {
 
 
     getBindingsForAction (actionName, controllerName = null, eventType = 'pressed') {
-        const results = []
-        for (const binding of this.#bindings.values) {
-            if (binding.actionName === actionName &&
-                (controllerName === null || binding.controllerName === controllerName) &&
-                binding.eventType === eventType) {
-                results.push(binding)
-            }
+        if (controllerName === null) {
+            const key = `${actionName}:${eventType}`
+            return this.#bindings.lookup('actionAll', key)
         }
-        return results
+
+        const controller = controllerName || ''
+        const key = `${actionName}:${eventType}:${controller}`
+        return this.#bindings.lookup('action', key)
     }
 
 
@@ -149,7 +165,6 @@ export default class InputBinder extends PerkyModule {
 
     clearBindings () {
         this.#bindings.clear()
-        this.#inputIndex.clear()
     }
 
 
@@ -200,33 +215,6 @@ export default class InputBinder extends PerkyModule {
     }
 
 
-    #addToInputIndex (binding) {
-        const inputKey = buildInputKey(binding.deviceName, binding.controlName, binding.eventType)
-
-        if (!this.#inputIndex.has(inputKey)) {
-            this.#inputIndex.set(inputKey, [])
-        }
-
-        this.#inputIndex.get(inputKey).push(binding)
-    }
-
-
-    #removeFromInputIndex (binding) {
-        const inputKey = buildInputKey(binding.deviceName, binding.controlName, binding.eventType)
-        const bindings = this.#inputIndex.get(inputKey)
-
-        if (bindings) {
-            const index = bindings.indexOf(binding)
-            if (index !== -1) {
-                bindings.splice(index, 1)
-
-                if (bindings.length === 0) {
-                    this.#inputIndex.delete(inputKey)
-                }
-            }
-        }
-    }
-
 }
 
 
@@ -235,9 +223,7 @@ function keyFor ({deviceName, controlName, actionName, controllerName = null, ev
 }
 
 
-function buildInputKey (deviceName, controlName, eventType) {
-    return `${deviceName}:${controlName}:${eventType}`
-}
+
 
 
 const MOUSE_CONTROLS = [
