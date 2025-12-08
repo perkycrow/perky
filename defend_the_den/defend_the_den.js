@@ -1,7 +1,9 @@
 import Application from '../application/application'
 import GameLoop from '../game/game_loop'
 import GameController from './controllers/game_controller'
-import Canvas2D from '../canvas/canvas_2d'
+
+// import Canvas2D from '../canvas/canvas_2d'
+import WebGLCanvas2D from '../canvas/webgl_canvas_2d'
 import Camera2D from '../canvas/camera_2d'
 import Group2D from '../canvas/group_2d'
 import Image2D from '../canvas/image_2d'
@@ -24,7 +26,7 @@ export default class DefendTheDen extends Application {
             unitsInView: 6.5
         })
 
-        this.canvas = new Canvas2D({
+        this.canvas = new WebGLCanvas2D({
             container: this.element,
             autoFit: true,
             camera: this.camera,
