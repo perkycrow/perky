@@ -4,6 +4,8 @@ import WebGLTextureManager from './webgl_texture_manager'
 import WebGLSpriteBatch from './webgl_sprite_batch'
 import Image2D from './image_2d'
 import Sprite2D from './sprite_2d'
+import Circle from './circle'
+import Rectangle from './rectangle'
 
 
 export default class WebGLCanvas2D {
@@ -82,6 +84,8 @@ export default class WebGLCanvas2D {
         this.spriteBatch = new WebGLSpriteBatch(gl, this.spriteProgram, this.textureManager)
 
         this.gridVertexBuffer = gl.createBuffer()
+        this.primitiveVertexBuffer = gl.createBuffer()
+        this.primitives = []
     }
 
 
@@ -196,6 +200,7 @@ export default class WebGLCanvas2D {
             this.gl.deleteProgram(this.spriteProgram.program)
             this.gl.deleteProgram(this.primitiveProgram.program)
             this.gl.deleteBuffer(this.gridVertexBuffer)
+            this.gl.deleteBuffer(this.primitiveVertexBuffer)
         }
 
         if (this.canvas && this.canvas.parentElement) {
@@ -251,7 +256,9 @@ export default class WebGLCanvas2D {
 
         scene.updateWorldMatrix(false)
 
+        this.primitives = []
         this.#renderSprites(scene, projectionMatrix, viewMatrix)
+        this.#renderPrimitives(projectionMatrix, viewMatrix)
 
         if (this.showGrid) {
             this.#renderGrid(projectionMatrix, viewMatrix)
@@ -276,7 +283,7 @@ export default class WebGLCanvas2D {
     }
 
 
-    #traverseAndBatch (object, parentOpacity) {
+    #traverseAndBatch (object, parentOpacity) { // eslint-disable-line complexity
         if (!object.visible) {
             return
         }
@@ -297,11 +304,114 @@ export default class WebGLCanvas2D {
 
         if (object instanceof Image2D || object instanceof Sprite2D) {
             this.spriteBatch.addSprite(object, effectiveOpacity)
+        } else if (object instanceof Circle || object instanceof Rectangle) {
+            this.primitives.push({object, opacity: effectiveOpacity})
         }
 
         object.children.forEach(child => {
             this.#traverseAndBatch(child, effectiveOpacity)
         })
+    }
+
+
+    #renderPrimitives (projectionMatrix, viewMatrix) {
+        if (this.primitives.length === 0) {
+            return
+        }
+
+        const gl = this.gl
+        gl.useProgram(this.primitiveProgram.program)
+        gl.uniformMatrix3fv(this.primitiveProgram.uniforms.projectionMatrix, false, projectionMatrix)
+        gl.uniformMatrix3fv(this.primitiveProgram.uniforms.viewMatrix, false, viewMatrix)
+
+        for (const {object, opacity} of this.primitives) {
+            if (object instanceof Circle) {
+                this.#renderCircle(object, opacity)
+            } else if (object instanceof Rectangle) {
+                this.#renderRectangle(object, opacity)
+            }
+        }
+    }
+
+
+    #renderCircle (circle, opacity) {
+        const gl = this.gl
+        const segments = 32
+        const radius = circle.radius
+        const offsetX = -radius * 2 * circle.anchorX + radius
+        const offsetY = -radius * 2 * circle.anchorY + radius
+
+        const color = parseColor(circle.color)
+        const m = circle.worldMatrix
+
+        const vertices = []
+
+        const centerX = m[0] * offsetX + m[2] * offsetY + m[4]
+        const centerY = m[1] * offsetX + m[3] * offsetY + m[5]
+        vertices.push(centerX, centerY, color.r, color.g, color.b, opacity)
+
+        for (let i = 0; i <= segments; i++) {
+            const angle = (i / segments) * Math.PI * 2
+            const x = offsetX + Math.cos(angle) * radius
+            const y = offsetY + Math.sin(angle) * radius
+
+            const worldX = m[0] * x + m[2] * y + m[4]
+            const worldY = m[1] * x + m[3] * y + m[5]
+
+            vertices.push(worldX, worldY, color.r, color.g, color.b, opacity)
+        }
+
+        const vertexData = new Float32Array(vertices)
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.primitiveVertexBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.DYNAMIC_DRAW)
+
+        const stride = 6 * 4
+        gl.enableVertexAttribArray(this.primitiveProgram.attributes.position)
+        gl.vertexAttribPointer(this.primitiveProgram.attributes.position, 2, gl.FLOAT, false, stride, 0)
+
+        gl.enableVertexAttribArray(this.primitiveProgram.attributes.color)
+        gl.vertexAttribPointer(this.primitiveProgram.attributes.color, 4, gl.FLOAT, false, stride, 2 * 4)
+
+        gl.drawArrays(gl.TRIANGLE_FAN, 0, segments + 2)
+    }
+
+
+    #renderRectangle (rect, opacity) {
+        const gl = this.gl
+        const offsetX = -rect.width * rect.anchorX
+        const offsetY = -rect.height * rect.anchorY
+
+        const color = parseColor(rect.color)
+        const m = rect.worldMatrix
+
+        const corners = [
+            {x: offsetX, y: offsetY},
+            {x: offsetX + rect.width, y: offsetY},
+            {x: offsetX + rect.width, y: offsetY + rect.height},
+            {x: offsetX, y: offsetY + rect.height}
+        ]
+
+        const vertices = []
+        for (const corner of corners) {
+            const worldX = m[0] * corner.x + m[2] * corner.y + m[4]
+            const worldY = m[1] * corner.x + m[3] * corner.y + m[5]
+            vertices.push(worldX, worldY, color.r, color.g, color.b, opacity)
+        }
+
+        const vertexData = new Float32Array(vertices)
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.primitiveVertexBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.DYNAMIC_DRAW)
+
+        const stride = 6 * 4
+        gl.enableVertexAttribArray(this.primitiveProgram.attributes.position)
+        gl.vertexAttribPointer(this.primitiveProgram.attributes.position, 2, gl.FLOAT, false, stride, 0)
+
+        gl.enableVertexAttribArray(this.primitiveProgram.attributes.color)
+        gl.vertexAttribPointer(this.primitiveProgram.attributes.color, 4, gl.FLOAT, false, stride, 2 * 4)
+
+        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
     }
 
 
