@@ -195,7 +195,7 @@ export default class Canvas2D {
         ctx.save()
         this.camera.applyToContext(ctx, this.pixelRatio)
 
-        scene.updateWorldMatrix(true)
+        scene.updateWorldMatrix(false)
 
         renderObject(ctx, scene, 1.0, this)
 
