@@ -4,7 +4,7 @@ import Vec2 from '../math/vec2'
 
 export default class Player {
 
-    constructor ({x = 0, y = 0, maxSpeed = 10, acceleration = 50, boundaries = {min: -2.5, max: 2.5}} = {}) {
+    constructor ({x = 0, y = 0, maxSpeed = 8, acceleration = 80, boundaries = {min: -2.5, max: 2.5}} = {}) {
         this.position = new Vec2(x, y)
         this.velocity = new Vec2(0, 0)
 
