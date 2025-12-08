@@ -3,6 +3,7 @@ import InputManager from './input_manager'
 import InputBinder from './input_binder'
 import KeyboardDevice from './input_devices/keyboard_device'
 import MouseDevice from './input_devices/mouse_device'
+import Vec2 from '../math/vec2'
 
 
 export default class InputSystem extends PerkyModule {
@@ -78,7 +79,8 @@ export default class InputSystem extends PerkyModule {
             'isActionPressed',
             'getActionControls',
             'getInputValue',
-            'getInputValueAny'
+            'getInputValueAny',
+            'direction'
         ])
     }
 
@@ -201,6 +203,23 @@ export default class InputSystem extends PerkyModule {
         }
 
         return controls
+    }
+
+
+    direction (name = 'move') {
+        const up = name + 'Up'
+        const down = name + 'Down'
+        const left = name + 'Left'
+        const right = name + 'Right'
+
+        const x = (this.isActionPressed(right) ? 1 : 0)
+            - (this.isActionPressed(left) ? 1 : 0)
+        const y = (this.isActionPressed(up) ? 1 : 0)
+            - (this.isActionPressed(down) ? 1 : 0)
+
+        const vec = new Vec2(x, y)
+
+        return vec.length() > 0 ? vec.clone().normalize() : vec
     }
 
 

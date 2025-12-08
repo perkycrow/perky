@@ -73,13 +73,9 @@ export default class DefendTheDen extends Application {
         })
 
         this.on('update', (deltaTime) => {
-            if (this.isActionPressed('moveUp')) {
-                this.player.y += 3 * deltaTime
-            }
+            const move = this.direction('move')
 
-            if (this.isActionPressed('moveDown')) {
-                this.player.y -= 3 * deltaTime
-            }
+            this.player.y += move.y * 3 * deltaTime
         })
 
         this.on('render', () => {
