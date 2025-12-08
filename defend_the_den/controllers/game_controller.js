@@ -3,6 +3,11 @@ import ActionController from '../../core/action_controller'
 
 export default class GameController extends ActionController {
 
+
+    move (direction, deltaTime) {
+        this.get('player').y += direction.y * 3 * deltaTime
+    }
+
     moveUp () {
         this.set('moving', 'up')
     }

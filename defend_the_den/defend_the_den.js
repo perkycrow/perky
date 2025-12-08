@@ -6,6 +6,7 @@ import Camera2D from '../canvas/camera_2d'
 import Group2D from '../canvas/group_2d'
 import Image2D from '../canvas/image_2d'
 import Circle from '../canvas/circle'
+import Player from './player'
 
 import manifest from './manifest'
 
@@ -28,7 +29,7 @@ export default class DefendTheDen extends Application {
             autoFit: true,
             camera: this.camera,
             showGrid: true,
-            pixelRatio: window.devicePixelRatio || 1,
+            pixelRatio: 1.5,
             gridStep: 1,
             gridOpacity: 0.15,
             gridColor: '#666666',
@@ -45,8 +46,8 @@ export default class DefendTheDen extends Application {
         this.bindKey('ArrowDown', 'moveDown')
         this.bindKey('Space', 'shoot')
 
-        this.player = {name: 'Player 1', x: 0, y: 0}
-        this.setContextFor('game', {player: this.player, y: 0})
+        this.player = new Player({x: 0, y: 0})
+        this.setContextFor('game', {player: this.player})
 
         const rootGroup = new Group2D({name: 'root'})
 
@@ -73,9 +74,9 @@ export default class DefendTheDen extends Application {
         })
 
         this.on('update', (deltaTime) => {
-            const move = this.direction('move')
-
-            this.player.y += move.y * 3 * deltaTime
+            const direction = this.direction('move')
+            this.player.move(direction, deltaTime)
+            this.player.update(deltaTime)
         })
 
         this.on('render', () => {
