@@ -84,6 +84,18 @@ export default class DefendTheDen extends Application {
         this.on('render', () => {
             this.wolfSprite.x = this.player.x
             this.wolfSprite.y = this.player.y
+
+            const velocity = this.player.velocity
+            if (Math.abs(velocity.y) > 0.1) {
+                if (velocity.y > 0) {
+                    this.wolfSprite.image = this.getImage('wolf_up')
+                } else {
+                    this.wolfSprite.image = this.getImage('wolf_down')
+                }
+            } else {
+                this.wolfSprite.image = this.getImage('wolf_right')
+            }
+
             this.canvas.render(rootGroup)
         })
     }
