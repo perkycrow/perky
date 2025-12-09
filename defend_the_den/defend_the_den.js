@@ -23,7 +23,7 @@ export default class DefendTheDen extends Application {
         this.create(GameLoop, {$bind: 'gameLoop'})
 
         this.camera = new Camera2D({
-            unitsInView: 6.5
+            unitsInView: 5
         })
 
         this.canvas = new WebGLCanvas2D({
@@ -56,6 +56,19 @@ export default class DefendTheDen extends Application {
         window.d = this
 
         this.on('start', () => {
+            const backgroundImage = this.getImage('background')
+            const backgroundHeight = 5
+            const backgroundWidth = (backgroundImage.width / backgroundImage.height) * backgroundHeight
+
+            const background = new Image2D({
+                image: backgroundImage,
+                x: 0,
+                y: 0,
+                width: backgroundWidth,
+                height: backgroundHeight
+            })
+            rootGroup.addChild(background)
+
             this.wolfSprite = new Image2D({
                 image: this.getImage('wolf'),
                 x: 0,

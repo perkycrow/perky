@@ -4,6 +4,9 @@ const manifest = {
     },
     sourceDescriptors: {
         images: {
+            background: {
+                url: '/assets/images/background.jpg'
+            },
             wolf: {
                 url: '/assets/images/wolf.png'
             },
