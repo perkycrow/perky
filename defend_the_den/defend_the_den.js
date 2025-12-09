@@ -9,6 +9,7 @@ import Group2D from '../canvas/group_2d'
 import Image2D from '../canvas/image_2d'
 import Circle from '../canvas/circle'
 import Player from './player'
+import Enemy from './enemy'
 
 import manifest from './manifest'
 
@@ -48,7 +49,8 @@ export default class DefendTheDen extends Application {
         this.bindKey('ArrowDown', 'moveDown')
         this.bindKey('Space', 'shoot')
 
-        this.player = new Player({x: 0, y: 0})
+        this.player = new Player({x: -2.5, y: 0})
+        this.enemy = new Enemy({x: 2.5, y: 0, maxSpeed: 2})
         this.setContextFor('game', {player: this.player})
 
         const rootGroup = new Group2D({name: 'root'})
@@ -78,6 +80,15 @@ export default class DefendTheDen extends Application {
             })
             rootGroup.addChild(this.wolfSprite)
 
+            this.pigSprite = new Image2D({
+                image: this.getImage('pig'),
+                x: this.enemy.x,
+                y: this.enemy.y,
+                width: 1,
+                height: 1
+            })
+            rootGroup.addChild(this.pigSprite)
+
             const circle = new Circle({
                 x: 2,
                 y: 2,
@@ -92,6 +103,8 @@ export default class DefendTheDen extends Application {
             const direction = this.direction('move')
             this.player.move(direction, deltaTime)
             this.player.update(deltaTime)
+
+            this.enemy.update(deltaTime)
         })
 
         this.on('render', () => {
@@ -108,6 +121,9 @@ export default class DefendTheDen extends Application {
             } else {
                 this.wolfSprite.image = this.getImage('wolf_right')
             }
+
+            this.pigSprite.x = this.enemy.x
+            this.pigSprite.y = this.enemy.y
 
             this.canvas.render(rootGroup)
         })

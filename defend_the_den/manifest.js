@@ -18,6 +18,9 @@ const manifest = {
             },
             wolf_down: {
                 url: '/assets/images/wolf_down.png'
+            },
+            pig: {
+                url: '/assets/images/pig.png'
             }
         }
     }
