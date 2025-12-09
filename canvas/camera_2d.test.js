@@ -15,7 +15,7 @@ describe(Camera2D, () => {
         expect(camera.x).toBe(0)
         expect(camera.y).toBe(0)
         expect(camera.zoom).toBe(1)
-        expect(camera.unitsInView).toBe(10)
+        expect(camera.unitsInView).toEqual({height: 10})
         expect(camera.viewportWidth).toBe(800)
         expect(camera.viewportHeight).toBe(600)
         expect(camera.followTarget).toBe(null)
@@ -36,14 +36,14 @@ describe(Camera2D, () => {
         expect(cam.x).toBe(10)
         expect(cam.y).toBe(20)
         expect(cam.zoom).toBe(2)
-        expect(cam.unitsInView).toBe(5)
+        expect(cam.unitsInView).toEqual({height: 5})
         expect(cam.viewportWidth).toBe(1024)
         expect(cam.viewportHeight).toBe(768)
     })
 
 
     test('pixelsPerUnit', () => {
-        camera.unitsInView = 10
+        camera.unitsInView = {height: 10}
         camera.viewportHeight = 600
         camera.zoom = 1
 
@@ -57,7 +57,7 @@ describe(Camera2D, () => {
     test('setUnitsInView', () => {
         const result = camera.setUnitsInView(5)
 
-        expect(camera.unitsInView).toBe(5)
+        expect(camera.unitsInView).toEqual({height: 5})
         expect(result).toBe(camera)
     })
 
@@ -116,7 +116,7 @@ describe(Camera2D, () => {
     test('worldToScreen', () => {
         camera.x = 0
         camera.y = 0
-        camera.unitsInView = 10
+        camera.unitsInView = {height: 10}
         camera.viewportWidth = 800
         camera.viewportHeight = 600
         camera.zoom = 1
@@ -134,7 +134,7 @@ describe(Camera2D, () => {
     test('screenToWorld', () => {
         camera.x = 0
         camera.y = 0
-        camera.unitsInView = 10
+        camera.unitsInView = {height: 10}
         camera.viewportWidth = 800
         camera.viewportHeight = 600
         camera.zoom = 1
@@ -157,7 +157,7 @@ describe(Camera2D, () => {
 
         camera.viewportWidth = 800
         camera.viewportHeight = 600
-        camera.unitsInView = 10
+        camera.unitsInView = {height: 10}
         camera.zoom = 1
         camera.x = 5
         camera.y = 10
@@ -176,7 +176,7 @@ describe(Camera2D, () => {
         camera.y = 0
         camera.viewportWidth = 800
         camera.viewportHeight = 600
-        camera.unitsInView = 10
+        camera.unitsInView = {height: 10}
         camera.zoom = 1
 
         const bounds = {minX: -1, minY: -1, maxX: 1, maxY: 1, width: 2, height: 2}
@@ -189,7 +189,7 @@ describe(Camera2D, () => {
         camera.y = 0
         camera.viewportWidth = 800
         camera.viewportHeight = 600
-        camera.unitsInView = 10
+        camera.unitsInView = {height: 10}
         camera.zoom = 1
 
         const bounds = {minX: 100, minY: 100, maxX: 110, maxY: 110, width: 10, height: 10}
@@ -202,7 +202,7 @@ describe(Camera2D, () => {
         camera.y = 0
         camera.viewportWidth = 800
         camera.viewportHeight = 600
-        camera.unitsInView = 10
+        camera.unitsInView = {height: 10}
         camera.zoom = 1
 
         const bounds = {minX: 5, minY: -1, maxX: 10, maxY: 1, width: 5, height: 2}
@@ -215,7 +215,7 @@ describe(Camera2D, () => {
         camera.y = 0
         camera.viewportWidth = 800
         camera.viewportHeight = 600
-        camera.unitsInView = 10
+        camera.unitsInView = {height: 10}
         camera.zoom = 1
 
         const bounds = {minX: 0, minY: 0, maxX: 0, maxY: 0, width: 0, height: 0}
@@ -240,7 +240,7 @@ describe(Camera2D, () => {
         camera.rotation = Math.PI / 2
         camera.viewportWidth = 800
         camera.viewportHeight = 600
-        camera.unitsInView = 10
+        camera.unitsInView = {height: 10}
         camera.zoom = 1
 
         const result = camera.worldToScreen(1, 0)
@@ -256,7 +256,7 @@ describe(Camera2D, () => {
         camera.rotation = Math.PI / 2
         camera.viewportWidth = 800
         camera.viewportHeight = 600
-        camera.unitsInView = 10
+        camera.unitsInView = {height: 10}
         camera.zoom = 1
 
         const result = camera.screenToWorld(400, 240)
@@ -272,7 +272,7 @@ describe(Camera2D, () => {
         camera.rotation = Math.PI / 3
         camera.viewportWidth = 800
         camera.viewportHeight = 600
-        camera.unitsInView = 10
+        camera.unitsInView = {height: 10}
         camera.zoom = 1.5
 
         const worldPoint = {x: 10, y: 7}
@@ -281,6 +281,124 @@ describe(Camera2D, () => {
 
         expect(backToWorld.x).toBeCloseTo(worldPoint.x, 0.01)
         expect(backToWorld.y).toBeCloseTo(worldPoint.y, 0.01)
+    })
+
+
+    describe('unitsInView modes', () => {
+
+        test('height-based mode with explicit object', () => {
+            const cam = new Camera2D({
+                unitsInView: {height: 10},
+                viewportWidth: 800,
+                viewportHeight: 600
+            })
+
+            expect(cam.unitsInView).toEqual({height: 10})
+            expect(cam.pixelsPerUnit).toBe(60) // 600 / 10
+        })
+
+
+        test('width-based mode', () => {
+            const cam = new Camera2D({
+                unitsInView: {width: 20},
+                viewportWidth: 800,
+                viewportHeight: 600
+            })
+
+            expect(cam.unitsInView).toEqual({width: 20})
+            expect(cam.pixelsPerUnit).toBe(40) // 800 / 20
+        })
+
+
+        test('cover mode shows at least both dimensions', () => {
+            // Landscape viewport (800x600, ratio 4:3)
+            const cam = new Camera2D({
+                unitsInView: {width: 14, height: 5},
+                viewportWidth: 800,
+                viewportHeight: 600
+            })
+
+            expect(cam.unitsInView).toEqual({width: 14, height: 5})
+
+            // Should use height as constraint (smaller ppu to show both)
+            // ppuForWidth = 800 / 14 ≈ 57.14
+            // ppuForHeight = 600 / 5 = 120
+            // min(57.14, 120) = 57.14
+            expect(cam.pixelsPerUnit).toBeCloseTo(57.14, 1)
+        })
+
+
+        test('cover mode on portrait viewport', () => {
+            // Portrait viewport (600x800, ratio 3:4)
+            const cam = new Camera2D({
+                unitsInView: {width: 14, height: 5},
+                viewportWidth: 600,
+                viewportHeight: 800
+            })
+
+            // ppuForWidth = 600 / 14 ≈ 42.86
+            // ppuForHeight = 800 / 5 = 160
+            // min(42.86, 160) = 42.86
+            expect(cam.pixelsPerUnit).toBeCloseTo(42.86, 1)
+        })
+
+
+        test('cover mode on square viewport', () => {
+            // Square viewport (800x800)
+            const cam = new Camera2D({
+                unitsInView: {width: 10, height: 10},
+                viewportWidth: 800,
+                viewportHeight: 800
+            })
+
+            // ppuForWidth = 800 / 10 = 80
+            // ppuForHeight = 800 / 10 = 80
+            // min(80, 80) = 80
+            expect(cam.pixelsPerUnit).toBe(80)
+        })
+
+
+        test('setUnitsInView with width object', () => {
+            const result = camera.setUnitsInView({width: 15})
+
+            expect(camera.unitsInView).toEqual({width: 15})
+            expect(result).toBe(camera)
+        })
+
+
+        test('setUnitsInView with cover mode object', () => {
+            const result = camera.setUnitsInView({width: 14, height: 5})
+
+            expect(camera.unitsInView).toEqual({width: 14, height: 5})
+            expect(result).toBe(camera)
+        })
+
+
+        test('width-based mode with zoom', () => {
+            const cam = new Camera2D({
+                unitsInView: {width: 20},
+                viewportWidth: 800,
+                viewportHeight: 600,
+                zoom: 2
+            })
+
+            // (800 / 20) * 2 = 80
+            expect(cam.pixelsPerUnit).toBe(80)
+        })
+
+
+        test('cover mode with zoom', () => {
+            const cam = new Camera2D({
+                unitsInView: {width: 14, height: 5},
+                viewportWidth: 800,
+                viewportHeight: 600,
+                zoom: 1.5
+            })
+
+            // min(800/14, 600/5) * 1.5 ≈ 57.14 * 1.5 ≈ 85.71
+            expect(cam.pixelsPerUnit).toBeCloseTo(85.71, 1)
+        })
+
     })
 
 })

@@ -5,24 +5,44 @@ export default class Camera2D {
         this.y = options.y ?? 0
         this.zoom = options.zoom ?? 1
         this.rotation = options.rotation ?? 0  // radians
-        
-        this.unitsInView = options.unitsInView ?? 10
+
+        const unitsInView = options.unitsInView ?? 10
+        if (typeof unitsInView === 'number') {
+            this.unitsInView = {height: unitsInView}
+        } else {
+            this.unitsInView = unitsInView
+        }
+
         this.viewportWidth = options.viewportWidth ?? 800
         this.viewportHeight = options.viewportHeight ?? 600
         this.pixelRatio = options.pixelRatio ?? 1
-        
+
         this.followTarget = null
         this.followSpeed = 0.1
     }
 
 
     get pixelsPerUnit () {
-        return this.viewportHeight / this.unitsInView * this.zoom
+        if (this.unitsInView.width && this.unitsInView.height) {
+
+            const ppuForWidth = this.viewportWidth / this.unitsInView.width
+            const ppuForHeight = this.viewportHeight / this.unitsInView.height
+
+            return Math.min(ppuForWidth, ppuForHeight) * this.zoom
+        } else if (this.unitsInView.width) {
+            return this.viewportWidth / this.unitsInView.width * this.zoom
+        } else {
+            return this.viewportHeight / this.unitsInView.height * this.zoom
+        }
     }
 
 
     setUnitsInView (units) {
-        this.unitsInView = units
+        if (typeof units === 'number') {
+            this.unitsInView = {height: units}
+        } else {
+            this.unitsInView = units
+        }
         return this
     }
 
@@ -71,7 +91,7 @@ export default class Camera2D {
             dx = rotatedX
             dy = rotatedY
         }
-        
+
         const screenX = dx * ppu + this.viewportWidth / 2
         const screenY = -dy * ppu + this.viewportHeight / 2
         return {x: screenX, y: screenY}
@@ -88,7 +108,7 @@ export default class Camera2D {
 
         let dx = (screenX - this.viewportWidth / 2) / ppu
         let dy = -((screenY - this.viewportHeight / 2) / ppu)
-        
+
         if (this.rotation !== 0) {
             const cos = Math.cos(this.rotation)
             const sin = Math.sin(this.rotation)
@@ -97,7 +117,7 @@ export default class Camera2D {
             dx = rotatedX
             dy = rotatedY
         }
-        
+
         const worldX = dx + this.x
         const worldY = dy + this.y
         return {x: worldX, y: worldY}
@@ -111,12 +131,12 @@ export default class Camera2D {
 
         const halfWidth = this.viewportWidth / (2 * this.pixelsPerUnit)
         const halfHeight = this.viewportHeight / (2 * this.pixelsPerUnit)
-        
+
         const cameraMinX = this.x - halfWidth
         const cameraMaxX = this.x + halfWidth
         const cameraMinY = this.y - halfHeight
         const cameraMaxY = this.y + halfHeight
-        
+
         return !(
             bounds.maxX < cameraMinX ||
             bounds.minX > cameraMaxX ||
@@ -135,10 +155,10 @@ export default class Camera2D {
         if (this.rotation !== 0) {
             ctx.rotate(-this.rotation)
         }
-        
+
         const ppu = this.pixelsPerUnit * pixelRatio
         ctx.scale(ppu, -ppu)
-        
+
         ctx.translate(-this.x, -this.y)
     }
 

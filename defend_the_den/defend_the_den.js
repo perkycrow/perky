@@ -23,7 +23,7 @@ export default class DefendTheDen extends Application {
         this.create(GameLoop, {$bind: 'gameLoop'})
 
         this.camera = new Camera2D({
-            unitsInView: 5
+            unitsInView: {width: 7, height: 5}
         })
 
         this.canvas = new WebGLCanvas2D({
