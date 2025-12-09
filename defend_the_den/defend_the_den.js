@@ -10,6 +10,7 @@ import Image2D from '../canvas/image_2d'
 import Circle from '../canvas/circle'
 import Player from './player'
 import Enemy from './enemy'
+import Projectile from './projectile'
 
 import manifest from './manifest'
 
@@ -51,11 +52,25 @@ export default class DefendTheDen extends Application {
 
         this.player = new Player({x: -2.5, y: 0})
         this.enemy = new Enemy({x: 2.5, y: 0, maxSpeed: 2})
+        this.projectiles = []
         this.setContextFor('game', {player: this.player})
 
         const rootGroup = new Group2D({name: 'root'})
+        this.projectilesGroup = new Group2D({name: 'projectiles'})
 
         window.d = this
+
+        const gameController = this.getController('game')
+        gameController.on('shoot', () => {
+            console.log('Creating projectile!', this.player)
+            const projectile = new Projectile({
+                x: this.player.x + 0.5,
+                y: this.player.y,
+                speed: 8
+            })
+            this.projectiles.push(projectile)
+            console.log('Projectiles array:', this.projectiles.length)
+        })
 
         this.on('start', () => {
             const backgroundImage = this.getImage('background')
@@ -97,6 +112,7 @@ export default class DefendTheDen extends Application {
             })
 
             rootGroup.addChild(circle)
+            rootGroup.addChild(this.projectilesGroup)
         })
 
         this.on('update', (deltaTime) => {
@@ -105,6 +121,12 @@ export default class DefendTheDen extends Application {
             this.player.update(deltaTime)
 
             this.enemy.update(deltaTime)
+
+            this.projectiles.forEach(projectile => {
+                projectile.update(deltaTime)
+            })
+
+            this.projectiles = this.projectiles.filter(p => p.alive)
         })
 
         this.on('render', () => {
@@ -124,6 +146,15 @@ export default class DefendTheDen extends Application {
 
             this.pigSprite.x = this.enemy.x
             this.pigSprite.y = this.enemy.y
+
+            this.projectilesGroup.children = this.projectiles.map(projectile => {
+                return new Circle({
+                    x: projectile.x,
+                    y: projectile.y,
+                    radius: 0.1,
+                    color: '#000000'
+                })
+            })
 
             this.canvas.render(rootGroup)
         })

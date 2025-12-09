@@ -21,7 +21,8 @@ export default class GameController extends ActionController {
     }
 
     shoot () {
-        console.log('Shoot')
+        console.log('Shoot', Date.now())
+        this.emit('shoot')
     }
 
 }
