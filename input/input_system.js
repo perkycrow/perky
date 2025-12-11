@@ -264,7 +264,7 @@ export default class InputSystem extends PerkyModule {
 
         matchingBindings.forEach(binding => {
             if (typeof binding.shouldTrigger !== 'function' || binding.shouldTrigger(this.inputManager)) {
-                this.host?.actionDispatcher?.dispatchAction(binding, control, event, device)
+                this.host?.actionDispatcher?.dispatchAction(binding, event, device)
             }
         })
     }

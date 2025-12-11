@@ -230,7 +230,7 @@ export default class ActionDispatcher extends PerkyModule {
     }
 
 
-    dispatchAction (binding, control, ...args) {
+    dispatchAction (binding, ...args) {
         const targetController = binding.controllerName
 
         if (targetController) {

@@ -249,9 +249,7 @@ describe(ActionDispatcher, () => {
             controllerName: 'game'
         }
 
-        const control = {name: 'Space'}
-
-        dispatcher.dispatchAction(binding, control, 'event', 'device')
+        dispatcher.dispatchAction(binding, 'event', 'device')
 
         expect(controller.jump).toHaveBeenCalledWith('event', 'device')
     })
@@ -275,9 +273,7 @@ describe(ActionDispatcher, () => {
             controllerName: 'game'
         }
 
-        const control = {name: 'Space'}
-
-        dispatcher.dispatchAction(binding, control, 'event', 'device')
+        dispatcher.dispatchAction(binding, 'event', 'device')
 
         expect(gameController.jump).not.toHaveBeenCalled()
     })
@@ -302,9 +298,7 @@ describe(ActionDispatcher, () => {
             controllerName: 'game'
         }
 
-        const control = {name: 'Space'}
-
-        dispatcher.dispatchAction(binding, control, 'event', 'device')
+        dispatcher.dispatchAction(binding, 'event', 'device')
 
         expect(gameController.jump).toHaveBeenCalledWith('event', 'device')
     })
@@ -325,9 +319,7 @@ describe(ActionDispatcher, () => {
             actionName: 'jump'
         }
 
-        const control = {name: 'Space'}
-
-        dispatcher.dispatchAction(binding, control, 'event', 'device')
+        dispatcher.dispatchAction(binding, 'event', 'device')
 
         expect(controller.jump).toHaveBeenCalledWith('event', 'device')
     })
