@@ -282,11 +282,11 @@ describe(Engine, () => {
     })
 
 
-    test('dispatchAction', () => {
+    test('execute', () => {
         const controllerSpy = vi.fn()
         engine.mainController.testAction = controllerSpy
 
-        engine.dispatchAction('testAction', 'param1', 'param2')
+        engine.execute('testAction', 'param1', 'param2')
 
         expect(controllerSpy).toHaveBeenCalledWith('param1', 'param2')
     })

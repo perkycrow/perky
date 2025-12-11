@@ -20,7 +20,9 @@ export default class ActionDispatcher extends PerkyModule {
             pushActive: 'pushActiveController',
             popActive: 'popActiveController',
             clearActive: 'clearActiveControllers',
-            dispatch: 'dispatchAction',
+            execute: 'execute',
+            executeTo: 'executeTo',
+            dispatchAction: 'dispatchAction',
             listActions: 'listActions',
             mainController: 'mainController',
             addAction: 'addAction',
@@ -207,23 +209,21 @@ export default class ActionDispatcher extends PerkyModule {
     }
 
 
-    dispatch (actionName, ...args) {
+    execute (actionName, ...args) {
         return this.#dispatchAction(actionName, ...args)
     }
 
 
-    dispatchTo (name, actionName, ...args) {
-        const controller = this.getChild(name)
+    executeTo (name, actionName, ...args) {
+        const controller = this.getController(name)
 
-        if (controller) {
+        if (controller && this.#isControllerActive(name)) {
             if (typeof controller.execute === 'function') {
                 return controller.execute(actionName, ...args)
             } else if (typeof controller[actionName] === 'function') {
                 controller[actionName](...args)
                 return true
             }
-
-            return false
         }
 
         return false
@@ -231,17 +231,9 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     dispatchAction (binding, ...args) {
-        const targetController = binding.controllerName
-
-        if (targetController) {
-            if (!this.#isControllerActive(targetController)) {
-                return false
-            }
-
-            return this.dispatchTo(targetController, binding.actionName, ...args)
-        } else {
-            return this.dispatch(binding.actionName, ...args)
-        }
+        return binding.controllerName
+            ? this.executeTo(binding.controllerName, binding.actionName, ...args)
+            : this.execute(binding.actionName, ...args)
     }
 
 

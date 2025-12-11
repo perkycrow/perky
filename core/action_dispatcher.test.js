@@ -201,7 +201,7 @@ describe(ActionDispatcher, () => {
         dispatcher.register('main', controller)
         dispatcher.setActive('main')
 
-        dispatcher.dispatch('someAction', 'arg1', 'arg2')
+        dispatcher.execute('someAction', 'arg1', 'arg2')
 
         expect(controller.someAction).toHaveBeenCalledWith('arg1', 'arg2')
     })
@@ -210,7 +210,7 @@ describe(ActionDispatcher, () => {
     test('dispatch - no active controller', () => {
         const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { })
 
-        dispatcher.dispatch('someAction')
+        dispatcher.execute('someAction')
 
         expect(consoleSpy).toHaveBeenCalled()
 
@@ -218,7 +218,7 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('dispatchTo', () => {
+    test('executeTo', () => {
         class TestController extends PerkyModule {
             someAction = vi.fn()
         }
@@ -226,8 +226,9 @@ describe(ActionDispatcher, () => {
         const controller = new TestController()
 
         dispatcher.register('main', controller)
+        dispatcher.setActive('main')
 
-        dispatcher.dispatchTo('main', 'someAction', 'arg1', 'arg2')
+        dispatcher.executeTo('main', 'someAction', 'arg1', 'arg2')
 
         expect(controller.someAction).toHaveBeenCalledWith('arg1', 'arg2')
     })
@@ -454,13 +455,13 @@ describe(ActionDispatcher, () => {
         dispatcher.pushActive('game')
         dispatcher.pushActive('pause')
 
-        dispatcher.dispatch('move')
+        dispatcher.execute('move')
         expect(gameController.move).toHaveBeenCalled()
 
-        dispatcher.dispatch('shoot')
+        dispatcher.execute('shoot')
         expect(gameController.shoot).not.toHaveBeenCalled()
 
-        dispatcher.dispatch('resume')
+        dispatcher.execute('resume')
         expect(pauseController.resume).toHaveBeenCalled()
     })
 
@@ -485,7 +486,7 @@ describe(ActionDispatcher, () => {
         dispatcher.pushActive('game')
         dispatcher.pushActive('pause')
 
-        dispatcher.dispatch('move')
+        dispatcher.execute('move')
 
         expect(gameController.move).toHaveBeenCalled()
     })

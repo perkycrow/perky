@@ -85,7 +85,7 @@ export default class ApplicationManager extends PerkyModule {
     execute (appId, method, ...args) {
         if (this.instances.has(appId)) {
             const app = this.instances.get(appId)
-            app.dispatchAction(method, ...args)
+            app.execute(method, ...args)
         }
     }
 
@@ -94,7 +94,7 @@ export default class ApplicationManager extends PerkyModule {
         if (this.instances.has(appId)) {
             const app = this.instances.get(appId)
             this.instances.delete(appId)
-            
+
             this.emit('applications:delete', appId, app)
             app.emit('unregistered', this, appId)
             app.dispose()
