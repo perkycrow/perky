@@ -7,11 +7,14 @@ export default class ActionController extends PerkyModule {
     static propagable = []
 
     #actions = new Registry()
+    #actionList = []
 
     constructor (actions) {
         super()
 
         this.context = {}
+
+        this.#actionList = extractPrototypeMethods(this)
 
         if (actions && typeof actions === 'object') {
             Object.keys(actions).forEach(actionName => {
@@ -64,6 +67,9 @@ export default class ActionController extends PerkyModule {
 
 
     addAction (actionName, action) {
+        if (!this.#actionList.includes(actionName)) {
+            this.#actionList.push(actionName)
+        }
         return this.#actions.set(actionName, action)
     }
 
@@ -91,31 +97,9 @@ export default class ActionController extends PerkyModule {
     }
 
 
-    listActions () { // eslint-disable-line complexity
-        const actions = new Set()
-
-        for (const actionName of this.#actions.keys) {
-            actions.add(actionName)
-        }
-
-        const proto = Object.getPrototypeOf(this)
-        const methods = Object.getOwnPropertyNames(proto)
-
-        for (const method of methods) {
-            if (method !== 'constructor' &&
-                typeof this[method] === 'function' &&
-                !method.startsWith('_') &&
-                !method.startsWith('#') &&
-                !isInternalMethod(method)) {
-                actions.add(method)
-            }
-        }
-
-        return Array.from(actions)
+    listActions () {
+        return [...this.#actionList]
     }
-
-
-
 
 
     execute (actionName, ...args) {
@@ -139,6 +123,26 @@ const INTERNAL_METHODS = new Set([
     'context', 'setContext', 'clearContext'
 ])
 
+
 function isInternalMethod (methodName) {
     return INTERNAL_METHODS.has(methodName)
+}
+
+
+function extractPrototypeMethods (instance) { // eslint-disable-line complexity
+    const methods = []
+    const proto = Object.getPrototypeOf(instance)
+    const propertyNames = Object.getOwnPropertyNames(proto)
+
+    for (const method of propertyNames) {
+        if (method !== 'constructor' &&
+                typeof instance[method] === 'function' &&
+                !method.startsWith('_') &&
+                !method.startsWith('#') &&
+                !isInternalMethod(method)) {
+            methods.push(method)
+        }
+    }
+
+    return methods
 }
