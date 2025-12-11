@@ -31,41 +31,6 @@ export default class ActionController extends PerkyModule {
     }
 
 
-    get (key) {
-        return this.context[key]
-    }
-
-
-    set (key, value) {
-        this.context[key] = value
-        return this.context[key]
-    }
-
-
-    setContext (newContext, value) {
-        if (typeof newContext === 'string') {
-            this.context[newContext] = value
-        } else if (typeof newContext === 'object') {
-            Object.assign(this.context, newContext)
-        }
-
-        return this.context
-    }
-
-
-    clearContext (key) {
-        if (key) {
-            delete this.context[key]
-        } else {
-            for (key of Object.keys(this.context)) {
-                delete this.context[key]
-            }
-        }
-
-        return this.context
-    }
-
-
     addAction (actionName, action) {
         if (!this.#actionList.includes(actionName)) {
             this.#actionList.push(actionName)
@@ -119,8 +84,7 @@ export default class ActionController extends PerkyModule {
 const INTERNAL_METHODS = new Set([
     'start', 'stop', 'dispose', 'create', 'on', 'once', 'off', 'emit',
     'emitter', 'addAction', 'getAction', 'removeAction',
-    'hasAction', 'shouldPropagate', 'listActions', 'execute',
-    'context', 'setContext', 'clearContext'
+    'hasAction', 'shouldPropagate', 'listActions', 'execute', 'context'
 ])
 
 
@@ -136,10 +100,10 @@ function extractPrototypeMethods (instance) { // eslint-disable-line complexity
 
     for (const method of propertyNames) {
         if (method !== 'constructor' &&
-                typeof instance[method] === 'function' &&
-                !method.startsWith('_') &&
-                !method.startsWith('#') &&
-                !isInternalMethod(method)) {
+            typeof instance[method] === 'function' &&
+            !method.startsWith('_') &&
+            !method.startsWith('#') &&
+            !isInternalMethod(method)) {
             methods.push(method)
         }
     }

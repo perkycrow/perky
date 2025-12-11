@@ -53,7 +53,6 @@ export default class DefendTheDen extends Application {
         this.player = new Player({x: -2.5, y: 0})
         this.enemy = new Enemy({x: 2.5, y: 0, maxSpeed: 2})
         this.projectiles = []
-        this.setContextFor('game', {player: this.player})
 
         const rootGroup = new Group2D({name: 'root'})
         this.projectilesGroup = new Group2D({name: 'projectiles'})
