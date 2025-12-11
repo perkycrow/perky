@@ -355,7 +355,7 @@ describe(Engine, () => {
     test('action dispatcher initialization', () => {
         expect(engine.actionDispatcher).toBeInstanceOf(ActionDispatcher)
         expect(engine.getController('main')).toBeInstanceOf(ActionController)
-        expect(engine.actionDispatcher.getActiveNames()).toEqual(['main'])
+        expect(engine.actionDispatcher.getActive()).toEqual(['main'])
     })
 
 

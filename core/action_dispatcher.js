@@ -64,16 +64,6 @@ export default class ActionDispatcher extends PerkyModule {
     }
 
 
-    get activeControllers () {
-        return this.#activeControllers.map(name => this.getChild(name)).filter(Boolean)
-    }
-
-
-    getActiveNames () {
-        return [...this.#activeControllers]
-    }
-
-
     register (name, ControllerClass) {
         if (this.hasChild(name)) {
             console.warn(`Controller "${name}" already registered. Overwriting...`)
@@ -95,7 +85,6 @@ export default class ActionDispatcher extends PerkyModule {
             return false
         }
 
-        // Remove from active controllers stack
         const stackIndex = this.#activeControllers.indexOf(name)
         if (stackIndex !== -1) {
             this.#activeControllers.splice(stackIndex, 1)
@@ -107,11 +96,6 @@ export default class ActionDispatcher extends PerkyModule {
 
     getController (name) {
         return this.getChild(name)
-    }
-
-
-    getNameFor (controller) {
-        return this.getChildrenRegistry().keyFor(controller)
     }
 
 

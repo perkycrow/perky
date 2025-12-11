@@ -15,7 +15,7 @@ describe(ActionDispatcher, () => {
 
     test('constructor', () => {
         expect(dispatcher.getController('any')).toBeNull()
-        expect(dispatcher.getActiveNames()).toEqual([])
+        expect(dispatcher.getActive()).toEqual([])
     })
 
 
@@ -51,7 +51,7 @@ describe(ActionDispatcher, () => {
 
         expect(newDispatcher.mainControllerName).toBe('main')
         expect(newDispatcher.getController('main')).toBeInstanceOf(ActionController)
-        expect(newDispatcher.getActiveNames()).toEqual(['main'])
+        expect(newDispatcher.getActive()).toEqual(['main'])
         expect(newDispatcher.mainController).toBeInstanceOf(ActionController)
     })
 
@@ -64,7 +64,7 @@ describe(ActionDispatcher, () => {
 
         expect(newDispatcher.mainControllerName).toBe('base')
         expect(newDispatcher.getController('base')).toBeInstanceOf(ActionController)
-        expect(newDispatcher.getActiveNames()).toEqual(['base'])
+        expect(newDispatcher.getActive()).toEqual(['base'])
         expect(newDispatcher.mainController).toBeInstanceOf(ActionController)
     })
 
@@ -76,7 +76,7 @@ describe(ActionDispatcher, () => {
         newDispatcher.install(host, {main: false})
 
         expect(newDispatcher.mainControllerName).toBeNull()
-        expect(newDispatcher.getActiveNames()).toEqual([])
+        expect(newDispatcher.getActive()).toEqual([])
         expect(newDispatcher.mainController).toBeNull()
     })
 
@@ -106,7 +106,7 @@ describe(ActionDispatcher, () => {
         dispatcher.setActive('main')
         dispatcher.unregister('main')
 
-        expect(dispatcher.getActiveNames()).toEqual([])
+        expect(dispatcher.getActive()).toEqual([])
     })
 
 
@@ -133,15 +133,6 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('getNameFor', () => {
-        const controller = new ActionController()
-
-        dispatcher.register('main', controller)
-
-        expect(dispatcher.getNameFor(controller)).toBe('main')
-    })
-
-
     test('setActive valid controller', () => {
         const controller = new ActionController()
 
@@ -149,7 +140,7 @@ describe(ActionDispatcher, () => {
         const result = dispatcher.setActive('main')
 
         expect(result).toBe(true)
-        expect(dispatcher.getActiveNames()).toEqual(['main'])
+        expect(dispatcher.getActive()).toEqual(['main'])
     })
 
 
@@ -159,7 +150,7 @@ describe(ActionDispatcher, () => {
         const result = dispatcher.setActive('nonExistent')
 
         expect(result).toBe(false)
-        expect(dispatcher.getActiveNames()).toEqual([])
+        expect(dispatcher.getActive()).toEqual([])
         expect(consoleSpy).toHaveBeenCalled()
 
         consoleSpy.mockRestore()
