@@ -85,7 +85,7 @@ export default class ActionController extends PerkyModule {
 
     shouldPropagate (actionName) {
         const ControllerClass = this.constructor
-        return ControllerClass.propagable && Array.isArray(ControllerClass.propagable) 
+        return ControllerClass.propagable && Array.isArray(ControllerClass.propagable)
             ? ControllerClass.propagable.includes(actionName)
             : false
     }
@@ -93,16 +93,16 @@ export default class ActionController extends PerkyModule {
 
     listActions () { // eslint-disable-line complexity
         const actions = new Set()
-        
+
         for (const actionName of this.#actions.keys) {
             actions.add(actionName)
         }
-        
+
         const proto = Object.getPrototypeOf(this)
         const methods = Object.getOwnPropertyNames(proto)
-        
+
         for (const method of methods) {
-            if (method !== 'constructor' && 
+            if (method !== 'constructor' &&
                 typeof this[method] === 'function' &&
                 !method.startsWith('_') &&
                 !method.startsWith('#') &&
@@ -110,62 +110,32 @@ export default class ActionController extends PerkyModule {
                 actions.add(method)
             }
         }
-        
+
         return Array.from(actions)
     }
 
 
-    addCallback (callbackName, actionName, callback) {
-        this.on(`${callbackName}Action:${actionName}`, callback)
-    }
 
-
-    beforeAction (actionName, callback) {
-        return this.addCallback('before', actionName, callback)
-    }
-
-
-    afterAction (actionName, callback) {
-        return this.addCallback('after', actionName, callback)
-    }
 
 
     execute (actionName, ...args) {
-        const action = this.getAction(actionName)
+        const action = this.getAction(actionName) || this[actionName]
 
-        if (action) {
-            if (!this.emitCallbacks(`beforeAction:${actionName}`, ...args)) {
-                return false
-            }
-
-            const result = action(...args)
-            this.emitCallbacks(`afterAction:${actionName}`, ...args)
-
-            return result
+        if (typeof action === 'function') {
+            action.call(this, ...args)
         }
 
-        if (typeof this[actionName] === 'function') {
-            if (!this.emitCallbacks(`beforeAction:${actionName}`, ...args)) {
-                return false
-            }
-
-            const result = this[actionName](...args)
-            this.emitCallbacks(`afterAction:${actionName}`, ...args)
-
-            return result
-        }
-
-        return false
+        this.emit(actionName, ...args)
+        this.emit('action', actionName, ...args)
     }
 
 }
 
 
 const INTERNAL_METHODS = new Set([
-    'start', 'stop', 'dispose', 'create', 'on', 'once', 'off', 'emit', 
-    'emitCallbacks', 'emitter', 'addAction', 'getAction', 'removeAction',
-    'hasAction', 'shouldPropagate', 'listActions', 'addCallback',
-    'beforeAction', 'afterAction', 'execute',
+    'start', 'stop', 'dispose', 'create', 'on', 'once', 'off', 'emit',
+    'emitter', 'addAction', 'getAction', 'removeAction',
+    'hasAction', 'shouldPropagate', 'listActions', 'execute',
     'context', 'setContext', 'clearContext'
 ])
 

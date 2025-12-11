@@ -126,102 +126,71 @@ describe(ActionController, () => {
     })
 
 
-    test('beforeAction', () => {
-        const callback = vi.fn()
-        const spy = vi.spyOn(controller, 'on')
 
-        controller.beforeAction('testAction', callback)
-
-        expect(spy).toHaveBeenCalledWith('beforeAction:testAction', callback)
-    })
-
-
-    test('afterAction', () => {
-        const callback = vi.fn()
-        const spy = vi.spyOn(controller, 'on')
-
-        controller.afterAction('testAction', callback)
-
-        expect(spy).toHaveBeenCalledWith('afterAction:testAction', callback)
-    })
 
 
     test('execute with existing registered action', () => {
-        const action = vi.fn().mockReturnValue('result')
-        const beforeCallback = vi.fn().mockReturnValue(true)
-        const afterCallback = vi.fn()
+        const action = vi.fn()
+        const actionListener = vi.fn()
+        const genericListener = vi.fn()
 
         controller.addAction('testAction', action)
-        controller.beforeAction('testAction', beforeCallback)
-        controller.afterAction('testAction', afterCallback)
+        controller.on('testAction', actionListener)
+        controller.on('action', genericListener)
 
-        const result = controller.execute('testAction', 'arg1', 'arg2')
+        controller.execute('testAction', 'arg1', 'arg2')
 
-        expect(beforeCallback).toHaveBeenCalledWith('arg1', 'arg2')
         expect(action).toHaveBeenCalledWith('arg1', 'arg2')
-        expect(afterCallback).toHaveBeenCalledWith('arg1', 'arg2')
-        expect(result).toBe('result')
+        expect(actionListener).toHaveBeenCalledWith('arg1', 'arg2')
+        expect(genericListener).toHaveBeenCalledWith('testAction', 'arg1', 'arg2')
     })
 
 
     test('execute with method action', () => {
-        class TestController extends ActionController {
-            testMethod = vi.fn().mockReturnValue('method result')
-        }
+        const action = vi.fn()
+        const actionListener = vi.fn()
 
-        const testController = new TestController()
-        const result = testController.execute('testMethod', 'arg1')
+        controller.addAction('testMethod', action)
+        controller.on('testMethod', actionListener)
 
-        expect(testController.testMethod).toHaveBeenCalledWith('arg1')
-        expect(result).toBe('method result')
+        controller.execute('testMethod', 'arg1')
+
+        expect(action).toHaveBeenCalledWith('arg1')
+        expect(actionListener).toHaveBeenCalledWith('arg1')
     })
 
 
-    test('execute with beforeAction returning false', () => {
+    test('execute with non-existent action still emits events', () => {
+        const actionListener = vi.fn()
+        const genericListener = vi.fn()
+
+        controller.on('nonExistentAction', actionListener)
+        controller.on('action', genericListener)
+
+        controller.execute('nonExistentAction', 'arg1', 'arg2')
+
+        expect(actionListener).toHaveBeenCalledWith('arg1', 'arg2')
+        expect(genericListener).toHaveBeenCalledWith('nonExistentAction', 'arg1', 'arg2')
+    })
+
+
+    test('multiple event listeners', () => {
         const action = vi.fn()
-        const beforeCallback = vi.fn().mockReturnValue(false)
-        const afterCallback = vi.fn()
+        const listener1 = vi.fn()
+        const listener2 = vi.fn()
+        const genericListener = vi.fn()
 
         controller.addAction('testAction', action)
-        controller.beforeAction('testAction', beforeCallback)
-        controller.afterAction('testAction', afterCallback)
-
-        const result = controller.execute('testAction', 'arg1', 'arg2')
-
-        expect(beforeCallback).toHaveBeenCalledWith('arg1', 'arg2')
-        expect(action).not.toHaveBeenCalled()
-        expect(afterCallback).not.toHaveBeenCalled()
-        expect(result).toBe(false)
-    })
-
-
-    test('execute with non-existent action', () => {
-        const result = controller.execute('nonExistentAction', 'arg1', 'arg2')
-
-        expect(result).toBe(false)
-    })
-
-
-    test('multiple callbacks', () => {
-        const action = vi.fn()
-        const beforeCallback1 = vi.fn().mockReturnValue(true)
-        const beforeCallback2 = vi.fn().mockReturnValue(true)
-        const afterCallback1 = vi.fn()
-        const afterCallback2 = vi.fn()
-
-        controller.addAction('testAction', action)
-        controller.beforeAction('testAction', beforeCallback1)
-        controller.beforeAction('testAction', beforeCallback2)
-        controller.afterAction('testAction', afterCallback1)
-        controller.afterAction('testAction', afterCallback2)
+        controller.on('testAction', listener1)
+        controller.on('testAction', listener2)
+        controller.on('action', genericListener)
 
         controller.execute('testAction', 'arg')
 
-        expect(beforeCallback1).toHaveBeenCalledWith('arg')
-        expect(beforeCallback2).toHaveBeenCalledWith('arg')
         expect(action).toHaveBeenCalledWith('arg')
-        expect(afterCallback1).toHaveBeenCalledWith('arg')
-        expect(afterCallback2).toHaveBeenCalledWith('arg')
+        expect(listener1).toHaveBeenCalledWith('arg')
+        expect(listener2).toHaveBeenCalledWith('arg')
+        expect(genericListener).toHaveBeenCalledWith('testAction', 'arg')
     })
 
 

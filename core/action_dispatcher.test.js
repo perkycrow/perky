@@ -194,16 +194,15 @@ describe(ActionDispatcher, () => {
 
     test('dispatch - single mode (default)', () => {
         class TestController extends ActionController {
-            someAction = vi.fn(() => true)
+            someAction = vi.fn()
         }
         const controller = new TestController()
 
         dispatcher.register('main', controller)
         dispatcher.setActive('main')
 
-        const result = dispatcher.dispatch('someAction', 'arg1', 'arg2')
+        dispatcher.dispatch('someAction', 'arg1', 'arg2')
 
-        expect(result).toBe(true)
         expect(controller.someAction).toHaveBeenCalledWith('arg1', 'arg2')
     })
 
@@ -211,9 +210,8 @@ describe(ActionDispatcher, () => {
     test('dispatch - no active controller', () => {
         const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { })
 
-        const result = dispatcher.dispatch('someAction')
+        dispatcher.dispatch('someAction')
 
-        expect(result).toBe(false)
         expect(consoleSpy).toHaveBeenCalled()
 
         consoleSpy.mockRestore()
@@ -229,28 +227,9 @@ describe(ActionDispatcher, () => {
 
         dispatcher.register('main', controller)
 
-        const result = dispatcher.dispatchTo('main', 'someAction', 'arg1', 'arg2')
+        dispatcher.dispatchTo('main', 'someAction', 'arg1', 'arg2')
 
-        expect(result).toBe(true)
         expect(controller.someAction).toHaveBeenCalledWith('arg1', 'arg2')
-    })
-
-
-    test('dispatchTo - non-existent method', () => {
-        const controller = new PerkyModule()
-
-        dispatcher.register('main', controller)
-
-        const result = dispatcher.dispatchTo('main', 'nonExistentAction')
-
-        expect(result).toBe(false)
-    })
-
-
-    test('dispatchTo - non-existent controller', () => {
-        const result = dispatcher.dispatchTo('nonExistent', 'someAction')
-
-        expect(result).toBe(false)
     })
 
 
@@ -272,14 +251,13 @@ describe(ActionDispatcher, () => {
 
         const control = {name: 'Space'}
 
-        const result = dispatcher.dispatchAction(binding, control, 'event', 'device')
+        dispatcher.dispatchAction(binding, control, 'event', 'device')
 
-        expect(result).toBe(true)
         expect(controller.jump).toHaveBeenCalledWith('event', 'device')
     })
 
 
-    test('dispatchAction - inactive controller returns false', () => {
+    test('dispatchAction - inactive controller does not call action', () => {
         class TestController extends PerkyModule {
             jump = vi.fn()
         }
@@ -299,9 +277,8 @@ describe(ActionDispatcher, () => {
 
         const control = {name: 'Space'}
 
-        const result = dispatcher.dispatchAction(binding, control, 'event', 'device')
+        dispatcher.dispatchAction(binding, control, 'event', 'device')
 
-        expect(result).toBe(false)
         expect(gameController.jump).not.toHaveBeenCalled()
     })
 
@@ -327,16 +304,15 @@ describe(ActionDispatcher, () => {
 
         const control = {name: 'Space'}
 
-        const result = dispatcher.dispatchAction(binding, control, 'event', 'device')
+        dispatcher.dispatchAction(binding, control, 'event', 'device')
 
-        expect(result).toBe(true)
         expect(gameController.jump).toHaveBeenCalledWith('event', 'device')
     })
 
 
     test('dispatchAction - active controller fallback', () => {
         class TestController extends ActionController {
-            jump = vi.fn(() => true)
+            jump = vi.fn()
         }
 
         const controller = new TestController()
@@ -351,9 +327,8 @@ describe(ActionDispatcher, () => {
 
         const control = {name: 'Space'}
 
-        const result = dispatcher.dispatchAction(binding, control, 'event', 'device')
+        dispatcher.dispatchAction(binding, control, 'event', 'device')
 
-        expect(result).toBe(true)
         expect(controller.jump).toHaveBeenCalledWith('event', 'device')
     })
 
@@ -502,7 +477,7 @@ describe(ActionDispatcher, () => {
         class GameController extends ActionController {
             static propagable = ['move']
 
-            move = vi.fn().mockReturnValue(true)
+            move = vi.fn()
         }
 
         class PauseController extends ActionController {
