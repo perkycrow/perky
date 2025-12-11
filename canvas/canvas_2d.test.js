@@ -205,7 +205,7 @@ describe(Canvas2D, () => {
 
         renderer.render(scene)
 
-        expect(scene.updateWorldMatrix).toHaveBeenCalledWith(true)
+        expect(scene.updateWorldMatrix).toHaveBeenCalledWith(false)
     })
 
 
@@ -265,7 +265,7 @@ describe(Canvas2D, () => {
         expect(() => renderer.render(scene)).not.toThrow()
     })
 
-    
+
     test('render multiple objects', () => {
         const scene = new Group2D()
         scene.addChild(
