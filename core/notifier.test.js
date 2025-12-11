@@ -19,13 +19,13 @@ describe(Notifier, () => {
     test('getListenersFor', () => {
         expect(notifier.getListenersFor('foo')).toBeUndefined()
 
-        notifier.on('foo', () => {})
+        notifier.on('foo', () => { })
         expect(notifier.getListenersFor('foo')).toHaveLength(1)
     })
 
 
     test('on', () => {
-        const listener = () => {}
+        const listener = () => { }
 
         expect(notifier.on('foo', listener)).toBe(listener)
         expect(notifier.getListenersFor('foo')).toEqual([listener])
@@ -46,7 +46,7 @@ describe(Notifier, () => {
 
 
     test('off', () => {
-        const listener = () => {}
+        const listener = () => { }
 
         expect(notifier.off('foo', listener)).toBe(false)
 
@@ -75,7 +75,7 @@ describe(Notifier, () => {
         notifier.on('foo', listener1)
         notifier.on('foo', listener2)
         await notifier.emitAsync('foo', 1, 2, 3)
-        
+
         expect(listener1).toHaveBeenCalledWith(1, 2, 3)
         expect(listener2).toHaveBeenCalledWith(1, 2, 3)
 
@@ -85,57 +85,11 @@ describe(Notifier, () => {
     })
 
 
-    test('emitCallbacks', () => {
-        const listener1 = vi.fn().mockReturnValue(true)
-        const listener2 = vi.fn().mockReturnValue(false)
-        const listener3 = vi.fn()
-
-        notifier.on('foo', listener1)
-        notifier.on('foo', listener1)
-        expect(notifier.emitCallbacks('foo', 1, 2, 3)).toBe(true)
-        expect(listener1).toHaveBeenCalledTimes(2)
-        expect(listener1).toHaveBeenCalledWith(1, 2, 3)
-
-        listener1.mockClear()
-        notifier.on('bar', listener1)
-        notifier.on('bar', listener2)
-        notifier.on('bar', listener3)
-        expect(notifier.emitCallbacks('bar', 4, 5, 6)).toBe(false)
-        expect(listener1).toHaveBeenCalledTimes(1)
-        expect(listener2).toHaveBeenCalledTimes(1)
-        expect(listener3).not.toHaveBeenCalled()
-
-        expect(notifier.emitCallbacks('nonexistent')).toBe(true)
-    })
-
-
-    test('emitCallbacksAsync', async () => {
-        const listener1 = vi.fn().mockResolvedValue(true)
-        const listener2 = vi.fn().mockResolvedValue(false)
-        const listener3 = vi.fn()
-
-        notifier.on('foo', listener1)
-        notifier.on('foo', listener1)
-        expect(await notifier.emitCallbacksAsync('foo', 1, 2, 3)).toBe(true)
-        expect(listener1).toHaveBeenCalledTimes(2)
-        expect(listener1).toHaveBeenCalledWith(1, 2, 3)
-
-        listener1.mockClear()
-        notifier.on('bar', listener1)
-        notifier.on('bar', listener2)
-        notifier.on('bar', listener3)
-        expect(await notifier.emitCallbacksAsync('bar', 4, 5, 6)).toBe(false)
-        expect(listener1).toHaveBeenCalledTimes(1)
-        expect(listener2).toHaveBeenCalledTimes(1)
-        expect(listener3).not.toHaveBeenCalled()
-
-        expect(await notifier.emitCallbacksAsync('nonexistent')).toBe(true)
-    })
 
 
     test('removeListeners', () => {
-        notifier.on('foo', () => {})
-        notifier.on('bar', () => {})
+        notifier.on('foo', () => { })
+        notifier.on('bar', () => { })
 
         expect(notifier.getListenersFor('foo')).toHaveLength(1)
         expect(notifier.getListenersFor('bar')).toHaveLength(1)
@@ -147,8 +101,8 @@ describe(Notifier, () => {
 
 
     test('removeListenersFor', () => {
-        notifier.on('foo', () => {})
-        notifier.on('bar', () => {})
+        notifier.on('foo', () => { })
+        notifier.on('bar', () => { })
 
         expect(notifier.getListenersFor('foo')).toHaveLength(1)
         expect(notifier.getListenersFor('bar')).toHaveLength(1)
@@ -183,12 +137,12 @@ describe(Notifier, () => {
         const notifier1 = new Notifier()
         const notifier2 = new Notifier()
 
-        notifier1.on('test', () => {})
+        notifier1.on('test', () => { })
         expect(notifier1.getListenersFor('test')).toHaveLength(1)
         expect(notifier2.getListenersFor('test')).toBeUndefined()
 
-        notifier2.on('test', () => {})
-        notifier2.on('test', () => {})
+        notifier2.on('test', () => { })
+        notifier2.on('test', () => { })
         expect(notifier1.getListenersFor('test')).toHaveLength(1)
         expect(notifier2.getListenersFor('test')).toHaveLength(2)
     })

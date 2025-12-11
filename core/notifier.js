@@ -73,33 +73,6 @@ export default class Notifier {
     }
 
 
-    emitCallbacks (name, ...args) {
-        const listeners = this.getListenersFor(name) || []
-        for (let listener of listeners) {
-            const result = listener(...args)
-
-            if (result === false) {
-                return false
-            }
-        }
-
-        return true
-    }
-
-
-    async emitCallbacksAsync (name, ...args) {
-        const listeners = this.getListenersFor(name) || []
-
-        for (let listener of listeners) {
-            const result = await Promise.resolve(listener(...args))
-
-            if (result === false) {
-                return false
-            }
-        }
-
-        return true
-    }
 
 
     emitter (name) {
