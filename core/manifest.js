@@ -1,6 +1,6 @@
 import PerkyModule from './perky_module'
 import {setDefaults, getNestedValue, setNestedValue, singularize, deepMerge} from './utils'
-import SourceDescriptorDescriptor from './source_descriptor'
+import SourceDescriptor from './source_descriptor'
 
 
 export default class Manifest extends PerkyModule {
@@ -234,8 +234,8 @@ function prepareSourceDescriptor (type, sourceDescriptor) {
         sourceDescriptor.type = singularize(type)
     }
 
-    if (!(sourceDescriptor instanceof SourceDescriptorDescriptor)) {
-        sourceDescriptor = new SourceDescriptorDescriptor(sourceDescriptor)
+    if (!(sourceDescriptor instanceof SourceDescriptor)) {
+        sourceDescriptor = new SourceDescriptor(sourceDescriptor)
     }
 
     if (!sourceDescriptor.id) {
