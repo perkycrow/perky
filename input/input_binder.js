@@ -1,12 +1,12 @@
 import PerkyModule from '../core/perky_module'
-import IndexedRegistry from '../core/indexed_registry'
+import Registry from '../core/registry'
 import InputBinding from './input_binding'
 import CompositeBinding from './composite_binding'
 
 
 export default class InputBinder extends PerkyModule {
 
-    #bindings = new IndexedRegistry()
+    #bindings = new Registry()
 
     constructor ({bindings = [], inputBinder} = {}) {
         super()

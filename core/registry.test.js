@@ -67,20 +67,20 @@ describe(Registry, () => {
 
     test('invoke and reverseInvoke', () => {
         const calls = []
-        
+
         const obj1 = {method: (arg) => calls.push(['obj1', arg])}
-        const obj2 = {method: (arg) => calls.push(['obj2', arg]), otherMethod: () => {}}
+        const obj2 = {method: (arg) => calls.push(['obj2', arg]), otherMethod: () => { }}
         const obj3 = {notMethod: 'not a method'}
-        
+
         registry.set('obj1', obj1)
         registry.set('obj2', obj2)
         registry.set('obj3', obj3)
-        
+
         registry.invoke('method', 'arg1')
         expect(calls).toEqual([['obj1', 'arg1'], ['obj2', 'arg1']])
-        
+
         calls.length = 0
-        
+
         registry.reverseInvoke('method', 'arg2')
         expect(calls).toEqual([['obj2', 'arg2'], ['obj1', 'arg2']])
 
@@ -95,9 +95,11 @@ describe(Registry, () => {
             // Intentionally empty to suppress console output
         })
         const calls = []
-        const obj1 = {method: () => {
-            throw new Error('Test Error')
-        }}
+        const obj1 = {
+            method: () => {
+                throw new Error('Test Error')
+            }
+        }
         const obj2 = {method: () => calls.push('obj2')}
 
         registry.set('obj1', obj1)
@@ -112,19 +114,19 @@ describe(Registry, () => {
 
     test('invoker and reverseInvoker', () => {
         const calls = []
-        
+
         const obj1 = {method: (arg) => calls.push(['obj1', arg])}
         const obj2 = {method: (arg) => calls.push(['obj2', arg])}
-        
+
         registry.set('obj1', obj1)
         registry.set('obj2', obj2)
-        
+
         const invoker = registry.invoker('method')
         invoker('arg1')
         expect(calls).toEqual([['obj1', 'arg1'], ['obj2', 'arg1']])
 
         calls.length = 0
-        
+
         const reverseInvoker = registry.reverseInvoker('method')
         reverseInvoker('arg2')
         expect(calls).toEqual([['obj2', 'arg2'], ['obj1', 'arg2']])
@@ -137,7 +139,7 @@ describe(Registry, () => {
             foo: 'bar',
             baz: 'qux'
         }
-        
+
         registry.addCollection(collection)
         expect(registry.get('foo')).toBe('bar')
         expect(registry.get('baz')).toBe('qux')
@@ -174,12 +176,12 @@ describe(Registry, () => {
     test('toObject', () => {
         const foo = {name: 'foo'}
         const bar = {name: 'bar'}
-        
+
         registry.set('foo', foo)
         registry.set('bar', bar)
-        
+
         const object = registry.toObject()
-        
+
         expect(object).toEqual({
             foo,
             bar
@@ -251,12 +253,176 @@ describe(Registry, () => {
             key1: 'value1',
             key2: 'value2'
         }
-        
+
         const registryWithCollection = new Registry(collection)
-        
+
         expect(registryWithCollection.size).toBe(2)
         expect(registryWithCollection.get('key1')).toBe('value1')
         expect(registryWithCollection.get('key2')).toBe('value2')
+    })
+
+
+    describe('Indexing', () => {
+
+        test('addIndex creates a new index', () => {
+            registry.addIndex('byName', (item) => item.name)
+            expect(registry.hasIndex('byName')).toBe(true)
+        })
+
+
+        test('addIndex throws if keyFunction is not a function', () => {
+            expect(() => registry.addIndex('test', 'not-a-function')).toThrow(TypeError)
+        })
+
+
+        test('lookup returns empty array for non-existent key', () => {
+            registry.addIndex('byName', (item) => item.name)
+            expect(registry.lookup('byName', 'John')).toEqual([])
+        })
+
+
+        test('lookup throws if index does not exist', () => {
+            expect(() => registry.lookup('nonExistent', 'key')).toThrow()
+        })
+
+
+        test('items are automatically added to index on set', () => {
+            registry.addIndex('byName', (item) => item.name)
+
+            registry.set('1', {name: 'Alice', age: 30})
+            registry.set('2', {name: 'Bob', age: 25})
+
+            expect(registry.lookup('byName', 'Alice')).toEqual([{name: 'Alice', age: 30}])
+            expect(registry.lookup('byName', 'Bob')).toEqual([{name: 'Bob', age: 25}])
+        })
+
+
+        test('multiple items with same key are stored in index', () => {
+            registry.addIndex('byAge', (item) => item.age)
+
+            registry.set('1', {name: 'Alice', age: 30})
+            registry.set('2', {name: 'Bob', age: 30})
+            registry.set('3', {name: 'Charlie', age: 25})
+
+            const age30 = registry.lookup('byAge', 30)
+            expect(age30).toHaveLength(2)
+            expect(age30).toContainEqual({name: 'Alice', age: 30})
+            expect(age30).toContainEqual({name: 'Bob', age: 30})
+        })
+
+
+        test('items are removed from index on delete', () => {
+            registry.addIndex('byName', (item) => item.name)
+
+            registry.set('1', {name: 'Alice', age: 30})
+            expect(registry.lookup('byName', 'Alice')).toHaveLength(1)
+
+            registry.delete('1')
+            expect(registry.lookup('byName', 'Alice')).toEqual([])
+        })
+
+
+        test('items are updated in index when replaced', () => {
+            registry.addIndex('byName', (item) => item.name)
+
+            registry.set('1', {name: 'Alice', age: 30})
+            expect(registry.lookup('byName', 'Alice')).toHaveLength(1)
+
+            registry.set('1', {name: 'Bob', age: 30})
+            expect(registry.lookup('byName', 'Alice')).toEqual([])
+            expect(registry.lookup('byName', 'Bob')).toHaveLength(1)
+        })
+
+
+        test('index can be added after items are inserted', () => {
+            registry.set('1', {name: 'Alice', age: 30})
+            registry.set('2', {name: 'Bob', age: 25})
+
+            registry.addIndex('byName', (item) => item.name)
+
+            expect(registry.lookup('byName', 'Alice')).toHaveLength(1)
+            expect(registry.lookup('byName', 'Bob')).toHaveLength(1)
+        })
+
+
+        test('multiple indexes can coexist', () => {
+            registry.addIndex('byName', (item) => item.name)
+            registry.addIndex('byAge', (item) => item.age)
+
+            registry.set('1', {name: 'Alice', age: 30})
+            registry.set('2', {name: 'Bob', age: 30})
+
+            expect(registry.lookup('byName', 'Alice')).toHaveLength(1)
+            expect(registry.lookup('byAge', 30)).toHaveLength(2)
+        })
+
+
+        test('keyFunction can return array of keys', () => {
+            registry.addIndex('byTags', (item) => item.tags)
+
+            registry.set('1', {name: 'Post1', tags: ['javascript', 'testing']})
+            registry.set('2', {name: 'Post2', tags: ['javascript', 'nodejs']})
+
+            const jsPosts = registry.lookup('byTags', 'javascript')
+            expect(jsPosts).toHaveLength(2)
+
+            const testingPosts = registry.lookup('byTags', 'testing')
+            expect(testingPosts).toHaveLength(1)
+            expect(testingPosts[0].name).toBe('Post1')
+        })
+
+
+        test('keyFunction returning null/undefined is ignored', () => {
+            registry.addIndex('byOptional', (item) => item.optional)
+
+            registry.set('1', {name: 'Item1', optional: null})
+            registry.set('2', {name: 'Item2', optional: undefined})
+            registry.set('3', {name: 'Item3', optional: 'value'})
+
+            expect(registry.lookup('byOptional', null)).toEqual([])
+            expect(registry.lookup('byOptional', undefined)).toEqual([])
+            expect(registry.lookup('byOptional', 'value')).toHaveLength(1)
+        })
+
+
+        test('removeIndex removes an index', () => {
+            registry.addIndex('byName', (item) => item.name)
+            expect(registry.hasIndex('byName')).toBe(true)
+
+            registry.removeIndex('byName')
+            expect(registry.hasIndex('byName')).toBe(false)
+        })
+
+
+        test('complex index key function', () => {
+            registry.addIndex('byActionEvent', (item) =>
+                `${item.action}:${item.event}`)
+
+            registry.set('1', {action: 'jump', event: 'pressed'})
+            registry.set('2', {action: 'jump', event: 'released'})
+            registry.set('3', {action: 'run', event: 'pressed'})
+
+            const jumpPressed = registry.lookup('byActionEvent', 'jump:pressed')
+            expect(jumpPressed).toHaveLength(1)
+            expect(jumpPressed[0].action).toBe('jump')
+            expect(jumpPressed[0].event).toBe('pressed')
+        })
+
+
+        test('clear removes items from indexes', () => {
+            registry.addIndex('byName', (item) => item.name)
+
+            registry.set('1', {name: 'Alice'})
+            registry.set('2', {name: 'Bob'})
+
+            expect(registry.lookup('byName', 'Alice')).toHaveLength(1)
+
+            registry.clear()
+
+            expect(registry.lookup('byName', 'Alice')).toEqual([])
+            expect(registry.lookup('byName', 'Bob')).toEqual([])
+        })
+
     })
 
 })
