@@ -43,7 +43,7 @@ export default class ActionDispatcher extends PerkyModule {
             const mainName = typeof mainOption === 'string' ? mainOption : 'main'
             this.mainControllerName = mainName
 
-            this.register(mainName, ActionController)
+            this.register(mainName)
             this.setActive(mainName)
         }
     }
