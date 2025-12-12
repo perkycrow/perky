@@ -1,5 +1,4 @@
-import Application from '../application/application'
-import GameLoop from '../game/game_loop'
+import Game from '../game/game'
 
 import GameController from './controllers/game_controller'
 
@@ -14,14 +13,13 @@ import Circle from '../canvas/circle'
 import manifest from './manifest'
 
 
-export default class DefendTheDen extends Application {
+export default class DefendTheDen extends Game {
 
     constructor (params = {}) {
         super({manifest, ...params})
     }
 
     configure () {
-        this.create(GameLoop, {$bind: 'gameLoop'})
 
         this.camera = new Camera2D({
             unitsInView: {width: 7, height: 5}
@@ -94,9 +92,7 @@ export default class DefendTheDen extends Application {
             rootGroup.addChild(this.projectilesGroup)
         })
 
-        this.on('update', (deltaTime) => {
-            gameController.update(this, deltaTime)
-        })
+
 
         this.on('render', () => {
             this.wolfSprite.x = gameController.player.x
