@@ -1083,6 +1083,176 @@ describe(Application, () => {
 
     })
 
+
+    describe('controller bindings auto-registration', () => {
+
+        test('registers simple bindings when controller is registered', () => {
+            class TestController extends PerkyModule {
+                static bindings = {
+                    shoot: 'Space',
+                    jump: 'KeyJ'
+                }
+
+                static normalizeBindings () {
+                    return [
+                        {action: 'shoot', key: 'Space', scoped: false, eventType: 'pressed', controllerName: null},
+                        {action: 'jump', key: 'KeyJ', scoped: false, eventType: 'pressed', controllerName: null}
+                    ]
+                }
+            }
+
+            const beforeBindings = application.getAllBindings()
+            expect(beforeBindings.filter(b => b.actionName === 'shoot')).toHaveLength(0)
+
+            application.registerController('game', TestController)
+
+            const afterBindings = application.getAllBindings()
+            const shootBinding = afterBindings.find(b => b.actionName === 'shoot')
+            const jumpBinding = afterBindings.find(b => b.actionName === 'jump')
+
+            expect(shootBinding).toBeDefined()
+            expect(shootBinding.controlName).toBe('Space')
+            expect(shootBinding.controllerName).toBeNull()
+
+            expect(jumpBinding).toBeDefined()
+            expect(jumpBinding.controlName).toBe('KeyJ')
+            expect(jumpBinding.controllerName).toBeNull()
+        })
+
+
+        test('registers scoped bindings with controllerName', () => {
+            class TestController extends PerkyModule {
+                static bindings = {
+                    shoot: {keys: 'Space', scoped: true}
+                }
+
+                static normalizeBindings (controllerName) {
+                    return [
+                        {action: 'shoot', key: 'Space', scoped: true, eventType: 'pressed', controllerName}
+                    ]
+                }
+            }
+
+            application.registerController('player', TestController)
+
+            const bindings = application.getAllBindings()
+            const shootBinding = bindings.find(b => b.actionName === 'shoot' && b.controllerName === 'player')
+
+            expect(shootBinding).toBeDefined()
+            expect(shootBinding.controlName).toBe('Space')
+            expect(shootBinding.controllerName).toBe('player')
+        })
+
+
+        test('registers multiple keys for same action', () => {
+            class TestController extends PerkyModule {
+                static bindings = {
+                    moveUp: ['KeyW', 'ArrowUp']
+                }
+
+                static normalizeBindings () {
+                    return [
+                        {action: 'moveUp', key: 'KeyW', scoped: false, eventType: 'pressed', controllerName: null},
+                        {action: 'moveUp', key: 'ArrowUp', scoped: false, eventType: 'pressed', controllerName: null}
+                    ]
+                }
+            }
+
+            application.registerController('game', TestController)
+
+            const bindings = application.getAllBindings()
+            const moveUpBindings = bindings.filter(b => b.actionName === 'moveUp')
+
+            expect(moveUpBindings.length).toBeGreaterThanOrEqual(2)
+            expect(moveUpBindings.some(b => b.controlName === 'KeyW')).toBe(true)
+            expect(moveUpBindings.some(b => b.controlName === 'ArrowUp')).toBe(true)
+        })
+
+
+        test('handles controller without bindings gracefully', () => {
+            class TestController extends PerkyModule {
+                testAction () { }
+            }
+
+            const beforeCount = application.getAllBindings().length
+
+            expect(() => {
+                application.registerController('simple', TestController)
+            }).not.toThrow()
+
+            const afterCount = application.getAllBindings().length
+            expect(afterCount).toBe(beforeCount)
+        })
+
+
+        test('registers bindings with custom eventType', () => {
+            class TestController extends PerkyModule {
+                static bindings = {
+                    boost: {keys: 'ShiftLeft', eventType: 'released'}
+                }
+
+                static normalizeBindings () {
+                    return [
+                        {action: 'boost', key: 'ShiftLeft', scoped: false, eventType: 'released', controllerName: null}
+                    ]
+                }
+            }
+
+            application.registerController('game', TestController)
+
+            const bindings = application.getAllBindings()
+            const boostBinding = bindings.find(b => b.actionName === 'boost')
+
+            expect(boostBinding).toBeDefined()
+            expect(boostBinding.eventType).toBe('released')
+        })
+
+
+        test('allows multiple controllers with same keys (different scopes)', () => {
+            class GameController extends PerkyModule {
+                static bindings = {
+                    move: {keys: 'ArrowUp', scoped: true}
+                }
+
+                static normalizeBindings (controllerName) {
+                    return [
+                        {action: 'move', key: 'ArrowUp', scoped: true, eventType: 'pressed', controllerName}
+                    ]
+                }
+            }
+
+            class MenuController extends PerkyModule {
+                static bindings = {
+                    navigate: {keys: 'ArrowUp', scoped: true}
+                }
+
+                static normalizeBindings (controllerName) {
+                    return [
+                        {action: 'navigate', key: 'ArrowUp', scoped: true, eventType: 'pressed', controllerName}
+                    ]
+                }
+            }
+
+            application.registerController('game', GameController)
+            application.registerController('menu', MenuController)
+
+            const bindings = application.getAllBindings()
+            const arrowUpBindings = bindings.filter(b => b.controlName === 'ArrowUp')
+
+            expect(arrowUpBindings.length).toBeGreaterThanOrEqual(2)
+
+            const gameBinding = arrowUpBindings.find(b => b.controllerName === 'game')
+            const menuBinding = arrowUpBindings.find(b => b.controllerName === 'menu')
+
+            expect(gameBinding).toBeDefined()
+            expect(gameBinding.actionName).toBe('move')
+
+            expect(menuBinding).toBeDefined()
+            expect(menuBinding.actionName).toBe('navigate')
+        })
+
+    })
+
 })
 
 

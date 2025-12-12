@@ -5,6 +5,7 @@ import Registry from '../core/registry'
 export default class ActionController extends PerkyModule {
 
     static propagable = []
+    static bindings = {}
 
     #actions = new Registry()
     #actionList = []
@@ -78,6 +79,28 @@ export default class ActionController extends PerkyModule {
         this.emit('action', actionName, ...args)
     }
 
+
+    static normalizeBindings (controllerName) { // eslint-disable-line complexity
+        const bindings = this.bindings || {}
+        const normalized = []
+
+        for (const [actionName, bindingDef] of Object.entries(bindings)) {
+            const bindingConfigs = normalizeBindingDefinition(bindingDef)
+
+            for (const config of bindingConfigs) {
+                normalized.push({
+                    action: actionName,
+                    key: config.key,
+                    scoped: config.scoped ?? false,
+                    eventType: config.eventType ?? 'pressed',
+                    controllerName: config.scoped ? controllerName : null
+                })
+            }
+        }
+
+        return normalized
+    }
+
 }
 
 
@@ -109,4 +132,29 @@ function extractPrototypeMethods (instance) { // eslint-disable-line complexity
     }
 
     return methods
+}
+
+
+function normalizeBindingDefinition (bindingDef) {
+    // Simple string: 'Space'
+    if (typeof bindingDef === 'string') {
+        return [{key: bindingDef}]
+    }
+
+    // Array of keys: ['KeyW', 'ArrowUp']
+    if (Array.isArray(bindingDef)) {
+        return bindingDef.map(key => ({key}))
+    }
+
+    // Object with keys and options: {keys: 'Space', scoped: true}
+    if (typeof bindingDef === 'object' && bindingDef !== null) {
+        const keys = Array.isArray(bindingDef.keys) ? bindingDef.keys : [bindingDef.keys]
+        return keys.map(key => ({
+            key,
+            scoped: bindingDef.scoped ?? false,
+            eventType: bindingDef.eventType ?? 'pressed'
+        }))
+    }
+
+    return []
 }

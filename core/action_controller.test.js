@@ -190,4 +190,163 @@ describe(ActionController, () => {
         expect(genericListener).toHaveBeenCalledWith('testAction', 'arg')
     })
 
+
+    describe('normalizeBindings', () => {
+
+        test('empty bindings', () => {
+            class TestController extends ActionController {
+                static bindings = {}
+            }
+
+            const normalized = TestController.normalizeBindings('test')
+            expect(normalized).toEqual([])
+        })
+
+
+        test('simple string binding', () => {
+            class TestController extends ActionController {
+                static bindings = {
+                    shoot: 'Space'
+                }
+            }
+
+            const normalized = TestController.normalizeBindings('test')
+            expect(normalized).toEqual([
+                {
+                    action: 'shoot',
+                    key: 'Space',
+                    scoped: false,
+                    eventType: 'pressed',
+                    controllerName: null
+                }
+            ])
+        })
+
+
+        test('array of keys binding', () => {
+            class TestController extends ActionController {
+                static bindings = {
+                    moveUp: ['KeyW', 'ArrowUp']
+                }
+            }
+
+            const normalized = TestController.normalizeBindings('test')
+            expect(normalized).toEqual([
+                {
+                    action: 'moveUp',
+                    key: 'KeyW',
+                    scoped: false,
+                    eventType: 'pressed',
+                    controllerName: null
+                },
+                {
+                    action: 'moveUp',
+                    key: 'ArrowUp',
+                    scoped: false,
+                    eventType: 'pressed',
+                    controllerName: null
+                }
+            ])
+        })
+
+
+        test('scoped binding', () => {
+            class TestController extends ActionController {
+                static bindings = {
+                    shoot: {keys: 'Space', scoped: true}
+                }
+            }
+
+            const normalized = TestController.normalizeBindings('game')
+            expect(normalized).toEqual([
+                {
+                    action: 'shoot',
+                    key: 'Space',
+                    scoped: true,
+                    eventType: 'pressed',
+                    controllerName: 'game'
+                }
+            ])
+        })
+
+
+        test('scoped binding with multiple keys', () => {
+            class TestController extends ActionController {
+                static bindings = {
+                    move: {keys: ['KeyW', 'KeyS'], scoped: true}
+                }
+            }
+
+            const normalized = TestController.normalizeBindings('game')
+            expect(normalized).toEqual([
+                {
+                    action: 'move',
+                    key: 'KeyW',
+                    scoped: true,
+                    eventType: 'pressed',
+                    controllerName: 'game'
+                },
+                {
+                    action: 'move',
+                    key: 'KeyS',
+                    scoped: true,
+                    eventType: 'pressed',
+                    controllerName: 'game'
+                }
+            ])
+        })
+
+
+        test('custom eventType', () => {
+            class TestController extends ActionController {
+                static bindings = {
+                    shoot: {keys: 'Space', eventType: 'released'}
+                }
+            }
+
+            const normalized = TestController.normalizeBindings('test')
+            expect(normalized).toEqual([
+                {
+                    action: 'shoot',
+                    key: 'Space',
+                    scoped: false,
+                    eventType: 'released',
+                    controllerName: null
+                }
+            ])
+        })
+
+
+        test('mixed binding formats', () => {
+            class TestController extends ActionController {
+                static bindings = {
+                    shoot: 'Space',
+                    moveUp: ['KeyW', 'ArrowUp'],
+                    jump: {keys: 'KeyJ', scoped: true},
+                    dash: {keys: ['KeyD', 'ShiftLeft'], scoped: false, eventType: 'released'}
+                }
+            }
+
+            const normalized = TestController.normalizeBindings('player')
+            expect(normalized).toHaveLength(6)
+
+            expect(normalized).toContainEqual({
+                action: 'shoot',
+                key: 'Space',
+                scoped: false,
+                eventType: 'pressed',
+                controllerName: null
+            })
+
+            expect(normalized).toContainEqual({
+                action: 'jump',
+                key: 'KeyJ',
+                scoped: true,
+                eventType: 'pressed',
+                controllerName: 'player'
+            })
+        })
+
+    })
+
 })

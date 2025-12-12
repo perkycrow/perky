@@ -32,6 +32,23 @@ export default class Application extends Engine {
             perkyView: this.perkyView
         })
 
+        // Auto-register controller bindings when controllers are created
+        this.actionDispatcher.on('controller:set', (controllerName, controller) => {
+            const ControllerClass = controller.constructor
+
+            if (typeof ControllerClass.normalizeBindings === 'function') {
+                const bindings = ControllerClass.normalizeBindings(controllerName)
+
+                for (const binding of bindings) {
+                    this.bindKey(binding.key, {
+                        actionName: binding.action,
+                        controllerName: binding.controllerName,
+                        eventType: binding.eventType
+                    })
+                }
+            }
+        })
+
         if (typeof this.configure === 'function') {
             this.configure(params)
         }

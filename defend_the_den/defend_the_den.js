@@ -43,12 +43,6 @@ export default class DefendTheDen extends Application {
         this.registerController('game', GameController)
         this.setActiveControllers(['game'])
 
-        this.bindKey('KeyW', 'moveUp')
-        this.bindKey('ArrowUp', 'moveUp')
-        this.bindKey('KeyS', 'moveDown')
-        this.bindKey('ArrowDown', 'moveDown')
-        this.bindKey('Space', 'shoot')
-
         const rootGroup = new Group2D({name: 'root'})
         this.projectilesGroup = new Group2D({name: 'projectiles'})
 
@@ -101,7 +95,7 @@ export default class DefendTheDen extends Application {
         })
 
         this.on('update', (deltaTime) => {
-            const direction = this.direction('move')
+            const direction = this.getDirection('move')
             gameController.player.move(direction, deltaTime)
             gameController.player.update(deltaTime)
             gameController.enemy.update(deltaTime)

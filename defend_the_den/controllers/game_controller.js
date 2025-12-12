@@ -5,6 +5,12 @@ import Enemy from '../enemy'
 
 export default class GameController extends ActionController {
 
+    static bindings = {
+        moveUp: ['KeyW', 'ArrowUp'],
+        moveDown: ['KeyS', 'ArrowDown'],
+        shoot: 'Space'
+    }
+
     start () {
         this.player = new Player({x: -2.5, y: 0})
         this.enemy = new Enemy({x: 2.5, y: 0, maxSpeed: 2})
