@@ -1,7 +1,7 @@
 import Application from '../application/application'
 import GameLoop from '../game/game_loop'
 
-// import GameController from './controllers/game_controller'
+import GameController from './controllers/game_controller'
 
 // import Canvas2D from '../canvas/canvas_2d'
 import WebGLCanvas2D from '../canvas/webgl_canvas_2d'
@@ -9,9 +9,7 @@ import Camera2D from '../canvas/camera_2d'
 import Group2D from '../canvas/group_2d'
 import Image2D from '../canvas/image_2d'
 import Circle from '../canvas/circle'
-import Player from './player'
-import Enemy from './enemy'
-import Projectile from './projectile'
+
 
 import manifest from './manifest'
 
@@ -42,7 +40,7 @@ export default class DefendTheDen extends Application {
             enableCulling: true
         })
 
-        this.registerController('game')
+        this.registerController('game', GameController)
         this.setActiveControllers(['game'])
 
         this.bindKey('KeyW', 'moveUp')
@@ -51,33 +49,13 @@ export default class DefendTheDen extends Application {
         this.bindKey('ArrowDown', 'moveDown')
         this.bindKey('Space', 'shoot')
 
-        this.player = new Player({x: -2.5, y: 0})
-        this.enemy = new Enemy({x: 2.5, y: 0, maxSpeed: 2})
-        this.projectiles = []
-
         const rootGroup = new Group2D({name: 'root'})
         this.projectilesGroup = new Group2D({name: 'projectiles'})
 
         window.d = this
 
-
-
         const gameController = this.getController('game')
-        gameController.on('action', (actionName, params) => {
-            console.log(`Action dispatched: ${actionName}`, params)
-        })
 
-        // gameController.addAction('shoot', () => {})
-        gameController.on('shoot', () => {
-            console.log('Creating projectile!', this.player)
-            const projectile = new Projectile({
-                x: this.player.x + 0.5,
-                y: this.player.y,
-                speed: 8
-            })
-            this.projectiles.push(projectile)
-            console.log('Projectiles array:', this.projectiles.length)
-        })
 
         this.on('start', () => {
             const backgroundImage = this.getImage('background')
@@ -104,8 +82,8 @@ export default class DefendTheDen extends Application {
 
             this.pigSprite = new Image2D({
                 image: this.getImage('pig'),
-                x: this.enemy.x,
-                y: this.enemy.y,
+                x: gameController.enemy.x,
+                y: gameController.enemy.y,
                 width: 1,
                 height: 1
             })
@@ -124,23 +102,22 @@ export default class DefendTheDen extends Application {
 
         this.on('update', (deltaTime) => {
             const direction = this.direction('move')
-            this.player.move(direction, deltaTime)
-            this.player.update(deltaTime)
+            gameController.player.move(direction, deltaTime)
+            gameController.player.update(deltaTime)
+            gameController.enemy.update(deltaTime)
 
-            this.enemy.update(deltaTime)
-
-            this.projectiles.forEach(projectile => {
+            gameController.projectiles.forEach(projectile => {
                 projectile.update(deltaTime)
             })
 
-            this.projectiles = this.projectiles.filter(p => p.alive)
+            gameController.projectiles = gameController.projectiles.filter(p => p.alive)
         })
 
         this.on('render', () => {
-            this.wolfSprite.x = this.player.x
-            this.wolfSprite.y = this.player.y
+            this.wolfSprite.x = gameController.player.x
+            this.wolfSprite.y = gameController.player.y
 
-            const velocity = this.player.velocity
+            const velocity = gameController.player.velocity
             if (Math.abs(velocity.y) > 0.1) {
                 if (velocity.y > 0) {
                     this.wolfSprite.image = this.getImage('wolf_up')
@@ -151,10 +128,10 @@ export default class DefendTheDen extends Application {
                 this.wolfSprite.image = this.getImage('wolf_right')
             }
 
-            this.pigSprite.x = this.enemy.x
-            this.pigSprite.y = this.enemy.y
+            this.pigSprite.x = gameController.enemy.x
+            this.pigSprite.y = gameController.enemy.y
 
-            this.projectilesGroup.children = this.projectiles.map(projectile => {
+            this.projectilesGroup.children = gameController.projectiles.map(projectile => {
                 return new Circle({
                     x: projectile.x,
                     y: projectile.y,
