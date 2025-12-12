@@ -38,16 +38,6 @@ export default class Application extends Engine {
     }
 
 
-    get inputManager () {
-        return this.inputSystem?.inputManager
-    }
-
-
-    get inputBinder () {
-        return this.inputSystem?.inputBinder
-    }
-
-
     async preload () {
         return this.loadTag('preload')
     }

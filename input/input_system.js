@@ -54,7 +54,9 @@ export default class InputSystem extends PerkyModule {
             'addControl',
             'getControl',
             'getControlAny',
-            'getPressedControls'
+            'getPressedControls',
+            'inputManager',
+            'inputBinder'
         ])
 
         host.delegate(this, [
