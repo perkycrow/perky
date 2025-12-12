@@ -15,9 +15,7 @@ import manifest from './manifest'
 
 export default class DefendTheDen extends Game {
 
-    constructor (params = {}) {
-        super({manifest, ...params})
-    }
+    static manifest = manifest
 
     configure () {
 

@@ -46,6 +46,22 @@ describe(Engine, () => {
     })
 
 
+    test('constructor with static manifest', () => {
+        class CustomEngine extends Engine {
+            static manifest = {
+                metadata: {name: 'Static Manifest Engine'}
+            }
+        }
+
+        const customEngine = new CustomEngine()
+
+        expect(customEngine.manifest).toBeInstanceOf(Manifest)
+        expect(customEngine.manifest.getMetadata('name')).toBe('Static Manifest Engine')
+    })
+
+
+
+
     test('use registers child', () => {
         class TestChild extends PerkyModule { }
 

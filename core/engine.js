@@ -6,17 +6,17 @@ import ActionDispatcher from './action_dispatcher'
 export default class Engine extends PerkyModule {
 
     constructor (params = {}) {
-        const {manifest = {}} = params
-
         super({
             name: 'engine',
             ...params
         })
 
+        const manifestData = params.manifest || this.constructor.manifest || {}
+
         this.create(Manifest, {
             $bind: 'manifest',
             $lifecycle: false,
-            data: manifest.export ? manifest.export() : manifest
+            data: manifestData.export ? manifestData.export() : manifestData
         })
 
         this.create(ActionDispatcher, {
