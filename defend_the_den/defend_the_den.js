@@ -95,16 +95,7 @@ export default class DefendTheDen extends Application {
         })
 
         this.on('update', (deltaTime) => {
-            const direction = this.getDirection('move')
-            gameController.player.move(direction, deltaTime)
-            gameController.player.update(deltaTime)
-            gameController.enemy.update(deltaTime)
-
-            gameController.projectiles.forEach(projectile => {
-                projectile.update(deltaTime)
-            })
-
-            gameController.projectiles = gameController.projectiles.filter(p => p.alive)
+            gameController.update(this, deltaTime)
         })
 
         this.on('render', () => {

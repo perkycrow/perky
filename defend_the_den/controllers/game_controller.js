@@ -17,20 +17,18 @@ export default class GameController extends ActionController {
         this.projectiles = []
     }
 
-    move (direction, deltaTime) {
+    update (game, deltaTime) {
+        const direction = game.getDirection('move')
 
-    }
+        this.player.move(direction, deltaTime)
+        this.player.update(deltaTime)
+        this.enemy.update(deltaTime)
 
-    moveUp () {
+        this.projectiles.forEach(projectile => {
+            projectile.update(deltaTime)
+        })
 
-    }
-
-    moveDown () {
-
-    }
-
-    stopMove () {
-
+        this.projectiles = this.projectiles.filter(p => p.alive)
     }
 
     shoot () {
