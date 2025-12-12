@@ -43,6 +43,7 @@ export default class InputSystem extends PerkyModule {
 
     onInstall (host) {
         host.delegate(this, [
+            'inputManager',
             'registerDevice',
             'unregisterDevice',
             'getDevice',
@@ -54,12 +55,11 @@ export default class InputSystem extends PerkyModule {
             'addControl',
             'getControl',
             'getControlAny',
-            'getPressedControls',
-            'inputManager',
-            'inputBinder'
+            'getPressedControls'
         ])
 
         host.delegate(this, [
+            'inputBinder',
             'bind',
             'unbind',
             'getBinding',

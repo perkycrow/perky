@@ -126,9 +126,6 @@ describe(ActionController, () => {
     })
 
 
-
-
-
     test('execute with existing registered action', () => {
         const action = vi.fn()
         const actionListener = vi.fn()

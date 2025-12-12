@@ -1,5 +1,7 @@
 import {describe, expect, test, beforeEach} from 'vitest'
 import {
+    toCamelCase,
+    toPascalCase,
     toSnakeCase,
     singularize,
     uniqueId,
@@ -12,6 +14,24 @@ import {
 
 
 describe('String Utils', () => {
+
+    test('toCamelCase', () => {
+        expect(toCamelCase('hello_world')).toEqual('helloWorld')
+        expect(toCamelCase('hello-world')).toEqual('helloWorld')
+        expect(toCamelCase('hello world')).toEqual('helloWorld')
+        expect(toCamelCase('HelloWorld')).toEqual('helloWorld')
+        expect(toCamelCase('Hello')).toEqual('hello')
+    })
+
+
+    test('toPascalCase', () => {
+        expect(toPascalCase('hello_world')).toEqual('HelloWorld')
+        expect(toPascalCase('hello-world')).toEqual('HelloWorld')
+        expect(toPascalCase('hello world')).toEqual('HelloWorld')
+        expect(toPascalCase('HelloWorld')).toEqual('HelloWorld')
+        expect(toPascalCase('Hello')).toEqual('Hello')
+    })
+
 
     test('toSnakeCase', () => {
         expect(toSnakeCase('helloWorld')).toEqual('hello_world')

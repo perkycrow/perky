@@ -1,5 +1,18 @@
 import pluralizeLib from './libs/pluralize'
 
+
+export function toCamelCase (string) {
+    return string
+        .replace(/[-_\s]([a-z])/g, (match, letter) => letter.toUpperCase())
+        .replace(/^[A-Z]/, letter => letter.toLowerCase())
+}
+
+
+export function toPascalCase (string) {
+    return toCamelCase(string).replace(/^[a-z]/, letter => letter.toUpperCase())
+}
+
+
 export function toSnakeCase (string) {
     return string
         .replace(/[-\s]/g, '_')
