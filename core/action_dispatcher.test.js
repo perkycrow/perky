@@ -450,7 +450,7 @@ describe(ActionDispatcher, () => {
         expect(gameController.move).toHaveBeenCalled()
 
         dispatcher.execute('shoot')
-        expect(gameController.shoot).not.toHaveBeenCalled()
+        expect(gameController.shoot).toHaveBeenCalled()
 
         dispatcher.execute('resume')
         expect(pauseController.resume).toHaveBeenCalled()

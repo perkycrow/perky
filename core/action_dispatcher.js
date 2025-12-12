@@ -158,8 +158,7 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     execute (actionName, ...args) {
-        console.log(`AAAExecuting action: ${actionName}`, ...args)
-        return this.#dispatchAction(actionName, ...args)
+        this.#dispatchAction(actionName, ...args)
     }
 
 
@@ -168,22 +167,20 @@ export default class ActionDispatcher extends PerkyModule {
 
         if (controller && this.#isControllerActive(name)) {
             if (typeof controller.execute === 'function') {
-                return controller.execute(actionName, ...args)
+                controller.execute(actionName, ...args)
             } else if (typeof controller[actionName] === 'function') {
                 controller[actionName](...args)
-                return true
             }
         }
-
-        return false
     }
 
 
     dispatchAction (binding, ...args) {
-        console.log('Dispatching action:', binding, ...args)
-        return binding.controllerName
-            ? this.executeTo(binding.controllerName, binding.actionName, ...args)
-            : this.execute(binding.actionName, ...args)
+        if (binding.controllerName) {
+            this.executeTo(binding.controllerName, binding.actionName, ...args)
+        } else {
+            this.execute(binding.actionName, ...args)
+        }
     }
 
 
@@ -214,7 +211,7 @@ export default class ActionDispatcher extends PerkyModule {
     #dispatchAction (actionName, ...args) { // eslint-disable-line complexity
         if (this.#activeControllers.length === 0) {
             console.warn('No active controllers')
-            return false
+            return
         }
 
         const registry = this.getChildrenRegistry()
@@ -229,42 +226,13 @@ export default class ActionDispatcher extends PerkyModule {
 
             const hasAction = controller.hasAction(actionName)
 
-            const result = controller.execute(actionName, ...args)
+            controller.execute(actionName, ...args)
 
             if (hasAction && !controller.shouldPropagate(actionName)) {
-                return result
-            }
-
-            if (!hasAction) {
-                const canPropagate = this.#canPropagate(actionName, i - 1)
-
-                if (!canPropagate) {
-                    return false
-                }
+                return
             }
         }
-
-        return false
     }
 
-
-    #canPropagate (actionName, startIndex) {
-        const registry = this.getChildrenRegistry()
-
-        for (let i = startIndex; i >= 0; i--) {
-            const controllerName = this.#activeControllers[i]
-            const controller = registry.get(controllerName)
-
-            if (!controller) {
-                continue
-            }
-
-            if (controller.hasAction(actionName) && controller.shouldPropagate(actionName)) {
-                return true
-            }
-        }
-
-        return false
-    }
 
 }
