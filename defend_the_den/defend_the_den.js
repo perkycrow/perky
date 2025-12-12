@@ -1,6 +1,7 @@
 import Application from '../application/application'
 import GameLoop from '../game/game_loop'
-import GameController from './controllers/game_controller'
+
+// import GameController from './controllers/game_controller'
 
 // import Canvas2D from '../canvas/canvas_2d'
 import WebGLCanvas2D from '../canvas/webgl_canvas_2d'
@@ -41,7 +42,7 @@ export default class DefendTheDen extends Application {
             enableCulling: true
         })
 
-        this.registerController('game', GameController)
+        this.registerController('game')
         this.setActiveControllers(['game'])
 
         this.bindKey('KeyW', 'moveUp')
@@ -59,7 +60,14 @@ export default class DefendTheDen extends Application {
 
         window.d = this
 
+
+
         const gameController = this.getController('game')
+        gameController.on('action', (actionName, params) => {
+            console.log(`Action dispatched: ${actionName}`, params)
+        })
+
+        // gameController.addAction('shoot', () => {})
         gameController.on('shoot', () => {
             console.log('Creating projectile!', this.player)
             const projectile = new Projectile({

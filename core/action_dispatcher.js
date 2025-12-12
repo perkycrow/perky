@@ -64,7 +64,7 @@ export default class ActionDispatcher extends PerkyModule {
     }
 
 
-    register (name, ControllerClass) {
+    register (name, ControllerClass = ActionController) {
         if (this.hasChild(name)) {
             console.warn(`Controller "${name}" already registered. Overwriting...`)
         }
@@ -158,6 +158,7 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     execute (actionName, ...args) {
+        console.log(`AAAExecuting action: ${actionName}`, ...args)
         return this.#dispatchAction(actionName, ...args)
     }
 
@@ -179,6 +180,7 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     dispatchAction (binding, ...args) {
+        console.log('Dispatching action:', binding, ...args)
         return binding.controllerName
             ? this.executeTo(binding.controllerName, binding.actionName, ...args)
             : this.execute(binding.actionName, ...args)
@@ -227,13 +229,13 @@ export default class ActionDispatcher extends PerkyModule {
 
             const hasAction = controller.hasAction(actionName)
 
-            if (hasAction) {
-                const result = controller.execute(actionName, ...args)
+            const result = controller.execute(actionName, ...args)
 
-                if (!controller.shouldPropagate(actionName)) {
-                    return result
-                }
-            } else {
+            if (hasAction && !controller.shouldPropagate(actionName)) {
+                return result
+            }
+
+            if (!hasAction) {
                 const canPropagate = this.#canPropagate(actionName, i - 1)
 
                 if (!canPropagate) {

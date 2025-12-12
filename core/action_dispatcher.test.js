@@ -1,7 +1,7 @@
 import ActionDispatcher from './action_dispatcher'
 import ActionController from './action_controller'
 import PerkyModule from './perky_module'
-import {vi} from 'vitest'
+import {describe, test, expect, beforeEach, vi} from 'vitest'
 
 
 describe(ActionDispatcher, () => {
