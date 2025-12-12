@@ -82,7 +82,7 @@ export default class InputSystem extends PerkyModule {
             'getActionControls',
             'getInputValue',
             'getInputValueAny',
-            'direction'
+            'getDirection'
         ])
     }
 
@@ -208,7 +208,7 @@ export default class InputSystem extends PerkyModule {
     }
 
 
-    direction (name = 'move') {
+    getDirection (name = 'move') {
         const up = name + 'Up'
         const down = name + 'Down'
         const left = name + 'Left'
