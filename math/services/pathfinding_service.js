@@ -1,6 +1,6 @@
 import Grid from '../grid.js'
 import Pathfinder, {heuristics} from '../pathfinder.js'
-import ServiceHost from '../../core/service_host.js'
+import ServiceHost from '../../service/service_host'
 
 
 export default class PathfindingService extends ServiceHost {

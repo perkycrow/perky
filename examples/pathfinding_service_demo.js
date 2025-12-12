@@ -1,4 +1,4 @@
-import ServiceClient from '../core/service_client.js'
+import ServiceClient from '../service/service_client'
 import Grid from '../math/grid.js'
 
 class PathfindingServiceDemo {

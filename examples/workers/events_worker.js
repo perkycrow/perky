@@ -1,4 +1,4 @@
-import ServiceHost from '../../core/service_host'
+import ServiceHost from '../../service/service_host'
 
 class EventsWorker {
 

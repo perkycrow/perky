@@ -1,6 +1,6 @@
 import ServiceTransport from './service_transport'
 import ServiceRequest from './service_request'
-import Notifier from './notifier'
+import Notifier from '../core/notifier'
 
 
 export default class ServiceClient extends Notifier {

@@ -1,4 +1,4 @@
-import ServiceClient from '../core/service_client'
+import ServiceClient from '../service/service_client'
 
 class ServiceDemo {
 
