@@ -158,7 +158,29 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     execute (actionName, ...args) {
-        this.#dispatchAction(actionName, ...args)
+        if (this.#activeControllers.length === 0) {
+            console.warn('No active controllers')
+            return
+        }
+
+        const registry = this.getChildrenRegistry()
+
+        for (let i = this.#activeControllers.length - 1; i >= 0; i--) {
+            const controllerName = this.#activeControllers[i]
+            const controller = registry.get(controllerName)
+
+            if (!controller) {
+                continue
+            }
+
+            const hasAction = controller.hasAction(actionName)
+
+            controller.execute(actionName, ...args)
+
+            if (hasAction && !controller.shouldPropagate(actionName)) {
+                return
+            }
+        }
     }
 
 
@@ -205,33 +227,6 @@ export default class ActionDispatcher extends PerkyModule {
         }
 
         return allActions
-    }
-
-
-    #dispatchAction (actionName, ...args) { // eslint-disable-line complexity
-        if (this.#activeControllers.length === 0) {
-            console.warn('No active controllers')
-            return
-        }
-
-        const registry = this.getChildrenRegistry()
-
-        for (let i = this.#activeControllers.length - 1; i >= 0; i--) {
-            const controllerName = this.#activeControllers[i]
-            const controller = registry.get(controllerName)
-
-            if (!controller) {
-                continue
-            }
-
-            const hasAction = controller.hasAction(actionName)
-
-            controller.execute(actionName, ...args)
-
-            if (hasAction && !controller.shouldPropagate(actionName)) {
-                return
-            }
-        }
     }
 
 
