@@ -1,10 +1,15 @@
 
 import Vec2 from '../math/vec2'
+import Entity from '../game/entity'
 
 
-export default class Enemy {
+export default class Enemy extends Entity {
 
-    constructor ({x = 0, y = 0, maxSpeed = 3, boundaries = {min: -1.5, max: 1}} = {}) {
+    constructor (params = {}) {
+        super(params)
+
+        const {x = 0, y = 0, maxSpeed = 3, boundaries = {min: -1.5, max: 1}} = params
+
         this.position = new Vec2(x, y)
         this.velocity = new Vec2(-maxSpeed, 0)  // Se déplace vers la gauche
 

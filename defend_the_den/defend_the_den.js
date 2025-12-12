@@ -1,6 +1,9 @@
 import Game from '../game/game'
+import World from '../game/world'
 
 import GameController from './controllers/game_controller'
+import Player from './player'
+import Enemy from './enemy'
 
 // import Canvas2D from '../canvas/canvas_2d'
 import WebGLCanvas2D from '../canvas/webgl_canvas_2d'
@@ -18,6 +21,7 @@ export default class DefendTheDen extends Game {
     static manifest = manifest
 
     configure () {
+        this.world = new World()
 
         this.camera = new Camera2D({
             unitsInView: {width: 7, height: 5}
@@ -48,6 +52,23 @@ export default class DefendTheDen extends Game {
 
 
         this.on('start', () => {
+            const player = new Player({
+                x: -2.5,
+                y: 0,
+                $category: 'player',
+                $tags: ['updatable', 'controllable']
+            })
+            this.world.addEntity('player', player)
+
+            const enemy = new Enemy({
+                x: 2.5,
+                y: 0,
+                maxSpeed: 2,
+                $category: 'enemy',
+                $tags: ['updatable']
+            })
+            this.world.addEntity('enemy', enemy)
+
             const backgroundImage = this.getImage('background')
             const backgroundHeight = 5
             const backgroundWidth = (backgroundImage.width / backgroundImage.height) * backgroundHeight
@@ -72,8 +93,8 @@ export default class DefendTheDen extends Game {
 
             this.pigSprite = new Image2D({
                 image: this.getImage('pig'),
-                x: gameController.enemy.x,
-                y: gameController.enemy.y,
+                x: this.world.getEntity('enemy').x,
+                y: this.world.getEntity('enemy').y,
                 width: 1,
                 height: 1
             })
@@ -93,10 +114,14 @@ export default class DefendTheDen extends Game {
 
 
         this.on('render', () => {
-            this.wolfSprite.x = gameController.player.x
-            this.wolfSprite.y = gameController.player.y
+            const player = this.world.getEntity('player')
+            const enemy = this.world.getEntity('enemy')
+            const projectiles = this.world.byCategory('projectile')
 
-            const velocity = gameController.player.velocity
+            this.wolfSprite.x = player.x
+            this.wolfSprite.y = player.y
+
+            const velocity = player.velocity
             if (Math.abs(velocity.y) > 0.1) {
                 if (velocity.y > 0) {
                     this.wolfSprite.image = this.getImage('wolf_up')
@@ -107,10 +132,10 @@ export default class DefendTheDen extends Game {
                 this.wolfSprite.image = this.getImage('wolf_right')
             }
 
-            this.pigSprite.x = gameController.enemy.x
-            this.pigSprite.y = gameController.enemy.y
+            this.pigSprite.x = enemy.x
+            this.pigSprite.y = enemy.y
 
-            this.projectilesGroup.children = gameController.projectiles.map(projectile => {
+            this.projectilesGroup.children = projectiles.map(projectile => {
                 return new Circle({
                     x: projectile.x,
                     y: projectile.y,

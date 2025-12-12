@@ -11,33 +11,40 @@ export default class GameController extends ActionController {
         shoot: 'Space'
     }
 
-    start () {
-        this.player = new Player({x: -2.5, y: 0})
-        this.enemy = new Enemy({x: 2.5, y: 0, maxSpeed: 2})
-        this.projectiles = []
-    }
-
     update (game, deltaTime) {
+        const player = game.world.getEntity('player')
+
         const direction = game.getDirection('move')
+        player.move(direction, deltaTime)
 
-        this.player.move(direction, deltaTime)
-        this.player.update(deltaTime)
-        this.enemy.update(deltaTime)
+        const updatables = game.world.byTag('updatable')
+        for (const entity of updatables) {
+            entity.update(deltaTime)
+        }
 
-        this.projectiles.forEach(projectile => {
-            projectile.update(deltaTime)
-        })
-
-        this.projectiles = this.projectiles.filter(p => p.alive)
+        const projectiles = game.world.byCategory('projectile')
+        for (const entity of projectiles) {
+            if (!entity.alive) {
+                game.world.removeEntity(entity.$id)
+            }
+        }
     }
 
     shoot () {
+        const player = this.engine.world.getEntity('player')
+
         const projectile = new Projectile({
-            x: this.player.x + 0.5,
-            y: this.player.y,
+            x: player.x + 0.5,
+            y: player.y,
             speed: 8
         })
-        this.projectiles.push(projectile)
+
+        const id = `projectile_${Date.now()}_${Math.random()}`
+        projectile.$id = id
+        projectile.$category = 'projectile'
+        projectile.$tags = ['updatable']
+
+        this.engine.world.addEntity(id, projectile)
     }
 
 }

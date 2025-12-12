@@ -1,10 +1,15 @@
 
 import Vec2 from '../math/vec2'
+import Entity from '../game/entity'
 
 
-export default class Projectile {
+export default class Projectile extends Entity {
 
-    constructor ({x = 0, y = 0, speed = 10} = {}) {
+    constructor (params = {}) {
+        super(params)
+
+        const {x = 0, y = 0, speed = 10} = params
+
         this.position = new Vec2(x, y)
         this.velocity = new Vec2(speed, 0)
         this.speed = speed
