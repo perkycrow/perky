@@ -1,5 +1,6 @@
 import PerkyModule from '../core/perky_module'
 import Registry from '../core/registry'
+import {uniqueId} from '../core/utils'
 
 
 export default class World extends PerkyModule {
@@ -24,13 +25,18 @@ export default class World extends PerkyModule {
     }
 
 
-    addEntity (id, entity) {
-        if (!entity.$category) {
-            entity.$category = 'entity'
+    addEntity (idOrEntity, entity) {
+        const hasExplicitId = typeof idOrEntity === 'string'
+        entity ||= idOrEntity
+        
+        if (hasExplicitId) {
+            entity.$id = idOrEntity
         }
+        
+        entity.$category ||= 'entity'
+        entity.$id ||= uniqueId('world', entity.$category)
 
-        this.#entities.set(id, entity)
-        return this
+        this.#entities.set(entity.$id, entity)
     }
 
 

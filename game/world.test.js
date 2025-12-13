@@ -26,12 +26,42 @@ describe('World', () => {
 
     describe('addEntity', () => {
 
-        test('adds an entity with $category', () => {
+        test('adds an entity with explicit id and $category', () => {
             const entity = {$category: 'player', x: 0, y: 0}
             world.addEntity('player1', entity)
 
             expect(world.size).toBe(1)
             expect(world.getEntity('player1')).toBe(entity)
+            expect(entity.$id).toBe('player1')
+        })
+
+        test('adds an entity without explicit id - generates id automatically', () => {
+            const entity = {$category: 'player', x: 0, y: 0}
+            world.addEntity(entity)
+
+            expect(world.size).toBe(1)
+            expect(entity.$id).toBeDefined()
+            expect(world.getEntity(entity.$id)).toBe(entity)
+        })
+
+        test('uses entity.$id if already defined', () => {
+            const entity = {$id: 'myPlayer', $category: 'player', x: 0, y: 0}
+            world.addEntity(entity)
+
+            expect(world.size).toBe(1)
+            expect(entity.$id).toBe('myPlayer')
+            expect(world.getEntity('myPlayer')).toBe(entity)
+        })
+
+        test('generated id uses category as prefix', () => {
+            const player = {$category: 'player'}
+            const enemy = {$category: 'enemy'}
+            
+            world.addEntity(player)
+            world.addEntity(enemy)
+
+            expect(player.$id).toMatch(/^player/)
+            expect(enemy.$id).toMatch(/^enemy/)
         })
 
         test('assigns default "entity" category if not provided', () => {
@@ -43,11 +73,13 @@ describe('World', () => {
             expect(world.getEntity('test')).toBe(entity)
         })
 
-        test('returns this for chaining', () => {
-            const entity = {$category: 'player'}
-            const result = world.addEntity('player1', entity)
+        test('assigns default "entity" category for auto-generated id', () => {
+            const entity = {x: 0, y: 0}
 
-            expect(result).toBe(world)
+            world.addEntity(entity)
+
+            expect(entity.$category).toBe('entity')
+            expect(entity.$id).toMatch(/^entity/)
         })
 
     })

@@ -52,22 +52,8 @@ export default class DefendTheDen extends Game {
 
 
         this.on('start', () => {
-            const player = new Player({
-                x: -2.5,
-                y: 0,
-                $category: 'player',
-                $tags: ['updatable', 'controllable']
-            })
-            this.world.addEntity('player', player)
-
-            const enemy = new Enemy({
-                x: 2.5,
-                y: 0,
-                maxSpeed: 2,
-                $category: 'enemy',
-                $tags: ['updatable']
-            })
-            this.world.addEntity('enemy', enemy)
+            gameController.spawnPlayer(this.world, {x: -2.5})
+            gameController.createEnemy(this.world, {x: 2.5})
 
             const backgroundImage = this.getImage('background')
             const backgroundHeight = 5

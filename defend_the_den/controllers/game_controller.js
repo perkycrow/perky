@@ -47,4 +47,27 @@ export default class GameController extends ActionController {
         this.engine.world.addEntity(id, projectile)
     }
 
+    spawnPlayer (world, options = {}) {
+        const player = new Player({
+            x: options.x || 0,
+            y: options.y || 0,
+            $category: 'player',
+            $tags: ['updatable', 'controllable']
+        })
+        world.addEntity('player', player)
+        return player
+    }
+
+    createEnemy (world, options = {}) {
+        const enemy = new Enemy({
+            x: options.x || 0,
+            y: options.y || 0,
+            maxSpeed: options.maxSpeed || 2,
+            $category: 'enemy',
+            $tags: ['updatable']
+        })
+        world.addEntity('enemy', enemy)
+        return enemy
+    }
+
 }
