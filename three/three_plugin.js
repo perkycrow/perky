@@ -150,9 +150,26 @@ function createRenderer (rendererOptions = {}) {
     return renderer
 }
 
+function addMethod (plugin, host, methodName, method) {
+    if (typeof method !== 'function') {
+        throw new Error('Method must be a function')
+    }
+
+    if (!host) {
+        throw new Error('Cannot add method: child has no host')
+    }
+
+    if (host[methodName]) {
+        console.warn(`Method ${methodName} already exists on host`)
+        return false
+    }
+
+    host[methodName] = method.bind(host)
+}
+
 
 function addThreeMethods (plugin, host) {
-    plugin.addMethod('render', function () {
+    addMethod(plugin, host, 'render', function () {
         if (this.renderComposer) {
             this.renderComposer.render()
         } else if (this.renderer && this.scene && this.camera) {
@@ -160,15 +177,15 @@ function addThreeMethods (plugin, host) {
         }
     })
 
-    plugin.addMethod('resizeThree', function () {
+    addMethod(plugin, host, 'resizeThree', function () {
         handleResize(plugin, host)
     })
 
-    plugin.addMethod('getThreeContainerSize', function () {
+    addMethod(plugin, host, 'getThreeContainerSize', function () {
         return getContainerSize(host)
     })
 
-    plugin.addMethod('screenToWorld', function (screenX, screenY, depth = 0, camera = null) {
+    addMethod(plugin, host, 'screenToWorld', function (screenX, screenY, depth = 0, camera = null) {
         return screenToWorld({
             camera: camera || this.camera,
             container: host.perkyView.element,
@@ -178,7 +195,7 @@ function addThreeMethods (plugin, host) {
         })
     })
 
-    plugin.addMethod('worldToScreen', function (worldX, worldY, worldZ = 0, camera = null) {
+    addMethod(plugin, host, 'worldToScreen', function (worldX, worldY, worldZ = 0, camera = null) {
         return worldToScreen({
             camera: camera || this.camera,
             container: host.perkyView.element,
@@ -188,14 +205,14 @@ function addThreeMethods (plugin, host) {
         })
     })
 
-    plugin.addMethod('getViewDimensions', function (camera = null) {
+    addMethod(plugin, host, 'getViewDimensions', function (camera = null) {
         return getViewDimensions({
             camera: camera || this.camera,
             container: host.perkyView.element
         })
     })
 
-    plugin.addMethod('getScreenBounds', function (camera = null) {
+    addMethod(plugin, host, 'getScreenBounds', function (camera = null) {
         return getScreenBounds({
             camera: camera || this.camera,
             container: host.perkyView.element

@@ -23,7 +23,6 @@ export default class PerkyModule extends Notifier {
     }
 
 
-
     get started () {
         return this.#started
     }
@@ -81,6 +80,21 @@ export default class PerkyModule extends Notifier {
         this.removeListeners()
 
         return true
+    }
+
+
+    onStart () { // eslint-disable-line class-methods-use-this
+        // Override in subclasses
+    }
+
+
+    onStop () { // eslint-disable-line class-methods-use-this
+        // Override in subclasses
+    }
+
+
+    onDispose () { // eslint-disable-line class-methods-use-this
+        // Override in subclasses
     }
 
 
@@ -189,40 +203,6 @@ export default class PerkyModule extends Notifier {
         const bind = child.$bind
 
         unregisterChild(this, name, child, category, bind)
-        return true
-    }
-
-
-    onStart () { // eslint-disable-line class-methods-use-this
-        // Override in subclasses
-    }
-
-
-    onStop () { // eslint-disable-line class-methods-use-this
-        // Override in subclasses
-    }
-
-
-    onDispose () { // eslint-disable-line class-methods-use-this
-        // Override in subclasses
-    }
-
-
-    addMethod (methodName, method) {
-        if (typeof method !== 'function') {
-            throw new Error('Method must be a function')
-        }
-
-        if (!this.host) {
-            throw new Error('Cannot add method: child has no host')
-        }
-
-        if (this.host[methodName]) {
-            console.warn(`Method ${methodName} already exists on host`)
-            return false
-        }
-
-        this.host[methodName] = method.bind(this.host)
         return true
     }
 

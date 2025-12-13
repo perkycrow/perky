@@ -367,25 +367,6 @@ describe(PerkyModule, () => {
     })
 
 
-    test('addMethod', () => {
-        child.install(host, {})
-        const testMethod = vi.fn()
-
-        const result = child.addMethod('testMethod', testMethod)
-
-        expect(result).toBe(true)
-        expect(host.testMethod).toBeDefined()
-        expect(typeof host.testMethod).toBe('function')
-    })
-
-
-    test('addMethod without host throws', () => {
-        expect(() => {
-            child.addMethod('test', vi.fn())
-        }).toThrow('Cannot add method: child has no host')
-    })
-
-
     test('delegate with methods', () => {
         const target = {
             method1: vi.fn(),
