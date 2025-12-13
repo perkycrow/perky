@@ -1,27 +1,15 @@
-import ActionController from '../../core/action_controller'
+import WorldController from '../../game/world_controller'
 import Player from '../player'
 import Projectile from '../projectile'
 import Enemy from '../enemy'
 
 
-export default class GameController extends ActionController {
-
-    #world = null
+export default class GameController extends WorldController {
 
     static bindings = {
         moveUp: ['KeyW', 'ArrowUp'],
         moveDown: ['KeyS', 'ArrowDown'],
         shoot: 'Space'
-    }
-
-
-    get world () {
-        return this.#world
-    }
-
-
-    set world (value) {
-        this.#world = value
     }
 
 
@@ -60,14 +48,6 @@ export default class GameController extends ActionController {
         projectile.$tags = ['updatable']
 
         this.world.addEntity(id, projectile)
-    }
-
-
-    spawn (Entity, options = {}) {
-        const entity = new Entity(options)
-        this.world.addEntity(entity)
-
-        return entity
     }
 
 
