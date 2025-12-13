@@ -118,48 +118,6 @@ export default class Registry extends Notifier {
     }
 
 
-    invoke (methodName, ...args) {
-        this.#map.forEach((item) => {
-            if (item && typeof item[methodName] === 'function') {
-                try {
-                    item[methodName](...args)
-                } catch (error) {
-                    console.error(`Error invoking ${methodName} on item:`, item, error)
-                }
-            }
-        })
-    }
-
-
-    reverseInvoke (methodName, ...args) {
-        const items = Array.from(this.#map.values()).reverse()
-
-        items.forEach((item) => {
-            if (item && typeof item[methodName] === 'function') {
-                try {
-                    item[methodName](...args)
-                } catch (error) {
-                    console.error(`Error reverse invoking ${methodName} on item:`, item, error)
-                }
-            }
-        })
-    }
-
-
-    invoker (methodName) {
-        return (...args) => {
-            this.invoke(methodName, ...args)
-        }
-    }
-
-
-    reverseInvoker (methodName) {
-        return (...args) => {
-            this.reverseInvoke(methodName, ...args)
-        }
-    }
-
-
     addCollection (collection) {
         if (!collection || typeof collection !== 'object') {
             throw new Error('Collection must be an object or Map')
