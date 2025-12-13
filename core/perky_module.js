@@ -1,6 +1,7 @@
 import Notifier from './notifier'
 import Registry from './registry'
 import Lifecycle from './lifecycle'
+import {uniqueId} from './utils'
 
 
 export default class PerkyModule extends Notifier {
@@ -74,7 +75,7 @@ export default class PerkyModule extends Notifier {
 
     create (ChildClassOrInstance, options = {}) {
         const child = prepareChild(ChildClassOrInstance, options)
-        const childName = getChildName(child, options)
+        const childName = getChildName(this, child, options)
 
         if (!validateChild(child, childName)) {
             return false
@@ -242,20 +243,30 @@ export default class PerkyModule extends Notifier {
 function prepareChild (ChildClassOrInstance, options) {
     const {instance, ...instanceOptions} = options
 
+    let child
     if (instance) {
-        return instance
+        child = instance
+    } else if (typeof ChildClassOrInstance === 'function') {
+        child = new ChildClassOrInstance(instanceOptions)
+    } else {
+        child = ChildClassOrInstance
     }
 
-    if (typeof ChildClassOrInstance === 'function') {
-        return new ChildClassOrInstance(instanceOptions)
+    if (!child.$category) {
+        child.$category = options.$category || 'child'
     }
 
-    return ChildClassOrInstance
+    return child
 }
 
 
-function getChildName (child, options) {
-    return options.$name || child.name || child.constructor.name
+function getChildName (host, child, options) {
+    if (options.$name) {
+        return options.$name
+    }
+
+    const category = child.$category || 'child'
+    return uniqueId(host.childrenRegistry, category)
 }
 
 
@@ -289,7 +300,10 @@ function registerChild (host, child, childName, options) {
         return false
     }
 
-    child.$category = options.$category || 'child'
+    // $category already set in prepareChild, but allow override from options
+    if (options.$category) {
+        child.$category = options.$category
+    }
     child.$bind = options.$bind
 
     const children = host.childrenRegistry

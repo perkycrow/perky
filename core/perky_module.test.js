@@ -106,6 +106,71 @@ describe(PerkyModule, () => {
     })
 
 
+    test('auto-generates unique IDs when $name not provided', () => {
+        class Enemy extends PerkyModule { }
+
+        const enemy1 = child.create(Enemy, {$category: 'enemy'})
+        const enemy2 = child.create(Enemy, {$category: 'enemy'})
+        const enemy3 = child.create(Enemy, {$category: 'enemy'})
+
+        expect(child.hasChild('enemy')).toBe(true)
+        expect(child.getChild('enemy')).toBe(enemy1)
+
+        expect(child.hasChild('enemy_1')).toBe(true)
+        expect(child.getChild('enemy_1')).toBe(enemy2)
+
+        expect(child.hasChild('enemy_2')).toBe(true)
+        expect(child.getChild('enemy_2')).toBe(enemy3)
+    })
+
+
+    test('explicit $name creates single instance (replacement)', () => {
+        class Player extends PerkyModule { }
+
+        const player1 = child.create(Player, {
+            $name: 'player',
+            $category: 'player'
+        })
+
+        const player2 = child.create(Player, {
+            $name: 'player',
+            $category: 'player'
+        })
+
+        expect(child.hasChild('player')).toBe(true)
+        expect(child.getChild('player')).toBe(player2)
+        expect(child.getChild('player')).not.toBe(player1)
+
+        expect(child.hasChild('player_1')).toBe(false)
+    })
+
+
+    test('unique IDs work with different categories', () => {
+        class Enemy extends PerkyModule { }
+        class Projectile extends PerkyModule { }
+
+        const enemy1 = child.create(Enemy, {$category: 'enemy'})
+        const enemy1Name = child.childrenRegistry.keyFor(enemy1)
+
+        const projectile1 = child.create(Projectile, {$category: 'projectile'})
+        const projectile1Name = child.childrenRegistry.keyFor(projectile1)
+
+        const enemy2 = child.create(Enemy, {$category: 'enemy'})
+        const enemy2Name = child.childrenRegistry.keyFor(enemy2)
+
+        const projectile2 = child.create(Projectile, {$category: 'projectile'})
+        const projectile2Name = child.childrenRegistry.keyFor(projectile2)
+
+        expect(child.hasChild(enemy1Name)).toBe(true)
+        expect(child.hasChild(enemy2Name)).toBe(true)
+        expect(child.hasChild(projectile1Name)).toBe(true)
+        expect(child.hasChild(projectile2Name)).toBe(true)
+
+        expect(enemy1).not.toBe(enemy2)
+        expect(projectile1).not.toBe(projectile2)
+    })
+
+
     test('getChildrenByCategory - single category', () => {
         class TestChild1 extends PerkyModule { }
         class TestChild2 extends PerkyModule { }
