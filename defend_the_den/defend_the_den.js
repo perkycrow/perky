@@ -49,11 +49,11 @@ export default class DefendTheDen extends Game {
         window.d = this
 
         const gameController = this.getController('game')
-
+        gameController.world = this.world
 
         this.on('start', () => {
-            gameController.spawnPlayer(this.world, {x: -2.5})
-            gameController.createEnemy(this.world, {x: 2.5})
+            this.execute('spawnPlayer', {x: -2.5})
+            this.execute('spawnEnemy', {x: 2.5})
 
             const backgroundImage = this.getImage('background')
             const backgroundHeight = 5

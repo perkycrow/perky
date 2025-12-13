@@ -122,11 +122,21 @@ function extractPrototypeMethods (instance) { // eslint-disable-line complexity
     const propertyNames = Object.getOwnPropertyNames(proto)
 
     for (const method of propertyNames) {
-        if (method !== 'constructor' &&
-            typeof instance[method] === 'function' &&
-            !method.startsWith('_') &&
-            !method.startsWith('#') &&
-            !isInternalMethod(method)) {
+        if (method === 'constructor') {
+            continue
+        }
+
+        if (method.startsWith('_') || method.startsWith('#')) {
+            continue
+        }
+
+        if (isInternalMethod(method)) {
+            continue
+        }
+
+        const descriptor = Object.getOwnPropertyDescriptor(proto, method)
+
+        if (descriptor && typeof descriptor.value === 'function') {
             methods.push(method)
         }
     }
@@ -136,17 +146,14 @@ function extractPrototypeMethods (instance) { // eslint-disable-line complexity
 
 
 function normalizeBindingDefinition (bindingDef) {
-    // Simple string: 'Space'
     if (typeof bindingDef === 'string') {
         return [{key: bindingDef}]
     }
 
-    // Array of keys: ['KeyW', 'ArrowUp']
     if (Array.isArray(bindingDef)) {
         return bindingDef.map(key => ({key}))
     }
 
-    // Object with keys and options: {keys: 'Space', scoped: true}
     if (typeof bindingDef === 'object' && bindingDef !== null) {
         const keys = Array.isArray(bindingDef.keys) ? bindingDef.keys : [bindingDef.keys]
         return keys.map(key => ({

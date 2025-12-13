@@ -3,7 +3,10 @@ import Player from '../player'
 import Projectile from '../projectile'
 import Enemy from '../enemy'
 
+
 export default class GameController extends ActionController {
+
+    #world = null
 
     static bindings = {
         moveUp: ['KeyW', 'ArrowUp'],
@@ -11,27 +14,39 @@ export default class GameController extends ActionController {
         shoot: 'Space'
     }
 
+
+    get world () {
+        return this.#world
+    }
+
+
+    set world (value) {
+        this.#world = value
+    }
+
+
     update (game, deltaTime) {
-        const player = game.world.getEntity('player')
+        const player = this.world.getEntity('player')
 
         const direction = game.getDirection('move')
         player.move(direction, deltaTime)
 
-        const updatables = game.world.byTag('updatable')
+        const updatables = this.world.byTag('updatable')
         for (const entity of updatables) {
             entity.update(deltaTime)
         }
 
-        const projectiles = game.world.byCategory('projectile')
+        const projectiles = this.world.byCategory('projectile')
         for (const entity of projectiles) {
             if (!entity.alive) {
-                game.world.removeEntity(entity.$id)
+                this.world.removeEntity(entity.$id)
             }
         }
     }
 
+
     shoot () {
-        const player = this.engine.world.getEntity('player')
+        const player = this.world.getEntity('player')
 
         const projectile = new Projectile({
             x: player.x + 0.5,
@@ -44,30 +59,36 @@ export default class GameController extends ActionController {
         projectile.$category = 'projectile'
         projectile.$tags = ['updatable']
 
-        this.engine.world.addEntity(id, projectile)
+        this.world.addEntity(id, projectile)
     }
 
-    spawnPlayer (world, options = {}) {
-        const player = new Player({
+
+    spawn (Entity, options = {}) {
+        const entity = new Entity(options)
+        this.world.addEntity(entity)
+
+        return entity
+    }
+
+
+    spawnPlayer (options = {}) {
+        return this.execute('spawn', Player, {
             x: options.x || 0,
             y: options.y || 0,
             $category: 'player',
             $tags: ['updatable', 'controllable']
         })
-        world.addEntity('player', player)
-        return player
     }
 
-    createEnemy (world, options = {}) {
-        const enemy = new Enemy({
+
+    spawnEnemy (options = {}) {
+        return this.execute('spawn', Enemy, {
             x: options.x || 0,
             y: options.y || 0,
             maxSpeed: options.maxSpeed || 2,
             $category: 'enemy',
             $tags: ['updatable']
         })
-        world.addEntity('enemy', enemy)
-        return enemy
     }
 
 }
