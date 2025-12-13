@@ -53,10 +53,10 @@ describe('Entity', () => {
 
             expect(entity.started).toBe(false)
 
-            entity.lifecycle.start()
+            entity.start()
             expect(entity.started).toBe(true)
 
-            entity.lifecycle.stop()
+            entity.stop()
             expect(entity.started).toBe(false)
         })
 

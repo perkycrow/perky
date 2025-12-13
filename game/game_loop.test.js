@@ -61,7 +61,7 @@ describe('GameLoop', () => {
     test('running getter', () => {
         expect(gameLoop.running).toBe(false)
 
-        gameLoop.lifecycle.start()
+        gameLoop.start()
         expect(gameLoop.running).toBe(true)
 
         gameLoop.paused = true
@@ -70,7 +70,7 @@ describe('GameLoop', () => {
 
 
     test('start', () => {
-        gameLoop.lifecycle.start()
+        gameLoop.start()
 
         expect(gameLoop.started).toBe(true)
         expect(gameLoop.lastTime).toBeDefined()
@@ -81,10 +81,10 @@ describe('GameLoop', () => {
 
 
     test('start with already started', () => {
-        gameLoop.lifecycle.start()
+        gameLoop.start()
 
         vi.clearAllMocks()
-        const result = gameLoop.lifecycle.start()
+        const result = gameLoop.start()
 
         expect(result).toBe(false)
         expect(requestAnimationFrame).not.toHaveBeenCalled()
@@ -92,7 +92,7 @@ describe('GameLoop', () => {
 
 
     test('pause', () => {
-        gameLoop.lifecycle.start()
+        gameLoop.start()
         gameLoop.paused = false
 
         const result = gameLoop.pause('param')
@@ -114,7 +114,7 @@ describe('GameLoop', () => {
 
 
     test('resume', () => {
-        gameLoop.lifecycle.start()
+        gameLoop.start()
         gameLoop.paused = true
 
         const result = gameLoop.resume('param')
@@ -127,7 +127,7 @@ describe('GameLoop', () => {
 
 
     test('resume when not paused', () => {
-        gameLoop.lifecycle.start()
+        gameLoop.start()
         gameLoop.paused = false
 
         vi.clearAllMocks()
@@ -163,7 +163,7 @@ describe('GameLoop', () => {
         testLoop.on('update', update)
         testLoop.on('render', render)
 
-        testLoop.lifecycle.start()
+        testLoop.start()
         expect(animationCallbacks.length).toBeGreaterThan(0)
 
         testLoop.lastTime = performance.now() - 50 // 50ms ago
@@ -184,7 +184,7 @@ describe('GameLoop', () => {
         testLoop.on('update', update)
         testLoop.on('render', render)
 
-        testLoop.lifecycle.start()
+        testLoop.start()
         expect(animationCallbacks.length).toBeGreaterThan(0)
 
         testLoop.paused = true

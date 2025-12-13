@@ -61,7 +61,7 @@ export default class ApplicationManager extends PerkyModule {
         if (params.container) {
             app.mount(params.container)
         }
-        app.lifecycle.start()
+        app.start()
         return app
     }
 
@@ -69,7 +69,7 @@ export default class ApplicationManager extends PerkyModule {
     start (appId) {
         if (this.instances.has(appId)) {
             const app = this.instances.get(appId)
-            app.lifecycle.start()
+            app.start()
         }
     }
 
@@ -77,7 +77,7 @@ export default class ApplicationManager extends PerkyModule {
     stop (appId) {
         if (this.instances.has(appId)) {
             const app = this.instances.get(appId)
-            app.lifecycle.stop()
+            app.stop()
         }
     }
 
@@ -97,7 +97,7 @@ export default class ApplicationManager extends PerkyModule {
 
             this.emit('applications:delete', appId, app)
             app.emit('unregistered', this, appId)
-            app.lifecycle.dispose()
+            app.dispose()
         }
     }
 

@@ -82,7 +82,7 @@ describe(InputManager, () => {
     test('automatic lifecycle management', () => {
         const manager = new InputManager()
 
-        manager.lifecycle.start()
+        manager.start()
         const device = manager.registerDevice(InputDevice, {$name: 'auto', $bind: 'auto', name: 'TestDevice'})
 
         expect(device.started).toBe(true)

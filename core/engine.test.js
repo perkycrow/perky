@@ -225,10 +225,10 @@ describe(Engine, () => {
         const stopSpy = vi.spyOn(child, 'stop')
 
 
-        engine.lifecycle.start()
+        engine.start()
         expect(startSpy).toHaveBeenCalled()
 
-        engine.lifecycle.stop()
+        engine.stop()
         expect(stopSpy).toHaveBeenCalled()
     })
 
@@ -294,12 +294,12 @@ describe(Engine, () => {
 
         engine.registerController('test', controller)
 
-        engine.lifecycle.start()
+        engine.start()
 
-        engine.lifecycle.stop()
+        engine.stop()
         expect(stopSpy).toHaveBeenCalled()
 
-        engine.lifecycle.start()
+        engine.start()
         expect(startSpy).toHaveBeenCalled()
     })
 
@@ -354,7 +354,7 @@ describe(Engine, () => {
 
 
     test('use after start calls start on the child', () => {
-        engine.lifecycle.start()
+        engine.start()
 
         class TestChild extends PerkyModule { }
 
@@ -364,7 +364,7 @@ describe(Engine, () => {
             $lifecycle: true
         })
 
-        expect(createdChild.lifecycle.started).toBe(true)
+        expect(createdChild.started).toBe(true)
     })
 
 })

@@ -39,7 +39,7 @@ describe(KeyboardDevice, () => {
 
 
     test('start attaches event listeners', () => {
-        device.lifecycle.start()
+        device.start()
 
         expect(mockContainer.addEventListener).toHaveBeenCalledWith('keydown', device.keydownListener, true)
         expect(mockContainer.addEventListener).toHaveBeenCalledWith('keyup', device.keyupListener, true)
@@ -49,8 +49,8 @@ describe(KeyboardDevice, () => {
 
 
     test('stop removes event listeners', () => {
-        device.lifecycle.start()
-        device.lifecycle.stop()
+        device.start()
+        device.stop()
 
         expect(mockContainer.removeEventListener).toHaveBeenCalledWith('keydown', device.keydownListener, true)
         expect(mockContainer.removeEventListener).toHaveBeenCalledWith('keyup', device.keyupListener, true)
@@ -60,15 +60,16 @@ describe(KeyboardDevice, () => {
 
 
     test('dispose calls stop', () => {
-        const stopSpy = vi.spyOn(device.lifecycle, 'stop')
-        device.lifecycle.dispose()
+        const stopSpy = vi.spyOn(device, 'stop')
+        device.start()
+        device.dispose()
         expect(stopSpy).toHaveBeenCalled()
     })
 
 
 
     test('keydown event creates and presses control', () => {
-        device.lifecycle.start()
+        device.start()
 
         const keydownListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'keydown')[1]
@@ -84,7 +85,7 @@ describe(KeyboardDevice, () => {
 
 
     test('keydown event does not press already pressed control', () => {
-        device.lifecycle.start()
+        device.start()
 
         const keydownListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'keydown')[1]
@@ -101,7 +102,7 @@ describe(KeyboardDevice, () => {
 
 
     test('keyup event releases control', () => {
-        device.lifecycle.start()
+        device.start()
 
         const keydownListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'keydown')[1]
@@ -118,7 +119,7 @@ describe(KeyboardDevice, () => {
 
 
     test('keyup event does nothing for non-existent control', () => {
-        device.lifecycle.start()
+        device.start()
 
         const keyupListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'keyup')[1]
@@ -130,7 +131,7 @@ describe(KeyboardDevice, () => {
 
 
     test('blur event releases all pressed keys', () => {
-        device.lifecycle.start()
+        device.start()
 
         const keydownListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'keydown')[1]
@@ -155,7 +156,7 @@ describe(KeyboardDevice, () => {
         device.on('control:pressed', controlPressedListener)
         device.on('control:released', controlReleasedListener)
 
-        device.lifecycle.start()
+        device.start()
 
         const keydownListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'keydown')[1]

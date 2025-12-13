@@ -460,7 +460,7 @@ describe(ApplicationManager, () => {
         expect(appManager.instances.has(appId)).toBe(true)
         expect(appManager.list()).toHaveLength(1)
 
-        app.lifecycle.dispose()
+        app.dispose()
 
         expect(appManager.instances.has(appId)).toBe(false)
         expect(appManager.list()).toHaveLength(0)

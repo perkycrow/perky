@@ -302,7 +302,7 @@ describe(PerkyModule, () => {
             $lifecycle: false
         })
 
-        child.lifecycle.start()
+        child.start()
 
         expect(startSpy).not.toHaveBeenCalled()
     })
@@ -359,10 +359,10 @@ describe(PerkyModule, () => {
         const childStartSpy = vi.spyOn(childChild, 'start')
         const childStopSpy = vi.spyOn(childChild, 'stop')
 
-        child.lifecycle.start()
+        child.start()
         expect(childStartSpy).toHaveBeenCalled()
 
-        child.lifecycle.stop()
+        child.stop()
         expect(childStopSpy).toHaveBeenCalled()
     })
 
@@ -503,7 +503,7 @@ describe(PerkyModule, () => {
         const child1DisposeSpy = vi.spyOn(child1, 'dispose')
         const child2DisposeSpy = vi.spyOn(child2, 'dispose')
 
-        child.lifecycle.dispose()
+        child.dispose()
 
         expect(child1DisposeSpy).toHaveBeenCalled()
         expect(child2DisposeSpy).toHaveBeenCalled()
@@ -528,7 +528,7 @@ describe(PerkyModule, () => {
         const level1DisposeSpy = vi.spyOn(level1, 'dispose')
         const level2DisposeSpy = vi.spyOn(level2, 'dispose')
 
-        child.lifecycle.dispose()
+        child.dispose()
 
         expect(level1DisposeSpy).toHaveBeenCalled()
         expect(level2DisposeSpy).toHaveBeenCalled()
@@ -549,13 +549,13 @@ describe(PerkyModule, () => {
             $name: 'child'
         })
 
-        child.lifecycle.dispose()
+        child.dispose()
         expect(childDisposeSpy).toHaveBeenCalledTimes(1)
         expect(child.disposed).toBe(true)
 
         childDisposeSpy.mockClear()
 
-        childChild.lifecycle.dispose()
+        childChild.dispose()
 
         expect(childDisposeSpy).not.toHaveBeenCalled()
         expect(childChild.disposed).toBe(true)
@@ -574,7 +574,7 @@ describe(PerkyModule, () => {
 
         expect(child.hasChild('child')).toBe(true)
 
-        child.lifecycle.dispose()
+        child.dispose()
 
         expect(child.hasChild('child')).toBe(false)
         expect(child.childrenRegistry.size).toBe(0)

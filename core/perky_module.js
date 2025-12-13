@@ -1,18 +1,17 @@
 import Notifier from './notifier'
 import Registry from './registry'
-import Lifecycle from './lifecycle'
 import {uniqueId} from './utils'
 
 
 export default class PerkyModule extends Notifier {
 
     #children = null
-    #lifecycle = null
+    #started = false
+    #disposed = false
 
     constructor (options = {}) {
         super()
 
-        this.#lifecycle = new Lifecycle(this)
         this.options = options
         this.name = options.name || this.constructor.name
         this.host = null
@@ -24,8 +23,64 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    get lifecycle () {
-        return this.#lifecycle
+
+    get started () {
+        return this.#started
+    }
+
+
+    get disposed () {
+        return this.#disposed
+    }
+
+
+    start () {
+        if (this.#started) {
+            return false
+        }
+
+        this.#started = true
+        this.onStart?.()
+        this.emit('start')
+
+        return true
+    }
+
+
+    stop () {
+        if (!this.#started) {
+            return false
+        }
+
+        this.#started = false
+        this.onStop?.()
+        this.emit('stop')
+
+        return true
+    }
+
+
+    dispose () {
+        if (this.#disposed) {
+            return false
+        }
+
+        this.#disposed = true
+        this.stop()
+
+        const children = this.childrenRegistry
+        children.forEach(child => {
+            if (child && !child.disposed) {
+                child.dispose()
+            }
+        })
+        children.clear()
+
+        this.onDispose?.()
+        this.emit('dispose')
+        this.removeListeners()
+
+        return true
     }
 
 
@@ -39,18 +94,9 @@ export default class PerkyModule extends Notifier {
 
 
     get running () {
-        return this.lifecycle.started
+        return this.started
     }
 
-
-    get started () {
-        return this.lifecycle.started
-    }
-
-
-    get disposed () {
-        return this.lifecycle.disposed
-    }
 
 
     install (host, options) {
@@ -158,21 +204,6 @@ export default class PerkyModule extends Notifier {
 
 
     onDispose () { // eslint-disable-line class-methods-use-this
-        // Override in subclasses
-    }
-
-
-    start () { // eslint-disable-line class-methods-use-this
-        // Override in subclasses
-    }
-
-
-    stop () { // eslint-disable-line class-methods-use-this
-        // Override in subclasses
-    }
-
-
-    dispose () { // eslint-disable-line class-methods-use-this
         // Override in subclasses
     }
 
@@ -340,18 +371,19 @@ function setupLifecycle (host, child, childName, options) {
     const children = host.childrenRegistry
 
     if (host.started) {
-        child.lifecycle.start()
+        child.start()
     }
 
     host.on('start', () => {
+
         if (children.get(childName) === child) {
-            child.lifecycle.start()
+            child.start()
         }
     })
 
     host.on('stop', () => {
         if (children.get(childName) === child) {
-            child.lifecycle.stop()
+            child.stop()
         }
     })
 
@@ -395,6 +427,6 @@ function unregisterChild (host, childName, child, category, bind) { // eslint-di
     child.emit('unregistered', host, childName)
 
     if (!child.disposed) {
-        child.lifecycle.dispose()
+        child.dispose()
     }
 }
