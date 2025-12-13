@@ -7,17 +7,25 @@ import {uniqueId} from './utils'
 export default class PerkyModule extends Notifier {
 
     #children = null
+    #lifecycle = null
 
     constructor (options = {}) {
         super()
-        this.lifecycle = new Lifecycle(this)
+
+        this.#lifecycle = new Lifecycle(this)
         this.options = options
         this.name = options.name || this.constructor.name
         this.host = null
         this.installed = false
+
         this.#children = new Registry()
         this.#children.addIndex('$category')
         this.hasMany('children', 'child')
+    }
+
+
+    get lifecycle () {
+        return this.#lifecycle
     }
 
 
