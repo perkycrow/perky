@@ -42,7 +42,7 @@ export default class GameLoop extends PerkyModule {
     }
 
 
-    start () {
+    onStart () {
         this.paused = false
         this.lastTime = performance.now()
         this.accumulator = 0

@@ -60,7 +60,7 @@ describe(MouseDevice, () => {
 
 
     test('start attaches event listeners', () => {
-        device.start()
+        device.lifecycle.start()
 
         expect(mockContainer.addEventListener).toHaveBeenCalledWith('mousedown', device.mousedownListener)
         expect(mockContainer.addEventListener).toHaveBeenCalledWith('mouseup', device.mouseupListener)
@@ -72,8 +72,8 @@ describe(MouseDevice, () => {
 
 
     test('stop removes event listeners', () => {
-        device.start()
-        device.stop()
+        device.lifecycle.start()
+        device.lifecycle.stop()
 
         expect(mockContainer.removeEventListener).toHaveBeenCalledWith('mousedown', device.mousedownListener)
         expect(mockContainer.removeEventListener).toHaveBeenCalledWith('mouseup', device.mouseupListener)
@@ -92,7 +92,7 @@ describe(MouseDevice, () => {
 
 
     test('mousedown event presses correct button', () => {
-        device.start()
+        device.lifecycle.start()
 
         const mousedownListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'mousedown')[1]
@@ -109,7 +109,7 @@ describe(MouseDevice, () => {
 
 
     test('mouseup event releases correct button', () => {
-        device.start()
+        device.lifecycle.start()
 
         const mousedownListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'mousedown')[1]
@@ -125,7 +125,7 @@ describe(MouseDevice, () => {
 
 
     test('side buttons work correctly', () => {
-        device.start()
+        device.lifecycle.start()
 
         const mousedownListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'mousedown')[1]
@@ -139,7 +139,7 @@ describe(MouseDevice, () => {
 
 
     test('mousemove updates position', () => {
-        device.start()
+        device.lifecycle.start()
 
         const mousemoveListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'mousemove')[1]
@@ -159,7 +159,7 @@ describe(MouseDevice, () => {
 
 
     test('mousedown does not press already pressed button', () => {
-        device.start()
+        device.lifecycle.start()
 
         const mousedownListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'mousedown')[1]
@@ -174,7 +174,7 @@ describe(MouseDevice, () => {
 
 
     test('wheel event updates navigation control', () => {
-        device.start()
+        device.lifecycle.start()
 
         const wheelListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'wheel')[1]
@@ -197,7 +197,7 @@ describe(MouseDevice, () => {
         device.on('control:released', controlReleasedListener)
         device.on('control:updated', controlUpdatedListener)
 
-        device.start()
+        device.lifecycle.start()
 
         const mousedownListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'mousedown')[1]

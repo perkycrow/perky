@@ -24,7 +24,7 @@ export default class MouseDevice extends InputDevice {
     }
 
 
-    start () {
+    onStart () {
         this.container.addEventListener('mousedown', this.mousedownListener)
         this.container.addEventListener('mouseup', this.mouseupListener)
         this.container.addEventListener('mousemove', this.mousemoveListener)
@@ -33,17 +33,12 @@ export default class MouseDevice extends InputDevice {
     }
 
 
-    stop () {
+    onStop () {
         this.container.removeEventListener('mousedown', this.mousedownListener)
         this.container.removeEventListener('mouseup', this.mouseupListener)
         this.container.removeEventListener('mousemove', this.mousemoveListener)
         this.container.removeEventListener('contextmenu', this.contextmenuListener)
         this.container.removeEventListener('wheel', this.wheelListener)
-    }
-
-
-    dispose () {
-        this.lifecycle.stop()
     }
 
 

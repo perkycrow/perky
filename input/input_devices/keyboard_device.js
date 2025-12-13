@@ -18,22 +18,17 @@ export default class KeyboardDevice extends InputDevice {
     }
 
 
-    start () {
+    onStart () {
         this.container.addEventListener('keydown', this.keydownListener, true)
         this.container.addEventListener('keyup', this.keyupListener, true)
         this.container.addEventListener('blur', this.blurListener)
     }
 
 
-    stop () {
+    onStop () {
         this.container.removeEventListener('keydown', this.keydownListener, true)
         this.container.removeEventListener('keyup', this.keyupListener, true)
         this.container.removeEventListener('blur', this.blurListener)
-    }
-
-
-    dispose () {
-        this.lifecycle.stop()
     }
 
 

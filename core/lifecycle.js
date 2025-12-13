@@ -26,6 +26,7 @@ export default class Lifecycle {
 
         this.#started = true
         this.instance.start?.()
+        this.instance.onStart?.()
         this.instance.emit('start')
 
         return true
@@ -39,6 +40,7 @@ export default class Lifecycle {
 
         this.#started = false
         this.instance.stop?.()
+        this.instance.onStop?.()
         this.instance.emit('stop')
 
         return true
@@ -62,6 +64,7 @@ export default class Lifecycle {
         children.clear()
 
         this.instance.dispose?.()
+        this.instance.onDispose?.()
         this.instance.emit('dispose')
         this.instance.removeListeners()
 

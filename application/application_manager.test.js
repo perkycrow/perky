@@ -16,11 +16,11 @@ class MockApplication extends Application {
         this.mockDismount = vi.fn()
     }
 
-    start () {
+    onStart () {
         this.mockStart()
     }
 
-    stop () {
+    onStop () {
         this.mockStop()
     }
 
@@ -29,7 +29,7 @@ class MockApplication extends Application {
         return super.dispatchAction(...args)
     }
 
-    dispose () {
+    onDispose () {
         this.mockDispose()
     }
 }

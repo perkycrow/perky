@@ -147,6 +147,21 @@ export default class PerkyModule extends Notifier {
     }
 
 
+    onStart () { // eslint-disable-line class-methods-use-this
+        // Override in subclasses
+    }
+
+
+    onStop () { // eslint-disable-line class-methods-use-this
+        // Override in subclasses
+    }
+
+
+    onDispose () { // eslint-disable-line class-methods-use-this
+        // Override in subclasses
+    }
+
+
     start () { // eslint-disable-line class-methods-use-this
         // Override in subclasses
     }
