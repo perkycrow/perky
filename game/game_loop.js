@@ -42,11 +42,7 @@ export default class GameLoop extends PerkyModule {
     }
 
 
-    start (...args) {
-        if (!super.start(...args)) {
-            return false
-        }
-
+    start () {
         this.paused = false
         this.lastTime = performance.now()
         this.accumulator = 0
@@ -54,8 +50,6 @@ export default class GameLoop extends PerkyModule {
         this.lastFpsUpdate = this.lastTime
 
         requestAnimationFrame(time => update(this, time))
-
-        return true
     }
 
 

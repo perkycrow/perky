@@ -247,10 +247,10 @@ describe(Engine, () => {
             $lifecycle: true
         })
 
-        engine.start()
+        engine.lifecycle.start()
         expect(startSpy).toHaveBeenCalled()
 
-        engine.stop()
+        engine.lifecycle.stop()
         expect(stopSpy).toHaveBeenCalled()
     })
 
@@ -316,12 +316,12 @@ describe(Engine, () => {
 
         engine.registerController('test', controller)
 
-        engine.start()
+        engine.lifecycle.start()
 
-        engine.stop()
+        engine.lifecycle.stop()
         expect(stopSpy).toHaveBeenCalled()
 
-        engine.start()
+        engine.lifecycle.start()
         expect(startSpy).toHaveBeenCalled()
     })
 
@@ -376,7 +376,7 @@ describe(Engine, () => {
 
 
     test('use after start calls start on the child', () => {
-        engine.start()
+        engine.lifecycle.start()
 
         class TestChild extends PerkyModule { }
         const child = new TestChild()

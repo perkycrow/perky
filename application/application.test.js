@@ -261,7 +261,7 @@ describe(Application, () => {
         vi.spyOn(application.perkyView, 'dispose')
         vi.spyOn(application.perkyView, 'dismount')
 
-        application.dispose()
+        application.lifecycle.dispose()
 
         expect(application.perkyView.dispose).toHaveBeenCalled()
         expect(application.perkyView.dismount).toHaveBeenCalled()

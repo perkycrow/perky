@@ -32,7 +32,7 @@ describe(InputManager, () => {
 
         manager.registerDevice('test', device1)
         manager.registerDevice('test', device2)
-        
+
         expect(manager.getDevice('test')).toBe(device2)
         expect(manager.test).toBe(device2)
     })
@@ -96,13 +96,13 @@ describe(InputManager, () => {
         const manager = new InputManager()
         const device = new InputDevice({name: 'TestDevice'})
 
-        device.start = vi.fn()
+        const lifecycleStartSpy = vi.spyOn(device.lifecycle, 'start')
 
-        manager.start()
+        manager.lifecycle.start()  // Start the manager first
 
-        manager.registerDevice('auto', device)
+        manager.registerDevice('auto', device)  // Then register the device
 
-        expect(device.start).toHaveBeenCalled()
+        expect(lifecycleStartSpy).toHaveBeenCalled()
     })
 
 
@@ -135,10 +135,10 @@ describe(InputManager, () => {
     test('device events', () => {
         const manager = new InputManager()
         const device = new InputDevice({name: 'TestDevice'})
-        
+
         const deviceSetListener = vi.fn()
         const registeredListener = vi.fn()
-        
+
         manager.on('device:set', deviceSetListener)
         device.on('registered', registeredListener)
 
@@ -291,7 +291,7 @@ describe(InputManager, () => {
         const manager = new InputManager()
         const keyboard = new InputDevice({name: 'KeyboardDevice'})
         const mouse = new InputDevice({name: 'MouseDevice'})
-        
+
         manager.registerDevice('keyboard', keyboard)
         manager.registerDevice('mouse', mouse)
 
@@ -331,7 +331,7 @@ describe(InputManager, () => {
         const manager = new InputManager()
         const keyboard = new InputDevice({name: 'KeyboardDevice'})
         const mouse = new InputDevice({name: 'MouseDevice'})
-        
+
         manager.registerDevice('keyboard', keyboard)
         manager.registerDevice('mouse', mouse)
 
@@ -360,7 +360,7 @@ describe(InputManager, () => {
         const manager = new InputManager()
         const keyboard = new InputDevice({name: 'KeyboardDevice'})
         const mouse = new InputDevice({name: 'MouseDevice'})
-        
+
         manager.registerDevice('keyboard', keyboard)
         manager.registerDevice('mouse', mouse)
 
@@ -391,7 +391,7 @@ describe(InputManager, () => {
 
         expect(manager.deviceKeyFor(keyboard)).toBe('keyboard')
         expect(manager.deviceKeyFor(mouse)).toBe('mouse')
-        
+
         const unknownDevice = new InputDevice({name: 'Unknown'})
         expect(manager.deviceKeyFor(unknownDevice)).toBeUndefined()
     })
@@ -399,7 +399,7 @@ describe(InputManager, () => {
 
     test('constructor - no default devices', () => {
         const manager = new InputManager()
-        
+
         expect(manager.devices.size).toBe(0)
         expect(manager.getDevice('keyboard')).toBeUndefined()
         expect(manager.getDevice('mouse')).toBeUndefined()

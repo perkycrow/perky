@@ -196,7 +196,7 @@ describe(PerkyModule, () => {
             $lifecycle: false
         })
 
-        child.start()
+        child.lifecycle.start()
 
         expect(startSpy).not.toHaveBeenCalled()
     })
@@ -213,7 +213,7 @@ describe(PerkyModule, () => {
             $lifecycle: true
         })
 
-        child.start()
+        child.lifecycle.start()
 
         expect(startSpy).toHaveBeenCalled()
     })
@@ -274,10 +274,10 @@ describe(PerkyModule, () => {
             $lifecycle: true
         })
 
-        child.start()
+        child.lifecycle.start()
         expect(childStartSpy).toHaveBeenCalled()
 
-        child.stop()
+        child.lifecycle.stop()
         expect(childStopSpy).toHaveBeenCalled()
     })
 
@@ -423,7 +423,7 @@ describe(PerkyModule, () => {
             $name: 'child2'
         })
 
-        child.dispose()
+        child.lifecycle.dispose()
 
         expect(child1DisposeSpy).toHaveBeenCalled()
         expect(child2DisposeSpy).toHaveBeenCalled()
@@ -453,7 +453,7 @@ describe(PerkyModule, () => {
         const level1DisposeSpy = vi.spyOn(level1, 'dispose')
         const level2DisposeSpy = vi.spyOn(level2, 'dispose')
 
-        child.dispose()
+        child.lifecycle.dispose()
 
         expect(level1DisposeSpy).toHaveBeenCalled()
         expect(level2DisposeSpy).toHaveBeenCalled()
@@ -474,13 +474,13 @@ describe(PerkyModule, () => {
             $name: 'child'
         })
 
-        child.dispose()
+        child.lifecycle.dispose()
         expect(childDisposeSpy).toHaveBeenCalledTimes(1)
         expect(child.disposed).toBe(true)
 
         childDisposeSpy.mockClear()
 
-        childChild.dispose()
+        childChild.lifecycle.dispose()
 
         expect(childDisposeSpy).not.toHaveBeenCalled()
         expect(childChild.disposed).toBe(true)
@@ -499,7 +499,7 @@ describe(PerkyModule, () => {
 
         expect(child.hasChild('child')).toBe(true)
 
-        child.dispose()
+        child.lifecycle.dispose()
 
         expect(child.hasChild('child')).toBe(false)
         expect(child.getChildrenRegistry().size).toBe(0)

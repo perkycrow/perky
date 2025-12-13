@@ -85,8 +85,8 @@ describe(MouseDevice, () => {
 
 
     test('dispose calls stop', () => {
-        const stopSpy = vi.spyOn(device, 'stop')
-        device.dispose()
+        const stopSpy = vi.spyOn(device.lifecycle, 'stop')
+        device.lifecycle.dispose()
         expect(stopSpy).toHaveBeenCalled()
     })
 

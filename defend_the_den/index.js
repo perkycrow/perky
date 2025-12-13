@@ -6,7 +6,7 @@ async function init () {
 
     app.mount(container)
     await app.loadAll()
-    app.start()
+    app.lifecycle.start()
 
     window.defendTheDen = app
 }

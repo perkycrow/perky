@@ -44,15 +44,15 @@ export default class InputManager extends PerkyModule {
         this[name] = device
 
         if (this.started) {
-            device.start()
+            device.lifecycle.start()
         }
 
-        this.on('start', () => device.start())
-        this.on('stop', () => device.stop())
+        this.on('start', () => device.lifecycle.start())
+        this.on('stop', () => device.lifecycle.stop())
         this.on('dispose', () => {
             this.devices.delete(name)
             delete this[name]
-            device.dispose()
+            device.lifecycle.dispose()
         })
 
         device.once('dispose', () => {

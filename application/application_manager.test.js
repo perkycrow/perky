@@ -18,12 +18,10 @@ class MockApplication extends Application {
 
     start () {
         this.mockStart()
-        return super.start()
     }
 
     stop () {
         this.mockStop()
-        return super.stop()
     }
 
     dispatchAction (...args) {
@@ -33,10 +31,6 @@ class MockApplication extends Application {
 
     dispose () {
         this.mockDispose()
-        if (this.perkyView && this.perkyView.mounted) {
-            this.mockDismount()
-        }
-        return super.dispose()
     }
 }
 
@@ -250,11 +244,12 @@ describe(ApplicationManager, () => {
         const appId = app.id
 
         expect(app.perkyView.mounted).toBe(true)
+        const dismountSpy = vi.spyOn(app.perkyView, 'dismount')
 
         appManager.dispose(appId)
 
         expect(app.mockDispose).toHaveBeenCalled()
-        expect(app.mockDismount).toHaveBeenCalledTimes(1)
+        expect(dismountSpy).toHaveBeenCalledTimes(1)
         expect(appManager.instances.has(appId)).toBe(false)
     })
 
@@ -268,12 +263,12 @@ describe(ApplicationManager, () => {
         appManager.stop(appId)
         expect(app.mockStop).toHaveBeenCalledTimes(1)
         expect(app.mockDispose).not.toHaveBeenCalled()
-        expect(app.mockDismount).not.toHaveBeenCalled()
         expect(appManager.instances.has(appId)).toBe(true)
 
+        const dismountSpy = vi.spyOn(app.perkyView, 'dismount')
         appManager.dispose(appId)
         expect(app.mockDispose).toHaveBeenCalled()
-        expect(app.mockDismount).toHaveBeenCalledTimes(1)
+        expect(dismountSpy).toHaveBeenCalledTimes(1)
         expect(appManager.instances.has(appId)).toBe(false)
     })
 
@@ -435,17 +430,20 @@ describe(ApplicationManager, () => {
         appManager.register('testApp', MockApp)
 
         const app = appManager.create('testApp')
-        expect(app.mockStart).not.toHaveBeenCalled()
-        expect(app.mockStop).not.toHaveBeenCalled()
+        const startSpy = vi.spyOn(app, 'start')
+        const stopSpy = vi.spyOn(app, 'stop')
+
+        expect(startSpy).not.toHaveBeenCalled()
+        expect(stopSpy).not.toHaveBeenCalled()
 
         appManager.start(app.id)
-        expect(app.mockStart).toHaveBeenCalledTimes(1)
+        expect(startSpy).toHaveBeenCalledTimes(1)
 
         appManager.stop(app.id)
         expect(app.mockStop).toHaveBeenCalledTimes(1)
 
         appManager.start(app.id)
-        expect(app.mockStart).toHaveBeenCalledTimes(2)
+        expect(startSpy).toHaveBeenCalledTimes(2)
 
         appManager.dispose(app.id)
         expect(app.mockDispose).toHaveBeenCalled()
@@ -462,7 +460,7 @@ describe(ApplicationManager, () => {
         expect(appManager.instances.has(appId)).toBe(true)
         expect(appManager.list()).toHaveLength(1)
 
-        app.dispose()
+        app.lifecycle.dispose()
 
         expect(appManager.instances.has(appId)).toBe(false)
         expect(appManager.list()).toHaveLength(0)

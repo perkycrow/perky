@@ -48,15 +48,15 @@ describe('Entity', () => {
             expect(entity.emit).toBeDefined()
         })
 
-        test('supports lifecycle methods', () => {
+        test('supports  lifecycle methods', () => {
             const entity = new Entity()
 
             expect(entity.started).toBe(false)
 
-            entity.start()
+            entity.lifecycle.start()
             expect(entity.started).toBe(true)
 
-            entity.stop()
+            entity.lifecycle.stop()
             expect(entity.started).toBe(false)
         })
 

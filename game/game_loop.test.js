@@ -26,7 +26,7 @@ describe('GameLoop', () => {
         })
 
         vi.spyOn(PerkyModule.prototype, 'emit')
-        
+
         gameLoop = new GameLoop()
     })
 
@@ -61,17 +61,17 @@ describe('GameLoop', () => {
     test('running getter', () => {
         expect(gameLoop.running).toBe(false)
 
-        gameLoop.started = true
+        gameLoop.lifecycle.start()
         expect(gameLoop.running).toBe(true)
-        
+
         gameLoop.paused = true
         expect(gameLoop.running).toBe(false)
     })
 
 
     test('start', () => {
-        gameLoop.start('param')
-        
+        gameLoop.lifecycle.start()
+
         expect(gameLoop.started).toBe(true)
         expect(gameLoop.lastTime).toBeDefined()
         expect(gameLoop.accumulator).toBe(0)
@@ -81,21 +81,22 @@ describe('GameLoop', () => {
 
 
     test('start with already started', () => {
-        gameLoop.started = true
-        
-        const result = gameLoop.start()
-        
+        gameLoop.lifecycle.start()
+
+        vi.clearAllMocks()
+        const result = gameLoop.lifecycle.start()
+
         expect(result).toBe(false)
         expect(requestAnimationFrame).not.toHaveBeenCalled()
     })
 
 
     test('pause', () => {
-        gameLoop.started = true
+        gameLoop.lifecycle.start()
         gameLoop.paused = false
-        
+
         const result = gameLoop.pause('param')
-        
+
         expect(result).toBe(true)
         expect(gameLoop.paused).toBe(true)
         expect(gameLoop.emit).toHaveBeenCalledWith('pause', 'param')
@@ -113,11 +114,11 @@ describe('GameLoop', () => {
 
 
     test('resume', () => {
-        gameLoop.started = true
+        gameLoop.lifecycle.start()
         gameLoop.paused = true
-        
+
         const result = gameLoop.resume('param')
-        
+
         expect(result).toBe(true)
         expect(gameLoop.paused).toBe(false)
         expect(gameLoop.emit).toHaveBeenCalledWith('resume', 'param')
@@ -126,13 +127,13 @@ describe('GameLoop', () => {
 
 
     test('resume when not paused', () => {
+        gameLoop.lifecycle.start()
+        gameLoop.paused = false
+
         vi.clearAllMocks()
 
-        gameLoop.started = true
-        gameLoop.paused = false
-        
         const result = gameLoop.resume()
-        
+
         expect(result).toBe(false)
         expect(gameLoop.emit).not.toHaveBeenCalled()
     })
@@ -140,7 +141,7 @@ describe('GameLoop', () => {
 
     test('setFps and getFps', () => {
         gameLoop.setFps(30)
-        
+
         expect(gameLoop.frameInterval).toBe(1000 / 30)
         expect(gameLoop.getFps()).toBe(30)
     })
@@ -148,7 +149,7 @@ describe('GameLoop', () => {
 
     test('getCurrentFps', () => {
         expect(gameLoop.getCurrentFps()).toBe(0)
-        
+
         gameLoop.currentFps = 59
         expect(gameLoop.getCurrentFps()).toBe(59)
     })
@@ -162,7 +163,7 @@ describe('GameLoop', () => {
         testLoop.on('update', update)
         testLoop.on('render', render)
 
-        testLoop.start()
+        testLoop.lifecycle.start()
         expect(animationCallbacks.length).toBeGreaterThan(0)
 
         testLoop.lastTime = performance.now() - 50 // 50ms ago
@@ -171,7 +172,7 @@ describe('GameLoop', () => {
         updateFn(performance.now())
 
         expect(update).toHaveBeenCalled()
-        
+
         expect(render).toHaveBeenCalled()
     })
 
@@ -183,7 +184,7 @@ describe('GameLoop', () => {
         testLoop.on('update', update)
         testLoop.on('render', render)
 
-        testLoop.start()
+        testLoop.lifecycle.start()
         expect(animationCallbacks.length).toBeGreaterThan(0)
 
         testLoop.paused = true

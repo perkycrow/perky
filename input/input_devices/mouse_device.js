@@ -25,38 +25,25 @@ export default class MouseDevice extends InputDevice {
 
 
     start () {
-        if (!super.start()) {
-            return false
-        }
-
         this.container.addEventListener('mousedown', this.mousedownListener)
         this.container.addEventListener('mouseup', this.mouseupListener)
         this.container.addEventListener('mousemove', this.mousemoveListener)
         this.container.addEventListener('contextmenu', this.contextmenuListener)
         this.container.addEventListener('wheel', this.wheelListener, {passive: false})
-
-        return true
     }
 
 
     stop () {
-        if (!super.stop()) {
-            return false
-        }
-
         this.container.removeEventListener('mousedown', this.mousedownListener)
         this.container.removeEventListener('mouseup', this.mouseupListener)
         this.container.removeEventListener('mousemove', this.mousemoveListener)
         this.container.removeEventListener('contextmenu', this.contextmenuListener)
         this.container.removeEventListener('wheel', this.wheelListener)
-
-        return true
     }
 
 
     dispose () {
-        this.stop()
-        return super.dispose()
+        this.lifecycle.stop()
     }
 
 
@@ -133,16 +120,16 @@ export default class MouseDevice extends InputDevice {
 
     #handleContextmenu (event) {
         const rightButtonControl = this.getControl('rightButton')
-        
+
         this.preventDefault(event, rightButtonControl)
     }
 
 
     #handleWheel (event) {
         const navigationControl = this.getControl('navigation')
-        
+
         this.preventDefault(event, navigationControl)
-        
+
         navigationControl.setValue(event, event)
     }
 

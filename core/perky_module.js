@@ -1,5 +1,6 @@
 import Notifier from './notifier'
 import Registry from './registry'
+import Lifecycle from './lifecycle'
 
 
 export default class PerkyModule extends Notifier {
@@ -8,7 +9,7 @@ export default class PerkyModule extends Notifier {
 
     constructor (options = {}) {
         super()
-        this.started = false
+        this.lifecycle = new Lifecycle(this)
         this.options = options
         this.name = options.name || this.constructor.name
         this.host = null
@@ -18,7 +19,17 @@ export default class PerkyModule extends Notifier {
 
 
     get running () {
-        return this.started
+        return this.lifecycle.started
+    }
+
+
+    get started () {
+        return this.lifecycle.started
+    }
+
+
+    get disposed () {
+        return this.lifecycle.disposed
     }
 
 
@@ -125,49 +136,18 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    start () {
-        if (this.started) {
-            return false
-        }
-
-        this.started = true
-        this.emit('start')
-
-        return true
+    start () { // eslint-disable-line class-methods-use-this
+        // Override in subclasses
     }
 
 
-    stop () {
-        if (!this.started) {
-            return false
-        }
-
-        this.started = false
-        this.emit('stop')
-
-        return true
+    stop () { // eslint-disable-line class-methods-use-this
+        // Override in subclasses
     }
 
 
-    dispose () {
-        if (this.disposed) {
-            return false
-        }
-
-        this.disposed = true
-        this.stop()
-
-        this.#children.forEach(child => {
-            if (child && !child.disposed) {
-                child.dispose()
-            }
-        })
-        this.#children.clear()
-
-        this.emit('dispose')
-        this.removeListeners()
-
-        return true
+    dispose () { // eslint-disable-line class-methods-use-this
+        // Override in subclasses
     }
 
 
@@ -340,18 +320,18 @@ function setupLifecycle (host, child, childName, options) {
     const children = host.getChildrenRegistry()
 
     if (host.started) {
-        child.start()
+        child.lifecycle.start()
     }
 
     host.on('start', () => {
         if (children.get(childName) === child) {
-            child.start()
+            child.lifecycle.start()
         }
     })
 
     host.on('stop', () => {
         if (children.get(childName) === child) {
-            child.stop()
+            child.lifecycle.stop()
         }
     })
 
@@ -395,6 +375,6 @@ function unregisterChild (host, childName, child, category, bind) { // eslint-di
     child.emit('unregistered', host, childName)
 
     if (!child.disposed) {
-        child.dispose()
+        child.lifecycle.dispose()
     }
 }
