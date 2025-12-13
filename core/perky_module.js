@@ -17,6 +17,16 @@ export default class PerkyModule extends Notifier {
         this.installed = false
         this.#children = new Registry()
         this.#children.addIndex('$category')
+        this.hasMany('children', 'child')
+    }
+
+
+    hasMany (identifier, categoryName) {
+        Object.defineProperty(this, identifier, {
+            get: () => this.#children.lookup('$category', categoryName),
+            enumerable: true,
+            configurable: false
+        })
     }
 
 
@@ -76,10 +86,6 @@ export default class PerkyModule extends Notifier {
     create (ChildClassOrInstance, options = {}) {
         const child = prepareChild(ChildClassOrInstance, options)
         const childName = getChildName(this, child, options)
-
-        if (!validateChild(child, childName)) {
-            return false
-        }
 
         unregisterExisting(this, childName, options)
 
@@ -240,17 +246,8 @@ export default class PerkyModule extends Notifier {
 }
 
 
-function prepareChild (ChildClassOrInstance, options) {
-    const {instance, ...instanceOptions} = options
-
-    let child
-    if (instance) {
-        child = instance
-    } else if (typeof ChildClassOrInstance === 'function') {
-        child = new ChildClassOrInstance(instanceOptions)
-    } else {
-        child = ChildClassOrInstance
-    }
+function prepareChild (Child, options) {
+    let child = typeof Child === 'function' ? new Child(options) : Child
 
     if (!child.$category) {
         child.$category = options.$category || 'child'
@@ -267,16 +264,6 @@ function getChildName (host, child, options) {
 
     const category = child.$category || 'child'
     return uniqueId(host.childrenRegistry, category)
-}
-
-
-function validateChild (child, childName) {
-    if (!(child instanceof PerkyModule)) {
-        console.warn(`Attempted to use non-child object: ${childName}`)
-        return false
-    }
-
-    return true
 }
 
 

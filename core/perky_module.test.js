@@ -91,21 +91,6 @@ describe(PerkyModule, () => {
     })
 
 
-    test('use with Child instance', () => {
-        class TestChild extends PerkyModule { }
-        const instance = new TestChild()
-
-        const result = child.create(TestChild, {
-            instance,
-            $name: 'test',
-            $category: 'test'
-        })
-
-        expect(result).toBe(instance)
-        expect(child.getChild('test')).toBe(instance)
-    })
-
-
     test('auto-generates unique IDs when $name not provided', () => {
         class Enemy extends PerkyModule { }
 
@@ -323,51 +308,30 @@ describe(PerkyModule, () => {
     })
 
 
-    test('use with lifecycle enabled', () => {
-        class TestChild extends PerkyModule { }
-        const instance = new TestChild()
-        const startSpy = vi.spyOn(instance, 'start')
-
-        child.create(TestChild, {
-            instance,
-            $name: 'test',
-            $lifecycle: true
-        })
-
-        child.lifecycle.start()
-
-        expect(startSpy).toHaveBeenCalled()
-    })
-
-
     test('use emits registration events', () => {
         class TestChild extends PerkyModule { }
         const emitSpy = vi.spyOn(child, 'emit')
-        const testExt = new TestChild()
-        const testExtEmitSpy = vi.spyOn(testExt, 'emit')
 
-        child.create(TestChild, {
-            instance: testExt,
+        const granchild = child.create(TestChild, {
             $name: 'test',
             $category: 'testCategory'
         })
 
-        expect(emitSpy).toHaveBeenCalledWith('testCategory:set', 'test', testExt)
-        expect(testExtEmitSpy).toHaveBeenCalledWith('registered', child, 'test')
+        expect(emitSpy).toHaveBeenCalledWith('testCategory:set', 'test', granchild)
     })
 
 
     test('removeChild', () => {
         class TestChild extends PerkyModule { }
-        const instance = new TestChild()
-        const uninstallSpy = vi.spyOn(instance, 'uninstall')
-        const disposeSpy = vi.spyOn(instance, 'dispose')
 
-        child.create(TestChild, {
-            instance,
+        const instance = child.create(TestChild, {
             $name: 'test',
             $category: 'test'
         })
+
+        const uninstallSpy = vi.spyOn(instance, 'uninstall')
+        const disposeSpy = vi.spyOn(instance, 'dispose')
+
 
         const result = child.removeChild('test')
 
@@ -385,15 +349,15 @@ describe(PerkyModule, () => {
 
     test('lifecycle cascade', () => {
         class ChildChild extends PerkyModule { }
-        const childChild = new ChildChild()
-        const childStartSpy = vi.spyOn(childChild, 'start')
-        const childStopSpy = vi.spyOn(childChild, 'stop')
+        new ChildChild()
 
-        child.create(ChildChild, {
-            instance: childChild,
+        const childChild = child.create(ChildChild, {
             $name: 'child',
             $lifecycle: true
         })
+
+        const childStartSpy = vi.spyOn(childChild, 'start')
+        const childStopSpy = vi.spyOn(childChild, 'stop')
 
         child.lifecycle.start()
         expect(childStartSpy).toHaveBeenCalled()
@@ -528,21 +492,16 @@ describe(PerkyModule, () => {
         class ChildChild1 extends PerkyModule { }
         class ChildChild2 extends PerkyModule { }
 
-        const child1 = new ChildChild1()
-        const child2 = new ChildChild2()
-
-        const child1DisposeSpy = vi.spyOn(child1, 'dispose')
-        const child2DisposeSpy = vi.spyOn(child2, 'dispose')
-
-        child.create(ChildChild1, {
-            instance: child1,
+        const child1 = child.create(ChildChild1, {
             $name: 'child1'
         })
 
-        child.create(ChildChild2, {
-            instance: child2,
+        const child2 = child.create(ChildChild2, {
             $name: 'child2'
         })
+
+        const child1DisposeSpy = vi.spyOn(child1, 'dispose')
+        const child2DisposeSpy = vi.spyOn(child2, 'dispose')
 
         child.lifecycle.dispose()
 
@@ -558,17 +517,12 @@ describe(PerkyModule, () => {
         class Level1Child extends PerkyModule { }
         class Level2Child extends PerkyModule { }
 
-        const level1 = new Level1Child()
-        const level2 = new Level2Child()
-
-        level1.create(Level2Child, {
-            instance: level2,
-            $name: 'level2'
+        const level1 = child.create(Level1Child, {
+            $name: 'level1'
         })
 
-        child.create(Level1Child, {
-            instance: level1,
-            $name: 'level1'
+        const level2 = child.create(Level2Child, {
+            $name: 'level2'
         })
 
         const level1DisposeSpy = vi.spyOn(level1, 'dispose')
