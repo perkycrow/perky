@@ -185,8 +185,17 @@ export default class Registry extends Notifier {
 
 
     addIndex (name, keyFunction) {
+        if (keyFunction === undefined) {
+            keyFunction = name
+        }
+
+        if (typeof keyFunction === 'string') {
+            const propertyName = keyFunction
+            keyFunction = (item) => item[propertyName]
+        }
+
         if (typeof keyFunction !== 'function') {
-            throw new TypeError('keyFunction must be a function')
+            throw new TypeError('keyFunction must be a function or string')
         }
 
         const index = {
@@ -211,7 +220,8 @@ export default class Registry extends Notifier {
             throw new Error(`Index '${indexName}' does not exist`)
         }
 
-        return index.data.get(key) || []
+        const items = index.data.get(key)
+        return items ? Array.from(items) : []
     }
 
 
@@ -255,13 +265,11 @@ export default class Registry extends Notifier {
 
         for (const key of keys) {
             if (!index.data.has(key)) {
-                index.data.set(key, [])
+                index.data.set(key, new Set())
             }
 
             const items = index.data.get(key)
-            if (!items.includes(value)) {
-                items.push(value)
-            }
+            items.add(value)
         }
     }
 
@@ -280,12 +288,9 @@ export default class Registry extends Notifier {
                 continue
             }
 
-            const idx = items.indexOf(value)
-            if (idx !== -1) {
-                items.splice(idx, 1)
-            }
+            items.delete(value)
 
-            if (items.length === 0) {
+            if (items.size === 0) {
                 index.data.delete(key)
             }
         }

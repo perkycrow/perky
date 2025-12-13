@@ -15,6 +15,7 @@ export default class PerkyModule extends Notifier {
         this.host = null
         this.installed = false
         this.#children = new Registry()
+        this.#children.addIndex('$category')
     }
 
 
@@ -110,15 +111,10 @@ export default class PerkyModule extends Notifier {
 
     getChildrenByCategory (category) {
         const registry = this.getChildrenRegistry()
-        const names = []
+        const children = registry.lookup('$category', category)
 
-        for (const [name, child] of registry.entries) {
-            if (child.$category === category) {
-                names.push(name)
-            }
-        }
-
-        return names
+        // Map children instances back to their names for API compatibility
+        return children.map(child => registry.keyFor(child))
     }
 
 
@@ -293,11 +289,12 @@ function registerChild (host, child, childName, options) {
         return false
     }
 
-    const children = host.getChildrenRegistry()
-    children.set(childName, child)
-
+    // Assign metadata before adding to registry so indexes can capture these properties
     child.$category = options.$category || 'child'
     child.$bind = options.$bind
+
+    const children = host.getChildrenRegistry()
+    children.set(childName, child)
 
     return true
 }

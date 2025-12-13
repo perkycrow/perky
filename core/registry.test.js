@@ -270,8 +270,31 @@ describe(Registry, () => {
         })
 
 
-        test('addIndex throws if keyFunction is not a function', () => {
-            expect(() => registry.addIndex('test', 'not-a-function')).toThrow(TypeError)
+        test('addIndex with property name string', () => {
+            registry.addIndex('byName', 'name')
+
+            registry.set('1', {name: 'Alice', age: 30})
+            registry.set('2', {name: 'Bob', age: 25})
+
+            expect(registry.lookup('byName', 'Alice')).toEqual([{name: 'Alice', age: 30}])
+            expect(registry.lookup('byName', 'Bob')).toEqual([{name: 'Bob', age: 25}])
+        })
+
+
+        test('addIndex with single argument (property name)', () => {
+            registry.addIndex('name')
+
+            registry.set('1', {name: 'Alice', age: 30})
+            registry.set('2', {name: 'Bob', age: 25})
+
+            expect(registry.lookup('name', 'Alice')).toEqual([{name: 'Alice', age: 30}])
+            expect(registry.lookup('name', 'Bob')).toEqual([{name: 'Bob', age: 25}])
+        })
+
+
+        test('addIndex throws if keyFunction is invalid type', () => {
+            expect(() => registry.addIndex('test', 123)).toThrow(TypeError)
+            expect(() => registry.addIndex('test', null)).toThrow(TypeError)
         })
 
 

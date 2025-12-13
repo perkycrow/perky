@@ -175,6 +175,62 @@ describe(PerkyModule, () => {
     })
 
 
+    test('category index is automatically created', () => {
+        const registry = child.getChildrenRegistry()
+
+        expect(registry.hasIndex('$category')).toBe(true)
+    })
+
+
+    test('category index is updated when children are added', () => {
+        class TestChild extends PerkyModule { }
+        const registry = child.getChildrenRegistry()
+
+        child.create(TestChild, {
+            $name: 'ext1',
+            $category: 'module'
+        })
+
+        child.create(TestChild, {
+            $name: 'ext2',
+            $category: 'service'
+        })
+
+        const moduleChildren = registry.lookup('$category', 'module')
+        const serviceChildren = registry.lookup('$category', 'service')
+
+        expect(moduleChildren).toHaveLength(1)
+        expect(serviceChildren).toHaveLength(1)
+        expect(moduleChildren[0]).toBe(child.getChild('ext1'))
+        expect(serviceChildren[0]).toBe(child.getChild('ext2'))
+    })
+
+
+    test('category index is updated when children are removed', () => {
+        class TestChild extends PerkyModule { }
+        const registry = child.getChildrenRegistry()
+
+        child.create(TestChild, {
+            $name: 'ext1',
+            $category: 'module'
+        })
+
+        child.create(TestChild, {
+            $name: 'ext2',
+            $category: 'module'
+        })
+
+        let moduleChildren = registry.lookup('$category', 'module')
+        expect(moduleChildren).toHaveLength(2)
+
+        child.removeChild('ext1')
+
+        moduleChildren = registry.lookup('$category', 'module')
+        expect(moduleChildren).toHaveLength(1)
+        expect(moduleChildren[0]).toBe(child.getChild('ext2'))
+    })
+
+
     test('use with binding', () => {
         class TestChild extends PerkyModule { }
 

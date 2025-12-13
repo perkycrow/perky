@@ -1177,7 +1177,7 @@ describe(Application, () => {
 
         test('handles controller without bindings gracefully', () => {
             class TestController extends PerkyModule {
-                testAction () { }
+                testAction () { } // eslint-disable-line class-methods-use-this
             }
 
             const beforeCount = application.getAllBindings().length
