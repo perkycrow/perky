@@ -46,39 +46,6 @@ describe(Application, () => {
         vi.spyOn(PerkyView.prototype, 'mount').mockReturnValue(null)
         vi.spyOn(PerkyView, 'defaultElement').mockReturnValue(mockPerkyViewElement)
 
-        // FIXME: Complexity
-        vi.spyOn(Engine.prototype, 'create').mockImplementation(function (ChildClass, options) { // eslint-disable-line complexity
-            let instance = options.instance
-            if (!instance) {
-                if (ChildClass === KeyboardDevice || ChildClass === MouseDevice) {
-                    const container = options.container || (ChildClass === MouseDevice && this.perkyView ? this.perkyView.element : window)
-                    instance = new ChildClass({...options, container})
-                } else if (ChildClass === PerkyView) {
-                    instance = new ChildClass({...options, element: mockPerkyViewElement})
-                } else {
-                    instance = new ChildClass(options)
-                }
-            }
-
-            if (instance.install) {
-                instance.install(this, options)
-            }
-
-            if (options.$bind) {
-                this[options.$bind] = instance
-            }
-
-            const childrenRegistry = this.childrenRegistry
-            const childName = options.$name || instance.name || instance.constructor.name
-            childrenRegistry.set(childName, instance)
-
-            if ((ChildClass === KeyboardDevice || ChildClass === MouseDevice) && this.inputManager) {
-                this.inputManager.registerDevice(ChildClass, options)
-            }
-
-            return this
-        })
-
         application = new Application()
     })
 
@@ -258,13 +225,14 @@ describe(Application, () => {
 
 
     test('dispose calls perkyView.dispose() which dismounts', () => {
-        vi.spyOn(application.perkyView, 'dispose')
-        vi.spyOn(application.perkyView, 'dismount')
+        const perkyView = application.perkyView
+        vi.spyOn(perkyView, 'dispose')
+        vi.spyOn(perkyView, 'dismount')
 
         application.lifecycle.dispose()
 
-        expect(application.perkyView.dispose).toHaveBeenCalled()
-        expect(application.perkyView.dismount).toHaveBeenCalled()
+        expect(perkyView.dispose).toHaveBeenCalled()
+        expect(perkyView.dismount).toHaveBeenCalled()
     })
 
 
@@ -537,9 +505,7 @@ describe(Application, () => {
             }
         }
 
-        const child = new TestChild()
         application.create(TestChild, {
-            instance: child,
             $name: 'testChild',
             $category: 'child'
         })

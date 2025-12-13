@@ -222,13 +222,4 @@ describe(PerkyView, () => {
         expect(element.style.display).toBe('')
     })
 
-
-    test('dispose', () => {
-        const disposeSpy = vi.spyOn(PerkyModule.prototype, 'dispose')
-
-        view.dispose()
-
-        expect(disposeSpy).toHaveBeenCalled()
-    })
-
 })

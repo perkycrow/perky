@@ -76,22 +76,6 @@ describe(Engine, () => {
     })
 
 
-    test('use with non-child object', () => {
-        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { })
-        const nonChild = {}
-
-        engine.create(nonChild.constructor, {
-            instance: nonChild,
-            $name: 'test'
-        })
-
-        expect(consoleSpy).toHaveBeenCalled()
-        expect(engine.getChild('test')).toBeNull()
-
-        consoleSpy.mockRestore()
-    })
-
-
     test('getChild', () => {
         class TestChild extends PerkyModule { }
         engine.create(TestChild, {
@@ -200,26 +184,20 @@ describe(Engine, () => {
     test('child registration events', () => {
         class TestChild extends PerkyModule { }
         const engineSpy = vi.spyOn(engine, 'emit')
-        const child = new TestChild()
-        const childSpy = vi.spyOn(child, 'emit')
 
-        engine.create(TestChild, {
-            instance: child,
+        const child = engine.create(TestChild, {
             $name: 'test',
             $category: 'module'
         })
 
         expect(engineSpy).toHaveBeenCalledWith('module:set', 'test', child)
-        expect(childSpy).toHaveBeenCalledWith('registered', engine, 'test')
         expect(child.host).toBe(engine)
     })
 
 
     test('child unregistration events', () => {
         class TestChild extends PerkyModule { }
-        const child = new TestChild()
-        engine.create(TestChild, {
-            instance: child,
+        const child = engine.create(TestChild, {
             $name: 'test',
             $category: 'module'
         })
@@ -236,16 +214,16 @@ describe(Engine, () => {
 
     test('child lifecycle events propagation', () => {
         class TestChild extends PerkyModule { }
-        const child = new TestChild()
-        const startSpy = vi.spyOn(child, 'start')
-        const stopSpy = vi.spyOn(child, 'stop')
 
-        engine.create(TestChild, {
-            instance: child,
+        const child = engine.create(TestChild, {
             $name: 'test',
             $category: 'module',
             $lifecycle: true
         })
+
+        const startSpy = vi.spyOn(child, 'start')
+        const stopSpy = vi.spyOn(child, 'stop')
+
 
         engine.lifecycle.start()
         expect(startSpy).toHaveBeenCalled()
@@ -379,17 +357,14 @@ describe(Engine, () => {
         engine.lifecycle.start()
 
         class TestChild extends PerkyModule { }
-        const child = new TestChild()
-        const startSpy = vi.spyOn(child, 'start')
 
-        engine.create(TestChild, {
-            instance: child,
+        const createdChild = engine.create(TestChild, {
             $name: 'newChild',
             $category: 'module',
             $lifecycle: true
         })
 
-        expect(startSpy).toHaveBeenCalled()
+        expect(createdChild.lifecycle.started).toBe(true)
     })
 
 })

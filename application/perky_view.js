@@ -177,7 +177,7 @@ export default class PerkyView extends PerkyModule {
     }
 
 
-    dispose (...args) {
+    dispose () {
         this.exitFullscreenMode()
 
         if (this.#resizeObserver) {
@@ -190,8 +190,6 @@ export default class PerkyView extends PerkyModule {
         }
 
         this.dismount()
-
-        super.dispose(...args)
     }
 
 
