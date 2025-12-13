@@ -28,11 +28,11 @@ export default class World extends PerkyModule {
     addEntity (idOrEntity, entity) {
         const hasExplicitId = typeof idOrEntity === 'string'
         entity ||= idOrEntity
-        
+
         if (hasExplicitId) {
             entity.$id = idOrEntity
         }
-        
+
         entity.$category ||= 'entity'
         entity.$id ||= uniqueId('world', entity.$category)
 
@@ -40,7 +40,8 @@ export default class World extends PerkyModule {
     }
 
 
-    removeEntity (id) {
+    removeEntity (idOrEntity) {
+        const id = typeof idOrEntity === 'object' ? idOrEntity.$id : idOrEntity
         return this.#entities.delete(id)
     }
 

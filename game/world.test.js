@@ -56,7 +56,7 @@ describe('World', () => {
         test('generated id uses category as prefix', () => {
             const player = {$category: 'player'}
             const enemy = {$category: 'enemy'}
-            
+
             world.addEntity(player)
             world.addEntity(enemy)
 
@@ -103,6 +103,18 @@ describe('World', () => {
 
             expect(removed).toBe(false)
         })
+
+        test('removes an entity by passing the entity object', () => {
+            const entity = {$category: 'player', x: 0, y: 0}
+            world.addEntity('player1', entity)
+
+            const removed = world.removeEntity(entity)
+
+            expect(removed).toBe(true)
+            expect(world.size).toBe(0)
+            expect(world.hasEntity('player1')).toBe(false)
+        })
+
 
     })
 
@@ -254,7 +266,7 @@ describe('World', () => {
             world.addEntity('e2', entity2)
 
             const visited = []
-            world.forEach((entity) => {
+            world.forEach((entity) => { // eslint-disable-line max-nested-callbacks
                 visited.push(entity)
             })
 
@@ -269,7 +281,6 @@ describe('World', () => {
     describe('integration with game loop', () => {
 
         test('supports typical update pattern', () => {
-            // Setup entities
             const player = {$category: 'player', $tags: ['updatable'], update: () => { }}
             const enemy1 = {$category: 'enemy', $tags: ['updatable', 'hostile'], update: () => { }}
             const enemy2 = {$category: 'enemy', $tags: ['updatable', 'hostile'], update: () => { }}
@@ -280,15 +291,12 @@ describe('World', () => {
             world.addEntity('enemy2', enemy2)
             world.addEntity('deco1', decoration)
 
-            // Update loop pattern
             const updatables = world.byTag('updatable')
             expect(updatables).toHaveLength(3)
 
-            // Collision detection pattern
             const hostiles = world.byTag('hostile')
             expect(hostiles).toHaveLength(2)
 
-            // Category-based rendering
             const enemies = world.byCategory('enemy')
             expect(enemies).toHaveLength(2)
         })
