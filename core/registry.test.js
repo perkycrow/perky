@@ -1,3 +1,4 @@
+/* eslint-disable max-nested-callbacks */
 import Registry from './registry'
 import {vi} from 'vitest'
 
