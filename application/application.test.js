@@ -73,7 +73,7 @@ describe(Application, () => {
             childrenRegistry.set(childName, instance)
 
             if ((ChildClass === KeyboardDevice || ChildClass === MouseDevice) && this.inputManager) {
-                this.inputManager.registerDevice(options.$name, instance)
+                this.inputManager.registerDevice(ChildClass, options)
             }
 
             return this
@@ -293,8 +293,13 @@ describe(Application, () => {
         spaceControl.press({code: 'Space'})
 
         await new Promise(resolve => setTimeout(resolve, 0))
-
         expect(controller.jump).toHaveBeenCalled()
+    })
+
+
+    test('constructor registers devices with InputManager', () => {
+        expect(application.inputManager.getDevice('keyboard')).toBeDefined()
+        expect(application.inputManager.getDevice('mouse')).toBeDefined()
     })
 
 
@@ -364,18 +369,19 @@ describe(Application, () => {
         expect(application.getAllBindings()).toHaveLength(2)
 
         application.clearBindings()
-
         expect(application.getAllBindings()).toHaveLength(0)
     })
 
 
     test('device management', () => {
+        expect(application.registerDevice).toBeDefined()
+        expect(application.getDevice).toBeDefined()
+
         const keyboardDevice = application.getDevice('keyboard')
         const mouseDevice = application.getDevice('mouse')
-
         expect(keyboardDevice).toBeInstanceOf(KeyboardDevice)
         expect(mouseDevice).toBeInstanceOf(MouseDevice)
-        expect(application.getDevice('nonExistent')).toBeUndefined()
+        expect(application.getDevice('nonExistent')).toBeNull()
     })
 
 

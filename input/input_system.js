@@ -20,24 +20,30 @@ export default class InputSystem extends PerkyModule {
             $bind: 'inputManager'
         })
 
-        this.create(KeyboardDevice, {
+        this.inputManager.registerDevice(KeyboardDevice, {
             $name: 'keyboard',
-            $category: 'device',
             $bind: 'keyboard',
             ...keyboard
         })
-        this.inputManager.registerDevice('keyboard', this.keyboard)
 
-        this.create(MouseDevice, {
+        this.inputManager.registerDevice(MouseDevice, {
             $name: 'mouse',
-            $category: 'device',
             $bind: 'mouse',
             ...mouse,
             container: perkyView?.element
         })
-        this.inputManager.registerDevice('mouse', this.mouse)
 
         this.#initEvents()
+    }
+
+
+    get keyboard () {
+        return this.inputManager.getDevice('keyboard')
+    }
+
+
+    get mouse () {
+        return this.inputManager.getDevice('mouse')
     }
 
 

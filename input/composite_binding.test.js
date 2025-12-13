@@ -19,8 +19,7 @@ describe(CompositeBinding, () => {
         }))
 
         inputManager = new InputManager()
-        keyboardDevice = new KeyboardDevice()
-        inputManager.registerDevice('keyboard', keyboardDevice)
+        keyboardDevice = inputManager.registerDevice(KeyboardDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'KeyboardDevice'})
 
         compositeBinding = new CompositeBinding({
             controls: [

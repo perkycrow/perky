@@ -31,8 +31,10 @@ describe(InputSystem, () => {
 
 
     test('constructor creates keyboard and mouse devices', () => {
-        expect(inputSystem.keyboard).toBeInstanceOf(KeyboardDevice)
-        expect(inputSystem.mouse).toBeInstanceOf(MouseDevice)
+        const inputSystem1 = new InputSystem()
+
+        expect(inputSystem1.inputManager.getDevice('keyboard')).toBeInstanceOf(KeyboardDevice)
+        expect(inputSystem1.inputManager.getDevice('mouse')).toBeInstanceOf(MouseDevice)
     })
 
 
