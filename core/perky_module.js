@@ -104,13 +104,13 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    getChildrenRegistry () {
+    get childrenRegistry () {
         return this.#children
     }
 
 
     getChildrenByCategory (category) {
-        const registry = this.getChildrenRegistry()
+        const registry = this.childrenRegistry
         const children = registry.lookup('$category', category)
 
         // Map children instances back to their names for API compatibility
@@ -270,7 +270,7 @@ function validateChild (child, childName) {
 
 
 function unregisterExisting (host, childName, options) {
-    const children = host.getChildrenRegistry()
+    const children = host.childrenRegistry
     if (children.has(childName)) {
         const existing = children.get(childName)
         const category = existing.$category || options.$category || 'child'
@@ -289,11 +289,10 @@ function registerChild (host, child, childName, options) {
         return false
     }
 
-    // Assign metadata before adding to registry so indexes can capture these properties
     child.$category = options.$category || 'child'
     child.$bind = options.$bind
 
-    const children = host.getChildrenRegistry()
+    const children = host.childrenRegistry
     children.set(childName, child)
 
     return true
@@ -314,7 +313,7 @@ function setupLifecycle (host, child, childName, options) {
         return
     }
 
-    const children = host.getChildrenRegistry()
+    const children = host.childrenRegistry
 
     if (host.started) {
         child.lifecycle.start()
@@ -359,7 +358,7 @@ function emitRegistrationEvents (host, child, childName, options) {
 
 
 function unregisterChild (host, childName, child, category, bind) { // eslint-disable-line max-params
-    const children = host.getChildrenRegistry()
+    const children = host.childrenRegistry
     children.delete(childName)
 
     if (bind && host[bind] === child) {

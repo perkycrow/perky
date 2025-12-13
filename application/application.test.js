@@ -68,7 +68,7 @@ describe(Application, () => {
                 this[options.$bind] = instance
             }
 
-            const childrenRegistry = this.getChildrenRegistry()
+            const childrenRegistry = this.childrenRegistry
             const childName = options.$name || instance.name || instance.constructor.name
             childrenRegistry.set(childName, instance)
 

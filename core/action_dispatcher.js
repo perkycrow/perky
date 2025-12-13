@@ -163,7 +163,7 @@ export default class ActionDispatcher extends PerkyModule {
             return
         }
 
-        const registry = this.getChildrenRegistry()
+        const registry = this.childrenRegistry
 
         for (let i = this.#activeControllers.length - 1; i >= 0; i--) {
             const controllerName = this.#activeControllers[i]
@@ -218,7 +218,7 @@ export default class ActionDispatcher extends PerkyModule {
 
     listAllActions () {
         const allActions = new Map()
-        const registry = this.getChildrenRegistry()
+        const registry = this.childrenRegistry
 
         for (const [name, controller] of registry.entries) {
             if (typeof controller.listActions === 'function') {

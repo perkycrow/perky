@@ -183,7 +183,7 @@ export default class InputManager extends PerkyModule {
 
 
     deviceKeyFor (device) {
-        return this.getChildrenRegistry().keyFor(device)
+        return this.childrenRegistry.keyFor(device)
     }
 
 

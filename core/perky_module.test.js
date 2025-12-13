@@ -14,7 +14,7 @@ describe(PerkyModule, () => {
             started: false,
             on: vi.fn(),
             emit: vi.fn(),
-            getChildrenRegistry: vi.fn(() => childrenRegistry),
+            childrenRegistry: childrenRegistry,
             hasChild: vi.fn((name) => childrenRegistry.has(name)),
             getChild: vi.fn((name) => childrenRegistry.get(name))
         }
@@ -176,7 +176,7 @@ describe(PerkyModule, () => {
 
 
     test('category index is automatically created', () => {
-        const registry = child.getChildrenRegistry()
+        const registry = child.childrenRegistry
 
         expect(registry.hasIndex('$category')).toBe(true)
     })
@@ -184,7 +184,7 @@ describe(PerkyModule, () => {
 
     test('category index is updated when children are added', () => {
         class TestChild extends PerkyModule { }
-        const registry = child.getChildrenRegistry()
+        const registry = child.childrenRegistry
 
         child.create(TestChild, {
             $name: 'ext1',
@@ -208,7 +208,7 @@ describe(PerkyModule, () => {
 
     test('category index is updated when children are removed', () => {
         class TestChild extends PerkyModule { }
-        const registry = child.getChildrenRegistry()
+        const registry = child.childrenRegistry
 
         child.create(TestChild, {
             $name: 'ext1',
@@ -558,7 +558,7 @@ describe(PerkyModule, () => {
         child.lifecycle.dispose()
 
         expect(child.hasChild('child')).toBe(false)
-        expect(child.getChildrenRegistry().size).toBe(0)
+        expect(child.childrenRegistry.size).toBe(0)
     })
 
 })

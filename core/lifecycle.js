@@ -53,7 +53,7 @@ export default class Lifecycle {
         this.#disposed = true
         this.stop()
 
-        const children = this.instance.getChildrenRegistry()
+        const children = this.instance.childrenRegistry
         children.forEach(child => {
             if (child && !child.disposed) {
                 child.lifecycle.dispose()
