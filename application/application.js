@@ -32,22 +32,7 @@ export default class Application extends Engine {
             perkyView: this.perkyView
         })
 
-        // Auto-register controller bindings when controllers are created
-        this.actionDispatcher.on('controller:set', (controllerName, controller) => {
-            const ControllerClass = controller.constructor
-
-            if (typeof ControllerClass.normalizeBindings === 'function') {
-                const bindings = ControllerClass.normalizeBindings(controllerName)
-
-                for (const binding of bindings) {
-                    this.bindKey(binding.key, {
-                        actionName: binding.action,
-                        controllerName: binding.controllerName,
-                        eventType: binding.eventType
-                    })
-                }
-            }
-        })
+        this.actionDispatcher.on('controller:set', this.#autoRegisterBindings.bind(this))
 
         if (typeof this.configure === 'function') {
             this.configure(params)
@@ -76,6 +61,23 @@ export default class Application extends Engine {
 
     getImage (id) {
         return this.getSource('images', id)
+    }
+
+
+    #autoRegisterBindings (controllerName, controller) {
+        const ControllerClass = controller.constructor
+
+        if (typeof ControllerClass.normalizeBindings === 'function') {
+            const bindings = ControllerClass.normalizeBindings(controllerName)
+
+            for (const binding of bindings) {
+                this.bindKey(binding.key, {
+                    actionName: binding.action,
+                    controllerName: binding.controllerName,
+                    eventType: binding.eventType
+                })
+            }
+        }
     }
 
 }

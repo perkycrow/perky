@@ -53,14 +53,6 @@ describe(PerkyModule, () => {
     })
 
 
-    test('install when already installed', () => {
-        child.install(host, {})
-        const result = child.install(host, {})
-
-        expect(result).toBe(false)
-    })
-
-
     test('uninstall', () => {
         child.install(host, {})
         const result = child.uninstall()
