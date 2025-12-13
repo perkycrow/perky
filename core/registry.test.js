@@ -19,9 +19,27 @@ describe(Registry, () => {
         expect(registry.get('key')).toBe('value')
         expect(spy).toHaveBeenCalledWith('set', 'key', 'value', undefined)
 
+        spy.mockClear()
         registry.set('key', 'newValue')
+
         expect(registry.get('key')).toBe('newValue')
-        expect(spy).toHaveBeenCalledWith('set', 'key', 'newValue', 'value')
+
+        expect(spy).toHaveBeenCalledTimes(2)
+        expect(spy).toHaveBeenNthCalledWith(1, 'delete', 'key', 'value')
+        expect(spy).toHaveBeenNthCalledWith(2, 'set', 'key', 'newValue', 'value')
+    })
+
+
+    test('set with same value does not emit delete', () => {
+        const spy = vi.spyOn(registry, 'emit')
+
+        registry.set('key', 'value')
+        spy.mockClear()
+
+        registry.set('key', 'value')
+
+        expect(spy).toHaveBeenCalledTimes(1)
+        expect(spy).toHaveBeenCalledWith('set', 'key', 'value', 'value')
     })
 
 
@@ -91,9 +109,7 @@ describe(Registry, () => {
 
 
     test('invoke with error', () => {
-        const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
-            // Intentionally empty to suppress console output
-        })
+        const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
         const calls = []
         const obj1 = {
             method: () => {

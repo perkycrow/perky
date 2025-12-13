@@ -74,6 +74,11 @@ export default class Registry extends Notifier {
     set (key, value) {
         const exists = this.#map.has(key)
         const oldValue = exists ? this.#map.get(key) : undefined
+
+        if (exists && oldValue !== value) {
+            this.emit('delete', key, oldValue)
+        }
+
         this.#map.set(key, value)
         this.emit('set', key, value, oldValue)
 
@@ -235,20 +240,14 @@ export default class Registry extends Notifier {
     }
 
 
-    #handleSet = (key, value, oldValue) => {
-        if (oldValue !== undefined) {
-            for (const indexName of this.#indexes.keys()) {
-                this.#removeFromIndex(indexName, oldValue)
-            }
-        }
-
+    #handleSet (key, value) {
         for (const indexName of this.#indexes.keys()) {
             this.#addToIndex(indexName, value)
         }
     }
 
 
-    #handleDelete = (key, value) => {
+    #handleDelete (key, value) {
         for (const indexName of this.#indexes.keys()) {
             this.#removeFromIndex(indexName, value)
         }
