@@ -37,10 +37,13 @@ export default class GameRenderer {
         })
         this.rootGroup.addChild(this.wolfSprite)
 
+        const enemies = this.world.childrenByTags('enemy')
+        const enemyEntity = enemies[0]
+
         this.pigSprite = new Image2D({
             image: this.game.getImage('pig'),
-            x: this.world.getEntity('enemy').x,
-            y: this.world.getEntity('enemy').y,
+            x: enemyEntity?.x || 0,
+            y: enemyEntity?.y || 0,
             width: 1,
             height: 1
         })
@@ -59,9 +62,14 @@ export default class GameRenderer {
 
 
     render () {
-        const player = this.world.getEntity('player')
-        const enemy = this.world.getEntity('enemy')
-        const projectiles = this.world.byCategory('projectile')
+        const player = this.world.getChild('player')
+
+        const enemies = this.world.childrenByTags('enemy')
+        const enemy = enemies[0]
+
+        if (!player || !enemy) {
+            return
+        }
 
         this.wolfSprite.x = player.x
         this.wolfSprite.y = player.y
@@ -80,6 +88,7 @@ export default class GameRenderer {
         this.pigSprite.x = enemy.x
         this.pigSprite.y = enemy.y
 
+        const projectiles = this.world.childrenByCategory('projectile')
         this.projectilesGroup.children = projectiles.map(projectile => {
             return new Circle({
                 x: projectile.x,

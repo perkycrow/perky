@@ -1,5 +1,5 @@
 import Game from '../game/game'
-import World from '../game/world'
+import World from './world'
 
 import GameController from './controllers/game_controller'
 import GameRenderer from './game_renderer'

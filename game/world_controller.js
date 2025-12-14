@@ -27,13 +27,11 @@ export default class WorldController extends ActionController {
 
 
     spawn (Entity, options = {}) {
-        const entity = new Entity(options)
-
         if (this.world) {
-            this.world.addEntity(entity)
+            return this.world.create(Entity, options)
         }
 
-        return entity
+        return null
     }
 
 }
