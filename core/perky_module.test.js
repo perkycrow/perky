@@ -605,7 +605,130 @@ describe(PerkyModule, () => {
         expect(child.childrenRegistry.size).toBe(0)
     })
 
+
+    describe('static category', () => {
+        test('uses PerkyModule default category "child" when not specified', () => {
+            const module = child.create(PerkyModule, {$name: 'test'})
+            expect(module.$category).toBe('child')
+        })
+
+
+        test('uses static category from subclass', () => {
+            class GameController extends PerkyModule {
+                static category = 'controller'
+            }
+
+            const controller = child.create(GameController, {$name: 'game'})
+            expect(controller.$category).toBe('controller')
+        })
+
+
+        test('explicit $category overrides static category', () => {
+            class GameController extends PerkyModule {
+                static category = 'controller'
+            }
+
+            const controller = child.create(GameController, {
+                $name: 'game',
+                $category: 'custom'
+            })
+
+            expect(controller.$category).toBe('custom')
+        })
+
+
+        test('works with multiple levels of inheritance', () => {
+            class BaseController extends PerkyModule {
+                static get category () {
+                    return 'controller'
+                }
+            }
+
+            class GameController extends BaseController {
+                static get category () {
+                    return 'game-controller'
+                }
+            }
+
+            const controller = child.create(GameController, {$name: 'game'})
+            expect(controller.$category).toBe('game-controller')
+        })
+
+
+        test('subclass without static category falls back to parent', () => {
+            class BaseController extends PerkyModule {
+                static get category () {
+                    return 'controller'
+                }
+            }
+
+            class GameController extends BaseController {
+                // No static category override
+            }
+
+            const controller = child.create(GameController, {$name: 'game'})
+            expect(controller.$category).toBe('controller')
+        })
+
+
+        test('auto-generates unique IDs using static category', () => {
+            class Monster extends PerkyModule {
+                static get category () {
+                    return 'monster'
+                }
+            }
+
+            // Use a fresh parent to ensure predictable ID generation
+            const parent = new PerkyModule()
+            const monster1 = parent.create(Monster)
+            const monster2 = parent.create(Monster)
+            const monster3 = parent.create(Monster)
+
+            expect(monster1.$category).toBe('monster')
+            expect(monster2.$category).toBe('monster')
+            expect(monster3.$category).toBe('monster')
+
+            expect(monster1.$name).toBe('monster')
+            expect(monster2.$name).toBe('monster_1')
+            expect(monster3.$name).toBe('monster_2')
+        })
+
+
+        test('emits correct event based on static category', () => {
+            class GameController extends PerkyModule {
+                static get category () {
+                    return 'controller'
+                }
+            }
+
+            const emitSpy = vi.spyOn(child, 'emit')
+            const controller = child.create(GameController, {$name: 'game'})
+
+            expect(emitSpy).toHaveBeenCalledWith('controller:set', 'game', controller)
+        })
+
+
+        test('listNamesFor works with static category', () => {
+            class GameController extends PerkyModule {
+                static get category () {
+                    return 'controller'
+                }
+            }
+
+            class InputController extends PerkyModule {
+                static get category () {
+                    return 'controller'
+                }
+            }
+
+            child.create(GameController, {$name: 'game'})
+            child.create(InputController, {$name: 'input'})
+
+            const controllers = child.listNamesFor('controller')
+            expect(controllers).toHaveLength(2)
+            expect(controllers).toContain('game')
+            expect(controllers).toContain('input')
+        })
+    })
+
 })
-
-
-

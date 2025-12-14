@@ -14,12 +14,14 @@ export default class PerkyModule extends Notifier {
     #host = null
     #bind
 
+    static category = 'child'
+
     constructor (options = {}) {
         super()
 
         this.options = {...options}
         this.#name = options.$name || options.name || this.constructor.name
-        this.#category = options.$category
+        this.#category = options.$category || this.constructor.category
         this.#bind = options.$bind
 
         this.#childrenRegistry = new Registry()
@@ -212,7 +214,7 @@ export default class PerkyModule extends Notifier {
 
 
     create (Child, options = {}) {
-        options.$category ||= 'child'
+        options.$category ||= Child.category
         options.$name ||= uniqueId(this.childrenRegistry, options.$category)
 
         const child = typeof Child === 'function' ? new Child(options) : Child

@@ -3,11 +3,11 @@ import PerkyModule from '../core/perky_module'
 
 export default class Entity extends PerkyModule {
 
-    constructor (params = {}) {
-        super()
+    static category = 'entity'
 
-        this.$category = params.$category || 'entity'
-        this.$tags = params.$tags || []
+    constructor (options = {}) {
+        super(options)
+        this.$tags = options.$tags || []
     }
 
 }
