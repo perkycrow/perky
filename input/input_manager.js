@@ -3,10 +3,6 @@ import PerkyModule from '../core/perky_module'
 
 export default class InputManager extends PerkyModule {
 
-    constructor () {
-        super()
-    }
-
 
     onInstall (host) {
         host.delegate(this, [

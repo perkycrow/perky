@@ -4,8 +4,9 @@ import SourceLoader from './source_loader'
 
 export default class SourceManager extends PerkyModule {
 
-    constructor ({loaders, manifest}) {
-        super()
+    constructor (options = {}) {
+        super(options)
+        const {loaders, manifest} = options
         this.loaders = loaders
         this.manifest = manifest
     }

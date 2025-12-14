@@ -4,7 +4,7 @@ import PerkyModule from '../core/perky_module'
 export default class GameLoop extends PerkyModule {
 
     constructor (params = {}) {
-        super()
+        super(params)
 
         this.paused = false
         this.lastTime = 0

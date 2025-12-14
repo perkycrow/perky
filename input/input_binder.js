@@ -8,8 +8,10 @@ export default class InputBinder extends PerkyModule {
 
     #bindings = new Registry()
 
-    constructor ({bindings = [], inputBinder} = {}) {
-        super()
+    constructor (options = {}) {
+        super(options)
+
+        const {bindings = [], inputBinder} = options
 
         this.#bindings.addIndex('input', (binding) => {
             if (binding instanceof CompositeBinding) {

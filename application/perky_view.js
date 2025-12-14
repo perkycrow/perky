@@ -10,7 +10,7 @@ export default class PerkyView extends PerkyModule {
     displayMode = 'normal'
 
     constructor (params = {}) {
-        super()
+        super(params)
 
         this.element = params.element ? params.element : this.constructor.defaultElement(params)
 

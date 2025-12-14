@@ -210,8 +210,8 @@ export default class PerkyModule extends Notifier {
         child.install(this, options)
         this.childrenRegistry.set(options.$name, child)
 
-        if (options.$bind) {
-            this[options.$bind] = child
+        if (child.$bind) {
+            this[child.$bind] = child
         }
 
         setupLifecycle(this, child, options)
