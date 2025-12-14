@@ -731,4 +731,170 @@ describe(PerkyModule, () => {
         })
     })
 
+
+    describe('eagerStart', () => {
+        test('default eagerStart is true for PerkyModule', () => {
+            const module = child.create(PerkyModule, {$name: 'test'})
+            expect(module.$eagerStart).toBe(true)
+        })
+
+
+        test('child starts eagerly when parent is already started', () => {
+            child.start()
+
+            const module = child.create(PerkyModule, {$name: 'test'})
+
+            expect(module.started).toBe(true)
+        })
+
+
+        test('child does not start when parent is not started', () => {
+            const module = child.create(PerkyModule, {$name: 'test'})
+
+            expect(module.started).toBe(false)
+        })
+
+
+        test('eagerStart: false prevents automatic start', () => {
+            child.start()
+
+            const module = child.create(PerkyModule, {
+                $name: 'test',
+                $eagerStart: false
+            })
+
+            expect(module.started).toBe(false)
+        })
+
+
+        test('eagerStart: true forces eager start', () => {
+            child.start()
+
+            const module = child.create(PerkyModule, {
+                $name: 'test',
+                $eagerStart: true
+            })
+
+            expect(module.started).toBe(true)
+        })
+
+
+        test('static eagerStart is inherited from class', () => {
+            class LazyModule extends PerkyModule {
+                static eagerStart = false
+            }
+
+            child.start()
+
+            const module = child.create(LazyModule, {$name: 'test'})
+
+            expect(module.$eagerStart).toBe(false)
+            expect(module.started).toBe(false)
+        })
+
+
+        test('explicit $eagerStart overrides static eagerStart', () => {
+            class LazyModule extends PerkyModule {
+                static eagerStart = false
+            }
+
+            child.start()
+
+            const module = child.create(LazyModule, {
+                $name: 'test',
+                $eagerStart: true
+            })
+
+            expect(module.$eagerStart).toBe(true)
+            expect(module.started).toBe(true)
+        })
+
+
+        test('eagerStart cascading: option > static > default', () => {
+            class CustomModule extends PerkyModule {
+                static eagerStart = false
+            }
+
+            const module1 = child.create(CustomModule, {$name: 'test1'})
+            expect(module1.$eagerStart).toBe(false)
+
+            const module2 = child.create(CustomModule, {
+                $name: 'test2',
+                $eagerStart: true
+            })
+            expect(module2.$eagerStart).toBe(true)
+
+            const module3 = child.create(PerkyModule, {$name: 'test3'})
+            expect(module3.$eagerStart).toBe(true)
+        })
+
+
+        test('eagerStart works with $lifecycle: false', () => {
+            child.start()
+
+            const module = child.create(PerkyModule, {
+                $name: 'test',
+                $eagerStart: true,
+                $lifecycle: false
+            })
+
+            expect(module.started).toBe(false)
+        })
+
+
+        test('lazy module can be started manually later', () => {
+            child.start()
+
+            const module = child.create(PerkyModule, {
+                $name: 'test',
+                $eagerStart: false
+            })
+
+            expect(module.started).toBe(false)
+
+            module.start()
+
+            expect(module.started).toBe(true)
+        })
+
+
+        test('multiple children with mixed eagerStart', () => {
+            child.start()
+
+            const eager1 = child.create(PerkyModule, {
+                $name: 'eager1',
+                $eagerStart: true
+            })
+
+            const lazy1 = child.create(PerkyModule, {
+                $name: 'lazy1',
+                $eagerStart: false
+            })
+
+            const eager2 = child.create(PerkyModule, {
+                $name: 'eager2'
+            })
+
+            expect(eager1.started).toBe(true)
+            expect(lazy1.started).toBe(false)
+            expect(eager2.started).toBe(true)
+        })
+
+
+        test('eagerStart getter returns correct value', () => {
+            const eager = child.create(PerkyModule, {
+                $name: 'eager',
+                $eagerStart: true
+            })
+
+            const lazy = child.create(PerkyModule, {
+                $name: 'lazy',
+                $eagerStart: false
+            })
+
+            expect(eager.$eagerStart).toBe(true)
+            expect(lazy.$eagerStart).toBe(false)
+        })
+    })
+
 })
