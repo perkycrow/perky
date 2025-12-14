@@ -77,11 +77,6 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    set host (newHost) {
-        this.#host = newHost
-    }
-
-
     get started () {
         return this.#started
     }
