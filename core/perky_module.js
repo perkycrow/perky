@@ -16,6 +16,7 @@ export default class PerkyModule extends Notifier {
     #bind
     #eagerStart
     #tags = null
+    #tagIndexes = new Map()
 
     static category = 'default'
     static eagerStart = true
@@ -254,8 +255,9 @@ export default class PerkyModule extends Notifier {
         child.install(this, options)
         this.childrenRegistry.set(options.$name, child)
 
-
         setupLifecycle(this, child, options)
+
+        this.#setupTagIndexListeners(child)
 
         this.emit(`${child.$category}:set`, child.$name, child)
         child.emit('registered', this, child.$name)
@@ -369,7 +371,95 @@ export default class PerkyModule extends Notifier {
             return
         }
 
-        target.pipeTo(this, events, namespace)
+        const eventArray = Array.isArray(events) ? events : Object.keys(events)
+        eventArray.forEach((event) => {
+            target.on(event, (...args) => {
+                const prefixedEvent = namespace ? `${namespace}:${event}` : event
+                this.emit(prefixedEvent, ...args)
+            })
+        })
+    }
+
+
+    childrenByTags (...tags) {
+        if (tags.length === 0) {
+            return []
+        }
+
+        const indexKey = getIndexKey(tags)
+
+        if (this.#tagIndexes.has(indexKey)) {
+            return this.#childrenRegistry.lookup(indexKey, indexKey)
+        } else {
+            return this.#childrenRegistry.all.filter(child =>
+                tags.every(tag => child.$tags?.includes(tag)))
+        }
+    }
+
+
+    addTagsIndex (tags) {
+        if (!Array.isArray(tags) || tags.length === 0) {
+            return false
+        }
+
+        const indexKey = getIndexKey(tags)
+
+        if (this.#tagIndexes.has(indexKey)) {
+            return false
+        }
+
+        this.#childrenRegistry.addIndex(indexKey, child => {
+            const hasAllTags = tags.every(tag => child.tags?.has(tag))
+            return hasAllTags ? indexKey : null
+        })
+
+        this.#tagIndexes.set(indexKey, tags)
+
+        this.#childrenRegistry.forEach(child => {
+            if (child.tags) {
+                this.#setupTagIndexListeners(child)
+            }
+        })
+
+        return true
+    }
+
+
+    removeTagsIndex (tags) {
+        const indexKey = getIndexKey(tags)
+
+        if (!this.#tagIndexes.has(indexKey)) {
+            return false
+        }
+
+        this.#childrenRegistry.removeIndex(indexKey)
+        this.#tagIndexes.delete(indexKey)
+        return true
+    }
+
+
+    #setupTagIndexListeners (child) {
+        if (this.#tagIndexes.size > 0 && child.tags) {
+            return
+        }
+
+        child.tags.on('add', () => {
+            for (const indexKey of this.#tagIndexes.keys()) {
+                this.#childrenRegistry.updateIndexFor(child, indexKey, null, indexKey)
+            }
+        })
+
+        child.tags.on('delete', () => {
+            for (const indexKey of this.#tagIndexes.keys()) {
+                this.#childrenRegistry.updateIndexFor(child, indexKey, indexKey, null)
+            }
+        })
+
+        child.tags.on('clear', () => {
+            for (const indexKey of this.#tagIndexes.keys()) {
+                this.#childrenRegistry.updateIndexFor(child, indexKey, indexKey, null)
+            }
+        })
     }
 
 }
@@ -454,4 +544,9 @@ function unregisterChild (host, child) { // eslint-disable-line max-params
     if (!child.disposed) {
         child.dispose()
     }
+}
+
+
+function getIndexKey (tags) {
+    return [...tags].sort().join('_')
 }

@@ -1071,5 +1071,214 @@ describe(PerkyModule, () => {
 
     })
 
+
+    describe('composite tag indexing', () => {
+
+        test('childrenByTags returns children matching all tags (without index)', () => {
+            const child1 = child.create(PerkyModule, {$name: 'c1', $tags: ['enemy', 'collidable', 'flying']})
+            const child2 = child.create(PerkyModule, {$name: 'c2', $tags: ['enemy', 'collidable']})
+            child.create(PerkyModule, {$name: 'c3', $tags: ['friendly', 'collidable']})
+
+            const enemyColliders = child.childrenByTags('enemy', 'collidable')
+
+            expect(enemyColliders).toHaveLength(2)
+            expect(enemyColliders).toContain(child1)
+            expect(enemyColliders).toContain(child2)
+        })
+
+
+        test('childrenByTags returns empty array for no matches', () => {
+            child.create(PerkyModule, {$name: 'c1', $tags: ['enemy']})
+
+            const result = child.childrenByTags('enemy', 'collidable')
+
+            expect(result).toEqual([])
+        })
+
+
+        test('childrenByTags returns empty array for empty tags', () => {
+            const result = child.childrenByTags()
+
+            expect(result).toEqual([])
+        })
+
+
+        test('addTagsIndex creates composite index', () => {
+            const result = child.addTagsIndex(['enemy', 'collidable'])
+
+            expect(result).toBe(true)
+            expect(child.childrenRegistry.hasIndex('collidable_enemy')).toBe(true)
+        })
+
+
+        test('addTagsIndex normalizes tag order', () => {
+            child.addTagsIndex(['collidable', 'enemy'])
+
+            expect(child.childrenRegistry.hasIndex('collidable_enemy')).toBe(true)
+        })
+
+
+        test('addTagsIndex returns false if already indexed', () => {
+            const result1 = child.addTagsIndex(['enemy', 'collidable'])
+            const result2 = child.addTagsIndex(['enemy', 'collidable'])
+
+            expect(result1).toBe(true)
+            expect(result2).toBe(false)
+        })
+
+
+        test('addTagsIndex returns false for empty array', () => {
+            const result = child.addTagsIndex([])
+
+            expect(result).toBe(false)
+        })
+
+
+        test('addTagsIndex returns false for non-array', () => {
+            const result = child.addTagsIndex('invalid')
+
+            expect(result).toBe(false)
+        })
+
+
+        test('childrenByTags uses index when available', () => {
+            const child1 = child.create(PerkyModule, {$name: 'c1', $tags: ['enemy', 'collidable']})
+            child.create(PerkyModule, {$name: 'c2', $tags: ['enemy']})
+
+            child.addTagsIndex(['enemy', 'collidable'])
+
+            const result = child.childrenByTags('enemy', 'collidable')
+
+            expect(result).toHaveLength(1)
+            expect(result).toContain(child1)
+        })
+
+
+        test('removeTagsIndex removes composite index', () => {
+            child.addTagsIndex(['enemy', 'collidable'])
+            const result = child.removeTagsIndex(['enemy', 'collidable'])
+
+            expect(result).toBe(true)
+            expect(child.childrenRegistry.hasIndex('collidable_enemy')).toBe(false)
+        })
+
+
+        test('removeTagsIndex returns false if not indexed', () => {
+            const result = child.removeTagsIndex(['enemy', 'collidable'])
+
+            expect(result).toBe(false)
+        })
+
+
+        test('index automatically updates when child tags change (add)', () => {
+            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy']})
+            child.addTagsIndex(['enemy', 'collidable'])
+            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
+
+            testChild.tags.add('collidable')
+
+            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
+            expect(child.childrenByTags('enemy', 'collidable')).toContain(testChild)
+        })
+
+
+        test('index automatically updates when child tags change (delete)', () => {
+            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy', 'collidable']})
+            child.addTagsIndex(['enemy', 'collidable'])
+
+            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
+
+            testChild.tags.delete('collidable')
+
+            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
+        })
+
+
+        test('index automatically updates when child tags change (clear)', () => {
+            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy', 'collidable']})
+            child.addTagsIndex(['enemy', 'collidable'])
+
+            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
+
+            testChild.tags.clear()
+
+            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
+        })
+
+
+        test('index updates when $tags is reassigned', () => {
+            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy']})
+            child.addTagsIndex(['enemy', 'collidable'])
+
+            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
+
+            testChild.$tags = ['enemy', 'collidable']
+
+            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
+        })
+
+
+        test('multiple composite indexes work independently', () => {
+            const enemy = child.create(PerkyModule, {$name: 'enemy', $tags: ['enemy', 'collidable']})
+            const friendly = child.create(PerkyModule, {$name: 'friendly', $tags: ['friendly', 'collidable']})
+
+            child.addTagsIndex(['enemy', 'collidable'])
+            child.addTagsIndex(['friendly', 'collidable'])
+
+            expect(child.childrenByTags('enemy', 'collidable')).toEqual([enemy])
+            expect(child.childrenByTags('friendly', 'collidable')).toEqual([friendly])
+        })
+
+
+        test('events are cleaned up when child is removed', () => {
+            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy', 'collidable']})
+            child.addTagsIndex(['enemy', 'collidable'])
+
+            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
+
+            child.removeChild('test')
+
+            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
+
+            testChild.tags.add('flying')
+            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
+        })
+
+
+        test('index hooks are added to existing children', () => {
+            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy']})
+
+            child.addTagsIndex(['enemy', 'collidable'])
+
+            testChild.tags.add('collidable')
+
+            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
+        })
+
+
+        test('single tag query works', () => {
+            const child1 = child.create(PerkyModule, {$name: 'c1', $tags: ['enemy']})
+            const child2 = child.create(PerkyModule, {$name: 'c2', $tags: ['enemy', 'flying']})
+            child.create(PerkyModule, {$name: 'c3', $tags: ['friendly']})
+
+            const enemies = child.childrenByTags('enemy')
+
+            expect(enemies).toHaveLength(2)
+            expect(enemies).toContain(child1)
+            expect(enemies).toContain(child2)
+        })
+
+
+        test('works with children without tags', () => {
+            child.create(PerkyModule, {$name: 'c1'})
+            const child2 = child.create(PerkyModule, {$name: 'c2', $tags: ['enemy']})
+
+            const result = child.childrenByTags('enemy')
+
+            expect(result).toEqual([child2])
+        })
+
+    })
+
 })
 
