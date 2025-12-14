@@ -10,13 +10,15 @@ export default class PerkyModule extends Notifier {
     #disposed = false
     #name
     #category
+    #bind
 
     constructor (options = {}) {
         super()
 
-        this.options = options
+        this.options = {...options}
         this.#name = options.$name || options.name || this.constructor.name
         this.#category = options.$category
+        this.#bind = options.$bind
 
         this.host = null
         this.installed = false
@@ -52,6 +54,21 @@ export default class PerkyModule extends Notifier {
         if (oldCategory !== newCategory) {
             this.#category = newCategory
             this.emit('category:changed', newCategory, oldCategory)
+        }
+    }
+
+
+    get $bind () {
+        return this.#bind
+    }
+
+
+    set $bind (newBind) {
+        const oldBind = this.#bind
+
+        if (oldBind !== newBind) {
+            this.#bind = newBind
+            this.emit('bind:changed', newBind, oldBind)
         }
     }
 
@@ -144,7 +161,6 @@ export default class PerkyModule extends Notifier {
     }
 
 
-
     install (host, options) {
         if (this.installed) {
             return this.uninstall()
@@ -185,15 +201,23 @@ export default class PerkyModule extends Notifier {
 
     create (Child, options = {}) {
         options.$category ||= 'child'
+        options.$name ||= uniqueId(this.childrenRegistry, options.$category)
 
         const child = typeof Child === 'function' ? new Child(options) : Child
-        const childName = getChildName(this, child, options)
 
-        unregisterExisting(this, childName, options)
-        registerChild(this, child, childName, options)
-        setupBinding(this, child, options)
+        unregisterExisting(this, options.$name)
+
+        child.install(this, options)
+        this.childrenRegistry.set(options.$name, child)
+
+        if (options.$bind) {
+            this[options.$bind] = child
+        }
+
         setupLifecycle(this, child, options)
-        emitRegistrationEvents(this, child, childName, options)
+
+        this.emit(`${child.$category}:set`, child.$name, child)
+        child.emit('registered', this, child.$name)
 
         return child
     }
@@ -313,37 +337,11 @@ export default class PerkyModule extends Notifier {
 }
 
 
-function getChildName (host, child, options) {
-    if (options.$name) {
-        return options.$name
-    }
-
-    const category = child.$category
-    return uniqueId(host.childrenRegistry, category)
-}
-
-
 function unregisterExisting (host, childName) {
     const children = host.childrenRegistry
 
     if (children.has(childName)) {
         unregisterChild(host, children.get(childName))
-    }
-}
-
-
-function registerChild (host, child, childName, options) {
-    child.install(host, options)
-    child.$category = options.$category
-    child.$bind = options.$bind
-
-    host.childrenRegistry.set(childName, child)
-}
-
-
-function setupBinding (host, child, options) {
-    if (options.$bind) {
-        host[options.$bind] = child
     }
 }
 
@@ -391,16 +389,10 @@ function setupLifecycle (host, child, options) {
 }
 
 
-function emitRegistrationEvents (host, child, childName, options) {
-    const category = options.$category
-
-    host.emit(`${category}:set`, childName, child)
-    child.emit('registered', host, childName)
-}
-
-
 function unregisterChild (host, child) { // eslint-disable-line max-params
-    host.childrenRegistry.delete(child.$name)
+    if (host.childrenRegistry.hasEntry(child.$name, child)) {
+        host.childrenRegistry.delete(child.$name)
+    }
 
     if (child.$bind && host[child.$bind] === child) {
         delete host[child.$bind]

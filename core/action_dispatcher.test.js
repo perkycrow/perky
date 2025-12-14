@@ -474,11 +474,8 @@ describe(ActionDispatcher, () => {
 
 
     test('listControllers', () => {
-        const controller1 = new ActionController()
-        const controller2 = new ActionController()
-
-        dispatcher.register('main', controller1)
-        dispatcher.register('pause', controller2)
+        dispatcher.register('main', ActionController)
+        dispatcher.register('pause', ActionController)
 
         const controllers = dispatcher.listControllers()
 

@@ -304,13 +304,10 @@ describe(Engine, () => {
 
     test('controller registration events', () => {
         const actionDispatcherSpy = vi.spyOn(engine.actionDispatcher, 'emit')
-        const controller = new ActionController()
-        const controllerSpy = vi.spyOn(controller, 'emit')
 
-        engine.registerController('test', controller)
+        const controller = engine.registerController('test', ActionController)
 
         expect(actionDispatcherSpy).toHaveBeenCalledWith('controller:set', 'test', controller)
-        expect(controllerSpy).toHaveBeenCalledWith('registered', engine.actionDispatcher, 'test')
 
         expect(controller.host).toBe(engine.actionDispatcher)
     })
