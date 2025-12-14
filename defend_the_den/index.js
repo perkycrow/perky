@@ -4,6 +4,7 @@ import DefendTheDen from './defend_the_den'
 async function init () {
     const appManager = new ApplicationManager()
     appManager.register('defendTheDen', DefendTheDen)
+    appManager.start()
 
     const container = document.getElementById('defend_the_den')
     const app = await appManager.spawn('defendTheDen', {

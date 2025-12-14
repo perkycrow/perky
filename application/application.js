@@ -8,6 +8,8 @@ import InputSystem from '../input/input_system'
 
 export default class Application extends Engine {
 
+    static eagerStart = false
+
     constructor (params = {}) {
         const {inputBinder, keyboard = {}, mouse = {}} = params
 

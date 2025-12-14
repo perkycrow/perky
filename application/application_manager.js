@@ -51,6 +51,7 @@ export default class ApplicationManager extends PerkyModule {
         if (params.container) {
             app.mount(params.container)
         }
+
         app.start()
         return app
     }

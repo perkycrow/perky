@@ -13,8 +13,10 @@ export default class PerkyModule extends Notifier {
     #category
     #host = null
     #bind
+    #eagerStart
 
     static category = 'default'
+    static eagerStart = true
 
     constructor (options = {}) {
         super()
@@ -23,6 +25,7 @@ export default class PerkyModule extends Notifier {
         this.#name = options.$name || options.name || this.constructor.name
         this.#category = options.$category || this.constructor.category
         this.#bind = options.$bind
+        this.#eagerStart = options.$eagerStart
 
         this.#childrenRegistry = new Registry()
         this.#childrenRegistry.addIndex('$category')
@@ -91,6 +94,11 @@ export default class PerkyModule extends Notifier {
 
     get installed () {
         return this.#installed
+    }
+
+
+    get $eagerStart () {
+        return this.#eagerStart
     }
 
 
@@ -216,6 +224,7 @@ export default class PerkyModule extends Notifier {
     create (Child, options = {}) {
         options.$category ||= Child.category
         options.$name ||= uniqueId(this.childrenRegistry, options.$category)
+        options.$eagerStart = options.$eagerStart ?? Child.eagerStart ?? true
 
         const child = typeof Child === 'function' ? new Child(options) : Child
 
@@ -363,7 +372,7 @@ function setupLifecycle (host, child, options) {
 
     const childrenRegistry = host.childrenRegistry
 
-    if (host.started) {
+    if (host.started && child.$eagerStart) {
         child.start()
     }
 
