@@ -1,14 +1,18 @@
+import ApplicationManager from '../application/application_manager'
 import DefendTheDen from './defend_the_den'
 
 async function init () {
-    const app = new DefendTheDen()
-    const container = document.getElementById('defend_the_den')
+    const appManager = new ApplicationManager()
+    appManager.register('defendTheDen', DefendTheDen)
 
-    app.mount(container)
-    await app.loadAll()
-    app.start()
+    const container = document.getElementById('defend_the_den')
+    const app = await appManager.spawn('defendTheDen', {
+        container,
+        preload: 'all'
+    })
 
     window.defendTheDen = app
+    window.appManager = appManager
 }
 
 if (document.readyState === 'loading') {

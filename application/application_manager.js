@@ -44,8 +44,15 @@ export default class ApplicationManager extends PerkyModule {
 
 
     async spawn (name, params = {}) {
-        const app = this.createApp(name, params)
-        await app.preload()
+        const {preload = true, ...appParams} = params
+        const app = this.createApp(name, appParams)
+
+        if (preload === 'all') {
+            await app.loadAll()
+        } else if (preload === true) {
+            await app.preload()
+        }
+
         if (params.container) {
             app.mount(params.container)
         }
