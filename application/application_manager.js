@@ -8,8 +8,6 @@ export default class ApplicationManager extends PerkyModule {
         super()
 
         this.constructors = new Registry()
-        this.instances = new Registry()
-        this.lastAppId = 0
     }
 
 
@@ -29,34 +27,24 @@ export default class ApplicationManager extends PerkyModule {
     }
 
 
-    create (name, params = {}) {
+    createApp (name, params = {}) {
         if (!this.constructors.has(name)) {
             throw new Error(`Application "${name}" is not registered.`)
         }
 
         const Application = this.constructors.get(name)
-        const app = new Application(params)
-        app.id = ++this.lastAppId
-        app.host = this
-        this.instances.set(app.id, app)
 
-        app.once('dispose', () => {
-            if (this.instances.get(app.id) === app) {
-                this.instances.delete(app.id)
-                this.emit('applications:delete', app.id, app)
-                app.emit('unregistered', this, app.id)
-            }
-        })
+        const options = {
+            ...params,
+            $category: 'application'
+        }
 
-        this.emit('applications:set', app.id, app)
-        app.emit('registered', this, app.id)
-
-        return app
+        return this.create(Application, options)
     }
 
 
     async spawn (name, params = {}) {
-        const app = this.create(name, params)
+        const app = this.createApp(name, params)
         await app.preload()
         if (params.container) {
             app.mount(params.container)
@@ -66,53 +54,57 @@ export default class ApplicationManager extends PerkyModule {
     }
 
 
-    start (appId) {
-        if (this.instances.has(appId)) {
-            const app = this.instances.get(appId)
+    startApp (nameOrId) {
+        const app = this.#findApp(nameOrId)
+        if (app) {
             app.start()
         }
     }
 
 
-    stop (appId) {
-        if (this.instances.has(appId)) {
-            const app = this.instances.get(appId)
+    stopApp (nameOrId) {
+        const app = this.#findApp(nameOrId)
+        if (app) {
             app.stop()
         }
     }
 
 
-    execute (appId, method, ...args) {
-        if (this.instances.has(appId)) {
-            const app = this.instances.get(appId)
+    execute (nameOrId, method, ...args) {
+        const app = this.#findApp(nameOrId)
+        if (app) {
             app.execute(method, ...args)
         }
     }
 
 
-    dispose (appId) {
-        if (this.instances.has(appId)) {
-            const app = this.instances.get(appId)
-            this.instances.delete(appId)
-
-            this.emit('applications:delete', appId, app)
-            app.emit('unregistered', this, appId)
-            app.dispose()
+    disposeApp (nameOrId) {
+        const app = this.#findApp(nameOrId)
+        if (app) {
+            this.removeChild(app.$name)
         }
     }
 
 
     list (grep = null) {
-        const apps = []
-        this.instances.forEach((app) => {
-            apps.push(app)
-        })
+        const apps = this.children
 
         if (grep) {
-            return apps.filter(app => app.name.includes(grep))
+            return apps.filter(app => app.name && app.name.includes(grep))
         }
 
         return apps
+    }
+
+
+    #findApp (nameOrId) {
+        let app = this.getChild(nameOrId)
+
+        if (!app) {
+            app = this.children.find(child => child.$name === nameOrId)
+        }
+
+        return app || null
     }
 
 }

@@ -58,14 +58,12 @@ describe(ApplicationManager, () => {
     test('constructor', () => {
         expect(appManager).toBeInstanceOf(PerkyModule)
         expect(appManager.constructors).toBeInstanceOf(Registry)
-        expect(appManager.instances).toBeInstanceOf(Registry)
-        expect(appManager.lastAppId).toBe(0)
     })
 
 
-    test('constructor initializes Registry', () => {
-        expect(appManager.instances).toBeInstanceOf(Registry)
-        expect(appManager.instances.size).toBe(0)
+    test('constructor initializes children registry', () => {
+        expect(appManager.childrenRegistry).toBeInstanceOf(Registry)
+        expect(appManager.childrenRegistry.size).toBe(0)
     })
 
 
@@ -104,48 +102,49 @@ describe(ApplicationManager, () => {
     })
 
 
-    test('create', () => {
+    test('createApp', () => {
         appManager.register('testApp', MockApp)
 
-        const app = appManager.create('testApp', {name: 'TestInstance'})
+        const app = appManager.createApp('testApp', {name: 'TestInstance'})
 
         expect(app).toBeInstanceOf(MockApp)
-        expect(app.id).toBe(1)
+        expect(app.$name).toBeTruthy()
         expect(app.name).toBe('TestInstance')
-        expect(appManager.lastAppId).toBe(1)
-        expect(appManager.instances.has(1)).toBe(true)
-        expect(appManager.instances.get(1)).toBe(app)
+        expect(app.$category).toBe('application')
+        expect(appManager.childrenRegistry.has(app.$name)).toBe(true)
+        expect(appManager.getChild(app.$name)).toBe(app)
     })
 
 
-    test('create with default params', () => {
+    test('createApp with default params', () => {
         appManager.register('testApp', MockApp)
 
-        const app = appManager.create('testApp')
+        const app = appManager.createApp('testApp')
 
         expect(app).toBeInstanceOf(MockApp)
-        expect(app.id).toBe(1)
+        expect(app.$name).toBeTruthy()
         expect(app.name).toBe('MockApp')
     })
 
 
-    test('create increments lastAppId', () => {
+    test('createApp generates unique names', () => {
         appManager.register('testApp', MockApp)
 
-        const app1 = appManager.create('testApp')
-        const app2 = appManager.create('testApp')
-        const app3 = appManager.create('testApp')
+        const app1 = appManager.createApp('testApp')
+        const app2 = appManager.createApp('testApp')
+        const app3 = appManager.createApp('testApp')
 
-        expect(app1.id).toBe(1)
-        expect(app2.id).toBe(2)
-        expect(app3.id).toBe(3)
-        expect(appManager.lastAppId).toBe(3)
+        expect(app1.$name).toBeTruthy()
+        expect(app2.$name).toBeTruthy()
+        expect(app3.$name).toBeTruthy()
+        expect(app1.$name).not.toBe(app2.$name)
+        expect(app2.$name).not.toBe(app3.$name)
     })
 
 
-    test('create unregistered app throws error', () => {
+    test('createApp unregistered app throws error', () => {
         expect(() => {
-            appManager.create('nonExistent')
+            appManager.createApp('nonExistent')
         }).toThrow('Application "nonExistent" is not registered.')
     })
 
@@ -156,43 +155,43 @@ describe(ApplicationManager, () => {
         const app = await appManager.spawn('testApp', {name: 'SpawnedApp'})
 
         expect(app).toBeInstanceOf(MockApp)
-        expect(app.id).toBe(1)
+        expect(app.$name).toBeTruthy()
         expect(app.name).toBe('SpawnedApp')
         expect(app.mockStart).toHaveBeenCalled()
-        expect(appManager.instances.has(1)).toBe(true)
+        expect(appManager.childrenRegistry.has(app.$name)).toBe(true)
     })
 
 
-    test('start', () => {
+    test('startApp', () => {
         appManager.register('testApp', MockApp)
-        const app = appManager.create('testApp')
+        const app = appManager.createApp('testApp')
 
-        appManager.start(app.id)
+        appManager.startApp(app.$name)
 
         expect(app.mockStart).toHaveBeenCalled()
     })
 
 
-    test('start non-existent app', () => {
+    test('startApp non-existent app', () => {
         expect(() => {
-            appManager.start(999)
+            appManager.startApp('nonExistent')
         }).not.toThrow()
     })
 
 
-    test('stop', async () => {
+    test('stopApp', async () => {
         appManager.register('testApp', MockApp)
         const app = await appManager.spawn('testApp')
 
-        appManager.stop(app.id)
+        appManager.stopApp(app.$name)
 
         expect(app.mockStop).toHaveBeenCalled()
     })
 
 
-    test('stop non-existent app', () => {
+    test('stopApp non-existent app', () => {
         expect(() => {
-            appManager.stop(999)
+            appManager.stopApp('nonExistent')
         }).not.toThrow()
     })
 
@@ -201,11 +200,11 @@ describe(ApplicationManager, () => {
         appManager = new ApplicationManager()
         appManager.register('TestApp', Application)
 
-        const app = appManager.create('TestApp')
+        const app = appManager.createApp('TestApp')
         const actionSpy = vi.fn()
         app.mainController.testAction = actionSpy
 
-        appManager.execute(app.id, 'testAction', 'arg1', 'arg2')
+        appManager.execute(app.$name, 'testAction', 'arg1', 'arg2')
 
         expect(actionSpy).toHaveBeenCalledWith('arg1', 'arg2')
     })
@@ -213,72 +212,72 @@ describe(ApplicationManager, () => {
 
     test('execute non-existent app', () => {
         expect(() => {
-            appManager.execute(999, 'testAction')
+            appManager.execute('nonExistent', 'testAction')
         }).not.toThrow()
     })
 
 
-    test('dispose', async () => {
+    test('disposeApp', async () => {
         appManager.register('testApp', MockApp)
         const app = await appManager.spawn('testApp')
-        const appId = app.id
+        const appName = app.$name
 
-        appManager.dispose(appId)
+        appManager.disposeApp(appName)
 
         expect(app.mockDispose).toHaveBeenCalled()
-        expect(appManager.instances.has(appId)).toBe(false)
+        expect(appManager.childrenRegistry.has(appName)).toBe(false)
     })
 
 
-    test('dispose non-existent app', () => {
+    test('disposeApp non-existent app', () => {
         expect(() => {
-            appManager.dispose(999)
+            appManager.disposeApp('nonExistent')
         }).not.toThrow()
     })
 
 
-    test('dispose calls app.dispose() which triggers dismount', async () => {
+    test('disposeApp calls app.dispose() which triggers dismount', async () => {
         appManager.register('testApp', MockApp)
         const container = document.createElement('div')
         const app = await appManager.spawn('testApp', {container})
-        const appId = app.id
+        const appName = app.$name
 
         expect(app.perkyView.mounted).toBe(true)
         const dismountSpy = vi.spyOn(app.perkyView, 'dismount')
 
-        appManager.dispose(appId)
+        appManager.disposeApp(appName)
 
         expect(app.mockDispose).toHaveBeenCalled()
         expect(dismountSpy).toHaveBeenCalledTimes(1)
-        expect(appManager.instances.has(appId)).toBe(false)
+        expect(appManager.childrenRegistry.has(appName)).toBe(false)
     })
 
 
-    test('dispose vs stop - dispose should call app.dispose(), not just stop()', async () => {
+    test('disposeApp vs stopApp - disposeApp should call app.dispose(), not just stop()', async () => {
         appManager.register('testApp', MockApp)
         const container = document.createElement('div')
         const app = await appManager.spawn('testApp', {container})
-        const appId = app.id
+        const appName = app.$name
 
-        appManager.stop(appId)
+        appManager.stopApp(appName)
         expect(app.mockStop).toHaveBeenCalledTimes(1)
         expect(app.mockDispose).not.toHaveBeenCalled()
-        expect(appManager.instances.has(appId)).toBe(true)
+        expect(appManager.childrenRegistry.has(appName)).toBe(true)
 
         const dismountSpy = vi.spyOn(app.perkyView, 'dismount')
-        appManager.dispose(appId)
+        appManager.disposeApp(appName)
         expect(app.mockDispose).toHaveBeenCalled()
         expect(dismountSpy).toHaveBeenCalledTimes(1)
-        expect(appManager.instances.has(appId)).toBe(false)
+        expect(appManager.childrenRegistry.has(appName)).toBe(false)
     })
 
 
     test('list all apps', () => {
         appManager.register('testApp', MockApp)
 
-        const app1 = appManager.create('testApp', {name: 'App1'})
-        const app2 = appManager.create('testApp', {name: 'App2'})
-        const app3 = appManager.create('testApp', {name: 'Different'})
+        const app1 = appManager.createApp('testApp', {name: 'App1'})
+        const app2 = appManager.createApp('testApp', {name: 'App2'})
+        const app3 = appManager.createApp('testApp', {name: 'Different'})
 
         const allApps = appManager.list()
 
@@ -292,9 +291,9 @@ describe(ApplicationManager, () => {
     test('list with grep filter', () => {
         appManager.register('testApp', MockApp)
 
-        const app1 = appManager.create('testApp', {name: 'GameApp'})
-        const app2 = appManager.create('testApp', {name: 'MenuApp'})
-        const app3 = appManager.create('testApp', {name: 'SettingsApp'})
+        const app1 = appManager.createApp('testApp', {name: 'GameApp'})
+        const app2 = appManager.createApp('testApp', {name: 'MenuApp'})
+        const app3 = appManager.createApp('testApp', {name: 'SettingsApp'})
 
         const gameApps = appManager.list('Game')
         const menuApps = appManager.list('Menu')
@@ -315,7 +314,7 @@ describe(ApplicationManager, () => {
 
     test('list with no matches', () => {
         appManager.register('testApp', MockApp)
-        appManager.create('testApp', {name: 'TestApp'})
+        appManager.createApp('testApp', {name: 'TestApp'})
 
         const noMatches = appManager.list('NonExistent')
 
@@ -357,13 +356,13 @@ describe(ApplicationManager, () => {
         const preload = await appManager.spawn('preload')
         expect(preload.mockStart).toHaveBeenCalled()
 
-        appManager.stop(preload.id)
+        appManager.stopApp(preload.$name)
         expect(preload.mockStop).toHaveBeenCalled()
 
         const title = await appManager.spawn('title')
         expect(title.mockStart).toHaveBeenCalled()
 
-        appManager.stop(title.id)
+        appManager.stopApp(title.$name)
         await appManager.spawn('game')
 
         expect(appManager.list()).toHaveLength(3)
@@ -397,72 +396,74 @@ describe(ApplicationManager, () => {
         const runningApps = appManager.list()
         expect(runningApps).toHaveLength(2)
 
-        appManager.dispose(settings.id)
+        appManager.disposeApp(settings.$name)
         expect(settings.mockDispose).toHaveBeenCalled()
-        expect(appManager.instances.has(settings.id)).toBe(false)
-        expect(appManager.instances.has(game.id)).toBe(true)
+        expect(appManager.childrenRegistry.has(settings.$name)).toBe(false)
+        expect(appManager.childrenRegistry.has(game.$name)).toBe(true)
     })
 
 
     test('multiple instances of same app type', () => {
         appManager.register('dialog', MockApp)
 
-        const dialog1 = appManager.create('dialog', {name: 'ConfirmDialog'})
-        const dialog2 = appManager.create('dialog', {name: 'AlertDialog'})
-        const dialog3 = appManager.create('dialog', {name: 'InputDialog'})
+        const dialog1 = appManager.createApp('dialog', {name: 'ConfirmDialog'})
+        const dialog2 = appManager.createApp('dialog', {name: 'AlertDialog'})
+        const dialog3 = appManager.createApp('dialog', {name: 'InputDialog'})
 
-        expect(dialog1.id).toBe(1)
-        expect(dialog2.id).toBe(2)
-        expect(dialog3.id).toBe(3)
+        expect(dialog1.$name).toBeTruthy()
+        expect(dialog2.$name).toBeTruthy()
+        expect(dialog3.$name).toBeTruthy()
+        expect(dialog1.$name).not.toBe(dialog2.$name)
+        expect(dialog2.$name).not.toBe(dialog3.$name)
 
         expect(appManager.list()).toHaveLength(3)
         expect(appManager.list('Dialog')).toHaveLength(3)
 
-        appManager.dispose(dialog2.id)
+        appManager.disposeApp(dialog2.$name)
         expect(appManager.list()).toHaveLength(2)
-        expect(appManager.instances.has(dialog1.id)).toBe(true)
-        expect(appManager.instances.has(dialog2.id)).toBe(false)
-        expect(appManager.instances.has(dialog3.id)).toBe(true)
+        expect(appManager.childrenRegistry.has(dialog1.$name)).toBe(true)
+        expect(appManager.childrenRegistry.has(dialog2.$name)).toBe(false)
+        expect(appManager.childrenRegistry.has(dialog3.$name)).toBe(true)
     })
 
 
     test('app lifecycle management', () => {
         appManager.register('testApp', MockApp)
 
-        const app = appManager.create('testApp')
+        const app = appManager.createApp('testApp')
         const startSpy = vi.spyOn(app, 'start')
         const stopSpy = vi.spyOn(app, 'stop')
 
         expect(startSpy).not.toHaveBeenCalled()
         expect(stopSpy).not.toHaveBeenCalled()
 
-        appManager.start(app.id)
+        appManager.startApp(app.$name)
         expect(startSpy).toHaveBeenCalledTimes(1)
 
-        appManager.stop(app.id)
+        appManager.stopApp(app.$name)
         expect(app.mockStop).toHaveBeenCalledTimes(1)
 
-        appManager.start(app.id)
+        appManager.startApp(app.$name)
         expect(startSpy).toHaveBeenCalledTimes(2)
 
-        appManager.dispose(app.id)
+        appManager.disposeApp(app.$name)
         expect(app.mockDispose).toHaveBeenCalled()
-        expect(appManager.instances.has(app.id)).toBe(false)
+        expect(appManager.childrenRegistry.has(app.$name)).toBe(false)
     })
 
 
     test('app self-dispose should be intercepted by manager', () => {
         appManager.register('testApp', MockApp)
 
-        const app = appManager.create('testApp')
-        const appId = app.id
+        const app = appManager.createApp('testApp')
+        const appName = app.$name
 
-        expect(appManager.instances.has(appId)).toBe(true)
+        expect(appManager.childrenRegistry.has(appName)).toBe(true)
         expect(appManager.list()).toHaveLength(1)
 
         app.dispose()
 
-        expect(appManager.instances.has(appId)).toBe(false)
+        expect(appManager.childrenRegistry.has(appName)).toBe(false)
         expect(appManager.list()).toHaveLength(0)
     })
 
