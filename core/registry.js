@@ -71,6 +71,16 @@ export default class Registry extends Notifier {
     }
 
 
+    hasEntry (key, value) {
+        return this.get(key) === value
+    }
+
+
+    isKeyOf (key, value) {
+        return this.keyFor(value) === key
+    }
+
+
     forEach (callbackFn, thisArg) {
         this.#map.forEach(callbackFn, thisArg)
     }
