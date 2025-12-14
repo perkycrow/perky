@@ -11,6 +11,7 @@ export default class PerkyModule extends Notifier {
     #installed = false
     #name
     #category
+    #host = null
     #bind
 
     constructor (options = {}) {
@@ -20,8 +21,6 @@ export default class PerkyModule extends Notifier {
         this.#name = options.$name || options.name || this.constructor.name
         this.#category = options.$category
         this.#bind = options.$bind
-
-        this.host = null
 
         this.#childrenRegistry = new Registry()
         this.#childrenRegistry.addIndex('$category')
@@ -70,6 +69,15 @@ export default class PerkyModule extends Notifier {
             this.#bind = newBind
             this.emit('bind:changed', newBind, oldBind)
         }
+    }
+
+
+    get host () {
+        return this.#host
+    }
+
+    set host (newHost) {
+        this.#host = newHost
     }
 
 
@@ -162,7 +170,7 @@ export default class PerkyModule extends Notifier {
 
 
     get running () {
-        return this.started
+        return this.#started
     }
 
 
@@ -171,7 +179,7 @@ export default class PerkyModule extends Notifier {
             return this.uninstall()
         }
 
-        this.host = host
+        this.#host = host
         if (this.$bind) {
             host[this.$bind] = this
         }
@@ -189,10 +197,9 @@ export default class PerkyModule extends Notifier {
             return false
         }
 
-        this.onUninstall(this.host)
-
+        this.onUninstall(this.#host)
         this.#installed = false
-        this.host = null
+        this.#host = null
 
         return true
     }
@@ -275,14 +282,14 @@ export default class PerkyModule extends Notifier {
             return
         }
 
-        if (!this.host) {
+        if (!this.#host) {
             throw new Error('Cannot bind events: child has no host')
         }
 
         Object.keys(eventBindings).forEach(eventName => {
             const handler = eventBindings[eventName]
             if (typeof handler === 'function') {
-                this.host.on(eventName, handler)
+                this.#host.on(eventName, handler)
             }
         })
     }
