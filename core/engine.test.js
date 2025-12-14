@@ -256,8 +256,7 @@ describe(Engine, () => {
 
 
     test('unregisterController', () => {
-        const controller = new ActionController()
-        engine.registerController('test', controller)
+        engine.registerController('test', ActionController)
 
         engine.unregisterController('test')
 
@@ -266,8 +265,7 @@ describe(Engine, () => {
 
 
     test('getActiveControllers', () => {
-        const controller = new ActionController()
-        engine.registerController('test', controller)
+        engine.registerController('test', ActionController)
 
         engine.setActiveControllers('test')
 
@@ -319,8 +317,7 @@ describe(Engine, () => {
 
 
     test('controller unregistration events', () => {
-        const controller = new ActionController()
-        engine.registerController('test', controller)
+        const controller = engine.registerController('test', ActionController)
 
         const actionDispatcherSpy = vi.spyOn(engine.actionDispatcher, 'emit')
         const controllerSpy = vi.spyOn(controller, 'emit')
@@ -335,8 +332,8 @@ describe(Engine, () => {
     test('controller clear event', () => {
         const actionDispatcherSpy = vi.spyOn(engine.actionDispatcher, 'emit')
 
-        engine.registerController('test1', new ActionController())
-        engine.registerController('test2', new ActionController())
+        engine.registerController('test1', ActionController)
+        engine.registerController('test2', ActionController)
 
         engine.unregisterController('test1')
         engine.unregisterController('test2')

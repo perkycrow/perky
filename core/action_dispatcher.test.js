@@ -29,17 +29,9 @@ describe(ActionDispatcher, () => {
 
 
     test('register with existing name', () => {
-        const controller1 = new ActionController()
-        const controller2 = new ActionController()
-        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { })
-
-        dispatcher.register('main', controller1)
-        dispatcher.register('main', controller2)
-
-        expect(consoleSpy).toHaveBeenCalled()
+        dispatcher.register('main', ActionController)
+        const controller2 = dispatcher.register('main', ActionController)
         expect(dispatcher.getController('main')).toBe(controller2)
-
-        consoleSpy.mockRestore()
     })
 
 
@@ -82,9 +74,7 @@ describe(ActionDispatcher, () => {
 
 
     test('unregister', () => {
-        const controller = new ActionController()
-
-        dispatcher.register('main', controller)
+        dispatcher.register('main', ActionController)
         const result = dispatcher.unregister('main')
 
         expect(result).toBe(true)

@@ -10,20 +10,10 @@ export default class ActionController extends PerkyModule {
     #actions = new Registry()
     #actionList = []
 
-    constructor (actions) {
-        super()
-
+    constructor (options = {}) {
+        super(options)
         this.context = {}
-
         this.#actionList = extractPrototypeMethods(this)
-
-        if (actions && typeof actions === 'object') {
-            Object.keys(actions).forEach(actionName => {
-                if (typeof actions[actionName] === 'function') {
-                    this.addAction(actionName, actions[actionName])
-                }
-            })
-        }
     }
 
 

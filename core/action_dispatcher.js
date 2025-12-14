@@ -64,17 +64,12 @@ export default class ActionDispatcher extends PerkyModule {
     }
 
 
-    register (name, ControllerClass = ActionController) {
-        if (this.hasChild(name)) {
-            console.warn(`Controller "${name}" already registered. Overwriting...`)
-        }
-
-        this.create(ControllerClass, {
+    register (name, Controller = ActionController) {
+        return this.create(Controller, {
             $name: name,
             $category: 'controller'
         })
 
-        return this
     }
 
 

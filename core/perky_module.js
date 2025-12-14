@@ -183,10 +183,10 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    create (ChildClassOrInstance, options = {}) {
+    create (Child, options = {}) {
         options.$category ||= 'child'
 
-        const child = prepareChild(ChildClassOrInstance, options)
+        const child = typeof Child === 'function' ? new Child(options) : Child
         const childName = getChildName(this, child, options)
 
         unregisterExisting(this, childName, options)
@@ -229,14 +229,13 @@ export default class PerkyModule extends Notifier {
 
     removeChild (name) {
         const child = this.#childrenRegistry.get(name)
+
         if (!child) {
             return false
         }
 
-        const category = child.$category
-        const bind = child.$bind
+        unregisterChild(this, child)
 
-        unregisterChild(this, name, child, category, bind)
         return true
     }
 
@@ -314,11 +313,6 @@ export default class PerkyModule extends Notifier {
 }
 
 
-function prepareChild (Child, options) {
-    return typeof Child === 'function' ? new Child(options) : Child
-}
-
-
 function getChildName (host, child, options) {
     if (options.$name) {
         return options.$name
@@ -329,26 +323,18 @@ function getChildName (host, child, options) {
 }
 
 
-function unregisterExisting (host, childName, options) {
+function unregisterExisting (host, childName) {
     const children = host.childrenRegistry
-    if (children.has(childName)) {
-        const existing = children.get(childName)
-        const category = existing.$category || options.$category
-        const bind = existing.$bind
 
-        unregisterChild(host, childName, existing, category, bind)
+    if (children.has(childName)) {
+        unregisterChild(host, children.get(childName))
     }
 }
 
 
 function registerChild (host, child, childName, options) {
-    child.host = host
-
     child.install(host, options)
-
-    if (options.$category) {
-        child.$category = options.$category
-    }
+    child.$category = options.$category
     child.$bind = options.$bind
 
     host.childrenRegistry.set(childName, child)
@@ -385,17 +371,13 @@ function setupLifecycle (host, child, options) {
 
     host.on('dispose', () => {
         if (childrenRegistry.hasEntry(child.$name, child)) {
-            const category = child.$category
-            const bind = child.$bind
-            unregisterChild(host, child.$name, child, category, bind)
+            unregisterChild(host, child)
         }
     })
 
     child.once('dispose', () => {
         if (childrenRegistry.hasEntry(child.$name, child)) {
-            const category = child.$category
-            const bind = child.$bind
-            unregisterChild(host, child.$name, child, category, bind)
+            unregisterChild(host, child)
         }
     })
 
@@ -417,17 +399,17 @@ function emitRegistrationEvents (host, child, childName, options) {
 }
 
 
-function unregisterChild (host, childName, child, category, bind) { // eslint-disable-line max-params
-    host.childrenRegistry.delete(childName)
+function unregisterChild (host, child) { // eslint-disable-line max-params
+    host.childrenRegistry.delete(child.$name)
 
-    if (bind && host[bind] === child) {
-        delete host[bind]
+    if (child.$bind && host[child.$bind] === child) {
+        delete host[child.$bind]
     }
 
     child.uninstall()
 
-    host.emit(`${category}:delete`, childName, child)
-    child.emit('unregistered', host, childName)
+    host.emit(`${child.$category}:delete`, child.$name, child)
+    child.emit('unregistered', host, child.$name)
 
     if (!child.disposed) {
         child.dispose()
