@@ -184,13 +184,15 @@ export default class PerkyModule extends Notifier {
 
 
     create (ChildClassOrInstance, options = {}) {
+        options.$category ||= 'child'
+
         const child = prepareChild(ChildClassOrInstance, options)
         const childName = getChildName(this, child, options)
 
         unregisterExisting(this, childName, options)
         registerChild(this, child, childName, options)
         setupBinding(this, child, options)
-        setupLifecycle(this, child, childName, options)
+        setupLifecycle(this, child, options)
         emitRegistrationEvents(this, child, childName, options)
 
         return child
@@ -231,7 +233,7 @@ export default class PerkyModule extends Notifier {
             return false
         }
 
-        const category = child.$category || 'child'
+        const category = child.$category
         const bind = child.$bind
 
         unregisterChild(this, name, child, category, bind)
@@ -313,13 +315,7 @@ export default class PerkyModule extends Notifier {
 
 
 function prepareChild (Child, options) {
-    let child = typeof Child === 'function' ? new Child(options) : Child
-
-    if (!child.$category) {
-        child.$category = options.$category || 'child'
-    }
-
-    return child
+    return typeof Child === 'function' ? new Child(options) : Child
 }
 
 
@@ -328,7 +324,7 @@ function getChildName (host, child, options) {
         return options.$name
     }
 
-    const category = child.$category || 'child'
+    const category = child.$category
     return uniqueId(host.childrenRegistry, category)
 }
 
@@ -337,7 +333,7 @@ function unregisterExisting (host, childName, options) {
     const children = host.childrenRegistry
     if (children.has(childName)) {
         const existing = children.get(childName)
-        const category = existing.$category || options.$category || 'child'
+        const category = existing.$category || options.$category
         const bind = existing.$bind
 
         unregisterChild(host, childName, existing, category, bind)
@@ -366,7 +362,7 @@ function setupBinding (host, child, options) {
 }
 
 
-function setupLifecycle (host, child, childName, options) {
+function setupLifecycle (host, child, options) {
     const {$lifecycle = true} = options
 
     if (!$lifecycle) {
@@ -389,7 +385,7 @@ function setupLifecycle (host, child, childName, options) {
 
     host.on('dispose', () => {
         if (childrenRegistry.hasEntry(child.$name, child)) {
-            const category = child.$category || 'child'
+            const category = child.$category
             const bind = child.$bind
             unregisterChild(host, child.$name, child, category, bind)
         }
@@ -397,7 +393,7 @@ function setupLifecycle (host, child, childName, options) {
 
     child.once('dispose', () => {
         if (childrenRegistry.hasEntry(child.$name, child)) {
-            const category = child.$category || 'child'
+            const category = child.$category
             const bind = child.$bind
             unregisterChild(host, child.$name, child, category, bind)
         }
@@ -414,7 +410,7 @@ function setupLifecycle (host, child, childName, options) {
 
 
 function emitRegistrationEvents (host, child, childName, options) {
-    const category = options.$category || 'child'
+    const category = options.$category
 
     host.emit(`${category}:set`, childName, child)
     child.emit('registered', host, childName)
