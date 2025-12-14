@@ -99,6 +99,23 @@ describe(Registry, () => {
     })
 
 
+    test('updateKey with item verification', () => {
+        const value1 = 'value1'
+        const value2 = 'value2'
+
+        registry.set('key1', value1)
+        registry.set('key2', value2)
+
+        expect(registry.updateKey('key1', 'newKey1', value1)).toBe(true)
+        expect(registry.has('key1')).toBe(false)
+        expect(registry.get('newKey1')).toBe(value1)
+
+        expect(registry.updateKey('key2', 'newKey2', value1)).toBe(false)
+        expect(registry.has('key2')).toBe(true)
+        expect(registry.get('key2')).toBe(value2)
+    })
+
+
     test('updateKey with non-existent key returns false', () => {
         const result = registry.updateKey('nonexistent', 'newKey')
         expect(result).toBe(false)
@@ -472,21 +489,19 @@ describe(Registry, () => {
         })
 
 
-        test('updateIndexFor throws if value not in registry', () => {
+        test('updateIndexFor returns false if value not in registry', () => {
             registry.addIndex('byCategory', (item) => item.category)
             const item = {name: 'Item', category: 'foo'}
 
-            expect(() => registry.updateIndexFor(item, 'byCategory', 'foo', 'bar'))
-                .toThrow('Value not found in registry')
+            expect(registry.updateIndexFor(item, 'byCategory', 'foo', 'bar')).toBe(false)
         })
 
 
-        test('updateIndexFor throws if index does not exist', () => {
+        test('updateIndexFor returns false if index does not exist', () => {
             const item = {name: 'Item', category: 'foo'}
             registry.set('1', item)
 
-            expect(() => registry.updateIndexFor(item, 'nonExistent', 'foo', 'bar'))
-                .toThrow("Index 'nonExistent' does not exist")
+            expect(registry.updateIndexFor(item, 'nonExistent', 'foo', 'bar')).toBe(false)
         })
 
 
@@ -523,21 +538,19 @@ describe(Registry, () => {
         })
 
 
-        test('refreshIndexFor throws if value not in registry', () => {
+        test('refreshIndexFor returns false if value not in registry', () => {
             registry.addIndex('byCategory', (item) => item.category)
             const item = {name: 'Item', category: 'foo'}
 
-            expect(() => registry.refreshIndexFor(item, 'byCategory'))
-                .toThrow('Value not found in registry')
+            expect(registry.refreshIndexFor(item, 'byCategory')).toBe(false)
         })
 
 
-        test('refreshIndexFor throws if index does not exist', () => {
+        test('refreshIndexFor returns false if index does not exist', () => {
             const item = {name: 'Item', category: 'foo'}
             registry.set('1', item)
 
-            expect(() => registry.refreshIndexFor(item, 'nonExistent'))
-                .toThrow("Index 'nonExistent' does not exist")
+            expect(registry.refreshIndexFor(item, 'nonExistent')).toBe(false)
         })
     })
 

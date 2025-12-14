@@ -388,31 +388,29 @@ function setupLifecycle (host, child, childName, options) {
     })
 
     host.on('dispose', () => {
-        if (childrenRegistry.hasEntry(childName, child)) {
+        if (childrenRegistry.hasEntry(child.$name, child)) {
             const category = child.$category || 'child'
             const bind = child.$bind
-            unregisterChild(host, childName, child, category, bind)
+            unregisterChild(host, child.$name, child, category, bind)
         }
     })
 
     child.once('dispose', () => {
-        if (childrenRegistry.hasEntry(childName, child)) {
+        if (childrenRegistry.hasEntry(child.$name, child)) {
             const category = child.$category || 'child'
             const bind = child.$bind
-            unregisterChild(host, childName, child, category, bind)
+            unregisterChild(host, child.$name, child, category, bind)
         }
     })
 
     child.on('category:changed', (newCategory, oldCategory) => {
-        if (childrenRegistry.hasEntry(childName, child)) {
+        if (childrenRegistry.hasEntry(child.$name, child)) {
             childrenRegistry.updateIndexFor(child, '$category', oldCategory, newCategory)
         }
     })
 
     child.on('name:changed', (newName, oldName) => {
-        if (childrenRegistry.isKeyOf(oldName, child)) {
-            childrenRegistry.updateKey(oldName, newName)
-        }
+        childrenRegistry.updateKey(oldName, newName, child)
     })
 }
 

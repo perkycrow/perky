@@ -119,7 +119,7 @@ export default class Registry extends Notifier {
     }
 
 
-    updateKey (oldKey, newKey) {
+    updateKey (oldKey, newKey, item) {
         if (!this.has(oldKey)) {
             return false
         }
@@ -129,6 +129,11 @@ export default class Registry extends Notifier {
         }
 
         const value = this.get(oldKey)
+
+        if (item !== undefined && value !== item) {
+            return false
+        }
+
         this.#map.delete(oldKey)
         this.#map.set(newKey, value)
 
@@ -240,12 +245,12 @@ export default class Registry extends Notifier {
 
     updateIndexFor (value, indexName, oldKeys, newKeys) { // eslint-disable-line complexity
         if (!this.hasValue(value)) {
-            throw new Error('Value not found in registry')
+            return false
         }
 
         const index = this.#indexes.get(indexName)
         if (!index) {
-            throw new Error(`Index '${indexName}' does not exist`)
+            return false
         }
 
         const oldKeysArray = Array.isArray(oldKeys) ? oldKeys : [oldKeys]
@@ -267,17 +272,19 @@ export default class Registry extends Notifier {
             }
             index.data.get(newKey).add(value)
         }
+
+        return true
     }
 
 
     refreshIndexFor (value, indexName) {
         if (!this.hasValue(value)) {
-            throw new Error('Value not found in registry')
+            return false
         }
 
         const index = this.#indexes.get(indexName)
         if (!index) {
-            throw new Error(`Index '${indexName}' does not exist`)
+            return false
         }
 
         for (const [key, items] of index.data.entries()) {
@@ -290,6 +297,8 @@ export default class Registry extends Notifier {
         }
 
         this.#addToIndex(indexName, value)
+
+        return true
     }
 
 
