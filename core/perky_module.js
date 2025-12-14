@@ -8,6 +8,7 @@ export default class PerkyModule extends Notifier {
     #childrenRegistry = null
     #started = false
     #disposed = false
+    #installed = false
     #name
     #category
     #bind
@@ -21,7 +22,6 @@ export default class PerkyModule extends Notifier {
         this.#bind = options.$bind
 
         this.host = null
-        this.installed = false
 
         this.#childrenRegistry = new Registry()
         this.#childrenRegistry.addIndex('$category')
@@ -80,6 +80,11 @@ export default class PerkyModule extends Notifier {
 
     get disposed () {
         return this.#disposed
+    }
+
+
+    get installed () {
+        return this.#installed
     }
 
 
@@ -162,12 +167,16 @@ export default class PerkyModule extends Notifier {
 
 
     install (host, options) {
-        if (this.installed) {
+        if (this.#installed) {
             return this.uninstall()
         }
 
         this.host = host
-        this.installed = true
+        if (this.$bind) {
+            host[this.$bind] = this
+        }
+        this.#installed = true
+
 
         this.onInstall(host, options)
 
@@ -176,13 +185,13 @@ export default class PerkyModule extends Notifier {
 
 
     uninstall () {
-        if (!this.installed) {
+        if (!this.#installed) {
             return false
         }
 
         this.onUninstall(this.host)
 
-        this.installed = false
+        this.#installed = false
         this.host = null
 
         return true
@@ -210,9 +219,6 @@ export default class PerkyModule extends Notifier {
         child.install(this, options)
         this.childrenRegistry.set(options.$name, child)
 
-        if (child.$bind) {
-            this[child.$bind] = child
-        }
 
         setupLifecycle(this, child, options)
 
@@ -385,6 +391,16 @@ function setupLifecycle (host, child, options) {
 
     child.on('name:changed', (newName, oldName) => {
         childrenRegistry.updateKey(oldName, newName, child)
+    })
+
+    child.on('bind:changed', (newBind, oldBind) => {
+        if (oldBind && host[oldBind] === child) {
+            delete host[oldBind]
+        }
+
+        if (newBind) {
+            host[newBind] = child
+        }
     })
 }
 

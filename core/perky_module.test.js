@@ -319,6 +319,24 @@ describe(PerkyModule, () => {
     })
 
 
+    test('binding updates automatically when $bind changes', () => {
+        class TestChild extends PerkyModule { }
+
+        const testChild = child.create(TestChild, {
+            $name: 'test',
+            $bind: 'oldProperty'
+        })
+
+        expect(child.oldProperty).toBe(testChild)
+        expect(child.newProperty).toBeUndefined()
+
+        testChild.$bind = 'newProperty'
+
+        expect(child.oldProperty).toBeUndefined()
+        expect(child.newProperty).toBe(testChild)
+    })
+
+
     test('use with lifecycle disabled', () => {
         class TestChild extends PerkyModule { }
         const startSpy = vi.spyOn(TestChild.prototype, 'start')
