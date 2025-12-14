@@ -252,11 +252,8 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    getChildrenByCategory (category) {
-        const children = this.#childrenRegistry.lookup('$category', category)
-
-        // Map children instances back to their names for API compatibility
-        return children.map(child => this.#childrenRegistry.keyFor(child))
+    listNamesFor (key, indexName = '$category') {
+        return this.#childrenRegistry.lookupKeys(indexName, key)
     }
 
 

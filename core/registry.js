@@ -228,6 +228,24 @@ export default class Registry extends Notifier {
     }
 
 
+    lookupKeys (indexName, key) {
+        const itemsSet = new Set(this.lookup(indexName, key))
+
+        if (itemsSet.size === 0) {
+            return []
+        }
+
+        const keys = []
+        for (const [k, v] of this.#map.entries()) {
+            if (itemsSet.has(v)) {
+                keys.push(k)
+            }
+        }
+
+        return keys
+    }
+
+
     get all () {
         return Array.from(this.#map.values())
     }

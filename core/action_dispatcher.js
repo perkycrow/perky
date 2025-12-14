@@ -207,7 +207,7 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     listControllers () {
-        return this.getChildrenByCategory('controller')
+        return this.listNamesFor('controller')
     }
 
 

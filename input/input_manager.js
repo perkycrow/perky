@@ -58,7 +58,7 @@ export default class InputManager extends PerkyModule {
 
 
     isPressedAny (controlName) {
-        const deviceNames = this.getChildrenByCategory('device')
+        const deviceNames = this.listNamesFor('device')
         for (const name of deviceNames) {
             const device = this.getChild(name)
             if (device && device.isPressed(controlName)) {
@@ -70,7 +70,7 @@ export default class InputManager extends PerkyModule {
 
 
     getValueAny (controlName) {
-        const deviceNames = this.getChildrenByCategory('device')
+        const deviceNames = this.listNamesFor('device')
         for (const name of deviceNames) {
             const device = this.getChild(name)
             if (device) {
@@ -85,7 +85,7 @@ export default class InputManager extends PerkyModule {
 
 
     getControlAny (controlName) {
-        const deviceNames = this.getChildrenByCategory('device')
+        const deviceNames = this.listNamesFor('device')
         for (const name of deviceNames) {
             const device = this.getChild(name)
             if (device) {
@@ -101,7 +101,7 @@ export default class InputManager extends PerkyModule {
 
     getAllPressed (controlName) {
         const results = []
-        const deviceNames = this.getChildrenByCategory('device')
+        const deviceNames = this.listNamesFor('device')
         for (const name of deviceNames) {
             const device = this.getChild(name)
             if (device && device.isPressed(controlName)) {
@@ -120,7 +120,7 @@ export default class InputManager extends PerkyModule {
 
     getAllValues (controlName) {
         const results = []
-        const deviceNames = this.getChildrenByCategory('device')
+        const deviceNames = this.listNamesFor('device')
         for (const name of deviceNames) {
             const device = this.getChild(name)
             if (device) {
@@ -155,7 +155,7 @@ export default class InputManager extends PerkyModule {
 
 
     addControlToFirst (Control, params = {}) {
-        const deviceNames = this.getChildrenByCategory('device')
+        const deviceNames = this.listNamesFor('device')
         const firstDevice = deviceNames.length > 0 ? this.getChild(deviceNames[0]) : null
         if (!firstDevice) {
             throw new Error('No devices available')
@@ -166,7 +166,7 @@ export default class InputManager extends PerkyModule {
 
     addControlToAll (Control, params = {}) {
         const results = []
-        const deviceNames = this.getChildrenByCategory('device')
+        const deviceNames = this.listNamesFor('device')
         for (const name of deviceNames) {
             const device = this.getChild(name)
             if (device) {

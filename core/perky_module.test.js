@@ -148,7 +148,7 @@ describe(PerkyModule, () => {
     })
 
 
-    test('getChildrenByCategory - single category', () => {
+    test('listNamesFor - single category', () => {
         class TestChild1 extends PerkyModule { }
         class TestChild2 extends PerkyModule { }
 
@@ -162,7 +162,7 @@ describe(PerkyModule, () => {
             $category: 'module'
         })
 
-        const modules = child.getChildrenByCategory('module')
+        const modules = child.listNamesFor('module')
 
         expect(modules).toHaveLength(2)
         expect(modules).toContain('ext1')
@@ -170,7 +170,7 @@ describe(PerkyModule, () => {
     })
 
 
-    test('getChildrenByCategory - mixed categories', () => {
+    test('listNamesFor - mixed categories', () => {
         class TestChild1 extends PerkyModule { }
         class TestChild2 extends PerkyModule { }
         class TestChild3 extends PerkyModule { }
@@ -190,8 +190,8 @@ describe(PerkyModule, () => {
             $category: 'module'
         })
 
-        const modules = child.getChildrenByCategory('module')
-        const services = child.getChildrenByCategory('service')
+        const modules = child.listNamesFor('module')
+        const services = child.listNamesFor('service')
 
         expect(modules).toHaveLength(2)
         expect(modules).toContain('ext1')
@@ -202,30 +202,30 @@ describe(PerkyModule, () => {
     })
 
 
-    test('getChildrenByCategory - empty category', () => {
+    test('listNamesFor - empty category', () => {
         const parent = new PerkyModule()
 
         parent.create(PerkyModule, {$category: 'module'})
         parent.create(PerkyModule, {$category: 'module'})
 
-        const services = parent.getChildrenByCategory('service')
+        const services = parent.listNamesFor('service')
         expect(services).toEqual([])
     })
 
 
-    test('getChildrenByCategory - dynamic category update', () => {
+    test('listNamesFor - dynamic category update', () => {
         const parent = new PerkyModule()
 
         const childA = parent.create(PerkyModule, {$name: 'childA', $category: 'module'})
         parent.create(PerkyModule, {$name: 'childB', $category: 'service'})
 
-        expect(parent.getChildrenByCategory('module')).toEqual(['childA'])
-        expect(parent.getChildrenByCategory('service')).toEqual(['childB'])
+        expect(parent.listNamesFor('module')).toEqual(['childA'])
+        expect(parent.listNamesFor('service')).toEqual(['childB'])
 
         childA.$category = 'service'
 
-        expect(parent.getChildrenByCategory('module')).toEqual([])
-        const serviceChildren = parent.getChildrenByCategory('service')
+        expect(parent.listNamesFor('module')).toEqual([])
+        const serviceChildren = parent.listNamesFor('service')
         expect(serviceChildren).toHaveLength(2)
         expect(serviceChildren).toContain('childA')
         expect(serviceChildren).toContain('childB')
