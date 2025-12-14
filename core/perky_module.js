@@ -439,7 +439,7 @@ export default class PerkyModule extends Notifier {
 
 
     #setupTagIndexListeners (child) {
-        if (this.#tagIndexes.size > 0 && child.tags) {
+        if (this.#tagIndexes.size === 0 || !child.tags) {
             return
         }
 

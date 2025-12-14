@@ -40,8 +40,6 @@ export default class DefendTheDen extends Game {
 
         this.renderer = new GameRenderer(this.world, this)
 
-        window.d = this
-
         const gameController = this.getController('game')
         gameController.world = this.world
 
