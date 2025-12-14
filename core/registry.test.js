@@ -67,6 +67,44 @@ describe(Registry, () => {
     })
 
 
+    test('updateKey', () => {
+        const spy = vi.spyOn(registry, 'emit')
+
+        registry.set('oldKey', 'value')
+        spy.mockClear()
+
+        const result = registry.updateKey('oldKey', 'newKey')
+
+        expect(result).toBe(true)
+        expect(registry.has('oldKey')).toBe(false)
+        expect(registry.has('newKey')).toBe(true)
+        expect(registry.get('newKey')).toBe('value')
+        expect(spy).toHaveBeenCalledWith('key:updated', 'oldKey', 'newKey', 'value')
+        expect(spy).toHaveBeenCalledTimes(1)
+    })
+
+
+    test('updateKey with same key does nothing', () => {
+        const spy = vi.spyOn(registry, 'emit')
+
+        registry.set('key', 'value')
+        spy.mockClear()
+
+        const result = registry.updateKey('key', 'key')
+
+        expect(result).toBe(false)
+        expect(registry.has('key')).toBe(true)
+        expect(registry.get('key')).toBe('value')
+        expect(spy).not.toHaveBeenCalled()
+    })
+
+
+    test('updateKey with non-existent key returns false', () => {
+        const result = registry.updateKey('nonexistent', 'newKey')
+        expect(result).toBe(false)
+    })
+
+
     test('clear', () => {
         registry.set('key1', 'value1')
         registry.set('key2', 'value2')
@@ -119,8 +157,8 @@ describe(Registry, () => {
 
 
     test('addCollection invalid', () => {
-        expect(() => registry.addCollection(null)).toThrow('Collection must be an object or Map')
-        expect(() => registry.addCollection(123)).toThrow('Collection must be an object or Map')
+        expect(registry.addCollection(null)).toBe(false)
+        expect(registry.addCollection(123)).toBe(false)
     })
 
 
@@ -243,9 +281,9 @@ describe(Registry, () => {
         })
 
 
-        test('addIndex throws if keyFunction is invalid type', () => {
-            expect(() => registry.addIndex('test', 123)).toThrow(TypeError)
-            expect(() => registry.addIndex('test', null)).toThrow(TypeError)
+        test('addIndex returns false if keyFunction is invalid type', () => {
+            expect(registry.addIndex('test', 123)).toBe(false)
+            expect(registry.addIndex('test', null)).toBe(false)
         })
 
 

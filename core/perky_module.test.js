@@ -288,6 +288,25 @@ describe(PerkyModule, () => {
     })
 
 
+    test('registry key is updated when child name changes', () => {
+        const parent = new PerkyModule()
+
+        const childModule = parent.create(PerkyModule, {
+            $name: 'oldName',
+            $category: 'module'
+        })
+
+        expect(parent.hasChild('oldName')).toBe(true)
+        expect(parent.getChild('oldName')).toBe(childModule)
+
+        childModule.$name = 'newName'
+
+        expect(parent.hasChild('oldName')).toBe(false)
+        expect(parent.hasChild('newName')).toBe(true)
+        expect(parent.getChild('newName')).toBe(childModule)
+    })
+
+
     test('use with binding', () => {
         class TestChild extends PerkyModule { }
 

@@ -87,7 +87,7 @@ export default class Registry extends Notifier {
         this.#map.set(key, value)
         this.emit('set', key, value, oldValue)
 
-        return this
+        return true
     }
 
 
@@ -109,6 +109,25 @@ export default class Registry extends Notifier {
     }
 
 
+    updateKey (oldKey, newKey) {
+        if (!this.has(oldKey)) {
+            return false
+        }
+
+        if (oldKey === newKey) {
+            return false
+        }
+
+        const value = this.get(oldKey)
+        this.#map.delete(oldKey)
+        this.#map.set(newKey, value)
+
+        this.emit('key:updated', oldKey, newKey, value)
+
+        return true
+    }
+
+
     clear () {
         if (this.#map.size > 0) {
             const itemsToDelete = Array.from(this.#map.entries())
@@ -125,7 +144,7 @@ export default class Registry extends Notifier {
 
     addCollection (collection) {
         if (!collection || typeof collection !== 'object') {
-            throw new Error('Collection must be an object or Map')
+            return false
         }
 
         if (typeof collection.forEach === 'function') {
@@ -139,7 +158,8 @@ export default class Registry extends Notifier {
                 }
             }
         }
-        return this
+
+        return true
     }
 
 
@@ -163,7 +183,7 @@ export default class Registry extends Notifier {
         }
 
         if (typeof keyFunction !== 'function') {
-            throw new TypeError('keyFunction must be a function or string')
+            return false
         }
 
         const index = {
@@ -177,7 +197,7 @@ export default class Registry extends Notifier {
             this.#addToIndex(name, value)
         }
 
-        return this
+        return true
     }
 
 
