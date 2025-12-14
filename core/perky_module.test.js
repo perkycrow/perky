@@ -396,7 +396,7 @@ describe(PerkyModule, () => {
         new ChildChild()
 
         const childChild = child.create(ChildChild, {
-            $name: 'child',
+            $name: 'default',
             $lifecycle: true
         })
 
@@ -571,7 +571,7 @@ describe(PerkyModule, () => {
 
         child.create(ChildChild, {
             instance: childChild,
-            $name: 'child'
+            $name: 'default'
         })
 
         child.dispose()
@@ -594,14 +594,14 @@ describe(PerkyModule, () => {
 
         child.create(ChildChild, {
             instance: childChild,
-            $name: 'child'
+            $name: 'default'
         })
 
-        expect(child.hasChild('child')).toBe(true)
+        expect(child.hasChild('default')).toBe(true)
 
         child.dispose()
 
-        expect(child.hasChild('child')).toBe(false)
+        expect(child.hasChild('default')).toBe(false)
         expect(child.childrenRegistry.size).toBe(0)
     })
 
@@ -609,7 +609,7 @@ describe(PerkyModule, () => {
     describe('static category', () => {
         test('uses PerkyModule default category "child" when not specified', () => {
             const module = child.create(PerkyModule, {$name: 'test'})
-            expect(module.$category).toBe('child')
+            expect(module.$category).toBe('default')
         })
 
 

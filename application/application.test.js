@@ -492,7 +492,7 @@ describe(Application, () => {
             }
         }
 
-        application.create(TestChild, {$name: 'testChild', $category: 'child'})
+        application.create(TestChild, {$name: 'testChild', $category: 'default'})
 
         expect(application.hasChild('testChild')).toBe(true)
     })
@@ -507,7 +507,7 @@ describe(Application, () => {
 
         application.create(TestChild, {
             $name: 'testChild',
-            $category: 'child'
+            $category: 'default'
         })
 
         expect(application.hasChild('testChild')).toBe(true)
@@ -523,7 +523,7 @@ describe(Application, () => {
 
         application.create(TestChild, {
             $name: 'testChild',
-            $category: 'child',
+            $category: 'default',
             someOption: true
         })
 

@@ -14,7 +14,7 @@ export default class PerkyModule extends Notifier {
     #host = null
     #bind
 
-    static category = 'child'
+    static category = 'default'
 
     constructor (options = {}) {
         super()
