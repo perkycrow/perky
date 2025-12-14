@@ -65,7 +65,7 @@ describe('ThreePlugin', () => {
     test('creates plugin with default options', () => {
         plugin = new ThreePlugin()
         
-        expect(plugin.name).toBe('three')
+        expect(plugin.$name).toBe('three')
         expect(plugin.scene).toBeNull()
         expect(plugin.camera).toBeNull()
         expect(plugin.renderer).toBeNull()
@@ -87,7 +87,7 @@ describe('ThreePlugin', () => {
         
         plugin = new ThreePlugin(options)
         
-        expect(plugin.name).toBe('three')
+        expect(plugin.$name).toBe('three')
         expect(plugin.options.backgroundColor).toBe(0x87CEEB)
         expect(plugin.options.camera.type).toBe('perspective')
         expect(plugin.options.camera.fov).toBe(60)
@@ -99,7 +99,7 @@ describe('ThreePlugin', () => {
         plugin = new ThreePlugin({
             backgroundColor: 0x87CEEB
         })
-        
+
         plugin.install(app)
         
         expect(plugin.installed).toBe(true)

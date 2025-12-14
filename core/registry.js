@@ -38,6 +38,11 @@ export default class Registry extends Notifier {
     }
 
 
+    get map () {
+        return this.#map
+    }
+
+
     get (key) {
         return this.#map.get(key)
     }
@@ -185,6 +190,11 @@ export default class Registry extends Notifier {
 
         const items = index.data.get(key)
         return items ? Array.from(items) : []
+    }
+
+
+    get all () {
+        return Array.from(this.#map.values())
     }
 
 

@@ -15,7 +15,7 @@ describe(InputDevice, () => {
 
 
     test('constructor', () => {
-        expect(device.name).toBe('testDevice')
+        expect(device.$name).toBe('testDevice')
         expect(device.container).toBe(window)
         expect(device.controls).toBeDefined()
         expect(device.pressedNames).toBeInstanceOf(Set)
@@ -27,17 +27,17 @@ describe(InputDevice, () => {
         const customContainer = document.createElement('div')
         const customDevice = new InputDevice({
             container: customContainer,
-            name: 'custom'
+            $name: 'custom'
         })
 
         expect(customDevice.container).toBe(customContainer)
-        expect(customDevice.name).toBe('custom')
+        expect(customDevice.$name).toBe('custom')
     })
 
 
     test('constructor with default name', () => {
         const defaultDevice = new InputDevice()
-        expect(defaultDevice.name).toBe('InputDevice')
+        expect(defaultDevice.$name).toBe('InputDevice')
     })
 
 

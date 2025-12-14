@@ -19,7 +19,7 @@ describe(PerkyModule, () => {
             getChild: vi.fn((name) => childrenRegistry.get(name))
         }
 
-        child = new PerkyModule({name: 'testChild'})
+        child = new PerkyModule({$name: 'testChild'})
     })
 
 
@@ -30,8 +30,8 @@ describe(PerkyModule, () => {
 
     test('constructor', () => {
         expect(child).toBeInstanceOf(PerkyModule)
-        expect(child.name).toBe('testChild')
-        expect(child.options).toEqual({name: 'testChild'})
+        expect(child.$name).toBe('testChild')
+        expect(child.options).toEqual({$name: 'testChild'})
         expect(child.host).toBeNull()
         expect(child.installed).toBe(false)
     })
@@ -40,7 +40,7 @@ describe(PerkyModule, () => {
     test('constructor with default name', () => {
         class TestChild extends PerkyModule { }
         const ext = new TestChild()
-        expect(ext.name).toBe('TestChild')
+        expect(ext.$name).toBe('TestChild')
     })
 
 

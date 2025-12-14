@@ -488,7 +488,7 @@ describe(Application, () => {
     test('use method installs child class', () => {
         class TestChild extends PerkyModule {
             constructor (options) {
-                super({...options, name: 'testChild'})
+                super({...options, $name: 'testChild'})
             }
         }
 
@@ -501,7 +501,7 @@ describe(Application, () => {
     test('use method installs child instance', () => {
         class TestChild extends PerkyModule {
             constructor (options) {
-                super({...options, name: 'testChild'})
+                super({...options, $name: 'testChild'})
             }
         }
 
@@ -517,7 +517,7 @@ describe(Application, () => {
     test('use method with options', () => {
         class TestChild extends PerkyModule {
             constructor (options) {
-                super({...options, name: 'testChild'})
+                super({...options, $name: 'testChild'})
             }
         }
 

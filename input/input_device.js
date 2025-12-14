@@ -4,8 +4,10 @@ import Registry from '../core/registry'
 
 export default class InputDevice extends PerkyModule {
 
-    constructor ({container = window, name} = {}) {
-        super({name})
+    constructor (options = {}) {
+        super(options)
+
+        const {container = window} = options
 
         this.container = container
         this.controls = new Registry()

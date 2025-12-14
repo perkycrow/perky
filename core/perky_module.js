@@ -13,7 +13,7 @@ export default class PerkyModule extends Notifier {
         super()
 
         this.options = options
-        this.name = options.name || this.constructor.name
+        this.$name = options.$name || options.name || this.constructor.name
         this.host = null
         this.installed = false
 
@@ -175,6 +175,11 @@ export default class PerkyModule extends Notifier {
 
     get childrenRegistry () {
         return this.#childrenRegistry
+    }
+
+
+    get children () {
+        return this.#childrenRegistry.all
     }
 
 

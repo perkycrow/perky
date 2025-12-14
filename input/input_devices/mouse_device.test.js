@@ -33,7 +33,7 @@ describe(MouseDevice, () => {
 
     test('constructor', () => {
         expect(device).toBeInstanceOf(InputDevice)
-        expect(device.name).toBe('testMouse')
+        expect(device.$name).toBe('testMouse')
         expect(device.container).toBe(mockContainer)
         expect(device.mousedownListener).toBeInstanceOf(Function)
         expect(device.mouseupListener).toBeInstanceOf(Function)
@@ -43,7 +43,7 @@ describe(MouseDevice, () => {
 
     test('constructor with default params', () => {
         const defaultDevice = new MouseDevice()
-        expect(defaultDevice.name).toBe('MouseDevice')
+        expect(defaultDevice.$name).toBe('MouseDevice')
         expect(defaultDevice.container).toBe(window)
     })
 

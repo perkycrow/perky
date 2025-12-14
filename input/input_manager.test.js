@@ -8,7 +8,7 @@ describe(InputManager, () => {
 
     test('registerDevice', () => {
         const manager = new InputManager()
-        const device = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'TestDevice'})
+        const device = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard'})
 
         expect(manager.getDevice('keyboard')).toBe(device)
         expect(device.host).toBe(manager)
@@ -18,8 +18,8 @@ describe(InputManager, () => {
 
     test('registerDevice with duplicate name replaces device', () => {
         const manager = new InputManager()
-        manager.registerDevice(InputDevice, {$name: 'test', $bind: 'test', name: 'Device1'})
-        const device2 = manager.registerDevice(InputDevice, {$name: 'test', $bind: 'test', name: 'Device2'})
+        manager.registerDevice(InputDevice, {$name: 'test', $bind: 'test'})
+        const device2 = manager.registerDevice(InputDevice, {$name: 'test', $bind: 'test'})
 
         expect(manager.getDevice('test')).toBe(device2)
         expect(manager.test).toBe(device2)
@@ -28,17 +28,16 @@ describe(InputManager, () => {
 
     test('registerDevice creates device properly', () => {
         const manager = new InputManager()
-        const device = manager.registerDevice(InputDevice, {$name: 'test', $bind: 'test', name: 'TestDevice'})
+        const device = manager.registerDevice(InputDevice, {$name: 'test', $bind: 'test'})
 
         expect(device).toBeDefined()
-        expect(device.name).toBe('TestDevice')
         expect(manager.getDevice('test')).toBe(device)
     })
 
 
     test('isPressed', () => {
         const manager = new InputManager()
-        const device = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'TestDevice'})
+        const device = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard'})
 
         const button = device.findOrCreateControl(ButtonControl, {name: 'TestButton'})
 
@@ -56,7 +55,7 @@ describe(InputManager, () => {
 
     test('getValueFor', () => {
         const manager = new InputManager()
-        const device = manager.registerDevice(InputDevice, {$name: 'mouse', $bind: 'mouse', name: 'TestDevice'})
+        const device = manager.registerDevice(InputDevice, {$name: 'mouse', $bind: 'mouse'})
 
         const button = device.findOrCreateControl(ButtonControl, {name: 'TestButton'})
         button.value = 0.5
@@ -69,7 +68,7 @@ describe(InputManager, () => {
 
     test('getControl', () => {
         const manager = new InputManager()
-        const device = manager.registerDevice(InputDevice, {$name: 'gamepad', $bind: 'gamepad', name: 'TestDevice'})
+        const device = manager.registerDevice(InputDevice, {$name: 'gamepad', $bind: 'gamepad'})
 
         const button = device.findOrCreateControl(ButtonControl, {name: 'TestButton'})
 
@@ -83,7 +82,7 @@ describe(InputManager, () => {
         const manager = new InputManager()
 
         manager.start()
-        const device = manager.registerDevice(InputDevice, {$name: 'auto', $bind: 'auto', name: 'TestDevice'})
+        const device = manager.registerDevice(InputDevice, {$name: 'auto', $bind: 'auto'})
 
         expect(device.started).toBe(true)
     })
@@ -91,7 +90,7 @@ describe(InputManager, () => {
 
     test('event forwarding', () => {
         const manager = new InputManager()
-        const device = manager.registerDevice(InputDevice, {$name: 'test', $bind: 'test', name: 'TestDevice'})
+        const device = manager.registerDevice(InputDevice, {$name: 'test', $bind: 'test'})
 
         const pressedListener = vi.fn()
         const releasedListener = vi.fn()
@@ -120,7 +119,7 @@ describe(InputManager, () => {
         const deviceSetListener = vi.fn()
         manager.on('device:set', deviceSetListener)
 
-        const device = manager.registerDevice(InputDevice, {$name: 'test', $bind: 'test', name: 'TestDevice'})
+        const device = manager.registerDevice(InputDevice, {$name: 'test', $bind: 'test'})
 
         expect(deviceSetListener).toHaveBeenCalledWith('test', device)
     })
@@ -128,8 +127,8 @@ describe(InputManager, () => {
 
     test('automatic device binding', () => {
         const manager = new InputManager()
-        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'KeyboardDevice'})
-        const mouse = manager.registerDevice(InputDevice, {$name: 'mouse', $bind: 'mouse', name: 'MouseDevice'})
+        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard'})
+        const mouse = manager.registerDevice(InputDevice, {$name: 'mouse', $bind: 'mouse'})
 
 
         expect(manager.keyboard).toBe(keyboard)
@@ -141,8 +140,8 @@ describe(InputManager, () => {
 
     test('isPressedAny', () => {
         const manager = new InputManager()
-        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'KeyboardDevice'})
-        const gamepad = manager.registerDevice(InputDevice, {$name: 'gamepad', $bind: 'gamepad', name: 'GamepadDevice'})
+        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard'})
+        const gamepad = manager.registerDevice(InputDevice, {$name: 'gamepad', $bind: 'gamepad'})
 
 
         const keyW = keyboard.findOrCreateControl(ButtonControl, {name: 'KeyW'})
@@ -163,8 +162,8 @@ describe(InputManager, () => {
 
     test('getValueAny', () => {
         const manager = new InputManager()
-        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'KeyboardDevice'})
-        const mouse = manager.registerDevice(InputDevice, {$name: 'mouse', $bind: 'mouse', name: 'MouseDevice'})
+        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard'})
+        const mouse = manager.registerDevice(InputDevice, {$name: 'mouse', $bind: 'mouse'})
 
 
         const keyW = keyboard.findOrCreateControl(ButtonControl, {name: 'KeyW'})
@@ -181,8 +180,8 @@ describe(InputManager, () => {
 
     test('getControlAny', () => {
         const manager = new InputManager()
-        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'KeyboardDevice'})
-        const mouse = manager.registerDevice(InputDevice, {$name: 'mouse', $bind: 'mouse', name: 'MouseDevice'})
+        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard'})
+        const mouse = manager.registerDevice(InputDevice, {$name: 'mouse', $bind: 'mouse'})
 
 
         const keyW = keyboard.findOrCreateControl(ButtonControl, {name: 'KeyW'})
@@ -196,8 +195,8 @@ describe(InputManager, () => {
 
     test('getAllPressed', () => {
         const manager = new InputManager()
-        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'KeyboardDevice'})
-        const gamepad = manager.registerDevice(InputDevice, {$name: 'gamepad', $bind: 'gamepad', name: 'GamepadDevice'})
+        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard'})
+        const gamepad = manager.registerDevice(InputDevice, {$name: 'gamepad', $bind: 'gamepad'})
 
 
         const keyEnter = keyboard.findOrCreateControl(ButtonControl, {name: 'Enter'})
@@ -218,8 +217,8 @@ describe(InputManager, () => {
 
     test('getAllValues', () => {
         const manager = new InputManager()
-        const device1 = manager.registerDevice(InputDevice, {$name: 'device1', $bind: 'device1', name: 'Device1'})
-        const device2 = manager.registerDevice(InputDevice, {$name: 'device2', $bind: 'device2', name: 'Device2'})
+        const device1 = manager.registerDevice(InputDevice, {$name: 'device1', $bind: 'device1'})
+        const device2 = manager.registerDevice(InputDevice, {$name: 'device2', $bind: 'device2'})
 
         const control1 = device1.findOrCreateControl(ButtonControl, {name: 'SharedControl'})
         const control2 = device2.findOrCreateControl(ButtonControl, {name: 'SharedControl'})
@@ -236,7 +235,7 @@ describe(InputManager, () => {
 
     test('addControl - explicit form', () => {
         const manager = new InputManager()
-        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'KeyboardDevice'})
+        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard'})
 
         const control = manager.addControl('keyboard', ButtonControl, {
             name: 'TestKey',
@@ -252,8 +251,8 @@ describe(InputManager, () => {
 
     test('addControl - shortcut form', () => {
         const manager = new InputManager()
-        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'KeyboardDevice'})
-        const mouse = manager.registerDevice(InputDevice, {$name: 'mouse', $bind: 'mouse', name: 'MouseDevice'})
+        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard'})
+        const mouse = manager.registerDevice(InputDevice, {$name: 'mouse', $bind: 'mouse'})
 
 
         const control = manager.addControl(ButtonControl, {
@@ -290,8 +289,8 @@ describe(InputManager, () => {
 
     test('addControlToFirst', () => {
         const manager = new InputManager()
-        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'KeyboardDevice'})
-        const mouse = manager.registerDevice(InputDevice, {$name: 'mouse', $bind: 'mouse', name: 'MouseDevice'})
+        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard'})
+        const mouse = manager.registerDevice(InputDevice, {$name: 'mouse', $bind: 'mouse'})
 
 
         const control = manager.addControlToFirst(ButtonControl, {
@@ -317,8 +316,8 @@ describe(InputManager, () => {
 
     test('addControlToAll', () => {
         const manager = new InputManager()
-        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'KeyboardDevice'})
-        const mouse = manager.registerDevice(InputDevice, {$name: 'mouse', $bind: 'mouse', name: 'MouseDevice'})
+        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard'})
+        const mouse = manager.registerDevice(InputDevice, {$name: 'mouse', $bind: 'mouse'})
 
 
         const results = manager.addControlToAll(ButtonControl, {
@@ -340,8 +339,8 @@ describe(InputManager, () => {
 
     test('deviceKeyFor', () => {
         const manager = new InputManager()
-        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'KeyboardDevice'})
-        const mouse = manager.registerDevice(InputDevice, {$name: 'mouse', $bind: 'mouse', name: 'MouseDevice'})
+        const keyboard = manager.registerDevice(InputDevice, {$name: 'keyboard', $bind: 'keyboard'})
+        const mouse = manager.registerDevice(InputDevice, {$name: 'mouse', $bind: 'mouse'})
 
 
         expect(manager.deviceKeyFor(keyboard)).toBe('keyboard')
