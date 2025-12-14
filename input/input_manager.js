@@ -3,7 +3,6 @@ import PerkyModule from '../core/perky_module'
 
 export default class InputManager extends PerkyModule {
 
-
     onInstall (host) {
         host.delegate(this, [
             'registerDevice',

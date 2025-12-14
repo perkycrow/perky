@@ -4,12 +4,7 @@ import PerkyModule from '../core/perky_module'
 
 export default class ApplicationManager extends PerkyModule {
 
-    constructor () {
-        super()
-
-        this.constructors = new Registry()
-    }
-
+    constructors = new Registry()
 
     register (name, Application) {
         if (this.constructors.has(name)) {

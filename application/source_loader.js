@@ -1,7 +1,8 @@
-import PerkyModule from '../core/perky_module'
+import Notifier from '../core/perky_module'
 import Registry from '../core/registry'
 
-export default class SourceLoader extends PerkyModule {
+
+export default class SourceLoader extends Notifier {
 
     #loadingPromises = {}
 

@@ -7,8 +7,8 @@ export default class World extends PerkyModule {
 
     #entities = new Registry()
 
-    constructor () {
-        super()
+    constructor (options = {}) {
+        super(options)
 
         this.#entities.addIndex('category', entity => entity.$category)
         this.#entities.addIndex('tags', entity => entity.$tags)

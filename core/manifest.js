@@ -10,10 +10,7 @@ export default class Manifest extends PerkyModule {
     constructor (params = {}) {
         const {data = {}, ...moduleParams} = params
 
-        super({
-            name: 'manifest',
-            ...moduleParams
-        })
+        super(moduleParams)
 
         this.#data = setDefaults(data, {
             metadata: {},

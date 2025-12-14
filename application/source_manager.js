@@ -6,9 +6,9 @@ export default class SourceManager extends PerkyModule {
 
     constructor (options = {}) {
         super(options)
-        const {loaders, manifest} = options
-        this.loaders = loaders
-        this.manifest = manifest
+
+        this.loaders = options.loaders
+        this.manifest = options.manifest
     }
 
 
