@@ -550,8 +550,3 @@ function unregisterChild (host, child) { // eslint-disable-line max-params
 function getIndexKey (tags) {
     return [...tags].sort().join('_')
 }
-
-
-function getCategoryTagsIndexKey (category, tags) {
-    return `${category}_${[...tags].sort().join('_')}`
-}
