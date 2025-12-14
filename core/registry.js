@@ -243,8 +243,8 @@ export default class Registry extends Notifier {
     }
 
 
-    updateIndexFor (value, indexName, oldKeys, newKeys) { // eslint-disable-line complexity
-        if (!this.hasValue(value)) {
+    updateIndexFor (item, indexName, oldKeys, newKeys) { // eslint-disable-line complexity
+        if (!this.hasValue(item)) {
             return false
         }
 
@@ -259,7 +259,7 @@ export default class Registry extends Notifier {
         for (const oldKey of oldKeysArray) {
             const items = index.data.get(oldKey)
             if (items) {
-                items.delete(value)
+                items.delete(item)
                 if (items.size === 0) {
                     index.data.delete(oldKey)
                 }
@@ -270,7 +270,7 @@ export default class Registry extends Notifier {
             if (!index.data.has(newKey)) {
                 index.data.set(newKey, new Set())
             }
-            index.data.get(newKey).add(value)
+            index.data.get(newKey).add(item)
         }
 
         return true

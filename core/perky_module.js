@@ -404,9 +404,7 @@ function setupLifecycle (host, child, childName, options) {
     })
 
     child.on('category:changed', (newCategory, oldCategory) => {
-        if (childrenRegistry.hasEntry(child.$name, child)) {
-            childrenRegistry.updateIndexFor(child, '$category', oldCategory, newCategory)
-        }
+        childrenRegistry.updateIndexFor(child, '$category', oldCategory, newCategory)
     })
 
     child.on('name:changed', (newName, oldName) => {
