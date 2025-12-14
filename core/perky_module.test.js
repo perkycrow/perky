@@ -891,10 +891,185 @@ describe(PerkyModule, () => {
                 $name: 'lazy',
                 $eagerStart: false
             })
-
             expect(eager.$eagerStart).toBe(true)
             expect(lazy.$eagerStart).toBe(false)
         })
     })
 
+
+    describe('$tags', () => {
+
+        test('initializes with empty tags by default', () => {
+            const module = new PerkyModule()
+            expect(module.$tags).toEqual([])
+        })
+
+
+        test('initializes with tags from options', () => {
+            const module = new PerkyModule({$tags: ['enemy', 'collidable']})
+            expect(module.$tags).toEqual(['enemy', 'collidable'])
+        })
+
+
+        test('$tags returns array copy', () => {
+            const module = new PerkyModule({$tags: ['test']})
+            const tags1 = module.$tags
+            const tags2 = module.$tags
+            expect(tags1).not.toBe(tags2)
+            expect(tags1).toEqual(tags2)
+        })
+
+
+        test('tags property returns ObservableSet', () => {
+            const module = new PerkyModule()
+            expect(module.tags).toBeDefined()
+            expect(module.tags.size).toBe(0)
+        })
+
+
+        test('can add tags via tags.add()', () => {
+            const module = new PerkyModule()
+            module.tags.add('enemy')
+            module.tags.add('collidable')
+
+            expect(module.$tags).toEqual(['enemy', 'collidable'])
+            expect(module.tags.size).toBe(2)
+        })
+
+
+        test('can delete tags via tags.delete()', () => {
+            const module = new PerkyModule({$tags: ['enemy', 'collidable', 'flying']})
+
+            module.tags.delete('flying')
+
+            expect(module.$tags).toEqual(['enemy', 'collidable'])
+            expect(module.tags.size).toBe(2)
+        })
+
+
+        test('can clear tags via tags.clear()', () => {
+            const module = new PerkyModule({$tags: ['enemy', 'collidable']})
+
+            module.tags.clear()
+
+            expect(module.$tags).toEqual([])
+            expect(module.tags.size).toBe(0)
+        })
+
+
+        test('tags.add() emits add event', () => {
+            const module = new PerkyModule()
+            let addedTag
+
+            module.tags.on('add', (tag) => {
+                addedTag = tag
+            })
+
+            module.tags.add('enemy')
+
+            expect(addedTag).toBe('enemy')
+        })
+
+
+        test('tags.delete() emits delete event', () => {
+            const module = new PerkyModule({$tags: ['enemy']})
+            let deletedTag
+
+            module.tags.on('delete', (tag) => {
+                deletedTag = tag
+            })
+
+            module.tags.delete('enemy')
+
+            expect(deletedTag).toBe('enemy')
+        })
+
+
+        test('tags.clear() emits clear event', () => {
+            const module = new PerkyModule({$tags: ['enemy', 'collidable']})
+            let clearedTags
+
+            module.tags.on('clear', (tags) => {
+                clearedTags = tags
+            })
+
+            module.tags.clear()
+
+            expect(clearedTags).toEqual(['enemy', 'collidable'])
+        })
+
+
+        test('tags support chaining', () => {
+            const module = new PerkyModule()
+
+            module.tags.add('enemy').add('collidable').add('flying')
+
+            expect(module.$tags).toEqual(['enemy', 'collidable', 'flying'])
+        })
+
+
+        test('tags support iteration', () => {
+            const module = new PerkyModule({$tags: ['a', 'b', 'c']})
+
+            const collected = []
+            for (const tag of module.tags) {
+                collected.push(tag)
+            }
+
+            expect(collected).toEqual(['a', 'b', 'c'])
+        })
+
+
+        test('can set $tags with array', () => {
+            const module = new PerkyModule({$tags: ['enemy', 'collidable']})
+
+            module.$tags = ['friendly', 'flying']
+
+            expect(module.$tags).toEqual(['friendly', 'flying'])
+            expect(module.tags.size).toBe(2)
+        })
+
+
+        test('setting $tags clears old tags', () => {
+            const module = new PerkyModule({$tags: ['a', 'b', 'c']})
+
+            module.$tags = ['x', 'y']
+
+            expect(module.$tags).toEqual(['x', 'y'])
+            expect(module.tags.has('a')).toBe(false)
+            expect(module.tags.has('b')).toBe(false)
+        })
+
+
+        test('setting $tags emits clear and add events', () => {
+            const module = new PerkyModule({$tags: ['old']})
+            let clearedTags
+            let addedTags = []
+
+            module.tags.on('clear', (tags) => {
+                clearedTags = tags
+            })
+            module.tags.on('add', (tag) => {
+                addedTags.push(tag)
+            })
+
+            module.$tags = ['new1', 'new2']
+
+            expect(clearedTags).toEqual(['old'])
+            expect(addedTags).toEqual(['new1', 'new2'])
+        })
+
+
+        test('setting $tags to empty array clears all', () => {
+            const module = new PerkyModule({$tags: ['a', 'b']})
+
+            module.$tags = []
+
+            expect(module.$tags).toEqual([])
+            expect(module.tags.size).toBe(0)
+        })
+
+    })
+
 })
+

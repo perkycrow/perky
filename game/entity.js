@@ -7,7 +7,6 @@ export default class Entity extends PerkyModule {
 
     constructor (options = {}) {
         super(options)
-        this.$tags = options.$tags || []
     }
 
 }

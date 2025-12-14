@@ -1,5 +1,6 @@
 import Notifier from './notifier'
 import Registry from './registry'
+import ObservableSet from './observable_set'
 import {uniqueId} from './utils'
 
 
@@ -14,6 +15,7 @@ export default class PerkyModule extends Notifier {
     #host = null
     #bind
     #eagerStart
+    #tags = null
 
     static category = 'default'
     static eagerStart = true
@@ -26,6 +28,7 @@ export default class PerkyModule extends Notifier {
         this.#category = options.$category || this.constructor.category
         this.#bind = options.$bind
         this.#eagerStart = options.$eagerStart
+        this.#tags = new ObservableSet(options.$tags)
 
         this.#childrenRegistry = new Registry()
         this.#childrenRegistry.addIndex('$category')
@@ -99,6 +102,24 @@ export default class PerkyModule extends Notifier {
 
     get $eagerStart () {
         return this.#eagerStart
+    }
+
+
+    get $tags () {
+        return this.#tags.toArray()
+    }
+
+
+    set $tags (newTags) {
+        this.#tags.clear()
+        if (Array.isArray(newTags)) {
+            newTags.forEach(tag => this.#tags.add(tag))
+        }
+    }
+
+
+    get tags () {
+        return this.#tags
     }
 
 
