@@ -203,17 +203,32 @@ describe(PerkyModule, () => {
 
 
     test('getChildrenByCategory - empty category', () => {
-        class TestChild extends PerkyModule { }
+        const parent = new PerkyModule()
 
-        child.create(TestChild, {
-            $name: 'ext1',
-            $category: 'module'
-        })
+        parent.create(PerkyModule, {$category: 'module'})
+        parent.create(PerkyModule, {$category: 'module'})
 
-        const services = child.getChildrenByCategory('service')
-
-        expect(services).toHaveLength(0)
+        const services = parent.getChildrenByCategory('service')
         expect(services).toEqual([])
+    })
+
+
+    test('getChildrenByCategory - dynamic category update', () => {
+        const parent = new PerkyModule()
+
+        const childA = parent.create(PerkyModule, {$name: 'childA', $category: 'module'})
+        parent.create(PerkyModule, {$name: 'childB', $category: 'service'})
+
+        expect(parent.getChildrenByCategory('module')).toEqual(['childA'])
+        expect(parent.getChildrenByCategory('service')).toEqual(['childB'])
+
+        childA.$category = 'service'
+
+        expect(parent.getChildrenByCategory('module')).toEqual([])
+        const serviceChildren = parent.getChildrenByCategory('service')
+        expect(serviceChildren).toHaveLength(2)
+        expect(serviceChildren).toContain('childA')
+        expect(serviceChildren).toContain('childB')
     })
 
 

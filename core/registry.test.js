@@ -383,11 +383,11 @@ describe(Registry, () => {
         })
 
 
-        test('clear removes items from indexes', () => {
+        test('index updated on clear', () => {
             registry.addIndex('byName', (item) => item.name)
 
-            registry.set('1', {name: 'Alice'})
-            registry.set('2', {name: 'Bob'})
+            registry.set('1', {name: 'Alice', age: 30})
+            registry.set('2', {name: 'Bob', age: 25})
 
             expect(registry.lookup('byName', 'Alice')).toHaveLength(1)
 
@@ -397,6 +397,110 @@ describe(Registry, () => {
             expect(registry.lookup('byName', 'Bob')).toEqual([])
         })
 
+
+        test('updateIndexFor moves item from old key to new key', () => {
+            registry.addIndex('byCategory', (item) => item.category)
+
+            const item = {name: 'Item', category: 'foo'}
+            registry.set('1', item)
+
+            expect(registry.lookup('byCategory', 'foo')).toHaveLength(1)
+            expect(registry.lookup('byCategory', 'bar')).toHaveLength(0)
+
+            item.category = 'bar'
+            registry.updateIndexFor(item, 'byCategory', 'foo', 'bar')
+
+            expect(registry.lookup('byCategory', 'foo')).toHaveLength(0)
+            expect(registry.lookup('byCategory', 'bar')).toHaveLength(1)
+        })
+
+
+        test('updateIndexFor handles array keys', () => {
+            registry.addIndex('byTags', (item) => item.tags)
+
+            const item = {name: 'Post', tags: ['javascript', 'testing']}
+            registry.set('1', item)
+
+            expect(registry.lookup('byTags', 'javascript')).toHaveLength(1)
+            expect(registry.lookup('byTags', 'testing')).toHaveLength(1)
+
+            item.tags = ['react', 'hooks']
+            registry.updateIndexFor(item, 'byTags', ['javascript', 'testing'], ['react', 'hooks'])
+
+            expect(registry.lookup('byTags', 'javascript')).toHaveLength(0)
+            expect(registry.lookup('byTags', 'testing')).toHaveLength(0)
+            expect(registry.lookup('byTags', 'react')).toHaveLength(1)
+            expect(registry.lookup('byTags', 'hooks')).toHaveLength(1)
+        })
+
+
+        test('updateIndexFor throws if value not in registry', () => {
+            registry.addIndex('byCategory', (item) => item.category)
+            const item = {name: 'Item', category: 'foo'}
+
+            expect(() => registry.updateIndexFor(item, 'byCategory', 'foo', 'bar'))
+                .toThrow('Value not found in registry')
+        })
+
+
+        test('updateIndexFor throws if index does not exist', () => {
+            const item = {name: 'Item', category: 'foo'}
+            registry.set('1', item)
+
+            expect(() => registry.updateIndexFor(item, 'nonExistent', 'foo', 'bar'))
+                .toThrow("Index 'nonExistent' does not exist")
+        })
+
+
+        test('refreshIndexFor recalculates index automatically', () => {
+            registry.addIndex('byCategory', (item) => item.category)
+
+            const item = {name: 'Item', category: 'foo'}
+            registry.set('1', item)
+
+            expect(registry.lookup('byCategory', 'foo')).toHaveLength(1)
+            expect(registry.lookup('byCategory', 'bar')).toHaveLength(0)
+
+            item.category = 'bar'
+            registry.refreshIndexFor(item, 'byCategory')
+
+            expect(registry.lookup('byCategory', 'foo')).toHaveLength(0)
+            expect(registry.lookup('byCategory', 'bar')).toHaveLength(1)
+        })
+
+
+        test('refreshIndexFor handles array values', () => {
+            registry.addIndex('byTags', (item) => item.tags)
+
+            const item = {name: 'Post', tags: ['javascript', 'testing']}
+            registry.set('1', item)
+
+            expect(registry.lookup('byTags', 'javascript')).toHaveLength(1)
+
+            item.tags = ['react', 'hooks']
+            registry.refreshIndexFor(item, 'byTags')
+
+            expect(registry.lookup('byTags', 'javascript')).toHaveLength(0)
+            expect(registry.lookup('byTags', 'react')).toHaveLength(1)
+        })
+
+
+        test('refreshIndexFor throws if value not in registry', () => {
+            registry.addIndex('byCategory', (item) => item.category)
+            const item = {name: 'Item', category: 'foo'}
+
+            expect(() => registry.refreshIndexFor(item, 'byCategory'))
+                .toThrow('Value not found in registry')
+        })
+
+
+        test('refreshIndexFor throws if index does not exist', () => {
+            const item = {name: 'Item', category: 'foo'}
+            registry.set('1', item)
+
+            expect(() => registry.refreshIndexFor(item, 'nonExistent'))
+                .toThrow("Index 'nonExistent' does not exist")
+        })
     })
 
 })

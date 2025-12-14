@@ -8,17 +8,51 @@ export default class PerkyModule extends Notifier {
     #childrenRegistry = null
     #started = false
     #disposed = false
+    #name
+    #category
 
     constructor (options = {}) {
         super()
 
         this.options = options
-        this.$name = options.$name || options.name || this.constructor.name
+        this.#name = options.$name || options.name || this.constructor.name
+        this.#category = options.$category
+
         this.host = null
         this.installed = false
 
         this.#childrenRegistry = new Registry()
         this.#childrenRegistry.addIndex('$category')
+    }
+
+
+    get $name () {
+        return this.#name
+    }
+
+
+    set $name (newName) {
+        const oldName = this.#name
+
+        if (oldName !== newName) {
+            this.#name = newName
+            this.emit('name:changed', newName, oldName)
+        }
+    }
+
+
+    get $category () {
+        return this.#category
+    }
+
+
+    set $category (newCategory) {
+        const oldCategory = this.#category
+
+        if (oldCategory !== newCategory) {
+            this.#category = newCategory
+            this.emit('category:changed', newCategory, oldCategory)
+        }
     }
 
 
@@ -366,6 +400,12 @@ function setupLifecycle (host, child, childName, options) {
             const category = child.$category || 'child'
             const bind = child.$bind
             unregisterChild(host, childName, child, category, bind)
+        }
+    })
+
+    child.on('category:changed', (newCategory, oldCategory) => {
+        if (childrenRegistry.get(childName) === child) {
+            childrenRegistry.updateIndexFor(child, '$category', oldCategory, newCategory)
         }
     })
 }

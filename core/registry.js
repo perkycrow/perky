@@ -208,6 +208,61 @@ export default class Registry extends Notifier {
     }
 
 
+    updateIndexFor (value, indexName, oldKeys, newKeys) { // eslint-disable-line complexity
+        if (!this.hasValue(value)) {
+            throw new Error('Value not found in registry')
+        }
+
+        const index = this.#indexes.get(indexName)
+        if (!index) {
+            throw new Error(`Index '${indexName}' does not exist`)
+        }
+
+        const oldKeysArray = Array.isArray(oldKeys) ? oldKeys : [oldKeys]
+        const newKeysArray = Array.isArray(newKeys) ? newKeys : [newKeys]
+
+        for (const oldKey of oldKeysArray) {
+            const items = index.data.get(oldKey)
+            if (items) {
+                items.delete(value)
+                if (items.size === 0) {
+                    index.data.delete(oldKey)
+                }
+            }
+        }
+
+        for (const newKey of newKeysArray) {
+            if (!index.data.has(newKey)) {
+                index.data.set(newKey, new Set())
+            }
+            index.data.get(newKey).add(value)
+        }
+    }
+
+
+    refreshIndexFor (value, indexName) {
+        if (!this.hasValue(value)) {
+            throw new Error('Value not found in registry')
+        }
+
+        const index = this.#indexes.get(indexName)
+        if (!index) {
+            throw new Error(`Index '${indexName}' does not exist`)
+        }
+
+        for (const [key, items] of index.data.entries()) {
+            if (items.has(value)) {
+                items.delete(value)
+                if (items.size === 0) {
+                    index.data.delete(key)
+                }
+            }
+        }
+
+        this.#addToIndex(indexName, value)
+    }
+
+
     #handleSet (key, value) {
         for (const indexName of this.#indexes.keys()) {
             this.#addToIndex(indexName, value)
