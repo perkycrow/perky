@@ -527,7 +527,7 @@ function setupLifecycle (host, child, options) {
 }
 
 
-function unregisterChild (host, child) { // eslint-disable-line max-params
+function unregisterChild (host, child) {
     if (host.childrenRegistry.hasEntry(child.$name, child)) {
         host.childrenRegistry.delete(child.$name)
     }
