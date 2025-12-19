@@ -13,36 +13,61 @@ export default class GameController extends WorldController {
     }
 
 
-    update (game, deltaTime) { // eslint-disable-line complexity
-        const player = this.world.getChild('player')
+    update (game, deltaTime) {
+        this.updatePlayer(game, deltaTime)
+        this.updateEntities(deltaTime)
+        this.checkCollisions()
+        this.cleanupDeadEntities()
+    }
 
+
+    updatePlayer (game, deltaTime) {
+        const player = this.world.getChild('player')
         const direction = game.getDirection('move')
         player.move(direction, deltaTime)
+    }
 
+
+    updateEntities (deltaTime) {
         const updatables = this.world.childrenByTags('updatable')
         for (const entity of updatables) {
             entity.update(deltaTime)
         }
+    }
 
-        this.checkCollisions()
 
+    cleanupDeadEntities () {
+        this.cleanupProjectiles()
+        this.cleanupEnemies()
+    }
+
+
+    cleanupProjectiles () {
         const projectiles = this.world.childrenByCategory('projectile')
         for (const projectile of projectiles) {
             if (!projectile.alive) {
                 this.world.removeChild(projectile.$name)
             }
         }
+    }
 
+
+    cleanupEnemies () {
         const enemies = this.world.childrenByTags('enemy')
         for (const enemy of enemies) {
             if (!enemy.alive) {
                 this.world.removeChild(enemy.$name)
 
                 if (enemy.x < -2.5) {
-                    console.log('GAME OVER! A pig reached your base!')
+                    this.onGameOver()
                 }
             }
         }
+    }
+
+
+    onGameOver () {
+        console.log('GAME OVER! A pig reached your base!')
     }
 
 
@@ -69,11 +94,16 @@ export default class GameController extends WorldController {
                 if (distance < hitRadius) {
                     projectile.alive = false
                     enemy.alive = false
-                    console.log('Hit! Enemy destroyed!')
+                    this.onEnemyDestroyed()
                     break
                 }
             }
         }
+    }
+
+
+    onEnemyDestroyed () {
+        console.log('Hit! Enemy destroyed!')
     }
 
 
