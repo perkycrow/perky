@@ -26,7 +26,7 @@ export default class GameRenderer extends PerkyModule {
             const sprite = this.#enemySprites.get(name)
 
             if (sprite) {
-                this.rootGroup.removeChild(sprite)
+                this.rootGroup.remove(sprite)
                 this.#enemySprites.delete(name)
             }
         })

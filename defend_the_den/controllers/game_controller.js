@@ -13,7 +13,7 @@ export default class GameController extends WorldController {
     }
 
 
-    update (game, deltaTime) {
+    update (game, deltaTime) { // eslint-disable-line complexity
         const player = this.world.getChild('player')
 
         const direction = game.getDirection('move')
@@ -24,10 +24,54 @@ export default class GameController extends WorldController {
             entity.update(deltaTime)
         }
 
+        this.checkCollisions()
+
         const projectiles = this.world.childrenByCategory('projectile')
-        for (const entity of projectiles) {
-            if (!entity.alive) {
-                this.world.removeChild(entity.$name)
+        for (const projectile of projectiles) {
+            if (!projectile.alive) {
+                this.world.removeChild(projectile.$name)
+            }
+        }
+
+        const enemies = this.world.childrenByTags('enemy')
+        for (const enemy of enemies) {
+            if (!enemy.alive) {
+                this.world.removeChild(enemy.$name)
+
+                if (enemy.x < -2.5) {
+                    console.log('GAME OVER! A pig reached your base!')
+                }
+            }
+        }
+    }
+
+
+    checkCollisions () {
+        const projectiles = this.world.childrenByCategory('projectile')
+        const enemies = this.world.childrenByTags('enemy')
+
+        for (const projectile of projectiles) {
+            if (!projectile.alive) {
+                continue
+            }
+
+            for (const enemy of enemies) {
+                if (!enemy.alive) {
+                    continue
+                }
+
+                const dx = projectile.x - enemy.x
+                const dy = projectile.y - enemy.y
+                const distance = Math.sqrt(dx * dx + dy * dy)
+
+                const hitRadius = 0.4
+
+                if (distance < hitRadius) {
+                    projectile.alive = false
+                    enemy.alive = false
+                    console.log('Hit! Enemy destroyed!')
+                    break
+                }
             }
         }
     }
@@ -39,9 +83,11 @@ export default class GameController extends WorldController {
         this.world.create(Projectile, {
             $category: 'projectile',
             $tags: ['updatable'],
-            x: player.x + 0.5,
+            x: player.x + 0.3,
             y: player.y,
-            speed: 8
+            velocityX: 12,
+            velocityY: 1,
+            gravity: -8
         })
     }
 

@@ -15,6 +15,7 @@ export default class Enemy extends Entity {
 
         this.maxSpeed = maxSpeed
         this.boundaries = boundaries
+        this.alive = true
     }
 
 
@@ -44,10 +45,8 @@ export default class Enemy extends Entity {
             this.position.y = this.boundaries.min
         }
 
-        if (this.position.x < -4) {
-            this.position.x = 4
-
-            this.position.y = this.boundaries.min + Math.random() * (this.boundaries.max - this.boundaries.min)
+        if (this.position.x < -2.5) {
+            this.alive = false
         }
     }
 

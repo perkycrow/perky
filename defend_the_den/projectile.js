@@ -8,11 +8,11 @@ export default class Projectile extends Entity {
     constructor (params = {}) {
         super(params)
 
-        const {x = 0, y = 0, speed = 10} = params
+        const {x = 0, y = 0, velocityX = 5, velocityY = 3, gravity = -10} = params
 
         this.position = new Vec2(x, y)
-        this.velocity = new Vec2(speed, 0)
-        this.speed = speed
+        this.velocity = new Vec2(velocityX, velocityY)
+        this.gravity = gravity
         this.alive = true
     }
 
@@ -35,9 +35,11 @@ export default class Projectile extends Entity {
 
 
     update (deltaTime) {
+        this.velocity.y += this.gravity * deltaTime
+
         this.position.add(this.velocity.clone().multiplyScalar(deltaTime))
 
-        if (this.position.x > 5) {
+        if (this.position.y < -3 || this.position.x > 5) {
             this.alive = false
         }
     }
