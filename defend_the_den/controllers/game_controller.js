@@ -63,7 +63,7 @@ export default class GameController extends WorldController {
             $tags: ['updatable', 'enemy'],
             x: options.x || 0,
             y: options.y || 0,
-            maxSpeed: options.maxSpeed || 2
+            maxSpeed: options.maxSpeed || 0.5
         })
     }
 

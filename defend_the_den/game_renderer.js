@@ -8,10 +8,13 @@ export default class GameRenderer extends PerkyModule {
 
     #enemySprites = new Map()
 
-    constructor (world, game) {
-        super()
-        this.world = world
-        this.game = game
+    constructor (options = {}) {
+        super(options)
+        this.world = options.world
+        this.game = options.game
+
+        this.rootGroup = new Group2D({name: 'root'})
+        this.projectilesGroup = new Group2D({name: 'projectiles'})
 
         this.world.on('entity:set', (name, entity) => {
             if (entity.hasTag('enemy')) {
@@ -31,9 +34,6 @@ export default class GameRenderer extends PerkyModule {
 
 
     initialize () {
-        this.rootGroup = new Group2D({name: 'root'})
-        this.projectilesGroup = new Group2D({name: 'projectiles'})
-
         const backgroundImage = this.game.getImage('background')
         const backgroundHeight = 5
         const backgroundWidth = (backgroundImage.width / backgroundImage.height) * backgroundHeight
