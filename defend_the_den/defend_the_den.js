@@ -50,10 +50,12 @@ export default class DefendTheDen extends Game {
     }
 
     onStart () {
+        this.renderer.initialize()
+
         this.execute('spawnPlayer', {x: -2.5})
         this.execute('spawnEnemy', {x: 2.5})
-
-        this.renderer.initialize()
+        this.execute('spawnEnemy', {x: 1.5})
+        this.execute('spawnEnemy', {x: 3.5})
     }
 
 }

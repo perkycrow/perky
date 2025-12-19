@@ -1,13 +1,32 @@
 import Group2D from '../canvas/group_2d'
 import Image2D from '../canvas/image_2d'
 import Circle from '../canvas/circle'
+import PerkyModule from '../core/perky_module'
 
 
-export default class GameRenderer {
+export default class GameRenderer extends PerkyModule {
+
+    #enemySprites = new Map()
 
     constructor (world, game) {
+        super()
         this.world = world
         this.game = game
+
+        this.world.on('entity:set', (name, entity) => {
+            if (entity.$tags?.includes('enemy')) {
+                this.#createEnemySprite(entity)
+            }
+        })
+
+        this.world.on('entity:delete', (name) => {
+            const sprite = this.#enemySprites.get(name)
+
+            if (sprite) {
+                this.rootGroup.removeChild(sprite)
+                this.#enemySprites.delete(name)
+            }
+        })
     }
 
 
@@ -37,17 +56,9 @@ export default class GameRenderer {
         })
         this.rootGroup.addChild(this.wolfSprite)
 
+        // Create sprites for existing enemies
         const enemies = this.world.childrenByTags('enemy')
-        const enemyEntity = enemies[0]
-
-        this.pigSprite = new Image2D({
-            image: this.game.getImage('pig'),
-            x: enemyEntity?.x || 0,
-            y: enemyEntity?.y || 0,
-            width: 1,
-            height: 1
-        })
-        this.rootGroup.addChild(this.pigSprite)
+        enemies.forEach(enemy => this.#createEnemySprite(enemy))
 
         const circle = new Circle({
             x: 2,
@@ -61,13 +72,24 @@ export default class GameRenderer {
     }
 
 
+    #createEnemySprite (enemy) {
+        const pigSprite = new Image2D({
+            image: this.game.getImage('pig'),
+            x: enemy.x,
+            y: enemy.y,
+            width: 1,
+            height: 1
+        })
+
+        this.rootGroup.addChild(pigSprite)
+        this.#enemySprites.set(enemy.$name, pigSprite)
+    }
+
+
     render () {
         const player = this.world.getChild('player')
 
-        const enemies = this.world.childrenByTags('enemy')
-        const enemy = enemies[0]
-
-        if (!player || !enemy) {
+        if (!player) {
             return
         }
 
@@ -85,8 +107,15 @@ export default class GameRenderer {
             this.wolfSprite.image = this.game.getImage('wolf_right')
         }
 
-        this.pigSprite.x = enemy.x
-        this.pigSprite.y = enemy.y
+        // Update all enemy sprites
+        const enemies = this.world.childrenByTags('enemy')
+        enemies.forEach(enemy => {
+            const sprite = this.#enemySprites.get(enemy.$name)
+            if (sprite) {
+                sprite.x = enemy.x
+                sprite.y = enemy.y
+            }
+        })
 
         const projectiles = this.world.childrenByCategory('projectile')
         this.projectilesGroup.children = projectiles.map(projectile => {
