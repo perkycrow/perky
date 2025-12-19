@@ -56,9 +56,9 @@ export default class DefendTheDen extends Game {
         this.renderer.initialize()
 
         this.execute('spawnPlayer', {x: -2.5})
-        this.execute('spawnEnemy', {x: 2.5})
-        this.execute('spawnEnemy', {x: 1.5})
-        this.execute('spawnEnemy', {x: 3.5})
+
+        const gameController = this.getController('game')
+        gameController.startWave(0)
     }
 
 }

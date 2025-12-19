@@ -8,7 +8,7 @@ export default class Player extends Entity {
     constructor (params = {}) {
         super(params)
 
-        const {x = 0, y = 0, maxSpeed = 8, acceleration = 80, boundaries = {min: -1.5, max: 1}} = params
+        const {x = 0, y = 0, maxSpeed = 8, acceleration = 80, boundaries = {min: -1.35, max: 1.35}} = params
 
         this.position = new Vec2(x, y)
         this.velocity = new Vec2(0, 0)
