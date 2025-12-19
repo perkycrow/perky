@@ -29,11 +29,23 @@ export default class PerkyModule extends Notifier {
         this.#category = options.$category || this.constructor.category
         this.#bind = options.$bind
         this.#eagerStart = options.$eagerStart
+
         this.#tags = new ObservableSet(options.$tags)
 
         this.#childrenRegistry = new Registry()
         this.#childrenRegistry.addIndex('$category')
     }
+
+
+    onStart () {} // eslint-disable-line class-methods-use-this
+
+    onStop () {} // eslint-disable-line class-methods-use-this
+
+    onDispose () {} // eslint-disable-line class-methods-use-this
+
+    onInstall () {} // eslint-disable-line class-methods-use-this
+
+    onUninstall () {} // eslint-disable-line class-methods-use-this
 
 
     get $name () {
@@ -173,21 +185,6 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    onStart () { // eslint-disable-line class-methods-use-this
-        // Override in subclasses
-    }
-
-
-    onStop () { // eslint-disable-line class-methods-use-this
-        // Override in subclasses
-    }
-
-
-    onDispose () { // eslint-disable-line class-methods-use-this
-        // Override in subclasses
-    }
-
-
     hasMany (identifier, categoryName) {
         Object.defineProperty(this, identifier, {
             get: () => this.#childrenRegistry.lookup('$category', categoryName),
@@ -230,16 +227,6 @@ export default class PerkyModule extends Notifier {
         this.#host = null
 
         return true
-    }
-
-
-    onInstall () { // eslint-disable-line class-methods-use-this
-        // Override in subclasses
-    }
-
-
-    onUninstall () { // eslint-disable-line class-methods-use-this
-        // Override in subclasses
     }
 
 
@@ -541,9 +528,7 @@ function unregisterChild (host, child) {
     host.emit(`${child.$category}:delete`, child.$name, child)
     child.emit('unregistered', host, child.$name)
 
-    if (!child.disposed) {
-        child.dispose()
-    }
+    child.dispose()
 }
 
 
