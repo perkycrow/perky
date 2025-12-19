@@ -14,7 +14,7 @@ export default class GameRenderer extends PerkyModule {
         this.game = game
 
         this.world.on('entity:set', (name, entity) => {
-            if (entity.$tags?.includes('enemy')) {
+            if (entity.hasTag('enemy')) {
                 this.#createEnemySprite(entity)
             }
         })

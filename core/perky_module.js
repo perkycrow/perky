@@ -136,6 +136,20 @@ export default class PerkyModule extends Notifier {
     }
 
 
+    hasTag (tag) {
+        return this.#tags.has(tag)
+    }
+
+
+    hasTags (tags) {
+        if (typeof tags === 'string') {
+            return this.hasTag(tags)
+        }
+
+        return Array.isArray(tags) && tags.every(tag => this.#tags.has(tag))
+    }
+
+
     start () {
         if (this.#started) {
             return false

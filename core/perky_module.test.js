@@ -1069,6 +1069,71 @@ describe(PerkyModule, () => {
             expect(module.tags.size).toBe(0)
         })
 
+
+        describe('hasTag()', () => {
+            test('returns true when tag exists', () => {
+                const module = new PerkyModule({$tags: ['enemy', 'collidable']})
+                expect(module.hasTag('enemy')).toBe(true)
+                expect(module.hasTag('collidable')).toBe(true)
+            })
+
+
+            test('returns false when tag does not exist', () => {
+                const module = new PerkyModule({$tags: ['enemy']})
+                expect(module.hasTag('friendly')).toBe(false)
+                expect(module.hasTag('collidable')).toBe(false)
+            })
+
+
+            test('returns false when no tags set', () => {
+                const module = new PerkyModule()
+                expect(module.hasTag('enemy')).toBe(false)
+            })
+        })
+
+
+        describe('hasTags()', () => {
+            test('returns true when all tags exist (array)', () => {
+                const module = new PerkyModule({$tags: ['enemy', 'collidable', 'flying']})
+                expect(module.hasTags(['enemy', 'collidable'])).toBe(true)
+                expect(module.hasTags(['enemy'])).toBe(true)
+            })
+
+
+            test('returns false when some tags missing (array)', () => {
+                const module = new PerkyModule({$tags: ['enemy', 'collidable']})
+                expect(module.hasTags(['enemy', 'flying'])).toBe(false)
+                expect(module.hasTags(['friendly', 'enemy'])).toBe(false)
+            })
+
+
+            test('returns false when no tags match (array)', () => {
+                const module = new PerkyModule({$tags: ['enemy']})
+                expect(module.hasTags(['friendly', 'collidable'])).toBe(false)
+            })
+
+
+            test('fallback: accepts string and checks single tag', () => {
+                const module = new PerkyModule({$tags: ['enemy', 'collidable']})
+                expect(module.hasTags('enemy')).toBe(true)
+                expect(module.hasTags('collidable')).toBe(true)
+                expect(module.hasTags('friendly')).toBe(false)
+            })
+
+
+            test('returns true for empty array', () => {
+                const module = new PerkyModule({$tags: ['enemy']})
+                expect(module.hasTags([])).toBe(true)
+            })
+
+
+            test('returns false when no tags set', () => {
+                const module = new PerkyModule()
+                expect(module.hasTags(['enemy'])).toBe(false)
+                expect(module.hasTags('enemy')).toBe(false)
+            })
+        })
+
     })
 
 
