@@ -37,15 +37,15 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    onStart () {} // eslint-disable-line class-methods-use-this
+    onStart () { } // eslint-disable-line class-methods-use-this
 
-    onStop () {} // eslint-disable-line class-methods-use-this
+    onStop () { } // eslint-disable-line class-methods-use-this
 
-    onDispose () {} // eslint-disable-line class-methods-use-this
+    onDispose () { } // eslint-disable-line class-methods-use-this
 
-    onInstall () {} // eslint-disable-line class-methods-use-this
+    onInstall () { } // eslint-disable-line class-methods-use-this
 
-    onUninstall () {} // eslint-disable-line class-methods-use-this
+    onUninstall () { } // eslint-disable-line class-methods-use-this
 
 
     get $name () {
@@ -374,12 +374,13 @@ export default class PerkyModule extends Notifier {
         }
 
         const indexKey = getIndexKey(tags)
+        const registry = this.#childrenRegistry
 
         if (this.#tagIndexes.has(indexKey)) {
-            return this.#childrenRegistry.lookup(indexKey, indexKey)
+            return registry.lookup(indexKey, indexKey)
         } else {
-            return this.#childrenRegistry.all.filter(child =>
-                tags.every(tag => child.$tags?.includes(tag)))
+            return registry.all.filter(child => tags.every(tag => child.$tags?.includes(tag)))
+
         }
     }
 
@@ -430,23 +431,15 @@ export default class PerkyModule extends Notifier {
             return
         }
 
-        child.tags.on('add', () => {
+        const refreshAllIndexes = () => {
             for (const indexKey of this.#tagIndexes.keys()) {
-                this.#childrenRegistry.updateIndexFor(child, indexKey, null, indexKey)
+                this.#childrenRegistry.refreshIndexFor(child, indexKey)
             }
-        })
+        }
 
-        child.tags.on('delete', () => {
-            for (const indexKey of this.#tagIndexes.keys()) {
-                this.#childrenRegistry.updateIndexFor(child, indexKey, indexKey, null)
-            }
-        })
-
-        child.tags.on('clear', () => {
-            for (const indexKey of this.#tagIndexes.keys()) {
-                this.#childrenRegistry.updateIndexFor(child, indexKey, indexKey, null)
-            }
-        })
+        child.tags.on('add', refreshAllIndexes)
+        child.tags.on('delete', refreshAllIndexes)
+        child.tags.on('clear', refreshAllIndexes)
     }
 
 }
