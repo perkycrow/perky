@@ -368,18 +368,20 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    childrenByTags (...tags) {
-        if (tags.length === 0) {
+    childrenByTags (tags) {
+        const tagArray = Array.isArray(tags) ? tags : [tags]
+
+        if (tagArray.length === 0) {
             return []
         }
 
-        const indexKey = getIndexKey(tags)
+        const indexKey = getIndexKey(tagArray)
         const registry = this.#childrenRegistry
 
         if (this.#tagIndexes.has(indexKey)) {
             return registry.lookup(indexKey, indexKey)
         } else {
-            return registry.all.filter(child => tags.every(tag => child.$tags?.includes(tag)))
+            return registry.all.filter(child => tagArray.every(tag => child.$tags?.includes(tag)))
 
         }
     }

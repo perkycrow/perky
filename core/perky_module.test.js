@@ -1079,7 +1079,7 @@ describe(PerkyModule, () => {
             const child2 = child.create(PerkyModule, {$name: 'c2', $tags: ['enemy', 'collidable']})
             child.create(PerkyModule, {$name: 'c3', $tags: ['friendly', 'collidable']})
 
-            const enemyColliders = child.childrenByTags('enemy', 'collidable')
+            const enemyColliders = child.childrenByTags(['enemy', 'collidable'])
 
             expect(enemyColliders).toHaveLength(2)
             expect(enemyColliders).toContain(child1)
@@ -1090,7 +1090,7 @@ describe(PerkyModule, () => {
         test('childrenByTags returns empty array for no matches', () => {
             child.create(PerkyModule, {$name: 'c1', $tags: ['enemy']})
 
-            const result = child.childrenByTags('enemy', 'collidable')
+            const result = child.childrenByTags(['enemy', 'collidable'])
 
             expect(result).toEqual([])
         })
@@ -1147,7 +1147,7 @@ describe(PerkyModule, () => {
 
             child.addTagsIndex(['enemy', 'collidable'])
 
-            const result = child.childrenByTags('enemy', 'collidable')
+            const result = child.childrenByTags(['enemy', 'collidable'])
 
             expect(result).toHaveLength(1)
             expect(result).toContain(child1)
@@ -1173,12 +1173,12 @@ describe(PerkyModule, () => {
         test('index automatically updates when child tags change (add)', () => {
             const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy']})
             child.addTagsIndex(['enemy', 'collidable'])
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(0)
 
             testChild.tags.add('collidable')
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
-            expect(child.childrenByTags('enemy', 'collidable')).toContain(testChild)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(1)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toContain(testChild)
         })
 
 
@@ -1186,11 +1186,11 @@ describe(PerkyModule, () => {
             const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy', 'collidable']})
             child.addTagsIndex(['enemy', 'collidable'])
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(1)
 
             testChild.tags.delete('collidable')
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(0)
         })
 
 
@@ -1198,11 +1198,11 @@ describe(PerkyModule, () => {
             const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy', 'collidable']})
             child.addTagsIndex(['enemy', 'collidable'])
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(1)
 
             testChild.tags.clear()
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(0)
         })
 
 
@@ -1210,11 +1210,11 @@ describe(PerkyModule, () => {
             const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy']})
             child.addTagsIndex(['enemy', 'collidable'])
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(0)
 
             testChild.$tags = ['enemy', 'collidable']
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(1)
         })
 
 
@@ -1225,8 +1225,8 @@ describe(PerkyModule, () => {
             child.addTagsIndex(['enemy', 'collidable'])
             child.addTagsIndex(['friendly', 'collidable'])
 
-            expect(child.childrenByTags('enemy', 'collidable')).toEqual([enemy])
-            expect(child.childrenByTags('friendly', 'collidable')).toEqual([friendly])
+            expect(child.childrenByTags(['enemy', 'collidable'])).toEqual([enemy])
+            expect(child.childrenByTags(['friendly', 'collidable'])).toEqual([friendly])
         })
 
 
@@ -1234,14 +1234,14 @@ describe(PerkyModule, () => {
             const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy', 'collidable']})
             child.addTagsIndex(['enemy', 'collidable'])
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(1)
 
             child.removeChild('test')
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(0)
 
             testChild.tags.add('flying')
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(0)
         })
 
 
@@ -1252,7 +1252,7 @@ describe(PerkyModule, () => {
 
             testChild.tags.add('collidable')
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(1)
         })
 
 
@@ -1290,7 +1290,7 @@ describe(PerkyModule, () => {
 
             testChild.tags.add('collidable')
 
-            const result = child.childrenByTags('enemy', 'collidable')
+            const result = child.childrenByTags(['enemy', 'collidable'])
             expect(result).toHaveLength(1)
             expect(result).toContain(testChild)
         })
@@ -1303,7 +1303,7 @@ describe(PerkyModule, () => {
 
             testChild.tags.add('collidable')
 
-            const result = child.childrenByTags('enemy', 'collidable')
+            const result = child.childrenByTags(['enemy', 'collidable'])
             expect(result).toHaveLength(1)
             expect(result).toContain(testChild)
         })
@@ -1317,7 +1317,7 @@ describe(PerkyModule, () => {
             testChild.tags.add('enemy')
             testChild.tags.add('collidable')
 
-            const result = child.childrenByTags('enemy', 'collidable')
+            const result = child.childrenByTags(['enemy', 'collidable'])
             expect(result).toHaveLength(1)
             expect(result).toContain(testChild)
         })
@@ -1329,18 +1329,18 @@ describe(PerkyModule, () => {
 
             const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy']})
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
-            expect(child.childrenByTags('enemy', 'flying')).toHaveLength(0)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(0)
+            expect(child.childrenByTags(['enemy', 'flying'])).toHaveLength(0)
 
             testChild.tags.add('collidable')
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
-            expect(child.childrenByTags('enemy', 'flying')).toHaveLength(0)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(1)
+            expect(child.childrenByTags(['enemy', 'flying'])).toHaveLength(0)
 
             testChild.tags.add('flying')
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
-            expect(child.childrenByTags('enemy', 'flying')).toHaveLength(1)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(1)
+            expect(child.childrenByTags(['enemy', 'flying'])).toHaveLength(1)
         })
 
 
@@ -1350,18 +1350,18 @@ describe(PerkyModule, () => {
 
             const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy', 'collidable', 'flying']})
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
-            expect(child.childrenByTags('enemy', 'flying')).toHaveLength(1)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(1)
+            expect(child.childrenByTags(['enemy', 'flying'])).toHaveLength(1)
 
             testChild.tags.delete('collidable')
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
-            expect(child.childrenByTags('enemy', 'flying')).toHaveLength(1)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(0)
+            expect(child.childrenByTags(['enemy', 'flying'])).toHaveLength(1)
 
             testChild.tags.delete('flying')
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
-            expect(child.childrenByTags('enemy', 'flying')).toHaveLength(0)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(0)
+            expect(child.childrenByTags(['enemy', 'flying'])).toHaveLength(0)
         })
 
 
@@ -1371,13 +1371,13 @@ describe(PerkyModule, () => {
 
             const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy', 'collidable', 'flying']})
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
-            expect(child.childrenByTags('enemy', 'flying')).toHaveLength(1)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(1)
+            expect(child.childrenByTags(['enemy', 'flying'])).toHaveLength(1)
 
             testChild.tags.clear()
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
-            expect(child.childrenByTags('enemy', 'flying')).toHaveLength(0)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(0)
+            expect(child.childrenByTags(['enemy', 'flying'])).toHaveLength(0)
         })
 
 
@@ -1388,17 +1388,17 @@ describe(PerkyModule, () => {
             const enemy = child.create(PerkyModule, {$name: 'enemy', $tags: ['enemy']})
             const friendly = child.create(PerkyModule, {$name: 'friendly', $tags: ['friendly']})
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(0)
-            expect(child.childrenByTags('friendly', 'collidable')).toHaveLength(0)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(0)
+            expect(child.childrenByTags(['friendly', 'collidable'])).toHaveLength(0)
 
             enemy.tags.add('collidable')
             friendly.tags.add('collidable')
 
-            expect(child.childrenByTags('enemy', 'collidable')).toHaveLength(1)
-            expect(child.childrenByTags('enemy', 'collidable')).toContain(enemy)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(1)
+            expect(child.childrenByTags(['enemy', 'collidable'])).toContain(enemy)
 
-            expect(child.childrenByTags('friendly', 'collidable')).toHaveLength(1)
-            expect(child.childrenByTags('friendly', 'collidable')).toContain(friendly)
+            expect(child.childrenByTags(['friendly', 'collidable'])).toHaveLength(1)
+            expect(child.childrenByTags(['friendly', 'collidable'])).toContain(friendly)
         })
 
 
@@ -1408,18 +1408,18 @@ describe(PerkyModule, () => {
             const enemy1 = child.create(PerkyModule, {$name: 'enemy1', $tags: ['enemy']})
             const enemy2 = child.create(PerkyModule, {$name: 'enemy2', $tags: ['enemy', 'collidable']})
 
-            expect(child.childrenByTags('enemy', 'collidable')).toEqual([enemy2])
+            expect(child.childrenByTags(['enemy', 'collidable'])).toEqual([enemy2])
 
             enemy1.tags.add('collidable')
 
-            const result = child.childrenByTags('enemy', 'collidable')
+            const result = child.childrenByTags(['enemy', 'collidable'])
             expect(result).toHaveLength(2)
             expect(result).toContain(enemy1)
             expect(result).toContain(enemy2)
 
             enemy2.tags.delete('enemy')
 
-            const result2 = child.childrenByTags('enemy', 'collidable')
+            const result2 = child.childrenByTags(['enemy', 'collidable'])
             expect(result2).toHaveLength(1)
             expect(result2).toContain(enemy1)
         })
@@ -1432,7 +1432,7 @@ describe(PerkyModule, () => {
 
             testChild.tags.add('collidable')
 
-            const result = child.childrenByTags('enemy', 'collidable')
+            const result = child.childrenByTags(['enemy', 'collidable'])
             expect(result).toHaveLength(1)
             expect(result).toContain(testChild)
         })
