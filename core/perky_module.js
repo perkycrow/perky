@@ -58,7 +58,7 @@ export default class PerkyModule extends Notifier {
 
         if (oldName !== newName) {
             this.#name = newName
-            this.emit('name:changed', newName, oldName)
+            this.emit('$name:changed', newName, oldName)
         }
     }
 
@@ -73,7 +73,7 @@ export default class PerkyModule extends Notifier {
 
         if (oldCategory !== newCategory) {
             this.#category = newCategory
-            this.emit('category:changed', newCategory, oldCategory)
+            this.emit('$category:changed', newCategory, oldCategory)
         }
     }
 
@@ -88,7 +88,7 @@ export default class PerkyModule extends Notifier {
 
         if (oldBind !== newBind) {
             this.#bind = newBind
-            this.emit('bind:changed', newBind, oldBind)
+            this.emit('$bind:changed', newBind, oldBind)
         }
     }
 
@@ -494,15 +494,15 @@ function setupLifecycle (host, child, options) {
         }
     })
 
-    child.on('category:changed', (newCategory, oldCategory) => {
+    child.on('$category:changed', (newCategory, oldCategory) => {
         childrenRegistry.updateIndexFor(child, '$category', oldCategory, newCategory)
     })
 
-    child.on('name:changed', (newName, oldName) => {
+    child.on('$name:changed', (newName, oldName) => {
         childrenRegistry.updateKey(oldName, newName, child)
     })
 
-    child.on('bind:changed', (newBind, oldBind) => {
+    child.on('$bind:changed', (newBind, oldBind) => {
         if (oldBind && host[oldBind] === child) {
             delete host[oldBind]
         }
