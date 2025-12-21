@@ -2,6 +2,7 @@
 export default class Notifier {
 
     #listenersFor = {}
+    #externalListeners = []
 
     getListenersFor (name) {
         return this.#listenersFor[name]
@@ -73,8 +74,6 @@ export default class Notifier {
     }
 
 
-
-
     emitter (name) {
         return (...args) => this.emit(name, ...args)
     }
@@ -100,6 +99,39 @@ export default class Notifier {
         }
 
         return this
+    }
+
+
+    listenTo (target, eventName, callback) {
+        target.on(eventName, callback)
+        this.#externalListeners.push({target, eventName, callback})
+    }
+
+
+    listenToOnce (target, eventName, callback) {
+        const onceWrapper = (...args) => {
+            callback(...args)
+
+            target.off(eventName, onceWrapper)
+
+            const index = this.#externalListeners.findIndex(
+                l => l.target === target && l.eventName === eventName && l.callback === onceWrapper
+            )
+            if (index !== -1) {
+                this.#externalListeners.splice(index, 1)
+            }
+        }
+
+        target.on(eventName, onceWrapper)
+        this.#externalListeners.push({target, eventName, callback: onceWrapper})
+    }
+
+
+    cleanExternalListeners () {
+        this.#externalListeners.forEach(({target, eventName, callback}) => {
+            target.off(eventName, callback)
+        })
+        this.#externalListeners = []
     }
 
 
