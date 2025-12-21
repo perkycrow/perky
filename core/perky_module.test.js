@@ -718,8 +718,8 @@ describe(PerkyModule, () => {
     })
 
 
-    describe('eagerStart', () => {
-        test('default eagerStart is true for PerkyModule', () => {
+    describe('$eagerStart', () => {
+        test('default $eagerStart is true for PerkyModule', () => {
             const module = child.create(PerkyModule, {$name: 'test'})
             expect(module.$eagerStart).toBe(true)
         })
@@ -741,7 +741,7 @@ describe(PerkyModule, () => {
         })
 
 
-        test('eagerStart: false prevents automatic start', () => {
+        test('$eagerStart: false prevents automatic start', () => {
             child.start()
 
             const module = child.create(PerkyModule, {
@@ -753,7 +753,7 @@ describe(PerkyModule, () => {
         })
 
 
-        test('eagerStart: true forces eager start', () => {
+        test('$eagerStart: true forces eager start', () => {
             child.start()
 
             const module = child.create(PerkyModule, {
@@ -765,9 +765,9 @@ describe(PerkyModule, () => {
         })
 
 
-        test('static eagerStart is inherited from class', () => {
+        test('static $eagerStart is inherited from class', () => {
             class LazyModule extends PerkyModule {
-                static eagerStart = false
+                static $eagerStart = false
             }
 
             child.start()
@@ -779,9 +779,9 @@ describe(PerkyModule, () => {
         })
 
 
-        test('explicit $eagerStart overrides static eagerStart', () => {
+        test('explicit $eagerStart overrides static $eagerStart', () => {
             class LazyModule extends PerkyModule {
-                static eagerStart = false
+                static $eagerStart = false
             }
 
             child.start()
@@ -796,9 +796,9 @@ describe(PerkyModule, () => {
         })
 
 
-        test('eagerStart cascading: option > static > default', () => {
+        test('$eagerStart cascading: option > static > default', () => {
             class CustomModule extends PerkyModule {
-                static eagerStart = false
+                static $eagerStart = false
             }
 
             const module1 = child.create(CustomModule, {$name: 'test1'})
@@ -815,7 +815,7 @@ describe(PerkyModule, () => {
         })
 
 
-        test('eagerStart works with $lifecycle: false', () => {
+        test('$eagerStart works with $lifecycle: false', () => {
             child.start()
 
             const module = child.create(PerkyModule, {
@@ -844,7 +844,7 @@ describe(PerkyModule, () => {
         })
 
 
-        test('multiple children with mixed eagerStart', () => {
+        test('multiple children with mixed $eagerStart', () => {
             child.start()
 
             const eager1 = child.create(PerkyModule, {

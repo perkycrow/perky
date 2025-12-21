@@ -19,7 +19,7 @@ export default class PerkyModule extends Notifier {
     #tagIndexes = new Map()
 
     static $category = 'default'
-    static eagerStart = true
+    static $eagerStart = true
 
     constructor (options = {}) {
         super()
@@ -247,7 +247,7 @@ export default class PerkyModule extends Notifier {
     create (Child, options = {}) {
         options.$category ||= Child.$category
         options.$name ||= uniqueId(this.childrenRegistry, options.$category)
-        options.$eagerStart = options.$eagerStart ?? Child.eagerStart ?? true
+        options.$eagerStart = options.$eagerStart ?? Child.$eagerStart ?? true
 
         const child = typeof Child === 'function' ? new Child(options) : Child
 
