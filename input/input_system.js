@@ -8,9 +8,11 @@ import Vec2 from '../math/vec2'
 
 export default class InputSystem extends PerkyModule {
 
+    static $category = 'inputSystem'
+
     constructor (options = {}) {
         const {inputBinder, keyboard = {}, mouse = {}, perkyView} = options
-        super({name: 'inputSystem'})
+        super(options)
 
         this.create(InputBinder, {
             $bind: 'inputBinder',

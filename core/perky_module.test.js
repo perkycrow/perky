@@ -606,16 +606,16 @@ describe(PerkyModule, () => {
     })
 
 
-    describe('static category', () => {
+    describe('static $category', () => {
         test('uses PerkyModule default category "child" when not specified', () => {
             const module = child.create(PerkyModule, {$name: 'test'})
             expect(module.$category).toBe('default')
         })
 
 
-        test('uses static category from subclass', () => {
+        test('uses static $category from subclass', () => {
             class GameController extends PerkyModule {
-                static category = 'controller'
+                static $category = 'controller'
             }
 
             const controller = child.create(GameController, {$name: 'game'})
@@ -623,9 +623,9 @@ describe(PerkyModule, () => {
         })
 
 
-        test('explicit $category overrides static category', () => {
+        test('explicit $category overrides static $category', () => {
             class GameController extends PerkyModule {
-                static category = 'controller'
+                static $category = 'controller'
             }
 
             const controller = child.create(GameController, {
@@ -639,31 +639,25 @@ describe(PerkyModule, () => {
 
         test('works with multiple levels of inheritance', () => {
             class BaseController extends PerkyModule {
-                static get category () {
-                    return 'controller'
-                }
+                static $category = 'controller'
             }
 
             class GameController extends BaseController {
-                static get category () {
-                    return 'game-controller'
-                }
+                static $category = 'gameController'
             }
 
             const controller = child.create(GameController, {$name: 'game'})
-            expect(controller.$category).toBe('game-controller')
+            expect(controller.$category).toBe('gameController')
         })
 
 
-        test('subclass without static category falls back to parent', () => {
+        test('subclass without static $category falls back to parent', () => {
             class BaseController extends PerkyModule {
-                static get category () {
-                    return 'controller'
-                }
+                static $category = 'controller'
             }
 
             class GameController extends BaseController {
-                // No static category override
+                // No static $category override
             }
 
             const controller = child.create(GameController, {$name: 'game'})
@@ -671,11 +665,9 @@ describe(PerkyModule, () => {
         })
 
 
-        test('auto-generates unique IDs using static category', () => {
+        test('auto-generates unique IDs using static $category', () => {
             class Monster extends PerkyModule {
-                static get category () {
-                    return 'monster'
-                }
+                static $category = 'monster'
             }
 
             // Use a fresh parent to ensure predictable ID generation
@@ -694,11 +686,9 @@ describe(PerkyModule, () => {
         })
 
 
-        test('emits correct event based on static category', () => {
+        test('emits correct event based on static $category', () => {
             class GameController extends PerkyModule {
-                static get category () {
-                    return 'controller'
-                }
+                static $category = 'controller'
             }
 
             const emitSpy = vi.spyOn(child, 'emit')
@@ -708,17 +698,13 @@ describe(PerkyModule, () => {
         })
 
 
-        test('listNamesFor works with static category', () => {
+        test('listNamesFor works with static $category', () => {
             class GameController extends PerkyModule {
-                static get category () {
-                    return 'controller'
-                }
+                static $category = 'controller'
             }
 
             class InputController extends PerkyModule {
-                static get category () {
-                    return 'controller'
-                }
+                static $category = 'controller'
             }
 
             child.create(GameController, {$name: 'game'})

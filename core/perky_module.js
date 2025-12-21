@@ -18,7 +18,7 @@ export default class PerkyModule extends Notifier {
     #tags = null
     #tagIndexes = new Map()
 
-    static category = 'default'
+    static $category = 'default'
     static eagerStart = true
 
     constructor (options = {}) {
@@ -26,7 +26,7 @@ export default class PerkyModule extends Notifier {
 
         this.options = {...options}
         this.#name = options.$name || options.name || this.constructor.name
-        this.#category = options.$category || this.constructor.category
+        this.#category = options.$category || this.constructor.$category
         this.#bind = options.$bind
         this.#eagerStart = options.$eagerStart
 
@@ -245,7 +245,7 @@ export default class PerkyModule extends Notifier {
 
 
     create (Child, options = {}) {
-        options.$category ||= Child.category
+        options.$category ||= Child.$category
         options.$name ||= uniqueId(this.childrenRegistry, options.$category)
         options.$eagerStart = options.$eagerStart ?? Child.eagerStart ?? true
 

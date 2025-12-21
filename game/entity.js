@@ -3,6 +3,6 @@ import PerkyModule from '../core/perky_module'
 
 export default class Entity extends PerkyModule {
 
-    static category = 'entity'
+    static $category = 'entity'
 
 }

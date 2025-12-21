@@ -454,15 +454,15 @@ describe(Registry, () => {
 
 
         test('updateIndexFor moves item from old key to new key', () => {
-            registry.addIndex('byCategory', (item) => item.category)
+            registry.addIndex('byCategory', (item) => item.$category)
 
-            const item = {name: 'Item', category: 'foo'}
+            const item = {name: 'Item', $category: 'foo'}
             registry.set('1', item)
 
             expect(registry.lookup('byCategory', 'foo')).toHaveLength(1)
             expect(registry.lookup('byCategory', 'bar')).toHaveLength(0)
 
-            item.category = 'bar'
+            item.$category = 'bar'
             registry.updateIndexFor(item, 'byCategory', 'foo', 'bar')
 
             expect(registry.lookup('byCategory', 'foo')).toHaveLength(0)
@@ -490,7 +490,7 @@ describe(Registry, () => {
 
 
         test('updateIndexFor returns false if value not in registry', () => {
-            registry.addIndex('byCategory', (item) => item.category)
+            registry.addIndex('byCategory', (item) => item.$category)
             const item = {name: 'Item', category: 'foo'}
 
             expect(registry.updateIndexFor(item, 'byCategory', 'foo', 'bar')).toBe(false)
@@ -506,15 +506,15 @@ describe(Registry, () => {
 
 
         test('refreshIndexFor recalculates index automatically', () => {
-            registry.addIndex('byCategory', (item) => item.category)
+            registry.addIndex('byCategory', (item) => item.$category)
 
-            const item = {name: 'Item', category: 'foo'}
+            const item = {name: 'Item', $category: 'foo'}
             registry.set('1', item)
 
             expect(registry.lookup('byCategory', 'foo')).toHaveLength(1)
             expect(registry.lookup('byCategory', 'bar')).toHaveLength(0)
 
-            item.category = 'bar'
+            item.$category = 'bar'
             registry.refreshIndexFor(item, 'byCategory')
 
             expect(registry.lookup('byCategory', 'foo')).toHaveLength(0)
@@ -539,7 +539,7 @@ describe(Registry, () => {
 
 
         test('refreshIndexFor returns false if value not in registry', () => {
-            registry.addIndex('byCategory', (item) => item.category)
+            registry.addIndex('byCategory', (item) => item.$category)
             const item = {name: 'Item', category: 'foo'}
 
             expect(registry.refreshIndexFor(item, 'byCategory')).toBe(false)
