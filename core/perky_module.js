@@ -4,6 +4,8 @@ import ObservableSet from './observable_set'
 import {uniqueId} from './utils'
 
 
+
+
 export default class PerkyModule extends Notifier {
 
     #childrenRegistry = null
@@ -184,6 +186,8 @@ export default class PerkyModule extends Notifier {
         this.#disposed = true
         this.stop()
 
+        this.cleanExternalListeners()
+
         this.#childrenRegistry.forEach(child => {
             if (child && !child.disposed) {
                 child.dispose()
@@ -257,7 +261,6 @@ export default class PerkyModule extends Notifier {
         this.childrenRegistry.set(options.$name, child)
 
         setupLifecycle(this, child, options)
-
         this.#setupTagIndexListeners(child)
 
         this.emit(`${child.$category}:set`, child.$name, child)
@@ -453,10 +456,11 @@ export default class PerkyModule extends Notifier {
             }
         }
 
-        child.tags.on('add', refreshAllIndexes)
-        child.tags.on('delete', refreshAllIndexes)
-        child.tags.on('clear', refreshAllIndexes)
+        child.listenTo(child.tags, 'add', refreshAllIndexes)
+        child.listenTo(child.tags, 'delete', refreshAllIndexes)
+        child.listenTo(child.tags, 'clear', refreshAllIndexes)
     }
+
 
 }
 
@@ -483,15 +487,15 @@ function setupLifecycle (host, child, options) {
         child.start()
     }
 
-    host.on('start', () => {
+    child.listenTo(host, 'start', () => {
         child.start()
     })
 
-    host.on('stop', () => {
+    child.listenTo(host, 'stop', () => {
         child.stop()
     })
 
-    host.on('dispose', () => {
+    child.listenTo(host, 'dispose', () => {
         if (childrenRegistry.hasEntry(child.$name, child)) {
             unregisterChild(host, child)
         }
@@ -503,15 +507,15 @@ function setupLifecycle (host, child, options) {
         }
     })
 
-    child.on('$category:changed', (newCategory, oldCategory) => {
+    child.listenTo(child, '$category:changed', (newCategory, oldCategory) => {
         childrenRegistry.updateIndexFor(child, '$category', oldCategory, newCategory)
     })
 
-    child.on('$name:changed', (newName, oldName) => {
+    child.listenTo(child, '$name:changed', (newName, oldName) => {
         childrenRegistry.updateKey(oldName, newName, child)
     })
 
-    child.on('$bind:changed', (newBind, oldBind) => {
+    child.listenTo(child, '$bind:changed', (newBind, oldBind) => {
         if (oldBind && host[oldBind] === child) {
             delete host[oldBind]
         }
