@@ -5,8 +5,8 @@ import GameController from './controllers/game_controller'
 import GameRenderer from './game_renderer'
 
 // import Canvas2D from '../canvas/canvas_2d'
-import WebGLCanvas2D from '../canvas/webgl_canvas_2d'
-import Camera2D from '../canvas/camera_2d'
+import WebGLCanvas2D from '../render/webgl_canvas_2d'
+import Camera2D from '../render/camera_2d'
 
 import manifest from './manifest'
 

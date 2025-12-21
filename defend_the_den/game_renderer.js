@@ -1,6 +1,6 @@
-import Group2D from '../canvas/group_2d'
-import Image2D from '../canvas/image_2d'
-import Circle from '../canvas/circle'
+import Group2D from '../render/group_2d'
+import Image2D from '../render/image_2d'
+import Circle from '../render/circle'
 import PerkyModule from '../core/perky_module'
 
 
