@@ -64,17 +64,11 @@ export default class SourceManager extends PerkyModule {
 
 
     #setupLoaderEvents (loader) {
-        loader.on('progress', (...args) => {
-            this.emit('loader:progress', loader, ...args)
-        })
-
-        loader.on('complete', (...args) => {
-            this.emit('loader:complete', loader, ...args)
-        })
-
-        loader.on('error', (...args) => {
-            this.emit('loader:error', loader, ...args)
-        })
+        this.delegateEvents(loader, [
+            'progress',
+            'complete',
+            'error'
+        ], 'loader')
     }
 
 }

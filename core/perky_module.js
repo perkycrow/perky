@@ -203,15 +203,6 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    hasMany (identifier, categoryName) {
-        Object.defineProperty(this, identifier, {
-            get: () => this.#childrenRegistry.lookup('$category', categoryName),
-            enumerable: true,
-            configurable: false
-        })
-    }
-
-
     get running () {
         return this.#started
     }
@@ -320,7 +311,7 @@ export default class PerkyModule extends Notifier {
         Object.keys(eventBindings).forEach(eventName => {
             const handler = eventBindings[eventName]
             if (typeof handler === 'function') {
-                this.#host.on(eventName, handler)
+                this.listenTo(this.#host, eventName, handler)
             }
         })
     }
@@ -377,7 +368,7 @@ export default class PerkyModule extends Notifier {
 
         const eventArray = Array.isArray(events) ? events : Object.keys(events)
         eventArray.forEach((event) => {
-            target.on(event, (...args) => {
+            this.listenTo(target, event, (...args) => {
                 const prefixedEvent = namespace ? `${namespace}:${event}` : event
                 this.emit(prefixedEvent, ...args)
             })
