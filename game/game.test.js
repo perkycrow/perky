@@ -3,6 +3,8 @@ import Game from './game'
 import Application from '../application/application'
 import GameLoop from './game_loop'
 import ActionController from '../core/action_controller'
+import RenderSystem from '../render/render_system'
+
 
 
 describe('Game', () => {
@@ -11,14 +13,12 @@ describe('Game', () => {
     let mockPerformanceNow
 
     beforeEach(() => {
-        // Mock ResizeObserver for browser APIs
         global.ResizeObserver = vi.fn().mockImplementation(() => ({
             observe: vi.fn(),
             unobserve: vi.fn(),
             disconnect: vi.fn()
         }))
 
-        // Mock browser APIs
         mockRequestAnimationFrame = global.requestAnimationFrame
         mockPerformanceNow = global.performance?.now
 
@@ -142,6 +142,58 @@ describe('Game', () => {
         })
 
         expect(customGame.manifest).toBeDefined()
+    })
+
+
+    test('automatically creates RenderSystem', () => {
+        expect(game.renderSystem).toBeInstanceOf(RenderSystem)
+    })
+
+
+    test('RenderSystem is bound to game instance', () => {
+        expect(game.renderSystem).toBeDefined()
+        expect(game.renderSystem.host).toBe(game)
+    })
+
+
+    test('passes renderSystem options through to RenderSystem', () => {
+        const container = document.createElement('div')
+        const customGame = new Game({
+            renderSystem: {
+                container,
+                width: 1024,
+                height: 768
+            }
+        })
+
+        expect(customGame.renderSystem.layerManager.width).toBe(1024)
+        expect(customGame.renderSystem.layerManager.height).toBe(768)
+        expect(customGame.renderSystem.layerManager.container).toBe(container)
+    })
+
+
+    test('delegates createLayer method to host', () => {
+        const layer = game.createLayer('test', 'canvas')
+
+        expect(layer).toBeDefined()
+        expect(game.renderSystem.layerManager.getLayer('test')).toBe(layer)
+    })
+
+
+    test('delegates getLayer method to host', () => {
+        game.createLayer('game', 'canvas')
+        const layer = game.getLayer('game')
+
+        expect(layer).toBeDefined()
+        expect(layer.name).toBe('game')
+    })
+
+
+    test('delegates renderAll method to host', () => {
+        const spy = vi.spyOn(game.renderSystem.layerManager, 'renderAll')
+        game.renderAll()
+
+        expect(spy).toHaveBeenCalled()
     })
 
 })

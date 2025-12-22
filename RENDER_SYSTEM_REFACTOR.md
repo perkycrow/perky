@@ -6,23 +6,27 @@
 ## 📊 Progression actuelle
 
 **Phase actuelle** : Phase 1 - Fondations du RenderSystem  
-**Étape en cours** : Étape 2 - TERMINÉE ✅
+**Étape en cours** : Étape 3 - TERMINÉE ✅
 
 ### Statut
 - [x] Étape 1 : Créer RenderSystem (stub) - ✅ TERMINÉ
 - [x] Étape 2 : Créer les tests pour RenderSystem - ✅ TERMINÉ (18/18 tests passent)
-- [ ] Étape 3 : Intégrer RenderSystem dans Game (optionnel)
+- [x] Étape 3 : Intégrer RenderSystem dans Game - ✅ TERMINÉ (14/14 tests passent)
 - [ ] Étape 4 : Refactorer LayerManager extends PerkyModule ⚠️
 - [ ] Étape 5 : Refactorer Layer extends PerkyModule ⚠️
 - [ ] Étape 6 : Migrer DefendTheDen ⚠️
 
 ### Dernière mise à jour
-- **Fichiers créés** : 
-  - `render/render_system.js` (115 lignes)
-  - `render/render_system.test.js` (18 tests ✅)
-- **Tests** : 18/18 passent
+- **Fichiers modifiés** : 
+  - `game/game.js` (import RenderSystem, création dans constructor)
+  - `game/game.test.js` (6 nouveaux tests pour RenderSystem)
+- **Tests** : 1787/1787 passent ✅ (dont 14/14 dans game.test.js)
 - **Breaking changes** : Aucun à ce stade
-- **Prochaine étape** : Intégrer dans Game (étape 3) ou passer directement aux breaking changes (étape 4)
+- **Fonctionnalités ajoutées** :
+  - RenderSystem créé automatiquement dans Game
+  - Méthodes déléguées au host (`createLayer`, `getLayer`, `renderAll`, etc.)
+  - Options pass-through via `params.renderSystem`
+- **Prochaine étape** : Étape 4 (Refactorer LayerManager extends PerkyModule) ou pause pour validation
 
 ---
 
