@@ -65,40 +65,8 @@ export default class Notifier {
     }
 
 
-    async emitAsync (name, ...args) {
-        const listeners = this.getListenersFor(name) || []
-
-        for (let listener of listeners) {
-            await Promise.resolve(listener.call(this, ...args))
-        }
-    }
-
-
     emitter (name) {
         return (...args) => this.emit(name, ...args)
-    }
-
-
-    pipeTo (target, events, namespace) {
-        if (!target || typeof target.emit !== 'function') {
-            throw new TypeError('Target must be a Notifier instance')
-        }
-
-        if (Array.isArray(events)) {
-            events.forEach(eventName => {
-                const targetEventName = namespace ? `${namespace}:${eventName}` : eventName
-                this.on(eventName, target.emitter(targetEventName))
-            })
-        } else if (events && typeof events === 'object') {
-            Object.entries(events).forEach(([sourceEvent, targetEvent]) => {
-                const finalTargetEvent = namespace ? `${namespace}:${targetEvent}` : targetEvent
-                this.on(sourceEvent, target.emitter(finalTargetEvent))
-            })
-        } else {
-            throw new TypeError('Events must be an array or an object')
-        }
-
-        return this
     }
 
 
@@ -153,20 +121,18 @@ export default class Notifier {
     }
 
 
-    static notifierMethods = ['on', 'off', 'emit', 'emitter', 'pipeTo', 'removeListeners', 'removeListenersFor']
-
-
-    static addCapabilitiesTo (target) {
-        if (!(target instanceof Object)) {
-            throw new TypeError('Target must be an object')
-        }
-
-        const notifier = new Notifier()
-        target.notifier = notifier
-
-        for (let method of Notifier.notifierMethods) {
-            target[method] = notifier[method].bind(notifier)
-        }
-    }
+    static notifierMethods = [
+        'getListenersFor',
+        'on',
+        'once',
+        'off',
+        'emit',
+        'emitter',
+        'listenTo',
+        'listenToOnce',
+        'cleanExternalListeners',
+        'removeListeners',
+        'removeListenersFor'
+    ]
 
 }
