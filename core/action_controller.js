@@ -91,18 +91,26 @@ export default class ActionController extends PerkyModule {
         return normalized
     }
 
+
+    static actionControllerMethods = this.perkyModuleMethods.concat([
+        'addAction',
+        'getAction',
+        'removeAction',
+        'hasAction',
+        'shouldPropagate',
+        'listActions',
+        'execute',
+        'context'
+    ])
+
 }
 
 
-const INTERNAL_METHODS = new Set([
-    'start', 'stop', 'dispose', 'create', 'on', 'once', 'off', 'emit',
-    'emitter', 'addAction', 'getAction', 'removeAction',
-    'hasAction', 'shouldPropagate', 'listActions', 'execute', 'context'
-])
+const internalMethods = new Set(ActionController.actionControllerMethods)
 
 
 function isInternalMethod (methodName) {
-    return INTERNAL_METHODS.has(methodName)
+    return internalMethods.has(methodName)
 }
 
 
