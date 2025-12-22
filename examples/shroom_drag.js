@@ -31,7 +31,7 @@ const manifest = {
 
 export default class ShroomDrag extends Application {
 
-    configure () {
+    configureApplication () {
         this.create(GameLoop, {
             fps: 60,
             maxFrameSkip: 5

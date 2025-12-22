@@ -89,7 +89,7 @@ describe(Application, () => {
                 super()
             }
 
-            configure () {
+            configureApplication () {
                 this.configureCalled = true
             }
         }

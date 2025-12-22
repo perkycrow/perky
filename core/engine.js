@@ -5,13 +5,12 @@ import ActionDispatcher from './action_dispatcher'
 
 export default class Engine extends PerkyModule {
 
-    constructor (params = {}) {
-        super({
-            name: 'engine',
-            ...params
-        })
+    static $category = 'engine'
 
-        const manifestData = params.manifest || this.constructor.manifest || {}
+    constructor (options = {}) {
+        super(options)
+
+        const manifestData = options.manifest || this.constructor.manifest || {}
 
         this.create(Manifest, {
             $bind: 'manifest',
@@ -22,6 +21,11 @@ export default class Engine extends PerkyModule {
         this.create(ActionDispatcher, {
             $bind: 'actionDispatcher'
         })
+
+        this.configureEngine(options)
     }
+
+
+    configureEngine () { } // eslint-disable-line class-methods-use-this
 
 }

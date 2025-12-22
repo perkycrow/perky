@@ -8,12 +8,15 @@ import InputSystem from '../input/input_system'
 
 export default class Application extends Engine {
 
+    static $category = 'application'
+
     static $eagerStart = false
 
-    constructor (params = {}) {
-        const {inputBinder, keyboard = {}, mouse = {}} = params
 
-        super(params)
+    constructor (options = {}) {
+        const {inputBinder, keyboard = {}, mouse = {}} = options
+
+        super(options)
 
         this.create(PerkyView, {
             $bind: 'perkyView',
@@ -36,10 +39,11 @@ export default class Application extends Engine {
 
         this.actionDispatcher.on('controller:set', this.#autoRegisterBindings.bind(this))
 
-        if (typeof this.configure === 'function') {
-            this.configure(params)
-        }
+        this.configureApplication(options)
     }
+
+
+    configureApplication () { } // eslint-disable-line class-methods-use-this
 
 
     async preload () {

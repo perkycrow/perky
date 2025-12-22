@@ -19,7 +19,7 @@ export default class DefendTheDen extends Game {
 
     static manifest = manifest
 
-    configure () {
+    configureGame () {
         this.world = new World()
 
         this.camera = new Camera2D({
