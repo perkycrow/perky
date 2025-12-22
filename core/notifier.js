@@ -121,6 +121,21 @@ export default class Notifier {
     }
 
 
+    delegateEvents (target, events, namespace) {
+        if (!target || (!Array.isArray(events) && typeof events !== 'object')) {
+            return
+        }
+
+        const eventArray = Array.isArray(events) ? events : Object.keys(events)
+        eventArray.forEach((event) => {
+            this.listenTo(target, event, (...args) => {
+                const prefixedEvent = namespace ? `${namespace}:${event}` : event
+                this.emit(prefixedEvent, ...args)
+            })
+        })
+    }
+
+
     static notifierMethods = [
         'getListenersFor',
         'on',
@@ -132,7 +147,8 @@ export default class Notifier {
         'listenToOnce',
         'cleanExternalListeners',
         'removeListeners',
-        'removeListenersFor'
+        'removeListenersFor',
+        'delegateEvents'
     ]
 
 }

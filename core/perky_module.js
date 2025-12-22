@@ -299,24 +299,6 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    bindEvents (eventBindings) {
-        if (!eventBindings || typeof eventBindings !== 'object') {
-            return
-        }
-
-        if (!this.#host) {
-            throw new Error('Cannot bind events: child has no host')
-        }
-
-        Object.keys(eventBindings).forEach(eventName => {
-            const handler = eventBindings[eventName]
-            if (typeof handler === 'function') {
-                this.listenTo(this.#host, eventName, handler)
-            }
-        })
-    }
-
-
     delegate (target, names) {
         if (!target) {
             throw new Error('Target is required for delegation')
@@ -358,21 +340,6 @@ export default class PerkyModule extends Notifier {
                 configurable: true
             })
         }
-    }
-
-
-    delegateEvents (target, events, namespace) {
-        if (!target || (!Array.isArray(events) && typeof events !== 'object')) {
-            return
-        }
-
-        const eventArray = Array.isArray(events) ? events : Object.keys(events)
-        eventArray.forEach((event) => {
-            this.listenTo(target, event, (...args) => {
-                const prefixedEvent = namespace ? `${namespace}:${event}` : event
-                this.emit(prefixedEvent, ...args)
-            })
-        })
     }
 
 
@@ -452,6 +419,25 @@ export default class PerkyModule extends Notifier {
         child.listenTo(child.tags, 'clear', refreshAllIndexes)
     }
 
+
+    static perkyModuleMethods = this.notifierMethods.concat([
+        'start',
+        'stop',
+        'dispose',
+        'install',
+        'uninstall',
+        'create',
+        'getChild',
+        'hasChild',
+        'childrenRegistry',
+        'children',
+        'listNamesFor',
+        'removeChild',
+        'delegate',
+        'childrenByTags',
+        'addTagsIndex',
+        'removeTagsIndex'
+    ])
 
 }
 

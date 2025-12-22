@@ -287,4 +287,156 @@ describe(Notifier, () => {
         })
     })
 
+
+    describe('emitter', () => {
+        test('should return a function that emits the given event', () => {
+            const listener = vi.fn()
+            notifier.on('test', listener)
+
+            const emitTest = notifier.emitter('test')
+            emitTest(1, 2, 3)
+
+            expect(listener).toHaveBeenCalledWith(1, 2, 3)
+        })
+
+        test('should pass all arguments to emit', () => {
+            const listener = vi.fn()
+            notifier.on('foo', listener)
+
+            const emitFoo = notifier.emitter('foo')
+            emitFoo('a', 'b', 'c', 'd')
+
+            expect(listener).toHaveBeenCalledWith('a', 'b', 'c', 'd')
+        })
+
+        test('should work with no arguments', () => {
+            const listener = vi.fn()
+            notifier.on('bar', listener)
+
+            const emitBar = notifier.emitter('bar')
+            emitBar()
+
+            expect(listener).toHaveBeenCalledWith()
+        })
+
+        test('should create different emitters for different events', () => {
+            const listener1 = vi.fn()
+            const listener2 = vi.fn()
+            notifier.on('event1', listener1)
+            notifier.on('event2', listener2)
+
+            const emit1 = notifier.emitter('event1')
+            const emit2 = notifier.emitter('event2')
+
+            emit1('data1')
+            emit2('data2')
+
+            expect(listener1).toHaveBeenCalledWith('data1')
+            expect(listener2).toHaveBeenCalledWith('data2')
+        })
+    })
+
+
+    describe('delegateEvents', () => {
+        test('should delegate events from target without namespace', () => {
+            const target = new Notifier()
+            const listener = vi.fn()
+
+            notifier.on('test', listener)
+            notifier.delegateEvents(target, ['test'])
+
+            target.emit('test', 1, 2, 3)
+            expect(listener).toHaveBeenCalledWith(1, 2, 3)
+        })
+
+        test('should delegate events with namespace prefix', () => {
+            const target = new Notifier()
+            const listener = vi.fn()
+
+            notifier.on('child:test', listener)
+            notifier.delegateEvents(target, ['test'], 'child')
+
+            target.emit('test', 'data')
+            expect(listener).toHaveBeenCalledWith('data')
+        })
+
+        test('should handle multiple events from array', () => {
+            const target = new Notifier()
+            const listener1 = vi.fn()
+            const listener2 = vi.fn()
+
+            notifier.on('event1', listener1)
+            notifier.on('event2', listener2)
+            notifier.delegateEvents(target, ['event1', 'event2'])
+
+            target.emit('event1', 'a')
+            target.emit('event2', 'b')
+
+            expect(listener1).toHaveBeenCalledWith('a')
+            expect(listener2).toHaveBeenCalledWith('b')
+        })
+
+        test('should handle events object', () => {
+            const target = new Notifier()
+            const listener1 = vi.fn()
+            const listener2 = vi.fn()
+
+            notifier.on('foo', listener1)
+            notifier.on('bar', listener2)
+            notifier.delegateEvents(target, {foo: true, bar: true})
+
+            target.emit('foo', 1)
+            target.emit('bar', 2)
+
+            expect(listener1).toHaveBeenCalledWith(1)
+            expect(listener2).toHaveBeenCalledWith(2)
+        })
+
+        test('should combine namespace with events object', () => {
+            const target = new Notifier()
+            const listener1 = vi.fn()
+            const listener2 = vi.fn()
+
+            notifier.on('ns:foo', listener1)
+            notifier.on('ns:bar', listener2)
+            notifier.delegateEvents(target, {foo: true, bar: true}, 'ns')
+
+            target.emit('foo', 'x')
+            target.emit('bar', 'y')
+
+            expect(listener1).toHaveBeenCalledWith('x')
+            expect(listener2).toHaveBeenCalledWith('y')
+        })
+
+        test('should return early if target is null', () => {
+            expect(() => notifier.delegateEvents(null, ['test'])).not.toThrow()
+        })
+
+        test('should return early if target is undefined', () => {
+            expect(() => notifier.delegateEvents(undefined, ['test'])).not.toThrow()
+        })
+
+        test('should return early if events is not array or object', () => {
+            const target = new Notifier()
+            expect(() => notifier.delegateEvents(target, 'string')).not.toThrow()
+            expect(() => notifier.delegateEvents(target, 123)).not.toThrow()
+        })
+
+        test('should cleanup delegated listeners', () => {
+            const target = new Notifier()
+            const listener = vi.fn()
+
+            notifier.on('test', listener)
+            notifier.delegateEvents(target, ['test'])
+
+            target.emit('test', 'before')
+            expect(listener).toHaveBeenCalledWith('before')
+
+            notifier.cleanExternalListeners()
+
+            target.emit('test', 'after')
+            expect(listener).toHaveBeenCalledTimes(1)
+        })
+    })
+
 })
