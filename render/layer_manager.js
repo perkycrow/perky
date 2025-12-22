@@ -1,17 +1,21 @@
+import PerkyModule from '../core/perky_module'
 import CanvasLayer from './canvas_layer'
 import HTMLLayer from './html_layer'
 import Camera2D from './camera_2d'
 
 
-export default class LayerManager {
+export default class LayerManager extends PerkyModule {
+
+    static $category = 'layerManager'
 
     constructor (options = {}) { // eslint-disable-line complexity
+        super(options)
+
         this.container = options.container ?? createContainer()
-        this.layers = new Map()
         this.cameras = new Map()
         this.width = options.width ?? 800
         this.height = options.height ?? 600
-        
+
         this.setupContainer()
 
         if (options.autoResize && options.autoResize.container) {
@@ -22,15 +26,15 @@ export default class LayerManager {
                 this.height = actualHeight
             }
         }
-        
+
         this.setupCameras(options.cameras)
-        
+
         if (options.layers) {
             options.layers.forEach(layerConfig => {
                 this.createLayer(layerConfig.name, layerConfig.type, layerConfig)
             })
         }
-        
+
         if (options.autoResize) {
             this.enableAutoResize(options.autoResize)
         }
@@ -53,7 +57,7 @@ export default class LayerManager {
             }
             this.cameras.set(id, camera)
         })
-        
+
         return this
     }
 
@@ -77,15 +81,15 @@ export default class LayerManager {
         if (!cameraOption) {
             return null
         }
-        
+
         if (typeof cameraOption === 'string') {
             return this.getCamera(cameraOption)
         }
-        
+
         if (cameraOption instanceof Camera2D) {
             return cameraOption
         }
-        
+
         return null
     }
 
@@ -94,24 +98,24 @@ export default class LayerManager {
         if (!this.container.style.position || this.container.style.position === 'static') {
             this.container.style.position = 'relative'
         }
-        
+
         if (!this.container.style.width) {
             this.container.style.width = `${this.width}px`
         }
-        
+
         if (!this.container.style.height) {
             this.container.style.height = `${this.height}px`
         }
-        
+
         this.container.style.overflow = 'hidden'
     }
 
 
     createLayer (name, type = 'canvas', options = {}) {
-        if (this.layers.has(name)) {
+        if (this.childrenRegistry.has(name)) {
             throw new Error(`Layer "${name}" already exists`)
         }
-        
+
         const layerOptions = {
             ...options,
             width: this.width,
@@ -122,7 +126,7 @@ export default class LayerManager {
         if (layerOptions.camera) {
             layerOptions.camera = this.resolveCamera(layerOptions.camera)
         }
-        
+
         let layer
         if (type === 'canvas') {
             layer = new CanvasLayer(name, layerOptions)
@@ -131,18 +135,20 @@ export default class LayerManager {
         } else {
             throw new Error(`Unknown layer type: ${type}`)
         }
-        
+
         layer.mount(this.container)
-        this.layers.set(name, layer)
-        
+
+        // Store in childrenRegistry instead of layers Map
+        this.childrenRegistry.set(name, layer)
+
         this.sortLayers()
-        
+
         return layer
     }
 
 
     getLayer (name) {
-        return this.layers.get(name)
+        return this.getChild(name)
     }
 
 
@@ -165,25 +171,25 @@ export default class LayerManager {
 
 
     removeLayer (name) {
-        const layer = this.layers.get(name)
+        const layer = this.getChild(name)
         if (layer) {
             layer.destroy()
-            this.layers.delete(name)
+            this.childrenRegistry.delete(name)
         }
         return this
     }
 
 
     sortLayers () {
-        const sorted = Array.from(this.layers.values())
+        const sorted = this.children
             .sort((a, b) => a.zIndex - b.zIndex)
-        
+
         sorted.forEach(layer => {
             if (layer.element && layer.element.parentElement) {
                 this.container.appendChild(layer.element)
             }
         })
-        
+
         return this
     }
 
@@ -191,14 +197,14 @@ export default class LayerManager {
     resize (width, height) {
         this.width = width
         this.height = height
-        
+
         this.container.style.width = `${width}px`
         this.container.style.height = `${height}px`
 
-        this.layers.forEach(layer => {
+        this.children.forEach(layer => {
             layer.resize(width, height)
         })
-        
+
         return this
     }
 
@@ -206,18 +212,18 @@ export default class LayerManager {
     resizeToContainer () {
         const width = this.container.clientWidth
         const height = this.container.clientHeight
-        
+
         if (width > 0 && height > 0) {
             return this.resize(width, height)
         }
-        
+
         return this
     }
 
 
     enableAutoResize (options = {}) {
         const resizeToParent = options.container ?? false
-        
+
         const handleResize = () => {
             if (resizeToParent) {
                 this.resizeToContainer()
@@ -225,21 +231,21 @@ export default class LayerManager {
                 this.resize(window.innerWidth, window.innerHeight)
             }
         }
-        
+
         window.addEventListener('resize', handleResize)
-        
+
         this.disableAutoResize = () => {
             window.removeEventListener('resize', handleResize)
         }
-        
+
         handleResize()
-        
+
         return this
     }
 
 
     renderAll () {
-        this.layers.forEach(layer => {
+        this.children.forEach(layer => {
             if (layer instanceof CanvasLayer && layer.autoRender) {
                 layer.render()
             }
@@ -261,7 +267,7 @@ export default class LayerManager {
 
 
     markAllDirty () {
-        this.layers.forEach(layer => layer.markDirty())
+        this.children.forEach(layer => layer.markDirty())
         return this
     }
 
@@ -284,14 +290,23 @@ export default class LayerManager {
     }
 
 
-    destroy () {
+    onDispose () {
+        // Manually destroy all layers first (they're not PerkyModule yet, so they don't have dispose())
+        this.children.forEach(layer => {
+            if (layer && layer.destroy) {
+                layer.destroy()
+            }
+        })
+
+        // Clear the registry to prevent PerkyModule from trying to dispose them
+        this.childrenRegistry.clear()
+
+        // Cleanup auto-resize
         if (this.disableAutoResize) {
             this.disableAutoResize()
         }
-        
-        this.layers.forEach(layer => layer.destroy())
-        this.layers.clear()
-        
+
+        // Cleanup container
         if (this.container.parentElement) {
             this.container.parentElement.removeChild(this.container)
         }

@@ -1,5 +1,6 @@
-import {describe, test, expect, beforeEach} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach} from 'vitest'
 import LayerManager from './layer_manager'
+import PerkyModule from '../core/perky_module'
 import CanvasLayer from './canvas_layer'
 import HTMLLayer from './html_layer'
 
@@ -12,7 +13,7 @@ describe(LayerManager, () => {
     beforeEach(() => {
         container = document.createElement('div')
         document.body.appendChild(container)
-        
+
         manager = new LayerManager({
             container,
             width: 800,
@@ -23,7 +24,7 @@ describe(LayerManager, () => {
 
     afterEach(() => {
         if (manager) {
-            manager.destroy()
+            manager.dispose()
         }
         if (container && container.parentElement) {
             document.body.removeChild(container)
@@ -32,10 +33,12 @@ describe(LayerManager, () => {
 
 
     test('constructor', () => {
+        expect(manager).toBeInstanceOf(PerkyModule)
+        expect(manager.$category).toBe('layerManager')
         expect(manager.container).toBe(container)
         expect(manager.width).toBe(800)
         expect(manager.height).toBe(600)
-        expect(manager.layers.size).toBe(0)
+        expect(manager.childrenRegistry.size).toBe(0)
     })
 
 
@@ -44,7 +47,7 @@ describe(LayerManager, () => {
 
         expect(layer).toBeInstanceOf(CanvasLayer)
         expect(layer.name).toBe('game')
-        expect(manager.layers.size).toBe(1)
+        expect(manager.childrenRegistry.size).toBe(1)
         expect(container.contains(layer.canvas)).toBe(true)
     })
 
@@ -54,7 +57,7 @@ describe(LayerManager, () => {
 
         expect(layer).toBeInstanceOf(HTMLLayer)
         expect(layer.name).toBe('ui')
-        expect(manager.layers.size).toBe(1)
+        expect(manager.childrenRegistry.size).toBe(1)
         expect(container.contains(layer.div)).toBe(true)
     })
 
@@ -70,9 +73,9 @@ describe(LayerManager, () => {
 
     test('getLayer', () => {
         const layer = manager.createLayer('test', 'canvas')
-        
+
         expect(manager.getLayer('test')).toBe(layer)
-        expect(manager.getLayer('nonexistent')).toBeUndefined()
+        expect(manager.getLayer('nonexistent')).toBeNull()
     })
 
 
@@ -96,10 +99,10 @@ describe(LayerManager, () => {
 
     test('removeLayer', () => {
         const layer = manager.createLayer('test', 'canvas')
-        
-        expect(manager.layers.size).toBe(1)
+
+        expect(manager.childrenRegistry.size).toBe(1)
         manager.removeLayer('test')
-        expect(manager.layers.size).toBe(0)
+        expect(manager.childrenRegistry.size).toBe(0)
         expect(container.contains(layer.canvas)).toBe(false)
     })
 
@@ -120,7 +123,7 @@ describe(LayerManager, () => {
 
     test('resize', () => {
         manager.createLayer('test', 'canvas')
-        
+
         manager.resize(1024, 768)
 
         expect(manager.width).toBe(1024)
@@ -132,12 +135,12 @@ describe(LayerManager, () => {
 
     test('showLayer and hideLayer', () => {
         const layer = manager.createLayer('test', 'canvas')
-        
+
         expect(layer.visible).toBe(true)
-        
+
         manager.hideLayer('test')
         expect(layer.visible).toBe(false)
-        
+
         manager.showLayer('test')
         expect(layer.visible).toBe(true)
     })
@@ -146,12 +149,12 @@ describe(LayerManager, () => {
     test('markAllDirty', () => {
         const layer1 = manager.createLayer('layer1', 'canvas')
         const layer2 = manager.createLayer('layer2', 'canvas')
-        
+
         layer1.markClean()
         layer2.markClean()
-        
+
         manager.markAllDirty()
-        
+
         expect(layer1.dirty).toBe(true)
         expect(layer2.dirty).toBe(true)
     })

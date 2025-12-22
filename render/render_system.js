@@ -44,8 +44,10 @@ export default class RenderSystem extends PerkyModule {
 
 
     onDispose () {
+        // PerkyModule will automatically dispose layerManager since it's in childrenRegistry
+        // But we created it manually so we need to clean it up ourselves for now
         if (this.layerManager) {
-            this.layerManager.destroy()
+            this.layerManager.dispose()
             this.layerManager = null
         }
     }

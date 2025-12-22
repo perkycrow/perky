@@ -70,7 +70,7 @@ describe('RenderSystem', () => {
             expect(renderSystem.getLayer('temp')).toBeDefined()
 
             renderSystem.removeLayer('temp')
-            expect(renderSystem.getLayer('temp')).toBeUndefined()
+            expect(renderSystem.getLayer('temp')).toBeNull()
         })
 
 
@@ -165,7 +165,7 @@ describe('RenderSystem', () => {
     describe('lifecycle', () => {
 
         it('should dispose the LayerManager on dispose', () => {
-            const spy = vi.spyOn(renderSystem.layerManager, 'destroy')
+            const spy = vi.spyOn(renderSystem.layerManager, 'dispose')
 
             renderSystem.dispose()
 
