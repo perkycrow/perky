@@ -9,6 +9,10 @@ import WebGLCanvas2D from '../render/webgl_canvas_2d'
 import Camera2D from '../render/camera_2d'
 
 import manifest from './manifest'
+import debug from '../core/debug'
+
+debug.enableDebug()
+window.debug = debug
 
 
 export default class DefendTheDen extends Game {
@@ -62,3 +66,4 @@ export default class DefendTheDen extends Game {
     }
 
 }
+

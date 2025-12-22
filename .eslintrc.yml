@@ -9,6 +9,7 @@ parserOptions:
   ecmaVersion: 2022
 globals:
   globalThis: true
+  WeakRef: true
 rules:
   no-alert: 0
   no-array-constructor: 2
