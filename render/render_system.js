@@ -36,7 +36,6 @@ export default class RenderSystem extends PerkyModule {
             'setCamera'
         ])
 
-        // Listen to resize events from the host
         this.listenTo(host, 'resize', ({width, height}) => {
             if (this.layerManager.autoResizeEnabled) {
                 this.layerManager.resize(width, height)

@@ -1,3 +1,4 @@
+import PerkyModule from '../core/perky_module'
 import Camera2D from './camera_2d'
 import {createSpriteProgram, createPrimitiveProgram} from './webgl_shaders'
 import WebGLTextureManager from './webgl_texture_manager'
@@ -8,12 +9,13 @@ import Circle from './circle'
 import Rectangle from './rectangle'
 
 
-export default class WebGLCanvas2D {
+export default class WebGLCanvas2D extends PerkyModule {
 
     #resizeObserver = null
     #autoFitEnabled = false
 
     constructor (options = {}) { // eslint-disable-line complexity
+        super(options)
         this.#setupCanvas(options)
 
         this.pixelRatio = options.pixelRatio ?? 1
@@ -185,7 +187,7 @@ export default class WebGLCanvas2D {
     }
 
 
-    dispose () {
+    onDispose () {
         this.autoFitEnabled = false
 
         if (this.spriteBatch) {
