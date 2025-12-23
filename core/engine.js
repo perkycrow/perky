@@ -22,10 +22,7 @@ export default class Engine extends PerkyModule {
             $bind: 'actionDispatcher'
         })
 
-        this.configureEngine(options)
+        this.configureEngine?.(options)
     }
-
-
-    configureEngine () { } // eslint-disable-line class-methods-use-this
 
 }

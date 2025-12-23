@@ -39,11 +39,8 @@ export default class Application extends Engine {
 
         this.actionDispatcher.on('controller:set', this.#autoRegisterBindings.bind(this))
 
-        this.configureApplication(options)
+        this.configureApplication?.(options)
     }
-
-
-    configureApplication () { } // eslint-disable-line class-methods-use-this
 
 
     async preload () {

@@ -39,17 +39,6 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    onStart () { } // eslint-disable-line class-methods-use-this
-
-    onStop () { } // eslint-disable-line class-methods-use-this
-
-    onDispose () { } // eslint-disable-line class-methods-use-this
-
-    onInstall () { } // eslint-disable-line class-methods-use-this
-
-    onUninstall () { } // eslint-disable-line class-methods-use-this
-
-
     get $name () {
         return this.#name
     }
@@ -220,7 +209,7 @@ export default class PerkyModule extends Notifier {
         this.#installed = true
 
 
-        this.onInstall(host, options)
+        this.onInstall?.(host, options)
 
         return true
     }
@@ -231,7 +220,7 @@ export default class PerkyModule extends Notifier {
             return false
         }
 
-        this.onUninstall(this.#host)
+        this.onUninstall?.(this.#host)
         this.#installed = false
         this.#host = null
 
