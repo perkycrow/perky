@@ -34,14 +34,15 @@ describe(CanvasLayer, () => {
 
     test('constructor with provided camera', () => {
         const camera = new Camera2D({x: 10, y: 20})
-        const l = new CanvasLayer({$name: 'test'}, {camera})
+        const l = new CanvasLayer({$name: 'test', camera})
 
         expect(l.renderer.camera).toBe(camera)
     })
 
 
     test('constructor with custom dimensions', () => {
-        const l = new CanvasLayer({$name: 'test'}, {
+        const l = new CanvasLayer({
+            $name: 'test',
             width: 1024,
             height: 768
         })
@@ -52,7 +53,8 @@ describe(CanvasLayer, () => {
 
 
     test('constructor with pixelRatio', () => {
-        const l = new CanvasLayer({$name: 'test'}, {
+        const l = new CanvasLayer({
+            $name: 'test',
             width: 800,
             height: 600,
             pixelRatio: 2
@@ -67,19 +69,19 @@ describe(CanvasLayer, () => {
 
 
     test('constructor with showGrid option', () => {
-        const l = new CanvasLayer({$name: 'test'}, {showGrid: true})
+        const l = new CanvasLayer({$name: 'test', showGrid: true})
         expect(l.renderer.showGrid).toBe(true)
     })
 
 
     test('constructor with backgroundColor option', () => {
-        const l = new CanvasLayer({$name: 'test'}, {backgroundColor: '#FF0000'})
+        const l = new CanvasLayer({$name: 'test', backgroundColor: '#FF0000'})
         expect(l.renderer.backgroundColor).toBe('#FF0000')
     })
 
 
     test('constructor with enableCulling option', () => {
-        const l = new CanvasLayer({$name: 'test'}, {enableCulling: true})
+        const l = new CanvasLayer({$name: 'test', enableCulling: true})
         expect(l.renderer.enableCulling).toBe(true)
     })
 
@@ -88,10 +90,10 @@ describe(CanvasLayer, () => {
         expect(layer.dirty).toBe(true)
         layer.markClean()
         expect(layer.dirty).toBe(false)
-        
+
         const scene = new Group2D()
         layer.setContent(scene)
-        
+
         expect(layer.content).toBe(scene)
         expect(layer.dirty).toBe(true)
     })
@@ -125,7 +127,7 @@ describe(CanvasLayer, () => {
 
     test('resize updates canvas dimensions', () => {
         layer.resize(1024, 768)
-        
+
         expect(layer.canvas.width).toBe(1024)
         expect(layer.canvas.height).toBe(768)
         expect(layer.dirty).toBe(true)
@@ -133,10 +135,10 @@ describe(CanvasLayer, () => {
 
 
     test('resize with pixelRatio scales internal canvas', () => {
-        const l = new CanvasLayer({$name: 'test'}, {pixelRatio: 2})
-        
+        const l = new CanvasLayer({$name: 'test', pixelRatio: 2})
+
         l.resize(800, 600)
-        
+
         expect(l.canvas.width).toBe(1600)
         expect(l.canvas.height).toBe(1200)
         expect(l.canvas.style.width).toBe('800px')
@@ -146,17 +148,18 @@ describe(CanvasLayer, () => {
 
     test('resize updates camera viewport dimensions', () => {
         const camera = new Camera2D()
-        const l = new CanvasLayer({$name: 'test'}, {camera, pixelRatio: 1})
-        
+        const l = new CanvasLayer({$name: 'test', camera, pixelRatio: 1})
+
         l.resize(1024, 768)
-        
+
         expect(camera.viewportWidth).toBe(1024)
         expect(camera.viewportHeight).toBe(768)
     })
 
 
     test('resize with viewport', () => {
-        const l = new CanvasLayer({$name: 'test'}, {
+        const l = new CanvasLayer({
+            $name: 'test',
             viewport: {
                 x: 0,
                 y: 0,
@@ -165,7 +168,7 @@ describe(CanvasLayer, () => {
                 anchor: 'top-left'
             }
         })
-        
+
         l.resize(1000, 800)
 
         expect(l.canvas.width).toBe(500)
@@ -179,7 +182,7 @@ describe(CanvasLayer, () => {
 
 
     test('autoRender can be set to false', () => {
-        const l = new CanvasLayer({$name: 'test'}, {autoRender: false})
+        const l = new CanvasLayer({$name: 'test', autoRender: false})
         expect(l.autoRender).toBe(false)
     })
 
@@ -187,9 +190,9 @@ describe(CanvasLayer, () => {
     test('dispose cleans up', () => {
         const container = document.createElement('div')
         layer.mount(container)
-        
+
         layer.dispose()
-        
+
         expect(layer.element).toBe(null)
         expect(container.contains(layer.canvas)).toBe(false)
     })
@@ -199,7 +202,7 @@ describe(CanvasLayer, () => {
         const scene = new Group2D()
         const circle = new Circle({x: 0, y: 0, radius: 1, color: '#FF0000'})
         scene.addChild(circle)
-        
+
         layer.setContent(scene)
         layer.render()
 
@@ -213,14 +216,15 @@ describe(CanvasLayer, () => {
             viewportHeight: 100,
             pixelRatio: 1
         })
-        
-        new CanvasLayer({$name: 'test'}, {
+
+        new CanvasLayer({
+            $name: 'test',
             width: 800,
             height: 600,
             pixelRatio: 2,
             camera
         })
-        
+
         expect(camera.viewportWidth).toBe(800)
         expect(camera.viewportHeight).toBe(600)
         expect(camera.pixelRatio).toBe(1)
@@ -228,7 +232,8 @@ describe(CanvasLayer, () => {
 
 
     test('viewport with anchor top-right', () => {
-        const l = new CanvasLayer({$name: 'test'}, {
+        const l = new CanvasLayer({
+            $name: 'test',
             width: 1000,
             height: 800,
             viewport: {
@@ -239,11 +244,11 @@ describe(CanvasLayer, () => {
                 anchor: 'top-right'
             }
         })
-        
+
         // Canvas should be 200x150
         expect(l.canvas.width).toBe(200)
         expect(l.canvas.height).toBe(150)
-        
+
         // Positioned at top-right: 1000 - 200 - 10 = 790
         expect(l.canvas.style.left).toBe('790px')
         expect(l.canvas.style.top).toBe('10px')
@@ -251,13 +256,14 @@ describe(CanvasLayer, () => {
 
 
     test('grid options passed to renderer', () => {
-        const l = new CanvasLayer({$name: 'test'}, {
+        const l = new CanvasLayer({
+            $name: 'test',
             showGrid: true,
             gridStep: 2,
             gridOpacity: 0.3,
             gridColor: '#FF0000'
         })
-        
+
         expect(l.renderer.showGrid).toBe(true)
         expect(l.renderer.gridOptions.step).toBe(2)
         expect(l.renderer.gridOptions.opacity).toBe(0.3)

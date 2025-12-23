@@ -20,7 +20,8 @@ describe(HTMLLayer, () => {
 
 
     test('constructor with content option', () => {
-        const l = new HTMLLayer({$name: 'test'}, {
+        const l = new HTMLLayer({
+            $name: 'test',
             content: '<p>Hello World</p>'
         })
 
@@ -29,7 +30,8 @@ describe(HTMLLayer, () => {
 
 
     test('constructor with className option', () => {
-        const l = new HTMLLayer({$name: 'test'}, {
+        const l = new HTMLLayer({
+            $name: 'test',
             className: 'my-custom-class'
         })
 
@@ -39,7 +41,7 @@ describe(HTMLLayer, () => {
 
     test('constructor with camera option', () => {
         const camera = new Camera2D()
-        const l = new HTMLLayer({$name: 'test'}, {camera})
+        const l = new HTMLLayer({$name: 'test', camera})
 
         expect(l.camera).toBe(camera)
     })
@@ -54,9 +56,9 @@ describe(HTMLLayer, () => {
     test('setContent with HTMLElement', () => {
         const p = document.createElement('p')
         p.textContent = 'Paragraph'
-        
+
         layer.setContent(p)
-        
+
         expect(layer.div.contains(p)).toBe(true)
         expect(layer.div.children.length).toBe(1)
     })
@@ -65,10 +67,10 @@ describe(HTMLLayer, () => {
     test('addClass and removeClass', () => {
         layer.addClass('foo')
         expect(layer.div.classList.contains('foo')).toBe(true)
-        
+
         layer.addClass('bar')
         expect(layer.div.classList.contains('bar')).toBe(true)
-        
+
         layer.removeClass('foo')
         expect(layer.div.classList.contains('foo')).toBe(false)
         expect(layer.div.classList.contains('bar')).toBe(true)
@@ -83,18 +85,18 @@ describe(HTMLLayer, () => {
 
     test('setCamera', () => {
         const camera = new Camera2D()
-        
+
         layer.setCamera(camera)
-        
+
         expect(layer.camera).toBe(camera)
     })
 
 
     test('createWorldElement creates element', () => {
         layer.camera = new Camera2D()
-        
+
         const el = layer.createWorldElement('<div>Test</div>', 10, 20)
-        
+
         expect(el).toBeInstanceOf(HTMLDivElement)
         expect(el.innerHTML).toBe('<div>Test</div>')
         expect(layer.div.contains(el)).toBe(true)
@@ -104,7 +106,7 @@ describe(HTMLLayer, () => {
 
     test('createWorldElement with options', () => {
         layer.camera = new Camera2D()
-        
+
         const el = layer.createWorldElement(
             '<span>Label</span>',
             5,
@@ -117,9 +119,9 @@ describe(HTMLLayer, () => {
                 pointerEvents: 'none'
             }
         )
-        
+
         expect(el.style.pointerEvents).toBe('none')
-        
+
         const worldEl = layer.worldElements[0]
         expect(worldEl.worldX).toBe(5)
         expect(worldEl.worldY).toBe(10)
@@ -133,11 +135,11 @@ describe(HTMLLayer, () => {
     test('createWorldElement with targetObject', () => {
         layer.camera = new Camera2D()
         const target = {x: 5, y: 10}
-        
+
         layer.createWorldElement('<div>Target</div>', 0, 0, {
             targetObject: target
         })
-        
+
         const worldEl = layer.worldElements[0]
         expect(worldEl.targetObject).toBe(target)
     })
@@ -146,12 +148,12 @@ describe(HTMLLayer, () => {
     test('removeWorldElement', () => {
         layer.camera = new Camera2D()
         const el = layer.createWorldElement('<div>Remove me</div>', 0, 0)
-        
+
         expect(layer.worldElements.length).toBe(1)
         expect(layer.div.contains(el)).toBe(true)
-        
+
         layer.removeWorldElement(el)
-        
+
         expect(layer.worldElements.length).toBe(0)
         expect(layer.div.contains(el)).toBe(false)
     })
@@ -160,9 +162,9 @@ describe(HTMLLayer, () => {
     test('updateElementWorldPosition', () => {
         layer.camera = new Camera2D()
         const el = layer.createWorldElement('<div>Move me</div>', 0, 0)
-        
+
         layer.updateElementWorldPosition(el, 15, 25)
-        
+
         const worldEl = layer.worldElements[0]
         expect(worldEl.worldX).toBe(15)
         expect(worldEl.worldY).toBe(25)
@@ -173,9 +175,9 @@ describe(HTMLLayer, () => {
         layer.camera = new Camera2D()
         const el = layer.createWorldElement('<div>Target me</div>', 0, 0)
         const target = {x: 10, y: 20}
-        
+
         layer.setElementTarget(el, target)
-        
+
         const worldEl = layer.worldElements[0]
         expect(worldEl.targetObject).toBe(target)
     })
@@ -200,9 +202,9 @@ describe(HTMLLayer, () => {
             pixelRatio: 1
         })
         layer.camera = camera
-        
+
         const el = layer.createWorldElement('<div>Position me</div>', 0, 0)
-        
+
         layer.updateWorldElements(true)
 
         expect(el.style.transform).toContain('translate')
@@ -212,14 +214,14 @@ describe(HTMLLayer, () => {
     test('updateWorldElements syncs targetObject position', () => {
         const camera = new Camera2D()
         layer.camera = camera
-        
+
         const target = {x: 5, y: 10}
         layer.createWorldElement('<div>Follow</div>', 0, 0, {
             targetObject: target
         })
-        
+
         layer.updateWorldElements(true)
-        
+
         const worldEl = layer.worldElements[0]
         expect(worldEl.worldX).toBe(5)
         expect(worldEl.worldY).toBe(10)
@@ -229,7 +231,7 @@ describe(HTMLLayer, () => {
     test('updateWorldElements with inheritTransform', () => {
         const camera = new Camera2D()
         layer.camera = camera
-        
+
         const target = {
             x: 0,
             y: 0,
@@ -237,12 +239,12 @@ describe(HTMLLayer, () => {
             scaleX: 2,
             scaleY: 2
         }
-        
+
         const el = layer.createWorldElement('<div>Inherit</div>', 0, 0, {
             targetObject: target,
             inheritTransform: true
         })
-        
+
         layer.updateWorldElements(true)
 
         expect(el.style.transform).toContain('rotate')
@@ -263,9 +265,9 @@ describe(HTMLLayer, () => {
         layer.camera = camera
 
         const el = layer.createWorldElement('<div>Offscreen</div>', 1000, 1000)
-        
+
         layer.updateWorldElements(true)
-        
+
         const worldEl = layer.worldElements[0]
         expect(worldEl.visible).toBe(false)
         expect(el.style.display).toBe('none')
@@ -282,7 +284,7 @@ describe(HTMLLayer, () => {
         layer.camera = camera
 
         const units = layer.cssToWorldUnits(120)
-        
+
         expect(units).toBe(2)
     })
 
@@ -295,18 +297,18 @@ describe(HTMLLayer, () => {
             pixelRatio: 1
         })
         layer.camera = camera
-        
+
         const pixels = layer.worldUnitsToCss(3)
-        
+
         expect(pixels).toBe(180)
     })
 
 
     test('resize updates viewport', () => {
         layer.viewport = {x: 0, y: 0, width: '50%', height: '50%', anchor: 'top-left'}
-        
+
         layer.resize(1000, 800)
-        
+
         expect(layer.div.style.width).toBe('500px')
         expect(layer.div.style.height).toBe('400px')
     })
