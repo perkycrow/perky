@@ -167,10 +167,11 @@ describe('RenderSystem', () => {
         it('should dispose the LayerManager on dispose', () => {
             const spy = vi.spyOn(renderSystem.layerManager, 'dispose')
 
+            const layerManager = renderSystem.layerManager
             renderSystem.dispose()
 
             expect(spy).toHaveBeenCalled()
-            expect(renderSystem.layerManager.disposed).toBe(true)
+            expect(layerManager.disposed).toBe(true)
         })
 
 

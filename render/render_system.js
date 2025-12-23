@@ -9,8 +9,8 @@ export default class RenderSystem extends PerkyModule {
     constructor (options = {}) {
         super(options)
 
-        this.layerManager = this.create(LayerManager, {
-            $name: 'layerManager',
+        this.create(LayerManager, {
+            $bind: 'layerManager',
             container: options.container,
             width: options.width,
             height: options.height,
@@ -22,10 +22,6 @@ export default class RenderSystem extends PerkyModule {
 
 
     onInstall (host) {
-        host.delegate(this, {
-            layerManager: 'layerManager'
-        })
-
         host.delegate(this, [
             'createLayer',
             'getLayer',
@@ -85,7 +81,7 @@ export default class RenderSystem extends PerkyModule {
     hideLayer (name) {
         return this.layerManager.hideLayer(name)
     }
-    
+
 
     getCamera (id = 'main') {
         return this.layerManager.getCamera(id)
