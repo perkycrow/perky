@@ -1,13 +1,19 @@
-export default class Layer {
+import PerkyModule from '../core/perky_module'
 
-    constructor (name, options = {}) {
-        this.name = name
+
+export default class Layer extends PerkyModule {
+
+    static $category = 'layer'
+
+    constructor (options = {}) {
+        super(options)
+
         this.zIndex = options.zIndex ?? 0
         this.visible = options.visible ?? true
         this.opacity = options.opacity ?? 1
         this.pointerEvents = options.pointerEvents ?? 'auto'
         this.dirty = true
-        
+
         this.element = null
         this.container = null
 
@@ -41,7 +47,7 @@ export default class Layer {
         let y = typeof vp.y === 'string' && vp.y.endsWith('%')
             ? (parseFloat(vp.y) / 100) * containerHeight
             : parseFloat(vp.y)
-        
+
         const anchor = vp.anchor || 'top-left'
         if (anchor.includes('right')) {
             x = containerWidth - width - x
@@ -49,12 +55,12 @@ export default class Layer {
         if (anchor.includes('bottom')) {
             y = containerHeight - height - y
         }
-        
+
         this.resolvedViewport.x = x
         this.resolvedViewport.y = y
         this.resolvedViewport.width = width
         this.resolvedViewport.height = height
-        
+
         return this.resolvedViewport
     }
 
@@ -63,14 +69,14 @@ export default class Layer {
         if (!this.element) {
             return this
         }
-        
+
         const vp = this.resolvedViewport
-        
+
         this.element.style.left = `${vp.x}px`
         this.element.style.top = `${vp.y}px`
         this.element.style.width = `${vp.width}px`
         this.element.style.height = `${vp.height}px`
-        
+
         return this
     }
 
@@ -148,10 +154,9 @@ export default class Layer {
     }
 
 
-    destroy () {
+    onDispose () {
         this.unmount()
         this.element = null
     }
 
 }
-

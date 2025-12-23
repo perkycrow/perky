@@ -61,7 +61,7 @@ describe('RenderSystem', () => {
             const layer = renderSystem.getLayer('game')
 
             expect(layer).toBeDefined()
-            expect(layer.name).toBe('game')
+            expect(layer.$name).toBe('game')
         })
 
 

@@ -116,22 +116,23 @@ export default class LayerManager extends PerkyModule {
             throw new Error(`Layer "${name}" already exists`)
         }
 
+        const camera = this.resolveCamera(options.camera)
+
         const layerOptions = {
+            $name: name,  // Pass name via $name option
             ...options,
             width: this.width,
             height: this.height,
+            camera,
             layerManager: this
         }
 
-        if (layerOptions.camera) {
-            layerOptions.camera = this.resolveCamera(layerOptions.camera)
-        }
-
         let layer
+
         if (type === 'canvas') {
-            layer = new CanvasLayer(name, layerOptions)
+            layer = new CanvasLayer(layerOptions)  // Just options, no name param
         } else if (type === 'html') {
-            layer = new HTMLLayer(name, layerOptions)
+            layer = new HTMLLayer(layerOptions)
         } else {
             throw new Error(`Unknown layer type: ${type}`)
         }
@@ -142,7 +143,6 @@ export default class LayerManager extends PerkyModule {
         this.childrenRegistry.set(name, layer)
 
         this.sortLayers()
-
         return layer
     }
 
@@ -173,7 +173,7 @@ export default class LayerManager extends PerkyModule {
     removeLayer (name) {
         const layer = this.getChild(name)
         if (layer) {
-            layer.destroy()
+            layer.dispose()  // Use dispose instead of destroy
             this.childrenRegistry.delete(name)
         }
         return this
@@ -291,17 +291,10 @@ export default class LayerManager extends PerkyModule {
 
 
     onDispose () {
-        // Manually destroy all layers first (they're not PerkyModule yet, so they don't have dispose())
-        this.children.forEach(layer => {
-            if (layer && layer.destroy) {
-                layer.destroy()
-            }
-        })
+        // Layers now extend PerkyModule and have dispose()
+        // PerkyModule will automatically call dispose() on all children
+        // Just handle LayerManager-specific cleanup
 
-        // Clear the registry to prevent PerkyModule from trying to dispose them
-        this.childrenRegistry.clear()
-
-        // Cleanup auto-resize
         if (this.disableAutoResize) {
             this.disableAutoResize()
         }

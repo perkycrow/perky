@@ -5,8 +5,8 @@ import Camera2D from './camera_2d'
 
 export default class CanvasLayer extends Layer {
 
-    constructor (name, options = {}) { // eslint-disable-line complexity
-        super(name, options)
+    constructor (options = {}) { // eslint-disable-line complexity
+        super(options)
 
         this.canvas = document.createElement('canvas')
         this.element = this.canvas
@@ -93,11 +93,11 @@ export default class CanvasLayer extends Layer {
     }
 
 
-    destroy () {
+    onDispose () {
         if (this.renderer) {
             this.renderer.dispose()
         }
-        super.destroy()
+        super.onDispose()
     }
 
 }

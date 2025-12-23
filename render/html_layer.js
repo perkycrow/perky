@@ -3,27 +3,27 @@ import Layer from './layer'
 
 export default class HTMLLayer extends Layer {
 
-    constructor (name, options = {}) {
-        super(name, options)
-        
+    constructor (options = {}) {
+        super(options)
+
         this.div = document.createElement('div')
         this.element = this.div
-        
+
         this.applyStyles()
-        
+
         if (options.content) {
             this.setContent(options.content)
         }
-        
+
         if (options.className) {
             this.div.className = options.className
         }
-        
+
         this.worldElements = []
         this.camera = options.camera ?? null
         this.autoUpdate = options.autoUpdate ?? true
         this.updateThreshold = options.updateThreshold ?? 0.5
-        
+
         this.applyViewport()
     }
 
@@ -93,7 +93,7 @@ export default class HTMLLayer extends Layer {
         el.style.willChange = 'transform'
         el.style.left = '0'
         el.style.top = '0'
-        
+
         const worldEl = {
             element: el,
             worldX,
@@ -112,7 +112,7 @@ export default class HTMLLayer extends Layer {
             lastZoom: null,
             visible: true
         }
-        
+
         this.div.appendChild(el)
         this.worldElements.push(worldEl)
 
@@ -130,7 +130,7 @@ export default class HTMLLayer extends Layer {
                 }
             })
         }
-        
+
         return el
     }
 
@@ -170,7 +170,7 @@ export default class HTMLLayer extends Layer {
         if (!this.camera || this.worldElements.length === 0) {
             return this
         }
-        
+
         // Camera now works in logical (CSS) coordinates, so ppu is already in CSS pixels
         const ppu = this.camera.pixelsPerUnit
         const zoomChanged = force || this.worldElements.some(el => el.lastZoom !== this.camera.zoom)
@@ -196,19 +196,19 @@ export default class HTMLLayer extends Layer {
 
             const worldOffsetXPx = worldEl.worldOffsetX * ppu
             const worldOffsetYPx = -worldEl.worldOffsetY * ppu
-            
+
             const finalX = screen.x + worldEl.offsetX + worldOffsetXPx
             const finalY = screen.y + worldEl.offsetY + worldOffsetYPx
-            
+
             // Camera viewport is already in CSS coordinates
             const cssWidth = this.camera.viewportWidth
             const cssHeight = this.camera.viewportHeight
-            
+
             const isVisible = (
                 finalX >= -100 && finalX <= cssWidth + 100 &&
                 finalY >= -100 && finalY <= cssHeight + 100
             )
-            
+
             if (!isVisible) {
                 if (worldEl.visible) {
                     worldEl.element.style.display = 'none'
@@ -217,7 +217,7 @@ export default class HTMLLayer extends Layer {
                 worldEl.lastZoom = this.camera.zoom
                 return
             }
-            
+
             if (!force && worldEl.lastScreenX !== null) {
                 const dx = Math.abs(finalX - worldEl.lastScreenX)
                 const dy = Math.abs(finalY - worldEl.lastScreenY)
@@ -226,7 +226,7 @@ export default class HTMLLayer extends Layer {
                     return
                 }
             }
-            
+
             if (!worldEl.visible) {
                 worldEl.element.style.display = 'block'
                 worldEl.visible = true
@@ -238,7 +238,7 @@ export default class HTMLLayer extends Layer {
             let scaleY = worldEl.worldScaleY
             let rotationDeg = 0
             let needsScale = false
-            
+
             if (worldEl.inheritTransform && worldEl.targetObject) {
                 const rotation = worldEl.targetObject.rotation || 0
                 const targetScaleX = worldEl.targetObject.scaleX || 1
@@ -246,9 +246,9 @@ export default class HTMLLayer extends Layer {
 
                 scaleX *= targetScaleX
                 scaleY *= targetScaleY
-                
+
                 rotationDeg = -rotation * (180 / Math.PI)
-                
+
                 needsScale = true
             } else if (worldEl.worldScaleX !== 1 || worldEl.worldScaleY !== 1) {
                 needsScale = true
@@ -261,13 +261,13 @@ export default class HTMLLayer extends Layer {
             if (needsScale) {
                 transformStr += ` scale(${scaleX}, ${scaleY})`
             }
-            
+
             worldEl.element.style.transform = transformStr
             worldEl.lastScreenX = finalX
             worldEl.lastScreenY = finalY
             worldEl.lastZoom = this.camera.zoom
         })
-        
+
         return this
     }
 
@@ -287,7 +287,7 @@ export default class HTMLLayer extends Layer {
         if (!this.camera) {
             return 0
         }
-        
+
         // Camera pixelsPerUnit is already in CSS coordinates
         const ppu = this.camera.pixelsPerUnit
         return units * ppu

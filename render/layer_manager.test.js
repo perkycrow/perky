@@ -46,7 +46,7 @@ describe(LayerManager, () => {
         const layer = manager.createLayer('game', 'canvas')
 
         expect(layer).toBeInstanceOf(CanvasLayer)
-        expect(layer.name).toBe('game')
+        expect(layer.$name).toBe('game')
         expect(manager.childrenRegistry.size).toBe(1)
         expect(container.contains(layer.canvas)).toBe(true)
     })
@@ -56,7 +56,7 @@ describe(LayerManager, () => {
         const layer = manager.createLayer('ui', 'html')
 
         expect(layer).toBeInstanceOf(HTMLLayer)
-        expect(layer.name).toBe('ui')
+        expect(layer.$name).toBe('ui')
         expect(manager.childrenRegistry.size).toBe(1)
         expect(container.contains(layer.div)).toBe(true)
     })

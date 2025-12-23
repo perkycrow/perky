@@ -185,7 +185,7 @@ describe('Game', () => {
         const layer = game.getLayer('game')
 
         expect(layer).toBeDefined()
-        expect(layer.name).toBe('game')
+        expect(layer.$name).toBe('game')
     })
 
 
