@@ -216,23 +216,14 @@ export default class LayerManager extends PerkyModule {
 
 
     enableAutoResize (options = {}) {
+        this.autoResizeEnabled = true
+        this.autoResizeOptions = options
+
         const resizeToParent = options.container ?? false
 
-        const handleResize = () => {
-            if (resizeToParent) {
-                this.resizeToContainer()
-            } else {
-                this.resize(window.innerWidth, window.innerHeight)
-            }
+        if (resizeToParent) {
+            this.resizeToContainer()
         }
-
-        window.addEventListener('resize', handleResize)
-
-        this.disableAutoResize = () => {
-            window.removeEventListener('resize', handleResize)
-        }
-
-        handleResize()
 
         return this
     }
@@ -285,10 +276,6 @@ export default class LayerManager extends PerkyModule {
 
 
     onDispose () {
-        if (this.disableAutoResize) {
-            this.disableAutoResize()
-        }
-
         if (this.container.parentElement) {
             this.container.parentElement.removeChild(this.container)
         }

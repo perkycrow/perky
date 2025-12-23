@@ -190,7 +190,8 @@ describe('RenderSystem', () => {
 
         it('should delegate methods to host on install', () => {
             const host = {
-                delegate: vi.fn()
+                delegate: vi.fn(),
+                on: vi.fn()
             }
 
             renderSystem.install(host)
