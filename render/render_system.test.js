@@ -170,7 +170,7 @@ describe('RenderSystem', () => {
             renderSystem.dispose()
 
             expect(spy).toHaveBeenCalled()
-            expect(renderSystem.layerManager).toBeNull()
+            expect(renderSystem.layerManager.disposed).toBe(true)
         })
 
 

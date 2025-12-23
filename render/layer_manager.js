@@ -285,15 +285,10 @@ export default class LayerManager extends PerkyModule {
 
 
     onDispose () {
-        // Layers now extend PerkyModule and have dispose()
-        // PerkyModule will automatically call dispose() on all children
-        // Just handle LayerManager-specific cleanup
-
         if (this.disableAutoResize) {
             this.disableAutoResize()
         }
 
-        // Cleanup container
         if (this.container.parentElement) {
             this.container.parentElement.removeChild(this.container)
         }

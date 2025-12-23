@@ -9,8 +9,8 @@ export default class RenderSystem extends PerkyModule {
     constructor (options = {}) {
         super(options)
 
-        // Create default LayerManager (using old system for now)
-        this.layerManager = new LayerManager({
+        this.layerManager = this.create(LayerManager, {
+            $name: 'layerManager',
             container: options.container,
             width: options.width,
             height: options.height,
@@ -22,7 +22,6 @@ export default class RenderSystem extends PerkyModule {
 
 
     onInstall (host) {
-        // Delegate LayerManager methods to the host for convenience
         host.delegate(this, {
             layerManager: 'layerManager'
         })
@@ -42,18 +41,6 @@ export default class RenderSystem extends PerkyModule {
         ])
     }
 
-
-    onDispose () {
-        // PerkyModule will automatically dispose layerManager since it's in childrenRegistry
-        // But we created it manually so we need to clean it up ourselves for now
-        if (this.layerManager) {
-            this.layerManager.dispose()
-            this.layerManager = null
-        }
-    }
-
-
-    // Wrapper methods for LayerManager
 
     createLayer (name, type = 'canvas', options = {}) {
         return this.layerManager.createLayer(name, type, options)
@@ -98,7 +85,7 @@ export default class RenderSystem extends PerkyModule {
     hideLayer (name) {
         return this.layerManager.hideLayer(name)
     }
-
+    
 
     getCamera (id = 'main') {
         return this.layerManager.getCamera(id)
