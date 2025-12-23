@@ -177,7 +177,9 @@ describe('RenderSystem', () => {
         it('should not crash if disposed twice', () => {
             renderSystem.dispose()
 
-            expect(() => renderSystem.dispose()).not.toThrow()
+            expect(() => { // eslint-disable-line max-nested-callbacks
+                renderSystem.dispose()
+            }).not.toThrow()
         })
 
     })

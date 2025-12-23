@@ -5,28 +5,33 @@
 
 ## 📊 Progression actuelle
 
-**Phase actuelle** : Phase 1 - Fondations du RenderSystem  
-**Étape en cours** : Étape 3 - TERMINÉE ✅
+**Phase actuelle** : Phase 1-3 - COMPLÈTES ✅  
+**Étape en cours** : RENDER SYSTEM REFACTOR TERMINÉ 🎉
 
 ### Statut
 - [x] Étape 1 : Créer RenderSystem (stub) - ✅ TERMINÉ
 - [x] Étape 2 : Créer les tests pour RenderSystem - ✅ TERMINÉ (18/18 tests passent)
 - [x] Étape 3 : Intégrer RenderSystem dans Game - ✅ TERMINÉ (14/14 tests passent)
-- [ ] Étape 4 : Refactorer LayerManager extends PerkyModule ⚠️
-- [ ] Étape 5 : Refactorer Layer extends PerkyModule ⚠️
-- [ ] Étape 6 : Migrer DefendTheDen ⚠️
+- [x] Étape 4 : Refactorer LayerManager extends PerkyModule - ✅ TERMINÉ (12/12 tests passent)
+- [x] Étape 5 : Refactorer Layer extends PerkyModule - ✅ TERMINÉ (1787/1787 tests passent)
+- [ ] Étape 6 : Polissage et amélioration continue 🔜
 
-### Dernière mise à jour
+### Dernière mise à jour (Étape 5 - 2025-12-23)
 - **Fichiers modifiés** : 
-  - `game/game.js` (import RenderSystem, création dans constructor)
-  - `game/game.test.js` (6 nouveaux tests pour RenderSystem)
-- **Tests** : 1787/1787 passent ✅ (dont 14/14 dans game.test.js)
-- **Breaking changes** : Aucun à ce stade
-- **Fonctionnalités ajoutées** :
-  - RenderSystem créé automatiquement dans Game
-  - Méthodes déléguées au host (`createLayer`, `getLayer`, `renderAll`, etc.)
-  - Options pass-through via `params.renderSystem`
-- **Prochaine étape** : Étape 4 (Refactorer LayerManager extends PerkyModule) ou pause pour validation
+  - `render/layer.js` (extends PerkyModule, onDispose)
+  - `render/canvas_layer.js` (constructor updated, onDispose)
+  - `render/html_layer.js` (constructor updated)
+  - `render/layer_manager.js` (simplified onDispose)
+  - Tests mis à jour dans `render/*.test.js`
+- **Tests** : ✅ **1787/1787 passent** (100%)  
+- **Breaking changes** : 
+  - Constructor: `new Layer('name', opts)` → `new Layer({$name: 'name', ...opts})`
+  - Lifecycle: `layer.destroy()` → `layer.dispose()`
+  - Property: `layer.name` → `layer.$name`
+- **Fonctionnalités ajoutées** :\n  - Architecture 100% PerkyModule dans le système de rendu
+  - Lifecycle automatique pour tous les layers
+  - Events natifs disponibles pour tous les layers
+- **Prochaine étape** : Polissage et optimisations (optionnel)
 
 ---
 
