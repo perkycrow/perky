@@ -119,7 +119,7 @@ export default class LayerManager extends PerkyModule {
         const camera = this.resolveCamera(options.camera)
 
         const layerOptions = {
-            $name: name,  // Pass name via $name option
+            $name: name,
             ...options,
             width: this.width,
             height: this.height,
@@ -127,22 +127,21 @@ export default class LayerManager extends PerkyModule {
             layerManager: this
         }
 
-        let layer
+        const layerTypes = {
+            canvas: CanvasLayer,
+            html: HTMLLayer
+        }
 
-        if (type === 'canvas') {
-            layer = new CanvasLayer(layerOptions)  // Just options, no name param
-        } else if (type === 'html') {
-            layer = new HTMLLayer(layerOptions)
-        } else {
+        const LayerClass = layerTypes[type]
+
+        if (!LayerClass) {
             throw new Error(`Unknown layer type: ${type}`)
         }
 
+        const layer = this.create(LayerClass, layerOptions)
         layer.mount(this.container)
-
-        // Store in childrenRegistry instead of layers Map
-        this.childrenRegistry.set(name, layer)
-
         this.sortLayers()
+
         return layer
     }
 
@@ -171,12 +170,7 @@ export default class LayerManager extends PerkyModule {
 
 
     removeLayer (name) {
-        const layer = this.getChild(name)
-        if (layer) {
-            layer.dispose()  // Use dispose instead of destroy
-            this.childrenRegistry.delete(name)
-        }
-        return this
+        return this.removeChild(name)
     }
 
 

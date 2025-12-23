@@ -101,8 +101,12 @@ describe(LayerManager, () => {
         const layer = manager.createLayer('test', 'canvas')
 
         expect(manager.childrenRegistry.size).toBe(1)
+        expect(layer.disposed).toBe(false)
+
         manager.removeLayer('test')
+
         expect(manager.childrenRegistry.size).toBe(0)
+        expect(layer.disposed).toBe(true)
         expect(container.contains(layer.canvas)).toBe(false)
     })
 
