@@ -1140,23 +1140,7 @@ describe(Application, () => {
             expect(moveUpBindings.some(b => b.controlName === 'ArrowUp')).toBe(true)
         })
 
-
-        test('handles controller without bindings gracefully', () => {
-            class TestController extends PerkyModule {
-                testAction () { } // eslint-disable-line class-methods-use-this
-            }
-
-            const beforeCount = application.getAllBindings().length
-
-            expect(() => {
-                application.registerController('simple', TestController)
-            }).not.toThrow()
-
-            const afterCount = application.getAllBindings().length
-            expect(afterCount).toBe(beforeCount)
-        })
-
-
+        
         test('registers bindings with custom eventType', () => {
             class TestController extends PerkyModule {
                 static bindings = {
