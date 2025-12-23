@@ -70,8 +70,8 @@ export default class ActionController extends PerkyModule {
     }
 
 
-    static normalizeBindings (controllerName) { // eslint-disable-line complexity
-        const bindings = this.bindings || {}
+    static normalizeBindings (controllerName) {
+        const bindings = this.bindings
         const normalized = []
 
         for (const [actionName, bindingDef] of Object.entries(bindings)) {

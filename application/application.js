@@ -68,18 +68,15 @@ export default class Application extends Engine {
 
 
     #autoRegisterBindings (controllerName, controller) {
-        const ControllerClass = controller.constructor
+        const Controller = controller.constructor
+        const bindings = Controller.normalizeBindings(controllerName)
 
-        if (typeof ControllerClass.normalizeBindings === 'function') {
-            const bindings = ControllerClass.normalizeBindings(controllerName)
-
-            for (const binding of bindings) {
-                this.bindKey(binding.key, {
-                    actionName: binding.action,
-                    controllerName: binding.controllerName,
-                    eventType: binding.eventType
-                })
-            }
+        for (const binding of bindings) {
+            this.bindKey(binding.key, {
+                actionName: binding.action,
+                controllerName: binding.controllerName,
+                eventType: binding.eventType
+            })
         }
     }
 
