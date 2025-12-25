@@ -234,8 +234,12 @@ export default class PerkyModule extends Notifier {
         options.$eagerStart = options.$eagerStart ?? Child.$eagerStart ?? true
 
         const child = typeof Child === 'function' ? new Child(options) : Child
+        return this.#addChild(child, options)
+    }
 
-        unregisterExisting(this, options.$name)
+
+    #addChild (child, options = {}) {
+        unregisterExisting(this, child.$name)
 
         child.install(this, options)
         this.childrenRegistry.set(options.$name, child)
