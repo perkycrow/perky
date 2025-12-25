@@ -9,12 +9,6 @@ describe('PerkyCode', () => {
 
 
     beforeEach(() => {
-        global.ResizeObserver = vi.fn().mockImplementation(() => ({
-            observe: vi.fn(),
-            unobserve: vi.fn(),
-            disconnect: vi.fn()
-        }))
-
         Object.defineProperty(global.navigator, 'clipboard', {
             value: {
                 writeText: vi.fn().mockResolvedValue(undefined)
@@ -36,7 +30,6 @@ describe('PerkyCode', () => {
     afterEach(() => {
         vi.restoreAllMocks()
         document.body.innerHTML = ''
-        delete global.ResizeObserver
         delete global.fetch
     })
 

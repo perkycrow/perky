@@ -12,12 +12,6 @@ describe(CompositeBinding, () => {
 
 
     beforeEach(() => {
-        global.ResizeObserver = vi.fn().mockImplementation(() => ({
-            observe: vi.fn(),
-            unobserve: vi.fn(),
-            disconnect: vi.fn()
-        }))
-
         inputManager = new InputManager()
         keyboardDevice = inputManager.registerDevice(KeyboardDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'KeyboardDevice'})
 

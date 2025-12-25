@@ -9,12 +9,6 @@ describe(PerkyView, () => {
     let container
 
     beforeEach(() => {
-        global.ResizeObserver = vi.fn().mockImplementation(() => ({
-            observe: vi.fn(),
-            unobserve: vi.fn(),
-            disconnect: vi.fn()
-        }))
-
         element = document.createElement('div')
         element.id = 'test-view'
 
@@ -44,7 +38,6 @@ describe(PerkyView, () => {
     afterEach(() => {
         vi.restoreAllMocks()
         document.body.innerHTML = ''
-        delete global.ResizeObserver
     })
 
 

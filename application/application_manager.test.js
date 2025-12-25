@@ -40,12 +40,6 @@ describe(ApplicationManager, () => {
     let MockApp
 
     beforeEach(() => {
-        global.ResizeObserver = vi.fn().mockImplementation(() => ({
-            observe: vi.fn(),
-            unobserve: vi.fn(),
-            disconnect: vi.fn()
-        }))
-
         appManager = new ApplicationManager()
         MockApp = MockApplication
     })

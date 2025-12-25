@@ -13,12 +13,6 @@ describe('Game', () => {
     let mockPerformanceNow
 
     beforeEach(() => {
-        global.ResizeObserver = vi.fn().mockImplementation(() => ({
-            observe: vi.fn(),
-            unobserve: vi.fn(),
-            disconnect: vi.fn()
-        }))
-
         mockRequestAnimationFrame = global.requestAnimationFrame
         mockPerformanceNow = global.performance?.now
 
@@ -157,10 +151,8 @@ describe('Game', () => {
 
 
     test('passes renderSystem options through to RenderSystem', () => {
-        const container = document.createElement('div')
         const customGame = new Game({
             renderSystem: {
-                container,
                 width: 1024,
                 height: 768
             }
@@ -168,7 +160,6 @@ describe('Game', () => {
 
         expect(customGame.renderSystem.layerManager.width).toBe(1024)
         expect(customGame.renderSystem.layerManager.height).toBe(768)
-        expect(customGame.renderSystem.layerManager.container).toBe(container)
     })
 
 

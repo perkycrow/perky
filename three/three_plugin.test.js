@@ -3,12 +3,6 @@ import Application from '../application/application'
 import ThreePlugin from './three_plugin'
 import {Scene, Color} from 'three'
 
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-    observe: vi.fn(),
-    unobserve: vi.fn(),
-    disconnect: vi.fn()
-}))
-
 vi.mock('./renderers/webgl_renderer', () => ({
     default: class MockWebGLRenderer {
         constructor () {
