@@ -35,28 +35,13 @@ export default class RenderSystem extends PerkyModule {
             'setCamera'
         ])
 
-        // Intelligent mounting: mount LayerManager container into host element
-        const mountLayerManager = () => {
-            if (host.element) {
-                this.layerManager.parentContainer = host.element
-                this.layerManager.mountContainer()
-            }
-        }
-
-        // If host already has an element, mount immediately
         if (host.element) {
-            mountLayerManager()
+            this.layerManager.mount(host.element)
         } else if (host.mounted !== undefined) {
-            // If host has mounted state, wait for mount event
-            this.listenToOnce(host, 'mount', mountLayerManager)
+            this.listenToOnce(host, 'mount', () => {
+                this.layerManager.mount(host.element)
+            })
         }
-
-        // Listen for resize events from host
-        this.listenTo(host, 'resize', ({width, height}) => {
-            if (this.layerManager.autoResizeEnabled) {
-                this.layerManager.resize(width, height)
-            }
-        })
     }
 
 

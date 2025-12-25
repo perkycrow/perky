@@ -1,4 +1,5 @@
 import PerkyModule from '../core/perky_module'
+import PerkyView from '../application/perky_view'
 import CanvasLayer from './canvas_layer'
 import WebGLCanvasLayer from './webgl_canvas_layer'
 import HTMLLayer from './html_layer'
@@ -12,12 +13,13 @@ export default class LayerManager extends PerkyModule {
     constructor (options = {}) { // eslint-disable-line complexity
         super(options)
 
-        this.container = createContainer()
+        this.create(PerkyView, {
+            $bind: 'view',
+            className: 'layer-manager-container'
+        })
 
-        this.parentContainer = options.parentContainer
-
-        if (this.parentContainer) {
-            this.mountContainer()
+        if (options.container) {
+            this.mount(options.container)
         }
 
         this.cameras = new Map()
@@ -35,8 +37,38 @@ export default class LayerManager extends PerkyModule {
             })
         }
 
-
+        this.on('resize', ({width, height}) => {
+            if (this.autoResizeEnabled) {
+                this.resize(width, height)
+            }
+        })
     }
+
+
+    get element () {
+        return this.view.element
+    }
+
+
+    get container () {
+        return this.view.container
+    }
+
+
+    mount (container) {
+        return this.view.mount(container)
+    }
+
+
+    dismount () {
+        return this.view.dismount()
+    }
+
+
+    get mounted () {
+        return this.view.mounted
+    }
+
 
 
     setupCameras (camerasConfig = {}) {
@@ -92,24 +124,6 @@ export default class LayerManager extends PerkyModule {
     }
 
 
-    mountContainer () {
-        if (!this.parentContainer) {
-            throw new Error('Cannot mount: no parentContainer set')
-        }
-
-        // Set container styles for proper layout
-        Object.assign(this.container.style, {
-            position: 'absolute',
-            top: '0',
-            left: '0',
-            width: '100%',
-            height: '100%',
-            overflow: 'hidden'
-        })
-
-        this.parentContainer.appendChild(this.container)
-    }
-
 
     createLayer (name, type = 'canvas', options = {}) {
         if (this.childrenRegistry.has(name)) {
@@ -140,7 +154,7 @@ export default class LayerManager extends PerkyModule {
         }
 
         const layer = this.create(LayerClass, layerOptions)
-        layer.mount(this.container)
+        layer.mount(this.view.element)
         this.sortLayers()
 
         return layer
@@ -181,7 +195,7 @@ export default class LayerManager extends PerkyModule {
 
         sorted.forEach(layer => {
             if (layer.element && layer.element.parentElement) {
-                this.container.appendChild(layer.element)
+                this.view.element.appendChild(layer.element)
             }
         })
 
@@ -193,20 +207,19 @@ export default class LayerManager extends PerkyModule {
         this.width = width
         this.height = height
 
-        this.container.style.width = `${width}px`
-        this.container.style.height = `${height}px`
-
-        this.children.forEach(layer => {
-            layer.resize(width, height)
-        })
+        this.children
+            .filter(child => child !== this.view)
+            .forEach(layer => {
+                layer.resize(width, height)
+            })
 
         return this
     }
 
 
     resizeToContainer () {
-        const width = this.container.clientWidth
-        const height = this.container.clientHeight
+        const width = this.view.element.clientWidth
+        const height = this.view.element.clientHeight
 
         if (width > 0 && height > 0) {
             return this.resize(width, height)
@@ -229,14 +242,16 @@ export default class LayerManager extends PerkyModule {
 
 
     renderAll () {
-        this.children.forEach(layer => {
-            if (layer instanceof CanvasLayer && layer.autoRender) {
-                layer.render()
-            }
-            if (layer instanceof HTMLLayer && layer.autoUpdate) {
-                layer.updateWorldElements()
-            }
-        })
+        this.children
+            .filter(child => child !== this.view)
+            .forEach(layer => {
+                if (layer instanceof CanvasLayer && layer.autoRender) {
+                    layer.render()
+                }
+                if (layer instanceof HTMLLayer && layer.autoUpdate) {
+                    layer.updateWorldElements()
+                }
+            })
         return this
     }
 
@@ -251,7 +266,9 @@ export default class LayerManager extends PerkyModule {
 
 
     markAllDirty () {
-        this.children.forEach(layer => layer.markDirty())
+        this.children
+            .filter(child => child !== this.view)
+            .forEach(layer => layer.markDirty())
         return this
     }
 
@@ -275,15 +292,10 @@ export default class LayerManager extends PerkyModule {
 
 
     onDispose () {
-        if (this.container && this.container.parentElement) {
-            this.container.parentElement.removeChild(this.container)
+        if (this.view.element && this.view.element.parentElement) {
+            this.view.element.parentElement.removeChild(this.view.element)
         }
     }
 
 }
 
-function createContainer () {
-    const container = document.createElement('div')
-    container.className = 'layer-manager-container'
-    return container
-}
