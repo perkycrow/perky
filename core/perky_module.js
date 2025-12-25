@@ -357,6 +357,11 @@ export default class PerkyModule extends Notifier {
     }
 
 
+    childrenByCategory (category) {
+        return this.#childrenRegistry.lookup('$category', category)
+    }
+
+
     childrenByTags (tags) {
         const tagArray = Array.isArray(tags) ? tags : [tags]
 
