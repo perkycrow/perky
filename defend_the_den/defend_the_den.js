@@ -4,7 +4,6 @@ import World from './world'
 import GameController from './controllers/game_controller'
 import GameRenderer from './game_renderer'
 
-import RenderSystem from '../render/render_system'
 import Camera2D from '../render/camera_2d'
 
 import manifest from './manifest'
@@ -18,17 +17,12 @@ export default class DefendTheDen extends Game {
 
     static manifest = manifest
 
-    configureGame () {
-        this.world = new World()
-
-        this.camera = new Camera2D({
-            unitsInView: {width: 7, height: 5}
-        })
-
-        this.create(RenderSystem, {
-            $bind: 'renderSystem',
+    constructor (params = {}) {
+        const renderSystemConfig = {
             cameras: {
-                main: this.camera
+                main: new Camera2D({
+                    unitsInView: {width: 7, height: 5}
+                })
             },
             layers: [
                 {
@@ -44,7 +38,19 @@ export default class DefendTheDen extends Game {
                     enableCulling: true
                 }
             ]
+        }
+
+        super({
+            ...params,
+            renderSystem: renderSystemConfig
         })
+    }
+
+    configureGame () {
+        this.world = new World()
+
+        // Camera is now created in renderSystem config above
+        this.camera = this.renderSystem.layerManager.getCamera('main')
 
         this.registerController('game', GameController)
         this.setActiveControllers(['game'])

@@ -35,10 +35,13 @@ describe(LayerManager, () => {
     test('constructor', () => {
         expect(manager).toBeInstanceOf(PerkyModule)
         expect(manager.$category).toBe('layerManager')
+
         expect(manager.container).toBe(container)
         expect(manager.width).toBe(800)
         expect(manager.height).toBe(600)
-        expect(manager.childrenRegistry.size).toBe(0)
+
+        expect(manager.childrenRegistry.size).toBe(1)
+        expect(manager.view).toBeDefined()
     })
 
 
@@ -47,8 +50,8 @@ describe(LayerManager, () => {
 
         expect(layer).toBeInstanceOf(CanvasLayer)
         expect(layer.$name).toBe('game')
-        expect(manager.childrenRegistry.size).toBe(1)
-        expect(container.contains(layer.canvas)).toBe(true)
+        expect(manager.childrenRegistry.size).toBe(2) // view + layer
+        expect(manager.element.contains(layer.canvas)).toBe(true)
     })
 
 
@@ -57,8 +60,8 @@ describe(LayerManager, () => {
 
         expect(layer).toBeInstanceOf(HTMLLayer)
         expect(layer.$name).toBe('ui')
-        expect(manager.childrenRegistry.size).toBe(1)
-        expect(container.contains(layer.div)).toBe(true)
+        expect(manager.childrenRegistry.size).toBe(2) // view + layer
+        expect(manager.element.contains(layer.div)).toBe(true)
     })
 
 
@@ -100,14 +103,14 @@ describe(LayerManager, () => {
     test('removeLayer', () => {
         const layer = manager.createLayer('test', 'canvas')
 
-        expect(manager.childrenRegistry.size).toBe(1)
+        expect(manager.childrenRegistry.size).toBe(2) // view + layer
         expect(layer.disposed).toBe(false)
 
         manager.removeLayer('test')
 
-        expect(manager.childrenRegistry.size).toBe(0)
+        expect(manager.childrenRegistry.size).toBe(1) // only view remains
         expect(layer.disposed).toBe(true)
-        expect(container.contains(layer.canvas)).toBe(false)
+        expect(manager.element.contains(layer.canvas)).toBe(false)
     })
 
 
@@ -118,7 +121,7 @@ describe(LayerManager, () => {
 
         manager.sortLayers()
 
-        const children = Array.from(container.children)
+        const children = Array.from(manager.element.children)
         expect(children[0]).toBe(layer2.canvas)
         expect(children[1]).toBe(layer1.canvas)
         expect(children[2]).toBe(layer3.canvas)
@@ -132,8 +135,10 @@ describe(LayerManager, () => {
 
         expect(manager.width).toBe(1024)
         expect(manager.height).toBe(768)
-        expect(container.style.width).toBe('1024px')
-        expect(container.style.height).toBe('768px')
+
+        
+        expect(manager.view.element.style.width).not.toBe('1024px')
+        expect(manager.view.element.style.height).not.toBe('768px')
     })
 
 

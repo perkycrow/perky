@@ -15,7 +15,8 @@ export default class LayerManager extends PerkyModule {
 
         this.create(PerkyView, {
             $bind: 'view',
-            className: 'layer-manager-container'
+            className: 'layer-manager-container',
+            position: 'absolute'
         })
 
         if (options.container) {
@@ -154,7 +155,7 @@ export default class LayerManager extends PerkyModule {
         }
 
         const layer = this.create(LayerClass, layerOptions)
-        layer.mount(this.view.element)
+        layer.mount(this.element)
         this.sortLayers()
 
         return layer
@@ -190,12 +191,14 @@ export default class LayerManager extends PerkyModule {
 
 
     sortLayers () {
+        // Only sort actual layers, not the internal view
         const sorted = this.children
+            .filter(child => child !== this.view)
             .sort((a, b) => a.zIndex - b.zIndex)
 
         sorted.forEach(layer => {
             if (layer.element && layer.element.parentElement) {
-                this.view.element.appendChild(layer.element)
+                this.element.appendChild(layer.element)
             }
         })
 

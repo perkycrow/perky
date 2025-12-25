@@ -14,6 +14,10 @@ export default class PerkyView extends PerkyModule {
 
         this.element = params.element ? params.element : this.constructor.defaultElement(params)
 
+        if (params.position) {
+            applyPositionStyle(this.element, params.position)
+        }
+
         if (params.container) {
             this.mount(params.container)
         }
@@ -362,4 +366,14 @@ export default class PerkyView extends PerkyModule {
         this.emit('displayMode:changed', {mode})
     }
 
+}
+
+
+function applyPositionStyle (element, position) {
+    element.style.position = position
+    
+    if (position === 'absolute') {
+        element.style.top = '0'
+        element.style.left = '0'
+    }
 }
