@@ -158,20 +158,26 @@ describe('Game', () => {
             }
         })
 
-        expect(customGame.renderSystem.layerManager.width).toBe(1024)
-        expect(customGame.renderSystem.layerManager.height).toBe(768)
+        expect(customGame.renderSystem.layerWidth).toBe(1024)
+        expect(customGame.renderSystem.layerHeight).toBe(768)
     })
 
 
     test('delegates createLayer method to host', () => {
+        const container = document.createElement('div')
+        game.mount(container)
+
         const layer = game.createLayer('test', 'canvas')
 
         expect(layer).toBeDefined()
-        expect(game.renderSystem.layerManager.getLayer('test')).toBe(layer)
+        expect(game.renderSystem.getLayer('test')).toBe(layer)
     })
 
 
     test('delegates getLayer method to host', () => {
+        const container = document.createElement('div')
+        game.mount(container)
+
         game.createLayer('game', 'canvas')
         const layer = game.getLayer('game')
 
@@ -181,10 +187,13 @@ describe('Game', () => {
 
 
     test('delegates renderAll method to host', () => {
-        const spy = vi.spyOn(game.renderSystem.layerManager, 'renderAll')
-        game.renderAll()
+        expect(typeof game.renderAll).toBe('function')
 
-        expect(spy).toHaveBeenCalled()
+        const container = document.createElement('div')
+        game.mount(container)
+        game.createLayer('test', 'canvas')
+
+        expect(() => game.renderAll()).not.toThrow()
     })
 
 })

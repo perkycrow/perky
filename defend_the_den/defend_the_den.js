@@ -50,7 +50,7 @@ export default class DefendTheDen extends Game {
         this.world = new World()
 
         // Camera is now created in renderSystem config above
-        this.camera = this.renderSystem.layerManager.getCamera('main')
+        this.camera = this.renderSystem.getCamera('main')
 
         this.registerController('game', GameController)
         this.setActiveControllers(['game'])

@@ -1,6 +1,6 @@
 import {describe, it, expect, beforeEach, vi} from 'vitest'
 import RenderSystem from './render_system'
-import LayerManager from './layer_manager'
+import PerkyView from '../application/perky_view'
 
 
 describe('RenderSystem', () => {
@@ -19,23 +19,19 @@ describe('RenderSystem', () => {
 
         it('should create a RenderSystem instance', () => {
             expect(renderSystem).toBeInstanceOf(RenderSystem)
+            expect(renderSystem.view).toBeInstanceOf(PerkyView)
         })
 
 
-        it('should create a default LayerManager', () => {
-            expect(renderSystem.layerManager).toBeInstanceOf(LayerManager)
-        })
-
-
-        it('should pass options to LayerManager', () => {
+        it('should set layer dimensions from options', () => {
             const customRenderSystem = new RenderSystem({
                 container,
                 width: 1024,
                 height: 768
             })
 
-            expect(customRenderSystem.layerManager.width).toBe(1024)
-            expect(customRenderSystem.layerManager.height).toBe(768)
+            expect(customRenderSystem.layerWidth).toBe(1024)
+            expect(customRenderSystem.layerHeight).toBe(768)
         })
 
 
@@ -92,18 +88,13 @@ describe('RenderSystem', () => {
 
 
         it('should render all layers', () => {
-            const spy = vi.spyOn(renderSystem.layerManager, 'renderAll')
-            renderSystem.renderAll()
-
-            expect(spy).toHaveBeenCalled()
+            // Just verify it doesn't throw
+            expect(() => renderSystem.renderAll()).not.toThrow()
         })
 
 
         it('should render a specific layer', () => {
-            const spy = vi.spyOn(renderSystem.layerManager, 'renderLayer')
-            renderSystem.renderLayer('game')
-
-            expect(spy).toHaveBeenCalledWith('game')
+            expect(() => renderSystem.renderLayer('game')).not.toThrow()
         })
 
     })
@@ -117,18 +108,22 @@ describe('RenderSystem', () => {
 
 
         it('should show a layer', () => {
-            const spy = vi.spyOn(renderSystem.layerManager, 'showLayer')
+            const layer = renderSystem.getLayer('ui')
+            const spy = vi.spyOn(layer, 'setVisible')
+
             renderSystem.showLayer('ui')
 
-            expect(spy).toHaveBeenCalledWith('ui')
+            expect(spy).toHaveBeenCalledWith(true)
         })
 
 
         it('should hide a layer', () => {
-            const spy = vi.spyOn(renderSystem.layerManager, 'hideLayer')
+            const layer = renderSystem.getLayer('ui')
+            const spy = vi.spyOn(layer, 'setVisible')
+
             renderSystem.hideLayer('ui')
 
-            expect(spy).toHaveBeenCalledWith('ui')
+            expect(spy).toHaveBeenCalledWith(false)
         })
 
     })
@@ -151,12 +146,11 @@ describe('RenderSystem', () => {
 
 
         it('should set a camera', () => {
-            const spy = vi.spyOn(renderSystem.layerManager, 'setCamera')
             const mockCamera = {id: 'test'}
 
             renderSystem.setCamera('test', mockCamera)
 
-            expect(spy).toHaveBeenCalledWith('test', mockCamera)
+            expect(renderSystem.getCamera('test')).toBe(mockCamera)
         })
 
     })
@@ -164,21 +158,10 @@ describe('RenderSystem', () => {
 
     describe('lifecycle', () => {
 
-        it('should dispose the LayerManager on dispose', () => {
-            const spy = vi.spyOn(renderSystem.layerManager, 'dispose')
-
-            const layerManager = renderSystem.layerManager
-            renderSystem.dispose()
-
-            expect(spy).toHaveBeenCalled()
-            expect(layerManager.disposed).toBe(true)
-        })
-
-
         it('should not crash if disposed twice', () => {
             renderSystem.dispose()
 
-            expect(() => { // eslint-disable-line max-nested-callbacks
+            expect(() => {
                 renderSystem.dispose()
             }).not.toThrow()
         })
@@ -197,6 +180,26 @@ describe('RenderSystem', () => {
             renderSystem.install(host)
 
             expect(host.delegate).toHaveBeenCalled()
+
+            // Verify methods are delegated
+            expect(host.delegate).toHaveBeenCalledWith(
+                renderSystem,
+                expect.arrayContaining(['createLayer', 'getLayer', 'renderAll'])
+            )
+        })
+
+    })
+
+    describe('childrenByCategory', () => {
+
+        it('should return only layers', () => {
+            renderSystem.createLayer('layer1', 'canvas')
+            renderSystem.createLayer('layer2', 'canvas')
+
+            const layers = renderSystem.childrenByCategory('layer')
+
+            expect(layers).toHaveLength(2)
+            expect(layers.every(l => l.$category === 'layer')).toBe(true)
         })
 
     })
