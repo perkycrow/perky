@@ -11,7 +11,6 @@ export default class RenderSystem extends PerkyModule {
 
         this.create(LayerManager, {
             $bind: 'layerManager',
-            container: options.container,
             width: options.width,
             height: options.height,
             autoResize: options.autoResize,
@@ -36,6 +35,23 @@ export default class RenderSystem extends PerkyModule {
             'setCamera'
         ])
 
+        // Intelligent mounting: mount LayerManager container into host element
+        const mountLayerManager = () => {
+            if (host.element) {
+                this.layerManager.parentContainer = host.element
+                this.layerManager.mountContainer()
+            }
+        }
+
+        // If host already has an element, mount immediately
+        if (host.element) {
+            mountLayerManager()
+        } else if (host.mounted !== undefined) {
+            // If host has mounted state, wait for mount event
+            this.listenToOnce(host, 'mount', mountLayerManager)
+        }
+
+        // Listen for resize events from host
         this.listenTo(host, 'resize', ({width, height}) => {
             if (this.layerManager.autoResizeEnabled) {
                 this.layerManager.resize(width, height)

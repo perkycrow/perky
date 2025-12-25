@@ -127,7 +127,9 @@ export default class GameRenderer extends PerkyModule {
             })
         })
 
-        this.game.canvas.render(this.rootGroup)
+        const gameLayer = this.game.getCanvas('game')
+        gameLayer.setContent(this.rootGroup)
+        gameLayer.render()
     }
 
 }

@@ -120,6 +120,16 @@ export default class PerkyView extends PerkyModule {
 
         container.appendChild(this.element)
 
+        console.log('PerkyView mounted:', {
+            container,
+            containerClientWidth: container.clientWidth,
+            containerClientHeight: container.clientHeight,
+            elementClientWidth: this.element.clientWidth,
+            elementClientHeight: this.element.clientHeight,
+            elementWidth: this.width,
+            elementHeight: this.height
+        })
+
         this.emit('mount', {container})
 
         if (this.#resizeObserver) {
@@ -311,7 +321,10 @@ export default class PerkyView extends PerkyModule {
         this.#resizeObserver = new ResizeObserver(entries => {
             for (const entry of entries) {
                 const {width, height} = entry.contentRect
-                this.emit('resize', {width, height})
+
+                if (this.mounted) {
+                    this.emit('resize', {width, height})
+                }
             }
         })
 

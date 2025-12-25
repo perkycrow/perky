@@ -4,8 +4,7 @@ import World from './world'
 import GameController from './controllers/game_controller'
 import GameRenderer from './game_renderer'
 
-// import Canvas2D from '../canvas/canvas_2d'
-import WebGLCanvas2D from '../render/webgl_canvas_2d'
+import RenderSystem from '../render/render_system'
 import Camera2D from '../render/camera_2d'
 
 import manifest from './manifest'
@@ -26,17 +25,25 @@ export default class DefendTheDen extends Game {
             unitsInView: {width: 7, height: 5}
         })
 
-        this.canvas = new WebGLCanvas2D({
-            container: this.element,
-            autoFit: true,
-            camera: this.camera,
-            showGrid: true,
-            pixelRatio: 1.5,
-            gridStep: 1,
-            gridOpacity: 0.15,
-            gridColor: '#666666',
-            backgroundColor: '#f9f9f9',
-            enableCulling: true
+        this.create(RenderSystem, {
+            $bind: 'renderSystem',
+            cameras: {
+                main: this.camera
+            },
+            layers: [
+                {
+                    name: 'game',
+                    type: 'webgl',
+                    camera: 'main',
+                    showGrid: true,
+                    pixelRatio: 1.5,
+                    gridStep: 1,
+                    gridOpacity: 0.15,
+                    gridColor: '#666666',
+                    backgroundColor: '#f9f9f9',
+                    enableCulling: true
+                }
+            ]
         })
 
         this.registerController('game', GameController)

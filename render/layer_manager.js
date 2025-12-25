@@ -1,5 +1,6 @@
 import PerkyModule from '../core/perky_module'
 import CanvasLayer from './canvas_layer'
+import WebGLCanvasLayer from './webgl_canvas_layer'
 import HTMLLayer from './html_layer'
 import Camera2D from './camera_2d'
 
@@ -11,21 +12,20 @@ export default class LayerManager extends PerkyModule {
     constructor (options = {}) { // eslint-disable-line complexity
         super(options)
 
-        this.container = options.container ?? createContainer()
+        this.container = createContainer()
+
+        this.parentContainer = options.parentContainer
+
+        if (this.parentContainer) {
+            this.mountContainer()
+        }
+
         this.cameras = new Map()
         this.width = options.width ?? 800
         this.height = options.height ?? 600
 
-        this.setupContainer()
-
-        if (options.autoResize && options.autoResize.container) {
-            const actualWidth = this.container.clientWidth
-            const actualHeight = this.container.clientHeight
-            if (actualWidth > 0 && actualHeight > 0) {
-                this.width = actualWidth
-                this.height = actualHeight
-            }
-        }
+        const hasExplicitDimensions = options.width !== undefined || options.height !== undefined
+        this.autoResizeEnabled = options.autoResize ?? !hasExplicitDimensions
 
         this.setupCameras(options.cameras)
 
@@ -35,9 +35,7 @@ export default class LayerManager extends PerkyModule {
             })
         }
 
-        if (options.autoResize) {
-            this.enableAutoResize(options.autoResize)
-        }
+
     }
 
 
@@ -94,20 +92,22 @@ export default class LayerManager extends PerkyModule {
     }
 
 
-    setupContainer () {
-        if (!this.container.style.position || this.container.style.position === 'static') {
-            this.container.style.position = 'relative'
+    mountContainer () {
+        if (!this.parentContainer) {
+            throw new Error('Cannot mount: no parentContainer set')
         }
 
-        if (!this.container.style.width) {
-            this.container.style.width = `${this.width}px`
-        }
+        // Set container styles for proper layout
+        Object.assign(this.container.style, {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden'
+        })
 
-        if (!this.container.style.height) {
-            this.container.style.height = `${this.height}px`
-        }
-
-        this.container.style.overflow = 'hidden'
+        this.parentContainer.appendChild(this.container)
     }
 
 
@@ -129,6 +129,7 @@ export default class LayerManager extends PerkyModule {
 
         const layerTypes = {
             canvas: CanvasLayer,
+            webgl: WebGLCanvasLayer,
             html: HTMLLayer
         }
 
@@ -153,7 +154,7 @@ export default class LayerManager extends PerkyModule {
 
     getCanvas (name) {
         const layer = this.getLayer(name)
-        if (layer instanceof CanvasLayer) {
+        if (layer instanceof CanvasLayer || layer instanceof WebGLCanvasLayer) {
             return layer
         }
         throw new Error(`Layer "${name}" is not a canvas layer`)
@@ -215,16 +216,14 @@ export default class LayerManager extends PerkyModule {
     }
 
 
-    enableAutoResize (options = {}) {
+    enableAutoResize () {
         this.autoResizeEnabled = true
-        this.autoResizeOptions = options
+        return this
+    }
 
-        const resizeToParent = options.container ?? false
 
-        if (resizeToParent) {
-            this.resizeToContainer()
-        }
-
+    disableAutoResize () {
+        this.autoResizeEnabled = false
         return this
     }
 
@@ -276,7 +275,7 @@ export default class LayerManager extends PerkyModule {
 
 
     onDispose () {
-        if (this.container.parentElement) {
+        if (this.container && this.container.parentElement) {
             this.container.parentElement.removeChild(this.container)
         }
     }
