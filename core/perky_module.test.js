@@ -513,6 +513,33 @@ describe(PerkyModule, () => {
     })
 
 
+    test('delegate with string target (property name)', () => {
+        const manager = child.create(PerkyModule, {
+            $name: 'manager',
+            $bind: 'manager'
+        })
+
+        manager.getValue = vi.fn(() => 42)
+        manager.setValue = vi.fn()
+        manager.data = 'test data'
+
+        child.delegate('manager', ['getValue', 'setValue', 'data'])
+
+        expect(typeof child.getValue).toBe('function')
+        expect(typeof child.setValue).toBe('function')
+        expect(child.getValue()).toBe(42)
+        expect(manager.getValue).toHaveBeenCalled()
+
+        child.setValue(100)
+        expect(manager.setValue).toHaveBeenCalledWith(100)
+
+        expect(child.data).toBe('test data')
+        child.data = 'new data'
+        expect(manager.data).toBe('new data')
+    })
+
+
+
     test('dispose calls dispose on all children in cascade', () => {
         class ChildChild1 extends PerkyModule { }
         class ChildChild2 extends PerkyModule { }

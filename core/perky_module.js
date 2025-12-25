@@ -308,6 +308,11 @@ export default class PerkyModule extends Notifier {
 
 
     #delegateProperty (target, sourceName, hostName) { // eslint-disable-line complexity
+        if (typeof target === 'string' || typeof sourceName === 'symbol') {
+            this.#delegatePropertySym(target, sourceName, hostName)
+            return
+        }
+
         const descriptor = Object.getOwnPropertyDescriptor(target, sourceName)
 
         if (descriptor && (descriptor.get || descriptor.set)) {
@@ -329,6 +334,26 @@ export default class PerkyModule extends Notifier {
                 configurable: true
             })
         }
+    }
+
+
+    #delegatePropertySym (targetName, sourceName, hostName) {
+        Object.defineProperty(this, hostName, {
+            get: () => {
+                const target = this[targetName]
+                const value = target?.[sourceName]
+
+                if (typeof value === 'function') {
+                    return value.bind(target)
+                }
+                return value
+            },
+            set: (value) => {
+                this[targetName][sourceName] = value
+            },
+            enumerable: true,
+            configurable: true
+        })
     }
 
 
