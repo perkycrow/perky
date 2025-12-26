@@ -1,15 +1,16 @@
 import PerkyModule from '../core/perky_module'
 import Group2D from './group_2d'
-import ImageRenderer from './image_renderer'
-import CircleRenderer from './circle_renderer'
 
 
-const rendererRegistry = new Map()
+const classRegistry = new Map()
+const matcherRegistry = []
 
 
 export default class WorldRenderer extends PerkyModule {
 
     static $category = 'worldRenderer'
+
+    static matchersEnabled = true
 
     #renderers = new Map()
 
@@ -22,18 +23,40 @@ export default class WorldRenderer extends PerkyModule {
     }
 
 
-    static register (EntityClass, Renderer, config = null) {
-        rendererRegistry.set(EntityClass, {Renderer, config})
+    static register (classOrMatcher, Renderer, config = null) {
+        if (typeof classOrMatcher === 'function' && classOrMatcher.prototype) {
+            const isClass = classOrMatcher.toString().startsWith('class ') ||
+                            Object.getOwnPropertyNames(classOrMatcher.prototype).length > 1
+
+            if (isClass) {
+                classRegistry.set(classOrMatcher, {Renderer, config})
+                return
+            }
+        }
+
+        matcherRegistry.push({matcher: classOrMatcher, Renderer, config})
     }
 
 
-    static unregister (EntityClass) {
-        rendererRegistry.delete(EntityClass)
+    static unregister (classOrMatcher) {
+        if (classRegistry.has(classOrMatcher)) {
+            classRegistry.delete(classOrMatcher)
+            return true
+        }
+
+        const index = matcherRegistry.findIndex(entry => entry.matcher === classOrMatcher)
+        if (index !== -1) {
+            matcherRegistry.splice(index, 1)
+            return true
+        }
+
+        return false
     }
 
 
-    static getRegistration (EntityClass) {
-        return rendererRegistry.get(EntityClass)
+    static clearRegistry () {
+        classRegistry.clear()
+        matcherRegistry.length = 0
     }
 
 
@@ -57,54 +80,66 @@ export default class WorldRenderer extends PerkyModule {
 
 
     sync () {
-        for (const renderer of this.#renderers.values()) {
-            renderer.sync()
+        for (const renderers of this.#renderers.values()) {
+            for (const renderer of renderers) {
+                renderer.sync()
+            }
         }
     }
 
 
-    getRenderer (entityId) {
-        return this.#renderers.get(entityId)
+    getRenderers (entityId) {
+        return this.#renderers.get(entityId) || []
     }
 
 
     #handleEntitySet (entity) {
-        const Renderer = resolveRenderer(entity)
+        const registrations = resolveRenderers(entity, WorldRenderer.matchersEnabled)
 
-        if (!Renderer) {
+        if (registrations.length === 0) {
             return
         }
 
-        const context = {
-            game: this.game,
-            world: this.world,
-            group: this.rootGroup,
-            config: resolveConfig(entity)
+        const renderers = []
+
+        for (const {Renderer, config} of registrations) {
+            const context = {
+                game: this.game,
+                world: this.world,
+                group: this.rootGroup,
+                config
+            }
+
+            const renderer = new Renderer(entity, context)
+
+            if (renderer.root) {
+                this.rootGroup.addChild(renderer.root)
+            }
+
+            renderers.push(renderer)
         }
 
-        const renderer = new Renderer(entity, context)
-
-        if (renderer.root) {
-            this.rootGroup.addChild(renderer.root)
-        }
-
-        this.#renderers.set(entity.$id, renderer)
+        this.#renderers.set(entity.$id, renderers)
     }
 
 
     #handleEntityDelete (entityId) {
-        const renderer = this.#renderers.get(entityId)
+        const renderers = this.#renderers.get(entityId)
 
-        if (renderer) {
-            renderer.dispose()
+        if (renderers) {
+            for (const renderer of renderers) {
+                renderer.dispose()
+            }
             this.#renderers.delete(entityId)
         }
     }
 
 
     #disposeAllRenderers () {
-        for (const renderer of this.#renderers.values()) {
-            renderer.dispose()
+        for (const renderers of this.#renderers.values()) {
+            for (const renderer of renderers) {
+                renderer.dispose()
+            }
         }
         this.#renderers.clear()
     }
@@ -112,26 +147,23 @@ export default class WorldRenderer extends PerkyModule {
 }
 
 
-function resolveRenderer (entity) {
+function resolveRenderers (entity, matchersEnabled) {
+    const results = []
     const EntityClass = entity.constructor
 
-    const registration = rendererRegistry.get(EntityClass)
-    if (registration) {
-        return registration.Renderer
+    const classRegistration = classRegistry.get(EntityClass)
+    if (classRegistration) {
+        results.push(classRegistration)
     }
 
-    return null
-}
-
-
-function resolveConfig (entity) {
-    const EntityClass = entity.constructor
-
-    const registration = rendererRegistry.get(EntityClass)
-    if (registration) {
-        return registration.config
+    if (matchersEnabled) {
+        for (const entry of matcherRegistry) {
+            if (entry.matcher(entity)) {
+                results.push(entry)
+            }
+        }
     }
 
-    return null
+    return results
 }
 
