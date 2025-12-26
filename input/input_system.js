@@ -80,17 +80,12 @@ export default class InputSystem extends PerkyModule {
     }
 
 
-    // ===== Device Management (ex-InputManager) =====
-
     registerDevice (DeviceClass, options = {}) {
-        const device = this.create(DeviceClass, {
+        return this.create(DeviceClass, {
             $category: 'device',
             $lifecycle: true,
             ...options
         })
-
-        this.#forwardDeviceEvents(device)
-        return device
     }
 
 
@@ -242,8 +237,6 @@ export default class InputSystem extends PerkyModule {
         return this.childrenRegistry.keyFor(device)
     }
 
-
-    // ===== Convenience Methods =====
 
     getInputValue (deviceName, controlName) {
         return this.getValueFor(deviceName, controlName)
@@ -407,21 +400,6 @@ export default class InputSystem extends PerkyModule {
     #initEvents () {
         this.on('control:pressed', this.#handleInputEvent.bind(this, 'pressed'))
         this.on('control:released', this.#handleInputEvent.bind(this, 'released'))
-    }
-
-
-    #forwardDeviceEvents (device) {
-        device.on('control:pressed', (control, event) => {
-            this.emit('control:pressed', control, event, device)
-        })
-
-        device.on('control:released', (control, event) => {
-            this.emit('control:released', control, event, device)
-        })
-
-        device.on('control:updated', (control, value, oldValue, event) => {
-            this.emit('control:updated', control, value, oldValue, event, device)
-        })
     }
 
 

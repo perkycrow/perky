@@ -180,7 +180,7 @@ describe(InputDevice, () => {
 
         button.press()
 
-        expect(controlPressedListener).toHaveBeenCalledWith(button, null)
+        expect(controlPressedListener).toHaveBeenCalledWith(button, null, device)
         expect(device.pressedNames.has('testButton')).toBe(true)
     })
 
@@ -197,7 +197,7 @@ describe(InputDevice, () => {
         expect(device.pressedNames.has('testButton')).toBe(true)
 
         button.release()
-        expect(controlReleasedListener).toHaveBeenCalledWith(button, null)
+        expect(controlReleasedListener).toHaveBeenCalledWith(button, null, device)
         expect(device.pressedNames.has('testButton')).toBe(false)
     })
 
@@ -212,7 +212,7 @@ describe(InputDevice, () => {
 
         control.value = 42
 
-        expect(controlUpdatedListener).toHaveBeenCalledWith(control, 42, 0, undefined)
+        expect(controlUpdatedListener).toHaveBeenCalledWith(control, 42, 0, undefined, device)
     })
 
 
@@ -238,7 +238,7 @@ describe(InputDevice, () => {
 
     test('control removal cleans up event listeners', () => {
         const button = device.findOrCreateControl(ButtonControl, {name: 'removeTest'})
-        
+
         button.press()
         expect(device.pressedNames.has('removeTest')).toBe(true)
 
@@ -253,7 +253,7 @@ describe(InputDevice, () => {
         const control = {name: 'test'}
 
         expect(device.shouldPreventDefaultFor(event, control)).toBe(false)
-        
+
         device.shouldPreventDefault = false
         expect(device.shouldPreventDefaultFor(event, control)).toBe(false)
     })
@@ -262,7 +262,7 @@ describe(InputDevice, () => {
     test('shouldPreventDefaultFor with true', () => {
         const event = {preventDefault: vi.fn()}
         const control = {name: 'test'}
-        
+
         device.shouldPreventDefault = true
         expect(device.shouldPreventDefaultFor(event, control)).toBe(true)
     })
@@ -271,14 +271,14 @@ describe(InputDevice, () => {
     test('shouldPreventDefaultFor with function', () => {
         const event = {preventDefault: vi.fn(), ctrlKey: true}
         const control = {name: 'KeyR'}
-        
+
         device.shouldPreventDefault = (evt, ctrl, dev) => {
             expect(dev).toBe(device)
             return ctrl.name === 'KeyR' && evt.ctrlKey
         }
-        
+
         expect(device.shouldPreventDefaultFor(event, control)).toBe(true)
-        
+
         const anotherEvent = {preventDefault: vi.fn(), ctrlKey: false}
         expect(device.shouldPreventDefaultFor(anotherEvent, control)).toBe(false)
     })
@@ -287,10 +287,10 @@ describe(InputDevice, () => {
     test('preventDefault when shouldPreventDefaultFor returns true', () => {
         const event = {preventDefault: vi.fn(), stopPropagation: vi.fn()}
         const control = {name: 'test'}
-        
+
         device.shouldPreventDefault = true
         device.preventDefault(event, control)
-        
+
         expect(event.preventDefault).toHaveBeenCalledTimes(1)
         expect(event.stopPropagation).toHaveBeenCalledTimes(1)
     })
@@ -299,10 +299,10 @@ describe(InputDevice, () => {
     test('preventDefault when shouldPreventDefaultFor returns false', () => {
         const event = {preventDefault: vi.fn(), stopPropagation: vi.fn()}
         const control = {name: 'test'}
-        
+
         device.shouldPreventDefault = false
         device.preventDefault(event, control)
-        
+
         expect(event.preventDefault).not.toHaveBeenCalled()
         expect(event.stopPropagation).not.toHaveBeenCalled()
     })
@@ -310,10 +310,10 @@ describe(InputDevice, () => {
 
     test('preventDefault with null control', () => {
         const event = {preventDefault: vi.fn(), stopPropagation: vi.fn()}
-        
+
         device.shouldPreventDefault = true
         device.preventDefault(event, null)
-        
+
         expect(event.preventDefault).not.toHaveBeenCalled()
         expect(event.stopPropagation).not.toHaveBeenCalled()
     })
@@ -322,10 +322,10 @@ describe(InputDevice, () => {
     test('preventDefault with function condition', () => {
         const event = {preventDefault: vi.fn(), stopPropagation: vi.fn(), ctrlKey: true}
         const control = {name: 'KeyR'}
-        
+
         device.shouldPreventDefault = (evt, ctrl) => ctrl.name === 'KeyR' && evt.ctrlKey
         device.preventDefault(event, control)
-        
+
         expect(event.preventDefault).toHaveBeenCalledTimes(1)
         expect(event.stopPropagation).toHaveBeenCalledTimes(1)
     })
@@ -333,23 +333,23 @@ describe(InputDevice, () => {
 
     test('event listeners are properly removed when control is deleted from registry', () => {
         const button = new ButtonControl({device: device, name: 'listenerTest'})
-        
+
         const onSpy = vi.spyOn(button, 'on')
         const offSpy = vi.spyOn(button, 'off')
-        
+
         device.registerControl(button)
-        
+
         expect(onSpy).toHaveBeenCalledTimes(3)
         expect(onSpy).toHaveBeenCalledWith('pressed', expect.any(Function))
         expect(onSpy).toHaveBeenCalledWith('released', expect.any(Function))
         expect(onSpy).toHaveBeenCalledWith('updated', expect.any(Function))
-        
+
         const pressedListener = onSpy.mock.calls.find(call => call[0] === 'pressed')[1]
         const releasedListener = onSpy.mock.calls.find(call => call[0] === 'released')[1]
         const updatedListener = onSpy.mock.calls.find(call => call[0] === 'updated')[1]
-        
+
         device.controls.delete('listenerTest')
-        
+
         expect(offSpy).toHaveBeenCalledTimes(3)
         expect(offSpy).toHaveBeenCalledWith('pressed', pressedListener)
         expect(offSpy).toHaveBeenCalledWith('released', releasedListener)

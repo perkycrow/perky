@@ -17,6 +17,11 @@ export default class InputDevice extends PerkyModule {
     }
 
 
+    onInstall (host) {
+        host.delegateEvents(this, ['control:pressed', 'control:released', 'control:updated'])
+    }
+
+
     registerControl (control) {
         if (!(control && control.name)) {
             throw new Error('Control must have a name')
@@ -119,16 +124,16 @@ export default class InputDevice extends PerkyModule {
         const createListeners = (control) => ({
             pressed (event) {
                 device.pressedNames.add(control.name)
-                device.emit('control:pressed', control, event)
+                device.emit('control:pressed', control, event, device)
                 device.preventDefault(event, control)
             },
             released (event) {
                 device.pressedNames.delete(control.name)
-                device.emit('control:released', control, event)
+                device.emit('control:released', control, event, device)
                 device.preventDefault(event, control)
             },
             updated (value, oldValue, event) {
-                device.emit('control:updated', control, value, oldValue, event)
+                device.emit('control:updated', control, value, oldValue, event, device)
             }
         })
 
