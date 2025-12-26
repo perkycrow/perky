@@ -7,11 +7,7 @@ import NavigationControl from '../input_controls/navigation_control'
 export default class MouseDevice extends InputDevice {
 
     constructor (params = {}) {
-        super({
-            ...params,
-            container: params.container || window,
-            name: params.name || 'MouseDevice'
-        })
+        super(params)
 
         this.shouldPreventDefault = params.shouldPreventDefault
 

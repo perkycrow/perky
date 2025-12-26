@@ -5,11 +5,7 @@ import ButtonControl from '../input_controls/button_control'
 export default class KeyboardDevice extends InputDevice {
 
     constructor (params = {}) {
-        super({
-            ...params,
-            container: params.container || window,
-            name: params.name || 'KeyboardDevice'
-        })
+        super(params)
 
         this.shouldPreventDefault = params.shouldPreventDefault
 
