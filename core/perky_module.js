@@ -252,7 +252,6 @@ export default class PerkyModule extends Notifier {
         options.$id ||= uniqueId(this.childrenRegistry, options.$name)
         options.$eagerStart = options.$eagerStart ?? Child.$eagerStart ?? true
 
-        // const child = typeof Child === 'function' ? new Child(options) : Child
         return this.#addChild(new Child(options), options)
     }
 
@@ -261,7 +260,7 @@ export default class PerkyModule extends Notifier {
         unregisterExisting(this, child.$id)
 
         child.install(this, options)
-        this.childrenRegistry.set(options.$id, child)
+        this.childrenRegistry.set(child.$id, child)
 
         setupLifecycle(this, child, options)
         this.#setupTagIndexListeners(child)
@@ -531,15 +530,15 @@ function setupLifecycle (host, child, options) {
         }
     })
 
-    child.listenTo(child, '$category:changed', (newCategory, oldCategory) => {
+    child.on('$category:changed', (newCategory, oldCategory) => {
         childrenRegistry.updateIndexFor(child, '$category', oldCategory, newCategory)
     })
 
-    child.listenTo(child, '$id:changed', (newName, oldName) => {
+    child.on('$id:changed', (newName, oldName) => {
         childrenRegistry.updateKey(oldName, newName, child)
     })
 
-    child.listenTo(child, '$bind:changed', (newBind, oldBind) => {
+    child.on('$bind:changed', (newBind, oldBind) => {
         if (oldBind && host[oldBind] === child) {
             delete host[oldBind]
         }
