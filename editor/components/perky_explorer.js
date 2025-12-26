@@ -6,12 +6,14 @@ import GameLoopInspector from '../inspectors/game_loop_inspector.js'
 import TextureManagerInspector from '../inspectors/texture_manager_inspector.js'
 import EntityInspector from '../inspectors/entity_inspector.js'
 import WebGLCanvasLayerInspector from '../inspectors/webgl_canvas_layer_inspector.js'
+import WorldRendererInspector from '../inspectors/world_renderer_inspector.js'
 
 
 PerkyExplorerDetails.registerInspector(GameLoopInspector)
 PerkyExplorerDetails.registerInspector(TextureManagerInspector)
 PerkyExplorerDetails.registerInspector(EntityInspector)
 PerkyExplorerDetails.registerInspector(WebGLCanvasLayerInspector)
+PerkyExplorerDetails.registerInspector(WorldRendererInspector)
 
 
 export default class PerkyExplorer extends HTMLElement {
@@ -112,7 +114,7 @@ export default class PerkyExplorer extends HTMLElement {
         this.#detailsEl = document.createElement('perky-explorer-details')
 
         this.#detailsEl.addEventListener('open:scene-tree', (e) => {
-            this.#openSceneTree(e.detail.content)
+            this.#openSceneTree(e.detail.content, e.detail.worldRenderer)
         })
 
         explorer.appendChild(this.#headerEl)
@@ -127,6 +129,9 @@ export default class PerkyExplorer extends HTMLElement {
         const sidebar = document.createElement('scene-tree-sidebar')
         sidebar.classList.add('hidden')
         sidebar.addEventListener('sidebar:close', () => this.#closeSceneTree())
+        sidebar.addEventListener('navigate:entity', (e) => {
+            this.#navigateToEntity(e.detail.entity)
+        })
         return sidebar
     }
 
@@ -338,9 +343,9 @@ export default class PerkyExplorer extends HTMLElement {
     }
 
 
-    #openSceneTree (content) {
+    #openSceneTree (content, worldRenderer = null) {
         this.#sceneTreeMode = true
-        this.#sidebarEl.setContent(content)
+        this.#sidebarEl.setContent(content, worldRenderer)
         this.#updateViewState()
     }
 
@@ -348,6 +353,40 @@ export default class PerkyExplorer extends HTMLElement {
     #closeSceneTree () {
         this.#sceneTreeMode = false
         this.#updateViewState()
+    }
+
+
+    #navigateToEntity (entity) {
+        this.#closeSceneTree()
+
+        const node = this.#findNodeByModule(this.#rootNode, entity)
+        if (node) {
+            if (this.#selectedModule) {
+                this.#deselectAll(this.#rootNode)
+            }
+
+            this.#selectedModule = entity
+            node.setSelected(true)
+            this.#detailsEl.setModule(entity)
+
+            this.#expandParentsToNode(node)
+        }
+    }
+
+
+    #expandParentsToNode (targetNode) {
+        const expandPath = (node) => {
+            const children = node.shadowRoot.querySelectorAll('perky-explorer-node')
+            for (const child of children) {
+                if (child === targetNode || this.#findNodeByModule(child, targetNode.getModule())) {
+                    node.setExpanded(true)
+                    expandPath(child)
+                    return true
+                }
+            }
+            return false
+        }
+        expandPath(this.#rootNode)
     }
 
 }

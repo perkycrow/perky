@@ -111,6 +111,9 @@ export default class WorldRenderer extends PerkyModule {
             const renderer = new Renderer(entity, context)
 
             if (renderer.root) {
+                renderer.root.$entity = entity
+                renderer.root.$renderer = renderer
+                renderer.root.$rendererName = Renderer.name
                 this.rootGroup.addChild(renderer.root)
             }
 
@@ -118,6 +121,7 @@ export default class WorldRenderer extends PerkyModule {
         }
 
         this.#renderers.set(entity.$id, renderers)
+        this.emit('renderer:added', entity.$id, renderers)
     }
 
 
@@ -125,6 +129,7 @@ export default class WorldRenderer extends PerkyModule {
         const renderers = this.#renderers.get(entityId)
 
         if (renderers) {
+            this.emit('renderer:removed', entityId, renderers)
             for (const renderer of renderers) {
                 renderer.dispose()
             }

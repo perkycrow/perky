@@ -3,14 +3,20 @@ import './scene_tree_node.js'
 import Object2DInspector from '../inspectors/object_2d_inspector.js'
 
 
+const DEBOUNCE_MS = 100
+
+
 export default class SceneTreeSidebar extends HTMLElement {
 
     #content = null
+    #worldRenderer = null
     #headerEl = null
     #treeEl = null
     #rootNode = null
     #detailsEl = null
     #selectedObject = null
+    #listeners = []
+    #refreshTimeout = null
 
 
     constructor () {
@@ -20,8 +26,10 @@ export default class SceneTreeSidebar extends HTMLElement {
     }
 
 
-    setContent (content) {
+    setContent (content, worldRenderer = null) {
+        this.#unbindEvents()
         this.#content = content
+        this.#worldRenderer = worldRenderer
         this.#selectedObject = null
 
         if (this.#rootNode) {
@@ -34,6 +42,10 @@ export default class SceneTreeSidebar extends HTMLElement {
             }
         }
 
+        if (worldRenderer) {
+            this.#bindEvents()
+        }
+
         this.#updateDetails()
     }
 
@@ -44,6 +56,7 @@ export default class SceneTreeSidebar extends HTMLElement {
 
 
     close () {
+        this.#unbindEvents()
         this.dispatchEvent(new CustomEvent('sidebar:close', {
             bubbles: true,
             composed: true
@@ -64,6 +77,46 @@ export default class SceneTreeSidebar extends HTMLElement {
             }
             this.#updateInspector()
         }
+    }
+
+
+    #bindEvents () {
+        if (!this.#worldRenderer) {
+            return
+        }
+
+        const handleChange = () => this.#scheduleRefresh()
+        this.#worldRenderer.on('renderer:added', handleChange)
+        this.#worldRenderer.on('renderer:removed', handleChange)
+        this.#listeners.push(
+            {target: this.#worldRenderer, event: 'renderer:added', handler: handleChange},
+            {target: this.#worldRenderer, event: 'renderer:removed', handler: handleChange}
+        )
+    }
+
+
+    #unbindEvents () {
+        for (const {target, event, handler} of this.#listeners) {
+            target.off(event, handler)
+        }
+        this.#listeners = []
+
+        if (this.#refreshTimeout) {
+            clearTimeout(this.#refreshTimeout)
+            this.#refreshTimeout = null
+        }
+    }
+
+
+    #scheduleRefresh () {
+        if (this.#refreshTimeout) {
+            return
+        }
+
+        this.#refreshTimeout = setTimeout(() => {
+            this.#refreshTimeout = null
+            this.refresh()
+        }, DEBOUNCE_MS)
     }
 
 
@@ -124,6 +177,13 @@ export default class SceneTreeSidebar extends HTMLElement {
         this.#rootNode.style.display = 'none'
         this.#rootNode.addEventListener('node:select', (e) => {
             this.#handleNodeSelect(e.detail.object)
+        })
+        this.#rootNode.addEventListener('navigate:entity', (e) => {
+            this.dispatchEvent(new CustomEvent('navigate:entity', {
+                bubbles: true,
+                composed: true,
+                detail: e.detail
+            }))
         })
 
         tree.appendChild(this.#rootNode)

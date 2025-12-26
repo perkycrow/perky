@@ -53,7 +53,6 @@ export default class SceneTreeNode extends HTMLElement {
         this.#updateAll()
     }
 
-
     #buildDOM () {
         const style = document.createElement('style')
         style.textContent = `:host { ${cssVariables} } ${nodeStyles} ${sceneTreeNodeStyles}`
@@ -74,6 +73,12 @@ export default class SceneTreeNode extends HTMLElement {
 
         this.#propsEl = document.createElement('div')
         this.#propsEl.className = 'node-props'
+        this.#propsEl.addEventListener('click', (e) => {
+            if (this.#object?.$entity) {
+                e.stopPropagation()
+                this.#handleEntityClick()
+            }
+        })
 
         this.#contentEl.appendChild(this.#toggleEl)
         this.#contentEl.appendChild(this.#labelEl)
@@ -109,7 +114,13 @@ export default class SceneTreeNode extends HTMLElement {
             return
         }
 
-        this.#labelEl.textContent = this.#object.constructor.name
+        const obj = this.#object
+        if (obj.$rendererName) {
+            this.#labelEl.textContent = obj.$rendererName
+            this.#labelEl.title = `Renderer: ${obj.$rendererName}`
+        } else {
+            this.#labelEl.textContent = obj.constructor.name
+        }
     }
 
 
@@ -119,10 +130,18 @@ export default class SceneTreeNode extends HTMLElement {
         }
 
         const obj = this.#object
-        const x = formatNumber(obj.x)
-        const y = formatNumber(obj.y)
-        this.#propsEl.textContent = `(${x}, ${y})`
-        this.#propsEl.title = `x: ${obj.x}, y: ${obj.y}, rotation: ${obj.rotation}, scale: (${obj.scaleX}, ${obj.scaleY})`
+
+        if (obj.$entity) {
+            this.#propsEl.textContent = `→ ${obj.$entity.$id}`
+            this.#propsEl.title = `Entity: ${obj.$entity.$id} (${obj.$entity.constructor.name})`
+            this.#propsEl.classList.add('has-entity')
+        } else {
+            const x = formatNumber(obj.x)
+            const y = formatNumber(obj.y)
+            this.#propsEl.textContent = `(${x}, ${y})`
+            this.#propsEl.title = `x: ${obj.x}, y: ${obj.y}, rotation: ${obj.rotation}, scale: (${obj.scaleX}, ${obj.scaleY})`
+            this.#propsEl.classList.remove('has-entity')
+        }
     }
 
 
@@ -222,6 +241,15 @@ export default class SceneTreeNode extends HTMLElement {
     }
 
 
+    #handleEntityClick () {
+        this.dispatchEvent(new CustomEvent('navigate:entity', {
+            bubbles: true,
+            composed: true,
+            detail: {entity: this.#object.$entity}
+        }))
+    }
+
+
     expand () {
         this.setExpanded(true)
     }
@@ -253,6 +281,15 @@ const sceneTreeNodeStyles = `
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    .node-props.has-entity {
+        color: var(--accent);
+        cursor: pointer;
+    }
+
+    .node-props.has-entity:hover {
+        text-decoration: underline;
     }
 `
 
