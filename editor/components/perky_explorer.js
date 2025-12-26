@@ -1,14 +1,17 @@
 import {explorerStyles} from './perky_explorer_styles.js'
 import './perky_explorer_node.js'
+import './scene_tree_sidebar.js'
 import PerkyExplorerDetails from './perky_explorer_details.js'
 import GameLoopInspector from '../inspectors/game_loop_inspector.js'
 import TextureManagerInspector from '../inspectors/texture_manager_inspector.js'
 import EntityInspector from '../inspectors/entity_inspector.js'
+import WebGLCanvasLayerInspector from '../inspectors/webgl_canvas_layer_inspector.js'
 
 
 PerkyExplorerDetails.registerInspector(GameLoopInspector)
 PerkyExplorerDetails.registerInspector(TextureManagerInspector)
 PerkyExplorerDetails.registerInspector(EntityInspector)
+PerkyExplorerDetails.registerInspector(WebGLCanvasLayerInspector)
 
 
 export default class PerkyExplorer extends HTMLElement {
@@ -16,7 +19,10 @@ export default class PerkyExplorer extends HTMLElement {
     #module = null
     #isMinimized = false
     #isCollapsed = false
+    #sceneTreeMode = false
 
+    #containerEl = null
+    #sidebarEl = null
     #explorerEl = null
     #minimizedEl = null
     #headerEl = null
@@ -52,6 +58,7 @@ export default class PerkyExplorer extends HTMLElement {
 
         this.#updateTreeVisibility()
         this.#updateDetails()
+        this.#closeSceneTree()
     }
 
 
@@ -62,14 +69,21 @@ export default class PerkyExplorer extends HTMLElement {
 
     #buildDOM () {
         const style = document.createElement('style')
-        style.textContent = explorerStyles
+        style.textContent = explorerStyles + containerStyles
         this.shadowRoot.appendChild(style)
+
+        this.#containerEl = document.createElement('div')
+        this.#containerEl.className = 'explorer-container'
 
         this.#minimizedEl = this.#createMinimizedView()
         this.#explorerEl = this.#createExpandedView()
+        this.#sidebarEl = this.#createSceneTreeView()
 
-        this.shadowRoot.appendChild(this.#minimizedEl)
-        this.shadowRoot.appendChild(this.#explorerEl)
+        this.#containerEl.appendChild(this.#minimizedEl)
+        this.#containerEl.appendChild(this.#explorerEl)
+        this.#containerEl.appendChild(this.#sidebarEl)
+
+        this.shadowRoot.appendChild(this.#containerEl)
 
         this.#updateViewState()
         this.#updateTreeVisibility()
@@ -82,6 +96,7 @@ export default class PerkyExplorer extends HTMLElement {
         container.textContent = '📦'
         container.addEventListener('click', () => {
             this.#isMinimized = false
+            this.#closeSceneTree()
             this.#updateViewState()
         })
         return container
@@ -96,11 +111,23 @@ export default class PerkyExplorer extends HTMLElement {
         this.#treeEl = this.#createTree()
         this.#detailsEl = document.createElement('perky-explorer-details')
 
+        this.#detailsEl.addEventListener('open:scene-tree', (e) => {
+            this.#openSceneTree(e.detail.content)
+        })
+
         explorer.appendChild(this.#headerEl)
         explorer.appendChild(this.#treeEl)
         explorer.appendChild(this.#detailsEl)
 
         return explorer
+    }
+
+
+    #createSceneTreeView () {
+        const sidebar = document.createElement('scene-tree-sidebar')
+        sidebar.classList.add('hidden')
+        sidebar.addEventListener('sidebar:close', () => this.#closeSceneTree())
+        return sidebar
     }
 
 
@@ -183,6 +210,7 @@ export default class PerkyExplorer extends HTMLElement {
             selectedNode.setSelected(true)
         }
 
+        this.#closeSceneTree()
         this.#detailsEl.setModule(module)
     }
 
@@ -215,12 +243,18 @@ export default class PerkyExplorer extends HTMLElement {
 
 
     #updateViewState () {
-        if (this.#isMinimized) {
+        if (this.#sceneTreeMode) {
             this.#minimizedEl.classList.remove('hidden')
             this.#explorerEl.classList.add('hidden')
+            this.#sidebarEl.classList.remove('hidden')
+        } else if (this.#isMinimized) {
+            this.#minimizedEl.classList.remove('hidden')
+            this.#explorerEl.classList.add('hidden')
+            this.#sidebarEl.classList.add('hidden')
         } else {
             this.#minimizedEl.classList.add('hidden')
             this.#explorerEl.classList.remove('hidden')
+            this.#sidebarEl.classList.add('hidden')
         }
     }
 
@@ -303,7 +337,30 @@ export default class PerkyExplorer extends HTMLElement {
         }
     }
 
+
+    #openSceneTree (content) {
+        this.#sceneTreeMode = true
+        this.#sidebarEl.setContent(content)
+        this.#updateViewState()
+    }
+
+
+    #closeSceneTree () {
+        this.#sceneTreeMode = false
+        this.#updateViewState()
+    }
+
 }
+
+
+const containerStyles = `
+    .explorer-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+    }
+`
 
 
 customElements.define('perky-explorer', PerkyExplorer)
