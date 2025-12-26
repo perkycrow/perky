@@ -6,6 +6,7 @@ export default class ActionController extends PerkyModule {
 
     static propagable = []
     static bindings = {}
+    static $category = 'actionController'
 
     #actions = new Registry()
     #actionList = []

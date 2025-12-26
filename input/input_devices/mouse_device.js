@@ -6,6 +6,8 @@ import NavigationControl from '../input_controls/navigation_control'
 
 export default class MouseDevice extends InputDevice {
 
+    static $name = 'mouse'
+
     constructor (params = {}) {
         super(params)
 

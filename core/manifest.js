@@ -5,6 +5,8 @@ import SourceDescriptor from './source_descriptor'
 
 export default class Manifest extends PerkyModule {
 
+    static $category = 'manifest'
+
     #data
 
     constructor (params = {}) {

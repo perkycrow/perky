@@ -4,6 +4,8 @@ import ActionController from './action_controller'
 
 export default class ActionDispatcher extends PerkyModule {
 
+    static $category = 'actionDispatcher'
+
     #activeControllers = []
     mainControllerName = null
 

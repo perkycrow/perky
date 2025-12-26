@@ -21,7 +21,7 @@ export default class PerkyModule extends Notifier {
     #tags = null
     #tagIndexes = new Map()
 
-    static $category = 'default'
+    static $category = 'perkyModule'
     static $name = null
     static $eagerStart = true
 

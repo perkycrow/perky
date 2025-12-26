@@ -634,9 +634,9 @@ describe(PerkyModule, () => {
 
 
     describe('static $category', () => {
-        test('uses PerkyModule default category "child" when not specified', () => {
+        test('uses PerkyModule default category "perkyModule" when not specified', () => {
             const module = child.create(PerkyModule, {$id: 'test'})
-            expect(module.$category).toBe('default')
+            expect(module.$category).toBe('perkyModule')
         })
 
 

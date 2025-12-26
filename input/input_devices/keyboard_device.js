@@ -4,6 +4,8 @@ import ButtonControl from '../input_controls/button_control'
 
 export default class KeyboardDevice extends InputDevice {
 
+    static $name = 'keyboard'
+
     constructor (params = {}) {
         super(params)
 

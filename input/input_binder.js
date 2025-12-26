@@ -6,6 +6,8 @@ import CompositeBinding from './composite_binding'
 
 export default class InputBinder extends PerkyModule {
 
+    static $category = 'inputBinder'
+
     #bindings = new Registry()
 
     constructor (options = {}) {

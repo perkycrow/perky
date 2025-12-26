@@ -33,7 +33,7 @@ describe(KeyboardDevice, () => {
 
     test('constructor with default params', () => {
         const defaultDevice = new KeyboardDevice()
-        expect(defaultDevice.$id).toBe('KeyboardDevice')
+        expect(defaultDevice.$id).toBe('keyboard')
         expect(defaultDevice.container).toBe(window)
     })
 

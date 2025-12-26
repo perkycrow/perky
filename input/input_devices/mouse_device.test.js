@@ -43,7 +43,7 @@ describe(MouseDevice, () => {
 
     test('constructor with default params', () => {
         const defaultDevice = new MouseDevice()
-        expect(defaultDevice.$id).toBe('MouseDevice')
+        expect(defaultDevice.$id).toBe('mouse')
         expect(defaultDevice.container).toBe(window)
     })
 

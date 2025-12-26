@@ -4,6 +4,8 @@ import PerkyModule from '../core/perky_module'
 
 export default class PerkyView extends PerkyModule {
 
+    static $category = 'perkyView'
+
     #resizeObserver = null
     #previousStyles = {}
     #onFullscreenChange = null
