@@ -2,9 +2,11 @@ import {explorerStyles} from './perky_explorer_styles.js'
 import './perky_explorer_node.js'
 import PerkyExplorerDetails from './perky_explorer_details.js'
 import GameLoopInspector from '../inspectors/game_loop_inspector.js'
+import TextureManagerInspector from '../inspectors/texture_manager_inspector.js'
 
 
 PerkyExplorerDetails.registerInspector('gameLoop', GameLoopInspector)
+PerkyExplorerDetails.registerInspector('textureManager', TextureManagerInspector)
 
 
 export default class PerkyExplorer extends HTMLElement {
