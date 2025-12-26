@@ -1,4 +1,4 @@
-import {toSnakeCase, uniqueId} from './utils'
+import {toSnakeCase, uniqueId} from '../core/utils'
 
 
 export default class SourceDescriptor {

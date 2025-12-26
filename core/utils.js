@@ -1,4 +1,4 @@
-import pluralizeLib from './libs/pluralize'
+import pluralizeLib from './pluralize'
 
 
 export function toCamelCase (string) {

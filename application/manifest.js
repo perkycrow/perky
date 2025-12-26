@@ -1,5 +1,5 @@
-import PerkyModule from './perky_module'
-import {setDefaults, getNestedValue, setNestedValue, singularize, deepMerge} from './utils'
+import PerkyModule from '../core/perky_module'
+import {setDefaults, getNestedValue, setNestedValue, singularize, deepMerge} from '../core/utils'
 import SourceDescriptor from './source_descriptor'
 
 

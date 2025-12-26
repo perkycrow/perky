@@ -1,5 +1,5 @@
 import PerkyModule from '../core/perky_module'
-import Manifest from '../core/manifest'
+import Manifest from './manifest'
 import ActionDispatcher from '../core/action_dispatcher'
 import Registry from '../core/registry'
 import PerkyView from './perky_view'
