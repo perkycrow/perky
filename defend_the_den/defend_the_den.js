@@ -3,6 +3,7 @@ import World from './world'
 
 import GameController from './controllers/game_controller'
 import GameRenderer from './game_renderer'
+import Snowman from './snowman'
 
 import manifest from './manifest'
 import debug from '../core/debug'
@@ -69,6 +70,12 @@ export default class DefendTheDen extends Game {
 
     onStart () {
         this.execute('spawnPlayer', {x: -2.5})
+
+        this.world.create(Snowman, {
+            $id: 'snowman',
+            x: 2,
+            y: 0
+        })
 
         const gameController = this.getController('game')
         gameController.startWave(0)
