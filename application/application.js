@@ -29,8 +29,7 @@ export default class Application extends Engine {
 
         this.create(InputSystem, {
             $bind: 'inputSystem',
-            bindings: options.bindings,
-            perkyView: this.perkyView
+            bindings: options.bindings
         })
 
         this.actionDispatcher.on('controller:set', this.#autoRegisterBindings.bind(this))

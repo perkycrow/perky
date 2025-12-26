@@ -29,15 +29,13 @@ describe(InputSystem, () => {
     })
 
 
-    test('constructor creates keyboard and mouse devices', () => {
-        const inputSystem1 = new InputSystem()
-
-        expect(inputSystem1.getDevice('keyboard')).toBeInstanceOf(KeyboardDevice)
-        expect(inputSystem1.getDevice('mouse')).toBeInstanceOf(MouseDevice)
+    test('onInstall creates keyboard and mouse devices', () => {
+        expect(inputSystem.getDevice('keyboard')).toBeInstanceOf(KeyboardDevice)
+        expect(inputSystem.getDevice('mouse')).toBeInstanceOf(MouseDevice)
     })
 
 
-    test('constructor registers devices', () => {
+    test('onInstall registers devices with $bind', () => {
         expect(inputSystem.getDevice('keyboard')).toBe(inputSystem.keyboard)
         expect(inputSystem.getDevice('mouse')).toBe(inputSystem.mouse)
     })
@@ -458,26 +456,7 @@ describe(InputSystem, () => {
     })
 
 
-    test('constructor accepts custom keyboard options', () => {
-        const customInputSystem = new InputSystem({
-            keyboard: {
-                customOption: 'value'
-            }
-        })
 
-        expect(customInputSystem.keyboard).toBeInstanceOf(KeyboardDevice)
-    })
-
-
-    test('constructor accepts custom mouse options', () => {
-        const customInputSystem = new InputSystem({
-            mouse: {
-                customOption: 'value'
-            }
-        })
-
-        expect(customInputSystem.mouse).toBeInstanceOf(MouseDevice)
-    })
 
 
     test('constructor accepts inputBinder data', () => {

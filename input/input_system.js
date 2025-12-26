@@ -10,7 +10,7 @@ export default class InputSystem extends PerkyModule {
     static $category = 'inputSystem'
 
     constructor (options = {}) {
-        const {perkyView, bindings = []} = options
+        const {bindings = []} = options
         super(options)
 
         this.create(InputBinder, {
@@ -18,6 +18,11 @@ export default class InputSystem extends PerkyModule {
             bindings
         })
 
+        this.#initEvents()
+    }
+
+
+    onInstall (host) {
         this.registerDevice(KeyboardDevice, {
             $name: 'keyboard',
             $bind: 'keyboard'
@@ -26,14 +31,9 @@ export default class InputSystem extends PerkyModule {
         this.registerDevice(MouseDevice, {
             $name: 'mouse',
             $bind: 'mouse',
-            container: perkyView?.element
+            container: host.element
         })
 
-        this.#initEvents()
-    }
-
-
-    onInstall (host) {
         host.delegate(this, [
             'registerDevice',
             'unregisterDevice',
