@@ -323,3 +323,78 @@ export const cssVariables = `
     --font-mono: "Source Code Pro", "SF Mono", "Monaco", monospace;
 `
 
+
+export const inspectorStyles = `
+    .inspector-grid {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 2px 12px;
+        font-size: 11px;
+    }
+
+    .inspector-label {
+        color: var(--fg-muted);
+    }
+
+    .inspector-value {
+        color: var(--fg-secondary);
+    }
+
+    .inspector-value.accent {
+        color: var(--accent);
+        font-weight: 500;
+    }
+
+    .inspector-value.running {
+        color: var(--status-started);
+    }
+
+    .inspector-value.paused {
+        color: var(--status-stopped);
+    }
+
+    .inspector-actions {
+        display: flex;
+        gap: 6px;
+        margin-top: 6px;
+    }
+
+    .inspector-btn {
+        flex: 1;
+        background: var(--bg-hover);
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        color: var(--fg-secondary);
+        padding: 3px 8px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 10px;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .inspector-btn:hover {
+        background: var(--bg-selected);
+        color: var(--fg-primary);
+        border-color: var(--fg-muted);
+    }
+
+    .inspector-btn:active {
+        transform: scale(0.98);
+    }
+
+    .inspector-btn.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--bg-primary);
+    }
+
+    .inspector-btn.primary:hover {
+        filter: brightness(1.1);
+    }
+
+    .inspector-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+`
+

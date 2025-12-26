@@ -1,6 +1,10 @@
 import {explorerStyles} from './perky_explorer_styles.js'
 import './perky_explorer_node.js'
-import './perky_explorer_details.js'
+import PerkyExplorerDetails from './perky_explorer_details.js'
+import GameLoopInspector from '../inspectors/game_loop_inspector.js'
+
+
+PerkyExplorerDetails.registerInspector('gameLoop', GameLoopInspector)
 
 
 export default class PerkyExplorer extends HTMLElement {
