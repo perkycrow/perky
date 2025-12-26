@@ -304,6 +304,12 @@ export const detailsStyles = `
         color: var(--fg-muted);
         font-style: italic;
     }
+
+    .details-content > * + * {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+    }
 `
 
 

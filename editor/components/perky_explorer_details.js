@@ -1,7 +1,7 @@
 import {detailsStyles, cssVariables} from './perky_explorer_styles.js'
 
 
-const inspectorRegistry = new Map()
+const inspectorRegistry = new Set()
 
 
 export default class PerkyExplorerDetails extends HTMLElement {
@@ -91,10 +91,12 @@ export default class PerkyExplorerDetails extends HTMLElement {
     #renderContent () {
         this.#contentEl.innerHTML = ''
 
-        const customInspector = findInspector(this.#module)
+        const matchingInspectors = findAllInspectors(this.#module)
 
-        if (customInspector) {
-            this.#renderCustomInspector(customInspector)
+        if (matchingInspectors.length > 0) {
+            for (const Inspector of matchingInspectors) {
+                this.#renderCustomInspector(Inspector)
+            }
         } else if (typeof this.#module.inspect === 'function') {
             this.#renderInspectMethod()
         } else {
@@ -140,42 +142,28 @@ export default class PerkyExplorerDetails extends HTMLElement {
     }
 
 
-    static registerInspector (key, Inspector) {
-        inspectorRegistry.set(key, Inspector)
+    static registerInspector (Inspector) {
+        inspectorRegistry.add(Inspector)
     }
 
 
-    static unregisterInspector (key) {
-        inspectorRegistry.delete(key)
-    }
-
-
-    static getInspector (key) {
-        return inspectorRegistry.get(key)
-    }
-
-
-    static hasInspector (key) {
-        return inspectorRegistry.has(key)
+    static unregisterInspector (Inspector) {
+        inspectorRegistry.delete(Inspector)
     }
 
 }
 
 
-function findInspector (module) {
-    if (inspectorRegistry.has(module.$category)) {
-        return inspectorRegistry.get(module.$category)
+function findAllInspectors (module) {
+    const matches = []
+
+    for (const Inspector of inspectorRegistry) {
+        if (typeof Inspector.matches === 'function' && Inspector.matches(module)) {
+            matches.push(Inspector)
+        }
     }
 
-    if (inspectorRegistry.has(module.constructor.$name)) {
-        return inspectorRegistry.get(module.constructor.$name)
-    }
-
-    if (inspectorRegistry.has(module.constructor.name)) {
-        return inspectorRegistry.get(module.constructor.name)
-    }
-
-    return null
+    return matches
 }
 
 

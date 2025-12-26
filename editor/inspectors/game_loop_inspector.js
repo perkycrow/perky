@@ -1,4 +1,5 @@
 import {cssVariables, inspectorStyles} from '../components/perky_explorer_styles.js'
+import GameLoop from '../../game/game_loop.js'
 
 
 const styles = `
@@ -12,6 +13,10 @@ const styles = `
 
 
 export default class GameLoopInspector extends HTMLElement {
+
+    static matches (module) {
+        return module instanceof GameLoop
+    }
 
     #module = null
     #gridEl = null

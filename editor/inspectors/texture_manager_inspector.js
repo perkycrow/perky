@@ -1,4 +1,5 @@
 import {cssVariables, inspectorStyles} from '../components/perky_explorer_styles.js'
+import WebGLTextureManager from '../../render/webgl_texture_manager.js'
 
 
 const styles = `
@@ -133,6 +134,10 @@ const styles = `
 
 
 export default class TextureManagerInspector extends HTMLElement {
+
+    static matches (module) {
+        return module instanceof WebGLTextureManager
+    }
 
     #module = null
     #listeners = []
