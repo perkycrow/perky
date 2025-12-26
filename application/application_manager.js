@@ -84,7 +84,7 @@ export default class ApplicationManager extends PerkyModule {
     disposeApp (nameOrId) {
         const app = this.#findApp(nameOrId)
         if (app) {
-            this.removeChild(app.$name)
+            this.removeChild(app.$id)
         }
     }
 
@@ -104,7 +104,7 @@ export default class ApplicationManager extends PerkyModule {
         let app = this.getChild(nameOrId)
 
         if (!app) {
-            app = this.children.find(child => child.$name === nameOrId)
+            app = this.children.find(child => child.$id === nameOrId)
         }
 
         return app || null

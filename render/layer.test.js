@@ -7,12 +7,12 @@ describe(Layer, () => {
     let layer
 
     beforeEach(() => {
-        layer = new Layer({$name: 'test-layer'})
+        layer = new Layer({$id: 'test-layer'})
     })
 
 
     test('constructor defaults', () => {
-        expect(layer.$name).toBe('test-layer')
+        expect(layer.$id).toBe('test-layer')
         expect(layer.zIndex).toBe(0)
         expect(layer.visible).toBe(true)
         expect(layer.opacity).toBe(1)
@@ -25,14 +25,14 @@ describe(Layer, () => {
 
     test('constructor with options', () => {
         const l = new Layer({
-            $name: 'custom',
+            $id: 'custom',
             zIndex: 10,
             visible: false,
             opacity: 0.5,
             pointerEvents: 'none'
         })
 
-        expect(l.$name).toBe('custom')
+        expect(l.$id).toBe('custom')
         expect(l.zIndex).toBe(10)
         expect(l.visible).toBe(false)
         expect(l.opacity).toBe(0.5)
@@ -51,7 +51,7 @@ describe(Layer, () => {
 
     test('viewport with custom options', () => {
         const l = new Layer({
-            $name: 'test',
+            $id: 'test',
             viewport: {
                 x: 10,
                 y: 20,

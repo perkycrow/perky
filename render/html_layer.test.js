@@ -8,7 +8,7 @@ describe(HTMLLayer, () => {
     let layer
 
     beforeEach(() => {
-        layer = new HTMLLayer({$name: 'test-html'})
+        layer = new HTMLLayer({$id: 'test-html'})
     })
 
 
@@ -21,7 +21,7 @@ describe(HTMLLayer, () => {
 
     test('constructor with content option', () => {
         const l = new HTMLLayer({
-            $name: 'test',
+            $id: 'test',
             content: '<p>Hello World</p>'
         })
 
@@ -31,7 +31,7 @@ describe(HTMLLayer, () => {
 
     test('constructor with className option', () => {
         const l = new HTMLLayer({
-            $name: 'test',
+            $id: 'test',
             className: 'my-custom-class'
         })
 
@@ -41,7 +41,7 @@ describe(HTMLLayer, () => {
 
     test('constructor with camera option', () => {
         const camera = new Camera2D()
-        const l = new HTMLLayer({$name: 'test', camera})
+        const l = new HTMLLayer({$id: 'test', camera})
 
         expect(l.camera).toBe(camera)
     })

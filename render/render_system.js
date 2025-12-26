@@ -130,7 +130,7 @@ export default class RenderSystem extends PerkyModule {
         const camera = this.resolveCamera(options.camera)
 
         const layerOptions = {
-            $name: name,
+            $id: name,
             $category: 'layer',  // Important: set category to 'layer'
             ...options,
             width: this.layerWidth,

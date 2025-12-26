@@ -82,7 +82,7 @@ export default class GameRenderer extends PerkyModule {
         })
 
         this.rootGroup.addChild(pigSprite)
-        this.#enemySprites.set(enemy.$name, pigSprite)
+        this.#enemySprites.set(enemy.$id, pigSprite)
     }
 
 
@@ -110,7 +110,7 @@ export default class GameRenderer extends PerkyModule {
         // Update all enemy sprites
         const enemies = this.world.childrenByTags('enemy')
         enemies.forEach(enemy => {
-            const sprite = this.#enemySprites.get(enemy.$name)
+            const sprite = this.#enemySprites.get(enemy.$id)
             if (sprite) {
                 sprite.x = enemy.x
                 sprite.y = enemy.y

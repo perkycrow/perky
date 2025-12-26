@@ -13,7 +13,7 @@ describe(CompositeBinding, () => {
 
     beforeEach(() => {
         inputSystem = new InputSystem()
-        keyboardDevice = inputSystem.registerDevice(KeyboardDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'KeyboardDevice'})
+        keyboardDevice = inputSystem.registerDevice(KeyboardDevice, {$id: 'keyboard', $bind: 'keyboard', name: 'KeyboardDevice'})
 
         compositeBinding = new CompositeBinding({
             controls: [

@@ -66,7 +66,7 @@ describe(Engine, () => {
         class TestChild extends PerkyModule { }
 
         engine.create(TestChild, {
-            $name: 'test',
+            $id: 'test',
             $category: 'module',
             $bind: 'test'
         })
@@ -79,7 +79,7 @@ describe(Engine, () => {
     test('getChild', () => {
         class TestChild extends PerkyModule { }
         engine.create(TestChild, {
-            $name: 'test',
+            $id: 'test',
             $category: 'module'
         })
 
@@ -186,7 +186,7 @@ describe(Engine, () => {
         const engineSpy = vi.spyOn(engine, 'emit')
 
         const child = engine.create(TestChild, {
-            $name: 'test',
+            $id: 'test',
             $category: 'module'
         })
 
@@ -198,7 +198,7 @@ describe(Engine, () => {
     test('child unregistration events', () => {
         class TestChild extends PerkyModule { }
         const child = engine.create(TestChild, {
-            $name: 'test',
+            $id: 'test',
             $category: 'module'
         })
 
@@ -216,7 +216,7 @@ describe(Engine, () => {
         class TestChild extends PerkyModule { }
 
         const child = engine.create(TestChild, {
-            $name: 'test',
+            $id: 'test',
             $category: 'module',
             $lifecycle: true
         })
@@ -353,7 +353,7 @@ describe(Engine, () => {
         class TestChild extends PerkyModule { }
 
         const createdChild = engine.create(TestChild, {
-            $name: 'newChild',
+            $id: 'newChild',
             $category: 'module',
             $lifecycle: true
         })

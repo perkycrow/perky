@@ -10,7 +10,7 @@ describe(CanvasLayer, () => {
     let layer
 
     beforeEach(() => {
-        layer = new CanvasLayer({$name: 'test-canvas'})
+        layer = new CanvasLayer({$id: 'test-canvas'})
     })
 
 
@@ -34,7 +34,7 @@ describe(CanvasLayer, () => {
 
     test('constructor with provided camera', () => {
         const camera = new Camera2D({x: 10, y: 20})
-        const l = new CanvasLayer({$name: 'test', camera})
+        const l = new CanvasLayer({$id: 'test', camera})
 
         expect(l.renderer.camera).toBe(camera)
     })
@@ -42,7 +42,7 @@ describe(CanvasLayer, () => {
 
     test('constructor with custom dimensions', () => {
         const l = new CanvasLayer({
-            $name: 'test',
+            $id: 'test',
             width: 1024,
             height: 768
         })
@@ -54,7 +54,7 @@ describe(CanvasLayer, () => {
 
     test('constructor with pixelRatio', () => {
         const l = new CanvasLayer({
-            $name: 'test',
+            $id: 'test',
             width: 800,
             height: 600,
             pixelRatio: 2
@@ -69,19 +69,19 @@ describe(CanvasLayer, () => {
 
 
     test('constructor with showGrid option', () => {
-        const l = new CanvasLayer({$name: 'test', showGrid: true})
+        const l = new CanvasLayer({$id: 'test', showGrid: true})
         expect(l.renderer.showGrid).toBe(true)
     })
 
 
     test('constructor with backgroundColor option', () => {
-        const l = new CanvasLayer({$name: 'test', backgroundColor: '#FF0000'})
+        const l = new CanvasLayer({$id: 'test', backgroundColor: '#FF0000'})
         expect(l.renderer.backgroundColor).toBe('#FF0000')
     })
 
 
     test('constructor with enableCulling option', () => {
-        const l = new CanvasLayer({$name: 'test', enableCulling: true})
+        const l = new CanvasLayer({$id: 'test', enableCulling: true})
         expect(l.renderer.enableCulling).toBe(true)
     })
 
@@ -135,7 +135,7 @@ describe(CanvasLayer, () => {
 
 
     test('resize with pixelRatio scales internal canvas', () => {
-        const l = new CanvasLayer({$name: 'test', pixelRatio: 2})
+        const l = new CanvasLayer({$id: 'test', pixelRatio: 2})
 
         l.resize(800, 600)
 
@@ -148,7 +148,7 @@ describe(CanvasLayer, () => {
 
     test('resize updates camera viewport dimensions', () => {
         const camera = new Camera2D()
-        const l = new CanvasLayer({$name: 'test', camera, pixelRatio: 1})
+        const l = new CanvasLayer({$id: 'test', camera, pixelRatio: 1})
 
         l.resize(1024, 768)
 
@@ -159,7 +159,7 @@ describe(CanvasLayer, () => {
 
     test('resize with viewport', () => {
         const l = new CanvasLayer({
-            $name: 'test',
+            $id: 'test',
             viewport: {
                 x: 0,
                 y: 0,
@@ -182,7 +182,7 @@ describe(CanvasLayer, () => {
 
 
     test('autoRender can be set to false', () => {
-        const l = new CanvasLayer({$name: 'test', autoRender: false})
+        const l = new CanvasLayer({$id: 'test', autoRender: false})
         expect(l.autoRender).toBe(false)
     })
 
@@ -218,7 +218,7 @@ describe(CanvasLayer, () => {
         })
 
         new CanvasLayer({
-            $name: 'test',
+            $id: 'test',
             width: 800,
             height: 600,
             pixelRatio: 2,
@@ -233,7 +233,7 @@ describe(CanvasLayer, () => {
 
     test('viewport with anchor top-right', () => {
         const l = new CanvasLayer({
-            $name: 'test',
+            $id: 'test',
             width: 1000,
             height: 800,
             viewport: {
@@ -257,7 +257,7 @@ describe(CanvasLayer, () => {
 
     test('grid options passed to renderer', () => {
         const l = new CanvasLayer({
-            $name: 'test',
+            $id: 'test',
             showGrid: true,
             gridStep: 2,
             gridOpacity: 0.3,

@@ -23,7 +23,7 @@ describe(KeyboardDevice, () => {
 
     test('constructor', () => {
         expect(device).toBeInstanceOf(InputDevice)
-        expect(device.$name).toBe('testKeyboard')
+        expect(device.$id).toBe('testKeyboard')
         expect(device.container).toBe(mockContainer)
         expect(device.keydownListener).toBeInstanceOf(Function)
         expect(device.keyupListener).toBeInstanceOf(Function)
@@ -33,7 +33,7 @@ describe(KeyboardDevice, () => {
 
     test('constructor with default params', () => {
         const defaultDevice = new KeyboardDevice()
-        expect(defaultDevice.$name).toBe('KeyboardDevice')
+        expect(defaultDevice.$id).toBe('KeyboardDevice')
         expect(defaultDevice.container).toBe(window)
     })
 

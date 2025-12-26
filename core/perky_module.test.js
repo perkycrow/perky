@@ -19,7 +19,7 @@ describe(PerkyModule, () => {
             getChild: vi.fn((name) => childrenRegistry.get(name))
         }
 
-        child = new PerkyModule({$name: 'testChild'})
+        child = new PerkyModule({$id: 'testChild'})
     })
 
 
@@ -30,8 +30,8 @@ describe(PerkyModule, () => {
 
     test('constructor', () => {
         expect(child).toBeInstanceOf(PerkyModule)
-        expect(child.$name).toBe('testChild')
-        expect(child.options).toEqual({$name: 'testChild'})
+        expect(child.$id).toBe('testChild')
+        expect(child.options).toEqual({$id: 'testChild'})
         expect(child.host).toBeNull()
         expect(child.installed).toBe(false)
     })
@@ -40,7 +40,7 @@ describe(PerkyModule, () => {
     test('constructor with default name', () => {
         class TestChild extends PerkyModule { }
         const ext = new TestChild()
-        expect(ext.$name).toBe('TestChild')
+        expect(ext.$id).toBe('TestChild')
     })
 
 
@@ -73,7 +73,7 @@ describe(PerkyModule, () => {
         class TestChild extends PerkyModule { }
 
         const result = child.create(TestChild, {
-            $name: 'test',
+            $id: 'test',
             $category: 'test'
         })
 
@@ -83,7 +83,7 @@ describe(PerkyModule, () => {
     })
 
 
-    test('auto-generates unique IDs when $name not provided', () => {
+    test('auto-generates unique IDs when $id not provided', () => {
         class Enemy extends PerkyModule { }
 
         const enemy1 = child.create(Enemy, {$category: 'enemy'})
@@ -101,16 +101,16 @@ describe(PerkyModule, () => {
     })
 
 
-    test('explicit $name creates single instance (replacement)', () => {
+    test('explicit $id creates single instance (replacement)', () => {
         class Player extends PerkyModule { }
 
         const player1 = child.create(Player, {
-            $name: 'player',
+            $id: 'player',
             $category: 'player'
         })
 
         const player2 = child.create(Player, {
-            $name: 'player',
+            $id: 'player',
             $category: 'player'
         })
 
@@ -153,12 +153,12 @@ describe(PerkyModule, () => {
         class TestChild2 extends PerkyModule { }
 
         child.create(TestChild1, {
-            $name: 'ext1',
+            $id: 'ext1',
             $category: 'module'
         })
 
         child.create(TestChild2, {
-            $name: 'ext2',
+            $id: 'ext2',
             $category: 'module'
         })
 
@@ -176,17 +176,17 @@ describe(PerkyModule, () => {
         class TestChild3 extends PerkyModule { }
 
         child.create(TestChild1, {
-            $name: 'ext1',
+            $id: 'ext1',
             $category: 'module'
         })
 
         child.create(TestChild2, {
-            $name: 'ext2',
+            $id: 'ext2',
             $category: 'service'
         })
 
         child.create(TestChild3, {
-            $name: 'ext3',
+            $id: 'ext3',
             $category: 'module'
         })
 
@@ -216,8 +216,8 @@ describe(PerkyModule, () => {
     test('listNamesFor - dynamic category update', () => {
         const parent = new PerkyModule()
 
-        const childA = parent.create(PerkyModule, {$name: 'childA', $category: 'module'})
-        parent.create(PerkyModule, {$name: 'childB', $category: 'service'})
+        const childA = parent.create(PerkyModule, {$id: 'childA', $category: 'module'})
+        parent.create(PerkyModule, {$id: 'childB', $category: 'service'})
 
         expect(parent.listNamesFor('module')).toEqual(['childA'])
         expect(parent.listNamesFor('service')).toEqual(['childB'])
@@ -244,12 +244,12 @@ describe(PerkyModule, () => {
         const registry = child.childrenRegistry
 
         child.create(TestChild, {
-            $name: 'ext1',
+            $id: 'ext1',
             $category: 'module'
         })
 
         child.create(TestChild, {
-            $name: 'ext2',
+            $id: 'ext2',
             $category: 'service'
         })
 
@@ -268,12 +268,12 @@ describe(PerkyModule, () => {
         const registry = child.childrenRegistry
 
         child.create(TestChild, {
-            $name: 'ext1',
+            $id: 'ext1',
             $category: 'module'
         })
 
         child.create(TestChild, {
-            $name: 'ext2',
+            $id: 'ext2',
             $category: 'module'
         })
 
@@ -292,14 +292,14 @@ describe(PerkyModule, () => {
         const parent = new PerkyModule()
 
         const childModule = parent.create(PerkyModule, {
-            $name: 'oldName',
+            $id: 'oldName',
             $category: 'module'
         })
 
         expect(parent.hasChild('oldName')).toBe(true)
         expect(parent.getChild('oldName')).toBe(childModule)
 
-        childModule.$name = 'newName'
+        childModule.$id = 'newName'
 
         expect(parent.hasChild('oldName')).toBe(false)
         expect(parent.hasChild('newName')).toBe(true)
@@ -311,7 +311,7 @@ describe(PerkyModule, () => {
         class TestChild extends PerkyModule { }
 
         child.create(TestChild, {
-            $name: 'test',
+            $id: 'test',
             $bind: 'testProperty'
         })
 
@@ -323,7 +323,7 @@ describe(PerkyModule, () => {
         class TestChild extends PerkyModule { }
 
         const testChild = child.create(TestChild, {
-            $name: 'test',
+            $id: 'test',
             $bind: 'oldProperty'
         })
 
@@ -342,7 +342,7 @@ describe(PerkyModule, () => {
         const startSpy = vi.spyOn(TestChild.prototype, 'start')
 
         child.create(TestChild, {
-            $name: 'test',
+            $id: 'test',
             $lifecycle: false
         })
 
@@ -357,7 +357,7 @@ describe(PerkyModule, () => {
         const emitSpy = vi.spyOn(child, 'emit')
 
         const granchild = child.create(TestChild, {
-            $name: 'test',
+            $id: 'test',
             $category: 'testCategory'
         })
 
@@ -369,7 +369,7 @@ describe(PerkyModule, () => {
         class TestChild extends PerkyModule { }
 
         const instance = child.create(TestChild, {
-            $name: 'test',
+            $id: 'test',
             $category: 'test'
         })
 
@@ -396,7 +396,7 @@ describe(PerkyModule, () => {
         new ChildChild()
 
         const childChild = child.create(ChildChild, {
-            $name: 'default',
+            $id: 'default',
             $lifecycle: true
         })
 
@@ -515,7 +515,7 @@ describe(PerkyModule, () => {
 
     test('delegate with string target (property name)', () => {
         const manager = child.create(PerkyModule, {
-            $name: 'manager',
+            $id: 'manager',
             $bind: 'manager'
         })
 
@@ -545,11 +545,11 @@ describe(PerkyModule, () => {
         class ChildChild2 extends PerkyModule { }
 
         const child1 = child.create(ChildChild1, {
-            $name: 'child1'
+            $id: 'child1'
         })
 
         const child2 = child.create(ChildChild2, {
-            $name: 'child2'
+            $id: 'child2'
         })
 
         const child1DisposeSpy = vi.spyOn(child1, 'dispose')
@@ -570,11 +570,11 @@ describe(PerkyModule, () => {
         class Level2Child extends PerkyModule { }
 
         const level1 = child.create(Level1Child, {
-            $name: 'level1'
+            $id: 'level1'
         })
 
         const level2 = child.create(Level2Child, {
-            $name: 'level2'
+            $id: 'level2'
         })
 
         const level1DisposeSpy = vi.spyOn(level1, 'dispose')
@@ -598,7 +598,7 @@ describe(PerkyModule, () => {
 
         child.create(ChildChild, {
             instance: childChild,
-            $name: 'default'
+            $id: 'default'
         })
 
         child.dispose()
@@ -621,7 +621,7 @@ describe(PerkyModule, () => {
 
         child.create(ChildChild, {
             instance: childChild,
-            $name: 'default'
+            $id: 'default'
         })
 
         expect(child.hasChild('default')).toBe(true)
@@ -635,7 +635,7 @@ describe(PerkyModule, () => {
 
     describe('static $category', () => {
         test('uses PerkyModule default category "child" when not specified', () => {
-            const module = child.create(PerkyModule, {$name: 'test'})
+            const module = child.create(PerkyModule, {$id: 'test'})
             expect(module.$category).toBe('default')
         })
 
@@ -645,7 +645,7 @@ describe(PerkyModule, () => {
                 static $category = 'controller'
             }
 
-            const controller = child.create(GameController, {$name: 'game'})
+            const controller = child.create(GameController, {$id: 'game'})
             expect(controller.$category).toBe('controller')
         })
 
@@ -656,7 +656,7 @@ describe(PerkyModule, () => {
             }
 
             const controller = child.create(GameController, {
-                $name: 'game',
+                $id: 'game',
                 $category: 'custom'
             })
 
@@ -673,7 +673,7 @@ describe(PerkyModule, () => {
                 static $category = 'gameController'
             }
 
-            const controller = child.create(GameController, {$name: 'game'})
+            const controller = child.create(GameController, {$id: 'game'})
             expect(controller.$category).toBe('gameController')
         })
 
@@ -687,7 +687,7 @@ describe(PerkyModule, () => {
                 // No static $category override
             }
 
-            const controller = child.create(GameController, {$name: 'game'})
+            const controller = child.create(GameController, {$id: 'game'})
             expect(controller.$category).toBe('controller')
         })
 
@@ -707,9 +707,9 @@ describe(PerkyModule, () => {
             expect(monster2.$category).toBe('monster')
             expect(monster3.$category).toBe('monster')
 
-            expect(monster1.$name).toBe('monster')
-            expect(monster2.$name).toBe('monster_1')
-            expect(monster3.$name).toBe('monster_2')
+            expect(monster1.$id).toBe('monster')
+            expect(monster2.$id).toBe('monster_1')
+            expect(monster3.$id).toBe('monster_2')
         })
 
 
@@ -719,7 +719,7 @@ describe(PerkyModule, () => {
             }
 
             const emitSpy = vi.spyOn(child, 'emit')
-            const controller = child.create(GameController, {$name: 'game'})
+            const controller = child.create(GameController, {$id: 'game'})
 
             expect(emitSpy).toHaveBeenCalledWith('controller:set', 'game', controller)
         })
@@ -734,8 +734,8 @@ describe(PerkyModule, () => {
                 static $category = 'controller'
             }
 
-            child.create(GameController, {$name: 'game'})
-            child.create(InputController, {$name: 'input'})
+            child.create(GameController, {$id: 'game'})
+            child.create(InputController, {$id: 'input'})
 
             const controllers = child.listNamesFor('controller')
             expect(controllers).toHaveLength(2)
@@ -747,7 +747,7 @@ describe(PerkyModule, () => {
 
     describe('$eagerStart', () => {
         test('default $eagerStart is true for PerkyModule', () => {
-            const module = child.create(PerkyModule, {$name: 'test'})
+            const module = child.create(PerkyModule, {$id: 'test'})
             expect(module.$eagerStart).toBe(true)
         })
 
@@ -755,14 +755,14 @@ describe(PerkyModule, () => {
         test('child starts eagerly when parent is already started', () => {
             child.start()
 
-            const module = child.create(PerkyModule, {$name: 'test'})
+            const module = child.create(PerkyModule, {$id: 'test'})
 
             expect(module.started).toBe(true)
         })
 
 
         test('child does not start when parent is not started', () => {
-            const module = child.create(PerkyModule, {$name: 'test'})
+            const module = child.create(PerkyModule, {$id: 'test'})
 
             expect(module.started).toBe(false)
         })
@@ -772,7 +772,7 @@ describe(PerkyModule, () => {
             child.start()
 
             const module = child.create(PerkyModule, {
-                $name: 'test',
+                $id: 'test',
                 $eagerStart: false
             })
 
@@ -784,7 +784,7 @@ describe(PerkyModule, () => {
             child.start()
 
             const module = child.create(PerkyModule, {
-                $name: 'test',
+                $id: 'test',
                 $eagerStart: true
             })
 
@@ -799,7 +799,7 @@ describe(PerkyModule, () => {
 
             child.start()
 
-            const module = child.create(LazyModule, {$name: 'test'})
+            const module = child.create(LazyModule, {$id: 'test'})
 
             expect(module.$eagerStart).toBe(false)
             expect(module.started).toBe(false)
@@ -814,7 +814,7 @@ describe(PerkyModule, () => {
             child.start()
 
             const module = child.create(LazyModule, {
-                $name: 'test',
+                $id: 'test',
                 $eagerStart: true
             })
 
@@ -828,16 +828,16 @@ describe(PerkyModule, () => {
                 static $eagerStart = false
             }
 
-            const module1 = child.create(CustomModule, {$name: 'test1'})
+            const module1 = child.create(CustomModule, {$id: 'test1'})
             expect(module1.$eagerStart).toBe(false)
 
             const module2 = child.create(CustomModule, {
-                $name: 'test2',
+                $id: 'test2',
                 $eagerStart: true
             })
             expect(module2.$eagerStart).toBe(true)
 
-            const module3 = child.create(PerkyModule, {$name: 'test3'})
+            const module3 = child.create(PerkyModule, {$id: 'test3'})
             expect(module3.$eagerStart).toBe(true)
         })
 
@@ -846,7 +846,7 @@ describe(PerkyModule, () => {
             child.start()
 
             const module = child.create(PerkyModule, {
-                $name: 'test',
+                $id: 'test',
                 $eagerStart: true,
                 $lifecycle: false
             })
@@ -859,7 +859,7 @@ describe(PerkyModule, () => {
             child.start()
 
             const module = child.create(PerkyModule, {
-                $name: 'test',
+                $id: 'test',
                 $eagerStart: false
             })
 
@@ -875,17 +875,17 @@ describe(PerkyModule, () => {
             child.start()
 
             const eager1 = child.create(PerkyModule, {
-                $name: 'eager1',
+                $id: 'eager1',
                 $eagerStart: true
             })
 
             const lazy1 = child.create(PerkyModule, {
-                $name: 'lazy1',
+                $id: 'lazy1',
                 $eagerStart: false
             })
 
             const eager2 = child.create(PerkyModule, {
-                $name: 'eager2'
+                $id: 'eager2'
             })
 
             expect(eager1.started).toBe(true)
@@ -896,12 +896,12 @@ describe(PerkyModule, () => {
 
         test('eagerStart getter returns correct value', () => {
             const eager = child.create(PerkyModule, {
-                $name: 'eager',
+                $id: 'eager',
                 $eagerStart: true
             })
 
             const lazy = child.create(PerkyModule, {
-                $name: 'lazy',
+                $id: 'lazy',
                 $eagerStart: false
             })
             expect(eager.$eagerStart).toBe(true)
@@ -1153,9 +1153,9 @@ describe(PerkyModule, () => {
     describe('composite tag indexing', () => {
 
         test('childrenByTags returns children matching all tags (without index)', () => {
-            const child1 = child.create(PerkyModule, {$name: 'c1', $tags: ['enemy', 'collidable', 'flying']})
-            const child2 = child.create(PerkyModule, {$name: 'c2', $tags: ['enemy', 'collidable']})
-            child.create(PerkyModule, {$name: 'c3', $tags: ['friendly', 'collidable']})
+            const child1 = child.create(PerkyModule, {$id: 'c1', $tags: ['enemy', 'collidable', 'flying']})
+            const child2 = child.create(PerkyModule, {$id: 'c2', $tags: ['enemy', 'collidable']})
+            child.create(PerkyModule, {$id: 'c3', $tags: ['friendly', 'collidable']})
 
             const enemyColliders = child.childrenByTags(['enemy', 'collidable'])
 
@@ -1166,7 +1166,7 @@ describe(PerkyModule, () => {
 
 
         test('childrenByTags returns empty array for no matches', () => {
-            child.create(PerkyModule, {$name: 'c1', $tags: ['enemy']})
+            child.create(PerkyModule, {$id: 'c1', $tags: ['enemy']})
 
             const result = child.childrenByTags(['enemy', 'collidable'])
 
@@ -1220,8 +1220,8 @@ describe(PerkyModule, () => {
 
 
         test('childrenByTags uses index when available', () => {
-            const child1 = child.create(PerkyModule, {$name: 'c1', $tags: ['enemy', 'collidable']})
-            child.create(PerkyModule, {$name: 'c2', $tags: ['enemy']})
+            const child1 = child.create(PerkyModule, {$id: 'c1', $tags: ['enemy', 'collidable']})
+            child.create(PerkyModule, {$id: 'c2', $tags: ['enemy']})
 
             child.addTagsIndex(['enemy', 'collidable'])
 
@@ -1249,7 +1249,7 @@ describe(PerkyModule, () => {
 
 
         test('index automatically updates when child tags change (add)', () => {
-            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy']})
+            const testChild = child.create(PerkyModule, {$id: 'test', $tags: ['enemy']})
             child.addTagsIndex(['enemy', 'collidable'])
             expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(0)
 
@@ -1261,7 +1261,7 @@ describe(PerkyModule, () => {
 
 
         test('index automatically updates when child tags change (delete)', () => {
-            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy', 'collidable']})
+            const testChild = child.create(PerkyModule, {$id: 'test', $tags: ['enemy', 'collidable']})
             child.addTagsIndex(['enemy', 'collidable'])
 
             expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(1)
@@ -1273,7 +1273,7 @@ describe(PerkyModule, () => {
 
 
         test('index automatically updates when child tags change (clear)', () => {
-            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy', 'collidable']})
+            const testChild = child.create(PerkyModule, {$id: 'test', $tags: ['enemy', 'collidable']})
             child.addTagsIndex(['enemy', 'collidable'])
 
             expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(1)
@@ -1285,7 +1285,7 @@ describe(PerkyModule, () => {
 
 
         test('index updates when $tags is reassigned', () => {
-            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy']})
+            const testChild = child.create(PerkyModule, {$id: 'test', $tags: ['enemy']})
             child.addTagsIndex(['enemy', 'collidable'])
 
             expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(0)
@@ -1297,8 +1297,8 @@ describe(PerkyModule, () => {
 
 
         test('multiple composite indexes work independently', () => {
-            const enemy = child.create(PerkyModule, {$name: 'enemy', $tags: ['enemy', 'collidable']})
-            const friendly = child.create(PerkyModule, {$name: 'friendly', $tags: ['friendly', 'collidable']})
+            const enemy = child.create(PerkyModule, {$id: 'enemy', $tags: ['enemy', 'collidable']})
+            const friendly = child.create(PerkyModule, {$id: 'friendly', $tags: ['friendly', 'collidable']})
 
             child.addTagsIndex(['enemy', 'collidable'])
             child.addTagsIndex(['friendly', 'collidable'])
@@ -1309,7 +1309,7 @@ describe(PerkyModule, () => {
 
 
         test('events are cleaned up when child is removed', () => {
-            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy', 'collidable']})
+            const testChild = child.create(PerkyModule, {$id: 'test', $tags: ['enemy', 'collidable']})
             child.addTagsIndex(['enemy', 'collidable'])
 
             expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(1)
@@ -1324,7 +1324,7 @@ describe(PerkyModule, () => {
 
 
         test('index hooks are added to existing children', () => {
-            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy']})
+            const testChild = child.create(PerkyModule, {$id: 'test', $tags: ['enemy']})
 
             child.addTagsIndex(['enemy', 'collidable'])
 
@@ -1335,9 +1335,9 @@ describe(PerkyModule, () => {
 
 
         test('single tag query works', () => {
-            const child1 = child.create(PerkyModule, {$name: 'c1', $tags: ['enemy']})
-            const child2 = child.create(PerkyModule, {$name: 'c2', $tags: ['enemy', 'flying']})
-            child.create(PerkyModule, {$name: 'c3', $tags: ['friendly']})
+            const child1 = child.create(PerkyModule, {$id: 'c1', $tags: ['enemy']})
+            const child2 = child.create(PerkyModule, {$id: 'c2', $tags: ['enemy', 'flying']})
+            child.create(PerkyModule, {$id: 'c3', $tags: ['friendly']})
 
             const enemies = child.childrenByTags('enemy')
 
@@ -1348,8 +1348,8 @@ describe(PerkyModule, () => {
 
 
         test('works with children without tags', () => {
-            child.create(PerkyModule, {$name: 'c1'})
-            const child2 = child.create(PerkyModule, {$name: 'c2', $tags: ['enemy']})
+            child.create(PerkyModule, {$id: 'c1'})
+            const child2 = child.create(PerkyModule, {$id: 'c2', $tags: ['enemy']})
 
             const result = child.childrenByTags('enemy')
 
@@ -1364,7 +1364,7 @@ describe(PerkyModule, () => {
         test('listeners are set up when creating a child with tags and indexes exist', () => {
             child.addTagsIndex(['enemy', 'collidable'])
 
-            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy']})
+            const testChild = child.create(PerkyModule, {$id: 'test', $tags: ['enemy']})
 
             testChild.tags.add('collidable')
 
@@ -1375,7 +1375,7 @@ describe(PerkyModule, () => {
 
 
         test('listeners ARE set up when addTagsIndex is called for existing children', () => {
-            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy']})
+            const testChild = child.create(PerkyModule, {$id: 'test', $tags: ['enemy']})
 
             child.addTagsIndex(['enemy', 'collidable'])
 
@@ -1390,7 +1390,7 @@ describe(PerkyModule, () => {
         test('listeners ARE set up for children even without initial tags', () => {
             child.addTagsIndex(['enemy', 'collidable'])
 
-            const testChild = child.create(PerkyModule, {$name: 'test'})
+            const testChild = child.create(PerkyModule, {$id: 'test'})
 
             testChild.tags.add('enemy')
             testChild.tags.add('collidable')
@@ -1405,7 +1405,7 @@ describe(PerkyModule, () => {
             child.addTagsIndex(['enemy', 'collidable'])
             child.addTagsIndex(['enemy', 'flying'])
 
-            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy']})
+            const testChild = child.create(PerkyModule, {$id: 'test', $tags: ['enemy']})
 
             expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(0)
             expect(child.childrenByTags(['enemy', 'flying'])).toHaveLength(0)
@@ -1426,7 +1426,7 @@ describe(PerkyModule, () => {
             child.addTagsIndex(['enemy', 'collidable'])
             child.addTagsIndex(['enemy', 'flying'])
 
-            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy', 'collidable', 'flying']})
+            const testChild = child.create(PerkyModule, {$id: 'test', $tags: ['enemy', 'collidable', 'flying']})
 
             expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(1)
             expect(child.childrenByTags(['enemy', 'flying'])).toHaveLength(1)
@@ -1447,7 +1447,7 @@ describe(PerkyModule, () => {
             child.addTagsIndex(['enemy', 'collidable'])
             child.addTagsIndex(['enemy', 'flying'])
 
-            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy', 'collidable', 'flying']})
+            const testChild = child.create(PerkyModule, {$id: 'test', $tags: ['enemy', 'collidable', 'flying']})
 
             expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(1)
             expect(child.childrenByTags(['enemy', 'flying'])).toHaveLength(1)
@@ -1463,8 +1463,8 @@ describe(PerkyModule, () => {
             child.addTagsIndex(['enemy', 'collidable'])
             child.addTagsIndex(['friendly', 'collidable'])
 
-            const enemy = child.create(PerkyModule, {$name: 'enemy', $tags: ['enemy']})
-            const friendly = child.create(PerkyModule, {$name: 'friendly', $tags: ['friendly']})
+            const enemy = child.create(PerkyModule, {$id: 'enemy', $tags: ['enemy']})
+            const friendly = child.create(PerkyModule, {$id: 'friendly', $tags: ['friendly']})
 
             expect(child.childrenByTags(['enemy', 'collidable'])).toHaveLength(0)
             expect(child.childrenByTags(['friendly', 'collidable'])).toHaveLength(0)
@@ -1483,8 +1483,8 @@ describe(PerkyModule, () => {
         test('tag changes work correctly when adding index before creating children', () => {
             child.addTagsIndex(['enemy', 'collidable'])
 
-            const enemy1 = child.create(PerkyModule, {$name: 'enemy1', $tags: ['enemy']})
-            const enemy2 = child.create(PerkyModule, {$name: 'enemy2', $tags: ['enemy', 'collidable']})
+            const enemy1 = child.create(PerkyModule, {$id: 'enemy1', $tags: ['enemy']})
+            const enemy2 = child.create(PerkyModule, {$id: 'enemy2', $tags: ['enemy', 'collidable']})
 
             expect(child.childrenByTags(['enemy', 'collidable'])).toEqual([enemy2])
 
@@ -1504,7 +1504,7 @@ describe(PerkyModule, () => {
 
 
         test('listeners are set up for existing children when adding a new index', () => {
-            const testChild = child.create(PerkyModule, {$name: 'test', $tags: ['enemy']})
+            const testChild = child.create(PerkyModule, {$id: 'test', $tags: ['enemy']})
 
             child.addTagsIndex(['enemy', 'collidable'])
 

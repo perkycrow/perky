@@ -70,7 +70,7 @@ describe(InputSystem, () => {
     // ===== Device Management Tests (ex-InputManager) =====
 
     test('registerDevice', () => {
-        const device = inputSystem.registerDevice(InputDevice, {$name: 'gamepad', $bind: 'gamepad'})
+        const device = inputSystem.registerDevice(InputDevice, {$id: 'gamepad', $bind: 'gamepad'})
 
         expect(inputSystem.getDevice('gamepad')).toBe(device)
         expect(device.host).toBe(inputSystem)
@@ -79,8 +79,8 @@ describe(InputSystem, () => {
 
 
     test('registerDevice with duplicate name replaces device', () => {
-        inputSystem.registerDevice(InputDevice, {$name: 'test', $bind: 'test'})
-        const device2 = inputSystem.registerDevice(InputDevice, {$name: 'test', $bind: 'test'})
+        inputSystem.registerDevice(InputDevice, {$id: 'test', $bind: 'test'})
+        const device2 = inputSystem.registerDevice(InputDevice, {$id: 'test', $bind: 'test'})
 
         expect(inputSystem.getDevice('test')).toBe(device2)
         expect(inputSystem.test).toBe(device2)
@@ -113,7 +113,7 @@ describe(InputSystem, () => {
 
 
     test('getControl', () => {
-        const device = inputSystem.registerDevice(InputDevice, {$name: 'gamepad', $bind: 'gamepad'})
+        const device = inputSystem.registerDevice(InputDevice, {$id: 'gamepad', $bind: 'gamepad'})
         const button = device.findOrCreateControl(ButtonControl, {name: 'TestButton'})
 
         expect(inputSystem.getControl('gamepad', 'TestButton')).toBe(button)
@@ -124,14 +124,14 @@ describe(InputSystem, () => {
 
     test('automatic lifecycle management', () => {
         inputSystem.start()
-        const device = inputSystem.registerDevice(InputDevice, {$name: 'auto', $bind: 'auto'})
+        const device = inputSystem.registerDevice(InputDevice, {$id: 'auto', $bind: 'auto'})
 
         expect(device.started).toBe(true)
     })
 
 
     test('event forwarding', () => {
-        const device = inputSystem.registerDevice(InputDevice, {$name: 'test', $bind: 'test'})
+        const device = inputSystem.registerDevice(InputDevice, {$id: 'test', $bind: 'test'})
 
         const pressedListener = vi.fn()
         const releasedListener = vi.fn()
@@ -155,7 +155,7 @@ describe(InputSystem, () => {
 
 
     test('isPressedAny', () => {
-        const gamepad = inputSystem.registerDevice(InputDevice, {$name: 'gamepad', $bind: 'gamepad'})
+        const gamepad = inputSystem.registerDevice(InputDevice, {$id: 'gamepad', $bind: 'gamepad'})
 
         const keyW = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: 'KeyW'})
         const buttonA = gamepad.findOrCreateControl(ButtonControl, {name: 'ButtonA'})
@@ -197,7 +197,7 @@ describe(InputSystem, () => {
 
 
     test('getAllPressed', () => {
-        const gamepad = inputSystem.registerDevice(InputDevice, {$name: 'gamepad', $bind: 'gamepad'})
+        const gamepad = inputSystem.registerDevice(InputDevice, {$id: 'gamepad', $bind: 'gamepad'})
 
         const keyEnter = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: 'Enter'})
         const gamepadEnter = gamepad.findOrCreateControl(ButtonControl, {name: 'Enter'})
@@ -216,8 +216,8 @@ describe(InputSystem, () => {
 
 
     test('getAllValues', () => {
-        const device1 = inputSystem.registerDevice(InputDevice, {$name: 'device1', $bind: 'device1'})
-        const device2 = inputSystem.registerDevice(InputDevice, {$name: 'device2', $bind: 'device2'})
+        const device1 = inputSystem.registerDevice(InputDevice, {$id: 'device1', $bind: 'device1'})
+        const device2 = inputSystem.registerDevice(InputDevice, {$id: 'device2', $bind: 'device2'})
 
         const control1 = device1.findOrCreateControl(ButtonControl, {name: 'SharedControl'})
         const control2 = device2.findOrCreateControl(ButtonControl, {name: 'SharedControl'})

@@ -24,12 +24,12 @@ export default class InputSystem extends PerkyModule {
 
     onInstall (host) {
         this.registerDevice(KeyboardDevice, {
-            $name: 'keyboard',
+            $id: 'keyboard',
             $bind: 'keyboard'
         })
 
         this.registerDevice(MouseDevice, {
-            $name: 'mouse',
+            $id: 'mouse',
             $bind: 'mouse',
             container: host.element
         })

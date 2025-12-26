@@ -102,11 +102,11 @@ describe(ApplicationManager, () => {
         const app = appManager.createApp('testApp', {name: 'TestInstance'})
 
         expect(app).toBeInstanceOf(MockApp)
-        expect(app.$name).toBeTruthy()
+        expect(app.$id).toBeTruthy()
         expect(app.name).toBe('TestInstance')
         expect(app.$category).toBe('application')
-        expect(appManager.childrenRegistry.has(app.$name)).toBe(true)
-        expect(appManager.getChild(app.$name)).toBe(app)
+        expect(appManager.childrenRegistry.has(app.$id)).toBe(true)
+        expect(appManager.getChild(app.$id)).toBe(app)
     })
 
 
@@ -116,7 +116,7 @@ describe(ApplicationManager, () => {
         const app = appManager.createApp('testApp')
 
         expect(app).toBeInstanceOf(MockApp)
-        expect(app.$name).toBeTruthy()
+        expect(app.$id).toBeTruthy()
         expect(app.name).toBe('MockApp')
     })
 
@@ -128,11 +128,11 @@ describe(ApplicationManager, () => {
         const app2 = appManager.createApp('testApp')
         const app3 = appManager.createApp('testApp')
 
-        expect(app1.$name).toBeTruthy()
-        expect(app2.$name).toBeTruthy()
-        expect(app3.$name).toBeTruthy()
-        expect(app1.$name).not.toBe(app2.$name)
-        expect(app2.$name).not.toBe(app3.$name)
+        expect(app1.$id).toBeTruthy()
+        expect(app2.$id).toBeTruthy()
+        expect(app3.$id).toBeTruthy()
+        expect(app1.$id).not.toBe(app2.$id)
+        expect(app2.$id).not.toBe(app3.$id)
     })
 
 
@@ -149,10 +149,10 @@ describe(ApplicationManager, () => {
         const app = await appManager.spawn('testApp', {name: 'SpawnedApp'})
 
         expect(app).toBeInstanceOf(MockApp)
-        expect(app.$name).toBeTruthy()
+        expect(app.$id).toBeTruthy()
         expect(app.name).toBe('SpawnedApp')
         expect(app.mockStart).toHaveBeenCalled()
-        expect(appManager.childrenRegistry.has(app.$name)).toBe(true)
+        expect(appManager.childrenRegistry.has(app.$id)).toBe(true)
     })
 
 
@@ -160,7 +160,7 @@ describe(ApplicationManager, () => {
         appManager.register('testApp', MockApp)
         const app = appManager.createApp('testApp')
 
-        appManager.startApp(app.$name)
+        appManager.startApp(app.$id)
 
         expect(app.mockStart).toHaveBeenCalled()
     })
@@ -177,7 +177,7 @@ describe(ApplicationManager, () => {
         appManager.register('testApp', MockApp)
         const app = await appManager.spawn('testApp')
 
-        appManager.stopApp(app.$name)
+        appManager.stopApp(app.$id)
 
         expect(app.mockStop).toHaveBeenCalled()
     })
@@ -198,7 +198,7 @@ describe(ApplicationManager, () => {
         const actionSpy = vi.fn()
         app.mainController.testAction = actionSpy
 
-        appManager.execute(app.$name, 'testAction', 'arg1', 'arg2')
+        appManager.execute(app.$id, 'testAction', 'arg1', 'arg2')
 
         expect(actionSpy).toHaveBeenCalledWith('arg1', 'arg2')
     })
@@ -214,7 +214,7 @@ describe(ApplicationManager, () => {
     test('disposeApp', async () => {
         appManager.register('testApp', MockApp)
         const app = await appManager.spawn('testApp')
-        const appName = app.$name
+        const appName = app.$id
 
         appManager.disposeApp(appName)
 
@@ -234,7 +234,7 @@ describe(ApplicationManager, () => {
         appManager.register('testApp', MockApp)
         const container = document.createElement('div')
         const app = await appManager.spawn('testApp', {container})
-        const appName = app.$name
+        const appName = app.$id
 
         expect(app.perkyView.mounted).toBe(true)
         const dismountSpy = vi.spyOn(app.perkyView, 'dismount')
@@ -251,7 +251,7 @@ describe(ApplicationManager, () => {
         appManager.register('testApp', MockApp)
         const container = document.createElement('div')
         const app = await appManager.spawn('testApp', {container})
-        const appName = app.$name
+        const appName = app.$id
 
         appManager.stopApp(appName)
         expect(app.mockStop).toHaveBeenCalledTimes(1)
@@ -350,13 +350,13 @@ describe(ApplicationManager, () => {
         const preload = await appManager.spawn('preload')
         expect(preload.mockStart).toHaveBeenCalled()
 
-        appManager.stopApp(preload.$name)
+        appManager.stopApp(preload.$id)
         expect(preload.mockStop).toHaveBeenCalled()
 
         const title = await appManager.spawn('title')
         expect(title.mockStart).toHaveBeenCalled()
 
-        appManager.stopApp(title.$name)
+        appManager.stopApp(title.$id)
         await appManager.spawn('game')
 
         expect(appManager.list()).toHaveLength(3)
@@ -390,10 +390,10 @@ describe(ApplicationManager, () => {
         const runningApps = appManager.list()
         expect(runningApps).toHaveLength(2)
 
-        appManager.disposeApp(settings.$name)
+        appManager.disposeApp(settings.$id)
         expect(settings.mockDispose).toHaveBeenCalled()
-        expect(appManager.childrenRegistry.has(settings.$name)).toBe(false)
-        expect(appManager.childrenRegistry.has(game.$name)).toBe(true)
+        expect(appManager.childrenRegistry.has(settings.$id)).toBe(false)
+        expect(appManager.childrenRegistry.has(game.$id)).toBe(true)
     })
 
 
@@ -404,20 +404,20 @@ describe(ApplicationManager, () => {
         const dialog2 = appManager.createApp('dialog', {name: 'AlertDialog'})
         const dialog3 = appManager.createApp('dialog', {name: 'InputDialog'})
 
-        expect(dialog1.$name).toBeTruthy()
-        expect(dialog2.$name).toBeTruthy()
-        expect(dialog3.$name).toBeTruthy()
-        expect(dialog1.$name).not.toBe(dialog2.$name)
-        expect(dialog2.$name).not.toBe(dialog3.$name)
+        expect(dialog1.$id).toBeTruthy()
+        expect(dialog2.$id).toBeTruthy()
+        expect(dialog3.$id).toBeTruthy()
+        expect(dialog1.$id).not.toBe(dialog2.$id)
+        expect(dialog2.$id).not.toBe(dialog3.$id)
 
         expect(appManager.list()).toHaveLength(3)
         expect(appManager.list('Dialog')).toHaveLength(3)
 
-        appManager.disposeApp(dialog2.$name)
+        appManager.disposeApp(dialog2.$id)
         expect(appManager.list()).toHaveLength(2)
-        expect(appManager.childrenRegistry.has(dialog1.$name)).toBe(true)
-        expect(appManager.childrenRegistry.has(dialog2.$name)).toBe(false)
-        expect(appManager.childrenRegistry.has(dialog3.$name)).toBe(true)
+        expect(appManager.childrenRegistry.has(dialog1.$id)).toBe(true)
+        expect(appManager.childrenRegistry.has(dialog2.$id)).toBe(false)
+        expect(appManager.childrenRegistry.has(dialog3.$id)).toBe(true)
     })
 
 
@@ -431,18 +431,18 @@ describe(ApplicationManager, () => {
         expect(startSpy).not.toHaveBeenCalled()
         expect(stopSpy).not.toHaveBeenCalled()
 
-        appManager.startApp(app.$name)
+        appManager.startApp(app.$id)
         expect(startSpy).toHaveBeenCalledTimes(1)
 
-        appManager.stopApp(app.$name)
+        appManager.stopApp(app.$id)
         expect(app.mockStop).toHaveBeenCalledTimes(1)
 
-        appManager.startApp(app.$name)
+        appManager.startApp(app.$id)
         expect(startSpy).toHaveBeenCalledTimes(2)
 
-        appManager.disposeApp(app.$name)
+        appManager.disposeApp(app.$id)
         expect(app.mockDispose).toHaveBeenCalled()
-        expect(appManager.childrenRegistry.has(app.$name)).toBe(false)
+        expect(appManager.childrenRegistry.has(app.$id)).toBe(false)
     })
 
 
@@ -450,7 +450,7 @@ describe(ApplicationManager, () => {
         appManager.register('testApp', MockApp)
 
         const app = appManager.createApp('testApp')
-        const appName = app.$name
+        const appName = app.$id
 
         expect(appManager.childrenRegistry.has(appName)).toBe(true)
         expect(appManager.list()).toHaveLength(1)

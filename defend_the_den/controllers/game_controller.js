@@ -67,7 +67,7 @@ export default class GameController extends WorldController {
         const projectiles = this.world.childrenByCategory('projectile')
         for (const projectile of projectiles) {
             if (!projectile.alive) {
-                this.world.removeChild(projectile.$name)
+                this.world.removeChild(projectile.$id)
             }
         }
     }
@@ -77,7 +77,7 @@ export default class GameController extends WorldController {
         const enemies = this.world.childrenByTags('enemy')
         for (const enemy of enemies) {
             if (!enemy.alive) {
-                this.world.removeChild(enemy.$name)
+                this.world.removeChild(enemy.$id)
 
                 if (enemy.x < -2.5) {
                     this.onGameOver()
@@ -230,7 +230,7 @@ export default class GameController extends WorldController {
 
     spawnPlayer (options = {}) {
         return this.execute('spawn', Player, {
-            $name: 'player',
+            $id: 'player',
             $category: 'entity',
             $tags: ['updatable', 'controllable', 'player'],
             x: options.x || 0,

@@ -12,7 +12,7 @@ export default class PerkyModule extends Notifier {
     #started = false
     #disposed = false
     #installed = false
-    #name
+    #id
     #category
     #host = null
     #bind
@@ -27,7 +27,7 @@ export default class PerkyModule extends Notifier {
         super()
 
         this.options = {...options}
-        this.#name = options.$name || options.name || this.constructor.name
+        this.#id = options.$id || options.name || this.constructor.name
         this.#category = options.$category || this.constructor.$category
         this.#bind = options.$bind
         this.#eagerStart = options.$eagerStart
@@ -39,17 +39,17 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    get $name () {
-        return this.#name
+    get $id () {
+        return this.#id
     }
 
 
-    set $name (newName) {
-        const oldName = this.#name
+    set $id (newName) {
+        const oldName = this.#id
 
         if (oldName !== newName) {
-            this.#name = newName
-            this.emit('$name:changed', newName, oldName)
+            this.#id = newName
+            this.emit('$id:changed', newName, oldName)
         }
     }
 
@@ -230,7 +230,7 @@ export default class PerkyModule extends Notifier {
 
     create (Child, options = {}) {
         options.$category ||= Child.$category
-        options.$name ||= uniqueId(this.childrenRegistry, options.$category)
+        options.$id ||= uniqueId(this.childrenRegistry, options.$category)
         options.$eagerStart = options.$eagerStart ?? Child.$eagerStart ?? true
 
         const child = typeof Child === 'function' ? new Child(options) : Child
@@ -239,16 +239,16 @@ export default class PerkyModule extends Notifier {
 
 
     #addChild (child, options = {}) {
-        unregisterExisting(this, child.$name)
+        unregisterExisting(this, child.$id)
 
         child.install(this, options)
-        this.childrenRegistry.set(options.$name, child)
+        this.childrenRegistry.set(options.$id, child)
 
         setupLifecycle(this, child, options)
         this.#setupTagIndexListeners(child)
 
-        this.emit(`${child.$category}:set`, child.$name, child)
-        child.emit('registered', this, child.$name)
+        this.emit(`${child.$category}:set`, child.$id, child)
+        child.emit('registered', this, child.$id)
 
         return child
     }
@@ -501,13 +501,13 @@ function setupLifecycle (host, child, options) {
     })
 
     child.listenTo(host, 'dispose', () => {
-        if (childrenRegistry.hasEntry(child.$name, child)) {
+        if (childrenRegistry.hasEntry(child.$id, child)) {
             unregisterChild(host, child)
         }
     })
 
     child.once('dispose', () => {
-        if (childrenRegistry.hasEntry(child.$name, child)) {
+        if (childrenRegistry.hasEntry(child.$id, child)) {
             unregisterChild(host, child)
         }
     })
@@ -516,7 +516,7 @@ function setupLifecycle (host, child, options) {
         childrenRegistry.updateIndexFor(child, '$category', oldCategory, newCategory)
     })
 
-    child.listenTo(child, '$name:changed', (newName, oldName) => {
+    child.listenTo(child, '$id:changed', (newName, oldName) => {
         childrenRegistry.updateKey(oldName, newName, child)
     })
 
@@ -533,8 +533,8 @@ function setupLifecycle (host, child, options) {
 
 
 function unregisterChild (host, child) {
-    if (host.childrenRegistry.hasEntry(child.$name, child)) {
-        host.childrenRegistry.delete(child.$name)
+    if (host.childrenRegistry.hasEntry(child.$id, child)) {
+        host.childrenRegistry.delete(child.$id)
     }
 
     if (child.$bind && host[child.$bind] === child) {
@@ -543,8 +543,8 @@ function unregisterChild (host, child) {
 
     child.uninstall()
 
-    host.emit(`${child.$category}:delete`, child.$name, child)
-    child.emit('unregistered', host, child.$name)
+    host.emit(`${child.$category}:delete`, child.$id, child)
+    child.emit('unregistered', host, child.$id)
 
     child.dispose()
 }

@@ -482,11 +482,11 @@ describe(Application, () => {
     test('use method installs child class', () => {
         class TestChild extends PerkyModule {
             constructor (options) {
-                super({...options, $name: 'testChild'})
+                super({...options, $id: 'testChild'})
             }
         }
 
-        application.create(TestChild, {$name: 'testChild', $category: 'default'})
+        application.create(TestChild, {$id: 'testChild', $category: 'default'})
 
         expect(application.hasChild('testChild')).toBe(true)
     })
@@ -495,12 +495,12 @@ describe(Application, () => {
     test('use method installs child instance', () => {
         class TestChild extends PerkyModule {
             constructor (options) {
-                super({...options, $name: 'testChild'})
+                super({...options, $id: 'testChild'})
             }
         }
 
         application.create(TestChild, {
-            $name: 'testChild',
+            $id: 'testChild',
             $category: 'default'
         })
 
@@ -511,12 +511,12 @@ describe(Application, () => {
     test('use method with options', () => {
         class TestChild extends PerkyModule {
             constructor (options) {
-                super({...options, $name: 'testChild'})
+                super({...options, $id: 'testChild'})
             }
         }
 
         application.create(TestChild, {
-            $name: 'testChild',
+            $id: 'testChild',
             $category: 'default',
             someOption: true
         })

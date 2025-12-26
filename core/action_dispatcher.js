@@ -68,7 +68,7 @@ export default class ActionDispatcher extends PerkyModule {
 
     register (name, Controller = ActionController) {
         return this.create(Controller, {
-            $name: name,
+            $id: name,
             $category: 'controller'
         })
 
