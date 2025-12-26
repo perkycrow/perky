@@ -409,7 +409,7 @@ export default class PerkyExplorer extends HTMLElement {
 
         const title = document.createElement('div')
         title.className = 'explorer-title'
-        title.innerHTML = '<span class="explorer-title-icon">📦</span> Module Explorer'
+        title.innerHTML = '<span class="explorer-title-icon">📦</span> Perky Explorer'
 
         const buttons = document.createElement('div')
         buttons.className = 'explorer-buttons'
