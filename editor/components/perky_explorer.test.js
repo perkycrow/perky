@@ -3,6 +3,58 @@ import PerkyExplorer from './perky_explorer'
 import PerkyModule from '../../core/perky_module'
 
 
+function getRootNode (explorer) {
+    return explorer.shadowRoot.querySelector('perky-explorer-node')
+}
+
+
+function getNodeContent (node) {
+    return node?.shadowRoot?.querySelector('.node-content')
+}
+
+
+function getNodeStatus (node) {
+    return node?.shadowRoot?.querySelector('.node-status')
+}
+
+
+function getNodeId (node) {
+    return node?.shadowRoot?.querySelector('.node-id')
+}
+
+
+function getNodeToggle (node) {
+    return node?.shadowRoot?.querySelector('.node-toggle')
+}
+
+
+function getNodeChildren (node) {
+    return node?.shadowRoot?.querySelector('.node-children')
+}
+
+
+function getAllChildNodes (node) {
+    return node?.shadowRoot?.querySelectorAll('perky-explorer-node') || []
+}
+
+
+function collectAllNodeIds (node, ids = []) {
+    const idEl = getNodeId(node)
+    if (idEl) {
+        ids.push(idEl.textContent)
+    }
+    for (const child of getAllChildNodes(node)) {
+        collectAllNodeIds(child, ids)
+    }
+    return ids
+}
+
+
+function getDetails (explorer) {
+    return explorer.shadowRoot.querySelector('perky-explorer-details')
+}
+
+
 describe('PerkyExplorer', () => {
 
     let explorer
@@ -46,7 +98,7 @@ describe('PerkyExplorer', () => {
         it('should have a header with title', () => {
             const title = explorer.shadowRoot.querySelector('.explorer-title')
             expect(title).not.toBeNull()
-            expect(title.textContent).toContain('Module Explorer')
+            expect(title.textContent).toContain('Perky Explorer')
         })
 
     })
@@ -58,10 +110,10 @@ describe('PerkyExplorer', () => {
             const module = new PerkyModule({$id: 'root', $category: 'app'})
             explorer.setModule(module)
 
-            const treeNode = explorer.shadowRoot.querySelector('.tree-node')
-            expect(treeNode).not.toBeNull()
+            const rootNode = getRootNode(explorer)
+            expect(rootNode).not.toBeNull()
 
-            const id = treeNode.querySelector('.tree-id')
+            const id = getNodeId(rootNode)
             expect(id.textContent).toBe('root')
         })
 
@@ -80,7 +132,8 @@ describe('PerkyExplorer', () => {
 
             explorer.setModule(parent)
 
-            const childrenContainer = explorer.shadowRoot.querySelector('.tree-children')
+            const rootNode = getRootNode(explorer)
+            const childrenContainer = getNodeChildren(rootNode)
             expect(childrenContainer.classList.contains('expanded')).toBe(true)
         })
 
@@ -92,8 +145,8 @@ describe('PerkyExplorer', () => {
 
             explorer.setModule(parent)
 
-            const nodeIds = [...explorer.shadowRoot.querySelectorAll('.tree-id')]
-                .map(el => el.textContent)
+            const rootNode = getRootNode(explorer)
+            const nodeIds = collectAllNodeIds(rootNode)
 
             expect(nodeIds).toContain('parent')
             expect(nodeIds).toContain('child1')
@@ -109,7 +162,8 @@ describe('PerkyExplorer', () => {
             const module = new PerkyModule({$id: 'test'})
             explorer.setModule(module)
 
-            const status = explorer.shadowRoot.querySelector('.tree-status')
+            const rootNode = getRootNode(explorer)
+            const status = getNodeStatus(rootNode)
             expect(status.classList.contains('stopped')).toBe(true)
         })
 
@@ -119,7 +173,8 @@ describe('PerkyExplorer', () => {
             module.start()
             explorer.setModule(module)
 
-            const status = explorer.shadowRoot.querySelector('.tree-status')
+            const rootNode = getRootNode(explorer)
+            const status = getNodeStatus(rootNode)
             expect(status.classList.contains('started')).toBe(true)
         })
 
@@ -129,7 +184,8 @@ describe('PerkyExplorer', () => {
             module.dispose()
             explorer.setModule(module)
 
-            const status = explorer.shadowRoot.querySelector('.tree-status')
+            const rootNode = getRootNode(explorer)
+            const status = getNodeStatus(rootNode)
             expect(status.classList.contains('disposed')).toBe(true)
         })
 
@@ -159,15 +215,15 @@ describe('PerkyExplorer', () => {
             parent.create(PerkyModule, {$id: 'child'})
             explorer.setModule(parent)
 
-            // Initially expanded
-            let childContainer = explorer.shadowRoot.querySelector('.tree-children')
+            const rootNode = getRootNode(explorer)
+
+            let childContainer = getNodeChildren(rootNode)
             expect(childContainer.classList.contains('expanded')).toBe(true)
 
-            // Click toggle to collapse
-            const toggle = explorer.shadowRoot.querySelector('.tree-toggle.has-children')
+            const toggle = getNodeToggle(rootNode)
             toggle.click()
 
-            childContainer = explorer.shadowRoot.querySelector('.tree-children')
+            childContainer = getNodeChildren(rootNode)
             expect(childContainer.classList.contains('expanded')).toBe(false)
         })
 
@@ -185,10 +241,11 @@ describe('PerkyExplorer', () => {
             })
             explorer.setModule(module)
 
-            const nodeContent = explorer.shadowRoot.querySelector('.tree-node-content')
+            const rootNode = getRootNode(explorer)
+            const nodeContent = getNodeContent(rootNode)
             nodeContent.click()
 
-            const details = explorer.shadowRoot.querySelector('.explorer-details')
+            const details = getDetails(explorer)
             expect(details).not.toBeNull()
         })
 
@@ -201,12 +258,14 @@ describe('PerkyExplorer', () => {
             })
             explorer.setModule(module)
 
-            const nodeContent = explorer.shadowRoot.querySelector('.tree-node-content')
+            const rootNode = getRootNode(explorer)
+            const nodeContent = getNodeContent(rootNode)
             nodeContent.click()
 
-            const details = explorer.shadowRoot.querySelector('.explorer-details')
-            expect(details.textContent).toContain('TestName')
-            expect(details.textContent).toContain('testing')
+            const details = getDetails(explorer)
+            const detailsContent = details.shadowRoot.textContent
+            expect(detailsContent).toContain('TestName')
+            expect(detailsContent).toContain('testing')
         })
 
 
@@ -217,11 +276,13 @@ describe('PerkyExplorer', () => {
             })
             explorer.setModule(module)
 
-            const nodeContent = explorer.shadowRoot.querySelector('.tree-node-content')
+            const rootNode = getRootNode(explorer)
+            const nodeContent = getNodeContent(rootNode)
             nodeContent.click()
 
-            const tags = explorer.shadowRoot.querySelectorAll('.details-tag')
-            const tagTexts = [...tags].map(t => t.textContent)
+            const details = getDetails(explorer)
+            const tags = details.shadowRoot.querySelectorAll('.details-tag')
+            const tagTexts = [...tags].map(t => t.textContent) // eslint-disable-line max-nested-callbacks
 
             expect(tagTexts).toContain('alpha')
             expect(tagTexts).toContain('beta')
@@ -232,13 +293,12 @@ describe('PerkyExplorer', () => {
             const module = new PerkyModule({$id: 'test'})
             explorer.setModule(module)
 
-            const nodeContent = explorer.shadowRoot.querySelector('.tree-node-content')
+            const rootNode = getRootNode(explorer)
+            const nodeContent = getNodeContent(rootNode)
             nodeContent.click()
 
-            // Query again after click since DOM is re-rendered
-            const selectedNode = explorer.shadowRoot.querySelector('.tree-node-content.selected')
-            expect(selectedNode).not.toBeNull()
-            expect(selectedNode.querySelector('.tree-id').textContent).toBe('test')
+            const selectedContent = getNodeContent(rootNode)
+            expect(selectedContent.classList.contains('selected')).toBe(true)
         })
 
     })
@@ -254,7 +314,7 @@ describe('PerkyExplorer', () => {
             minimizeBtn.click()
 
             const minimized = explorer.shadowRoot.querySelector('.explorer-minimized')
-            expect(minimized).not.toBeNull()
+            expect(minimized.classList.contains('hidden')).toBe(false)
         })
 
 
@@ -262,16 +322,14 @@ describe('PerkyExplorer', () => {
             const module = new PerkyModule({$id: 'test'})
             explorer.setModule(module)
 
-            // Minimize
             const minimizeBtn = explorer.shadowRoot.querySelectorAll('.explorer-btn')[2]
             minimizeBtn.click()
 
-            // Restore
             const minimized = explorer.shadowRoot.querySelector('.explorer-minimized')
             minimized.click()
 
             const explorerPanel = explorer.shadowRoot.querySelector('.explorer')
-            expect(explorerPanel).not.toBeNull()
+            expect(explorerPanel.classList.contains('hidden')).toBe(false)
         })
 
     })
@@ -283,14 +341,13 @@ describe('PerkyExplorer', () => {
             const parent = new PerkyModule({$id: 'parent'})
             explorer.setModule(parent)
 
-            let nodeIds = [...explorer.shadowRoot.querySelectorAll('.tree-id')]
-                .map(el => el.textContent)
+            const rootNode = getRootNode(explorer)
+            let nodeIds = collectAllNodeIds(rootNode)
             expect(nodeIds).not.toContain('new-child')
 
             parent.create(PerkyModule, {$id: 'new-child', $category: 'perkyModule'})
 
-            nodeIds = [...explorer.shadowRoot.querySelectorAll('.tree-id')]
-                .map(el => el.textContent)
+            nodeIds = collectAllNodeIds(rootNode)
             expect(nodeIds).toContain('new-child')
         })
 
@@ -299,12 +356,13 @@ describe('PerkyExplorer', () => {
             const module = new PerkyModule({$id: 'test'})
             explorer.setModule(module)
 
-            let status = explorer.shadowRoot.querySelector('.tree-status')
+            const rootNode = getRootNode(explorer)
+            let status = getNodeStatus(rootNode)
             expect(status.classList.contains('stopped')).toBe(true)
 
             module.start()
 
-            status = explorer.shadowRoot.querySelector('.tree-status')
+            status = getNodeStatus(rootNode)
             expect(status.classList.contains('started')).toBe(true)
         })
 
@@ -317,9 +375,10 @@ describe('PerkyExplorer', () => {
             const module = new PerkyModule({$id: 'test'})
             explorer.setModule(module)
 
+            const rootNode = getRootNode(explorer)
             const offSpy = vi.spyOn(module, 'off')
 
-            explorer.remove()
+            rootNode.remove()
 
             expect(offSpy).toHaveBeenCalled()
         })
@@ -330,9 +389,11 @@ describe('PerkyExplorer', () => {
             const module2 = new PerkyModule({$id: 'second'})
 
             explorer.setModule(module1)
+
+            const rootNode = getRootNode(explorer)
             const offSpy = vi.spyOn(module1, 'off')
 
-            explorer.setModule(module2)
+            rootNode.setModule(module2)
 
             expect(offSpy).toHaveBeenCalled()
         })
