@@ -361,8 +361,13 @@ export default class PerkyModule extends Notifier {
     }
 
 
+    lookup (indexName, key) {
+        return this.#childrenRegistry.lookup(indexName, key)
+    }
+
+
     childrenByCategory (category) {
-        return this.#childrenRegistry.lookup('$category', category)
+        return this.lookup('$category', category)
     }
 
 
