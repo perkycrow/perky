@@ -17,11 +17,6 @@ export default class ActionController extends PerkyModule {
     }
 
 
-    get engine () {
-        return this.host?.engine
-    }
-
-
     addAction (actionName, action) {
         if (!this.#actionList.includes(actionName)) {
             this.#actionList.push(actionName)
