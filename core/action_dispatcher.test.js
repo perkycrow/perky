@@ -20,9 +20,7 @@ describe(ActionDispatcher, () => {
 
 
     test('register', () => {
-        const controller = new ActionController()
-
-        dispatcher.register('main', controller)
+        const controller = dispatcher.register('main', ActionController)
 
         expect(dispatcher.getController('main')).toBe(controller)
     })
@@ -90,9 +88,7 @@ describe(ActionDispatcher, () => {
 
 
     test('unregister active controller', () => {
-        const controller = new ActionController()
-
-        dispatcher.register('main', controller)
+        dispatcher.register('main', ActionController)
         dispatcher.setActive('main')
         dispatcher.unregister('main')
 
@@ -101,9 +97,7 @@ describe(ActionDispatcher, () => {
 
 
     test('unregister controller in stack', () => {
-        const controller = new ActionController()
-
-        dispatcher.register('main', controller)
+        dispatcher.register('main', ActionController)
         dispatcher.pushActive('main')
 
         expect(dispatcher.getActive()).toContain('main')
@@ -115,18 +109,14 @@ describe(ActionDispatcher, () => {
 
 
     test('getController', () => {
-        const controller = new ActionController()
-
-        dispatcher.register('main', controller)
+        const controller = dispatcher.register('main', ActionController)
 
         expect(dispatcher.getController('main')).toBe(controller)
     })
 
 
     test('setActive valid controller', () => {
-        const controller = new ActionController()
-
-        dispatcher.register('main', controller)
+        dispatcher.register('main', ActionController)
         const result = dispatcher.setActive('main')
 
         expect(result).toBe(true)
@@ -148,11 +138,8 @@ describe(ActionDispatcher, () => {
 
 
     test('setActive with array', () => {
-        const controller1 = new ActionController()
-        const controller2 = new ActionController()
-
-        dispatcher.register('main', controller1)
-        dispatcher.register('pause', controller2)
+        dispatcher.register('main', ActionController)
+        dispatcher.register('pause', ActionController)
 
         const result = dispatcher.setActive(['main', 'pause'])
 
@@ -162,9 +149,7 @@ describe(ActionDispatcher, () => {
 
 
     test('getActive returns array', () => {
-        const controller = new ActionController()
-
-        dispatcher.register('main', controller)
+        dispatcher.register('main', ActionController)
         dispatcher.setActive('main')
 
         const active = dispatcher.getActive()
@@ -177,9 +162,7 @@ describe(ActionDispatcher, () => {
         class TestController extends ActionController {
             someAction = vi.fn()
         }
-        const controller = new TestController()
-
-        dispatcher.register('main', controller)
+        const controller = dispatcher.register('main', TestController)
         dispatcher.setActive('main')
 
         dispatcher.execute('someAction', 'arg1', 'arg2')
@@ -203,10 +186,7 @@ describe(ActionDispatcher, () => {
         class TestController extends PerkyModule {
             someAction = vi.fn()
         }
-
-        const controller = new TestController()
-
-        dispatcher.register('main', controller)
+        const controller = dispatcher.register('main', TestController)
         dispatcher.setActive('main')
 
         dispatcher.executeTo('main', 'someAction', 'arg1', 'arg2')
@@ -219,9 +199,7 @@ describe(ActionDispatcher, () => {
         class TestController extends PerkyModule {
             jump = vi.fn()
         }
-
-        const controller = new TestController()
-        dispatcher.register('game', controller)
+        const controller = dispatcher.register('game', TestController)
         dispatcher.setActive('game')
 
         const binding = {
@@ -242,10 +220,10 @@ describe(ActionDispatcher, () => {
             jump = vi.fn()
         }
 
-        const gameController = new TestController()
-        const otherController = new ActionController()
-        dispatcher.register('game', gameController)
-        dispatcher.register('other', otherController)
+        const gameController = dispatcher.register('game', TestController)
+        dispatcher.register('other', ActionController)
+        dispatcher.register('game', TestController)
+        dispatcher.register('other', ActionController)
         dispatcher.setActive('other')
 
         const binding = {
@@ -266,10 +244,8 @@ describe(ActionDispatcher, () => {
             jump = vi.fn()
         }
 
-        const gameController = new TestController()
-        const pauseController = new ActionController()
-        dispatcher.register('game', gameController)
-        dispatcher.register('pause', pauseController)
+        const gameController = dispatcher.register('game', TestController)
+        dispatcher.register('pause', ActionController)
         dispatcher.pushActive('game')
         dispatcher.pushActive('pause')
 
@@ -291,8 +267,7 @@ describe(ActionDispatcher, () => {
             jump = vi.fn()
         }
 
-        const controller = new TestController()
-        dispatcher.register('main', controller)
+        const controller = dispatcher.register('main', TestController)
         dispatcher.setActive('main')
 
         const binding = {
@@ -308,8 +283,7 @@ describe(ActionDispatcher, () => {
 
 
     test('pushActive', () => {
-        const controller = new ActionController()
-        dispatcher.register('main', controller)
+        dispatcher.register('main', ActionController)
 
         dispatcher.pushActive('main')
 
@@ -330,8 +304,7 @@ describe(ActionDispatcher, () => {
 
 
     test('pushActive - prevents duplicate controller on top', () => {
-        const controller = new ActionController()
-        dispatcher.register('main', controller)
+        dispatcher.register('main', ActionController)
 
         dispatcher.pushActive('main')
         expect(dispatcher.getActive()).toEqual(['main'])
@@ -344,10 +317,8 @@ describe(ActionDispatcher, () => {
 
 
     test('pushActive - allows same controller if not on top', () => {
-        const controller1 = new ActionController()
-        const controller2 = new ActionController()
-        dispatcher.register('main', controller1)
-        dispatcher.register('other', controller2)
+        dispatcher.register('main', ActionController)
+        dispatcher.register('other', ActionController)
 
         dispatcher.pushActive('main')
         dispatcher.pushActive('other')
@@ -358,8 +329,7 @@ describe(ActionDispatcher, () => {
 
 
     test('popActive - returns popped controller', () => {
-        const controller = new ActionController()
-        dispatcher.register('main', controller)
+        dispatcher.register('main', ActionController)
 
         dispatcher.pushActive('main')
         const popped = dispatcher.popActive()
@@ -382,8 +352,7 @@ describe(ActionDispatcher, () => {
 
 
     test('getActive - returns copy', () => {
-        const controller = new ActionController()
-        dispatcher.register('main', controller)
+        dispatcher.register('main', ActionController)
 
         dispatcher.pushActive('main')
         const stack = dispatcher.getActive()
@@ -400,11 +369,8 @@ describe(ActionDispatcher, () => {
 
 
     test('clearActive', () => {
-        const controller1 = new ActionController()
-        const controller2 = new ActionController()
-
-        dispatcher.register('main', controller1)
-        dispatcher.register('pause', controller2)
+        dispatcher.register('main', ActionController)
+        dispatcher.register('pause', ActionController)
 
         dispatcher.pushActive('main')
         dispatcher.pushActive('pause')
@@ -427,11 +393,8 @@ describe(ActionDispatcher, () => {
             resume = vi.fn()
         }
 
-        const gameController = new GameController()
-        const pauseController = new PauseController()
-
-        dispatcher.register('game', gameController)
-        dispatcher.register('pause', pauseController)
+        const gameController = dispatcher.register('game', GameController)
+        const pauseController = dispatcher.register('pause', PauseController)
 
         dispatcher.pushActive('game')
         dispatcher.pushActive('pause')
@@ -458,11 +421,8 @@ describe(ActionDispatcher, () => {
             resume = vi.fn()
         }
 
-        const gameController = new GameController()
-        const pauseController = new PauseController()
-
-        dispatcher.register('game', gameController)
-        dispatcher.register('pause', pauseController)
+        const gameController = dispatcher.register('game', GameController)
+        dispatcher.register('pause', PauseController)
 
         dispatcher.pushActive('game')
         dispatcher.pushActive('pause')
@@ -490,10 +450,8 @@ describe(ActionDispatcher, () => {
             move () { } // eslint-disable-line class-methods-use-this
         }
 
-        const gameController = new GameController()
+        const gameController = dispatcher.register('game', GameController)
         gameController.addAction('shoot', vi.fn())
-
-        dispatcher.register('game', gameController)
 
         const allActions = dispatcher.listAllActions()
 

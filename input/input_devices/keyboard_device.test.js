@@ -16,7 +16,7 @@ describe(KeyboardDevice, () => {
 
         device = new KeyboardDevice({
             container: mockContainer,
-            name: 'testKeyboard'
+            $id: 'testKeyboard'
         })
     })
 

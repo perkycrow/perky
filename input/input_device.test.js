@@ -9,7 +9,7 @@ describe(InputDevice, () => {
 
     beforeEach(() => {
         device = new InputDevice({
-            name: 'testDevice'
+            $id: 'testDevice'
         })
     })
 

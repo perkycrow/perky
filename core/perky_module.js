@@ -13,6 +13,7 @@ export default class PerkyModule extends Notifier {
     #disposed = false
     #installed = false
     #id
+    #name
     #category
     #host = null
     #bind
@@ -21,13 +22,15 @@ export default class PerkyModule extends Notifier {
     #tagIndexes = new Map()
 
     static $category = 'default'
+    static $name = null
     static $eagerStart = true
 
     constructor (options = {}) {
         super()
 
         this.options = {...options}
-        this.#id = options.$id || options.name || this.constructor.name
+        this.#name = options.$name || this.constructor.$name || this.constructor.name
+        this.#id = options.$id || this.#name
         this.#category = options.$category || this.constructor.$category
         this.#bind = options.$bind
         this.#eagerStart = options.$eagerStart
@@ -50,6 +53,21 @@ export default class PerkyModule extends Notifier {
         if (oldName !== newName) {
             this.#id = newName
             this.emit('$id:changed', newName, oldName)
+        }
+    }
+
+
+    get $name () {
+        return this.#name
+    }
+
+
+    set $name (newName) {
+        const oldName = this.#name
+
+        if (oldName !== newName) {
+            this.#name = newName
+            this.emit('$name:changed', newName, oldName)
         }
     }
 
@@ -228,13 +246,14 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    create (Child, options = {}) {
+    create (Child, options = {}) { // eslint-disable-line complexity
         options.$category ||= Child.$category
-        options.$id ||= uniqueId(this.childrenRegistry, options.$category)
+        options.$name ||= Child.$name || options.$category
+        options.$id ||= uniqueId(this.childrenRegistry, options.$name)
         options.$eagerStart = options.$eagerStart ?? Child.$eagerStart ?? true
 
-        const child = typeof Child === 'function' ? new Child(options) : Child
-        return this.#addChild(child, options)
+        // const child = typeof Child === 'function' ? new Child(options) : Child
+        return this.#addChild(new Child(options), options)
     }
 
 

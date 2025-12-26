@@ -12,7 +12,7 @@ export default class ThreePlugin extends PerkyModule {
 
     constructor (options = {}) {
         super({
-            name: 'three',
+            $name: 'three',
             ...options
         })
 
@@ -65,7 +65,7 @@ function onInstall (plugin, host) {
     host.scene = scene
     host.camera = camera
     host.renderer = renderer
-    
+
     if (renderComposer) {
         host.renderComposer = renderComposer
     }
@@ -146,7 +146,7 @@ function createRenderer (rendererOptions = {}) {
         antialias: true,
         ...rendererOptions
     })
-    
+
     return renderer
 }
 
@@ -243,13 +243,13 @@ function setupEventHandlers (plugin, host) {
 
 function handleResize (plugin, host) {
     const {camera, renderer, renderComposer} = plugin
-    
+
     if (!camera || !renderer) {
         return
     }
 
     const containerSize = getContainerSize(host)
-    
+
     if (containerSize.width <= 0 || containerSize.height <= 0) {
         return
     }
@@ -279,7 +279,7 @@ function updateCamera (camera, containerSize) {
     } else if (camera.isOrthographicCamera) {
         const viewHeight = camera.top - camera.bottom
         const viewWidth = viewHeight * aspectRatio
-        
+
         camera.left = -viewWidth / 2
         camera.right = viewWidth / 2
         camera.updateProjectionMatrix()
@@ -289,7 +289,7 @@ function updateCamera (camera, containerSize) {
 
 function getContainerSize (host) {
     const container = host.perkyView?.element
-    
+
     if (!container) {
         return {width: 800, height: 600}
     }
@@ -315,7 +315,7 @@ function setupSpritesheetIntegration (plugin, host) {
             handleSpritesheetLoaded(source, sourceDescriptor, host)
         }
     }
-    
+
     host.on('loader:progress', spritesheetHandler)
 
     if (!plugin.spritesheetHandlers) {
@@ -328,12 +328,12 @@ function setupSpritesheetIntegration (plugin, host) {
 function handleSpritesheetLoaded (spritesheet, sourceDescriptor, host) {
     const spritesheetId = sourceDescriptor.id
     const frameNames = spritesheet.getFrameNames()
-    
+
     frameNames.forEach(frameName => {
         const frameTexture = spritesheet.getFrameTexture(frameName)
         if (frameTexture) {
             const frameId = `${spritesheetId}_${frameName}`
-            
+
             host.addSourceDescriptor('texture', {
                 id: frameId,
                 type: 'texture',

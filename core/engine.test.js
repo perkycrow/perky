@@ -234,17 +234,14 @@ describe(Engine, () => {
 
 
     test('registerController', () => {
-        const controller = new ActionController()
-
-        engine.registerController('test', controller)
+        const controller = engine.registerController('test', ActionController)
 
         expect(engine.getController('test')).toBe(controller)
     })
 
 
     test('getController', () => {
-        const controller = new ActionController()
-        engine.registerController('test', controller)
+        const controller = engine.registerController('test', ActionController)
 
         expect(engine.getController('test')).toBe(controller)
     })
@@ -285,12 +282,9 @@ describe(Engine, () => {
 
 
     test('controller lifecycle events propagation', () => {
-        const controller = new ActionController()
-
+        const controller = engine.registerController('test', ActionController)
         const startSpy = vi.spyOn(controller, 'start')
         const stopSpy = vi.spyOn(controller, 'stop')
-
-        engine.registerController('test', controller)
 
         engine.start()
 

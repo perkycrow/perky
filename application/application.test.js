@@ -236,9 +236,7 @@ describe(Application, () => {
         }
 
         const testApp = new Application()
-        const controller = new TestController()
-
-        testApp.registerController('game', controller)
+        const controller = testApp.registerController('game', TestController)
         testApp.setActiveControllers('game')
         testApp.bind({
             deviceName: 'keyboard',
@@ -864,9 +862,9 @@ describe(Application, () => {
             }
 
             const testApp = new Application()
-            const controller = new TestController()
 
-            testApp.registerController('editor', controller)
+
+            const controller = testApp.registerController('editor', TestController)
             testApp.setActiveControllers('editor')
             testApp.bindCombo(['ControlLeft', 'leftButton'], 'smartCombo', 'editor')
 

@@ -26,7 +26,7 @@ describe(MouseDevice, () => {
 
         device = new MouseDevice({
             container: mockContainer,
-            name: 'testMouse'
+            $id: 'testMouse'
         })
     })
 
