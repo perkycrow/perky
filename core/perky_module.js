@@ -25,6 +25,7 @@ export default class PerkyModule extends Notifier {
     static $category = 'perkyModule'
     static $name = null
     static $eagerStart = true
+    static $tags = []
 
     constructor (options = {}) {
         super()
@@ -37,7 +38,10 @@ export default class PerkyModule extends Notifier {
         this.#eagerStart = options.$eagerStart
         this.#lifecycle = options.$lifecycle !== false
 
-        this.#tags = new ObservableSet(options.$tags)
+        this.#tags = new ObservableSet([
+            ...this.constructor.$tags,
+            ...(options.$tags || [])
+        ])
 
         this.#childrenRegistry = new Registry()
         this.#childrenRegistry.addIndex('$category')
@@ -171,6 +175,20 @@ export default class PerkyModule extends Notifier {
 
     hasTag (tag) {
         return this.#tags.has(tag)
+    }
+
+
+    addTag (tag) {
+        if (this.#tags.has(tag)) {
+            return false
+        }
+        this.#tags.add(tag)
+        return true
+    }
+
+
+    removeTag (tag) {
+        return this.#tags.delete(tag)
     }
 
 

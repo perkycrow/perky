@@ -1180,6 +1180,49 @@ describe(PerkyModule, () => {
         })
 
 
+        describe('addTag()', () => {
+            test('adds a tag', () => {
+                const module = new PerkyModule()
+                module.addTag('enemy')
+                expect(module.hasTag('enemy')).toBe(true)
+            })
+
+
+            test('returns true when tag is new', () => {
+                const module = new PerkyModule()
+                expect(module.addTag('enemy')).toBe(true)
+            })
+
+
+            test('returns false when tag already exists', () => {
+                const module = new PerkyModule({$tags: ['enemy']})
+                expect(module.addTag('enemy')).toBe(false)
+            })
+        })
+
+
+        describe('removeTag()', () => {
+            test('removes a tag', () => {
+                const module = new PerkyModule({$tags: ['enemy', 'collidable']})
+                module.removeTag('enemy')
+                expect(module.hasTag('enemy')).toBe(false)
+                expect(module.hasTag('collidable')).toBe(true)
+            })
+
+
+            test('returns true when tag existed', () => {
+                const module = new PerkyModule({$tags: ['enemy']})
+                expect(module.removeTag('enemy')).toBe(true)
+            })
+
+
+            test('returns false when tag did not exist', () => {
+                const module = new PerkyModule()
+                expect(module.removeTag('enemy')).toBe(false)
+            })
+        })
+
+
         describe('hasTags()', () => {
             test('returns true when all tags exist (array)', () => {
                 const module = new PerkyModule({$tags: ['enemy', 'collidable', 'flying']})
