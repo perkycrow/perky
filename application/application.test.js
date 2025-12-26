@@ -1,5 +1,4 @@
 import Application from './application'
-import Engine from '../core/engine'
 import PerkyView from './perky_view'
 import Registry from '../core/registry'
 import Manifest from '../core/manifest'
@@ -50,7 +49,9 @@ describe(Application, () => {
 
 
     test('constructor', () => {
-        expect(application).toBeInstanceOf(Engine)
+        expect(application).toBeInstanceOf(PerkyModule)
+        expect(application.manifest).toBeInstanceOf(Manifest)
+        expect(application.actionDispatcher).toBeDefined()
         expect(application.loaders).toBeInstanceOf(Registry)
         expect(application.perkyView).toBeInstanceOf(PerkyView)
         expect(application.sourceManager).toBeDefined()
@@ -66,6 +67,33 @@ describe(Application, () => {
 
         expect(customApp.manifest).toBeDefined()
         expect(customApp.manifest.getMetadata('name')).toBe('Test App')
+    })
+
+
+    test('constructor with manifest instance', () => {
+        const manifest = new Manifest({
+            data: {
+                metadata: {name: 'Test App Instance'}
+            }
+        })
+        const customApp = new Application({manifest})
+
+        expect(customApp.manifest).toBeInstanceOf(Manifest)
+        expect(customApp.manifest.getMetadata('name')).toBe('Test App Instance')
+    })
+
+
+    test('constructor with static manifest', () => {
+        class CustomApp extends Application {
+            static manifest = {
+                metadata: {name: 'Static Manifest App'}
+            }
+        }
+
+        const customApp = new CustomApp()
+
+        expect(customApp.manifest).toBeInstanceOf(Manifest)
+        expect(customApp.manifest.getMetadata('name')).toBe('Static Manifest App')
     })
 
 
