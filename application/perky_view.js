@@ -124,16 +124,6 @@ export default class PerkyView extends PerkyModule {
 
         container.appendChild(this.element)
 
-        console.log('PerkyView mounted:', {
-            container,
-            containerClientWidth: container.clientWidth,
-            containerClientHeight: container.clientHeight,
-            elementClientWidth: this.element.clientWidth,
-            elementClientHeight: this.element.clientHeight,
-            elementWidth: this.width,
-            elementHeight: this.height
-        })
-
         this.emit('mount', {container})
 
         if (this.#resizeObserver) {
