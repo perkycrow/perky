@@ -259,14 +259,14 @@ describe(Application, () => {
     })
 
 
-    test('inputManager alias provides access to InputSystem', () => {
-        expect(application.inputManager.getDevice('keyboard')).toBeDefined()
-        expect(application.inputManager.getDevice('mouse')).toBeDefined()
+    test('inputSystem alias provides access to InputSystem', () => {
+        expect(application.inputSystem.getDevice('keyboard')).toBeDefined()
+        expect(application.inputSystem.getDevice('mouse')).toBeDefined()
     })
 
 
-    test('inputManager and inputBinder getters', () => {
-        expect(application.inputManager).toBeDefined()
+    test('inputSystem and inputBinder getters', () => {
+        expect(application.inputSystem).toBeDefined()
         expect(application.inputBinder).toBeDefined()
     })
 

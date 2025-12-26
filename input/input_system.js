@@ -35,15 +35,8 @@ export default class InputSystem extends PerkyModule {
     }
 
 
-    // Backward compatibility: inputManager now points to InputSystem itself
-    get inputManager () {
-        return this
-    }
-
-
     onInstall (host) {
         host.delegate(this, [
-            'inputManager',
             'registerDevice',
             'unregisterDevice',
             'getDevice',

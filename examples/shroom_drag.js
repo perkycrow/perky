@@ -165,20 +165,20 @@ export default class ShroomDrag extends Application {
     }
 
     setupMouseEvents () {
-        // Écouter les événements de souris via l'inputManager
-        this.inputManager.on('control:pressed', (control, event, device) => {
+        // Écouter les événements de souris via l'inputSystem
+        this.inputSystem.on('control:pressed', (control, event, device) => {
             if (device.name === 'MouseDevice' && control.name === 'leftButton') {
                 this.onMouseDown(event)
             }
         })
 
-        this.inputManager.on('control:released', (control, event, device) => {
+        this.inputSystem.on('control:released', (control, event, device) => {
             if (device.name === 'MouseDevice' && control.name === 'leftButton') {
                 this.onMouseUp(event)
             }
         })
 
-        this.inputManager.on('control:updated', (control, value, oldValue, event) => {
+        this.inputSystem.on('control:updated', (control, value, oldValue, event) => {
             const device = this.getDevice('mouse')
             if (device && control.name === 'position') {
                 this.onMouseMove(event)

@@ -248,19 +248,19 @@ export default class WorldBuilder extends Application {
 
     setupCameraControls () {
         // Pan avec le clic gauche + drag
-        this.inputManager.on('control:pressed', (control, event, device) => {
+        this.inputSystem.on('control:pressed', (control, event, device) => {
             if (device.name === 'MouseDevice' && control.name === 'leftButton') {
                 this.onPanStart(event)
             }
         })
 
-        this.inputManager.on('control:released', (control, event, device) => {
+        this.inputSystem.on('control:released', (control, event, device) => {
             if (device.name === 'MouseDevice' && control.name === 'leftButton') {
                 this.onPanEnd()
             }
         })
 
-        this.inputManager.on('control:updated', (control, value, oldValue, event) => {
+        this.inputSystem.on('control:updated', (control, value, oldValue, event) => {
             const device = this.getDevice('mouse')
             if (device && control.name === 'position' && this.isPanning) {
                 this.onPanMove(event)

@@ -39,9 +39,9 @@ export default class CompositeBinding extends InputBinding {
     }
 
 
-    shouldTrigger (inputManager) {
+    shouldTrigger (inputSystem) {
         return this.controls.every(({deviceName, controlName}) => {
-            return inputManager.isPressed(deviceName, controlName)
+            return inputSystem.isPressed(deviceName, controlName)
         })
     }
 

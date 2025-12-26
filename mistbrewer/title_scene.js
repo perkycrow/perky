@@ -60,7 +60,7 @@ export default class TitleScene extends Scene {
 
     setupInputHandlers () {
         // Handle mouse click
-        this.game.inputManager.on('control:pressed', (control, event, device) => {
+        this.game.inputSystem.on('control:pressed', (control, event, device) => {
             if (device.name === 'MouseDevice' && control.name === 'leftButton') {
                 if (this.isButtonClicked(event)) {
                     this.startGame()
@@ -69,7 +69,7 @@ export default class TitleScene extends Scene {
         })
 
         // Handle mouse move for hover effect
-        this.game.inputManager.on('control:updated', (control, value, oldValue, event) => {
+        this.game.inputSystem.on('control:updated', (control, value, oldValue, event) => {
             const device = this.game.getDevice('mouse')
             if (device && control.name === 'position') {
                 const wasHovering = this.isHovering
@@ -82,7 +82,7 @@ export default class TitleScene extends Scene {
         })
 
         // Handle keyboard (Enter key)
-        this.game.inputManager.on('control:pressed', (control, event, device) => {
+        this.game.inputSystem.on('control:pressed', (control, event, device) => {
             if (device.name === 'KeyboardDevice' && (control.name === 'Enter' || control.name === 'Space')) {
                 this.startGame()
             }
@@ -124,7 +124,7 @@ export default class TitleScene extends Scene {
     }
 
     async cleanup () {
-        // Remove input handlers (inputManager handles cleanup automatically when game changes)
+        // Remove input handlers (inputSystem handles cleanup automatically when game changes)
         
         // Remove sprites
         if (this.titleSprite) {

@@ -15,7 +15,7 @@ export default class GameScene extends Scene {
     }
 
     setupInputHandlers () {
-        this.game.inputManager.on('control:pressed', (control, event, device) => {
+        this.game.inputSystem.on('control:pressed', (control, event, device) => {
             if (device.name === 'KeyboardDevice' && control.name === 'Escape') {
                 console.log('🏠 Returning to title...')
                 this.game.sceneManager.switchTo('title')
