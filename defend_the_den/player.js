@@ -1,7 +1,10 @@
 import Entity from '../game/entity'
+import PlayerRenderer from './renderers/player_renderer'
 
 
 export default class Player extends Entity {
+
+    static Renderer = PlayerRenderer
 
     constructor (params = {}) {
         super(params)

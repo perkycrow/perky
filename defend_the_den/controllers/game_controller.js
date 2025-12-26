@@ -64,7 +64,7 @@ export default class GameController extends WorldController {
 
 
     cleanupProjectiles () {
-        const projectiles = this.world.childrenByCategory('projectile')
+        const projectiles = this.world.childrenByTags('projectile')
         for (const projectile of projectiles) {
             if (!projectile.alive) {
                 this.world.removeChild(projectile.$id)
@@ -93,7 +93,7 @@ export default class GameController extends WorldController {
 
 
     checkCollisions () {
-        const projectiles = this.world.childrenByCategory('projectile')
+        const projectiles = this.world.childrenByTags('projectile')
         const enemies = this.world.childrenByTags('enemy')
 
         for (const projectile of projectiles) {
@@ -217,7 +217,6 @@ export default class GameController extends WorldController {
         const player = this.world.getChild('player')
 
         this.world.create(Projectile, {
-            $category: 'projectile',
             $tags: ['updatable'],
             x: player.x + 0.3,
             y: player.y,

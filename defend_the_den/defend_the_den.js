@@ -48,13 +48,13 @@ export default class DefendTheDen extends Game {
     configureGame () {
         this.world = this.create(World)
 
-        // Camera is now created in renderSystem config above
         this.camera = this.renderSystem.getCamera('main')
 
         this.registerController('game', GameController)
         this.setActiveControllers(['game'])
 
-        this.renderer = new GameRenderer({
+        this.renderer = this.create(GameRenderer, {
+            $id: 'renderer',
             world: this.world,
             game: this
         })
@@ -62,15 +62,12 @@ export default class DefendTheDen extends Game {
         const gameController = this.getController('game')
         gameController.world = this.world
 
-
         this.on('render', () => {
             this.renderer.render()
         })
     }
 
     onStart () {
-        this.renderer.initialize()
-
         this.execute('spawnPlayer', {x: -2.5})
 
         const gameController = this.getController('game')

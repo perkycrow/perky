@@ -1,36 +1,24 @@
-
-import Vec2 from '../math/vec2'
 import Entity from '../game/entity'
 
 
 export default class Projectile extends Entity {
 
+    static $tags = ['projectile']
+
+    static renderable = {
+        type: 'circle',
+        radius: 0.1,
+        color: '#000000'
+    }
+
     constructor (params = {}) {
         super(params)
 
-        const {x = 0, y = 0, velocityX = 5, velocityY = 3, gravity = -10} = params
+        const {velocityX = 5, velocityY = 3, gravity = -10} = params
 
-        this.position = new Vec2(x, y)
-        this.velocity = new Vec2(velocityX, velocityY)
+        this.velocity.set(velocityX, velocityY)
         this.gravity = gravity
         this.alive = true
-    }
-
-
-    get x () {
-        return this.position.x
-    }
-
-    set x (value) {
-        this.position.x = value
-    }
-
-    get y () {
-        return this.position.y
-    }
-
-    set y (value) {
-        this.position.y = value
     }
 
 

@@ -10,6 +10,7 @@ export default class World extends PerkyModule {
 
         this.addTagsIndex(['updatable'])
         this.addTagsIndex(['enemy'])
+        this.addTagsIndex(['projectile'])
     }
 
 
