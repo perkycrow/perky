@@ -86,7 +86,10 @@ export default class WebGLCanvas2D extends PerkyModule {
         this.spriteProgram = createSpriteProgram(gl)
         this.primitiveProgram = createPrimitiveProgram(gl)
 
-        this.textureManager = new WebGLTextureManager(gl)
+        this.create(WebGLTextureManager, {
+            $bind: 'textureManager',
+            gl
+        })
         this.spriteBatch = new WebGLSpriteBatch(gl, this.spriteProgram, this.textureManager)
 
         this.gridVertexBuffer = gl.createBuffer()
@@ -196,10 +199,6 @@ export default class WebGLCanvas2D extends PerkyModule {
 
         if (this.spriteBatch) {
             this.spriteBatch.dispose()
-        }
-
-        if (this.textureManager) {
-            this.textureManager.dispose()
         }
 
         if (this.gl) {
