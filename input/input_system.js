@@ -75,6 +75,8 @@ export default class InputSystem extends PerkyModule {
             'getInputValueAny',
             'getDirection'
         ])
+
+        host.delegateEvents(this, ['input:triggered'])
     }
 
 
@@ -407,7 +409,7 @@ export default class InputSystem extends PerkyModule {
 
         matchingBindings.forEach(binding => {
             if (typeof binding.shouldTrigger !== 'function' || binding.shouldTrigger(this)) {
-                this.host?.actionDispatcher?.dispatchAction(binding, event, device)
+                this.emit('input:triggered', binding, event, device)
             }
         })
     }

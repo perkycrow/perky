@@ -400,8 +400,11 @@ describe(InputSystem, () => {
     })
 
 
-    test('dispatches action when control is pressed', async () => {
+    test('emits input:triggered event when control is pressed', async () => {
         inputSystem.bindKey('Space', 'jump')
+
+        const triggeredListener = vi.fn()
+        mockHost.on('input:triggered', triggeredListener)
 
         const spaceControl = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: 'Space'})
 
@@ -409,7 +412,12 @@ describe(InputSystem, () => {
 
         await new Promise(resolve => setTimeout(resolve, 0))
 
-        expect(mockHost.actionDispatcher.dispatchAction).toHaveBeenCalled()
+        expect(triggeredListener).toHaveBeenCalled()
+        expect(triggeredListener).toHaveBeenCalledWith(
+            expect.objectContaining({actionName: 'jump'}),
+            expect.anything(),
+            expect.anything()
+        )
     })
 
 

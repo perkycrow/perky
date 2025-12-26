@@ -10,6 +10,8 @@ export default class ActionDispatcher extends PerkyModule {
     onInstall (host, options) {
         this.#setupMainController(options)
 
+        this.listenTo(host, 'input:triggered', this.dispatchAction.bind(this))
+
         host.delegate(this, {
             register: 'registerController',
             unregister: 'unregisterController',
