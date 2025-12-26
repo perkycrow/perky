@@ -4,6 +4,7 @@ import World from './world'
 import GameController from './controllers/game_controller'
 import GameRenderer from './game_renderer'
 import Snowman from './snowman'
+import WaveProgressBar from './ui/wave_progress_bar'
 
 import manifest from './manifest'
 import debug from '../core/debug'
@@ -43,6 +44,12 @@ export default class DefendTheDen extends Game {
                     gridOpacity: 0.15,
                     gridColor: '#666666',
                     enableCulling: true
+                },
+                {
+                    name: 'ui',
+                    type: 'html',
+                    camera: 'main',
+                    pointerEvents: 'none'
                 }
             ]
         }
@@ -69,6 +76,13 @@ export default class DefendTheDen extends Game {
 
         const gameController = this.getController('game')
         gameController.world = this.world
+
+        const uiLayer = this.getHTML('ui')
+        const waveProgress = this.create(WaveProgressBar, {
+            $id: 'waveProgress',
+            gameController
+        })
+        waveProgress.mount(uiLayer)
 
         this.on('render', () => {
             this.renderer.render()

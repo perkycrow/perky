@@ -124,6 +124,14 @@ export default class GameController extends WorldController {
 
 
     onEnemyDestroyed () {
+        this.enemiesKilled++
+
+        const progress = this.enemiesToSpawn > 0
+            ? this.enemiesKilled / this.enemiesToSpawn
+            : 0
+
+        this.emit('wave:progress', progress)
+
         console.log('Hit! Enemy destroyed!')
     }
 
@@ -133,9 +141,13 @@ export default class GameController extends WorldController {
         const config = this.getWaveConfig(waveNumber)
 
         this.enemiesSpawned = 0
+        this.enemiesKilled = 0
         this.enemiesToSpawn = config.enemyCount
         this.spawnTimer = 0
         this.waveActive = true
+
+        this.emit('wave:start', waveNumber)
+        this.emit('wave:progress', 0)
 
         console.log(`🌊 Wave ${waveNumber + 1} started! ${config.enemyCount} enemies incoming!`)
     }
@@ -205,6 +217,9 @@ export default class GameController extends WorldController {
 
     onWaveComplete () {
         this.waveActive = false
+
+        this.emit('wave:complete', this.currentWave)
+
         console.log(`✅ Wave ${this.currentWave + 1} complete!`)
 
         setTimeout(() => {
