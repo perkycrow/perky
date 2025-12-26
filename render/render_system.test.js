@@ -146,11 +146,45 @@ describe('RenderSystem', () => {
 
 
         it('should set a camera', () => {
-            const mockCamera = {id: 'test'}
+            const camera = renderSystem.setCamera('test', {unitsInView: 5})
 
-            renderSystem.setCamera('test', mockCamera)
+            expect(renderSystem.getCamera('test')).toBe(camera)
+            expect(camera.unitsInView).toEqual({height: 5})
+        })
 
-            expect(renderSystem.getCamera('test')).toBe(mockCamera)
+
+        it('should create a camera with createCamera', () => {
+            const camera = renderSystem.createCamera('secondary', {
+                unitsInView: {width: 20},
+                zoom: 2
+            })
+
+            expect(camera.$id).toBe('secondary')
+            expect(camera.$category).toBe('camera')
+            expect(camera.unitsInView).toEqual({width: 20})
+            expect(camera.zoom).toBe(2)
+            expect(renderSystem.getCamera('secondary')).toBe(camera)
+        })
+
+
+        it('should replace existing camera with setCamera', () => {
+            const first = renderSystem.setCamera('test', {zoom: 1})
+            const second = renderSystem.setCamera('test', {zoom: 2})
+
+            expect(renderSystem.getCamera('test')).toBe(second)
+            expect(second.zoom).toBe(2)
+            expect(first.disposed).toBe(true)
+        })
+
+
+        it('should list cameras by category', () => {
+            renderSystem.createCamera('secondary', {})
+
+            const cameras = renderSystem.childrenByCategory('camera')
+
+            expect(cameras.length).toBe(2)
+            expect(cameras.map(c => c.$id)).toContain('main')
+            expect(cameras.map(c => c.$id)).toContain('secondary')
         })
 
     })

@@ -1,5 +1,6 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
 import Camera2D from './camera_2d'
+import PerkyModule from '../core/perky_module'
 
 
 describe(Camera2D, () => {
@@ -8,6 +9,17 @@ describe(Camera2D, () => {
 
     beforeEach(() => {
         camera = new Camera2D()
+    })
+
+
+    test('extends PerkyModule', () => {
+        expect(camera).toBeInstanceOf(PerkyModule)
+    })
+
+
+    test('$category', () => {
+        expect(Camera2D.$category).toBe('camera')
+        expect(camera.$category).toBe('camera')
     })
 
 

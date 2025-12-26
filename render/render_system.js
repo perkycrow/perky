@@ -23,7 +23,6 @@ export default class RenderSystem extends PerkyModule {
             this.mount(options.container)
         }
 
-        this.cameras = new Map()
         this.layerWidth = options.width ?? 800
         this.layerHeight = options.height ?? 600
 
@@ -69,38 +68,51 @@ export default class RenderSystem extends PerkyModule {
 
 
     setupCameras (camerasConfig = {}) {
-        this.cameras.set('main', new Camera2D({
-            unitsInView: 10,
-            viewportWidth: this.layerWidth,
-            viewportHeight: this.layerHeight
-        }))
+        const hasMainInConfig = 'main' in camerasConfig
 
-        Object.entries(camerasConfig).forEach(([id, camera]) => {
-            if (!camera.viewportWidth) {
-                camera.viewportWidth = this.layerWidth
-            }
-            if (!camera.viewportHeight) {
-                camera.viewportHeight = this.layerHeight
-            }
-            this.cameras.set(id, camera)
+        if (!hasMainInConfig) {
+            this.createCamera('main', {
+                unitsInView: 10,
+                viewportWidth: this.layerWidth,
+                viewportHeight: this.layerHeight
+            })
+        }
+
+        Object.entries(camerasConfig).forEach(([id, config]) => {
+            this.createCamera(id, config)
         })
 
         return this
     }
 
 
+    createCamera (id, config = {}) {
+        const options = {
+            $id: id,
+            viewportWidth: this.layerWidth,
+            viewportHeight: this.layerHeight,
+            ...config
+        }
+
+        return this.create(Camera2D, options)
+    }
+
+
     getCamera (id = 'main') {
-        const camera = this.cameras.get(id)
-        if (!camera) {
+        const camera = this.getChild(id)
+        if (!camera || camera.$category !== 'camera') {
             throw new Error(`Camera "${id}" not found`)
         }
         return camera
     }
 
 
-    setCamera (id, camera) {
-        this.cameras.set(id, camera)
-        return this
+    setCamera (id, config) {
+        const existing = this.getChild(id)
+        if (existing && existing.$category === 'camera') {
+            this.removeChild(id)
+        }
+        return this.createCamera(id, config)
     }
 
 
@@ -115,6 +127,10 @@ export default class RenderSystem extends PerkyModule {
 
         if (cameraOption instanceof Camera2D) {
             return cameraOption
+        }
+
+        if (typeof cameraOption === 'object') {
+            return this.createCamera(cameraOption.$id || 'unnamed', cameraOption)
         }
 
         return null
@@ -206,6 +222,11 @@ export default class RenderSystem extends PerkyModule {
         this.layerWidth = width
         this.layerHeight = height
 
+        this.childrenByCategory('camera').forEach(camera => {
+            camera.viewportWidth = width
+            camera.viewportHeight = height
+        })
+
         this.childrenByCategory('layer').forEach(layer => {
             layer.resize(width, height)
         })
@@ -296,6 +317,7 @@ export default class RenderSystem extends PerkyModule {
             'renderLayer',
             'showLayer',
             'hideLayer',
+            'createCamera',
             'getCamera',
             'setCamera'
         ])

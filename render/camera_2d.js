@@ -1,10 +1,17 @@
-export default class Camera2D {
+import PerkyModule from '../core/perky_module'
+
+
+export default class Camera2D extends PerkyModule {
+
+    static $category = 'camera'
 
     constructor (options = {}) { // eslint-disable-line complexity
+        super(options)
+
         this.x = options.x ?? 0
         this.y = options.y ?? 0
         this.zoom = options.zoom ?? 1
-        this.rotation = options.rotation ?? 0  // radians
+        this.rotation = options.rotation ?? 0
 
         const unitsInView = options.unitsInView ?? 10
         if (typeof unitsInView === 'number') {
@@ -24,7 +31,6 @@ export default class Camera2D {
 
     get pixelsPerUnit () {
         if (this.unitsInView.width && this.unitsInView.height) {
-
             const ppuForWidth = this.viewportWidth / this.unitsInView.width
             const ppuForHeight = this.viewportHeight / this.unitsInView.height
 
@@ -163,4 +169,3 @@ export default class Camera2D {
     }
 
 }
-

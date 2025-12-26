@@ -4,8 +4,6 @@ import World from './world'
 import GameController from './controllers/game_controller'
 import GameRenderer from './game_renderer'
 
-import Camera2D from '../render/camera_2d'
-
 import manifest from './manifest'
 import debug from '../core/debug'
 
@@ -21,9 +19,9 @@ export default class DefendTheDen extends Game {
     constructor (params = {}) {
         const renderSystemConfig = {
             cameras: {
-                main: new Camera2D({
+                main: {
                     unitsInView: {width: 7, height: 5}
-                })
+                }
             },
             layers: [
                 {
