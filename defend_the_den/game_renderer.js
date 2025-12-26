@@ -16,25 +16,6 @@ import SnowmanRenderer from './renderers/snowman_renderer'
 import ShadowRenderer from './renderers/shadow_renderer'
 
 
-WorldRenderer.register(Player, PlayerRenderer)
-WorldRenderer.register(Enemy, ImageRenderer, {image: 'pig', width: 1, height: 1})
-WorldRenderer.register(Projectile, CircleRenderer, {radius: 0.1, color: '#000000'})
-WorldRenderer.register(Snowman, SnowmanRenderer)
-
-WorldRenderer.register(
-    (entity) => entity.hasTag('enemy'),
-    CollisionBoxRenderer,
-    {width: 0.8, height: 0.8, strokeColor: '#ff0000', strokeWidth: 0.05}
-)
-
-WorldRenderer.register(
-    (entity) => entity.hasTag('enemy'),
-    ShadowRenderer,
-    {radius: 0.35, color: 'rgba(0,0,0,0.25)'},
-    'shadows'
-)
-
-
 export default class GameRenderer extends PerkyModule {
 
     constructor (options = {}) {
@@ -54,9 +35,31 @@ export default class GameRenderer extends PerkyModule {
         this.shadowsRenderer = this.create(WorldRenderer, {
             $id: 'shadowsRenderer',
             world: this.world,
-            game: this.game,
-            layer: 'shadows'
+            game: this.game
         })
+
+        this.#registerRenderers()
+    }
+
+
+    #registerRenderers () {
+        this.worldRenderer
+            .register(Player, PlayerRenderer)
+            .register(Enemy, ImageRenderer, {image: 'pig', width: 1, height: 1})
+            .register(Projectile, CircleRenderer, {radius: 0.1, color: '#000000'})
+            .register(Snowman, SnowmanRenderer)
+            .register(
+                (entity) => entity.hasTag('enemy'),
+                CollisionBoxRenderer,
+                {width: 0.8, height: 0.8, strokeColor: '#ff0000', strokeWidth: 0.05}
+            )
+
+        this.shadowsRenderer
+            .register(
+                (entity) => entity.hasTag('enemy'),
+                ShadowRenderer,
+                {radius: 0.35, color: 'rgba(0,0,0,0.25)'}
+            )
     }
 
 

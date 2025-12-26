@@ -2,16 +2,12 @@ import PerkyModule from '../core/perky_module'
 import Group2D from './group_2d'
 
 
-const classRegistry = new Map()
-const matcherRegistry = []
-
-
 export default class WorldRenderer extends PerkyModule {
 
     static $category = 'worldRenderer'
 
-    static matchersEnabled = true
-
+    #classRegistry = new Map()
+    #matcherRegistry = []
     #renderers = new Map()
 
     constructor (options = {}) {
@@ -19,35 +15,35 @@ export default class WorldRenderer extends PerkyModule {
 
         this.world = options.world
         this.game = options.game
-        this.layer = options.layer ?? null
         this.rootGroup = new Group2D({name: 'world'})
     }
 
 
-    static register (classOrMatcher, Renderer, config = null, layer = null) {
+    register (classOrMatcher, Renderer, config = null) {
         if (typeof classOrMatcher === 'function' && classOrMatcher.prototype) {
             const isClass = classOrMatcher.toString().startsWith('class ') ||
-                            Object.getOwnPropertyNames(classOrMatcher.prototype).length > 1
+                Object.getOwnPropertyNames(classOrMatcher.prototype).length > 1
 
             if (isClass) {
-                classRegistry.set(classOrMatcher, {Renderer, config, layer})
-                return
+                this.#classRegistry.set(classOrMatcher, {Renderer, config})
+                return this
             }
         }
 
-        matcherRegistry.push({matcher: classOrMatcher, Renderer, config, layer})
+        this.#matcherRegistry.push({matcher: classOrMatcher, Renderer, config})
+        return this
     }
 
 
-    static unregister (classOrMatcher) {
-        if (classRegistry.has(classOrMatcher)) {
-            classRegistry.delete(classOrMatcher)
+    unregister (classOrMatcher) {
+        if (this.#classRegistry.has(classOrMatcher)) {
+            this.#classRegistry.delete(classOrMatcher)
             return true
         }
 
-        const index = matcherRegistry.findIndex(entry => entry.matcher === classOrMatcher)
+        const index = this.#matcherRegistry.findIndex(entry => entry.matcher === classOrMatcher)
         if (index !== -1) {
-            matcherRegistry.splice(index, 1)
+            this.#matcherRegistry.splice(index, 1)
             return true
         }
 
@@ -55,9 +51,10 @@ export default class WorldRenderer extends PerkyModule {
     }
 
 
-    static clearRegistry () {
-        classRegistry.clear()
-        matcherRegistry.length = 0
+    clearRegistry () {
+        this.#classRegistry.clear()
+        this.#matcherRegistry.length = 0
+        return this
     }
 
 
@@ -95,7 +92,7 @@ export default class WorldRenderer extends PerkyModule {
 
 
     #handleEntitySet (entity) {
-        const registrations = resolveRenderers(entity, WorldRenderer.matchersEnabled, this.layer)
+        const registrations = this.#resolveRenderers(entity)
 
         if (registrations.length === 0) {
             return
@@ -145,34 +142,23 @@ export default class WorldRenderer extends PerkyModule {
         this.#renderers.clear()
     }
 
-}
 
+    #resolveRenderers (entity) {
+        const results = []
+        const EntityClass = entity.constructor
 
-function resolveRenderers (entity, matchersEnabled, targetLayer) {
-    const results = []
-    const EntityClass = entity.constructor
+        const classRegistration = this.#classRegistry.get(EntityClass)
+        if (classRegistration) {
+            results.push(classRegistration)
+        }
 
-    const classRegistration = classRegistry.get(EntityClass)
-    if (classRegistration && matchesLayer(classRegistration.layer, targetLayer)) {
-        results.push(classRegistration)
-    }
-
-    if (matchersEnabled) {
-        for (const entry of matcherRegistry) {
-            if (entry.matcher(entity) && matchesLayer(entry.layer, targetLayer)) {
+        for (const entry of this.#matcherRegistry) {
+            if (entry.matcher(entity)) {
                 results.push(entry)
             }
         }
+
+        return results
     }
 
-    return results
 }
-
-
-function matchesLayer (registrationLayer, targetLayer) {
-    if (registrationLayer === null) {
-        return targetLayer === null
-    }
-    return registrationLayer === targetLayer
-}
-
