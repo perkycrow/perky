@@ -81,11 +81,7 @@ export default class InputSystem extends PerkyModule {
 
 
     registerDevice (DeviceClass, options = {}) {
-        return this.create(DeviceClass, {
-            $category: 'device',
-            $lifecycle: true,
-            ...options
-        })
+        return this.create(DeviceClass, options)
     }
 
 

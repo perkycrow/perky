@@ -4,6 +4,8 @@ import Registry from '../core/registry'
 
 export default class InputDevice extends PerkyModule {
 
+    static $category = 'device'
+
     constructor (options = {}) {
         super(options)
 
