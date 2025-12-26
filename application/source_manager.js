@@ -4,6 +4,8 @@ import SourceLoader from './source_loader'
 
 export default class SourceManager extends PerkyModule {
 
+    static $category = 'sourceManager'
+
     constructor (options = {}) {
         super(options)
 

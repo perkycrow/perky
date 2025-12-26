@@ -15,6 +15,7 @@ window.debug = debug
 
 export default class DefendTheDen extends Game {
 
+    static $name = 'defendTheDen'
     static manifest = manifest
 
     constructor (params = {}) {
