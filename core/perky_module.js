@@ -18,6 +18,7 @@ export default class PerkyModule extends Notifier {
     #host = null
     #bind
     #eagerStart
+    #lifecycle
     #tags = null
     #tagIndexes = new Map()
 
@@ -34,6 +35,7 @@ export default class PerkyModule extends Notifier {
         this.#category = options.$category || this.constructor.$category
         this.#bind = options.$bind
         this.#eagerStart = options.$eagerStart
+        this.#lifecycle = options.$lifecycle !== false
 
         this.#tags = new ObservableSet(options.$tags)
 
@@ -124,6 +126,28 @@ export default class PerkyModule extends Notifier {
 
     get $eagerStart () {
         return this.#eagerStart
+    }
+
+
+    get $lifecycle () {
+        return this.#lifecycle
+    }
+
+
+    get $status () {
+        if (!this.#lifecycle) {
+            return 'static'
+        }
+
+        if (this.#disposed) {
+            return 'disposed'
+        }
+
+        if (this.#started) {
+            return 'started'
+        }
+
+        return 'stopped'
     }
 
 

@@ -910,6 +910,81 @@ describe(PerkyModule, () => {
     })
 
 
+    describe('$lifecycle', () => {
+
+        test('$lifecycle is true by default', () => {
+            const module = new PerkyModule()
+            expect(module.$lifecycle).toBe(true)
+        })
+
+
+        test('$lifecycle can be set to false via options', () => {
+            const module = new PerkyModule({$lifecycle: false})
+            expect(module.$lifecycle).toBe(false)
+        })
+
+
+        test('$lifecycle is true when option is explicitly true', () => {
+            const module = new PerkyModule({$lifecycle: true})
+            expect(module.$lifecycle).toBe(true)
+        })
+
+    })
+
+
+    describe('$status', () => {
+
+        test('returns "stopped" for new module', () => {
+            const module = new PerkyModule()
+            expect(module.$status).toBe('stopped')
+        })
+
+
+        test('returns "started" when module is running', () => {
+            const module = new PerkyModule()
+            module.start()
+            expect(module.$status).toBe('started')
+        })
+
+
+        test('returns "stopped" after stopping a started module', () => {
+            const module = new PerkyModule()
+            module.start()
+            module.stop()
+            expect(module.$status).toBe('stopped')
+        })
+
+
+        test('returns "disposed" when module is disposed', () => {
+            const module = new PerkyModule()
+            module.dispose()
+            expect(module.$status).toBe('disposed')
+        })
+
+
+        test('returns "static" when $lifecycle is false', () => {
+            const module = new PerkyModule({$lifecycle: false})
+            expect(module.$status).toBe('static')
+        })
+
+
+        test('returns "static" even if started when $lifecycle is false', () => {
+            const module = new PerkyModule({$lifecycle: false})
+            module.start()
+            expect(module.$status).toBe('static')
+        })
+
+
+        test('disposed takes precedence over started', () => {
+            const module = new PerkyModule()
+            module.start()
+            module.dispose()
+            expect(module.$status).toBe('disposed')
+        })
+
+    })
+
+
     describe('$tags', () => {
 
         test('initializes with empty tags by default', () => {

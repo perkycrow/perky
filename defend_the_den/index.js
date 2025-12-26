@@ -1,5 +1,6 @@
 import ApplicationManager from '../application/application_manager'
 import DefendTheDen from './defend_the_den'
+import '../editor/components/perky_explorer'
 
 async function init () {
     const appManager = new ApplicationManager()
@@ -12,8 +13,14 @@ async function init () {
         preload: 'all'
     })
 
+    // Attach module explorer for debugging
+    const explorer = document.createElement('perky-explorer')
+    document.body.appendChild(explorer)
+    explorer.setModule(app)
+
     window.defendTheDen = app
     window.appManager = appManager
+    window.explorer = explorer
 }
 
 if (document.readyState === 'loading') {
