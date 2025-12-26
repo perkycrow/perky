@@ -328,7 +328,7 @@ export const inspectorStyles = `
     .inspector-grid {
         display: grid;
         grid-template-columns: auto 1fr;
-        gap: 2px 12px;
+        gap: 4px 12px;
         font-size: 11px;
     }
 
@@ -356,20 +356,27 @@ export const inspectorStyles = `
     .inspector-actions {
         display: flex;
         gap: 6px;
-        margin-top: 6px;
+        margin-top: 10px;
     }
 
     .inspector-btn {
         flex: 1;
+        height: 28px;
+        padding: 0 12px;
         background: var(--bg-hover);
         border: 1px solid var(--border);
-        border-radius: 3px;
+        border-radius: 4px;
         color: var(--fg-secondary);
-        padding: 3px 8px;
         cursor: pointer;
         font-family: inherit;
-        font-size: 10px;
-        transition: background 0.15s, color 0.15s, border-color 0.15s;
+        font-size: 11px;
+        font-weight: 400;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        transition: all 0.15s ease;
     }
 
     .inspector-btn:hover {
@@ -386,15 +393,18 @@ export const inspectorStyles = `
         background: var(--accent);
         border-color: var(--accent);
         color: var(--bg-primary);
+        font-weight: 500;
     }
 
     .inspector-btn.primary:hover {
         filter: brightness(1.1);
+        border-color: var(--accent);
     }
 
     .inspector-btn:disabled {
-        opacity: 0.5;
+        opacity: 0.4;
         cursor: not-allowed;
+        pointer-events: none;
     }
 `
 

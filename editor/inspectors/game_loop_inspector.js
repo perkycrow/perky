@@ -60,7 +60,7 @@ export default class GameLoopInspector extends HTMLElement {
         this.#actionsEl = document.createElement('div')
         this.#actionsEl.className = 'inspector-actions'
 
-        this.#toggleBtn = this.#createButton('⏸ Pause', () => this.#handleToggle())
+        this.#toggleBtn = this.#createButton('⏸', 'Pause', () => this.#handleToggle())
         this.#actionsEl.appendChild(this.#toggleBtn)
 
         this.shadowRoot.appendChild(this.#gridEl)
@@ -89,10 +89,14 @@ export default class GameLoopInspector extends HTMLElement {
     }
 
 
-    #createButton (text, onClick) {
+    #createButton (icon, text, onClick) {
         const btn = document.createElement('button')
         btn.className = 'inspector-btn'
-        btn.textContent = text
+        if (icon) {
+            btn.textContent = `${icon} ${text}`
+        } else {
+            btn.textContent = text
+        }
         btn.addEventListener('click', onClick)
         return btn
     }

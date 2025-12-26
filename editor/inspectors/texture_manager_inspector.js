@@ -129,43 +129,6 @@ const styles = `
     .info-value.disabled {
         color: var(--fg-muted);
     }
-
-    .inspector-actions {
-        display: flex;
-        gap: 6px;
-        margin-top: 10px;
-    }
-
-    .inspector-btn {
-        flex: 1;
-        background: var(--bg-hover);
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        color: var(--fg-secondary);
-        padding: 6px 10px;
-        cursor: pointer;
-        font-family: inherit;
-        font-size: 11px;
-        transition: all 0.15s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-    }
-
-    .inspector-btn:hover {
-        background: var(--bg-selected);
-        color: var(--fg-primary);
-        border-color: var(--fg-muted);
-    }
-
-    .inspector-btn:active {
-        transform: scale(0.98);
-    }
-
-    .inspector-btn .icon {
-        font-size: 12px;
-    }
 `
 
 
@@ -335,15 +298,8 @@ export default class TextureManagerInspector extends HTMLElement {
     #createButton (icon, text, onClick) {
         const btn = document.createElement('button')
         btn.className = 'inspector-btn'
-
-        const iconEl = document.createElement('span')
-        iconEl.className = 'icon'
-        iconEl.textContent = icon
-
-        btn.appendChild(iconEl)
-        btn.appendChild(document.createTextNode(text))
+        btn.textContent = `${icon} ${text}`
         btn.addEventListener('click', onClick)
-
         return btn
     }
 
