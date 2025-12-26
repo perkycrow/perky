@@ -1,11 +1,10 @@
 import Layer from './layer'
 import Canvas2D from './canvas_2d'
-import Camera2D from './camera_2d'
 
 
 export default class CanvasLayer extends Layer {
 
-    constructor (options = {}) { // eslint-disable-line complexity
+    constructor (options = {}) {
         super(options)
 
         this.canvas = document.createElement('canvas')
@@ -19,21 +18,11 @@ export default class CanvasLayer extends Layer {
 
         const vp = this.calculateViewport(width, height)
 
-        let camera
-        if (options.camera) {
-            camera = options.camera
+        const camera = options.camera
+        if (camera) {
             camera.viewportWidth = vp.width
             camera.viewportHeight = vp.height
-            if (camera.pixelRatio === undefined) {
-                camera.pixelRatio = 1
-            }
-        } else {
-            camera = new Camera2D({
-                unitsInView: options.unitsInView ?? 10,
-                viewportWidth: vp.width,
-                viewportHeight: vp.height,
-                pixelRatio: 1
-            })
+            camera.pixelRatio ??= 1
         }
 
         this.renderer = new Canvas2D({

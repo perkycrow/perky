@@ -11,6 +11,10 @@ import Rectangle from './rectangle'
 
 export default class WebGLCanvas2D extends PerkyModule {
 
+
+    static $category = 'renderer'
+    static $name = 'webGLCanvas2D'
+
     #resizeObserver = null
     #autoFitEnabled = false
 

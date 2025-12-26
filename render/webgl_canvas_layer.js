@@ -1,6 +1,5 @@
 import Layer from './layer'
 import WebGLCanvas2D from './webgl_canvas_2d'
-import Camera2D from './camera_2d'
 
 
 export default class WebGLCanvasLayer extends Layer {
@@ -19,24 +18,15 @@ export default class WebGLCanvasLayer extends Layer {
 
         const vp = this.calculateViewport(width, height)
 
-        let camera
-        if (options.camera) {
-            camera = options.camera
+        const camera = options.camera
+        if (camera) {
             camera.viewportWidth = vp.width
             camera.viewportHeight = vp.height
-            if (camera.pixelRatio === undefined) {
-                camera.pixelRatio = 1
-            }
-        } else {
-            camera = new Camera2D({
-                unitsInView: options.unitsInView ?? 10,
-                viewportWidth: vp.width,
-                viewportHeight: vp.height,
-                pixelRatio: 1
-            })
+            camera.pixelRatio ??= 1
         }
 
-        this.renderer = new WebGLCanvas2D({
+        this.create(WebGLCanvas2D, {
+            $bind: 'renderer',
             canvas: this.canvas,
             width: vp.width,
             height: vp.height,
@@ -92,12 +82,5 @@ export default class WebGLCanvasLayer extends Layer {
         return this
     }
 
-
-    onDispose () {
-        if (this.renderer) {
-            this.renderer.dispose()
-        }
-        super.onDispose()
-    }
 
 }
