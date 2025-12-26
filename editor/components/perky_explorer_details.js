@@ -128,9 +128,12 @@ export default class PerkyExplorerDetails extends HTMLElement {
 
         addGridRow(grid, '$name', module.$name)
         addGridRow(grid, '$category', module.$category)
-        addGridRow(grid, '$tags', formatTags(module.$tags))
-        addGridRow(grid, '$status', module.$status)
-        addGridRow(grid, 'installed', module.installed ? 'yes' : 'no')
+
+        const tags = module.$tags
+        if (tags && tags.length > 0) {
+            addGridRow(grid, '$tags', formatTags(tags))
+        }
+
         addGridRow(grid, 'children', module.children.length, true)
 
         this.#contentEl.appendChild(grid)
@@ -218,10 +221,6 @@ function formatValue (value) {
 
 
 function formatTags (tags) {
-    if (!tags || tags.length === 0) {
-        return '(none)'
-    }
-
     const container = document.createElement('div')
     container.className = 'details-tags'
 
