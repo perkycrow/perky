@@ -14,8 +14,6 @@ export default class Application extends Engine {
 
 
     constructor (options = {}) {
-        const {inputBinder, keyboard = {}, mouse = {}} = options
-
         super(options)
 
         this.create(PerkyView, {
@@ -31,9 +29,7 @@ export default class Application extends Engine {
 
         this.create(InputSystem, {
             $bind: 'inputSystem',
-            inputBinder,
-            keyboard,
-            mouse,
+            bindings: options.bindings,
             perkyView: this.perkyView
         })
 

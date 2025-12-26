@@ -10,24 +10,22 @@ export default class InputSystem extends PerkyModule {
     static $category = 'inputSystem'
 
     constructor (options = {}) {
-        const {inputBinder, keyboard = {}, mouse = {}, perkyView} = options
+        const {perkyView, bindings = []} = options
         super(options)
 
         this.create(InputBinder, {
             $bind: 'inputBinder',
-            inputBinder
+            bindings
         })
 
         this.registerDevice(KeyboardDevice, {
             $name: 'keyboard',
-            $bind: 'keyboard',
-            ...keyboard
+            $bind: 'keyboard'
         })
 
         this.registerDevice(MouseDevice, {
             $name: 'mouse',
             $bind: 'mouse',
-            ...mouse,
             container: perkyView?.element
         })
 

@@ -490,7 +490,7 @@ describe(InputSystem, () => {
         ]
 
         const customInputSystem = new InputSystem({
-            inputBinder: {bindings}
+            bindings
         })
 
         expect(customInputSystem.inputBinder.hasBinding({actionName: 'jump'})).toBe(true)
