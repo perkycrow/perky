@@ -1,5 +1,4 @@
 import PerkyModule from '../core/perky_module'
-import InputManager from './input_manager'
 import InputBinder from './input_binder'
 import KeyboardDevice from './input_devices/keyboard_device'
 import MouseDevice from './input_devices/mouse_device'
@@ -19,17 +18,13 @@ export default class InputSystem extends PerkyModule {
             inputBinder
         })
 
-        this.create(InputManager, {
-            $bind: 'inputManager'
-        })
-
-        this.inputManager.registerDevice(KeyboardDevice, {
+        this.registerDevice(KeyboardDevice, {
             $name: 'keyboard',
             $bind: 'keyboard',
             ...keyboard
         })
 
-        this.inputManager.registerDevice(MouseDevice, {
+        this.registerDevice(MouseDevice, {
             $name: 'mouse',
             $bind: 'mouse',
             ...mouse,
@@ -40,13 +35,9 @@ export default class InputSystem extends PerkyModule {
     }
 
 
-    get keyboard () {
-        return this.inputManager.getDevice('keyboard')
-    }
-
-
-    get mouse () {
-        return this.inputManager.getDevice('mouse')
+    // Backward compatibility: inputManager now points to InputSystem itself
+    get inputManager () {
+        return this
     }
 
 
@@ -96,23 +87,188 @@ export default class InputSystem extends PerkyModule {
     }
 
 
+    // ===== Device Management (ex-InputManager) =====
+
+    registerDevice (DeviceClass, options = {}) {
+        const device = this.create(DeviceClass, {
+            $category: 'device',
+            $lifecycle: true,
+            ...options
+        })
+
+        this.#forwardDeviceEvents(device)
+        return device
+    }
+
+
+    getDevice (name) {
+        return this.getChild(name)
+    }
+
+
+    isPressed (deviceName, controlName) {
+        const device = this.getDevice(deviceName)
+        return device ? device.isPressed(controlName) : false
+    }
+
+
+    getValueFor (deviceName, controlName) {
+        const device = this.getDevice(deviceName)
+        return device ? device.getValueFor(controlName) : undefined
+    }
+
+
+    getControl (deviceName, controlName) {
+        const device = this.getDevice(deviceName)
+        return device ? device.getControl(controlName) : null
+    }
+
+
+    isPressedAny (controlName) {
+        const deviceNames = this.listNamesFor('device')
+        for (const name of deviceNames) {
+            const device = this.getChild(name)
+            if (device && device.isPressed(controlName)) {
+                return true
+            }
+        }
+        return false
+    }
+
+
+    getValueAny (controlName) {
+        const deviceNames = this.listNamesFor('device')
+        for (const name of deviceNames) {
+            const device = this.getChild(name)
+            if (device) {
+                const value = device.getValueFor(controlName)
+                if (value !== undefined) {
+                    return value
+                }
+            }
+        }
+        return undefined
+    }
+
+
+    getControlAny (controlName) {
+        const deviceNames = this.listNamesFor('device')
+        for (const name of deviceNames) {
+            const device = this.getChild(name)
+            if (device) {
+                const control = device.getControl(controlName)
+                if (control) {
+                    return control
+                }
+            }
+        }
+        return null
+    }
+
+
+    getAllPressed (controlName) {
+        const results = []
+        const deviceNames = this.listNamesFor('device')
+        for (const name of deviceNames) {
+            const device = this.getChild(name)
+            if (device && device.isPressed(controlName)) {
+                results.push(device)
+            }
+        }
+        return results
+    }
+
+
+    getPressedControls (deviceName) {
+        const device = this.getDevice(deviceName)
+        return device ? device.getPressedControls() : []
+    }
+
+
+    getAllValues (controlName) {
+        const results = []
+        const deviceNames = this.listNamesFor('device')
+        for (const name of deviceNames) {
+            const device = this.getChild(name)
+            if (device) {
+                const value = device.getValueFor(controlName)
+                if (value !== undefined) {
+                    results.push({device, value})
+                }
+            }
+        }
+        return results
+    }
+
+
+    addControl (deviceNameOrControl, ControlOrParams = {}, params = {}) {
+
+        if (typeof deviceNameOrControl === 'string') {
+            const device = this.getDevice(deviceNameOrControl)
+
+            if (!device) {
+                throw new Error(`Device '${deviceNameOrControl}' not found`)
+            }
+
+            return device.findOrCreateControl(ControlOrParams, params)
+
+        } else if (typeof deviceNameOrControl === 'function') {
+
+            return this.addControlToFirst(deviceNameOrControl, ControlOrParams)
+        }
+
+        return null
+    }
+
+
+    addControlToFirst (Control, params = {}) {
+        const deviceNames = this.listNamesFor('device')
+        const firstDevice = deviceNames.length > 0 ? this.getChild(deviceNames[0]) : null
+        if (!firstDevice) {
+            throw new Error('No devices available')
+        }
+        return firstDevice.findOrCreateControl(Control, params)
+    }
+
+
+    addControlToAll (Control, params = {}) {
+        const results = []
+        const deviceNames = this.listNamesFor('device')
+        for (const name of deviceNames) {
+            const device = this.getChild(name)
+            if (device) {
+                const control = device.findOrCreateControl(Control, params)
+                results.push({device, control})
+            }
+        }
+        return results
+    }
+
+
+    deviceKeyFor (device) {
+        return this.childrenRegistry.keyFor(device)
+    }
+
+
+    // ===== Convenience Methods =====
+
     getInputValue (deviceName, controlName) {
-        return this.inputManager.getValueFor(deviceName, controlName)
+        return this.getValueFor(deviceName, controlName)
     }
 
 
     getInputValueAny (controlName) {
-        return this.inputManager.getValueAny(controlName)
+        return this.getValueAny(controlName)
     }
 
 
     isKeyPressed (keyName) {
-        return this.inputManager.isPressed('keyboard', keyName)
+        return this.isPressed('keyboard', keyName)
     }
 
 
     isMousePressed (buttonName) {
-        return this.inputManager.isPressed('mouse', buttonName)
+        return this.isPressed('mouse', buttonName)
     }
 
 
@@ -193,10 +349,10 @@ export default class InputSystem extends PerkyModule {
 
         for (const binding of bindings) {
             if (typeof binding.shouldTrigger === 'function') {
-                if (binding.shouldTrigger(this.inputManager)) {
+                if (binding.shouldTrigger(this)) {
                     return true
                 }
-            } else if (this.inputManager.isPressed(binding.deviceName, binding.controlName)) {
+            } else if (this.isPressed(binding.deviceName, binding.controlName)) {
                 return true
             }
         }
@@ -239,13 +395,13 @@ export default class InputSystem extends PerkyModule {
 
         if (binding.controls && Array.isArray(binding.controls)) {
             for (const {deviceName, controlName} of binding.controls) {
-                const control = this.inputManager.getControl(deviceName, controlName)
+                const control = this.getControl(deviceName, controlName)
                 if (control) {
                     controls.push(control)
                 }
             }
         } else {
-            const control = this.inputManager.getControl(binding.deviceName, binding.controlName)
+            const control = this.getControl(binding.deviceName, binding.controlName)
             if (control) {
                 controls.push(control)
             }
@@ -256,17 +412,28 @@ export default class InputSystem extends PerkyModule {
 
 
     #initEvents () {
-        const {inputManager} = this
+        this.on('control:pressed', this.#handleInputEvent.bind(this, 'pressed'))
+        this.on('control:released', this.#handleInputEvent.bind(this, 'released'))
+    }
 
-        inputManager.on('control:pressed', this.#handleInputEvent.bind(this, 'pressed'))
-        inputManager.on('control:released', this.#handleInputEvent.bind(this, 'released'))
 
-        this.delegateEvents(inputManager, ['control:pressed', 'control:released'])
+    #forwardDeviceEvents (device) {
+        device.on('control:pressed', (control, event) => {
+            this.emit('control:pressed', control, event, device)
+        })
+
+        device.on('control:released', (control, event) => {
+            this.emit('control:released', control, event, device)
+        })
+
+        device.on('control:updated', (control, value, oldValue, event) => {
+            this.emit('control:updated', control, value, oldValue, event, device)
+        })
     }
 
 
     #handleInputEvent (eventType, control, event, device) {
-        const deviceName = this.inputManager.deviceKeyFor(device)
+        const deviceName = this.deviceKeyFor(device)
         const matchingBindings = this.inputBinder.getBindingsForInput({
             deviceName,
             controlName: control.name,
@@ -274,7 +441,7 @@ export default class InputSystem extends PerkyModule {
         })
 
         matchingBindings.forEach(binding => {
-            if (typeof binding.shouldTrigger !== 'function' || binding.shouldTrigger(this.inputManager)) {
+            if (typeof binding.shouldTrigger !== 'function' || binding.shouldTrigger(this)) {
                 this.host?.actionDispatcher?.dispatchAction(binding, event, device)
             }
         })

@@ -259,7 +259,7 @@ describe(Application, () => {
     })
 
 
-    test('constructor registers devices with InputManager', () => {
+    test('inputManager alias provides access to InputSystem', () => {
         expect(application.inputManager.getDevice('keyboard')).toBeDefined()
         expect(application.inputManager.getDevice('mouse')).toBeDefined()
     })
@@ -1134,7 +1134,7 @@ describe(Application, () => {
             expect(moveUpBindings.some(b => b.controlName === 'ArrowUp')).toBe(true)
         })
 
-        
+
         test('registers bindings with custom eventType', () => {
             class TestController extends PerkyModule {
                 static bindings = {

@@ -6,6 +6,7 @@ export default class KeyboardDevice extends InputDevice {
 
     constructor (params = {}) {
         super({
+            ...params,
             container: params.container || window,
             name: params.name || 'KeyboardDevice'
         })

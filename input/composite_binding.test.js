@@ -1,19 +1,19 @@
 import CompositeBinding from './composite_binding'
-import InputManager from './input_manager'
+import InputSystem from './input_system'
 import KeyboardDevice from './input_devices/keyboard_device'
 import ButtonControl from './input_controls/button_control'
 import {vi} from 'vitest'
 
 
 describe(CompositeBinding, () => {
-    let inputManager
+    let inputSystem
     let keyboardDevice
     let compositeBinding
 
 
     beforeEach(() => {
-        inputManager = new InputManager()
-        keyboardDevice = inputManager.registerDevice(KeyboardDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'KeyboardDevice'})
+        inputSystem = new InputSystem()
+        keyboardDevice = inputSystem.registerDevice(KeyboardDevice, {$name: 'keyboard', $bind: 'keyboard', name: 'KeyboardDevice'})
 
         compositeBinding = new CompositeBinding({
             controls: [
@@ -97,13 +97,13 @@ describe(CompositeBinding, () => {
         const ctrlControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'ControlLeft'})
         const sControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'KeyS'})
 
-        expect(compositeBinding.shouldTrigger(inputManager)).toBe(false)
+        expect(compositeBinding.shouldTrigger(inputSystem)).toBe(false)
 
         ctrlControl.press()
-        expect(compositeBinding.shouldTrigger(inputManager)).toBe(false)
+        expect(compositeBinding.shouldTrigger(inputSystem)).toBe(false)
 
         sControl.press()
-        expect(compositeBinding.shouldTrigger(inputManager)).toBe(true)
+        expect(compositeBinding.shouldTrigger(inputSystem)).toBe(true)
     })
 
 

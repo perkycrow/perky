@@ -8,6 +8,7 @@ export default class MouseDevice extends InputDevice {
 
     constructor (params = {}) {
         super({
+            ...params,
             container: params.container || window,
             name: params.name || 'MouseDevice'
         })

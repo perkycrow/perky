@@ -1,7 +1,7 @@
 import {describe, beforeEach, vi} from 'vitest'
 import InputSystem from './input_system'
-import InputManager from './input_manager'
 import InputBinder from './input_binder'
+import InputDevice from './input_device'
 import KeyboardDevice from './input_devices/keyboard_device'
 import MouseDevice from './input_devices/mouse_device'
 import ButtonControl from './input_controls/button_control'
@@ -24,8 +24,7 @@ describe(InputSystem, () => {
     })
 
 
-    test('constructor creates InputManager and InputBinder', () => {
-        expect(inputSystem.inputManager).toBeInstanceOf(InputManager)
+    test('constructor creates InputBinder', () => {
         expect(inputSystem.inputBinder).toBeInstanceOf(InputBinder)
     })
 
@@ -33,18 +32,18 @@ describe(InputSystem, () => {
     test('constructor creates keyboard and mouse devices', () => {
         const inputSystem1 = new InputSystem()
 
-        expect(inputSystem1.inputManager.getDevice('keyboard')).toBeInstanceOf(KeyboardDevice)
-        expect(inputSystem1.inputManager.getDevice('mouse')).toBeInstanceOf(MouseDevice)
+        expect(inputSystem1.getDevice('keyboard')).toBeInstanceOf(KeyboardDevice)
+        expect(inputSystem1.getDevice('mouse')).toBeInstanceOf(MouseDevice)
     })
 
 
-    test('constructor registers devices with InputManager', () => {
-        expect(inputSystem.inputManager.getDevice('keyboard')).toBe(inputSystem.keyboard)
-        expect(inputSystem.inputManager.getDevice('mouse')).toBe(inputSystem.mouse)
+    test('constructor registers devices', () => {
+        expect(inputSystem.getDevice('keyboard')).toBe(inputSystem.keyboard)
+        expect(inputSystem.getDevice('mouse')).toBe(inputSystem.mouse)
     })
 
 
-    test('onInstall delegates InputManager methods to host', () => {
+    test('onInstall delegates device management methods to host', () => {
         expect(typeof mockHost.registerDevice).toBe('function')
         expect(typeof mockHost.getDevice).toBe('function')
         expect(typeof mockHost.isPressed).toBe('function')
@@ -69,6 +68,248 @@ describe(InputSystem, () => {
         expect(typeof mockHost.getActionControls).toBe('function')
     })
 
+
+    // ===== Device Management Tests (ex-InputManager) =====
+
+    test('registerDevice', () => {
+        const device = inputSystem.registerDevice(InputDevice, {$name: 'gamepad', $bind: 'gamepad'})
+
+        expect(inputSystem.getDevice('gamepad')).toBe(device)
+        expect(device.host).toBe(inputSystem)
+        expect(inputSystem.gamepad).toBe(device)
+    })
+
+
+    test('registerDevice with duplicate name replaces device', () => {
+        inputSystem.registerDevice(InputDevice, {$name: 'test', $bind: 'test'})
+        const device2 = inputSystem.registerDevice(InputDevice, {$name: 'test', $bind: 'test'})
+
+        expect(inputSystem.getDevice('test')).toBe(device2)
+        expect(inputSystem.test).toBe(device2)
+    })
+
+
+    test('isPressed', () => {
+        const button = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: 'TestButton'})
+
+        expect(inputSystem.isPressed('keyboard', 'TestButton')).toBe(false)
+        expect(inputSystem.isPressed('nonExistent', 'TestButton')).toBe(false)
+        expect(inputSystem.isPressed('keyboard', 'nonExistent')).toBe(false)
+
+        button.press()
+        expect(inputSystem.isPressed('keyboard', 'TestButton')).toBe(true)
+
+        button.release()
+        expect(inputSystem.isPressed('keyboard', 'TestButton')).toBe(false)
+    })
+
+
+    test('getValueFor', () => {
+        const button = inputSystem.mouse.findOrCreateControl(ButtonControl, {name: 'TestButton'})
+        button.value = 0.5
+
+        expect(inputSystem.getValueFor('mouse', 'TestButton')).toBe(0.5)
+        expect(inputSystem.getValueFor('nonExistent', 'TestButton')).toBeUndefined()
+        expect(inputSystem.getValueFor('mouse', 'nonExistent')).toBeUndefined()
+    })
+
+
+    test('getControl', () => {
+        const device = inputSystem.registerDevice(InputDevice, {$name: 'gamepad', $bind: 'gamepad'})
+        const button = device.findOrCreateControl(ButtonControl, {name: 'TestButton'})
+
+        expect(inputSystem.getControl('gamepad', 'TestButton')).toBe(button)
+        expect(inputSystem.getControl('nonExistent', 'TestButton')).toBeNull()
+        expect(inputSystem.getControl('gamepad', 'nonExistent')).toBeUndefined()
+    })
+
+
+    test('automatic lifecycle management', () => {
+        inputSystem.start()
+        const device = inputSystem.registerDevice(InputDevice, {$name: 'auto', $bind: 'auto'})
+
+        expect(device.started).toBe(true)
+    })
+
+
+    test('event forwarding', () => {
+        const device = inputSystem.registerDevice(InputDevice, {$name: 'test', $bind: 'test'})
+
+        const pressedListener = vi.fn()
+        const releasedListener = vi.fn()
+        const updatedListener = vi.fn()
+
+        inputSystem.on('control:pressed', pressedListener)
+        inputSystem.on('control:released', releasedListener)
+        inputSystem.on('control:updated', updatedListener)
+
+        const button = device.findOrCreateControl(ButtonControl, {name: 'TestButton'})
+
+        button.press()
+        expect(pressedListener).toHaveBeenCalledWith(button, null, device)
+
+        button.release()
+        expect(releasedListener).toHaveBeenCalledWith(button, null, device)
+
+        button.setValue(0.5)
+        expect(updatedListener).toHaveBeenCalled()
+    })
+
+
+    test('isPressedAny', () => {
+        const gamepad = inputSystem.registerDevice(InputDevice, {$name: 'gamepad', $bind: 'gamepad'})
+
+        const keyW = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: 'KeyW'})
+        const buttonA = gamepad.findOrCreateControl(ButtonControl, {name: 'ButtonA'})
+
+        expect(inputSystem.isPressedAny('KeyW')).toBe(false)
+        expect(inputSystem.isPressedAny('ButtonA')).toBe(false)
+        expect(inputSystem.isPressedAny('NonExistent')).toBe(false)
+
+        keyW.press()
+        expect(inputSystem.isPressedAny('KeyW')).toBe(true)
+        expect(inputSystem.isPressedAny('ButtonA')).toBe(false)
+
+        buttonA.press()
+        expect(inputSystem.isPressedAny('ButtonA')).toBe(true)
+    })
+
+
+    test('getValueAny', () => {
+        const keyW = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: 'KeyW'})
+        const leftButton = inputSystem.mouse.findOrCreateControl(ButtonControl, {name: 'leftButton'})
+
+        keyW.setValue(0.8)
+        leftButton.setValue(0.5)
+
+        expect(inputSystem.getValueAny('KeyW')).toBe(0.8)
+        expect(inputSystem.getValueAny('leftButton')).toBe(0.5)
+        expect(inputSystem.getValueAny('NonExistent')).toBeUndefined()
+    })
+
+
+    test('getControlAny', () => {
+        const keyW = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: 'KeyW'})
+        const leftButton = inputSystem.mouse.findOrCreateControl(ButtonControl, {name: 'leftButton'})
+
+        expect(inputSystem.getControlAny('KeyW')).toBe(keyW)
+        expect(inputSystem.getControlAny('leftButton')).toBe(leftButton)
+        expect(inputSystem.getControlAny('NonExistent')).toBeNull()
+    })
+
+
+    test('getAllPressed', () => {
+        const gamepad = inputSystem.registerDevice(InputDevice, {$name: 'gamepad', $bind: 'gamepad'})
+
+        const keyEnter = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: 'Enter'})
+        const gamepadEnter = gamepad.findOrCreateControl(ButtonControl, {name: 'Enter'})
+
+        expect(inputSystem.getAllPressed('Enter')).toEqual([])
+
+        keyEnter.press()
+        expect(inputSystem.getAllPressed('Enter')).toEqual([inputSystem.keyboard])
+
+        gamepadEnter.press()
+        expect(inputSystem.getAllPressed('Enter')).toEqual([inputSystem.keyboard, gamepad])
+
+        keyEnter.release()
+        expect(inputSystem.getAllPressed('Enter')).toEqual([gamepad])
+    })
+
+
+    test('getAllValues', () => {
+        const device1 = inputSystem.registerDevice(InputDevice, {$name: 'device1', $bind: 'device1'})
+        const device2 = inputSystem.registerDevice(InputDevice, {$name: 'device2', $bind: 'device2'})
+
+        const control1 = device1.findOrCreateControl(ButtonControl, {name: 'SharedControl'})
+        const control2 = device2.findOrCreateControl(ButtonControl, {name: 'SharedControl'})
+
+        control1.setValue(0.3)
+        control2.setValue(0.7)
+
+        const values = inputSystem.getAllValues('SharedControl')
+        expect(values).toHaveLength(2)
+        expect(values[0]).toEqual({device: device1, value: 0.3})
+        expect(values[1]).toEqual({device: device2, value: 0.7})
+    })
+
+
+    test('addControl - explicit form', () => {
+        const control = inputSystem.addControl('keyboard', ButtonControl, {
+            name: 'TestKey',
+            pressThreshold: 0.8
+        })
+
+        expect(control).toBeInstanceOf(ButtonControl)
+        expect(control.name).toBe('TestKey')
+        expect(control.pressThreshold).toBe(0.8)
+        expect(inputSystem.keyboard.getControl('TestKey')).toBe(control)
+    })
+
+
+    test('addControl - shortcut form', () => {
+        const control = inputSystem.addControl(ButtonControl, {
+            name: 'ShortcutKey',
+            pressThreshold: 0.6
+        })
+
+        expect(control).toBeInstanceOf(ButtonControl)
+        expect(control.name).toBe('ShortcutKey')
+        expect(control.pressThreshold).toBe(0.6)
+
+        expect(inputSystem.keyboard.getControl('ShortcutKey')).toBe(control)
+        expect(inputSystem.mouse.getControl('ShortcutKey')).toBeUndefined()
+    })
+
+
+    test('addControl with nonexistent device', () => {
+        expect(() => {
+            inputSystem.addControl('nonexistent', ButtonControl, {name: 'test'})
+        }).toThrow("Device 'nonexistent' not found")
+    })
+
+
+    test('addControlToFirst', () => {
+        const control = inputSystem.addControlToFirst(ButtonControl, {
+            name: 'FirstDeviceControl'
+        })
+
+        expect(control).toBeInstanceOf(ButtonControl)
+        expect(control.name).toBe('FirstDeviceControl')
+
+        expect(inputSystem.keyboard.getControl('FirstDeviceControl')).toBe(control)
+        expect(inputSystem.mouse.getControl('FirstDeviceControl')).toBeUndefined()
+    })
+
+
+    test('addControlToAll', () => {
+        const results = inputSystem.addControlToAll(ButtonControl, {
+            name: 'SharedControl'
+        })
+
+        expect(results).toHaveLength(2)
+        expect(results[0].device).toBe(inputSystem.keyboard)
+        expect(results[0].control).toBeInstanceOf(ButtonControl)
+        expect(results[0].control.name).toBe('SharedControl')
+        expect(results[1].device).toBe(inputSystem.mouse)
+        expect(results[1].control).toBeInstanceOf(ButtonControl)
+        expect(results[1].control.name).toBe('SharedControl')
+
+        expect(inputSystem.keyboard.getControl('SharedControl')).toBe(results[0].control)
+        expect(inputSystem.mouse.getControl('SharedControl')).toBe(results[1].control)
+    })
+
+
+    test('deviceKeyFor', () => {
+        expect(inputSystem.deviceKeyFor(inputSystem.keyboard)).toBe('keyboard')
+        expect(inputSystem.deviceKeyFor(inputSystem.mouse)).toBe('mouse')
+
+        const unknownDevice = new InputDevice({name: 'Unknown'})
+        expect(inputSystem.deviceKeyFor(unknownDevice)).toBeUndefined()
+    })
+
+
+    // ===== Binding Tests =====
 
     test('bindKey creates keyboard binding', () => {
         const binding = inputSystem.bindKey('Space', 'jump')
@@ -178,8 +419,8 @@ describe(InputSystem, () => {
         const pressedListener = vi.fn()
         const releasedListener = vi.fn()
 
-        inputSystem.inputManager.on('control:pressed', pressedListener)
-        inputSystem.inputManager.on('control:released', releasedListener)
+        inputSystem.on('control:pressed', pressedListener)
+        inputSystem.on('control:released', releasedListener)
 
         const spaceControl = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: 'Space'})
 
