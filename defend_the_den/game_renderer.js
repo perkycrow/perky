@@ -13,6 +13,7 @@ import Snowman from './snowman'
 
 import PlayerRenderer from './renderers/player_renderer'
 import SnowmanRenderer from './renderers/snowman_renderer'
+import ShadowRenderer from './renderers/shadow_renderer'
 
 
 WorldRenderer.register(Player, PlayerRenderer)
@@ -26,6 +27,13 @@ WorldRenderer.register(
     {width: 0.8, height: 0.8, strokeColor: '#ff0000', strokeWidth: 0.05}
 )
 
+WorldRenderer.register(
+    (entity) => entity.hasTag('enemy'),
+    ShadowRenderer,
+    {radius: 0.35, color: 'rgba(0,0,0,0.25)'},
+    'shadows'
+)
+
 
 export default class GameRenderer extends PerkyModule {
 
@@ -35,17 +43,26 @@ export default class GameRenderer extends PerkyModule {
         this.game = options.game
 
         this.rootGroup = new Group2D({name: 'root'})
+        this.shadowsGroup = new Group2D({name: 'shadows'})
 
         this.worldRenderer = this.create(WorldRenderer, {
             $id: 'worldRenderer',
             world: this.world,
             game: this.game
         })
+
+        this.shadowsRenderer = this.create(WorldRenderer, {
+            $id: 'shadowsRenderer',
+            world: this.world,
+            game: this.game,
+            layer: 'shadows'
+        })
     }
 
 
     onStart () {
         this.#buildScene()
+        this.shadowsGroup.addChild(this.shadowsRenderer.rootGroup)
         this.rootGroup.addChild(this.worldRenderer.rootGroup)
     }
 
@@ -63,12 +80,17 @@ export default class GameRenderer extends PerkyModule {
             height: backgroundHeight
         })
 
-        this.rootGroup.addChild(background)
+        this.shadowsGroup.addChild(background)
     }
 
 
     render () {
+        this.shadowsRenderer.sync()
         this.worldRenderer.sync()
+
+        const shadowsLayer = this.game.getCanvas('shadows')
+        shadowsLayer.setContent(this.shadowsGroup)
+        shadowsLayer.render()
 
         const gameLayer = this.game.getCanvas('game')
         gameLayer.setContent(this.rootGroup)

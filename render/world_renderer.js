@@ -19,22 +19,23 @@ export default class WorldRenderer extends PerkyModule {
 
         this.world = options.world
         this.game = options.game
+        this.layer = options.layer ?? null
         this.rootGroup = new Group2D({name: 'world'})
     }
 
 
-    static register (classOrMatcher, Renderer, config = null) {
+    static register (classOrMatcher, Renderer, config = null, layer = null) {
         if (typeof classOrMatcher === 'function' && classOrMatcher.prototype) {
             const isClass = classOrMatcher.toString().startsWith('class ') ||
                             Object.getOwnPropertyNames(classOrMatcher.prototype).length > 1
 
             if (isClass) {
-                classRegistry.set(classOrMatcher, {Renderer, config})
+                classRegistry.set(classOrMatcher, {Renderer, config, layer})
                 return
             }
         }
 
-        matcherRegistry.push({matcher: classOrMatcher, Renderer, config})
+        matcherRegistry.push({matcher: classOrMatcher, Renderer, config, layer})
     }
 
 
@@ -94,7 +95,7 @@ export default class WorldRenderer extends PerkyModule {
 
 
     #handleEntitySet (entity) {
-        const registrations = resolveRenderers(entity, WorldRenderer.matchersEnabled)
+        const registrations = resolveRenderers(entity, WorldRenderer.matchersEnabled, this.layer)
 
         if (registrations.length === 0) {
             return
@@ -147,23 +148,31 @@ export default class WorldRenderer extends PerkyModule {
 }
 
 
-function resolveRenderers (entity, matchersEnabled) {
+function resolveRenderers (entity, matchersEnabled, targetLayer) {
     const results = []
     const EntityClass = entity.constructor
 
     const classRegistration = classRegistry.get(EntityClass)
-    if (classRegistration) {
+    if (classRegistration && matchesLayer(classRegistration.layer, targetLayer)) {
         results.push(classRegistration)
     }
 
     if (matchersEnabled) {
         for (const entry of matcherRegistry) {
-            if (entry.matcher(entity)) {
+            if (entry.matcher(entity) && matchesLayer(entry.layer, targetLayer)) {
                 results.push(entry)
             }
         }
     }
 
     return results
+}
+
+
+function matchesLayer (registrationLayer, targetLayer) {
+    if (registrationLayer === null) {
+        return targetLayer === null
+    }
+    return registrationLayer === targetLayer
 }
 

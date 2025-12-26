@@ -26,6 +26,14 @@ export default class DefendTheDen extends Game {
             },
             layers: [
                 {
+                    name: 'shadows',
+                    type: 'webgl',
+                    camera: 'main',
+                    pixelRatio: 1.5,
+                    backgroundColor: '#f9f9f9',
+                    enableCulling: true
+                },
+                {
                     name: 'game',
                     type: 'webgl',
                     camera: 'main',
@@ -34,7 +42,6 @@ export default class DefendTheDen extends Game {
                     gridStep: 1,
                     gridOpacity: 0.15,
                     gridColor: '#666666',
-                    backgroundColor: '#f9f9f9',
                     enableCulling: true
                 }
             ]
