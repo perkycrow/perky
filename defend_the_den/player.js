@@ -1,5 +1,3 @@
-
-import Vec2 from '../math/vec2'
 import Entity from '../game/entity'
 
 
@@ -8,31 +6,11 @@ export default class Player extends Entity {
     constructor (params = {}) {
         super(params)
 
-        const {x = 0, y = 0, maxSpeed = 8, acceleration = 80, boundaries = {min: -1.35, max: 1.35}} = params
-
-        this.position = new Vec2(x, y)
-        this.velocity = new Vec2(0, 0)
+        const {maxSpeed = 8, acceleration = 80, boundaries = {min: -1.35, max: 1.35}} = params
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
         this.boundaries = boundaries
-    }
-
-
-    get x () {
-        return this.position.x
-    }
-
-    set x (value) {
-        this.position.x = value
-    }
-
-    get y () {
-        return this.position.y
-    }
-
-    set y (value) {
-        this.position.y = value
     }
 
 

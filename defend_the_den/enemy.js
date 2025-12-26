@@ -1,5 +1,3 @@
-
-import Vec2 from '../math/vec2'
 import Entity from '../game/entity'
 import {trackInstance, untrackInstance} from '../core/debug'
 
@@ -10,31 +8,13 @@ export default class Enemy extends Entity {
         super(params)
         trackInstance('Enemy', this)
 
-        const {x = 0, y = 0, maxSpeed = 3, boundaries = {min: -1.5, max: 1}} = params
+        const {maxSpeed = 3, boundaries = {min: -1.5, max: 1}} = params
 
-        this.position = new Vec2(x, y)
-        this.velocity = new Vec2(-maxSpeed, 0)
+        this.velocity.set(-maxSpeed, 0)
 
         this.maxSpeed = maxSpeed
         this.boundaries = boundaries
         this.alive = true
-    }
-
-
-    get x () {
-        return this.position.x
-    }
-
-    set x (value) {
-        this.position.x = value
-    }
-
-    get y () {
-        return this.position.y
-    }
-
-    set y (value) {
-        this.position.y = value
     }
 
 
