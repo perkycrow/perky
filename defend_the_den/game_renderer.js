@@ -3,6 +3,7 @@ import Image2D from '../render/image_2d'
 import WorldRenderer from '../render/world_renderer'
 import ImageRenderer from '../render/image_renderer'
 import CircleRenderer from '../render/circle_renderer'
+import CollisionBoxRenderer from '../render/collision_box_renderer'
 import PerkyModule from '../core/perky_module'
 
 import Player from './player'
@@ -18,6 +19,12 @@ WorldRenderer.register(Player, PlayerRenderer)
 WorldRenderer.register(Enemy, ImageRenderer, {image: 'pig', width: 1, height: 1})
 WorldRenderer.register(Projectile, CircleRenderer, {radius: 0.1, color: '#000000'})
 WorldRenderer.register(Snowman, SnowmanRenderer)
+
+WorldRenderer.register(
+    (entity) => entity.hasTag('enemy'),
+    CollisionBoxRenderer,
+    {width: 0.8, height: 0.8, strokeColor: '#ff0000', strokeWidth: 0.05}
+)
 
 
 export default class GameRenderer extends PerkyModule {

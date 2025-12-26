@@ -386,8 +386,6 @@ export default class WebGLCanvas2D extends PerkyModule {
         const gl = this.gl
         const offsetX = -rect.width * rect.anchorX
         const offsetY = -rect.height * rect.anchorY
-
-        const color = parseColor(rect.color)
         const m = rect.worldMatrix
 
         const corners = [
@@ -397,26 +395,62 @@ export default class WebGLCanvas2D extends PerkyModule {
             {x: offsetX, y: offsetY + rect.height}
         ]
 
-        const vertices = []
-        for (const corner of corners) {
-            const worldX = m[0] * corner.x + m[2] * corner.y + m[4]
-            const worldY = m[1] * corner.x + m[3] * corner.y + m[5]
-            vertices.push(worldX, worldY, color.r, color.g, color.b, opacity)
+        const worldCorners = corners.map(corner => ({
+            x: m[0] * corner.x + m[2] * corner.y + m[4],
+            y: m[1] * corner.x + m[3] * corner.y + m[5]
+        }))
+
+        if (rect.color && rect.color !== 'transparent') {
+            const color = parseColor(rect.color)
+            const vertices = []
+
+            for (const wc of worldCorners) {
+                vertices.push(wc.x, wc.y, color.r, color.g, color.b, opacity)
+            }
+
+            const vertexData = new Float32Array(vertices)
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.primitiveVertexBuffer)
+            gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.DYNAMIC_DRAW)
+
+            const stride = 6 * 4
+            gl.enableVertexAttribArray(this.primitiveProgram.attributes.position)
+            gl.vertexAttribPointer(this.primitiveProgram.attributes.position, 2, gl.FLOAT, false, stride, 0)
+
+            gl.enableVertexAttribArray(this.primitiveProgram.attributes.color)
+            gl.vertexAttribPointer(this.primitiveProgram.attributes.color, 4, gl.FLOAT, false, stride, 2 * 4)
+
+            gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
         }
 
-        const vertexData = new Float32Array(vertices)
+        if (rect.strokeWidth > 0) {
+            const strokeColor = parseColor(rect.strokeColor)
+            const vertices = []
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.primitiveVertexBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.DYNAMIC_DRAW)
+            for (let i = 0; i < 4; i++) {
+                const start = worldCorners[i]
+                const end = worldCorners[(i + 1) % 4]
+                vertices.push(
+                    start.x, start.y, strokeColor.r, strokeColor.g, strokeColor.b, opacity,
+                    end.x, end.y, strokeColor.r, strokeColor.g, strokeColor.b, opacity
+                )
+            }
 
-        const stride = 6 * 4
-        gl.enableVertexAttribArray(this.primitiveProgram.attributes.position)
-        gl.vertexAttribPointer(this.primitiveProgram.attributes.position, 2, gl.FLOAT, false, stride, 0)
+            const vertexData = new Float32Array(vertices)
 
-        gl.enableVertexAttribArray(this.primitiveProgram.attributes.color)
-        gl.vertexAttribPointer(this.primitiveProgram.attributes.color, 4, gl.FLOAT, false, stride, 2 * 4)
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.primitiveVertexBuffer)
+            gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.DYNAMIC_DRAW)
 
-        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
+            const stride = 6 * 4
+            gl.enableVertexAttribArray(this.primitiveProgram.attributes.position)
+            gl.vertexAttribPointer(this.primitiveProgram.attributes.position, 2, gl.FLOAT, false, stride, 0)
+
+            gl.enableVertexAttribArray(this.primitiveProgram.attributes.color)
+            gl.vertexAttribPointer(this.primitiveProgram.attributes.color, 4, gl.FLOAT, false, stride, 2 * 4)
+
+            gl.lineWidth(rect.strokeWidth)
+            gl.drawArrays(gl.LINES, 0, 8)
+        }
     }
 
 

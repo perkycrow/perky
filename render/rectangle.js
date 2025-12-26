@@ -32,10 +32,12 @@ export default class Rectangle extends Object2D {
     render (ctx) {
         const offsetX = -this.width * this.anchorX
         const offsetY = -this.height * this.anchorY
-        
-        ctx.fillStyle = this.color
-        ctx.fillRect(offsetX, offsetY, this.width, this.height)
-        
+
+        if (this.color && this.color !== 'transparent') {
+            ctx.fillStyle = this.color
+            ctx.fillRect(offsetX, offsetY, this.width, this.height)
+        }
+
         if (this.strokeWidth > 0) {
             ctx.strokeStyle = this.strokeColor
             ctx.lineWidth = this.strokeWidth
