@@ -86,11 +86,16 @@ export default class SceneTreeSidebar extends HTMLElement {
         }
 
         const handleChange = () => this.#scheduleRefresh()
+        const handleDispose = () => this.close()
+
         this.#worldRenderer.on('renderer:added', handleChange)
         this.#worldRenderer.on('renderer:removed', handleChange)
+        this.#worldRenderer.on('dispose', handleDispose)
+
         this.#listeners.push(
             {target: this.#worldRenderer, event: 'renderer:added', handler: handleChange},
-            {target: this.#worldRenderer, event: 'renderer:removed', handler: handleChange}
+            {target: this.#worldRenderer, event: 'renderer:removed', handler: handleChange},
+            {target: this.#worldRenderer, event: 'dispose', handler: handleDispose}
         )
     }
 

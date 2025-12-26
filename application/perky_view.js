@@ -183,7 +183,7 @@ export default class PerkyView extends PerkyModule {
     }
 
 
-    dispose () {
+    onDispose () {
         this.exitFullscreenMode()
 
         if (this.#resizeObserver) {
@@ -363,7 +363,7 @@ export default class PerkyView extends PerkyModule {
 
 function applyPositionStyle (element, position) {
     element.style.position = position
-    
+
     if (position === 'absolute') {
         element.style.top = '0'
         element.style.left = '0'

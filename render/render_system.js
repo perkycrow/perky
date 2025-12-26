@@ -334,7 +334,7 @@ export default class RenderSystem extends PerkyModule {
 
 
     onDispose () {
-        if (this.view.element && this.view.element.parentElement) {
+        if (this.view?.element?.parentElement) {
             this.view.element.parentElement.removeChild(this.view.element)
         }
     }

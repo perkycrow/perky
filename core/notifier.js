@@ -57,9 +57,14 @@ export default class Notifier {
 
 
     emit (name, ...args) {
-        const listeners = this.getListenersFor(name) || []
+        const listeners = this.getListenersFor(name)
+        if (!listeners) {
+            return
+        }
 
-        for (let listener of listeners) {
+        const listenersCopy = [...listeners]
+
+        for (const listener of listenersCopy) {
             listener.call(this, ...args)
         }
     }
