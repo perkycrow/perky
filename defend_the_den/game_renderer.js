@@ -1,7 +1,23 @@
 import Group2D from '../render/group_2d'
 import Image2D from '../render/image_2d'
 import WorldRenderer from '../render/world_renderer'
+import ImageRenderer from '../render/image_renderer'
+import CircleRenderer from '../render/circle_renderer'
 import PerkyModule from '../core/perky_module'
+
+import Player from './player'
+import Enemy from './enemy'
+import Projectile from './projectile'
+import Snowman from './snowman'
+
+import PlayerRenderer from './renderers/player_renderer'
+import SnowmanRenderer from './renderers/snowman_renderer'
+
+
+WorldRenderer.register(Player, PlayerRenderer)
+WorldRenderer.register(Enemy, ImageRenderer, {image: 'pig', width: 1, height: 1})
+WorldRenderer.register(Projectile, CircleRenderer, {radius: 0.1, color: '#000000'})
+WorldRenderer.register(Snowman, SnowmanRenderer)
 
 
 export default class GameRenderer extends PerkyModule {

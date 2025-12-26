@@ -4,6 +4,9 @@ import ImageRenderer from './image_renderer'
 import CircleRenderer from './circle_renderer'
 
 
+const rendererRegistry = new Map()
+
+
 export default class WorldRenderer extends PerkyModule {
 
     static $category = 'worldRenderer'
@@ -16,6 +19,21 @@ export default class WorldRenderer extends PerkyModule {
         this.world = options.world
         this.game = options.game
         this.rootGroup = new Group2D({name: 'world'})
+    }
+
+
+    static register (EntityClass, Renderer, config = null) {
+        rendererRegistry.set(EntityClass, {Renderer, config})
+    }
+
+
+    static unregister (EntityClass) {
+        rendererRegistry.delete(EntityClass)
+    }
+
+
+    static getRegistration (EntityClass) {
+        return rendererRegistry.get(EntityClass)
     }
 
 
@@ -60,7 +78,8 @@ export default class WorldRenderer extends PerkyModule {
         const context = {
             game: this.game,
             world: this.world,
-            group: this.rootGroup
+            group: this.rootGroup,
+            config: resolveConfig(entity)
         }
 
         const renderer = new Renderer(entity, context)
@@ -96,20 +115,21 @@ export default class WorldRenderer extends PerkyModule {
 function resolveRenderer (entity) {
     const EntityClass = entity.constructor
 
-    if (EntityClass.Renderer) {
-        return EntityClass.Renderer
+    const registration = rendererRegistry.get(EntityClass)
+    if (registration) {
+        return registration.Renderer
     }
 
-    if (EntityClass.renderable) {
-        const {type} = EntityClass.renderable
+    return null
+}
 
-        if (type === 'image') {
-            return ImageRenderer
-        }
 
-        if (type === 'circle') {
-            return CircleRenderer
-        }
+function resolveConfig (entity) {
+    const EntityClass = entity.constructor
+
+    const registration = rendererRegistry.get(EntityClass)
+    if (registration) {
+        return registration.config
     }
 
     return null

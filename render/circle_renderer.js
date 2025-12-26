@@ -7,7 +7,7 @@ export default class CircleRenderer extends EntityRenderer {
     constructor (entity, context) {
         super(entity, context)
 
-        const config = entity.constructor.renderable
+        const config = context.config || {}
 
         this.root = new Circle({
             x: entity.x,

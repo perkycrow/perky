@@ -7,7 +7,7 @@ export default class ImageRenderer extends EntityRenderer {
     constructor (entity, context) {
         super(entity, context)
 
-        const config = entity.constructor.renderable
+        const config = context.config || {}
         const image = context.game.getImage(config.image)
 
         this.root = new Image2D({

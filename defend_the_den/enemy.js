@@ -4,13 +4,6 @@ import {trackInstance, untrackInstance} from '../core/debug'
 
 export default class Enemy extends Entity {
 
-    static renderable = {
-        type: 'image',
-        image: 'pig',
-        width: 1,
-        height: 1
-    }
-
     constructor (params = {}) {
         super(params)
         trackInstance('Enemy', this)

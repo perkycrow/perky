@@ -5,12 +5,6 @@ export default class Projectile extends Entity {
 
     static $tags = ['projectile']
 
-    static renderable = {
-        type: 'circle',
-        radius: 0.1,
-        color: '#000000'
-    }
-
     constructor (params = {}) {
         super(params)
 
