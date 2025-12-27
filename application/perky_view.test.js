@@ -197,16 +197,15 @@ describe(PerkyView, () => {
         view.hide()
 
         expect(element.style.display).toBe('none')
-        expect(view.previousDisplay).toBe('flex')
     })
 
 
-    test('show', () => {
-        view.previousDisplay = 'flex'
+    test('show restores previous display', () => {
+        element.style.display = 'flex'
+        view.hide()
         view.show()
 
         expect(element.style.display).toBe('flex')
-        expect(view.previousDisplay).toBeUndefined()
     })
 
 

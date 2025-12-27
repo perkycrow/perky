@@ -9,6 +9,7 @@ export default class PerkyView extends PerkyModule {
     #resizeObserver = null
     #previousStyles = {}
     #onFullscreenChange = null
+    #previousDisplay = null
     displayMode = 'normal'
 
     constructor (params = {}) {
@@ -83,7 +84,7 @@ export default class PerkyView extends PerkyModule {
     get aspectRatio () {
         const {width, height} = this.size
 
-        return width / height
+        return height > 0 ? width / height : 0
     }
 
 
@@ -221,7 +222,7 @@ export default class PerkyView extends PerkyModule {
 
     hide () {
         if (this.display && this.display !== 'none') {
-            this.previousDisplay = this.display
+            this.#previousDisplay = this.display
         }
 
         this.display = 'none'
@@ -229,9 +230,9 @@ export default class PerkyView extends PerkyModule {
 
 
     show () {
-        if (this.previousDisplay) {
-            this.display = this.previousDisplay
-            delete this.previousDisplay
+        if (this.#previousDisplay) {
+            this.display = this.#previousDisplay
+            this.#previousDisplay = null
         } else {
             this.display = ''
         }

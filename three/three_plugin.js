@@ -304,7 +304,7 @@ function getContainerSize (host) {
 
 function registerThreeLoaders (host) {
     Object.entries(threeLoaders).forEach(([name, loaderFunction]) => {
-        host.registerLoader(name, loaderFunction)
+        host.loaders.set(name, loaderFunction)
     })
 }
 

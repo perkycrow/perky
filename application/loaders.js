@@ -35,6 +35,7 @@ export async function loadImage (params) {
         const img = new Image()
 
         img.onload = function () {
+            URL.revokeObjectURL(url)
             resolve(img)
         }
 
@@ -111,12 +112,17 @@ export function loadFont (params) {
         weight = 'normal'
     } = config
 
-    const font = new FontFace(family || name, `url(${url})`, {style, weight})
+    const fontName = family || name
+    const font = new FontFace(fontName, `url(${url})`, {style, weight})
 
-    return font.load().then(() => {
-        document.fonts.add(font)
-        return font
-    })
+    return font.load()
+        .then(() => {
+            document.fonts.add(font)
+            return font
+        })
+        .catch(error => {
+            throw new Error(`Failed to load font "${fontName}": ${error.message}`)
+        })
 }
 
 

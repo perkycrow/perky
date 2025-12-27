@@ -7,7 +7,7 @@ export default class SourceDescriptor {
         this.type    = params.type
         this.name    = params.name
         this.id      = params.id || guessId(params)
-        this.name  ||= this.id
+        this.name ??= this.id
 
         this.url     = params.url || params.path
         this.source  = params.source

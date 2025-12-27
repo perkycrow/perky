@@ -57,20 +57,6 @@ export default class Application extends PerkyModule {
     }
 
 
-    registerLoader (name, loaderFunction) {
-        if (!name || typeof name !== 'string') {
-            throw new Error('Loader name must be a non-empty string')
-        }
-
-        if (!loaderFunction || typeof loaderFunction !== 'function') {
-            throw new Error('Loader must be a function')
-        }
-
-        this.loaders.set(name, loaderFunction)
-        return this
-    }
-
-
     getImage (id) {
         return this.getSource('images', id)
     }
