@@ -1,19 +1,23 @@
+export const cssVariables = `
+    --bg-primary: #1a1a1e;
+    --bg-secondary: #24242a;
+    --bg-hover: #2e2e36;
+    --bg-selected: #3a3a44;
+    --fg-primary: #e4e4e8;
+    --fg-secondary: #9898a0;
+    --fg-muted: #6a6a72;
+    --accent: #6b9fff;
+    --status-started: #4ade80;
+    --status-stopped: #f87171;
+    --status-disposed: #6b7280;
+    --border: #38383e;
+    --font-mono: "Source Code Pro", "SF Mono", "Monaco", monospace;
+`
+
+
 export const explorerStyles = `
     :host {
-        --bg-primary: #1a1a1e;
-        --bg-secondary: #24242a;
-        --bg-hover: #2e2e36;
-        --bg-selected: #3a3a44;
-        --fg-primary: #e4e4e8;
-        --fg-secondary: #9898a0;
-        --fg-muted: #6a6a72;
-        --accent: #6b9fff;
-        --status-started: #4ade80;
-        --status-stopped: #f87171;
-        --status-disposed: #6b7280;
-        --border: #38383e;
-        --font-mono: "Source Code Pro", "SF Mono", "Monaco", monospace;
-        
+        ${cssVariables}
         display: block;
         font-family: var(--font-mono);
         font-size: 12px;
@@ -24,6 +28,7 @@ export const explorerStyles = `
         max-height: calc(100vh - 20px);
         z-index: 9999;
     }
+
 
     .explorer {
         background: var(--bg-primary);
@@ -310,23 +315,6 @@ export const detailsStyles = `
         padding-top: 12px;
         border-top: 1px solid var(--border);
     }
-`
-
-
-export const cssVariables = `
-    --bg-primary: #1a1a1e;
-    --bg-secondary: #24242a;
-    --bg-hover: #2e2e36;
-    --bg-selected: #3a3a44;
-    --fg-primary: #e4e4e8;
-    --fg-secondary: #9898a0;
-    --fg-muted: #6a6a72;
-    --accent: #6b9fff;
-    --status-started: #4ade80;
-    --status-stopped: #f87171;
-    --status-disposed: #6b7280;
-    --border: #38383e;
-    --font-mono: "Source Code Pro", "SF Mono", "Monaco", monospace;
 `
 
 

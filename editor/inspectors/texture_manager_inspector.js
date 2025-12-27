@@ -1,5 +1,6 @@
 import BaseInspector from './base_inspector.js'
 import WebGLTextureManager from '../../render/webgl_texture_manager.js'
+import {formatBytes} from '../../core/utils.js'
 
 
 const customStyles = `
@@ -354,19 +355,6 @@ export default class TextureManagerInspector extends BaseInspector {
         this.#autoFlushEl.className = `info-value ${autoFlushEnabled ? 'enabled' : 'disabled'}`
     }
 
-}
-
-
-function formatBytes (bytes) {
-    if (bytes === 0) {
-        return '0 B'
-    }
-
-    const units = ['B', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(1024))
-    const value = bytes / Math.pow(1024, i)
-
-    return `${value.toFixed(i > 1 ? 2 : 0)} ${units[i]}`
 }
 
 

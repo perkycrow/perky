@@ -1,5 +1,6 @@
 import BaseInspector from './base_inspector.js'
 import Object2D from '../../render/object_2d.js'
+import {formatNumber} from '../../core/utils.js'
 
 
 export default class Object2DInspector extends BaseInspector {
@@ -62,14 +63,6 @@ export default class Object2DInspector extends BaseInspector {
         return this.getModule()
     }
 
-}
-
-
-function formatNumber (n) {
-    if (typeof n !== 'number') {
-        return String(n)
-    }
-    return Number.isInteger(n) ? String(n) : n.toFixed(2)
 }
 
 

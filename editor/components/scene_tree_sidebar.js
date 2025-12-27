@@ -1,3 +1,4 @@
+import BaseEditorComponent from './base_editor_component.js'
 import {cssVariables} from './perky_explorer_styles.js'
 import './scene_tree_node.js'
 import Object2DInspector from '../inspectors/object_2d_inspector.js'
@@ -6,7 +7,100 @@ import Object2DInspector from '../inspectors/object_2d_inspector.js'
 const DEBOUNCE_MS = 100
 
 
-export default class SceneTreeSidebar extends HTMLElement {
+const sidebarStyles = `
+    :host {
+        display: block;
+        width: 320px;
+        background: var(--bg-primary);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        max-height: calc(100vh - 20px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--fg-primary);
+        font-weight: 500;
+    }
+
+    .sidebar-icon {
+        font-size: 14px;
+    }
+
+    .sidebar-buttons {
+        display: flex;
+        gap: 4px;
+    }
+
+    .sidebar-btn {
+        background: var(--bg-hover);
+        border: none;
+        border-radius: 4px;
+        color: var(--fg-secondary);
+        padding: 4px 8px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 11px;
+        transition: background 0.15s, color 0.15s;
+    }
+
+    .sidebar-btn:hover {
+        background: var(--bg-selected);
+        color: var(--fg-primary);
+    }
+
+    .sidebar-tree {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 0;
+        min-height: 100px;
+        max-height: 300px;
+    }
+
+    .sidebar-tree::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .sidebar-tree::-webkit-scrollbar-track {
+        background: var(--bg-primary);
+    }
+
+    .sidebar-tree::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+    }
+
+    .sidebar-details {
+        border-top: 1px solid var(--border);
+        background: var(--bg-secondary);
+        padding: 10px 12px;
+    }
+
+    .sidebar-empty {
+        color: var(--fg-muted);
+        font-style: italic;
+    }
+`
+
+
+export default class SceneTreeSidebar extends BaseEditorComponent {
 
     #content = null
     #worldRenderer = null
@@ -15,19 +109,23 @@ export default class SceneTreeSidebar extends HTMLElement {
     #rootNode = null
     #detailsEl = null
     #selectedObject = null
-    #listeners = []
     #refreshTimeout = null
 
 
     constructor () {
         super()
-        this.attachShadow({mode: 'open'})
         this.#buildDOM()
     }
 
 
+    disconnectedCallback () {
+        this.#clearRefreshTimeout()
+        super.disconnectedCallback()
+    }
+
+
     setContent (content, worldRenderer = null) {
-        this.#unbindEvents()
+        this.cleanListeners()
         this.#content = content
         this.#worldRenderer = worldRenderer
         this.#selectedObject = null
@@ -56,7 +154,7 @@ export default class SceneTreeSidebar extends HTMLElement {
 
 
     close () {
-        this.#unbindEvents()
+        this.cleanListeners()
         this.dispatchEvent(new CustomEvent('sidebar:close', {
             bubbles: true,
             composed: true
@@ -85,31 +183,9 @@ export default class SceneTreeSidebar extends HTMLElement {
             return
         }
 
-        const handleChange = () => this.#scheduleRefresh()
-        const handleDispose = () => this.close()
-
-        this.#worldRenderer.on('renderer:added', handleChange)
-        this.#worldRenderer.on('renderer:removed', handleChange)
-        this.#worldRenderer.on('dispose', handleDispose)
-
-        this.#listeners.push(
-            {target: this.#worldRenderer, event: 'renderer:added', handler: handleChange},
-            {target: this.#worldRenderer, event: 'renderer:removed', handler: handleChange},
-            {target: this.#worldRenderer, event: 'dispose', handler: handleDispose}
-        )
-    }
-
-
-    #unbindEvents () {
-        for (const {target, event, handler} of this.#listeners) {
-            target.off(event, handler)
-        }
-        this.#listeners = []
-
-        if (this.#refreshTimeout) {
-            clearTimeout(this.#refreshTimeout)
-            this.#refreshTimeout = null
-        }
+        this.listenTo(this.#worldRenderer, 'renderer:added', () => this.#scheduleRefresh())
+        this.listenTo(this.#worldRenderer, 'renderer:removed', () => this.#scheduleRefresh())
+        this.listenTo(this.#worldRenderer, 'dispose', () => this.close())
     }
 
 
@@ -122,6 +198,14 @@ export default class SceneTreeSidebar extends HTMLElement {
             this.#refreshTimeout = null
             this.refresh()
         }, DEBOUNCE_MS)
+    }
+
+
+    #clearRefreshTimeout () {
+        if (this.#refreshTimeout) {
+            clearTimeout(this.#refreshTimeout)
+            this.#refreshTimeout = null
+        }
     }
 
 
@@ -264,99 +348,6 @@ export default class SceneTreeSidebar extends HTMLElement {
     }
 
 }
-
-
-const sidebarStyles = `
-    :host {
-        display: block;
-        width: 320px;
-        background: var(--bg-primary);
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-        overflow: hidden;
-        font-family: var(--font-mono);
-        font-size: 12px;
-        max-height: calc(100vh - 20px);
-        display: flex;
-        flex-direction: column;
-    }
-
-    .sidebar-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 12px;
-        background: var(--bg-secondary);
-        border-bottom: 1px solid var(--border);
-    }
-
-    .sidebar-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--fg-primary);
-        font-weight: 500;
-    }
-
-    .sidebar-icon {
-        font-size: 14px;
-    }
-
-    .sidebar-buttons {
-        display: flex;
-        gap: 4px;
-    }
-
-    .sidebar-btn {
-        background: var(--bg-hover);
-        border: none;
-        border-radius: 4px;
-        color: var(--fg-secondary);
-        padding: 4px 8px;
-        cursor: pointer;
-        font-family: inherit;
-        font-size: 11px;
-        transition: background 0.15s, color 0.15s;
-    }
-
-    .sidebar-btn:hover {
-        background: var(--bg-selected);
-        color: var(--fg-primary);
-    }
-
-    .sidebar-tree {
-        flex: 1;
-        overflow-y: auto;
-        padding: 8px 0;
-        min-height: 100px;
-        max-height: 300px;
-    }
-
-    .sidebar-tree::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .sidebar-tree::-webkit-scrollbar-track {
-        background: var(--bg-primary);
-    }
-
-    .sidebar-tree::-webkit-scrollbar-thumb {
-        background: var(--border);
-        border-radius: 3px;
-    }
-
-    .sidebar-details {
-        border-top: 1px solid var(--border);
-        background: var(--bg-secondary);
-        padding: 10px 12px;
-    }
-
-    .sidebar-empty {
-        color: var(--fg-muted);
-        font-style: italic;
-    }
-`
 
 
 customElements.define('scene-tree-sidebar', SceneTreeSidebar)

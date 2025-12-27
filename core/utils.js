@@ -206,3 +206,24 @@ function mergeObject (target, source) {
 
     return destination
 }
+
+
+export function formatNumber (n) {
+    if (typeof n !== 'number') {
+        return String(n)
+    }
+    return Number.isInteger(n) ? String(n) : n.toFixed(2)
+}
+
+
+export function formatBytes (bytes) {
+    if (bytes === 0) {
+        return '0 B'
+    }
+
+    const units = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(1024))
+    const value = bytes / Math.pow(1024, i)
+
+    return `${value.toFixed(i > 1 ? 2 : 0)} ${units[i]}`
+}

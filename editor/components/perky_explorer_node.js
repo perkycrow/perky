@@ -1,44 +1,31 @@
-import {nodeStyles, cssVariables} from './perky_explorer_styles.js'
+import BaseTreeNode from './base_tree_node.js'
 
 
-export default class PerkyExplorerNode extends HTMLElement {
+export default class PerkyExplorerNode extends BaseTreeNode {
 
     #module = null
-    #depth = 0
-    #expanded = false
-    #selected = false
-
-    #contentEl = null
-    #toggleEl = null
-    #statusEl = null
-    #idEl = null
-    #categoryEl = null
-    #childrenEl = null
-
     #childNodes = new Map()
-    #listeners = []
 
 
     constructor () {
         super()
-        this.attachShadow({mode: 'open'})
-        this.#buildDOM()
     }
 
 
     disconnectedCallback () {
-        this.#unbindModuleEvents()
+        super.disconnectedCallback()
+        this.#clearChildNodes()
     }
 
 
     setModule (module, depth = 0) {
-        this.#unbindModuleEvents()
+        this.cleanListeners()
         this.#module = module
-        this.#depth = depth
+        this.setDepth(depth)
 
         if (module) {
             this.#bindModuleEvents()
-            this.#updateAll()
+            this.updateAll()
         }
     }
 
@@ -48,179 +35,47 @@ export default class PerkyExplorerNode extends HTMLElement {
     }
 
 
-    setExpanded (expanded) {
-        this.#expanded = expanded
-        this.#updateChildrenVisibility()
-        this.#updateToggle()
+    getItem () {
+        return this.#module
     }
 
 
-    setSelected (selected) {
-        this.#selected = selected
-        this.#updateSelectedState()
+    hasChildren () {
+        return this.#module && this.#module.children.length > 0
     }
 
 
-    #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = `:host { ${cssVariables} } ${nodeStyles}`
-        this.shadowRoot.appendChild(style)
-
-        this.#contentEl = document.createElement('div')
-        this.#contentEl.className = 'node-content'
-
-        this.#toggleEl = document.createElement('div')
-        this.#toggleEl.className = 'node-toggle'
-        this.#toggleEl.addEventListener('click', (e) => {
-            e.stopPropagation()
-            this.#handleToggleClick()
-        })
-
-        this.#statusEl = document.createElement('div')
-        this.#statusEl.className = 'node-status'
-
-        this.#idEl = document.createElement('div')
-        this.#idEl.className = 'node-id'
-
-        this.#categoryEl = document.createElement('div')
-        this.#categoryEl.className = 'node-category'
-
-        this.#contentEl.appendChild(this.#toggleEl)
-        this.#contentEl.appendChild(this.#statusEl)
-        this.#contentEl.appendChild(this.#idEl)
-        this.#contentEl.appendChild(this.#categoryEl)
-
-        this.#contentEl.addEventListener('click', () => this.#handleNodeClick())
-
-        this.#childrenEl = document.createElement('div')
-        this.#childrenEl.className = 'node-children'
-
-        this.shadowRoot.appendChild(this.#contentEl)
-        this.shadowRoot.appendChild(this.#childrenEl)
+    getChildren () {
+        return this.#module ? this.#module.children : []
     }
 
 
-    #bindModuleEvents () {
-        if (!this.#module) {
-            return
-        }
-
-        const module = this.#module
-
-        this.#addListener(module, 'start', () => this.#updateStatus())
-        this.#addListener(module, 'stop', () => this.#updateStatus())
-
-        const registry = module.childrenRegistry
-        if (registry) {
-            this.#addListener(registry, 'set', (id, child) => this.#handleChildAdded(id, child))
-            this.#addListener(registry, 'delete', (id) => this.#handleChildRemoved(id))
-        }
-
-        this.#addListener(module, '$id:changed', () => this.#updateId())
-        this.#addListener(module, '$category:changed', () => this.#updateCategory())
+    createChildNode (child) {
+        const childNode = document.createElement('perky-explorer-node')
+        childNode.setModule(child, this.depth + 1)
+        this.#childNodes.set(child.$id, childNode)
+        return childNode
     }
 
 
-    #addListener (target, event, handler) {
-        target.on(event, handler)
-        this.#listeners.push({target, event, handler})
-    }
-
-
-    #unbindModuleEvents () {
-        for (const {target, event, handler} of this.#listeners) {
-            target.off(event, handler)
-        }
-        this.#listeners = []
-        this.#clearChildNodes()
-    }
-
-
-    #clearChildNodes () {
-        for (const childNode of this.#childNodes.values()) {
-            childNode.remove()
-        }
-        this.#childNodes.clear()
-    }
-
-
-    #updateAll () {
-        this.#updateDepth()
+    renderNodeContent () {
         this.#updateStatus()
         this.#updateId()
         this.#updateCategory()
-        this.#updateToggle()
-        this.#updateChildren()
-        this.#updateChildrenVisibility()
     }
 
 
-    #updateDepth () {
-        this.#contentEl.style.setProperty('--depth', this.#depth)
+    getSelectDetail () {
+        return {module: this.#module}
     }
 
 
-    #updateStatus () {
-        if (!this.#module || !this.#statusEl) {
-            return
-        }
-
-        const status = this.#module.$status
-        this.#statusEl.className = `node-status ${status}`
-        this.#statusEl.title = status.charAt(0).toUpperCase() + status.slice(1)
+    getToggleDetail () {
+        return {module: this.#module, expanded: this.expanded}
     }
 
 
-    #updateId () {
-        if (!this.#module || !this.#idEl) {
-            return
-        }
-
-        this.#idEl.textContent = this.#module.$id
-        this.#idEl.title = this.#module.$id
-    }
-
-
-    #updateCategory () {
-        if (!this.#module || !this.#categoryEl) {
-            return
-        }
-
-        this.#categoryEl.textContent = this.#module.$category
-    }
-
-
-    #updateToggle () {
-        if (!this.#toggleEl) {
-            return
-        }
-
-        const hasChildren = this.#module && this.#module.children.length > 0
-
-        if (hasChildren) {
-            this.#toggleEl.classList.add('has-children')
-            this.#toggleEl.textContent = this.#expanded ? '▼' : '▶'
-        } else {
-            this.#toggleEl.classList.remove('has-children')
-            this.#toggleEl.textContent = ''
-        }
-    }
-
-
-    #updateSelectedState () {
-        if (!this.#contentEl) {
-            return
-        }
-
-        if (this.#selected) {
-            this.#contentEl.classList.add('selected')
-        } else {
-            this.#contentEl.classList.remove('selected')
-        }
-    }
-
-
-    #updateChildren () {
+    updateChildren () {
         if (!this.#module) {
             return
         }
@@ -230,7 +85,8 @@ export default class PerkyExplorerNode extends HTMLElement {
 
         for (const child of moduleChildren) {
             if (!this.#childNodes.has(child.$id)) {
-                this.#createChildNode(child)
+                const childNode = this.createChildNode(child)
+                this.childrenEl.appendChild(childNode)
             }
             currentIds.delete(child.$id)
         }
@@ -241,24 +97,88 @@ export default class PerkyExplorerNode extends HTMLElement {
     }
 
 
-    #updateChildrenVisibility () {
-        if (!this.#childrenEl) {
-            return
-        }
-
-        if (this.#expanded) {
-            this.#childrenEl.classList.add('expanded')
-        } else {
-            this.#childrenEl.classList.remove('expanded')
-        }
+    clearChildNodes () {
+        this.#clearChildNodes()
     }
 
 
-    #createChildNode (child) {
-        const childNode = document.createElement('perky-explorer-node')
-        childNode.setModule(child, this.#depth + 1)
-        this.#childrenEl.appendChild(childNode)
-        this.#childNodes.set(child.$id, childNode)
+    #bindModuleEvents () {
+        if (!this.#module) {
+            return
+        }
+
+        const module = this.#module
+
+        this.listenTo(module, 'start', () => this.#updateStatus())
+        this.listenTo(module, 'stop', () => this.#updateStatus())
+
+        const registry = module.childrenRegistry
+        if (registry) {
+            this.listenTo(registry, 'set', (id, child) => this.#handleChildAdded(id, child))
+            this.listenTo(registry, 'delete', (id) => this.#handleChildRemoved(id))
+        }
+
+        this.listenTo(module, '$id:changed', () => this.#updateId())
+        this.listenTo(module, '$category:changed', () => this.#updateCategory())
+    }
+
+
+    #updateStatus () {
+        if (!this.#module) {
+            return
+        }
+
+        let statusEl = this.contentEl.querySelector('.node-status')
+        if (!statusEl) {
+            statusEl = document.createElement('div')
+            statusEl.className = 'node-status'
+            this.contentEl.insertBefore(statusEl, this.toggleEl.nextSibling)
+        }
+
+        const status = this.#module.$status
+        statusEl.className = `node-status ${status}`
+        statusEl.title = status.charAt(0).toUpperCase() + status.slice(1)
+    }
+
+
+    #updateId () {
+        if (!this.#module) {
+            return
+        }
+
+        let idEl = this.contentEl.querySelector('.node-id')
+        if (!idEl) {
+            idEl = document.createElement('div')
+            idEl.className = 'node-id'
+            this.contentEl.appendChild(idEl)
+        }
+
+        idEl.textContent = this.#module.$id
+        idEl.title = this.#module.$id
+    }
+
+
+    #updateCategory () {
+        if (!this.#module) {
+            return
+        }
+
+        let categoryEl = this.contentEl.querySelector('.node-category')
+        if (!categoryEl) {
+            categoryEl = document.createElement('div')
+            categoryEl.className = 'node-category'
+            this.contentEl.appendChild(categoryEl)
+        }
+
+        categoryEl.textContent = this.#module.$category
+    }
+
+
+    #clearChildNodes () {
+        for (const childNode of this.#childNodes.values()) {
+            childNode.remove()
+        }
+        this.#childNodes.clear()
     }
 
 
@@ -271,49 +191,18 @@ export default class PerkyExplorerNode extends HTMLElement {
     }
 
 
-    #handleToggleClick () {
-        this.#expanded = !this.#expanded
-        this.#updateChildrenVisibility()
-        this.#updateToggle()
-
-        this.dispatchEvent(new CustomEvent('node:toggle', {
-            bubbles: true,
-            composed: true,
-            detail: {module: this.#module, expanded: this.#expanded}
-        }))
-    }
-
-
-    #handleNodeClick () {
-        this.dispatchEvent(new CustomEvent('node:select', {
-            bubbles: true,
-            composed: true,
-            detail: {module: this.#module}
-        }))
-    }
-
-
     #handleChildAdded (id, child) {
         if (!this.#childNodes.has(id)) {
-            this.#createChildNode(child)
-            this.#updateToggle()
+            const childNode = this.createChildNode(child)
+            this.childrenEl.appendChild(childNode)
+            this.refreshToggle()
         }
     }
 
 
     #handleChildRemoved (id) {
         this.#removeChildNode(id)
-        this.#updateToggle()
-    }
-
-
-    expand () {
-        this.setExpanded(true)
-    }
-
-
-    collapse () {
-        this.setExpanded(false)
+        this.refreshToggle()
     }
 
 }

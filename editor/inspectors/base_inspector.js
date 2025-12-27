@@ -1,29 +1,28 @@
+import BaseEditorComponent from '../components/base_editor_component.js'
 import {cssVariables, inspectorStyles} from '../components/perky_explorer_styles.js'
 
 
-export default class BaseInspector extends HTMLElement {
+export default class BaseInspector extends BaseEditorComponent {
 
     #module = null
     #gridEl = null
     #actionsEl = null
     #customStyles = ''
-    #externalListeners = []
 
 
     constructor (customStyles = '') {
         super()
         this.#customStyles = customStyles
-        this.attachShadow({mode: 'open'})
     }
 
 
     disconnectedCallback () {
-        this.cleanExternalListeners()
+        super.disconnectedCallback()
     }
 
 
     setModule (module) {
-        this.cleanExternalListeners()
+        this.cleanListeners()
         this.#module = module
         this.onModuleSet?.(module)
     }
@@ -119,20 +118,6 @@ export default class BaseInspector extends HTMLElement {
     clearContent () {
         this.#gridEl.innerHTML = ''
         this.#actionsEl.innerHTML = ''
-    }
-
-
-    listenTo (target, eventName, callback) {
-        target.on(eventName, callback)
-        this.#externalListeners.push({target, eventName, callback})
-    }
-
-
-    cleanExternalListeners () {
-        for (const {target, eventName, callback} of this.#externalListeners) {
-            target.off(eventName, callback)
-        }
-        this.#externalListeners = []
     }
 
 }
