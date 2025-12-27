@@ -1,5 +1,3 @@
-// Inspired by: https://github.com/plurals/pluralize
-
 function sanitizeRule (rule) {
     if (typeof rule === 'string') {
         return new RegExp('^' + rule + '$', 'i')
@@ -47,7 +45,7 @@ function replace (word, rule) {
 }
 
 
-export default class Pluralizer {
+export default class Inflector {
 
     #pluralRules = []
     #singularRules = []
@@ -102,6 +100,38 @@ export default class Pluralizer {
     pluralize (word, count, inclusive) {
         const pluralized = count === 1 ? this.singular(word) : this.plural(word)
         return (inclusive ? count + ' ' : '') + pluralized
+    }
+
+
+    toCamelCase (string) { // eslint-disable-line class-methods-use-this
+        return string
+            .replace(/[-_\s]([a-z])/g, (match, letter) => letter.toUpperCase())
+            .replace(/^[A-Z]/, letter => letter.toLowerCase())
+    }
+
+
+    toPascalCase (string) {
+        return this.toCamelCase(string).replace(/^[a-z]/, letter => letter.toUpperCase())
+    }
+
+
+    toSnakeCase (string) { // eslint-disable-line class-methods-use-this
+        return string
+            .replace(/[-\s]/g, '_')
+            .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
+            .replace(/([a-z])([A-Z])/g, '$1_$2')
+            .toLowerCase()
+            .replace(/^_/, '')
+    }
+
+
+    toKebabCase (string) { // eslint-disable-line class-methods-use-this
+        return string
+            .replace(/[_\s]/g, '-')
+            .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
+            .replace(/([a-z])([A-Z])/g, '$1-$2')
+            .toLowerCase()
+            .replace(/^-/, '')
     }
 
 

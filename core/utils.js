@@ -1,28 +1,26 @@
-import Pluralizer from './pluralizer'
+import Inflector from './inflector'
 
 
-const pluralizer = new Pluralizer()
+const inflector = new Inflector()
 
 
 export function toCamelCase (string) {
-    return string
-        .replace(/[-_\s]([a-z])/g, (match, letter) => letter.toUpperCase())
-        .replace(/^[A-Z]/, letter => letter.toLowerCase())
+    return inflector.toCamelCase(string)
 }
 
 
 export function toPascalCase (string) {
-    return toCamelCase(string).replace(/^[a-z]/, letter => letter.toUpperCase())
+    return inflector.toPascalCase(string)
 }
 
 
 export function toSnakeCase (string) {
-    return string
-        .replace(/[-\s]/g, '_')
-        .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
-        .replace(/([a-z])([A-Z])/g, '$1_$2')
-        .toLowerCase()
-        .replace(/^_/, '')
+    return inflector.toSnakeCase(string)
+}
+
+
+export function toKebabCase (string) {
+    return inflector.toKebabCase(string)
 }
 
 
@@ -61,27 +59,27 @@ export function resetUniqueId (collection, prefix) {
 
 
 export function singularize (word) {
-    return pluralizer.singular(word)
+    return inflector.singular(word)
 }
 
 
 export function pluralize (word, count, inclusive) {
-    return pluralizer.pluralize(word, count, inclusive)
+    return inflector.pluralize(word, count, inclusive)
 }
 
 
 export function plural (word) {
-    return pluralizer.plural(word)
+    return inflector.plural(word)
 }
 
 
 export function isPlural (word) {
-    return pluralizer.isPlural(word)
+    return inflector.isPlural(word)
 }
 
 
 export function isSingular (word) {
-    return pluralizer.isSingular(word)
+    return inflector.isSingular(word)
 }
 
 
