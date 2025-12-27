@@ -1,4 +1,7 @@
-import pluralizeLib from './pluralize'
+import Pluralizer from './pluralizer'
+
+
+const pluralizer = new Pluralizer()
 
 
 export function toCamelCase (string) {
@@ -58,7 +61,27 @@ export function resetUniqueId (collection, prefix) {
 
 
 export function singularize (word) {
-    return pluralizeLib.singular(word)
+    return pluralizer.singular(word)
+}
+
+
+export function pluralize (word, count, inclusive) {
+    return pluralizer.pluralize(word, count, inclusive)
+}
+
+
+export function plural (word) {
+    return pluralizer.plural(word)
+}
+
+
+export function isPlural (word) {
+    return pluralizer.isPlural(word)
+}
+
+
+export function isSingular (word) {
+    return pluralizer.isSingular(word)
 }
 
 
