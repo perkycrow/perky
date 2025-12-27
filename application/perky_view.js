@@ -35,7 +35,7 @@ export default class PerkyView extends PerkyModule {
 
 
     onInstall (host) {
-        host.delegate(this, [
+        this.delegateTo(host, [
             'element',
             'mount',
             'dismount',
@@ -48,7 +48,7 @@ export default class PerkyView extends PerkyModule {
             'toggleFullscreen'
         ])
 
-        host.delegateEvents(this, [
+        this.delegateEventsTo(host, [
             'resize',
             'mount',
             'dismount',

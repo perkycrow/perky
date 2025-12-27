@@ -26,7 +26,7 @@ export default class Manifest extends PerkyModule {
 
 
     onInstall (host) {
-        host.delegate(this, [
+        this.delegateTo(host, [
             'getMetadata',
             'setMetadata',
             'getConfig',
@@ -40,7 +40,7 @@ export default class Manifest extends PerkyModule {
             'setAlias'
         ])
 
-        host.delegate(this, {
+        this.delegateTo(host, {
             export: 'exportManifest',
             import: 'importManifest'
         })

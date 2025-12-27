@@ -411,133 +411,264 @@ describe(PerkyModule, () => {
     })
 
 
-    test('delegate with methods', () => {
-        const target = {
-            method1: vi.fn(),
-            method2: vi.fn()
-        }
+    test('delegateTo with methods', () => {
+        const hostModule = new PerkyModule({$id: 'host'})
+        const childModule = new PerkyModule({$id: 'child'})
 
-        child.delegate(target, ['method1', 'method2'])
+        childModule.method1 = vi.fn()
+        childModule.method2 = vi.fn()
 
-        expect(child.method1).toBeDefined()
-        expect(child.method2).toBeDefined()
-        expect(typeof child.method1).toBe('function')
-        expect(typeof child.method2).toBe('function')
+        childModule.delegateTo(hostModule, ['method1', 'method2'])
+
+        expect(hostModule.method1).toBeDefined()
+        expect(hostModule.method2).toBeDefined()
+        expect(typeof hostModule.method1).toBe('function')
+        expect(typeof hostModule.method2).toBe('function')
     })
 
 
-    test('delegate with properties', () => {
-        const target = {
-            prop1: 'value1',
-            prop2: 'value2'
-        }
+    test('delegateTo with properties', () => {
+        const hostModule = new PerkyModule({$id: 'host'})
+        const childModule = new PerkyModule({$id: 'child'})
 
-        child.delegate(target, ['prop1', 'prop2'])
+        childModule.prop1 = 'value1'
+        childModule.prop2 = 'value2'
 
-        expect(child.prop1).toBe('value1')
-        expect(child.prop2).toBe('value2')
+        childModule.delegateTo(hostModule, ['prop1', 'prop2'])
 
-        child.prop1 = 'newValue'
-        expect(target.prop1).toBe('newValue')
+        expect(hostModule.prop1).toBe('value1')
+        expect(hostModule.prop2).toBe('value2')
+
+        hostModule.prop1 = 'newValue'
+        expect(childModule.prop1).toBe('newValue')
     })
 
 
-    test('delegate with mixed methods and properties', () => {
-        const target = {
-            count: 0,
-            increment () {
-                this.count++
-            },
-            decrement () {
-                this.count--
-            }
+    test('delegateTo with mixed methods and properties', () => {
+        const hostModule = new PerkyModule({$id: 'host'})
+        const childModule = new PerkyModule({$id: 'child'})
+
+        childModule.count = 0
+        childModule.increment = function () {
+            this.count++
+        }
+        childModule.decrement = function () {
+            this.count--
         }
 
-        child.delegate(target, ['count', 'increment', 'decrement'])
+        childModule.delegateTo(hostModule, ['count', 'increment', 'decrement'])
 
-        expect(child.count).toBe(0)
-        expect(typeof child.increment).toBe('function')
-        expect(typeof child.decrement).toBe('function')
+        expect(hostModule.count).toBe(0)
+        expect(typeof hostModule.increment).toBe('function')
+        expect(typeof hostModule.decrement).toBe('function')
 
-        child.increment()
-        expect(target.count).toBe(1)
-        expect(child.count).toBe(1)
+        hostModule.increment()
+        expect(childModule.count).toBe(1)
+        expect(hostModule.count).toBe(1)
 
-        child.decrement()
-        expect(target.count).toBe(0)
-        expect(child.count).toBe(0)
+        hostModule.decrement()
+        expect(childModule.count).toBe(0)
+        expect(hostModule.count).toBe(0)
     })
 
 
-    test('delegate with getters and setters', () => {
-        const target = {
-            _value: 10,
-            get value () {
+    test('delegateTo with getters and setters', () => {
+        const hostModule = new PerkyModule({$id: 'host'})
+        const childModule = new PerkyModule({$id: 'child'})
+
+        childModule._value = 10
+        Object.defineProperty(childModule, 'value', {
+            get () {
                 return this._value
             },
-            set value (newValue) {
+            set (newValue) {
                 this._value = newValue
-            }
-        }
+            },
+            enumerable: true,
+            configurable: true
+        })
 
-        child.delegate(target, ['value'])
+        childModule.delegateTo(hostModule, ['value'])
 
-        expect(child.value).toBe(10)
+        expect(hostModule.value).toBe(10)
 
-        child.value = 20
-        expect(target.value).toBe(20)
-        expect(child.value).toBe(20)
+        hostModule.value = 20
+        expect(childModule.value).toBe(20)
+        expect(hostModule.value).toBe(20)
     })
 
 
-    test('delegate with object-based aliasing', () => {
-        const target = {
-            originalMethod: vi.fn(() => 'result'),
-            originalProp: 'value'
-        }
+    test('delegateTo with object-based aliasing', () => {
+        const hostModule = new PerkyModule({$id: 'host'})
+        const childModule = new PerkyModule({$id: 'child'})
 
-        child.delegate(target, {
+        childModule.originalMethod = vi.fn(() => 'result')
+        childModule.originalProp = 'value'
+
+        childModule.delegateTo(hostModule, {
             originalMethod: 'aliasedMethod',
             originalProp: 'aliasedProp'
         })
 
-        expect(child.aliasedMethod).toBeDefined()
-        expect(typeof child.aliasedMethod).toBe('function')
-        expect(child.aliasedMethod()).toBe('result')
-        expect(target.originalMethod).toHaveBeenCalled()
+        expect(hostModule.aliasedMethod).toBeDefined()
+        expect(typeof hostModule.aliasedMethod).toBe('function')
+        expect(hostModule.aliasedMethod()).toBe('result')
+        expect(childModule.originalMethod).toHaveBeenCalled()
 
-        expect(child.aliasedProp).toBe('value')
+        expect(hostModule.aliasedProp).toBe('value')
 
-        child.aliasedProp = 'new value'
-        expect(target.originalProp).toBe('new value')
+        hostModule.aliasedProp = 'new value'
+        expect(childModule.originalProp).toBe('new value')
     })
 
 
-    test('delegate with string target (property name)', () => {
-        const manager = child.create(PerkyModule, {
-            $id: 'manager',
-            $bind: 'manager'
-        })
+    test('delegateTo cleans up delegations on uninstall', () => {
+        const hostModule = new PerkyModule({$id: 'host'})
+        const childModule = hostModule.create(PerkyModule, {$id: 'child'})
 
-        manager.getValue = vi.fn(() => 42)
-        manager.setValue = vi.fn()
-        manager.data = 'test data'
+        childModule.getValue = vi.fn(() => 42)
+        childModule.someData = 'test'
 
-        child.delegate('manager', ['getValue', 'setValue', 'data'])
+        childModule.delegateTo(hostModule, ['getValue', 'someData'])
 
-        expect(typeof child.getValue).toBe('function')
-        expect(typeof child.setValue).toBe('function')
-        expect(child.getValue()).toBe(42)
-        expect(manager.getValue).toHaveBeenCalled()
+        expect(hostModule.getValue).toBeDefined()
+        expect(hostModule.getValue()).toBe(42)
+        expect(hostModule.someData).toBe('test')
 
-        child.setValue(100)
-        expect(manager.setValue).toHaveBeenCalledWith(100)
+        childModule.uninstall()
 
-        expect(child.data).toBe('test data')
-        child.data = 'new data'
-        expect(manager.data).toBe('new data')
+        expect(hostModule.getValue).toBeUndefined()
+        expect(hostModule.someData).toBeUndefined()
     })
 
+
+    test('delegateTo cleans up delegations on dispose', () => {
+        const hostModule = new PerkyModule({$id: 'host'})
+        const childModule = hostModule.create(PerkyModule, {$id: 'child'})
+
+        childModule.doSomething = vi.fn()
+
+        childModule.delegateTo(hostModule, ['doSomething'])
+
+        expect(hostModule.doSomething).toBeDefined()
+
+        childModule.dispose()
+
+        expect(hostModule.doSomething).toBeUndefined()
+    })
+
+
+    test('delegateTo with object-based aliasing cleans up on uninstall', () => {
+        const hostModule = new PerkyModule({$id: 'host'})
+        const childModule = hostModule.create(PerkyModule, {$id: 'child'})
+
+        childModule.originalMethod = vi.fn(() => 'result')
+
+        childModule.delegateTo(hostModule, {originalMethod: 'aliasedMethod'})
+
+        expect(hostModule.aliasedMethod).toBeDefined()
+        expect(hostModule.aliasedMethod()).toBe('result')
+
+        childModule.uninstall()
+
+        expect(hostModule.aliasedMethod).toBeUndefined()
+    })
+
+
+    test('cleanDelegations removes all delegated properties', () => {
+        const hostModule = new PerkyModule({$id: 'host'})
+        const childModule = new PerkyModule({$id: 'child'})
+
+        childModule.method1 = vi.fn()
+        childModule.method2 = vi.fn()
+        childModule.prop1 = 'value1'
+
+        childModule.delegateTo(hostModule, ['method1', 'prop1'])
+        childModule.delegateTo(hostModule, ['method2'])
+
+        expect(hostModule.method1).toBeDefined()
+        expect(hostModule.method2).toBeDefined()
+        expect(hostModule.prop1).toBe('value1')
+
+        childModule.cleanDelegations()
+
+        expect(hostModule.method1).toBeUndefined()
+        expect(hostModule.method2).toBeUndefined()
+        expect(hostModule.prop1).toBeUndefined()
+    })
+
+
+    test('delegateEventsTo forwards events to host', () => {
+        const hostModule = new PerkyModule({$id: 'host'})
+        const childModule = hostModule.create(PerkyModule, {$id: 'child'})
+
+        const updateSpy = vi.fn()
+        const renderSpy = vi.fn()
+
+        hostModule.on('update', updateSpy)
+        hostModule.on('render', renderSpy)
+
+        childModule.delegateEventsTo(hostModule, ['update', 'render'])
+
+        childModule.emit('update', 0.16)
+        childModule.emit('render', 1.0)
+
+        expect(updateSpy).toHaveBeenCalledWith(0.16)
+        expect(renderSpy).toHaveBeenCalledWith(1.0)
+    })
+
+
+    test('delegateEventsTo with namespace prefixes events', () => {
+        const hostModule = new PerkyModule({$id: 'host'})
+        const childModule = hostModule.create(PerkyModule, {$id: 'child'})
+
+        const spy = vi.fn()
+        hostModule.on('child:update', spy)
+
+        childModule.delegateEventsTo(hostModule, ['update'], 'child')
+
+        childModule.emit('update', 0.16)
+
+        expect(spy).toHaveBeenCalledWith(0.16)
+    })
+
+
+    test('delegateEventsTo cleans up on uninstall', () => {
+        const hostModule = new PerkyModule({$id: 'host'})
+        const childModule = hostModule.create(PerkyModule, {$id: 'child'})
+
+        const spy = vi.fn()
+        hostModule.on('update', spy)
+
+        childModule.delegateEventsTo(hostModule, ['update'])
+
+        childModule.emit('update', 0.16)
+        expect(spy).toHaveBeenCalledTimes(1)
+
+        childModule.uninstall()
+
+        childModule.emit('update', 0.16)
+        expect(spy).toHaveBeenCalledTimes(1)
+    })
+
+
+    test('delegateEventsTo cleans up on dispose', () => {
+        const hostModule = new PerkyModule({$id: 'host'})
+        const childModule = hostModule.create(PerkyModule, {$id: 'child'})
+
+        const spy = vi.fn()
+        hostModule.on('update', spy)
+
+        childModule.delegateEventsTo(hostModule, ['update'])
+
+        childModule.emit('update', 0.16)
+        expect(spy).toHaveBeenCalledTimes(1)
+
+        childModule.dispose()
+
+        childModule.emit('update', 0.16)
+        expect(spy).toHaveBeenCalledTimes(1)
+    })
 
 
     test('dispose calls dispose on all children in cascade', () => {

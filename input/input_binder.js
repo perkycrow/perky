@@ -39,7 +39,7 @@ export default class InputBinder extends PerkyModule {
 
 
     onInstall (host) {
-        host.delegate(this, [
+        this.delegateTo(host, [
             'bindInput',
             'unbind',
             'getBinding',

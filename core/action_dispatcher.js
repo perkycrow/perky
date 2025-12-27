@@ -14,7 +14,7 @@ export default class ActionDispatcher extends PerkyModule {
 
         this.listenTo(host, 'input:triggered', this.dispatchAction.bind(this))
 
-        host.delegate(this, {
+        this.delegateTo(host, {
             register: 'registerController',
             unregister: 'unregisterController',
             getController: 'getController',

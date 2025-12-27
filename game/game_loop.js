@@ -20,7 +20,7 @@ export default class GameLoop extends PerkyModule {
 
 
     onInstall (host) {
-        host.delegate(this, [
+        this.delegateTo(host, [
             'paused',
             'pause',
             'resume',
@@ -29,7 +29,7 @@ export default class GameLoop extends PerkyModule {
             'getCurrentFps'
         ])
 
-        host.delegateEvents(this, [
+        this.delegateEventsTo(host, [
             'update',
             'render',
             'pause',

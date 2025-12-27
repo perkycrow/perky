@@ -15,9 +15,9 @@ export default class SourceManager extends PerkyModule {
 
 
     onInstall (host) {
-        host.delegate(this, ['loadSource', 'loadTag', 'loadAll', 'loaders'])
+        this.delegateTo(host, ['loadSource', 'loadTag', 'loadAll', 'loaders'])
 
-        host.delegateEvents(this, [
+        this.delegateEventsTo(host, [
             'loader:progress',
             'loader:complete',
             'loader:error'

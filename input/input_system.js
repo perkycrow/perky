@@ -34,7 +34,7 @@ export default class InputSystem extends PerkyModule {
             container: host.element
         })
 
-        host.delegate(this, [
+        this.delegateTo(host, [
             'registerDevice',
             'unregisterDevice',
             'getDevice',
@@ -49,7 +49,7 @@ export default class InputSystem extends PerkyModule {
             'getPressedControls'
         ])
 
-        host.delegate(this, [
+        this.delegateTo(host, [
             'inputBinder',
             'bindInput',
             'unbind',
@@ -62,7 +62,7 @@ export default class InputSystem extends PerkyModule {
             'bindCombo'
         ])
 
-        host.delegate(this, [
+        this.delegateTo(host, [
             'isKeyPressed',
             'isMousePressed',
             'getKeyValue',
@@ -74,7 +74,7 @@ export default class InputSystem extends PerkyModule {
             'getDirection'
         ])
 
-        host.delegateEvents(this, ['input:triggered'])
+        this.delegateEventsTo(host, ['input:triggered'])
     }
 
 

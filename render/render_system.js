@@ -306,8 +306,7 @@ export default class RenderSystem extends PerkyModule {
 
 
     onInstall (host) {
-        // Delegate RenderSystem methods to the host (Game)
-        host.delegate(this, [
+        this.delegateTo(host, [
             'createLayer',
             'getLayer',
             'getCanvas',
@@ -322,7 +321,6 @@ export default class RenderSystem extends PerkyModule {
             'setCamera'
         ])
 
-        // Mount RenderSystem into host element if it exists
         if (host.element) {
             this.mount(host.element)
         } else if (host.mounted !== undefined) {

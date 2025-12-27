@@ -20,7 +20,7 @@ export default class InputDevice extends PerkyModule {
 
 
     onInstall (host) {
-        host.delegateEvents(this, ['control:pressed', 'control:released', 'control:updated'])
+        this.delegateEventsTo(host, ['control:pressed', 'control:released', 'control:updated'])
     }
 
 

@@ -21,6 +21,8 @@ export default class PerkyModule extends Notifier {
     #lifecycle
     #tags = null
     #tagIndexes = new Map()
+    #delegations = []
+    #eventDelegations = []
 
     static $category = 'perkyModule'
     static $name = null
@@ -280,6 +282,8 @@ export default class PerkyModule extends Notifier {
             return false
         }
 
+        this.cleanDelegations()
+        this.cleanEventDelegations()
         this.onUninstall?.(this.#host)
         this.#installed = false
         this.#host = null
@@ -352,72 +356,49 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    delegate (target, names) {
-        if (!target) {
-            throw new Error('Target is required for delegation')
-        }
+    delegateTo (host, names) {
+        delegateProperties(host, this, names)
 
-        if (Array.isArray(names)) {
-            names.forEach(name => {
-                this.#delegateProperty(target, name, name)
-            })
-        } else if (typeof names === 'object') {
-            Object.entries(names).forEach(([sourceName, hostName]) => {
-                this.#delegateProperty(target, sourceName, hostName)
-            })
-        } else {
-            throw new Error('Names must be an array or object')
-        }
+        const propertyNames = Array.isArray(names)
+            ? names
+            : Object.values(names)
+
+        this.#delegations.push({host, propertyNames})
     }
 
 
-    #delegateProperty (target, sourceName, hostName) { // eslint-disable-line complexity
-        if (typeof target === 'string' || typeof sourceName === 'symbol') {
-            this.#delegatePropertySym(target, sourceName, hostName)
-            return
+    cleanDelegations () {
+        for (const {host, propertyNames} of this.#delegations) {
+            for (const name of propertyNames) {
+                delete host[name]
+            }
         }
-
-        const descriptor = Object.getOwnPropertyDescriptor(target, sourceName)
-
-        if (descriptor && (descriptor.get || descriptor.set)) {
-            Object.defineProperty(this, hostName, {
-                get: descriptor.get ? descriptor.get.bind(target) : undefined,
-                set: descriptor.set ? descriptor.set.bind(target) : undefined,
-                enumerable: true,
-                configurable: true
-            })
-        } else if (typeof target[sourceName] === 'function') {
-            this[hostName] = target[sourceName].bind(target)
-        } else {
-            Object.defineProperty(this, hostName, {
-                get: () => target[sourceName],
-                set: (value) => {
-                    target[sourceName] = value
-                },
-                enumerable: true,
-                configurable: true
-            })
-        }
+        this.#delegations = []
     }
 
 
-    #delegatePropertySym (targetName, sourceName, hostName) {
-        Object.defineProperty(this, hostName, {
-            get: () => {
-                const target = this[targetName]
-                const value = target?.[sourceName]
+    delegateEventsTo (host, events, namespace) {
+        const eventArray = Array.isArray(events) ? events : Object.keys(events)
+        const callbacks = []
 
-                if (typeof value === 'function') {
-                    return value.bind(target)
-                }
-                return value
-            },
-            set: (value) => {
-                this[targetName][sourceName] = value
-            },
-            enumerable: true,
-            configurable: true
-        })
+        for (const event of eventArray) {
+            const prefixedEvent = namespace ? `${namespace}:${event}` : event
+            const callback = (...args) => host.emit(prefixedEvent, ...args)
+            this.on(event, callback)
+            callbacks.push({event, callback})
+        }
+
+        this.#eventDelegations.push({callbacks})
+    }
+
+
+    cleanEventDelegations () {
+        for (const {callbacks} of this.#eventDelegations) {
+            for (const {event, callback} of callbacks) {
+                this.off(event, callback)
+            }
+        }
+        this.#eventDelegations = []
     }
 
 
@@ -521,7 +502,10 @@ export default class PerkyModule extends Notifier {
         'children',
         'listNamesFor',
         'removeChild',
-        'delegate',
+        'delegateTo',
+        'cleanDelegations',
+        'delegateEventsTo',
+        'cleanEventDelegations',
         'childrenByTags',
         'addTagsIndex',
         'removeTagsIndex'
@@ -612,4 +596,40 @@ function unregisterChild (host, child) {
 
 function getIndexKey (tags) {
     return [...tags].sort().join('_')
+}
+
+
+function delegateProperties (receiver, source, names) {
+    if (Array.isArray(names)) {
+        names.forEach(name => delegateProperty(receiver, source, name, name))
+    } else if (typeof names === 'object') {
+        Object.entries(names).forEach(([sourceName, receiverName]) => {
+            delegateProperty(receiver, source, sourceName, receiverName)
+        })
+    }
+}
+
+
+function delegateProperty (receiver, source, sourceName, receiverName) { // eslint-disable-line complexity
+    const descriptor = Object.getOwnPropertyDescriptor(source, sourceName)
+
+    if (descriptor && (descriptor.get || descriptor.set)) {
+        Object.defineProperty(receiver, receiverName, {
+            get: descriptor.get ? descriptor.get.bind(source) : undefined,
+            set: descriptor.set ? descriptor.set.bind(source) : undefined,
+            enumerable: true,
+            configurable: true
+        })
+    } else if (typeof source[sourceName] === 'function') {
+        receiver[receiverName] = source[sourceName].bind(source)
+    } else {
+        Object.defineProperty(receiver, receiverName, {
+            get: () => source[sourceName],
+            set: (value) => {
+                source[sourceName] = value
+            },
+            enumerable: true,
+            configurable: true
+        })
+    }
 }

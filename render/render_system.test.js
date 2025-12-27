@@ -88,13 +88,12 @@ describe('RenderSystem', () => {
 
 
         it('should render all layers', () => {
-            // Just verify it doesn't throw
-            expect(() => renderSystem.renderAll()).not.toThrow()
+            expect(() => renderSystem.renderAll()).not.toThrow() // eslint-disable-line max-nested-callbacks
         })
 
 
         it('should render a specific layer', () => {
-            expect(() => renderSystem.renderLayer('game')).not.toThrow()
+            expect(() => renderSystem.renderLayer('game')).not.toThrow() // eslint-disable-line max-nested-callbacks
         })
 
     })
@@ -183,8 +182,8 @@ describe('RenderSystem', () => {
             const cameras = renderSystem.childrenByCategory('camera')
 
             expect(cameras.length).toBe(2)
-            expect(cameras.map(c => c.$id)).toContain('main')
-            expect(cameras.map(c => c.$id)).toContain('secondary')
+            expect(cameras.map(c => c.$id)).toContain('main') // eslint-disable-line max-nested-callbacks
+            expect(cameras.map(c => c.$id)).toContain('secondary') // eslint-disable-line max-nested-callbacks
         })
 
     })
@@ -195,7 +194,7 @@ describe('RenderSystem', () => {
         it('should not crash if disposed twice', () => {
             renderSystem.dispose()
 
-            expect(() => {
+            expect(() => { // eslint-disable-line max-nested-callbacks
                 renderSystem.dispose()
             }).not.toThrow()
         })
@@ -207,19 +206,14 @@ describe('RenderSystem', () => {
 
         it('should delegate methods to host on install', () => {
             const host = {
-                delegate: vi.fn(),
                 on: vi.fn()
             }
 
             renderSystem.install(host)
 
-            expect(host.delegate).toHaveBeenCalled()
-
-            // Verify methods are delegated
-            expect(host.delegate).toHaveBeenCalledWith(
-                renderSystem,
-                expect.arrayContaining(['createLayer', 'getLayer', 'renderAll'])
-            )
+            expect(host.createLayer).toBeDefined()
+            expect(host.getLayer).toBeDefined()
+            expect(host.renderAll).toBeDefined()
         })
 
     })
@@ -233,7 +227,7 @@ describe('RenderSystem', () => {
             const layers = renderSystem.childrenByCategory('layer')
 
             expect(layers).toHaveLength(2)
-            expect(layers.every(l => l.$category === 'layer')).toBe(true)
+            expect(layers.every(l => l.$category === 'layer')).toBe(true) // eslint-disable-line max-nested-callbacks
         })
 
     })
