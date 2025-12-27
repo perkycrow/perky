@@ -106,8 +106,6 @@ export default class InputBinder extends PerkyModule {
 
         if (binding) {
             this.#bindings.delete(binding.key)
-
-            // Emit event for reactive indexing
             this.emit('binding:removed', binding)
 
             return true
@@ -212,13 +210,6 @@ export default class InputBinder extends PerkyModule {
             }))
         }
     }
-
-
-    static import (params) {
-        return new InputBinder(params)
-    }
-
-
 }
 
 

@@ -453,7 +453,7 @@ describe(InputBinder, () => {
     })
 
 
-    test('import - static method', () => {
+    test('constructor - with exported data', () => {
         const data = {
             bindings: [
                 {
@@ -471,7 +471,7 @@ describe(InputBinder, () => {
             ]
         }
 
-        const binderFromImport = InputBinder.import(data)
+        const binderFromImport = new InputBinder(data)
 
         expect(binderFromImport.getAllBindings()).toHaveLength(2)
 
@@ -512,8 +512,8 @@ describe(InputBinder, () => {
     })
 
 
-    test('import - empty data', () => {
-        const binderFromImport = InputBinder.import({})
+    test('constructor - empty data via import pattern', () => {
+        const binderFromImport = new InputBinder({})
         expect(binderFromImport.getAllBindings()).toHaveLength(0)
     })
 
