@@ -7,6 +7,7 @@ export default class BaseInspector extends HTMLElement {
     #gridEl = null
     #actionsEl = null
     #customStyles = ''
+    #externalListeners = []
 
 
     constructor (customStyles = '') {
@@ -16,7 +17,13 @@ export default class BaseInspector extends HTMLElement {
     }
 
 
+    disconnectedCallback () {
+        this.cleanExternalListeners()
+    }
+
+
     setModule (module) {
+        this.cleanExternalListeners()
         this.#module = module
         this.onModuleSet?.(module)
     }
@@ -112,6 +119,20 @@ export default class BaseInspector extends HTMLElement {
     clearContent () {
         this.#gridEl.innerHTML = ''
         this.#actionsEl.innerHTML = ''
+    }
+
+
+    listenTo (target, eventName, callback) {
+        target.on(eventName, callback)
+        this.#externalListeners.push({target, eventName, callback})
+    }
+
+
+    cleanExternalListeners () {
+        for (const {target, eventName, callback} of this.#externalListeners) {
+            target.off(eventName, callback)
+        }
+        this.#externalListeners = []
     }
 
 }

@@ -1,5 +1,4 @@
 import BaseInspector from './base_inspector.js'
-import {createListenerManager} from './listener_helper.js'
 import WebGLTextureManager from '../../render/webgl_texture_manager.js'
 
 
@@ -133,8 +132,6 @@ export default class TextureManagerInspector extends BaseInspector {
         return module instanceof WebGLTextureManager
     }
 
-    #listeners = createListenerManager()
-
     #activeCountEl = null
     #activeSizeEl = null
     #zombieCountEl = null
@@ -152,14 +149,7 @@ export default class TextureManagerInspector extends BaseInspector {
     }
 
 
-    disconnectedCallback () {
-        this.#listeners.clear()
-    }
-
-
     onModuleSet (module) {
-        this.#listeners.clear()
-
         if (module) {
             this.#bindEvents()
             this.#updateAll()
@@ -322,7 +312,7 @@ export default class TextureManagerInspector extends BaseInspector {
 
         const events = ['create', 'zombie', 'resurrect', 'delete', 'flush', 'flushStale', 'flushIfFull']
         for (const event of events) {
-            this.#listeners.add(this.module, event, () => this.#updateAll())
+            this.listenTo(this.module, event, () => this.#updateAll())
         }
     }
 

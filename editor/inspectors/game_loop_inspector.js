@@ -1,5 +1,4 @@
 import BaseInspector from './base_inspector.js'
-import {createListenerManager} from './listener_helper.js'
 import GameLoop from '../../game/game_loop.js'
 
 
@@ -12,7 +11,6 @@ export default class GameLoopInspector extends BaseInspector {
     #fpsValueEl = null
     #statusValueEl = null
     #toggleBtn = null
-    #listeners = createListenerManager()
 
 
     constructor () {
@@ -21,14 +19,7 @@ export default class GameLoopInspector extends BaseInspector {
     }
 
 
-    disconnectedCallback () {
-        this.#listeners.clear()
-    }
-
-
     onModuleSet (module) {
-        this.#listeners.clear()
-
         if (module) {
             this.#bindEvents()
             this.#updateAll()
@@ -66,11 +57,11 @@ export default class GameLoopInspector extends BaseInspector {
             return
         }
 
-        this.#listeners.add(this.module, 'render', (_, fps) => this.#updateFps(fps))
-        this.#listeners.add(this.module, 'pause', () => this.#updateStatus())
-        this.#listeners.add(this.module, 'resume', () => this.#updateStatus())
-        this.#listeners.add(this.module, 'start', () => this.#updateStatus())
-        this.#listeners.add(this.module, 'stop', () => this.#updateStatus())
+        this.listenTo(this.module, 'render', (_, fps) => this.#updateFps(fps))
+        this.listenTo(this.module, 'pause', () => this.#updateStatus())
+        this.listenTo(this.module, 'resume', () => this.#updateStatus())
+        this.listenTo(this.module, 'start', () => this.#updateStatus())
+        this.listenTo(this.module, 'stop', () => this.#updateStatus())
     }
 
 
