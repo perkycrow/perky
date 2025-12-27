@@ -44,7 +44,7 @@ describe(InputBinder, () => {
 
 
     test('bind - minimal', () => {
-        const result = binder.bind({
+        const result = binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump'
@@ -63,7 +63,7 @@ describe(InputBinder, () => {
 
 
     test('bind - specific controller', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Escape',
             actionName: 'openMenu',
@@ -77,7 +77,7 @@ describe(InputBinder, () => {
 
 
     test('bind - specific eventType', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'stopJump',
@@ -91,7 +91,7 @@ describe(InputBinder, () => {
 
 
     test('unbind', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump'
@@ -116,7 +116,7 @@ describe(InputBinder, () => {
 
 
     test('getBinding', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump',
@@ -144,7 +144,7 @@ describe(InputBinder, () => {
 
 
     test('hasBinding', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump'
@@ -168,7 +168,7 @@ describe(InputBinder, () => {
 
 
     test('getBindingsForInput - single binding', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump'
@@ -186,14 +186,14 @@ describe(InputBinder, () => {
 
 
     test('getBindingsForInput - multiple bindings', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump',
             controllerName: 'game'
         })
 
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'select',
@@ -213,14 +213,14 @@ describe(InputBinder, () => {
 
 
     test('getBindingsForInput - different event types', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump',
             eventType: 'pressed'
         })
 
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'stopJump',
@@ -259,7 +259,7 @@ describe(InputBinder, () => {
 
 
     test('getBindingsForAction - single binding', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump'
@@ -274,14 +274,14 @@ describe(InputBinder, () => {
 
 
     test('getBindingsForAction - multiple bindings for same action', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump',
             controllerName: 'player1'
         })
 
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'KeyW',
             actionName: 'jump',
@@ -297,21 +297,21 @@ describe(InputBinder, () => {
 
 
     test('getBindingsForAction - filter by controllerName', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump',
             controllerName: 'player1'
         })
 
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'KeyW',
             actionName: 'jump',
             controllerName: 'player2'
         })
 
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Enter',
             actionName: 'jump'
@@ -331,14 +331,14 @@ describe(InputBinder, () => {
 
 
     test('getBindingsForAction - filter by eventType', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump',
             eventType: 'pressed'
         })
 
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump',
@@ -362,7 +362,7 @@ describe(InputBinder, () => {
 
 
     test('unbind - updates input index', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump'
@@ -387,13 +387,13 @@ describe(InputBinder, () => {
 
 
     test('clearBindings', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump'
         })
 
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Enter',
             actionName: 'select'
@@ -422,13 +422,13 @@ describe(InputBinder, () => {
 
 
     test('export', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump'
         })
 
-        binder.bind({
+        binder.bindInput({
             deviceName: 'mouse',
             controlName: 'LeftButton',
             actionName: 'fire',
@@ -641,7 +641,7 @@ describe(InputBinder, () => {
 
 
     test('maintains action index when bindings are added', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'KeyW',
             actionName: 'moveUp',
@@ -655,14 +655,14 @@ describe(InputBinder, () => {
 
 
     test('maintains action index when bindings are removed', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'KeyW',
             actionName: 'moveUp',
             controllerName: 'player1'
         })
 
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'ArrowUp',
             actionName: 'moveUp',
@@ -685,13 +685,13 @@ describe(InputBinder, () => {
 
 
     test('clearBindings clears action index', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump'
         })
 
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'KeyW',
             actionName: 'moveUp'
@@ -708,14 +708,14 @@ describe(InputBinder, () => {
 
 
     test('action index handles multiple controllers', () => {
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump',
             controllerName: 'player1'
         })
 
-        binder.bind({
+        binder.bindInput({
             deviceName: 'keyboard',
             controlName: 'KeyW',
             actionName: 'jump',

@@ -50,7 +50,7 @@ describe(InputSystem, () => {
 
 
     test('onInstall delegates InputBinder methods to host', () => {
-        expect(typeof mockHost.bind).toBe('function')
+        expect(typeof mockHost.bindInput).toBe('function')
         expect(typeof mockHost.unbind).toBe('function')
         expect(typeof mockHost.getBinding).toBe('function')
         expect(typeof mockHost.hasBinding).toBe('function')
@@ -58,8 +58,6 @@ describe(InputSystem, () => {
 
 
     test('onInstall adds convenience methods to host', () => {
-        expect(typeof mockHost.bindKey).toBe('function')
-        expect(typeof mockHost.bindMouse).toBe('function')
         expect(typeof mockHost.isKeyPressed).toBe('function')
         expect(typeof mockHost.isMousePressed).toBe('function')
         expect(typeof mockHost.isActionPressed).toBe('function')
@@ -309,8 +307,8 @@ describe(InputSystem, () => {
 
     // ===== Binding Tests =====
 
-    test('bindKey creates keyboard binding', () => {
-        const binding = inputSystem.bindKey('Space', 'jump')
+    test('bindInput creates keyboard binding (auto-detected)', () => {
+        const binding = inputSystem.bindInput({controlName: 'Space', actionName: 'jump'})
 
         expect(binding).toBeDefined()
         expect(binding.deviceName).toBe('keyboard')
@@ -319,8 +317,8 @@ describe(InputSystem, () => {
     })
 
 
-    test('bindMouse creates mouse binding', () => {
-        const binding = inputSystem.bindMouse('leftButton', 'fire')
+    test('bindInput creates mouse binding (auto-detected)', () => {
+        const binding = inputSystem.bindInput({controlName: 'leftButton', actionName: 'fire'})
 
         expect(binding).toBeDefined()
         expect(binding.deviceName).toBe('mouse')
@@ -361,7 +359,7 @@ describe(InputSystem, () => {
 
 
     test('isActionPressed returns true when action is pressed', () => {
-        inputSystem.bindKey('Space', 'jump')
+        inputSystem.bindInput({controlName: 'Space', actionName: 'jump'})
 
         const spaceControl = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: 'Space'})
         spaceControl.press()
@@ -371,8 +369,8 @@ describe(InputSystem, () => {
 
 
     test('isActionPressed works with multiple bindings', () => {
-        inputSystem.bindKey('Space', 'jump', 'pressed', 'player1')
-        inputSystem.bindKey('KeyW', 'jump', 'pressed', 'player2')
+        inputSystem.bindInput({controlName: 'Space', actionName: 'jump', controllerName: 'player1'})
+        inputSystem.bindInput({controlName: 'KeyW', actionName: 'jump', controllerName: 'player2'})
 
         const wControl = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: 'KeyW'})
         wControl.press()
@@ -390,7 +388,7 @@ describe(InputSystem, () => {
 
 
     test('getActionControls returns controls for action', () => {
-        inputSystem.bindKey('Space', 'jump')
+        inputSystem.bindInput({controlName: 'Space', actionName: 'jump'})
 
         const spaceControl = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: 'Space'})
 
@@ -401,7 +399,7 @@ describe(InputSystem, () => {
 
 
     test('emits input:triggered event when control is pressed', async () => {
-        inputSystem.bindKey('Space', 'jump')
+        inputSystem.bindInput({controlName: 'Space', actionName: 'jump'})
 
         const triggeredListener = vi.fn()
         mockHost.on('input:triggered', triggeredListener)
@@ -488,10 +486,10 @@ describe(InputSystem, () => {
 
         beforeEach(() => {
             // Setup WASD bindings
-            inputSystem.bindKey('KeyW', 'moveUp')
-            inputSystem.bindKey('KeyA', 'moveLeft')
-            inputSystem.bindKey('KeyS', 'moveDown')
-            inputSystem.bindKey('KeyD', 'moveRight')
+            inputSystem.bindInput({controlName: 'KeyW', actionName: 'moveUp'})
+            inputSystem.bindInput({controlName: 'KeyA', actionName: 'moveLeft'})
+            inputSystem.bindInput({controlName: 'KeyS', actionName: 'moveDown'})
+            inputSystem.bindInput({controlName: 'KeyD', actionName: 'moveRight'})
         })
 
 
@@ -554,10 +552,10 @@ describe(InputSystem, () => {
 
 
         test('works with custom direction name', () => {
-            inputSystem.bindKey('ArrowUp', 'aimUp')
-            inputSystem.bindKey('ArrowDown', 'aimDown')
-            inputSystem.bindKey('ArrowLeft', 'aimLeft')
-            inputSystem.bindKey('ArrowRight', 'aimRight')
+            inputSystem.bindInput({controlName: 'ArrowUp', actionName: 'aimUp'})
+            inputSystem.bindInput({controlName: 'ArrowDown', actionName: 'aimDown'})
+            inputSystem.bindInput({controlName: 'ArrowLeft', actionName: 'aimLeft'})
+            inputSystem.bindInput({controlName: 'ArrowRight', actionName: 'aimRight'})
 
             const upControl = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: 'ArrowUp'})
             upControl.press()

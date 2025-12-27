@@ -51,7 +51,7 @@ export default class InputSystem extends PerkyModule {
 
         host.delegate(this, [
             'inputBinder',
-            'bind',
+            'bindInput',
             'unbind',
             'getBinding',
             'hasBinding',
@@ -63,8 +63,6 @@ export default class InputSystem extends PerkyModule {
         ])
 
         host.delegate(this, [
-            'bindKey',
-            'bindMouse',
             'isKeyPressed',
             'isMousePressed',
             'getKeyValue',
@@ -268,29 +266,6 @@ export default class InputSystem extends PerkyModule {
         return this.getInputValue('mouse', buttonName)
     }
 
-
-    bindKey (keyName, actionNameOrOptions, eventType = 'pressed', controllerName = null) {
-        const isObject = typeof actionNameOrOptions === 'object'
-        return this.inputBinder.bind({
-            deviceName: 'keyboard',
-            controlName: keyName,
-            actionName: isObject ? actionNameOrOptions.actionName : actionNameOrOptions,
-            eventType: isObject ? actionNameOrOptions.eventType ?? 'pressed' : eventType,
-            controllerName: isObject ? actionNameOrOptions.controllerName ?? null : controllerName
-        })
-    }
-
-
-    bindMouse (buttonName, actionNameOrOptions, eventType = 'pressed', controllerName = null) {
-        const isObject = typeof actionNameOrOptions === 'object'
-        return this.inputBinder.bind({
-            deviceName: 'mouse',
-            controlName: buttonName,
-            actionName: isObject ? actionNameOrOptions.actionName : actionNameOrOptions,
-            eventType: isObject ? actionNameOrOptions.eventType ?? 'pressed' : eventType,
-            controllerName: isObject ? actionNameOrOptions.controllerName ?? null : controllerName
-        })
-    }
 
 
     isActionPressed (actionName, controllerName = null) {

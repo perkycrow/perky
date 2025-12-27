@@ -40,7 +40,7 @@ export default class InputBinder extends PerkyModule {
 
     onInstall (host) {
         host.delegate(this, [
-            'bind',
+            'bindInput',
             'unbind',
             'getBinding',
             'hasBinding',
@@ -65,11 +65,11 @@ export default class InputBinder extends PerkyModule {
 
 
     importBindings (bindings) {
-        bindings.forEach(bindingData => this.bind(bindingData))
+        bindings.forEach(bindingData => this.bindInput(bindingData))
     }
 
 
-    bind ({
+    bindInput ({
         deviceName,
         controlName,
         actionName,
@@ -88,7 +88,7 @@ export default class InputBinder extends PerkyModule {
             })
         } else {
             binding = new InputBinding({
-                deviceName,
+                deviceName: deviceName ?? detectDeviceFromControlName(controlName),
                 controlName,
                 actionName,
                 controllerName,
@@ -190,7 +190,7 @@ export default class InputBinder extends PerkyModule {
             }
         })
 
-        return this.bind({
+        return this.bindInput({
             controls: normalizedControls,
             actionName,
             controllerName,

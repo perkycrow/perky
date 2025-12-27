@@ -81,7 +81,8 @@ export default class Application extends PerkyModule {
         const bindings = Controller.normalizeBindings?.(controllerName) || []
 
         for (const binding of bindings) {
-            this.bindKey(binding.key, {
+            this.bindInput({
+                controlName: binding.key,
                 actionName: binding.action,
                 controllerName: binding.controllerName,
                 eventType: binding.eventType

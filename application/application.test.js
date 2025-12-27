@@ -266,7 +266,7 @@ describe(Application, () => {
         const testApp = new Application()
         const controller = testApp.registerController('game', TestController)
         testApp.setActiveControllers('game')
-        testApp.bind({
+        testApp.bindInput({
             deviceName: 'keyboard',
             controlName: 'Space',
             actionName: 'jump',
@@ -298,7 +298,7 @@ describe(Application, () => {
 
 
     test('bind and unbind', () => {
-        const binding = application.bind({
+        const binding = application.bindInput({
             deviceName: 'keyboard',
             controlName: 'Enter',
             actionName: 'select'
@@ -315,7 +315,7 @@ describe(Application, () => {
 
 
     test('getBinding and hasBinding', () => {
-        application.bind({
+        application.bindInput({
             deviceName: 'keyboard',
             controlName: 'Tab',
             actionName: 'nextTab'
@@ -333,7 +333,7 @@ describe(Application, () => {
 
 
     test('getBindingsForInput', () => {
-        application.bind({
+        application.bindInput({
             deviceName: 'keyboard',
             controlName: 'F1',
             actionName: 'help'
@@ -351,8 +351,8 @@ describe(Application, () => {
 
 
     test('clearBindings', () => {
-        application.bind({deviceName: 'keyboard', controlName: 'A', actionName: 'action1'})
-        application.bind({deviceName: 'keyboard', controlName: 'B', actionName: 'action2'})
+        application.bindInput({deviceName: 'keyboard', controlName: 'A', actionName: 'action1'})
+        application.bindInput({deviceName: 'keyboard', controlName: 'B', actionName: 'action2'})
 
         expect(application.getAllBindings()).toHaveLength(2)
 
@@ -467,7 +467,7 @@ describe(Application, () => {
 
 
     test('bindKey convenience method', () => {
-        const binding = application.bindKey('Escape', 'pause')
+        const binding = application.bindInput({controlName: 'Escape', actionName: 'pause'})
 
         expect(binding).toBeDefined()
         expect(binding.deviceName).toBe('keyboard')
@@ -475,13 +475,13 @@ describe(Application, () => {
         expect(binding.actionName).toBe('pause')
         expect(binding.eventType).toBe('pressed')
 
-        const releasedBinding = application.bindKey('Escape', 'resume', 'released')
+        const releasedBinding = application.bindInput({controlName: 'Escape', actionName: 'resume', eventType: 'released'})
         expect(releasedBinding.eventType).toBe('released')
     })
 
 
     test('bindMouse convenience method', () => {
-        const binding = application.bindMouse('leftButton', 'shoot')
+        const binding = application.bindInput({controlName: 'leftButton', actionName: 'shoot'})
 
         expect(binding).toBeDefined()
         expect(binding.deviceName).toBe('mouse')
@@ -489,7 +489,7 @@ describe(Application, () => {
         expect(binding.actionName).toBe('shoot')
         expect(binding.eventType).toBe('pressed')
 
-        const releasedBinding = application.bindMouse('rightButton', 'aim', 'released')
+        const releasedBinding = application.bindInput({controlName: 'rightButton', actionName: 'aim', eventType: 'released'})
         expect(releasedBinding.eventType).toBe('released')
     })
 
@@ -555,7 +555,7 @@ describe(Application, () => {
     describe('bindKey flexible API', () => {
 
         test('parameter format with controllerName', () => {
-            const binding = application.bindKey('KeyF', 'fire', 'pressed', 'player1')
+            const binding = application.bindInput({controlName: 'KeyF', actionName: 'fire', eventType: 'pressed', controllerName: 'player1'})
 
             expect(binding).toBeDefined()
             expect(binding.deviceName).toBe('keyboard')
@@ -566,7 +566,7 @@ describe(Application, () => {
         })
 
         test('parameter format with eventType and no controllerName', () => {
-            const binding = application.bindKey('KeyG', 'grenade', 'released')
+            const binding = application.bindInput({controlName: 'KeyG', actionName: 'grenade', eventType: 'released'})
 
             expect(binding).toBeDefined()
             expect(binding.deviceName).toBe('keyboard')
@@ -577,7 +577,7 @@ describe(Application, () => {
         })
 
         test('object format with actionName only', () => {
-            const binding = application.bindKey('KeyH', {actionName: 'heal'})
+            const binding = application.bindInput({controlName: 'KeyH', actionName: 'heal'})
 
             expect(binding).toBeDefined()
             expect(binding.deviceName).toBe('keyboard')
@@ -588,7 +588,8 @@ describe(Application, () => {
         })
 
         test('object format with actionName and eventType', () => {
-            const binding = application.bindKey('KeyI', {
+            const binding = application.bindInput({
+                controlName: 'KeyI',
                 actionName: 'inventory',
                 eventType: 'released'
             })
@@ -602,7 +603,8 @@ describe(Application, () => {
         })
 
         test('object format with all options', () => {
-            const binding = application.bindKey('KeyJ', {
+            const binding = application.bindInput({
+                controlName: 'KeyJ',
                 actionName: 'jump',
                 eventType: 'pressed',
                 controllerName: 'player2'
@@ -617,7 +619,8 @@ describe(Application, () => {
         })
 
         test('object format with partial options uses defaults', () => {
-            const binding = application.bindKey('KeyK', {
+            const binding = application.bindInput({
+                controlName: 'KeyK',
                 actionName: 'kick',
                 controllerName: 'player3'
             })
@@ -631,7 +634,7 @@ describe(Application, () => {
         })
 
         test('backwards compatibility - original format still works', () => {
-            const binding = application.bindKey('KeyL', 'look')
+            const binding = application.bindInput({controlName: 'KeyL', actionName: 'look'})
 
             expect(binding).toBeDefined()
             expect(binding.deviceName).toBe('keyboard')
@@ -647,7 +650,7 @@ describe(Application, () => {
     describe('bindMouse flexible API', () => {
 
         test('parameter format with controllerName', () => {
-            const binding = application.bindMouse('middleButton', 'zoom', 'pressed', 'camera')
+            const binding = application.bindInput({controlName: 'middleButton', actionName: 'zoom', eventType: 'pressed', controllerName: 'camera'})
 
             expect(binding).toBeDefined()
             expect(binding.deviceName).toBe('mouse')
@@ -658,7 +661,7 @@ describe(Application, () => {
         })
 
         test('parameter format with eventType and no controllerName', () => {
-            const binding = application.bindMouse('rightButton', 'context', 'released')
+            const binding = application.bindInput({controlName: 'rightButton', actionName: 'context', eventType: 'released'})
 
             expect(binding).toBeDefined()
             expect(binding.deviceName).toBe('mouse')
@@ -669,7 +672,7 @@ describe(Application, () => {
         })
 
         test('object format with actionName only', () => {
-            const binding = application.bindMouse('leftButton', {actionName: 'select'})
+            const binding = application.bindInput({controlName: 'leftButton', actionName: 'select'})
 
             expect(binding).toBeDefined()
             expect(binding.deviceName).toBe('mouse')
@@ -680,7 +683,8 @@ describe(Application, () => {
         })
 
         test('object format with actionName and eventType', () => {
-            const binding = application.bindMouse('rightButton', {
+            const binding = application.bindInput({
+                controlName: 'rightButton',
                 actionName: 'menu',
                 eventType: 'released'
             })
@@ -694,7 +698,8 @@ describe(Application, () => {
         })
 
         test('object format with all options', () => {
-            const binding = application.bindMouse('leftButton', {
+            const binding = application.bindInput({
+                controlName: 'leftButton',
                 actionName: 'fire',
                 eventType: 'pressed',
                 controllerName: 'weapon'
@@ -709,7 +714,8 @@ describe(Application, () => {
         })
 
         test('object format with partial options uses defaults', () => {
-            const binding = application.bindMouse('middleButton', {
+            const binding = application.bindInput({
+                controlName: 'middleButton',
                 actionName: 'special',
                 controllerName: 'ui'
             })
@@ -723,7 +729,7 @@ describe(Application, () => {
         })
 
         test('backwards compatibility - original format still works', () => {
-            const binding = application.bindMouse('rightButton', 'aim')
+            const binding = application.bindInput({controlName: 'rightButton', actionName: 'aim'})
 
             expect(binding).toBeDefined()
             expect(binding.deviceName).toBe('mouse')
@@ -757,9 +763,10 @@ describe(Application, () => {
     describe('flexible API edge cases', () => {
 
         test('mixed usage in same application', () => {
-            const binding1 = application.bindKey('Digit1', 'slot1', 'pressed', 'inventory')
+            const binding1 = application.bindInput({controlName: 'Digit1', actionName: 'slot1', eventType: 'pressed', controllerName: 'inventory'})
 
-            const binding2 = application.bindKey('Digit2', {
+            const binding2 = application.bindInput({
+                controlName: 'Digit2',
                 actionName: 'slot2',
                 eventType: 'pressed',
                 controllerName: 'inventory'
@@ -922,13 +929,13 @@ describe(Application, () => {
 
 
         test('isActionPressed - returns false when control not pressed', () => {
-            application.bindKey('Space', 'jump')
+            application.bindInput({controlName: 'Space', actionName: 'jump'})
             expect(application.isActionPressed('jump')).toBe(false)
         })
 
 
         test('isActionPressed - returns true when control is pressed', () => {
-            application.bindKey('Space', 'jump')
+            application.bindInput({controlName: 'Space', actionName: 'jump'})
 
             const keyboardDevice = application.getDevice('keyboard')
             const spaceControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'Space'})
@@ -939,8 +946,8 @@ describe(Application, () => {
 
 
         test('isActionPressed - works with multiple bindings for same action', () => {
-            application.bindKey('Space', 'jump')
-            application.bindKey('KeyW', 'jump')
+            application.bindInput({controlName: 'Space', actionName: 'jump'})
+            application.bindInput({controlName: 'KeyW', actionName: 'jump'})
 
             const keyboardDevice = application.getDevice('keyboard')
             const wControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'KeyW'})
@@ -951,8 +958,8 @@ describe(Application, () => {
 
 
         test('isActionPressed - filters by controllerName', () => {
-            application.bindKey('Space', 'jump', 'pressed', 'player1')
-            application.bindKey('KeyW', 'jump', 'pressed', 'player2')
+            application.bindInput({controlName: 'Space', actionName: 'jump', eventType: 'pressed', controllerName: 'player1'})
+            application.bindInput({controlName: 'KeyW', actionName: 'jump', eventType: 'pressed', controllerName: 'player2'})
 
             const keyboardDevice = application.getDevice('keyboard')
             const spaceControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'Space'})
@@ -989,7 +996,7 @@ describe(Application, () => {
 
 
         test('getActionControls - returns control for simple binding', () => {
-            application.bindKey('Space', 'jump')
+            application.bindInput({controlName: 'Space', actionName: 'jump'})
 
             const keyboardDevice = application.getDevice('keyboard')
             const spaceControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'Space'})
@@ -1001,8 +1008,8 @@ describe(Application, () => {
 
 
         test('getActionControls - returns multiple controls for multiple bindings', () => {
-            application.bindKey('Space', 'jump', 'pressed', 'player1')
-            application.bindKey('KeyW', 'jump', 'pressed', 'player2')
+            application.bindInput({controlName: 'Space', actionName: 'jump', eventType: 'pressed', controllerName: 'player1'})
+            application.bindInput({controlName: 'KeyW', actionName: 'jump', eventType: 'pressed', controllerName: 'player2'})
 
             const keyboardDevice = application.getDevice('keyboard')
             const spaceControl = keyboardDevice.findOrCreateControl(ButtonControl, {name: 'Space'})
@@ -1016,8 +1023,8 @@ describe(Application, () => {
 
 
         test('getActionControls - filters by controllerName', () => {
-            application.bindKey('Space', 'jump', 'pressed', 'player1')
-            application.bindKey('KeyW', 'jump', 'pressed', 'player2')
+            application.bindInput({controlName: 'Space', actionName: 'jump', eventType: 'pressed', controllerName: 'player1'})
+            application.bindInput({controlName: 'KeyW', actionName: 'jump', eventType: 'pressed', controllerName: 'player2'})
 
             const keyboardDevice = application.getDevice('keyboard')
             keyboardDevice.findOrCreateControl(ButtonControl, {name: 'Space'})
@@ -1051,7 +1058,7 @@ describe(Application, () => {
 
 
         test('getActionControls - handles non-existent controls gracefully', () => {
-            application.bindKey('Space', 'jump')
+            application.bindInput({controlName: 'Space', actionName: 'jump'})
 
             const controls = application.getActionControls('jump')
             expect(controls).toHaveLength(0)
@@ -1059,8 +1066,8 @@ describe(Application, () => {
 
 
         test('getActionControls - works with cross-device bindings', () => {
-            application.bindKey('Space', 'action', 'pressed', 'keyboard-input')
-            application.bindMouse('leftButton', 'action', 'pressed', 'mouse-input')
+            application.bindInput({controlName: 'Space', actionName: 'action', eventType: 'pressed', controllerName: 'keyboard-input'})
+            application.bindInput({controlName: 'leftButton', actionName: 'action', eventType: 'pressed', controllerName: 'mouse-input'})
 
             const keyboardDevice = application.getDevice('keyboard')
             const mouseDevice = application.getDevice('mouse')
