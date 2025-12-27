@@ -104,22 +104,34 @@ export function setNestedValue (obj, path, value) {
 
 
 export function deepMerge (target, source) {
+    return deepMergeInternal(target, source, new WeakSet())
+}
+
+
+function deepMergeInternal (target, source, seen) { // eslint-disable-line complexity
     if (!source) {
         return target
+    }
+
+    if (typeof source === 'object' && source !== null) {
+        if (seen.has(source)) {
+            return source
+        }
+        seen.add(source)
     }
 
     const sourceIsArray = Array.isArray(source)
     const targetIsArray = Array.isArray(target)
 
     if (sourceIsArray !== targetIsArray) {
-        return cloneIfNeeded(source)
+        return cloneIfNeeded(source, seen)
     }
 
     if (sourceIsArray) {
-        return mergeArrays(target, source)
+        return mergeArrays(target, source, seen)
     }
 
-    return mergeObject(target, source)
+    return mergeObject(target, source, seen)
 }
 
 
@@ -168,13 +180,13 @@ function emptyTarget (value) {
 }
 
 
-function cloneIfNeeded (value, isMergeable = isMergeableObject) {
-    return (isMergeable(value)) ? deepMerge(emptyTarget(value), value) : value
+function cloneIfNeeded (value, seen) {
+    return isMergeableObject(value) ? deepMergeInternal(emptyTarget(value), value, seen) : value
 }
 
 
-function mergeArrays (target, source) {
-    return target.concat(source).map(element => cloneIfNeeded(element))
+function mergeArrays (target, source, seen) {
+    return target.concat(source).map(element => cloneIfNeeded(element, seen))
 }
 
 
@@ -187,20 +199,20 @@ function getKeys (target) {
 }
 
 
-function mergeObject (target, source) {
+function mergeObject (target, source, seen) {
     const destination = {}
 
     if (isMergeableObject(target)) {
         getKeys(target).forEach(key => {
-            destination[key] = cloneIfNeeded(target[key])
+            destination[key] = cloneIfNeeded(target[key], seen)
         })
     }
 
     getKeys(source).forEach(key => {
         if ((key in target) && isMergeableObject(source[key])) {
-            destination[key] = deepMerge(target[key], source[key])
+            destination[key] = deepMergeInternal(target[key], source[key], seen)
         } else {
-            destination[key] = cloneIfNeeded(source[key])
+            destination[key] = cloneIfNeeded(source[key], seen)
         }
     })
 

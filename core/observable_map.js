@@ -4,6 +4,7 @@ import Notifier from './notifier'
 export default class ObservableMap extends Notifier {
 
     #map = new Map()
+    #values = new Set()
 
     constructor (collection) {
         super()
@@ -55,7 +56,7 @@ export default class ObservableMap extends Notifier {
 
 
     hasValue (value) {
-        return Array.from(this.values).some((val) => val === value)
+        return this.#values.has(value)
     }
 
 
@@ -90,12 +91,16 @@ export default class ObservableMap extends Notifier {
     set (key, value) {
         const exists = this.#map.has(key)
         const oldValue = exists ? this.#map.get(key) : undefined
+        const isReplacing = exists && oldValue !== value
 
-        if (exists && oldValue !== value) {
+        this.#map.set(key, value)
+        this.#values.add(value)
+
+        if (isReplacing) {
+            this.#removeFromValues(oldValue)
             this.emit('delete', key, oldValue)
         }
 
-        this.#map.set(key, value)
         this.emit('set', key, value, oldValue)
 
         return true
@@ -113,6 +118,7 @@ export default class ObservableMap extends Notifier {
         const deleted = this.#map.delete(key)
 
         if (deleted) {
+            this.#removeFromValues(value)
             this.emit('delete', key, value)
         }
 
@@ -152,9 +158,20 @@ export default class ObservableMap extends Notifier {
             })
 
             this.#map.clear()
+            this.#values.clear()
 
             this.emit('clear')
         }
+    }
+
+
+    #removeFromValues (value) {
+        for (const [, v] of this.#map) {
+            if (v === value) {
+                return
+            }
+        }
+        this.#values.delete(value)
     }
 
 

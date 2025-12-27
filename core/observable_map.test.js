@@ -589,4 +589,84 @@ describe(ObservableMap, () => {
 
     })
 
+
+    describe('hasValue with shared values', () => {
+
+        test('hasValue returns true when same value is used by multiple keys', () => {
+            const sharedValue = {shared: true}
+
+            observableMap.set('key1', sharedValue)
+            observableMap.set('key2', sharedValue)
+
+            expect(observableMap.hasValue(sharedValue)).toBe(true)
+            expect(observableMap.size).toBe(2)
+        })
+
+
+        test('hasValue still returns true after deleting one key when value is shared', () => {
+            const sharedValue = {shared: true}
+
+            observableMap.set('key1', sharedValue)
+            observableMap.set('key2', sharedValue)
+
+            observableMap.delete('key1')
+
+            expect(observableMap.hasValue(sharedValue)).toBe(true)
+            expect(observableMap.size).toBe(1)
+        })
+
+
+        test('hasValue returns false only after all keys with shared value are deleted', () => {
+            const sharedValue = {shared: true}
+
+            observableMap.set('key1', sharedValue)
+            observableMap.set('key2', sharedValue)
+            observableMap.set('key3', sharedValue)
+
+            observableMap.delete('key1')
+            expect(observableMap.hasValue(sharedValue)).toBe(true)
+
+            observableMap.delete('key2')
+            expect(observableMap.hasValue(sharedValue)).toBe(true)
+
+            observableMap.delete('key3')
+            expect(observableMap.hasValue(sharedValue)).toBe(false)
+        })
+
+
+        test('hasValue works correctly when replacing a shared value', () => {
+            const sharedValue = {shared: true}
+            const newValue = {new: true}
+
+            observableMap.set('key1', sharedValue)
+            observableMap.set('key2', sharedValue)
+
+            observableMap.set('key1', newValue)
+
+            expect(observableMap.hasValue(sharedValue)).toBe(true)
+            expect(observableMap.hasValue(newValue)).toBe(true)
+
+            observableMap.set('key2', newValue)
+
+            expect(observableMap.hasValue(sharedValue)).toBe(false)
+            expect(observableMap.hasValue(newValue)).toBe(true)
+        })
+
+
+        test('clear removes all values from hasValue tracking', () => {
+            const value1 = {id: 1}
+            const value2 = {id: 2}
+
+            observableMap.set('key1', value1)
+            observableMap.set('key2', value1)
+            observableMap.set('key3', value2)
+
+            observableMap.clear()
+
+            expect(observableMap.hasValue(value1)).toBe(false)
+            expect(observableMap.hasValue(value2)).toBe(false)
+        })
+
+    })
+
 })

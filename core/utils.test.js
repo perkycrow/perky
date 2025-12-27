@@ -167,6 +167,21 @@ describe('Object Utils', () => {
     })
 
 
+    test('deepMerge handles circular references', () => {
+        const circular = {a: 1}
+        circular.self = circular
+
+        expect(() => {
+            deepMerge({}, circular)
+        }).not.toThrow()
+
+        const result = deepMerge({b: 2}, circular)
+        expect(result.a).toBe(1)
+        expect(result.b).toBe(2)
+        expect(result.self).toBe(circular)
+    })
+
+
     test('setDefaults', () => {
         expect(setDefaults({a: 1}, {a: 0, b: 2})).toEqual({a: 1, b: 2})
 

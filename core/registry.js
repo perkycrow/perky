@@ -34,7 +34,7 @@ export default class Registry extends ObservableMap {
 
         this.#indexes.set(name, index)
 
-        for (const [, value] of this.entries) {
+        for (const value of this.map.values()) {
             this.#addToIndex(name, value)
         }
 
