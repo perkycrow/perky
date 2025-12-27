@@ -205,45 +205,18 @@ export default class PerkyExplorer extends HTMLElement {
 
     #handleNodeSelect (module) {
         if (this.#selectedModule) {
-            this.#deselectAll(this.#rootNode)
+            this.#rootNode.deselectAll()
         }
 
         this.#selectedModule = module
 
-        const selectedNode = this.#findNodeByModule(this.#rootNode, module)
+        const selectedNode = this.#rootNode.findNode(n => n.getModule() === module)
         if (selectedNode) {
             selectedNode.setSelected(true)
         }
 
         this.#closeSceneTree()
         this.#detailsEl.setModule(module)
-    }
-
-
-    #deselectAll (node) {
-        node.setSelected(false)
-
-        const children = node.shadowRoot.querySelectorAll('perky-explorer-node')
-        for (const child of children) {
-            this.#deselectAll(child)
-        }
-    }
-
-
-    #findNodeByModule (node, module) {
-        if (node.getModule() === module) {
-            return node
-        }
-
-        const children = node.shadowRoot.querySelectorAll('perky-explorer-node')
-        for (const child of children) {
-            const found = this.#findNodeByModule(child, module)
-            if (found) {
-                return found
-            }
-        }
-
-        return null
     }
 
 
@@ -334,7 +307,7 @@ export default class PerkyExplorer extends HTMLElement {
         }
 
         if (this.#selectedModule) {
-            const node = this.#findNodeByModule(this.#rootNode, this.#selectedModule)
+            const node = this.#rootNode.findNode(n => n.getModule() === this.#selectedModule)
             if (node) {
                 node.setSelected(true)
             }
@@ -359,10 +332,10 @@ export default class PerkyExplorer extends HTMLElement {
     #navigateToEntity (entity) {
         this.#closeSceneTree()
 
-        const node = this.#findNodeByModule(this.#rootNode, entity)
+        const node = this.#rootNode.findNode(n => n.getModule() === entity)
         if (node) {
             if (this.#selectedModule) {
-                this.#deselectAll(this.#rootNode)
+                this.#rootNode.deselectAll()
             }
 
             this.#selectedModule = entity
@@ -376,9 +349,13 @@ export default class PerkyExplorer extends HTMLElement {
 
     #expandParentsToNode (targetNode) {
         const expandPath = (node) => {
-            const children = node.shadowRoot.querySelectorAll('perky-explorer-node')
+            const childNodeTag = node.constructor.childNodeTag
+            if (!childNodeTag) {
+                return false
+            }
+            const children = node.shadowRoot.querySelectorAll(childNodeTag)
             for (const child of children) {
-                if (child === targetNode || this.#findNodeByModule(child, targetNode.getModule())) {
+                if (child === targetNode || child.findNode(n => n === targetNode)) {
                     node.setExpanded(true)
                     expandPath(child)
                     return true

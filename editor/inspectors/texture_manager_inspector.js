@@ -36,7 +36,7 @@ const customStyles = `
     }
 
     .stat-value.zombie {
-        color: #f59e0b;
+        color: var(--status-warning);
     }
 
     .stat-sub {
@@ -87,7 +87,7 @@ const customStyles = `
     }
 
     .progress-bar.medium {
-        background: #f59e0b;
+        background: var(--status-warning);
     }
 
     .progress-bar.high {
@@ -227,13 +227,11 @@ export default class TextureManagerInspector extends BaseInspector {
         this.actionsEl.appendChild(flushBtn)
         this.actionsEl.appendChild(flushStaleBtn)
 
-        // Insert before grid
         this.shadowRoot.insertBefore(stats, this.gridEl)
         this.shadowRoot.insertBefore(progressSection, this.gridEl)
         this.shadowRoot.insertBefore(divider, this.gridEl)
         this.shadowRoot.insertBefore(infoSection, this.gridEl)
 
-        // Hide the default grid since we use custom layout
         this.gridEl.style.display = 'none'
     }
 

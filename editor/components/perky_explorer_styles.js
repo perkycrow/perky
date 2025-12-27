@@ -9,6 +9,7 @@ export const cssVariables = `
     --accent: #6b9fff;
     --status-started: #4ade80;
     --status-stopped: #f87171;
+    --status-warning: #f59e0b;
     --status-disposed: #6b7280;
     --border: #38383e;
     --font-mono: "Source Code Pro", "SF Mono", "Monaco", monospace;
@@ -347,6 +348,13 @@ export const inspectorStyles = `
         color: var(--status-stopped);
     }
 
+    .inspector-separator {
+        grid-column: 1 / -1;
+        height: 1px;
+        background: var(--border);
+        margin: 6px 0;
+    }
+
     .inspector-actions {
         display: flex;
         gap: 6px;
@@ -402,3 +410,76 @@ export const inspectorStyles = `
     }
 `
 
+
+export const panelStyles = `
+    .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .panel-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--fg-primary);
+        font-weight: 500;
+    }
+
+    .panel-title-icon {
+        font-size: 14px;
+    }
+
+    .panel-buttons {
+        display: flex;
+        gap: 4px;
+    }
+
+    .panel-btn {
+        background: var(--bg-hover);
+        border: none;
+        border-radius: 4px;
+        color: var(--fg-secondary);
+        padding: 4px 8px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 11px;
+        transition: background 0.15s, color 0.15s;
+    }
+
+    .panel-btn:hover {
+        background: var(--bg-selected);
+        color: var(--fg-primary);
+    }
+
+    .panel-tree {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 0;
+        min-height: 100px;
+    }
+
+    .panel-tree::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .panel-tree::-webkit-scrollbar-track {
+        background: var(--bg-primary);
+    }
+
+    .panel-tree::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+    }
+
+    .panel-empty {
+        padding: 20px;
+        text-align: center;
+        color: var(--fg-muted);
+    }
+`

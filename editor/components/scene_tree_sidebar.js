@@ -169,7 +169,7 @@ export default class SceneTreeSidebar extends BaseEditorComponent {
         }
 
         if (this.#selectedObject) {
-            const node = this.#findNodeByObject(this.#rootNode, this.#selectedObject)
+            const node = this.#rootNode.findNode(n => n.getObject() === this.#selectedObject)
             if (node) {
                 node.setSelected(true)
             }
@@ -283,44 +283,17 @@ export default class SceneTreeSidebar extends BaseEditorComponent {
 
     #handleNodeSelect (object) {
         if (this.#selectedObject) {
-            this.#deselectAll(this.#rootNode)
+            this.#rootNode.deselectAll()
         }
 
         this.#selectedObject = object
 
-        const selectedNode = this.#findNodeByObject(this.#rootNode, object)
+        const selectedNode = this.#rootNode.findNode(n => n.getObject() === object)
         if (selectedNode) {
             selectedNode.setSelected(true)
         }
 
         this.#updateInspector()
-    }
-
-
-    #deselectAll (node) {
-        node.setSelected(false)
-
-        const children = node.shadowRoot.querySelectorAll('scene-tree-node')
-        for (const child of children) {
-            this.#deselectAll(child)
-        }
-    }
-
-
-    #findNodeByObject (node, object) {
-        if (node.getObject() === object) {
-            return node
-        }
-
-        const children = node.shadowRoot.querySelectorAll('scene-tree-node')
-        for (const child of children) {
-            const found = this.#findNodeByObject(child, object)
-            if (found) {
-                return found
-            }
-        }
-
-        return null
     }
 
 

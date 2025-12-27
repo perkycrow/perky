@@ -4,6 +4,8 @@ import {nodeStyles, cssVariables} from './perky_explorer_styles.js'
 
 export default class BaseTreeNode extends BaseEditorComponent {
 
+    static childNodeTag = null
+
     #depth = 0
     #expanded = false
     #selected = false
@@ -133,6 +135,50 @@ export default class BaseTreeNode extends BaseEditorComponent {
 
     refreshToggle () {
         this.#updateToggle()
+    }
+
+
+    findNode (predicate) {
+        if (predicate(this)) {
+            return this
+        }
+
+        const childNodeTag = this.constructor.childNodeTag
+        if (!childNodeTag) {
+            return null
+        }
+
+        const children = this.shadowRoot.querySelectorAll(childNodeTag)
+
+        for (const child of children) {
+            const found = child.findNode(predicate)
+            if (found) {
+                return found
+            }
+        }
+
+        return null
+    }
+
+
+    traverse (fn) {
+        fn(this)
+
+        const childNodeTag = this.constructor.childNodeTag
+        if (!childNodeTag) {
+            return
+        }
+
+        const children = this.shadowRoot.querySelectorAll(childNodeTag)
+
+        for (const child of children) {
+            child.traverse(fn)
+        }
+    }
+
+
+    deselectAll () {
+        this.traverse(node => node.setSelected(false))
     }
 
 

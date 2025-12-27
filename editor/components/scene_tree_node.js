@@ -31,6 +31,8 @@ const sceneTreeNodeStyles = `
 
 export default class SceneTreeNode extends BaseTreeNode {
 
+    static childNodeTag = 'scene-tree-node'
+
     #object = null
     #childNodes = []
     #labelEl = null

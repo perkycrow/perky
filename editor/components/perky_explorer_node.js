@@ -3,6 +3,8 @@ import BaseTreeNode from './base_tree_node.js'
 
 export default class PerkyExplorerNode extends BaseTreeNode {
 
+    static childNodeTag = 'perky-explorer-node'
+
     #module = null
     #childNodes = new Map()
 

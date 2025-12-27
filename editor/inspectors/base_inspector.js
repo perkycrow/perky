@@ -98,10 +98,6 @@ export default class BaseInspector extends BaseEditorComponent {
     addSeparator () {
         const sep = document.createElement('div')
         sep.className = 'inspector-separator'
-        sep.style.gridColumn = '1 / -1'
-        sep.style.height = '1px'
-        sep.style.background = 'var(--border)'
-        sep.style.margin = '6px 0'
         this.#gridEl.appendChild(sep)
     }
 
