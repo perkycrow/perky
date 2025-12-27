@@ -126,7 +126,7 @@ export default class ActionDispatcher extends PerkyModule {
             return false
         }
 
-        if (this.#activeControllers.length > 0 && this.#activeControllers[this.#activeControllers.length - 1] === name) {
+        if (this.#isTopController(name)) {
             return false
         }
 
@@ -207,6 +207,12 @@ export default class ActionDispatcher extends PerkyModule {
 
     #isControllerActive (controllerName) {
         return this.#activeControllers.includes(controllerName)
+    }
+
+
+    #isTopController (name) {
+        const stack = this.#activeControllers
+        return stack.length > 0 && stack[stack.length - 1] === name
     }
 
 

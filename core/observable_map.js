@@ -5,6 +5,7 @@ export default class ObservableMap extends Notifier {
 
     #map = new Map()
     #values = new Set()
+    #keyByValue = new Map()
 
     constructor (collection) {
         super()
@@ -61,15 +62,7 @@ export default class ObservableMap extends Notifier {
 
 
     keyFor (value) {
-        const {entries} = this
-
-        for (const [key, val] of entries) {
-            if (val === value) {
-                return key
-            }
-        }
-
-        return undefined
+        return this.#keyByValue.get(value)
     }
 
 
@@ -95,6 +88,7 @@ export default class ObservableMap extends Notifier {
 
         this.#map.set(key, value)
         this.#values.add(value)
+        this.#keyByValue.set(value, key)
 
         if (isReplacing) {
             this.#removeFromValues(oldValue)
@@ -159,6 +153,7 @@ export default class ObservableMap extends Notifier {
 
             this.#map.clear()
             this.#values.clear()
+            this.#keyByValue.clear()
 
             this.emit('clear')
         }
@@ -172,6 +167,7 @@ export default class ObservableMap extends Notifier {
             }
         }
         this.#values.delete(value)
+        this.#keyByValue.delete(value)
     }
 
 

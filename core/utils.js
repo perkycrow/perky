@@ -148,7 +148,7 @@ export function exportValue (value) { // eslint-disable-line complexity
 
         const result = {}
         for (const key in value) {
-            if (value.hasOwnProperty(key)) {
+            if (Object.hasOwn(value, key)) {
                 result[key] = exportValue(value[key])
             }
         }

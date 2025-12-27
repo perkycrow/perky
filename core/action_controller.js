@@ -1,5 +1,5 @@
-import PerkyModule from '../core/perky_module'
-import Registry from '../core/registry'
+import PerkyModule from './perky_module'
+import Registry from './registry'
 
 
 export default class ActionController extends PerkyModule {
