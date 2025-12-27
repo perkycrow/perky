@@ -1,51 +1,93 @@
-import alea from './alea'
+const CHARACTERS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
-
-const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 export default class Random {
 
+    #c
+    #s0
+    #s1
+    #s2
+    #seed
+
+
     constructor (seed = Random.generateSeed()) {
-        this.random = alea(seed)
-        this.currentSeed = seed
+        this.#seed = seed
+        this.#initSeed(seed)
+    }
+
+
+    #next () {
+        const t = 2091639 * this.#s0 + this.#c * 2.3283064365386963e-10
+        this.#c = t | 0 // eslint-disable-line no-bitwise
+        this.#s0 = this.#s1
+        this.#s1 = this.#s2
+        this.#s2 = t - this.#c
+
+        return this.#s2
+    }
+
+
+    #initSeed (seed) {
+        const mash = createMash()
+        this.#c = 1
+        this.#s0 = 0.8633289230056107 - mash(seed)
+        if (this.#s0 < 0) {
+            this.#s0 += 1
+        }
+        this.#s1 = 0.15019597788341343 - mash(seed)
+        if (this.#s1 < 0) {
+            this.#s1 += 1
+        }
+        this.#s2 = 0.9176952994894236 - mash(seed)
+        if (this.#s2 < 0) {
+            this.#s2 += 1
+        }
     }
 
 
     setSeed (seed) {
-        this.random.setSeed(seed)
-        this.currentSeed = seed
+        this.#seed = seed
+        this.#initSeed(seed)
 
         return this
     }
 
 
     getSeed () {
-        return this.currentSeed
+        return this.#seed
     }
 
 
     setState (state) {
-        this.random.setState(state)
+        this.#c = state.c
+        this.#s0 = state.s0
+        this.#s1 = state.s1
+        this.#s2 = state.s2
 
         return this
     }
 
 
     getState () {
-        return this.random.state()
+        return {
+            c: this.#c,
+            s0: this.#s0,
+            s1: this.#s1,
+            s2: this.#s2
+        }
     }
 
 
     fork () {
-        const newRandom = new Random(this.currentSeed)
-        newRandom.setState(this.random.state())
+        const forked = new Random(this.#seed)
+        forked.setState(this.getState())
 
-        return newRandom
+        return forked
     }
 
 
     between (min, max) {
-        return this.random() * (max - min) + min
+        return this.#next() * (max - min) + min
     }
 
 
@@ -55,19 +97,17 @@ export default class Random {
 
 
     pick (array) {
-        const index = this.intBetween(0, array.length)
-
-        return array[index]
+        return array[this.intBetween(0, array.length)]
     }
 
 
     oneChanceIn (chances) {
-        return this.between(0, 1) < 1 / chances
+        return this.#next() < 1 / chances
     }
 
 
     coinToss () {
-        return this.between(0, 1) < 0.5
+        return this.#next() < 0.5
     }
 
 
@@ -78,9 +118,9 @@ export default class Random {
 
         const totalWeight = choices.reduce((total, choice) => total + choice.weight, 0)
 
-        let randomValue = this.random() * totalWeight
+        let randomValue = this.#next() * totalWeight
 
-        for (let choice of choices) {
+        for (const choice of choices) {
             randomValue -= choice.weight
 
             if (randomValue <= 0) {
@@ -94,15 +134,32 @@ export default class Random {
 
     static generateSeed (length = 10) {
         let result = ''
-    
-        const charactersLength = characters.length
-    
+
         for (let i = 0; i < length; i++) {
-            const randomIndex = Math.floor(Math.random() * charactersLength)
-            result += characters.charAt(randomIndex)
+            result += CHARACTERS.charAt(Math.floor(Math.random() * CHARACTERS.length))
         }
-    
+
         return result
     }
 
+}
+
+
+function createMash () {
+    let n = 0xeaee1443
+
+    return function (string) {
+        string = String(string)
+
+        for (let i = 0; i < string.length; i++) {
+            n += string.charCodeAt(i)
+            let h = 0.02519603282416938 * n
+            n = h >>> 0 // eslint-disable-line no-bitwise
+            h = (h - n) * n
+            n = h >>> 0 // eslint-disable-line no-bitwise
+            n += (h - n) * 0x100000000
+        }
+
+        return (n >>> 0) * 2.3283064365386963e-10 // eslint-disable-line no-bitwise
+    }
 }
