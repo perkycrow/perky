@@ -6,28 +6,32 @@ export default class KeyboardDevice extends InputDevice {
 
     static $name = 'keyboard'
 
+    #keydownListener
+    #keyupListener
+    #blurListener
+
     constructor (params = {}) {
         super(params)
 
         this.shouldPreventDefault = params.shouldPreventDefault
 
-        this.keydownListener = this.#handleKeydown.bind(this)
-        this.keyupListener = this.#handleKeyup.bind(this)
-        this.blurListener = this.#handleBlur.bind(this)
+        this.#keydownListener = this.#handleKeydown.bind(this)
+        this.#keyupListener = this.#handleKeyup.bind(this)
+        this.#blurListener = this.#handleBlur.bind(this)
     }
 
 
     onStart () {
-        this.container.addEventListener('keydown', this.keydownListener, true)
-        this.container.addEventListener('keyup', this.keyupListener, true)
-        this.container.addEventListener('blur', this.blurListener)
+        this.container.addEventListener('keydown', this.#keydownListener, true)
+        this.container.addEventListener('keyup', this.#keyupListener, true)
+        this.container.addEventListener('blur', this.#blurListener)
     }
 
 
     onStop () {
-        this.container.removeEventListener('keydown', this.keydownListener, true)
-        this.container.removeEventListener('keyup', this.keyupListener, true)
-        this.container.removeEventListener('blur', this.blurListener)
+        this.container.removeEventListener('keydown', this.#keydownListener, true)
+        this.container.removeEventListener('keyup', this.#keyupListener, true)
+        this.container.removeEventListener('blur', this.#blurListener)
     }
 
 

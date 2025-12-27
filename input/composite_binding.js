@@ -10,6 +10,10 @@ export default class CompositeBinding extends InputBinding {
         eventType = 'pressed'
     }) {
 
+        if (!Array.isArray(controls) || controls.length < 2) {
+            throw new Error('CompositeBinding requires an array of at least 2 controls')
+        }
+
         super({
             deviceName: 'composite',
             controlName: CompositeBinding.generateControlName(controls),
@@ -17,7 +21,7 @@ export default class CompositeBinding extends InputBinding {
             controllerName,
             eventType
         })
-        
+
         this.controls = controls
     }
 

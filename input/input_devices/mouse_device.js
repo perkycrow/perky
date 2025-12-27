@@ -8,6 +8,12 @@ export default class MouseDevice extends InputDevice {
 
     static $name = 'mouse'
 
+    #mousedownListener
+    #mouseupListener
+    #mousemoveListener
+    #contextmenuListener
+    #wheelListener
+
     constructor (params = {}) {
         super(params)
 
@@ -15,29 +21,29 @@ export default class MouseDevice extends InputDevice {
 
         this.#createControls()
 
-        this.mousedownListener = this.#handleMousedown.bind(this)
-        this.mouseupListener = this.#handleMouseup.bind(this)
-        this.mousemoveListener = this.#handleMousemove.bind(this)
-        this.contextmenuListener = this.#handleContextmenu.bind(this)
-        this.wheelListener = this.#handleWheel.bind(this)
+        this.#mousedownListener = this.#handleMousedown.bind(this)
+        this.#mouseupListener = this.#handleMouseup.bind(this)
+        this.#mousemoveListener = this.#handleMousemove.bind(this)
+        this.#contextmenuListener = this.#handleContextmenu.bind(this)
+        this.#wheelListener = this.#handleWheel.bind(this)
     }
 
 
     onStart () {
-        this.container.addEventListener('mousedown', this.mousedownListener)
-        this.container.addEventListener('mouseup', this.mouseupListener)
-        this.container.addEventListener('mousemove', this.mousemoveListener)
-        this.container.addEventListener('contextmenu', this.contextmenuListener)
-        this.container.addEventListener('wheel', this.wheelListener, {passive: false})
+        this.container.addEventListener('mousedown', this.#mousedownListener)
+        this.container.addEventListener('mouseup', this.#mouseupListener)
+        this.container.addEventListener('mousemove', this.#mousemoveListener)
+        this.container.addEventListener('contextmenu', this.#contextmenuListener)
+        this.container.addEventListener('wheel', this.#wheelListener, {passive: false})
     }
 
 
     onStop () {
-        this.container.removeEventListener('mousedown', this.mousedownListener)
-        this.container.removeEventListener('mouseup', this.mouseupListener)
-        this.container.removeEventListener('mousemove', this.mousemoveListener)
-        this.container.removeEventListener('contextmenu', this.contextmenuListener)
-        this.container.removeEventListener('wheel', this.wheelListener)
+        this.container.removeEventListener('mousedown', this.#mousedownListener)
+        this.container.removeEventListener('mouseup', this.#mouseupListener)
+        this.container.removeEventListener('mousemove', this.#mousemoveListener)
+        this.container.removeEventListener('contextmenu', this.#contextmenuListener)
+        this.container.removeEventListener('wheel', this.#wheelListener, {passive: false})
     }
 
 

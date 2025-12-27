@@ -15,7 +15,7 @@ export default class NavigationControl extends InputControl {
             deltaX: wheelEvent.deltaX || 0,
             deltaY: wheelEvent.deltaY || 0,
             deltaZ: wheelEvent.deltaZ || 0,
-            event: wheelEvent // Stocker l'événement original pour l'analyse des gestes
+            event: wheelEvent
         }
 
         this[OLD_VALUE] = this[VALUE]

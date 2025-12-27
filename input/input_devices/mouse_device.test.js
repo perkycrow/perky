@@ -35,9 +35,6 @@ describe(MouseDevice, () => {
         expect(device).toBeInstanceOf(InputDevice)
         expect(device.$id).toBe('testMouse')
         expect(device.container).toBe(mockContainer)
-        expect(device.mousedownListener).toBeInstanceOf(Function)
-        expect(device.mouseupListener).toBeInstanceOf(Function)
-        expect(device.mousemoveListener).toBeInstanceOf(Function)
     })
 
 
@@ -62,11 +59,11 @@ describe(MouseDevice, () => {
     test('start attaches event listeners', () => {
         device.start()
 
-        expect(mockContainer.addEventListener).toHaveBeenCalledWith('mousedown', device.mousedownListener)
-        expect(mockContainer.addEventListener).toHaveBeenCalledWith('mouseup', device.mouseupListener)
-        expect(mockContainer.addEventListener).toHaveBeenCalledWith('mousemove', device.mousemoveListener)
-        expect(mockContainer.addEventListener).toHaveBeenCalledWith('contextmenu', device.contextmenuListener)
-        expect(mockContainer.addEventListener).toHaveBeenCalledWith('wheel', device.wheelListener, {passive: false})
+        expect(mockContainer.addEventListener).toHaveBeenCalledWith('mousedown', expect.any(Function))
+        expect(mockContainer.addEventListener).toHaveBeenCalledWith('mouseup', expect.any(Function))
+        expect(mockContainer.addEventListener).toHaveBeenCalledWith('mousemove', expect.any(Function))
+        expect(mockContainer.addEventListener).toHaveBeenCalledWith('contextmenu', expect.any(Function))
+        expect(mockContainer.addEventListener).toHaveBeenCalledWith('wheel', expect.any(Function), {passive: false})
         expect(mockContainer.addEventListener).toHaveBeenCalledTimes(5)
     })
 
@@ -75,11 +72,11 @@ describe(MouseDevice, () => {
         device.start()
         device.stop()
 
-        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('mousedown', device.mousedownListener)
-        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('mouseup', device.mouseupListener)
-        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('mousemove', device.mousemoveListener)
-        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('contextmenu', device.contextmenuListener)
-        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('wheel', device.wheelListener)
+        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('mousedown', expect.any(Function))
+        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('mouseup', expect.any(Function))
+        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('mousemove', expect.any(Function))
+        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('contextmenu', expect.any(Function))
+        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('wheel', expect.any(Function), {passive: false})
         expect(mockContainer.removeEventListener).toHaveBeenCalledTimes(5)
     })
 

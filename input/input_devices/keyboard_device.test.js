@@ -25,9 +25,6 @@ describe(KeyboardDevice, () => {
         expect(device).toBeInstanceOf(InputDevice)
         expect(device.$id).toBe('testKeyboard')
         expect(device.container).toBe(mockContainer)
-        expect(device.keydownListener).toBeInstanceOf(Function)
-        expect(device.keyupListener).toBeInstanceOf(Function)
-        expect(device.blurListener).toBeInstanceOf(Function)
     })
 
 
@@ -41,9 +38,9 @@ describe(KeyboardDevice, () => {
     test('start attaches event listeners', () => {
         device.start()
 
-        expect(mockContainer.addEventListener).toHaveBeenCalledWith('keydown', device.keydownListener, true)
-        expect(mockContainer.addEventListener).toHaveBeenCalledWith('keyup', device.keyupListener, true)
-        expect(mockContainer.addEventListener).toHaveBeenCalledWith('blur', device.blurListener)
+        expect(mockContainer.addEventListener).toHaveBeenCalledWith('keydown', expect.any(Function), true)
+        expect(mockContainer.addEventListener).toHaveBeenCalledWith('keyup', expect.any(Function), true)
+        expect(mockContainer.addEventListener).toHaveBeenCalledWith('blur', expect.any(Function))
         expect(mockContainer.addEventListener).toHaveBeenCalledTimes(3)
     })
 
@@ -52,9 +49,9 @@ describe(KeyboardDevice, () => {
         device.start()
         device.stop()
 
-        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('keydown', device.keydownListener, true)
-        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('keyup', device.keyupListener, true)
-        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('blur', device.blurListener)
+        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('keydown', expect.any(Function), true)
+        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('keyup', expect.any(Function), true)
+        expect(mockContainer.removeEventListener).toHaveBeenCalledWith('blur', expect.any(Function))
         expect(mockContainer.removeEventListener).toHaveBeenCalledTimes(3)
     })
 
