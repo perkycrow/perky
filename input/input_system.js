@@ -270,64 +270,26 @@ export default class InputSystem extends PerkyModule {
 
 
     bindKey (keyName, actionNameOrOptions, eventType = 'pressed', controllerName = null) {
-        if (typeof actionNameOrOptions === 'object') {
-            const {actionName, eventType: objEventType = 'pressed', controllerName: objControllerName = null} = actionNameOrOptions
-
-            if (!actionName || typeof actionName !== 'string') {
-                throw new Error('actionName is required and must be a string')
-            }
-
-            return this.inputBinder.bind({
-                deviceName: 'keyboard',
-                controlName: keyName,
-                actionName,
-                eventType: objEventType,
-                controllerName: objControllerName
-            })
-        } else {
-            if (!actionNameOrOptions || typeof actionNameOrOptions !== 'string') {
-                throw new Error('actionName is required and must be a string')
-            }
-
-            return this.inputBinder.bind({
-                deviceName: 'keyboard',
-                controlName: keyName,
-                actionName: actionNameOrOptions,
-                eventType,
-                controllerName
-            })
-        }
+        const isObject = typeof actionNameOrOptions === 'object'
+        return this.inputBinder.bind({
+            deviceName: 'keyboard',
+            controlName: keyName,
+            actionName: isObject ? actionNameOrOptions.actionName : actionNameOrOptions,
+            eventType: isObject ? actionNameOrOptions.eventType ?? 'pressed' : eventType,
+            controllerName: isObject ? actionNameOrOptions.controllerName ?? null : controllerName
+        })
     }
 
 
     bindMouse (buttonName, actionNameOrOptions, eventType = 'pressed', controllerName = null) {
-        if (typeof actionNameOrOptions === 'object') {
-            const {actionName, eventType: objEventType = 'pressed', controllerName: objControllerName = null} = actionNameOrOptions
-
-            if (!actionName || typeof actionName !== 'string') {
-                throw new Error('actionName is required and must be a string')
-            }
-
-            return this.inputBinder.bind({
-                deviceName: 'mouse',
-                controlName: buttonName,
-                actionName,
-                eventType: objEventType,
-                controllerName: objControllerName
-            })
-        } else {
-            if (!actionNameOrOptions || typeof actionNameOrOptions !== 'string') {
-                throw new Error('actionName is required and must be a string')
-            }
-
-            return this.inputBinder.bind({
-                deviceName: 'mouse',
-                controlName: buttonName,
-                actionName: actionNameOrOptions,
-                eventType,
-                controllerName
-            })
-        }
+        const isObject = typeof actionNameOrOptions === 'object'
+        return this.inputBinder.bind({
+            deviceName: 'mouse',
+            controlName: buttonName,
+            actionName: isObject ? actionNameOrOptions.actionName : actionNameOrOptions,
+            eventType: isObject ? actionNameOrOptions.eventType ?? 'pressed' : eventType,
+            controllerName: isObject ? actionNameOrOptions.controllerName ?? null : controllerName
+        })
     }
 
 
