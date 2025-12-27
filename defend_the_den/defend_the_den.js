@@ -6,6 +6,9 @@ import GameRenderer from './game_renderer'
 import Snowman from './snowman'
 import WaveProgressBar from './ui/wave_progress_bar'
 
+import Circle from '../render/circle'
+import Group2D from '../render/group_2d'
+
 import manifest from './manifest'
 import debug from '../core/debug'
 
@@ -50,6 +53,12 @@ export default class DefendTheDen extends Game {
                     type: 'html',
                     camera: 'main',
                     pointerEvents: 'none'
+                },
+                {
+                    name: 'debug',
+                    type: 'canvas',
+                    camera: 'main',
+                    pointerEvents: 'none'
                 }
             ]
         }
@@ -84,8 +93,29 @@ export default class DefendTheDen extends Game {
         })
         waveProgress.mount(uiLayer)
 
+        // Debug layer test - animated circle
+        const debugLayer = this.getCanvas('debug')
+        const debugScene = new Group2D({name: 'debug'})
+        const debugCircle = new Circle({
+            x: 0,
+            y: 1.5,
+            radius: 0.3,
+            color: 'white'
+        })
+        debugScene.add(debugCircle)
+        debugLayer.setContent(debugScene)
+
+        let time = 0
         this.on('render', () => {
             this.renderer.render()
+
+            // Animate debug circle
+            time += 0.016
+            debugCircle.x = Math.sin(time * 2) * 2
+            debugCircle.scaleX = 1 + Math.sin(time * 4) * 0.3
+            debugCircle.scaleY = 1 + Math.sin(time * 4) * 0.3
+            debugLayer.markDirty()
+            debugLayer.render()
         })
     }
 
