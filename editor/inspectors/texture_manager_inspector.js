@@ -1,15 +1,9 @@
-import {cssVariables, inspectorStyles} from '../components/perky_explorer_styles.js'
+import BaseInspector from './base_inspector.js'
+import {createListenerManager} from './listener_helper.js'
 import WebGLTextureManager from '../../render/webgl_texture_manager.js'
 
 
-const styles = `
-    :host {
-        ${cssVariables}
-        display: block;
-    }
-
-    ${inspectorStyles}
-
+const customStyles = `
     .inspector-stats {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -133,14 +127,13 @@ const styles = `
 `
 
 
-export default class TextureManagerInspector extends HTMLElement {
+export default class TextureManagerInspector extends BaseInspector {
 
     static matches (module) {
         return module instanceof WebGLTextureManager
     }
 
-    #module = null
-    #listeners = []
+    #listeners = createListenerManager()
 
     #activeCountEl = null
     #activeSizeEl = null
@@ -154,20 +147,18 @@ export default class TextureManagerInspector extends HTMLElement {
 
 
     constructor () {
-        super()
-        this.attachShadow({mode: 'open'})
-        this.#buildDOM()
+        super(customStyles)
+        this.buildDOM()
     }
 
 
     disconnectedCallback () {
-        this.#unbindEvents()
+        this.#listeners.clear()
     }
 
 
-    setModule (module) {
-        this.#unbindEvents()
-        this.#module = module
+    onModuleSet (module) {
+        this.#listeners.clear()
 
         if (module) {
             this.#bindEvents()
@@ -176,10 +167,8 @@ export default class TextureManagerInspector extends HTMLElement {
     }
 
 
-    #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = styles
-        this.shadowRoot.appendChild(style)
+    buildDOM () {
+        super.buildDOM()
 
         const stats = document.createElement('div')
         stats.className = 'inspector-stats'
@@ -241,20 +230,20 @@ export default class TextureManagerInspector extends HTMLElement {
         infoSection.appendChild(maxRow)
         infoSection.appendChild(autoFlushRow)
 
-        const actions = document.createElement('div')
-        actions.className = 'inspector-actions'
+        const flushBtn = this.createButton('🗑', 'Flush All', () => this.#handleFlush())
+        const flushStaleBtn = this.createButton('🧹', 'Flush Stale', () => this.#handleFlushStale())
 
-        const flushBtn = this.#createButton('🗑', 'Flush All', () => this.#handleFlush())
-        const flushStaleBtn = this.#createButton('🧹', 'Flush Stale', () => this.#handleFlushStale())
+        this.actionsEl.appendChild(flushBtn)
+        this.actionsEl.appendChild(flushStaleBtn)
 
-        actions.appendChild(flushBtn)
-        actions.appendChild(flushStaleBtn)
+        // Insert before grid
+        this.shadowRoot.insertBefore(stats, this.gridEl)
+        this.shadowRoot.insertBefore(progressSection, this.gridEl)
+        this.shadowRoot.insertBefore(divider, this.gridEl)
+        this.shadowRoot.insertBefore(infoSection, this.gridEl)
 
-        this.shadowRoot.appendChild(stats)
-        this.shadowRoot.appendChild(progressSection)
-        this.shadowRoot.appendChild(divider)
-        this.shadowRoot.appendChild(infoSection)
-        this.shadowRoot.appendChild(actions)
+        // Hide the default grid since we use custom layout
+        this.gridEl.style.display = 'none'
     }
 
 
@@ -300,21 +289,12 @@ export default class TextureManagerInspector extends HTMLElement {
     }
 
 
-    #createButton (icon, text, onClick) {
-        const btn = document.createElement('button')
-        btn.className = 'inspector-btn'
-        btn.textContent = `${icon} ${text}`
-        btn.addEventListener('click', onClick)
-        return btn
-    }
-
-
     #handleFlush () {
-        if (!this.#module) {
+        if (!this.module) {
             return
         }
 
-        const result = this.#module.flush()
+        const result = this.module.flush()
         if (result.count > 0) {
             console.log(`[TextureManager] Flushed ${result.count} textures (${formatBytes(result.size)})`)
         }
@@ -323,11 +303,11 @@ export default class TextureManagerInspector extends HTMLElement {
 
 
     #handleFlushStale () {
-        if (!this.#module) {
+        if (!this.module) {
             return
         }
 
-        const result = this.#module.flushStale()
+        const result = this.module.flushStale()
         if (result.count > 0) {
             console.log(`[TextureManager] Flushed ${result.count} stale textures (${formatBytes(result.size)})`)
         }
@@ -336,37 +316,23 @@ export default class TextureManagerInspector extends HTMLElement {
 
 
     #bindEvents () {
-        if (!this.#module) {
+        if (!this.module) {
             return
         }
 
         const events = ['create', 'zombie', 'resurrect', 'delete', 'flush', 'flushStale', 'flushIfFull']
         for (const event of events) {
-            this.#addListener(this.#module, event, () => this.#updateAll())
+            this.#listeners.add(this.module, event, () => this.#updateAll())
         }
     }
 
 
-    #addListener (target, event, handler) {
-        target.on(event, handler)
-        this.#listeners.push({target, event, handler})
-    }
-
-
-    #unbindEvents () {
-        for (const {target, event, handler} of this.#listeners) {
-            target.off(event, handler)
-        }
-        this.#listeners = []
-    }
-
-
-    #updateAll () {
-        if (!this.#module) {
+    #updateAll () { // eslint-disable-line complexity
+        if (!this.module) {
             return
         }
 
-        const stats = this.#module.stats
+        const stats = this.module.stats
 
         this.#activeCountEl.textContent = stats.activeCount
         this.#activeSizeEl.textContent = formatBytes(stats.activeSize)
@@ -375,10 +341,10 @@ export default class TextureManagerInspector extends HTMLElement {
         this.#zombieSizeEl.textContent = formatBytes(stats.zombieSize)
 
         this.#totalSizeEl.textContent = formatBytes(stats.totalSize)
-        this.#maxSizeEl.textContent = formatBytes(this.#module.maxZombieSize)
+        this.#maxSizeEl.textContent = formatBytes(this.module.maxZombieSize)
 
-        const usagePercent = this.#module.maxZombieSize > 0
-            ? (stats.zombieSize / this.#module.maxZombieSize) * 100
+        const usagePercent = this.module.maxZombieSize > 0
+            ? (stats.zombieSize / this.module.maxZombieSize) * 100
             : 0
 
         this.#progressValueEl.textContent = `${usagePercent.toFixed(1)}%`
@@ -393,7 +359,7 @@ export default class TextureManagerInspector extends HTMLElement {
             this.#progressBarEl.classList.add('low')
         }
 
-        const autoFlushEnabled = this.#module.autoFlushEnabled
+        const autoFlushEnabled = this.module.autoFlushEnabled
         this.#autoFlushEl.textContent = autoFlushEnabled ? 'Enabled' : 'Disabled'
         this.#autoFlushEl.className = `info-value ${autoFlushEnabled ? 'enabled' : 'disabled'}`
     }

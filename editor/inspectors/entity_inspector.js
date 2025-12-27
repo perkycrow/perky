@@ -1,15 +1,8 @@
-import {cssVariables, inspectorStyles} from '../components/perky_explorer_styles.js'
+import BaseInspector from './base_inspector.js'
 import Entity from '../../game/entity.js'
 
 
-const styles = `
-    :host {
-        ${cssVariables}
-        display: block;
-    }
-
-    ${inspectorStyles}
-
+const customStyles = `
     .inspector-section-title {
         font-size: 10px;
         text-transform: uppercase;
@@ -56,37 +49,24 @@ const styles = `
 `
 
 
-export default class EntityInspector extends HTMLElement {
+export default class EntityInspector extends BaseInspector {
 
     static matches (module) {
         return module instanceof Entity
     }
 
-    #module = null
     #xInput = null
     #yInput = null
 
 
     constructor () {
-        super()
-        this.attachShadow({mode: 'open'})
-        this.#buildDOM()
+        super(customStyles)
+        this.buildDOM()
     }
 
 
-    setModule (module) {
-        this.#module = module
-
-        if (module) {
-            this.#updateInputs()
-        }
-    }
-
-
-    #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = styles
-        this.shadowRoot.appendChild(style)
+    buildDOM () {
+        super.buildDOM()
 
         const title = document.createElement('div')
         title.className = 'inspector-section-title'
@@ -104,8 +84,15 @@ export default class EntityInspector extends HTMLElement {
         inputs.appendChild(xGroup)
         inputs.appendChild(yGroup)
 
-        this.shadowRoot.appendChild(title)
-        this.shadowRoot.appendChild(inputs)
+        this.shadowRoot.insertBefore(inputs, this.gridEl)
+        this.shadowRoot.insertBefore(title, inputs)
+    }
+
+
+    onModuleSet (module) {
+        if (module) {
+            this.#updateInputs()
+        }
     }
 
 
@@ -131,28 +118,27 @@ export default class EntityInspector extends HTMLElement {
 
 
     #handleInput (axis, value) {
-        if (!this.#module) {
+        if (!this.module) {
             return
         }
 
         const numValue = parseFloat(value)
         if (!isNaN(numValue)) {
-            this.#module[axis] = numValue
+            this.module[axis] = numValue
         }
     }
 
 
     #updateInputs () {
-        if (!this.#module) {
+        if (!this.module) {
             return
         }
 
-        this.#xInput.value = this.#module.x.toFixed(2)
-        this.#yInput.value = this.#module.y.toFixed(2)
+        this.#xInput.value = this.module.x.toFixed(2)
+        this.#yInput.value = this.module.y.toFixed(2)
     }
 
 }
 
 
 customElements.define('entity-inspector', EntityInspector)
-

@@ -1,47 +1,33 @@
-import {cssVariables, inspectorStyles} from '../components/perky_explorer_styles.js'
+import BaseInspector from './base_inspector.js'
+import {createListenerManager} from './listener_helper.js'
 import GameLoop from '../../game/game_loop.js'
 
 
-const styles = `
-    :host {
-        ${cssVariables}
-        display: block;
-    }
-
-    ${inspectorStyles}
-`
-
-
-export default class GameLoopInspector extends HTMLElement {
+export default class GameLoopInspector extends BaseInspector {
 
     static matches (module) {
         return module instanceof GameLoop
     }
 
-    #module = null
-    #gridEl = null
-    #actionsEl = null
     #fpsValueEl = null
     #statusValueEl = null
     #toggleBtn = null
-    #listeners = []
+    #listeners = createListenerManager()
 
 
     constructor () {
         super()
-        this.attachShadow({mode: 'open'})
-        this.#buildDOM()
+        this.buildDOM()
     }
 
 
     disconnectedCallback () {
-        this.#unbindEvents()
+        this.#listeners.clear()
     }
 
 
-    setModule (module) {
-        this.#unbindEvents()
-        this.#module = module
+    onModuleSet (module) {
+        this.#listeners.clear()
 
         if (module) {
             this.#bindEvents()
@@ -50,105 +36,46 @@ export default class GameLoopInspector extends HTMLElement {
     }
 
 
-    #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = styles
-        this.shadowRoot.appendChild(style)
+    buildDOM () {
+        super.buildDOM()
 
-        this.#gridEl = document.createElement('div')
-        this.#gridEl.className = 'inspector-grid'
+        this.#fpsValueEl = this.addRow('fps', '0')
+        this.#statusValueEl = this.addRow('status', 'stopped')
+        this.addRow('target fps', () => this.module?.fps || 60)
 
-        this.#fpsValueEl = this.#addRow('fps', '0')
-        this.#statusValueEl = this.#addRow('status', 'stopped')
-        this.#addRow('target fps', () => this.#module?.fps || 60)
-
-        this.#actionsEl = document.createElement('div')
-        this.#actionsEl.className = 'inspector-actions'
-
-        this.#toggleBtn = this.#createButton('⏸', 'Pause', () => this.#handleToggle())
-        this.#actionsEl.appendChild(this.#toggleBtn)
-
-        this.shadowRoot.appendChild(this.#gridEl)
-        this.shadowRoot.appendChild(this.#actionsEl)
-    }
-
-
-    #addRow (label, value) {
-        const labelEl = document.createElement('div')
-        labelEl.className = 'inspector-label'
-        labelEl.textContent = label
-
-        const valueEl = document.createElement('div')
-        valueEl.className = 'inspector-value'
-
-        if (typeof value === 'function') {
-            valueEl.textContent = value()
-        } else {
-            valueEl.textContent = value
-        }
-
-        this.#gridEl.appendChild(labelEl)
-        this.#gridEl.appendChild(valueEl)
-
-        return valueEl
-    }
-
-
-    #createButton (icon, text, onClick) {
-        const btn = document.createElement('button')
-        btn.className = 'inspector-btn'
-        if (icon) {
-            btn.textContent = `${icon} ${text}`
-        } else {
-            btn.textContent = text
-        }
-        btn.addEventListener('click', onClick)
-        return btn
+        this.#toggleBtn = this.createButton('⏸', 'Pause', () => this.#handleToggle())
+        this.actionsEl.appendChild(this.#toggleBtn)
     }
 
 
     #handleToggle () {
-        if (!this.#module) {
+        if (!this.module) {
             return
         }
 
-        if (this.#module.paused) {
-            this.#module.resume()
+        if (this.module.paused) {
+            this.module.resume()
         } else {
-            this.#module.pause()
+            this.module.pause()
         }
     }
 
 
     #bindEvents () {
-        if (!this.#module) {
+        if (!this.module) {
             return
         }
 
-        this.#addListener(this.#module, 'render', (_, fps) => this.#updateFps(fps))
-        this.#addListener(this.#module, 'pause', () => this.#updateStatus())
-        this.#addListener(this.#module, 'resume', () => this.#updateStatus())
-        this.#addListener(this.#module, 'start', () => this.#updateStatus())
-        this.#addListener(this.#module, 'stop', () => this.#updateStatus())
-    }
-
-
-    #addListener (target, event, handler) {
-        target.on(event, handler)
-        this.#listeners.push({target, event, handler})
-    }
-
-
-    #unbindEvents () {
-        for (const {target, event, handler} of this.#listeners) {
-            target.off(event, handler)
-        }
-        this.#listeners = []
+        this.#listeners.add(this.module, 'render', (_, fps) => this.#updateFps(fps))
+        this.#listeners.add(this.module, 'pause', () => this.#updateStatus())
+        this.#listeners.add(this.module, 'resume', () => this.#updateStatus())
+        this.#listeners.add(this.module, 'start', () => this.#updateStatus())
+        this.#listeners.add(this.module, 'stop', () => this.#updateStatus())
     }
 
 
     #updateAll () {
-        this.#updateFps(this.#module?.getCurrentFps() || 0)
+        this.#updateFps(this.module?.getCurrentFps() || 0)
         this.#updateStatus()
     }
 
@@ -159,12 +86,12 @@ export default class GameLoopInspector extends HTMLElement {
     }
 
 
-    #updateStatus () {
-        if (!this.#module) {
+    #updateStatus () { // eslint-disable-line complexity
+        if (!this.module) {
             return
         }
 
-        const {started, paused} = this.#module
+        const {started, paused} = this.module
         let status = 'stopped'
         let statusClass = ''
 
