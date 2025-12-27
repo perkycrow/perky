@@ -43,10 +43,9 @@ describe('PerkyCode', () => {
     })
 
 
-    test('properties are reactive', async () => {
+    test('properties are reactive', () => {
         element.title = 'Test Title'
         element.theme = 'light'
-        await element.updateComplete
 
         const title = element.shadowRoot.querySelector('.perky-code-title')
         expect(title.textContent).toBe('Test Title')
@@ -54,10 +53,9 @@ describe('PerkyCode', () => {
     })
 
 
-    test('code property triggers formatting', async () => {
+    test('code property triggers formatting', () => {
         const testCode = 'const test = true;'
         element.code = testCode
-        await element.updateComplete
 
         expect(element.formattedCode).toContain('perky-code-keyword')
         expect(element.formattedCode).toContain('perky-code-boolean')
@@ -73,11 +71,8 @@ describe('PerkyCode', () => {
         })
 
         element.src = 'test.js'
-        await element.updateComplete
-        
-        // Wait for the fetch to complete
+
         await new Promise(resolve => setTimeout(resolve, 0))
-        await element.updateComplete
 
         expect(global.fetch).toHaveBeenCalledWith('test.js')
         expect(element.code).toBe(testCode)
@@ -91,13 +86,10 @@ describe('PerkyCode', () => {
         })
 
         global.fetch.mockReturnValue(fetchPromise)
-        
+
         element.src = 'test.js'
-        await element.updateComplete
-        
-        // Wait for the loading state to be updated
+
         await new Promise(resolve => setTimeout(resolve, 0))
-        await element.updateComplete
 
         const loading = element.shadowRoot.querySelector('.loading')
         expect(loading).toBeTruthy()
@@ -109,8 +101,7 @@ describe('PerkyCode', () => {
         })
 
         await new Promise(resolve => setTimeout(resolve, 0))
-        await element.updateComplete
-        
+
         const loadingAfter = element.shadowRoot.querySelector('.loading')
         expect(loadingAfter).toBeFalsy()
     })
@@ -118,27 +109,24 @@ describe('PerkyCode', () => {
 
     test('error state', async () => {
         const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-        
+
         global.fetch.mockRejectedValue(new Error('Network error'))
-        
+
         element.src = 'test.js'
-        await element.updateComplete
-        
-        // Wait for the error state to be updated
+
         await new Promise(resolve => setTimeout(resolve, 0))
-        await element.updateComplete
 
         const error = element.shadowRoot.querySelector('.error')
         expect(error).toBeTruthy()
         expect(error.textContent).toContain('Network error')
-        
+
         consoleErrorSpy.mockRestore()
     })
 
 
     test('http error handling', async () => {
         const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-        
+
         global.fetch.mockResolvedValue({
             ok: false,
             status: 404,
@@ -146,23 +134,19 @@ describe('PerkyCode', () => {
         })
 
         element.src = 'test.js'
-        await element.updateComplete
-        
-        // Wait for the error state to be updated
+
         await new Promise(resolve => setTimeout(resolve, 0))
-        await element.updateComplete
 
         const error = element.shadowRoot.querySelector('.error')
         expect(error).toBeTruthy()
         expect(error.textContent).toContain('HTTP 404: Not Found')
-        
+
         consoleErrorSpy.mockRestore()
     })
 
 
     test('copyToClipboard copies code text', async () => {
         element.code = 'const test = true;'
-        await element.updateComplete
 
         const copyButton = element.shadowRoot.querySelector('.perky-code-copy')
         await copyButton.click()
@@ -173,7 +157,6 @@ describe('PerkyCode', () => {
 
     test('copy button feedback', async () => {
         element.code = 'const test = true;'
-        await element.updateComplete
 
         const copyButton = element.shadowRoot.querySelector('.perky-code-copy')
 
@@ -282,9 +265,8 @@ describe('PerkyCode', () => {
     })
 
 
-    test('light theme styling', async () => {
+    test('light theme styling', () => {
         element.theme = 'light'
-        await element.updateComplete
 
         expect(element.hasAttribute('theme')).toBe(true)
         expect(element.getAttribute('theme')).toBe('light')
@@ -296,7 +278,6 @@ describe('PerkyCode', () => {
         const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
         element.code = 'const test = true;'
-        await element.updateComplete
 
         const copyButton = element.shadowRoot.querySelector('.perky-code-copy')
         await copyButton.click()

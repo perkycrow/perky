@@ -1,25 +1,45 @@
-import Random from '/core/random'
-import PerkyLogger from '/editor/components/perky_logger'
-import {createControlPanel, addButtonFolder} from './example_utils'
+import Random from '/math/random.js'
+import '/editor/components/perky_logger.js'
+
 
 const container = document.querySelector('.example-content')
 
-const logger = new PerkyLogger()
+const logger = document.createElement('perky-logger')
 container.appendChild(logger)
 
-// Create control panel with utilities (much simpler!)
-const controlPane = createControlPanel({
-    title: 'Random Controls',
-    container,
-    position: 'top-right'
-})
-
-let random = new Random('example-seed')
+const random = new Random('example-seed')
 logger.info('Random:', random)
 logger.info('Seed:', random.getSeed())
 
-// Add basic functions folder
-addButtonFolder(controlPane, 'Basic Functions', [
+
+const controlPanel = document.createElement('div')
+controlPanel.className = 'control-panel'
+container.appendChild(controlPanel)
+
+
+function createFolder (title, buttons) {
+    const folder = document.createElement('div')
+    folder.className = 'control-folder'
+
+    const header = document.createElement('div')
+    header.className = 'folder-header'
+    header.textContent = title
+
+    folder.appendChild(header)
+
+    buttons.forEach(({title: buttonTitle, action}) => {
+        const button = document.createElement('button')
+        button.className = 'control-button'
+        button.textContent = buttonTitle
+        button.addEventListener('click', action)
+        folder.appendChild(button)
+    })
+
+    controlPanel.appendChild(folder)
+}
+
+
+createFolder('Basic Functions', [
     {
         title: 'between(0, 100)',
         action: () => {
@@ -33,7 +53,7 @@ addButtonFolder(controlPane, 'Basic Functions', [
         }
     },
     {
-        title: 'pick([a, b, c, d])',
+        title: "pick(['a', 'b', 'c', 'd'])",
         action: () => {
             logger.info("pick(['a', 'b', 'c', 'd']) => ", random.pick(['a', 'b', 'c', 'd']))
         }
@@ -46,8 +66,8 @@ addButtonFolder(controlPane, 'Basic Functions', [
     }
 ])
 
-// Add advanced functions folder
-addButtonFolder(controlPane, 'Advanced Functions', [
+
+createFolder('Advanced Functions', [
     {
         title: 'weightedChoice',
         action: () => {
@@ -67,8 +87,8 @@ addButtonFolder(controlPane, 'Advanced Functions', [
     }
 ])
 
-// Add chance functions folder
-addButtonFolder(controlPane, 'Chance Functions', [
+
+createFolder('Chance Functions', [
     {
         title: 'oneChanceIn(2)',
         action: () => {
@@ -83,8 +103,8 @@ addButtonFolder(controlPane, 'Chance Functions', [
     }
 ])
 
-// Add state management folder
-addButtonFolder(controlPane, 'State Management', [
+
+createFolder('State Management', [
     {
         title: 'setState Demo',
         action: () => {
@@ -106,3 +126,54 @@ addButtonFolder(controlPane, 'State Management', [
     }
 ])
 
+
+const style = document.createElement('style')
+style.textContent = `
+    .control-panel {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 250px;
+        font-family: "Source Code Pro", monospace;
+        font-size: 12px;
+    }
+
+    .control-folder {
+        background: #29292E;
+        border-radius: 3px;
+        margin-bottom: 8px;
+        overflow: hidden;
+    }
+
+    .folder-header {
+        background: #38383D;
+        color: #BBBCC3;
+        padding: 8px 12px;
+        font-weight: 500;
+        font-size: 0.75rem;
+    }
+
+    .control-button {
+        display: block;
+        width: 100%;
+        background: #3a3a40;
+        border: none;
+        color: #8C8C93;
+        padding: 8px 12px;
+        text-align: left;
+        cursor: pointer;
+        font-family: "Source Code Pro", monospace;
+        font-size: 0.7rem;
+        border-bottom: 1px solid #212125;
+    }
+
+    .control-button:last-child {
+        border-bottom: none;
+    }
+
+    .control-button:hover {
+        background: #45454b;
+        color: #BBBCC3;
+    }
+`
+document.head.appendChild(style)
