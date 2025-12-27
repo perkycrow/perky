@@ -201,13 +201,21 @@ export default class InputBinder extends PerkyModule {
 
     export () {
         return {
-            bindings: this.getAllBindings().map(binding => ({
-                deviceName: binding.deviceName,
-                controlName: binding.controlName,
-                actionName: binding.actionName,
-                controllerName: binding.controllerName,
-                eventType: binding.eventType
-            }))
+            bindings: this.getAllBindings().map(binding => {
+                const exported = {
+                    deviceName: binding.deviceName,
+                    controlName: binding.controlName,
+                    actionName: binding.actionName,
+                    controllerName: binding.controllerName,
+                    eventType: binding.eventType
+                }
+
+                if (binding.controls) {
+                    exported.controls = binding.controls
+                }
+
+                return exported
+            })
         }
     }
 }

@@ -119,6 +119,11 @@ export default class InputDevice extends PerkyModule {
     }
 
 
+    onDispose () {
+        this.controls.clear()
+    }
+
+
     #initEvents () {
         const device = this
         const controlListeners = new WeakMap()

@@ -453,6 +453,33 @@ describe(InputBinder, () => {
     })
 
 
+    test('export - includes controls for CompositeBinding', () => {
+        binder.bindCombo(['ControlLeft', 'KeyS'], 'save')
+
+        const exported = binder.export()
+
+        expect(exported.bindings).toHaveLength(1)
+        expect(exported.bindings[0].controls).toBeDefined()
+        expect(exported.bindings[0].controls).toHaveLength(2)
+        expect(exported.bindings[0].controls[0]).toEqual({deviceName: 'keyboard', controlName: 'ControlLeft'})
+        expect(exported.bindings[0].controls[1]).toEqual({deviceName: 'keyboard', controlName: 'KeyS'})
+    })
+
+
+    test('import - restores CompositeBinding from exported data', () => {
+        binder.bindCombo(['ControlLeft', 'KeyS'], 'save')
+
+        const exported = binder.export()
+        const newBinder = new InputBinder({bindings: exported.bindings})
+
+        const bindings = newBinder.getAllBindings()
+        expect(bindings).toHaveLength(1)
+        expect(bindings[0]).toBeInstanceOf(CompositeBinding)
+        expect(bindings[0].controls).toHaveLength(2)
+        expect(bindings[0].actionName).toBe('save')
+    })
+
+
     test('constructor - with exported data', () => {
         const data = {
             bindings: [

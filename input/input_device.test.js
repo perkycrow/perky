@@ -356,4 +356,21 @@ describe(InputDevice, () => {
         expect(offSpy).toHaveBeenCalledWith('updated', updatedListener)
     })
 
+
+    test('onDispose clears all controls', () => {
+        const button1 = device.findOrCreateControl(ButtonControl, {name: 'button1'})
+        const button2 = device.findOrCreateControl(ButtonControl, {name: 'button2'})
+
+        button1.press()
+        button2.press()
+
+        expect(device.controls.size).toBe(2)
+        expect(device.pressedNames.size).toBe(2)
+
+        device.dispose()
+
+        expect(device.controls.size).toBe(0)
+        expect(device.pressedNames.size).toBe(0)
+    })
+
 })
