@@ -4,7 +4,7 @@ import Canvas2D from './canvas_2d'
 
 export default class CanvasLayer extends Layer {
 
-    constructor (options = {}) {
+    constructor (options = {}) { // eslint-disable-line complexity
         super(options)
 
         this.canvas = document.createElement('canvas')
@@ -25,7 +25,8 @@ export default class CanvasLayer extends Layer {
             camera.pixelRatio ??= 1
         }
 
-        this.renderer = new Canvas2D({
+        this.create(Canvas2D, {
+            $bind: 'renderer',
             canvas: this.canvas,
             width: vp.width,
             height: vp.height,
@@ -79,14 +80,6 @@ export default class CanvasLayer extends Layer {
         this.applyViewport()
         this.markDirty()
         return this
-    }
-
-
-    onDispose () {
-        if (this.renderer) {
-            this.renderer.dispose()
-        }
-        super.onDispose()
     }
 
 }

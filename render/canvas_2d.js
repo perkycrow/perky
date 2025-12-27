@@ -1,12 +1,17 @@
+import PerkyModule from '../core/perky_module'
 import Camera2D from './camera_2d'
 
 
-export default class Canvas2D {
+export default class Canvas2D extends PerkyModule {
+
+    static $category = 'renderer'
+    static $name = 'canvas2D'
 
     #resizeObserver = null
     #autoFitEnabled = false
 
     constructor (options = {}) { // eslint-disable-line complexity
+        super(options)
         this.#setupCanvas(options)
 
         this.pixelRatio = options.pixelRatio ?? 1
@@ -163,7 +168,7 @@ export default class Canvas2D {
     }
 
 
-    dispose () {
+    onDispose () {
         this.autoFitEnabled = false
 
         if (this.canvas && this.canvas.parentElement) {

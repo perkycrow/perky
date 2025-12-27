@@ -4,10 +4,24 @@
       "id": "random",
       "file": "random.html",
       "category": "core",
-      "tags": ["core", "random"],
+      "tags": [
+        "core",
+        "random"
+      ],
       "title": "Random Number Generator",
       "description": "A simple random number generator using Perky."
+    },
+    {
+      "id": "canvas2d_demo",
+      "file": "canvas2d_demo.html",
+      "category": "render",
+      "tags": [
+        "render",
+        "canvas2d",
+        "animation"
+      ],
+      "title": "Canvas2D Render Demo",
+      "description": "Animated shapes demo showcasing the Canvas2D renderer with PerkyModule integration."
     }
   ]
 }
-
