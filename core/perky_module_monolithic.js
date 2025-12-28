@@ -2,27 +2,6 @@ import Notifier from './notifier'
 import Registry from './registry'
 import ObservableSet from './observable_set'
 import {uniqueId} from './utils'
-import {
-    unregisterExisting,
-    getChild,
-    hasChild,
-    listNamesFor,
-    removeChild,
-    lookup,
-    childrenByCategory
-} from './perky_module/children.js'
-import {setupLifecycle} from './perky_module/lifecycle.js'
-import {
-    setupTagIndexListeners,
-    hasTag,
-    addTag,
-    removeTag,
-    hasTags,
-    childrenByTags,
-    addTagsIndex,
-    removeTagsIndex
-} from './perky_module/tags.js'
-import {delegateProperties} from './perky_module/delegation.js'
 
 
 
@@ -196,23 +175,31 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    get tagIndexes () {
-        return this.#tagIndexes
+    hasTag (tag) {
+        return this.#tags.has(tag)
     }
 
 
-    get childrenRegistry () {
-        return this.#childrenRegistry
+    addTag (tag) {
+        if (this.#tags.has(tag)) {
+            return false
+        }
+        this.#tags.add(tag)
+        return true
     }
 
 
-    get children () {
-        return this.#childrenRegistry.all
+    removeTag (tag) {
+        return this.#tags.delete(tag)
     }
 
 
-    get running () {
-        return this.#started
+    hasTags (tags) {
+        if (typeof tags === 'string') {
+            return this.hasTag(tags)
+        }
+
+        return Array.isArray(tags) && tags.every(tag => this.#tags.has(tag))
     }
 
 
@@ -267,6 +254,11 @@ export default class PerkyModule extends Notifier {
     }
 
 
+    get running () {
+        return this.#started
+    }
+
+
     install (host, options) {
         if (this.#installed) {
             return this.uninstall()
@@ -317,12 +309,50 @@ export default class PerkyModule extends Notifier {
         this.childrenRegistry.set(child.$id, child)
 
         setupLifecycle(this, child, options)
-        setupTagIndexListeners(child, this.#tagIndexes, this.#childrenRegistry)
+        this.#setupTagIndexListeners(child)
 
         this.emit(`${child.$category}:set`, child.$id, child)
         child.emit('registered', this, child.$id)
 
         return child
+    }
+
+
+    getChild (name) {
+        return this.#childrenRegistry.get(name) || null
+    }
+
+
+    hasChild (name) {
+        return this.#childrenRegistry.has(name)
+    }
+
+
+    get childrenRegistry () {
+        return this.#childrenRegistry
+    }
+
+
+    get children () {
+        return this.#childrenRegistry.all
+    }
+
+
+    listNamesFor (key, indexName = '$category') {
+        return this.#childrenRegistry.lookupKeys(indexName, key)
+    }
+
+
+    removeChild (name) {
+        const child = this.#childrenRegistry.get(name)
+
+        if (!child) {
+            return false
+        }
+
+        unregisterChild(this, child)
+
+        return true
     }
 
 
@@ -372,42 +402,235 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    static perkyModuleMethods = Notifier.notifierMethods.concat([
+    lookup (indexName, key) {
+        return this.#childrenRegistry.lookup(indexName, key)
+    }
+
+
+    childrenByCategory (category) {
+        return this.lookup('$category', category)
+    }
+
+
+    childrenByTags (tags) {
+        const tagArray = Array.isArray(tags) ? tags : [tags]
+
+        if (tagArray.length === 0) {
+            return []
+        }
+
+        const indexKey = getIndexKey(tagArray)
+        const registry = this.#childrenRegistry
+
+        if (this.#tagIndexes.has(indexKey)) {
+            return registry.lookup(indexKey, indexKey)
+        } else {
+            return registry.all.filter(child => tagArray.every(tag => child.$tags?.includes(tag)))
+
+        }
+    }
+
+
+    addTagsIndex (tags) {
+        if (!Array.isArray(tags) || tags.length === 0) {
+            return false
+        }
+
+        const indexKey = getIndexKey(tags)
+
+        if (this.#tagIndexes.has(indexKey)) {
+            return false
+        }
+
+        this.#childrenRegistry.addIndex(indexKey, child => {
+            const hasAllTags = tags.every(tag => child.tags?.has(tag))
+            return hasAllTags ? indexKey : null
+        })
+
+        this.#tagIndexes.set(indexKey, tags)
+
+        this.#childrenRegistry.forEach(child => {
+            if (child.tags) {
+                this.#setupTagIndexListeners(child)
+            }
+        })
+
+        return true
+    }
+
+
+    removeTagsIndex (tags) {
+        const indexKey = getIndexKey(tags)
+
+        if (!this.#tagIndexes.has(indexKey)) {
+            return false
+        }
+
+        this.#childrenRegistry.removeIndex(indexKey)
+        this.#tagIndexes.delete(indexKey)
+        return true
+    }
+
+
+    #setupTagIndexListeners (child) {
+        if (this.#tagIndexes.size === 0 || !child.tags) {
+            return
+        }
+
+        const refreshAllIndexes = () => {
+            for (const indexKey of this.#tagIndexes.keys()) {
+                this.#childrenRegistry.refreshIndexFor(child, indexKey)
+            }
+        }
+
+        child.listenTo(child.tags, 'add', refreshAllIndexes)
+        child.listenTo(child.tags, 'delete', refreshAllIndexes)
+        child.listenTo(child.tags, 'clear', refreshAllIndexes)
+    }
+
+
+    static perkyModuleMethods = this.notifierMethods.concat([
         'start',
         'stop',
         'dispose',
         'install',
         'uninstall',
         'create',
+        'getChild',
+        'hasChild',
+        'childrenRegistry',
+        'children',
+        'listNamesFor',
+        'removeChild',
         'delegateTo',
         'cleanDelegations',
         'delegateEventsTo',
-        'cleanEventDelegations'
+        'cleanEventDelegations',
+        'childrenByTags',
+        'addTagsIndex',
+        'removeTagsIndex'
     ])
 
 }
 
 
-extendPrototype(PerkyModule, {
-    getChild,
-    hasChild,
-    listNamesFor,
-    removeChild,
-    lookup,
-    childrenByCategory,
-    hasTag,
-    addTag,
-    removeTag,
-    hasTags,
-    childrenByTags,
-    addTagsIndex,
-    removeTagsIndex
-})
+function unregisterExisting (host, childName) {
+    const children = host.childrenRegistry
 
-
-function extendPrototype (Class, methods) {
-    for (const name in methods) {
-        Class.prototype[name] = methods[name]
-        Class.perkyModuleMethods.push(name)
+    if (children.has(childName)) {
+        unregisterChild(host, children.get(childName))
     }
 }
+
+
+function setupLifecycle (host, child, options) {
+    const {$lifecycle = true} = options
+
+    if (!$lifecycle) {
+        return
+    }
+
+    const childrenRegistry = host.childrenRegistry
+
+    if (host.started && child.$eagerStart) {
+        child.start()
+    }
+
+    child.listenTo(host, 'start', () => {
+        child.start()
+    })
+
+    child.listenTo(host, 'stop', () => {
+        child.stop()
+    })
+
+    child.listenTo(host, 'dispose', () => {
+        if (childrenRegistry.hasEntry(child.$id, child)) {
+            unregisterChild(host, child)
+        }
+    })
+
+    child.once('dispose', () => {
+        if (childrenRegistry.hasEntry(child.$id, child)) {
+            unregisterChild(host, child)
+        }
+    })
+
+    child.on('$category:changed', (newCategory, oldCategory) => {
+        childrenRegistry.updateIndexFor(child, '$category', oldCategory, newCategory)
+    })
+
+    child.on('$id:changed', (newName, oldName) => {
+        childrenRegistry.updateKey(oldName, newName, child)
+    })
+
+    child.on('$bind:changed', (newBind, oldBind) => {
+        if (oldBind && host[oldBind] === child) {
+            delete host[oldBind]
+        }
+
+        if (newBind) {
+            host[newBind] = child
+        }
+    })
+}
+
+
+function unregisterChild (host, child) {
+    if (host.childrenRegistry.hasEntry(child.$id, child)) {
+        host.childrenRegistry.delete(child.$id)
+    }
+
+    if (child.$bind && host[child.$bind] === child) {
+        delete host[child.$bind]
+    }
+
+    child.uninstall()
+
+    host.emit(`${child.$category}:delete`, child.$id, child)
+    child.emit('unregistered', host, child.$id)
+
+    child.dispose()
+}
+
+
+function getIndexKey (tags) {
+    return [...tags].sort().join('_')
+}
+
+
+function delegateProperties (receiver, source, names) {
+    if (Array.isArray(names)) {
+        names.forEach(name => delegateProperty(receiver, source, name, name))
+    } else if (typeof names === 'object') {
+        Object.entries(names).forEach(([sourceName, receiverName]) => {
+            delegateProperty(receiver, source, sourceName, receiverName)
+        })
+    }
+}
+
+
+function delegateProperty (receiver, source, sourceName, receiverName) { // eslint-disable-line complexity
+    const descriptor = Object.getOwnPropertyDescriptor(source, sourceName)
+
+    if (descriptor && (descriptor.get || descriptor.set)) {
+        Object.defineProperty(receiver, receiverName, {
+            get: descriptor.get ? descriptor.get.bind(source) : undefined,
+            set: descriptor.set ? descriptor.set.bind(source) : undefined,
+            enumerable: true,
+            configurable: true
+        })
+    } else if (typeof source[sourceName] === 'function') {
+        receiver[receiverName] = source[sourceName].bind(source)
+    } else {
+        Object.defineProperty(receiver, receiverName, {
+            get: () => source[sourceName],
+            set: (value) => {
+                source[sourceName] = value
+            },
+            enumerable: true,
+            configurable: true
+        })
+    }
+}
+

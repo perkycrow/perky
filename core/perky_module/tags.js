@@ -77,3 +77,50 @@ export function queryChildrenByTags (tags, tagIndexes, childrenRegistry) {
     return childrenRegistry.all.filter(child => tagArray.every(tag => child.$tags?.includes(tag)))
 }
 
+
+export function hasTag (tag) {
+    return this.tags.has(tag)
+}
+
+
+export function addTag (tag) {
+    if (this.tags.has(tag)) {
+        return false
+    }
+    this.tags.add(tag)
+    return true
+}
+
+
+export function removeTag (tag) {
+    return this.tags.delete(tag)
+}
+
+
+export function hasTags (tags) {
+    if (typeof tags === 'string') {
+        return this.hasTag(tags)
+    }
+
+    return Array.isArray(tags) && tags.every(tag => this.tags.has(tag))
+}
+
+
+export function childrenByTags (tags) {
+    return queryChildrenByTags(tags, this.tagIndexes, this.childrenRegistry)
+}
+
+
+export function addTagsIndex (tags) {
+    return createTagsIndex(
+        tags,
+        this.tagIndexes,
+        this.childrenRegistry,
+        (child) => setupTagIndexListeners(child, this.tagIndexes, this.childrenRegistry)
+    )
+}
+
+
+export function removeTagsIndex (tags) {
+    return deleteTagsIndex(tags, this.tagIndexes, this.childrenRegistry)
+}
