@@ -1,5 +1,6 @@
 import BaseRenderer from './base_renderer'
 import RenderContext from './unified/render_context'
+import {traverseAndCollect} from './traverse'
 
 import CanvasCircleRenderer from './canvas/canvas_circle_renderer'
 import CanvasRectangleRenderer from './canvas/canvas_rectangle_renderer'
@@ -124,7 +125,11 @@ export default class Canvas2D extends BaseRenderer {
             renderer.reset()
         }
 
-        this.#traverseAndCollect(scene, 1.0)
+        traverseAndCollect(scene, this.#rendererRegistry, {
+            camera: this.camera,
+            enableCulling: this.enableCulling,
+            stats: this.stats
+        })
 
         for (const renderer of this.#renderers) {
             renderer.flush()
@@ -135,37 +140,6 @@ export default class Canvas2D extends BaseRenderer {
         }
 
         ctx.restore()
-    }
-
-
-    #traverseAndCollect (object, parentOpacity) {
-        if (!object.visible) {
-            return
-        }
-
-        this.stats.totalObjects++
-
-        if (this.enableCulling) {
-            const worldBounds = object.getWorldBounds()
-            if (!this.camera.isVisible(worldBounds)) {
-                this.stats.culledObjects++
-                return
-            }
-        }
-
-        this.stats.renderedObjects++
-
-        const effectiveOpacity = parentOpacity * object.opacity
-
-        const renderer = this.#rendererRegistry.get(object.constructor)
-        if (renderer) {
-            const hints = object.renderHints
-            renderer.collect(object, effectiveOpacity, hints)
-        }
-
-        object.children.forEach(child => {
-            this.#traverseAndCollect(child, effectiveOpacity)
-        })
     }
 
 
