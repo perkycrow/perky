@@ -60,11 +60,24 @@ const STYLES = `
     :host {
         display: block;
         height: 100%;
-        overflow: hidden;
+        overflow: auto;
+    }
+
+    :host::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    :host::-webkit-scrollbar-track {
+        background: #1a1a1e;
+    }
+
+    :host::-webkit-scrollbar-thumb {
+        background: #38383e;
+        border-radius: 3px;
     }
 
     perky-explorer {
-        height: 100%;
+        height: auto;
     }
 `
 
