@@ -10,7 +10,7 @@ export default class WebGLCircleRenderer extends WebGLPrimitiveRenderer {
     }
 
 
-    renderObject (circle, opacity, hints = null) {
+    renderObject (circle, opacity) {
         const gl = this.gl
         const program = this.context.primitiveProgram
         const segments = 32

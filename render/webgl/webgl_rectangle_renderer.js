@@ -10,7 +10,7 @@ export default class WebGLRectangleRenderer extends WebGLPrimitiveRenderer {
     }
 
 
-    renderObject (rect, opacity, hints = null) {
+    renderObject (rect, opacity) {
         const gl = this.gl
         const program = this.context.primitiveProgram
 

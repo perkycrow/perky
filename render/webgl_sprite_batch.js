@@ -44,7 +44,7 @@ export default class WebGLSpriteBatch {
     }
 
 
-    addSprite (object, effectiveOpacity) { // eslint-disable-line complexity
+    addSprite (object, effectiveOpacity, hints = null) { // eslint-disable-line complexity
         let image = null
         let frame = null
 

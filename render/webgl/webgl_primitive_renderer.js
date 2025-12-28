@@ -29,13 +29,13 @@ export default class WebGLPrimitiveRenderer extends WebGLObjectRenderer {
         gl.uniformMatrix3fv(program.uniforms.projectionMatrix, false, matrices.projectionMatrix)
         gl.uniformMatrix3fv(program.uniforms.viewMatrix, false, matrices.viewMatrix)
 
-        for (const {object, opacity, hints} of this.collected) {
-            this.renderObject(object, opacity, hints)
+        for (const {object, opacity} of this.collected) {
+            this.renderObject(object, opacity)
         }
     }
 
 
-    renderObject (object, opacity, hints = null) {
+    renderObject (object, opacity) {
         // Override in subclass
     }
 
