@@ -76,11 +76,11 @@ export default class PostProcessor {
             return false
         }
 
+        // Reset ping-pong state for clean frame
+        this.#framebufferManager.resetPingPong()
         this.#framebufferManager.bindSceneBuffer()
 
-        const gl = this.#gl
-        gl.clearColor(0, 0, 0, 0)
-        gl.clear(gl.COLOR_BUFFER_BIT)
+        // Don't change blend func - let renderer use its normal blending
 
         return true
     }
@@ -94,6 +94,9 @@ export default class PostProcessor {
         const gl = this.#gl
         const activePasses = this.#passes.filter(pass => pass.enabled)
 
+        // Disable blending for post-processing passes
+        gl.disable(gl.BLEND)
+
         let inputTexture = this.#framebufferManager.getSceneTexture()
 
         for (let i = 0; i < activePasses.length; i++) {
@@ -101,12 +104,14 @@ export default class PostProcessor {
 
             if (isLast) {
                 this.#framebufferManager.bindScreen()
+                // Clear screen to ensure no old content remains
+                gl.clearColor(0, 0, 0, 1)
+                gl.clear(gl.COLOR_BUFFER_BIT)
             } else {
                 this.#framebufferManager.bindPingPong()
+                gl.clearColor(0, 0, 0, 0)
+                gl.clear(gl.COLOR_BUFFER_BIT)
             }
-
-            gl.clearColor(0, 0, 0, 0)
-            gl.clear(gl.COLOR_BUFFER_BIT)
 
             activePasses[i].render(gl, inputTexture, this.#fullscreenQuad)
 
@@ -114,6 +119,10 @@ export default class PostProcessor {
                 inputTexture = this.#framebufferManager.swapAndGetTexture()
             }
         }
+
+        // Re-enable blending with standard blend func for normal rendering
+        gl.enable(gl.BLEND)
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
     }
 
 

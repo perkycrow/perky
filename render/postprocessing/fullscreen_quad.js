@@ -38,13 +38,20 @@ export default class FullscreenQuad {
         const positionAttr = program.attributes.aPosition
         const texCoordAttr = program.attributes.aTexCoord
 
+        if (positionAttr === undefined || positionAttr === -1) {
+            console.warn('FullscreenQuad: aPosition attribute not found')
+            return
+        }
+
         gl.bindBuffer(gl.ARRAY_BUFFER, this.#vertexBuffer)
         gl.enableVertexAttribArray(positionAttr)
         gl.vertexAttribPointer(positionAttr, 2, gl.FLOAT, false, 0, 0)
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.#texCoordBuffer)
-        gl.enableVertexAttribArray(texCoordAttr)
-        gl.vertexAttribPointer(texCoordAttr, 2, gl.FLOAT, false, 0, 0)
+        if (texCoordAttr !== undefined && texCoordAttr !== -1) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.#texCoordBuffer)
+            gl.enableVertexAttribArray(texCoordAttr)
+            gl.vertexAttribPointer(texCoordAttr, 2, gl.FLOAT, false, 0, 0)
+        }
 
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
     }

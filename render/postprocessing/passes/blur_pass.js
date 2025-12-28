@@ -25,11 +25,17 @@ uniform vec2 uDirection;
 varying vec2 vTexCoord;
 
 void main() {
+    // If radius is very small, just return the original color
+    if (uRadius < 0.01) {
+        gl_FragColor = texture2D(uTexture, vTexCoord);
+        return;
+    }
+
     vec4 color = vec4(0.0);
     vec2 texelSize = 1.0 / uResolution;
 
     float total = 0.0;
-    float sigma = uRadius / 2.0;
+    float sigma = max(uRadius / 2.0, 0.5);
 
     for (float i = -4.0; i <= 4.0; i += 1.0) {
         float weight = exp(-(i * i) / (2.0 * sigma * sigma));

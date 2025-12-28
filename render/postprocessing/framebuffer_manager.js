@@ -46,14 +46,17 @@ export default class FramebufferManager {
     #createFramebuffer () {
         const gl = this.#gl
 
+        const width = Math.max(1, this.#width)
+        const height = Math.max(1, this.#height)
+
         const texture = gl.createTexture()
         gl.bindTexture(gl.TEXTURE_2D, texture)
         gl.texImage2D(
             gl.TEXTURE_2D,
             0,
             gl.RGBA,
-            this.#width,
-            this.#height,
+            width,
+            height,
             0,
             gl.RGBA,
             gl.UNSIGNED_BYTE,
@@ -73,6 +76,11 @@ export default class FramebufferManager {
             texture,
             0
         )
+
+        const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+        if (status !== gl.FRAMEBUFFER_COMPLETE) {
+            console.error('Framebuffer not complete:', status)
+        }
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null)
         gl.bindTexture(gl.TEXTURE_2D, null)
@@ -109,6 +117,11 @@ export default class FramebufferManager {
 
         this.#pingPongFramebuffers = []
         this.#pingPongTextures = []
+    }
+
+
+    resetPingPong () {
+        this.#currentPingPong = 0
     }
 
 

@@ -30,7 +30,8 @@ void main() {
     float dist = length(uv);
     float vignette = smoothstep(1.0, 1.0 - uSoftness, dist * uIntensity);
 
-    gl_FragColor = vec4(color.rgb * vignette, color.a);
+    // Multiply all channels including alpha for premultiplied alpha
+    gl_FragColor = color * vignette;
 }
 `
 

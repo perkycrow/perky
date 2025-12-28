@@ -52,8 +52,9 @@ export default class WebGLCanvas2D extends BaseRenderer {
     #setupWebGL () {
         this.gl = this.canvas.getContext('webgl', {
             alpha: true,
-            premultipliedAlpha: true,
-            antialias: true
+            premultipliedAlpha: false,
+            antialias: true,
+            preserveDrawingBuffer: false
         })
 
         if (!this.gl) {
