@@ -19,10 +19,13 @@ PerkyExplorerDetails.registerInspector(WorldRendererInspector)
 
 export default class PerkyExplorer extends BaseEditorComponent {
 
+    static observedAttributes = ['embedded']
+
     #module = null
     #isMinimized = false
     #isCollapsed = false
     #sceneTreeMode = false
+    #embedded = false
 
     #containerEl = null
     #sidebarEl = null
@@ -33,12 +36,41 @@ export default class PerkyExplorer extends BaseEditorComponent {
     #rootNode = null
     #detailsEl = null
     #collapseBtnEl = null
+    #minimizeBtnEl = null
 
     #selectedModule = null
 
 
     connectedCallback () {
         this.#buildDOM()
+    }
+
+
+    attributeChangedCallback (name, oldValue, newValue) {
+        if (oldValue === newValue) {
+            return
+        }
+
+        if (name === 'embedded') {
+            this.#embedded = newValue !== null
+            this.#updateEmbeddedMode()
+        }
+    }
+
+
+    get embedded () {
+        return this.#embedded
+    }
+
+
+    set embedded (value) {
+        this.#embedded = value
+        if (value) {
+            this.setAttribute('embedded', '')
+        } else {
+            this.removeAttribute('embedded')
+        }
+        this.#updateEmbeddedMode()
     }
 
 
@@ -160,11 +192,11 @@ export default class PerkyExplorer extends BaseEditorComponent {
             this.#toggleCollapse()
         })
 
-        const minimizeBtn = document.createElement('button')
-        minimizeBtn.className = 'explorer-btn'
-        minimizeBtn.textContent = '◻'
-        minimizeBtn.title = 'Minimize'
-        minimizeBtn.addEventListener('click', (e) => {
+        this.#minimizeBtnEl = document.createElement('button')
+        this.#minimizeBtnEl.className = 'explorer-btn'
+        this.#minimizeBtnEl.textContent = '◻'
+        this.#minimizeBtnEl.title = 'Minimize'
+        this.#minimizeBtnEl.addEventListener('click', (e) => {
             e.stopPropagation()
             this.#isMinimized = true
             this.#updateViewState()
@@ -172,7 +204,7 @@ export default class PerkyExplorer extends BaseEditorComponent {
 
         buttons.appendChild(refreshBtn)
         buttons.appendChild(this.#collapseBtnEl)
-        buttons.appendChild(minimizeBtn)
+        buttons.appendChild(this.#minimizeBtnEl)
 
         header.appendChild(title)
         header.appendChild(buttons)
@@ -361,6 +393,22 @@ export default class PerkyExplorer extends BaseEditorComponent {
         expandPath(this.#rootNode)
     }
 
+
+    #updateEmbeddedMode () {
+        if (!this.#minimizedEl || !this.#minimizeBtnEl) {
+            return
+        }
+
+        if (this.#embedded) {
+            this.#minimizedEl.classList.add('hidden')
+            this.#minimizeBtnEl.classList.add('hidden')
+            this.#isMinimized = false
+            this.#updateViewState()
+        } else {
+            this.#minimizeBtnEl.classList.remove('hidden')
+        }
+    }
+
 }
 
 
@@ -370,6 +418,34 @@ const containerStyles = `
         flex-direction: column;
         align-items: flex-end;
         gap: 10px;
+    }
+
+    :host([embedded]) {
+        position: static;
+        width: 100%;
+        max-height: none;
+        right: auto;
+        top: auto;
+    }
+
+    :host([embedded]) .explorer-container {
+        align-items: stretch;
+    }
+
+    :host([embedded]) .explorer {
+        max-height: none;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        width: 100%;
+    }
+
+    :host([embedded]) .explorer-header {
+        display: none;
+    }
+
+    :host([embedded]) .explorer-tree {
+        max-height: none;
     }
 `
 
