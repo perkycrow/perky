@@ -1,0 +1,60 @@
+import WebGLObjectRenderer from './webgl_object_renderer'
+import WebGLSpriteBatch from '../webgl_sprite_batch'
+import Image2D from '../image_2d'
+import Sprite2D from '../sprite_2d'
+
+
+export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
+
+    #spriteBatch = null
+
+
+    static get handles () {
+        return [Image2D, Sprite2D]
+    }
+
+
+    init (context) {
+        super.init(context)
+        this.#spriteBatch = new WebGLSpriteBatch(
+            context.gl,
+            context.spriteProgram,
+            context.textureManager
+        )
+    }
+
+
+    reset () {
+        this.#spriteBatch.begin()
+    }
+
+
+    collect (object, opacity) {
+        this.#spriteBatch.addSprite(object, opacity)
+    }
+
+
+    flush (matrices) {
+        const gl = this.gl
+        const program = this.context.spriteProgram
+
+        gl.useProgram(program.program)
+        gl.uniformMatrix3fv(program.uniforms.projectionMatrix, false, matrices.projectionMatrix)
+        gl.uniformMatrix3fv(program.uniforms.viewMatrix, false, matrices.viewMatrix)
+
+        const identityMatrix = [1, 0, 0, 0, 1, 0, 0, 0, 1]
+        gl.uniformMatrix3fv(program.uniforms.modelMatrix, false, identityMatrix)
+
+        this.#spriteBatch.end()
+    }
+
+
+    dispose () {
+        if (this.#spriteBatch) {
+            this.#spriteBatch.dispose()
+            this.#spriteBatch = null
+        }
+        super.dispose()
+    }
+
+}

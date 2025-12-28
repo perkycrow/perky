@@ -1,22 +1,26 @@
 import BaseRenderer from './base_renderer'
 import {createSpriteProgram, createPrimitiveProgram} from './webgl_shaders'
 import WebGLTextureManager from './webgl_texture_manager'
-import WebGLSpriteBatch from './webgl_sprite_batch'
-import Image2D from './image_2d'
-import Sprite2D from './sprite_2d'
-import Circle from './circle'
-import Rectangle from './rectangle'
+import {parseColor} from './webgl/color_utils'
+
+import WebGLSpriteRenderer from './webgl/webgl_sprite_renderer'
+import WebGLCircleRenderer from './webgl/webgl_circle_renderer'
+import WebGLRectangleRenderer from './webgl/webgl_rectangle_renderer'
 
 
 export default class WebGLCanvas2D extends BaseRenderer {
 
     static $name = 'webGLCanvas2D'
 
+    #rendererRegistry = new Map()
+    #renderers = []
+
 
     constructor (options = {}) { // eslint-disable-line complexity
         super(options)
 
         this.#setupWebGL()
+        this.#setupDefaultRenderers()
         this.applyPixelRatio()
 
         this.showGrid = options.showGrid ?? false
@@ -61,11 +65,54 @@ export default class WebGLCanvas2D extends BaseRenderer {
             $bind: 'textureManager',
             gl
         })
-        this.spriteBatch = new WebGLSpriteBatch(gl, this.spriteProgram, this.textureManager)
 
         this.gridVertexBuffer = gl.createBuffer()
-        this.primitiveVertexBuffer = gl.createBuffer()
-        this.primitives = []
+    }
+
+
+    #setupDefaultRenderers () {
+        this.registerRenderer(new WebGLSpriteRenderer())
+        this.registerRenderer(new WebGLCircleRenderer())
+        this.registerRenderer(new WebGLRectangleRenderer())
+    }
+
+
+    registerRenderer (renderer) {
+        const context = {
+            gl: this.gl,
+            spriteProgram: this.spriteProgram,
+            primitiveProgram: this.primitiveProgram,
+            textureManager: this.textureManager
+        }
+
+        renderer.init(context)
+
+        for (const ObjectClass of renderer.constructor.handles) {
+            this.#rendererRegistry.set(ObjectClass, renderer)
+        }
+
+        if (!this.#renderers.includes(renderer)) {
+            this.#renderers.push(renderer)
+        }
+
+        return this
+    }
+
+
+    unregisterRenderer (renderer) {
+        for (const ObjectClass of renderer.constructor.handles) {
+            if (this.#rendererRegistry.get(ObjectClass) === renderer) {
+                this.#rendererRegistry.delete(ObjectClass)
+            }
+        }
+
+        const index = this.#renderers.indexOf(renderer)
+        if (index !== -1) {
+            this.#renderers.splice(index, 1)
+        }
+
+        renderer.dispose()
+        return this
     }
 
 
@@ -79,15 +126,16 @@ export default class WebGLCanvas2D extends BaseRenderer {
 
 
     onDispose () {
-        if (this.spriteBatch) {
-            this.spriteBatch.dispose()
+        for (const renderer of this.#renderers) {
+            renderer.dispose()
         }
+        this.#renderers = []
+        this.#rendererRegistry.clear()
 
         if (this.gl) {
             this.gl.deleteProgram(this.spriteProgram.program)
             this.gl.deleteProgram(this.primitiveProgram.program)
             this.gl.deleteBuffer(this.gridVertexBuffer)
-            this.gl.deleteBuffer(this.primitiveVertexBuffer)
         }
 
         super.onDispose()
@@ -134,38 +182,27 @@ export default class WebGLCanvas2D extends BaseRenderer {
 
         this.camera.update()
 
-        const {projectionMatrix, viewMatrix} = this.#getMatrices()
+        const matrices = this.#getMatrices()
 
         scene.updateWorldMatrix(false)
 
-        this.primitives = []
-        this.#renderSprites(scene, projectionMatrix, viewMatrix)
-        this.#renderPrimitives(projectionMatrix, viewMatrix)
+        for (const renderer of this.#renderers) {
+            renderer.reset()
+        }
+
+        this.#traverseAndCollect(scene, 1.0)
+
+        for (const renderer of this.#renderers) {
+            renderer.flush(matrices)
+        }
 
         if (this.showGrid) {
-            this.#renderGrid(projectionMatrix, viewMatrix)
+            this.#renderGrid(matrices.projectionMatrix, matrices.viewMatrix)
         }
     }
 
 
-    #renderSprites (scene, projectionMatrix, viewMatrix) {
-        const gl = this.gl
-
-        gl.useProgram(this.spriteProgram.program)
-
-        gl.uniformMatrix3fv(this.spriteProgram.uniforms.projectionMatrix, false, projectionMatrix)
-        gl.uniformMatrix3fv(this.spriteProgram.uniforms.viewMatrix, false, viewMatrix)
-
-        const identityMatrix = [1, 0, 0, 0, 1, 0, 0, 0, 1]
-        gl.uniformMatrix3fv(this.spriteProgram.uniforms.modelMatrix, false, identityMatrix)
-
-        this.spriteBatch.begin()
-        this.#traverseAndBatch(scene, 1.0)
-        this.spriteBatch.end()
-    }
-
-
-    #traverseAndBatch (object, parentOpacity) { // eslint-disable-line complexity
+    #traverseAndCollect (object, parentOpacity) {
         if (!object.visible) {
             return
         }
@@ -184,150 +221,14 @@ export default class WebGLCanvas2D extends BaseRenderer {
 
         const effectiveOpacity = parentOpacity * object.opacity
 
-        if (object instanceof Image2D || object instanceof Sprite2D) {
-            this.spriteBatch.addSprite(object, effectiveOpacity)
-        } else if (object instanceof Circle || object instanceof Rectangle) {
-            this.primitives.push({object, opacity: effectiveOpacity})
+        const renderer = this.#rendererRegistry.get(object.constructor)
+        if (renderer) {
+            renderer.collect(object, effectiveOpacity)
         }
 
         object.children.forEach(child => {
-            this.#traverseAndBatch(child, effectiveOpacity)
+            this.#traverseAndCollect(child, effectiveOpacity)
         })
-    }
-
-
-    #renderPrimitives (projectionMatrix, viewMatrix) {
-        if (this.primitives.length === 0) {
-            return
-        }
-
-        const gl = this.gl
-        gl.useProgram(this.primitiveProgram.program)
-        gl.uniformMatrix3fv(this.primitiveProgram.uniforms.projectionMatrix, false, projectionMatrix)
-        gl.uniformMatrix3fv(this.primitiveProgram.uniforms.viewMatrix, false, viewMatrix)
-
-        for (const {object, opacity} of this.primitives) {
-            if (object instanceof Circle) {
-                this.#renderCircle(object, opacity)
-            } else if (object instanceof Rectangle) {
-                this.#renderRectangle(object, opacity)
-            }
-        }
-    }
-
-
-    #renderCircle (circle, opacity) {
-        const gl = this.gl
-        const segments = 32
-        const radius = circle.radius
-        const offsetX = -radius * 2 * circle.anchorX + radius
-        const offsetY = -radius * 2 * circle.anchorY + radius
-
-        const color = parseColor(circle.color)
-        const m = circle.worldMatrix
-
-        const vertices = []
-
-        const centerX = m[0] * offsetX + m[2] * offsetY + m[4]
-        const centerY = m[1] * offsetX + m[3] * offsetY + m[5]
-        vertices.push(centerX, centerY, color.r, color.g, color.b, opacity)
-
-        for (let i = 0; i <= segments; i++) {
-            const angle = (i / segments) * Math.PI * 2
-            const x = offsetX + Math.cos(angle) * radius
-            const y = offsetY + Math.sin(angle) * radius
-
-            const worldX = m[0] * x + m[2] * y + m[4]
-            const worldY = m[1] * x + m[3] * y + m[5]
-
-            vertices.push(worldX, worldY, color.r, color.g, color.b, opacity)
-        }
-
-        const vertexData = new Float32Array(vertices)
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.primitiveVertexBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.DYNAMIC_DRAW)
-
-        const stride = 6 * 4
-        gl.enableVertexAttribArray(this.primitiveProgram.attributes.position)
-        gl.vertexAttribPointer(this.primitiveProgram.attributes.position, 2, gl.FLOAT, false, stride, 0)
-
-        gl.enableVertexAttribArray(this.primitiveProgram.attributes.color)
-        gl.vertexAttribPointer(this.primitiveProgram.attributes.color, 4, gl.FLOAT, false, stride, 2 * 4)
-
-        gl.drawArrays(gl.TRIANGLE_FAN, 0, segments + 2)
-    }
-
-
-    #renderRectangle (rect, opacity) {
-        const gl = this.gl
-        const offsetX = -rect.width * rect.anchorX
-        const offsetY = -rect.height * rect.anchorY
-        const m = rect.worldMatrix
-
-        const corners = [
-            {x: offsetX, y: offsetY},
-            {x: offsetX + rect.width, y: offsetY},
-            {x: offsetX + rect.width, y: offsetY + rect.height},
-            {x: offsetX, y: offsetY + rect.height}
-        ]
-
-        const worldCorners = corners.map(corner => ({
-            x: m[0] * corner.x + m[2] * corner.y + m[4],
-            y: m[1] * corner.x + m[3] * corner.y + m[5]
-        }))
-
-        if (rect.color && rect.color !== 'transparent') {
-            const color = parseColor(rect.color)
-            const vertices = []
-
-            for (const wc of worldCorners) {
-                vertices.push(wc.x, wc.y, color.r, color.g, color.b, opacity)
-            }
-
-            const vertexData = new Float32Array(vertices)
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.primitiveVertexBuffer)
-            gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.DYNAMIC_DRAW)
-
-            const stride = 6 * 4
-            gl.enableVertexAttribArray(this.primitiveProgram.attributes.position)
-            gl.vertexAttribPointer(this.primitiveProgram.attributes.position, 2, gl.FLOAT, false, stride, 0)
-
-            gl.enableVertexAttribArray(this.primitiveProgram.attributes.color)
-            gl.vertexAttribPointer(this.primitiveProgram.attributes.color, 4, gl.FLOAT, false, stride, 2 * 4)
-
-            gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
-        }
-
-        if (rect.strokeWidth > 0) {
-            const strokeColor = parseColor(rect.strokeColor)
-            const vertices = []
-
-            for (let i = 0; i < 4; i++) {
-                const start = worldCorners[i]
-                const end = worldCorners[(i + 1) % 4]
-                vertices.push(
-                    start.x, start.y, strokeColor.r, strokeColor.g, strokeColor.b, opacity,
-                    end.x, end.y, strokeColor.r, strokeColor.g, strokeColor.b, opacity
-                )
-            }
-
-            const vertexData = new Float32Array(vertices)
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.primitiveVertexBuffer)
-            gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.DYNAMIC_DRAW)
-
-            const stride = 6 * 4
-            gl.enableVertexAttribArray(this.primitiveProgram.attributes.position)
-            gl.vertexAttribPointer(this.primitiveProgram.attributes.position, 2, gl.FLOAT, false, stride, 0)
-
-            gl.enableVertexAttribArray(this.primitiveProgram.attributes.color)
-            gl.vertexAttribPointer(this.primitiveProgram.attributes.color, 4, gl.FLOAT, false, stride, 2 * 4)
-
-            gl.lineWidth(rect.strokeWidth)
-            gl.drawArrays(gl.LINES, 0, 8)
-        }
     }
 
 
@@ -384,16 +285,4 @@ export default class WebGLCanvas2D extends BaseRenderer {
         gl.drawArrays(gl.LINES, 0, vertices.length / 6)
     }
 
-}
-
-
-function parseColor (colorString) {
-    if (colorString.startsWith('#')) {
-        const hex = colorString.substring(1)
-        const r = parseInt(hex.substring(0, 2), 16) / 255
-        const g = parseInt(hex.substring(2, 4), 16) / 255
-        const b = parseInt(hex.substring(4, 6), 16) / 255
-        return {r, g, b, a: 1}
-    }
-    return {r: 0, g: 0, b: 0, a: 1}
 }
