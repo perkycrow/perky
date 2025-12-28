@@ -6,14 +6,14 @@ import PerkyExplorerDetails from './perky_explorer_details.js'
 import GameLoopInspector from './inspectors/game_loop_inspector.js'
 import TextureManagerInspector from './inspectors/texture_manager_inspector.js'
 import EntityInspector from './inspectors/entity_inspector.js'
-import WebGLCanvasLayerInspector from './inspectors/webgl_canvas_layer_inspector.js'
+import CanvasLayerInspector from './inspectors/canvas_layer_inspector.js'
 import WorldRendererInspector from './inspectors/world_renderer_inspector.js'
 
 
 PerkyExplorerDetails.registerInspector(GameLoopInspector)
 PerkyExplorerDetails.registerInspector(TextureManagerInspector)
 PerkyExplorerDetails.registerInspector(EntityInspector)
-PerkyExplorerDetails.registerInspector(WebGLCanvasLayerInspector)
+PerkyExplorerDetails.registerInspector(CanvasLayerInspector)
 PerkyExplorerDetails.registerInspector(WorldRendererInspector)
 
 

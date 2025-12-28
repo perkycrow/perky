@@ -1,11 +1,11 @@
 import BaseInspector from './base_inspector.js'
-import WebGLCanvasLayer from '../../render/webgl_canvas_layer.js'
+import CanvasLayer from '../../render/canvas_layer.js'
 
 
-export default class WebGLCanvasLayerInspector extends BaseInspector {
+export default class CanvasLayerInspector extends BaseInspector {
 
     static matches (module) {
-        return module instanceof WebGLCanvasLayer
+        return module instanceof CanvasLayer
     }
 
 
@@ -30,6 +30,7 @@ export default class WebGLCanvasLayerInspector extends BaseInspector {
 
         const layer = this.module
 
+        this.addRow('rendererType', layer.rendererType)
         this.addRow('zIndex', layer.zIndex)
         this.addRow('visible', layer.visible ? 'yes' : 'no')
         this.addRow('opacity', layer.opacity)
@@ -65,4 +66,4 @@ export default class WebGLCanvasLayerInspector extends BaseInspector {
 }
 
 
-customElements.define('webgl-canvas-layer-inspector', WebGLCanvasLayerInspector)
+customElements.define('canvas-layer-inspector', CanvasLayerInspector)

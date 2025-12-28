@@ -270,5 +270,53 @@ describe(CanvasLayer, () => {
         expect(l.renderer.gridOptions.color).toBe('#FF0000')
     })
 
-})
 
+    describe('rendererType option', () => {
+
+        test('defaults to canvas', () => {
+            expect(layer.rendererType).toBe('canvas')
+        })
+
+
+        test('can be set to webgl', () => {
+            const l = new CanvasLayer({$id: 'webgl-test', rendererType: 'webgl'})
+            expect(l.rendererType).toBe('webgl')
+        })
+
+
+        test('creates WebGLCanvas2D renderer when rendererType is webgl', () => {
+            const l = new CanvasLayer({$id: 'webgl-test', rendererType: 'webgl'})
+            expect(l.renderer.constructor.name).toBe('WebGLCanvas2D')
+        })
+
+
+        test('creates Canvas2D renderer when rendererType is canvas', () => {
+            const l = new CanvasLayer({$id: 'canvas-test', rendererType: 'canvas'})
+            expect(l.renderer.constructor.name).toBe('Canvas2D')
+        })
+
+
+        test('webgl layer works with same API as canvas', () => {
+            const l = new CanvasLayer({$id: 'webgl-api', rendererType: 'webgl'})
+            const scene = new Group2D()
+
+            l.setContent(scene)
+            expect(l.content).toBe(scene)
+            expect(l.dirty).toBe(true)
+
+            l.render()
+            expect(l.dirty).toBe(false)
+        })
+
+
+        test('webgl layer resize works', () => {
+            const l = new CanvasLayer({$id: 'webgl-resize', rendererType: 'webgl'})
+            l.resize(1024, 768)
+
+            expect(l.canvas.width).toBe(1024)
+            expect(l.canvas.height).toBe(768)
+        })
+
+    })
+
+})
