@@ -22,7 +22,12 @@ import {
     addTagsIndex,
     removeTagsIndex
 } from './perky_module/tags.js'
-import {delegateProperties} from './perky_module/delegation.js'
+import {
+    delegateTo,
+    cleanDelegations,
+    delegateEventsTo,
+    cleanEventDelegations
+} from './perky_module/delegation.js'
 
 
 
@@ -216,6 +221,16 @@ export default class PerkyModule extends Notifier {
     }
 
 
+    get delegations () {
+        return this.#delegations
+    }
+
+
+    get eventDelegations () {
+        return this.#eventDelegations
+    }
+
+
     start () {
         if (this.#started) {
             return false
@@ -326,63 +341,13 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    delegateTo (host, names) {
-        delegateProperties(host, this, names)
-
-        const propertyNames = Array.isArray(names)
-            ? names
-            : Object.values(names)
-
-        this.#delegations.push({host, propertyNames})
-    }
-
-
-    cleanDelegations () {
-        for (const {host, propertyNames} of this.#delegations) {
-            for (const name of propertyNames) {
-                delete host[name]
-            }
-        }
-        this.#delegations = []
-    }
-
-
-    delegateEventsTo (host, events, namespace) {
-        const eventArray = Array.isArray(events) ? events : Object.keys(events)
-        const callbacks = []
-
-        for (const event of eventArray) {
-            const prefixedEvent = namespace ? `${namespace}:${event}` : event
-            const callback = (...args) => host.emit(prefixedEvent, ...args)
-            this.on(event, callback)
-            callbacks.push({event, callback})
-        }
-
-        this.#eventDelegations.push({callbacks})
-    }
-
-
-    cleanEventDelegations () {
-        for (const {callbacks} of this.#eventDelegations) {
-            for (const {event, callback} of callbacks) {
-                this.off(event, callback)
-            }
-        }
-        this.#eventDelegations = []
-    }
-
-
     static perkyModuleMethods = Notifier.notifierMethods.concat([
         'start',
         'stop',
         'dispose',
         'install',
         'uninstall',
-        'create',
-        'delegateTo',
-        'cleanDelegations',
-        'delegateEventsTo',
-        'cleanEventDelegations'
+        'create'
     ])
 
 }
@@ -401,7 +366,11 @@ extendPrototype(PerkyModule, {
     hasTags,
     childrenByTags,
     addTagsIndex,
-    removeTagsIndex
+    removeTagsIndex,
+    delegateTo,
+    cleanDelegations,
+    delegateEventsTo,
+    cleanEventDelegations
 })
 
 
