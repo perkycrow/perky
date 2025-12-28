@@ -16,7 +16,7 @@ export default class ButtonControl extends InputControl {
     setValue (value, event = null) {
         this.lastEvent = event
         
-        if (super.setValue(value)) {
+        if (super.setValue(value, event)) {
 
             if (this.isPressed && !this.wasPressed) {
                 this.emit('pressed', this.lastEvent)

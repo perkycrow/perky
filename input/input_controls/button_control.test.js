@@ -178,6 +178,16 @@ describe(ButtonControl, () => {
         expect(pressedListener).toHaveBeenCalledWith(mockEvent)
     })
 
+    test('updated includes event when provided', () => {
+        const updatedListener = vi.fn()
+        control.on('updated', updatedListener)
+
+        const mockEvent = {type: 'mock'}
+        control.setValue(0.2, mockEvent)
+
+        expect(updatedListener).toHaveBeenCalledWith(0.2, 0, mockEvent)
+    })
+
 
     test('release method', () => {
         const releasedListener = vi.fn()

@@ -212,7 +212,21 @@ describe(InputDevice, () => {
 
         control.value = 42
 
-        expect(controlUpdatedListener).toHaveBeenCalledWith(control, 42, 0, undefined, device)
+        expect(controlUpdatedListener).toHaveBeenCalledWith(control, 42, 0, null, device)
+    })
+
+    test('control event propagation - updated forwards event for ButtonControl', () => {
+        const controlUpdatedListener = vi.fn()
+        device.on('control:updated', controlUpdatedListener)
+
+        const button = device.findOrCreateControl(ButtonControl, {
+            name: 'testButton'
+        })
+
+        const mockEvent = {type: 'mock'}
+        button.setValue(0.5, mockEvent)
+
+        expect(controlUpdatedListener).toHaveBeenCalledWith(button, 0.5, 0, mockEvent, device)
     })
 
 

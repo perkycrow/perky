@@ -67,10 +67,10 @@ describe(InputControl, () => {
         control.on('updated', listener)
 
         control.value = 456
-        expect(listener).toHaveBeenCalledWith(456, 0)
+        expect(listener).toHaveBeenCalledWith(456, 0, null)
 
         control.value = 789
-        expect(listener).toHaveBeenCalledWith(789, 456)
+        expect(listener).toHaveBeenCalledWith(789, 456, null)
     })
 
 
