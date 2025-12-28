@@ -296,18 +296,6 @@ export default class CollisionSystem {
     }
 
     
-    addThreeJSObject (threeObject, options = {}) {
-        if (!threeObject.userData) {
-            threeObject.userData = {}
-        }
-        
-        const detectedSize = autoDetectThreeJSSize(threeObject)
-        Object.assign(threeObject.userData, detectedSize)
-        
-        return this.addBody(threeObject, options)
-    }
-
-    
     enableDebugDraw (scene) {
         this.debugScene = scene
         this.debugEnabled = true
@@ -367,29 +355,6 @@ function boundsOverlap (boundsA, boundsB) {
            boundsA.right > boundsB.left &&
            boundsA.top < boundsB.bottom &&
            boundsA.bottom > boundsB.top
-}
-
-
-function autoDetectThreeJSSize (threeObject) {
-    if (threeObject.isSprite) {
-        const scale = threeObject.scale
-        return {
-            width: scale.x * 2,
-            height: scale.y * 2,
-            radius: Math.max(scale.x, scale.y)
-        }
-    }
-    
-    if (threeObject.geometry?.parameters) {
-        const params = threeObject.geometry.parameters
-        return {
-            width: params.width || params.radiusTop * 2,
-            height: params.height || params.radiusBottom * 2,
-            radius: params.radius
-        }
-    }
-    
-    return {}
 }
 
 

@@ -404,7 +404,6 @@ __metadata:
     esbuild: "npm:^0.25.0"
     eslint: "npm:^8.55.0"
     jsdom: "npm:^26.1.0"
-    three: "npm:^0.176.0"
     tone: "npm:^15.1.22"
     tweakpane: "npm:^4.0.5"
     vite: "npm:^6.4.1"
@@ -2874,13 +2873,6 @@ __metadata:
   version: 0.2.0
   resolution: "text-table@npm:0.2.0"
   checksum: 10c0/02805740c12851ea5982686810702e2f14369a5f4c5c40a836821e3eefc65ffeec3131ba324692a37608294b0fd8c1e55a2dd571ffed4909822787668ddbee5c
-  languageName: node
-  linkType: hard
-
-"three@npm:^0.176.0":
-  version: 0.176.0
-  resolution: "three@npm:0.176.0"
-  checksum: 10c0/e1aee553649d1fb38eceadd748438f4333a7fec24658e97895e05e686222c1aae8fe3925e81af1400dcde4b8bd8dae23066cf591f50e90fe1dd9a898fee8971b
   languageName: node
   linkType: hard
 

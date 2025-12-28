@@ -19,7 +19,6 @@ const tagFamilies = {
     application: ['loader', 'asset', 'view'],
     input: ['keyboard', 'mouse', 'combinations', 'touch'],
     canvas: ['canvas', '2d'],
-    three: ['three', '3d', 'webgl'],
     game: ['game', 'sprite', 'physics', 'collision', 'mouse', 'drag', 'world', 'level', 'scene-graph'],
     audio: ['audio', 'sound', 'music']
 }

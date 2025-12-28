@@ -123,11 +123,6 @@
     color: var(--accent-purple);
 }
 
-.category-badge.category-three {
-    background: rgba(185, 80, 80, 0.1);
-    color: var(--accent-red);
-}
-
 .category-badge.category-canvas {
     background: rgba(185, 80, 80, 0.1);
     color: var(--accent-red);
