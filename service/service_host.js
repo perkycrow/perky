@@ -1,13 +1,18 @@
 import ServiceTransport from './service_transport'
 import ServiceRequest from './service_request'
 import ServiceResponse from './service_response'
-import Notifier from '../core/notifier'
+import PerkyModule from '../core/perky_module'
 
 
-export default class ServiceHost extends Notifier {
+export default class ServiceHost extends PerkyModule {
 
-    constructor ({transport, target} = {}) {
-        super()
+    static $category = 'serviceHost'
+
+    static $eagerStart = false
+
+
+    constructor ({transport, target, ...options} = {}) {
+        super(options)
 
         if (transport) {
             this.transport = transport
@@ -38,7 +43,7 @@ export default class ServiceHost extends Notifier {
         if (typeof this[methodName] !== 'function') {
             throw new Error(`Method '${methodName}' not found on service`)
         }
-        
+
         this.actions.set(methodName, this[methodName].bind(this))
         return this
     }
@@ -95,10 +100,10 @@ export default class ServiceHost extends Notifier {
         }
     }
 
-    
+
     handleEvent (message) {
         const {eventName, args, direction} = message
-        
+
         if (direction === 'client-to-host') {
             this.emit(`client:${eventName}`, ...args)
         }
