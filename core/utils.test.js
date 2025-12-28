@@ -9,7 +9,8 @@ import {
     deepMerge,
     setDefaults,
     getNestedValue,
-    setNestedValue
+    setNestedValue,
+    delegateProperties
 } from './utils'
 
 
@@ -235,6 +236,102 @@ describe('Object Utils', () => {
         setNestedValue(obj, 'b.d.e', 4)
         expect(obj.b.d.e).toBe(4)
         expect(obj).toEqual({a: 1, b: {c: 3, d: {e: 4}}})
+    })
+
+})
+
+
+describe('delegateProperties', () => {
+
+    test('delegates methods with array notation', () => {
+        const source = {
+            method1: () => 'result1',
+            method2: () => 'result2'
+        }
+        const receiver = {}
+
+        delegateProperties(receiver, source, ['method1', 'method2'])
+
+        expect(receiver.method1()).toBe('result1')
+        expect(receiver.method2()).toBe('result2')
+    })
+
+
+    test('delegates properties with array notation', () => {
+        const source = {prop1: 'value1', prop2: 'value2'}
+        const receiver = {}
+
+        delegateProperties(receiver, source, ['prop1', 'prop2'])
+
+        expect(receiver.prop1).toBe('value1')
+        expect(receiver.prop2).toBe('value2')
+    })
+
+
+    test('property changes reflect on source', () => {
+        const source = {prop: 'initial'}
+        const receiver = {}
+
+        delegateProperties(receiver, source, ['prop'])
+
+        receiver.prop = 'changed'
+        expect(source.prop).toBe('changed')
+    })
+
+
+    test('delegates with object notation (aliasing)', () => {
+        const source = {
+            originalMethod: () => 'result',
+            originalProp: 'value'
+        }
+        const receiver = {}
+
+        delegateProperties(receiver, source, {
+            originalMethod: 'aliasedMethod',
+            originalProp: 'aliasedProp'
+        })
+
+        expect(receiver.aliasedMethod()).toBe('result')
+        expect(receiver.aliasedProp).toBe('value')
+    })
+
+
+    test('delegates getters and setters', () => {
+        let internalValue = 10
+        const source = {}
+        Object.defineProperty(source, 'value', {
+            get () {
+                return internalValue
+            },
+            set (newValue) {
+                internalValue = newValue
+            },
+            enumerable: true,
+            configurable: true
+        })
+
+        const receiver = {}
+        delegateProperties(receiver, source, ['value'])
+
+        expect(receiver.value).toBe(10)
+        receiver.value = 20
+        expect(internalValue).toBe(20)
+        expect(receiver.value).toBe(20)
+    })
+
+
+    test('methods are bound to source context', () => {
+        const source = {
+            name: 'source',
+            getName () {
+                return this.name
+            }
+        }
+        const receiver = {name: 'receiver'}
+
+        delegateProperties(receiver, source, ['getName'])
+
+        expect(receiver.getName()).toBe('source')
     })
 
 })
