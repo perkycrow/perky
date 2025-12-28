@@ -17,6 +17,10 @@ export const cssVariables = `
 
 
 export const explorerStyles = `
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
+
     :host {
         ${cssVariables}
         display: block;

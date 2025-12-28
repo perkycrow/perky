@@ -6,7 +6,9 @@ const sceneTreeNodeStyles = `
     .node-label {
         color: var(--fg-primary);
         font-weight: 500;
-        flex-shrink: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .node-props {
