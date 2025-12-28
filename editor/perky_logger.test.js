@@ -55,8 +55,8 @@ describe('PerkyLogger', () => {
 
         const entry = logger.log(message, type)
 
-        expect(entry.className).toContain('perky-logger-entry')
-        expect(entry.className).toContain('perky-logger-info')
+        expect(entry.className).toContain('logger-entry')
+        expect(entry.className).toContain('log-info')
         expect(entry.textContent).toBe(message)
         expect(logger.entries.length).toBe(1)
         expect(logger.entries[0]).toBe(entry)
@@ -69,7 +69,7 @@ describe('PerkyLogger', () => {
 
         const entry = logger.log(message, 'info')
 
-        const timestamp = entry.querySelector('.perky-logger-timestamp')
+        const timestamp = entry.querySelector('.logger-timestamp')
         expect(timestamp).not.toBeNull()
         expect(entry.textContent).toContain(message)
     })
@@ -140,7 +140,7 @@ describe('PerkyLogger', () => {
         logger.spacer()
 
         expect(logger.entries.length).toBe(1)
-        expect(logger.entries[0].className).toContain('perky-logger-spacer')
+        expect(logger.entries[0].className).toContain('logger-spacer')
     })
 
 
@@ -148,7 +148,7 @@ describe('PerkyLogger', () => {
         logger.title('Test Title')
 
         expect(logger.entries.length).toBe(1)
-        expect(logger.entries[0].className).toContain('perky-logger-title-entry')
+        expect(logger.entries[0].className).toContain('logger-title-entry')
         expect(logger.entries[0].textContent).toBe('Test Title')
     })
 
@@ -222,10 +222,10 @@ describe('PerkyLogger', () => {
 
 
     test('render displays correct structure', () => {
-        const loggerDiv = logger.shadowRoot.querySelector('.perky-logger')
-        const header = logger.shadowRoot.querySelector('.perky-logger-header')
-        const content = logger.shadowRoot.querySelector('.perky-logger-content')
-        const miniIcon = logger.shadowRoot.querySelector('.perky-logger-mini-icon')
+        const loggerDiv = logger.shadowRoot.querySelector('.logger')
+        const header = logger.shadowRoot.querySelector('.editor-header')
+        const content = logger.shadowRoot.querySelector('.logger-content')
+        const miniIcon = logger.shadowRoot.querySelector('.logger-mini-icon')
 
         expect(loggerDiv).toBeTruthy()
         expect(header).toBeTruthy()
@@ -237,7 +237,7 @@ describe('PerkyLogger', () => {
     test('entries are rendered in content', () => {
         logger.log('Test message', 'info')
 
-        const content = logger.shadowRoot.querySelector('.perky-logger-content')
+        const content = logger.shadowRoot.querySelector('.logger-content')
         expect(content.children.length).toBe(1)
     })
 
@@ -248,9 +248,9 @@ describe('PerkyLogger', () => {
 
         const classes = logger.getLoggerClasses()
 
-        expect(classes).toContain('perky-logger')
-        expect(classes).toContain('perky-logger-top')
-        expect(classes).toContain('perky-logger-minimized')
+        expect(classes).toContain('logger')
+        expect(classes).toContain('logger-top')
+        expect(classes).toContain('logger-minimized')
     })
 
 

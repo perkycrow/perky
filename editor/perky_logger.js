@@ -1,3 +1,5 @@
+import {buildEditorStyles, editorHeaderStyles, editorButtonStyles, editorScrollbarStyles, editorBaseStyles} from './editor_theme.js'
+
 
 export default class PerkyLogger extends HTMLElement {
 
@@ -197,18 +199,18 @@ export default class PerkyLogger extends HTMLElement {
 
     #createHeader () {
         const header = document.createElement('div')
-        header.className = 'perky-logger-header'
+        header.className = 'editor-header'
         header.addEventListener('click', () => this.toggle())
 
         const title = document.createElement('span')
-        title.className = 'perky-logger-title'
+        title.className = 'editor-header-title'
         title.textContent = 'Logger'
 
         const buttons = document.createElement('div')
-        buttons.className = 'perky-logger-buttons'
+        buttons.className = 'editor-header-buttons'
 
         const clearBtn = document.createElement('button')
-        clearBtn.className = 'perky-logger-clear'
+        clearBtn.className = 'editor-btn'
         clearBtn.textContent = 'Clear'
         clearBtn.addEventListener('click', (e) => {
             e.stopPropagation()
@@ -216,7 +218,7 @@ export default class PerkyLogger extends HTMLElement {
         })
 
         this.#collapseBtnEl = document.createElement('button')
-        this.#collapseBtnEl.className = 'perky-logger-minimize'
+        this.#collapseBtnEl.className = 'editor-btn'
         this.#collapseBtnEl.textContent = '-'
         this.#collapseBtnEl.addEventListener('click', (e) => {
             e.stopPropagation()
@@ -235,14 +237,14 @@ export default class PerkyLogger extends HTMLElement {
 
     #createContent () {
         const content = document.createElement('div')
-        content.className = 'perky-logger-content'
+        content.className = 'logger-content'
         return content
     }
 
 
     #createMiniIcon () {
         const miniIcon = document.createElement('div')
-        miniIcon.className = 'perky-logger-mini-icon hidden'
+        miniIcon.className = 'logger-mini-icon hidden'
         miniIcon.textContent = '\uD83D\uDCCB'
         miniIcon.addEventListener('click', () => this.toggle())
         return miniIcon
@@ -255,9 +257,9 @@ export default class PerkyLogger extends HTMLElement {
         }
 
         const classes = [
-            'perky-logger',
-            `perky-logger-${this.#position}`,
-            this.#isMinimized ? 'perky-logger-minimized' : ''
+            'logger',
+            `logger-${this.#position}`,
+            this.#isMinimized ? 'logger-minimized' : ''
         ].filter(Boolean).join(' ')
 
         this.#containerEl.className = classes
@@ -300,26 +302,26 @@ export default class PerkyLogger extends HTMLElement {
 
     getLoggerClasses () {
         return [
-            'perky-logger',
-            `perky-logger-${this.#position}`,
-            this.#isMinimized ? 'perky-logger-minimized' : ''
+            'logger',
+            `logger-${this.#position}`,
+            this.#isMinimized ? 'logger-minimized' : ''
         ].filter(Boolean).join(' ')
     }
 
 
     log (message, type = 'info', format = 'text') {
         const entry = document.createElement('div')
-        entry.className = `perky-logger-entry perky-logger-${type}`
+        entry.className = `logger-entry log-${type}`
 
         if (this.#timestamp) {
             const timestamp = document.createElement('span')
-            timestamp.className = 'perky-logger-timestamp'
+            timestamp.className = 'logger-timestamp'
             timestamp.textContent = new Date().toLocaleTimeString()
             entry.appendChild(timestamp)
         }
 
         const messageElement = document.createElement('span')
-        messageElement.className = 'perky-logger-message'
+        messageElement.className = 'logger-message'
 
         processMessage(messageElement, message, format)
 
@@ -370,7 +372,7 @@ export default class PerkyLogger extends HTMLElement {
 
     spacer () {
         const entry = document.createElement('div')
-        entry.className = 'perky-logger-entry perky-logger-spacer'
+        entry.className = 'logger-entry logger-spacer'
         this.#entries.push(entry)
 
         if (this.#contentEl) {
@@ -381,7 +383,7 @@ export default class PerkyLogger extends HTMLElement {
 
     title (title) {
         const entry = document.createElement('div')
-        entry.className = 'perky-logger-entry perky-logger-title-entry'
+        entry.className = 'logger-entry logger-title-entry'
         entry.textContent = title
         this.#entries.push(entry)
 
@@ -450,161 +452,74 @@ function formatMessage (...messages) {
 }
 
 
-const STYLES = `
+const STYLES = buildEditorStyles(
+    editorHeaderStyles,
+    editorButtonStyles,
+    editorScrollbarStyles,
+    editorBaseStyles,
+    `
     :host {
-        --bg-fields: #F0F0F0;
-        --bg-content: #FAFAFA;
-        --bg-headers: #E8E8E8;
-        --fg-fields: #6B6B6B;
-        --fg-content: #333333;
-        --fg-headers: #555555;
-
         display: block;
-        font-family: "Source Code Pro", monospace;
+        font-family: var(--font-mono);
         font-size: 12px;
     }
 
-    @media (prefers-color-scheme: dark) {
-        :host {
-            --bg-fields: #212125;
-            --bg-content: #29292E;
-            --bg-headers: #38383D;
-            --fg-fields: #8D8E94;
-            --fg-content: #8C8C93;
-            --fg-headers: #BBBCC3;
-        }
-
-        .perky-logger-error {
-            color: #FF6B6B;
-        }
-
-        .perky-logger-success {
-            color: #4BB74A;
-        }
-    }
-
-    :host([theme="light"]) {
-        --bg-fields: #F0F0F0;
-        --bg-content: #FAFAFA;
-        --bg-headers: #E8E8E8;
-        --fg-fields: #6B6B6B;
-        --fg-content: #333333;
-        --fg-headers: #555555;
-    }
-
-    :host([theme="light"]) .perky-logger-error {
-        color: #AA3731;
-    }
-
-    :host([theme="light"]) .perky-logger-success {
-        color: #007A33;
-    }
-
-    .perky-logger {
+    .logger {
         width: calc(100% - 20px);
-        border-radius: 3px;
+        border-radius: 6px;
         overflow: hidden;
         z-index: 100;
         transition: all 0.3s ease;
         position: relative;
-        background: var(--bg-content);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        border: 1px solid var(--bg-fields);
-        color: var(--fg-content);
+        background: var(--bg-primary);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        border: 1px solid var(--border);
+        color: var(--fg-primary);
     }
 
-    .perky-logger-minimized {
-        width: 36px;
-        height: 36px;
-        border-radius: 3px;
+    .logger-minimized {
+        width: 40px;
+        height: 40px;
+        border-radius: 6px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         position: absolute;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        background: var(--bg-content);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        background: var(--bg-primary);
     }
 
-    .perky-logger-minimized.perky-logger-bottom {
+    .logger-minimized.logger-bottom {
         bottom: 10px;
         right: 10px;
         left: auto;
     }
 
-    .perky-logger-minimized.perky-logger-top {
+    .logger-minimized.logger-top {
         top: 10px;
         right: 10px;
         left: auto;
     }
 
-    .perky-logger-bottom {
+    .logger-bottom {
         position: absolute;
         bottom: 10px;
         left: 10px;
     }
 
-    .perky-logger-top {
+    .logger-top {
         position: absolute;
         top: 10px;
         left: 10px;
     }
 
-    .perky-logger-header {
-        display: flex;
-        align-items: center;
-        padding: 8px 12px;
-        cursor: pointer;
-        user-select: none;
-        justify-content: space-between;
-        background: var(--bg-headers);
-        border-bottom: 1px solid var(--bg-fields);
-    }
-
-    .perky-logger-title {
-        flex-grow: 1;
-        font-weight: 500;
-        color: var(--fg-headers);
-        font-size: 0.75rem;
-    }
-
-    .perky-logger-buttons {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .perky-logger-minimize,
-    .perky-logger-clear {
-        appearance: none;
-        background: #ADAFB7;
-        border: 0;
-        border-radius: 2px;
-        color: #29292E;
-        min-width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        margin-left: 4px;
-        transition: background 0.2s ease;
-        font-family: "Source Code Pro", monospace;
-        font-size: 0.7rem;
-        padding: 3px 6px;
-    }
-
-    .perky-logger-minimize:hover,
-    .perky-logger-clear:hover {
-        background: #9FA1A9;
-    }
-
-    .perky-logger-content {
+    .logger-content {
         max-height: 250px;
         overflow-y: auto;
     }
 
-    .perky-logger-mini-icon {
+    .logger-mini-icon {
         width: 100%;
         height: 100%;
         display: flex;
@@ -613,64 +528,60 @@ const STYLES = `
         font-size: 18px;
     }
 
-    .perky-logger-entry {
+    .logger-entry {
         padding: 4px 12px;
         display: flex;
         align-items: baseline;
-        border-bottom: 1px solid var(--bg-fields);
+        border-bottom: 1px solid var(--border);
     }
 
-    .perky-logger-entry:last-child {
+    .logger-entry:last-child {
         border-bottom: none;
     }
 
-    .perky-logger-timestamp {
-        color: var(--fg-fields);
+    .logger-timestamp {
+        color: var(--fg-muted);
         margin-right: 8px;
         font-size: 11px;
         min-width: 70px;
     }
 
-    .perky-logger-message {
+    .logger-message {
         flex-grow: 1;
         word-break: break-word;
     }
 
-    .perky-logger-info {
-        color: var(--fg-content);
+    .log-info {
+        color: var(--fg-primary);
     }
 
-    .perky-logger-notice {
-        color: var(--fg-fields);
+    .log-notice {
+        color: var(--fg-muted);
     }
 
-    .perky-logger-warn {
-        color: #b08800;
+    .log-warn {
+        color: var(--status-warning);
     }
 
-    .perky-logger-error {
-        color: #AA3731;
+    .log-error {
+        color: var(--status-error);
     }
 
-    .perky-logger-success {
-        color: #007A33;
+    .log-success {
+        color: var(--status-success);
     }
 
-    .perky-logger-spacer {
+    .logger-spacer {
         height: 1px;
-        background-color: var(--bg-fields);
+        background-color: var(--border);
     }
 
-    .perky-logger-title-entry {
+    .logger-title-entry {
         font-weight: 500;
         font-size: 14px;
-        color: var(--fg-headers);
+        color: var(--fg-primary);
     }
-
-    .hidden {
-        display: none !important;
-    }
-`
+`)
 
 
 customElements.define('perky-logger', PerkyLogger)

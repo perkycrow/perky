@@ -38,7 +38,7 @@ describe('PerkyCode', () => {
         expect(element).toBeInstanceOf(PerkyCode)
         expect(element.tagName).toBe('PERKY-CODE')
         expect(element.title).toBe('Source Code')
-        expect(element.theme).toBe('dark')
+        expect(element.theme).toBe('')
         expect(element.code).toBe('')
     })
 
@@ -47,7 +47,7 @@ describe('PerkyCode', () => {
         element.title = 'Test Title'
         element.theme = 'light'
 
-        const title = element.shadowRoot.querySelector('.perky-code-title')
+        const title = element.shadowRoot.querySelector('.editor-header-title')
         expect(title.textContent).toBe('Test Title')
         expect(element.hasAttribute('theme')).toBe(true)
     })
@@ -57,9 +57,9 @@ describe('PerkyCode', () => {
         const testCode = 'const test = true;'
         element.code = testCode
 
-        expect(element.formattedCode).toContain('perky-code-keyword')
-        expect(element.formattedCode).toContain('perky-code-boolean')
-        expect(element.formattedCode).toContain('perky-code-line-number')
+        expect(element.formattedCode).toContain('hl-keyword')
+        expect(element.formattedCode).toContain('hl-constant')
+        expect(element.formattedCode).toContain('line-number')
     })
 
 
@@ -91,7 +91,7 @@ describe('PerkyCode', () => {
 
         await new Promise(resolve => setTimeout(resolve, 0))
 
-        const loading = element.shadowRoot.querySelector('.loading')
+        const loading = element.shadowRoot.querySelector('.code-loading')
         expect(loading).toBeTruthy()
         expect(loading.textContent).toBe('Loading code...')
 
@@ -102,7 +102,7 @@ describe('PerkyCode', () => {
 
         await new Promise(resolve => setTimeout(resolve, 0))
 
-        const loadingAfter = element.shadowRoot.querySelector('.loading')
+        const loadingAfter = element.shadowRoot.querySelector('.code-loading')
         expect(loadingAfter).toBeFalsy()
     })
 
@@ -116,7 +116,7 @@ describe('PerkyCode', () => {
 
         await new Promise(resolve => setTimeout(resolve, 0))
 
-        const error = element.shadowRoot.querySelector('.error')
+        const error = element.shadowRoot.querySelector('.code-error')
         expect(error).toBeTruthy()
         expect(error.textContent).toContain('Network error')
 
@@ -137,7 +137,7 @@ describe('PerkyCode', () => {
 
         await new Promise(resolve => setTimeout(resolve, 0))
 
-        const error = element.shadowRoot.querySelector('.error')
+        const error = element.shadowRoot.querySelector('.code-error')
         expect(error).toBeTruthy()
         expect(error.textContent).toContain('HTTP 404: Not Found')
 
@@ -148,7 +148,7 @@ describe('PerkyCode', () => {
     test('copyToClipboard copies code text', async () => {
         element.code = 'const test = true;'
 
-        const copyButton = element.shadowRoot.querySelector('.perky-code-copy')
+        const copyButton = element.shadowRoot.querySelector('.editor-btn')
         await copyButton.click()
 
         expect(navigator.clipboard.writeText).toHaveBeenCalledWith('const test = true;')
@@ -158,12 +158,12 @@ describe('PerkyCode', () => {
     test('copy button feedback', async () => {
         element.code = 'const test = true;'
 
-        const copyButton = element.shadowRoot.querySelector('.perky-code-copy')
+        const copyButton = element.shadowRoot.querySelector('.editor-btn')
 
         await copyButton.click()
 
         expect(copyButton.textContent).toBe('Copied!')
-        expect(copyButton.classList.contains('copied')).toBe(true)
+        expect(copyButton.classList.contains('success')).toBe(true)
     })
 
 
@@ -171,9 +171,9 @@ describe('PerkyCode', () => {
         element.code = 'const test = true;'
         element.formatCode()
 
-        expect(element.formattedCode).toContain('perky-code-keyword')
-        expect(element.formattedCode).toContain('perky-code-boolean')
-        expect(element.formattedCode).toContain('perky-code-line-number')
+        expect(element.formattedCode).toContain('hl-keyword')
+        expect(element.formattedCode).toContain('hl-constant')
+        expect(element.formattedCode).toContain('line-number')
     })
 
 
@@ -182,8 +182,8 @@ describe('PerkyCode', () => {
         element.formatCode()
 
         expect(element.formattedCode.split('\n').length).toBe(2)
-        expect(element.formattedCode).toContain('perky-code-keyword')
-        expect(element.formattedCode).toContain('perky-code-number')
+        expect(element.formattedCode).toContain('hl-keyword')
+        expect(element.formattedCode).toContain('hl-constant')
     })
 
 
@@ -191,7 +191,7 @@ describe('PerkyCode', () => {
         element.code = 'const message = "Hello world";'
         element.formatCode()
 
-        expect(element.formattedCode).toContain('perky-code-string')
+        expect(element.formattedCode).toContain('hl-string')
         expect(element.formattedCode).toContain('"Hello world"')
     })
 
@@ -200,7 +200,7 @@ describe('PerkyCode', () => {
         element.code = 'const test = true; // This is a comment'
         element.formatCode()
 
-        expect(element.formattedCode).toContain('perky-code-comment')
+        expect(element.formattedCode).toContain('hl-comment')
         expect(element.formattedCode).toContain('// This is a comment')
     })
 
@@ -209,8 +209,7 @@ describe('PerkyCode', () => {
         element.code = 'console.log("Hello");'
         element.formatCode()
 
-        expect(element.formattedCode).toContain('perky-code-builtin')
-        expect(element.formattedCode).toContain('perky-code-function')
+        expect(element.formattedCode).toContain('hl-keyword')
     })
 
 
@@ -218,7 +217,7 @@ describe('PerkyCode', () => {
         element.code = 'const value = object.property;'
         element.formatCode()
 
-        expect(element.formattedCode).toContain('perky-code-property')
+        expect(element.formattedCode).toContain('hl-constant')
     })
 
 
@@ -279,7 +278,7 @@ describe('PerkyCode', () => {
 
         element.code = 'const test = true;'
 
-        const copyButton = element.shadowRoot.querySelector('.perky-code-copy')
+        const copyButton = element.shadowRoot.querySelector('.editor-btn')
         await copyButton.click()
 
         expect(consoleSpy).toHaveBeenCalledWith('Failed to copy to clipboard:', expect.any(Error))
