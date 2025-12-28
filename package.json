@@ -12,7 +12,7 @@
     "application/**/*.js",
     "game/**/*.js",
     "math/**/*.js",
-    "components/**/*.js",
+    "editor/**/*.js",
     "**/*.css",
     "README.md",
     "LICENSE"
@@ -43,8 +43,8 @@
     "./math/*": {
       "import": "./math/*.js"
     },
-    "./components/*": {
-      "import": "./components/*.js"
+    "./editor/*": {
+      "import": "./editor/*.js"
     },
     "./**/*.css": "./**/*.css"
   },

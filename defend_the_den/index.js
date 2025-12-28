@@ -1,6 +1,6 @@
 import ApplicationManager from '../application/application_manager'
 import DefendTheDen from './defend_the_den'
-import '../editor/components/perky_explorer'
+import '../editor/perky_explorer'
 
 async function init () {
     const appManager = new ApplicationManager()

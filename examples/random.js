@@ -1,5 +1,5 @@
 import Random from '/math/random.js'
-import '/editor/components/perky_logger.js'
+import '/editor/perky_logger.js'
 
 
 const container = document.querySelector('.example-content')

@@ -1,5 +1,5 @@
 import BaseTreeNode from './base_tree_node.js'
-import {formatNumber} from '../../core/utils.js'
+import {formatNumber} from '../core/utils.js'
 
 
 const sceneTreeNodeStyles = `

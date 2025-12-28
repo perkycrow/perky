@@ -1,7 +1,7 @@
 import BaseEditorComponent from './base_editor_component.js'
 import {cssVariables} from './perky_explorer_styles.js'
 import './scene_tree_node.js'
-import Object2DInspector from '../inspectors/object_2d_inspector.js'
+import Object2DInspector from './inspectors/object_2d_inspector.js'
 
 
 const DEBOUNCE_MS = 100

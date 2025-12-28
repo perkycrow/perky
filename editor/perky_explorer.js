@@ -2,11 +2,11 @@ import {explorerStyles} from './perky_explorer_styles.js'
 import './perky_explorer_node.js'
 import './scene_tree_sidebar.js'
 import PerkyExplorerDetails from './perky_explorer_details.js'
-import GameLoopInspector from '../inspectors/game_loop_inspector.js'
-import TextureManagerInspector from '../inspectors/texture_manager_inspector.js'
-import EntityInspector from '../inspectors/entity_inspector.js'
-import WebGLCanvasLayerInspector from '../inspectors/webgl_canvas_layer_inspector.js'
-import WorldRendererInspector from '../inspectors/world_renderer_inspector.js'
+import GameLoopInspector from './inspectors/game_loop_inspector.js'
+import TextureManagerInspector from './inspectors/texture_manager_inspector.js'
+import EntityInspector from './inspectors/entity_inspector.js'
+import WebGLCanvasLayerInspector from './inspectors/webgl_canvas_layer_inspector.js'
+import WorldRendererInspector from './inspectors/world_renderer_inspector.js'
 
 
 PerkyExplorerDetails.registerInspector(GameLoopInspector)
