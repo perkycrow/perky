@@ -3,7 +3,6 @@ import PerkyView from '../application/perky_view'
 import CanvasLayer from './canvas_layer'
 import HTMLLayer from './html_layer'
 import Camera2D from './camera_2d'
-import RendererFactory from './renderer_factory'
 
 
 export default class RenderSystem extends PerkyModule {
@@ -156,14 +155,13 @@ export default class RenderSystem extends PerkyModule {
         }
 
         let LayerClass
-        if (RendererFactory.isValidType(type)) {
+        if (type === 'canvas' || type === 'webgl') {
             LayerClass = CanvasLayer
             layerOptions.rendererType = type
         } else if (type === 'html') {
             LayerClass = HTMLLayer
         } else {
-            const validTypes = [...RendererFactory.getAvailableTypes(), 'html']
-            throw new Error(`Unknown layer type: "${type}". Available: ${validTypes.join(', ')}`)
+            throw new Error(`Unknown layer type: "${type}"`)
         }
 
         const layer = this.create(LayerClass, layerOptions)

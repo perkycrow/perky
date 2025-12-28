@@ -1,5 +1,12 @@
 import Layer from './layer'
-import RendererFactory from './renderer_factory'
+import Canvas2D from './canvas_2d'
+import WebGLCanvas2D from './webgl_canvas_2d'
+
+
+const RENDERERS = {
+    canvas: Canvas2D,
+    webgl: WebGLCanvas2D
+}
 
 
 export default class CanvasLayer extends Layer {
@@ -26,7 +33,11 @@ export default class CanvasLayer extends Layer {
             camera.pixelRatio ??= 1
         }
 
-        const RendererClass = RendererFactory.getRendererClass(this.rendererType)
+        const RendererClass = RENDERERS[this.rendererType]
+        if (!RendererClass) {
+            throw new Error(`Unknown renderer type: "${this.rendererType}"`)
+        }
+
         this.create(RendererClass, {
             $bind: 'renderer',
             canvas: this.canvas,
