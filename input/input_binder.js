@@ -17,8 +17,15 @@ export default class InputBinder extends PerkyModule {
 
         this.#bindings.addIndex('input', (binding) => {
             if (binding instanceof CompositeBinding) {
-                return null
+                const keys = binding.controls.map(({deviceName, controlName}) => {
+                    return `${deviceName}:${controlName}:${binding.eventType}`
+                })
+
+                keys.push(`composite:${binding.controlName}:${binding.eventType}`)
+
+                return keys
             }
+
             return `${binding.deviceName}:${binding.controlName}:${binding.eventType}`
         })
 
@@ -134,13 +141,16 @@ export default class InputBinder extends PerkyModule {
 
     getBindingsForInput ({deviceName, controlName, eventType}) {
         const key = `${deviceName}:${controlName}:${eventType}`
-        const directBindings = this.#bindings.lookup('input', key)
+        const bindings = this.#bindings.lookup('input', key)
 
+        const directBindings = []
         const compositeBindings = []
-        for (const binding of this.#bindings.values) {
-            if (binding instanceof CompositeBinding &&
-                binding.matches({deviceName, controlName, eventType})) {
+
+        for (const binding of bindings) {
+            if (binding instanceof CompositeBinding) {
                 compositeBindings.push(binding)
+            } else {
+                directBindings.push(binding)
             }
         }
 

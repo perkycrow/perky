@@ -257,6 +257,55 @@ describe(InputBinder, () => {
         expect(bindings).toHaveLength(0)
     })
 
+    test('getBindingsForInput - includes CompositeBinding', () => {
+        binder.bindCombo(['ControlLeft', 'KeyS'], 'save')
+
+        const bindings = binder.getBindingsForInput({
+            deviceName: 'keyboard',
+            controlName: 'ControlLeft',
+            eventType: 'pressed'
+        })
+
+        expect(bindings).toHaveLength(1)
+        expect(bindings[0]).toBeInstanceOf(CompositeBinding)
+        expect(bindings[0].actionName).toBe('save')
+    })
+
+    test('getBindingsForInput - direct bindings come before CompositeBinding', () => {
+        binder.bindInput({
+            deviceName: 'keyboard',
+            controlName: 'ControlLeft',
+            actionName: 'ctrl'
+        })
+
+        binder.bindCombo(['ControlLeft', 'KeyS'], 'save')
+
+        const bindings = binder.getBindingsForInput({
+            deviceName: 'keyboard',
+            controlName: 'ControlLeft',
+            eventType: 'pressed'
+        })
+
+        expect(bindings).toHaveLength(2)
+        expect(bindings[0]).toBeInstanceOf(InputBinding)
+        expect(bindings[0].actionName).toBe('ctrl')
+        expect(bindings[1]).toBeInstanceOf(CompositeBinding)
+        expect(bindings[1].actionName).toBe('save')
+    })
+
+    test('getBindingsForInput - supports composite input key', () => {
+        const binding = binder.bindCombo(['ControlLeft', 'KeyS'], 'save')
+
+        const bindings = binder.getBindingsForInput({
+            deviceName: 'composite',
+            controlName: binding.controlName,
+            eventType: 'pressed'
+        })
+
+        expect(bindings).toHaveLength(1)
+        expect(bindings[0]).toBe(binding)
+    })
+
 
     test('getBindingsForAction - single binding', () => {
         binder.bindInput({
@@ -383,6 +432,24 @@ describe(InputBinder, () => {
             eventType: 'pressed'
         })
         expect(bindings).toHaveLength(0)
+    })
+
+    test('unbind - updates input index for CompositeBinding', () => {
+        binder.bindCombo(['ControlLeft', 'KeyS'], 'save')
+
+        expect(binder.getBindingsForInput({
+            deviceName: 'keyboard',
+            controlName: 'ControlLeft',
+            eventType: 'pressed'
+        })).toHaveLength(1)
+
+        binder.unbind({actionName: 'save'})
+
+        expect(binder.getBindingsForInput({
+            deviceName: 'keyboard',
+            controlName: 'ControlLeft',
+            eventType: 'pressed'
+        })).toHaveLength(0)
     })
 
 
