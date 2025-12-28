@@ -1,6 +1,5 @@
 import Layer from './layer'
-import Canvas2D from './canvas_2d'
-import WebGLCanvas2D from './webgl_canvas_2d'
+import RendererFactory from './renderer_factory'
 
 
 export default class CanvasLayer extends Layer {
@@ -27,7 +26,7 @@ export default class CanvasLayer extends Layer {
             camera.pixelRatio ??= 1
         }
 
-        const RendererClass = this.rendererType === 'webgl' ? WebGLCanvas2D : Canvas2D
+        const RendererClass = RendererFactory.getRendererClass(this.rendererType)
         this.create(RendererClass, {
             $bind: 'renderer',
             canvas: this.canvas,
