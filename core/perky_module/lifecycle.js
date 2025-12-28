@@ -1,4 +1,4 @@
-import {unregisterChild} from './perky_module_children.js'
+import {unregisterChild} from './children.js'
 
 
 export function setupLifecycle (host, child, options) {

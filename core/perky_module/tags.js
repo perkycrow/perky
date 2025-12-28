@@ -76,3 +76,4 @@ export function queryChildrenByTags (tags, tagIndexes, childrenRegistry) {
 
     return childrenRegistry.all.filter(child => tagArray.every(tag => child.$tags?.includes(tag)))
 }
+

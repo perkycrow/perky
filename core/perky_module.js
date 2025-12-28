@@ -2,15 +2,15 @@ import Notifier from './notifier'
 import Registry from './registry'
 import ObservableSet from './observable_set'
 import {uniqueId} from './utils'
-import {unregisterExisting, unregisterChild} from './perky_module_children.js'
-import {setupLifecycle} from './perky_module_lifecycle.js'
+import {unregisterExisting, unregisterChild} from './perky_module/children.js'
+import {setupLifecycle} from './perky_module/lifecycle.js'
 import {
     setupTagIndexListeners,
     createTagsIndex,
     deleteTagsIndex,
     queryChildrenByTags
-} from './perky_module_tags.js'
-import {delegateProperties} from './perky_module_delegation.js'
+} from './perky_module/tags.js'
+import {delegateProperties} from './perky_module/delegation.js'
 
 
 
