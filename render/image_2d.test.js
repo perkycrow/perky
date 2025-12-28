@@ -1,5 +1,6 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
 import Image2D from './image_2d'
+import CanvasImageRenderer from './canvas/canvas_image_renderer'
 
 
 describe(Image2D, () => {
@@ -40,46 +41,75 @@ describe(Image2D, () => {
     })
 
 
-    test('render does nothing when image is null', () => {
-        const ctx = {
-            drawImage: vi.fn()
-        }
+    test('getBounds', () => {
+        image2d.width = 100
+        image2d.height = 50
+        image2d.anchorX = 0.5
+        image2d.anchorY = 0.5
 
-        image2d.image = null
-        image2d.render(ctx)
+        const bounds = image2d.getBounds()
+
+        expect(bounds.minX).toBe(-50)
+        expect(bounds.minY).toBe(-25)
+        expect(bounds.maxX).toBe(50)
+        expect(bounds.maxY).toBe(25)
+        expect(bounds.width).toBe(100)
+        expect(bounds.height).toBe(50)
+    })
+
+})
+
+
+describe(CanvasImageRenderer, () => {
+
+    let renderer
+    let ctx
+
+    beforeEach(() => {
+        renderer = new CanvasImageRenderer()
+        ctx = {
+            save: vi.fn(),
+            scale: vi.fn(),
+            drawImage: vi.fn(),
+            restore: vi.fn()
+        }
+    })
+
+
+    test('handles Image2D class', () => {
+        expect(CanvasImageRenderer.handles).toContain(Image2D)
+    })
+
+
+    test('render does nothing when image is null', () => {
+        const image2d = new Image2D({image: null})
+
+        renderer.render(image2d, ctx)
 
         expect(ctx.drawImage).not.toHaveBeenCalled()
     })
 
 
     test('render does nothing when image is not complete', () => {
-        const ctx = {
-            drawImage: vi.fn()
-        }
+        const image2d = new Image2D({image: {complete: false}})
 
-        image2d.image = { complete: false }
-        image2d.render(ctx)
+        renderer.render(image2d, ctx)
 
         expect(ctx.drawImage).not.toHaveBeenCalled()
     })
 
 
     test('render draws image when complete', () => {
-        const ctx = {
-            save: vi.fn(),
-            scale: vi.fn(),
-            drawImage: vi.fn(),
-            restore: vi.fn()
-        }
+        const img = {complete: true}
+        const image2d = new Image2D({
+            image: img,
+            width: 100,
+            height: 50,
+            anchorX: 0.5,
+            anchorY: 0.5
+        })
 
-        const img = { complete: true }
-        image2d.image = img
-        image2d.width = 100
-        image2d.height = 50
-        image2d.anchorX = 0.5
-        image2d.anchorY = 0.5
-
-        image2d.render(ctx)
+        renderer.render(image2d, ctx)
 
         expect(ctx.save).toHaveBeenCalled()
         expect(ctx.scale).toHaveBeenCalledWith(1, -1)
@@ -89,21 +119,16 @@ describe(Image2D, () => {
 
 
     test('render with custom anchor', () => {
-        const ctx = {
-            save: vi.fn(),
-            scale: vi.fn(),
-            drawImage: vi.fn(),
-            restore: vi.fn()
-        }
+        const img = {complete: true}
+        const image2d = new Image2D({
+            image: img,
+            width: 100,
+            height: 50,
+            anchorX: 0,
+            anchorY: 0
+        })
 
-        const img = { complete: true }
-        image2d.image = img
-        image2d.width = 100
-        image2d.height = 50
-        image2d.anchorX = 0
-        image2d.anchorY = 0
-
-        image2d.render(ctx)
+        renderer.render(image2d, ctx)
 
         expect(ctx.save).toHaveBeenCalled()
         expect(ctx.scale).toHaveBeenCalledWith(1, -1)
@@ -113,21 +138,16 @@ describe(Image2D, () => {
 
 
     test('render with bottom-right anchor', () => {
-        const ctx = {
-            save: vi.fn(),
-            scale: vi.fn(),
-            drawImage: vi.fn(),
-            restore: vi.fn()
-        }
+        const img = {complete: true}
+        const image2d = new Image2D({
+            image: img,
+            width: 100,
+            height: 50,
+            anchorX: 1,
+            anchorY: 1
+        })
 
-        const img = { complete: true }
-        image2d.image = img
-        image2d.width = 100
-        image2d.height = 50
-        image2d.anchorX = 1
-        image2d.anchorY = 1
-
-        image2d.render(ctx)
+        renderer.render(image2d, ctx)
 
         expect(ctx.save).toHaveBeenCalled()
         expect(ctx.scale).toHaveBeenCalledWith(1, -1)

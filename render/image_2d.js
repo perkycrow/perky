@@ -27,22 +27,5 @@ export default class Image2D extends Object2D {
     }
 
 
-    render (ctx) {
-        if (this.image && this.image.complete) {
-            const offsetX = -this.width * this.anchorX
-            const offsetY = -this.height * this.anchorY
-            
-            ctx.save()
-            ctx.scale(1, -1)
-            ctx.drawImage(
-                this.image,
-                offsetX,
-                -offsetY - this.height,
-                this.width,
-                this.height
-            )
-            ctx.restore()
-        }
-    }
 
 }

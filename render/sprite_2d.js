@@ -71,39 +71,4 @@ export default class Sprite2D extends Object2D {
         }
     }
 
-    render (ctx) { // eslint-disable-line complexity
-        const img = this.image || (this.currentFrame ? this.currentFrame.image : null)
-
-        if (img && img.complete && this.currentFrame) {
-            const {x, y, w, h} = this.currentFrame.frame
-
-            let renderW = w
-            let renderH = h
-
-            if (this.width !== null) {
-                renderW = this.width
-                renderH = (h / w) * renderW
-            } else if (this.height !== null) {
-                renderH = this.height
-                renderW = (w / h) * renderH
-            }
-
-            const offsetX = -renderW * this.anchorX
-            const offsetY = -renderH * this.anchorY
-
-            ctx.save()
-
-            ctx.scale(1, -1)
-
-            ctx.drawImage(
-                img,
-                x, y, w, h,
-                offsetX,
-                -offsetY - renderH,
-                renderW, renderH
-            )
-
-            ctx.restore()
-        }
-    }
 }

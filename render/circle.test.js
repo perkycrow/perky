@@ -1,5 +1,6 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
 import Circle from './circle'
+import CanvasCircleRenderer from './canvas/canvas_circle_renderer'
 
 
 describe(Circle, () => {
@@ -48,71 +49,6 @@ describe(Circle, () => {
     })
 
 
-    test('render without stroke', () => {
-        const ctx = {
-            beginPath: vi.fn(),
-            arc: vi.fn(),
-            fill: vi.fn(),
-            stroke: vi.fn()
-        }
-
-        circle.radius = 20
-        circle.color = '#ff0000'
-        circle.anchorX = 0.5
-        circle.anchorY = 0.5
-        circle.strokeWidth = 0
-
-        circle.render(ctx)
-
-        expect(ctx.beginPath).toHaveBeenCalled()
-        expect(ctx.arc).toHaveBeenCalledWith(0, 0, 20, 0, Math.PI * 2)
-        expect(ctx.fill).toHaveBeenCalled()
-        expect(ctx.stroke).not.toHaveBeenCalled()
-    })
-
-
-    test('render with stroke', () => {
-        const ctx = {
-            beginPath: vi.fn(),
-            arc: vi.fn(),
-            fill: vi.fn(),
-            stroke: vi.fn()
-        }
-
-        circle.radius = 20
-        circle.color = '#ff0000'
-        circle.strokeColor = '#0000ff'
-        circle.strokeWidth = 2
-        circle.anchorX = 0.5
-        circle.anchorY = 0.5
-
-        circle.render(ctx)
-
-        expect(ctx.beginPath).toHaveBeenCalled()
-        expect(ctx.arc).toHaveBeenCalledWith(0, 0, 20, 0, Math.PI * 2)
-        expect(ctx.fill).toHaveBeenCalled()
-        expect(ctx.stroke).toHaveBeenCalled()
-    })
-
-
-    test('render with custom anchor', () => {
-        const ctx = {
-            beginPath: vi.fn(),
-            arc: vi.fn(),
-            fill: vi.fn(),
-            stroke: vi.fn()
-        }
-
-        circle.radius = 20
-        circle.anchorX = 0
-        circle.anchorY = 0
-
-        circle.render(ctx)
-
-        expect(ctx.arc).toHaveBeenCalledWith(20, 20, 20, 0, Math.PI * 2)
-    })
-
-
     test('getBounds', () => {
         circle.radius = 20
         circle.anchorX = 0.5
@@ -142,6 +78,79 @@ describe(Circle, () => {
         expect(bounds.maxY).toBeCloseTo(20)
         expect(bounds.width).toBe(20)
         expect(bounds.height).toBe(20)
+    })
+
+})
+
+
+describe(CanvasCircleRenderer, () => {
+
+    let renderer
+    let ctx
+
+    beforeEach(() => {
+        renderer = new CanvasCircleRenderer()
+        ctx = {
+            beginPath: vi.fn(),
+            arc: vi.fn(),
+            fill: vi.fn(),
+            stroke: vi.fn()
+        }
+    })
+
+
+    test('handles Circle class', () => {
+        expect(CanvasCircleRenderer.handles).toContain(Circle)
+    })
+
+
+    test('render without stroke', () => {
+        const circle = new Circle({
+            radius: 20,
+            color: '#ff0000',
+            anchorX: 0.5,
+            anchorY: 0.5,
+            strokeWidth: 0
+        })
+
+        renderer.render(circle, ctx)
+
+        expect(ctx.beginPath).toHaveBeenCalled()
+        expect(ctx.arc).toHaveBeenCalledWith(0, 0, 20, 0, Math.PI * 2)
+        expect(ctx.fill).toHaveBeenCalled()
+        expect(ctx.stroke).not.toHaveBeenCalled()
+    })
+
+
+    test('render with stroke', () => {
+        const circle = new Circle({
+            radius: 20,
+            color: '#ff0000',
+            strokeColor: '#0000ff',
+            strokeWidth: 2,
+            anchorX: 0.5,
+            anchorY: 0.5
+        })
+
+        renderer.render(circle, ctx)
+
+        expect(ctx.beginPath).toHaveBeenCalled()
+        expect(ctx.arc).toHaveBeenCalledWith(0, 0, 20, 0, Math.PI * 2)
+        expect(ctx.fill).toHaveBeenCalled()
+        expect(ctx.stroke).toHaveBeenCalled()
+    })
+
+
+    test('render with custom anchor', () => {
+        const circle = new Circle({
+            radius: 20,
+            anchorX: 0,
+            anchorY: 0
+        })
+
+        renderer.render(circle, ctx)
+
+        expect(ctx.arc).toHaveBeenCalledWith(20, 20, 20, 0, Math.PI * 2)
     })
 
 })

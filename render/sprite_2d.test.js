@@ -1,5 +1,7 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest'
 import Sprite2D from './sprite_2d'
+import CanvasSpriteRenderer from './canvas/canvas_sprite_renderer'
+
 
 describe('Sprite2D', () => {
     let mockImage
@@ -64,9 +66,18 @@ describe('Sprite2D', () => {
         expect(sprite.currentAnimation).toBeNull()
         expect(mockAnim.stop).toHaveBeenCalled()
     })
+})
 
-    it('should render frame using image from frame data', () => {
-        const ctx = {
+
+describe('CanvasSpriteRenderer', () => {
+    let renderer
+    let ctx
+    let mockImage
+    let mockFrame
+
+    beforeEach(() => {
+        renderer = new CanvasSpriteRenderer()
+        ctx = {
             save: vi.fn(),
             restore: vi.fn(),
             scale: vi.fn(),
@@ -74,8 +85,31 @@ describe('Sprite2D', () => {
             translate: vi.fn(),
             rotate: vi.fn()
         }
+        mockImage = {
+            width: 100,
+            height: 100,
+            complete: true
+        }
+        mockFrame = {
+            filename: 'frame1',
+            frame: {x: 0, y: 0, w: 10, h: 10},
+            image: mockImage
+        }
+    })
 
-        sprite.render(ctx)
+
+    it('handles Sprite2D class', () => {
+        expect(CanvasSpriteRenderer.handles).toContain(Sprite2D)
+    })
+
+
+    it('should render frame using image from frame data', () => {
+        const sprite = new Sprite2D({
+            frame: mockFrame,
+            width: 5
+        })
+
+        renderer.render(sprite, ctx)
 
         expect(ctx.drawImage).toHaveBeenCalledWith(
             mockImage,

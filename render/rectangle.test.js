@@ -1,5 +1,6 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
 import Rectangle from './rectangle'
+import CanvasRectangleRenderer from './canvas/canvas_rectangle_renderer'
 
 
 describe(Rectangle, () => {
@@ -45,20 +46,55 @@ describe(Rectangle, () => {
     })
 
 
-    test('render without stroke', () => {
-        const ctx = {
+    test('getBounds', () => {
+        rectangle.width = 100
+        rectangle.height = 50
+        rectangle.anchorX = 0.5
+        rectangle.anchorY = 0.5
+
+        const bounds = rectangle.getBounds()
+
+        expect(bounds.minX).toBe(-50)
+        expect(bounds.minY).toBe(-25)
+        expect(bounds.maxX).toBe(50)
+        expect(bounds.maxY).toBe(25)
+        expect(bounds.width).toBe(100)
+        expect(bounds.height).toBe(50)
+    })
+
+})
+
+
+describe(CanvasRectangleRenderer, () => {
+
+    let renderer
+    let ctx
+
+    beforeEach(() => {
+        renderer = new CanvasRectangleRenderer()
+        ctx = {
             fillRect: vi.fn(),
             strokeRect: vi.fn()
         }
+    })
 
-        rectangle.width = 100
-        rectangle.height = 50
-        rectangle.color = '#ff0000'
-        rectangle.anchorX = 0.5
-        rectangle.anchorY = 0.5
-        rectangle.strokeWidth = 0
 
-        rectangle.render(ctx)
+    test('handles Rectangle class', () => {
+        expect(CanvasRectangleRenderer.handles).toContain(Rectangle)
+    })
+
+
+    test('render without stroke', () => {
+        const rect = new Rectangle({
+            width: 100,
+            height: 50,
+            color: '#ff0000',
+            anchorX: 0.5,
+            anchorY: 0.5,
+            strokeWidth: 0
+        })
+
+        renderer.render(rect, ctx)
 
         expect(ctx.fillRect).toHaveBeenCalledWith(-50, -25, 100, 50)
         expect(ctx.strokeRect).not.toHaveBeenCalled()
@@ -66,20 +102,17 @@ describe(Rectangle, () => {
 
 
     test('render with stroke', () => {
-        const ctx = {
-            fillRect: vi.fn(),
-            strokeRect: vi.fn()
-        }
+        const rect = new Rectangle({
+            width: 100,
+            height: 50,
+            color: '#ff0000',
+            strokeColor: '#0000ff',
+            strokeWidth: 2,
+            anchorX: 0.5,
+            anchorY: 0.5
+        })
 
-        rectangle.width = 100
-        rectangle.height = 50
-        rectangle.color = '#ff0000'
-        rectangle.strokeColor = '#0000ff'
-        rectangle.strokeWidth = 2
-        rectangle.anchorX = 0.5
-        rectangle.anchorY = 0.5
-
-        rectangle.render(ctx)
+        renderer.render(rect, ctx)
 
         expect(ctx.fillRect).toHaveBeenCalledWith(-50, -25, 100, 50)
         expect(ctx.strokeRect).toHaveBeenCalledWith(-50, -25, 100, 50)
@@ -87,34 +120,28 @@ describe(Rectangle, () => {
 
 
     test('render with custom anchor', () => {
-        const ctx = {
-            fillRect: vi.fn(),
-            strokeRect: vi.fn()
-        }
+        const rect = new Rectangle({
+            width: 100,
+            height: 50,
+            anchorX: 0,
+            anchorY: 0
+        })
 
-        rectangle.width = 100
-        rectangle.height = 50
-        rectangle.anchorX = 0
-        rectangle.anchorY = 0
-
-        rectangle.render(ctx)
+        renderer.render(rect, ctx)
 
         expect(ctx.fillRect).toHaveBeenCalledWith(-0, -0, 100, 50)
     })
 
 
     test('render with top-left anchor', () => {
-        const ctx = {
-            fillRect: vi.fn(),
-            strokeRect: vi.fn()
-        }
+        const rect = new Rectangle({
+            width: 100,
+            height: 50,
+            anchorX: 1,
+            anchorY: 1
+        })
 
-        rectangle.width = 100
-        rectangle.height = 50
-        rectangle.anchorX = 1
-        rectangle.anchorY = 1
-
-        rectangle.render(ctx)
+        renderer.render(rect, ctx)
 
         expect(ctx.fillRect).toHaveBeenCalledWith(-100, -50, 100, 50)
     })
