@@ -1,5 +1,6 @@
 import BaseInspector from './base_inspector.js'
 import Entity from '../../game/entity.js'
+import '../number_input.js'
 
 
 const customStyles = `
@@ -14,37 +15,7 @@ const customStyles = `
     .position-inputs {
         display: flex;
         gap: 8px;
-    }
-
-    .input-group {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .input-label {
-        font-size: 11px;
-        color: var(--fg-muted);
-        min-width: 12px;
-    }
-
-    .input-field {
-        flex: 1;
-        background: var(--bg-primary);
-        border: 1px solid var(--border);
-        border-radius: 3px;
-        color: var(--fg-primary);
-        padding: 4px 6px;
-        font-size: 11px;
-        font-family: var(--font-mono);
         width: 100%;
-        box-sizing: border-box;
-    }
-
-    .input-field:focus {
-        outline: none;
-        border-color: var(--accent);
     }
 `
 
@@ -75,14 +46,20 @@ export default class EntityInspector extends BaseInspector {
         const inputs = document.createElement('div')
         inputs.className = 'position-inputs'
 
-        const xGroup = this.#createInputGroup('x')
-        const yGroup = this.#createInputGroup('y')
+        this.#xInput = document.createElement('number-input')
+        this.#xInput.setAttribute('label', 'x')
+        this.#xInput.setAttribute('step', '0.1')
+        this.#xInput.setAttribute('precision', '2')
+        this.#xInput.addEventListener('change', (e) => this.#handleInput('x', e.detail.value))
 
-        this.#xInput = xGroup.querySelector('.input-field')
-        this.#yInput = yGroup.querySelector('.input-field')
+        this.#yInput = document.createElement('number-input')
+        this.#yInput.setAttribute('label', 'y')
+        this.#yInput.setAttribute('step', '0.1')
+        this.#yInput.setAttribute('precision', '2')
+        this.#yInput.addEventListener('change', (e) => this.#handleInput('y', e.detail.value))
 
-        inputs.appendChild(xGroup)
-        inputs.appendChild(yGroup)
+        inputs.appendChild(this.#xInput)
+        inputs.appendChild(this.#yInput)
 
         this.shadowRoot.insertBefore(inputs, this.gridEl)
         this.shadowRoot.insertBefore(title, inputs)
@@ -96,36 +73,12 @@ export default class EntityInspector extends BaseInspector {
     }
 
 
-    #createInputGroup (label) {
-        const group = document.createElement('div')
-        group.className = 'input-group'
-
-        const labelEl = document.createElement('span')
-        labelEl.className = 'input-label'
-        labelEl.textContent = label
-
-        const input = document.createElement('input')
-        input.className = 'input-field'
-        input.type = 'number'
-        input.step = '0.1'
-        input.addEventListener('input', () => this.#handleInput(label, input.value))
-
-        group.appendChild(labelEl)
-        group.appendChild(input)
-
-        return group
-    }
-
-
     #handleInput (axis, value) {
         if (!this.module) {
             return
         }
 
-        const numValue = parseFloat(value)
-        if (!isNaN(numValue)) {
-            this.module[axis] = numValue
-        }
+        this.module[axis] = value
     }
 
 
@@ -134,8 +87,8 @@ export default class EntityInspector extends BaseInspector {
             return
         }
 
-        this.#xInput.value = this.module.x.toFixed(2)
-        this.#yInput.value = this.module.y.toFixed(2)
+        this.#xInput.value = this.module.x
+        this.#yInput.value = this.module.y
     }
 
 }
