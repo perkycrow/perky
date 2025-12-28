@@ -5,11 +5,10 @@ import {uniqueId} from './utils'
 import {unregisterExisting, unregisterChild} from './perky_module_children.js'
 import {setupLifecycle} from './perky_module_lifecycle.js'
 import {
-    getIndexKey,
     setupTagIndexListeners,
-    addTagsIndex as addTagsIndexFn,
-    removeTagsIndex as removeTagsIndexFn,
-    childrenByTags as childrenByTagsFn
+    createTagsIndex,
+    deleteTagsIndex,
+    queryChildrenByTags
 } from './perky_module_tags.js'
 import {delegateProperties} from './perky_module_delegation.js'
 
@@ -423,12 +422,12 @@ export default class PerkyModule extends Notifier {
 
 
     childrenByTags (tags) {
-        return childrenByTagsFn(tags, this.#tagIndexes, this.#childrenRegistry)
+        return queryChildrenByTags(tags, this.#tagIndexes, this.#childrenRegistry)
     }
 
 
     addTagsIndex (tags) {
-        return addTagsIndexFn(
+        return createTagsIndex(
             tags,
             this.#tagIndexes,
             this.#childrenRegistry,
@@ -438,12 +437,12 @@ export default class PerkyModule extends Notifier {
 
 
     removeTagsIndex (tags) {
-        return removeTagsIndexFn(tags, this.#tagIndexes, this.#childrenRegistry)
+        return deleteTagsIndex(tags, this.#tagIndexes, this.#childrenRegistry)
     }
 
 
     #setupTagIndexListeners (child) {
-        setupTagIndexListeners(this, child, this.#tagIndexes, this.#childrenRegistry)
+        setupTagIndexListeners(child, this.#tagIndexes, this.#childrenRegistry)
     }
 
 

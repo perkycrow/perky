@@ -1,9 +1,9 @@
-export function getIndexKey (tags) {
+function getIndexKey (tags) {
     return [...tags].sort().join('_')
 }
 
 
-export function setupTagIndexListeners (host, child, tagIndexes, childrenRegistry) {
+export function setupTagIndexListeners (child, tagIndexes, childrenRegistry) {
     if (tagIndexes.size === 0 || !child.tags) {
         return
     }
@@ -20,7 +20,7 @@ export function setupTagIndexListeners (host, child, tagIndexes, childrenRegistr
 }
 
 
-export function addTagsIndex (tags, tagIndexes, childrenRegistry, setupListenersFn) {
+export function createTagsIndex (tags, tagIndexes, childrenRegistry, setupListenersFn) {
     if (!Array.isArray(tags) || tags.length === 0) {
         return false
     }
@@ -48,7 +48,7 @@ export function addTagsIndex (tags, tagIndexes, childrenRegistry, setupListeners
 }
 
 
-export function removeTagsIndex (tags, tagIndexes, childrenRegistry) {
+export function deleteTagsIndex (tags, tagIndexes, childrenRegistry) {
     const indexKey = getIndexKey(tags)
 
     if (!tagIndexes.has(indexKey)) {
@@ -61,7 +61,7 @@ export function removeTagsIndex (tags, tagIndexes, childrenRegistry) {
 }
 
 
-export function childrenByTags (tags, tagIndexes, childrenRegistry) {
+export function queryChildrenByTags (tags, tagIndexes, childrenRegistry) {
     const tagArray = Array.isArray(tags) ? tags : [tags]
 
     if (tagArray.length === 0) {
@@ -76,4 +76,3 @@ export function childrenByTags (tags, tagIndexes, childrenRegistry) {
 
     return childrenRegistry.all.filter(child => tagArray.every(tag => child.$tags?.includes(tag)))
 }
-
