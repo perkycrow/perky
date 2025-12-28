@@ -64,7 +64,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
 
         const icon = document.createElement('span')
         icon.className = 'spotlight-icon'
-        icon.textContent = '\uD83D\uDD0D'
+        icon.textContent = '>_'
 
         this.#inputEl = document.createElement('input')
         this.#inputEl.className = 'spotlight-input'

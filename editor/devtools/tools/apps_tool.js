@@ -6,7 +6,7 @@ export default class AppsTool extends BaseTool {
 
     static toolId = 'apps'
     static toolName = 'Applications'
-    static toolIcon = '\uD83C\uDFAE'
+    static toolIcon = '\u26A1'
     static location = 'sidebar'
     static order = 20
 
@@ -148,18 +148,7 @@ export default class AppsTool extends BaseTool {
 
         info.appendChild(nameEl)
 
-        const actions = document.createElement('div')
-        actions.className = 'apps-item-actions'
-
-        const spawnBtn = document.createElement('button')
-        spawnBtn.className = 'editor-btn'
-        spawnBtn.textContent = 'Spawn'
-        spawnBtn.addEventListener('click', () => this.#spawnApp(name))
-
-        actions.appendChild(spawnBtn)
-
         item.appendChild(info)
-        item.appendChild(actions)
 
         return item
     }
@@ -228,20 +217,6 @@ export default class AppsTool extends BaseTool {
             return 'disposed'
         }
         return ''
-    }
-
-
-    async #spawnApp (name) {
-        if (!this.#appManager) {
-            return
-        }
-
-        try {
-            await this.#appManager.spawn(name)
-            this.#refresh()
-        } catch (error) {
-            console.error('Failed to spawn app:', error)
-        }
     }
 
 

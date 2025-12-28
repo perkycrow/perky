@@ -74,7 +74,7 @@ export default class DevToolsDock extends BaseEditorComponent {
         })
         this.#dockEl.appendChild(this.#loggerButton)
 
-        this.#spotlightButton = this.#createDockButton('\uD83D\uDD0D', 'Spotlight (Cmd+K)', () => {
+        this.#spotlightButton = this.#createDockButton('>_', 'Spotlight (Cmd+K)', () => {
             this.#state?.toggleSpotlight()
         })
         this.#dockEl.appendChild(this.#spotlightButton)
@@ -106,6 +106,8 @@ export default class DevToolsDock extends BaseEditorComponent {
     #updateActiveStates () {
         const activeTool = this.#state?.activeTool
         const sidebarOpen = this.#state?.sidebarOpen
+
+        this.#dockEl.classList.toggle('sidebar-open', sidebarOpen)
 
         for (const [toolId, button] of this.#toolButtons) {
             const isActive = sidebarOpen && activeTool === toolId

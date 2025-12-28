@@ -4,11 +4,10 @@ import {buildEditorStyles, editorHeaderStyles, editorButtonStyles, editorScrollb
 export const dockStyles = `
     .devtools-dock {
         position: fixed;
-        top: 50%;
+        top: 10px;
         right: 10px;
-        transform: translateY(-50%);
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         gap: 4px;
         padding: 6px;
         background: var(--bg-secondary);
@@ -47,9 +46,15 @@ export const dockStyles = `
     }
 
     .dock-separator {
-        height: 1px;
+        width: 1px;
         background: var(--border);
-        margin: 4px 0;
+        margin: 0 4px;
+    }
+
+    .devtools-dock.sidebar-open {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-bottom: none;
     }
 `
 
@@ -57,13 +62,14 @@ export const dockStyles = `
 export const sidebarStyles = `
     .devtools-sidebar {
         position: fixed;
-        top: 10px;
-        right: 60px;
+        top: 58px;
+        right: 10px;
         bottom: 10px;
         width: 320px;
         background: var(--bg-primary);
         border: 1px solid var(--border);
-        border-radius: 8px;
+        border-top: none;
+        border-radius: 8px 0 8px 8px;
         z-index: 9998;
         display: flex;
         flex-direction: column;
