@@ -20,7 +20,7 @@ function restoreCase (word, token) {
     }
 
     if (word[0] === word[0].toUpperCase()) {
-        return token.charAt(0).toUpperCase() + token.substr(1).toLowerCase()
+        return token.charAt(0).toUpperCase() + token.slice(1).toLowerCase()
     }
 
     return token.toLowerCase()
@@ -28,7 +28,7 @@ function restoreCase (word, token) {
 
 
 function interpolate (str, args) {
-    return str.replace(/\$(\d{1,2})/g, (_, index) => args[index] || '')
+    return str.replace(/\$(\d{1,2})/g, (_, index) => args[index] ?? '')
 }
 
 
