@@ -9,7 +9,7 @@ export default class CanvasRectangleRenderer extends CanvasObjectRenderer {
     }
 
 
-    render (rect, ctx) {
+    render (rect, ctx, hints = null) {
         const offsetX = -rect.width * rect.anchorX
         const offsetY = -rect.height * rect.anchorY
 

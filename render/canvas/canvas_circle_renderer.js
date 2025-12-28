@@ -9,7 +9,7 @@ export default class CanvasCircleRenderer extends CanvasObjectRenderer {
     }
 
 
-    render (circle, ctx) {
+    render (circle, ctx, hints = null) {
         const offsetX = -circle.radius * 2 * circle.anchorX + circle.radius
         const offsetY = -circle.radius * 2 * circle.anchorY + circle.radius
 

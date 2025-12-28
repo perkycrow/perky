@@ -1,5 +1,9 @@
 import BaseRenderer from './base_renderer'
-import {createSpriteProgram, createPrimitiveProgram} from './webgl_shaders'
+import RenderContext from './unified/render_context'
+import ShaderRegistry from './shaders/shader_registry'
+import {SPRITE_SHADER_DEF} from './shaders/builtin/sprite_shader'
+import {PRIMITIVE_SHADER_DEF} from './shaders/builtin/primitive_shader'
+import PostProcessor from './postprocessing/post_processor'
 import WebGLTextureManager from './webgl_texture_manager'
 import {parseColor} from './webgl/color_utils'
 
@@ -14,6 +18,9 @@ export default class WebGLCanvas2D extends BaseRenderer {
 
     #rendererRegistry = new Map()
     #renderers = []
+    #shaderRegistry = null
+    #renderContext = null
+    #postProcessor = null
 
 
     constructor (options = {}) { // eslint-disable-line complexity
@@ -58,15 +65,78 @@ export default class WebGLCanvas2D extends BaseRenderer {
         gl.enable(gl.BLEND)
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-        this.spriteProgram = createSpriteProgram(gl)
-        this.primitiveProgram = createPrimitiveProgram(gl)
+        this.#shaderRegistry = new ShaderRegistry(gl)
+        this.#setupBuiltinShaders()
 
         this.create(WebGLTextureManager, {
             $bind: 'textureManager',
             gl
         })
 
+        this.#renderContext = new RenderContext({
+            type: 'webgl',
+            canvas: this.canvas,
+            gl,
+            shaderRegistry: this.#shaderRegistry,
+            textureManager: this.textureManager
+        })
+
+        this.#postProcessor = new PostProcessor(
+            gl,
+            this.#shaderRegistry,
+            this.canvas.width,
+            this.canvas.height
+        )
+
         this.gridVertexBuffer = gl.createBuffer()
+    }
+
+
+    #setupBuiltinShaders () {
+        const spriteProgram = this.#shaderRegistry.register('sprite', SPRITE_SHADER_DEF)
+        const primitiveProgram = this.#shaderRegistry.register('primitive', PRIMITIVE_SHADER_DEF)
+
+        this.#shaderRegistry.setDefault('sprite', 'sprite')
+        this.#shaderRegistry.setDefault('primitive', 'primitive')
+
+        this.spriteProgram = this.#createLegacyProgramFormat(spriteProgram, {
+            position: 'aPosition',
+            texCoord: 'aTexCoord',
+            opacity: 'aOpacity'
+        }, {
+            projectionMatrix: 'uProjectionMatrix',
+            viewMatrix: 'uViewMatrix',
+            modelMatrix: 'uModelMatrix',
+            texture: 'uTexture'
+        })
+
+        this.primitiveProgram = this.#createLegacyProgramFormat(primitiveProgram, {
+            position: 'aPosition',
+            color: 'aColor'
+        }, {
+            projectionMatrix: 'uProjectionMatrix',
+            viewMatrix: 'uViewMatrix'
+        })
+    }
+
+
+    #createLegacyProgramFormat (shaderProgram, attrMap, uniformMap) {
+        const attributes = {}
+        const uniforms = {}
+
+        for (const [key, name] of Object.entries(attrMap)) {
+            attributes[key] = shaderProgram.attributes[name]
+        }
+
+        for (const [key, name] of Object.entries(uniformMap)) {
+            uniforms[key] = shaderProgram.uniforms[name]
+        }
+
+        return {
+            program: shaderProgram.program,
+            attributes,
+            uniforms
+        }
     }
 
 
@@ -122,6 +192,42 @@ export default class WebGLCanvas2D extends BaseRenderer {
         if (this.gl) {
             this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
         }
+
+        if (this.#postProcessor) {
+            this.#postProcessor.resize(this.canvas.width, this.canvas.height)
+        }
+    }
+
+
+    get shaderRegistry () {
+        return this.#shaderRegistry
+    }
+
+
+    registerShader (id, definition) {
+        return this.#shaderRegistry.register(id, definition)
+    }
+
+
+    getShader (id) {
+        return this.#shaderRegistry.get(id)
+    }
+
+
+    get postProcessor () {
+        return this.#postProcessor
+    }
+
+
+    addPostPass (pass) {
+        this.#postProcessor.addPass(pass)
+        return this
+    }
+
+
+    removePostPass (pass) {
+        this.#postProcessor.removePass(pass)
+        return this
     }
 
 
@@ -132,12 +238,21 @@ export default class WebGLCanvas2D extends BaseRenderer {
         this.#renderers = []
         this.#rendererRegistry.clear()
 
+        if (this.#postProcessor) {
+            this.#postProcessor.dispose()
+            this.#postProcessor = null
+        }
+
+        if (this.#shaderRegistry) {
+            this.#shaderRegistry.dispose()
+            this.#shaderRegistry = null
+        }
+
         if (this.gl) {
-            this.gl.deleteProgram(this.spriteProgram.program)
-            this.gl.deleteProgram(this.primitiveProgram.program)
             this.gl.deleteBuffer(this.gridVertexBuffer)
         }
 
+        this.#renderContext = null
         super.onDispose()
         this.gl = null
     }
@@ -172,6 +287,8 @@ export default class WebGLCanvas2D extends BaseRenderer {
         this.stats.culledObjects = 0
         this.stats.drawCalls = 0
 
+        const usePostProcessing = this.#postProcessor.begin()
+
         if (this.backgroundColor && this.backgroundColor !== 'transparent') {
             const color = parseColor(this.backgroundColor)
             gl.clearColor(color.r, color.g, color.b, color.a)
@@ -199,6 +316,10 @@ export default class WebGLCanvas2D extends BaseRenderer {
         if (this.showGrid) {
             this.#renderGrid(matrices.projectionMatrix, matrices.viewMatrix)
         }
+
+        if (usePostProcessing) {
+            this.#postProcessor.finish()
+        }
     }
 
 
@@ -223,7 +344,8 @@ export default class WebGLCanvas2D extends BaseRenderer {
 
         const renderer = this.#rendererRegistry.get(object.constructor)
         if (renderer) {
-            renderer.collect(object, effectiveOpacity)
+            const hints = object.renderHints
+            renderer.collect(object, effectiveOpacity, hints)
         }
 
         object.children.forEach(child => {

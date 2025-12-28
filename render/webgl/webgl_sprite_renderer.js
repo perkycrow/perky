@@ -25,16 +25,17 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
 
 
     reset () {
+        super.reset()
         this.#spriteBatch.begin()
     }
 
 
-    collect (object, opacity) {
-        this.#spriteBatch.addSprite(object, opacity)
-    }
-
-
     flush (matrices) {
+        // First add all collected sprites to the batch
+        for (const {object, opacity, hints} of this.collected) {
+            this.#spriteBatch.addSprite(object, opacity, hints)
+        }
+
         const gl = this.gl
         const program = this.context.spriteProgram
 

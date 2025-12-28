@@ -2,6 +2,7 @@ export default class WebGLObjectRenderer {
 
     #gl = null
     #context = null
+    #collected = []
 
 
     static get handles () {
@@ -26,12 +27,17 @@ export default class WebGLObjectRenderer {
 
 
     reset () {
-        // Override in subclass
+        this.#collected = []
     }
 
 
-    collect (object, opacity) {
-        // Override in subclass
+    collect (object, opacity, hints = null) {
+        this.#collected.push({object, opacity, hints})
+    }
+
+
+    get collected () {
+        return this.#collected
     }
 
 
@@ -41,6 +47,7 @@ export default class WebGLObjectRenderer {
 
 
     dispose () {
+        this.#collected = []
         this.#gl = null
         this.#context = null
     }

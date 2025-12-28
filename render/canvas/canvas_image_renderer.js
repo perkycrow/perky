@@ -9,7 +9,7 @@ export default class CanvasImageRenderer extends CanvasObjectRenderer {
     }
 
 
-    render (image, ctx) {
+    render (image, ctx, hints = null) {
         if (image.image && image.image.complete) {
             const offsetX = -image.width * image.anchorX
             const offsetY = -image.height * image.anchorY

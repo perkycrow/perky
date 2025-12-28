@@ -1,6 +1,7 @@
 export default class CanvasObjectRenderer {
 
-    #ctx = null
+    #context = null
+    #collected = []
 
 
     static get handles () {
@@ -9,22 +10,60 @@ export default class CanvasObjectRenderer {
 
 
     get ctx () {
-        return this.#ctx
+        return this.#context?.ctx || null
     }
 
 
-    init (ctx) {
-        this.#ctx = ctx
+    get context () {
+        return this.#context
     }
 
 
-    render (object, ctx) {
+    init (context) {
+        this.#context = context
+    }
+
+
+    reset () {
+        this.#collected = []
+    }
+
+
+    collect (object, opacity, hints = null) {
+        this.#collected.push({object, opacity, hints})
+    }
+
+
+    flush () {
+        const ctx = this.ctx
+
+        for (const {object, opacity, hints} of this.#collected) {
+            ctx.save()
+
+            const m = object.worldMatrix
+            ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5])
+
+            ctx.globalAlpha = opacity
+
+            if (hints?.filter) {
+                ctx.filter = hints.filter
+            }
+
+            this.render(object, ctx, hints)
+
+            ctx.restore()
+        }
+    }
+
+
+    render (object, ctx, hints = null) {
         // Override in subclass
     }
 
 
     dispose () {
-        this.#ctx = null
+        this.#collected = []
+        this.#context = null
     }
 
 }

@@ -131,6 +131,11 @@ export default class Object2D extends Transform2D {
     }
 
 
+    get renderHints () { // eslint-disable-line class-methods-use-this
+        return null
+    }
+
+
     render () { // eslint-disable-line class-methods-use-this
 
     }

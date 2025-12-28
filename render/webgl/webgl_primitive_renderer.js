@@ -3,17 +3,11 @@ import WebGLObjectRenderer from './webgl_object_renderer'
 
 export default class WebGLPrimitiveRenderer extends WebGLObjectRenderer {
 
-    #collected = []
     #vertexBuffer = null
 
 
     get vertexBuffer () {
         return this.#vertexBuffer
-    }
-
-
-    get collected () {
-        return this.#collected
     }
 
 
@@ -23,18 +17,8 @@ export default class WebGLPrimitiveRenderer extends WebGLObjectRenderer {
     }
 
 
-    reset () {
-        this.#collected = []
-    }
-
-
-    collect (object, opacity) {
-        this.#collected.push({object, opacity})
-    }
-
-
     flush (matrices) {
-        if (this.#collected.length === 0) {
+        if (this.collected.length === 0) {
             return
         }
 
@@ -45,13 +29,13 @@ export default class WebGLPrimitiveRenderer extends WebGLObjectRenderer {
         gl.uniformMatrix3fv(program.uniforms.projectionMatrix, false, matrices.projectionMatrix)
         gl.uniformMatrix3fv(program.uniforms.viewMatrix, false, matrices.viewMatrix)
 
-        for (const {object, opacity} of this.#collected) {
-            this.renderObject(object, opacity)
+        for (const {object, opacity, hints} of this.collected) {
+            this.renderObject(object, opacity, hints)
         }
     }
 
 
-    renderObject (object, opacity) {
+    renderObject (object, opacity, hints = null) {
         // Override in subclass
     }
 

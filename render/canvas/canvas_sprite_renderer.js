@@ -9,7 +9,7 @@ export default class CanvasSpriteRenderer extends CanvasObjectRenderer {
     }
 
 
-    render (sprite, ctx) { // eslint-disable-line complexity
+    render (sprite, ctx, hints = null) { // eslint-disable-line complexity
         const img = sprite.image || (sprite.currentFrame ? sprite.currentFrame.image : null)
 
         if (img && img.complete && sprite.currentFrame) {

@@ -1,4 +1,5 @@
 import BaseRenderer from './base_renderer'
+import RenderContext from './unified/render_context'
 
 import CanvasCircleRenderer from './canvas/canvas_circle_renderer'
 import CanvasRectangleRenderer from './canvas/canvas_rectangle_renderer'
@@ -12,12 +13,18 @@ export default class Canvas2D extends BaseRenderer {
 
     #rendererRegistry = new Map()
     #renderers = []
+    #renderContext = null
 
 
     constructor (options = {}) { // eslint-disable-line complexity
         super(options)
 
         this.ctx = this.canvas.getContext('2d')
+        this.#renderContext = new RenderContext({
+            type: 'canvas',
+            canvas: this.canvas,
+            ctx: this.ctx
+        })
 
         this.#setupDefaultRenderers()
         this.applyPixelRatio()
@@ -49,7 +56,7 @@ export default class Canvas2D extends BaseRenderer {
 
 
     registerRenderer (renderer) {
-        renderer.init(this.ctx)
+        renderer.init(this.#renderContext)
 
         for (const ObjectClass of renderer.constructor.handles) {
             this.#rendererRegistry.set(ObjectClass, renderer)
@@ -113,7 +120,15 @@ export default class Canvas2D extends BaseRenderer {
 
         scene.updateWorldMatrix(false)
 
-        this.#renderObject(ctx, scene, 1.0)
+        for (const renderer of this.#renderers) {
+            renderer.reset()
+        }
+
+        this.#traverseAndCollect(scene, 1.0)
+
+        for (const renderer of this.#renderers) {
+            renderer.flush()
+        }
 
         if (this.showGrid) {
             this.#drawGrid(ctx)
@@ -123,7 +138,7 @@ export default class Canvas2D extends BaseRenderer {
     }
 
 
-    #renderObject (ctx, object, parentOpacity) {
+    #traverseAndCollect (object, parentOpacity) {
         if (!object.visible) {
             return
         }
@@ -142,23 +157,15 @@ export default class Canvas2D extends BaseRenderer {
 
         const effectiveOpacity = parentOpacity * object.opacity
 
-        ctx.save()
-
-        const m = object.worldMatrix
-        ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5])
-
-        ctx.globalAlpha = effectiveOpacity
-
         const renderer = this.#rendererRegistry.get(object.constructor)
         if (renderer) {
-            renderer.render(object, ctx)
+            const hints = object.renderHints
+            renderer.collect(object, effectiveOpacity, hints)
         }
 
         object.children.forEach(child => {
-            this.#renderObject(ctx, child, effectiveOpacity)
+            this.#traverseAndCollect(child, effectiveOpacity)
         })
-
-        ctx.restore()
     }
 
 
