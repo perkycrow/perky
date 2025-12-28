@@ -116,7 +116,7 @@ describe(InputSystem, () => {
 
         expect(inputSystem.getControl('gamepad', 'TestButton')).toBe(button)
         expect(inputSystem.getControl('nonExistent', 'TestButton')).toBeNull()
-        expect(inputSystem.getControl('gamepad', 'nonExistent')).toBeUndefined()
+        expect(inputSystem.getControl('gamepad', 'nonExistent')).toBeNull()
     })
 
 

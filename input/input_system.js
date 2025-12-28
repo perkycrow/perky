@@ -102,7 +102,7 @@ export default class InputSystem extends PerkyModule {
 
     getControl (deviceName, controlName) {
         const device = this.getDevice(deviceName)
-        return device ? device.getControl(controlName) : null
+        return device ? (device.getControl(controlName) ?? null) : null
     }
 
 

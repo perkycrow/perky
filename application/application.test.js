@@ -298,7 +298,7 @@ describe(Application, () => {
         expect(application.isPressedAny('Jump')).toBe(false)
         expect(application.getInputValue('mouse', 'leftButton')).toBe(0)
         expect(application.getInputValueAny('Fire')).toBeUndefined()
-        expect(application.getControl('keyboard', 'Space')).toBeUndefined()
+        expect(application.getControl('keyboard', 'Space')).toBeNull()
         expect(application.getControlAny('Jump')).toBeNull()
     })
 
