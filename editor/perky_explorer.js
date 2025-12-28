@@ -25,6 +25,7 @@ export default class PerkyExplorer extends BaseEditorComponent {
     #isMinimized = false
     #isCollapsed = false
     #sceneTreeMode = false
+    #sceneTreeSource = null
     #embedded = false
 
     #containerEl = null
@@ -122,7 +123,17 @@ export default class PerkyExplorer extends BaseEditorComponent {
     #createMinimizedView () {
         const container = document.createElement('div')
         container.className = 'explorer-minimized'
-        container.textContent = '📦'
+
+        const backButton = document.createElement('span')
+        backButton.className = 'explorer-back-button'
+        backButton.textContent = '←'
+
+        const label = document.createElement('span')
+        label.className = 'explorer-minimized-label'
+
+        container.appendChild(backButton)
+        container.appendChild(label)
+
         container.addEventListener('click', () => {
             this.#isMinimized = false
             this.#closeSceneTree()
@@ -248,16 +259,30 @@ export default class PerkyExplorer extends BaseEditorComponent {
 
 
     #updateViewState () {
+        const label = this.#minimizedEl.querySelector('.explorer-minimized-label')
+
         if (this.#sceneTreeMode) {
             this.#minimizedEl.classList.remove('hidden')
+            this.#minimizedEl.classList.add('scene-tree-mode')
             this.#explorerEl.classList.add('hidden')
             this.#sidebarEl.classList.remove('hidden')
+
+            if (label) {
+                const source = this.#sceneTreeSource || this.#selectedModule
+                label.textContent = source?.name || 'Scene Tree'
+            }
         } else if (this.#isMinimized) {
             this.#minimizedEl.classList.remove('hidden')
+            this.#minimizedEl.classList.remove('scene-tree-mode')
             this.#explorerEl.classList.add('hidden')
             this.#sidebarEl.classList.add('hidden')
+
+            if (label) {
+                label.textContent = 'Explorer'
+            }
         } else {
             this.#minimizedEl.classList.add('hidden')
+            this.#minimizedEl.classList.remove('scene-tree-mode')
             this.#explorerEl.classList.remove('hidden')
             this.#sidebarEl.classList.add('hidden')
         }
@@ -345,6 +370,7 @@ export default class PerkyExplorer extends BaseEditorComponent {
 
     #openSceneTree (content, worldRenderer = null) {
         this.#sceneTreeMode = true
+        this.#sceneTreeSource = worldRenderer
         this.#sidebarEl.setContent(content, worldRenderer)
         this.#updateViewState()
     }
@@ -352,6 +378,7 @@ export default class PerkyExplorer extends BaseEditorComponent {
 
     #closeSceneTree () {
         this.#sceneTreeMode = false
+        this.#sceneTreeSource = null
         this.#updateViewState()
     }
 

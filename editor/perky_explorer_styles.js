@@ -36,10 +36,24 @@ export const explorerStyles = `
         border: 1px solid var(--border);
         border-radius: 6px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-        overflow: hidden;
+        overflow-y: auto;
+        overflow-x: hidden;
         display: flex;
         flex-direction: column;
-        max-height: calc(100vh - 20px);
+        max-height: inherit;
+    }
+
+    .explorer::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .explorer::-webkit-scrollbar-track {
+        background: var(--bg-primary);
+    }
+
+    .explorer::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
     }
 
     .explorer-header {
@@ -51,6 +65,9 @@ export const explorerStyles = `
         border-bottom: 1px solid var(--border);
         cursor: pointer;
         user-select: none;
+        position: sticky;
+        top: 0;
+        z-index: 1;
     }
 
     .explorer-title {
@@ -88,11 +105,9 @@ export const explorerStyles = `
     }
 
     .explorer-tree {
-        flex: 1;
-        overflow-y: auto;
+        flex-shrink: 0;
         padding: 8px 0;
         min-height: 100px;
-        max-height: 400px;
     }
 
     .explorer-tree::-webkit-scrollbar {
@@ -109,21 +124,59 @@ export const explorerStyles = `
     }
 
     .explorer-minimized {
-        width: 40px;
-        height: 40px;
+        height: 36px;
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: 8px;
+        padding: 0 12px;
         background: var(--bg-primary);
         border: 1px solid var(--border);
         border-radius: 6px;
         cursor: pointer;
-        font-size: 18px;
+        font-size: 12px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        color: var(--fg-primary);
     }
 
     .explorer-minimized:hover {
         background: var(--bg-secondary);
+    }
+
+    .explorer-back-button {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        background: var(--bg-hover);
+        border-radius: 4px;
+        color: var(--fg-secondary);
+        font-size: 12px;
+        transition: background 0.15s, color 0.15s;
+    }
+
+    .explorer-minimized.scene-tree-mode {
+        background: var(--bg-secondary);
+        border: none;
+        border-bottom: 1px solid var(--border);
+        border-radius: 6px 6px 0 0;
+        box-shadow: none;
+    }
+
+    .explorer-minimized.scene-tree-mode .explorer-back-button {
+        display: flex;
+    }
+
+    .explorer-minimized:hover .explorer-back-button {
+        background: var(--bg-selected);
+        color: var(--fg-primary);
+    }
+
+    .explorer-minimized-label {
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .hidden {
@@ -232,6 +285,7 @@ export const nodeStyles = `
 export const detailsStyles = `
     :host {
         display: block;
+        flex-shrink: 0;
         border-top: 1px solid var(--border);
         background: var(--bg-secondary);
         padding: 10px 12px;
