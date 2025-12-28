@@ -1,3 +1,4 @@
+import BaseEditorComponent from './base_editor_component.js'
 import {explorerStyles} from './perky_explorer_styles.js'
 import './perky_explorer_node.js'
 import './scene_tree_sidebar.js'
@@ -16,7 +17,7 @@ PerkyExplorerDetails.registerInspector(WebGLCanvasLayerInspector)
 PerkyExplorerDetails.registerInspector(WorldRendererInspector)
 
 
-export default class PerkyExplorer extends HTMLElement {
+export default class PerkyExplorer extends BaseEditorComponent {
 
     #module = null
     #isMinimized = false
@@ -34,12 +35,6 @@ export default class PerkyExplorer extends HTMLElement {
     #collapseBtnEl = null
 
     #selectedModule = null
-
-
-    constructor () {
-        super()
-        this.attachShadow({mode: 'open'})
-    }
 
 
     connectedCallback () {

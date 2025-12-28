@@ -1,20 +1,15 @@
+import BaseEditorComponent from './base_editor_component.js'
 import {detailsStyles, cssVariables} from './perky_explorer_styles.js'
 
 
 const inspectorRegistry = new Set()
 
 
-export default class PerkyExplorerDetails extends HTMLElement {
+export default class PerkyExplorerDetails extends BaseEditorComponent {
 
     #module = null
     #titleEl = null
     #contentEl = null
-
-
-    constructor () {
-        super()
-        this.attachShadow({mode: 'open'})
-    }
 
 
     connectedCallback () {

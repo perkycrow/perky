@@ -52,17 +52,6 @@ export default class Object2DInspector extends BaseInspector {
         }
     }
 
-
-    // Backward compatibility alias
-    setObject (object) {
-        this.setModule(object)
-    }
-
-
-    getObject () {
-        return this.getModule()
-    }
-
 }
 
 

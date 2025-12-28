@@ -1,5 +1,5 @@
 import BaseEditorComponent from './base_editor_component.js'
-import {cssVariables} from './perky_explorer_styles.js'
+import {cssVariables, panelStyles} from './perky_explorer_styles.js'
 import './scene_tree_node.js'
 import Object2DInspector from './inspectors/object_2d_inspector.js'
 
@@ -7,7 +7,7 @@ import Object2DInspector from './inspectors/object_2d_inspector.js'
 const DEBOUNCE_MS = 100
 
 
-const sidebarStyles = `
+const sidebarExtraStyles = `
     :host {
         display: block;
         width: 320px;
@@ -23,77 +23,17 @@ const sidebarStyles = `
         flex-direction: column;
     }
 
-    .sidebar-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 12px;
-        background: var(--bg-secondary);
-        border-bottom: 1px solid var(--border);
-    }
-
-    .sidebar-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--fg-primary);
-        font-weight: 500;
-    }
-
-    .sidebar-icon {
-        font-size: 14px;
-    }
-
-    .sidebar-buttons {
-        display: flex;
-        gap: 4px;
-    }
-
-    .sidebar-btn {
-        background: var(--bg-hover);
-        border: none;
-        border-radius: 4px;
-        color: var(--fg-secondary);
-        padding: 4px 8px;
-        cursor: pointer;
-        font-family: inherit;
-        font-size: 11px;
-        transition: background 0.15s, color 0.15s;
-    }
-
-    .sidebar-btn:hover {
-        background: var(--bg-selected);
-        color: var(--fg-primary);
-    }
-
-    .sidebar-tree {
-        flex: 1;
-        overflow-y: auto;
-        padding: 8px 0;
-        min-height: 100px;
+    .panel-tree {
         max-height: 300px;
     }
 
-    .sidebar-tree::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .sidebar-tree::-webkit-scrollbar-track {
-        background: var(--bg-primary);
-    }
-
-    .sidebar-tree::-webkit-scrollbar-thumb {
-        background: var(--border);
-        border-radius: 3px;
-    }
-
-    .sidebar-details {
+    .panel-details {
         border-top: 1px solid var(--border);
         background: var(--bg-secondary);
         padding: 10px 12px;
     }
 
-    .sidebar-empty {
+    .panel-empty {
         color: var(--fg-muted);
         font-style: italic;
     }
@@ -211,13 +151,13 @@ export default class SceneTreeSidebar extends BaseEditorComponent {
 
     #buildDOM () {
         const style = document.createElement('style')
-        style.textContent = `:host { ${cssVariables} } ${sidebarStyles}`
+        style.textContent = `:host { ${cssVariables} } ${panelStyles} ${sidebarExtraStyles}`
         this.shadowRoot.appendChild(style)
 
         this.#headerEl = this.#createHeader()
         this.#treeEl = this.#createTree()
         this.#detailsEl = document.createElement('div')
-        this.#detailsEl.className = 'sidebar-details'
+        this.#detailsEl.className = 'panel-details'
 
         this.shadowRoot.appendChild(this.#headerEl)
         this.shadowRoot.appendChild(this.#treeEl)
@@ -227,23 +167,23 @@ export default class SceneTreeSidebar extends BaseEditorComponent {
 
     #createHeader () {
         const header = document.createElement('div')
-        header.className = 'sidebar-header'
+        header.className = 'panel-header'
 
         const title = document.createElement('div')
-        title.className = 'sidebar-title'
-        title.innerHTML = '<span class="sidebar-icon">🎬</span> Scene Tree'
+        title.className = 'panel-title'
+        title.innerHTML = '<span class="panel-title-icon">🎬</span> Scene Tree'
 
         const buttons = document.createElement('div')
-        buttons.className = 'sidebar-buttons'
+        buttons.className = 'panel-buttons'
 
         const refreshBtn = document.createElement('button')
-        refreshBtn.className = 'sidebar-btn'
+        refreshBtn.className = 'panel-btn'
         refreshBtn.textContent = '↻'
         refreshBtn.title = 'Refresh'
         refreshBtn.addEventListener('click', () => this.refresh())
 
         const closeBtn = document.createElement('button')
-        closeBtn.className = 'sidebar-btn'
+        closeBtn.className = 'panel-btn'
         closeBtn.textContent = '✕'
         closeBtn.title = 'Close'
         closeBtn.addEventListener('click', () => this.close())
@@ -260,7 +200,7 @@ export default class SceneTreeSidebar extends BaseEditorComponent {
 
     #createTree () {
         const tree = document.createElement('div')
-        tree.className = 'sidebar-tree'
+        tree.className = 'panel-tree'
 
         this.#rootNode = document.createElement('scene-tree-node')
         this.#rootNode.style.display = 'none'
@@ -303,7 +243,7 @@ export default class SceneTreeSidebar extends BaseEditorComponent {
         } else {
             this.#detailsEl.innerHTML = ''
             const empty = document.createElement('div')
-            empty.className = 'sidebar-empty'
+            empty.className = 'panel-empty'
             empty.textContent = 'Select an object to inspect'
             this.#detailsEl.appendChild(empty)
         }
@@ -315,7 +255,7 @@ export default class SceneTreeSidebar extends BaseEditorComponent {
 
         if (this.#selectedObject) {
             const inspector = new Object2DInspector()
-            inspector.setObject(this.#selectedObject)
+            inspector.setModule(this.#selectedObject)
             this.#detailsEl.appendChild(inspector)
         }
     }
