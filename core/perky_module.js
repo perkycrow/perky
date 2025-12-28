@@ -2,6 +2,7 @@ import Notifier from './notifier'
 import Registry from './registry'
 import ObservableSet from './observable_set'
 import {uniqueId} from './utils'
+
 import {
     unregisterExisting,
     getChild,
@@ -11,7 +12,11 @@ import {
     lookup,
     childrenByCategory
 } from './perky_module/children.js'
-import {setupLifecycle} from './perky_module/lifecycle.js'
+
+import {
+    setupLifecycle
+} from './perky_module/lifecycle.js'
+
 import {
     setupTagIndexListeners,
     hasTag,
@@ -22,6 +27,7 @@ import {
     addTagsIndex,
     removeTagsIndex
 } from './perky_module/tags.js'
+
 import {
     delegateTo,
     cleanDelegations,
@@ -54,6 +60,7 @@ export default class PerkyModule extends Notifier {
     static $name = null
     static $eagerStart = true
     static $tags = []
+
 
     constructor (options = {}) {
         super()
