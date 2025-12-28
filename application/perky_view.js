@@ -121,8 +121,8 @@ export default class PerkyView extends PerkyModule {
 
 
     mount (container) {
-        if (this.parentElement && this.parentElement !== container) {
-            this.parentElement.removeChild(this.element)
+        if (this.container && this.container !== container) {
+            this.container.removeChild(this.element)
         }
 
         container.appendChild(this.element)
@@ -136,9 +136,9 @@ export default class PerkyView extends PerkyModule {
 
 
     dismount () {
-        if (this.parentElement) {
-            this.parentElement.removeChild(this.element)
-            this.emit('dismount', {container: this.parentElement})
+        if (this.container) {
+            this.container.removeChild(this.element)
+            this.emit('dismount', {container: this.container})
         }
 
         if (this.#resizeObserver) {

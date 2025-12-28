@@ -73,7 +73,6 @@ export default class ActionDispatcher extends PerkyModule {
             $id: name,
             $category: 'controller'
         })
-
     }
 
 

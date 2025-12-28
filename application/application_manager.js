@@ -93,7 +93,7 @@ export default class ApplicationManager extends PerkyModule {
         const apps = this.children
 
         if (grep) {
-            return apps.filter(app => app.name && app.name.includes(grep))
+            return apps.filter(app => app.$name && app.$name.includes(grep))
         }
 
         return apps

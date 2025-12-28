@@ -48,7 +48,8 @@ export async function loadImage (params) {
         img.src = url
     })
 }
-  
+
+
 export async function loadText (params) {
     const response = await loadResponse(params)
 
