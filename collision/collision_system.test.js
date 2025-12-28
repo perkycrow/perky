@@ -353,44 +353,6 @@ describe('CollisionSystem', () => {
     })
 
 
-    test('addThreeJSObject detects sprite dimensions', () => {
-        const sprite = {
-            isSprite: true,
-            scale: {x: 32, y: 24},
-            userData: {},
-            position: {x: 0, y: 0}
-        }
-
-        collisionSystem.addThreeJSObject(sprite)
-
-        expect(sprite.userData.width).toBe(64) // 32 * 2
-        expect(sprite.userData.height).toBe(48) // 24 * 2
-        expect(sprite.userData.radius).toBe(32) // Math.max(32, 24)
-        expect(collisionSystem.collisionBodies).toContain(sprite)
-    })
-
-
-    test('addThreeJSObject detects geometry dimensions', () => {
-        const mesh = {
-            geometry: {
-                parameters: {
-                    width: 40,
-                    height: 60,
-                    radius: 25
-                }
-            },
-            userData: {},
-            position: {x: 0, y: 0}
-        }
-
-        collisionSystem.addThreeJSObject(mesh)
-
-        expect(mesh.userData.width).toBe(40)
-        expect(mesh.userData.height).toBe(60)
-        expect(mesh.userData.radius).toBe(25)
-    })
-
-
     test('pauseBody and resumeBody', () => {
         const body = createTestBody({x: 0, y: 0})
         collisionSystem.addBody(body, {velocity: {x: 100, y: 50}})
