@@ -68,12 +68,6 @@ describe(CanvasLayer, () => {
     })
 
 
-    test('constructor with showGrid option', () => {
-        const l = new CanvasLayer({$id: 'test', showGrid: true})
-        expect(l.renderer.showGrid).toBe(true)
-    })
-
-
     test('constructor with backgroundColor option', () => {
         const l = new CanvasLayer({$id: 'test', backgroundColor: '#FF0000'})
         expect(l.renderer.backgroundColor).toBe('#FF0000')
@@ -252,22 +246,6 @@ describe(CanvasLayer, () => {
         // Positioned at top-right: 1000 - 200 - 10 = 790
         expect(l.canvas.style.left).toBe('790px')
         expect(l.canvas.style.top).toBe('10px')
-    })
-
-
-    test('grid options passed to renderer', () => {
-        const l = new CanvasLayer({
-            $id: 'test',
-            showGrid: true,
-            gridStep: 2,
-            gridOpacity: 0.3,
-            gridColor: '#FF0000'
-        })
-
-        expect(l.renderer.showGrid).toBe(true)
-        expect(l.renderer.gridOptions.step).toBe(2)
-        expect(l.renderer.gridOptions.opacity).toBe(0.3)
-        expect(l.renderer.gridOptions.color).toBe('#FF0000')
     })
 
 

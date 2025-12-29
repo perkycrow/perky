@@ -1,5 +1,4 @@
 import BaseRenderer from './base_renderer'
-import RenderContext from './unified/render_context'
 import {traverseAndCollect} from './traverse'
 import ShaderRegistry from './shaders/shader_registry'
 import {SPRITE_SHADER_DEF} from './shaders/builtin/sprite_shader'
@@ -20,7 +19,6 @@ export default class WebGLCanvas2D extends BaseRenderer {
     #rendererRegistry = new Map()
     #renderers = []
     #shaderRegistry = null
-    #renderContext = null
     #postProcessor = null
 
 
@@ -31,13 +29,6 @@ export default class WebGLCanvas2D extends BaseRenderer {
         this.#setupDefaultRenderers()
         this.applyPixelRatio()
 
-        this.showGrid = options.showGrid ?? false
-        this.gridOptions = {
-            step: options.gridStep ?? 1,
-            opacity: options.gridOpacity ?? 0.5,
-            color: options.gridColor ?? '#000000',
-            lineWidth: options.gridLineWidth ?? 1
-        }
         this.backgroundColor = options.backgroundColor ?? null
         this.enableCulling = options.enableCulling ?? false
 
@@ -75,22 +66,12 @@ export default class WebGLCanvas2D extends BaseRenderer {
             gl
         })
 
-        this.#renderContext = new RenderContext({
-            type: 'webgl',
-            canvas: this.canvas,
-            gl,
-            shaderRegistry: this.#shaderRegistry,
-            textureManager: this.textureManager
-        })
-
         this.#postProcessor = new PostProcessor(
             gl,
             this.#shaderRegistry,
             this.canvas.width,
             this.canvas.height
         )
-
-        this.gridVertexBuffer = gl.createBuffer()
     }
 
 
@@ -250,11 +231,6 @@ export default class WebGLCanvas2D extends BaseRenderer {
             this.#shaderRegistry = null
         }
 
-        if (this.gl) {
-            this.gl.deleteBuffer(this.gridVertexBuffer)
-        }
-
-        this.#renderContext = null
         super.onDispose()
         this.gl = null
     }
@@ -319,67 +295,9 @@ export default class WebGLCanvas2D extends BaseRenderer {
             renderer.flush(matrices)
         }
 
-        if (this.showGrid) {
-            this.#renderGrid(matrices.projectionMatrix, matrices.viewMatrix)
-        }
-
         if (usePostProcessing) {
             this.#postProcessor.finish()
         }
-    }
-
-
-    #renderGrid (projectionMatrix, viewMatrix) {
-        const gl = this.gl
-        const camera = this.camera
-        const options = this.gridOptions
-
-        const ppu = camera.pixelsPerUnit
-        const step = options.step
-        const halfWidth = camera.viewportWidth / (2 * ppu)
-        const halfHeight = camera.viewportHeight / (2 * ppu)
-
-        const minX = Math.floor(camera.x - halfWidth)
-        const maxX = Math.ceil(camera.x + halfWidth)
-        const minY = Math.floor(camera.y - halfHeight)
-        const maxY = Math.ceil(camera.y + halfHeight)
-
-        const vertices = []
-        const color = parseColor(options.color)
-        const opacity = options.opacity
-
-        for (let x = Math.floor(minX / step) * step; x <= maxX; x += step) {
-            vertices.push(
-                x, minY, color.r, color.g, color.b, opacity,
-                x, maxY, color.r, color.g, color.b, opacity
-            )
-        }
-
-        for (let y = Math.floor(minY / step) * step; y <= maxY; y += step) {
-            vertices.push(
-                minX, y, color.r, color.g, color.b, opacity,
-                maxX, y, color.r, color.g, color.b, opacity
-            )
-        }
-
-        const vertexData = new Float32Array(vertices)
-
-        gl.useProgram(this.primitiveProgram.program)
-        gl.uniformMatrix3fv(this.primitiveProgram.uniforms.projectionMatrix, false, projectionMatrix)
-        gl.uniformMatrix3fv(this.primitiveProgram.uniforms.viewMatrix, false, viewMatrix)
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.gridVertexBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.DYNAMIC_DRAW)
-
-        const stride = 6 * 4  // 6 floats
-
-        gl.enableVertexAttribArray(this.primitiveProgram.attributes.position)
-        gl.vertexAttribPointer(this.primitiveProgram.attributes.position, 2, gl.FLOAT, false, stride, 0)
-
-        gl.enableVertexAttribArray(this.primitiveProgram.attributes.color)
-        gl.vertexAttribPointer(this.primitiveProgram.attributes.color, 4, gl.FLOAT, false, stride, 2 * 4)
-
-        gl.drawArrays(gl.LINES, 0, vertices.length / 6)
     }
 
 }

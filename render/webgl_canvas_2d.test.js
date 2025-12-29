@@ -57,12 +57,6 @@ describe('WebGLCanvas2D', () => {
         })
 
 
-        test('with showGrid', () => {
-            const r = new WebGLCanvas2D({canvas, showGrid: true})
-            expect(r.showGrid).toBe(true)
-        })
-
-
         test('with enableCulling', () => {
             const r = new WebGLCanvas2D({canvas, enableCulling: true})
             expect(r.enableCulling).toBe(true)

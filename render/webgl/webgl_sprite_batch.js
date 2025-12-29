@@ -1,5 +1,5 @@
-import Image2D from './image_2d'
-import Sprite2D from './sprite_2d'
+import Image2D from '../image_2d'
+import Sprite2D from '../sprite_2d'
 
 
 export default class WebGLSpriteBatch {

@@ -41,11 +41,7 @@ export default class DefendTheDen extends Game {
                     name: 'game',
                     type: 'webgl',
                     camera: 'main',
-                    showGrid: true,
                     pixelRatio: 1.5,
-                    gridStep: 1,
-                    gridOpacity: 0.15,
-                    gridColor: '#666666',
                     enableCulling: true
                 },
                 {

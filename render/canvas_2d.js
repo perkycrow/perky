@@ -1,5 +1,4 @@
 import BaseRenderer from './base_renderer'
-import RenderContext from './unified/render_context'
 import {traverseAndCollect} from './traverse'
 
 import CanvasCircleRenderer from './canvas/canvas_circle_renderer'
@@ -14,29 +13,16 @@ export default class Canvas2D extends BaseRenderer {
 
     #rendererRegistry = new Map()
     #renderers = []
-    #renderContext = null
 
 
-    constructor (options = {}) { // eslint-disable-line complexity
+    constructor (options = {}) {
         super(options)
 
         this.ctx = this.canvas.getContext('2d')
-        this.#renderContext = new RenderContext({
-            type: 'canvas',
-            canvas: this.canvas,
-            ctx: this.ctx
-        })
 
         this.#setupDefaultRenderers()
         this.applyPixelRatio()
 
-        this.showGrid = options.showGrid ?? false
-        this.gridOptions = {
-            step: options.gridStep ?? 1,
-            opacity: options.gridOpacity ?? 0.5,
-            color: options.gridColor ?? '#000000',
-            lineWidth: options.gridLineWidth ?? 1
-        }
         this.backgroundColor = options.backgroundColor ?? null
         this.enableCulling = options.enableCulling ?? false
 
@@ -57,7 +43,7 @@ export default class Canvas2D extends BaseRenderer {
 
 
     registerRenderer (renderer) {
-        renderer.init(this.#renderContext)
+        renderer.init({ctx: this.ctx, canvas: this.canvas})
 
         for (const ObjectClass of renderer.constructor.handles) {
             this.#rendererRegistry.set(ObjectClass, renderer)
@@ -135,44 +121,6 @@ export default class Canvas2D extends BaseRenderer {
             renderer.flush()
         }
 
-        if (this.showGrid) {
-            this.#drawGrid(ctx)
-        }
-
-        ctx.restore()
-    }
-
-
-    #drawGrid (ctx) {
-        ctx.save()
-
-        const ppu = this.camera.pixelsPerUnit
-        const step = this.gridOptions.step
-        const halfWidth = this.camera.viewportWidth / (2 * ppu)
-        const halfHeight = this.camera.viewportHeight / (2 * ppu)
-
-        const minX = Math.floor(this.camera.x - halfWidth)
-        const maxX = Math.ceil(this.camera.x + halfWidth)
-        const minY = Math.floor(this.camera.y - halfHeight)
-        const maxY = Math.ceil(this.camera.y + halfHeight)
-
-        ctx.strokeStyle = this.gridOptions.color
-        ctx.lineWidth = this.gridOptions.lineWidth / ppu
-        ctx.globalAlpha = this.gridOptions.opacity
-
-        ctx.beginPath()
-
-        for (let x = Math.floor(minX / step) * step; x <= maxX; x += step) {
-            ctx.moveTo(x, minY)
-            ctx.lineTo(x, maxY)
-        }
-
-        for (let y = Math.floor(minY / step) * step; y <= maxY; y += step) {
-            ctx.moveTo(minX, y)
-            ctx.lineTo(maxX, y)
-        }
-
-        ctx.stroke()
         ctx.restore()
     }
 

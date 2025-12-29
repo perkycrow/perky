@@ -1,5 +1,5 @@
 import WebGLObjectRenderer from './webgl_object_renderer'
-import WebGLSpriteBatch from '../webgl_sprite_batch'
+import WebGLSpriteBatch from './webgl_sprite_batch'
 import Image2D from '../image_2d'
 import Sprite2D from '../sprite_2d'
 
