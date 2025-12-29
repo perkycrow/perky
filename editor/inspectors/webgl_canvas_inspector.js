@@ -5,8 +5,8 @@ import '../toggle_input.js'
 
 
 function getEditableUniforms (pass) {
-    const defaults = pass.getDefaultUniforms?.() || {}
-    const configs = pass.getUniformConfig?.() || {}
+    const defaults = pass.constructor.defaultUniforms || {}
+    const configs = pass.constructor.uniformConfig || {}
     const currentUniforms = pass.uniforms || {}
 
     return Object.entries(defaults)

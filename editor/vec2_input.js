@@ -5,12 +5,15 @@ import './number_input.js'
 const vec2Styles = createInputStyles(`
     :host {
         display: block;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .vec2-input-container {
         display: flex;
         flex-direction: column;
         gap: 4px;
+        width: 100%;
     }
 
     .vec2-input-label {
@@ -28,6 +31,11 @@ const vec2Styles = createInputStyles(`
         display: flex;
         gap: 8px;
         width: 100%;
+    }
+
+    .vec2-inputs number-input {
+        flex: 1;
+        min-width: 0;
     }
 `)
 
