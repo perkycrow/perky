@@ -22,21 +22,6 @@
       ],
       "title": "Canvas2D Render Demo",
       "description": "Animated shapes demo showcasing the Canvas2D renderer with PerkyModule integration."
-    },
-    {
-      "id": "postprocessing_demo",
-      "file": "postprocessing_demo.html",
-      "category": "render",
-      "tags": [
-        "render",
-        "webgl",
-        "postprocessing",
-        "shaders",
-        "vignette",
-        "blur"
-      ],
-      "title": "WebGL Post-Processing",
-      "description": "Demo of the unified render architecture with shaders and post-processing effects (vignette, blur)."
     }
   ]
 }
