@@ -224,25 +224,24 @@ function animate () {
     // Update wave pass time uniform
     wavePass.setUniform('uTime', time)
 
-    // Animation disabled for debugging
-    // shapes.forEach((shape) => {
-    //     const wobble = Math.sin(time * 2 + shape.phase) * 0.3
-    //     shape.object.x = shape.baseX + wobble * Math.cos(shape.phase)
-    //     shape.object.y = shape.baseY + wobble * Math.sin(shape.phase)
+    shapes.forEach((shape) => {
+        const wobble = Math.sin(time * 2 + shape.phase) * 0.3
+        shape.object.x = shape.baseX + wobble * Math.cos(shape.phase)
+        shape.object.y = shape.baseY + wobble * Math.sin(shape.phase)
 
-    //     if (shape.type === 'rect') {
-    //         shape.object.rotation = time + shape.phase
-    //     } else {
-    //         const scale = 1 + Math.sin(time * 3 + shape.phase) * 0.2
-    //         shape.object.scaleX = scale
-    //         shape.object.scaleY = scale
-    //     }
-    // })
+        if (shape.type === 'rect') {
+            shape.object.rotation = time + shape.phase
+        } else {
+            const scale = 1 + Math.sin(time * 3 + shape.phase) * 0.2
+            shape.object.scaleX = scale
+            shape.object.scaleY = scale
+        }
+    })
 
-    // centerCircle.scaleX = 1 + Math.sin(time * 4) * 0.15
-    // centerCircle.scaleY = 1 + Math.cos(time * 4) * 0.15
+    centerCircle.scaleX = 1 + Math.sin(time * 4) * 0.15
+    centerCircle.scaleY = 1 + Math.cos(time * 4) * 0.15
 
-    // mainCamera.rotation = Math.sin(time * 0.5) * 0.1
+    mainCamera.rotation = Math.sin(time * 0.5) * 0.1
 
     layer.markDirty()
     layer.render()

@@ -24,7 +24,9 @@ export default class GameRenderer extends PerkyModule {
         this.game = options.game
 
         this.rootGroup = new Group2D({name: 'root'})
+        this.backgroundGroup = new Group2D({name: 'background'})
         this.shadowsGroup = new Group2D({name: 'shadows'})
+        this.entitiesGroup = new Group2D({name: 'entities'})
 
         this.worldRenderer = this.create(WorldRenderer, {
             $id: 'worldRenderer',
@@ -65,8 +67,14 @@ export default class GameRenderer extends PerkyModule {
 
     onStart () {
         this.#buildScene()
+
+        // Build scene hierarchy: background -> shadows -> entities
+        this.rootGroup.addChild(this.backgroundGroup)
+        this.rootGroup.addChild(this.shadowsGroup)
+        this.rootGroup.addChild(this.entitiesGroup)
+
         this.shadowsGroup.addChild(this.shadowsRenderer.rootGroup)
-        this.rootGroup.addChild(this.worldRenderer.rootGroup)
+        this.entitiesGroup.addChild(this.worldRenderer.rootGroup)
     }
 
 
@@ -83,17 +91,13 @@ export default class GameRenderer extends PerkyModule {
             height: backgroundHeight
         })
 
-        this.shadowsGroup.addChild(background)
+        this.backgroundGroup.addChild(background)
     }
 
 
     render () {
         this.shadowsRenderer.sync()
         this.worldRenderer.sync()
-
-        const shadowsLayer = this.game.getCanvas('shadows')
-        shadowsLayer.setContent(this.shadowsGroup)
-        shadowsLayer.render()
 
         const gameLayer = this.game.getCanvas('game')
         gameLayer.setContent(this.rootGroup)

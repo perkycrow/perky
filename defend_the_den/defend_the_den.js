@@ -6,8 +6,8 @@ import GameRenderer from './game_renderer'
 import Snowman from './snowman'
 import WaveProgressBar from './ui/wave_progress_bar'
 
-import Circle from '../render/circle'
-import Group2D from '../render/group_2d'
+import VignettePass from '../render/postprocessing/passes/vignette_pass'
+import ColorGradePass from '../render/postprocessing/passes/color_grade_pass'
 
 import manifest from './manifest'
 import debug from '../core/debug'
@@ -30,7 +30,7 @@ export default class DefendTheDen extends Game {
             },
             layers: [
                 {
-                    name: 'shadows',
+                    name: 'game',
                     type: 'webgl',
                     camera: 'main',
                     pixelRatio: 1.5,
@@ -38,21 +38,8 @@ export default class DefendTheDen extends Game {
                     enableCulling: true
                 },
                 {
-                    name: 'game',
-                    type: 'webgl',
-                    camera: 'main',
-                    pixelRatio: 1.5,
-                    enableCulling: true
-                },
-                {
                     name: 'ui',
                     type: 'html',
-                    camera: 'main',
-                    pointerEvents: 'none'
-                },
-                {
-                    name: 'debug',
-                    type: 'canvas',
                     camera: 'main',
                     pointerEvents: 'none'
                 }
@@ -82,6 +69,22 @@ export default class DefendTheDen extends Game {
         const gameController = this.getController('game')
         gameController.world = this.world
 
+        // Setup post-processing on game layer
+        const gameLayer = this.getCanvas('game')
+        const vignettePass = new VignettePass()
+        vignettePass.setUniform('uIntensity', 1.0)
+        vignettePass.setUniform('uSmoothness', 0.4)
+        gameLayer.renderer.addPostPass(vignettePass)
+
+        const colorGradePass = new ColorGradePass()
+        colorGradePass.setUniform('uBrightness', 0.02)
+        colorGradePass.setUniform('uContrast', 1.05)
+        colorGradePass.setUniform('uSaturation', 1.1)
+        gameLayer.renderer.addPostPass(colorGradePass)
+
+        // TEMP: Debug controls for post-processing
+        this._createPostProcessControls(vignettePass, colorGradePass)
+
         const uiLayer = this.getHTML('ui')
         const waveProgress = this.create(WaveProgressBar, {
             $id: 'waveProgress',
@@ -89,29 +92,8 @@ export default class DefendTheDen extends Game {
         })
         waveProgress.mount(uiLayer)
 
-        // Debug layer test - animated circle
-        const debugLayer = this.getCanvas('debug')
-        const debugScene = new Group2D({name: 'debug'})
-        const debugCircle = new Circle({
-            x: 0,
-            y: 1.5,
-            radius: 0.3,
-            color: 'white'
-        })
-        debugScene.add(debugCircle)
-        debugLayer.setContent(debugScene)
-
-        let time = 0
         this.on('render', () => {
             this.renderer.render()
-
-            // Animate debug circle
-            time += 0.016
-            debugCircle.x = Math.sin(time * 2) * 2
-            debugCircle.scaleX = 1 + Math.sin(time * 4) * 0.3
-            debugCircle.scaleY = 1 + Math.sin(time * 4) * 0.3
-            debugLayer.markDirty()
-            debugLayer.render()
         })
     }
 
@@ -126,6 +108,70 @@ export default class DefendTheDen extends Game {
 
         const gameController = this.getController('game')
         gameController.startWave(0)
+    }
+
+
+    // TEMP: Debug UI for post-processing
+    _createPostProcessControls (vignettePass, colorGradePass) {
+        const panel = document.createElement('div')
+        panel.id = 'postprocess-debug'
+        panel.innerHTML = `
+            <style>
+                #postprocess-debug {
+                    position: fixed;
+                    top: 10px;
+                    right: 10px;
+                    background: rgba(0,0,0,0.85);
+                    padding: 12px;
+                    border-radius: 8px;
+                    font-family: monospace;
+                    font-size: 11px;
+                    color: #fff;
+                    z-index: 9999;
+                    min-width: 200px;
+                }
+                #postprocess-debug h4 { margin: 0 0 8px; color: #4ecdc4; }
+                #postprocess-debug label { display: flex; align-items: center; gap: 6px; margin: 4px 0; }
+                #postprocess-debug input[type="checkbox"] { accent-color: #4ecdc4; }
+                #postprocess-debug input[type="range"] { width: 100%; accent-color: #4ecdc4; }
+                #postprocess-debug .group { margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #333; }
+            </style>
+            <h4>Post-Processing Debug</h4>
+            <div class="group">
+                <label><input type="checkbox" id="pp-vignette" checked> Vignette</label>
+                <label>Intensity <input type="range" id="pp-vignette-intensity" min="0" max="200" value="100"></label>
+                <label>Smoothness <input type="range" id="pp-vignette-smoothness" min="0" max="100" value="40"></label>
+            </div>
+            <div class="group">
+                <label><input type="checkbox" id="pp-colorgrade" checked> Color Grade</label>
+                <label>Brightness <input type="range" id="pp-brightness" min="-50" max="50" value="2"></label>
+                <label>Contrast <input type="range" id="pp-contrast" min="50" max="150" value="105"></label>
+                <label>Saturation <input type="range" id="pp-saturation" min="0" max="200" value="110"></label>
+            </div>
+        `
+        document.body.appendChild(panel)
+
+        document.getElementById('pp-vignette').addEventListener('change', (e) => {
+            vignettePass.enabled = e.target.checked
+        })
+        document.getElementById('pp-vignette-intensity').addEventListener('input', (e) => {
+            vignettePass.setUniform('uIntensity', e.target.value / 100)
+        })
+        document.getElementById('pp-vignette-smoothness').addEventListener('input', (e) => {
+            vignettePass.setUniform('uSmoothness', e.target.value / 100)
+        })
+        document.getElementById('pp-colorgrade').addEventListener('change', (e) => {
+            colorGradePass.enabled = e.target.checked
+        })
+        document.getElementById('pp-brightness').addEventListener('input', (e) => {
+            colorGradePass.setUniform('uBrightness', e.target.value / 100)
+        })
+        document.getElementById('pp-contrast').addEventListener('input', (e) => {
+            colorGradePass.setUniform('uContrast', e.target.value / 100)
+        })
+        document.getElementById('pp-saturation').addEventListener('input', (e) => {
+            colorGradePass.setUniform('uSaturation', e.target.value / 100)
+        })
     }
 
 }
