@@ -1,4 +1,7 @@
 import {buildEditorStyles, editorHeaderStyles, editorButtonStyles, editorScrollbarStyles, editorBaseStyles} from './editor_theme.js'
+import logger from '../core/logger.js'
+import {renderLogItem} from './log_renderers/log_renderer_registry.js'
+import './log_renderers/vec2_log_renderer.js'
 
 
 function createLoggerContent () {
@@ -27,6 +30,11 @@ export default class PerkyLogger extends HTMLElement {
     #miniIconEl = null
     #collapseBtnEl = null
 
+    #onLog = null
+    #onClear = null
+    #onSpacer = null
+    #onTitle = null
+
 
     constructor () {
         super()
@@ -36,6 +44,12 @@ export default class PerkyLogger extends HTMLElement {
 
     connectedCallback () {
         this.#buildDOM()
+        this.#bindLoggerEvents()
+    }
+
+
+    disconnectedCallback () {
+        this.#unbindLoggerEvents()
     }
 
 
@@ -204,6 +218,79 @@ export default class PerkyLogger extends HTMLElement {
     }
 
 
+    #bindLoggerEvents () {
+        this.#replayHistory()
+
+        this.#onLog = ({type, items, timestamp}) => this.#handleLog(type, items, timestamp)
+        this.#onClear = () => this.clear()
+        this.#onSpacer = () => this.spacer()
+        this.#onTitle = ({title}) => this.title(title)
+
+        logger.on('log', this.#onLog)
+        logger.on('clear', this.#onClear)
+        logger.on('spacer', this.#onSpacer)
+        logger.on('title', this.#onTitle)
+    }
+
+
+    #replayHistory () {
+        for (const entry of logger.history) {
+            this.#replayEntry(entry)
+        }
+        this.#scrollToBottom()
+    }
+
+
+    #replayEntry (entry) {
+        switch (entry.event) {
+        case 'log':
+            this.#handleLog(entry.type, entry.items, entry.timestamp)
+            break
+        case 'clear':
+            this.clear()
+            break
+        case 'spacer':
+            this.spacer()
+            break
+        case 'title':
+            this.title(entry.title)
+            break
+        default:
+            break
+        }
+    }
+
+
+    #unbindLoggerEvents () {
+        logger.off('log', this.#onLog)
+        logger.off('clear', this.#onClear)
+        logger.off('spacer', this.#onSpacer)
+        logger.off('title', this.#onTitle)
+    }
+
+
+    #handleLog (type, items, timestamp) {
+        const fragment = document.createDocumentFragment()
+
+        items.forEach((item, index) => {
+            if (index > 0) {
+                fragment.appendChild(document.createTextNode(' '))
+            }
+
+            const rendered = renderLogItem(item)
+            if (rendered) {
+                fragment.appendChild(rendered)
+            } else if (typeof item === 'object' && item !== null) {
+                fragment.appendChild(document.createTextNode(JSON.stringify(item)))
+            } else {
+                fragment.appendChild(document.createTextNode(String(item)))
+            }
+        })
+
+        this.log(fragment, type, 'element', timestamp)
+    }
+
+
     #createHeader () {
         const header = document.createElement('div')
         header.className = 'editor-header'
@@ -296,6 +383,14 @@ export default class PerkyLogger extends HTMLElement {
         } else {
             this.#contentEl.classList.remove('hidden')
             this.#collapseBtnEl.textContent = '-'
+            this.#scrollToBottom()
+        }
+    }
+
+
+    #scrollToBottom () {
+        if (this.#contentEl) {
+            this.#contentEl.scrollTop = this.#contentEl.scrollHeight
         }
     }
 
@@ -309,16 +404,13 @@ export default class PerkyLogger extends HTMLElement {
     }
 
 
-    log (message, type = 'info', format = 'text') {
+    log (message, type = 'info', format = 'text', timestamp = null) {
         const entry = document.createElement('div')
         entry.className = `logger-entry log-${type}`
 
-        if (this.#timestamp) {
-            const timestamp = document.createElement('span')
-            timestamp.className = 'logger-timestamp'
-            timestamp.textContent = new Date().toLocaleTimeString()
-            entry.appendChild(timestamp)
-        }
+        const indicator = document.createElement('span')
+        indicator.className = 'logger-indicator'
+        entry.appendChild(indicator)
 
         const messageElement = document.createElement('span')
         messageElement.className = 'logger-message'
@@ -326,6 +418,12 @@ export default class PerkyLogger extends HTMLElement {
         processMessage(messageElement, message, format)
 
         entry.appendChild(messageElement)
+
+        const time = timestamp ? new Date(timestamp) : new Date()
+        const timestampEl = document.createElement('span')
+        timestampEl.className = 'logger-timestamp'
+        timestampEl.textContent = time.toLocaleTimeString()
+        entry.appendChild(timestampEl)
 
         this.#entries.push(entry)
 
@@ -529,57 +627,118 @@ const STYLES = buildEditorStyles(
     }
 
     .logger-entry {
-        padding: 4px 12px;
+        padding: 3px 12px;
         display: flex;
-        align-items: baseline;
-        border-bottom: 1px solid var(--border);
+        align-items: center;
+        gap: 8px;
+        font-size: 10px;
     }
 
-    .logger-entry:last-child {
-        border-bottom: none;
+    .logger-indicator {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: var(--fg-muted);
+        opacity: 0.5;
+    }
+
+    .log-info .logger-indicator {
+        background: var(--fg-muted);
+        opacity: 0.5;
+    }
+
+    .log-notice .logger-indicator {
+        background: var(--fg-muted);
+        opacity: 0.3;
+    }
+
+    .log-warn .logger-indicator {
+        background: var(--status-warning);
+        opacity: 1;
+    }
+
+    .log-error .logger-indicator {
+        background: var(--status-error);
+        opacity: 1;
+        box-shadow: 0 0 4px var(--status-error);
+    }
+
+    .log-success .logger-indicator {
+        background: var(--status-started);
+        opacity: 1;
     }
 
     .logger-timestamp {
         color: var(--fg-muted);
-        margin-right: 8px;
-        font-size: 11px;
-        min-width: 70px;
+        font-size: 10px;
+        flex-shrink: 0;
+        opacity: 0;
+        transition: opacity 0.15s;
+    }
+
+    .logger-entry:hover .logger-timestamp {
+        opacity: 1;
     }
 
     .logger-message {
         flex-grow: 1;
         word-break: break-word;
+        color: var(--fg-secondary);
     }
 
-    .log-info {
+    .log-error .logger-message {
         color: var(--fg-primary);
-    }
-
-    .log-notice {
-        color: var(--fg-muted);
-    }
-
-    .log-warn {
-        color: var(--status-warning);
-    }
-
-    .log-error {
-        color: var(--status-error);
-    }
-
-    .log-success {
-        color: var(--status-success);
     }
 
     .logger-spacer {
         height: 1px;
-        background-color: var(--border);
+        background: var(--border);
+        margin: 4px 12px;
+        padding: 0;
+        gap: 0;
     }
 
     .logger-title-entry {
+        padding: 6px 12px 2px;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--fg-muted);
+    }
+
+    /* Log Renderers */
+    .log-vec2 {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--bg-hover);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 10px;
+    }
+
+    .log-vec2-label {
+        color: var(--fg-muted);
         font-weight: 500;
-        font-size: 14px;
-        color: var(--fg-primary);
+    }
+
+    .log-vec2-values {
+        display: inline-flex;
+        gap: 8px;
+    }
+
+    .log-vec2-component {
+        display: inline-flex;
+        gap: 4px;
+    }
+
+    .log-vec2-key {
+        color: var(--fg-muted);
+    }
+
+    .log-vec2-value {
+        color: var(--accent);
     }
 `
 )

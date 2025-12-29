@@ -89,6 +89,18 @@ export default class PerkyDevTools extends BaseEditorComponent {
             this.#loggerEl.classList.add('hidden')
         })
 
+        this.#state.addEventListener('sidebar:open', () => {
+            this.#loggerEl.classList.add('sidebar-open')
+        })
+
+        this.#state.addEventListener('sidebar:close', () => {
+            this.#loggerEl.classList.remove('sidebar-open')
+        })
+
+        if (this.#state.sidebarOpen) {
+            this.#loggerEl.classList.add('sidebar-open')
+        }
+
         this.#state.addEventListener('spotlight:open', () => {
             this.#showSpotlight()
         })
@@ -158,10 +170,15 @@ const STYLES = `
 
     .devtools-logger {
         position: fixed;
-        bottom: 10px;
-        left: 10px;
-        right: 60px;
+        bottom: 0;
+        left: 0;
+        right: 0;
         z-index: 9997;
+        transition: right 0.2s ease;
+    }
+
+    .devtools-logger.sidebar-open {
+        right: 330px;
     }
 
     .devtools-logger.hidden {
