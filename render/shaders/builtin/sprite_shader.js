@@ -1,14 +1,14 @@
-export const SPRITE_VERTEX = `
-attribute vec2 aPosition;
-attribute vec2 aTexCoord;
-attribute float aOpacity;
+export const SPRITE_VERTEX = `#version 300 es
+in vec2 aPosition;
+in vec2 aTexCoord;
+in float aOpacity;
 
 uniform mat3 uProjectionMatrix;
 uniform mat3 uViewMatrix;
 uniform mat3 uModelMatrix;
 
-varying vec2 vTexCoord;
-varying float vOpacity;
+out vec2 vTexCoord;
+out float vOpacity;
 
 void main() {
     vec3 worldPos = uModelMatrix * vec3(aPosition, 1.0);
@@ -22,16 +22,19 @@ void main() {
 `
 
 
-export const SPRITE_FRAGMENT = `
+export const SPRITE_FRAGMENT = `#version 300 es
 precision mediump float;
 
 uniform sampler2D uTexture;
-varying vec2 vTexCoord;
-varying float vOpacity;
+
+in vec2 vTexCoord;
+in float vOpacity;
+
+out vec4 fragColor;
 
 void main() {
-    vec4 texColor = texture2D(uTexture, vTexCoord);
-    gl_FragColor = vec4(texColor.rgb, texColor.a * vOpacity);
+    vec4 texColor = texture(uTexture, vTexCoord);
+    fragColor = vec4(texColor.rgb, texColor.a * vOpacity);
 }
 `
 

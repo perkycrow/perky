@@ -98,7 +98,7 @@ global.createMockWebGLContext = () => ({
 // Override HTMLCanvasElement.getContext to return mock WebGL
 const originalGetContext = HTMLCanvasElement.prototype.getContext
 HTMLCanvasElement.prototype.getContext = function (type, options) {
-    if (type === 'webgl') {
+    if (type === 'webgl' || type === 'webgl2') {
         return global.createMockWebGLContext()
     }
     return originalGetContext.call(this, type, options)

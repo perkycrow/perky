@@ -42,7 +42,7 @@ export default class WebGLCanvas2D extends BaseRenderer {
 
 
     #setupWebGL () {
-        this.gl = this.canvas.getContext('webgl', {
+        this.gl = this.canvas.getContext('webgl2', {
             alpha: true,
             premultipliedAlpha: false,
             antialias: true,
@@ -50,7 +50,7 @@ export default class WebGLCanvas2D extends BaseRenderer {
         })
 
         if (!this.gl) {
-            throw new Error('WebGL not supported')
+            throw new Error('WebGL2 not supported')
         }
 
         const gl = this.gl

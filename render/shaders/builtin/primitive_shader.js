@@ -1,11 +1,11 @@
-export const PRIMITIVE_VERTEX = `
-attribute vec2 aPosition;
-attribute vec4 aColor;
+export const PRIMITIVE_VERTEX = `#version 300 es
+in vec2 aPosition;
+in vec4 aColor;
 
 uniform mat3 uProjectionMatrix;
 uniform mat3 uViewMatrix;
 
-varying vec4 vColor;
+out vec4 vColor;
 
 void main() {
     vec3 viewPos = uViewMatrix * vec3(aPosition, 1.0);
@@ -17,13 +17,15 @@ void main() {
 `
 
 
-export const PRIMITIVE_FRAGMENT = `
+export const PRIMITIVE_FRAGMENT = `#version 300 es
 precision mediump float;
 
-varying vec4 vColor;
+in vec4 vColor;
+
+out vec4 fragColor;
 
 void main() {
-    gl_FragColor = vColor;
+    fragColor = vColor;
 }
 `
 
