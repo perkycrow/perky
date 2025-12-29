@@ -8,7 +8,6 @@ import {vi} from 'vitest'
 class MockApplication extends Application {
     constructor (params = {}) {
         super(params)
-        this.name = params.name || 'MockApp'
         this.mockStart = vi.fn()
         this.mockStop = vi.fn()
         this.mockDispatchAction = vi.fn()
@@ -99,11 +98,11 @@ describe(ApplicationManager, () => {
     test('createApp', () => {
         appManager.register('testApp', MockApp)
 
-        const app = appManager.createApp('testApp', {name: 'TestInstance'})
+        const app = appManager.createApp('testApp', {$name: 'TestInstance'})
 
         expect(app).toBeInstanceOf(MockApp)
         expect(app.$id).toBeTruthy()
-        expect(app.name).toBe('TestInstance')
+        expect(app.$name).toBe('TestInstance')
         expect(app.$category).toBe('application')
         expect(appManager.childrenRegistry.has(app.$id)).toBe(true)
         expect(appManager.getChild(app.$id)).toBe(app)
@@ -117,7 +116,7 @@ describe(ApplicationManager, () => {
 
         expect(app).toBeInstanceOf(MockApp)
         expect(app.$id).toBeTruthy()
-        expect(app.name).toBe('MockApp')
+        expect(app.$name).toBe('application')
     })
 
 
@@ -146,11 +145,11 @@ describe(ApplicationManager, () => {
     test('spawn', async () => {
         appManager.register('testApp', MockApp)
 
-        const app = await appManager.spawn('testApp', {name: 'SpawnedApp'})
+        const app = await appManager.spawn('testApp', {$name: 'SpawnedApp'})
 
         expect(app).toBeInstanceOf(MockApp)
         expect(app.$id).toBeTruthy()
-        expect(app.name).toBe('SpawnedApp')
+        expect(app.$name).toBe('SpawnedApp')
         expect(app.mockStart).toHaveBeenCalled()
         expect(appManager.childrenRegistry.has(app.$id)).toBe(true)
     })
@@ -269,9 +268,9 @@ describe(ApplicationManager, () => {
     test('list all apps', () => {
         appManager.register('testApp', MockApp)
 
-        const app1 = appManager.createApp('testApp', {name: 'App1'})
-        const app2 = appManager.createApp('testApp', {name: 'App2'})
-        const app3 = appManager.createApp('testApp', {name: 'Different'})
+        const app1 = appManager.createApp('testApp', {$name: 'App1'})
+        const app2 = appManager.createApp('testApp', {$name: 'App2'})
+        const app3 = appManager.createApp('testApp', {$name: 'Different'})
 
         const allApps = appManager.list()
 
@@ -285,9 +284,9 @@ describe(ApplicationManager, () => {
     test('list with grep filter', () => {
         appManager.register('testApp', MockApp)
 
-        const app1 = appManager.createApp('testApp', {name: 'GameApp'})
-        const app2 = appManager.createApp('testApp', {name: 'MenuApp'})
-        const app3 = appManager.createApp('testApp', {name: 'SettingsApp'})
+        const app1 = appManager.createApp('testApp', {$name: 'GameApp'})
+        const app2 = appManager.createApp('testApp', {$name: 'MenuApp'})
+        const app3 = appManager.createApp('testApp', {$name: 'SettingsApp'})
 
         const gameApps = appManager.list('Game')
         const menuApps = appManager.list('Menu')
@@ -308,7 +307,7 @@ describe(ApplicationManager, () => {
 
     test('list with no matches', () => {
         appManager.register('testApp', MockApp)
-        appManager.createApp('testApp', {name: 'TestApp'})
+        appManager.createApp('testApp', {$name: 'TestApp'})
 
         const noMatches = appManager.list('NonExistent')
 
@@ -327,19 +326,19 @@ describe(ApplicationManager, () => {
     test('integration scenario - preload then title then game', async () => {
         class PreloadApp extends MockApp {
             constructor (params) {
-                super({...params, name: 'Preload'})
+                super({...params, $name: 'Preload'})
             }
         }
 
         class TitleApp extends MockApp {
             constructor (params) {
-                super({...params, name: 'TitleScreen'})
+                super({...params, $name: 'TitleScreen'})
             }
         }
 
         class GameApp extends MockApp {
             constructor (params) {
-                super({...params, name: 'Game'})
+                super({...params, $name: 'Game'})
             }
         }
 
@@ -368,13 +367,13 @@ describe(ApplicationManager, () => {
     test('integration scenario - settings overlay', async () => {
         class GameApp extends MockApp {
             constructor (params) {
-                super({...params, name: 'Game'})
+                super({...params, $name: 'Game'})
             }
         }
 
         class SettingsApp extends MockApp {
             constructor (params) {
-                super({...params, name: 'Settings'})
+                super({...params, $name: 'Settings'})
             }
         }
 
@@ -400,9 +399,9 @@ describe(ApplicationManager, () => {
     test('multiple instances of same app type', () => {
         appManager.register('dialog', MockApp)
 
-        const dialog1 = appManager.createApp('dialog', {name: 'ConfirmDialog'})
-        const dialog2 = appManager.createApp('dialog', {name: 'AlertDialog'})
-        const dialog3 = appManager.createApp('dialog', {name: 'InputDialog'})
+        const dialog1 = appManager.createApp('dialog', {$name: 'ConfirmDialog'})
+        const dialog2 = appManager.createApp('dialog', {$name: 'AlertDialog'})
+        const dialog3 = appManager.createApp('dialog', {$name: 'InputDialog'})
 
         expect(dialog1.$id).toBeTruthy()
         expect(dialog2.$id).toBeTruthy()
