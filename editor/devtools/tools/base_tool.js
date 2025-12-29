@@ -24,17 +24,17 @@ export default class BaseTool extends BaseEditorComponent {
     }
 
 
-    onStateSet (state) {
+    onStateSet () { // eslint-disable-line class-methods-use-this
         // Override in subclasses
     }
 
 
-    onActivate () {
+    onActivate () { // eslint-disable-line class-methods-use-this
         // Override in subclasses
     }
 
 
-    onDeactivate () {
+    onDeactivate () { // eslint-disable-line class-methods-use-this
         // Override in subclasses
     }
 

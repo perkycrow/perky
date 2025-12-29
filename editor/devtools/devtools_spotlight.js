@@ -87,7 +87,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
     }
 
 
-    #buildCommands () {
+    #buildCommands () { // eslint-disable-line complexity
         this.#commands = []
 
         const tools = getAllTools()
@@ -193,12 +193,12 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
 
 
     #filterCommands (query) {
-        if (!query) {
-            this.#filteredCommands = [...this.#commands]
-        } else {
+        if (query) {
             this.#filteredCommands = this.#commands.filter(cmd =>
                 cmd.title.toLowerCase().includes(query) ||
                 cmd.subtitle.toLowerCase().includes(query))
+        } else {
+            this.#filteredCommands = [...this.#commands]
         }
 
         this.#selectedIndex = 0
@@ -285,7 +285,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
 
     #updateSelection () {
         const results = this.#resultsEl.querySelectorAll('.spotlight-result')
-        results.forEach((el, index) => {
+        results.forEach((el) => {
             const cmdIndex = this.#filteredCommands.findIndex(c => c.id === el.dataset.id)
             el.classList.toggle('selected', cmdIndex === this.#selectedIndex)
         })
@@ -324,6 +324,9 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
         case 'Escape':
             e.preventDefault()
             this.#state?.closeSpotlight()
+            break
+
+        default:
             break
         }
     }

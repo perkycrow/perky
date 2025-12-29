@@ -3,6 +3,16 @@ import {buildDockStyles} from './devtools_styles.js'
 import {getSidebarTools} from './devtools_registry.js'
 
 
+function createDockButton (icon, title, onClick) {
+    const button = document.createElement('button')
+    button.className = 'dock-button'
+    button.innerHTML = icon
+    button.title = title
+    button.addEventListener('click', onClick)
+    return button
+}
+
+
 export default class DevToolsDock extends BaseEditorComponent {
 
     #state = null
@@ -67,7 +77,7 @@ export default class DevToolsDock extends BaseEditorComponent {
 
 
     #renderMinimized () {
-        const crowBtn = this.#createDockButton(
+        const crowBtn = createDockButton(
             '',
             'Open DevTools',
             () => {
@@ -236,7 +246,7 @@ export default class DevToolsDock extends BaseEditorComponent {
         }
 
         // Logger
-        this.#loggerButton = this.#createDockButton(
+        this.#loggerButton = createDockButton(
             '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>',
             'Logger',
             () => {
@@ -246,7 +256,7 @@ export default class DevToolsDock extends BaseEditorComponent {
         this.#dockEl.appendChild(this.#loggerButton)
 
         // Spotlight
-        this.#spotlightButton = this.#createDockButton(
+        this.#spotlightButton = createDockButton(
             '<svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>',
             'Spotlight (Cmd+K)',
             () => {
@@ -261,7 +271,7 @@ export default class DevToolsDock extends BaseEditorComponent {
         this.#dockEl.appendChild(separator2)
 
         // Collapse Button
-        const collapseBtn = this.#createDockButton(
+        const collapseBtn = createDockButton(
             '<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>',
             'Collapse Dock',
             () => {
@@ -282,20 +292,10 @@ export default class DevToolsDock extends BaseEditorComponent {
 
 
     #createToolButton (Tool) {
-        const button = this.#createDockButton(Tool.toolIcon, Tool.toolName, () => {
+        const button = createDockButton(Tool.toolIcon, Tool.toolName, () => {
             this.#state?.toggleTool(Tool.toolId)
         })
         button.dataset.toolId = Tool.toolId
-        return button
-    }
-
-
-    #createDockButton (icon, title, onClick) {
-        const button = document.createElement('button')
-        button.className = 'dock-button'
-        button.innerHTML = icon
-        button.title = title
-        button.addEventListener('click', onClick)
         return button
     }
 

@@ -1,3 +1,4 @@
+/* eslint-disable max-nested-callbacks */
 import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
 import BaseInspector from './base_inspector'
 import Notifier from '../../core/notifier'

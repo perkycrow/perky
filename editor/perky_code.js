@@ -457,7 +457,8 @@ const STYLES = buildEditorStyles(
         border: 1px solid var(--border);
         border-radius: 6px;
     }
-`)
+`
+)
 
 
 customElements.define('perky-code', PerkyCode)

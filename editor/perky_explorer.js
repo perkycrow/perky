@@ -285,7 +285,7 @@ export default class PerkyExplorer extends BaseEditorComponent {
     }
 
 
-    #updateViewState () {
+    #updateViewState () { // eslint-disable-line complexity
         const label = this.#minimizedEl.querySelector('.explorer-minimized-label')
 
         if (this.#sceneTreeMode) {
@@ -493,7 +493,7 @@ export default class PerkyExplorer extends BaseEditorComponent {
     }
 
 
-    #updateHeaderControls () {
+    #updateHeaderControls () { // eslint-disable-line complexity
         this.#updateTreeNavigation()
 
         if (!this.#backToRootBtnEl) {

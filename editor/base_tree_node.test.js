@@ -1,3 +1,4 @@
+/* eslint-disable max-nested-callbacks */
 import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
 import BaseTreeNode from './base_tree_node'
 

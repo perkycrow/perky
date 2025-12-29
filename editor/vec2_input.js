@@ -1,5 +1,35 @@
-import {cssVariables} from './perky_explorer_styles.js'
+import {createInputStyles, emitChange, handleAttributeChange} from './base_input.js'
 import './number_input.js'
+
+
+const vec2Styles = createInputStyles(`
+    :host {
+        display: block;
+    }
+
+    .vec2-input-container {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .vec2-input-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--fg-muted);
+    }
+
+    .vec2-input-label:empty {
+        display: none;
+    }
+
+    .vec2-inputs {
+        display: flex;
+        gap: 8px;
+        width: 100%;
+    }
+`)
 
 
 export default class Vec2Input extends HTMLElement {
@@ -29,16 +59,7 @@ export default class Vec2Input extends HTMLElement {
 
 
     attributeChangedCallback (name, oldValue, newValue) {
-        if (oldValue === newValue) {
-            return
-        }
-
-        if (name === 'label') {
-            this.#label = newValue || ''
-            if (this.#labelEl) {
-                this.#labelEl.textContent = this.#label
-            }
-        }
+        handleAttributeChange(this, name, oldValue, newValue)
     }
 
 
@@ -53,20 +74,26 @@ export default class Vec2Input extends HTMLElement {
     }
 
 
+    setLabel (val) {
+        this.#label = val
+        if (this.#labelEl) {
+            this.#labelEl.textContent = this.#label
+        }
+    }
+
+
     #buildDOM () {
         const style = document.createElement('style')
-        style.textContent = this.#getStyles()
+        style.textContent = vec2Styles
         this.shadowRoot.appendChild(style)
 
         const container = document.createElement('div')
         container.className = 'vec2-input-container'
 
-        // Optional label
         this.#labelEl = document.createElement('span')
         this.#labelEl.className = 'vec2-input-label'
         this.#labelEl.textContent = this.#label
 
-        // Input fields
         const inputs = document.createElement('div')
         inputs.className = 'vec2-inputs'
 
@@ -92,40 +119,6 @@ export default class Vec2Input extends HTMLElement {
     }
 
 
-    #getStyles () {
-        return `
-            :host {
-                ${cssVariables}
-                display: block;
-                font-family: var(--font-mono);
-            }
-
-            .vec2-input-container {
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-            }
-
-            .vec2-input-label {
-                font-size: 10px;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                color: var(--fg-muted);
-            }
-
-            .vec2-input-label:empty {
-                display: none;
-            }
-
-            .vec2-inputs {
-                display: flex;
-                gap: 8px;
-                width: 100%;
-            }
-        `
-    }
-
-
     #updateDisplay () {
         if (!this.#vec2) {
             return
@@ -142,11 +135,7 @@ export default class Vec2Input extends HTMLElement {
         }
 
         this.#vec2[axis] = value
-
-        this.dispatchEvent(new CustomEvent('change', {
-            detail: {value: this.#vec2, axis, componentValue: value},
-            bubbles: true
-        }))
+        emitChange(this, {value: this.#vec2, axis, componentValue: value})
     }
 
 }

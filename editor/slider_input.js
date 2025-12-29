@@ -1,4 +1,87 @@
-import {cssVariables} from './perky_explorer_styles.js'
+import {createInputStyles, emitChange, handleAttributeChange} from './base_input.js'
+
+
+const sliderStyles = createInputStyles(`
+    .slider-input-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .slider-input-label {
+        font-size: 10px;
+        color: var(--fg-muted);
+        min-width: 60px;
+    }
+
+    .slider-input-label:empty {
+        display: none;
+    }
+
+    .slider-input-track {
+        flex: 1;
+        height: 4px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    .slider-input-track::-webkit-slider-runnable-track {
+        height: 4px;
+        background: var(--bg-hover);
+        border-radius: 2px;
+    }
+
+    .slider-input-track::-moz-range-track {
+        height: 4px;
+        background: var(--bg-hover);
+        border-radius: 2px;
+        border: none;
+    }
+
+    .slider-input-track::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 12px;
+        height: 12px;
+        background: var(--accent);
+        border-radius: 50%;
+        cursor: pointer;
+        margin-top: -4px;
+        transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .slider-input-track::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+        box-shadow: 0 0 6px var(--accent);
+    }
+
+    .slider-input-track::-moz-range-thumb {
+        width: 12px;
+        height: 12px;
+        background: var(--accent);
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .slider-input-value {
+        font-size: 10px;
+        color: var(--fg-secondary);
+        min-width: 32px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+`)
+
+
+function formatSliderValue (value) {
+    if (Math.abs(value) < 0.01) {
+        return value.toFixed(3)
+    }
+    return value.toFixed(2)
+}
 
 
 export default class SliderInput extends HTMLElement {
@@ -32,40 +115,7 @@ export default class SliderInput extends HTMLElement {
 
 
     attributeChangedCallback (name, oldValue, newValue) {
-        if (oldValue === newValue) {
-            return
-        }
-
-        switch (name) {
-        case 'value':
-            this.#value = parseFloat(newValue) || 0
-            this.#updateDisplay()
-            break
-        case 'min':
-            this.#min = parseFloat(newValue) || 0
-            if (this.#slider) {
-                this.#slider.min = this.#min
-            }
-            break
-        case 'max':
-            this.#max = parseFloat(newValue) || 100
-            if (this.#slider) {
-                this.#slider.max = this.#max
-            }
-            break
-        case 'step':
-            this.#step = parseFloat(newValue) || 1
-            if (this.#slider) {
-                this.#slider.step = this.#step
-            }
-            break
-        case 'label':
-            this.#label = newValue || ''
-            if (this.#labelEl) {
-                this.#labelEl.textContent = this.#label
-            }
-            break
-        }
+        handleAttributeChange(this, name, oldValue, newValue)
     }
 
 
@@ -83,9 +133,47 @@ export default class SliderInput extends HTMLElement {
     }
 
 
+    setValue (val) {
+        this.#value = val
+        this.#updateDisplay()
+    }
+
+
+    setMin (val) {
+        this.#min = val
+        if (this.#slider) {
+            this.#slider.min = this.#min
+        }
+    }
+
+
+    setMax (val) {
+        this.#max = val
+        if (this.#slider) {
+            this.#slider.max = this.#max
+        }
+    }
+
+
+    setStep (val) {
+        this.#step = val
+        if (this.#slider) {
+            this.#slider.step = this.#step
+        }
+    }
+
+
+    setLabel (val) {
+        this.#label = val
+        if (this.#labelEl) {
+            this.#labelEl.textContent = this.#label
+        }
+    }
+
+
     #buildDOM () {
         const style = document.createElement('style')
-        style.textContent = this.#getStyles()
+        style.textContent = sliderStyles
         this.shadowRoot.appendChild(style)
 
         const container = document.createElement('div')
@@ -114,95 +202,12 @@ export default class SliderInput extends HTMLElement {
     }
 
 
-    #getStyles () {
-        return `
-            :host {
-                ${cssVariables}
-                display: block;
-                font-family: var(--font-mono);
-            }
-
-            .slider-input-container {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .slider-input-label {
-                font-size: 10px;
-                color: var(--fg-muted);
-                min-width: 60px;
-            }
-
-            .slider-input-label:empty {
-                display: none;
-            }
-
-            .slider-input-track {
-                flex: 1;
-                height: 4px;
-                -webkit-appearance: none;
-                appearance: none;
-                background: transparent;
-                cursor: pointer;
-            }
-
-            .slider-input-track::-webkit-slider-runnable-track {
-                height: 4px;
-                background: var(--bg-hover);
-                border-radius: 2px;
-            }
-
-            .slider-input-track::-moz-range-track {
-                height: 4px;
-                background: var(--bg-hover);
-                border-radius: 2px;
-                border: none;
-            }
-
-            .slider-input-track::-webkit-slider-thumb {
-                -webkit-appearance: none;
-                appearance: none;
-                width: 12px;
-                height: 12px;
-                background: var(--accent);
-                border-radius: 50%;
-                cursor: pointer;
-                margin-top: -4px;
-                transition: transform 0.1s, box-shadow 0.1s;
-            }
-
-            .slider-input-track::-webkit-slider-thumb:hover {
-                transform: scale(1.2);
-                box-shadow: 0 0 6px var(--accent);
-            }
-
-            .slider-input-track::-moz-range-thumb {
-                width: 12px;
-                height: 12px;
-                background: var(--accent);
-                border: none;
-                border-radius: 50%;
-                cursor: pointer;
-            }
-
-            .slider-input-value {
-                font-size: 10px;
-                color: var(--fg-secondary);
-                min-width: 32px;
-                text-align: right;
-                font-variant-numeric: tabular-nums;
-            }
-        `
-    }
-
-
     #updateDisplay () {
         if (this.#slider) {
             this.#slider.value = this.#value
         }
         if (this.#valueEl) {
-            this.#valueEl.textContent = this.#formatValue(this.#value)
+            this.#valueEl.textContent = formatSliderValue(this.#value)
         }
     }
 
@@ -211,30 +216,14 @@ export default class SliderInput extends HTMLElement {
         const newValue = parseFloat(this.#slider.value)
         if (this.#value !== newValue) {
             this.#value = newValue
-            this.#valueEl.textContent = this.#formatValue(this.#value)
-            this.#emitChange()
+            this.#valueEl.textContent = formatSliderValue(this.#value)
+            emitChange(this, {value: this.#value})
         }
-    }
-
-
-    #formatValue (value) {
-        if (Math.abs(value) < 0.01) {
-            return value.toFixed(3)
-        }
-        return value.toFixed(2)
     }
 
 
     #clamp (value) {
         return Math.max(this.#min, Math.min(this.#max, value))
-    }
-
-
-    #emitChange () {
-        this.dispatchEvent(new CustomEvent('change', {
-            detail: {value: this.#value},
-            bubbles: true
-        }))
     }
 
 }

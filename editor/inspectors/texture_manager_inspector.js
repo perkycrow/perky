@@ -3,6 +3,48 @@ import WebGLTextureManager from '../../render/webgl_texture_manager.js'
 import {formatBytes} from '../../core/utils.js'
 
 
+function createStatCard (label, value, sub, className = '') {
+    const card = document.createElement('div')
+    card.className = 'stat-card'
+
+    const labelEl = document.createElement('div')
+    labelEl.className = 'stat-label'
+    labelEl.textContent = label
+
+    const valueEl = document.createElement('div')
+    valueEl.className = `stat-value ${className}`
+    valueEl.textContent = value
+
+    const subEl = document.createElement('div')
+    subEl.className = 'stat-sub'
+    subEl.textContent = sub
+
+    card.appendChild(labelEl)
+    card.appendChild(valueEl)
+    card.appendChild(subEl)
+
+    return card
+}
+
+
+function createInfoRow (label) {
+    const row = document.createElement('div')
+    row.className = 'info-row'
+
+    const labelEl = document.createElement('span')
+    labelEl.className = 'info-label'
+    labelEl.textContent = label
+
+    const valueEl = document.createElement('span')
+    valueEl.className = 'info-value'
+
+    row.appendChild(labelEl)
+    row.appendChild(valueEl)
+
+    return row
+}
+
+
 const customStyles = `
     .inspector-stats {
         display: grid;
@@ -164,11 +206,11 @@ export default class TextureManagerInspector extends BaseInspector {
         const stats = document.createElement('div')
         stats.className = 'inspector-stats'
 
-        const activeCard = this.#createStatCard('Active', '0', '0 B', 'active')
+        const activeCard = createStatCard('Active', '0', '0 B', 'active')
         this.#activeCountEl = activeCard.querySelector('.stat-value')
         this.#activeSizeEl = activeCard.querySelector('.stat-sub')
 
-        const zombieCard = this.#createStatCard('Zombies', '0', '0 B', 'zombie')
+        const zombieCard = createStatCard('Zombies', '0', '0 B', 'zombie')
         this.#zombieCountEl = zombieCard.querySelector('.stat-value')
         this.#zombieSizeEl = zombieCard.querySelector('.stat-sub')
 
@@ -208,13 +250,13 @@ export default class TextureManagerInspector extends BaseInspector {
 
         const infoSection = document.createElement('div')
 
-        const totalRow = this.#createInfoRow('Total memory')
+        const totalRow = createInfoRow('Total memory')
         this.#totalSizeEl = totalRow.querySelector('.info-value')
 
-        const maxRow = this.#createInfoRow('Max zombie size')
+        const maxRow = createInfoRow('Max zombie size')
         this.#maxSizeEl = maxRow.querySelector('.info-value')
 
-        const autoFlushRow = this.#createInfoRow('Auto flush')
+        const autoFlushRow = createInfoRow('Auto flush')
         this.#autoFlushEl = autoFlushRow.querySelector('.info-value')
 
         infoSection.appendChild(totalRow)
@@ -233,48 +275,6 @@ export default class TextureManagerInspector extends BaseInspector {
         this.shadowRoot.insertBefore(infoSection, this.gridEl)
 
         this.gridEl.style.display = 'none'
-    }
-
-
-    #createStatCard (label, value, sub, className = '') {
-        const card = document.createElement('div')
-        card.className = 'stat-card'
-
-        const labelEl = document.createElement('div')
-        labelEl.className = 'stat-label'
-        labelEl.textContent = label
-
-        const valueEl = document.createElement('div')
-        valueEl.className = `stat-value ${className}`
-        valueEl.textContent = value
-
-        const subEl = document.createElement('div')
-        subEl.className = 'stat-sub'
-        subEl.textContent = sub
-
-        card.appendChild(labelEl)
-        card.appendChild(valueEl)
-        card.appendChild(subEl)
-
-        return card
-    }
-
-
-    #createInfoRow (label) {
-        const row = document.createElement('div')
-        row.className = 'info-row'
-
-        const labelEl = document.createElement('span')
-        labelEl.className = 'info-label'
-        labelEl.textContent = label
-
-        const valueEl = document.createElement('span')
-        valueEl.className = 'info-value'
-
-        row.appendChild(labelEl)
-        row.appendChild(valueEl)
-
-        return row
     }
 
 

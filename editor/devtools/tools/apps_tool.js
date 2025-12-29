@@ -2,6 +2,57 @@ import BaseTool from './base_tool.js'
 import {buildEditorStyles, editorScrollbarStyles, editorButtonStyles, editorBaseStyles} from '../../editor_theme.js'
 
 
+function createSection (title, type) {
+    const section = document.createElement('div')
+    section.className = 'apps-section'
+
+    const header = document.createElement('div')
+    header.className = 'apps-section-header'
+    header.textContent = title
+
+    const list = document.createElement('div')
+    list.className = 'apps-list'
+    list.dataset.type = type
+
+    section.appendChild(header)
+    section.appendChild(list)
+
+    return section
+}
+
+
+function createRegisteredItem (name) {
+    const item = document.createElement('div')
+    item.className = 'apps-item'
+
+    const info = document.createElement('div')
+    info.className = 'apps-item-info'
+
+    const nameEl = document.createElement('span')
+    nameEl.className = 'apps-item-name'
+    nameEl.textContent = name
+
+    info.appendChild(nameEl)
+    item.appendChild(info)
+
+    return item
+}
+
+
+function getStatusClass (app) {
+    if (app.$status === 'started') {
+        return 'started'
+    }
+    if (app.$status === 'stopped') {
+        return 'stopped'
+    }
+    if (app.$status === 'disposed') {
+        return 'disposed'
+    }
+    return ''
+}
+
+
 export default class AppsTool extends BaseTool {
 
     static toolId = 'apps'
@@ -45,35 +96,16 @@ export default class AppsTool extends BaseTool {
         this.#containerEl = document.createElement('div')
         this.#containerEl.className = 'apps-container'
 
-        const registeredSection = this.#createSection('Registered Apps', 'registered')
+        const registeredSection = createSection('Registered Apps', 'registered')
         this.#registeredListEl = registeredSection.querySelector('.apps-list')
 
-        const runningSection = this.#createSection('Running Apps', 'running')
+        const runningSection = createSection('Running Apps', 'running')
         this.#runningListEl = runningSection.querySelector('.apps-list')
 
         this.#containerEl.appendChild(registeredSection)
         this.#containerEl.appendChild(runningSection)
 
         this.shadowRoot.appendChild(this.#containerEl)
-    }
-
-
-    #createSection (title, type) {
-        const section = document.createElement('div')
-        section.className = 'apps-section'
-
-        const header = document.createElement('div')
-        header.className = 'apps-section-header'
-        header.textContent = title
-
-        const list = document.createElement('div')
-        list.className = 'apps-list'
-        list.dataset.type = type
-
-        section.appendChild(header)
-        section.appendChild(list)
-
-        return section
     }
 
 
@@ -103,7 +135,7 @@ export default class AppsTool extends BaseTool {
         }
 
         for (const name of registered) {
-            const item = this.#createRegisteredItem(name)
+            const item = createRegisteredItem(name)
             this.#registeredListEl.appendChild(item)
         }
     }
@@ -135,25 +167,6 @@ export default class AppsTool extends BaseTool {
     }
 
 
-    #createRegisteredItem (name) {
-        const item = document.createElement('div')
-        item.className = 'apps-item'
-
-        const info = document.createElement('div')
-        info.className = 'apps-item-info'
-
-        const nameEl = document.createElement('span')
-        nameEl.className = 'apps-item-name'
-        nameEl.textContent = name
-
-        info.appendChild(nameEl)
-
-        item.appendChild(info)
-
-        return item
-    }
-
-
     #createRunningItem (app) {
         const item = document.createElement('div')
         item.className = 'apps-item'
@@ -162,7 +175,7 @@ export default class AppsTool extends BaseTool {
         info.className = 'apps-item-info'
 
         const status = document.createElement('span')
-        status.className = `apps-item-status ${this.#getStatusClass(app)}`
+        status.className = `apps-item-status ${getStatusClass(app)}`
 
         const nameEl = document.createElement('span')
         nameEl.className = 'apps-item-name'
@@ -203,20 +216,6 @@ export default class AppsTool extends BaseTool {
         item.appendChild(actions)
 
         return item
-    }
-
-
-    #getStatusClass (app) {
-        if (app.$status === 'started') {
-            return 'started'
-        }
-        if (app.$status === 'stopped') {
-            return 'stopped'
-        }
-        if (app.$status === 'disposed') {
-            return 'disposed'
-        }
-        return ''
     }
 
 

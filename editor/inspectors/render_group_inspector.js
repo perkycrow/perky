@@ -4,6 +4,73 @@ import '../slider_input.js'
 import '../toggle_input.js'
 
 
+function createToggle (label, checked, onChange) {
+    const container = document.createElement('div')
+    container.style.cssText = 'grid-column: 1 / -1;'
+
+    const toggle = document.createElement('toggle-input')
+    toggle.checked = checked
+    toggle.setAttribute('label', label)
+    toggle.addEventListener('change', (e) => onChange(e.detail.checked))
+
+    container.appendChild(toggle)
+    return container
+}
+
+
+function createSlider (label, value, options, onChange) {
+    const {min, max, step} = options
+    const container = document.createElement('div')
+    container.style.cssText = 'grid-column: 1 / -1;'
+
+    const slider = document.createElement('slider-input')
+    slider.setAttribute('label', label)
+    slider.setAttribute('min', min)
+    slider.setAttribute('max', max)
+    slider.setAttribute('step', step)
+    slider.value = value
+
+    slider.addEventListener('change', (e) => onChange(e.detail.value))
+
+    container.appendChild(slider)
+    return container
+}
+
+
+function getEditableUniforms (pass) {
+    const defaults = pass.getDefaultUniforms?.() || {}
+    const configs = pass.getUniformConfig?.() || {}
+    const currentUniforms = pass.uniforms || {}
+
+    return Object.entries(defaults)
+        .filter(([, defaultValue]) => typeof defaultValue === 'number')
+        .map(([name, defaultValue]) => ({
+            name,
+            defaultValue,
+            currentValue: currentUniforms[name] ?? defaultValue,
+            config: configs[name] || {min: 0, max: defaultValue * 2 || 1, step: 0.01}
+        }))
+}
+
+
+function renderUniformControl (container, pass, uniform) {
+    const {min, max, step} = uniform.config
+
+    const slider = document.createElement('slider-input')
+    slider.setAttribute('label', uniform.name.replace(/^u/, ''))
+    slider.setAttribute('min', min)
+    slider.setAttribute('max', max)
+    slider.setAttribute('step', step)
+    slider.value = uniform.currentValue
+
+    slider.addEventListener('change', (e) => {
+        pass.setUniform(uniform.name, e.detail.value)
+    })
+
+    container.appendChild(slider)
+}
+
+
 const customStyles = `
     .pass-section {
         grid-column: 1 / -1;
@@ -64,7 +131,7 @@ export default class RenderGroupInspector extends BaseInspector {
         const group = this.module
 
         // Visibility toggle at the very top
-        const visibleToggle = this.#createToggle('visible', group.visible, (value) => {
+        const visibleToggle = createToggle('visible', group.visible, (value) => {
             group.visible = value
         })
         this.gridEl.appendChild(visibleToggle)
@@ -76,7 +143,7 @@ export default class RenderGroupInspector extends BaseInspector {
         this.addSeparator()
 
         // Opacity slider
-        const opacitySlider = this.#createSlider('opacity', group.opacity, 0, 1, 0.01, (value) => {
+        const opacitySlider = createSlider('opacity', group.opacity, {min: 0, max: 1, step: 0.01}, (value) => {
             group.opacity = value
         })
         this.gridEl.appendChild(opacitySlider)
@@ -99,42 +166,6 @@ export default class RenderGroupInspector extends BaseInspector {
 
         // Post-passes
         this.#renderPostPasses(group)
-    }
-
-
-    #createToggle (label, checked, onChange) {
-        const container = document.createElement('div')
-        container.style.cssText = 'grid-column: 1 / -1;'
-
-        const toggle = document.createElement('toggle-input')
-        toggle.checked = checked
-        toggle.setAttribute('label', label)
-        toggle.addEventListener('change', (e) => {
-            onChange(e.detail.checked)
-        })
-
-        container.appendChild(toggle)
-        return container
-    }
-
-
-    #createSlider (label, value, min, max, step, onChange) {
-        const container = document.createElement('div')
-        container.style.cssText = 'grid-column: 1 / -1;'
-
-        const slider = document.createElement('slider-input')
-        slider.setAttribute('label', label)
-        slider.setAttribute('min', min)
-        slider.setAttribute('max', max)
-        slider.setAttribute('step', step)
-        slider.value = value
-
-        slider.addEventListener('change', (e) => {
-            onChange(e.detail.value)
-        })
-
-        container.appendChild(slider)
-        return container
     }
 
 
@@ -203,53 +234,19 @@ export default class RenderGroupInspector extends BaseInspector {
         header.appendChild(toggle)
         section.appendChild(header)
 
-        const uniforms = this.#getEditableUniforms(pass)
+        const uniforms = getEditableUniforms(pass)
         if (uniforms.length > 0) {
             const uniformsEl = document.createElement('div')
             uniformsEl.className = 'pass-uniforms'
 
             for (const uniform of uniforms) {
-                this.#renderUniformControl(uniformsEl, pass, uniform)
+                renderUniformControl(uniformsEl, pass, uniform)
             }
 
             section.appendChild(uniformsEl)
         }
 
         this.gridEl.appendChild(section)
-    }
-
-
-    #getEditableUniforms (pass) {
-        const defaults = pass.getDefaultUniforms?.() || {}
-        const configs = pass.getUniformConfig?.() || {}
-        const currentUniforms = pass.uniforms || {}
-
-        return Object.entries(defaults)
-            .filter(([, defaultValue]) => typeof defaultValue === 'number')
-            .map(([name, defaultValue]) => ({
-                name,
-                defaultValue,
-                currentValue: currentUniforms[name] ?? defaultValue,
-                config: configs[name] || {min: 0, max: defaultValue * 2 || 1, step: 0.01}
-            }))
-    }
-
-
-    #renderUniformControl (container, pass, uniform) {
-        const {min, max, step} = uniform.config
-
-        const slider = document.createElement('slider-input')
-        slider.setAttribute('label', uniform.name.replace(/^u/, ''))
-        slider.setAttribute('min', min)
-        slider.setAttribute('max', max)
-        slider.setAttribute('step', step)
-        slider.value = uniform.currentValue
-
-        slider.addEventListener('change', (e) => {
-            pass.setUniform(uniform.name, e.detail.value)
-        })
-
-        container.appendChild(slider)
     }
 
 }

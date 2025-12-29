@@ -3,6 +3,13 @@ import {buildSidebarStyles} from './devtools_styles.js'
 import {getTool} from './devtools_registry.js'
 
 
+function createSidebarContent () {
+    const content = document.createElement('div')
+    content.className = 'sidebar-content'
+    return content
+}
+
+
 export default class DevToolsSidebar extends BaseEditorComponent {
 
     #state = null
@@ -53,7 +60,7 @@ export default class DevToolsSidebar extends BaseEditorComponent {
         this.#sidebarEl.className = 'devtools-sidebar hidden'
 
         this.#headerEl = this.#createHeader()
-        this.#contentEl = this.#createContent()
+        this.#contentEl = createSidebarContent()
 
         this.#sidebarEl.appendChild(this.#headerEl)
         this.#sidebarEl.appendChild(this.#contentEl)
@@ -89,13 +96,6 @@ export default class DevToolsSidebar extends BaseEditorComponent {
         header.appendChild(this.#closeBtn)
 
         return header
-    }
-
-
-    #createContent () {
-        const content = document.createElement('div')
-        content.className = 'sidebar-content'
-        return content
     }
 
 

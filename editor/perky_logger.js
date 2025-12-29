@@ -1,6 +1,13 @@
 import {buildEditorStyles, editorHeaderStyles, editorButtonStyles, editorScrollbarStyles, editorBaseStyles} from './editor_theme.js'
 
 
+function createLoggerContent () {
+    const content = document.createElement('div')
+    content.className = 'logger-content'
+    return content
+}
+
+
 export default class PerkyLogger extends HTMLElement {
 
     static observedAttributes = ['max-entries', 'position', 'timestamp', 'collapsible', 'theme']
@@ -184,7 +191,7 @@ export default class PerkyLogger extends HTMLElement {
         this.#updateClasses()
 
         this.#headerEl = this.#createHeader()
-        this.#contentEl = this.#createContent()
+        this.#contentEl = createLoggerContent()
         this.#miniIconEl = this.#createMiniIcon()
 
         this.#containerEl.appendChild(this.#headerEl)
@@ -232,13 +239,6 @@ export default class PerkyLogger extends HTMLElement {
         header.appendChild(buttons)
 
         return header
-    }
-
-
-    #createContent () {
-        const content = document.createElement('div')
-        content.className = 'logger-content'
-        return content
     }
 
 
@@ -581,7 +581,8 @@ const STYLES = buildEditorStyles(
         font-size: 14px;
         color: var(--fg-primary);
     }
-`)
+`
+)
 
 
 customElements.define('perky-logger', PerkyLogger)
