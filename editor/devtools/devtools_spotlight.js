@@ -108,7 +108,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
             id: 'toggle:logger',
             title: 'Toggle Logger',
             subtitle: 'Panel',
-            icon: '\uD83D\uDCCB',
+            icon: '<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>',
             action: () => {
                 this.#state?.toggleLogger()
                 this.#state?.closeSpotlight()
@@ -119,7 +119,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
             id: 'close:sidebar',
             title: 'Close Sidebar',
             subtitle: 'Panel',
-            icon: '\u2715',
+            icon: '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
             action: () => {
                 this.#state?.closeSidebar()
                 this.#state?.closeSpotlight()
@@ -135,7 +135,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
                     id: `spawn:${name}`,
                     title: `Spawn ${name}`,
                     subtitle: 'Application',
-                    icon: '\uD83D\uDE80',
+                    icon: '<svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg>',
                     action: async () => {
                         await appManager.spawn(name)
                         this.#state?.closeSpotlight()
@@ -150,7 +150,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
                         id: `stop:${app.$id}`,
                         title: `Stop ${app.$id}`,
                         subtitle: 'Application',
-                        icon: '\u23F9',
+                        icon: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>',
                         action: () => {
                             appManager.stopApp(app.$id)
                             this.#state?.closeSpotlight()
@@ -161,7 +161,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
                         id: `start:${app.$id}`,
                         title: `Start ${app.$id}`,
                         subtitle: 'Application',
-                        icon: '\u25B6',
+                        icon: '<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>',
                         action: () => {
                             appManager.startApp(app.$id)
                             this.#state?.closeSpotlight()
@@ -173,7 +173,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
                     id: `dispose:${app.$id}`,
                     title: `Dispose ${app.$id}`,
                     subtitle: 'Application',
-                    icon: '\uD83D\uDDD1',
+                    icon: '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>',
                     action: () => {
                         appManager.disposeApp(app.$id)
                         this.#state?.closeSpotlight()

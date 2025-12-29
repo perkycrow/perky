@@ -226,6 +226,7 @@ export const spotlightStyles = `
         display: flex;
         align-items: center;
         justify-content: center;
+        color: var(--fg-muted);
     }
 
     .spotlight-result-icon svg {
