@@ -24,30 +24,17 @@
       "description": "Animated shapes demo showcasing the Canvas2D renderer with PerkyModule integration."
     },
     {
-      "id": "postprocessing_demo",
-      "file": "postprocessing_demo.html",
+      "id": "camera_demo",
+      "file": "camera_demo.html",
       "category": "render",
       "tags": [
         "render",
-        "webgl",
-        "postprocessing",
-        "shaders"
+        "camera",
+        "animation",
+        "easing"
       ],
-      "title": "Post-Processing Demo",
-      "description": "WebGL post-processing pipeline with custom shader effects like grayscale and wave distortion."
-    },
-    {
-      "id": "render_groups_demo",
-      "file": "render_groups_demo.html",
-      "category": "render",
-      "tags": [
-        "render",
-        "webgl",
-        "layers",
-        "postprocessing"
-      ],
-      "title": "Render Groups Demo",
-      "description": "Multi-layer rendering with per-group post-processing and global effects composition."
+      "title": "Camera Transitions",
+      "description": "Camera animations, transitions with easing, and effects like screenshake."
     }
   ]
 }
