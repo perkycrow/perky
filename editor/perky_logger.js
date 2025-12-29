@@ -385,6 +385,12 @@ const STYLES = buildEditorStyles(
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         border: 1px solid var(--border);
         color: var(--fg-primary);
+        opacity: 0.4;
+        transition: opacity 0.2s ease;
+    }
+
+    .logger:hover {
+        opacity: 1;
     }
 
     .logger-content {
@@ -431,7 +437,7 @@ const STYLES = buildEditorStyles(
     }
 
     .log-success .logger-indicator {
-        background: var(--status-started);
+        background: var(--status-success);
         opacity: 1;
     }
 

@@ -278,9 +278,12 @@ export default class DevToolsDock extends BaseEditorComponent {
                 this.#minimized = true
                 this.#render()
 
-                // Close sidebar when collapsing
+                // Close sidebar and logger when collapsing
                 if (this.#state?.sidebarOpen) {
                     this.#state.closeSidebar()
+                }
+                if (this.#state?.loggerOpen) {
+                    this.#state.closeLogger()
                 }
             }
         )
