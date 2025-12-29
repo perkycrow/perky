@@ -1,5 +1,7 @@
 import BaseInspector from './base_inspector.js'
 import WebGLCanvas2D from '../../render/webgl_canvas_2d.js'
+import '../slider_input.js'
+import '../toggle_input.js'
 
 
 const customStyles = `
@@ -17,110 +19,11 @@ const customStyles = `
         margin-bottom: 8px;
     }
 
-    .pass-toggle {
-        position: relative;
-        width: 28px;
-        height: 14px;
-        appearance: none;
-        background: var(--bg-hover);
-        border-radius: 7px;
-        cursor: pointer;
-        transition: background 0.2s;
-        flex-shrink: 0;
-    }
-
-    .pass-toggle::after {
-        content: '';
-        position: absolute;
-        top: 2px;
-        left: 2px;
-        width: 10px;
-        height: 10px;
-        background: var(--fg-muted);
-        border-radius: 50%;
-        transition: transform 0.2s, background 0.2s;
-    }
-
-    .pass-toggle:checked {
-        background: var(--accent);
-    }
-
-    .pass-toggle:checked::after {
-        transform: translateX(14px);
-        background: var(--bg-primary);
-    }
-
-    .pass-name {
-        color: var(--fg-primary);
-        font-weight: 500;
-        flex: 1;
-    }
-
     .pass-uniforms {
         display: flex;
         flex-direction: column;
         gap: 8px;
         padding-left: 4px;
-    }
-
-    .uniform-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .uniform-label {
-        color: var(--fg-muted);
-        font-size: 10px;
-        min-width: 60px;
-    }
-
-    .uniform-slider-container {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .uniform-slider {
-        flex: 1;
-        height: 3px;
-        appearance: none;
-        background: var(--bg-hover);
-        border-radius: 2px;
-        cursor: pointer;
-    }
-
-    .uniform-slider::-webkit-slider-thumb {
-        appearance: none;
-        width: 12px;
-        height: 12px;
-        background: var(--accent);
-        border-radius: 50%;
-        cursor: pointer;
-        transition: transform 0.1s, box-shadow 0.1s;
-    }
-
-    .uniform-slider::-webkit-slider-thumb:hover {
-        transform: scale(1.2);
-        box-shadow: 0 0 6px var(--accent);
-    }
-
-    .uniform-slider::-moz-range-thumb {
-        width: 12px;
-        height: 12px;
-        background: var(--accent);
-        border: none;
-        border-radius: 50%;
-        cursor: pointer;
-    }
-
-    .uniform-value {
-        font-size: 10px;
-        color: var(--fg-secondary);
-        min-width: 32px;
-        text-align: right;
-        font-variant-numeric: tabular-nums;
     }
 
     .no-passes {
@@ -203,20 +106,14 @@ export default class WebGLCanvasInspector extends BaseInspector {
         const header = document.createElement('div')
         header.className = 'pass-header'
 
-        const toggle = document.createElement('input')
-        toggle.type = 'checkbox'
-        toggle.className = 'pass-toggle'
+        const toggle = document.createElement('toggle-input')
         toggle.checked = pass.enabled
-        toggle.addEventListener('change', () => {
-            pass.enabled = toggle.checked
+        toggle.setAttribute('label', pass.constructor.name)
+        toggle.addEventListener('change', (e) => {
+            pass.enabled = e.detail.checked
         })
 
-        const name = document.createElement('span')
-        name.className = 'pass-name'
-        name.textContent = pass.constructor.name
-
         header.appendChild(toggle)
-        header.appendChild(name)
         section.appendChild(header)
 
         const uniforms = this.#getEditableUniforms(pass)
@@ -247,50 +144,21 @@ export default class WebGLCanvasInspector extends BaseInspector {
 
 
     #renderUniformControl (container, pass, uniform) {
-        const row = document.createElement('div')
-        row.className = 'uniform-row'
-
-        const label = document.createElement('span')
-        label.className = 'uniform-label'
-        label.textContent = uniform.name.replace(/^u/, '')
-
-        const sliderContainer = document.createElement('div')
-        sliderContainer.className = 'uniform-slider-container'
-
-        const slider = document.createElement('input')
-        slider.type = 'range'
-        slider.className = 'uniform-slider'
-
         const config = this.#getSliderConfig(uniform.name, uniform.defaultValue)
-        slider.min = config.min
-        slider.max = config.max
-        slider.step = config.step
+
+        const slider = document.createElement('slider-input')
+        slider.setAttribute('label', uniform.name.replace(/^u/, ''))
+        slider.setAttribute('min', config.min)
+        slider.setAttribute('max', config.max)
+        slider.setAttribute('step', config.step)
         slider.value = uniform.currentValue * config.scale
 
-        const valueDisplay = document.createElement('span')
-        valueDisplay.className = 'uniform-value'
-        valueDisplay.textContent = this.#formatValue(uniform.currentValue)
-
-        slider.addEventListener('input', () => {
-            const value = parseFloat(slider.value) / config.scale
+        slider.addEventListener('change', (e) => {
+            const value = e.detail.value / config.scale
             pass.setUniform(uniform.name, value)
-            valueDisplay.textContent = this.#formatValue(value)
         })
 
-        sliderContainer.appendChild(slider)
-        sliderContainer.appendChild(valueDisplay)
-
-        row.appendChild(label)
-        row.appendChild(sliderContainer)
-        container.appendChild(row)
-    }
-
-
-    #formatValue (value) {
-        if (Math.abs(value) < 0.01) {
-            return value.toFixed(3)
-        }
-        return value.toFixed(2)
+        container.appendChild(slider)
     }
 
 
