@@ -84,7 +84,6 @@ export default class RenderGroup extends PerkyModule {
 
         this.#initPasses(renderer.gl, renderer.shaderRegistry)
 
-        // Create framebuffer for this group
         const fbManager = renderer.postProcessor?.framebufferManager
         if (fbManager) {
             fbManager.getOrCreateBuffer(this.$name)

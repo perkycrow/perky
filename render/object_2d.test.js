@@ -166,7 +166,7 @@ describe(Object2D, () => {
     test('getWorldBounds with translation', () => {
         object.x = 10
         object.y = 20
-        object.getBounds = () => ({ minX: 0, minY: 0, maxX: 10, maxY: 10, width: 10, height: 10 })
+        object.getBounds = () => ({minX: 0, minY: 0, maxX: 10, maxY: 10, width: 10, height: 10})
         object.updateWorldMatrix()
 
         const bounds = object.getWorldBounds()
@@ -181,7 +181,7 @@ describe(Object2D, () => {
     test('getWorldBounds with scale', () => {
         object.scaleX = 2
         object.scaleY = 2
-        object.getBounds = () => ({ minX: 0, minY: 0, maxX: 10, maxY: 10, width: 10, height: 10 })
+        object.getBounds = () => ({minX: 0, minY: 0, maxX: 10, maxY: 10, width: 10, height: 10})
         object.updateWorldMatrix()
 
         const bounds = object.getWorldBounds()

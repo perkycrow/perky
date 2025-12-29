@@ -56,8 +56,7 @@ export default class CanvasObjectRenderer {
     }
 
 
-    render (object, ctx, hints = null) {
-        // Override in subclass
+    render () { // eslint-disable-line class-methods-use-this
     }
 
 

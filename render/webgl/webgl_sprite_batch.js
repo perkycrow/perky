@@ -2,7 +2,14 @@ import Image2D from '../image_2d'
 import Sprite2D from '../sprite_2d'
 
 
+const DEFAULT_TEX_COORDS = [0, 1, 1, 1, 1, 0, 0, 0]
+
+
 export default class WebGLSpriteBatch {
+
+    #tempCorners = new Float32Array(8)
+    #tempTexCoords = new Float32Array(8)
+
 
     constructor (gl, spriteProgram, textureManager) {
         this.gl = gl
@@ -44,7 +51,7 @@ export default class WebGLSpriteBatch {
     }
 
 
-    addSprite (object, effectiveOpacity, hints = null) { // eslint-disable-line complexity
+    addSprite (object, effectiveOpacity) { // eslint-disable-line complexity
         let image = null
         let frame = null
 
@@ -73,52 +80,49 @@ export default class WebGLSpriteBatch {
             this.flush()
         }
 
-        const bounds = object.getBounds()
-        const {minX, minY, maxX, maxY} = bounds
-
+        const {minX, minY, maxX, maxY} = object.getBounds()
         const m = object.worldMatrix
+        const corners = this.#tempCorners
+        const texCoords = this.#tempTexCoords
 
-        const corners = [
-            {x: minX, y: minY},  // bottom-left
-            {x: maxX, y: minY},  // bottom-right
-            {x: maxX, y: maxY},  // top-right
-            {x: minX, y: maxY}   // top-left
-        ]
+        corners[0] = m[0] * minX + m[2] * minY + m[4]
+        corners[1] = m[1] * minX + m[3] * minY + m[5]
+        corners[2] = m[0] * maxX + m[2] * minY + m[4]
+        corners[3] = m[1] * maxX + m[3] * minY + m[5]
+        corners[4] = m[0] * maxX + m[2] * maxY + m[4]
+        corners[5] = m[1] * maxX + m[3] * maxY + m[5]
+        corners[6] = m[0] * minX + m[2] * maxY + m[4]
+        corners[7] = m[1] * minX + m[3] * maxY + m[5]
 
-        const transformedCorners = corners.map(corner => ({
-            x: m[0] * corner.x + m[2] * corner.y + m[4],
-            y: m[1] * corner.x + m[3] * corner.y + m[5]
-        }))
-
-
-        let texCoords
         if (frame) {
             const {x, y, w, h} = frame.frame
             const iw = image.width
             const ih = image.height
+            const u0 = x / iw
+            const u1 = (x + w) / iw
+            const v0 = y / ih
+            const v1 = (y + h) / ih
 
-            texCoords = [
-                {u: x / iw, v: (y + h) / ih},           // bottom-left
-                {u: (x + w) / iw, v: (y + h) / ih},     // bottom-right
-                {u: (x + w) / iw, v: y / ih},           // top-right
-                {u: x / iw, v: y / ih}                  // top-left
-            ]
+            texCoords[0] = u0
+            texCoords[1] = v1
+            texCoords[2] = u1
+            texCoords[3] = v1
+            texCoords[4] = u1
+            texCoords[5] = v0
+            texCoords[6] = u0
+            texCoords[7] = v0
         } else {
-            texCoords = [
-                {u: 0, v: 1},  // bottom-left
-                {u: 1, v: 1},  // bottom-right
-                {u: 1, v: 0},  // top-right
-                {u: 0, v: 0}   // top-left
-            ]
+            texCoords.set(DEFAULT_TEX_COORDS)
         }
 
         for (let i = 0; i < 4; i++) {
             const idx = this.vertexIndex
+            const ci = i * 2
 
-            this.vertexData[idx + 0] = transformedCorners[i].x
-            this.vertexData[idx + 1] = transformedCorners[i].y
-            this.vertexData[idx + 2] = texCoords[i].u
-            this.vertexData[idx + 3] = texCoords[i].v
+            this.vertexData[idx] = corners[ci]
+            this.vertexData[idx + 1] = corners[ci + 1]
+            this.vertexData[idx + 2] = texCoords[ci]
+            this.vertexData[idx + 3] = texCoords[ci + 1]
             this.vertexData[idx + 4] = effectiveOpacity
 
             this.vertexIndex += 5

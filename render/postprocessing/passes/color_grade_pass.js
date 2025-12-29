@@ -3,7 +3,7 @@ import RenderPass from '../render_pass'
 
 export default class ColorGradePass extends RenderPass {
 
-    getShaderDefinition () {
+    getShaderDefinition () { // eslint-disable-line class-methods-use-this
         return {
             vertex: `#version 300 es
                 in vec2 aPosition;
@@ -29,17 +29,10 @@ export default class ColorGradePass extends RenderPass {
 
                 void main() {
                     vec4 color = texture(uTexture, vTexCoord);
-
-                    // Brightness
                     vec3 rgb = color.rgb + uBrightness;
-
-                    // Contrast
                     rgb = (rgb - 0.5) * uContrast + 0.5;
-
-                    // Saturation
                     float gray = dot(rgb, vec3(0.299, 0.587, 0.114));
                     rgb = mix(vec3(gray), rgb, uSaturation);
-
                     fragColor = vec4(clamp(rgb, 0.0, 1.0), color.a);
                 }
             `,
@@ -49,7 +42,7 @@ export default class ColorGradePass extends RenderPass {
     }
 
 
-    getDefaultUniforms () {
+    getDefaultUniforms () { // eslint-disable-line class-methods-use-this
         return {
             uBrightness: 0.0,
             uContrast: 1.0,
@@ -58,7 +51,7 @@ export default class ColorGradePass extends RenderPass {
     }
 
 
-    getUniformConfig () {
+    getUniformConfig () { // eslint-disable-line class-methods-use-this
         return {
             uBrightness: {min: -0.5, max: 0.5, step: 0.01},
             uContrast: {min: 0.5, max: 1.5, step: 0.01},

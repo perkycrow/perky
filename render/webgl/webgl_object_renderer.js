@@ -41,8 +41,7 @@ export default class WebGLObjectRenderer {
     }
 
 
-    flush (matrices) {
-        // Override in subclass
+    flush () { // eslint-disable-line class-methods-use-this
     }
 
 

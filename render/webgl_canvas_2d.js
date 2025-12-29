@@ -23,7 +23,6 @@ export default class WebGLCanvas2D extends BaseRenderer {
     #shaderRegistry = null
     #postProcessor = null
 
-    // RenderGroup support (composite rendering)
     #compositeQuad = null
     #compositeProgram = null
 
@@ -200,7 +199,6 @@ export default class WebGLCanvas2D extends BaseRenderer {
     setRenderGroups (configs) {
         this.clearRenderGroups()
 
-        // Initialize composite shader if needed
         if (!this.#compositeProgram) {
             this.#setupCompositeShader()
         }
@@ -208,7 +206,6 @@ export default class WebGLCanvas2D extends BaseRenderer {
             this.#compositeQuad = new FullscreenQuad(this.gl)
         }
 
-        // Create each group via PerkyModule create()
         for (const config of configs) {
             this.create(RenderGroup, config)
         }
@@ -277,7 +274,6 @@ export default class WebGLCanvas2D extends BaseRenderer {
         this.#renderers = []
         this.#rendererRegistry.clear()
 
-        // Clean up render groups
         this.clearRenderGroups()
 
         if (this.#compositeQuad) {
@@ -328,34 +324,19 @@ export default class WebGLCanvas2D extends BaseRenderer {
      *                             uses multi-group rendering instead.
      */
     render (scene) {
-        // If render groups are set and no explicit scene, use multi-group rendering
         if (this.renderGroups.length > 0 && !scene) {
             return this.#renderWithGroups()
         }
-
-        // Legacy single-scene rendering
         return this.#renderSingleScene(scene)
     }
 
 
     #renderSingleScene (scene) {
-        const gl = this.gl
-
-        this.stats.totalObjects = 0
-        this.stats.renderedObjects = 0
-        this.stats.culledObjects = 0
-        this.stats.drawCalls = 0
+        this.#resetStats()
 
         const usePostProcessing = this.#postProcessor.begin()
 
-        if (this.backgroundColor && this.backgroundColor !== 'transparent') {
-            const color = parseColor(this.backgroundColor)
-            gl.clearColor(color.r, color.g, color.b, color.a)
-        } else {
-            gl.clearColor(0, 0, 0, 0)
-        }
-        gl.clear(gl.COLOR_BUFFER_BIT)
-
+        this.#clearWithBackground()
         this.camera.update()
 
         const matrices = this.#getMatrices()
@@ -383,61 +364,61 @@ export default class WebGLCanvas2D extends BaseRenderer {
 
 
     #renderWithGroups () {
-        const gl = this.gl
-        const fbManager = this.#postProcessor.framebufferManager
-
-        this.stats.totalObjects = 0
-        this.stats.renderedObjects = 0
-        this.stats.culledObjects = 0
-        this.stats.drawCalls = 0
-
+        this.#resetStats()
         this.camera.update()
         const matrices = this.#getMatrices()
 
-        // Phase 1: Render each group to MSAA buffer, then resolve to its texture
+        this.#renderGroupsToTextures(matrices)
+        this.#compositeGroups()
+    }
+
+
+    #renderGroupsToTextures (matrices) {
         for (const group of this.renderGroups) {
-            if (!group.visible || !group.content) {
-                continue
-            }
-
-            // Ensure group's framebuffer exists
-            fbManager.getOrCreateBuffer(group.$name)
-
-            // Render to shared MSAA buffer for antialiasing
-            fbManager.bindSceneBuffer()
-
-            // Clear with transparent background
-            gl.clearColor(0, 0, 0, 0)
-            gl.clear(gl.COLOR_BUFFER_BIT)
-
-            // Render group content
-            group.content.updateWorldMatrix(false)
-
-            for (const renderer of this.#renderers) {
-                renderer.reset()
-            }
-
-            traverseAndCollect(group.content, this.#rendererRegistry, {
-                camera: this.camera,
-                enableCulling: this.enableCulling,
-                stats: this.stats
-            })
-
-            for (const renderer of this.#renderers) {
-                renderer.flush(matrices)
-            }
-
-            // Resolve MSAA to group's texture buffer
-            fbManager.resolveToBuffer(group.$name)
-
-            // Apply group's local post-passes (if any)
-            if (group.hasActivePasses()) {
-                this.#applyGroupPasses(group)
+            if (group.visible && group.content) {
+                this.#renderGroupToTexture(group, matrices)
             }
         }
+    }
 
-        // Phase 2: Composite all groups to the main scene buffer (for global post-processing)
+
+    #renderGroupToTexture (group, matrices) {
+        const gl = this.gl
+        const fbManager = this.#postProcessor.framebufferManager
+
+        fbManager.getOrCreateBuffer(group.$name)
+        fbManager.bindSceneBuffer()
+
+        gl.clearColor(0, 0, 0, 0)
+        gl.clear(gl.COLOR_BUFFER_BIT)
+
+        group.content.updateWorldMatrix(false)
+
+        for (const renderer of this.#renderers) {
+            renderer.reset()
+        }
+
+        traverseAndCollect(group.content, this.#rendererRegistry, {
+            camera: this.camera,
+            enableCulling: this.enableCulling,
+            stats: this.stats
+        })
+
+        for (const renderer of this.#renderers) {
+            renderer.flush(matrices)
+        }
+
+        fbManager.resolveToBuffer(group.$name)
+
+        if (group.hasActivePasses()) {
+            this.#applyGroupPasses(group)
+        }
+    }
+
+
+    #compositeGroups () {
         const hasGlobalPostProcessing = this.#postProcessor.hasActivePasses()
+        const fbManager = this.#postProcessor.framebufferManager
 
         if (hasGlobalPostProcessing) {
             fbManager.bindSceneBuffer()
@@ -445,16 +426,21 @@ export default class WebGLCanvas2D extends BaseRenderer {
             fbManager.bindScreen()
         }
 
-        // Clear with background color
-        if (this.backgroundColor && this.backgroundColor !== 'transparent') {
-            const color = parseColor(this.backgroundColor)
-            gl.clearColor(color.r, color.g, color.b, color.a)
-        } else {
-            gl.clearColor(0, 0, 0, 0)
-        }
-        gl.clear(gl.COLOR_BUFFER_BIT)
+        this.#clearWithBackground()
+        this.#drawAllGroups()
 
-        // Composite each group with its blend mode
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
+
+        if (hasGlobalPostProcessing) {
+            this.#postProcessor.finish()
+        }
+    }
+
+
+    #drawAllGroups () {
+        const gl = this.gl
+        const fbManager = this.#postProcessor.framebufferManager
+
         this.#compositeProgram.use()
         gl.activeTexture(gl.TEXTURE0)
         this.#compositeProgram.setUniform1i('uTexture', 0)
@@ -465,28 +451,39 @@ export default class WebGLCanvas2D extends BaseRenderer {
             }
 
             const texture = fbManager.getBufferTexture(group.$name)
-            if (!texture) {
-                continue
+            if (texture) {
+                this.#drawGroup(group, texture)
             }
-
-            // Set blend mode
-            this.#applyBlendMode(group.blendMode)
-
-            // Set opacity
-            this.#compositeProgram.setUniform1f('uOpacity', group.opacity)
-
-            // Draw textured quad
-            gl.bindTexture(gl.TEXTURE_2D, texture)
-            this.#compositeQuad.draw(gl, this.#compositeProgram)
         }
+    }
 
-        // Reset to normal blending
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-        // Phase 3: Apply global post-processing
-        if (hasGlobalPostProcessing) {
-            this.#postProcessor.finish()
+    #drawGroup (group, texture) {
+        const gl = this.gl
+        this.#applyBlendMode(group.blendMode)
+        this.#compositeProgram.setUniform1f('uOpacity', group.opacity)
+        gl.bindTexture(gl.TEXTURE_2D, texture)
+        this.#compositeQuad.draw(gl, this.#compositeProgram)
+    }
+
+
+    #resetStats () {
+        this.stats.totalObjects = 0
+        this.stats.renderedObjects = 0
+        this.stats.culledObjects = 0
+        this.stats.drawCalls = 0
+    }
+
+
+    #clearWithBackground () {
+        const gl = this.gl
+        if (this.backgroundColor && this.backgroundColor !== 'transparent') {
+            const color = parseColor(this.backgroundColor)
+            gl.clearColor(color.r, color.g, color.b, color.a)
+        } else {
+            gl.clearColor(0, 0, 0, 0)
         }
+        gl.clear(gl.COLOR_BUFFER_BIT)
     }
 
 
@@ -501,13 +498,11 @@ export default class WebGLCanvas2D extends BaseRenderer {
 
         gl.disable(gl.BLEND)
 
-        // First, copy the group's content to ping-pong buffer to avoid read/write feedback
         fbManager.resetPingPong()
         fbManager.bindPingPong()
         gl.clearColor(0, 0, 0, 0)
         gl.clear(gl.COLOR_BUFFER_BIT)
 
-        // Draw the group's texture to ping-pong
         this.#compositeProgram.use()
         gl.activeTexture(gl.TEXTURE0)
         gl.bindTexture(gl.TEXTURE_2D, fbManager.getBufferTexture(group.$name))
@@ -515,14 +510,12 @@ export default class WebGLCanvas2D extends BaseRenderer {
         this.#compositeProgram.setUniform1f('uOpacity', 1.0)
         this.#compositeQuad.draw(gl, this.#compositeProgram)
 
-        // Now process through passes using ping-pong
         let inputTexture = fbManager.swapAndGetTexture()
 
         for (let i = 0; i < activePasses.length; i++) {
             const isLast = i === activePasses.length - 1
 
             if (isLast) {
-                // Render back to the group's buffer
                 fbManager.bindBuffer(group.$name)
             } else {
                 fbManager.bindPingPong()
@@ -546,7 +539,6 @@ export default class WebGLCanvas2D extends BaseRenderer {
     #applyBlendMode (blendMode) {
         const gl = this.gl
 
-        // Using premultiplied alpha blend modes
         switch (blendMode) {
         case BLEND_MODES.additive:
             gl.blendFunc(gl.ONE, gl.ONE)
@@ -556,7 +548,6 @@ export default class WebGLCanvas2D extends BaseRenderer {
             break
         case BLEND_MODES.normal:
         default:
-                // Premultiplied alpha: ONE, ONE_MINUS_SRC_ALPHA
             gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
             break
         }

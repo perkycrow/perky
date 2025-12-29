@@ -9,7 +9,7 @@ export default class CanvasImageRenderer extends CanvasObjectRenderer {
     }
 
 
-    render (image, ctx, hints = null) {
+    render (image, ctx) { // eslint-disable-line class-methods-use-this
         if (image.image && image.image.complete) {
             const offsetX = -image.width * image.anchorX
             const offsetY = -image.height * image.anchorY

@@ -106,8 +106,8 @@ export default class ShaderProgram {
     }
 
 
-    setUniform4f (name, x, y, z, w) {
-        this.#gl.uniform4f(this.#uniforms[name], x, y, z, w)
+    setUniform4f (name, values) {
+        this.#gl.uniform4f(this.#uniforms[name], values[0], values[1], values[2], values[3])
         return this
     }
 

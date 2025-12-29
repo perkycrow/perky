@@ -9,7 +9,7 @@ export default class CanvasCircleRenderer extends CanvasObjectRenderer {
     }
 
 
-    render (circle, ctx, hints = null) {
+    render (circle, ctx) { // eslint-disable-line class-methods-use-this
         const offsetX = -circle.radius * 2 * circle.anchorX + circle.radius
         const offsetY = -circle.radius * 2 * circle.anchorY + circle.radius
 

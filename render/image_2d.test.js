@@ -20,7 +20,7 @@ describe(Image2D, () => {
 
 
     test('constructor with options', () => {
-        const img = { complete: true }
+        const img = {complete: true}
         const i = new Image2D({
             x: 10,
             y: 20,

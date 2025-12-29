@@ -3,7 +3,7 @@ import RenderPass from '../render_pass'
 
 export default class VignettePass extends RenderPass {
 
-    getShaderDefinition () {
+    getShaderDefinition () { // eslint-disable-line class-methods-use-this
         return {
             vertex: `#version 300 es
                 in vec2 aPosition;
@@ -42,7 +42,7 @@ export default class VignettePass extends RenderPass {
     }
 
 
-    getDefaultUniforms () {
+    getDefaultUniforms () { // eslint-disable-line class-methods-use-this
         return {
             uIntensity: 1.2,
             uSmoothness: 0.5
@@ -50,7 +50,7 @@ export default class VignettePass extends RenderPass {
     }
 
 
-    getUniformConfig () {
+    getUniformConfig () { // eslint-disable-line class-methods-use-this
         return {
             uIntensity: {min: 0, max: 2, step: 0.01},
             uSmoothness: {min: 0, max: 1, step: 0.01}

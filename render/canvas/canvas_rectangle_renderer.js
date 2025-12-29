@@ -9,7 +9,7 @@ export default class CanvasRectangleRenderer extends CanvasObjectRenderer {
     }
 
 
-    render (rect, ctx, hints = null) {
+    render (rect, ctx) { // eslint-disable-line class-methods-use-this
         const offsetX = -rect.width * rect.anchorX
         const offsetY = -rect.height * rect.anchorY
 

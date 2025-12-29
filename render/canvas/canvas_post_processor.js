@@ -1,3 +1,17 @@
+const FILTER_FORMATTERS = {
+    blur: v => `blur(${v}px)`,
+    brightness: v => `brightness(${v})`,
+    contrast: v => `contrast(${v})`,
+    grayscale: v => `grayscale(${v})`,
+    saturate: v => `saturate(${v})`,
+    sepia: v => `sepia(${v})`,
+    hueRotate: v => `hue-rotate(${v}deg)`,
+    invert: v => `invert(${v})`,
+    opacity: v => `opacity(${v})`,
+    dropShadow: v => `drop-shadow(${v})`
+}
+
+
 export default class CanvasPostProcessor {
 
     #ctx = null
@@ -56,32 +70,7 @@ export default class CanvasPostProcessor {
 
     #buildFilterString () {
         return this.#filters
-            .map(({type, value}) => {
-                switch (type) {
-                case 'blur':
-                    return `blur(${value}px)`
-                case 'brightness':
-                    return `brightness(${value})`
-                case 'contrast':
-                    return `contrast(${value})`
-                case 'grayscale':
-                    return `grayscale(${value})`
-                case 'saturate':
-                    return `saturate(${value})`
-                case 'sepia':
-                    return `sepia(${value})`
-                case 'hueRotate':
-                    return `hue-rotate(${value}deg)`
-                case 'invert':
-                    return `invert(${value})`
-                case 'opacity':
-                    return `opacity(${value})`
-                case 'dropShadow':
-                    return `drop-shadow(${value})`
-                default:
-                    return ''
-                }
-            })
+            .map(({type, value}) => FILTER_FORMATTERS[type]?.(value) ?? '')
             .filter(s => s.length > 0)
             .join(' ')
     }

@@ -1,3 +1,4 @@
+/* eslint-disable max-nested-callbacks */
 import {describe, it, expect, beforeEach} from 'vitest'
 import BaseRenderer from './base_renderer'
 

@@ -44,7 +44,6 @@ export default class RenderSystem extends PerkyModule {
     }
 
 
-    // Delegate PerkyView methods for element/container access
     get element () {
         return this.view.element
     }
@@ -201,7 +200,6 @@ export default class RenderSystem extends PerkyModule {
 
 
     sortLayers () {
-        // Use childrenByCategory to get only layers (exclude internal view)
         const sorted = this.childrenByCategory('layer')
             .sort((a, b) => a.zIndex - b.zIndex)
 

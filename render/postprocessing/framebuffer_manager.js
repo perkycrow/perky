@@ -5,19 +5,13 @@ export default class FramebufferManager {
     #height = 0
     #samples = 4
 
-    // MSAA scene buffer (renderbuffer, not texture)
     #msaaFramebuffer = null
     #msaaRenderbuffer = null
-
-    // Resolve target (texture we can sample from)
     #sceneFramebuffer = null
     #sceneTexture = null
-
     #pingPongFramebuffers = []
     #pingPongTextures = []
     #currentPingPong = 0
-
-    // Named buffers for RenderGroup support
     #namedBuffers = new Map()
 
 
@@ -159,7 +153,6 @@ export default class FramebufferManager {
 
 
     #resizeNamedBuffers () {
-        // Recreate all named buffers with new size
         const gl = this.#gl
         const names = [...this.#namedBuffers.keys()]
 
@@ -214,7 +207,6 @@ export default class FramebufferManager {
         const width = this.#width
         const height = this.#height
 
-        // Blit from MSAA renderbuffer to resolve texture
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.#msaaFramebuffer)
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this.#sceneFramebuffer)
         gl.blitFramebuffer(

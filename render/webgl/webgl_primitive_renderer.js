@@ -35,8 +35,7 @@ export default class WebGLPrimitiveRenderer extends WebGLObjectRenderer {
     }
 
 
-    renderObject (object, opacity) {
-        // Override in subclass
+    renderObject () { // eslint-disable-line class-methods-use-this
     }
 
 

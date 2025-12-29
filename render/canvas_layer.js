@@ -79,18 +79,17 @@ export default class CanvasLayer extends Layer {
 
 
     render () {
-        // If render groups are configured, use group rendering (no content needed)
-        if (this.renderer.renderGroups?.length > 0 && this.dirty) {
-            this.renderer.render()
-            this.markClean()
+        if (!this.dirty) {
             return this
         }
 
-        // Standard content-based rendering
-        if (this.content && this.dirty) {
+        if (this.renderer.renderGroups?.length > 0) {
+            this.renderer.render()
+        } else if (this.content) {
             this.renderer.render(this.content)
-            this.markClean()
         }
+
+        this.markClean()
         return this
     }
 
