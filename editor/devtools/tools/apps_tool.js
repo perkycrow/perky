@@ -6,7 +6,7 @@ export default class AppsTool extends BaseTool {
 
     static toolId = 'apps'
     static toolName = 'Applications'
-    static toolIcon = '<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>'
+    static toolIcon = '<svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>'
     static location = 'sidebar'
     static order = 20
 
