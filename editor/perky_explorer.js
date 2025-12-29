@@ -10,6 +10,7 @@ import CanvasLayerInspector from './inspectors/canvas_layer_inspector.js'
 import WorldRendererInspector from './inspectors/world_renderer_inspector.js'
 import WebGLCanvasInspector from './inspectors/webgl_canvas_inspector.js'
 import RenderGroupInspector from './inspectors/render_group_inspector.js'
+import ManifestInspector from './inspectors/manifest_inspector.js'
 
 
 PerkyExplorerDetails.registerInspector(GameLoopInspector)
@@ -19,6 +20,7 @@ PerkyExplorerDetails.registerInspector(CanvasLayerInspector)
 PerkyExplorerDetails.registerInspector(WorldRendererInspector)
 PerkyExplorerDetails.registerInspector(WebGLCanvasInspector)
 PerkyExplorerDetails.registerInspector(RenderGroupInspector)
+PerkyExplorerDetails.registerInspector(ManifestInspector)
 
 
 export default class PerkyExplorer extends BaseEditorComponent {
