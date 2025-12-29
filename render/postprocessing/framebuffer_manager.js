@@ -17,6 +17,9 @@ export default class FramebufferManager {
     #pingPongTextures = []
     #currentPingPong = 0
 
+    // Named buffers for RenderGroup support
+    #namedBuffers = new Map()
+
 
     constructor (gl, width, height, samples = 4) {
         this.#gl = gl
@@ -151,6 +154,23 @@ export default class FramebufferManager {
 
         this.#deleteFramebuffers()
         this.#createFramebuffers()
+        this.#resizeNamedBuffers()
+    }
+
+
+    #resizeNamedBuffers () {
+        // Recreate all named buffers with new size
+        const gl = this.#gl
+        const names = [...this.#namedBuffers.keys()]
+
+        for (const name of names) {
+            const old = this.#namedBuffers.get(name)
+            gl.deleteFramebuffer(old.framebuffer)
+            gl.deleteTexture(old.texture)
+
+            const {framebuffer, texture} = this.#createFramebuffer()
+            this.#namedBuffers.set(name, {framebuffer, texture})
+        }
     }
 
 
@@ -208,6 +228,40 @@ export default class FramebufferManager {
     }
 
 
+    /**
+     * Resolve MSAA buffer content to a named buffer.
+     * This enables MSAA antialiasing for render groups by:
+     * 1. Rendering group content to shared MSAA buffer
+     * 2. Resolving to the group's named texture buffer
+     *
+     * @param {string} name - Named buffer to resolve to
+     * @returns {boolean} True if successful
+     */
+    resolveToBuffer (name) {
+        const buffer = this.#namedBuffers.get(name)
+        if (!buffer) {
+            return false
+        }
+
+        const gl = this.#gl
+        const width = this.#width
+        const height = this.#height
+
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.#msaaFramebuffer)
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, buffer.framebuffer)
+        gl.blitFramebuffer(
+            0, 0, width, height,
+            0, 0, width, height,
+            gl.COLOR_BUFFER_BIT,
+            gl.NEAREST
+        )
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null)
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null)
+
+        return true
+    }
+
+
     getSceneTexture () {
         return this.#sceneTexture
     }
@@ -227,6 +281,64 @@ export default class FramebufferManager {
     }
 
 
+    /**
+     * Get or create a named framebuffer for RenderGroup.
+     * Creates the buffer on first access, reuses on subsequent calls.
+     *
+     * @param {string} name - Unique identifier for the buffer
+     * @returns {{framebuffer: WebGLFramebuffer, texture: WebGLTexture}}
+     */
+    getOrCreateBuffer (name) {
+        if (!this.#namedBuffers.has(name)) {
+            const {framebuffer, texture} = this.#createFramebuffer()
+            this.#namedBuffers.set(name, {framebuffer, texture})
+        }
+        return this.#namedBuffers.get(name)
+    }
+
+
+    /**
+     * Bind a named framebuffer for rendering.
+     *
+     * @param {string} name - Buffer identifier
+     * @returns {boolean} True if buffer was bound
+     */
+    bindBuffer (name) {
+        const buffer = this.#namedBuffers.get(name)
+        if (!buffer) {
+            return false
+        }
+        const gl = this.#gl
+        gl.bindFramebuffer(gl.FRAMEBUFFER, buffer.framebuffer)
+        gl.viewport(0, 0, this.#width, this.#height)
+        return true
+    }
+
+
+    /**
+     * Get texture from a named buffer.
+     *
+     * @param {string} name - Buffer identifier
+     * @returns {WebGLTexture|null}
+     */
+    getBufferTexture (name) {
+        return this.#namedBuffers.get(name)?.texture ?? null
+    }
+
+
+    /**
+     * Dispose all named buffers.
+     */
+    disposeNamedBuffers () {
+        const gl = this.#gl
+        for (const {framebuffer, texture} of this.#namedBuffers.values()) {
+            gl.deleteFramebuffer(framebuffer)
+            gl.deleteTexture(texture)
+        }
+        this.#namedBuffers.clear()
+    }
+
+
     bindScreen () {
         const gl = this.#gl
         gl.bindFramebuffer(gl.FRAMEBUFFER, null)
@@ -236,6 +348,7 @@ export default class FramebufferManager {
 
     dispose () {
         this.#deleteFramebuffers()
+        this.disposeNamedBuffers()
         this.#msaaFramebuffer = null
         this.#msaaRenderbuffer = null
         this.#sceneFramebuffer = null

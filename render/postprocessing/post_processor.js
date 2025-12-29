@@ -35,6 +35,11 @@ export default class PostProcessor {
     }
 
 
+    get framebufferManager () {
+        return this.#framebufferManager
+    }
+
+
     addPass (pass) {
         pass.init(this.#gl, this.#shaderRegistry)
         this.#passes.push(pass)
@@ -107,6 +112,7 @@ export default class PostProcessor {
 
             if (isLast) {
                 this.#framebufferManager.bindScreen()
+
                 // Clear screen to ensure no old content remains
                 gl.clearColor(0, 0, 0, 1)
                 gl.clear(gl.COLOR_BUFFER_BIT)

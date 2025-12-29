@@ -35,6 +35,19 @@
       ],
       "title": "Post-Processing Demo",
       "description": "WebGL post-processing pipeline with custom shader effects like grayscale and wave distortion."
+    },
+    {
+      "id": "render_groups_demo",
+      "file": "render_groups_demo.html",
+      "category": "render",
+      "tags": [
+        "render",
+        "webgl",
+        "layers",
+        "postprocessing"
+      ],
+      "title": "Render Groups Demo",
+      "description": "Multi-layer rendering with per-group post-processing and global effects composition."
     }
   ]
 }
