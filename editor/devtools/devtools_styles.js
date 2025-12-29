@@ -64,6 +64,37 @@ export const dockStyles = `
         border-bottom-right-radius: 0;
         border-bottom: none;
     }
+
+    /* Minimized State: Discreet Perky Crow Button */
+    .devtools-dock.minimized {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+    }
+
+    .devtools-dock.minimized .dock-button {
+        width: 48px;
+        height: 48px;
+        background: transparent;
+        color: var(--fg-primary);
+        /* Ensure visibility on mixed backgrounds via drop shadow */
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .devtools-dock.minimized .dock-button:hover {
+        transform: scale(1.1);
+        color: var(--accent);
+    }
+
+    .devtools-dock.minimized .dock-button svg {
+        width: 32px;
+        height: 32px;
+        /* Filled style implies we don't rely on stroke */
+        stroke: none;
+        fill: currentColor;
+    }
 `
 
 
