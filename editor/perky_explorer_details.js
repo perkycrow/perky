@@ -36,7 +36,23 @@ export default class PerkyExplorerDetails extends BaseEditorComponent {
 
     #buildDOM () {
         const style = document.createElement('style')
-        style.textContent = `:host { ${cssVariables} } ${detailsStyles}`
+        style.textContent = `:host { ${cssVariables} } ${detailsStyles}
+        .details-focus-btn {
+            background: none;
+            border: none;
+            color: var(--fg-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: auto;
+            opacity: 0.5;
+            padding: 4px;
+            transition: opacity 0.2s, color 0.2s;
+        }
+        .details-focus-btn:hover {
+            opacity: 1;
+            color: var(--fg-primary);
+        }
+        `
         this.shadowRoot.appendChild(style)
 
         this.#titleEl = document.createElement('div')
@@ -78,8 +94,21 @@ export default class PerkyExplorerDetails extends BaseEditorComponent {
         const statusDot = document.createElement('div')
         statusDot.className = `details-status ${this.#module.$status}`
 
+        const focusBtn = document.createElement('button')
+        focusBtn.className = 'details-focus-btn'
+        focusBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>'
+        focusBtn.title = 'Focus on this module'
+        focusBtn.onclick = () => {
+            this.dispatchEvent(new CustomEvent('focus:module', {
+                detail: {module: this.#module},
+                bubbles: true,
+                composed: true
+            }))
+        }
+
         this.#titleEl.appendChild(statusDot)
         this.#titleEl.appendChild(document.createTextNode(this.#module.$id))
+        this.#titleEl.appendChild(focusBtn)
     }
 
 

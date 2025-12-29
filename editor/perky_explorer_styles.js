@@ -192,6 +192,29 @@ export const explorerStyles = `
         text-align: center;
         color: var(--fg-muted);
     }
+
+    .explorer-back-node {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        color: var(--fg-secondary);
+        cursor: pointer;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-secondary);
+        font-size: 11px;
+        font-weight: 500;
+        transition: color 0.15s, background 0.15s;
+    }
+
+    .explorer-back-node:hover {
+        background: var(--bg-hover);
+        color: var(--fg-primary);
+    }
+
+    .explorer-back-icon {
+        font-size: 14px;
+    }
 `
 
 

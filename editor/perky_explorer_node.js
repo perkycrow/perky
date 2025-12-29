@@ -21,6 +21,7 @@ export default class PerkyExplorerNode extends BaseTreeNode {
 
 
     setModule (module, depth = 0) {
+        this.setSelected(false)
         this.cleanListeners()
         this.#module = module
         this.setDepth(depth)

@@ -47,6 +47,7 @@ export default class SceneTreeNode extends BaseTreeNode {
 
 
     setObject (object, depth = 0) {
+        this.setSelected(false)
         this.#object = object
         this.setDepth(depth)
         this.updateAll()

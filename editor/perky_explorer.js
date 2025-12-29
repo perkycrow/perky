@@ -44,6 +44,9 @@ export default class PerkyExplorer extends BaseEditorComponent {
     #minimizeBtnEl = null
 
     #selectedModule = null
+    #rootModule = null
+    #backToRootBtnEl = null
+    #backNodeEl = null
 
 
     connectedCallback () {
@@ -81,6 +84,7 @@ export default class PerkyExplorer extends BaseEditorComponent {
 
     setModule (module) {
         this.#module = module
+        this.#rootModule = module
         this.#selectedModule = null
 
         if (this.#rootNode) {
@@ -92,6 +96,7 @@ export default class PerkyExplorer extends BaseEditorComponent {
 
         this.#updateTreeVisibility()
         this.#updateDetails()
+        this.#updateHeaderControls()
         this.#closeSceneTree()
     }
 
@@ -159,6 +164,10 @@ export default class PerkyExplorer extends BaseEditorComponent {
             this.#openSceneTree(e.detail.content, e.detail.worldRenderer)
         })
 
+        this.#detailsEl.addEventListener('focus:module', (e) => {
+            this.focusModule(e.detail.module)
+        })
+
         explorer.appendChild(this.#headerEl)
         explorer.appendChild(this.#treeEl)
         explorer.appendChild(this.#detailsEl)
@@ -189,6 +198,16 @@ export default class PerkyExplorer extends BaseEditorComponent {
         const buttons = document.createElement('div')
         buttons.className = 'explorer-buttons'
 
+        this.#backToRootBtnEl = document.createElement('button')
+        this.#backToRootBtnEl.className = 'explorer-btn'
+        this.#backToRootBtnEl.textContent = 'Back'
+        this.#backToRootBtnEl.title = 'Go Back'
+        this.#backToRootBtnEl.style.display = 'none' // Start hidden
+        this.#backToRootBtnEl.addEventListener('click', (e) => {
+            e.stopPropagation()
+            this.focusModule(this.#module)
+        })
+
         const refreshBtn = document.createElement('button')
         refreshBtn.className = 'explorer-btn'
         refreshBtn.textContent = '↻'
@@ -217,6 +236,7 @@ export default class PerkyExplorer extends BaseEditorComponent {
             this.#updateViewState()
         })
 
+        buttons.appendChild(this.#backToRootBtnEl)
         buttons.appendChild(refreshBtn)
         buttons.appendChild(this.#collapseBtnEl)
         buttons.appendChild(this.#minimizeBtnEl)
@@ -233,6 +253,9 @@ export default class PerkyExplorer extends BaseEditorComponent {
     #createTree () {
         const tree = document.createElement('div')
         tree.className = 'explorer-tree'
+
+        this.#backNodeEl = this.#createBackNode()
+        tree.appendChild(this.#backNodeEl)
 
         this.#rootNode = document.createElement('perky-explorer-node')
         this.#rootNode.addEventListener('node:select', (e) => {
@@ -357,8 +380,8 @@ export default class PerkyExplorer extends BaseEditorComponent {
 
 
     #refresh () {
-        if (this.#module) {
-            this.#rootNode.setModule(this.#module, 0)
+        if (this.#rootModule) {
+            this.#rootNode.setModule(this.#rootModule, 0)
             this.#rootNode.setExpanded(true)
         }
 
@@ -437,6 +460,96 @@ export default class PerkyExplorer extends BaseEditorComponent {
             this.#updateViewState()
         } else {
             this.#minimizeBtnEl.classList.remove('hidden')
+        }
+    }
+
+
+    focusModule (module) {
+        if (!module) {
+            return
+        }
+
+        this.#rootModule = module
+        this.#rootNode.setModule(module, 0)
+        this.#rootNode.setExpanded(true)
+        this.#updateHeaderControls()
+
+        // If the selected module is not within the new focus hierarchy, clear selection
+        // Actually, let's keep it simply: if we focus, we probably want to see that node expanded
+        // But if the selected node was deep down, it might still be visible.
+        // For now, let's just re-select if visible, or clear if not.
+
+        if (this.#selectedModule) {
+            const node = this.#rootNode.findNode(n => n.getModule() === this.#selectedModule)
+            if (node) {
+                node.setSelected(true)
+            } else {
+                // Selected module is outside of focus scope, maybe we should select the focused root?
+                // Or just keep the details showing the old one?
+                // Let's select the root module
+                this.#handleNodeSelect(module)
+            }
+        }
+    }
+
+
+    #updateHeaderControls () {
+        this.#updateTreeNavigation()
+
+        if (!this.#backToRootBtnEl) {
+            return
+        }
+
+        // Ensure button is in the DOM (fail-safe)
+        if (!this.#backToRootBtnEl.isConnected && this.#headerEl) {
+            const buttons = this.#headerEl.querySelector('.explorer-buttons')
+            if (buttons) {
+                buttons.insertBefore(this.#backToRootBtnEl, buttons.firstChild)
+            }
+        }
+
+        const isRoot = this.#rootModule && this.#module && this.#rootModule.$id === this.#module.$id
+
+        if (this.#rootModule && !isRoot) {
+            this.#backToRootBtnEl.style.display = 'inline-block'
+            this.#backToRootBtnEl.classList.remove('hidden')
+            this.#headerEl.querySelector('.explorer-title').textContent = this.#rootModule.$id
+        } else {
+            this.#backToRootBtnEl.style.display = 'none'
+            this.#headerEl.querySelector('.explorer-title').innerHTML = '<span class="explorer-title-icon">📦</span> Perky Explorer'
+        }
+    }
+
+
+    #createBackNode () {
+        const node = document.createElement('div')
+        node.className = 'explorer-back-node hidden'
+        node.innerHTML = `
+            <span class="explorer-back-icon">↩</span>
+            <span class="explorer-back-label">Back</span>
+        `
+        node.addEventListener('click', (e) => {
+            e.stopPropagation()
+            this.focusModule(this.#module)
+        })
+        return node
+    }
+
+
+    #updateTreeNavigation () {
+        if (!this.#backNodeEl) {
+            return
+        }
+
+        const isRoot = this.#rootModule && this.#module && this.#rootModule.$id === this.#module.$id
+
+        if (this.#rootModule && !isRoot) {
+            this.#backNodeEl.classList.remove('hidden')
+
+            // Update label to show where we are going back to? 
+            // "Back to Root" is generic and fine.
+        } else {
+            this.#backNodeEl.classList.add('hidden')
         }
     }
 
