@@ -184,6 +184,14 @@ export default class Transform2D {
         this.children.forEach(child => child.updateWorldMatrix(force))
     }
 
+
+    transformPoint (point, matrix = this.#worldMatrix) {
+        return {
+            x: matrix[0] * point.x + matrix[2] * point.y + matrix[4],
+            y: matrix[1] * point.x + matrix[3] * point.y + matrix[5]
+        }
+    }
+
 }
 
 

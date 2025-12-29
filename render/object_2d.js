@@ -60,6 +60,14 @@ export default class Object2D extends Transform2D {
 
     setOpacity (opacity) {
         this.opacity = opacity
+        this.markDirty()
+        return this
+    }
+
+
+    setVisible (visible) {
+        this.visible = visible
+        this.markDirty()
         return this
     }
 
@@ -94,32 +102,28 @@ export default class Object2D extends Transform2D {
 
     getWorldBounds () {
         const localBounds = this.getBounds()
-        
+
         if (localBounds.width === 0 && localBounds.height === 0) {
             return localBounds
         }
-        
+
         const corners = [
             {x: localBounds.minX, y: localBounds.minY},
             {x: localBounds.maxX, y: localBounds.minY},
             {x: localBounds.minX, y: localBounds.maxY},
             {x: localBounds.maxX, y: localBounds.maxY}
         ]
-        
-        const m = this.worldMatrix
-        const transformedCorners = corners.map(corner => ({
-            x: m[0] * corner.x + m[2] * corner.y + m[4],
-            y: m[1] * corner.x + m[3] * corner.y + m[5]
-        }))
-        
+
+        const transformedCorners = corners.map(corner => this.transformPoint(corner))
+
         const xs = transformedCorners.map(c => c.x)
         const ys = transformedCorners.map(c => c.y)
-        
+
         const minX = Math.min(...xs)
         const minY = Math.min(...ys)
         const maxX = Math.max(...xs)
         const maxY = Math.max(...ys)
-        
+
         return {
             minX,
             minY,
