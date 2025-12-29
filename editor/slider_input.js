@@ -91,12 +91,10 @@ export default class SliderInput extends HTMLElement {
         const container = document.createElement('div')
         container.className = 'slider-input-container'
 
-        // Label
         this.#labelEl = document.createElement('span')
         this.#labelEl.className = 'slider-input-label'
         this.#labelEl.textContent = this.#label
 
-        // Slider track
         this.#slider = document.createElement('input')
         this.#slider.type = 'range'
         this.#slider.className = 'slider-input-track'
@@ -105,7 +103,6 @@ export default class SliderInput extends HTMLElement {
         this.#slider.step = this.#step
         this.#slider.addEventListener('input', () => this.#handleInput())
 
-        // Value display
         this.#valueEl = document.createElement('span')
         this.#valueEl.className = 'slider-input-value'
 
@@ -150,14 +147,12 @@ export default class SliderInput extends HTMLElement {
                 cursor: pointer;
             }
 
-            /* Track - WebKit */
             .slider-input-track::-webkit-slider-runnable-track {
                 height: 4px;
                 background: var(--bg-hover);
                 border-radius: 2px;
             }
 
-            /* Track - Firefox */
             .slider-input-track::-moz-range-track {
                 height: 4px;
                 background: var(--bg-hover);
@@ -165,7 +160,6 @@ export default class SliderInput extends HTMLElement {
                 border: none;
             }
 
-            /* Thumb - WebKit */
             .slider-input-track::-webkit-slider-thumb {
                 -webkit-appearance: none;
                 appearance: none;
@@ -183,7 +177,6 @@ export default class SliderInput extends HTMLElement {
                 box-shadow: 0 0 6px var(--accent);
             }
 
-            /* Thumb - Firefox */
             .slider-input-track::-moz-range-thumb {
                 width: 12px;
                 height: 12px;
@@ -191,12 +184,6 @@ export default class SliderInput extends HTMLElement {
                 border: none;
                 border-radius: 50%;
                 cursor: pointer;
-                transition: transform 0.1s, box-shadow 0.1s;
-            }
-
-            .slider-input-track::-moz-range-thumb:hover {
-                transform: scale(1.2);
-                box-shadow: 0 0 6px var(--accent);
             }
 
             .slider-input-value {
