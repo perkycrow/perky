@@ -5,25 +5,6 @@ import '../toggle_input.js'
 
 
 const customStyles = `
-    .blend-row {
-        grid-column: 1 / -1;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 4px;
-    }
-
-    .blend-row select {
-        flex: 1;
-        padding: 4px 8px;
-        background: var(--bg-darker);
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        color: var(--fg);
-        font-family: inherit;
-        font-size: 12px;
-    }
-
     .pass-section {
         grid-column: 1 / -1;
         margin-top: 8px;
@@ -49,12 +30,6 @@ const customStyles = `
         color: var(--fg-muted);
         font-style: italic;
         padding: 8px 0;
-    }
-
-    .content-info {
-        font-size: 11px;
-        color: var(--fg-muted);
-        padding: 4px 0;
     }
 `
 
@@ -88,15 +63,17 @@ export default class RenderGroupInspector extends BaseInspector {
 
         const group = this.module
 
-        // Basic info
-        this.addRow('name', group.$name)
-        this.addRow('status', group.started ? 'started' : 'stopped')
-
-        // Visibility toggle
+        // Visibility toggle at the very top
         const visibleToggle = this.#createToggle('visible', group.visible, (value) => {
             group.visible = value
         })
         this.gridEl.appendChild(visibleToggle)
+
+        // Basic info
+        this.addRow('name', group.$name)
+        this.addRow('status', group.started ? 'started' : 'stopped')
+
+        this.addSeparator()
 
         // Opacity slider
         const opacitySlider = this.#createSlider('opacity', group.opacity, 0, 1, 0.01, (value) => {
@@ -104,7 +81,7 @@ export default class RenderGroupInspector extends BaseInspector {
         })
         this.gridEl.appendChild(opacitySlider)
 
-        // Blend mode selector
+        // Blend mode selector using shared styles
         this.#renderBlendModeSelector(group)
 
         this.addSeparator()
@@ -162,14 +139,15 @@ export default class RenderGroupInspector extends BaseInspector {
 
 
     #renderBlendModeSelector (group) {
-        const container = document.createElement('div')
-        container.className = 'blend-row'
+        const row = document.createElement('div')
+        row.className = 'inspector-row'
 
         const label = document.createElement('span')
+        label.className = 'inspector-row-label'
         label.textContent = 'blendMode'
-        label.style.color = 'var(--fg-muted)'
 
         const select = document.createElement('select')
+        select.className = 'inspector-select'
         const modes = ['normal', 'additive', 'multiply']
 
         for (const mode of modes) {
@@ -184,9 +162,9 @@ export default class RenderGroupInspector extends BaseInspector {
             group.blendMode = select.value
         })
 
-        container.appendChild(label)
-        container.appendChild(select)
-        this.gridEl.appendChild(container)
+        row.appendChild(label)
+        row.appendChild(select)
+        this.gridEl.appendChild(row)
     }
 
 

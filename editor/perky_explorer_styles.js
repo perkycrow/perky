@@ -466,6 +466,42 @@ export const inspectorStyles = `
         cursor: not-allowed;
         pointer-events: none;
     }
+
+    .inspector-select {
+        width: 100%;
+        padding: 6px 10px;
+        background: var(--bg-primary);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        color: var(--fg-secondary);
+        font-family: inherit;
+        font-size: 11px;
+        cursor: pointer;
+        transition: border-color 0.15s, color 0.15s;
+    }
+
+    .inspector-select:hover {
+        border-color: var(--fg-muted);
+        color: var(--fg-primary);
+    }
+
+    .inspector-select:focus {
+        outline: none;
+        border-color: var(--accent);
+    }
+
+    .inspector-row {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .inspector-row-label {
+        color: var(--fg-muted);
+        font-size: 11px;
+    }
 `
 
 
