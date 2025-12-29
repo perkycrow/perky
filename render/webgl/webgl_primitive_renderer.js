@@ -26,8 +26,8 @@ export default class WebGLPrimitiveRenderer extends WebGLObjectRenderer {
         const program = this.context.primitiveProgram
 
         gl.useProgram(program.program)
-        gl.uniformMatrix3fv(program.uniforms.projectionMatrix, false, matrices.projectionMatrix)
-        gl.uniformMatrix3fv(program.uniforms.viewMatrix, false, matrices.viewMatrix)
+        gl.uniformMatrix3fv(program.uniforms.uProjectionMatrix, false, matrices.projectionMatrix)
+        gl.uniformMatrix3fv(program.uniforms.uViewMatrix, false, matrices.viewMatrix)
 
         for (const {object, opacity} of this.collected) {
             this.renderObject(object, opacity)

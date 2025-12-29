@@ -40,11 +40,11 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
         const program = this.context.spriteProgram
 
         gl.useProgram(program.program)
-        gl.uniformMatrix3fv(program.uniforms.projectionMatrix, false, matrices.projectionMatrix)
-        gl.uniformMatrix3fv(program.uniforms.viewMatrix, false, matrices.viewMatrix)
+        gl.uniformMatrix3fv(program.uniforms.uProjectionMatrix, false, matrices.projectionMatrix)
+        gl.uniformMatrix3fv(program.uniforms.uViewMatrix, false, matrices.viewMatrix)
 
         const identityMatrix = [1, 0, 0, 0, 1, 0, 0, 0, 1]
-        gl.uniformMatrix3fv(program.uniforms.modelMatrix, false, identityMatrix)
+        gl.uniformMatrix3fv(program.uniforms.uModelMatrix, false, identityMatrix)
 
         this.#spriteBatch.end()
     }

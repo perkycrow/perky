@@ -76,50 +76,11 @@ export default class WebGLCanvas2D extends BaseRenderer {
 
 
     #setupBuiltinShaders () {
-        const spriteProgram = this.#shaderRegistry.register('sprite', SPRITE_SHADER_DEF)
-        const primitiveProgram = this.#shaderRegistry.register('primitive', PRIMITIVE_SHADER_DEF)
+        this.spriteProgram = this.#shaderRegistry.register('sprite', SPRITE_SHADER_DEF)
+        this.primitiveProgram = this.#shaderRegistry.register('primitive', PRIMITIVE_SHADER_DEF)
 
         this.#shaderRegistry.setDefault('sprite', 'sprite')
         this.#shaderRegistry.setDefault('primitive', 'primitive')
-
-        this.spriteProgram = this.#createLegacyProgramFormat(spriteProgram, {
-            position: 'aPosition',
-            texCoord: 'aTexCoord',
-            opacity: 'aOpacity'
-        }, {
-            projectionMatrix: 'uProjectionMatrix',
-            viewMatrix: 'uViewMatrix',
-            modelMatrix: 'uModelMatrix',
-            texture: 'uTexture'
-        })
-
-        this.primitiveProgram = this.#createLegacyProgramFormat(primitiveProgram, {
-            position: 'aPosition',
-            color: 'aColor'
-        }, {
-            projectionMatrix: 'uProjectionMatrix',
-            viewMatrix: 'uViewMatrix'
-        })
-    }
-
-
-    #createLegacyProgramFormat (shaderProgram, attrMap, uniformMap) {
-        const attributes = {}
-        const uniforms = {}
-
-        for (const [key, name] of Object.entries(attrMap)) {
-            attributes[key] = shaderProgram.attributes[name]
-        }
-
-        for (const [key, name] of Object.entries(uniformMap)) {
-            uniforms[key] = shaderProgram.uniforms[name]
-        }
-
-        return {
-            program: shaderProgram.program,
-            attributes,
-            uniforms
-        }
     }
 
 

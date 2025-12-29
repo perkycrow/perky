@@ -44,11 +44,11 @@ export default class WebGLRectangleRenderer extends WebGLPrimitiveRenderer {
             gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.DYNAMIC_DRAW)
 
             const stride = 6 * 4
-            gl.enableVertexAttribArray(program.attributes.position)
-            gl.vertexAttribPointer(program.attributes.position, 2, gl.FLOAT, false, stride, 0)
+            gl.enableVertexAttribArray(program.attributes.aPosition)
+            gl.vertexAttribPointer(program.attributes.aPosition, 2, gl.FLOAT, false, stride, 0)
 
-            gl.enableVertexAttribArray(program.attributes.color)
-            gl.vertexAttribPointer(program.attributes.color, 4, gl.FLOAT, false, stride, 2 * 4)
+            gl.enableVertexAttribArray(program.attributes.aColor)
+            gl.vertexAttribPointer(program.attributes.aColor, 4, gl.FLOAT, false, stride, 2 * 4)
 
             gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
         }
@@ -72,11 +72,11 @@ export default class WebGLRectangleRenderer extends WebGLPrimitiveRenderer {
             gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.DYNAMIC_DRAW)
 
             const stride = 6 * 4
-            gl.enableVertexAttribArray(program.attributes.position)
-            gl.vertexAttribPointer(program.attributes.position, 2, gl.FLOAT, false, stride, 0)
+            gl.enableVertexAttribArray(program.attributes.aPosition)
+            gl.vertexAttribPointer(program.attributes.aPosition, 2, gl.FLOAT, false, stride, 0)
 
-            gl.enableVertexAttribArray(program.attributes.color)
-            gl.vertexAttribPointer(program.attributes.color, 4, gl.FLOAT, false, stride, 2 * 4)
+            gl.enableVertexAttribArray(program.attributes.aColor)
+            gl.vertexAttribPointer(program.attributes.aColor, 4, gl.FLOAT, false, stride, 2 * 4)
 
             gl.lineWidth(rect.strokeWidth)
             gl.drawArrays(gl.LINES, 0, 8)

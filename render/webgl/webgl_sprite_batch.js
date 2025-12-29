@@ -140,21 +140,21 @@ export default class WebGLSpriteBatch {
 
         gl.activeTexture(gl.TEXTURE0)
         gl.bindTexture(gl.TEXTURE_2D, this.currentTexture)
-        gl.uniform1i(program.uniforms.texture, 0)
+        gl.uniform1i(program.uniforms.uTexture, 0)
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
         gl.bufferData(gl.ARRAY_BUFFER, this.vertexData.subarray(0, this.vertexIndex), gl.DYNAMIC_DRAW)
 
         const stride = 5 * 4  // 5 floats * 4 bytes
 
-        gl.enableVertexAttribArray(program.attributes.position)
-        gl.vertexAttribPointer(program.attributes.position, 2, gl.FLOAT, false, stride, 0)
+        gl.enableVertexAttribArray(program.attributes.aPosition)
+        gl.vertexAttribPointer(program.attributes.aPosition, 2, gl.FLOAT, false, stride, 0)
 
-        gl.enableVertexAttribArray(program.attributes.texCoord)
-        gl.vertexAttribPointer(program.attributes.texCoord, 2, gl.FLOAT, false, stride, 2 * 4)
+        gl.enableVertexAttribArray(program.attributes.aTexCoord)
+        gl.vertexAttribPointer(program.attributes.aTexCoord, 2, gl.FLOAT, false, stride, 2 * 4)
 
-        gl.enableVertexAttribArray(program.attributes.opacity)
-        gl.vertexAttribPointer(program.attributes.opacity, 1, gl.FLOAT, false, stride, 4 * 4)
+        gl.enableVertexAttribArray(program.attributes.aOpacity)
+        gl.vertexAttribPointer(program.attributes.aOpacity, 1, gl.FLOAT, false, stride, 4 * 4)
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
         gl.drawElements(gl.TRIANGLES, this.spriteCount * 6, gl.UNSIGNED_SHORT, 0)
