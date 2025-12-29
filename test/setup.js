@@ -57,9 +57,16 @@ global.createMockWebGLContext = () => ({
     createFramebuffer: () => ({}),
     bindFramebuffer: () => { },
     framebufferTexture2D: () => { },
+    framebufferRenderbuffer: () => { },
     checkFramebufferStatus: () => 36053,
     deleteFramebuffer: () => { },
     lineWidth: () => { },
+    createRenderbuffer: () => ({}),
+    bindRenderbuffer: () => { },
+    renderbufferStorageMultisample: () => { },
+    deleteRenderbuffer: () => { },
+    blitFramebuffer: () => { },
+    getParameter: () => 4,
 
     // WebGL constants
     BLEND: 1,
@@ -91,7 +98,12 @@ global.createMockWebGLContext = () => ({
     STATIC_DRAW: 1,
     COMPILE_STATUS: 1,
     LINK_STATUS: 1,
-    FRAMEBUFFER_COMPLETE: 36053
+    FRAMEBUFFER_COMPLETE: 36053,
+    RENDERBUFFER: 1,
+    RGBA8: 1,
+    READ_FRAMEBUFFER: 1,
+    DRAW_FRAMEBUFFER: 1,
+    MAX_SAMPLES: 0x8d57
 })
 
 

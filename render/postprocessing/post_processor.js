@@ -94,6 +94,9 @@ export default class PostProcessor {
         const gl = this.#gl
         const activePasses = this.#passes.filter(pass => pass.enabled)
 
+        // Resolve MSAA to texture
+        this.#framebufferManager.resolveSceneBuffer()
+
         // Disable blending for post-processing passes
         gl.disable(gl.BLEND)
 

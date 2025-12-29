@@ -12,11 +12,7 @@ const renderSystem = new RenderSystem({
 })
 
 renderSystem.createLayer('game', 'canvas', {
-    backgroundColor: '#1a1a2e',
-    showGrid: true,
-    gridStep: 1,
-    gridOpacity: 0.15,
-    gridColor: '#4a4a6a'
+    backgroundColor: '#1a1a2e'
 })
 
 const mainCamera = renderSystem.getCamera('main')
