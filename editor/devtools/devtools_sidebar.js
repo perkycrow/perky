@@ -116,7 +116,7 @@ export default class DevToolsSidebar extends BaseEditorComponent {
             return
         }
 
-        this.#titleIconEl.textContent = Tool.toolIcon
+        this.#titleIconEl.innerHTML = Tool.toolIcon
         this.#titleTextEl.textContent = Tool.toolName
 
         this.#currentToolEl = new Tool()

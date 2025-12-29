@@ -198,8 +198,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
         } else {
             this.#filteredCommands = this.#commands.filter(cmd =>
                 cmd.title.toLowerCase().includes(query) ||
-                cmd.subtitle.toLowerCase().includes(query)
-            )
+                cmd.subtitle.toLowerCase().includes(query))
         }
 
         this.#selectedIndex = 0
@@ -257,7 +256,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
 
         const icon = document.createElement('span')
         icon.className = 'spotlight-result-icon'
-        icon.textContent = cmd.icon
+        icon.innerHTML = cmd.icon
 
         const text = document.createElement('div')
         text.className = 'spotlight-result-text'
@@ -300,32 +299,32 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
 
     #onKeydown (e) {
         switch (e.key) {
-            case 'ArrowDown':
-                e.preventDefault()
-                this.#selectedIndex = Math.min(
-                    this.#selectedIndex + 1,
-                    this.#filteredCommands.length - 1
-                )
-                this.#updateSelection()
-                break
+        case 'ArrowDown':
+            e.preventDefault()
+            this.#selectedIndex = Math.min(
+                this.#selectedIndex + 1,
+                this.#filteredCommands.length - 1
+            )
+            this.#updateSelection()
+            break
 
-            case 'ArrowUp':
-                e.preventDefault()
-                this.#selectedIndex = Math.max(this.#selectedIndex - 1, 0)
-                this.#updateSelection()
-                break
+        case 'ArrowUp':
+            e.preventDefault()
+            this.#selectedIndex = Math.max(this.#selectedIndex - 1, 0)
+            this.#updateSelection()
+            break
 
-            case 'Enter':
-                e.preventDefault()
-                if (this.#filteredCommands[this.#selectedIndex]) {
-                    this.#filteredCommands[this.#selectedIndex].action()
-                }
-                break
+        case 'Enter':
+            e.preventDefault()
+            if (this.#filteredCommands[this.#selectedIndex]) {
+                this.#filteredCommands[this.#selectedIndex].action()
+            }
+            break
 
-            case 'Escape':
-                e.preventDefault()
-                this.#state?.closeSpotlight()
-                break
+        case 'Escape':
+            e.preventDefault()
+            this.#state?.closeSpotlight()
+            break
         }
     }
 

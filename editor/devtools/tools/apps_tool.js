@@ -6,7 +6,7 @@ export default class AppsTool extends BaseTool {
 
     static toolId = 'apps'
     static toolName = 'Applications'
-    static toolIcon = '\u26A1'
+    static toolIcon = '<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>'
     static location = 'sidebar'
     static order = 20
 
@@ -359,7 +359,8 @@ const STYLES = buildEditorStyles(
         font-style: italic;
         padding: 8px 0;
     }
-`)
+`
+)
 
 
 AppsTool.register()

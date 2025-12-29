@@ -69,14 +69,22 @@ export default class DevToolsDock extends BaseEditorComponent {
             this.#dockEl.appendChild(separator)
         }
 
-        this.#loggerButton = this.#createDockButton('\uD83D\uDCCB', 'Logger', () => {
-            this.#state?.toggleLogger()
-        })
+        this.#loggerButton = this.#createDockButton(
+            '<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>',
+            'Logger',
+            () => {
+                this.#state?.toggleLogger()
+            }
+        )
         this.#dockEl.appendChild(this.#loggerButton)
 
-        this.#spotlightButton = this.#createDockButton('>_', 'Spotlight (Cmd+K)', () => {
-            this.#state?.toggleSpotlight()
-        })
+        this.#spotlightButton = this.#createDockButton(
+            '<svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>',
+            'Spotlight (Cmd+K)',
+            () => {
+                this.#state?.toggleSpotlight()
+            }
+        )
         this.#dockEl.appendChild(this.#spotlightButton)
 
         this.#updateActiveStates()
@@ -96,7 +104,7 @@ export default class DevToolsDock extends BaseEditorComponent {
     #createDockButton (icon, title, onClick) {
         const button = document.createElement('button')
         button.className = 'dock-button'
-        button.textContent = icon
+        button.innerHTML = icon
         button.title = title
         button.addEventListener('click', onClick)
         return button

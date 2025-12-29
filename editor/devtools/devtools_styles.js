@@ -32,6 +32,14 @@ export const dockStyles = `
         color: var(--fg-primary);
     }
 
+    .dock-button svg {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+    }
+
     .dock-button:hover {
         background: var(--bg-hover);
     }
@@ -97,6 +105,16 @@ export const sidebarStyles = `
 
     .sidebar-title-icon {
         font-size: 16px;
+        display: flex;
+        align-items: center;
+    }
+
+    .sidebar-title-icon svg {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
     }
 
     .sidebar-close {
@@ -205,6 +223,17 @@ export const spotlightStyles = `
         font-size: 18px;
         width: 24px;
         text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .spotlight-result-icon svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
     }
 
     .spotlight-result-text {
