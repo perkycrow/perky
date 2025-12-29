@@ -65,10 +65,6 @@ const customStyles = `
         margin-bottom: 6px;
     }
 
-    .group-icon {
-        font-size: 12px;
-    }
-
     .group-name {
         font-size: 10px;
         text-transform: uppercase;
@@ -100,11 +96,6 @@ const customStyles = `
         gap: 8px;
     }
 
-    .binding-icon {
-        font-size: 14px;
-        width: 20px;
-        text-align: center;
-    }
 
     .binding-input {
         flex: 1;
@@ -348,16 +339,12 @@ export default class InputBinderInspector extends BaseInspector {
     }
 
 
-    #createGroup (type, name, bindings) {
+    #createGroup (_type, name, bindings) {
         const group = document.createElement('div')
         group.className = 'binding-group'
 
         const header = document.createElement('div')
         header.className = 'group-header'
-
-        const icon = document.createElement('span')
-        icon.className = 'group-icon'
-        icon.textContent = type === 'device' ? this.#getDeviceIcon(name) : '🎯'
 
         const nameEl = document.createElement('span')
         nameEl.className = 'group-name'
@@ -367,7 +354,6 @@ export default class InputBinderInspector extends BaseInspector {
         count.className = 'group-count'
         count.textContent = bindings.length
 
-        header.appendChild(icon)
         header.appendChild(nameEl)
         header.appendChild(count)
         group.appendChild(header)
@@ -388,10 +374,6 @@ export default class InputBinderInspector extends BaseInspector {
 
         const row = document.createElement('div')
         row.className = 'binding-row'
-
-        const icon = document.createElement('span')
-        icon.className = 'binding-icon'
-        icon.textContent = isComposite ? '🔗' : this.#getDeviceIcon(binding.deviceName)
 
         const input = document.createElement('div')
         input.className = 'binding-input'
@@ -439,7 +421,6 @@ export default class InputBinderInspector extends BaseInspector {
         eventBadge.textContent = binding.eventType
         action.appendChild(eventBadge)
 
-        row.appendChild(icon)
         row.appendChild(input)
         row.appendChild(arrow)
         row.appendChild(action)
@@ -460,9 +441,6 @@ export default class InputBinderInspector extends BaseInspector {
                 const control = document.createElement('div')
                 control.className = 'combo-control'
 
-                const ctrlIcon = document.createElement('span')
-                ctrlIcon.textContent = this.#getDeviceIcon(ctrl.deviceName)
-
                 const device = document.createElement('span')
                 device.className = 'device-badge'
                 device.textContent = ctrl.deviceName
@@ -471,7 +449,6 @@ export default class InputBinderInspector extends BaseInspector {
                 name.className = 'control-name'
                 name.textContent = ctrl.controlName
 
-                control.appendChild(ctrlIcon)
                 control.appendChild(device)
                 control.appendChild(name)
                 comboControls.appendChild(control)
@@ -483,21 +460,6 @@ export default class InputBinderInspector extends BaseInspector {
         return card
     }
 
-
-    #getDeviceIcon (deviceName) {
-        switch (deviceName) {
-            case 'keyboard':
-                return '⌨️'
-            case 'mouse':
-                return '🖱️'
-            case 'gamepad':
-                return '🎮'
-            case 'composite':
-                return '🔗'
-            default:
-                return '🕹️'
-        }
-    }
 
 }
 
