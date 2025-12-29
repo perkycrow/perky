@@ -12,7 +12,6 @@ import RenderSystem from '/render/render_system.js'
 import Group2D from '/render/group_2d.js'
 import Circle from '/render/circle.js'
 import Rectangle from '/render/rectangle.js'
-import RenderGroup from '/render/render_group.js'
 import RenderPass from '/render/postprocessing/render_pass.js'
 import VignettePass from '/render/postprocessing/passes/vignette_pass.js'
 
@@ -148,25 +147,25 @@ const vignettePass = new VignettePass()
 vignettePass.setUniform('uIntensity', 0.8)
 vignettePass.setUniform('uSmoothness', 0.5)
 
-// Configure render groups
+// Configure render groups (using config objects - RenderGroups created internally via create())
 layer.renderer.setRenderGroups([
-    new RenderGroup({
+    {
         $name: 'background',
         content: backgroundGroup
 
         // No post-passes → no effect
-    }),
-    new RenderGroup({
+    },
+    {
         $name: 'shadows',
         content: shadowsGroup
 
         // No post-passes → shadows stay gray (not saturated)
-    }),
-    new RenderGroup({
+    },
+    {
         $name: 'entities',
         content: entitiesGroup,
         postPasses: [saturationPass]  // Saturation boost on entities only!
-    })
+    }
 ])
 
 // Global post-processing (applied after all groups are composited)

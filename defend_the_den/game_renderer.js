@@ -23,20 +23,21 @@ export default class GameRenderer extends PerkyModule {
         this.world = options.world
         this.game = options.game
 
-        this.rootGroup = new Group2D({name: 'root'})
+        // Scene graph groups (content for each render layer)
         this.backgroundGroup = new Group2D({name: 'background'})
         this.shadowsGroup = new Group2D({name: 'shadows'})
         this.entitiesGroup = new Group2D({name: 'entities'})
 
-
-        // this.shadowsRenderer = this.create(WorldRenderer, {
-        //     $id: 'shadowsRenderer',
-        //     world: this.world,
-        //     game: this.game
-        // })
-
+        // World renderer for entities
         this.worldRenderer = this.create(WorldRenderer, {
             $id: 'worldRenderer',
+            world: this.world,
+            game: this.game
+        })
+
+        // Shadow renderer for enemy shadows
+        this.shadowsRenderer = this.create(WorldRenderer, {
+            $id: 'shadowsRenderer',
             world: this.world,
             game: this.game
         })
@@ -57,25 +58,19 @@ export default class GameRenderer extends PerkyModule {
                 {width: 0.8, height: 0.8, strokeColor: '#ff0000', strokeWidth: 0.05}
             )
 
-        // this.shadowsRenderer
-        //     .register(
-        //         (entity) => entity.hasTag('enemy'),
-        //         ShadowRenderer,
-        //         {radius: 0.35, color: 'rgba(0,0,0,0.25)'}
-        //     )
+        // Shadow renderer only for enemies
+        this.shadowsRenderer
+            .register(
+                (entity) => entity.hasTag('enemy'),
+                ShadowRenderer,
+                {radius: 0.35, color: 'rgba(0,0,0,0.25)'}
+            )
     }
 
 
     onStart () {
         this.#buildScene()
-
-        // Build scene hierarchy: background -> shadows -> entities
-        this.rootGroup.addChild(this.backgroundGroup)
-        this.rootGroup.addChild(this.shadowsGroup)
-        this.rootGroup.addChild(this.entitiesGroup)
-
-        // this.shadowsGroup.addChild(this.shadowsRenderer.rootGroup)
-        this.entitiesGroup.addChild(this.worldRenderer.rootGroup)
+        this.#setupRenderGroups()
     }
 
 
@@ -93,15 +88,44 @@ export default class GameRenderer extends PerkyModule {
         })
 
         this.backgroundGroup.addChild(background)
+
+        // Link renderers to their groups
+        this.shadowsGroup.addChild(this.shadowsRenderer.rootGroup)
+        this.entitiesGroup.addChild(this.worldRenderer.rootGroup)
+    }
+
+
+    #setupRenderGroups () {
+        const gameLayer = this.game.getCanvas('game')
+
+        // Configure render groups - each with its own framebuffer
+        // No per-group effects for now, but structure is ready
+        gameLayer.renderer.setRenderGroups([
+            {
+                $name: 'background',
+                content: this.backgroundGroup
+            },
+            {
+                $name: 'shadows',
+                content: this.shadowsGroup
+            },
+            {
+                $name: 'entities',
+                content: this.entitiesGroup
+
+                // Could add per-entity effects here, e.g.:
+                // postPasses: [saturationPass]
+            }
+        ])
     }
 
 
     render () {
-        // this.shadowsRenderer.sync()
+        this.shadowsRenderer.sync()
         this.worldRenderer.sync()
 
         const gameLayer = this.game.getCanvas('game')
-        gameLayer.setContent(this.rootGroup)
+        gameLayer.markDirty()  // Mark dirty to trigger re-render
         gameLayer.render()
     }
 

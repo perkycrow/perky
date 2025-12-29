@@ -187,17 +187,17 @@ export default class WebGLCanvas2D extends BaseRenderer {
      * Each group is rendered to its own framebuffer, processed with its own
      * post-passes, then all groups are composited together before global post-processing.
      *
-     * @param {RenderGroup[]} groups - Array of RenderGroups in render order (back to front)
+     * @param {Object[]} configs - Array of RenderGroup config objects in render order (back to front)
      * @returns {this}
      *
      * @example
      * renderer.setRenderGroups([
-     *     new RenderGroup({name: 'background', content: bgGroup}),
-     *     new RenderGroup({name: 'shadows', content: shadowGroup}),
-     *     new RenderGroup({name: 'entities', content: entityGroup, postPasses: [colorGrade]})
+     *     {$name: 'background', content: bgGroup},
+     *     {$name: 'shadows', content: shadowGroup},
+     *     {$name: 'entities', content: entityGroup, postPasses: [colorGrade]}
      * ])
      */
-    setRenderGroups (groups) {
+    setRenderGroups (configs) {
         this.clearRenderGroups()
 
         // Initialize composite shader if needed
@@ -208,16 +208,9 @@ export default class WebGLCanvas2D extends BaseRenderer {
             this.#compositeQuad = new FullscreenQuad(this.gl)
         }
 
-        // Create each group as a child PerkyModule
-        for (const groupConfig of groups) {
-            if (groupConfig instanceof RenderGroup) {
-                // Already instantiated - add as child
-                groupConfig.install(this)
-                this.childrenRegistry.set(groupConfig.$id, groupConfig)
-            } else {
-                // Config object - create new RenderGroup
-                this.create(RenderGroup, groupConfig)
-            }
+        // Create each group via PerkyModule create()
+        for (const config of configs) {
+            this.create(RenderGroup, config)
         }
 
         return this
