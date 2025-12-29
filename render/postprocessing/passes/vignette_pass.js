@@ -49,4 +49,12 @@ export default class VignettePass extends RenderPass {
         }
     }
 
+
+    getUniformConfig () {
+        return {
+            uIntensity: {min: 0, max: 2, step: 0.01},
+            uSmoothness: {min: 0, max: 1, step: 0.01}
+        }
+    }
+
 }

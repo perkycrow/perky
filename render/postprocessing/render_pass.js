@@ -35,6 +35,11 @@ export default class RenderPass {
     }
 
 
+    getUniformConfig () { // eslint-disable-line class-methods-use-this
+        return {}
+    }
+
+
     getShaderDefinition () { // eslint-disable-line class-methods-use-this
         throw new Error('RenderPass.getShaderDefinition() must be implemented')
     }

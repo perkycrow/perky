@@ -134,58 +134,35 @@ export default class WebGLCanvasInspector extends BaseInspector {
 
     #getEditableUniforms (pass) {
         const defaults = pass.getDefaultUniforms?.() || {}
+        const configs = pass.getUniformConfig?.() || {}
         const currentUniforms = pass.uniforms || {}
-        return Object.entries(defaults).map(([name, defaultValue]) => ({
-            name,
-            defaultValue,
-            currentValue: currentUniforms[name] ?? defaultValue
-        }))
+
+        return Object.entries(defaults)
+            .filter(([, defaultValue]) => typeof defaultValue === 'number')
+            .map(([name, defaultValue]) => ({
+                name,
+                defaultValue,
+                currentValue: currentUniforms[name] ?? defaultValue,
+                config: configs[name] || {min: 0, max: defaultValue * 2 || 1, step: 0.01}
+            }))
     }
 
 
     #renderUniformControl (container, pass, uniform) {
-        const config = this.#getSliderConfig(uniform.name, uniform.defaultValue)
+        const {min, max, step} = uniform.config
 
         const slider = document.createElement('slider-input')
         slider.setAttribute('label', uniform.name.replace(/^u/, ''))
-        slider.setAttribute('min', config.min)
-        slider.setAttribute('max', config.max)
-        slider.setAttribute('step', config.step)
-        slider.value = uniform.currentValue * config.scale
+        slider.setAttribute('min', min)
+        slider.setAttribute('max', max)
+        slider.setAttribute('step', step)
+        slider.value = uniform.currentValue
 
         slider.addEventListener('change', (e) => {
-            const value = e.detail.value / config.scale
-            pass.setUniform(uniform.name, value)
+            pass.setUniform(uniform.name, e.detail.value)
         })
 
         container.appendChild(slider)
-    }
-
-
-    #getSliderConfig (name, defaultValue) { // eslint-disable-line complexity
-        const nameLower = name.toLowerCase()
-
-        if (nameLower.includes('intensity') || nameLower.includes('smoothness')) {
-            return {min: 0, max: 200, step: 1, scale: 100}
-        }
-
-        if (nameLower.includes('brightness')) {
-            return {min: -50, max: 50, step: 1, scale: 100}
-        }
-
-        if (nameLower.includes('contrast') || nameLower.includes('saturation')) {
-            return {min: 50, max: 150, step: 1, scale: 100}
-        }
-
-        if (nameLower.includes('amplitude')) {
-            return {min: 0, max: 50, step: 1, scale: 1000}
-        }
-
-        if (nameLower.includes('time')) {
-            return {min: 0, max: 100, step: 1, scale: 1}
-        }
-
-        return {min: 0, max: 100, step: 1, scale: 100}
     }
 
 }

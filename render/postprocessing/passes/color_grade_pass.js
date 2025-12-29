@@ -57,4 +57,13 @@ export default class ColorGradePass extends RenderPass {
         }
     }
 
+
+    getUniformConfig () {
+        return {
+            uBrightness: {min: -0.5, max: 0.5, step: 0.01},
+            uContrast: {min: 0.5, max: 1.5, step: 0.01},
+            uSaturation: {min: 0, max: 2, step: 0.01}
+        }
+    }
+
 }
