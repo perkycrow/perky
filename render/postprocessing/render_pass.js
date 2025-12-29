@@ -1,12 +1,16 @@
 export default class RenderPass {
 
+    static shaderDefinition = null
+    static defaultUniforms = {}
+    static uniformConfig = {}
+
     #enabled = true
     #program = null
     #uniforms = {}
 
 
     constructor () {
-        this.#uniforms = this.getDefaultUniforms()
+        this.#uniforms = {...this.constructor.defaultUniforms}
     }
 
 
@@ -30,25 +34,13 @@ export default class RenderPass {
     }
 
 
-    getDefaultUniforms () { // eslint-disable-line class-methods-use-this
-        return {}
-    }
+    init (shaderRegistry) {
+        const definition = this.constructor.shaderDefinition
+        if (!definition) {
+            throw new Error(`${this.constructor.name}.shaderDefinition must be defined`)
+        }
 
-
-    getUniformConfig () { // eslint-disable-line class-methods-use-this
-        return {}
-    }
-
-
-    getShaderDefinition () { // eslint-disable-line class-methods-use-this
-        throw new Error('RenderPass.getShaderDefinition() must be implemented')
-    }
-
-
-    init (gl, shaderRegistry) {
-        const definition = this.getShaderDefinition()
         const id = `pass_${this.constructor.name}_${Date.now()}`
-
         this.#program = shaderRegistry.register(id, definition)
     }
 

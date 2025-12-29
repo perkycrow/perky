@@ -41,7 +41,7 @@ export default class PostProcessor {
 
 
     addPass (pass) {
-        pass.init(this.#gl, this.#shaderRegistry)
+        pass.init(this.#shaderRegistry)
         this.#passes.push(pass)
         return this
     }
@@ -81,11 +81,8 @@ export default class PostProcessor {
             return false
         }
 
-        // Reset ping-pong state for clean frame
         this.#framebufferManager.resetPingPong()
         this.#framebufferManager.bindSceneBuffer()
-
-        // Don't change blend func - let renderer use its normal blending
 
         return true
     }
@@ -99,10 +96,8 @@ export default class PostProcessor {
         const gl = this.#gl
         const activePasses = this.#passes.filter(pass => pass.enabled)
 
-        // Resolve MSAA to texture
         this.#framebufferManager.resolveSceneBuffer()
 
-        // Disable blending for post-processing passes
         gl.disable(gl.BLEND)
 
         let inputTexture = this.#framebufferManager.getSceneTexture()
@@ -113,7 +108,6 @@ export default class PostProcessor {
             if (isLast) {
                 this.#framebufferManager.bindScreen()
 
-                // Clear screen to ensure no old content remains
                 gl.clearColor(0, 0, 0, 1)
                 gl.clear(gl.COLOR_BUFFER_BIT)
             } else {
@@ -129,7 +123,6 @@ export default class PostProcessor {
             }
         }
 
-        // Re-enable blending with standard blend func for normal rendering
         gl.enable(gl.BLEND)
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
     }
