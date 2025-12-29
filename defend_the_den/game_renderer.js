@@ -28,14 +28,15 @@ export default class GameRenderer extends PerkyModule {
         this.shadowsGroup = new Group2D({name: 'shadows'})
         this.entitiesGroup = new Group2D({name: 'entities'})
 
+
+        // this.shadowsRenderer = this.create(WorldRenderer, {
+        //     $id: 'shadowsRenderer',
+        //     world: this.world,
+        //     game: this.game
+        // })
+
         this.worldRenderer = this.create(WorldRenderer, {
             $id: 'worldRenderer',
-            world: this.world,
-            game: this.game
-        })
-
-        this.shadowsRenderer = this.create(WorldRenderer, {
-            $id: 'shadowsRenderer',
             world: this.world,
             game: this.game
         })
@@ -56,12 +57,12 @@ export default class GameRenderer extends PerkyModule {
                 {width: 0.8, height: 0.8, strokeColor: '#ff0000', strokeWidth: 0.05}
             )
 
-        this.shadowsRenderer
-            .register(
-                (entity) => entity.hasTag('enemy'),
-                ShadowRenderer,
-                {radius: 0.35, color: 'rgba(0,0,0,0.25)'}
-            )
+        // this.shadowsRenderer
+        //     .register(
+        //         (entity) => entity.hasTag('enemy'),
+        //         ShadowRenderer,
+        //         {radius: 0.35, color: 'rgba(0,0,0,0.25)'}
+        //     )
     }
 
 
@@ -73,7 +74,7 @@ export default class GameRenderer extends PerkyModule {
         this.rootGroup.addChild(this.shadowsGroup)
         this.rootGroup.addChild(this.entitiesGroup)
 
-        this.shadowsGroup.addChild(this.shadowsRenderer.rootGroup)
+        // this.shadowsGroup.addChild(this.shadowsRenderer.rootGroup)
         this.entitiesGroup.addChild(this.worldRenderer.rootGroup)
     }
 
@@ -96,7 +97,7 @@ export default class GameRenderer extends PerkyModule {
 
 
     render () {
-        this.shadowsRenderer.sync()
+        // this.shadowsRenderer.sync()
         this.worldRenderer.sync()
 
         const gameLayer = this.game.getCanvas('game')

@@ -76,11 +76,11 @@ export default class DefendTheDen extends Game {
         vignettePass.setUniform('uSmoothness', 0.4)
         gameLayer.renderer.addPostPass(vignettePass)
 
-        const colorGradePass = new ColorGradePass()
-        colorGradePass.setUniform('uBrightness', 0.02)
-        colorGradePass.setUniform('uContrast', 1.05)
-        colorGradePass.setUniform('uSaturation', 1.1)
-        gameLayer.renderer.addPostPass(colorGradePass)
+        // const colorGradePass = new ColorGradePass()
+        // colorGradePass.setUniform('uBrightness', 0.02)
+        // colorGradePass.setUniform('uContrast', 1.05)
+        // colorGradePass.setUniform('uSaturation', 1.1)
+        // gameLayer.renderer.addPostPass(colorGradePass)
 
         const uiLayer = this.getHTML('ui')
         const waveProgress = this.create(WaveProgressBar, {
