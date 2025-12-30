@@ -41,7 +41,15 @@ export default class WebGLObjectRenderer {
     }
 
 
-    flush () { // eslint-disable-line class-methods-use-this
+    /**
+     * Flush collected objects to the screen.
+     *
+     * @param {Object} matrices - View/projection matrices
+     * @param {Object} [renderContext] - Optional render context for transforms
+     * @param {ShaderProgram} [renderContext.program] - Alternative shader program
+     * @param {RenderTransform} [renderContext.transform] - Active transform
+     */
+    flush (matrices, renderContext = null) { // eslint-disable-line no-unused-vars, class-methods-use-this
     }
 
 

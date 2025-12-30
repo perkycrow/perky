@@ -17,7 +17,8 @@ export default class WebGLSpriteBatch {
         this.textureManager = textureManager
 
         this.maxSprites = 1000
-        this.vertexData = new Float32Array(this.maxSprites * 4 * 5)
+        // 6 floats per vertex: x, y, u, v, opacity, feetY
+        this.vertexData = new Float32Array(this.maxSprites * 4 * 6)
         this.indexData = new Uint16Array(this.maxSprites * 6)
 
         for (let i = 0; i < this.maxSprites; i++) {
@@ -41,13 +42,15 @@ export default class WebGLSpriteBatch {
         this.currentTexture = null
         this.spriteCount = 0
         this.vertexIndex = 0
+        this.activeProgram = null
     }
 
 
-    begin () {
+    begin (program = null) {
         this.spriteCount = 0
         this.vertexIndex = 0
         this.currentTexture = null
+        this.activeProgram = program
     }
 
 
@@ -115,6 +118,10 @@ export default class WebGLSpriteBatch {
             texCoords.set(DEFAULT_TEX_COORDS)
         }
 
+        // Calculate feet Y position (minimum Y of the bottom vertices)
+        // corners[1] and corners[3] are the Y values of bottom-left and bottom-right
+        const feetY = Math.min(corners[1], corners[3])
+
         for (let i = 0; i < 4; i++) {
             const idx = this.vertexIndex
             const ci = i * 2
@@ -124,21 +131,22 @@ export default class WebGLSpriteBatch {
             this.vertexData[idx + 2] = texCoords[ci]
             this.vertexData[idx + 3] = texCoords[ci + 1]
             this.vertexData[idx + 4] = effectiveOpacity
+            this.vertexData[idx + 5] = feetY
 
-            this.vertexIndex += 5
+            this.vertexIndex += 6
         }
 
         this.spriteCount++
     }
 
 
-    flush () {
+    flush (alternateProgram = null) {
         if (this.spriteCount === 0) {
             return
         }
 
         const gl = this.gl
-        const program = this.spriteProgram
+        const program = alternateProgram || this.activeProgram || this.spriteProgram
 
         gl.useProgram(program.program)
 
@@ -149,7 +157,7 @@ export default class WebGLSpriteBatch {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
         gl.bufferData(gl.ARRAY_BUFFER, this.vertexData.subarray(0, this.vertexIndex), gl.DYNAMIC_DRAW)
 
-        const stride = 5 * 4  // 5 floats * 4 bytes
+        const stride = 6 * 4  // 6 floats * 4 bytes
 
         gl.enableVertexAttribArray(program.attributes.aPosition)
         gl.vertexAttribPointer(program.attributes.aPosition, 2, gl.FLOAT, false, stride, 0)
@@ -160,6 +168,12 @@ export default class WebGLSpriteBatch {
         gl.enableVertexAttribArray(program.attributes.aOpacity)
         gl.vertexAttribPointer(program.attributes.aOpacity, 1, gl.FLOAT, false, stride, 4 * 4)
 
+        // aFeetY attribute - only enable if the shader has it (shadow shader)
+        if (program.attributes.aFeetY !== undefined) {
+            gl.enableVertexAttribArray(program.attributes.aFeetY)
+            gl.vertexAttribPointer(program.attributes.aFeetY, 1, gl.FLOAT, false, stride, 5 * 4)
+        }
+
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
         gl.drawElements(gl.TRIANGLES, this.spriteCount * 6, gl.UNSIGNED_SHORT, 0)
 
@@ -168,8 +182,8 @@ export default class WebGLSpriteBatch {
     }
 
 
-    end () {
-        this.flush()
+    end (alternateProgram = null) {
+        this.flush(alternateProgram)
     }
 
 

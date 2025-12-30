@@ -394,8 +394,13 @@ export default class WebGLCanvas2D extends BaseRenderer {
 
         group.content.updateWorldMatrix(false)
 
+        // Build render context if group has a transform
+        const renderContext = group.renderTransform?.enabled
+            ? {transform: group.renderTransform}
+            : null
+
         for (const renderer of this.#renderers) {
-            renderer.reset()
+            renderer.reset(renderContext)
         }
 
         traverseAndCollect(group.content, this.#rendererRegistry, {
@@ -405,7 +410,7 @@ export default class WebGLCanvas2D extends BaseRenderer {
         })
 
         for (const renderer of this.#renderers) {
-            renderer.flush(matrices)
+            renderer.flush(matrices, renderContext)
         }
 
         fbManager.resolveToBuffer(group.$name)

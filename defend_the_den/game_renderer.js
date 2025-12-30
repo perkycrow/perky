@@ -4,6 +4,7 @@ import WorldView from '../game/world_view'
 import ImageView from '../game/image_view'
 import CircleView from '../game/circle_view'
 import PerkyModule from '../core/perky_module'
+import {ShadowTransform} from '../render/transforms'
 
 import Player from './player'
 import Enemy from './enemy'
@@ -73,6 +74,16 @@ export default class GameRenderer extends PerkyModule {
             {
                 $name: 'background',
                 content: this.backgroundGroup
+            },
+            {
+                $name: 'shadows',
+                content: this.entitiesGroup,
+                renderTransform: new ShadowTransform({
+                    skewX: 0.3,
+                    scaleY: -0.4,
+                    offsetY: 0.05,
+                    color: [0, 0, 0, 0.3]
+                })
             },
             {
                 $name: 'entities',

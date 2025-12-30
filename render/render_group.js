@@ -11,7 +11,7 @@ export default class RenderGroup extends PerkyModule {
     static $category = 'renderGroup'
     static $name = 'renderGroup'
 
-    constructor (options = {}) {
+    constructor (options = {}) { // eslint-disable-line complexity
         super(options)
 
         this.content = options.content ?? null
@@ -19,6 +19,7 @@ export default class RenderGroup extends PerkyModule {
         this.blendMode = options.blendMode ?? BLEND_MODES.normal
         this.visible = options.visible ?? true
         this.opacity = options.opacity ?? 1
+        this.renderTransform = options.renderTransform ?? null
 
         this.#initialized = false
     }
@@ -34,10 +35,21 @@ export default class RenderGroup extends PerkyModule {
         }
 
         this.#initPasses(renderer.shaderRegistry)
+        this.#initTransform(renderer)
 
         const fbManager = renderer.postProcessor?.framebufferManager
         if (fbManager) {
             fbManager.getOrCreateBuffer(this.$name)
+        }
+    }
+
+
+    #initTransform (renderer) {
+        if (this.renderTransform) {
+            this.renderTransform.init({
+                gl: renderer.gl,
+                shaderRegistry: renderer.shaderRegistry
+            })
         }
     }
 
@@ -65,6 +77,12 @@ export default class RenderGroup extends PerkyModule {
             pass.dispose()
         }
         this.postPasses = []
+
+        if (this.renderTransform) {
+            this.renderTransform.dispose()
+            this.renderTransform = null
+        }
+
         this.#initialized = false
     }
 

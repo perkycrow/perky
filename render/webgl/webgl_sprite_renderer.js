@@ -24,20 +24,22 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
     }
 
 
-    reset () {
+    reset (renderContext = null) {
         super.reset()
-        this.#spriteBatch.begin()
+        const program = renderContext?.transform?.getProgram() || null
+        this.#spriteBatch.begin(program)
     }
 
 
-    flush (matrices) {
+    flush (matrices, renderContext = null) {
         // First add all collected sprites to the batch
         for (const {object, opacity, hints} of this.collected) {
             this.#spriteBatch.addSprite(object, opacity, hints)
         }
 
         const gl = this.gl
-        const program = this.context.spriteProgram
+        const transform = renderContext?.transform
+        const program = transform?.getProgram() || this.context.spriteProgram
 
         gl.useProgram(program.program)
         gl.uniformMatrix3fv(program.uniforms.uProjectionMatrix, false, matrices.projectionMatrix)
@@ -46,7 +48,12 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
         const identityMatrix = [1, 0, 0, 0, 1, 0, 0, 0, 1]
         gl.uniformMatrix3fv(program.uniforms.uModelMatrix, false, identityMatrix)
 
-        this.#spriteBatch.end()
+        // Apply transform-specific uniforms if present
+        if (transform) {
+            transform.applyUniforms(gl, program, matrices)
+        }
+
+        this.#spriteBatch.end(program)
     }
 
 
