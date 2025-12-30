@@ -43,18 +43,21 @@ class MockRenderer {
 
 
 class MockCamera {
+
+    #visibleBounds
+
     constructor (visibleBounds = null) {
-        this._visibleBounds = visibleBounds
+        this.#visibleBounds = visibleBounds
     }
 
     isVisible (bounds) {
-        if (!this._visibleBounds) {
+        if (!this.#visibleBounds) {
             return true
         }
-        return bounds.x >= this._visibleBounds.minX &&
-               bounds.x <= this._visibleBounds.maxX &&
-               bounds.y >= this._visibleBounds.minY &&
-               bounds.y <= this._visibleBounds.maxY
+        return bounds.x >= this.#visibleBounds.minX &&
+               bounds.x <= this.#visibleBounds.maxX &&
+               bounds.y >= this.#visibleBounds.minY &&
+               bounds.y <= this.#visibleBounds.maxY
     }
 }
 

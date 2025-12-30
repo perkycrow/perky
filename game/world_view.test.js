@@ -33,11 +33,11 @@ class MockEntity extends PerkyModule {
         super(options)
         this.x = options.x ?? 0
         this.y = options.y ?? 0
-        this._entityTags = options.entityTags ?? []
+        this.entityTags = options.entityTags ?? []
     }
 
     hasTag (tag) {
-        return this._entityTags.includes(tag)
+        return this.entityTags.includes(tag)
     }
 }
 

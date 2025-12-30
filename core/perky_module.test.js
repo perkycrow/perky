@@ -476,13 +476,13 @@ describe(PerkyModule, () => {
         const hostModule = new PerkyModule({$id: 'host'})
         const childModule = new PerkyModule({$id: 'child'})
 
-        childModule._value = 10
+        childModule.internalValue = 10
         Object.defineProperty(childModule, 'value', {
             get () {
-                return this._value
+                return this.internalValue
             },
             set (newValue) {
-                this._value = newValue
+                this.internalValue = newValue
             },
             enumerable: true,
             configurable: true
