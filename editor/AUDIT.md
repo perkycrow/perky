@@ -273,7 +273,6 @@ Confusion entre méthode privée et publique.
 1. Consolidate style creation (3.1)
 2. Extract GridBuilder (3.3)
 3. Standardize attribute handlers (2.1)
-4. Add JSDoc (2.3)
 
 ### Phase 3 - Architecture
 1. Unify registry patterns (3.2)
