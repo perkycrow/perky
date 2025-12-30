@@ -49,6 +49,19 @@
       ],
       "title": "Shadow Transform Demo",
       "description": "Shadow projection with RenderGroups, ShadowTransform, and simulated orbiting light source."
+    },
+    {
+      "id": "depth_demo",
+      "file": "depth_demo.html",
+      "category": "render",
+      "tags": [
+        "render",
+        "depth",
+        "sorting",
+        "webgl"
+      ],
+      "title": "Depth Sorting Demo",
+      "description": "Orbiting moon demo showing automatic depth sorting based on position."
     }
   ]
 }

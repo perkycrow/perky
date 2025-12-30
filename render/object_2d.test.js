@@ -14,6 +14,7 @@ describe(Object2D, () => {
     test('constructor defaults', () => {
         expect(object.visible).toBe(true)
         expect(object.opacity).toBe(1)
+        expect(object.depth).toBe(0)
         expect(object.anchorX).toBe(0.5)
         expect(object.anchorY).toBe(0.5)
         expect(object.x).toBe(0)
@@ -32,6 +33,7 @@ describe(Object2D, () => {
             scaleX: 2,
             scaleY: 3,
             opacity: 0.5,
+            depth: 5,
             visible: false,
             anchorX: 0.25,
             anchorY: 0.75,
@@ -45,6 +47,7 @@ describe(Object2D, () => {
         expect(obj.scaleX).toBe(2)
         expect(obj.scaleY).toBe(3)
         expect(obj.opacity).toBe(0.5)
+        expect(obj.depth).toBe(5)
         expect(obj.visible).toBe(false)
         expect(obj.anchorX).toBe(0.25)
         expect(obj.anchorY).toBe(0.75)
@@ -90,8 +93,16 @@ describe(Object2D, () => {
 
     test('setOpacity', () => {
         const result = object.setOpacity(0.5)
-        
+
         expect(object.opacity).toBe(0.5)
+        expect(result).toBe(object)
+    })
+
+
+    test('setDepth', () => {
+        const result = object.setDepth(10)
+
+        expect(object.depth).toBe(10)
         expect(result).toBe(object)
     })
 
@@ -134,6 +145,7 @@ describe(Object2D, () => {
             .setRotation(Math.PI)
             .setScale(2, 3)
             .setOpacity(0.5)
+            .setDepth(7)
             .setAnchor(0.25, 0.75)
             .setPivot(5, 10)
 
@@ -144,6 +156,7 @@ describe(Object2D, () => {
         expect(object.scaleX).toBe(2)
         expect(object.scaleY).toBe(3)
         expect(object.opacity).toBe(0.5)
+        expect(object.depth).toBe(7)
         expect(object.anchorX).toBe(0.25)
         expect(object.anchorY).toBe(0.75)
         expect(object.pivotX).toBe(5)

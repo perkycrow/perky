@@ -10,10 +10,14 @@ export default class Transform2D {
     #localMatrix
     #worldMatrix
     #dirty
+    #sortedChildren
+    #childrenNeedSort
 
     constructor () {
         this.parent = null
         this.children = []
+        this.#sortedChildren = null
+        this.#childrenNeedSort = false
 
         this.#localMatrix = [1, 0, 0, 1, 0, 0]
         this.#worldMatrix = [1, 0, 0, 1, 0, 0]
@@ -126,6 +130,7 @@ export default class Transform2D {
             child.parent = this
             child.markDirty()
         })
+        this.markChildrenNeedSort()
         return this
     }
 
@@ -137,7 +142,23 @@ export default class Transform2D {
             child.parent = null
             child.markDirty()
         }
+        this.markChildrenNeedSort()
         return this
+    }
+
+
+    markChildrenNeedSort () {
+        this.#childrenNeedSort = true
+        this.#sortedChildren = null
+    }
+
+
+    getSortedChildren () {
+        if (this.#childrenNeedSort || !this.#sortedChildren) {
+            this.#sortedChildren = this.children.slice().sort((a, b) => (a.depth ?? 0) - (b.depth ?? 0))
+            this.#childrenNeedSort = false
+        }
+        return this.#sortedChildren
     }
 
 

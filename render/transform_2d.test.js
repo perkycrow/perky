@@ -153,7 +153,7 @@ describe(Transform2D, () => {
     test('markDirty propagates to children', () => {
         const child1 = new Transform2D()
         const child2 = new Transform2D()
-        
+
         transform.add(child1)
         child1.add(child2)
 
@@ -162,12 +162,95 @@ describe(Transform2D, () => {
         child2.updateWorldMatrix()
 
         transform.markDirty()
-        
+
         transform.x = 100
         transform.updateWorldMatrix()
 
         const m = child2.worldMatrix
         expect(m[4]).toBeCloseTo(100)
+    })
+
+
+    test('getSortedChildren returns children sorted by depth', () => {
+        const child1 = new Transform2D()
+        child1.depth = 2
+        const child2 = new Transform2D()
+        child2.depth = 0
+        const child3 = new Transform2D()
+        child3.depth = 1
+
+        transform.add(child1, child2, child3)
+
+        const sorted = transform.getSortedChildren()
+
+        expect(sorted[0]).toBe(child2)
+        expect(sorted[1]).toBe(child3)
+        expect(sorted[2]).toBe(child1)
+    })
+
+
+    test('getSortedChildren caches result', () => {
+        const child1 = new Transform2D()
+        child1.depth = 1
+        const child2 = new Transform2D()
+        child2.depth = 0
+
+        transform.add(child1, child2)
+
+        const sorted1 = transform.getSortedChildren()
+        const sorted2 = transform.getSortedChildren()
+
+        expect(sorted1).toBe(sorted2)
+    })
+
+
+    test('markChildrenNeedSort invalidates cache', () => {
+        const child1 = new Transform2D()
+        child1.depth = 1
+        const child2 = new Transform2D()
+        child2.depth = 0
+
+        transform.add(child1, child2)
+
+        const sorted1 = transform.getSortedChildren()
+        transform.markChildrenNeedSort()
+        const sorted2 = transform.getSortedChildren()
+
+        expect(sorted1).not.toBe(sorted2)
+    })
+
+
+    test('add triggers re-sort on next getSortedChildren call', () => {
+        const child1 = new Transform2D()
+        child1.depth = 1
+
+        transform.add(child1)
+        const sorted1 = transform.getSortedChildren()
+
+        const child2 = new Transform2D()
+        child2.depth = 0
+        transform.add(child2)
+
+        const sorted2 = transform.getSortedChildren()
+        expect(sorted2[0]).toBe(child2)
+        expect(sorted2[1]).toBe(child1)
+    })
+
+
+    test('remove triggers re-sort on next getSortedChildren call', () => {
+        const child1 = new Transform2D()
+        child1.depth = 0
+        const child2 = new Transform2D()
+        child2.depth = 1
+
+        transform.add(child1, child2)
+        const sorted1 = transform.getSortedChildren()
+        expect(sorted1.length).toBe(2)
+
+        transform.remove(child1)
+        const sorted2 = transform.getSortedChildren()
+        expect(sorted2.length).toBe(1)
+        expect(sorted2[0]).toBe(child2)
     })
 
 })

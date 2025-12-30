@@ -3,16 +3,30 @@ import {traverseAndCollect} from './traverse'
 
 
 class MockObject {
+
+    #worldBounds
+    #sortedChildren = null
+    #childrenNeedSort = true
+
     constructor (options = {}) {
         this.visible = options.visible ?? true
         this.opacity = options.opacity ?? 1
+        this.depth = options.depth
         this.children = options.children ?? []
         this.renderHints = options.renderHints ?? null
-        this._worldBounds = options.worldBounds ?? {x: 0, y: 0, width: 1, height: 1}
+        this.#worldBounds = options.worldBounds ?? {x: 0, y: 0, width: 1, height: 1}
     }
 
     getWorldBounds () {
-        return this._worldBounds
+        return this.#worldBounds
+    }
+
+    getSortedChildren () {
+        if (this.#childrenNeedSort || !this.#sortedChildren) {
+            this.#sortedChildren = this.children.slice().sort((a, b) => (a.depth ?? 0) - (b.depth ?? 0))
+            this.#childrenNeedSort = false
+        }
+        return this.#sortedChildren
     }
 }
 
@@ -274,6 +288,76 @@ describe('traverseAndCollect', () => {
             traverseAndCollect(root, rendererRegistry, {stats})
 
             expect(stats.totalObjects).toBe(0)
+        })
+
+    })
+
+
+    describe('depth sorting', () => {
+
+        test('renders children sorted by depth', () => {
+            const child1 = new MockObject({depth: 2})
+            const child2 = new MockObject({depth: 0})
+            const child3 = new MockObject({depth: 1})
+            const root = new MockObject({children: [child1, child2, child3]})
+
+            traverseAndCollect(root, rendererRegistry)
+
+            expect(mockRenderer.collected[1].object).toBe(child2) // depth 0
+            expect(mockRenderer.collected[2].object).toBe(child3) // depth 1
+            expect(mockRenderer.collected[3].object).toBe(child1) // depth 2
+        })
+
+
+        test('preserves insertion order for same depth', () => {
+            const child1 = new MockObject({depth: 0})
+            const child2 = new MockObject({depth: 0})
+            const child3 = new MockObject({depth: 0})
+            const root = new MockObject({children: [child1, child2, child3]})
+
+            traverseAndCollect(root, rendererRegistry)
+
+            expect(mockRenderer.collected[1].object).toBe(child1)
+            expect(mockRenderer.collected[2].object).toBe(child2)
+            expect(mockRenderer.collected[3].object).toBe(child3)
+        })
+
+
+        test('handles negative depth values', () => {
+            const child1 = new MockObject({depth: 0})
+            const child2 = new MockObject({depth: -1})
+            const child3 = new MockObject({depth: 1})
+            const root = new MockObject({children: [child1, child2, child3]})
+
+            traverseAndCollect(root, rendererRegistry)
+
+            expect(mockRenderer.collected[1].object).toBe(child2) // depth -1
+            expect(mockRenderer.collected[2].object).toBe(child1) // depth 0
+            expect(mockRenderer.collected[3].object).toBe(child3) // depth 1
+        })
+
+
+        test('treats undefined depth as 0', () => {
+            const child1 = new MockObject({depth: 1})
+            const child2 = new MockObject() // no depth, should be 0
+            const root = new MockObject({children: [child1, child2]})
+
+            traverseAndCollect(root, rendererRegistry)
+
+            expect(mockRenderer.collected[1].object).toBe(child2) // depth 0
+            expect(mockRenderer.collected[2].object).toBe(child1) // depth 1
+        })
+
+
+        test('does not mutate original children array', () => {
+            const child1 = new MockObject({depth: 2})
+            const child2 = new MockObject({depth: 0})
+            const root = new MockObject({children: [child1, child2]})
+
+            traverseAndCollect(root, rendererRegistry)
+
+            expect(root.children[0]).toBe(child1)
+            expect(root.children[1]).toBe(child2)
         })
 
     })

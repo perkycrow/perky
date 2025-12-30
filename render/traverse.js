@@ -50,8 +50,11 @@ function traverseNode (object, ctx, parentOpacity) { // eslint-disable-line comp
         renderer.collect(object, effectiveOpacity, object.renderHints)
     }
 
-    const children = object.children
-    for (let i = 0, len = children.length; i < len; i++) {
-        traverseNode(children[i], ctx, effectiveOpacity)
+    const sortedChildren = object.getSortedChildren
+        ? object.getSortedChildren()
+        : object.children
+
+    for (let i = 0, len = sortedChildren.length; i < len; i++) {
+        traverseNode(sortedChildren[i], ctx, effectiveOpacity)
     }
 }

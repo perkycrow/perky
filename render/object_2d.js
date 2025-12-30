@@ -8,6 +8,7 @@ export default class Object2D extends Transform2D {
         
         this.visible = options.visible ?? true
         this.opacity = options.opacity ?? 1
+        this.depth = options.depth ?? 0
         this.anchorX = options.anchorX ?? 0.5
         this.anchorY = options.anchorY ?? 0.5
         
@@ -68,6 +69,18 @@ export default class Object2D extends Transform2D {
     setVisible (visible) {
         this.visible = visible
         this.markDirty()
+        return this
+    }
+
+
+    setDepth (depth) {
+        if (this.depth !== depth) {
+            this.depth = depth
+            if (this.parent) {
+                this.parent.markChildrenNeedSort()
+            }
+            this.markDirty()
+        }
         return this
     }
 
