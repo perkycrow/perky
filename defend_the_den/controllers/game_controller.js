@@ -87,11 +87,6 @@ export default class GameController extends WorldController {
     }
 
 
-    onGameOver () {
-        console.log('GAME OVER! A pig reached your base!')
-    }
-
-
     checkCollisions () {
         const projectiles = this.world.childrenByTags('projectile')
         const enemies = this.world.childrenByTags('enemy')
@@ -131,8 +126,6 @@ export default class GameController extends WorldController {
             : 0
 
         this.emit('wave:progress', progress)
-
-        console.log('Hit! Enemy destroyed!')
     }
 
 
@@ -148,8 +141,6 @@ export default class GameController extends WorldController {
 
         this.emit('wave:start', waveNumber)
         this.emit('wave:progress', 0)
-
-        console.log(`🌊 Wave ${waveNumber + 1} started! ${config.enemyCount} enemies incoming!`)
     }
 
 
@@ -219,8 +210,6 @@ export default class GameController extends WorldController {
         this.waveActive = false
 
         this.emit('wave:complete', this.currentWave)
-
-        console.log(`✅ Wave ${this.currentWave + 1} complete!`)
 
         setTimeout(() => {
             this.startWave(this.currentWave + 1)

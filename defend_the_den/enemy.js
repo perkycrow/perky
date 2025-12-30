@@ -1,12 +1,10 @@
 import Entity from '../game/entity'
-import {trackInstance, untrackInstance} from '../core/debug'
 
 
 export default class Enemy extends Entity {
 
     constructor (params = {}) {
         super(params)
-        trackInstance('Enemy', this)
 
         const {maxSpeed = 3, boundaries = {min: -1.5, max: 1}} = params
 
@@ -30,11 +28,6 @@ export default class Enemy extends Entity {
         if (this.position.x < -2.5) {
             this.alive = false
         }
-    }
-
-
-    onDispose () {
-        untrackInstance('Enemy', this)
     }
 
 }

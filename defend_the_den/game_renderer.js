@@ -20,11 +20,9 @@ export default class GameRenderer extends PerkyModule {
         this.world = options.world
         this.game = options.game
 
-        // Scene graph groups (content for each render layer)
         this.backgroundGroup = new Group2D({name: 'background'})
         this.entitiesGroup = new Group2D({name: 'entities'})
 
-        // World view for entities
         this.worldView = this.create(WorldView, {
             $id: 'worldView',
             world: this.world,

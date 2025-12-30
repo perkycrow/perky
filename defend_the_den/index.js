@@ -13,7 +13,6 @@ async function init () {
         preload: 'all'
     })
 
-    // Attach devtools for debugging
     const devtools = document.createElement('perky-devtools')
     document.body.appendChild(devtools)
     devtools.setModule(app)
