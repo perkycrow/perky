@@ -1,4 +1,4 @@
-export default class EntityRenderer {
+export default class EntityView {
 
     constructor (entity, context) {
         this.entity = entity

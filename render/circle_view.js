@@ -1,8 +1,8 @@
-import EntityRenderer from './entity_renderer'
+import EntityView from '../game/entity_view'
 import Circle from './circle'
 
 
-export default class CircleRenderer extends EntityRenderer {
+export default class CircleView extends EntityView {
 
     constructor (entity, context) {
         super(entity, context)
@@ -18,4 +18,3 @@ export default class CircleRenderer extends EntityRenderer {
     }
 
 }
-

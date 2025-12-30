@@ -1,8 +1,8 @@
-import EntityRenderer from '../../render/entity_renderer'
+import EntityView from '../../game/entity_view'
 import Image2D from '../../render/image_2d'
 
 
-export default class PlayerRenderer extends EntityRenderer {
+export default class PlayerView extends EntityView {
 
     constructor (entity, context) {
         super(entity, context)

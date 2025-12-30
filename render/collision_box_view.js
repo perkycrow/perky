@@ -1,8 +1,8 @@
-import EntityRenderer from './entity_renderer'
+import EntityView from '../game/entity_view'
 import Rectangle from './rectangle'
 
 
-export default class CollisionBoxRenderer extends EntityRenderer {
+export default class CollisionBoxView extends EntityView {
 
     constructor (entity, context) {
         super(entity, context)
@@ -21,4 +21,3 @@ export default class CollisionBoxRenderer extends EntityRenderer {
     }
 
 }
-

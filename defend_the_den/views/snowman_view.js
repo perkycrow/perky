@@ -1,9 +1,9 @@
-import EntityRenderer from '../../render/entity_renderer'
+import EntityView from '../../game/entity_view'
 import Group2D from '../../render/group_2d'
 import Circle from '../../render/circle'
 
 
-export default class SnowmanRenderer extends EntityRenderer {
+export default class SnowmanView extends EntityView {
 
     constructor (entity, context) {
         super(entity, context)

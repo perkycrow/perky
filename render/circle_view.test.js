@@ -1,5 +1,5 @@
 import {describe, test, expect, beforeEach} from 'vitest'
-import CircleRenderer from './circle_renderer'
+import CircleView from './circle_view'
 import Circle from './circle'
 import Group2D from './group_2d'
 
@@ -20,45 +20,45 @@ class MockContext {
 }
 
 
-describe('CircleRenderer', () => {
+describe('CircleView', () => {
 
     let entity
     let context
-    let renderer
+    let view
 
     beforeEach(() => {
         entity = new MockEntity(10, 20)
         context = new MockContext()
-        renderer = new CircleRenderer(entity, context)
+        view = new CircleView(entity, context)
     })
 
 
     describe('constructor', () => {
 
-        test('extends EntityRenderer', () => {
-            expect(renderer.entity).toBe(entity)
-            expect(renderer.context).toBe(context)
+        test('extends EntityView', () => {
+            expect(view.entity).toBe(entity)
+            expect(view.context).toBe(context)
         })
 
 
         test('creates a Circle as root', () => {
-            expect(renderer.root).toBeInstanceOf(Circle)
+            expect(view.root).toBeInstanceOf(Circle)
         })
 
 
         test('positions circle at entity position', () => {
-            expect(renderer.root.x).toBe(10)
-            expect(renderer.root.y).toBe(20)
+            expect(view.root.x).toBe(10)
+            expect(view.root.y).toBe(20)
         })
 
 
         test('uses default radius of 0.5', () => {
-            expect(renderer.root.radius).toBe(0.5)
+            expect(view.root.radius).toBe(0.5)
         })
 
 
         test('uses default color of white', () => {
-            expect(renderer.root.color).toBe('#ffffff')
+            expect(view.root.color).toBe('#ffffff')
         })
 
     })
@@ -68,26 +68,26 @@ describe('CircleRenderer', () => {
 
         test('accepts custom radius', () => {
             const customContext = new MockContext({radius: 2.5})
-            const customRenderer = new CircleRenderer(entity, customContext)
+            const customView = new CircleView(entity, customContext)
 
-            expect(customRenderer.root.radius).toBe(2.5)
+            expect(customView.root.radius).toBe(2.5)
         })
 
 
         test('accepts custom color', () => {
             const customContext = new MockContext({color: '#ff0000'})
-            const customRenderer = new CircleRenderer(entity, customContext)
+            const customView = new CircleView(entity, customContext)
 
-            expect(customRenderer.root.color).toBe('#ff0000')
+            expect(customView.root.color).toBe('#ff0000')
         })
 
 
         test('handles missing config gracefully', () => {
             const noConfigContext = {group: new Group2D()}
-            const noConfigRenderer = new CircleRenderer(entity, noConfigContext)
+            const noConfigView = new CircleView(entity, noConfigContext)
 
-            expect(noConfigRenderer.root.radius).toBe(0.5)
-            expect(noConfigRenderer.root.color).toBe('#ffffff')
+            expect(noConfigView.root.radius).toBe(0.5)
+            expect(noConfigView.root.color).toBe('#ffffff')
         })
 
     })
@@ -98,10 +98,10 @@ describe('CircleRenderer', () => {
         test('updates circle position from entity', () => {
             entity.x = 100
             entity.y = 200
-            renderer.sync()
+            view.sync()
 
-            expect(renderer.root.x).toBe(100)
-            expect(renderer.root.y).toBe(200)
+            expect(view.root.x).toBe(100)
+            expect(view.root.y).toBe(200)
         })
 
     })
@@ -110,11 +110,11 @@ describe('CircleRenderer', () => {
     describe('dispose', () => {
 
         test('cleans up properly', () => {
-            context.group.addChild(renderer.root)
-            renderer.dispose()
+            context.group.addChild(view.root)
+            view.dispose()
 
-            expect(renderer.root).toBeNull()
-            expect(renderer.entity).toBeNull()
+            expect(view.root).toBeNull()
+            expect(view.entity).toBeNull()
         })
 
     })

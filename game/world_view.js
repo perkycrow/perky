@@ -1,14 +1,14 @@
 import PerkyModule from '../core/perky_module'
-import Group2D from './group_2d'
+import Group2D from '../render/group_2d'
 
 
-export default class WorldRenderer extends PerkyModule {
+export default class WorldView extends PerkyModule {
 
-    static $category = 'worldRenderer'
+    static $category = 'worldView'
 
     #classRegistry = new Map()
     #matcherRegistry = []
-    #renderers = new Map()
+    #views = new Map()
 
     constructor (options = {}) {
         super(options)
@@ -19,18 +19,18 @@ export default class WorldRenderer extends PerkyModule {
     }
 
 
-    register (classOrMatcher, Renderer, config = null) {
+    register (classOrMatcher, View, config = null) {
         if (typeof classOrMatcher === 'function' && classOrMatcher.prototype) {
             const isClass = classOrMatcher.toString().startsWith('class ') ||
                 Object.getOwnPropertyNames(classOrMatcher.prototype).length > 1
 
             if (isClass) {
-                this.#classRegistry.set(classOrMatcher, {Renderer, config})
+                this.#classRegistry.set(classOrMatcher, {View, config})
                 return this
             }
         }
 
-        this.#matcherRegistry.push({matcher: classOrMatcher, Renderer, config})
+        this.#matcherRegistry.push({matcher: classOrMatcher, View, config})
         return this
     }
 
@@ -73,34 +73,34 @@ export default class WorldRenderer extends PerkyModule {
 
 
     onStop () {
-        this.#disposeAllRenderers()
+        this.#disposeAllViews()
     }
 
 
     sync () {
-        for (const renderers of this.#renderers.values()) {
-            for (const renderer of renderers) {
-                renderer.sync()
+        for (const views of this.#views.values()) {
+            for (const view of views) {
+                view.sync()
             }
         }
     }
 
 
-    getRenderers (entityId) {
-        return this.#renderers.get(entityId) || []
+    getViews (entityId) {
+        return this.#views.get(entityId) || []
     }
 
 
     #handleEntitySet (entity) {
-        const registrations = this.#resolveRenderers(entity)
+        const registrations = this.#resolveViews(entity)
 
         if (registrations.length === 0) {
             return
         }
 
-        const renderers = []
+        const views = []
 
-        for (const {Renderer, config} of registrations) {
+        for (const {View, config} of registrations) {
             const context = {
                 game: this.game,
                 world: this.world,
@@ -108,47 +108,47 @@ export default class WorldRenderer extends PerkyModule {
                 config
             }
 
-            const renderer = new Renderer(entity, context)
+            const view = new View(entity, context)
 
-            if (renderer.root) {
-                renderer.root.$entity = entity
-                renderer.root.$renderer = renderer
-                renderer.root.$rendererName = Renderer.name
-                this.rootGroup.addChild(renderer.root)
+            if (view.root) {
+                view.root.$entity = entity
+                view.root.$view = view
+                view.root.$viewName = View.name
+                this.rootGroup.addChild(view.root)
             }
 
-            renderers.push(renderer)
+            views.push(view)
         }
 
-        this.#renderers.set(entity.$id, renderers)
-        this.emit('renderer:added', entity.$id, renderers)
+        this.#views.set(entity.$id, views)
+        this.emit('view:added', entity.$id, views)
     }
 
 
     #handleEntityDelete (entityId) {
-        const renderers = this.#renderers.get(entityId)
+        const views = this.#views.get(entityId)
 
-        if (renderers) {
-            this.emit('renderer:removed', entityId, renderers)
-            for (const renderer of renderers) {
-                renderer.dispose()
+        if (views) {
+            this.emit('view:removed', entityId, views)
+            for (const view of views) {
+                view.dispose()
             }
-            this.#renderers.delete(entityId)
+            this.#views.delete(entityId)
         }
     }
 
 
-    #disposeAllRenderers () {
-        for (const renderers of this.#renderers.values()) {
-            for (const renderer of renderers) {
-                renderer.dispose()
+    #disposeAllViews () {
+        for (const views of this.#views.values()) {
+            for (const view of views) {
+                view.dispose()
             }
         }
-        this.#renderers.clear()
+        this.#views.clear()
     }
 
 
-    #resolveRenderers (entity) {
+    #resolveViews (entity) {
         const results = []
         const EntityClass = entity.constructor
 

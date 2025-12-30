@@ -1,5 +1,5 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
-import ImageRenderer from './image_renderer'
+import ImageView from './image_view'
 import Image2D from './image_2d'
 import Group2D from './group_2d'
 
@@ -23,35 +23,35 @@ class MockContext {
 }
 
 
-describe('ImageRenderer', () => {
+describe('ImageView', () => {
 
     let entity
     let context
-    let renderer
+    let view
 
     beforeEach(() => {
         entity = new MockEntity(10, 20)
         context = new MockContext({image: 'test-sprite'})
-        renderer = new ImageRenderer(entity, context)
+        view = new ImageView(entity, context)
     })
 
 
     describe('constructor', () => {
 
-        test('extends EntityRenderer', () => {
-            expect(renderer.entity).toBe(entity)
-            expect(renderer.context).toBe(context)
+        test('extends EntityView', () => {
+            expect(view.entity).toBe(entity)
+            expect(view.context).toBe(context)
         })
 
 
         test('creates an Image2D as root', () => {
-            expect(renderer.root).toBeInstanceOf(Image2D)
+            expect(view.root).toBeInstanceOf(Image2D)
         })
 
 
         test('positions image at entity position', () => {
-            expect(renderer.root.x).toBe(10)
-            expect(renderer.root.y).toBe(20)
+            expect(view.root.x).toBe(10)
+            expect(view.root.y).toBe(20)
         })
 
 
@@ -61,14 +61,14 @@ describe('ImageRenderer', () => {
 
 
         test('uses default dimensions of 1x1', () => {
-            expect(renderer.root.width).toBe(1)
-            expect(renderer.root.height).toBe(1)
+            expect(view.root.width).toBe(1)
+            expect(view.root.height).toBe(1)
         })
 
 
         test('uses default anchor of 0.5, 0.5 (center)', () => {
-            expect(renderer.root.anchorX).toBe(0.5)
-            expect(renderer.root.anchorY).toBe(0.5)
+            expect(view.root.anchorX).toBe(0.5)
+            expect(view.root.anchorY).toBe(0.5)
         })
 
     })
@@ -82,10 +82,10 @@ describe('ImageRenderer', () => {
                 width: 2.5,
                 height: 3.0
             })
-            const customRenderer = new ImageRenderer(entity, customContext)
+            const customView = new ImageView(entity, customContext)
 
-            expect(customRenderer.root.width).toBe(2.5)
-            expect(customRenderer.root.height).toBe(3.0)
+            expect(customView.root.width).toBe(2.5)
+            expect(customView.root.height).toBe(3.0)
         })
 
 
@@ -95,10 +95,10 @@ describe('ImageRenderer', () => {
                 anchorX: 0,
                 anchorY: 1
             })
-            const customRenderer = new ImageRenderer(entity, customContext)
+            const customView = new ImageView(entity, customContext)
 
-            expect(customRenderer.root.anchorX).toBe(0)
-            expect(customRenderer.root.anchorY).toBe(1)
+            expect(customView.root.anchorX).toBe(0)
+            expect(customView.root.anchorY).toBe(1)
         })
 
 
@@ -107,10 +107,10 @@ describe('ImageRenderer', () => {
                 group: new Group2D(),
                 game: {getImage: vi.fn(() => ({width: 32, height: 32}))}
             }
-            const minimalRenderer = new ImageRenderer(entity, minimalContext)
+            const minimalView = new ImageView(entity, minimalContext)
 
-            expect(minimalRenderer.root.width).toBe(1)
-            expect(minimalRenderer.root.height).toBe(1)
+            expect(minimalView.root.width).toBe(1)
+            expect(minimalView.root.height).toBe(1)
         })
 
     })
@@ -121,10 +121,10 @@ describe('ImageRenderer', () => {
         test('updates image position from entity', () => {
             entity.x = 100
             entity.y = 200
-            renderer.sync()
+            view.sync()
 
-            expect(renderer.root.x).toBe(100)
-            expect(renderer.root.y).toBe(200)
+            expect(view.root.x).toBe(100)
+            expect(view.root.y).toBe(200)
         })
 
     })
@@ -133,11 +133,11 @@ describe('ImageRenderer', () => {
     describe('dispose', () => {
 
         test('cleans up properly', () => {
-            context.group.addChild(renderer.root)
-            renderer.dispose()
+            context.group.addChild(view.root)
+            view.dispose()
 
-            expect(renderer.root).toBeNull()
-            expect(renderer.entity).toBeNull()
+            expect(view.root).toBeNull()
+            expect(view.entity).toBeNull()
         })
 
     })

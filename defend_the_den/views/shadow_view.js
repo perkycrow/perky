@@ -1,8 +1,8 @@
-import EntityRenderer from '../../render/entity_renderer'
+import EntityView from '../../game/entity_view'
 import Circle from '../../render/circle'
 
 
-export default class ShadowRenderer extends EntityRenderer {
+export default class ShadowView extends EntityView {
 
     constructor (entity, context) {
         super(entity, context)

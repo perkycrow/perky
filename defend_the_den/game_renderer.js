@@ -1,9 +1,9 @@
 import Group2D from '../render/group_2d'
 import Image2D from '../render/image_2d'
-import WorldRenderer from '../render/world_renderer'
-import ImageRenderer from '../render/image_renderer'
-import CircleRenderer from '../render/circle_renderer'
-import CollisionBoxRenderer from '../render/collision_box_renderer'
+import WorldView from '../game/world_view'
+import ImageView from '../render/image_view'
+import CircleView from '../render/circle_view'
+import CollisionBoxView from '../render/collision_box_view'
 import PerkyModule from '../core/perky_module'
 
 import Player from './player'
@@ -11,9 +11,9 @@ import Enemy from './enemy'
 import Projectile from './projectile'
 import Snowman from './snowman'
 
-import PlayerRenderer from './renderers/player_renderer'
-import SnowmanRenderer from './renderers/snowman_renderer'
-import ShadowRenderer from './renderers/shadow_renderer'
+import PlayerView from './views/player_view'
+import SnowmanView from './views/snowman_view'
+import ShadowView from './views/shadow_view'
 
 
 export default class GameRenderer extends PerkyModule {
@@ -28,41 +28,41 @@ export default class GameRenderer extends PerkyModule {
         this.shadowsGroup = new Group2D({name: 'shadows'})
         this.entitiesGroup = new Group2D({name: 'entities'})
 
-        // World renderer for entities
-        this.worldRenderer = this.create(WorldRenderer, {
-            $id: 'worldRenderer',
+        // World view for entities
+        this.worldView = this.create(WorldView, {
+            $id: 'worldView',
             world: this.world,
             game: this.game
         })
 
-        // Shadow renderer for enemy shadows
-        this.shadowsRenderer = this.create(WorldRenderer, {
-            $id: 'shadowsRenderer',
+        // Shadow view for enemy shadows
+        this.shadowsView = this.create(WorldView, {
+            $id: 'shadowsView',
             world: this.world,
             game: this.game
         })
 
-        this.#registerRenderers()
+        this.#registerViews()
     }
 
 
-    #registerRenderers () {
-        this.worldRenderer
-            .register(Player, PlayerRenderer)
-            .register(Enemy, ImageRenderer, {image: 'pig', width: 1, height: 1})
-            .register(Projectile, CircleRenderer, {radius: 0.1, color: '#000000'})
-            .register(Snowman, SnowmanRenderer)
+    #registerViews () {
+        this.worldView
+            .register(Player, PlayerView)
+            .register(Enemy, ImageView, {image: 'pig', width: 1, height: 1})
+            .register(Projectile, CircleView, {radius: 0.1, color: '#000000'})
+            .register(Snowman, SnowmanView)
             .register(
                 (entity) => entity.hasTag('enemy'),
-                CollisionBoxRenderer,
+                CollisionBoxView,
                 {width: 0.8, height: 0.8, strokeColor: '#ff0000', strokeWidth: 0.05}
             )
 
-        // Shadow renderer only for enemies
-        this.shadowsRenderer
+        // Shadow view only for enemies
+        this.shadowsView
             .register(
                 (entity) => entity.hasTag('enemy'),
-                ShadowRenderer,
+                ShadowView,
                 {radius: 0.35, color: 'rgba(0,0,0,0.25)'}
             )
     }
@@ -89,9 +89,9 @@ export default class GameRenderer extends PerkyModule {
 
         this.backgroundGroup.addChild(background)
 
-        // Link renderers to their groups
-        this.shadowsGroup.addChild(this.shadowsRenderer.rootGroup)
-        this.entitiesGroup.addChild(this.worldRenderer.rootGroup)
+        // Link views to their groups
+        this.shadowsGroup.addChild(this.shadowsView.rootGroup)
+        this.entitiesGroup.addChild(this.worldView.rootGroup)
     }
 
 
@@ -121,8 +121,8 @@ export default class GameRenderer extends PerkyModule {
 
 
     render () {
-        this.shadowsRenderer.sync()
-        this.worldRenderer.sync()
+        this.shadowsView.sync()
+        this.worldView.sync()
 
         const gameLayer = this.game.getCanvas('game')
         gameLayer.markDirty()  // Mark dirty to trigger re-render

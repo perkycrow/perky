@@ -1,22 +1,22 @@
 import BaseInspector from './base_inspector.js'
-import WorldRenderer from '../../render/world_renderer.js'
+import WorldView from '../../game/world_view.js'
 
 
 const customStyles = `
-    .renderer-list {
+    .view-list {
         margin-top: 8px;
         padding-top: 8px;
         border-top: 1px solid var(--border);
     }
 
-    .renderer-list-title {
+    .view-list-title {
         color: var(--fg-secondary);
         font-size: 10px;
         margin-bottom: 6px;
         text-transform: uppercase;
     }
 
-    .renderer-item {
+    .view-item {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -25,17 +25,17 @@ const customStyles = `
         font-size: 11px;
     }
 
-    .renderer-count {
+    .view-count {
         color: var(--fg-muted);
         font-size: 10px;
     }
 `
 
 
-export default class WorldRendererInspector extends BaseInspector {
+export default class WorldViewInspector extends BaseInspector {
 
     static matches (module) {
-        return module instanceof WorldRenderer
+        return module instanceof WorldView
     }
 
 
@@ -59,15 +59,15 @@ export default class WorldRendererInspector extends BaseInspector {
 
         this.clearContent()
 
-        const renderer = this.module
+        const worldView = this.module
 
-        this.addRow('world', renderer.world?.$id || '(none)')
-        this.addRow('game', renderer.game?.$id || '(none)')
+        this.addRow('world', worldView.world?.$id || '(none)')
+        this.addRow('game', worldView.game?.$id || '(none)')
 
-        const entityCount = renderer.rootGroup?.children?.length ?? 0
+        const entityCount = worldView.rootGroup?.children?.length ?? 0
         this.addRow('entities', entityCount, true)
 
-        if (renderer.rootGroup && entityCount > 0) {
+        if (worldView.rootGroup && entityCount > 0) {
             const sceneTreeBtn = this.createButton('🎬', 'Scene Tree', () => this.#openSceneTree())
             sceneTreeBtn.classList.add('primary')
             this.actionsEl.appendChild(sceneTreeBtn)
@@ -85,7 +85,7 @@ export default class WorldRendererInspector extends BaseInspector {
             composed: true,
             detail: {
                 content: this.module.rootGroup,
-                worldRenderer: this.module
+                worldView: this.module
             }
         }))
     }
@@ -93,4 +93,4 @@ export default class WorldRendererInspector extends BaseInspector {
 }
 
 
-customElements.define('world-renderer-inspector', WorldRendererInspector)
+customElements.define('world-view-inspector', WorldViewInspector)

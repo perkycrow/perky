@@ -1,9 +1,7 @@
-import PerkyModule from '../core/perky_module'
+import World from '../game/world'
 
 
-export default class World extends PerkyModule {
-
-    static $category = 'world'
+export default class DenWorld extends World {
 
     constructor (options = {}) {
         super(options)
@@ -11,16 +9,6 @@ export default class World extends PerkyModule {
         this.addTagsIndex(['updatable'])
         this.addTagsIndex(['enemy'])
         this.addTagsIndex(['projectile'])
-    }
-
-
-    get entities () {
-        return this.childrenByCategory('entity')
-    }
-
-
-    childrenByCategory (category) {
-        return this.childrenRegistry.lookup('$category', category)
     }
 
 }
