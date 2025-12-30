@@ -35,6 +35,20 @@
       ],
       "title": "Camera Transitions",
       "description": "Camera animations, transitions with easing, and effects like screenshake."
+    },
+    {
+      "id": "shadow_demo",
+      "file": "shadow_demo.html",
+      "category": "render",
+      "tags": [
+        "render",
+        "webgl",
+        "shadow",
+        "transform",
+        "lighting"
+      ],
+      "title": "Shadow Transform Demo",
+      "description": "Shadow projection with RenderGroups, ShadowTransform, and simulated orbiting light source."
     }
   ]
 }
