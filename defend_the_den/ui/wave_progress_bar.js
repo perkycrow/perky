@@ -68,35 +68,47 @@ export default class WaveProgressBar extends PerkyModule {
         style.textContent = `
             .wave-progress {
                 position: absolute;
-                top: 16px;
+                top: 20px;
                 left: 50%;
                 transform: translateX(-50%);
                 text-align: center;
-                font-family: system-ui, sans-serif;
+                font-family: 'Segoe UI', system-ui, sans-serif;
             }
 
             .wave-progress-label {
-                color: #333;
-                font-size: 14px;
-                font-weight: 600;
-                margin-bottom: 6px;
-                text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+                color: rgba(255, 255, 255, 0.9);
+                font-size: 12px;
+                font-weight: 500;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+                margin-bottom: 8px;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            }
+
+            .wave-progress-label .wave-number {
+                font-weight: 700;
+                color: #fff;
             }
 
             .wave-progress-track {
-                width: 200px;
-                height: 8px;
-                background: rgba(0,0,0,0.15);
-                border-radius: 4px;
+                width: 180px;
+                height: 4px;
+                background: rgba(255, 255, 255, 0.15);
+                border-radius: 2px;
                 overflow: hidden;
+                box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
             }
 
             .wave-progress-fill {
                 height: 100%;
                 width: 0%;
-                background: linear-gradient(90deg, #4ade80, #22c55e);
-                border-radius: 4px;
-                transition: width 0.3s ease;
+                background: linear-gradient(90deg,
+                    rgba(255, 255, 255, 0.6),
+                    rgba(255, 255, 255, 0.9)
+                );
+                border-radius: 2px;
+                transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
             }
         `
         this.root.appendChild(style)

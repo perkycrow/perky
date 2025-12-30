@@ -3,7 +3,6 @@ import DenWorld from './world'
 
 import GameController from './controllers/game_controller'
 import GameRenderer from './game_renderer'
-import Snowman from './snowman'
 import WaveProgressBar from './ui/wave_progress_bar'
 
 import VignettePass from '../render/postprocessing/passes/vignette_pass'
@@ -35,7 +34,7 @@ export default class DefendTheDen extends Game {
                     type: 'webgl',
                     camera: 'main',
                     pixelRatio: 1.5,
-                    backgroundColor: '#f9f9f9',
+                    backgroundColor: '#000000',
                     enableCulling: true
                 },
                 {
@@ -74,8 +73,6 @@ export default class DefendTheDen extends Game {
 
         const gameLayer = this.getCanvas('game')
         const vignettePass = new VignettePass()
-        vignettePass.setUniform('uIntensity', 1.0)
-        vignettePass.setUniform('uSmoothness', 0.4)
         gameLayer.renderer.addPostPass(vignettePass)
 
         const uiLayer = this.getHTML('ui')
@@ -91,18 +88,10 @@ export default class DefendTheDen extends Game {
     }
 
     onStart () {
-
         this.execute('spawnPlayer', {x: -2.5})
-
-        this.world.create(Snowman, {
-            $id: 'snowman',
-            x: 2,
-            y: 0
-        })
 
         const gameController = this.getController('game')
         gameController.startWave(0)
-
     }
 
 }

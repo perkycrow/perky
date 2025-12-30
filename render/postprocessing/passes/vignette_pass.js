@@ -18,28 +18,46 @@ export default class VignettePass extends RenderPass {
             uniform sampler2D uTexture;
             uniform float uIntensity;
             uniform float uSmoothness;
+            uniform float uRoundness;
+            uniform vec3 uColor;
             in vec2 vTexCoord;
             out vec4 fragColor;
             void main() {
                 vec4 color = texture(uTexture, vTexCoord);
                 vec2 uv = vTexCoord * 2.0 - 1.0;
-                float dist = length(uv);
-                float vignette = smoothstep(1.0, 1.0 - uSmoothness, dist * uIntensity);
-                fragColor = vec4(color.rgb * vignette, color.a);
+
+                // Elliptical vignette with adjustable roundness
+                uv.x *= mix(1.0, 0.7, uRoundness);
+
+                // Squared distance for softer falloff
+                float dist = dot(uv, uv);
+
+                // Smooth vignette with better curve
+                float vignette = 1.0 - dist * uIntensity;
+                vignette = smoothstep(0.0, uSmoothness, vignette);
+
+                // Blend with vignette color instead of pure black
+                vec3 finalColor = mix(uColor, color.rgb, vignette);
+
+                fragColor = vec4(finalColor, color.a);
             }
         `,
-        uniforms: ['uTexture', 'uIntensity', 'uSmoothness'],
+        uniforms: ['uTexture', 'uIntensity', 'uSmoothness', 'uRoundness', 'uColor'],
         attributes: ['aPosition', 'aTexCoord']
     }
 
     static defaultUniforms = {
-        uIntensity: 1.2,
-        uSmoothness: 0.5
+        uIntensity: 0.4,
+        uSmoothness: 0.8,
+        uRoundness: 0.5,
+        uColor: [0.0, 0.0, 0.0]
     }
 
     static uniformConfig = {
-        uIntensity: {min: 0, max: 2, step: 0.01},
-        uSmoothness: {min: 0, max: 1, step: 0.01}
+        uIntensity: {min: 0, max: 1, step: 0.01},
+        uSmoothness: {min: 0, max: 2, step: 0.01},
+        uRoundness: {min: 0, max: 1, step: 0.01},
+        uColor: {type: 'color'}
     }
 
 }
