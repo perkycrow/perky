@@ -1,4 +1,5 @@
 import BaseInspector from './base_inspector.js'
+import PerkyExplorerDetails from '../perky_explorer_details.js'
 import GameLoop from '../../game/game_loop.js'
 
 
@@ -115,3 +116,5 @@ export default class GameLoopInspector extends BaseInspector {
 
 
 customElements.define('game-loop-inspector', GameLoopInspector)
+
+PerkyExplorerDetails.registerInspector(GameLoopInspector)

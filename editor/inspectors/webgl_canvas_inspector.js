@@ -1,4 +1,5 @@
 import BaseInspector from './base_inspector.js'
+import PerkyExplorerDetails from '../perky_explorer_details.js'
 import WebGLCanvas2D from '../../render/webgl_canvas_2d.js'
 import {passStyles, renderPass} from './inspector_helpers.js'
 
@@ -71,3 +72,5 @@ export default class WebGLCanvasInspector extends BaseInspector {
 
 
 customElements.define('webgl-canvas-inspector', WebGLCanvasInspector)
+
+PerkyExplorerDetails.registerInspector(WebGLCanvasInspector)

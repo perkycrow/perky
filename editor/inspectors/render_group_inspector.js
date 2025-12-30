@@ -1,4 +1,5 @@
 import BaseInspector from './base_inspector.js'
+import PerkyExplorerDetails from '../perky_explorer_details.js'
 import RenderGroup from '../../render/render_group.js'
 import {
     createToggle,
@@ -133,3 +134,5 @@ export default class RenderGroupInspector extends BaseInspector {
 
 
 customElements.define('render-group-inspector', RenderGroupInspector)
+
+PerkyExplorerDetails.registerInspector(RenderGroupInspector)

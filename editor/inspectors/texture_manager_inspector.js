@@ -1,4 +1,5 @@
 import BaseInspector from './base_inspector.js'
+import PerkyExplorerDetails from '../perky_explorer_details.js'
 import WebGLTextureManager from '../../render/webgl_texture_manager.js'
 import {formatBytes} from '../../core/utils.js'
 
@@ -357,3 +358,5 @@ export default class TextureManagerInspector extends BaseInspector {
 
 
 customElements.define('texture-manager-inspector', TextureManagerInspector)
+
+PerkyExplorerDetails.registerInspector(TextureManagerInspector)

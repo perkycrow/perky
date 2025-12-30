@@ -1,4 +1,5 @@
 import BaseInspector from './base_inspector.js'
+import PerkyExplorerDetails from '../perky_explorer_details.js'
 import Entity from '../../game/entity.js'
 import '../vec2_input.js'
 
@@ -38,4 +39,6 @@ export default class EntityInspector extends BaseInspector {
 
 
 customElements.define('entity-inspector', EntityInspector)
+
+PerkyExplorerDetails.registerInspector(EntityInspector)
 

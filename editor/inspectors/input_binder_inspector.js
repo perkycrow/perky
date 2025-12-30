@@ -1,4 +1,5 @@
 import BaseInspector from './base_inspector.js'
+import PerkyExplorerDetails from '../perky_explorer_details.js'
 import InputBinder from '../../input/input_binder.js'
 import CompositeBinding from '../../input/composite_binding.js'
 
@@ -465,3 +466,5 @@ export default class InputBinderInspector extends BaseInspector {
 
 
 customElements.define('input-binder-inspector', InputBinderInspector)
+
+PerkyExplorerDetails.registerInspector(InputBinderInspector)

@@ -1,4 +1,5 @@
 import BaseInspector from './base_inspector.js'
+import PerkyExplorerDetails from '../perky_explorer_details.js'
 import WorldView from '../../game/world_view.js'
 
 
@@ -94,3 +95,5 @@ export default class WorldViewInspector extends BaseInspector {
 
 
 customElements.define('world-view-inspector', WorldViewInspector)
+
+PerkyExplorerDetails.registerInspector(WorldViewInspector)

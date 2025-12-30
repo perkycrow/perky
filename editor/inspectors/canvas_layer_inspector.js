@@ -1,4 +1,5 @@
 import BaseInspector from './base_inspector.js'
+import PerkyExplorerDetails from '../perky_explorer_details.js'
 import CanvasLayer from '../../render/canvas_layer.js'
 
 
@@ -67,3 +68,5 @@ export default class CanvasLayerInspector extends BaseInspector {
 
 
 customElements.define('canvas-layer-inspector', CanvasLayerInspector)
+
+PerkyExplorerDetails.registerInspector(CanvasLayerInspector)

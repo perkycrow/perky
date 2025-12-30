@@ -1,4 +1,5 @@
 import BaseInspector from './base_inspector.js'
+import PerkyExplorerDetails from '../perky_explorer_details.js'
 import Manifest from '../../application/manifest.js'
 
 
@@ -558,3 +559,5 @@ export default class ManifestInspector extends BaseInspector {
 
 
 customElements.define('manifest-inspector', ManifestInspector)
+
+PerkyExplorerDetails.registerInspector(ManifestInspector)
