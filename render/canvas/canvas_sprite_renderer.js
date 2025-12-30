@@ -12,7 +12,7 @@ export default class CanvasSpriteRenderer extends CanvasObjectRenderer {
     render (sprite, ctx) { // eslint-disable-line complexity, class-methods-use-this
         const img = sprite.image || (sprite.currentFrame ? sprite.currentFrame.image : null)
 
-        if (img && img.complete && sprite.currentFrame) {
+        if (img && img.complete && img.naturalWidth > 0 && sprite.currentFrame) {
             const {x, y, w, h} = sprite.currentFrame.frame
 
             let renderW = w

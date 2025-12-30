@@ -12,6 +12,8 @@ describe('Sprite2D', () => {
         mockImage = {
             width: 100,
             height: 100,
+            naturalWidth: 100,
+            naturalHeight: 100,
             complete: true
         }
         mockFrame = {
@@ -88,6 +90,8 @@ describe('CanvasSpriteRenderer', () => {
         mockImage = {
             width: 100,
             height: 100,
+            naturalWidth: 100,
+            naturalHeight: 100,
             complete: true
         }
         mockFrame = {

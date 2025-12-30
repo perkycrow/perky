@@ -17,6 +17,7 @@ export default class WebGLSpriteBatch {
         this.textureManager = textureManager
 
         this.maxSprites = 1000
+
         // 6 floats per vertex: x, y, u, v, opacity, feetY
         this.vertexData = new Float32Array(this.maxSprites * 4 * 6)
         this.indexData = new Uint16Array(this.maxSprites * 6)
@@ -65,7 +66,7 @@ export default class WebGLSpriteBatch {
             frame = object.currentFrame
         }
 
-        if (!image || !image.complete) {
+        if (!image || !image.complete || image.naturalWidth === 0) {
             return
         }
 

@@ -319,6 +319,26 @@ export default class FramebufferManager {
 
 
     /**
+     * Dispose a single named buffer.
+     *
+     * @param {string} name - Buffer identifier to dispose
+     * @returns {boolean} True if buffer was found and disposed
+     */
+    disposeBuffer (name) {
+        const buffer = this.#namedBuffers.get(name)
+        if (!buffer) {
+            return false
+        }
+
+        const gl = this.#gl
+        gl.deleteFramebuffer(buffer.framebuffer)
+        gl.deleteTexture(buffer.texture)
+        this.#namedBuffers.delete(name)
+        return true
+    }
+
+
+    /**
      * Dispose all named buffers.
      */
     disposeNamedBuffers () {
