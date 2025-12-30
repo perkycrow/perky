@@ -2,7 +2,9 @@ import BaseEditorComponent from './base_editor_component.js'
 import {explorerStyles} from './perky_explorer_styles.js'
 import './perky_explorer_node.js'
 import './scene_tree_sidebar.js'
+import ExplorerContextMenu from './explorer_context_menu.js'
 import PerkyExplorerDetails from './perky_explorer_details.js'
+import {getActionsForModule, registerActionProvider} from './context_menu_actions.js'
 import GameLoopInspector from './inspectors/game_loop_inspector.js'
 import TextureManagerInspector from './inspectors/texture_manager_inspector.js'
 import EntityInspector from './inspectors/entity_inspector.js'
@@ -51,10 +53,18 @@ export default class PerkyExplorer extends BaseEditorComponent {
     #rootModule = null
     #backToRootBtnEl = null
     #backNodeEl = null
+    #contextMenuEl = null
 
 
     connectedCallback () {
         this.#buildDOM()
+    }
+
+
+    disconnectedCallback () {
+        if (this.#contextMenuEl && this.#contextMenuEl.parentNode) {
+            this.#contextMenuEl.parentNode.removeChild(this.#contextMenuEl)
+        }
     }
 
 
@@ -265,6 +275,9 @@ export default class PerkyExplorer extends BaseEditorComponent {
         this.#rootNode.addEventListener('node:select', (e) => {
             this.#handleNodeSelect(e.detail.module)
         })
+        this.#rootNode.addEventListener('node:contextmenu', (e) => {
+            this.#handleNodeContextMenu(e.detail)
+        })
 
         tree.appendChild(this.#rootNode)
 
@@ -286,6 +299,31 @@ export default class PerkyExplorer extends BaseEditorComponent {
 
         this.#closeSceneTree()
         this.#detailsEl.setModule(module)
+    }
+
+
+    #handleNodeContextMenu (detail) {
+        const {module, x, y} = detail
+
+        if (!module) {
+            return
+        }
+
+        this.#ensureContextMenu()
+
+        const actions = getActionsForModule(module, {
+            onFocus: (m) => this.focusModule(m)
+        })
+
+        this.#contextMenuEl.show(actions, module, {x, y})
+    }
+
+
+    #ensureContextMenu () {
+        if (!this.#contextMenuEl) {
+            this.#contextMenuEl = new ExplorerContextMenu()
+            document.body.appendChild(this.#contextMenuEl)
+        }
     }
 
 
@@ -596,6 +634,9 @@ const containerStyles = `
         max-height: none;
     }
 `
+
+
+PerkyExplorer.registerActionProvider = registerActionProvider
 
 
 customElements.define('perky-explorer', PerkyExplorer)

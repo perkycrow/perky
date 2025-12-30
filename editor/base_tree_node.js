@@ -227,6 +227,7 @@ export default class BaseTreeNode extends BaseEditorComponent {
 
         this.#contentEl.appendChild(this.#toggleEl)
         this.#contentEl.addEventListener('click', () => this.#handleNodeClick())
+        this.#contentEl.addEventListener('contextmenu', (e) => this.#handleContextMenu(e))
 
         this.#childrenEl = document.createElement('div')
         this.#childrenEl.className = 'node-children'
@@ -292,6 +293,26 @@ export default class BaseTreeNode extends BaseEditorComponent {
 
     #handleNodeClick () {
         this.emitSelect()
+    }
+
+
+    #handleContextMenu (e) {
+        e.preventDefault()
+        e.stopPropagation()
+        this.emitContextMenu(e)
+    }
+
+
+    emitContextMenu (e) {
+        this.dispatchEvent(new CustomEvent('node:contextmenu', {
+            bubbles: true,
+            composed: true,
+            detail: {
+                ...this.getSelectDetail(),
+                x: e.clientX,
+                y: e.clientY
+            }
+        }))
     }
 
 
