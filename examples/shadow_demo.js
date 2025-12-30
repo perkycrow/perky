@@ -47,30 +47,28 @@ const sprites = spritePositions.map(pos => {
         height: pos.scale,
         anchorX: 0.5,
         anchorY: 0,  // Anchor at feet
-        image: shroomImage
+        image: shroomImage,
+        depth: pos.y  // Depth based on Y position
     })
     entitiesGroup.add(sprite)
     return sprite
 })
 
 
-// Light helper circle
-const lightHelper = new Circle({
-    x: 3,
-    y: 0,
-    radius: 0.25,
+// Sun helper circle (always in the back, moves in an arc)
+const sunHelper = new Circle({
+    x: -4,
+    y: 2,
+    radius: 0.4,
     color: '#ffdd44'
 })
-helpersGroup.add(lightHelper)
+helpersGroup.add(sunHelper)
 
 
-// Shadow transform - default to directional (sun-like)
+// Shadow transform (directional sun-like shadows)
 const shadowTransform = new ShadowTransform({
-    mode: 'directional',
-    skewX: 0.4,
+    skewX: 0.5,
     scaleY: -0.5,
-    lightPosition: [2, 0],
-    lightHeight: 2,
     offsetY: 0,
     color: [0, 0, 0, 0.35]
 })
@@ -81,6 +79,10 @@ const layer = renderSystem.getCanvas('game')
 
 layer.renderer.setRenderGroups([
     {
+        $name: 'helpers',
+        content: helpersGroup
+    },
+    {
         $name: 'shadows',
         content: entitiesGroup,
         renderTransform: shadowTransform
@@ -88,52 +90,46 @@ layer.renderer.setRenderGroups([
     {
         $name: 'entities',
         content: entitiesGroup
-    },
-    {
-        $name: 'helpers',
-        content: helpersGroup
     }
 ])
 
 
 // Animation state
 let time = 0
-const orbitRadius = 3
-const orbitSpeed = 0.5
+const arcSpeed = 0.3
 
 
 function animate () {
     time += 0.016
 
-    const angle = time * orbitSpeed
+    // Sun moves in an arc from left to right (like sunrise to sunset)
+    // angle goes from 0 to PI (left horizon to right horizon)
+    const angle = (Math.sin(time * arcSpeed) + 1) / 2 * Math.PI
 
-    // Always orbit the light helper
-    const lightX = Math.cos(angle) * orbitRadius
-    const lightY = Math.sin(angle) * orbitRadius * 0.3
+    // Sun position on arc (x: -4 to 4, y: 0 to 3 at peak)
+    const sunX = Math.cos(angle) * 4
+    const sunY = Math.sin(angle) * 3
 
-    lightHelper.x = lightX
-    lightHelper.y = lightY
+    sunHelper.x = sunX
+    sunHelper.y = sunY
 
-    if (shadowTransform.mode === 'pointLight') {
-        // Point light: shadows follow the orbiting light
-        shadowTransform.lightPosition[0] = lightX
-        shadowTransform.lightPosition[1] = lightY
+    // Shadow direction is opposite to sun position
+    // When sun is on the right, shadows point left (negative skewX)
+    // When sun is high, shadows are short (scaleY close to 0)
+    const sunHeight = sunY / 3  // Normalized 0-1
 
-        // Update info
-        const lightPosInfo = document.getElementById('light-pos')
-        if (lightPosInfo) {
-            lightPosInfo.textContent = `(${lightX.toFixed(1)}, ${lightY.toFixed(1)})`
-        }
-    } else {
-        // Directional: all shadows have same angle (sun-like)
-        shadowTransform.skewX = Math.cos(angle) * 0.6
-        shadowTransform.scaleY = -0.4 + Math.sin(angle) * 0.2
+    shadowTransform.skewX = -sunX * 0.15
+    shadowTransform.scaleY = -0.3 - (1 - sunHeight) * 0.4  // Longer shadows when sun is low
 
-        // Update info
-        const lightPosInfo = document.getElementById('light-pos')
-        if (lightPosInfo) {
-            lightPosInfo.textContent = `skew: ${shadowTransform.skewX.toFixed(2)}`
-        }
+    // Update info display
+    const sunPosInfo = document.getElementById('sun-pos')
+    if (sunPosInfo) {
+        sunPosInfo.textContent = `(${sunX.toFixed(1)}, ${sunY.toFixed(1)})`
+    }
+
+    const skewInfo = document.getElementById('skew-info')
+    if (skewInfo) {
+        skewInfo.textContent = shadowTransform.skewX.toFixed(2)
     }
 
     layer.markDirty()
@@ -149,44 +145,25 @@ shroomImage.onload = () => {
 }
 
 
-// Toggle light mode
-function toggleLightMode () {
-    const isDirectional = shadowTransform.mode === 'directional'
-    shadowTransform.mode = isDirectional ? 'pointLight' : 'directional'
-
-    // Update UI
-    const modeLabel = document.getElementById('mode-label')
-    const toggleBtn = document.getElementById('toggle-btn')
-    if (modeLabel) {
-        modeLabel.textContent = isDirectional ? 'Point Light' : 'Directional'
-    }
-    if (toggleBtn) {
-        toggleBtn.textContent = isDirectional ? 'Switch to Directional' : 'Switch to Point Light'
-    }
-}
-
-
 // Info panel
 const infoPanel = document.createElement('div')
 infoPanel.className = 'info-panel'
 infoPanel.innerHTML = `
     <div class="info-item">
-        <span class="info-label">Shadow Mode:</span>
-        <span class="info-value" id="mode-label">Directional</span>
+        <span class="info-label">Sun Position:</span>
+        <span class="info-value" id="sun-pos">(-4.0, 0.0)</span>
+    </div>
+    <div class="info-item">
+        <span class="info-label">Shadow Skew:</span>
+        <span class="info-value" id="skew-info">0.50</span>
     </div>
     <div class="info-item">
         <span class="info-label">Sprites:</span>
         <span class="info-value">5</span>
     </div>
-    <div class="info-item">
-        <span class="info-label">Light:</span>
-        <span class="info-value" id="light-pos">skew: 0.40</span>
-    </div>
-    <button id="toggle-btn" class="toggle-btn">Switch to Point Light</button>
+    <div class="info-hint">Sun moves in an arc like sunrise to sunset</div>
 `
 container.appendChild(infoPanel)
-
-document.getElementById('toggle-btn').addEventListener('click', toggleLightMode)
 
 
 const style = document.createElement('style')
@@ -219,23 +196,11 @@ style.textContent = `
         font-weight: 500;
     }
 
-    .toggle-btn {
-        margin-top: 10px;
-        width: 100%;
-        padding: 8px 12px;
-        background: #ffdd44;
-        color: #1a1a2e;
-        border: none;
-        border-radius: 4px;
-        font-family: "Source Code Pro", monospace;
+    .info-hint {
+        margin-top: 12px;
         font-size: 11px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-
-    .toggle-btn:hover {
-        background: #ffea80;
+        color: #666;
+        line-height: 1.4;
     }
 `
 document.head.appendChild(style)
