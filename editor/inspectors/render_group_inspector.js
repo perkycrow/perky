@@ -37,6 +37,60 @@ function createSlider (label, value, options, onChange) {
 }
 
 
+function createColorRow (name, color, onChange) {
+    const row = document.createElement('div')
+    row.className = 'inspector-row'
+
+    const label = document.createElement('span')
+    label.className = 'inspector-row-label'
+    label.textContent = name
+
+    const colorInput = document.createElement('input')
+    colorInput.type = 'color'
+    colorInput.className = 'inspector-color'
+
+    // Convert [r, g, b, a] to hex
+    const toHex = (v) => Math.round(v * 255).toString(16).padStart(2, '0')
+    colorInput.value = `#${toHex(color[0])}${toHex(color[1])}${toHex(color[2])}`
+
+    colorInput.addEventListener('input', (e) => {
+        const hex = e.target.value
+        const r = parseInt(hex.slice(1, 3), 16) / 255
+        const g = parseInt(hex.slice(3, 5), 16) / 255
+        const b = parseInt(hex.slice(5, 7), 16) / 255
+        onChange([r, g, b, color[3]]) // Preserve alpha
+    })
+
+    row.appendChild(label)
+    row.appendChild(colorInput)
+    return row
+}
+
+
+function renderTransformProperty (container, transform, name, config) {
+    if (config.type === 'color') {
+        const row = createColorRow(name, transform[name], (newColor) => {
+            transform[name] = newColor
+        })
+        container.appendChild(row)
+    } else {
+        // Default: numeric slider
+        const slider = document.createElement('slider-input')
+        slider.setAttribute('label', name)
+        slider.setAttribute('min', config.min ?? 0)
+        slider.setAttribute('max', config.max ?? 1)
+        slider.setAttribute('step', config.step ?? 0.01)
+        slider.value = transform[name]
+
+        slider.addEventListener('change', (e) => {
+            transform[name] = e.detail.value
+        })
+
+        container.appendChild(slider)
+    }
+}
+
+
 function getEditableUniforms (pass) {
     const defaults = pass.getDefaultUniforms?.() || {}
     const configs = pass.getUniformConfig?.() || {}
@@ -164,6 +218,11 @@ export default class RenderGroupInspector extends BaseInspector {
 
         this.addSeparator()
 
+        // Render transform (shadows, etc.)
+        this.#renderTransform(group)
+
+        this.addSeparator()
+
         // Post-passes
         this.#renderPostPasses(group)
     }
@@ -196,6 +255,50 @@ export default class RenderGroupInspector extends BaseInspector {
         row.appendChild(label)
         row.appendChild(select)
         this.gridEl.appendChild(row)
+    }
+
+
+    #renderTransform (group) {
+        const transform = group.renderTransform
+
+        if (!transform) {
+            this.addRow('transform', 'none')
+            return
+        }
+
+        const section = document.createElement('div')
+        section.className = 'pass-section'
+
+        const header = document.createElement('div')
+        header.className = 'pass-header'
+
+        const toggle = document.createElement('toggle-input')
+        toggle.checked = transform.enabled
+        toggle.setAttribute('label', transform.constructor.name)
+        toggle.addEventListener('change', (e) => {
+            transform.enabled = e.detail.checked
+        })
+
+        header.appendChild(toggle)
+        section.appendChild(header)
+
+        // Get editable properties from the transform
+        const config = transform.getPropertyConfig?.() || {}
+        const propertyNames = Object.keys(config)
+
+        if (propertyNames.length > 0) {
+            const propsEl = document.createElement('div')
+            propsEl.className = 'pass-uniforms'
+
+            for (const name of propertyNames) {
+                const propConfig = config[name]
+                renderTransformProperty(propsEl, transform, name, propConfig)
+            }
+
+            section.appendChild(propsEl)
+        }
+
+        this.gridEl.appendChild(section)
     }
 
 

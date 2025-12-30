@@ -47,6 +47,19 @@ export default class ShadowTransform extends RenderTransform {
     }
 
 
+    getPropertyConfig () {
+        return this.constructor.propertyConfig
+    }
+
+
+    static propertyConfig = {
+        skewX: {min: -2, max: 2, step: 0.05},
+        scaleY: {min: -1, max: 0, step: 0.05},
+        offsetY: {min: -0.5, max: 0.5, step: 0.01},
+        color: {type: 'color'}
+    }
+
+
     dispose () {
         this.#program = null
     }
