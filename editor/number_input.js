@@ -169,6 +169,13 @@ export default class NumberInput extends HTMLElement {
     }
 
 
+    disconnectedCallback () {
+        if (this.#isDragging) {
+            this.#onDragEnd()
+        }
+    }
+
+
     attributeChangedCallback (name, oldValue, newValue) {
         handleAttributeChange(this, name, oldValue, newValue)
     }

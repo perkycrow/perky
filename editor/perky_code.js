@@ -17,6 +17,7 @@ export default class PerkyCode extends HTMLElement {
     #preEl = null
     #copyBtnEl = null
     #titleEl = null
+    #copyTimeoutId = null
 
 
     constructor () {
@@ -34,6 +35,14 @@ export default class PerkyCode extends HTMLElement {
 
         if (this.#code) {
             this.formatCode()
+        }
+    }
+
+
+    disconnectedCallback () {
+        if (this.#copyTimeoutId) {
+            clearTimeout(this.#copyTimeoutId)
+            this.#copyTimeoutId = null
         }
     }
 
@@ -376,9 +385,14 @@ export default class PerkyCode extends HTMLElement {
             this.#copyBtnEl.textContent = 'Copied!'
             this.#copyBtnEl.classList.add('success')
 
-            setTimeout(() => {
+            if (this.#copyTimeoutId) {
+                clearTimeout(this.#copyTimeoutId)
+            }
+
+            this.#copyTimeoutId = setTimeout(() => {
                 this.#copyBtnEl.textContent = originalText
                 this.#copyBtnEl.classList.remove('success')
+                this.#copyTimeoutId = null
             }, 2000)
         } catch (error) {
             console.error('Failed to copy to clipboard:', error)
