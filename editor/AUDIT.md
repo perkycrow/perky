@@ -20,43 +20,65 @@ Cet audit a été réalisé suite à une demande d'analyse du dossier `/editor/`
 
 ## CRITIQUE - Memory Leaks & Performance
 
-### 1.1 Event Listeners non nettoyés dans Context Menu
-**Fichier:** `explorer_context_menu.js:25-27, 36-38, 97-102`
+### 1.1 NumberInput - Drag listeners sans disconnectedCallback
+**Fichier:** `number_input.js:346-354`
 
-**Problème:** Les listeners ajoutés dans `#renderActions()` ne sont jamais supprimés. Chaque ouverture du menu accumule des listeners.
-
-**Fix:** Stocker les références et les nettoyer dans `hide()`.
-
----
-
-### 1.2 Document Event Listeners sans cleanup
-**Fichiers:** `number_input.js:353-354`, `devtools/perky_devtools.js:131,137`
-
-**Problème:** Les listeners document-level pour le drag (NumberInput) et clavier (DevTools) ne sont pas retirés dans `disconnectedCallback`.
+**Problème:** Si le composant est retiré du DOM pendant un drag actif, les listeners `mousemove` et `mouseup` sur `document` ne sont jamais retirés. Les handlers sont des arrow functions stables (`#onDragMove`, `#onDragEnd`), mais il n'y a pas de `disconnectedCallback`.
 
 **Fix:**
 ```javascript
 disconnectedCallback() {
-  document.removeEventListener('mousemove', this.#onDragMove)
-  document.removeEventListener('mouseup', this.#onDragEnd)
+  if (this.#isDragging) {
+    this.#onDragEnd()
+  }
 }
 ```
 
 ---
 
-### 1.3 setTimeout sans cleanup
-**Fichier:** `perky_code.js:379`
+### 1.2 setTimeout sans cleanup
+**Fichier:** `perky_code.js:379-382`
 
-**Problème:** `setTimeout` utilisé sans `clearTimeout` dans `disconnectedCallback`.
+**Problème:** Le `setTimeout` pour le feedback "Copied!" (2 secondes) n'est pas nettoyé si le composant est détruit avant.
+
+**Fix:**
+```javascript
+#copyTimeoutId = null
+
+disconnectedCallback() {
+  if (this.#copyTimeoutId) {
+    clearTimeout(this.#copyTimeoutId)
+  }
+}
+
+// Dans copyToClipboard():
+this.#copyTimeoutId = setTimeout(() => { ... }, 2000)
+```
 
 ---
 
-### 1.4 innerHTML excessif
-**Fichiers:** `perky_code.js:226-252`, `explorer_context_menu.js:60,84`, `base_tree_node.js:132`, `perky_explorer_details.js:92,116`
+### 1.3 innerHTML pour clear le DOM
+**Fichiers:** `perky_code.js:226,235,244`, `explorer_context_menu.js:60`, `perky_explorer_details.js:82,92,116`
 
-**Problème:** DOM thrashing à chaque mise à jour. Risque XSS si données non sanitisées.
+**Problème:** `innerHTML = ''` utilisé pour vider le DOM, puis reconstruction complète à chaque update.
 
-**Fix:** Utiliser `textContent`, `createTextNode()`, ou `DocumentFragment`.
+**Impact:** Performance suboptimale sur updates fréquentes (pas de risque XSS car données internes).
+
+**Fix:** Utiliser `replaceChildren()` ou conserver les références DOM et les mettre à jour directement.
+
+---
+
+### ~~1.4 Context Menu listeners~~ VÉRIFIÉ OK
+**Fichier:** `explorer_context_menu.js:25-27, 36-38, 131-143`
+
+**Statut:** Les listeners document-level utilisent des arrow functions comme propriétés de classe (`#handleOutsideClick`, `#handleKeyDown`), donc les références sont stables. Le cleanup dans `hide()` fonctionne correctement.
+
+---
+
+### ~~1.5 PerkyDevTools keyboard~~ VÉRIFIÉ OK
+**Fichier:** `devtools/perky_devtools.js:118-140`
+
+**Statut:** Le cleanup est correctement implémenté dans `disconnectedCallback()` via `#cleanupKeyboard()`.
 
 ---
 
@@ -265,9 +287,10 @@ Confusion entre méthode privée et publique.
 
 ### Phase 1 - Critique
 1. ~~Découplage inspectors~~ (FAIT)
-2. Fix memory leaks (1.1, 1.2, 1.3)
-3. Fix bug récursion (7.1)
-4. Fix menu positioning (7.2)
+2. Fix NumberInput disconnectedCallback (1.1)
+3. Fix PerkyCode setTimeout cleanup (1.2)
+4. Fix bug récursion (7.1)
+5. Fix menu positioning (7.2)
 
 ### Phase 2 - Qualité
 1. Consolidate style creation (3.1)
