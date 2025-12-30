@@ -1,5 +1,5 @@
-import EntityView from '../game/entity_view'
-import Rectangle from './rectangle'
+import EntityView from './entity_view'
+import Rectangle from '../render/rectangle'
 
 
 export default class CollisionBoxView extends EntityView {

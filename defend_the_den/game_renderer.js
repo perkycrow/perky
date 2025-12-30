@@ -1,9 +1,9 @@
 import Group2D from '../render/group_2d'
 import Image2D from '../render/image_2d'
 import WorldView from '../game/world_view'
-import ImageView from '../render/image_view'
-import CircleView from '../render/circle_view'
-import CollisionBoxView from '../render/collision_box_view'
+import ImageView from '../game/image_view'
+import CircleView from '../game/circle_view'
+import CollisionBoxView from '../game/collision_box_view'
 import PerkyModule from '../core/perky_module'
 
 import Player from './player'

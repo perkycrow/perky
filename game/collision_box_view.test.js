@@ -1,7 +1,7 @@
 import {describe, test, expect, beforeEach} from 'vitest'
 import CollisionBoxView from './collision_box_view'
-import Rectangle from './rectangle'
-import Group2D from './group_2d'
+import Rectangle from '../render/rectangle'
+import Group2D from '../render/group_2d'
 
 
 class MockEntity {

@@ -1,5 +1,5 @@
-import EntityView from '../game/entity_view'
-import Circle from './circle'
+import EntityView from './entity_view'
+import Circle from '../render/circle'
 
 
 export default class CircleView extends EntityView {

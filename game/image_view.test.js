@@ -1,7 +1,7 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
 import ImageView from './image_view'
-import Image2D from './image_2d'
-import Group2D from './group_2d'
+import Image2D from '../render/image_2d'
+import Group2D from '../render/group_2d'
 
 
 class MockEntity {

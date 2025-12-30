@@ -1,7 +1,7 @@
 import {describe, test, expect, beforeEach} from 'vitest'
 import CircleView from './circle_view'
-import Circle from './circle'
-import Group2D from './group_2d'
+import Circle from '../render/circle'
+import Group2D from '../render/group_2d'
 
 
 class MockEntity {
