@@ -28,9 +28,6 @@ describe('PerkyLogger', () => {
         expect(logger.maxEntries).toBe(50)
         expect(logger.position).toBe('bottom')
         expect(logger.timestamp).toBe(false)
-        expect(logger.collapsible).toBe(true)
-        expect(logger.isMinimized).toBe(false)
-        expect(logger.isCollapsed).toBe(false)
         expect(logger.entries).toEqual([])
     })
 
@@ -40,12 +37,10 @@ describe('PerkyLogger', () => {
         customLogger.maxEntries = 100
         customLogger.position = 'top'
         customLogger.timestamp = true
-        customLogger.collapsible = false
 
         expect(customLogger.maxEntries).toBe(100)
         expect(customLogger.position).toBe('top')
         expect(customLogger.timestamp).toBe(true)
-        expect(customLogger.collapsible).toBe(false)
     })
 
 
@@ -57,7 +52,7 @@ describe('PerkyLogger', () => {
 
         expect(entry.className).toContain('logger-entry')
         expect(entry.className).toContain('log-info')
-        expect(entry.textContent).toBe(message)
+        expect(entry.querySelector('.logger-message').textContent).toBe(message)
         expect(logger.entries.length).toBe(1)
         expect(logger.entries[0]).toBe(entry)
     })
@@ -166,71 +161,12 @@ describe('PerkyLogger', () => {
     })
 
 
-    test('toggle collapses and expands content', () => {
-        expect(logger.isCollapsed).toBe(false)
-
-        logger.toggle()
-
-        expect(logger.isCollapsed).toBe(true)
-
-        logger.toggle()
-
-        expect(logger.isCollapsed).toBe(false)
-    })
-
-
-    test('toggle does nothing when collapsible is false', () => {
-        logger.collapsible = false
-        const initialCollapsed = logger.isCollapsed
-
-        logger.toggle()
-
-        expect(logger.isCollapsed).toBe(initialCollapsed)
-    })
-
-
-    test('toggle restores from minimized state', () => {
-        logger.isMinimized = true
-        logger.isCollapsed = true
-
-        logger.toggle()
-
-        expect(logger.isMinimized).toBe(false)
-        expect(logger.isCollapsed).toBe(false)
-    })
-
-
-    test('minimize toggles the minimized state', () => {
-        logger.minimize()
-
-        expect(logger.isMinimized).toBe(true)
-
-        logger.minimize()
-
-        expect(logger.isMinimized).toBe(false)
-        expect(logger.isCollapsed).toBe(false)
-    })
-
-
-    test('minimize uncollapes when collapsed', () => {
-        logger.isCollapsed = true
-
-        logger.minimize()
-
-        expect(logger.isCollapsed).toBe(false)
-    })
-
-
     test('render displays correct structure', () => {
         const loggerDiv = logger.shadowRoot.querySelector('.logger')
-        const header = logger.shadowRoot.querySelector('.editor-header')
         const content = logger.shadowRoot.querySelector('.logger-content')
-        const miniIcon = logger.shadowRoot.querySelector('.logger-mini-icon')
 
         expect(loggerDiv).toBeTruthy()
-        expect(header).toBeTruthy()
         expect(content).toBeTruthy()
-        expect(miniIcon).toBeTruthy()
     })
 
 
@@ -242,15 +178,13 @@ describe('PerkyLogger', () => {
     })
 
 
-    test('getLoggerClasses returns correct classes', () => {
+    test('position updates logger classes', () => {
         logger.position = 'top'
-        logger.isMinimized = true
 
-        const classes = logger.getLoggerClasses()
+        const loggerDiv = logger.shadowRoot.querySelector('.logger')
 
-        expect(classes).toContain('logger')
-        expect(classes).toContain('logger-top')
-        expect(classes).toContain('logger-minimized')
+        expect(loggerDiv.className).toContain('logger')
+        expect(loggerDiv.className).toContain('logger-top')
     })
 
 
