@@ -33,7 +33,7 @@ const spritePositions = [
     {x: -2, y: 0.3, scale: 1.2},
     {x: 2, y: -0.2, scale: 1.0},
     {x: -1, y: -0.5, scale: 0.8},
-    {x: 1.5, y: 0.5, scale: 1.3},
+    {x: 1.5, y: 0.5, scale: 1.3}
 ]
 
 const sprites = spritePositions.map(pos => {

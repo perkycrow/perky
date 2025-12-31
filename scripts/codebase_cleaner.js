@@ -285,6 +285,54 @@ function cleanUnusedEslintDirectives (rootDir, options = {}) {
 
 // === ESLINT ERRORS CHECK ===
 
+const RULE_ADVICE = new Map([
+    ['no-negated-condition', 'Invert the condition and swap if/else'],
+    ['complexity', 'Split the function into smaller sub-functions'],
+    ['no-unused-vars', 'Remove the unused variable'],
+    ['comma-dangle', 'Remove the trailing comma'],
+    ['max-statements-per-line', 'Put each statement on its own line'],
+    ['max-nested-callbacks', 'Reduce nesting or extract into functions']
+])
+
+
+function getPrivateMethodAdvice (ruleId, message) {
+    if (ruleId === 'class-methods-use-this' && message.includes('private method')) {
+        return 'Extract as a regular function below the class'
+    }
+    return null
+}
+
+
+function getAdvice (ruleId, message, isTestFile) {
+    const privateAdvice = getPrivateMethodAdvice(ruleId, message)
+    if (privateAdvice) {
+        return privateAdvice
+    }
+
+    if (ruleId === 'max-nested-callbacks' && isTestFile) {
+        return 'Add // eslint-disable-line max-nested-callbacks'
+    }
+
+    return RULE_ADVICE.get(ruleId) || null
+}
+
+
+function runEslintFix (rootDir) {
+    console.log('\n=== AUTO-FIXING ESLINT ERRORS ===\n')
+
+    try {
+        execSync('npx eslint --fix .', {
+            cwd: rootDir,
+            encoding: 'utf-8',
+            stdio: ['pipe', 'pipe', 'pipe']
+        })
+        console.log('Auto-fix completed.')
+    } catch {
+        console.log('Auto-fix completed (some issues may remain).')
+    }
+}
+
+
 function runEslintCheck (rootDir) {
     console.log('\n=== CHECKING ESLINT ERRORS ===\n')
 
@@ -313,6 +361,33 @@ function runEslintCheck (rootDir) {
 }
 
 
+function groupMessagesByRule (messages) {
+    const grouped = {}
+
+    for (const msg of messages) {
+        const ruleId = msg.ruleId || 'unknown'
+        if (!grouped[ruleId]) {
+            grouped[ruleId] = []
+        }
+        grouped[ruleId].push(msg)
+    }
+
+    return grouped
+}
+
+
+function printRuleGroup (ruleId, messages, isTestFile) {
+    const severity = messages[0].severity === 2 ? 'ERROR' : 'WARN'
+    const lines = messages.map(m => m.line).join(', ')
+    console.log(`  [${severity}] ${ruleId} (line${messages.length > 1 ? 's' : ''} ${lines})`)
+
+    const advice = getAdvice(ruleId, messages[0].message, isTestFile)
+    if (advice) {
+        console.log(`         -> ${advice}`)
+    }
+}
+
+
 function printFileIssues (file, rootDir) {
     const errors = file.messages.filter(m => m.severity === 2)
     const warnings = file.messages.filter(m => m.severity === 1)
@@ -322,10 +397,15 @@ function printFileIssues (file, rootDir) {
     }
 
     const relativePath = path.relative(rootDir, file.filePath)
-    console.log(`${relativePath}:`)
+    const isTestFile = relativePath.endsWith('.test.js')
 
-    errors.forEach(msg => console.log(`  Line ${msg.line}: [ERROR] ${msg.message} (${msg.ruleId})`))
-    warnings.forEach(msg => console.log(`  Line ${msg.line}: [WARN] ${msg.message} (${msg.ruleId})`))
+    console.log(`\n${relativePath}:`)
+
+    const grouped = groupMessagesByRule([...errors, ...warnings])
+
+    for (const [ruleId, messages] of Object.entries(grouped)) {
+        printRuleGroup(ruleId, messages, isTestFile)
+    }
 
     return {errors: errors.length, warnings: warnings.length}
 }
@@ -348,7 +428,7 @@ function processEslintResults (data, rootDir) {
     if (filesWithIssues === 0) {
         console.log('No ESLint errors or warnings found.')
     } else {
-        console.log(`\nTotal: ${totalErrors} error(s), ${totalWarnings} warning(s) in ${filesWithIssues} file(s)`)
+        console.log(`\n=== TOTAL: ${totalErrors} error(s), ${totalWarnings} warning(s) in ${filesWithIssues} file(s) ===`)
     }
 
     return {errorCount: totalErrors, warningCount: totalWarnings, filesWithIssues}
@@ -453,6 +533,11 @@ function runCommentCleaner (rootDir, options = {}) { // eslint-disable-line comp
 function run (rootDir, options = {}) {
     const commentResult = runCommentCleaner(rootDir, options)
     const unusedResult = cleanUnusedEslintDirectives(rootDir, options)
+
+    if (!options.dryRun) {
+        runEslintFix(rootDir)
+    }
+
     const eslintResult = runEslintCheck(rootDir)
 
     return {comments: commentResult, unusedDirectives: unusedResult, eslint: eslintResult}
