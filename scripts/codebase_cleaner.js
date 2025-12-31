@@ -283,6 +283,78 @@ function cleanUnusedEslintDirectives (rootDir, options = {}) {
 }
 
 
+// === ESLINT ERRORS CHECK ===
+
+function runEslintCheck (rootDir) {
+    console.log('\n=== CHECKING ESLINT ERRORS ===\n')
+
+    try {
+        const output = execSync('npx eslint --format json .', {
+            cwd: rootDir,
+            encoding: 'utf-8',
+            stdio: ['pipe', 'pipe', 'pipe']
+        })
+
+        const data = JSON.parse(output)
+        return processEslintResults(data, rootDir)
+    } catch (error) {
+        if (error.stdout) {
+            try {
+                const data = JSON.parse(error.stdout)
+                return processEslintResults(data, rootDir)
+            } catch {
+                console.log('Failed to parse ESLint output.')
+                return {errorCount: 0, warningCount: 0, filesWithIssues: 0}
+            }
+        }
+        console.log('ESLint check failed.')
+        return {errorCount: 0, warningCount: 0, filesWithIssues: 0}
+    }
+}
+
+
+function printFileIssues (file, rootDir) {
+    const errors = file.messages.filter(m => m.severity === 2)
+    const warnings = file.messages.filter(m => m.severity === 1)
+
+    if (errors.length === 0 && warnings.length === 0) {
+        return {errors: 0, warnings: 0}
+    }
+
+    const relativePath = path.relative(rootDir, file.filePath)
+    console.log(`${relativePath}:`)
+
+    errors.forEach(msg => console.log(`  Line ${msg.line}: [ERROR] ${msg.message} (${msg.ruleId})`))
+    warnings.forEach(msg => console.log(`  Line ${msg.line}: [WARN] ${msg.message} (${msg.ruleId})`))
+
+    return {errors: errors.length, warnings: warnings.length}
+}
+
+
+function processEslintResults (data, rootDir) {
+    let totalErrors = 0
+    let totalWarnings = 0
+    let filesWithIssues = 0
+
+    for (const file of data) {
+        const {errors, warnings} = printFileIssues(file, rootDir)
+        if (errors > 0 || warnings > 0) {
+            filesWithIssues++
+            totalErrors += errors
+            totalWarnings += warnings
+        }
+    }
+
+    if (filesWithIssues === 0) {
+        console.log('No ESLint errors or warnings found.')
+    } else {
+        console.log(`\nTotal: ${totalErrors} error(s), ${totalWarnings} warning(s) in ${filesWithIssues} file(s)`)
+    }
+
+    return {errorCount: totalErrors, warningCount: totalWarnings, filesWithIssues}
+}
+
+
 // === FILE DISCOVERY ===
 
 function shouldSkipDirectory (name) {
@@ -338,7 +410,7 @@ function processFile (filePath, rootDir, options) {
 }
 
 
-function runCommentCleaner (rootDir, options = {}) {
+function runCommentCleaner (rootDir, options = {}) { // eslint-disable-line complexity
     const dryRun = options.dryRun ?? false
 
     console.log(dryRun ? '=== DRY RUN MODE ===' : '=== CLEANING COMMENTS ===')
@@ -380,9 +452,10 @@ function runCommentCleaner (rootDir, options = {}) {
 
 function run (rootDir, options = {}) {
     const commentResult = runCommentCleaner(rootDir, options)
-    const eslintResult = cleanUnusedEslintDirectives(rootDir, options)
+    const unusedResult = cleanUnusedEslintDirectives(rootDir, options)
+    const eslintResult = runEslintCheck(rootDir)
 
-    return {comments: commentResult, eslint: eslintResult}
+    return {comments: commentResult, unusedDirectives: unusedResult, eslint: eslintResult}
 }
 
 
