@@ -21,14 +21,14 @@ export default class Circle extends Object2D {
 
     getBounds () {
         const size = this.radius * 2
-        const offsetX = -this.radius * 2 * this.anchorX + this.radius
-        const offsetY = -this.radius * 2 * this.anchorY + this.radius
-        
+        const offsetX = -size * this.anchorX
+        const offsetY = -size * this.anchorY
+
         return {
-            minX: offsetX - this.radius,
-            minY: offsetY - this.radius,
-            maxX: offsetX + this.radius,
-            maxY: offsetY + this.radius,
+            minX: offsetX,
+            minY: offsetY,
+            maxX: offsetX + size,
+            maxY: offsetY + size,
             width: size,
             height: size
         }

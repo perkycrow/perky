@@ -11,12 +11,12 @@ export default class WebGLSpriteBatch {
     #tempTexCoords = new Float32Array(8)
 
 
-    constructor (gl, spriteProgram, textureManager) {
+    constructor (gl, spriteProgram, textureManager, options = {}) {
         this.gl = gl
         this.spriteProgram = spriteProgram
         this.textureManager = textureManager
 
-        this.maxSprites = 1000
+        this.maxSprites = options.maxSprites ?? 1000
 
         // 6 floats per vertex: x, y, u, v, opacity, feetY
         this.vertexData = new Float32Array(this.maxSprites * 4 * 6)
@@ -66,12 +66,18 @@ export default class WebGLSpriteBatch {
             frame = object.currentFrame
         }
 
-        if (!image || !image.complete || image.naturalWidth === 0) {
+        if (!image) {
+            console.warn('WebGLSpriteBatch: Sprite has no image', object)
+            return
+        }
+
+        if (!image.complete || image.naturalWidth === 0) {
             return
         }
 
         const texture = this.textureManager.getTexture(image)
         if (!texture) {
+            console.warn('WebGLSpriteBatch: Failed to get texture for image', image.src)
             return
         }
 
@@ -170,7 +176,7 @@ export default class WebGLSpriteBatch {
         gl.vertexAttribPointer(program.attributes.aOpacity, 1, gl.FLOAT, false, stride, 4 * 4)
 
         // aFeetY attribute - only enable if the shader has it (shadow shader)
-        if (program.attributes.aFeetY !== undefined) {
+        if (program.attributes.aFeetY !== undefined && program.attributes.aFeetY !== -1) {
             gl.enableVertexAttribArray(program.attributes.aFeetY)
             gl.vertexAttribPointer(program.attributes.aFeetY, 1, gl.FLOAT, false, stride, 5 * 4)
         }

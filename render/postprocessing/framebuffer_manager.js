@@ -1,3 +1,14 @@
+function getFramebufferStatusName (gl, status) {
+    const statusNames = {
+        [gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT]: 'INCOMPLETE_ATTACHMENT',
+        [gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT]: 'INCOMPLETE_MISSING_ATTACHMENT',
+        [gl.FRAMEBUFFER_UNSUPPORTED]: 'UNSUPPORTED',
+        [gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE]: 'INCOMPLETE_MULTISAMPLE'
+    }
+    return statusNames[status] || `UNKNOWN (${status})`
+}
+
+
 export default class FramebufferManager {
 
     #gl = null
@@ -77,7 +88,9 @@ export default class FramebufferManager {
 
         const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
         if (status !== gl.FRAMEBUFFER_COMPLETE) {
-            console.error('MSAA Framebuffer not complete:', status)
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+            gl.bindRenderbuffer(gl.RENDERBUFFER, null)
+            throw new Error(`MSAA Framebuffer not complete: ${getFramebufferStatusName(gl, status)}`)
         }
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null)
@@ -128,7 +141,9 @@ export default class FramebufferManager {
 
         const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
         if (status !== gl.FRAMEBUFFER_COMPLETE) {
-            console.error('Framebuffer not complete:', status)
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+            gl.bindTexture(gl.TEXTURE_2D, null)
+            throw new Error(`Framebuffer not complete: ${getFramebufferStatusName(gl, status)}`)
         }
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null)
