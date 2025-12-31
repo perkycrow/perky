@@ -8,7 +8,7 @@ export default class ImageView extends EntityView {
         super(entity, context)
 
         const config = context.config || {}
-        const image = context.game.getImage(config.image)
+        const image = context.game.getSource(config.image)
 
         this.root = new Image2D({
             image,

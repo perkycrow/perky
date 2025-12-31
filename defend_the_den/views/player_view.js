@@ -8,9 +8,9 @@ export default class PlayerView extends EntityView {
         super(entity, context)
 
         this.images = {
-            right: context.game.getImage('wolf_right'),
-            up: context.game.getImage('wolf_up'),
-            down: context.game.getImage('wolf_down')
+            right: context.game.getSource('wolf_right'),
+            up: context.game.getSource('wolf_up'),
+            down: context.game.getSource('wolf_down')
         }
 
         this.root = new Image2D({

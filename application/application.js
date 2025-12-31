@@ -57,11 +57,6 @@ export default class Application extends PerkyModule {
     }
 
 
-    getImage (id) {
-        return this.getSource(id)
-    }
-
-
     #autoRegisterBindings (controllerName, controller) {
         const Controller = controller.constructor
         const bindings = Controller.normalizeBindings?.(controllerName) || []

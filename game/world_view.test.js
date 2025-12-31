@@ -76,7 +76,7 @@ describe('WorldView', () => {
 
     beforeEach(() => {
         mockWorld = new MockWorld()
-        mockGame = {getImage: vi.fn()}
+        mockGame = {getSource: vi.fn()}
 
         worldView = new WorldView({
             world: mockWorld,

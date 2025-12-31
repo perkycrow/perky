@@ -17,7 +17,7 @@ class MockContext {
         this.group = new Group2D({name: 'test-group'})
         this.config = config
         this.game = {
-            getImage: vi.fn(() => ({width: 64, height: 64}))
+            getSource: vi.fn(() => ({width: 64, height: 64}))
         }
     }
 }
@@ -56,7 +56,7 @@ describe('ImageView', () => {
 
 
         test('loads image from game', () => {
-            expect(context.game.getImage).toHaveBeenCalledWith('test-sprite')
+            expect(context.game.getSource).toHaveBeenCalledWith('test-sprite')
         })
 
 
@@ -105,7 +105,7 @@ describe('ImageView', () => {
         test('handles missing config gracefully', () => {
             const minimalContext = {
                 group: new Group2D(),
-                game: {getImage: vi.fn(() => ({width: 32, height: 32}))}
+                game: {getSource: vi.fn(() => ({width: 32, height: 32}))}
             }
             const minimalView = new ImageView(entity, minimalContext)
 

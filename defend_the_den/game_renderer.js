@@ -48,7 +48,7 @@ export default class GameRenderer extends PerkyModule {
 
 
     #buildScene () {
-        const backgroundImage = this.game.getImage('background')
+        const backgroundImage = this.game.getSource('background')
         const backgroundHeight = 5
         const backgroundWidth = (backgroundImage.width / backgroundImage.height) * backgroundHeight
 
