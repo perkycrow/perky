@@ -1,13 +1,4 @@
-/**
- * Traverse a scene graph and collect visible objects for rendering.
- *
- * @param {Object} object - Root object to traverse
- * @param {Map} rendererRegistry - Map of object constructor to renderer
- * @param {Object} options - Traversal options
- * @param {Object} options.camera - Camera for culling (optional)
- * @param {boolean} options.enableCulling - Enable frustum culling (default false)
- * @param {Object} options.stats - Stats object to update (optional)
- */
+
 export function traverseAndCollect (object, rendererRegistry, options = {}) {
     const ctx = {
         rendererRegistry,

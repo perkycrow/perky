@@ -235,15 +235,6 @@ export default class FramebufferManager {
     }
 
 
-    /**
-     * Resolve MSAA buffer content to a named buffer.
-     * This enables MSAA antialiasing for render groups by:
-     * 1. Rendering group content to shared MSAA buffer
-     * 2. Resolving to the group's named texture buffer
-     *
-     * @param {string} name - Named buffer to resolve to
-     * @returns {boolean} True if successful
-     */
     resolveToBuffer (name) {
         const buffer = this.#namedBuffers.get(name)
         if (!buffer) {
@@ -288,13 +279,6 @@ export default class FramebufferManager {
     }
 
 
-    /**
-     * Get or create a named framebuffer for RenderGroup.
-     * Creates the buffer on first access, reuses on subsequent calls.
-     *
-     * @param {string} name - Unique identifier for the buffer
-     * @returns {{framebuffer: WebGLFramebuffer, texture: WebGLTexture}}
-     */
     getOrCreateBuffer (name) {
         if (!this.#namedBuffers.has(name)) {
             const {framebuffer, texture} = this.#createFramebuffer()
@@ -304,12 +288,6 @@ export default class FramebufferManager {
     }
 
 
-    /**
-     * Bind a named framebuffer for rendering.
-     *
-     * @param {string} name - Buffer identifier
-     * @returns {boolean} True if buffer was bound
-     */
     bindBuffer (name) {
         const buffer = this.#namedBuffers.get(name)
         if (!buffer) {
@@ -322,23 +300,11 @@ export default class FramebufferManager {
     }
 
 
-    /**
-     * Get texture from a named buffer.
-     *
-     * @param {string} name - Buffer identifier
-     * @returns {WebGLTexture|null}
-     */
     getBufferTexture (name) {
         return this.#namedBuffers.get(name)?.texture ?? null
     }
 
 
-    /**
-     * Dispose a single named buffer.
-     *
-     * @param {string} name - Buffer identifier to dispose
-     * @returns {boolean} True if buffer was found and disposed
-     */
     disposeBuffer (name) {
         const buffer = this.#namedBuffers.get(name)
         if (!buffer) {

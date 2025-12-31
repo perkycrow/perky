@@ -222,10 +222,6 @@ export default class WebGLCanvas2D extends BaseRenderer {
     }
 
 
-    /**
-     * Get the current render groups in registration order.
-     * @returns {RenderGroup[]}
-     */
     get renderGroups () {
         return this.childrenByCategory('renderGroup')
     }
@@ -313,12 +309,6 @@ export default class WebGLCanvas2D extends BaseRenderer {
     }
 
 
-    /**
-     * Render the scene or render groups.
-     *
-     * @param {Object2D} [scene] - Scene to render. If omitted and render groups are set,
-     *                             uses multi-group rendering instead.
-     */
     render (scene) {
         if (this.renderGroups.length > 0 && !scene) {
             return this.#renderWithGroups()
