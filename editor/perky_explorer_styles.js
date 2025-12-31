@@ -495,6 +495,19 @@ export const inspectorStyles = `
         color: var(--fg-muted);
         font-size: 11px;
     }
+
+    .inspector-color-swatch {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        cursor: pointer;
+        transition: border-color 0.15s;
+    }
+
+    .inspector-color-swatch:hover {
+        border-color: var(--fg-muted);
+    }
 `
 
 

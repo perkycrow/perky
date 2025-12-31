@@ -43,24 +43,40 @@ export function createColorRow (name, color, onChange) {
     label.className = 'inspector-row-label'
     label.textContent = name
 
+    // Hidden native input
     const colorInput = document.createElement('input')
     colorInput.type = 'color'
-    colorInput.className = 'inspector-color'
+    colorInput.style.cssText = 'position: absolute; opacity: 0; pointer-events: none;'
 
-    // Convert [r, g, b, a] to hex
+    // Visible color swatch
+    const swatch = document.createElement('div')
+    swatch.className = 'inspector-color-swatch'
+
     const toHex = (v) => Math.round(v * 255).toString(16).padStart(2, '0')
+    const updateSwatch = () => {
+        swatch.style.backgroundColor = `rgba(${color[0] * 255}, ${color[1] * 255}, ${color[2] * 255}, ${color[3]})`
+    }
+    updateSwatch()
+
     colorInput.value = `#${toHex(color[0])}${toHex(color[1])}${toHex(color[2])}`
+
+    swatch.addEventListener('click', () => colorInput.click())
 
     colorInput.addEventListener('input', (e) => {
         const hex = e.target.value
         const r = parseInt(hex.slice(1, 3), 16) / 255
         const g = parseInt(hex.slice(3, 5), 16) / 255
         const b = parseInt(hex.slice(5, 7), 16) / 255
-        onChange([r, g, b, color[3]]) // Preserve alpha
+        color[0] = r
+        color[1] = g
+        color[2] = b
+        updateSwatch()
+        onChange([r, g, b, color[3]])
     })
 
     row.appendChild(label)
     row.appendChild(colorInput)
+    row.appendChild(swatch)
     return row
 }
 
