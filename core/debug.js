@@ -1,3 +1,6 @@
+import logger from './logger.js'
+
+
 const instances = new Map()
 let enabled = false
 let cleanupIntervalId = null
@@ -9,7 +12,7 @@ export function enableDebug () {
     }
 
     enabled = true
-    console.log('🔍 Debug mode enabled')
+    logger.info('Debug mode enabled')
 
     if (!cleanupIntervalId) {
         cleanupIntervalId = setInterval(cleanupDeadReferences, 5000)
@@ -23,7 +26,7 @@ export function disableDebug () {
     }
 
     enabled = false
-    console.log('🔍 Debug mode disabled')
+    logger.info('Debug mode disabled')
 
     if (cleanupIntervalId) {
         clearInterval(cleanupIntervalId)
@@ -97,7 +100,7 @@ export function getInstanceCount (className) {
 
 export function printDiagnostics () {
     if (!enabled) {
-        console.warn('⚠️ Debug mode is disabled. Call enableDebug() first.')
+        logger.warn('Debug mode is disabled. Call enableDebug() first.')
         return
     }
 

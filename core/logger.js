@@ -1,10 +1,20 @@
 import Notifier from './notifier.js'
 
 
+const CONSOLE_METHODS = {
+    info: 'info',
+    warn: 'warn',
+    error: 'error',
+    notice: 'log',
+    success: 'log'
+}
+
+
 class Logger extends Notifier {
 
     #history = []
     #maxHistory = 100
+    #consoleOutput = true
 
 
     get history () {
@@ -20,6 +30,16 @@ class Logger extends Notifier {
     set maxHistory (value) {
         this.#maxHistory = value
         this.#trimHistory()
+    }
+
+
+    get consoleOutput () {
+        return this.#consoleOutput
+    }
+
+
+    set consoleOutput (value) {
+        this.#consoleOutput = value
     }
 
 
@@ -40,6 +60,11 @@ class Logger extends Notifier {
         const entry = {event: 'log', type, items, timestamp: Date.now()}
         this.#record(entry)
         this.emit('log', entry)
+
+        if (this.#consoleOutput) {
+            const method = CONSOLE_METHODS[type] || 'log'
+            console[method](...items)
+        }
     }
 
 

@@ -1,5 +1,6 @@
 import PerkyModule from './perky_module'
 import ActionController from './action_controller'
+import logger from './logger.js'
 
 
 export default class ActionDispatcher extends PerkyModule {
@@ -102,7 +103,7 @@ export default class ActionDispatcher extends PerkyModule {
 
         for (const name of nameArray) {
             if (!this.hasChild(name)) {
-                console.warn(`Controller "${name}" not found. Cannot set as active controller.`)
+                logger.warn(`Controller "${name}" not found. Cannot set as active controller.`)
                 return false
             }
         }
@@ -121,7 +122,7 @@ export default class ActionDispatcher extends PerkyModule {
 
     pushActive (name) {
         if (!this.hasChild(name)) {
-            console.warn(`Controller "${name}" not found`)
+            logger.warn(`Controller "${name}" not found`)
             return false
         }
 
@@ -138,7 +139,7 @@ export default class ActionDispatcher extends PerkyModule {
 
     popActive () {
         if (this.#activeControllers.length === 0) {
-            console.warn('Active controllers stack is empty')
+            logger.warn('Active controllers stack is empty')
             return null
         }
 
@@ -157,7 +158,7 @@ export default class ActionDispatcher extends PerkyModule {
 
     execute (actionName, ...args) {
         if (this.#activeControllers.length === 0) {
-            console.warn('No active controllers')
+            logger.warn('No active controllers')
             return
         }
 
