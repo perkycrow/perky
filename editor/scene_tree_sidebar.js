@@ -12,9 +12,6 @@ const sidebarExtraStyles = `
         display: block;
         width: 320px;
         background: var(--bg-primary);
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         overflow: hidden;
         font-family: var(--font-mono);
         font-size: 12px;

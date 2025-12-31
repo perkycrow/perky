@@ -15,6 +15,7 @@ export default class PerkyExplorer extends BaseEditorComponent {
     #isMinimized = false
     #isCollapsed = false
     #sceneTreeMode = false
+    #focusMode = false
     #sceneTreeSource = null
     #embedded = false
 
@@ -31,8 +32,6 @@ export default class PerkyExplorer extends BaseEditorComponent {
 
     #selectedModule = null
     #rootModule = null
-    #backToRootBtnEl = null
-    #backNodeEl = null
     #contextMenuEl = null
 
 
@@ -131,16 +130,17 @@ export default class PerkyExplorer extends BaseEditorComponent {
         backButton.className = 'explorer-back-button'
         backButton.textContent = '←'
 
-        const label = document.createElement('span')
-        label.className = 'explorer-minimized-label'
-
         container.appendChild(backButton)
-        container.appendChild(label)
 
         container.addEventListener('click', () => {
-            this.#isMinimized = false
-            this.#closeSceneTree()
-            this.#updateViewState()
+            if (this.#sceneTreeMode) {
+                this.#closeSceneTree()
+            } else if (this.#focusMode) {
+                this.focusModule(this.#module)
+            } else {
+                this.#isMinimized = false
+                this.#updateViewState()
+            }
         })
         return container
     }
@@ -192,16 +192,6 @@ export default class PerkyExplorer extends BaseEditorComponent {
         const buttons = document.createElement('div')
         buttons.className = 'explorer-buttons'
 
-        this.#backToRootBtnEl = document.createElement('button')
-        this.#backToRootBtnEl.className = 'explorer-btn'
-        this.#backToRootBtnEl.textContent = 'Back'
-        this.#backToRootBtnEl.title = 'Go Back'
-        this.#backToRootBtnEl.style.display = 'none' // Start hidden
-        this.#backToRootBtnEl.addEventListener('click', (e) => {
-            e.stopPropagation()
-            this.focusModule(this.#module)
-        })
-
         const refreshBtn = document.createElement('button')
         refreshBtn.className = 'explorer-btn'
         refreshBtn.textContent = '↻'
@@ -230,7 +220,6 @@ export default class PerkyExplorer extends BaseEditorComponent {
             this.#updateViewState()
         })
 
-        buttons.appendChild(this.#backToRootBtnEl)
         buttons.appendChild(refreshBtn)
         buttons.appendChild(this.#collapseBtnEl)
         buttons.appendChild(this.#minimizeBtnEl)
@@ -247,9 +236,6 @@ export default class PerkyExplorer extends BaseEditorComponent {
     #createTree () {
         const tree = document.createElement('div')
         tree.className = 'explorer-tree'
-
-        this.#backNodeEl = this.#createBackNode()
-        tree.appendChild(this.#backNodeEl)
 
         this.#rootNode = document.createElement('perky-explorer-node')
         this.#rootNode.addEventListener('node:select', (e) => {
@@ -307,31 +293,25 @@ export default class PerkyExplorer extends BaseEditorComponent {
     }
 
 
-    #updateViewState () { // eslint-disable-line complexity
-        const label = this.#minimizedEl.querySelector('.explorer-minimized-label')
-
+    #updateViewState () {
         if (this.#sceneTreeMode) {
             this.#minimizedEl.classList.remove('hidden')
-            this.#minimizedEl.classList.add('scene-tree-mode')
+            this.#minimizedEl.classList.add('back-mode')
             this.#explorerEl.classList.add('hidden')
             this.#sidebarEl.classList.remove('hidden')
-
-            if (label) {
-                const source = this.#sceneTreeSource || this.#selectedModule
-                label.textContent = source?.name || 'Scene Tree'
-            }
+        } else if (this.#focusMode) {
+            this.#minimizedEl.classList.remove('hidden')
+            this.#minimizedEl.classList.add('back-mode')
+            this.#explorerEl.classList.remove('hidden')
+            this.#sidebarEl.classList.add('hidden')
         } else if (this.#isMinimized) {
             this.#minimizedEl.classList.remove('hidden')
-            this.#minimizedEl.classList.remove('scene-tree-mode')
+            this.#minimizedEl.classList.remove('back-mode')
             this.#explorerEl.classList.add('hidden')
             this.#sidebarEl.classList.add('hidden')
-
-            if (label) {
-                label.textContent = 'Explorer'
-            }
         } else {
             this.#minimizedEl.classList.add('hidden')
-            this.#minimizedEl.classList.remove('scene-tree-mode')
+            this.#minimizedEl.classList.remove('back-mode')
             this.#explorerEl.classList.remove('hidden')
             this.#sidebarEl.classList.add('hidden')
         }
@@ -515,65 +495,19 @@ export default class PerkyExplorer extends BaseEditorComponent {
     }
 
 
-    #updateHeaderControls () { // eslint-disable-line complexity
-        this.#updateTreeNavigation()
-
-        if (!this.#backToRootBtnEl) {
-            return
-        }
-
-        // Ensure button is in the DOM (fail-safe)
-        if (!this.#backToRootBtnEl.isConnected && this.#headerEl) {
-            const buttons = this.#headerEl.querySelector('.explorer-buttons')
-            if (buttons) {
-                buttons.insertBefore(this.#backToRootBtnEl, buttons.firstChild)
-            }
-        }
-
+    #updateHeaderControls () {
         const isRoot = this.#rootModule && this.#module && this.#rootModule.$id === this.#module.$id
+        this.#focusMode = this.#rootModule && !isRoot
 
-        if (this.#rootModule && !isRoot) {
-            this.#backToRootBtnEl.style.display = 'inline-block'
-            this.#backToRootBtnEl.classList.remove('hidden')
+        this.#updateViewState()
+
+        if (this.#focusMode) {
             this.#headerEl.querySelector('.explorer-title').textContent = this.#rootModule.$id
         } else {
-            this.#backToRootBtnEl.style.display = 'none'
             this.#headerEl.querySelector('.explorer-title').innerHTML = '<span class="explorer-title-icon">📦</span> Perky Explorer'
         }
     }
 
-
-    #createBackNode () {
-        const node = document.createElement('div')
-        node.className = 'explorer-back-node hidden'
-        node.innerHTML = `
-            <span class="explorer-back-icon">↩</span>
-            <span class="explorer-back-label">Back</span>
-        `
-        node.addEventListener('click', (e) => {
-            e.stopPropagation()
-            this.focusModule(this.#module)
-        })
-        return node
-    }
-
-
-    #updateTreeNavigation () {
-        if (!this.#backNodeEl) {
-            return
-        }
-
-        const isRoot = this.#rootModule && this.#module && this.#rootModule.$id === this.#module.$id
-
-        if (this.#rootModule && !isRoot) {
-            this.#backNodeEl.classList.remove('hidden')
-
-            // Update label to show where we are going back to? 
-            // "Back to Root" is generic and fine.
-        } else {
-            this.#backNodeEl.classList.add('hidden')
-        }
-    }
 
 }
 

@@ -159,28 +159,21 @@ export const explorerStyles = `
         transition: background 0.15s, color 0.15s;
     }
 
-    .explorer-minimized.scene-tree-mode {
+    .explorer-minimized.back-mode {
         background: var(--bg-secondary);
         border: none;
         border-bottom: 1px solid var(--border);
-        border-radius: 6px 6px 0 0;
+        border-radius: 0;
         box-shadow: none;
     }
 
-    .explorer-minimized.scene-tree-mode .explorer-back-button {
+    .explorer-minimized.back-mode .explorer-back-button {
         display: flex;
     }
 
     .explorer-minimized:hover .explorer-back-button {
         background: var(--bg-selected);
         color: var(--fg-primary);
-    }
-
-    .explorer-minimized-label {
-        max-width: 150px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
     }
 
     .hidden {
@@ -191,29 +184,6 @@ export const explorerStyles = `
         padding: 20px;
         text-align: center;
         color: var(--fg-muted);
-    }
-
-    .explorer-back-node {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 12px;
-        color: var(--fg-secondary);
-        cursor: pointer;
-        border-bottom: 1px solid var(--border);
-        background: var(--bg-secondary);
-        font-size: 11px;
-        font-weight: 500;
-        transition: color 0.15s, background 0.15s;
-    }
-
-    .explorer-back-node:hover {
-        background: var(--bg-hover);
-        color: var(--fg-primary);
-    }
-
-    .explorer-back-icon {
-        font-size: 14px;
     }
 `
 
