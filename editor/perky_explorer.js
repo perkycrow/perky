@@ -16,7 +16,6 @@ export default class PerkyExplorer extends BaseEditorComponent {
     #isCollapsed = false
     #sceneTreeMode = false
     #focusMode = false
-    #sceneTreeSource = null
     #embedded = false
 
     #containerEl = null
@@ -399,7 +398,6 @@ export default class PerkyExplorer extends BaseEditorComponent {
 
     #openSceneTree (content, worldRenderer = null) {
         this.#sceneTreeMode = true
-        this.#sceneTreeSource = worldRenderer
         this.#sidebarEl.setContent(content, worldRenderer)
         this.#updateViewState()
     }
@@ -407,7 +405,6 @@ export default class PerkyExplorer extends BaseEditorComponent {
 
     #closeSceneTree () {
         this.#sceneTreeMode = false
-        this.#sceneTreeSource = null
         this.#updateViewState()
     }
 

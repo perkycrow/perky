@@ -310,7 +310,7 @@ describe('PerkyExplorer', () => {
             const module = new PerkyModule({$id: 'test'})
             explorer.setModule(module)
 
-            const minimizeBtn = explorer.shadowRoot.querySelectorAll('.explorer-btn')[3]
+            const minimizeBtn = explorer.shadowRoot.querySelectorAll('.explorer-btn')[2]
             minimizeBtn.click()
 
             const minimized = explorer.shadowRoot.querySelector('.explorer-minimized')
@@ -322,7 +322,7 @@ describe('PerkyExplorer', () => {
             const module = new PerkyModule({$id: 'test'})
             explorer.setModule(module)
 
-            const minimizeBtn = explorer.shadowRoot.querySelectorAll('.explorer-btn')[3]
+            const minimizeBtn = explorer.shadowRoot.querySelectorAll('.explorer-btn')[2]
             minimizeBtn.click()
 
             const minimized = explorer.shadowRoot.querySelector('.explorer-minimized')
