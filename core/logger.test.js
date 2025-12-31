@@ -6,6 +6,7 @@ import {vi} from 'vitest'
 describe('Logger', () => {
 
     beforeEach(() => {
+        logger.consoleOutput = false
         logger.removeListeners()
         logger.clearHistory()
         logger.maxHistory = 100
