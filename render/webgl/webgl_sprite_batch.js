@@ -18,7 +18,7 @@ export default class WebGLSpriteBatch {
 
         this.maxSprites = options.maxSprites ?? 1000
 
-        // 6 floats per vertex: x, y, u, v, opacity, feetY
+
         this.vertexData = new Float32Array(this.maxSprites * 4 * 6)
         this.indexData = new Uint16Array(this.maxSprites * 6)
 
@@ -125,8 +125,7 @@ export default class WebGLSpriteBatch {
             texCoords.set(DEFAULT_TEX_COORDS)
         }
 
-        // Calculate feet Y position (minimum Y of the bottom vertices)
-        // corners[1] and corners[3] are the Y values of bottom-left and bottom-right
+
         const feetY = Math.min(corners[1], corners[3])
 
         for (let i = 0; i < 4; i++) {
@@ -164,7 +163,7 @@ export default class WebGLSpriteBatch {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
         gl.bufferData(gl.ARRAY_BUFFER, this.vertexData.subarray(0, this.vertexIndex), gl.DYNAMIC_DRAW)
 
-        const stride = 6 * 4  // 6 floats * 4 bytes
+        const stride = 6 * 4
 
         gl.enableVertexAttribArray(program.attributes.aPosition)
         gl.vertexAttribPointer(program.attributes.aPosition, 2, gl.FLOAT, false, stride, 0)
@@ -175,7 +174,7 @@ export default class WebGLSpriteBatch {
         gl.enableVertexAttribArray(program.attributes.aOpacity)
         gl.vertexAttribPointer(program.attributes.aOpacity, 1, gl.FLOAT, false, stride, 4 * 4)
 
-        // aFeetY attribute - only enable if the shader has it (shadow shader)
+
         if (program.attributes.aFeetY !== undefined && program.attributes.aFeetY !== -1) {
             gl.enableVertexAttribArray(program.attributes.aFeetY)
             gl.vertexAttribPointer(program.attributes.aFeetY, 1, gl.FLOAT, false, stride, 5 * 4)

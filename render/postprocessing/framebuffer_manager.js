@@ -353,9 +353,6 @@ export default class FramebufferManager {
     }
 
 
-    /**
-     * Dispose all named buffers.
-     */
     disposeNamedBuffers () {
         const gl = this.#gl
         for (const {framebuffer, texture} of this.#namedBuffers.values()) {

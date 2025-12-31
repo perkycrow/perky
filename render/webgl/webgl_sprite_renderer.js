@@ -32,7 +32,7 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
 
 
     flush (matrices, renderContext = null) {
-        // First add all collected sprites to the batch
+
         for (const {object, opacity, hints} of this.collected) {
             this.#spriteBatch.addSprite(object, opacity, hints)
         }
@@ -48,7 +48,7 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
         const identityMatrix = [1, 0, 0, 0, 1, 0, 0, 0, 1]
         gl.uniformMatrix3fv(program.uniforms.uModelMatrix, false, identityMatrix)
 
-        // Apply transform-specific uniforms if present
+
         if (transform) {
             transform.applyUniforms(gl, program, matrices)
         }

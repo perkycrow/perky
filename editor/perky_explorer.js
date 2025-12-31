@@ -473,19 +473,14 @@ export default class PerkyExplorer extends BaseEditorComponent {
         this.#rootNode.setExpanded(true)
         this.#updateHeaderControls()
 
-        // If the selected module is not within the new focus hierarchy, clear selection
-        // Actually, let's keep it simply: if we focus, we probably want to see that node expanded
-        // But if the selected node was deep down, it might still be visible.
-        // For now, let's just re-select if visible, or clear if not.
 
         if (this.#selectedModule) {
             const node = this.#rootNode.findNode(n => n.getModule() === this.#selectedModule)
             if (node) {
                 node.setSelected(true)
             } else {
-                // Selected module is outside of focus scope, maybe we should select the focused root?
-                // Or just keep the details showing the old one?
-                // Let's select the root module
+
+
                 this.#handleNodeSelect(module)
             }
         }

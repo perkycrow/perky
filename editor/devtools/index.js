@@ -1,5 +1,5 @@
-// DevTools main entry point
-// Import this file to get the full devtools experience
+
+
 
 import './tools/explorer_tool.js'
 import './tools/apps_tool.js'

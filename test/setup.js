@@ -12,7 +12,6 @@ global.ResizeObserver = class ResizeObserver {
 }
 
 
-// Mock WebGL context for tests
 global.createMockWebGLContext = () => ({
     enable: () => { },
     disable: () => { },
@@ -68,7 +67,7 @@ global.createMockWebGLContext = () => ({
     blitFramebuffer: () => { },
     getParameter: () => 4,
 
-    // WebGL constants
+
     BLEND: 1,
     SRC_ALPHA: 1,
     ONE_MINUS_SRC_ALPHA: 1,
@@ -107,7 +106,6 @@ global.createMockWebGLContext = () => ({
 })
 
 
-// Override HTMLCanvasElement.getContext to return mock WebGL
 const originalGetContext = HTMLCanvasElement.prototype.getContext
 HTMLCanvasElement.prototype.getContext = function (type, options) {
     if (type === 'webgl' || type === 'webgl2') {

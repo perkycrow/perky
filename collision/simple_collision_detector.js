@@ -1,8 +1,4 @@
-/**
- * Simple collision detector for basic games
- * Lightweight alternative to the full CollisionSystem
- * Perfect for simple cases like Shroom Runner
- */
+
 export default class SimpleCollisionDetector {
 
     constructor () {
@@ -11,7 +7,7 @@ export default class SimpleCollisionDetector {
         this.enabled = true
     }
 
-    
+
     addBody (object, options = {}) {
         const body = {
             object,
@@ -19,12 +15,12 @@ export default class SimpleCollisionDetector {
             radius: options.radius || getDefaultRadius(object),
             enabled: options.enabled !== false
         }
-        
+
         this.bodies.push(body)
         return body
     }
 
-    
+
     removeBody (object) {
         const index = this.bodies.findIndex(body => body.object === object)
         if (index > -1) {
@@ -32,13 +28,13 @@ export default class SimpleCollisionDetector {
         }
     }
 
-    
+
     onCollision (typeA, typeB, callback) {
         const key = getCollisionKey(typeA, typeB)
         this.callbacks.set(key, callback)
     }
 
-    
+
     detectCollisions () {
         if (!this.enabled) {
             return
@@ -49,30 +45,30 @@ export default class SimpleCollisionDetector {
         }
     }
 
-    
+
     checkBodyCollisions (bodyIndex) {
         const bodyA = this.bodies[bodyIndex]
-        
+
         for (let j = bodyIndex + 1; j < this.bodies.length; j++) {
             const bodyB = this.bodies[j]
-            
+
             if (!bodyA.enabled || !bodyB.enabled) {
                 continue
             }
-            
+
             if (checkCollision(bodyA, bodyB)) {
                 this.handleCollision(bodyA, bodyB)
             }
         }
     }
 
-    
+
     handleCollision (bodyA, bodyB) {
         const key1 = getCollisionKey(bodyA.type, bodyB.type)
         const key2 = getCollisionKey(bodyB.type, bodyA.type)
-        
+
         const callback = this.callbacks.get(key1) || this.callbacks.get(key2)
-        
+
         if (callback) {
             callback(bodyA.object, bodyB.object, {
                 distance: getDistance(bodyA.object, bodyB.object),
@@ -82,28 +78,28 @@ export default class SimpleCollisionDetector {
         }
     }
 
-    
+
     enable () {
         this.enabled = true
     }
 
-    
+
     disable () {
         this.enabled = false
     }
 
-    
+
     clear () {
         this.bodies = []
         this.callbacks.clear()
     }
 
-    
+
     getBodiesOfType (type) {
         return this.bodies.filter(body => body.type === type)
     }
 
-    
+
     getBodiesNear (x, y, radius) {
         return this.bodies.filter(body => {
             const dx = body.object.position.x - x
@@ -119,12 +115,12 @@ export default class SimpleCollisionDetector {
 function checkCollision (bodyA, bodyB) {
     const posA = bodyA.object.position
     const posB = bodyB.object.position
-    
+
     const dx = posA.x - posB.x
     const dy = posA.y - posB.y
     const distance = Math.sqrt(dx * dx + dy * dy)
     const minDistance = bodyA.radius + bodyB.radius
-    
+
     return distance < minDistance
 }
 
@@ -145,11 +141,11 @@ function getDefaultRadius (object) {
     if (object.isSprite) {
         return Math.max(object.scale.x, object.scale.y)
     }
-    
+
     if (object.geometry?.parameters) {
         const params = object.geometry.parameters
         return params.radius || Math.max(params.width, params.height) / 2
     }
-    
+
     return 1
 } 

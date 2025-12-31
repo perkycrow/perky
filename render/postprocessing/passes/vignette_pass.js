@@ -26,17 +26,17 @@ export default class VignettePass extends RenderPass {
                 vec4 color = texture(uTexture, vTexCoord);
                 vec2 uv = vTexCoord * 2.0 - 1.0;
 
-                // Elliptical vignette with adjustable roundness
+
                 uv.x *= mix(1.0, 0.7, uRoundness);
 
-                // Squared distance for softer falloff
+
                 float dist = dot(uv, uv);
 
-                // Smooth vignette with better curve
+
                 float vignette = 1.0 - dist * uIntensity;
                 vignette = smoothstep(0.0, uSmoothness, vignette);
 
-                // Blend with vignette color instead of pure black
+
                 vec3 finalColor = mix(uColor, color.rgb, vignette);
 
                 fragColor = vec4(finalColor, color.a);

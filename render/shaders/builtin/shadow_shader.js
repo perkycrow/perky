@@ -16,13 +16,11 @@ out vec2 vTexCoord;
 out float vOpacity;
 
 void main() {
-    // aPosition is already in world space from the batch
-    // aFeetY is the Y position of the sprite's feet (bottom)
 
-    // Distance from feet (0 at feet, positive going up)
+
     float distFromFeet = aPosition.y - aFeetY;
 
-    // Apply shadow projection (directional light)
+
     vec2 shadowPos = aPosition;
     shadowPos.x += uShadowSkewX * distFromFeet;
     shadowPos.y = aFeetY + distFromFeet * uShadowScaleY + uShadowOffsetY;
@@ -51,7 +49,7 @@ out vec4 fragColor;
 
 void main() {
     vec4 texColor = texture(uTexture, vTexCoord);
-    // Use texture alpha but replace color with shadow color
+
     float alpha = texColor.a * vOpacity * uShadowColor.a;
     fragColor = vec4(uShadowColor.rgb, alpha);
 }

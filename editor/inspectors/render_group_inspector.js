@@ -39,30 +39,30 @@ export default class RenderGroupInspector extends BaseInspector {
 
         const group = this.module
 
-        // Visibility toggle at the very top
+
         const visibleToggle = createToggle('visible', group.visible, (value) => {
             group.visible = value
         })
         this.gridEl.appendChild(visibleToggle)
 
-        // Basic info
+
         this.addRow('name', group.$name)
         this.addRow('status', group.started ? 'started' : 'stopped')
 
         this.addSeparator()
 
-        // Opacity slider
+
         const opacitySlider = createSlider('opacity', group.opacity, {min: 0, max: 1, step: 0.01}, (value) => {
             group.opacity = value
         })
         this.gridEl.appendChild(opacitySlider)
 
-        // Blend mode selector using shared styles
+
         this.#renderBlendModeSelector(group)
 
         this.addSeparator()
 
-        // Content info
+
         if (group.content) {
             this.addRow('content', group.content.name || group.content.constructor.name)
             const childCount = group.content.children?.length || 0
@@ -73,12 +73,12 @@ export default class RenderGroupInspector extends BaseInspector {
 
         this.addSeparator()
 
-        // Render transform (shadows, etc.)
+
         renderTransform(this.gridEl, this.addRow.bind(this), group.renderTransform)
 
         this.addSeparator()
 
-        // Post-passes
+
         this.#renderPostPasses(group)
     }
 

@@ -104,7 +104,7 @@ export default class HTMLLayer extends Layer {
             worldOffsetY: options.worldOffsetY ?? 0,
             worldScaleX: options.worldScaleX ?? 1,
             worldScaleY: options.worldScaleY ?? 1,
-            autoCenter: options.autoCenter ?? false, // true, 'x', 'y', or false
+            autoCenter: options.autoCenter ?? false,
             inheritTransform: options.inheritTransform ?? false,
             targetObject: options.targetObject ?? null,
             lastScreenX: null,
@@ -171,7 +171,7 @@ export default class HTMLLayer extends Layer {
             return this
         }
 
-        // Camera now works in logical (CSS) coordinates, so ppu is already in CSS pixels
+
         const ppu = this.camera.pixelsPerUnit
         const zoomChanged = force || this.worldElements.some(el => el.lastZoom !== this.camera.zoom)
 
@@ -200,7 +200,7 @@ export default class HTMLLayer extends Layer {
             const finalX = screen.x + worldEl.offsetX + worldOffsetXPx
             const finalY = screen.y + worldEl.offsetY + worldOffsetYPx
 
-            // Camera viewport is already in CSS coordinates
+
             const cssWidth = this.camera.viewportWidth
             const cssHeight = this.camera.viewportHeight
 
@@ -277,7 +277,7 @@ export default class HTMLLayer extends Layer {
             return 0
         }
 
-        // Camera pixelsPerUnit is already in CSS coordinates
+
         const ppu = this.camera.pixelsPerUnit
         return pixels / ppu
     }
@@ -288,7 +288,7 @@ export default class HTMLLayer extends Layer {
             return 0
         }
 
-        // Camera pixelsPerUnit is already in CSS coordinates
+
         const ppu = this.camera.pixelsPerUnit
         return units * ppu
     }

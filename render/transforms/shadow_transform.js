@@ -2,18 +2,6 @@ import RenderTransform from '../render_transform'
 import {SHADOW_SHADER_DEF} from '../shaders/builtin/shadow_shader'
 
 
-/**
- * Transform that renders objects as projected shadows.
- * Simulates directional light (like the sun) where all shadows
- * have the same angle regardless of sprite position.
- *
- * @example
- * new ShadowTransform({
- *     skewX: 0.5,
- *     scaleY: 0.5,
- *     color: [0, 0, 0, 0.4]
- * })
- */
 export default class ShadowTransform extends RenderTransform {
 
     #program = null

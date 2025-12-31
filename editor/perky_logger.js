@@ -479,7 +479,7 @@ const STYLES = buildEditorStyles(
         color: var(--fg-muted);
     }
 
-    /* Log Renderers */
+
     .log-vec2 {
         display: inline-flex;
         align-items: center;

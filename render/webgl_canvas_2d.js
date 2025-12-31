@@ -27,7 +27,6 @@ export default class WebGLCanvas2D extends BaseRenderer {
     #compositeProgram = null
 
 
-
     constructor (options = {}) { // eslint-disable-line complexity
         super(options)
 
@@ -214,9 +213,6 @@ export default class WebGLCanvas2D extends BaseRenderer {
     }
 
 
-    /**
-     * Clear all render groups, reverting to single-scene rendering.
-     */
     clearRenderGroups () {
         const groups = this.renderGroups
         for (const group of groups) {
@@ -254,7 +250,7 @@ export default class WebGLCanvas2D extends BaseRenderer {
                 out vec4 fragColor;
                 void main() {
                     vec4 color = texture(uTexture, vTexCoord);
-                    // Use premultiplied alpha for correct compositing
+
                     float alpha = color.a * uOpacity;
                     fragColor = vec4(color.rgb * uOpacity, alpha);
                 }
@@ -394,7 +390,7 @@ export default class WebGLCanvas2D extends BaseRenderer {
 
         group.content.updateWorldMatrix(false)
 
-        // Build render context if group has a transform
+
         const renderContext = group.renderTransform?.enabled
             ? {transform: group.renderTransform}
             : null

@@ -11,7 +11,7 @@ export function createControlPanel ({title, container, position = 'top-right', w
 
     pane.registerPlugin(EssentialsPlugin)
 
-    // Position the panel
+
     const positions = {
         'top-left': {top: '10px', left: '10px'},
         'top-right': {top: '10px', right: '10px'},
@@ -75,26 +75,26 @@ export function addFpsMonitoring (pane, gameOrLoop, {title = 'Performance', expa
         format: (v) => v.toFixed(0)
     })
 
-    // FPS tracking variables
+
     let frameCount = 0
     let fpsSum = 0
     let lastReset = performance.now()
 
-    // Monitor FPS
+
     gameOrLoop.on('render', (frameProgress, fps) => {
         fpsGraph.begin()
 
         const currentFps = fps || 60
         fpsStats.current = currentFps
 
-        // Update stats
+
         frameCount++
         fpsSum += currentFps
         fpsStats.average = fpsSum / frameCount
         fpsStats.min = Math.min(fpsStats.min, currentFps)
         fpsStats.max = Math.max(fpsStats.max, currentFps)
 
-        // Reset stats at interval
+
         if (performance.now() - lastReset > resetInterval) {
             frameCount = 0
             fpsSum = 0
@@ -145,12 +145,12 @@ export function createGameControlPanel ({title, container, game, logger, positio
         expanded: expanded ?? false
     })
 
-    // Add FPS monitoring if requested
+
     if (includeFps && game) {
         addFpsMonitoring(pane, game)
     }
 
-    // Add basic game controls
+
     if (game) {
         addButtonFolder(pane, 'Game Controls', [
             {
@@ -207,8 +207,8 @@ export function addReadonlyBinding ({folder, object, property, label, formatter}
 
 function formatLabel (str) {
     return str
-        .replace(/([a-z])([A-Z])/g, '$1 $2') // camelCase to spaces
-        .replace(/^./, (char) => char.toUpperCase()) // capitalize first letter
+        .replace(/([a-z])([A-Z])/g, '$1 $2')
+        .replace(/^./, (char) => char.toUpperCase())
 }
 
 
@@ -245,12 +245,12 @@ export function addToggle (folder, object, property = 'enabled', label) {
 
 
 export const RANGES = {
-    UNIT: {min: 0, max: 1, step: 0.01},           // 0-1
-    PERCENT: {min: 0, max: 100, step: 1},         // 0-100
-    ANGLE: {min: 0, max: Math.PI * 2, step: 0.1}, // 0-2π
-    RGB: {min: 0, max: 2, step: 0.01},            // 0-2 for color channels
-    BRIGHTNESS: {min: -0.5, max: 0.5, step: 0.01}, // brightness range
-    CONTRAST: {min: 0.5, max: 2, step: 0.01}      // contrast range
+    UNIT: {min: 0, max: 1, step: 0.01},
+    PERCENT: {min: 0, max: 100, step: 1},
+    ANGLE: {min: 0, max: Math.PI * 2, step: 0.1},
+    RGB: {min: 0, max: 2, step: 0.01},
+    BRIGHTNESS: {min: -0.5, max: 0.5, step: 0.01},
+    CONTRAST: {min: 0.5, max: 2, step: 0.01}
 }
 
 
@@ -280,13 +280,13 @@ export function createDebugPanel (container, debugObject, position = 'bottom-rig
         expanded: false
     })
 
-    // Auto-add bindings for common debug properties
+
     const debugFolder = pane.addFolder({
         title: 'Debug Info',
         expanded: true
     })
 
-    // Common debug properties
+
     const commonProps = ['x', 'y', 'z', 'rotation', 'scale', 'speed', 'health', 'score', 'level']
 
     commonProps.forEach(prop => {

@@ -43,12 +43,12 @@ export function createColorRow (name, color, onChange) {
     label.className = 'inspector-row-label'
     label.textContent = name
 
-    // Hidden native input
+
     const colorInput = document.createElement('input')
     colorInput.type = 'color'
     colorInput.style.cssText = 'position: absolute; opacity: 0; pointer-events: none;'
 
-    // Visible color swatch
+
     const swatch = document.createElement('div')
     swatch.className = 'inspector-color-swatch'
 
@@ -122,7 +122,7 @@ export function renderTransformProperty (container, transform, name, config) {
         })
         container.appendChild(row)
     } else {
-        // Default: numeric slider
+
         const slider = document.createElement('slider-input')
         slider.setAttribute('label', name)
         slider.setAttribute('min', config.min ?? 0)

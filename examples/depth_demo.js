@@ -18,11 +18,9 @@ const mainCamera = renderSystem.getCamera('main')
 mainCamera.setUnitsInView(6)
 
 
-// Scene group
 const sceneGroup = new Group2D({name: 'scene'})
 
 
-// Center circle (planet)
 const planet = new Circle({
     x: 0,
     y: 0,
@@ -33,7 +31,6 @@ const planet = new Circle({
 sceneGroup.add(planet)
 
 
-// Orbiting circle (moon)
 const moon = new Circle({
     x: 2,
     y: 0,
@@ -44,33 +41,30 @@ const moon = new Circle({
 sceneGroup.add(moon)
 
 
-// Setup render groups
 const layer = renderSystem.getCanvas('game')
 layer.renderer.setRenderGroups([
     {$name: 'scene', content: sceneGroup}
 ])
 
 
-// Animation state
 let time = 0
 const orbitRadius = 2
 const orbitSpeed = 0.8
 
 
-// Animation loop
 function animate () {
     time += 0.016
 
     const angle = time * orbitSpeed
 
-    // Orbit position
+
     const x = Math.cos(angle) * orbitRadius
-    const y = Math.sin(angle) * orbitRadius * 0.4 // Elliptical orbit for depth effect
+    const y = Math.sin(angle) * orbitRadius * 0.4
 
     moon.x = x
     moon.y = y
 
-    // Update depth based on Y position (behind when y > 0, in front when y < 0)
+
     moon.setDepth(y > 0 ? -1 : 1)
 
     layer.markDirty()
@@ -82,7 +76,6 @@ function animate () {
 animate()
 
 
-// Info panel
 const infoPanel = document.createElement('div')
 infoPanel.className = 'info-panel'
 infoPanel.innerHTML = `
@@ -99,13 +92,11 @@ infoPanel.innerHTML = `
 container.appendChild(infoPanel)
 
 
-// Update depth display
 setInterval(() => {
     document.getElementById('moon-depth').textContent = moon.depth
 }, 100)
 
 
-// Styles
 const style = document.createElement('style')
 style.textContent = `
     .info-panel {

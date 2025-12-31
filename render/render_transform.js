@@ -1,21 +1,4 @@
-/**
- * Base class for render transformations.
- * RenderTransforms modify how objects are rendered within a RenderGroup,
- * enabling effects like shadows, reflections, outlines, etc.
- *
- * @example
- * renderer.setRenderGroups([
- *     {
- *         $name: 'shadows',
- *         content: scene,
- *         renderTransform: new ShadowTransform({angle: Math.PI / 6})
- *     },
- *     {
- *         $name: 'entities',
- *         content: scene
- *     }
- * ])
- */
+
 export default class RenderTransform {
 
     constructor (options = {}) {
@@ -31,8 +14,8 @@ export default class RenderTransform {
      * @param {WebGL2RenderingContext} context.gl - WebGL context
      * @param {ShaderRegistry} context.shaderRegistry - Shader registry
      */
-    init (context) { // eslint-disable-line no-unused-vars
-        // Override in subclasses
+    init () { // eslint-disable-line class-methods-use-this
+
     }
 
 
@@ -44,7 +27,7 @@ export default class RenderTransform {
      * @param {Object} matrices - Current view/projection matrices
      * @returns {Object} Modified matrices or render state
      */
-    apply (context, matrices) { // eslint-disable-line no-unused-vars
+    apply (context, matrices) {// eslint-disable-line class-methods-use-this
         return matrices
     }
 
@@ -55,7 +38,7 @@ export default class RenderTransform {
      *
      * @returns {ShaderProgram|null}
      */
-    getProgram () {
+    getProgram () { // eslint-disable-line class-methods-use-this
         return null
     }
 
@@ -67,16 +50,13 @@ export default class RenderTransform {
      * @param {ShaderProgram} program
      * @param {Object} matrices
      */
-    applyUniforms (gl, program, matrices) { // eslint-disable-line no-unused-vars
-        // Override in subclasses
+    applyUniforms () { // eslint-disable-line class-methods-use-this
+
     }
 
 
-    /**
-     * Clean up resources.
-     */
-    dispose () {
-        // Override in subclasses
+    dispose () { // eslint-disable-line class-methods-use-this
+
     }
 
 }
