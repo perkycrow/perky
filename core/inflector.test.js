@@ -44,6 +44,94 @@ describe('Inflector', () => {
             expect(inflector.plural('mouse')).toBe('mice')
         })
 
+
+        test('words ending in f/fe become ves', () => {
+            expect(inflector.plural('knife')).toBe('knives')
+            expect(inflector.plural('wife')).toBe('wives')
+            expect(inflector.plural('life')).toBe('lives')
+            expect(inflector.plural('leaf')).toBe('leaves')
+            expect(inflector.plural('half')).toBe('halves')
+            expect(inflector.plural('wolf')).toBe('wolves')
+            expect(inflector.plural('thief')).toBe('thieves')
+        })
+
+
+        test('words ending in o', () => {
+            expect(inflector.plural('hero')).toBe('heroes')
+            expect(inflector.plural('potato')).toBe('potatoes')
+            expect(inflector.plural('tomato')).toBe('tomatoes')
+            expect(inflector.plural('echo')).toBe('echoes')
+            expect(inflector.plural('volcano')).toBe('volcanoes')
+            expect(inflector.plural('tornado')).toBe('tornadoes')
+        })
+
+
+        test('Latin/Greek endings', () => {
+            expect(inflector.plural('focus')).toBe('foci')
+            expect(inflector.plural('cactus')).toBe('cacti')
+            expect(inflector.plural('fungus')).toBe('fungi')
+            expect(inflector.plural('nucleus')).toBe('nuclei')
+            expect(inflector.plural('radius')).toBe('radii')
+            expect(inflector.plural('stimulus')).toBe('stimuli')
+            expect(inflector.plural('syllabus')).toBe('syllabi')
+            expect(inflector.plural('alumnus')).toBe('alumni')
+        })
+
+
+        test('words ending in -is become -es', () => {
+            expect(inflector.plural('analysis')).toBe('analyses')
+            expect(inflector.plural('basis')).toBe('bases')
+            expect(inflector.plural('crisis')).toBe('crises')
+            expect(inflector.plural('diagnosis')).toBe('diagnoses')
+            expect(inflector.plural('hypothesis')).toBe('hypotheses')
+            expect(inflector.plural('thesis')).toBe('theses')
+            expect(inflector.plural('axis')).toBe('axes')
+        })
+
+
+        test('words ending in -um become -a', () => {
+            expect(inflector.plural('datum')).toBe('data')
+            expect(inflector.plural('curriculum')).toBe('curricula')
+            expect(inflector.plural('symposium')).toBe('symposia')
+            expect(inflector.plural('bacterium')).toBe('bacteria')
+            expect(inflector.plural('millennium')).toBe('millennia')
+            expect(inflector.plural('addendum')).toBe('addenda')
+            expect(inflector.plural('erratum')).toBe('errata')
+        })
+
+
+        test('words ending in -on become -a', () => {
+            expect(inflector.plural('criterion')).toBe('criteria')
+            expect(inflector.plural('phenomenon')).toBe('phenomena')
+        })
+
+
+        test('words ending in -a become -ae', () => {
+            expect(inflector.plural('alumna')).toBe('alumnae')
+            expect(inflector.plural('vertebra')).toBe('vertebrae')
+            expect(inflector.plural('alga')).toBe('algae')
+        })
+
+
+        test('words ending in -ex/-ix become -ices', () => {
+            expect(inflector.plural('index')).toBe('indices')
+            expect(inflector.plural('appendix')).toBe('appendices')
+            expect(inflector.plural('matrix')).toBe('matrices')
+        })
+
+
+        test('pronouns and special irregulars', () => {
+            expect(inflector.plural('I')).toBe('WE')
+            expect(inflector.plural('me')).toBe('us')
+            expect(inflector.plural('he')).toBe('they')
+            expect(inflector.plural('she')).toBe('they')
+            expect(inflector.plural('this')).toBe('these')
+            expect(inflector.plural('that')).toBe('those')
+            expect(inflector.plural('is')).toBe('are')
+            expect(inflector.plural('was')).toBe('were')
+            expect(inflector.plural('has')).toBe('have')
+        })
+
     })
 
 
