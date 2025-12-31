@@ -1,14 +1,3 @@
-import {
-    loadResponse,
-    loadBlob,
-    loadImage,
-    loadText,
-    loadJson,
-    loadArrayBuffer,
-    loadAudio,
-    replaceUrlFilename,
-    removeFileExtension
-} from './loaders'
 import {vi, beforeEach, describe, test, expect, afterEach} from 'vitest'
 
 
@@ -20,8 +9,11 @@ describe('Loaders', () => {
     let triggerLoad
     let triggerError
     let lastCreatedImage
+    let loaders
 
-    beforeEach(() => {
+    beforeEach(async () => {
+        vi.resetModules()
+
         mockResponse = {
             ok: true,
             blob: vi.fn(),
@@ -72,8 +64,10 @@ describe('Loaders', () => {
             decodeAudioData: vi.fn(),
             close: vi.fn()
         }
-        global.AudioContext = vi.fn(() => mockAudioContext)
-        global.webkitAudioContext = vi.fn(() => mockAudioContext)
+        global.AudioContext = vi.fn().mockImplementation(() => mockAudioContext)
+        global.webkitAudioContext = vi.fn().mockImplementation(() => mockAudioContext)
+
+        loaders = await import('./loaders')
     })
 
 
@@ -84,9 +78,9 @@ describe('Loaders', () => {
 
     test('loadResponse with string', async () => {
         const url = 'http://example.com'
-        
-        await loadResponse(url)
-        
+
+        await loaders.loadResponse(url)
+
         expect(mockFetch).toHaveBeenCalledWith(url, {})
     })
 
@@ -96,16 +90,16 @@ describe('Loaders', () => {
             url: 'http://example.com',
             config: {method: 'POST'}
         }
-        
-        await loadResponse(params)
-        
+
+        await loaders.loadResponse(params)
+
         expect(mockFetch).toHaveBeenCalledWith(params.url, params.config)
     })
 
 
     test('loadBlob success', async () => {
-        const result = await loadBlob('http://example.com')
-        
+        const result = await loaders.loadBlob('http://example.com')
+
         expect(mockResponse.blob).toHaveBeenCalled()
         expect(result).toBe(mockBlob)
     })
@@ -114,8 +108,8 @@ describe('Loaders', () => {
     test('loadBlob error', async () => {
         mockResponse.ok = false
         mockResponse.status = 404
-        
-        await expect(loadBlob('http://example.com')).rejects.toThrow('HTTP Error: 404')
+
+        await expect(loaders.loadBlob('http://example.com')).rejects.toThrow('HTTP Error 404')
     })
 
 
@@ -125,10 +119,10 @@ describe('Loaders', () => {
         const blob = new Blob(['test'], {type: 'image/png'})
         mockResponse.blob.mockResolvedValue(blob)
         global.URL.createObjectURL.mockReturnValue('blob:test')
-        
-        const loadPromise = loadImage('http://example.com')
+
+        const loadPromise = loaders.loadImage('http://example.com')
         const result = await loadPromise
-        
+
         expect(global.URL.createObjectURL).toHaveBeenCalledWith(blob)
         expect(result).toBe(lastCreatedImage)
     })
@@ -140,8 +134,8 @@ describe('Loaders', () => {
         const blob = new Blob(['test'], {type: 'image/png'})
         mockResponse.blob.mockResolvedValue(blob)
         global.URL.createObjectURL.mockReturnValue('blob:test')
-        
-        const loadPromise = loadImage('http://example.com')
+
+        const loadPromise = loaders.loadImage('http://example.com')
         await expect(loadPromise).rejects.toThrow('Failed to load image')
         expect(global.URL.revokeObjectURL).toHaveBeenCalledWith('blob:test')
     })
@@ -150,9 +144,9 @@ describe('Loaders', () => {
     test('loadText success', async () => {
         const text = 'Hello World'
         mockResponse.text.mockResolvedValue(text)
-        
-        const result = await loadText('http://example.com')
-        
+
+        const result = await loaders.loadText('http://example.com')
+
         expect(mockResponse.text).toHaveBeenCalled()
         expect(result).toBe(text)
     })
@@ -161,17 +155,17 @@ describe('Loaders', () => {
     test('loadText error', async () => {
         mockResponse.ok = false
         mockResponse.status = 404
-        
-        await expect(loadText('http://example.com')).rejects.toThrow('HTTP Error: 404')
+
+        await expect(loaders.loadText('http://example.com')).rejects.toThrow('HTTP Error 404')
     })
 
 
     test('loadJson success', async () => {
         const json = {message: 'Hello World'}
         mockResponse.json.mockResolvedValue(json)
-        
-        const result = await loadJson('http://example.com')
-        
+
+        const result = await loaders.loadJson('http://example.com')
+
         expect(mockResponse.json).toHaveBeenCalled()
         expect(result).toEqual(json)
     })
@@ -180,17 +174,17 @@ describe('Loaders', () => {
     test('loadJson error', async () => {
         mockResponse.ok = false
         mockResponse.status = 404
-        
-        await expect(loadJson('http://example.com')).rejects.toThrow('HTTP Error: 404')
+
+        await expect(loaders.loadJson('http://example.com')).rejects.toThrow('HTTP Error 404')
     })
 
 
     test('loadArrayBuffer success', async () => {
         const buffer = new ArrayBuffer(8)
         mockResponse.arrayBuffer.mockResolvedValue(buffer)
-        
-        const result = await loadArrayBuffer('http://example.com')
-        
+
+        const result = await loaders.loadArrayBuffer('http://example.com')
+
         expect(mockResponse.arrayBuffer).toHaveBeenCalled()
         expect(result).toBe(buffer)
     })
@@ -199,8 +193,8 @@ describe('Loaders', () => {
     test('loadArrayBuffer error', async () => {
         mockResponse.ok = false
         mockResponse.status = 404
-        
-        await expect(loadArrayBuffer('http://example.com')).rejects.toThrow('HTTP Error: 404')
+
+        await expect(loaders.loadArrayBuffer('http://example.com')).rejects.toThrow('HTTP Error 404')
     })
 
 
@@ -211,11 +205,10 @@ describe('Loaders', () => {
         mockAudioContext.decodeAudioData.mockImplementation((_, success) => {
             success(audioBuffer)
         })
-        
-        const result = await loadAudio('http://example.com')
-        
+
+        const result = await loaders.loadAudio('http://example.com')
+
         expect(mockAudioContext.decodeAudioData).toHaveBeenCalledWith(buffer, expect.any(Function), expect.any(Function))
-        expect(mockAudioContext.close).toHaveBeenCalled()
         expect(result).toBe(audioBuffer)
     })
 
@@ -226,9 +219,8 @@ describe('Loaders', () => {
         mockAudioContext.decodeAudioData.mockImplementation((_, __, error) => {
             error(new Error('Decode error'))
         })
-        
-        await expect(loadAudio('http://example.com')).rejects.toThrow('Failed to decode audio data: Decode error')
-        expect(mockAudioContext.close).toHaveBeenCalled()
+
+        await expect(loaders.loadAudio('http://example.com')).rejects.toThrow('Failed to decode audio data: Decode error')
     })
 
 
@@ -236,22 +228,22 @@ describe('Loaders', () => {
 
     describe('Utility Functions', () => {
         test('replaceUrlFilename', () => {
-            expect(replaceUrlFilename('/path/to/file.json', 'newfile.json'))
+            expect(loaders.replaceUrlFilename('/path/to/file.json', 'newfile.json'))
                 .toBe('/path/to/newfile.json')
 
-            expect(replaceUrlFilename('http://example.com/assets/sprite.json', 'sprite-1.json'))
+            expect(loaders.replaceUrlFilename('http://example.com/assets/sprite.json', 'sprite-1.json'))
                 .toBe('http://example.com/assets/sprite-1.json')
 
-            expect(replaceUrlFilename('file.json', 'other.json'))
+            expect(loaders.replaceUrlFilename('file.json', 'other.json'))
                 .toBe('other.json')
         })
 
         test('removeFileExtension', () => {
-            expect(removeFileExtension('file.png')).toBe('file')
-            expect(removeFileExtension('complex.name.jpg')).toBe('complex.name')
-            expect(removeFileExtension('noextension')).toBe('noextension')
-            expect(removeFileExtension('path/to/file.txt')).toBe('path/to/file')
-            expect(removeFileExtension('')).toBe('')
+            expect(loaders.removeFileExtension('file.png')).toBe('file')
+            expect(loaders.removeFileExtension('complex.name.jpg')).toBe('complex.name')
+            expect(loaders.removeFileExtension('noextension')).toBe('noextension')
+            expect(loaders.removeFileExtension('path/to/file.txt')).toBe('path/to/file')
+            expect(loaders.removeFileExtension('')).toBe('')
         })
     })
 

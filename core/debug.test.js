@@ -3,6 +3,7 @@ import debug from './debug'
 
 
 describe('Debug', () => {
+    let consoleInfoSpy
     let consoleLogSpy
 
     beforeEach(() => {
@@ -12,6 +13,7 @@ describe('Debug', () => {
 
         debug.clearInstances()
 
+        consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => { })
         consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => { })
         vi.spyOn(console, 'group').mockImplementation(() => { })
         vi.spyOn(console, 'groupEnd').mockImplementation(() => { })
@@ -33,36 +35,36 @@ describe('Debug', () => {
             debug.enableDebug()
 
             expect(debug.isDebugEnabled()).toBe(true)
-            expect(consoleLogSpy).toHaveBeenCalledWith('🔍 Debug mode enabled')
+            expect(consoleInfoSpy).toHaveBeenCalledWith('Debug mode enabled')
         })
 
         test('should disable debug mode', () => {
             debug.enableDebug()
-            consoleLogSpy.mockClear()
+            consoleInfoSpy.mockClear()
 
             debug.disableDebug()
 
             expect(debug.isDebugEnabled()).toBe(false)
-            expect(consoleLogSpy).toHaveBeenCalledWith('🔍 Debug mode disabled')
+            expect(consoleInfoSpy).toHaveBeenCalledWith('Debug mode disabled')
         })
 
         test('should not enable twice', () => {
             debug.enableDebug()
-            consoleLogSpy.mockClear()
+            consoleInfoSpy.mockClear()
 
             debug.enableDebug()
 
-            expect(consoleLogSpy).not.toHaveBeenCalled()
+            expect(consoleInfoSpy).not.toHaveBeenCalled()
         })
 
         test('should not disable twice', () => {
             debug.enableDebug()
             debug.disableDebug()
-            consoleLogSpy.mockClear()
+            consoleInfoSpy.mockClear()
 
             debug.disableDebug()
 
-            expect(consoleLogSpy).not.toHaveBeenCalled()
+            expect(consoleInfoSpy).not.toHaveBeenCalled()
         })
 
         test('should start cleanup interval when enabled', () => {

@@ -36,7 +36,7 @@ export default class ExampleIndex extends Application {
     constructor (params = {}) {
         super(params)
 
-        this.html = baseHtml
+        this.element.innerHTML = baseHtml
         this.examples = params.examples || []
         this.searchInput = this.element.querySelector('.search-input')
         this.grid = this.element.querySelector('.examples-grid')

@@ -78,10 +78,6 @@ export default class GameController extends WorldController {
         for (const enemy of enemies) {
             if (!enemy.alive) {
                 this.world.removeChild(enemy.$id)
-
-                if (enemy.x < -2.5) {
-                    this.onGameOver()
-                }
             }
         }
     }

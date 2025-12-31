@@ -65,11 +65,9 @@ describe(PerkyView, () => {
     })
 
 
-    test('html getter and setter', () => {
-        view.html = '<div>test content</div>'
-        expect(element.innerHTML).toBe('<div>test content</div>')
+    test('html getter', () => {
+        element.innerHTML = '<div>test content</div>'
         expect(view.html).toBe('<div>test content</div>')
-        expect(view.html = '<div>test content</div>').toBe('<div>test content</div>')
     })
 
 

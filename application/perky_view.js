@@ -43,7 +43,6 @@ export default class PerkyView extends PerkyModule {
             'mounted',
             'displayMode',
             'setDisplayMode',
-            'html',
             'enterFullscreenMode',
             'exitFullscreenMode',
             'toggleFullscreen'
@@ -121,6 +120,10 @@ export default class PerkyView extends PerkyModule {
 
 
     mount (container) {
+        if (!container) {
+            throw new Error('Container element is required')
+        }
+
         if (this.container && this.container !== container) {
             this.container.removeChild(this.element)
         }
@@ -202,11 +205,6 @@ export default class PerkyView extends PerkyModule {
 
     get html () {
         return this.element.innerHTML
-    }
-
-
-    set html (html) {
-        this.element.innerHTML = html
     }
 
 

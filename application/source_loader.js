@@ -24,6 +24,9 @@ export default class SourceLoader extends PerkyModule {
 
 
     get progress () {
+        if (this.sourceCount === 0) {
+            return 1
+        }
         return this.loadedCount / this.sourceCount
     }
 

@@ -9,6 +9,13 @@ export function normalizeParams (params) {
 }
 
 
+function checkResponse (response, url) {
+    if (!response.ok) {
+        throw new Error(`HTTP Error ${response.status} (${response.statusText}) for ${url}`)
+    }
+}
+
+
 export async function loadResponse (params) {
     const {url, config} = normalizeParams(params)
 
@@ -17,11 +24,10 @@ export async function loadResponse (params) {
 
 
 export async function loadBlob (params) {
+    const {url} = normalizeParams(params)
     const response = await loadResponse(params)
 
-    if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status}`)
-    }
+    checkResponse(response, url)
 
     return response.blob()
 }
@@ -51,53 +57,58 @@ export async function loadImage (params) {
 
 
 export async function loadText (params) {
+    const {url} = normalizeParams(params)
     const response = await loadResponse(params)
 
-    if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status}`)
-    }
+    checkResponse(response, url)
 
     return response.text()
 }
 
 
 export async function loadJson (params) {
+    const {url} = normalizeParams(params)
     const response = await loadResponse(params)
 
-    if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status}`)
-    }
+    checkResponse(response, url)
 
     return response.json()
 }
 
 
 export async function loadArrayBuffer (params) {
+    const {url} = normalizeParams(params)
     const response = await loadResponse(params)
 
-    if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status}`)
-    }
+    checkResponse(response, url)
 
     return response.arrayBuffer()
 }
 
 
+let sharedAudioContext = null
+
+
+function getAudioContext () {
+    if (!sharedAudioContext) {
+        sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)()
+    }
+    return sharedAudioContext
+}
+
+
 export async function loadAudio (params) {
     const arrayBuffer = await loadArrayBuffer(params)
-    
+    const audioContext = getAudioContext()
+
     return new Promise((resolve, reject) => {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)()
-      
         audioContext.decodeAudioData(
-            arrayBuffer, 
+            arrayBuffer,
             function (decodedData) {
                 resolve(decodedData)
-                audioContext.close()
-            }, 
+            },
             function (error) {
                 reject(new Error('Failed to decode audio data: ' + (error ? error.message : 'Unknown error')))
-                audioContext.close()
             }
         )
     })
