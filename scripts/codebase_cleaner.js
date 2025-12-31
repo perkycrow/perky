@@ -544,10 +544,85 @@ function run (rootDir, options = {}) {
 }
 
 
+// === ESLINT AUDIT ===
+
+function findEslintDisables (rootDir) {
+    const files = findJsFiles(rootDir)
+    const disables = []
+
+    for (const filePath of files) {
+        const relativePath = path.relative(rootDir, filePath)
+        const content = fs.readFileSync(filePath, 'utf-8')
+        const lines = content.split('\n')
+
+        lines.forEach((line, index) => {
+            const patterns = [
+                /eslint-disable-next-line\s+([\w-]+(?:,\s*[\w-]+)*)/,
+                /eslint-disable-line\s+([\w-]+(?:,\s*[\w-]+)*)/,
+                /eslint-disable\s+([\w-]+(?:,\s*[\w-]+)*)/
+            ]
+
+            for (const pattern of patterns) {
+                const match = line.match(pattern)
+                if (match) {
+                    const rules = match[1].split(',').map(r => r.trim())
+                    rules.forEach(rule => {
+                        disables.push({
+                            file: relativePath,
+                            line: index + 1,
+                            rule,
+                            context: line.trim()
+                        })
+                    })
+                }
+            }
+        })
+    }
+
+    return disables
+}
+
+
+function runEslintAudit (rootDir) {
+    console.log('=== ESLINT DISABLE AUDIT ===\n')
+
+    const disables = findEslintDisables(rootDir)
+
+    if (disables.length === 0) {
+        console.log('No eslint-disable directives found.')
+        return
+    }
+
+    const byRule = {}
+    for (const d of disables) {
+        if (!byRule[d.rule]) {
+            byRule[d.rule] = []
+        }
+        byRule[d.rule].push(d)
+    }
+
+    const sortedRules = Object.entries(byRule).sort((a, b) => b[1].length - a[1].length)
+
+    for (const [rule, occurrences] of sortedRules) {
+        console.log(`\n${rule} (${occurrences.length}):`)
+        for (const occ of occurrences) {
+            console.log(`  ${occ.file}:${occ.line}`)
+        }
+    }
+
+    console.log(`\n=== TOTAL: ${disables.length} directive(s) for ${sortedRules.length} rule(s) ===`)
+}
+
+
 // === CLI ===
 
 const rootDir = path.resolve(__dirname, '..')
 const dryRun = process.argv.includes('--dry-run')
 const verbose = process.argv.includes('--verbose')
+const eslintAudit = process.argv.includes('--eslint-audit')
 
-run(rootDir, {dryRun, verbose})
+if (eslintAudit) {
+    runEslintAudit(rootDir)
+} else {
+    run(rootDir, {dryRun, verbose})
+}

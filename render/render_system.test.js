@@ -88,12 +88,12 @@ describe('RenderSystem', () => {
 
 
         it('should render all layers', () => {
-            expect(() => renderSystem.renderAll()).not.toThrow() // eslint-disable-line max-nested-callbacks
+            expect(() => renderSystem.renderAll()).not.toThrow()
         })
 
 
         it('should render a specific layer', () => {
-            expect(() => renderSystem.renderLayer('game')).not.toThrow() // eslint-disable-line max-nested-callbacks
+            expect(() => renderSystem.renderLayer('game')).not.toThrow()
         })
 
     })
@@ -182,8 +182,8 @@ describe('RenderSystem', () => {
             const cameras = renderSystem.childrenByCategory('camera')
 
             expect(cameras.length).toBe(2)
-            expect(cameras.map(c => c.$id)).toContain('main') // eslint-disable-line max-nested-callbacks
-            expect(cameras.map(c => c.$id)).toContain('secondary') // eslint-disable-line max-nested-callbacks
+            expect(cameras.map(c => c.$id)).toContain('main')
+            expect(cameras.map(c => c.$id)).toContain('secondary')
         })
 
     })
@@ -194,7 +194,7 @@ describe('RenderSystem', () => {
         it('should not crash if disposed twice', () => {
             renderSystem.dispose()
 
-            expect(() => { // eslint-disable-line max-nested-callbacks
+            expect(() => {
                 renderSystem.dispose()
             }).not.toThrow()
         })
@@ -227,7 +227,7 @@ describe('RenderSystem', () => {
             const layers = renderSystem.childrenByCategory('layer')
 
             expect(layers).toHaveLength(2)
-            expect(layers.every(l => l.$category === 'layer')).toBe(true) // eslint-disable-line max-nested-callbacks
+            expect(layers.every(l => l.$category === 'layer')).toBe(true)
         })
 
     })

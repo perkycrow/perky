@@ -78,7 +78,7 @@ describe('Vec2', () => {
 
         test('setComponent throws on invalid index', () => {
             const vec = new Vec2()
-            expect(() => { // eslint-disable-line max-nested-callbacks
+            expect(() => {
                 vec.setComponent(2, 5)
             }).toThrow('index out of range: 2')
         })
@@ -533,7 +533,7 @@ describe('Vec2', () => {
 
         test('getComponent throws on invalid index', () => {
             const vec = new Vec2()
-            expect(() => { // eslint-disable-line max-nested-callbacks
+            expect(() => {
                 vec.getComponent(2)
             }).toThrow('index out of range: 2')
         })

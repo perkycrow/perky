@@ -43,8 +43,8 @@ describe(Random, () => {
             const random1 = new Random('seed-a')
             const random2 = new Random('seed-b')
 
-            const sequence1 = Array.from({length: 5}, () => random1.between(0, 1)) // eslint-disable-line max-nested-callbacks
-            const sequence2 = Array.from({length: 5}, () => random2.between(0, 1)) // eslint-disable-line max-nested-callbacks
+            const sequence1 = Array.from({length: 5}, () => random1.between(0, 1))
+            const sequence2 = Array.from({length: 5}, () => random2.between(0, 1))
 
             expect(sequence1).not.toEqual(sequence2)
         })

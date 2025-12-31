@@ -327,3 +327,8 @@ rules:
   wrap-regex: 0
   require-unicode-regexp: 0
   yoda: 2
+overrides:
+  - files:
+      - "**/*.test.js"
+    rules:
+      max-nested-callbacks: 0

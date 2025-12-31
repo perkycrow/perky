@@ -154,7 +154,7 @@ describe('Debug', () => {
             debug.enableDebug()
             const instance = {id: 1}
 
-            expect(() => { // eslint-disable-line max-nested-callbacks
+            expect(() => {
                 debug.untrackInstance('NonExistent', instance)
             }).not.toThrow()
         })
@@ -166,7 +166,7 @@ describe('Debug', () => {
 
             debug.trackInstance('TestClass', instance1)
 
-            expect(() => { // eslint-disable-line max-nested-callbacks
+            expect(() => {
                 debug.untrackInstance('TestClass', instance2)
             }).not.toThrow()
 

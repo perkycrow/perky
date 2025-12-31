@@ -1,4 +1,3 @@
-/* eslint-disable max-nested-callbacks */
 import {describe, test, expect, beforeEach} from 'vitest'
 import ObservableMap from './observable_map'
 

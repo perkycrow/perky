@@ -1,4 +1,3 @@
-/* eslint-disable max-nested-callbacks */
 
 import {describe, it, expect, vi} from 'vitest'
 import {getActionsForModule, registerActionProvider} from './context_menu_actions.js'

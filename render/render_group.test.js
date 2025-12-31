@@ -148,7 +148,7 @@ describe('RenderGroup', () => {
     describe('onInstall', () => {
 
         test('does nothing without valid renderer', () => {
-            expect(() => renderGroup.onInstall()).not.toThrow() // eslint-disable-line max-nested-callbacks
+            expect(() => renderGroup.onInstall()).not.toThrow()
         })
 
 

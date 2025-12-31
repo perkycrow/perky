@@ -580,14 +580,14 @@ describe(InputSystem, () => {
             ]
 
             testDirections.forEach(({keys, expected}) => {
-                ['KeyW', 'KeyA', 'KeyS', 'KeyD'].forEach(key => { // eslint-disable-line max-nested-callbacks
+                ['KeyW', 'KeyA', 'KeyS', 'KeyD'].forEach(key => {
                     const control = inputSystem.keyboard.getControl(key)
                     if (control) {
                         control.release()
                     }
                 })
 
-                keys.forEach(key => { // eslint-disable-line max-nested-callbacks
+                keys.forEach(key => {
                     const control = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: key})
                     control.press()
                 })

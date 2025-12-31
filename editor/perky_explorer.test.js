@@ -282,7 +282,7 @@ describe('PerkyExplorer', () => {
 
             const details = getDetails(explorer)
             const tags = details.shadowRoot.querySelectorAll('.details-tag')
-            const tagTexts = [...tags].map(t => t.textContent) // eslint-disable-line max-nested-callbacks
+            const tagTexts = [...tags].map(t => t.textContent)
 
             expect(tagTexts).toContain('alpha')
             expect(tagTexts).toContain('beta')

@@ -105,7 +105,7 @@ describe('ImageView', () => {
         test('handles missing config gracefully', () => {
             const minimalContext = {
                 group: new Group2D(),
-                game: {getSource: vi.fn(() => ({width: 32, height: 32}))} // eslint-disable-line max-nested-callbacks
+                game: {getSource: vi.fn(() => ({width: 32, height: 32}))}
             }
             const minimalView = new ImageView(entity, minimalContext)
 
