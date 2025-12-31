@@ -1,3 +1,4 @@
+/* eslint-disable no-bitwise */
 const CHARACTERS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 
@@ -18,7 +19,7 @@ export default class Random {
 
     #next () {
         const t = 2091639 * this.#s0 + this.#c * 2.3283064365386963e-10
-        this.#c = t | 0 // eslint-disable-line no-bitwise
+        this.#c = t | 0
         this.#s0 = this.#s1
         this.#s1 = this.#s2
         this.#s2 = t - this.#c
@@ -154,12 +155,12 @@ function createMash () {
         for (let i = 0; i < string.length; i++) {
             n += string.charCodeAt(i)
             let h = 0.02519603282416938 * n
-            n = h >>> 0 // eslint-disable-line no-bitwise
+            n = h >>> 0
             h = (h - n) * n
-            n = h >>> 0 // eslint-disable-line no-bitwise
+            n = h >>> 0
             n += (h - n) * 0x100000000
         }
 
-        return (n >>> 0) * 2.3283064365386963e-10 // eslint-disable-line no-bitwise
+        return (n >>> 0) * 2.3283064365386963e-10
     }
 }

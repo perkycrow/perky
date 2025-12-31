@@ -192,7 +192,7 @@ describe('context_menu_actions', () => {
 
         it('should allow registering custom action providers', () => {
             class CustomModule extends PerkyModule {
-                customMethod () {} // eslint-disable-line class-methods-use-this
+                customMethod () {}
             }
 
             registerActionProvider({

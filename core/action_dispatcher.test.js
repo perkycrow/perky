@@ -447,8 +447,8 @@ describe(ActionDispatcher, () => {
 
     test('listAllActions', () => {
         class GameController extends ActionController {
-            jump () { } // eslint-disable-line class-methods-use-this
-            move () { } // eslint-disable-line class-methods-use-this
+            jump () { }
+            move () { }
         }
 
         const gameController = dispatcher.register('game', GameController)

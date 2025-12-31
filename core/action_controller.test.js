@@ -45,7 +45,7 @@ describe(ActionController, () => {
 
     test('hasAction - method action', () => {
         class TestController extends ActionController {
-            testMethod () { } // eslint-disable-line class-methods-use-this
+            testMethod () { }
         }
 
         const testController = new TestController()
@@ -89,8 +89,8 @@ describe(ActionController, () => {
 
     test('listActions - method actions', () => {
         class TestController extends ActionController {
-            jump () { } // eslint-disable-line class-methods-use-this
-            move () { } // eslint-disable-line class-methods-use-this
+            jump () { }
+            move () { }
         }
 
         const testController = new TestController()

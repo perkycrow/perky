@@ -19,8 +19,8 @@ global.ResizeObserver = class ResizeObserver {
             }
         }])
     }
-    disconnect () { } // eslint-disable-line class-methods-use-this
-    unobserve () { } // eslint-disable-line class-methods-use-this
+    disconnect () { }
+    unobserve () { }
 }
 
 
