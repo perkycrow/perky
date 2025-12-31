@@ -93,125 +93,16 @@ export default class DevToolsDock extends BaseEditorComponent {
         )
 
 
-        crowBtn.innerHTML = `
-            <svg viewBox="0 0 24 24">
-                 <!-- Main Group Flipped to face Left -->
-                 <g transform="scale(-1, 1) translate(-24, 0)" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-
-                     <!-- Top Hat -->
-                     <!-- Slightly jaunty angle -->
-                     <path d="M10 6 L14 6 L13 3 L10 3 Z" /> <!-- Crown -->
-                     <path d="M9 6 L15 6" /> <!-- Brim -->
-
-                     <!-- Head & Beak -->
-                     <!-- Starting from back of neck, going up over head, beak, down front -->
-                     <path d="
-                        M 10 18            <!-- Neck Back -->
-                        Q 9 14 10 10       <!-- Back of Head -->
-                        C 10 7 13 7 15 9   <!-- Top of Head -->
-                        L 20 11            <!-- Beak Top -->
-                        Q 22 12 20 13      <!-- Beak Tip -->
-                        L 16 12            <!-- Beak Mouth Line -->
-                        Q 16 15 15 18      <!-- Chest/Neck Front -->
-                     " />
-
-                     <!-- Eye (Circle with pupil) -->
-                     <circle cx="13.5" cy="10.5" r="1.5" />
-                     <circle cx="14" cy="10.5" r="0.5" fill="currentColor" stroke="none" />
-                 </g>
-            </svg>
-        `
-
-
-        crowBtn.innerHTML = `
-            <svg viewBox="0 0 24 24">
-                <g transform="scale(-1, 1) translate(-24, 0)" fill="currentColor">
-                    <!-- Eye -->
-                    <path d="M12 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm0 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
-
-                    <!-- Head & Body Outline (Variable width simulation) -->
-                    <!-- Drawing the "White" parts as a filled shape -->
-
-                    <!-- Hat -->
-                    <path d="M10 5h4l-0.5-2h-3L10 5zm-1 1h6v1H9V6z"/>
-
-                    <!-- Beak -->
-                    <path d="M16 8c2 0 4 1 6 3-1 1-3 1-5 0l-1-1v-2z"/> 
-                    <!-- Wait, that's not good. Let's trace the "Vibe". -->
-                </g>
-            </svg>
-        `
-
-
-        crowBtn.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <!-- Flipped to Look Left -->
-                <g transform="scale(-1, 1) translate(-24, 0)">
-                    <!-- Hat -->
-                    <path d="M 11 5 L 15 5" /> <!-- Brim -->
-                    <path d="M 12 5 L 12.5 2.5 L 14.5 2.5 L 14 5" /> <!-- Crown -->
-
-                    <!-- Head -->
-                    <path d="M 13 5 C 16 5 18 7 18 10" /> <!-- Forehead -->
-
-                    <!-- Beak -->
-                    <path d="M 18 10 L 22 11.5 L 17 13" /> 
-
-                    <!-- Neck/Chest -->
-                    <path d="M 17 13 C 17 16 16 19 14 21" />
-
-                    <!-- Back of Head/Neck -->
-                    <path d="M 11 5 C 9 6 8 12 8 18" />
-
-                    <!-- Eye -->
-                    <circle cx="15" cy="9" r="1.5" />
-                </g>
-            </svg>
-        `
-
-
-        crowBtn.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                 <g transform="scale(-1, 1) translate(-24, 0)">
-                     <!-- Hat Crown -->
-                     <path d="M11 5l0.5-2h3l0.5 2" />
-                     <!-- Hat Brim -->
-                     <path d="M10 6h7" />
-
-                     <!-- Face Profile -->
-                     <path d="M12 6c2 0 4 1 5 3" /> <!-- Forehead -->
-                     <path d="M22 11c-2-1-4-2-5-2" /> <!-- Beak Top -->
-                     <path d="M22 11c-1 1-3 2-5 1" /> <!-- Beak Bottom -->
-                     <path d="M17 12c0 3-1 6-4 9" /> <!-- Chest -->
-
-                     <!-- Back -->
-                     <path d="M11 6c-2 2-2 8 0 14" />
-
-                     <!-- Eye -->
-                     <circle cx="15" cy="9" r="1.2" fill="currentColor" stroke="none"/>
-                     <circle cx="15" cy="9" r="2.5" stroke-width="1.5"/>
-                 </g>
-            </svg>
-        `
 
 
         crowBtn.innerHTML = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <!-- Looking Left -->
-                <!-- Hat -->
-                <path d="M10 5 L14 5 M 11 5 L 11.5 2.5 H 13.5 L 13 5"/> 
-
-                <!-- Eye (Donut) -->
+                <path d="M10 5 L14 5"/>
+                <path d="M11 5 L11.5 2.5 H13.5 L13 5"/>
                 <circle cx="10" cy="10" r="2" />
-
-                <!-- Head/Beak Path -->
-                <!-- Top Head -->
                 <path d="M 12 5 C 9 5 8 7 8 9" />
-                <!-- Beak -->
                 <path d="M 8 9 L 3 11 L 8 13" />
-                <!-- Front Neck -->
                 <path d="M 8 13 C 9 16 11 19 14 21" />
-                <!-- Back Neck -->
                 <path d="M 14 5 C 16 6 17 12 17 20" />
             </svg>
         `
