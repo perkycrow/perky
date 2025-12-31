@@ -28,7 +28,7 @@ export default class ActionDispatcher extends PerkyModule {
             execute: 'execute',
             executeTo: 'executeTo',
             dispatchAction: 'dispatchAction',
-            listActions: 'listActions',
+            listActions: 'listAllActions',
             mainController: 'mainController',
             addAction: 'addAction',
             removeAction: 'removeAction'
@@ -60,12 +60,20 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     addAction (actionName, action) {
-        return this.mainController?.addAction(actionName, action)
+        if (!this.mainController) {
+            logger.warn('No main controller available. Cannot add action.')
+            return false
+        }
+        return this.mainController.addAction(actionName, action)
     }
 
 
     removeAction (actionName) {
-        return this.mainController?.removeAction(actionName)
+        if (!this.mainController) {
+            logger.warn('No main controller available. Cannot remove action.')
+            return false
+        }
+        return this.mainController.removeAction(actionName)
     }
 
 
@@ -126,7 +134,7 @@ export default class ActionDispatcher extends PerkyModule {
             return false
         }
 
-        if (this.#isTopController(name)) {
+        if (this.#activeControllers.includes(name)) {
             return false
         }
 
@@ -169,6 +177,7 @@ export default class ActionDispatcher extends PerkyModule {
             const controller = registry.get(controllerName)
 
             if (!controller) {
+                logger.warn(`Controller "${controllerName}" not found in registry but present in active stack`)
                 continue
             }
 
@@ -207,12 +216,6 @@ export default class ActionDispatcher extends PerkyModule {
 
     #isControllerActive (controllerName) {
         return this.#activeControllers.includes(controllerName)
-    }
-
-
-    #isTopController (name) {
-        const stack = this.#activeControllers
-        return stack.length > 0 && stack[stack.length - 1] === name
     }
 
 

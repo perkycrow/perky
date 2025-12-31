@@ -303,7 +303,7 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('pushActive - prevents duplicate controller on top', () => {
+    test('pushActive - prevents duplicate controller', () => {
         dispatcher.register('main', ActionController)
 
         dispatcher.pushActive('main')
@@ -316,15 +316,16 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('pushActive - allows same controller if not on top', () => {
+    test('pushActive - prevents duplicate even if not on top', () => {
         dispatcher.register('main', ActionController)
         dispatcher.register('other', ActionController)
 
         dispatcher.pushActive('main')
         dispatcher.pushActive('other')
-        dispatcher.pushActive('main')
+        const result = dispatcher.pushActive('main')
 
-        expect(dispatcher.getActive()).toEqual(['main', 'other', 'main'])
+        expect(result).toBe(false)
+        expect(dispatcher.getActive()).toEqual(['main', 'other'])
     })
 
 
