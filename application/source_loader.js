@@ -6,28 +6,28 @@ export default class SourceLoader extends PerkyModule {
 
     #loadingPromises = {}
 
-    constructor (sourceDescriptors, loaders) {
+    constructor (assets, loaders) {
         super()
         this.loaders = loaders instanceof Registry ? loaders : new Registry(loaders)
-        this.sourceDescriptors = sourceDescriptors
+        this.assets = assets
     }
 
 
-    get sourceCount () {
-        return this.sourceDescriptors.length
+    get assetCount () {
+        return this.assets.length
     }
 
 
     get loadedCount () {
-        return this.sourceDescriptors.filter(descriptor => descriptor.loaded).length
+        return this.assets.filter(asset => asset.loaded).length
     }
 
 
     get progress () {
-        if (this.sourceCount === 0) {
+        if (this.assetCount === 0) {
             return 1
         }
-        return this.loadedCount / this.sourceCount
+        return this.loadedCount / this.assetCount
     }
 
 
@@ -38,59 +38,59 @@ export default class SourceLoader extends PerkyModule {
 
         this.loading = true
 
-        const promises = this.sourceDescriptors.map(sourceDescriptor => {
-            return this.loadSource(sourceDescriptor)
+        const promises = this.assets.map(asset => {
+            return this.loadAsset(asset)
         })
 
         await Promise.all(promises)
 
         this.loading = false
 
-        this.emit('complete', this.sourceDescriptors)
+        this.emit('complete', this.assets)
 
-        return this.sourceDescriptors
+        return this.assets
     }
 
 
-    async loadSource (sourceDescriptor) {
-        const sourceKey = `${sourceDescriptor.type}:${sourceDescriptor.id}`
+    async loadAsset (asset) {
+        const assetKey = `${asset.type}:${asset.id}`
 
-        if (sourceDescriptor.loaded) {
-            return sourceDescriptor
+        if (asset.loaded) {
+            return asset
         }
 
-        if (this.#loadingPromises[sourceKey]) {
-            return this.#loadingPromises[sourceKey]
+        if (this.#loadingPromises[assetKey]) {
+            return this.#loadingPromises[assetKey]
         }
 
-        const loader = this.loaders.get(sourceDescriptor.type)
+        const loader = this.loaders.get(asset.type)
 
         if (!loader) {
-            throw new Error(`No loader found for source type: ${sourceDescriptor.type}`)
+            throw new Error(`No loader found for asset type: ${asset.type}`)
         }
 
-        const params = sourceDescriptor.url ? {
-            url: sourceDescriptor.url,
-            config: sourceDescriptor.config || {}
-        } : sourceDescriptor
+        const params = asset.url ? {
+            url: asset.url,
+            config: asset.config || {}
+        } : asset
 
-        this.#loadingPromises[sourceKey] = Promise.resolve()
+        this.#loadingPromises[assetKey] = Promise.resolve()
             .then(() => loader(params))
             .then(source => {
-                sourceDescriptor.source = source
-                delete this.#loadingPromises[sourceKey]
+                asset.source = source
+                delete this.#loadingPromises[assetKey]
 
-                this.emit('progress', this.progress, {sourceDescriptor, source})
-                return sourceDescriptor
+                this.emit('progress', this.progress, {asset, source})
+                return asset
             })
             .catch(error => {
-                delete this.#loadingPromises[sourceKey]
+                delete this.#loadingPromises[assetKey]
 
-                this.emit('error', sourceDescriptor, error)
+                this.emit('error', asset, error)
                 throw error
             })
 
-        return this.#loadingPromises[sourceKey]
+        return this.#loadingPromises[assetKey]
     }
 
 }

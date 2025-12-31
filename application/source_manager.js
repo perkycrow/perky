@@ -15,7 +15,7 @@ export default class SourceManager extends PerkyModule {
 
 
     onInstall (host) {
-        this.delegateTo(host, ['loadSource', 'loadTag', 'loadAll', 'loaders'])
+        this.delegateTo(host, ['loadAsset', 'loadTag', 'loadAll', 'loaders'])
 
         this.delegateEventsTo(host, [
             'loader:progress',
@@ -25,14 +25,14 @@ export default class SourceManager extends PerkyModule {
     }
 
 
-    async loadSource (type, id) {
-        const sourceDescriptor = this.manifest.getSourceDescriptor(type, id)
+    async loadAsset (id) {
+        const asset = this.manifest.getAsset(id)
 
-        if (!sourceDescriptor) {
-            throw new Error(`Source not found: ${type}:${id}`)
+        if (!asset) {
+            throw new Error(`Asset not found: ${id}`)
         }
 
-        const sourceLoader = new SourceLoader([sourceDescriptor], this.loaders)
+        const sourceLoader = new SourceLoader([asset], this.loaders)
         this.#setupLoaderEvents(sourceLoader)
 
         await sourceLoader.load()
@@ -42,9 +42,9 @@ export default class SourceManager extends PerkyModule {
 
 
     async loadTag (tag) {
-        const sourceDescriptors = this.manifest.getSourceDescriptorsByTag(tag)
+        const assets = this.manifest.getAssetsByTag(tag)
 
-        const sourceLoader = new SourceLoader(sourceDescriptors, this.loaders)
+        const sourceLoader = new SourceLoader(assets, this.loaders)
         this.#setupLoaderEvents(sourceLoader)
 
         await sourceLoader.load()
@@ -54,9 +54,9 @@ export default class SourceManager extends PerkyModule {
 
 
     async loadAll () {
-        const sourceDescriptors = this.manifest.getAllSourceDescriptors()
+        const assets = this.manifest.getAllAssets()
 
-        const sourceLoader = new SourceLoader(sourceDescriptors, this.loaders)
+        const sourceLoader = new SourceLoader(assets, this.loaders)
         this.#setupLoaderEvents(sourceLoader)
 
         await sourceLoader.load()

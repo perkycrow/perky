@@ -81,49 +81,49 @@ const customStyles = `
         font-style: italic;
     }
 
-    .descriptor-list {
+    .asset-list {
         display: flex;
         flex-direction: column;
         gap: 8px;
     }
 
-    .descriptor-type-group {
+    .asset-type-group {
         margin-bottom: 8px;
     }
 
-    .descriptor-type-header {
+    .asset-type-header {
         font-size: 10px;
         color: var(--accent);
         margin-bottom: 6px;
         text-transform: capitalize;
     }
 
-    .descriptor-card {
+    .asset-card {
         background: var(--bg-hover);
         border-radius: 4px;
         padding: 8px;
         margin-bottom: 6px;
     }
 
-    .descriptor-header {
+    .asset-header {
         display: flex;
         align-items: center;
         gap: 8px;
         margin-bottom: 6px;
     }
 
-    .descriptor-icon {
+    .asset-icon {
         font-size: 14px;
     }
 
-    .descriptor-name {
+    .asset-name {
         font-size: 11px;
         font-weight: 600;
         color: var(--fg-primary);
         flex: 1;
     }
 
-    .descriptor-type-badge {
+    .asset-type-badge {
         font-size: 9px;
         background: var(--bg-primary);
         padding: 2px 6px;
@@ -131,39 +131,39 @@ const customStyles = `
         color: var(--fg-muted);
     }
 
-    .descriptor-details {
+    .asset-details {
         display: grid;
         grid-template-columns: auto 1fr;
         gap: 2px 8px;
         font-size: 10px;
     }
 
-    .descriptor-label {
+    .asset-label {
         color: var(--fg-muted);
     }
 
-    .descriptor-value {
+    .asset-value {
         color: var(--fg-secondary);
         word-break: break-all;
     }
 
-    .descriptor-link {
+    .asset-link {
         color: var(--accent);
         text-decoration: none;
     }
 
-    .descriptor-link:hover {
+    .asset-link:hover {
         text-decoration: underline;
     }
 
-    .descriptor-tags {
+    .asset-tags {
         display: flex;
         flex-wrap: wrap;
         gap: 4px;
         margin-top: 6px;
     }
 
-    .descriptor-tag {
+    .asset-tag {
         font-size: 9px;
         background: var(--bg-primary);
         color: var(--accent);
@@ -171,14 +171,14 @@ const customStyles = `
         border-radius: 8px;
     }
 
-    .descriptor-preview {
+    .asset-preview {
         margin-top: 8px;
         max-width: 100%;
         border-radius: 4px;
         overflow: hidden;
     }
 
-    .descriptor-preview img {
+    .asset-preview img {
         max-width: 100%;
         max-height: 80px;
         object-fit: contain;
@@ -186,7 +186,7 @@ const customStyles = `
         background: var(--bg-primary);
     }
 
-    .descriptor-config {
+    .asset-config {
         margin-top: 6px;
         padding-top: 6px;
         border-top: 1px solid var(--border);
@@ -209,9 +209,8 @@ export default class ManifestInspector extends BaseInspector {
 
 
     #sectionsState = {
-        metadata: true,
         config: true,
-        sources: true
+        assets: true
     }
 
 
@@ -237,9 +236,8 @@ export default class ManifestInspector extends BaseInspector {
 
         const container = document.createElement('div')
 
-        container.appendChild(this.#createMetadataSection())
         container.appendChild(this.#createConfigSection())
-        container.appendChild(this.#createSourceDescriptorsSection())
+        container.appendChild(this.#createAssetsSection())
 
         this.gridEl.style.display = 'none'
         this.shadowRoot.insertBefore(container, this.gridEl)
@@ -284,23 +282,6 @@ export default class ManifestInspector extends BaseInspector {
         section.appendChild(content)
 
         return {section, content}
-    }
-
-
-    #createMetadataSection () {
-        const metadata = this.module.getMetadata()
-        const entries = Object.entries(metadata)
-
-        const {section, content} = this.#createSection('Metadata', 'metadata', entries.length)
-
-        if (entries.length === 0) {
-            content.innerHTML = '<div class="empty-message">No metadata defined</div>'
-        } else {
-            const grid = this.#createDataGrid(metadata)
-            content.appendChild(grid)
-        }
-
-        return section
     }
 
 
@@ -353,33 +334,29 @@ export default class ManifestInspector extends BaseInspector {
     }
 
 
-    #createSourceDescriptorsSection () {
-        const types = this.module.getSourceDescriptorTypes()
-        const allDescriptors = this.module.getAllSourceDescriptors()
+    #createAssetsSection () {
+        const allAssets = this.module.getAllAssets()
 
-        const {section, content} = this.#createSection('Source Descriptors', 'sources', allDescriptors.length)
+        const {section, content} = this.#createSection('Assets', 'assets', allAssets.length)
 
-        if (types.length === 0) {
-            content.innerHTML = '<div class="empty-message">No source descriptors defined</div>'
+        if (allAssets.length === 0) {
+            content.innerHTML = '<div class="empty-message">No assets defined</div>'
             return section
         }
 
-        for (const type of types) {
-            const descriptors = this.module.getSourceDescriptorsByType(type)
-            if (descriptors.length === 0) {
-                continue
-            }
+        const assetsByType = this.#groupAssetsByType(allAssets)
 
+        for (const [type, assets] of Object.entries(assetsByType)) {
             const group = document.createElement('div')
-            group.className = 'descriptor-type-group'
+            group.className = 'asset-type-group'
 
             const typeHeader = document.createElement('div')
-            typeHeader.className = 'descriptor-type-header'
-            typeHeader.textContent = `${type} (${descriptors.length})`
+            typeHeader.className = 'asset-type-header'
+            typeHeader.textContent = `${type} (${assets.length})`
             group.appendChild(typeHeader)
 
-            for (const descriptor of descriptors) {
-                group.appendChild(this.#createDescriptorCard(descriptor))
+            for (const asset of assets) {
+                group.appendChild(this.#createAssetCard(asset))
             }
 
             content.appendChild(group)
@@ -389,24 +366,39 @@ export default class ManifestInspector extends BaseInspector {
     }
 
 
-    #createDescriptorCard (descriptor) { // eslint-disable-line complexity
+    #groupAssetsByType (assets) {
+        const grouped = {}
+
+        for (const asset of assets) {
+            const type = asset.type || 'unknown'
+            if (!grouped[type]) {
+                grouped[type] = []
+            }
+            grouped[type].push(asset)
+        }
+
+        return grouped
+    }
+
+
+    #createAssetCard (asset) { // eslint-disable-line complexity
         const card = document.createElement('div')
-        card.className = 'descriptor-card'
+        card.className = 'asset-card'
 
         const header = document.createElement('div')
-        header.className = 'descriptor-header'
+        header.className = 'asset-header'
 
         const icon = document.createElement('span')
-        icon.className = 'descriptor-icon'
-        icon.textContent = this.#getDescriptorIcon(descriptor)
+        icon.className = 'asset-icon'
+        icon.textContent = this.#getAssetIcon(asset)
 
         const name = document.createElement('span')
-        name.className = 'descriptor-name'
-        name.textContent = descriptor.name || descriptor.id
+        name.className = 'asset-name'
+        name.textContent = asset.name || asset.id
 
         const typeBadge = document.createElement('span')
-        typeBadge.className = 'descriptor-type-badge'
-        typeBadge.textContent = descriptor.type
+        typeBadge.className = 'asset-type-badge'
+        typeBadge.textContent = asset.type
 
         header.appendChild(icon)
         header.appendChild(name)
@@ -414,32 +406,32 @@ export default class ManifestInspector extends BaseInspector {
         card.appendChild(header)
 
         const details = document.createElement('div')
-        details.className = 'descriptor-details'
+        details.className = 'asset-details'
 
-        this.#addDescriptorRow(details, 'id', descriptor.id)
+        this.#addAssetRow(details, 'id', asset.id)
 
-        if (descriptor.url) {
+        if (asset.url) {
             const urlValue = document.createElement('a')
-            urlValue.className = 'descriptor-link'
-            urlValue.href = descriptor.url
+            urlValue.className = 'asset-link'
+            urlValue.href = asset.url
             urlValue.target = '_blank'
-            urlValue.textContent = descriptor.url
-            this.#addDescriptorRowElement(details, 'url', urlValue)
+            urlValue.textContent = asset.url
+            this.#addAssetRowElement(details, 'url', urlValue)
         }
 
-        if (descriptor.loaded) {
-            this.#addDescriptorRow(details, 'loaded', 'Yes')
+        if (asset.loaded) {
+            this.#addAssetRow(details, 'loaded', 'Yes')
         }
 
         card.appendChild(details)
 
-        if (descriptor.tags && descriptor.tags.length > 0) {
+        if (asset.tags && asset.tags.length > 0) {
             const tagsContainer = document.createElement('div')
-            tagsContainer.className = 'descriptor-tags'
+            tagsContainer.className = 'asset-tags'
 
-            for (const tag of descriptor.tags) {
+            for (const tag of asset.tags) {
                 const tagEl = document.createElement('span')
-                tagEl.className = 'descriptor-tag'
+                tagEl.className = 'asset-tag'
                 tagEl.textContent = tag
                 tagsContainer.appendChild(tagEl)
             }
@@ -447,20 +439,20 @@ export default class ManifestInspector extends BaseInspector {
             card.appendChild(tagsContainer)
         }
 
-        if (descriptor.config && Object.keys(descriptor.config).length > 0) {
+        if (asset.config && Object.keys(asset.config).length > 0) {
             const configSection = document.createElement('div')
-            configSection.className = 'descriptor-config'
+            configSection.className = 'asset-config'
 
             const configTitle = document.createElement('div')
             configTitle.className = 'config-title'
             configTitle.textContent = 'Config'
             configSection.appendChild(configTitle)
 
-            configSection.appendChild(this.#createDataGrid(descriptor.config))
+            configSection.appendChild(this.#createDataGrid(asset.config))
             card.appendChild(configSection)
         }
 
-        const preview = this.#createSourcePreview(descriptor)
+        const preview = this.#createSourcePreview(asset)
         if (preview) {
             card.appendChild(preview)
         }
@@ -469,13 +461,13 @@ export default class ManifestInspector extends BaseInspector {
     }
 
 
-    #addDescriptorRow (container, label, value) {
+    #addAssetRow (container, label, value) {
         const labelEl = document.createElement('div')
-        labelEl.className = 'descriptor-label'
+        labelEl.className = 'asset-label'
         labelEl.textContent = label
 
         const valueEl = document.createElement('div')
-        valueEl.className = 'descriptor-value'
+        valueEl.className = 'asset-value'
         valueEl.textContent = value
 
         container.appendChild(labelEl)
@@ -483,13 +475,13 @@ export default class ManifestInspector extends BaseInspector {
     }
 
 
-    #addDescriptorRowElement (container, label, element) {
+    #addAssetRowElement (container, label, element) {
         const labelEl = document.createElement('div')
-        labelEl.className = 'descriptor-label'
+        labelEl.className = 'asset-label'
         labelEl.textContent = label
 
         const valueEl = document.createElement('div')
-        valueEl.className = 'descriptor-value'
+        valueEl.className = 'asset-value'
         valueEl.appendChild(element)
 
         container.appendChild(labelEl)
@@ -497,8 +489,8 @@ export default class ManifestInspector extends BaseInspector {
     }
 
 
-    #getDescriptorIcon (descriptor) {
-        const type = descriptor.type?.toLowerCase() || ''
+    #getAssetIcon (asset) {
+        const type = asset.type?.toLowerCase() || ''
 
         if (type.includes('texture') || type.includes('image') || type.includes('sprite')) {
             return '🖼'
@@ -526,8 +518,8 @@ export default class ManifestInspector extends BaseInspector {
     }
 
 
-    #createSourcePreview (descriptor) {
-        const source = descriptor.source
+    #createSourcePreview (asset) {
+        const source = asset.source
 
         if (!source) {
             return null
@@ -535,17 +527,17 @@ export default class ManifestInspector extends BaseInspector {
 
         if (source instanceof HTMLImageElement || source instanceof HTMLCanvasElement) {
             const preview = document.createElement('div')
-            preview.className = 'descriptor-preview'
+            preview.className = 'asset-preview'
 
             if (source instanceof HTMLImageElement) {
                 const img = document.createElement('img')
                 img.src = source.src
-                img.alt = descriptor.name || descriptor.id
+                img.alt = asset.name || asset.id
                 preview.appendChild(img)
             } else {
                 const img = document.createElement('img')
                 img.src = source.toDataURL()
-                img.alt = descriptor.name || descriptor.id
+                img.alt = asset.name || asset.id
                 preview.appendChild(img)
             }
 

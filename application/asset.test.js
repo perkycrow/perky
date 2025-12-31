@@ -1,9 +1,9 @@
 import {describe, test, expect} from 'vitest'
-import SourceDescriptor from './source_descriptor'
+import Asset from './asset'
 
 
-describe('SourceDescriptor', () => {
-    
+describe('Asset', () => {
+
     test('constructor with parameters', () => {
         const params = {
             type: 'image',
@@ -15,76 +15,76 @@ describe('SourceDescriptor', () => {
             config: {width: 100, height: 100}
         }
 
-        const descriptor = new SourceDescriptor(params)
-        
-        expect(descriptor.type).toBe('image')
-        expect(descriptor.name).toBe('example')
-        expect(descriptor.id).toBe('test_id')
-        expect(descriptor.url).toBe('/path/to/file.jpg')
-        expect(descriptor.source).toEqual({key: 'value'})
-        expect(descriptor.tags).toEqual(['titleScreen', 'mainScene'])
-        expect(descriptor.config).toEqual({width: 100, height: 100})
+        const asset = new Asset(params)
+
+        expect(asset.type).toBe('image')
+        expect(asset.name).toBe('example')
+        expect(asset.id).toBe('test_id')
+        expect(asset.url).toBe('/path/to/file.jpg')
+        expect(asset.source).toEqual({key: 'value'})
+        expect(asset.tags).toEqual(['titleScreen', 'mainScene'])
+        expect(asset.config).toEqual({width: 100, height: 100})
     })
 
 
-    test('constructor name', () => {
-        const descriptor = new SourceDescriptor({
+    test('constructor name defaults to id', () => {
+        const asset = new Asset({
             type: 'video',
             id: 'custom_id'
         })
-        
-        expect(descriptor.id).toBe('custom_id')
-        expect(descriptor.name).toBe('custom_id')
+
+        expect(asset.id).toBe('custom_id')
+        expect(asset.name).toBe('custom_id')
     })
 
 
-    test('loaded', () => {
-        const descriptor = new SourceDescriptor({
+    test('loaded returns true when source exists', () => {
+        const asset = new Asset({
             type: 'json',
             id: 'test_id',
             source: {content: 'source'}
         })
-        
-        expect(descriptor.loaded).toBe(true)
+
+        expect(asset.loaded).toBe(true)
     })
 
 
-    test('loaded false', () => {
-        const descriptor = new SourceDescriptor({
+    test('loaded returns false when source is missing', () => {
+        const asset = new Asset({
             type: 'text',
             id: 'test_id',
             url: '/path/to/text.txt'
         })
-        
-        expect(descriptor.loaded).toBe(false)
+
+        expect(asset.loaded).toBe(false)
     })
 
 
-    test('hasTag', () => {
-        const descriptor = new SourceDescriptor({
+    test('hasTag returns true for existing tags', () => {
+        const asset = new Asset({
             type: 'image',
             id: 'test_id',
             tags: ['titleScreen', 'mainScene']
         })
-        
-        expect(descriptor.hasTag('titleScreen')).toBe(true)
-        expect(descriptor.hasTag('mainScene')).toBe(true)
-        expect(descriptor.hasTag('endingScene')).toBe(false)
+
+        expect(asset.hasTag('titleScreen')).toBe(true)
+        expect(asset.hasTag('mainScene')).toBe(true)
+        expect(asset.hasTag('endingScene')).toBe(false)
     })
 
 
-    test('hasTag with empty tags', () => {
-        const descriptor = new SourceDescriptor({
+    test('hasTag returns false when tags are empty', () => {
+        const asset = new Asset({
             type: 'image',
             id: 'test_id'
         })
-        
-        expect(descriptor.hasTag('titleScreen')).toBe(false)
+
+        expect(asset.hasTag('titleScreen')).toBe(false)
     })
 
 
     test('export with url', () => {
-        const descriptor = new SourceDescriptor({
+        const asset = new Asset({
             type: 'image',
             name: 'example',
             id: 'test_id',
@@ -92,9 +92,9 @@ describe('SourceDescriptor', () => {
             tags: ['titleScreen'],
             config: {width: 100}
         })
-        
-        const exported = descriptor.export()
-        
+
+        const exported = asset.export()
+
         expect(exported).toEqual({
             type: 'image',
             id: 'test_id',
@@ -108,7 +108,7 @@ describe('SourceDescriptor', () => {
 
 
     test('export with source', () => {
-        const descriptor = new SourceDescriptor({
+        const asset = new Asset({
             type: 'json',
             name: 'config',
             id: 'config_id',
@@ -116,9 +116,9 @@ describe('SourceDescriptor', () => {
             tags: ['config', 'settings'],
             config: {parse: true}
         })
-        
-        const exported = descriptor.export()
-        
+
+        const exported = asset.export()
+
         expect(exported).toEqual({
             type: 'json',
             id: 'config_id',
@@ -131,14 +131,14 @@ describe('SourceDescriptor', () => {
     })
 
 
-    test('default tags', () => {
-        const descriptor = new SourceDescriptor({
+    test('default tags and config', () => {
+        const asset = new Asset({
             type: 'audio',
             id: 'audio_id'
         })
-        
-        expect(descriptor.tags).toEqual([])
-        expect(descriptor.config).toEqual({})
+
+        expect(asset.tags).toEqual([])
+        expect(asset.config).toEqual({})
     })
 
-}) 
+})

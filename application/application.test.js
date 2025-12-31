@@ -16,13 +16,18 @@ describe(Application, () => {
 
     beforeEach(() => {
         mockManifest = {
-            getSourceDescriptor: vi.fn(),
+            getAsset: vi.fn(),
+            getSource: vi.fn(),
             getConfig: vi.fn(),
             setConfig: vi.fn()
         }
 
-        vi.spyOn(Manifest.prototype, 'getSourceDescriptor').mockImplementation((...args) => {
-            return mockManifest.getSourceDescriptor(...args)
+        vi.spyOn(Manifest.prototype, 'getAsset').mockImplementation((...args) => {
+            return mockManifest.getAsset(...args)
+        })
+
+        vi.spyOn(Manifest.prototype, 'getSource').mockImplementation((...args) => {
+            return mockManifest.getSource(...args)
         })
 
         vi.spyOn(Manifest.prototype, 'getConfig').mockImplementation((path) => {
@@ -59,41 +64,47 @@ describe(Application, () => {
 
 
     test('constructor with custom manifest', () => {
+        vi.restoreAllMocks()
+
         const customManifestData = {
-            metadata: {name: 'Test App'}
+            config: {name: 'Test App'}
         }
 
         const customApp = new Application({manifest: customManifestData})
 
         expect(customApp.manifest).toBeDefined()
-        expect(customApp.manifest.getMetadata('name')).toBe('Test App')
+        expect(customApp.manifest.getConfig('name')).toBe('Test App')
     })
 
 
     test('constructor with manifest instance', () => {
+        vi.restoreAllMocks()
+
         const manifest = new Manifest({
             data: {
-                metadata: {name: 'Test App Instance'}
+                config: {name: 'Test App Instance'}
             }
         })
         const customApp = new Application({manifest})
 
         expect(customApp.manifest).toBeInstanceOf(Manifest)
-        expect(customApp.manifest.getMetadata('name')).toBe('Test App Instance')
+        expect(customApp.manifest.getConfig('name')).toBe('Test App Instance')
     })
 
 
     test('constructor with static manifest', () => {
+        vi.restoreAllMocks()
+
         class CustomApp extends Application {
             static manifest = {
-                metadata: {name: 'Static Manifest App'}
+                config: {name: 'Static Manifest App'}
             }
         }
 
         const customApp = new CustomApp()
 
         expect(customApp.manifest).toBeInstanceOf(Manifest)
-        expect(customApp.manifest.getMetadata('name')).toBe('Static Manifest App')
+        expect(customApp.manifest.getConfig('name')).toBe('Static Manifest App')
     })
 
 
@@ -122,12 +133,12 @@ describe(Application, () => {
 
 
 
-    test('loadSource', async () => {
-        vi.spyOn(application, 'loadSource').mockResolvedValue('loaded')
+    test('loadAsset', async () => {
+        vi.spyOn(application, 'loadAsset').mockResolvedValue('loaded')
 
-        const promise = application.loadSource('images', 'logo')
+        const promise = application.loadAsset('logo')
 
-        expect(application.loadSource).toHaveBeenCalledWith('images', 'logo')
+        expect(application.loadAsset).toHaveBeenCalledWith('logo')
         await expect(promise).resolves.toBe('loaded')
     })
 
@@ -153,9 +164,9 @@ describe(Application, () => {
 
 
     test('getSource', () => {
-        application.getSource('images', 'logo')
+        application.getSource('logo')
 
-        expect(mockManifest.getSourceDescriptor).toHaveBeenCalledWith('images', 'logo')
+        expect(mockManifest.getSource).toHaveBeenCalledWith('logo')
     })
 
 

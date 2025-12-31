@@ -1,6 +1,7 @@
 import PerkyModule from '../core/perky_module'
-import {setDefaults, getNestedValue, setNestedValue, singularize, deepMerge} from '../core/utils'
-import SourceDescriptor from './source_descriptor'
+import {setDefaults, getNestedValue, setNestedValue, deepMerge} from '../core/utils'
+import Registry from '../core/registry'
+import Asset from './asset'
 
 
 export default class Manifest extends PerkyModule {
@@ -15,29 +16,29 @@ export default class Manifest extends PerkyModule {
         super(moduleParams)
 
         this.#data = setDefaults(data, {
-            metadata: {},
             config: {},
-            sourceDescriptors: {},
-            aliases: {}
+            assets: {}
         })
 
-        this.#initSourceDescriptors()
+        this.assets = new Registry()
+        this.assets.addIndex('type', asset => asset.type)
+        this.assets.addIndex('tags', asset => asset.tags)
+
+        this.#initAssets()
     }
 
 
     onInstall (host) {
         this.delegateTo(host, [
-            'getMetadata',
-            'setMetadata',
             'getConfig',
             'setConfig',
-            'addSourceDescriptor',
-            'getSourceDescriptor',
-            'getSourceDescriptors',
-            'getSourceDescriptorsByType',
+            'addAsset',
+            'getAsset',
+            'getAssets',
+            'getAssetsByType',
+            'getAssetsByTag',
             'getSource',
-            'getAlias',
-            'setAlias'
+            'getAllAssets'
         ])
 
         this.delegateTo(host, {
@@ -59,28 +60,19 @@ export default class Manifest extends PerkyModule {
         } else {
             throw new Error('Invalid manifest data: must be a JSON string or object')
         }
+
+        this.assets.clear()
+        this.#initAssets()
+
         return this
     }
 
 
     export () {
         return deepMerge({}, {
-            metadata: this.#data.metadata,
             config: this.#data.config,
-            sourceDescriptors: exportSourceDescriptors(this.#data.sourceDescriptors),
-            aliases: this.#data.aliases
+            assets: this.#exportAssets()
         })
-    }
-
-
-    getMetadata (key) {
-        return key ? this.#data.metadata[key] : this.#data.metadata
-    }
-
-
-    setMetadata (key, value) {
-        this.#data.metadata[key] = value
-        return this
     }
 
 
@@ -99,183 +91,115 @@ export default class Manifest extends PerkyModule {
     }
 
 
-    addSourceDescriptor (type, sourceDescriptor) {
-        validateSourceDescriptorInput(type, sourceDescriptor)
+    addAsset (assetData) {
+        validateAssetInput(assetData)
 
-        this.addSourceDescriptorType(type)
+        const asset = prepareAsset(assetData)
 
-        sourceDescriptor = prepareSourceDescriptor(type, sourceDescriptor)
+        this.assets.set(asset.id, asset)
 
-        this.#data.sourceDescriptors[type][sourceDescriptor.id] = sourceDescriptor
-
-        return sourceDescriptor
+        return asset
     }
 
 
-    getSourceDescriptor (type, id) {
-        if (!this.#data.sourceDescriptors[type]) {
-            return null
-        }
-        return this.#data.sourceDescriptors[type][id] || null
+    getAsset (id) {
+        return this.assets.get(id) || null
     }
 
 
-    getSource (type, id) {
-        const sourceDescriptor = this.getSourceDescriptor(type, id)
+    getSource (id) {
+        const asset = this.getAsset(id)
 
-        if (!sourceDescriptor) {
+        if (!asset) {
             return null
         }
 
-        return sourceDescriptor.source
+        return asset.source
     }
 
 
-    getSourceDescriptorsByTag (tag) {
+    getAssetsByType (type) {
+        return this.assets.lookup('type', type)
+    }
+
+
+    getAssetsByTag (tag) {
         if (!tag || typeof tag !== 'string') {
             return []
         }
 
-        return getSourceDescriptorsByTag(tag, this.#data.sourceDescriptors)
+        return this.assets.lookup('tags', tag)
     }
 
 
-    getAlias (key) {
-        return key ? this.#data.aliases[key] : this.#data.aliases
+    getAssets () {
+        return this.assets.all
     }
 
 
-    setAlias (key, value) {
-        this.#data.aliases[key] = value
-        return this
+    getAllAssets () {
+        return this.assets.all
     }
 
 
-    addSourceDescriptorType (type) {
-        if (!type || typeof type !== 'string') {
-            throw new Error('SourceDescriptor type must be a non-empty string')
+    hasAsset (id) {
+        return this.assets.has(id)
+    }
+
+
+    removeAsset (id) {
+        return this.assets.delete(id)
+    }
+
+
+    #initAssets () {
+        const {assets} = this.#data
+
+        if (!assets || typeof assets !== 'object') {
+            return
         }
 
-        if (!this.#data.sourceDescriptors[type]) {
-            this.#data.sourceDescriptors[type] = {}
-        }
+        Object.entries(assets).forEach(([id, assetData]) => {
+            if (!assetData.id) {
+                assetData.id = id
+            }
 
-        return this.#data.sourceDescriptors[type]
-    }
-
-
-    hasSourceDescriptorType (type) {
-        return type in this.#data.sourceDescriptors
-    }
-
-
-    getSourceDescriptorTypes () {
-        return Object.keys(this.#data.sourceDescriptors)
-    }
-
-
-    getSourceDescriptorMap (type) {
-        return this.#data.sourceDescriptors[type] || {}
-    }
-
-
-    getSourceDescriptorsByType (type) {
-        const descriptors = this.getSourceDescriptorMap(type)
-        return Object.values(descriptors)
-    }
-
-
-    getSourceDescriptors (type) {
-        return this.getSourceDescriptorsByType(type)
-    }
-
-
-    getAllSourceDescriptors () {
-        const allDescriptors = []
-        for (const descriptorType in this.#data.sourceDescriptors) {
-            const descriptors = this.#data.sourceDescriptors[descriptorType]
-            allDescriptors.push(...Object.values(descriptors))
-        }
-        return allDescriptors
-    }
-
-
-    #initSourceDescriptors () {
-        const {sourceDescriptors} = this.#data
-
-        Object.entries(sourceDescriptors).forEach(([type, descriptors]) => {
-            Object.entries(descriptors).forEach(([id, descriptor]) => {
-                if (!descriptor.id) {
-                    descriptor.id = id
-                }
-
-                sourceDescriptors[type][id] = prepareSourceDescriptor(type, descriptor)
-            })
+            const asset = prepareAsset(assetData)
+            this.assets.set(asset.id, asset)
         })
     }
 
-}
 
+    #exportAssets () {
+        const exported = {}
 
-function validateSourceDescriptorInput (type, source) {
-    if (!type || typeof type !== 'string') {
-        throw new Error('SourceDescriptor type must be a non-empty string')
-    }
-
-    if (!source || typeof source !== 'object') {
-        throw new Error('SourceDescriptor must be an object or SourceDescriptor instance')
-    }
-}
-
-
-function prepareSourceDescriptor (type, sourceDescriptor) {
-    if (!sourceDescriptor.type) {
-        sourceDescriptor.type = singularize(type)
-    }
-
-    if (!(sourceDescriptor instanceof SourceDescriptor)) {
-        sourceDescriptor = new SourceDescriptor(sourceDescriptor)
-    }
-
-    if (!sourceDescriptor.id) {
-        throw new Error('SourceDescriptor must have an id')
-    }
-
-    return sourceDescriptor
-}
-
-
-function getSourceDescriptorsByTag (tag, sourceDescriptors) {
-    const sourceDescriptorsByTag = []
-
-    for (const type in sourceDescriptors) {
-        const sourceCollection = sourceDescriptors[type]
-
-        for (const id in sourceCollection) {
-            const sourceDescriptor = sourceCollection[id]
-
-            if (sourceDescriptor.hasTag(tag)) {
-                sourceDescriptorsByTag.push(sourceDescriptor)
-            }
+        for (const asset of this.assets.all) {
+            exported[asset.id] = asset.export()
         }
+
+        return exported
     }
 
-    return sourceDescriptorsByTag
 }
 
 
-function exportSourceDescriptors (sourceDescriptors) {
-    const exported = {}
+function validateAssetInput (assetData) {
+    if (!assetData || typeof assetData !== 'object') {
+        throw new Error('Asset must be an object or Asset instance')
+    }
+}
 
-    for (const type in sourceDescriptors) {
-        const sourceList = sourceDescriptors[type]
-        exported[type] = {}
 
-        for (const id in sourceList) {
-            const sourceDescriptor = sourceList[id]
-            exported[type][id] = sourceDescriptor.export()
-        }
+function prepareAsset (assetData) {
+    if (assetData instanceof Asset) {
+        return assetData
     }
 
-    return exported
+    const asset = new Asset(assetData)
+
+    if (!asset.id) {
+        throw new Error('Asset must have an id')
+    }
+
+    return asset
 }

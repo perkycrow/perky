@@ -6,7 +6,7 @@ import {vi, beforeEach, afterEach, describe, test, expect} from 'vitest'
 describe('SourceLoader', () => {
     let loader
     let loaders
-    let sourceDescriptors
+    let assets
 
     beforeEach(() => {
         loaders = {
@@ -15,13 +15,13 @@ describe('SourceLoader', () => {
             text: vi.fn().mockResolvedValue('loaded text')
         }
 
-        sourceDescriptors = [
+        assets = [
             {type: 'image', id: 'logo', url: '/assets/logo.png'},
             {type: 'audio', id: 'music', url: '/assets/music.mp3'},
             {type: 'text', id: 'config', url: '/assets/config.json'}
         ]
 
-        loader = new SourceLoader(sourceDescriptors, loaders)
+        loader = new SourceLoader(assets, loaders)
     })
 
 
@@ -32,49 +32,49 @@ describe('SourceLoader', () => {
 
     test('constructor', () => {
         expect(loader).toBeInstanceOf(PerkyModule)
-        expect(loader.sourceDescriptors).toBe(sourceDescriptors)
+        expect(loader.assets).toBe(assets)
         expect(loader.progress).toBe(0)
     })
 
 
-    test('sourceCount', () => {
-        expect(loader.sourceCount).toBe(3)
+    test('assetCount', () => {
+        expect(loader.assetCount).toBe(3)
     })
 
 
     test('loadedCount', () => {
-        sourceDescriptors[0].source = 'image data'
-        sourceDescriptors[0].loaded = true
-        sourceDescriptors[1].source = 'audio data'
-        sourceDescriptors[1].loaded = true
-        
+        assets[0].source = 'image data'
+        assets[0].loaded = true
+        assets[1].source = 'audio data'
+        assets[1].loaded = true
+
         expect(loader.loadedCount).toBe(2)
     })
 
 
     test('progress', () => {
         expect(loader.progress).toBe(0)
-        
-        sourceDescriptors[0].source = 'image data'
-        sourceDescriptors[0].loaded = true
-        
+
+        assets[0].source = 'image data'
+        assets[0].loaded = true
+
         expect(loader.progress).toBe(1 / 3)
 
-        sourceDescriptors[1].source = 'audio data'
-        sourceDescriptors[1].loaded = true
-        
+        assets[1].source = 'audio data'
+        assets[1].loaded = true
+
         expect(loader.progress).toBe(2 / 3)
 
-        sourceDescriptors[2].source = 'text data'
-        sourceDescriptors[2].loaded = true
-        
+        assets[2].source = 'text data'
+        assets[2].loaded = true
+
         expect(loader.progress).toBe(1)
     })
 
 
     test('load', async () => {
         const emitSpy = vi.spyOn(loader, 'emit')
-        const loadSourceSpy = vi.spyOn(loader, 'loadSource')
+        const loadAssetSpy = vi.spyOn(loader, 'loadAsset')
             .mockResolvedValueOnce({type: 'image', id: 'logo', loaded: true})
             .mockResolvedValueOnce({type: 'audio', id: 'music', loaded: true})
             .mockResolvedValueOnce({type: 'text', id: 'config', loaded: true})
@@ -82,92 +82,92 @@ describe('SourceLoader', () => {
         const result = await loader.load()
 
         expect(loader.loading).toBe(false)
-        expect(loadSourceSpy).toHaveBeenCalledTimes(3)
-        expect(emitSpy).toHaveBeenCalledWith('complete', sourceDescriptors)
-        expect(result).toBe(sourceDescriptors)
+        expect(loadAssetSpy).toHaveBeenCalledTimes(3)
+        expect(emitSpy).toHaveBeenCalledWith('complete', assets)
+        expect(result).toBe(assets)
     })
 
 
     test('load already loading', async () => {
         loader.loading = true
-        
+
         const result = await loader.load()
-        
+
         expect(result).toBe(false)
     })
 
 
-    test('loadSource already loaded', async () => {
-        const sourceDescriptor = {type: 'image', id: 'logo', loaded: true, source: 'image data'}
-        
-        const result = await loader.loadSource(sourceDescriptor)
-        
-        expect(result).toBe(sourceDescriptor)
+    test('loadAsset already loaded', async () => {
+        const asset = {type: 'image', id: 'logo', loaded: true, source: 'image data'}
+
+        const result = await loader.loadAsset(asset)
+
+        expect(result).toBe(asset)
         expect(loaders.image).not.toHaveBeenCalled()
     })
 
 
-    test('loadSource already loading', async () => {
-        const sourceDescriptor = {type: 'image', id: 'logo', url: '/assets/logo.png'}
-        
-        const loadPromise1 = loader.loadSource(sourceDescriptor)
-        const loadPromise2 = loader.loadSource(sourceDescriptor)
-        
+    test('loadAsset already loading', async () => {
+        const asset = {type: 'image', id: 'logo', url: '/assets/logo.png'}
+
+        const loadPromise1 = loader.loadAsset(asset)
+        const loadPromise2 = loader.loadAsset(asset)
+
         const result1 = await loadPromise1
         const result2 = await loadPromise2
-        
+
         expect(result1).toBe(result2)
         expect(loaders.image).toHaveBeenCalledTimes(1)
         expect(result1.source).toBe('loaded image')
     })
 
 
-    test('loadSource no loader', async () => {
-        const sourceDescriptor = {type: 'video', id: 'intro'}
-        
-        await expect(loader.loadSource(sourceDescriptor)).rejects.toThrow('No loader found for source type: video')
+    test('loadAsset no loader', async () => {
+        const asset = {type: 'video', id: 'intro'}
+
+        await expect(loader.loadAsset(asset)).rejects.toThrow('No loader found for asset type: video')
     })
 
 
-    test('loadSource with url', async () => {
+    test('loadAsset with url', async () => {
         const emitSpy = vi.spyOn(loader, 'emit')
-        const sourceDescriptor = {type: 'image', id: 'logo', url: '/assets/logo.png'}
-        
-        const result = await loader.loadSource(sourceDescriptor)
-        
+        const asset = {type: 'image', id: 'logo', url: '/assets/logo.png'}
+
+        const result = await loader.loadAsset(asset)
+
         expect(loaders.image).toHaveBeenCalledWith({
-            url: sourceDescriptor.url,
+            url: asset.url,
             config: {}
         })
-        expect(sourceDescriptor.source).toBe('loaded image')
+        expect(asset.source).toBe('loaded image')
         expect(emitSpy).toHaveBeenCalledWith('progress', expect.any(Number), {
-            sourceDescriptor, 
+            asset,
             source: 'loaded image'
         })
-        expect(result).toBe(sourceDescriptor)
+        expect(result).toBe(asset)
     })
 
 
-    test('loadSource without url', async () => {
-        const sourceDescriptor = {type: 'image', id: 'logo'}
-        
-        await loader.loadSource(sourceDescriptor)
-        
-        expect(loaders.image).toHaveBeenCalledWith(sourceDescriptor)
+    test('loadAsset without url', async () => {
+        const asset = {type: 'image', id: 'logo'}
+
+        await loader.loadAsset(asset)
+
+        expect(loaders.image).toHaveBeenCalledWith(asset)
     })
 
 
-    test('loadSource error', async () => {
+    test('loadAsset error', async () => {
         const emitSpy = vi.spyOn(loader, 'emit')
-        const sourceDescriptor = {type: 'image', id: 'logo', url: '/assets/logo.png'}
+        const asset = {type: 'image', id: 'logo', url: '/assets/logo.png'}
         const error = new Error('Loading failed')
         loaders.image.mockRejectedValueOnce(error)
-        
-        await expect(loader.loadSource(sourceDescriptor)).rejects.toThrow('Loading failed')
-        expect(emitSpy).toHaveBeenCalledWith('error', sourceDescriptor, error)
-        
+
+        await expect(loader.loadAsset(asset)).rejects.toThrow('Loading failed')
+        expect(emitSpy).toHaveBeenCalledWith('error', asset, error)
+
         loaders.image.mockResolvedValueOnce('loaded image after error')
-        const result = await loader.loadSource(sourceDescriptor)
+        const result = await loader.loadAsset(asset)
         expect(result.source).toBe('loaded image after error')
     })
 

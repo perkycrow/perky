@@ -58,7 +58,7 @@ export default class Application extends PerkyModule {
 
 
     getImage (id) {
-        return this.getSource('images', id)
+        return this.getSource(id)
     }
 
 

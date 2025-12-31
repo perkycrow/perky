@@ -1,7 +1,7 @@
 import {toSnakeCase, uniqueId} from '../core/utils'
 
 
-export default class SourceDescriptor {
+export default class Asset {
 
     constructor (params = {}) {
         this.type    = params.type
@@ -48,5 +48,5 @@ export default class SourceDescriptor {
 
 
 function guessId (params) {
-    return uniqueId('sources', params.id || (params.name ? toSnakeCase(params.name) : params.type))
-} 
+    return uniqueId('assets', params.id || (params.name ? toSnakeCase(params.name) : params.type))
+}
