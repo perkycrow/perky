@@ -9,7 +9,7 @@ export default class RenderSystem extends PerkyModule {
 
     static $category = 'renderSystem'
 
-    constructor (options = {}) { // eslint-disable-line complexity
+    constructor (options = {}) {
         super(options)
 
         this.create(PerkyView, {
@@ -22,20 +22,32 @@ export default class RenderSystem extends PerkyModule {
             this.mount(options.container)
         }
 
+        this.#configureDimensions(options)
+        this.setupCameras(options.cameras)
+        this.#setupInitialLayers(options.layers)
+        this.#setupResizeListener()
+    }
+
+
+    #configureDimensions (options) {
         this.layerWidth = options.width ?? 800
         this.layerHeight = options.height ?? 600
 
         const hasExplicitDimensions = options.width !== undefined || options.height !== undefined
         this.autoResizeEnabled = options.autoResize ?? !hasExplicitDimensions
+    }
 
-        this.setupCameras(options.cameras)
 
-        if (options.layers) {
-            options.layers.forEach(layerConfig => {
+    #setupInitialLayers (layers) {
+        if (layers) {
+            layers.forEach(layerConfig => {
                 this.createLayer(layerConfig.name, layerConfig.type, layerConfig)
             })
         }
+    }
 
+
+    #setupResizeListener () {
         this.on('resize', ({width, height}) => {
             if (this.autoResizeEnabled) {
                 this.resize(width, height)
@@ -128,7 +140,7 @@ export default class RenderSystem extends PerkyModule {
         }
 
         if (typeof cameraOption === 'object') {
-            return this.createCamera(cameraOption.$id || 'unnamed', cameraOption)
+            return this.createCamera(cameraOption.$id, cameraOption)
         }
 
         return null
