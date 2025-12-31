@@ -166,7 +166,7 @@ export default class HTMLLayer extends Layer {
     }
 
 
-    updateWorldElements (force = false) { // eslint-disable-line complexity
+    updateWorldElements (force = false) {
         if (!this.camera || this.worldElements.length === 0) {
             return this
         }

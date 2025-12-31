@@ -3,6 +3,7 @@
 import fs from 'fs'
 import path from 'path'
 import {fileURLToPath} from 'url'
+import {execSync} from 'child_process'
 
 
 const __filename = fileURLToPath(import.meta.url)
@@ -66,6 +67,11 @@ function isInsideString (textBefore) {
 
 function isUrlComment (textBefore) {
     return /https?:$/.test(textBefore)
+}
+
+
+function isUnusedDirectiveMessage (message) {
+    return message && message.includes('Unused eslint-disable directive')
 }
 
 
@@ -149,18 +155,148 @@ function cleanFileContent (content) {
 }
 
 
+// === ESLINT UNUSED DIRECTIVES ===
+
+function extractUnusedFromFile (file, rootDir) {
+    const unusedMessages = file.messages.filter(m => isUnusedDirectiveMessage(m.message))
+
+    if (unusedMessages.length === 0) {
+        return null
+    }
+
+    return {
+        filePath: file.filePath,
+        relativePath: path.relative(rootDir, file.filePath),
+        directives: unusedMessages.map(m => ({line: m.line, message: m.message}))
+    }
+}
+
+
+function parseEslintOutput (output, rootDir) {
+    const data = JSON.parse(output)
+    return data.map(file => extractUnusedFromFile(file, rootDir)).filter(Boolean)
+}
+
+
+function findUnusedEslintDirectives (rootDir) {
+    try {
+        const output = execSync('npx eslint --report-unused-disable-directives --format json .', {
+            cwd: rootDir,
+            encoding: 'utf-8',
+            stdio: ['pipe', 'pipe', 'pipe']
+        })
+
+        return parseEslintOutput(output, rootDir)
+    } catch (error) {
+        if (error.stdout) {
+            try {
+                return parseEslintOutput(error.stdout, rootDir)
+            } catch {
+                return []
+            }
+        }
+        return []
+    }
+}
+
+
+function removeUnusedDirective (content, line) {
+    const lines = content.split('\n')
+    const lineIndex = line - 1
+
+    if (lineIndex < 0 || lineIndex >= lines.length) {
+        return content
+    }
+
+    const currentLine = lines[lineIndex]
+
+    const inlineMatch = currentLine.match(/^(.+?)\s*\/\/\s*eslint-disable-line\s+[\w-]+\s*$/)
+    if (inlineMatch) {
+        lines[lineIndex] = inlineMatch[1].trimEnd()
+        return lines.join('\n')
+    }
+
+    const standaloneMatch = currentLine.match(/^\s*\/\/\s*eslint-disable-next-line\s+[\w-]+\s*$/)
+    if (standaloneMatch) {
+        lines.splice(lineIndex, 1)
+        return lines.join('\n')
+    }
+
+    const blockMatch = currentLine.match(/^\s*\/\*\s*eslint-disable\s+[\w-]+\s*\*\/\s*$/)
+    if (blockMatch) {
+        lines.splice(lineIndex, 1)
+        return lines.join('\n')
+    }
+
+    return content
+}
+
+
+function fixFileDirectives (file, dryRun) {
+    if (dryRun) {
+        return
+    }
+
+    let content = fs.readFileSync(file.filePath, 'utf-8')
+    const sortedDirectives = [...file.directives].sort((a, b) => b.line - a.line)
+
+    for (const directive of sortedDirectives) {
+        content = removeUnusedDirective(content, directive.line)
+    }
+
+    fs.writeFileSync(file.filePath, content, 'utf-8')
+}
+
+
+function cleanUnusedEslintDirectives (rootDir, options = {}) {
+    const dryRun = options.dryRun ?? false
+
+    console.log('\n=== CHECKING UNUSED ESLINT DIRECTIVES ===\n')
+
+    const unused = findUnusedEslintDirectives(rootDir)
+
+    if (unused.length === 0) {
+        console.log('No unused eslint-disable directives found.')
+        return {filesFixed: 0, directivesRemoved: 0}
+    }
+
+    let totalDirectives = 0
+
+    for (const file of unused) {
+        console.log(`${file.relativePath}:`)
+        file.directives.forEach(d => console.log(`  Line ${d.line}: ${d.message}`))
+        totalDirectives += file.directives.length
+
+        fixFileDirectives(file, dryRun)
+        if (!dryRun) {
+            console.log('  -> Fixed')
+        }
+    }
+
+    console.log(`\nTotal: ${totalDirectives} unused directive(s) in ${unused.length} file(s)`)
+
+    if (dryRun) {
+        console.log('Run without --dry-run to remove them.')
+    }
+
+    return {filesFixed: unused.length, directivesRemoved: totalDirectives}
+}
+
+
 // === FILE DISCOVERY ===
 
-function findJsFiles (dir, files = []) { // eslint-disable-line complexity
+function shouldSkipDirectory (name) {
+    return name === 'node_modules' || name.startsWith('.')
+}
+
+
+function findJsFiles (dir, files = []) {
     const entries = fs.readdirSync(dir, {withFileTypes: true})
 
     for (const entry of entries) {
         const fullPath = path.join(dir, entry.name)
 
-        if (entry.isDirectory()) {
-            if (entry.name === 'node_modules' || entry.name.startsWith('.')) {
-                continue
-            }
+        if (entry.isDirectory() && !shouldSkipDirectory(entry.name)) {
             findJsFiles(fullPath, files)
         } else if (entry.isFile() && entry.name.endsWith('.js')) {
             files.push(fullPath)
@@ -173,11 +309,39 @@ function findJsFiles (dir, files = []) { // eslint-disable-line complexity
 
 // === MAIN ===
 
-function run (rootDir, options = {}) { // eslint-disable-line complexity
-    const dryRun = options.dryRun ?? false
-    const verbose = options.verbose ?? false
+function processFile (filePath, rootDir, options) {
+    const relativePath = path.relative(rootDir, filePath)
 
-    console.log(dryRun ? '=== DRY RUN MODE ===' : '=== CLEANING CODEBASE ===')
+    if (isExcludedFile(relativePath)) {
+        return null
+    }
+
+    const content = fs.readFileSync(filePath, 'utf-8')
+    const {result, comments, modified} = cleanFileContent(content)
+
+    if (comments.length === 0) {
+        return null
+    }
+
+    if (options.verbose) {
+        comments.forEach((c, i) => {
+            const preview = c.text.length > 80 ? c.text.substring(0, 80) + '...' : c.text
+            console.log(`  ${i + 1}. [${c.type}] ${preview}`)
+        })
+    }
+
+    if (!options.dryRun && modified) {
+        fs.writeFileSync(filePath, result, 'utf-8')
+    }
+
+    return {relativePath, count: comments.length, modified}
+}
+
+
+function runCommentCleaner (rootDir, options = {}) {
+    const dryRun = options.dryRun ?? false
+
+    console.log(dryRun ? '=== DRY RUN MODE ===' : '=== CLEANING COMMENTS ===')
     console.log(`Root directory: ${rootDir}\n`)
 
     const files = findJsFiles(rootDir)
@@ -185,41 +349,24 @@ function run (rootDir, options = {}) { // eslint-disable-line complexity
     let totalCommentsFound = 0
 
     for (const filePath of files) {
-        const relativePath = path.relative(rootDir, filePath)
+        const result = processFile(filePath, rootDir, options)
 
-        if (isExcludedFile(relativePath)) {
-            continue
-        }
-
-        const content = fs.readFileSync(filePath, 'utf-8')
-        const {result, comments, modified} = cleanFileContent(content)
-
-        if (comments.length > 0) {
+        if (result) {
             totalFilesWithComments++
-            totalCommentsFound += comments.length
-
-            console.log(`\n${relativePath}: ${comments.length} comment(s)`)
-
-            if (verbose) {
-                comments.forEach((c, i) => {
-                    const preview = c.text.length > 80 ? c.text.substring(0, 80) + '...' : c.text
-                    console.log(`  ${i + 1}. [${c.type}] ${preview}`)
-                })
-            }
-
-            if (!dryRun && modified) {
-                fs.writeFileSync(filePath, result, 'utf-8')
+            totalCommentsFound += result.count
+            console.log(`\n${result.relativePath}: ${result.count} comment(s)`)
+            if (!dryRun) {
                 console.log('  -> Cleaned')
             }
         }
     }
 
-    console.log('\n=== SUMMARY ===')
+    console.log('\n=== COMMENT SUMMARY ===')
     console.log(`Total files scanned: ${files.length}`)
     console.log(`Files with comments: ${totalFilesWithComments}`)
     console.log(`Total comments found: ${totalCommentsFound}`)
 
-    if (dryRun) {
+    if (dryRun && totalCommentsFound > 0) {
         console.log('\nRun without --dry-run to apply changes.')
     }
 
@@ -228,6 +375,14 @@ function run (rootDir, options = {}) { // eslint-disable-line complexity
         filesWithComments: totalFilesWithComments,
         commentsFound: totalCommentsFound
     }
+}
+
+
+function run (rootDir, options = {}) {
+    const commentResult = runCommentCleaner(rootDir, options)
+    const eslintResult = cleanUnusedEslintDirectives(rootDir, options)
+
+    return {comments: commentResult, eslint: eslintResult}
 }
 
 

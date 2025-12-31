@@ -281,7 +281,7 @@ export default class Inflector {
     #loadPlurals () {
         const plurals = [
             [/s?$/i, 's'],
-            [/[^\x20-\x7F]$/i, '$0'], // eslint-disable-line no-control-regex
+            [/[^\x20-\x7F]$/i, '$0'],
             [/([^aeiou]ese)$/i, '$1'],
             [/(ax|test)is$/i, '$1es'],
             [/(alias|[^aou]us|t[lm]as|gas|ris)$/i, '$1es'],

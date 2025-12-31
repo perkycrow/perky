@@ -27,7 +27,7 @@ export default class WebGLCanvas2D extends BaseRenderer {
     #compositeProgram = null
 
 
-    constructor (options = {}) { // eslint-disable-line complexity
+    constructor (options = {}) {
         super(options)
 
         this.#setupWebGL()
