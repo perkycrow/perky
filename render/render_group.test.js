@@ -148,13 +148,12 @@ describe('RenderGroup', () => {
     describe('onInstall', () => {
 
         test('does nothing without valid renderer', () => {
-            expect(() => renderGroup.onInstall()).not.toThrow()
+            expect(() => renderGroup.onInstall()).not.toThrow() // eslint-disable-line max-nested-callbacks
         })
 
 
         test('initializes passes when renderer has gl and shaderRegistry', () => {
             const pass = new MockRenderPass()
-            const group = new RenderGroup({$id: 'test-group', postPasses: [pass]})
             const renderer = new MockRenderer()
 
             renderer.create(RenderGroup, {$id: 'test', postPasses: [pass]})

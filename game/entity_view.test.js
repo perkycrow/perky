@@ -54,7 +54,7 @@ describe('EntityView', () => {
     describe('sync', () => {
 
         test('does nothing when root is null', () => {
-            expect(() => view.sync()).not.toThrow()
+            expect(() => view.sync()).not.toThrow() // eslint-disable-line max-nested-callbacks
         })
 
 
@@ -125,7 +125,7 @@ describe('EntityView', () => {
 
         test('handles null root gracefully', () => {
             view.root = null
-            expect(() => view.dispose()).not.toThrow()
+            expect(() => view.dispose()).not.toThrow() // eslint-disable-line max-nested-callbacks
         })
 
 
@@ -133,7 +133,7 @@ describe('EntityView', () => {
             view.root = {x: 0, y: 0}
             context.group = null
 
-            expect(() => view.dispose()).not.toThrow()
+            expect(() => view.dispose()).not.toThrow() // eslint-disable-line max-nested-callbacks
         })
 
     })

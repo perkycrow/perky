@@ -302,7 +302,7 @@ export default class ManifestInspector extends BaseInspector {
     }
 
 
-    #createDataGrid (data, depth = 0) {
+    #createDataGrid (data, depth = 0) { // eslint-disable-line complexity
         const grid = document.createElement('div')
         grid.className = 'data-grid'
 
@@ -344,7 +344,7 @@ export default class ManifestInspector extends BaseInspector {
             return section
         }
 
-        const assetsByType = this.#groupAssetsByType(allAssets)
+        const assetsByType = groupAssetsByType(allAssets)
 
         for (const [type, assets] of Object.entries(assetsByType)) {
             const group = document.createElement('div')
@@ -356,7 +356,7 @@ export default class ManifestInspector extends BaseInspector {
             group.appendChild(typeHeader)
 
             for (const asset of assets) {
-                group.appendChild(this.#createAssetCard(asset))
+                group.appendChild(createAssetCard(asset, (data) => this.#createDataGrid(data)))
             }
 
             content.appendChild(group)
@@ -366,187 +366,188 @@ export default class ManifestInspector extends BaseInspector {
     }
 
 
-    #groupAssetsByType (assets) {
-        const grouped = {}
+}
 
-        for (const asset of assets) {
-            const type = asset.type || 'unknown'
-            if (!grouped[type]) {
-                grouped[type] = []
-            }
-            grouped[type].push(asset)
+
+function groupAssetsByType (assets) {
+    const grouped = {}
+
+    for (const asset of assets) {
+        const type = asset.type || 'unknown'
+        if (!grouped[type]) {
+            grouped[type] = []
         }
-
-        return grouped
+        grouped[type].push(asset)
     }
 
+    return grouped
+}
 
-    #createAssetCard (asset) { // eslint-disable-line complexity
-        const card = document.createElement('div')
-        card.className = 'asset-card'
 
-        const header = document.createElement('div')
-        header.className = 'asset-header'
+function createAssetCard (asset, createDataGrid) { // eslint-disable-line complexity
+    const card = document.createElement('div')
+    card.className = 'asset-card'
 
-        const icon = document.createElement('span')
-        icon.className = 'asset-icon'
-        icon.textContent = this.#getAssetIcon(asset)
+    const header = document.createElement('div')
+    header.className = 'asset-header'
 
-        const name = document.createElement('span')
-        name.className = 'asset-name'
-        name.textContent = asset.name || asset.id
+    const icon = document.createElement('span')
+    icon.className = 'asset-icon'
+    icon.textContent = getAssetIcon(asset)
 
-        const typeBadge = document.createElement('span')
-        typeBadge.className = 'asset-type-badge'
-        typeBadge.textContent = asset.type
+    const name = document.createElement('span')
+    name.className = 'asset-name'
+    name.textContent = asset.name || asset.id
 
-        header.appendChild(icon)
-        header.appendChild(name)
-        header.appendChild(typeBadge)
-        card.appendChild(header)
+    const typeBadge = document.createElement('span')
+    typeBadge.className = 'asset-type-badge'
+    typeBadge.textContent = asset.type
 
-        const details = document.createElement('div')
-        details.className = 'asset-details'
+    header.appendChild(icon)
+    header.appendChild(name)
+    header.appendChild(typeBadge)
+    card.appendChild(header)
 
-        this.#addAssetRow(details, 'id', asset.id)
+    const details = document.createElement('div')
+    details.className = 'asset-details'
 
-        if (asset.url) {
-            const urlValue = document.createElement('a')
-            urlValue.className = 'asset-link'
-            urlValue.href = asset.url
-            urlValue.target = '_blank'
-            urlValue.textContent = asset.url
-            this.#addAssetRowElement(details, 'url', urlValue)
-        }
+    addAssetRow(details, 'id', asset.id)
 
-        if (asset.loaded) {
-            this.#addAssetRow(details, 'loaded', 'Yes')
-        }
-
-        card.appendChild(details)
-
-        if (asset.tags && asset.tags.length > 0) {
-            const tagsContainer = document.createElement('div')
-            tagsContainer.className = 'asset-tags'
-
-            for (const tag of asset.tags) {
-                const tagEl = document.createElement('span')
-                tagEl.className = 'asset-tag'
-                tagEl.textContent = tag
-                tagsContainer.appendChild(tagEl)
-            }
-
-            card.appendChild(tagsContainer)
-        }
-
-        if (asset.config && Object.keys(asset.config).length > 0) {
-            const configSection = document.createElement('div')
-            configSection.className = 'asset-config'
-
-            const configTitle = document.createElement('div')
-            configTitle.className = 'config-title'
-            configTitle.textContent = 'Config'
-            configSection.appendChild(configTitle)
-
-            configSection.appendChild(this.#createDataGrid(asset.config))
-            card.appendChild(configSection)
-        }
-
-        const preview = this.#createSourcePreview(asset)
-        if (preview) {
-            card.appendChild(preview)
-        }
-
-        return card
+    if (asset.url) {
+        const urlValue = document.createElement('a')
+        urlValue.className = 'asset-link'
+        urlValue.href = asset.url
+        urlValue.target = '_blank'
+        urlValue.textContent = asset.url
+        addAssetRowElement(details, 'url', urlValue)
     }
 
-
-    #addAssetRow (container, label, value) {
-        const labelEl = document.createElement('div')
-        labelEl.className = 'asset-label'
-        labelEl.textContent = label
-
-        const valueEl = document.createElement('div')
-        valueEl.className = 'asset-value'
-        valueEl.textContent = value
-
-        container.appendChild(labelEl)
-        container.appendChild(valueEl)
+    if (asset.loaded) {
+        addAssetRow(details, 'loaded', 'Yes')
     }
 
+    card.appendChild(details)
 
-    #addAssetRowElement (container, label, element) {
-        const labelEl = document.createElement('div')
-        labelEl.className = 'asset-label'
-        labelEl.textContent = label
+    if (asset.tags && asset.tags.length > 0) {
+        const tagsContainer = document.createElement('div')
+        tagsContainer.className = 'asset-tags'
 
-        const valueEl = document.createElement('div')
-        valueEl.className = 'asset-value'
-        valueEl.appendChild(element)
+        for (const tag of asset.tags) {
+            const tagEl = document.createElement('span')
+            tagEl.className = 'asset-tag'
+            tagEl.textContent = tag
+            tagsContainer.appendChild(tagEl)
+        }
 
-        container.appendChild(labelEl)
-        container.appendChild(valueEl)
+        card.appendChild(tagsContainer)
     }
 
+    if (asset.config && Object.keys(asset.config).length > 0) {
+        const configSection = document.createElement('div')
+        configSection.className = 'asset-config'
 
-    #getAssetIcon (asset) {
-        const type = asset.type?.toLowerCase() || ''
+        const configTitle = document.createElement('div')
+        configTitle.className = 'config-title'
+        configTitle.textContent = 'Config'
+        configSection.appendChild(configTitle)
 
-        if (type.includes('texture') || type.includes('image') || type.includes('sprite')) {
-            return '🖼'
-        }
-        if (type.includes('audio') || type.includes('sound') || type.includes('music')) {
-            return '🔊'
-        }
-        if (type.includes('font')) {
-            return '🔤'
-        }
-        if (type.includes('shader')) {
-            return '✨'
-        }
-        if (type.includes('scene')) {
-            return '🎬'
-        }
-        if (type.includes('script')) {
-            return '📜'
-        }
-        if (type.includes('data') || type.includes('json')) {
-            return '📄'
-        }
-
-        return '📦'
+        configSection.appendChild(createDataGrid(asset.config))
+        card.appendChild(configSection)
     }
 
+    const preview = createSourcePreview(asset)
+    if (preview) {
+        card.appendChild(preview)
+    }
 
-    #createSourcePreview (asset) {
-        const source = asset.source
+    return card
+}
 
-        if (!source) {
-            return null
-        }
 
-        if (source instanceof HTMLImageElement || source instanceof HTMLCanvasElement) {
-            const preview = document.createElement('div')
-            preview.className = 'asset-preview'
+function addAssetRow (container, label, value) {
+    const labelEl = document.createElement('div')
+    labelEl.className = 'asset-label'
+    labelEl.textContent = label
 
-            if (source instanceof HTMLImageElement) {
-                const img = document.createElement('img')
-                img.src = source.src
-                img.alt = asset.name || asset.id
-                preview.appendChild(img)
-            } else {
-                const img = document.createElement('img')
-                img.src = source.toDataURL()
-                img.alt = asset.name || asset.id
-                preview.appendChild(img)
-            }
+    const valueEl = document.createElement('div')
+    valueEl.className = 'asset-value'
+    valueEl.textContent = value
 
-            return preview
-        }
+    container.appendChild(labelEl)
+    container.appendChild(valueEl)
+}
 
+
+function addAssetRowElement (container, label, element) {
+    const labelEl = document.createElement('div')
+    labelEl.className = 'asset-label'
+    labelEl.textContent = label
+
+    const valueEl = document.createElement('div')
+    valueEl.className = 'asset-value'
+    valueEl.appendChild(element)
+
+    container.appendChild(labelEl)
+    container.appendChild(valueEl)
+}
+
+
+function getAssetIcon (asset) { // eslint-disable-line complexity
+    const type = asset.type?.toLowerCase() || ''
+
+    if (type.includes('texture') || type.includes('image') || type.includes('sprite')) {
+        return '🖼'
+    }
+    if (type.includes('audio') || type.includes('sound') || type.includes('music')) {
+        return '🔊'
+    }
+    if (type.includes('font')) {
+        return '🔤'
+    }
+    if (type.includes('shader')) {
+        return '✨'
+    }
+    if (type.includes('scene')) {
+        return '🎬'
+    }
+    if (type.includes('script')) {
+        return '📜'
+    }
+    if (type.includes('data') || type.includes('json')) {
+        return '📄'
+    }
+
+    return '📦'
+}
+
+
+function createSourcePreview (asset) { // eslint-disable-line complexity
+    const source = asset.source
+
+    if (!source) {
         return null
     }
 
+    if (source instanceof HTMLImageElement || source instanceof HTMLCanvasElement) {
+        const preview = document.createElement('div')
+        preview.className = 'asset-preview'
+
+        if (source instanceof HTMLImageElement) {
+            const img = document.createElement('img')
+            img.src = source.src
+            img.alt = asset.name || asset.id
+            preview.appendChild(img)
+        } else {
+            const img = document.createElement('img')
+            img.src = source.toDataURL()
+            img.alt = asset.name || asset.id
+            preview.appendChild(img)
+        }
+
+        return preview
+    }
+
+    return null
 }
 
 

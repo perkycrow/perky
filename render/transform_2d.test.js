@@ -225,7 +225,7 @@ describe(Transform2D, () => {
         child1.depth = 1
 
         transform.add(child1)
-        const sorted1 = transform.getSortedChildren()
+        transform.getSortedChildren()
 
         const child2 = new Transform2D()
         child2.depth = 0

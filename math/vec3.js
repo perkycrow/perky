@@ -148,10 +148,12 @@ export default class Vec3 {
     }
 
     crossVectors (a, b) {
-        const ax = a.x; const ay = a.y; const 
-            az = a.z
-        const bx = b.x; const by = b.y; const 
-            bz = b.z
+        const ax = a.x
+        const ay = a.y
+        const az = a.z
+        const bx = b.x
+        const by = b.y
+        const bz = b.z
 
         this.x = ay * bz - az * by
         this.y = az * bx - ax * bz

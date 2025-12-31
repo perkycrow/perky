@@ -36,7 +36,7 @@ const spritePositions = [
     {x: 1.5, y: 0.5, scale: 1.3}
 ]
 
-const sprites = spritePositions.map(pos => {
+spritePositions.forEach(pos => {
     const sprite = new Image2D({
         x: pos.x,
         y: pos.y,
@@ -48,7 +48,6 @@ const sprites = spritePositions.map(pos => {
         depth: pos.y
     })
     entitiesGroup.add(sprite)
-    return sprite
 })
 
 

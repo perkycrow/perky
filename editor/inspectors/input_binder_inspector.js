@@ -273,7 +273,7 @@ export default class InputBinderInspector extends BaseInspector {
 
         const countEl = document.createElement('div')
         countEl.className = 'bindings-count'
-        countEl.innerHTML = `<strong>${count}</strong> binding${count !== 1 ? 's' : ''}`
+        countEl.innerHTML = `<strong>${count}</strong> binding${count === 1 ? '' : 's'}`
 
         const toggle = document.createElement('div')
         toggle.className = 'view-toggle'
@@ -340,7 +340,7 @@ export default class InputBinderInspector extends BaseInspector {
     }
 
 
-    #createGroup (_type, name, bindings) {
+    #createGroup (_type, name, bindings) { // eslint-disable-line class-methods-use-this
         const group = document.createElement('div')
         group.className = 'binding-group'
 
@@ -360,108 +360,108 @@ export default class InputBinderInspector extends BaseInspector {
         group.appendChild(header)
 
         for (const binding of bindings) {
-            group.appendChild(this.#createBindingCard(binding))
+            group.appendChild(createBindingCard(binding))
         }
 
         return group
     }
 
 
-    #createBindingCard (binding) {
-        const card = document.createElement('div')
-        card.className = 'binding-card'
+}
 
-        const isComposite = binding instanceof CompositeBinding
 
-        const row = document.createElement('div')
-        row.className = 'binding-row'
+function createBindingCard (binding) {
+    const card = document.createElement('div')
+    card.className = 'binding-card'
 
-        const input = document.createElement('div')
-        input.className = 'binding-input'
+    const isComposite = binding instanceof CompositeBinding
 
-        if (isComposite) {
-            const comboLabel = document.createElement('span')
-            comboLabel.className = 'control-name'
-            comboLabel.textContent = 'Combo'
-            input.appendChild(comboLabel)
-        } else {
-            const device = document.createElement('span')
-            device.className = 'device-badge'
-            device.textContent = binding.deviceName
+    const row = document.createElement('div')
+    row.className = 'binding-row'
 
-            const control = document.createElement('span')
-            control.className = 'control-name'
-            control.textContent = binding.controlName
+    const input = document.createElement('div')
+    input.className = 'binding-input'
 
-            input.appendChild(device)
-            input.appendChild(control)
-        }
+    if (isComposite) {
+        const comboLabel = document.createElement('span')
+        comboLabel.className = 'control-name'
+        comboLabel.textContent = 'Combo'
+        input.appendChild(comboLabel)
+    } else {
+        const device = document.createElement('span')
+        device.className = 'device-badge'
+        device.textContent = binding.deviceName
 
-        const arrow = document.createElement('span')
-        arrow.className = 'binding-arrow'
-        arrow.textContent = '→'
+        const control = document.createElement('span')
+        control.className = 'control-name'
+        control.textContent = binding.controlName
 
-        const action = document.createElement('div')
-        action.className = 'binding-action'
-
-        const actionName = document.createElement('span')
-        actionName.className = 'action-name'
-        actionName.textContent = binding.actionName
-
-        action.appendChild(actionName)
-
-        if (binding.controllerName) {
-            const controller = document.createElement('span')
-            controller.className = 'controller-badge'
-            controller.textContent = binding.controllerName
-            action.appendChild(controller)
-        }
-
-        const eventBadge = document.createElement('span')
-        eventBadge.className = `event-badge ${binding.eventType}`
-        eventBadge.textContent = binding.eventType
-        action.appendChild(eventBadge)
-
-        row.appendChild(input)
-        row.appendChild(arrow)
-        row.appendChild(action)
-        card.appendChild(row)
-
-        if (isComposite && binding.controls) {
-            const comboControls = document.createElement('div')
-            comboControls.className = 'combo-controls'
-
-            binding.controls.forEach((ctrl, index) => {
-                if (index > 0) {
-                    const plus = document.createElement('span')
-                    plus.className = 'combo-plus'
-                    plus.textContent = '+'
-                    comboControls.appendChild(plus)
-                }
-
-                const control = document.createElement('div')
-                control.className = 'combo-control'
-
-                const device = document.createElement('span')
-                device.className = 'device-badge'
-                device.textContent = ctrl.deviceName
-
-                const name = document.createElement('span')
-                name.className = 'control-name'
-                name.textContent = ctrl.controlName
-
-                control.appendChild(device)
-                control.appendChild(name)
-                comboControls.appendChild(control)
-            })
-
-            card.appendChild(comboControls)
-        }
-
-        return card
+        input.appendChild(device)
+        input.appendChild(control)
     }
 
+    const arrow = document.createElement('span')
+    arrow.className = 'binding-arrow'
+    arrow.textContent = '→'
 
+    const action = document.createElement('div')
+    action.className = 'binding-action'
+
+    const actionName = document.createElement('span')
+    actionName.className = 'action-name'
+    actionName.textContent = binding.actionName
+
+    action.appendChild(actionName)
+
+    if (binding.controllerName) {
+        const controller = document.createElement('span')
+        controller.className = 'controller-badge'
+        controller.textContent = binding.controllerName
+        action.appendChild(controller)
+    }
+
+    const eventBadge = document.createElement('span')
+    eventBadge.className = `event-badge ${binding.eventType}`
+    eventBadge.textContent = binding.eventType
+    action.appendChild(eventBadge)
+
+    row.appendChild(input)
+    row.appendChild(arrow)
+    row.appendChild(action)
+    card.appendChild(row)
+
+    if (isComposite && binding.controls) {
+        const comboControls = document.createElement('div')
+        comboControls.className = 'combo-controls'
+
+        binding.controls.forEach((ctrl, index) => {
+            if (index > 0) {
+                const plus = document.createElement('span')
+                plus.className = 'combo-plus'
+                plus.textContent = '+'
+                comboControls.appendChild(plus)
+            }
+
+            const control = document.createElement('div')
+            control.className = 'combo-control'
+
+            const device = document.createElement('span')
+            device.className = 'device-badge'
+            device.textContent = ctrl.deviceName
+
+            const name = document.createElement('span')
+            name.className = 'control-name'
+            name.textContent = ctrl.controlName
+
+            control.appendChild(device)
+            control.appendChild(name)
+            comboControls.appendChild(control)
+        })
+
+        card.appendChild(comboControls)
+    }
+
+    return card
 }
 
 
