@@ -82,7 +82,7 @@ export default class Registry extends ObservableMap {
     }
 
 
-    updateIndexFor (item, indexName, oldKeys, newKeys) { // eslint-disable-line complexity
+    updateIndexFor (item, indexName, oldKeys, newKeys) { // eslint-disable-line complexity -- clean
         if (!this.hasValue(item)) {
             return false
         }

@@ -112,7 +112,7 @@ function isInternalMethod (methodName) {
 const ignoredPrefixes = ['_', '#', 'on', 'update', 'get', 'check']
 
 
-function extractPrototypeMethods (instance) { // eslint-disable-line complexity
+function extractPrototypeMethods (instance) { // eslint-disable-line complexity -- clean
     const methods = []
     const proto = Object.getPrototypeOf(instance)
     const propertyNames = Object.getOwnPropertyNames(proto)

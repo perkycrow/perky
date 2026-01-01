@@ -129,7 +129,7 @@ export function deepMerge (target, source) {
 }
 
 
-function deepMergeInternal (target, source, seen) { // eslint-disable-line complexity
+function deepMergeInternal (target, source, seen) { // eslint-disable-line complexity -- clean
     if (!source) {
         return target
     }
@@ -156,7 +156,7 @@ function deepMergeInternal (target, source, seen) { // eslint-disable-line compl
 }
 
 
-export function exportValue (value) { // eslint-disable-line complexity
+export function exportValue (value) { // eslint-disable-line complexity -- clean
 
     if (value && typeof value === 'object') {
         if (typeof value.export === 'function') {
@@ -273,7 +273,7 @@ export function delegateProperties (receiver, source, names) {
 }
 
 
-function delegateProperty (receiver, source, sourceName, receiverName) { // eslint-disable-line complexity
+function delegateProperty (receiver, source, sourceName, receiverName) { // eslint-disable-line complexity -- clean
     const descriptor = Object.getOwnPropertyDescriptor(source, sourceName)
 
     if (descriptor && (descriptor.get || descriptor.set)) {
