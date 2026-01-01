@@ -751,6 +751,62 @@ function runEslintAudit (rootDir) {
 }
 
 
+// === SWITCH DETECTION ===
+
+function findSwitchStatements (rootDir) {
+    const files = findJsFiles(rootDir)
+    const switches = []
+
+    for (const filePath of files) {
+        const relativePath = path.relative(rootDir, filePath)
+        const content = fs.readFileSync(filePath, 'utf-8')
+        const lines = content.split('\n')
+
+        lines.forEach((line, index) => {
+            const match = line.match(/\bswitch\s*\(/)
+            if (match) {
+                switches.push({
+                    file: relativePath,
+                    line: index + 1,
+                    context: line.trim()
+                })
+            }
+        })
+    }
+
+    return switches
+}
+
+
+function runSwitchAudit (rootDir) {
+    console.log('=== SWITCH STATEMENT AUDIT ===\n')
+
+    const switches = findSwitchStatements(rootDir)
+
+    if (switches.length === 0) {
+        console.log('No switch statements found.')
+        return
+    }
+
+    const byFile = {}
+    for (const s of switches) {
+        if (!byFile[s.file]) {
+            byFile[s.file] = []
+        }
+        byFile[s.file].push(s)
+    }
+
+    for (const [file, occurrences] of Object.entries(byFile)) {
+        console.log(`\n${file}:`)
+        for (const occ of occurrences) {
+            console.log(`  Line ${occ.line}: ${occ.context}`)
+        }
+    }
+
+    console.log(`\n=== TOTAL: ${switches.length} switch statement(s) in ${Object.keys(byFile).length} file(s) ===`)
+}
+
+
 // === CLI ===
 
 const rootDir = path.resolve(__dirname, '..')
@@ -758,8 +814,11 @@ const dryRun = process.argv.includes('--dry-run')
 const verbose = process.argv.includes('--verbose')
 const eslintAudit = process.argv.includes('--eslint-audit')
 const fixImports = process.argv.includes('--fix-imports')
+const switchAudit = process.argv.includes('--switch-audit')
 
-if (eslintAudit) {
+if (switchAudit) {
+    runSwitchAudit(rootDir)
+} else if (eslintAudit) {
     runEslintAudit(rootDir)
 } else if (fixImports) {
     runImportExtensionCheck(rootDir, {dryRun})

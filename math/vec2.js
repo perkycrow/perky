@@ -275,22 +275,21 @@ export default class Vec2 {
     }
 
     getComponent (index) {
-        switch (index) {
-        case 0: return this.x
-        case 1: return this.y
-        default: throw new Error(`index out of range: ${index}`)
+        if (index === 0) {
+            return this.x
+        } else if (index === 1) {
+            return this.y
         }
+        throw new Error(`index out of range: ${index}`)
     }
 
     setComponent (index, value) {
-        switch (index) {
-        case 0:
+        if (index === 0) {
             this.x = value
-            break
-        case 1:
+        } else if (index === 1) {
             this.y = value
-            break
-        default: throw new Error(`index out of range: ${index}`)
+        } else {
+            throw new Error(`index out of range: ${index}`)
         }
         return this
     }

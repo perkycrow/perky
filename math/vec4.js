@@ -301,30 +301,29 @@ export default class Vec4 {
     }
 
     getComponent (index) {
-        switch (index) {
-        case 0: return this.x
-        case 1: return this.y
-        case 2: return this.z
-        case 3: return this.w
-        default: throw new Error(`index out of range: ${index}`)
+        if (index === 0) {
+            return this.x
+        } else if (index === 1) {
+            return this.y
+        } else if (index === 2) {
+            return this.z
+        } else if (index === 3) {
+            return this.w
         }
+        throw new Error(`index out of range: ${index}`)
     }
 
     setComponent (index, value) {
-        switch (index) {
-        case 0:
+        if (index === 0) {
             this.x = value
-            break
-        case 1:
+        } else if (index === 1) {
             this.y = value
-            break
-        case 2:
+        } else if (index === 2) {
             this.z = value
-            break
-        case 3:
+        } else if (index === 3) {
             this.w = value
-            break
-        default: throw new Error(`index out of range: ${index}`)
+        } else {
+            throw new Error(`index out of range: ${index}`)
         }
         return this
     }

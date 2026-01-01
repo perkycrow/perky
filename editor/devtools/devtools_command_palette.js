@@ -134,7 +134,7 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
     }
 
 
-    #buildInternalCommands () { // eslint-disable-line complexity
+    #buildInternalCommands () {
         const commands = []
 
         const tools = getAllTools()
@@ -394,34 +394,30 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
 
 
     #onKeydown (e) {
-        switch (e.key) {
-        case 'ArrowDown':
-            e.preventDefault()
-            this.#selectedIndex = Math.min(
-                this.#selectedIndex + 1,
-                this.#filteredCommands.length - 1
-            )
-            this.#updateSelection()
-            break
+        const keyHandlers = {
+            ArrowDown: () => {
+                this.#selectedIndex = Math.min(
+                    this.#selectedIndex + 1,
+                    this.#filteredCommands.length - 1
+                )
+                this.#updateSelection()
+            },
+            ArrowUp: () => {
+                this.#selectedIndex = Math.max(this.#selectedIndex - 1, 0)
+                this.#updateSelection()
+            },
+            Enter: () => {
+                this.#executeCurrentCommand()
+            },
+            Escape: () => {
+                this.#state?.closeCommandPalette()
+            }
+        }
 
-        case 'ArrowUp':
+        const handler = keyHandlers[e.key]
+        if (handler) {
             e.preventDefault()
-            this.#selectedIndex = Math.max(this.#selectedIndex - 1, 0)
-            this.#updateSelection()
-            break
-
-        case 'Enter':
-            e.preventDefault()
-            this.#executeCurrentCommand()
-            break
-
-        case 'Escape':
-            e.preventDefault()
-            this.#state?.closeCommandPalette()
-            break
-
-        default:
-            break
+            handler()
         }
     }
 

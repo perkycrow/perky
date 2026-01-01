@@ -186,22 +186,14 @@ export default class PerkyLogger extends HTMLElement {
 
 
     #replayEntry (entry) {
-        switch (entry.event) {
-        case 'log':
-            this.#handleLog(entry.type, entry.items, entry.timestamp)
-            break
-        case 'clear':
-            this.clear()
-            break
-        case 'spacer':
-            this.spacer()
-            break
-        case 'title':
-            this.title(entry.title)
-            break
-        default:
-            break
+        const handlers = {
+            log: () => this.#handleLog(entry.type, entry.items, entry.timestamp),
+            clear: () => this.clear(),
+            spacer: () => this.spacer(),
+            title: () => this.title(entry.title)
         }
+
+        handlers[entry.event]?.()
     }
 
 

@@ -367,26 +367,25 @@ export default class Vec3 {
     }
 
     getComponent (index) {
-        switch (index) {
-        case 0: return this.x
-        case 1: return this.y
-        case 2: return this.z
-        default: throw new Error(`index out of range: ${index}`)
+        if (index === 0) {
+            return this.x
+        } else if (index === 1) {
+            return this.y
+        } else if (index === 2) {
+            return this.z
         }
+        throw new Error(`index out of range: ${index}`)
     }
 
     setComponent (index, value) {
-        switch (index) {
-        case 0:
+        if (index === 0) {
             this.x = value
-            break
-        case 1:
+        } else if (index === 1) {
             this.y = value
-            break
-        case 2:
+        } else if (index === 2) {
             this.z = value
-            break
-        default: throw new Error(`index out of range: ${index}`)
+        } else {
+            throw new Error(`index out of range: ${index}`)
         }
         return this
     }

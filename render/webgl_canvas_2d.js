@@ -530,18 +530,14 @@ export default class WebGLCanvas2D extends BaseRenderer {
     #applyBlendMode (blendMode) {
         const gl = this.gl
 
-        switch (blendMode) {
-        case BLEND_MODES.additive:
-            gl.blendFunc(gl.ONE, gl.ONE)
-            break
-        case BLEND_MODES.multiply:
-            gl.blendFunc(gl.DST_COLOR, gl.ONE_MINUS_SRC_ALPHA)
-            break
-        case BLEND_MODES.normal:
-        default:
-            gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
-            break
+        const blendFuncs = {
+            [BLEND_MODES.additive]: [gl.ONE, gl.ONE],
+            [BLEND_MODES.multiply]: [gl.DST_COLOR, gl.ONE_MINUS_SRC_ALPHA],
+            [BLEND_MODES.normal]: [gl.ONE, gl.ONE_MINUS_SRC_ALPHA]
         }
+
+        const [src, dst] = blendFuncs[blendMode] || blendFuncs[BLEND_MODES.normal]
+        gl.blendFunc(src, dst)
     }
 
 }
