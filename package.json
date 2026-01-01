@@ -84,14 +84,12 @@
     "node": ">=16.0.0"
   },
   "devDependencies": {
-    "@tweakpane/plugin-essentials": "^0.2.1",
     "acorn": "^8.15.0",
     "canvas": "^3.2.0",
     "chokidar-cli": "^3.0.0",
     "esbuild": "^0.25.0",
     "eslint": "^8.55.0",
     "jsdom": "^26.1.0",
-    "tweakpane": "^4.0.5",
     "vite": "^6.4.1",
     "vitest": "^3.1.3"
   },
