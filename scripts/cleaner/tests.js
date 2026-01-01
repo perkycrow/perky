@@ -215,6 +215,7 @@ function printDeepNestingAudit (issues) {
     }
 
     hint('Flatten structure - each describe should group related tests')
+    hint('Too many nested describes - try to flatten by removing unnecessary wrappers')
     divider()
 
     for (const {file} of issues) {
