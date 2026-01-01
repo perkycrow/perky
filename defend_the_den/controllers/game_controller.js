@@ -51,7 +51,7 @@ export default class GameController extends WorldController {
     }
 
 
-    startWave (waveNumber) {
+    startWave (waveNumber = this.currentWave) {
         this.currentWave = waveNumber
         const config = this.getWaveConfig(waveNumber)
 
