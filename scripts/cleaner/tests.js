@@ -253,6 +253,7 @@ function printSingleTestDescribesAudit (issues) {
     }
 
     hint('Remove describe wrapper or add more related tests')
+    hint('Use describe() only when testing multiple scenarios of the same feature')
     divider()
 
     for (const {file, issues: fileIssues} of issues) {
