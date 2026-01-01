@@ -49,7 +49,6 @@ function printDigest (results) {
     console.log('')
 
     const sections = [
-        {key: 'comments', label: 'Comments'},
         {key: 'imports', label: 'Imports'},
         {key: 'unusedDirectives', label: 'Unused Directives'},
         {key: 'eslint', label: 'ESLint'},
