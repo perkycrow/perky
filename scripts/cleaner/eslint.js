@@ -206,6 +206,11 @@ export function fixEslint (rootDir) {
 
 // === ESLINT DISABLE AUDIT ===
 
+export function isCleanDirective (line) {
+    return /--\s*clean\b/.test(line)
+}
+
+
 function findEslintDisables (rootDir) {
     const files = findJsFiles(rootDir)
     const disables = []
@@ -226,12 +231,14 @@ function findEslintDisables (rootDir) {
                 const match = line.match(pattern)
                 if (match) {
                     const rules = match[1].split(',').map(r => r.trim())
+                    const isClean = isCleanDirective(line)
                     rules.forEach(rule => {
                         disables.push({
                             file: relativePath,
                             line: index + 1,
                             rule,
-                            context: line.trim()
+                            context: line.trim(),
+                            isClean
                         })
                     })
                 }
@@ -257,10 +264,18 @@ export function auditDisables (rootDir) {
 
     if (disables.length === 0) {
         success('No eslint-disable directives found')
-        return {directivesFound: 0, rulesFound: 0}
+        return {directivesFound: 0, rulesFound: 0, cleanCount: 0}
     }
 
-    const byRule = groupBy(disables, d => d.rule)
+    const unclean = disables.filter(d => !d.isClean)
+    const clean = disables.filter(d => d.isClean)
+
+    if (unclean.length === 0) {
+        success(`All ${clean.length} directive(s) are marked clean`)
+        return {directivesFound: disables.length, rulesFound: 0, cleanCount: clean.length}
+    }
+
+    const byRule = groupBy(unclean, d => d.rule)
     const sortedRules = Object.entries(byRule).sort((a, b) => b[1].length - a[1].length)
 
     hint('Consider fixing the underlying issue instead of suppressing')
@@ -276,7 +291,12 @@ export function auditDisables (rootDir) {
         }
     }
 
-    return {directivesFound: disables.length, rulesFound: sortedRules.length}
+    if (clean.length > 0) {
+        divider()
+        success(`${clean.length} directive(s) marked clean`)
+    }
+
+    return {directivesFound: disables.length, rulesFound: sortedRules.length, cleanCount: clean.length}
 }
 
 
