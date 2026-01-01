@@ -35,9 +35,9 @@ export default class EnemyView extends EntityView {
 
         if (this.entity.hitFlashTimer > 0) {
             const flash = Math.sin(this.entity.hitFlashTimer * 60) > 0
-            this.root.alpha = flash ? 0.5 : 1
+            this.root.opacity = flash ? 0.5 : 1
         } else {
-            this.root.alpha = 1
+            this.root.opacity = 1
         }
 
         if (this.entity.isStunned) {
