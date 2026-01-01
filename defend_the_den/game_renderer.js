@@ -77,9 +77,9 @@ export default class GameRenderer extends PerkyModule {
                 $name: 'shadows',
                 content: this.entitiesGroup,
                 renderTransform: new ShadowTransform({
-                    skewX: 0.3,
-                    scaleY: -0.4,
-                    offsetY: 0.05,
+                    skewX: 0.1,
+                    scaleY: -0.5,
+                    offsetY: 0.06,
                     color: [0, 0, 0, 0.3]
                 })
             },
