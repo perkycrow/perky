@@ -135,38 +135,45 @@ function collectAstPositions (ast) { // eslint-disable-line complexity
 }
 
 
-export function analyzeLineBreaks (content) {
-    let ast
+function parseContent (content) {
     try {
-        ast = acorn.parse(content, {
+        return acorn.parse(content, {
             ecmaVersion: 'latest',
             sourceType: 'module',
             locations: true
         })
     } catch {
-        return []
+        return null
+    }
+}
+
+
+function checkImportsGap (positions) {
+    if (positions.imports.length === 0 || positions.topLevel.length === 0) {
+        return null
     }
 
-    const positions = collectAstPositions(ast)
-    const adjustments = []
+    const lastImport = positions.imports[positions.imports.length - 1]
+    const firstCode = positions.topLevel[0]
+    const gap = getLineGap(firstCode.start, lastImport.end)
 
-    if (positions.imports.length > 0 && positions.topLevel.length > 0) {
-        const lastImport = positions.imports[positions.imports.length - 1]
-        const firstCode = positions.topLevel[0]
-        const gap = getLineGap(firstCode.start, lastImport.end)
-
-        if (gap !== 2) {
-            adjustments.push({
-                afterLine: lastImport.end,
-                beforeLine: firstCode.start,
-                currentGap: gap,
-                expectedGap: 2,
-                context: 'after imports'
-            })
-        }
+    if (gap === 2) {
+        return null
     }
 
+    return {
+        afterLine: lastImport.end,
+        beforeLine: firstCode.start,
+        currentGap: gap,
+        expectedGap: 2,
+        context: 'after imports'
+    }
+}
+
+
+function checkTopLevelGaps (positions) {
     const significantTypes = new Set(['function', 'class'])
+    const adjustments = []
 
     for (let i = 0; i < positions.topLevel.length - 1; i++) {
         const current = positions.topLevel[i]
@@ -189,62 +196,104 @@ export function analyzeLineBreaks (content) {
         }
     }
 
-    for (const classInfo of positions.classes) {
-        if (classInfo.members.length > 0) {
-            const firstMember = classInfo.members[0]
-            const gapAfterOpen = getLineGap(firstMember.start, classInfo.bodyStart)
+    return adjustments
+}
 
-            if (gapAfterOpen !== 1) {
-                adjustments.push({
-                    afterLine: classInfo.bodyStart,
-                    beforeLine: firstMember.start,
-                    currentGap: gapAfterOpen,
-                    expectedGap: 1,
-                    context: 'after class opening'
-                })
-            }
 
-            const lastMember = classInfo.members[classInfo.members.length - 1]
-            const gapBeforeClose = getLineGap(classInfo.bodyEnd, lastMember.end)
+function getExpectedMemberGap (current, next) {
+    const bothMethods = current.isMethod && next.isMethod
+    const mixedPropertyMethod = current.isProperty !== next.isProperty &&
+        (current.isMethod || next.isMethod)
 
-            if (gapBeforeClose !== 1) {
-                adjustments.push({
-                    afterLine: lastMember.end,
-                    beforeLine: classInfo.bodyEnd,
-                    currentGap: gapBeforeClose,
-                    expectedGap: 1,
-                    context: 'before class closing'
-                })
-            }
+    if (bothMethods) {
+        return 2
+    }
+    if (mixedPropertyMethod) {
+        return 1
+    }
+    return null
+}
 
-            for (let i = 0; i < classInfo.members.length - 1; i++) {
-                const current = classInfo.members[i]
-                const next = classInfo.members[i + 1]
-                const gap = getLineGap(next.start, current.end)
 
-                if (current.isMethod && next.isMethod) {
-                    if (gap !== 2) {
-                        adjustments.push({
-                            afterLine: current.end,
-                            beforeLine: next.start,
-                            currentGap: gap,
-                            expectedGap: 2,
-                            context: 'between methods'
-                        })
-                    }
-                } else if ((current.isProperty && next.isMethod) || (current.isMethod && next.isProperty)) {
-                    if (gap !== 1) {
-                        adjustments.push({
-                            afterLine: current.end,
-                            beforeLine: next.start,
-                            currentGap: gap,
-                            expectedGap: 1,
-                            context: 'between property and method'
-                        })
-                    }
-                }
-            }
+function checkClassMemberGaps (members) {
+    const adjustments = []
+
+    for (let i = 0; i < members.length - 1; i++) {
+        const current = members[i]
+        const next = members[i + 1]
+        const gap = getLineGap(next.start, current.end)
+        const expectedGap = getExpectedMemberGap(current, next)
+
+        if (expectedGap !== null && gap !== expectedGap) {
+            adjustments.push({
+                afterLine: current.end,
+                beforeLine: next.start,
+                currentGap: gap,
+                expectedGap,
+                context: expectedGap === 2 ? 'between methods' : 'between property and method'
+            })
         }
+    }
+
+    return adjustments
+}
+
+
+function checkClassGaps (classInfo) {
+    if (classInfo.members.length === 0) {
+        return []
+    }
+
+    const adjustments = []
+    const firstMember = classInfo.members[0]
+    const lastMember = classInfo.members[classInfo.members.length - 1]
+
+    const gapAfterOpen = getLineGap(firstMember.start, classInfo.bodyStart)
+    if (gapAfterOpen !== 1) {
+        adjustments.push({
+            afterLine: classInfo.bodyStart,
+            beforeLine: firstMember.start,
+            currentGap: gapAfterOpen,
+            expectedGap: 1,
+            context: 'after class opening'
+        })
+    }
+
+    const gapBeforeClose = getLineGap(classInfo.bodyEnd, lastMember.end)
+    if (gapBeforeClose !== 1) {
+        adjustments.push({
+            afterLine: lastMember.end,
+            beforeLine: classInfo.bodyEnd,
+            currentGap: gapBeforeClose,
+            expectedGap: 1,
+            context: 'before class closing'
+        })
+    }
+
+    adjustments.push(...checkClassMemberGaps(classInfo.members))
+
+    return adjustments
+}
+
+
+export function analyzeLineBreaks (content) {
+    const ast = parseContent(content)
+    if (!ast) {
+        return []
+    }
+
+    const positions = collectAstPositions(ast)
+    const adjustments = []
+
+    const importsGap = checkImportsGap(positions)
+    if (importsGap) {
+        adjustments.push(importsGap)
+    }
+
+    adjustments.push(...checkTopLevelGaps(positions))
+
+    for (const classInfo of positions.classes) {
+        adjustments.push(...checkClassGaps(classInfo))
     }
 
     return adjustments
