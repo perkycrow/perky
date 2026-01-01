@@ -161,6 +161,25 @@ export function fixUnusedDirectives (rootDir, dryRun = false) {
 
 // === ESLINT ERRORS ===
 
+function extractAllMessages (data, rootDir) {
+    const messages = []
+    for (const file of data) {
+        const relativePath = path.relative(rootDir, file.filePath)
+        for (const msg of file.messages) {
+            if (!isUnusedDirectiveMessage(msg.message)) {
+                messages.push({
+                    file: relativePath,
+                    line: msg.line,
+                    rule: msg.ruleId || 'unknown',
+                    severity: msg.severity
+                })
+            }
+        }
+    }
+    return messages
+}
+
+
 export function auditEslint (rootDir) {
     header('ESLint Errors')
 
@@ -172,25 +191,34 @@ export function auditEslint (rootDir) {
         return {errorCount: 0, warningCount: 0, filesWithIssues: 0}
     }
 
-    const filesWithErrors = data.filter(f => f.messages.length > 0)
+    const allMessages = extractAllMessages(data, rootDir)
 
-    if (filesWithErrors.length === 0) {
+    if (allMessages.length === 0) {
         success('No ESLint errors or warnings')
         return {errorCount: 0, warningCount: 0, filesWithIssues: 0}
     }
 
+    const byRule = groupBy(allMessages, m => m.rule)
+    const sortedRules = Object.entries(byRule).sort((a, b) => b[1].length - a[1].length)
+
     hint('Run npx eslint . for detailed error messages')
     divider()
 
-    for (const file of filesWithErrors) {
-        const relativePath = path.relative(rootDir, file.filePath)
-        listItem(relativePath)
+    for (const [rule, occurrences] of sortedRules) {
+        subHeader(`${rule} (${occurrences.length})`)
+        if (ruleHints[rule]) {
+            hint(ruleHints[rule])
+        }
+        for (const occ of occurrences) {
+            listItem(`${occ.file}:${occ.line}`)
+        }
     }
 
-    const totalErrors = filesWithErrors.reduce((sum, f) => sum + f.messages.filter(m => m.severity === 2).length, 0)
-    const totalWarnings = filesWithErrors.reduce((sum, f) => sum + f.messages.filter(m => m.severity === 1).length, 0)
+    const totalErrors = allMessages.filter(m => m.severity === 2).length
+    const totalWarnings = allMessages.filter(m => m.severity === 1).length
+    const filesWithIssues = new Set(allMessages.map(m => m.file)).size
 
-    return {errorCount: totalErrors, warningCount: totalWarnings, filesWithIssues: filesWithErrors.length}
+    return {errorCount: totalErrors, warningCount: totalWarnings, filesWithIssues}
 }
 
 

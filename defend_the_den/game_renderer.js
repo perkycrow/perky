@@ -1,8 +1,6 @@
 import Group2D from '../render/group_2d.js'
 import Image2D from '../render/image_2d.js'
 import WorldView from '../game/world_view.js'
-import ImageView from '../game/image_view.js'
-import CircleView from '../game/circle_view.js'
 import PerkyModule from '../core/perky_module.js'
 import {ShadowTransform} from '../render/transforms/index.js'
 
@@ -11,6 +9,9 @@ import Enemy from './enemy.js'
 import Projectile from './projectile.js'
 
 import PlayerView from './views/player_view.js'
+import EnemyView from './views/enemy_view.js'
+import ProjectileView from './views/projectile_view.js'
+import ImpactParticles from './impact_particles.js'
 
 
 export default class GameRenderer extends PerkyModule {
@@ -29,6 +30,14 @@ export default class GameRenderer extends PerkyModule {
             game: this.game
         })
 
+        this.impactParticles = this.create(ImpactParticles, {
+            $id: 'impactParticles',
+            count: 8,
+            minSpeed: 3,
+            maxSpeed: 6,
+            lifetime: 0.35
+        })
+
         this.#registerViews()
     }
 
@@ -36,8 +45,8 @@ export default class GameRenderer extends PerkyModule {
     #registerViews () {
         this.worldView
             .register(Player, PlayerView)
-            .register(Enemy, ImageView, {image: 'pig', width: 1, height: 1})
-            .register(Projectile, CircleView, {radius: 0.1, color: '#000000'})
+            .register(Enemy, EnemyView, {image: 'pig', width: 1, height: 1})
+            .register(Projectile, ProjectileView, {radius: 0.08, color: '#3a2a1a'})
     }
 
 
@@ -62,6 +71,11 @@ export default class GameRenderer extends PerkyModule {
 
         this.backgroundGroup.addChild(background)
         this.entitiesGroup.addChild(this.worldView.rootGroup)
+        this.entitiesGroup.addChild(this.impactParticles.particleGroup)
+
+        this.listenTo(this.world, 'enemy:hit', (data) => {
+            this.impactParticles.spawn(data.x, data.y, data.direction)
+        })
     }
 
 
@@ -93,6 +107,9 @@ export default class GameRenderer extends PerkyModule {
 
     render () {
         this.worldView.sync()
+
+        const deltaTime = this.game.clock?.deltaTime ?? 0.016
+        this.impactParticles.update(deltaTime)
 
         const gameLayer = this.game.getCanvas('game')
         gameLayer.markDirty()

@@ -65,24 +65,44 @@ export default class DenWorld extends World {
                 continue
             }
 
-            for (const enemy of enemies) {
-                if (!enemy.alive) {
-                    continue
-                }
+            this.checkProjectileCollisions(projectile, enemies)
+        }
+    }
 
-                const dx = projectile.x - enemy.x
-                const dy = projectile.y - enemy.y
-                const distance = Math.sqrt(dx * dx + dy * dy)
 
-                const hitRadius = 0.4
-
-                if (distance < hitRadius) {
-                    projectile.alive = false
-                    enemy.alive = false
-                    this.emit('enemy:destroyed', enemy)
-                    break
-                }
+    checkProjectileCollisions (projectile, enemies) {
+        for (const enemy of enemies) {
+            if (!enemy.alive) {
+                continue
             }
+
+            if (testCollision(projectile, enemy)) {
+                this.handleHit(projectile, enemy)
+                break
+            }
+        }
+    }
+
+
+    handleHit (projectile, enemy) {
+        projectile.alive = false
+
+        const impactDirection = {
+            x: projectile.velocity.x > 0 ? 1 : -1,
+            y: projectile.velocity.y * 0.3
+        }
+
+        const killed = enemy.hit(impactDirection, 2.5)
+
+        this.emit('enemy:hit', {
+            enemy,
+            x: enemy.x,
+            y: enemy.y,
+            direction: impactDirection
+        })
+
+        if (killed) {
+            this.emit('enemy:destroyed', enemy)
         }
     }
 
@@ -97,4 +117,14 @@ export default class DenWorld extends World {
         }
     }
 
+}
+
+
+function testCollision (projectile, enemy) {
+    const dx = projectile.x - enemy.x
+    const dy = projectile.y - enemy.y
+    const distance = Math.sqrt(dx * dx + dy * dy)
+    const hitRadius = 0.4
+
+    return distance < hitRadius
 }
