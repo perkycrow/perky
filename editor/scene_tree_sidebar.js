@@ -119,8 +119,8 @@ export default class SceneTreeSidebar extends BaseEditorComponent {
             return
         }
 
-        this.listenTo(this.#worldRenderer, 'renderer:added', () => this.#scheduleRefresh())
-        this.listenTo(this.#worldRenderer, 'renderer:removed', () => this.#scheduleRefresh())
+        this.listenTo(this.#worldRenderer, 'view:added', () => this.#scheduleRefresh())
+        this.listenTo(this.#worldRenderer, 'view:removed', () => this.#scheduleRefresh())
         this.listenTo(this.#worldRenderer, 'dispose', () => this.close())
     }
 
