@@ -547,6 +547,31 @@ function run (rootDir, options = {}) {
 
 // === IMPORT EXTENSION CHECK ===
 
+function resolveImportPath (fileDir, importPath) {
+    const resolvedPath = path.resolve(fileDir, importPath)
+
+    try {
+        const stats = fs.statSync(resolvedPath)
+        if (stats.isDirectory()) {
+            const indexPath = path.join(resolvedPath, 'index.js')
+            if (fs.existsSync(indexPath)) {
+                return {correctedPath: importPath + '/index.js', isDirectory: true}
+            }
+            return {correctedPath: importPath + '.js', isDirectory: true}
+        }
+    } catch {
+        // Path doesn't exist, assume it needs .js
+    }
+
+    return {correctedPath: importPath + '.js', isDirectory: false}
+}
+
+
+function hasJsExtension (importPath) {
+    return importPath.endsWith('.js') || importPath.endsWith('.json') || importPath.endsWith('.css')
+}
+
+
 function findMissingJsExtensions (rootDir) {
     const files = findJsFiles(rootDir)
     const issues = []
@@ -557,48 +582,36 @@ function findMissingJsExtensions (rootDir) {
         const content = fs.readFileSync(filePath, 'utf-8')
         const lines = content.split('\n')
 
-        lines.forEach((line, index) => { // eslint-disable-line complexity
+        lines.forEach((line, index) => {
             const importMatch = line.match(/^(\s*import\s+.+\s+from\s+['"])(\.[^'"]+)(['"].*)$/)
             const exportMatch = line.match(/^(\s*export\s+.+\s+from\s+['"])(\.[^'"]+)(['"].*)$/)
             const dynamicMatch = line.match(/^(.+import\s*\(\s*['"])(\.[^'"]+)(['"]\s*\).*)$/)
 
             const match = importMatch || exportMatch || dynamicMatch
 
-            if (match) {
-                const importPath = match[2]
-
-                if (!importPath.endsWith('.js') && !importPath.endsWith('.json') && !importPath.endsWith('.css')) {
-                    const resolvedPath = path.resolve(fileDir, importPath)
-
-                    let correctedPath = importPath + '.js'
-                    let isDirectory = false
-
-                    try {
-                        const stats = fs.statSync(resolvedPath)
-                        if (stats.isDirectory()) { // eslint-disable-line max-depth
-                            isDirectory = true
-                            const indexPath = path.join(resolvedPath, 'index.js')
-                            if (fs.existsSync(indexPath)) { // eslint-disable-line max-depth
-                                correctedPath = importPath + '/index.js'
-                            }
-                        }
-                    } catch {
-                        // Path doesn't exist, assume it needs .js
-                    }
-
-                    issues.push({
-                        file: relativePath,
-                        filePath,
-                        line: index + 1,
-                        importPath,
-                        correctedPath,
-                        isDirectory,
-                        fullLine: line,
-                        prefix: match[1],
-                        suffix: match[3]
-                    })
-                }
+            if (!match) {
+                return
             }
+
+            const importPath = match[2]
+
+            if (hasJsExtension(importPath)) {
+                return
+            }
+
+            const {correctedPath, isDirectory} = resolveImportPath(fileDir, importPath)
+
+            issues.push({
+                file: relativePath,
+                filePath,
+                line: index + 1,
+                importPath,
+                correctedPath,
+                isDirectory,
+                fullLine: line,
+                prefix: match[1],
+                suffix: match[3]
+            })
         })
     }
 
