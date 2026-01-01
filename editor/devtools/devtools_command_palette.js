@@ -2,6 +2,7 @@ import BaseEditorComponent from '../base_editor_component.js'
 import {buildCommandPaletteStyles} from './devtools_styles.js'
 import {getAllTools} from './devtools_registry.js'
 import {parseCommand} from './command_parser.js'
+import {ICONS} from './devtools_icons.js'
 
 
 export default class DevToolsCommandPalette extends BaseEditorComponent {
@@ -15,6 +16,8 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
     #internalCommands = []
     #filteredCommands = []
     #selectedIndex = 0
+    #history = []
+    #maxHistory = 20
 
 
     connectedCallback () {
@@ -35,8 +38,7 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
         this.#inputEl.value = ''
         this.#selectedIndex = 0
         this.#rebuildAll()
-        this.#filteredCommands = []
-        this.#renderResults()
+        this.#showHistory()
     }
 
 
@@ -249,10 +251,29 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
         } else if (query) {
             this.#filterCommands(commandPart, this.#appActions)
         } else {
+            this.#showHistory()
+        }
+    }
+
+
+    #showHistory () {
+        if (this.#history.length === 0) {
             this.#filteredCommands = []
             this.#selectedIndex = 0
             this.#renderResults()
+            return
         }
+
+        this.#filteredCommands = this.#history.map((entry, index) => ({
+            id: `history:${index}`,
+            title: entry.input,
+            subtitle: 'Recent',
+            type: 'history',
+            icon: ICONS.history,
+            originalEntry: entry
+        }))
+        this.#selectedIndex = 0
+        this.#renderResults()
     }
 
 
@@ -412,28 +433,48 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
 
 
     #executeCommand (cmd) {
-        if (cmd.type === 'action') {
+        if (cmd.type === 'history') {
+            this.#executeHistoryEntry(cmd.originalEntry)
+        } else if (cmd.type === 'action') {
             const input = this.#inputEl.value
             const {args} = parseCommand(input)
 
+            this.#addToHistory(input, cmd)
             cmd.app.actionDispatcher.execute(cmd.actionName, ...args)
             this.#state?.closeCommandPalette()
         } else if (cmd.action) {
+            this.#addToHistory(cmd.title, cmd)
             cmd.action()
         }
     }
 
-}
+
+    #executeHistoryEntry (entry) {
+        this.#inputEl.value = entry.input
+        this.#onInput()
+
+        const matchingCmd = this.#filteredCommands.find(c => c.id === entry.cmdId)
+        if (matchingCmd) {
+            this.#executeCommand(matchingCmd)
+        }
+    }
 
 
-const ICONS = {
-    action: '<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>',
-    logger: '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>',
-    close: '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
-    spawn: '<svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg>',
-    start: '<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>',
-    stop: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>',
-    dispose: '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>'
+    #addToHistory (input, cmd) {
+        const entry = {input, cmdId: cmd.id}
+
+        const existingIndex = this.#history.findIndex(e => e.input === input)
+        if (existingIndex !== -1) {
+            this.#history.splice(existingIndex, 1)
+        }
+
+        this.#history.unshift(entry)
+
+        if (this.#history.length > this.#maxHistory) {
+            this.#history.pop()
+        }
+    }
+
 }
 
 

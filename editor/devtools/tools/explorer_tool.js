@@ -1,4 +1,5 @@
 import BaseTool from './base_tool.js'
+import {ICONS} from '../devtools_icons.js'
 import '../../perky_explorer.js'
 
 
@@ -6,7 +7,7 @@ export default class ExplorerTool extends BaseTool {
 
     static toolId = 'explorer'
     static toolName = 'Explorer'
-    static toolIcon = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>'
+    static toolIcon = ICONS.explorer
     static location = 'sidebar'
     static order = 10
 

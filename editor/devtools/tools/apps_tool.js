@@ -1,5 +1,6 @@
 import BaseTool from './base_tool.js'
 import {buildEditorStyles, editorScrollbarStyles, editorButtonStyles, editorBaseStyles} from '../../editor_theme.js'
+import {ICONS} from '../devtools_icons.js'
 
 
 function createSection (title, type) {
@@ -57,7 +58,7 @@ export default class AppsTool extends BaseTool {
 
     static toolId = 'apps'
     static toolName = 'Applications'
-    static toolIcon = '<svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>'
+    static toolIcon = ICONS.apps
     static location = 'sidebar'
     static order = 20
 
