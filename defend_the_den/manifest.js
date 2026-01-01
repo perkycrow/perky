@@ -3,7 +3,7 @@ const manifest = {
         name: 'Mistbrewer'
     },
     assets: {
-        background: {type: 'image', url: '/assets/images/background.jpg'},
+        background: {type: 'image', url: '/assets/images/background.png'},
         wolf: {type: 'image', url: '/assets/images/wolf.png'},
         wolf_right: {type: 'image', url: '/assets/images/wolf_right.png'},
         wolf_up: {type: 'image', url: '/assets/images/wolf_up.png'},

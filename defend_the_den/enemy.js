@@ -8,7 +8,7 @@ export default class Enemy extends Entity {
     constructor (params = {}) {
         super(params)
 
-        const {maxSpeed = 3, boundaries = {min: -1.5, max: 1}} = params
+        const {maxSpeed = 3, boundaries = {min: -0.85, max: 1.55}} = params
 
         this.velocity.set(-maxSpeed, 0)
 
