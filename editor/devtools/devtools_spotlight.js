@@ -10,20 +10,21 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
     #containerEl = null
     #inputEl = null
     #resultsEl = null
-    #commands = []
+    #appActions = []
+    #internalCommands = []
     #filteredCommands = []
     #selectedIndex = 0
 
 
     connectedCallback () {
         this.#buildDOM()
-        this.#buildCommands()
+        this.#rebuildAll()
     }
 
 
     setState (state) {
         this.#state = state
-        this.#buildCommands()
+        this.#rebuildAll()
     }
 
 
@@ -32,8 +33,9 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
         this.#inputEl?.focus()
         this.#inputEl.value = ''
         this.#selectedIndex = 0
-        this.#buildCommands()
-        this.#filterCommands('')
+        this.#rebuildAll()
+        this.#filteredCommands = []
+        this.#renderResults()
     }
 
 
@@ -87,15 +89,60 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
     }
 
 
-    #buildCommands () { // eslint-disable-line complexity
-        this.#commands = []
+    #rebuildAll () {
+        this.#appActions = this.#buildAppActions()
+        this.#internalCommands = this.#buildInternalCommands()
+    }
+
+
+    #buildAppActions () {
+        const actions = []
+        const apps = this.#state?.appManager?.list() || []
+
+        for (const app of apps) {
+            if (app.$status === 'started') {
+                this.#collectActionsFromApp(app, actions)
+            }
+        }
+
+        return actions
+    }
+
+
+    #collectActionsFromApp (app, actions) {
+        const actionsMap = app.actionDispatcher?.listAllActions()
+        if (!actionsMap) {
+            return
+        }
+
+        for (const [controllerName, actionNames] of actionsMap) {
+            for (const actionName of actionNames) {
+                actions.push({
+                    id: `action:${app.$id}:${controllerName}:${actionName}`,
+                    title: actionName,
+                    subtitle: app.$id,
+                    type: 'action',
+                    icon: ICONS.action,
+                    action: () => {
+                        app.actionDispatcher.execute(actionName)
+                        this.#state?.closeSpotlight()
+                    }
+                })
+            }
+        }
+    }
+
+
+    #buildInternalCommands () { // eslint-disable-line complexity
+        const commands = []
 
         const tools = getAllTools()
         for (const Tool of tools) {
-            this.#commands.push({
+            commands.push({
                 id: `open:${Tool.toolId}`,
-                title: `Open ${Tool.toolName}`,
-                subtitle: 'Tool',
+                title: `/open ${Tool.toolId}`,
+                subtitle: `Open ${Tool.toolName}`,
+                type: 'command',
                 icon: Tool.toolIcon,
                 action: () => {
                     this.#state?.openTool(Tool.toolId)
@@ -104,22 +151,24 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
             })
         }
 
-        this.#commands.push({
+        commands.push({
             id: 'toggle:logger',
-            title: 'Toggle Logger',
-            subtitle: 'Panel',
-            icon: '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>',
+            title: '/toggle logger',
+            subtitle: 'Toggle Logger panel',
+            type: 'command',
+            icon: ICONS.logger,
             action: () => {
                 this.#state?.toggleLogger()
                 this.#state?.closeSpotlight()
             }
         })
 
-        this.#commands.push({
+        commands.push({
             id: 'close:sidebar',
-            title: 'Close Sidebar',
-            subtitle: 'Panel',
-            icon: '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
+            title: '/close sidebar',
+            subtitle: 'Close Sidebar panel',
+            type: 'command',
+            icon: ICONS.close,
             action: () => {
                 this.#state?.closeSidebar()
                 this.#state?.closeSpotlight()
@@ -131,11 +180,12 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
             const registered = Array.from(appManager.constructors.keys)
 
             for (const name of registered) {
-                this.#commands.push({
+                commands.push({
                     id: `spawn:${name}`,
-                    title: `Spawn ${name}`,
-                    subtitle: 'Application',
-                    icon: '<svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg>',
+                    title: `/spawn ${name}`,
+                    subtitle: 'Create app instance',
+                    type: 'command',
+                    icon: ICONS.spawn,
                     action: async () => {
                         await appManager.spawn(name)
                         this.#state?.closeSpotlight()
@@ -146,22 +196,24 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
             const running = appManager.list()
             for (const app of running) {
                 if (app.$status === 'started') {
-                    this.#commands.push({
+                    commands.push({
                         id: `stop:${app.$id}`,
-                        title: `Stop ${app.$id}`,
-                        subtitle: 'Application',
-                        icon: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>',
+                        title: `/stop ${app.$id}`,
+                        subtitle: 'Stop running app',
+                        type: 'command',
+                        icon: ICONS.stop,
                         action: () => {
                             appManager.stopApp(app.$id)
                             this.#state?.closeSpotlight()
                         }
                     })
                 } else if (app.$status === 'stopped') {
-                    this.#commands.push({
+                    commands.push({
                         id: `start:${app.$id}`,
-                        title: `Start ${app.$id}`,
-                        subtitle: 'Application',
-                        icon: '<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>',
+                        title: `/start ${app.$id}`,
+                        subtitle: 'Start stopped app',
+                        type: 'command',
+                        icon: ICONS.start,
                         action: () => {
                             appManager.startApp(app.$id)
                             this.#state?.closeSpotlight()
@@ -169,11 +221,12 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
                     })
                 }
 
-                this.#commands.push({
+                commands.push({
                     id: `dispose:${app.$id}`,
-                    title: `Dispose ${app.$id}`,
-                    subtitle: 'Application',
-                    icon: '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>',
+                    title: `/dispose ${app.$id}`,
+                    subtitle: 'Remove app instance',
+                    type: 'command',
+                    icon: ICONS.dispose,
                     action: () => {
                         appManager.disposeApp(app.$id)
                         this.#state?.closeSpotlight()
@@ -182,23 +235,34 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
             }
         }
 
-        this.#filteredCommands = [...this.#commands]
+        return commands
     }
 
 
     #onInput () {
-        const query = this.#inputEl.value.toLowerCase().trim()
-        this.#filterCommands(query)
+        const raw = this.#inputEl.value
+        const query = raw.trim().toLowerCase()
+
+        if (raw.startsWith('/')) {
+            const commandQuery = query.slice(1)
+            this.#filterCommands(commandQuery, this.#internalCommands)
+        } else if (query) {
+            this.#filterCommands(query, this.#appActions)
+        } else {
+            this.#filteredCommands = []
+            this.#selectedIndex = 0
+            this.#renderResults()
+        }
     }
 
 
-    #filterCommands (query) {
+    #filterCommands (query, source) {
         if (query) {
-            this.#filteredCommands = this.#commands.filter(cmd =>
+            this.#filteredCommands = source.filter(cmd =>
                 cmd.title.toLowerCase().includes(query) ||
                 cmd.subtitle.toLowerCase().includes(query))
         } else {
-            this.#filteredCommands = [...this.#commands]
+            this.#filteredCommands = [...source]
         }
 
         this.#selectedIndex = 0
@@ -210,10 +274,18 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
         this.#resultsEl.innerHTML = ''
 
         if (this.#filteredCommands.length === 0) {
-            const empty = document.createElement('div')
-            empty.className = 'spotlight-empty'
-            empty.textContent = 'No commands found'
-            this.#resultsEl.appendChild(empty)
+            const query = this.#inputEl.value.trim()
+            if (query) {
+                const empty = document.createElement('div')
+                empty.className = 'spotlight-empty'
+                empty.textContent = 'No results found'
+                this.#resultsEl.appendChild(empty)
+            } else {
+                const hint = document.createElement('div')
+                hint.className = 'spotlight-hint'
+                hint.textContent = 'Type to search actions, / for commands'
+                this.#resultsEl.appendChild(hint)
+            }
             return
         }
 
@@ -331,6 +403,17 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
         }
     }
 
+}
+
+
+const ICONS = {
+    action: '<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>',
+    logger: '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>',
+    close: '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
+    spawn: '<svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg>',
+    start: '<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>',
+    stop: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>',
+    dispose: '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>'
 }
 
 

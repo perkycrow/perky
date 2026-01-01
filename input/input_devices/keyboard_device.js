@@ -36,6 +36,10 @@ export default class KeyboardDevice extends InputDevice {
 
 
     #handleKeydown (event) {
+        if (shouldIgnoreEvent(event)) {
+            return
+        }
+
         const keyName = getKeyName(event)
         const control = this.findOrCreateControl(ButtonControl, {
             name: keyName
@@ -50,6 +54,10 @@ export default class KeyboardDevice extends InputDevice {
 
 
     #handleKeyup (event) {
+        if (shouldIgnoreEvent(event)) {
+            return
+        }
+
         const keyName = getKeyName(event)
         const control = this.getControl(keyName)
 
@@ -76,5 +84,22 @@ export default class KeyboardDevice extends InputDevice {
 
 function getKeyName (event) {
     return event.code
+}
+
+
+function shouldIgnoreEvent (event) {
+    const path = event.composedPath()
+    for (const element of path) {
+        if (element.tagName) {
+            const tagName = element.tagName.toLowerCase()
+            if (tagName === 'input' || tagName === 'textarea') {
+                return true
+            }
+            if (element.isContentEditable) {
+                return true
+            }
+        }
+    }
+    return false
 }
 

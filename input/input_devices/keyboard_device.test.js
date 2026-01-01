@@ -3,6 +3,16 @@ import InputDevice from '../input_device.js'
 import ButtonControl from '../input_controls/button_control.js'
 import {vi} from 'vitest'
 
+
+function createKeyEvent (code, target = document.body) {
+    return {
+        code,
+        target,
+        composedPath: () => [target, document.body, document, window]
+    }
+}
+
+
 describe(KeyboardDevice, () => {
     let device
     let mockContainer
@@ -71,7 +81,7 @@ describe(KeyboardDevice, () => {
         const keydownListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'keydown')[1]
 
-        const event = {code: 'KeyA'}
+        const event = createKeyEvent('KeyA')
         keydownListener(event)
 
         const control = device.getControl('KeyA')
@@ -87,7 +97,7 @@ describe(KeyboardDevice, () => {
         const keydownListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'keydown')[1]
 
-        const event = {code: 'KeyA'}
+        const event = createKeyEvent('KeyA')
         keydownListener(event)
 
         const control = device.getControl('KeyA')
@@ -106,7 +116,7 @@ describe(KeyboardDevice, () => {
         const keyupListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'keyup')[1]
 
-        const event = {code: 'KeyA'}
+        const event = createKeyEvent('KeyA')
         keydownListener(event)
         expect(device.isPressed('KeyA')).toBe(true)
 
@@ -121,7 +131,7 @@ describe(KeyboardDevice, () => {
         const keyupListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'keyup')[1]
 
-        const event = {code: 'KeyA'}
+        const event = createKeyEvent('KeyA')
         expect(() => keyupListener(event)).not.toThrow()
         expect(device.getControl('KeyA')).toBeUndefined()
     })
@@ -135,8 +145,8 @@ describe(KeyboardDevice, () => {
         const blurListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'blur')[1]
 
-        keydownListener({code: 'KeyA'})
-        keydownListener({code: 'KeyB'})
+        keydownListener(createKeyEvent('KeyA'))
+        keydownListener(createKeyEvent('KeyB'))
         expect(device.isPressed('KeyA')).toBe(true)
         expect(device.isPressed('KeyB')).toBe(true)
 
@@ -160,7 +170,7 @@ describe(KeyboardDevice, () => {
         const keyupListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'keyup')[1]
 
-        const event = {code: 'Space'}
+        const event = createKeyEvent('Space')
 
         keydownListener(event)
         expect(controlPressedListener).toHaveBeenCalledTimes(1)
