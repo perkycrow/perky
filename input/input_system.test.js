@@ -1,11 +1,11 @@
 import {describe, beforeEach, vi} from 'vitest'
-import InputSystem from './input_system'
-import InputBinder from './input_binder'
-import InputDevice from './input_device'
-import KeyboardDevice from './input_devices/keyboard_device'
-import MouseDevice from './input_devices/mouse_device'
-import ButtonControl from './input_controls/button_control'
-import PerkyModule from '../core/perky_module'
+import InputSystem from './input_system.js'
+import InputBinder from './input_binder.js'
+import InputDevice from './input_device.js'
+import KeyboardDevice from './input_devices/keyboard_device.js'
+import MouseDevice from './input_devices/mouse_device.js'
+import ButtonControl from './input_controls/button_control.js'
+import PerkyModule from '../core/perky_module.js'
 
 
 describe(InputSystem, () => {

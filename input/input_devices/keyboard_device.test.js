@@ -1,6 +1,6 @@
-import KeyboardDevice from './keyboard_device'
-import InputDevice from '../input_device'
-import ButtonControl from '../input_controls/button_control'
+import KeyboardDevice from './keyboard_device.js'
+import InputDevice from '../input_device.js'
+import ButtonControl from '../input_controls/button_control.js'
 import {vi} from 'vitest'
 
 describe(KeyboardDevice, () => {

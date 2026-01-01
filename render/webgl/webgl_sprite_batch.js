@@ -1,5 +1,5 @@
-import Image2D from '../image_2d'
-import Sprite2D from '../sprite_2d'
+import Image2D from '../image_2d.js'
+import Sprite2D from '../sprite_2d.js'
 
 
 const DEFAULT_TEX_COORDS = [0, 1, 1, 1, 1, 0, 0, 0]

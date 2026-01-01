@@ -1,5 +1,5 @@
-import FramebufferManager from './framebuffer_manager'
-import FullscreenQuad from './fullscreen_quad'
+import FramebufferManager from './framebuffer_manager.js'
+import FullscreenQuad from './fullscreen_quad.js'
 
 
 export default class PostProcessor {

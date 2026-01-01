@@ -1,6 +1,6 @@
 import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
-import PerkyExplorer from './perky_explorer'
-import PerkyModule from '../core/perky_module'
+import PerkyExplorer from './perky_explorer.js'
+import PerkyModule from '../core/perky_module.js'
 
 
 function getRootNode (explorer) {

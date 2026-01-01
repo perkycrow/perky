@@ -1,4 +1,4 @@
-import CollisionResolver from './collision_resolver'
+import CollisionResolver from './collision_resolver.js'
 
 
 describe('CollisionResolver', () => {

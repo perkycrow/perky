@@ -1,7 +1,7 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
-import ImageView from './image_view'
-import Image2D from '../render/image_2d'
-import Group2D from '../render/group_2d'
+import ImageView from './image_view.js'
+import Image2D from '../render/image_2d.js'
+import Group2D from '../render/group_2d.js'
 
 
 class MockEntity {

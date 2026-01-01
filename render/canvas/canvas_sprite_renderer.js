@@ -1,5 +1,5 @@
-import CanvasObjectRenderer from './canvas_object_renderer'
-import Sprite2D from '../sprite_2d'
+import CanvasObjectRenderer from './canvas_object_renderer.js'
+import Sprite2D from '../sprite_2d.js'
 
 
 export default class CanvasSpriteRenderer extends CanvasObjectRenderer {

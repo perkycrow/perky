@@ -1,11 +1,11 @@
-import PerkyModule from '../core/perky_module'
-import Manifest from './manifest'
-import ActionDispatcher from '../core/action_dispatcher'
-import Registry from '../core/registry'
-import PerkyView from './perky_view'
-import SourceManager from './source_manager'
-import {loaders} from './loaders'
-import InputSystem from '../input/input_system'
+import PerkyModule from '../core/perky_module.js'
+import Manifest from './manifest.js'
+import ActionDispatcher from '../core/action_dispatcher.js'
+import Registry from '../core/registry.js'
+import PerkyView from './perky_view.js'
+import SourceManager from './source_manager.js'
+import {loaders} from './loaders.js'
+import InputSystem from '../input/input_system.js'
 
 
 export default class Application extends PerkyModule {

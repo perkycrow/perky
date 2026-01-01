@@ -1,4 +1,4 @@
-import SimpleCollisionDetector from './simple_collision_detector'
+import SimpleCollisionDetector from './simple_collision_detector.js'
 import {vi} from 'vitest'
 
 

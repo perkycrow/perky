@@ -1,6 +1,6 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
-import Camera2D from './camera_2d'
-import PerkyModule from '../core/perky_module'
+import Camera2D from './camera_2d.js'
+import PerkyModule from '../core/perky_module.js'
 
 
 describe(Camera2D, () => {

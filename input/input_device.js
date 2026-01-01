@@ -1,5 +1,5 @@
-import PerkyModule from '../core/perky_module'
-import Registry from '../core/registry'
+import PerkyModule from '../core/perky_module.js'
+import Registry from '../core/registry.js'
 
 
 export default class InputDevice extends PerkyModule {

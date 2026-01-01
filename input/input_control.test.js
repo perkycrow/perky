@@ -1,4 +1,4 @@
-import InputControl from './input_control'
+import InputControl from './input_control.js'
 import {vi} from 'vitest'
 
 const {VALUE, OLD_VALUE} = InputControl

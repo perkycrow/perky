@@ -1,6 +1,6 @@
-import CollisionSystem from './collision_system'
-import BoxShape from './shapes/box_shape'
-import CircleShape from './shapes/circle_shape'
+import CollisionSystem from './collision_system.js'
+import BoxShape from './shapes/box_shape.js'
+import CircleShape from './shapes/circle_shape.js'
 import {vi} from 'vitest'
 
 

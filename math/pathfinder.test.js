@@ -1,5 +1,5 @@
-import Pathfinder, {heuristics} from './pathfinder'
-import Grid from './grid'
+import Pathfinder, {heuristics} from './pathfinder.js'
+import Grid from './grid.js'
 
 
 describe('Pathfinder', () => {

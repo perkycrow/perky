@@ -1,8 +1,8 @@
-import PerkyModule from '../core/perky_module'
-import InputBinder from './input_binder'
-import KeyboardDevice from './input_devices/keyboard_device'
-import MouseDevice from './input_devices/mouse_device'
-import Vec2 from '../math/vec2'
+import PerkyModule from '../core/perky_module.js'
+import InputBinder from './input_binder.js'
+import KeyboardDevice from './input_devices/keyboard_device.js'
+import MouseDevice from './input_devices/mouse_device.js'
+import Vec2 from '../math/vec2.js'
 
 
 export default class InputSystem extends PerkyModule {

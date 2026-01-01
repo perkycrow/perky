@@ -1,5 +1,5 @@
-import PerkyView from './perky_view'
-import PerkyModule from '../core/perky_module'
+import PerkyView from './perky_view.js'
+import PerkyModule from '../core/perky_module.js'
 import {vi, beforeEach, describe, test, expect, afterEach} from 'vitest'
 
 

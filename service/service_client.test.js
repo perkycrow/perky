@@ -1,6 +1,6 @@
-import ServiceClient from './service_client'
-import ServiceHost from './service_host'
-import ServiceTransport from './service_transport'
+import ServiceClient from './service_client.js'
+import ServiceHost from './service_host.js'
+import ServiceTransport from './service_transport.js'
 import {vi} from 'vitest'
 
 

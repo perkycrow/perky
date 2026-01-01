@@ -1,4 +1,4 @@
-import Entity from '../game/entity'
+import Entity from '../game/entity.js'
 
 
 export default class Projectile extends Entity {

@@ -1,6 +1,6 @@
 import {describe, test, expect, beforeEach} from 'vitest'
-import World from './world'
-import Entity from './entity'
+import World from './world.js'
+import Entity from './entity.js'
 
 
 describe('World', () => {

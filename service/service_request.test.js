@@ -1,4 +1,4 @@
-import ServiceRequest from './service_request'
+import ServiceRequest from './service_request.js'
 
 
 describe(ServiceRequest, () => {

@@ -1,4 +1,4 @@
-import CircleShape from './circle_shape'
+import CircleShape from './circle_shape.js'
 
 
 describe('CircleShape', () => {

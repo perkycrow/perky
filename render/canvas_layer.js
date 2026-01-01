@@ -1,6 +1,6 @@
-import Layer from './layer'
-import Canvas2D from './canvas_2d'
-import WebGLCanvas2D from './webgl_canvas_2d'
+import Layer from './layer.js'
+import Canvas2D from './canvas_2d.js'
+import WebGLCanvas2D from './webgl_canvas_2d.js'
 
 
 const RENDERERS = {

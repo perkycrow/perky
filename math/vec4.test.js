@@ -1,4 +1,4 @@
-import Vec4 from './vec4'
+import Vec4 from './vec4.js'
 
 
 describe('Vec4', () => {

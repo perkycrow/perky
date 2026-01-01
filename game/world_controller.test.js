@@ -1,7 +1,7 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
-import WorldController from './world_controller'
-import World from './world'
-import Entity from './entity'
+import WorldController from './world_controller.js'
+import World from './world.js'
+import Entity from './entity.js'
 
 
 describe('WorldController', () => {

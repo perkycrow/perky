@@ -1,5 +1,5 @@
-import PerkyModule from '../core/perky_module'
-import Group2D from '../render/group_2d'
+import PerkyModule from '../core/perky_module.js'
+import Group2D from '../render/group_2d.js'
 
 
 export default class WorldView extends PerkyModule {

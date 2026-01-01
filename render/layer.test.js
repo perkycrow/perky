@@ -1,5 +1,5 @@
 import {describe, test, expect, beforeEach} from 'vitest'
-import Layer from './layer'
+import Layer from './layer.js'
 
 
 describe(Layer, () => {

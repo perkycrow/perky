@@ -1,6 +1,6 @@
-import InputDevice from './input_device'
-import InputControl from './input_control'
-import ButtonControl from './input_controls/button_control'
+import InputDevice from './input_device.js'
+import InputControl from './input_control.js'
+import ButtonControl from './input_controls/button_control.js'
 import {vi} from 'vitest'
 
 

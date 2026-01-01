@@ -1,5 +1,5 @@
-import InputDevice from '../input_device'
-import ButtonControl from '../input_controls/button_control'
+import InputDevice from '../input_device.js'
+import ButtonControl from '../input_controls/button_control.js'
 
 
 export default class KeyboardDevice extends InputDevice {

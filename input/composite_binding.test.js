@@ -1,7 +1,7 @@
-import CompositeBinding from './composite_binding'
-import InputSystem from './input_system'
-import KeyboardDevice from './input_devices/keyboard_device'
-import ButtonControl from './input_controls/button_control'
+import CompositeBinding from './composite_binding.js'
+import InputSystem from './input_system.js'
+import KeyboardDevice from './input_devices/keyboard_device.js'
+import ButtonControl from './input_controls/button_control.js'
 import {vi} from 'vitest'
 
 

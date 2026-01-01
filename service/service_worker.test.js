@@ -1,4 +1,4 @@
-import ServiceClient from './service_client'
+import ServiceClient from './service_client.js'
 import {vi} from 'vitest'
 
 

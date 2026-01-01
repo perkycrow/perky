@@ -1,4 +1,4 @@
-import Object2D from './object_2d'
+import Object2D from './object_2d.js'
 
 
 export default class Image2D extends Object2D {

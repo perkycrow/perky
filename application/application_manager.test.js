@@ -1,7 +1,7 @@
-import ApplicationManager from './application_manager'
-import Application from './application'
-import PerkyModule from '../core/perky_module'
-import Registry from '../core/registry'
+import ApplicationManager from './application_manager.js'
+import Application from './application.js'
+import PerkyModule from '../core/perky_module.js'
+import Registry from '../core/registry.js'
 import {vi} from 'vitest'
 
 

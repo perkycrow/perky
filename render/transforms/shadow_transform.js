@@ -1,5 +1,5 @@
-import RenderTransform from '../render_transform'
-import {SHADOW_SHADER_DEF} from '../shaders/builtin/shadow_shader'
+import RenderTransform from '../render_transform.js'
+import {SHADOW_SHADER_DEF} from '../shaders/builtin/shadow_shader.js'
 
 
 export default class ShadowTransform extends RenderTransform {

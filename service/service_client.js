@@ -1,6 +1,6 @@
-import ServiceTransport from './service_transport'
-import ServiceRequest from './service_request'
-import PerkyModule from '../core/perky_module'
+import ServiceTransport from './service_transport.js'
+import ServiceRequest from './service_request.js'
+import PerkyModule from '../core/perky_module.js'
 
 
 export default class ServiceClient extends PerkyModule {

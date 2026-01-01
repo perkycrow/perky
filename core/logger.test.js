@@ -1,5 +1,5 @@
-import logger from './logger'
-import Notifier from './notifier'
+import logger from './logger.js'
+import Notifier from './notifier.js'
 import {vi} from 'vitest'
 
 
@@ -19,7 +19,7 @@ describe('Logger', () => {
 
 
     test('is a singleton', async () => {
-        const logger2 = (await import('./logger')).default
+        const logger2 = (await import('./logger.js')).default
         expect(logger2).toBe(logger)
     })
 

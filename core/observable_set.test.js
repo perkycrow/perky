@@ -1,5 +1,5 @@
 import {describe, test, expect, beforeEach} from 'vitest'
-import ObservableSet from './observable_set'
+import ObservableSet from './observable_set.js'
 
 
 describe(ObservableSet, () => {

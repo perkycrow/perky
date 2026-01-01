@@ -1,4 +1,4 @@
-import BoxShape from './box_shape'
+import BoxShape from './box_shape.js'
 
 
 describe('BoxShape', () => {

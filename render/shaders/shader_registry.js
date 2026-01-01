@@ -1,4 +1,4 @@
-import ShaderProgram from './shader_program'
+import ShaderProgram from './shader_program.js'
 
 
 export default class ShaderRegistry {

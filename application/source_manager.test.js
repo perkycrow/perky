@@ -1,6 +1,6 @@
-import SourceManager from './source_manager'
-import SourceLoader from './source_loader'
-import PerkyModule from '../core/perky_module'
+import SourceManager from './source_manager.js'
+import SourceLoader from './source_loader.js'
+import PerkyModule from '../core/perky_module.js'
 import {vi, beforeEach, describe, test, expect} from 'vitest'
 
 

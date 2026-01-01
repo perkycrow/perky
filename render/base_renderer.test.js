@@ -1,5 +1,5 @@
 import {describe, it, expect, beforeEach} from 'vitest'
-import BaseRenderer from './base_renderer'
+import BaseRenderer from './base_renderer.js'
 
 
 describe('BaseRenderer', () => {

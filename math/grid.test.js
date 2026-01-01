@@ -1,4 +1,4 @@
-import Grid, {fourDirections, eightDirections} from './grid'
+import Grid, {fourDirections, eightDirections} from './grid.js'
 
 
 describe('Grid', () => {

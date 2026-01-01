@@ -1,6 +1,6 @@
 import {describe, test, expect, beforeEach} from 'vitest'
-import Group2D from './group_2d'
-import Object2D from './object_2d'
+import Group2D from './group_2d.js'
+import Object2D from './object_2d.js'
 
 
 describe(Group2D, () => {

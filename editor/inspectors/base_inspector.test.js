@@ -1,6 +1,6 @@
 import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
-import BaseInspector from './base_inspector'
-import Notifier from '../../core/notifier'
+import BaseInspector from './base_inspector.js'
+import Notifier from '../../core/notifier.js'
 
 
 class TestInspector extends BaseInspector {

@@ -1,5 +1,5 @@
 import {describe, test, expect, beforeEach} from 'vitest'
-import {traverseAndCollect} from './traverse'
+import {traverseAndCollect} from './traverse.js'
 
 
 class MockObject {

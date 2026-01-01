@@ -1,6 +1,6 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
-import RenderGroup, {BLEND_MODES} from './render_group'
-import PerkyModule from '../core/perky_module'
+import RenderGroup, {BLEND_MODES} from './render_group.js'
+import PerkyModule from '../core/perky_module.js'
 
 
 class MockRenderPass {

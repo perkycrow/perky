@@ -1,6 +1,6 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
-import Image2D from './image_2d'
-import CanvasImageRenderer from './canvas/canvas_image_renderer'
+import Image2D from './image_2d.js'
+import CanvasImageRenderer from './canvas/canvas_image_renderer.js'
 
 
 describe(Image2D, () => {

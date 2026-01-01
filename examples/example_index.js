@@ -1,5 +1,5 @@
-import Application from '../application/application'
-import {toPascalCase} from '../core/utils'
+import Application from '../application/application.js'
+import {toPascalCase} from '../core/utils.js'
 
 const baseHtml = `
     <div class="search-container">

@@ -1,4 +1,4 @@
-import {fourDirections, eightDirections} from './grid'
+import {fourDirections, eightDirections} from './grid.js'
 
 
 export const heuristics = {

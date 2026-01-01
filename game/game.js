@@ -1,6 +1,6 @@
-import Application from '../application/application'
-import GameLoop from './game_loop'
-import RenderSystem from '../render/render_system'
+import Application from '../application/application.js'
+import GameLoop from './game_loop.js'
+import RenderSystem from '../render/render_system.js'
 
 
 export default class Game extends Application {

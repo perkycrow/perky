@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest'
-import Spritesheet from './spritesheet'
+import Spritesheet from './spritesheet.js'
 
 describe('Spritesheet', () => {
     const mockImage = {width: 100, height: 100}

@@ -1,5 +1,5 @@
 import {describe, test, expect, beforeEach} from 'vitest'
-import Transform2D from './transform_2d'
+import Transform2D from './transform_2d.js'
 
 
 describe(Transform2D, () => {

@@ -1,5 +1,5 @@
-import PerkyModule from '../core/perky_module'
-import Easing from '../math/easing'
+import PerkyModule from '../core/perky_module.js'
+import Easing from '../math/easing.js'
 
 
 export default class Camera2D extends PerkyModule {

@@ -1,5 +1,5 @@
 import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
-import BaseTreeNode from './base_tree_node'
+import BaseTreeNode from './base_tree_node.js'
 
 
 class TestTreeNode extends BaseTreeNode {

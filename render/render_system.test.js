@@ -1,6 +1,6 @@
 import {describe, it, expect, beforeEach, vi} from 'vitest'
-import RenderSystem from './render_system'
-import PerkyView from '../application/perky_view'
+import RenderSystem from './render_system.js'
+import PerkyView from '../application/perky_view.js'
 
 
 describe('RenderSystem', () => {

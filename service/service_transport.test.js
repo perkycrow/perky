@@ -1,4 +1,4 @@
-import ServiceTransport from './service_transport'
+import ServiceTransport from './service_transport.js'
 import {vi} from 'vitest'
 
 

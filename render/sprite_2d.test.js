@@ -1,6 +1,6 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest'
-import Sprite2D from './sprite_2d'
-import CanvasSpriteRenderer from './canvas/canvas_sprite_renderer'
+import Sprite2D from './sprite_2d.js'
+import CanvasSpriteRenderer from './canvas/canvas_sprite_renderer.js'
 
 
 describe('Sprite2D', () => {

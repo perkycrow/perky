@@ -1,7 +1,7 @@
-import World from '../game/world'
-import Player from './player'
-import Projectile from './projectile'
-import Enemy from './enemy'
+import World from '../game/world.js'
+import Player from './player.js'
+import Projectile from './projectile.js'
+import Enemy from './enemy.js'
 
 
 export default class DenWorld extends World {

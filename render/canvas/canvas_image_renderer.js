@@ -1,5 +1,5 @@
-import CanvasObjectRenderer from './canvas_object_renderer'
-import Image2D from '../image_2d'
+import CanvasObjectRenderer from './canvas_object_renderer.js'
+import Image2D from '../image_2d.js'
 
 
 export default class CanvasImageRenderer extends CanvasObjectRenderer {

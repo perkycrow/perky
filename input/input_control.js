@@ -1,4 +1,4 @@
-import Notifier from '../core/notifier'
+import Notifier from '../core/notifier.js'
 
 const VALUE = Symbol('value')
 const OLD_VALUE = Symbol('oldValue')

@@ -1,15 +1,15 @@
-import Game from '../game/game'
-import DenWorld from './den_world'
+import Game from '../game/game.js'
+import DenWorld from './den_world.js'
 
-import GameController from './controllers/game_controller'
-import GameRenderer from './game_renderer'
-import WaveProgressBar from './ui/wave_progress_bar'
+import GameController from './controllers/game_controller.js'
+import GameRenderer from './game_renderer.js'
+import WaveProgressBar from './ui/wave_progress_bar.js'
 
-import VignettePass from '../render/postprocessing/passes/vignette_pass'
+import VignettePass from '../render/postprocessing/passes/vignette_pass.js'
 
-import manifest from './manifest'
-import debug from '../core/debug'
-import logger from '../core/logger'
+import manifest from './manifest.js'
+import debug from '../core/debug.js'
+import logger from '../core/logger.js'
 
 
 debug.enableDebug()

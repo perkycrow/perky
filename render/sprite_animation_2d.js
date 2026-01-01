@@ -1,4 +1,4 @@
-import PerkyModule from '../core/perky_module'
+import PerkyModule from '../core/perky_module.js'
 
 
 export default class SpriteAnimation2D extends PerkyModule {

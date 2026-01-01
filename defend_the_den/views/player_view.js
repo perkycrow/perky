@@ -1,5 +1,5 @@
-import EntityView from '../../game/entity_view'
-import Image2D from '../../render/image_2d'
+import EntityView from '../../game/entity_view.js'
+import Image2D from '../../render/image_2d.js'
 
 
 export default class PlayerView extends EntityView {

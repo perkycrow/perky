@@ -1,6 +1,6 @@
 import {describe, test, expect} from 'vitest'
-import Entity from './entity'
-import Vec2 from '../math/vec2'
+import Entity from './entity.js'
+import Vec2 from '../math/vec2.js'
 
 
 describe('Entity', () => {

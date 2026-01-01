@@ -1,6 +1,6 @@
 import {describe, test, expect, beforeEach} from 'vitest'
-import HTMLLayer from './html_layer'
-import Camera2D from './camera_2d'
+import HTMLLayer from './html_layer.js'
+import Camera2D from './camera_2d.js'
 
 
 describe(HTMLLayer, () => {

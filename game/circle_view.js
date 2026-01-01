@@ -1,5 +1,5 @@
-import EntityView from './entity_view'
-import Circle from '../render/circle'
+import EntityView from './entity_view.js'
+import Circle from '../render/circle.js'
 
 
 export default class CircleView extends EntityView {

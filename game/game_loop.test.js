@@ -1,5 +1,5 @@
-import GameLoop from './game_loop'
-import PerkyModule from '../core/perky_module'
+import GameLoop from './game_loop.js'
+import PerkyModule from '../core/perky_module.js'
 import {vi, beforeEach, afterEach, describe, test, expect} from 'vitest'
 
 

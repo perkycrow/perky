@@ -1,6 +1,6 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
-import Circle from './circle'
-import CanvasCircleRenderer from './canvas/canvas_circle_renderer'
+import Circle from './circle.js'
+import CanvasCircleRenderer from './canvas/canvas_circle_renderer.js'
 
 
 describe(Circle, () => {

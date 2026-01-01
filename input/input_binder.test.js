@@ -1,7 +1,7 @@
 import {describe, beforeEach} from 'vitest'
-import InputBinder from './input_binder'
-import InputBinding from './input_binding'
-import CompositeBinding from './composite_binding'
+import InputBinder from './input_binder.js'
+import InputBinding from './input_binding.js'
+import CompositeBinding from './composite_binding.js'
 
 
 describe(InputBinder, () => {

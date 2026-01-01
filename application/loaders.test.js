@@ -67,7 +67,7 @@ describe('Loaders', () => {
         global.AudioContext = vi.fn().mockImplementation(() => mockAudioContext)
         global.webkitAudioContext = vi.fn().mockImplementation(() => mockAudioContext)
 
-        loaders = await import('./loaders')
+        loaders = await import('./loaders.js')
     })
 
 

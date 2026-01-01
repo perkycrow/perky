@@ -1,4 +1,4 @@
-import PerkyModule from '../core/perky_module'
+import PerkyModule from '../core/perky_module.js'
 
 export const BLEND_MODES = {
     normal: 'normal',

@@ -1,6 +1,6 @@
 import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
-import BaseEditorComponent from './base_editor_component'
-import Notifier from '../core/notifier'
+import BaseEditorComponent from './base_editor_component.js'
+import Notifier from '../core/notifier.js'
 
 
 class TestComponent extends BaseEditorComponent { }

@@ -1,4 +1,4 @@
-import InputControl from '../input_control'
+import InputControl from '../input_control.js'
 
 
 export default class ButtonControl extends InputControl {

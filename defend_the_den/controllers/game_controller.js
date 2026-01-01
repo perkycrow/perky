@@ -1,4 +1,4 @@
-import WorldController from '../../game/world_controller'
+import WorldController from '../../game/world_controller.js'
 
 
 export default class GameController extends WorldController {

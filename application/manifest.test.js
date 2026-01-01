@@ -1,5 +1,5 @@
-import Manifest from './manifest'
-import Asset from './asset'
+import Manifest from './manifest.js'
+import Asset from './asset.js'
 
 
 describe('Manifest', () => {

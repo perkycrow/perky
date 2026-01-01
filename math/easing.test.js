@@ -1,4 +1,4 @@
-import Easing from './easing'
+import Easing from './easing.js'
 
 
 describe('Easing', () => {

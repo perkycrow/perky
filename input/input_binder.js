@@ -1,7 +1,7 @@
-import PerkyModule from '../core/perky_module'
-import Registry from '../core/registry'
-import InputBinding from './input_binding'
-import CompositeBinding from './composite_binding'
+import PerkyModule from '../core/perky_module.js'
+import Registry from '../core/registry.js'
+import InputBinding from './input_binding.js'
+import CompositeBinding from './composite_binding.js'
 
 
 export default class InputBinder extends PerkyModule {

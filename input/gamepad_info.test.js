@@ -1,4 +1,4 @@
-import GamepadInfo from './gamepad_info'
+import GamepadInfo from './gamepad_info.js'
 
 
 describe('GamepadInfo', () => {

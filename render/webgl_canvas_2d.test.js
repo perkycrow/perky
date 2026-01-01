@@ -1,9 +1,9 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
-import WebGLCanvas2D from './webgl_canvas_2d'
-import Camera2D from './camera_2d'
-import Group2D from './group_2d'
-import Circle from './circle'
-import Rectangle from './rectangle'
+import WebGLCanvas2D from './webgl_canvas_2d.js'
+import Camera2D from './camera_2d.js'
+import Group2D from './group_2d.js'
+import Circle from './circle.js'
+import Rectangle from './rectangle.js'
 
 
 // WebGL mock is provided by test/setup.js

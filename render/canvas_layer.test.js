@@ -1,8 +1,8 @@
 import {describe, test, expect, beforeEach} from 'vitest'
-import CanvasLayer from './canvas_layer'
-import Camera2D from './camera_2d'
-import Group2D from './group_2d'
-import Circle from './circle'
+import CanvasLayer from './canvas_layer.js'
+import Camera2D from './camera_2d.js'
+import Group2D from './group_2d.js'
+import Circle from './circle.js'
 
 
 describe(CanvasLayer, () => {

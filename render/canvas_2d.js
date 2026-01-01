@@ -1,10 +1,10 @@
-import BaseRenderer from './base_renderer'
-import {traverseAndCollect} from './traverse'
+import BaseRenderer from './base_renderer.js'
+import {traverseAndCollect} from './traverse.js'
 
-import CanvasCircleRenderer from './canvas/canvas_circle_renderer'
-import CanvasRectangleRenderer from './canvas/canvas_rectangle_renderer'
-import CanvasImageRenderer from './canvas/canvas_image_renderer'
-import CanvasSpriteRenderer from './canvas/canvas_sprite_renderer'
+import CanvasCircleRenderer from './canvas/canvas_circle_renderer.js'
+import CanvasRectangleRenderer from './canvas/canvas_rectangle_renderer.js'
+import CanvasImageRenderer from './canvas/canvas_image_renderer.js'
+import CanvasSpriteRenderer from './canvas/canvas_sprite_renderer.js'
 
 
 export default class Canvas2D extends BaseRenderer {

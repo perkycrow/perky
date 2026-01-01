@@ -1,6 +1,6 @@
-import Vec2Control from './vec2_control'
-import InputControl from '../input_control'
-import Vec2 from '../../math/vec2'
+import Vec2Control from './vec2_control.js'
+import InputControl from '../input_control.js'
+import Vec2 from '../../math/vec2.js'
 import {vi} from 'vitest'
 
 const {VALUE, OLD_VALUE} = InputControl

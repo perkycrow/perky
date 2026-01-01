@@ -1,6 +1,6 @@
-import WebGLPrimitiveRenderer from './webgl_primitive_renderer'
-import {parseColor} from './color_utils'
-import Circle from '../circle'
+import WebGLPrimitiveRenderer from './webgl_primitive_renderer.js'
+import {parseColor} from './color_utils.js'
+import Circle from '../circle.js'
 
 
 export default class WebGLCircleRenderer extends WebGLPrimitiveRenderer {

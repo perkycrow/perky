@@ -1,4 +1,4 @@
-import Inflector from './inflector'
+import Inflector from './inflector.js'
 
 
 const inflector = new Inflector()

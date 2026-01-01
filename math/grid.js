@@ -1,4 +1,4 @@
-import {exportValue} from '../core/utils'
+import {exportValue} from '../core/utils.js'
 
 export const fourDirections = {
     up:    {x:  0, y:  1},

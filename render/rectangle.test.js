@@ -1,6 +1,6 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
-import Rectangle from './rectangle'
-import CanvasRectangleRenderer from './canvas/canvas_rectangle_renderer'
+import Rectangle from './rectangle.js'
+import CanvasRectangleRenderer from './canvas/canvas_rectangle_renderer.js'
 
 
 describe(Rectangle, () => {

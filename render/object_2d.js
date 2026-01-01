@@ -1,4 +1,4 @@
-import Transform2D from './transform_2d'
+import Transform2D from './transform_2d.js'
 
 
 export default class Object2D extends Transform2D {

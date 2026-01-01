@@ -1,5 +1,5 @@
 import {describe, test, expect, beforeEach} from 'vitest'
-import Object2D from './object_2d'
+import Object2D from './object_2d.js'
 
 
 describe(Object2D, () => {

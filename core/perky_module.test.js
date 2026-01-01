@@ -1,5 +1,5 @@
-import PerkyModule from './perky_module'
-import Registry from './registry'
+import PerkyModule from './perky_module.js'
+import Registry from './registry.js'
 import {vi, describe, test, expect, beforeEach, afterEach} from 'vitest'
 
 

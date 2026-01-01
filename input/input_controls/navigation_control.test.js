@@ -1,5 +1,5 @@
-import NavigationControl from './navigation_control'
-import InputControl from '../input_control'
+import NavigationControl from './navigation_control.js'
+import InputControl from '../input_control.js'
 import {vi} from 'vitest'
 
 

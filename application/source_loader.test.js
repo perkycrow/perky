@@ -1,5 +1,5 @@
-import SourceLoader from './source_loader'
-import PerkyModule from '../core/perky_module'
+import SourceLoader from './source_loader.js'
+import PerkyModule from '../core/perky_module.js'
 import {vi, beforeEach, afterEach, describe, test, expect} from 'vitest'
 
 

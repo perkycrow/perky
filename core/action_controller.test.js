@@ -1,4 +1,4 @@
-import ActionController from './action_controller'
+import ActionController from './action_controller.js'
 import {vi} from 'vitest'
 
 

@@ -1,6 +1,6 @@
-import WebGLPrimitiveRenderer from './webgl_primitive_renderer'
-import {parseColor} from './color_utils'
-import Rectangle from '../rectangle'
+import WebGLPrimitiveRenderer from './webgl_primitive_renderer.js'
+import {parseColor} from './color_utils.js'
+import Rectangle from '../rectangle.js'
 
 
 export default class WebGLRectangleRenderer extends WebGLPrimitiveRenderer {

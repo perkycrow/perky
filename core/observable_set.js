@@ -1,4 +1,4 @@
-import Notifier from './notifier'
+import Notifier from './notifier.js'
 
 
 export default class ObservableSet extends Notifier {

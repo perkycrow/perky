@@ -1,4 +1,4 @@
-import ServiceResponse from './service_response'
+import ServiceResponse from './service_response.js'
 
 
 describe(ServiceResponse, () => {

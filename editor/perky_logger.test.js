@@ -1,4 +1,4 @@
-import PerkyLogger from './perky_logger'
+import PerkyLogger from './perky_logger.js'
 import {vi, beforeEach, describe, test, expect, afterEach} from 'vitest'
 
 

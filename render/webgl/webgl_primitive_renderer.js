@@ -1,4 +1,4 @@
-import WebGLObjectRenderer from './webgl_object_renderer'
+import WebGLObjectRenderer from './webgl_object_renderer.js'
 
 
 export default class WebGLPrimitiveRenderer extends WebGLObjectRenderer {

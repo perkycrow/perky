@@ -1,7 +1,7 @@
-import PerkyModule from '../core/perky_module'
-import {setDefaults, getNestedValue, setNestedValue, deepMerge} from '../core/utils'
-import Registry from '../core/registry'
-import Asset from './asset'
+import PerkyModule from '../core/perky_module.js'
+import {setDefaults, getNestedValue, setNestedValue, deepMerge} from '../core/utils.js'
+import Registry from '../core/registry.js'
+import Asset from './asset.js'
 
 
 export default class Manifest extends PerkyModule {

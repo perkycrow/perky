@@ -1,4 +1,4 @@
-import ActionController from '../core/action_controller'
+import ActionController from '../core/action_controller.js'
 
 
 export default class WorldController extends ActionController {

@@ -1,5 +1,5 @@
-import PerkyModule from './perky_module'
-import ActionController from './action_controller'
+import PerkyModule from './perky_module.js'
+import ActionController from './action_controller.js'
 import logger from './logger.js'
 
 

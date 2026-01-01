@@ -1,5 +1,5 @@
 import {beforeEach, afterEach, describe, test, expect, vi} from 'vitest'
-import debug from './debug'
+import debug from './debug.js'
 
 
 describe('Debug', () => {

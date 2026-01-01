@@ -1,4 +1,4 @@
-import ObservableMap from './observable_map'
+import ObservableMap from './observable_map.js'
 
 
 export default class Registry extends ObservableMap {

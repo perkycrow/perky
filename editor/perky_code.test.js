@@ -1,4 +1,4 @@
-import PerkyCode from './perky_code'
+import PerkyCode from './perky_code.js'
 import {vi, beforeEach, describe, test, expect, afterEach} from 'vitest'
 
 

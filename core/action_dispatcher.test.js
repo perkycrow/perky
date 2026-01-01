@@ -1,6 +1,6 @@
-import ActionDispatcher from './action_dispatcher'
-import ActionController from './action_controller'
-import PerkyModule from './perky_module'
+import ActionDispatcher from './action_dispatcher.js'
+import ActionController from './action_controller.js'
+import PerkyModule from './perky_module.js'
 import {describe, test, expect, beforeEach, vi} from 'vitest'
 
 

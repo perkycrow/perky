@@ -1,9 +1,9 @@
 import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
-import Game from './game'
-import Application from '../application/application'
-import GameLoop from './game_loop'
-import ActionController from '../core/action_controller'
-import RenderSystem from '../render/render_system'
+import Game from './game.js'
+import Application from '../application/application.js'
+import GameLoop from './game_loop.js'
+import ActionController from '../core/action_controller.js'
+import RenderSystem from '../render/render_system.js'
 
 
 

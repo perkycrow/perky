@@ -1,5 +1,5 @@
-import {uniqueId} from '../core/utils'
-import PerkyModule from '../core/perky_module'
+import {uniqueId} from '../core/utils.js'
+import PerkyModule from '../core/perky_module.js'
 
 
 export default class PerkyView extends PerkyModule {

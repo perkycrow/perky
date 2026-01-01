@@ -1,5 +1,5 @@
 import {describe, expect, test} from 'vitest'
-import Inflector from './inflector'
+import Inflector from './inflector.js'
 
 
 const inflector = new Inflector()

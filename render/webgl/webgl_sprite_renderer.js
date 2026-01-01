@@ -1,7 +1,7 @@
-import WebGLObjectRenderer from './webgl_object_renderer'
-import WebGLSpriteBatch from './webgl_sprite_batch'
-import Image2D from '../image_2d'
-import Sprite2D from '../sprite_2d'
+import WebGLObjectRenderer from './webgl_object_renderer.js'
+import WebGLSpriteBatch from './webgl_sprite_batch.js'
+import Image2D from '../image_2d.js'
+import Sprite2D from '../sprite_2d.js'
 
 
 export default class WebGLSpriteRenderer extends WebGLObjectRenderer {

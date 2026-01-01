@@ -1,5 +1,5 @@
-import Registry from '../core/registry'
-import PerkyModule from '../core/perky_module'
+import Registry from '../core/registry.js'
+import PerkyModule from '../core/perky_module.js'
 
 
 export default class ApplicationManager extends PerkyModule {

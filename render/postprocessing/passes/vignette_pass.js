@@ -1,4 +1,4 @@
-import RenderPass from '../render_pass'
+import RenderPass from '../render_pass.js'
 
 
 export default class VignettePass extends RenderPass {

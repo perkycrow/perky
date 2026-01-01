@@ -1,8 +1,8 @@
-import MouseDevice from './mouse_device'
-import InputDevice from '../input_device'
-import ButtonControl from '../input_controls/button_control'
-import Vec2Control from '../input_controls/vec2_control'
-import NavigationControl from '../input_controls/navigation_control'
+import MouseDevice from './mouse_device.js'
+import InputDevice from '../input_device.js'
+import ButtonControl from '../input_controls/button_control.js'
+import Vec2Control from '../input_controls/vec2_control.js'
+import NavigationControl from '../input_controls/navigation_control.js'
 import {vi} from 'vitest'
 
 function createMockEvent (props = {}) {

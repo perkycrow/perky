@@ -1,5 +1,5 @@
 import {describe, test, expect} from 'vitest'
-import Asset from './asset'
+import Asset from './asset.js'
 
 
 describe('Asset', () => {

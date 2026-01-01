@@ -1,5 +1,5 @@
-import PerkyModule from '../core/perky_module'
-import Vec2 from '../math/vec2'
+import PerkyModule from '../core/perky_module.js'
+import Vec2 from '../math/vec2.js'
 
 
 export default class Entity extends PerkyModule {

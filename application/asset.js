@@ -1,4 +1,4 @@
-import {toSnakeCase, uniqueId} from '../core/utils'
+import {toSnakeCase, uniqueId} from '../core/utils.js'
 
 
 export default class Asset {

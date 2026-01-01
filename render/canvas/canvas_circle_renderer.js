@@ -1,5 +1,5 @@
-import CanvasObjectRenderer from './canvas_object_renderer'
-import Circle from '../circle'
+import CanvasObjectRenderer from './canvas_object_renderer.js'
+import Circle from '../circle.js'
 
 
 export default class CanvasCircleRenderer extends CanvasObjectRenderer {

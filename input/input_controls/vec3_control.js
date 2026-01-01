@@ -1,5 +1,5 @@
-import InputControl from '../input_control'
-import Vec3 from '../../math/vec3'
+import InputControl from '../input_control.js'
+import Vec3 from '../../math/vec3.js'
 
 
 const {VALUE, OLD_VALUE} = InputControl

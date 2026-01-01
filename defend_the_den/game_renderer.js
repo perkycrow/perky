@@ -1,16 +1,16 @@
-import Group2D from '../render/group_2d'
-import Image2D from '../render/image_2d'
-import WorldView from '../game/world_view'
-import ImageView from '../game/image_view'
-import CircleView from '../game/circle_view'
-import PerkyModule from '../core/perky_module'
-import {ShadowTransform} from '../render/transforms'
+import Group2D from '../render/group_2d.js'
+import Image2D from '../render/image_2d.js'
+import WorldView from '../game/world_view.js'
+import ImageView from '../game/image_view.js'
+import CircleView from '../game/circle_view.js'
+import PerkyModule from '../core/perky_module.js'
+import {ShadowTransform} from '../render/transforms/index.js'
 
-import Player from './player'
-import Enemy from './enemy'
-import Projectile from './projectile'
+import Player from './player.js'
+import Enemy from './enemy.js'
+import Projectile from './projectile.js'
 
-import PlayerView from './views/player_view'
+import PlayerView from './views/player_view.js'
 
 
 export default class GameRenderer extends PerkyModule {

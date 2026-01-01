@@ -1,4 +1,4 @@
-import InputBinding from './input_binding'
+import InputBinding from './input_binding.js'
 
 
 export default class CompositeBinding extends InputBinding {

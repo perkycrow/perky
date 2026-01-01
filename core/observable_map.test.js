@@ -1,5 +1,5 @@
 import {describe, test, expect, beforeEach} from 'vitest'
-import ObservableMap from './observable_map'
+import ObservableMap from './observable_map.js'
 
 
 describe(ObservableMap, () => {

@@ -1,8 +1,8 @@
-import PerkyModule from '../core/perky_module'
-import PerkyView from '../application/perky_view'
-import CanvasLayer from './canvas_layer'
-import HTMLLayer from './html_layer'
-import Camera2D from './camera_2d'
+import PerkyModule from '../core/perky_module.js'
+import PerkyView from '../application/perky_view.js'
+import CanvasLayer from './canvas_layer.js'
+import HTMLLayer from './html_layer.js'
+import Camera2D from './camera_2d.js'
 
 
 export default class RenderSystem extends PerkyModule {

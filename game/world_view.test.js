@@ -1,7 +1,7 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
-import WorldView from './world_view'
-import Group2D from '../render/group_2d'
-import PerkyModule from '../core/perky_module'
+import WorldView from './world_view.js'
+import Group2D from '../render/group_2d.js'
+import PerkyModule from '../core/perky_module.js'
 
 
 // Mock EntityView for testing

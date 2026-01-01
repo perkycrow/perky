@@ -1,5 +1,5 @@
-import PerkyModule from '../core/perky_module'
-import Camera2D from './camera_2d'
+import PerkyModule from '../core/perky_module.js'
+import Camera2D from './camera_2d.js'
 
 
 export default class BaseRenderer extends PerkyModule {

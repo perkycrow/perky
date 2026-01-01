@@ -1,5 +1,5 @@
 import {describe, it, expect, beforeEach, vi, afterEach} from 'vitest'
-import SpriteAnimation2D from './sprite_animation_2d'
+import SpriteAnimation2D from './sprite_animation_2d.js'
 
 describe('SpriteAnimation2D', () => {
     let spritesheet

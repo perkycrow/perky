@@ -1,7 +1,7 @@
-import Notifier from './notifier'
-import Registry from './registry'
-import ObservableSet from './observable_set'
-import {uniqueId, delegateProperties} from './utils'
+import Notifier from './notifier.js'
+import Registry from './registry.js'
+import ObservableSet from './observable_set.js'
+import {uniqueId, delegateProperties} from './utils.js'
 
 
 export default class PerkyModule extends Notifier {

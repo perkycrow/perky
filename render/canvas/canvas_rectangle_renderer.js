@@ -1,5 +1,5 @@
-import CanvasObjectRenderer from './canvas_object_renderer'
-import Rectangle from '../rectangle'
+import CanvasObjectRenderer from './canvas_object_renderer.js'
+import Rectangle from '../rectangle.js'
 
 
 export default class CanvasRectangleRenderer extends CanvasObjectRenderer {

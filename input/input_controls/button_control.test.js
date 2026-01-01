@@ -1,5 +1,5 @@
-import ButtonControl from './button_control'
-import InputControl from '../input_control'
+import ButtonControl from './button_control.js'
+import InputControl from '../input_control.js'
 import {vi} from 'vitest'
 
 
