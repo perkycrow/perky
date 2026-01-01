@@ -23,7 +23,7 @@ export default class Pathfinder {
     }
 
 
-    findPath (grid, start, goal) { // eslint-disable-line complexity
+    findPath (grid, start, goal) { // eslint-disable-line complexity -- clean
         if (!grid.isInside(start) || !grid.isInside(goal)) {
             return null
         }

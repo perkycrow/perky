@@ -88,7 +88,7 @@ export default class PathfindingService extends ServiceHost {
     }
 
 
-    findPath (req, res) { // eslint-disable-line complexity
+    findPath (req, res) { // eslint-disable-line complexity -- clean
         try {
             const {start, goal, options = {}} = req.params
 
