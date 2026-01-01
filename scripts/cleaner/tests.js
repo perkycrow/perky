@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import {findJsFiles, isExcludedFile} from './utils.js'
+import {header, success, hint, listItem, divider} from './format.js'
 
 
 function findTestFiles (rootDir) {
@@ -206,79 +207,70 @@ function findFilesWithoutTests (rootDir) {
 
 
 function printDeepNestingAudit (issues) {
-    console.log('\n=== DEEP NESTING IN TESTS ===\n')
+    header('Deep Nesting')
 
     if (issues.length === 0) {
-        console.log('No deeply nested tests found.\n')
+        success('No deeply nested tests found')
         return
     }
 
-    console.log('The following test files have deeply nested describe/test blocks.')
-    console.log('Consider flattening the structure - each describe should group')
-    console.log('related tests, not create unnecessary hierarchy.\n')
+    hint('Flatten structure - each describe should group related tests')
+    divider()
 
     for (const {file} of issues) {
-        console.log(`- ${file}`)
+        listItem(file)
     }
-
-    console.log('')
 }
 
 
 function printItUsageAudit (issues) {
-    console.log('\n=== IT() USAGE IN TESTS ===\n')
+    header('it() Usage')
 
     if (issues.length === 0) {
-        console.log('All test files use test() syntax.\n')
+        success('All test files use test() syntax')
         return
     }
 
-    console.log('The following test files use it() instead of test().')
-    console.log('For consistency and clarity in unit tests, prefer test() syntax.\n')
+    hint('Use test() instead of it() for unit tests')
+    divider()
 
     for (const {file, count} of issues) {
-        console.log(`- ${file} (${count} occurrences)`)
+        listItem(file, count)
     }
-
-    console.log('')
 }
 
 
 function printSingleTestDescribesAudit (issues) {
-    console.log('\n=== SINGLE-TEST DESCRIBES ===\n')
+    header('Single-Test Describes')
 
     if (issues.length === 0) {
-        console.log('No unnecessary describe blocks found.\n')
+        success('No unnecessary describe blocks found')
         return
     }
 
-    console.log('The following test files have describe blocks containing only one test.')
-    console.log('Consider removing the describe wrapper or adding more related tests.\n')
+    hint('Remove describe wrapper or add more related tests')
+    divider()
 
     for (const {file, issues: fileIssues} of issues) {
-        console.log(`- ${file} (${fileIssues.length} occurrences)`)
+        listItem(file, fileIssues.length)
     }
-
-    console.log('')
 }
 
 
 function printMissingTestsAudit (missing) {
-    console.log('\n=== MISSING TESTS ===\n')
+    header('Missing Tests')
 
     if (missing.length === 0) {
-        console.log('All files have corresponding test files.\n')
+        success('All files have corresponding test files')
         return
     }
 
-    console.log('Create the following test files. Each test file should import')
-    console.log('the corresponding module and test its exported functions.\n')
+    hint('Create test files that import and test exported functions')
+    divider()
 
     for (const {expectedTest} of missing) {
-        console.log(`- ${expectedTest}`)
+        listItem(expectedTest)
     }
-
-    console.log('')
 }
 
 

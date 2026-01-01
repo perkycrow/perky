@@ -9,9 +9,22 @@ import {
     auditSwitches
 } from './eslint.js'
 import {auditTests} from './tests.js'
+import {bold, cyan, dim} from './format.js'
+
+
+function printBanner () {
+    console.log('')
+    console.log(cyan('  ╭─────────────────────────────╮'))
+    console.log(cyan('  │') + bold('        PERKY CLEANER        ') + cyan('│'))
+    console.log(cyan('  ╰─────────────────────────────╯'))
+    console.log(dim('  Code quality & consistency tool'))
+    console.log('')
+}
 
 
 export function runAudit (rootDir) {
+    printBanner()
+
     const results = {}
 
     results.comments = auditComments(rootDir)
@@ -41,8 +54,6 @@ export function runFix (rootDir, options = {}) {
 
 
 export function runAll (rootDir) {
-    console.log('=== CLEANER ===\n')
-
     runAudit(rootDir)
     runFix(rootDir)
 }

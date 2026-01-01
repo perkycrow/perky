@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import {execSync} from 'child_process'
 import {findJsFiles, groupBy} from './utils.js'
+import {header, subHeader, success, hint, listItem, divider} from './format.js'
 
 
 export function isUnusedDirectiveMessage (message) {
@@ -109,26 +110,24 @@ function fixFileDirectives (file) {
 
 
 export function auditUnusedDirectives (rootDir) {
-    console.log('\n=== UNUSED ESLINT DIRECTIVES ===\n')
+    header('Unused ESLint Directives')
 
     const unused = findUnusedEslintDirectives(rootDir)
 
     if (unused.length === 0) {
-        console.log('No unused eslint-disable directives.\n')
+        success('No unused eslint-disable directives')
         return {filesWithIssues: 0, directivesFound: 0}
     }
 
     const filesWithIssues = unused.map(f => f.relativePath)
     let totalDirectives = unused.reduce((sum, f) => sum + f.directives.length, 0)
 
-    console.log('Remove unused eslint-disable directives from the following files.')
-    console.log('These directives suppress rules that are no longer being triggered.\n')
+    hint('Remove directives that no longer suppress any rules')
+    divider()
 
     for (const file of filesWithIssues) {
-        console.log(`- ${file}`)
+        listItem(file)
     }
-
-    console.log('')
 
     return {filesWithIssues: unused.length, directivesFound: totalDirectives}
 }
@@ -171,32 +170,30 @@ export function fixUnusedDirectives (rootDir, dryRun = false) {
 // === ESLINT ERRORS ===
 
 export function auditEslint (rootDir) {
-    console.log('\n=== ESLINT ERRORS ===\n')
+    header('ESLint Errors')
 
     const {output} = runEslintCommand('--format json .', rootDir)
     const data = parseEslintJson(output)
 
     if (!data) {
-        console.log('Failed to parse ESLint output.\n')
+        hint('Failed to parse ESLint output')
         return {errorCount: 0, warningCount: 0, filesWithIssues: 0}
     }
 
     const filesWithErrors = data.filter(f => f.messages.length > 0)
 
     if (filesWithErrors.length === 0) {
-        console.log('No ESLint errors or warnings.\n')
+        success('No ESLint errors or warnings')
         return {errorCount: 0, warningCount: 0, filesWithIssues: 0}
     }
 
-    console.log('Fix ESLint errors in the following files. Run `yarn lint`')
-    console.log('to see detailed error messages and line numbers.\n')
+    hint('Run npx eslint . for detailed error messages')
+    divider()
 
     for (const file of filesWithErrors) {
         const relativePath = path.relative(rootDir, file.filePath)
-        console.log(`- ${relativePath}`)
+        listItem(relativePath)
     }
-
-    console.log('')
 
     const totalErrors = filesWithErrors.reduce((sum, f) => sum + f.messages.filter(m => m.severity === 2).length, 0)
     const totalWarnings = filesWithErrors.reduce((sum, f) => sum + f.messages.filter(m => m.severity === 1).length, 0)
@@ -260,27 +257,26 @@ function findEslintDisables (rootDir) {
 
 
 export function auditDisables (rootDir) {
-    console.log('=== ESLINT DISABLES ===\n')
+    header('ESLint Disables')
 
     const disables = findEslintDisables(rootDir)
 
     if (disables.length === 0) {
-        console.log('No eslint-disable directives found.\n')
+        success('No eslint-disable directives found')
         return {directivesFound: 0, rulesFound: 0}
     }
 
     const byRule = groupBy(disables, d => d.rule)
     const sortedRules = Object.entries(byRule).sort((a, b) => b[1].length - a[1].length)
 
-    console.log('Review eslint-disable directives. Consider fixing the underlying')
-    console.log('issue instead of suppressing the rule when possible.\n')
+    hint('Consider fixing the underlying issue instead of suppressing')
+    divider()
 
     for (const [rule, occurrences] of sortedRules) {
-        console.log(`${rule} (${occurrences.length}):`)
+        subHeader(`${rule} (${occurrences.length})`)
         for (const occ of occurrences) {
-            console.log(`- ${occ.file}:${occ.line}`)
+            listItem(`${occ.file}:${occ.line}`)
         }
-        console.log('')
     }
 
     return {directivesFound: disables.length, rulesFound: sortedRules.length}
@@ -315,26 +311,24 @@ function findSwitchStatements (rootDir) {
 
 
 export function auditSwitches (rootDir) {
-    console.log('=== SWITCH STATEMENTS ===\n')
+    header('Switch Statements')
 
     const switches = findSwitchStatements(rootDir)
 
     if (switches.length === 0) {
-        console.log('No switch statements found.\n')
+        success('No switch statements found')
         return {switchesFound: 0, filesWithSwitches: 0}
     }
 
     const byFile = groupBy(switches, s => s.file)
     const files = Object.keys(byFile)
 
-    console.log('Consider refactoring switch statements to object lookups or')
-    console.log('polymorphism for better maintainability.\n')
+    hint('Consider refactoring to object lookups or polymorphism')
+    divider()
 
     for (const file of files) {
-        console.log(`- ${file}`)
+        listItem(file)
     }
-
-    console.log('')
 
     return {switchesFound: switches.length, filesWithSwitches: files.length}
 }

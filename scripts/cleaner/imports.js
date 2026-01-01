@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import {findJsFiles, groupBy} from './utils.js'
+import {header, success, hint, listItem, divider} from './format.js'
 
 
 function resolveImportPath (fileDir, importPath) {
@@ -92,26 +93,24 @@ function fixMissingExtension (filePath, issues) {
 
 
 export function auditImports (rootDir) {
-    console.log('\n=== IMPORT EXTENSIONS ===\n')
+    header('Import Extensions')
 
     const issues = findMissingJsExtensions(rootDir)
 
     if (issues.length === 0) {
-        console.log('All imports have .js extensions.\n')
+        success('All imports have .js extensions')
         return {filesWithIssues: 0, importsWithIssues: 0}
     }
 
     const byFile = groupBy(issues, i => i.filePath)
     const filesWithIssues = Object.keys(byFile).map(f => path.relative(rootDir, f))
 
-    console.log('Add .js extension to relative imports in the following files.')
-    console.log('All local imports should end with .js for ESM compatibility.\n')
+    hint('Add .js extension for ESM compatibility')
+    divider()
 
     for (const file of filesWithIssues) {
-        console.log(`- ${file}`)
+        listItem(file)
     }
-
-    console.log('')
 
     return {filesWithIssues: filesWithIssues.length, importsWithIssues: issues.length}
 }

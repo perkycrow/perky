@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import {isExcludedFile, isInsideString, isProtectedComment, findJsFiles} from './utils.js'
+import {header, success, hint, listItem, divider} from './format.js'
 
 
 export function isUrlComment (textBefore) {
@@ -110,7 +111,7 @@ function processFile (filePath, rootDir, dryRun) {
 
 
 export function auditComments (rootDir) {
-    console.log('=== COMMENTS ===\n')
+    header('Comments')
 
     const files = findJsFiles(rootDir)
     const filesWithComments = []
@@ -130,18 +131,16 @@ export function auditComments (rootDir) {
     }
 
     if (filesWithComments.length === 0) {
-        console.log('No comments to remove.\n')
+        success('No comments to remove')
         return {filesScanned: files.length, filesWithComments: 0, commentsFound: 0}
     }
 
-    console.log('Remove comments from the following files. Keep eslint directives')
-    console.log('and any comments that are essential for understanding complex logic.\n')
+    hint('Keep eslint directives and essential comments')
+    divider()
 
     for (const file of filesWithComments) {
-        console.log(`- ${file}`)
+        listItem(file)
     }
-
-    console.log('')
 
     return {filesScanned: files.length, filesWithComments: filesWithComments.length, commentsFound: filesWithComments.length}
 }
