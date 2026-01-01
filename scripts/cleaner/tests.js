@@ -68,21 +68,23 @@ function findFilesWithoutTests (rootDir) {
 
 
 export function auditTests (rootDir) {
-    console.log('\n=== MISSING TESTS AUDIT ===\n')
+    console.log('\n=== MISSING TESTS ===\n')
 
     const missing = findFilesWithoutTests(rootDir)
 
     if (missing.length === 0) {
-        console.log('All files have their test files.')
+        console.log('All files have corresponding test files.\n')
         return {filesWithoutTests: 0}
     }
 
-    for (const {file, expectedTest} of missing) {
-        console.log(`${file}`)
-        console.log(`  Missing: ${expectedTest}`)
+    console.log('Create the following test files. Each test file should import')
+    console.log('the corresponding module and test its exported functions.\n')
+
+    for (const {expectedTest} of missing) {
+        console.log(`- ${expectedTest}`)
     }
 
-    console.log(`\nTotal: ${missing.length} file(s) without tests`)
+    console.log('')
 
     return {filesWithoutTests: missing.length}
 }

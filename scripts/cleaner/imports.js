@@ -91,36 +91,29 @@ function fixMissingExtension (filePath, issues) {
 }
 
 
-function printIssues (byFile, rootDir) {
-    for (const [filePath, fileIssues] of Object.entries(byFile)) {
-        const relativePath = path.relative(rootDir, filePath)
-        console.log(`${relativePath}:`)
-
-        for (const issue of fileIssues) {
-            const marker = issue.isDirectory ? ' [DIR]' : ''
-            console.log(`  Line ${issue.line}: ${issue.importPath} -> ${issue.correctedPath}${marker}`)
-        }
-    }
-}
-
-
 export function auditImports (rootDir) {
-    console.log('\n=== IMPORT EXTENSION AUDIT ===\n')
+    console.log('\n=== IMPORT EXTENSIONS ===\n')
 
     const issues = findMissingJsExtensions(rootDir)
 
     if (issues.length === 0) {
-        console.log('No missing .js extensions found.')
+        console.log('All imports have .js extensions.\n')
         return {filesWithIssues: 0, importsWithIssues: 0}
     }
 
     const byFile = groupBy(issues, i => i.filePath)
-    printIssues(byFile, rootDir)
+    const filesWithIssues = Object.keys(byFile).map(f => path.relative(rootDir, f))
 
-    const filesCount = Object.keys(byFile).length
-    console.log(`\nTotal: ${issues.length} import(s) missing .js in ${filesCount} file(s)`)
+    console.log('Add .js extension to relative imports in the following files.')
+    console.log('All local imports should end with .js for ESM compatibility.\n')
 
-    return {filesWithIssues: filesCount, importsWithIssues: issues.length}
+    for (const file of filesWithIssues) {
+        console.log(`- ${file}`)
+    }
+
+    console.log('')
+
+    return {filesWithIssues: filesWithIssues.length, importsWithIssues: issues.length}
 }
 
 

@@ -110,11 +110,10 @@ function processFile (filePath, rootDir, dryRun) {
 
 
 export function auditComments (rootDir) {
-    console.log('=== COMMENT AUDIT ===\n')
+    console.log('=== COMMENTS ===\n')
 
     const files = findJsFiles(rootDir)
-    let totalFilesWithComments = 0
-    let totalCommentsFound = 0
+    const filesWithComments = []
 
     for (const filePath of files) {
         const relativePath = path.relative(rootDir, filePath)
@@ -126,22 +125,25 @@ export function auditComments (rootDir) {
         const {comments} = cleanFileContent(content)
 
         if (comments.length > 0) {
-            totalFilesWithComments++
-            totalCommentsFound += comments.length
-            console.log(`\n${relativePath}: ${comments.length} comment(s)`)
-            comments.forEach((c, i) => {
-                const preview = c.text.length > 80 ? c.text.substring(0, 80) + '...' : c.text
-                console.log(`  ${i + 1}. [${c.type}] ${preview}`)
-            })
+            filesWithComments.push(relativePath)
         }
     }
 
-    console.log('\n=== COMMENT SUMMARY ===')
-    console.log(`Total files scanned: ${files.length}`)
-    console.log(`Files with comments: ${totalFilesWithComments}`)
-    console.log(`Total comments found: ${totalCommentsFound}`)
+    if (filesWithComments.length === 0) {
+        console.log('No comments to remove.\n')
+        return {filesScanned: files.length, filesWithComments: 0, commentsFound: 0}
+    }
 
-    return {filesScanned: files.length, filesWithComments: totalFilesWithComments, commentsFound: totalCommentsFound}
+    console.log('Remove comments from the following files. Keep eslint directives')
+    console.log('and any comments that are essential for understanding complex logic.\n')
+
+    for (const file of filesWithComments) {
+        console.log(`- ${file}`)
+    }
+
+    console.log('')
+
+    return {filesScanned: files.length, filesWithComments: filesWithComments.length, commentsFound: filesWithComments.length}
 }
 
 
