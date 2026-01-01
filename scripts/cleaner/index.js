@@ -8,6 +8,7 @@ import {
     auditDisables,
     auditSwitches
 } from './eslint.js'
+import {auditTests} from './tests.js'
 
 
 export function runAudit (rootDir) {
@@ -19,6 +20,7 @@ export function runAudit (rootDir) {
     results.eslint = auditEslint(rootDir)
     results.disables = auditDisables(rootDir)
     results.switches = auditSwitches(rootDir)
+    results.tests = auditTests(rootDir)
 
     return results
 }
