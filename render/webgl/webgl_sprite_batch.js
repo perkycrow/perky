@@ -5,6 +5,66 @@ import Sprite2D from '../sprite_2d.js'
 const DEFAULT_TEX_COORDS = [0, 1, 1, 1, 1, 0, 0, 0]
 
 
+function extractImageAndFrame (object) {
+    let image = null
+    let frame = null
+
+    if (object instanceof Image2D) {
+        image = object.image
+    } else if (object instanceof Sprite2D) {
+        image = object.image || (object.currentFrame ? object.currentFrame.image : null)
+        frame = object.currentFrame
+    }
+
+    return {image, frame}
+}
+
+
+function computeTexCoords (frame, image, texCoords) {
+    if (frame) {
+        const {x, y, w, h} = frame.frame
+        const iw = image.width
+        const ih = image.height
+        const u0 = x / iw
+        const u1 = (x + w) / iw
+        const v0 = y / ih
+        const v1 = (y + h) / ih
+
+        texCoords[0] = u0
+        texCoords[1] = v1
+        texCoords[2] = u1
+        texCoords[3] = v1
+        texCoords[4] = u1
+        texCoords[5] = v0
+        texCoords[6] = u0
+        texCoords[7] = v0
+    } else {
+        texCoords.set(DEFAULT_TEX_COORDS)
+    }
+}
+
+
+function getValidTexture (image, textureManager) {
+    if (!image || !image.complete || image.naturalWidth === 0) {
+        return null
+    }
+    return textureManager.getTexture(image)
+}
+
+
+function transformCorners (m, bounds, corners) {
+    const {minX, minY, maxX, maxY} = bounds
+    corners[0] = m[0] * minX + m[2] * minY + m[4]
+    corners[1] = m[1] * minX + m[3] * minY + m[5]
+    corners[2] = m[0] * maxX + m[2] * minY + m[4]
+    corners[3] = m[1] * maxX + m[3] * minY + m[5]
+    corners[4] = m[0] * maxX + m[2] * maxY + m[4]
+    corners[5] = m[1] * maxX + m[3] * maxY + m[5]
+    corners[6] = m[0] * minX + m[2] * maxY + m[4]
+    corners[7] = m[1] * minX + m[3] * maxY + m[5]
+}
+
+
 export default class WebGLSpriteBatch {
 
     #tempCorners = new Float32Array(8)
@@ -54,32 +114,7 @@ export default class WebGLSpriteBatch {
     }
 
 
-    addSprite (object, effectiveOpacity) { // eslint-disable-line complexity
-        let image = null
-        let frame = null
-
-        if (object instanceof Image2D) {
-            image = object.image
-        } else if (object instanceof Sprite2D) {
-            image = object.image || (object.currentFrame ? object.currentFrame.image : null)
-            frame = object.currentFrame
-        }
-
-        if (!image) {
-            console.warn('WebGLSpriteBatch: Sprite has no image', object)
-            return
-        }
-
-        if (!image.complete || image.naturalWidth === 0) {
-            return
-        }
-
-        const texture = this.textureManager.getTexture(image)
-        if (!texture) {
-            console.warn('WebGLSpriteBatch: Failed to get texture for image', image.src)
-            return
-        }
-
+    #ensureTexture (texture) {
         if (this.currentTexture !== texture) {
             this.flush()
             this.currentTexture = texture
@@ -88,43 +123,10 @@ export default class WebGLSpriteBatch {
         if (this.spriteCount >= this.maxSprites) {
             this.flush()
         }
-
-        const {minX, minY, maxX, maxY} = object.getBounds()
-        const m = object.worldMatrix
-        const corners = this.#tempCorners
-        const texCoords = this.#tempTexCoords
-
-        corners[0] = m[0] * minX + m[2] * minY + m[4]
-        corners[1] = m[1] * minX + m[3] * minY + m[5]
-        corners[2] = m[0] * maxX + m[2] * minY + m[4]
-        corners[3] = m[1] * maxX + m[3] * minY + m[5]
-        corners[4] = m[0] * maxX + m[2] * maxY + m[4]
-        corners[5] = m[1] * maxX + m[3] * maxY + m[5]
-        corners[6] = m[0] * minX + m[2] * maxY + m[4]
-        corners[7] = m[1] * minX + m[3] * maxY + m[5]
-
-        if (frame) {
-            const {x, y, w, h} = frame.frame
-            const iw = image.width
-            const ih = image.height
-            const u0 = x / iw
-            const u1 = (x + w) / iw
-            const v0 = y / ih
-            const v1 = (y + h) / ih
-
-            texCoords[0] = u0
-            texCoords[1] = v1
-            texCoords[2] = u1
-            texCoords[3] = v1
-            texCoords[4] = u1
-            texCoords[5] = v0
-            texCoords[6] = u0
-            texCoords[7] = v0
-        } else {
-            texCoords.set(DEFAULT_TEX_COORDS)
-        }
+    }
 
 
+    #writeVertices (corners, texCoords, effectiveOpacity) {
         const feetY = Math.min(corners[1], corners[3])
 
         for (let i = 0; i < 4; i++) {
@@ -142,6 +144,26 @@ export default class WebGLSpriteBatch {
         }
 
         this.spriteCount++
+    }
+
+
+    addSprite (object, effectiveOpacity) {
+        const {image, frame} = extractImageAndFrame(object)
+        const texture = getValidTexture(image, this.textureManager)
+
+        if (!texture) {
+            return
+        }
+
+        this.#ensureTexture(texture)
+
+        const corners = this.#tempCorners
+        const texCoords = this.#tempTexCoords
+
+        transformCorners(object.worldMatrix, object.getBounds(), corners)
+        computeTexCoords(frame, image, texCoords)
+
+        this.#writeVertices(corners, texCoords, effectiveOpacity)
     }
 
 

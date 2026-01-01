@@ -82,7 +82,52 @@ function extractClassInfo (node, classDecl) {
 }
 
 
-function collectAstPositions (ast) { // eslint-disable-line complexity
+function processImportNode (node, positions) {
+    positions.imports.push({
+        type: 'import',
+        start: node.loc.start.line,
+        end: node.loc.end.line
+    })
+}
+
+
+function processExportNode (node, positions) {
+    const decl = node.declaration
+    if (!decl) {
+        return
+    }
+
+    if (decl.type === 'ClassDeclaration') {
+        const classInfo = extractClassInfo(node, decl)
+        positions.classes.push(classInfo)
+        positions.topLevel.push(classInfo)
+    } else {
+        positions.topLevel.push({
+            type: getNodeType(decl),
+            start: node.loc.start.line,
+            end: node.loc.end.line
+        })
+    }
+}
+
+
+function processClassNode (node, positions) {
+    const classInfo = extractClassInfo(node, node)
+    positions.classes.push(classInfo)
+    positions.topLevel.push(classInfo)
+}
+
+
+function processOtherNode (node, positions) {
+    positions.topLevel.push({
+        type: getNodeType(node),
+        start: node.loc.start.line,
+        end: node.loc.end.line
+    })
+}
+
+
+function collectAstPositions (ast) {
     const positions = {
         imports: [],
         topLevel: [],
@@ -91,44 +136,14 @@ function collectAstPositions (ast) { // eslint-disable-line complexity
 
     for (const node of ast.body) {
         if (node.type === 'ImportDeclaration') {
-            positions.imports.push({
-                type: 'import',
-                start: node.loc.start.line,
-                end: node.loc.end.line
-            })
-            continue
+            processImportNode(node, positions)
+        } else if (node.type === 'ExportNamedDeclaration' || node.type === 'ExportDefaultDeclaration') {
+            processExportNode(node, positions)
+        } else if (node.type === 'ClassDeclaration') {
+            processClassNode(node, positions)
+        } else {
+            processOtherNode(node, positions)
         }
-
-        if (node.type === 'ExportNamedDeclaration' || node.type === 'ExportDefaultDeclaration') {
-            const decl = node.declaration
-            if (decl) {
-                if (decl.type === 'ClassDeclaration') { // eslint-disable-line max-depth -- clean
-                    const classInfo = extractClassInfo(node, decl)
-                    positions.classes.push(classInfo)
-                    positions.topLevel.push(classInfo)
-                } else {
-                    positions.topLevel.push({
-                        type: getNodeType(decl),
-                        start: node.loc.start.line,
-                        end: node.loc.end.line
-                    })
-                }
-            }
-            continue
-        }
-
-        if (node.type === 'ClassDeclaration') {
-            const classInfo = extractClassInfo(node, node)
-            positions.classes.push(classInfo)
-            positions.topLevel.push(classInfo)
-            continue
-        }
-
-        positions.topLevel.push({
-            type: getNodeType(node),
-            start: node.loc.start.line,
-            end: node.loc.end.line
-        })
     }
 
     return positions
@@ -385,10 +400,7 @@ function processFile (filePath, rootDir, dryRun) {
 }
 
 
-export function auditWhitespace (rootDir) { // eslint-disable-line complexity
-    header('Whitespace')
-
-    const files = findJsFiles(rootDir)
+function collectFilesWithIssues (files, rootDir) {
     const filesWithIssues = []
 
     for (const filePath of files) {
@@ -406,6 +418,26 @@ export function auditWhitespace (rootDir) { // eslint-disable-line complexity
         }
     }
 
+    return filesWithIssues
+}
+
+
+function printFilesWithIssues (filesWithIssues) {
+    for (const {relativePath, issues} of filesWithIssues) {
+        listItem(relativePath)
+        for (const issue of issues) {
+            console.log(dim(`      ${issue}`))
+        }
+    }
+}
+
+
+export function auditWhitespace (rootDir) {
+    header('Whitespace')
+
+    const files = findJsFiles(rootDir)
+    const filesWithIssues = collectFilesWithIssues(files, rootDir)
+
     if (filesWithIssues.length === 0) {
         success('No whitespace issues')
         return {filesScanned: files.length, filesWithIssues: 0}
@@ -413,13 +445,7 @@ export function auditWhitespace (rootDir) { // eslint-disable-line complexity
 
     console.log(yellow(`Found issues in ${filesWithIssues.length} file(s):`))
     divider()
-
-    for (const {relativePath, issues} of filesWithIssues) {
-        listItem(relativePath)
-        for (const issue of issues) {
-            console.log(dim(`      ${issue}`))
-        }
-    }
+    printFilesWithIssues(filesWithIssues)
 
     return {filesScanned: files.length, filesWithIssues: filesWithIssues.length}
 }
