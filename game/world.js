@@ -20,7 +20,7 @@ export default class World extends PerkyModule {
 
         for (const entity of this.entities) {
             if (entity.started) {
-                entity.update?.(deltaTime)
+                entity.update(deltaTime)
             }
         }
 
@@ -28,13 +28,13 @@ export default class World extends PerkyModule {
     }
 
 
-    preUpdate () {
-        // Override in subclass
+    preUpdate () { // eslint-disable-line class-methods-use-this
+
     }
 
 
-    postUpdate () {
-        // Override in subclass
+    postUpdate () { // eslint-disable-line class-methods-use-this
+
     }
 
 }

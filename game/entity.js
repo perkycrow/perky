@@ -31,4 +31,9 @@ export default class Entity extends PerkyModule {
         this.position.y = value
     }
 
+
+    update () { // eslint-disable-line class-methods-use-this
+
+    }
+
 }
