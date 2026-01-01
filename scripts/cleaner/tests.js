@@ -254,7 +254,7 @@ function printItUsageAudit (issues) {
     hint('test() = unit tests ("test X does Y") - verifies implementation directly')
     hint('Sentences are for edge cases, simple methods can use test("methodName")')
     hint('Refactor these files from BDD style to unit test philosophy')
-    hint('Run yarn test after changes to ensure nothing breaks')
+    hint('Run "yarn test" after changes to ensure nothing breaks')
     divider()
 
     for (const {file} of issues) {
