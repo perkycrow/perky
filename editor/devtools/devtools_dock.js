@@ -34,10 +34,21 @@ export default class DevToolsDock extends BaseEditorComponent {
         this.#state = state
 
         state.addEventListener('tool:change', () => this.#updateActiveStates())
-        state.addEventListener('sidebar:open', () => this.#updateActiveStates())
+        state.addEventListener('sidebar:open', () => this.#expand())
         state.addEventListener('sidebar:close', () => this.#updateActiveStates())
-        state.addEventListener('logger:open', () => this.#updateLoggerState())
+        state.addEventListener('logger:open', () => this.#expand())
         state.addEventListener('logger:close', () => this.#updateLoggerState())
+    }
+
+
+    #expand () {
+        if (this.#minimized) {
+            this.#minimized = false
+            this.#render()
+        } else {
+            this.#updateActiveStates()
+            this.#updateLoggerState()
+        }
     }
 
 

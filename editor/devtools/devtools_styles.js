@@ -278,6 +278,11 @@ export const commandPaletteStyles = `
         color: var(--fg-primary);
     }
 
+    .command-palette-placeholder {
+        color: var(--fg-muted);
+        font-style: italic;
+    }
+
     .command-palette-result-subtitle {
         font-size: 11px;
         color: var(--fg-muted);

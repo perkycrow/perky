@@ -153,6 +153,18 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
         }
 
         commands.push({
+            id: 'open:logger',
+            title: '/open logger',
+            subtitle: 'Open Logger panel',
+            type: 'command',
+            icon: ICONS.logger,
+            action: () => {
+                this.#state?.openLogger()
+                this.#state?.closeCommandPalette()
+            }
+        })
+
+        commands.push({
             id: 'toggle:logger',
             title: '/toggle logger',
             subtitle: 'Toggle Logger panel',
@@ -176,65 +188,41 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
             }
         })
 
-        if (this.#state?.appManager) {
-            const appManager = this.#state.appManager
-            const registered = Array.from(appManager.constructors.keys)
+        commands.push({
+            id: 'spawn',
+            title: '/spawn',
+            placeholder: 'appName',
+            subtitle: 'Create app instance',
+            type: 'template',
+            icon: ICONS.spawn
+        })
 
-            for (const name of registered) {
-                commands.push({
-                    id: `spawn:${name}`,
-                    title: `/spawn ${name}`,
-                    subtitle: 'Create app instance',
-                    type: 'command',
-                    icon: ICONS.spawn,
-                    action: async () => {
-                        await appManager.spawn(name)
-                        this.#state?.closeCommandPalette()
-                    }
-                })
-            }
+        commands.push({
+            id: 'start',
+            title: '/start',
+            placeholder: 'appId',
+            subtitle: 'Start stopped app',
+            type: 'template',
+            icon: ICONS.start
+        })
 
-            const running = appManager.list()
-            for (const app of running) {
-                if (app.$status === 'started') {
-                    commands.push({
-                        id: `stop:${app.$id}`,
-                        title: `/stop ${app.$id}`,
-                        subtitle: 'Stop running app',
-                        type: 'command',
-                        icon: ICONS.stop,
-                        action: () => {
-                            appManager.stopApp(app.$id)
-                            this.#state?.closeCommandPalette()
-                        }
-                    })
-                } else if (app.$status === 'stopped') {
-                    commands.push({
-                        id: `start:${app.$id}`,
-                        title: `/start ${app.$id}`,
-                        subtitle: 'Start stopped app',
-                        type: 'command',
-                        icon: ICONS.start,
-                        action: () => {
-                            appManager.startApp(app.$id)
-                            this.#state?.closeCommandPalette()
-                        }
-                    })
-                }
+        commands.push({
+            id: 'stop',
+            title: '/stop',
+            placeholder: 'appId',
+            subtitle: 'Stop running app',
+            type: 'template',
+            icon: ICONS.stop
+        })
 
-                commands.push({
-                    id: `dispose:${app.$id}`,
-                    title: `/dispose ${app.$id}`,
-                    subtitle: 'Remove app instance',
-                    type: 'command',
-                    icon: ICONS.dispose,
-                    action: () => {
-                        appManager.disposeApp(app.$id)
-                        this.#state?.closeCommandPalette()
-                    }
-                })
-            }
-        }
+        commands.push({
+            id: 'dispose',
+            title: '/dispose',
+            placeholder: 'appId',
+            subtitle: 'Remove app instance',
+            type: 'template',
+            icon: ICONS.dispose
+        })
 
         return commands
     }
@@ -366,6 +354,13 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
         title.className = 'command-palette-result-title'
         title.textContent = cmd.title
 
+        if (cmd.placeholder) {
+            const placeholder = document.createElement('span')
+            placeholder.className = 'command-palette-placeholder'
+            placeholder.textContent = ` ${cmd.placeholder}`
+            title.appendChild(placeholder)
+        }
+
         text.appendChild(title)
 
         result.appendChild(icon)
@@ -443,6 +438,17 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
     #executeCommand (cmd) {
         if (cmd.type === 'history') {
             this.#executeHistoryEntry(cmd.originalEntry)
+        } else if (cmd.type === 'template') {
+            const input = this.#inputEl.value.trim()
+            const {args} = parseCommand(input)
+
+            if (args.length > 0) {
+                this.#executeTemplateCommand(cmd.id, args[0])
+            } else {
+                this.#inputEl.value = `${cmd.title} `
+                this.#inputEl.focus()
+                this.#onInput()
+            }
         } else if (cmd.type === 'action') {
             const input = this.#inputEl.value
             const {args} = parseCommand(input)
@@ -454,6 +460,45 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
         } else if (cmd.action) {
             this.#addToHistory(cmd.title, cmd)
             cmd.action()
+        }
+    }
+
+
+    #executeTemplateCommand (commandId, arg) {
+        const appManager = this.#state?.appManager
+        if (!appManager) {
+            return
+        }
+
+        const input = this.#inputEl.value.trim()
+
+        switch (commandId) {
+        case 'spawn':
+            this.#addToHistory(input, {id: commandId})
+            appManager.spawn(arg)
+            this.#state?.closeCommandPalette()
+            break
+
+        case 'start':
+            this.#addToHistory(input, {id: commandId})
+            appManager.startApp(arg)
+            this.#state?.closeCommandPalette()
+            break
+
+        case 'stop':
+            this.#addToHistory(input, {id: commandId})
+            appManager.stopApp(arg)
+            this.#state?.closeCommandPalette()
+            break
+
+        case 'dispose':
+            this.#addToHistory(input, {id: commandId})
+            appManager.disposeApp(arg)
+            this.#state?.closeCommandPalette()
+            break
+
+        default:
+            break
         }
     }
 
