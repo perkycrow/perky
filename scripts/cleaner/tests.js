@@ -88,6 +88,12 @@ function findItUsage (rootDir) {
 
 function processDescribeLine (trimmed, lineNum, indent, stack) {
     if (trimmed.startsWith('describe(')) {
+        for (let i = stack.length - 1; i >= 0; i--) {
+            if (stack[i].indent < indent) {
+                stack[i].testCount++
+                break
+            }
+        }
         stack.push({line: lineNum, indent, testCount: 0, text: trimmed.substring(0, 40)})
     }
 }
