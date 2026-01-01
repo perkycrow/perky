@@ -101,7 +101,7 @@ export default class BaseInspector extends BaseEditorComponent {
     }
 
 
-    createButton (icon, text, onClick) { // eslint-disable-line class-methods-use-this
+    createButton (icon, text, onClick) { // eslint-disable-line class-methods-use-this -- clean
         const btn = document.createElement('button')
         btn.className = 'inspector-btn'
         btn.textContent = icon ? `${icon} ${text}` : text

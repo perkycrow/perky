@@ -200,7 +200,7 @@ export default class BaseTreeNode extends BaseEditorComponent {
     }
 
 
-    getSelectDetail () { // eslint-disable-line class-methods-use-this
+    getSelectDetail () { // eslint-disable-line class-methods-use-this -- clean
         return {}
     }
 

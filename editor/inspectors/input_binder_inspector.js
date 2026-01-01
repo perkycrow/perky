@@ -257,9 +257,9 @@ export default class InputBinderInspector extends BaseInspector {
         list.className = 'bindings-list'
 
         if (this.#viewMode === 'action') {
-            this.#renderByAction(list, bindings)
+            renderByAction(list, bindings)
         } else {
-            this.#renderByDevice(list, bindings)
+            renderByDevice(list, bindings)
         }
 
         this.#containerEl.appendChild(list)
@@ -302,69 +302,69 @@ export default class InputBinderInspector extends BaseInspector {
         return header
     }
 
+}
 
-    #renderByAction (container, bindings) {
-        const groups = new Map()
 
-        for (const binding of bindings) {
-            const key = binding.actionName
-            if (!groups.has(key)) {
-                groups.set(key, [])
-            }
-            groups.get(key).push(binding)
+function renderByAction (container, bindings) {
+    const groups = new Map()
+
+    for (const binding of bindings) {
+        const key = binding.actionName
+        if (!groups.has(key)) {
+            groups.set(key, [])
         }
-
-        for (const [actionName, groupBindings] of groups) {
-            const group = this.#createGroup('action', actionName, groupBindings)
-            container.appendChild(group)
-        }
+        groups.get(key).push(binding)
     }
 
+    for (const [actionName, groupBindings] of groups) {
+        const group = createGroup(actionName, groupBindings)
+        container.appendChild(group)
+    }
+}
 
-    #renderByDevice (container, bindings) {
-        const groups = new Map()
 
-        for (const binding of bindings) {
-            const key = binding.deviceName
-            if (!groups.has(key)) {
-                groups.set(key, [])
-            }
-            groups.get(key).push(binding)
+function renderByDevice (container, bindings) {
+    const groups = new Map()
+
+    for (const binding of bindings) {
+        const key = binding.deviceName
+        if (!groups.has(key)) {
+            groups.set(key, [])
         }
-
-        for (const [deviceName, groupBindings] of groups) {
-            const group = this.#createGroup('device', deviceName, groupBindings)
-            container.appendChild(group)
-        }
+        groups.get(key).push(binding)
     }
 
+    for (const [deviceName, groupBindings] of groups) {
+        const group = createGroup(deviceName, groupBindings)
+        container.appendChild(group)
+    }
+}
 
-    #createGroup (_type, name, bindings) { // eslint-disable-line class-methods-use-this
-        const group = document.createElement('div')
-        group.className = 'binding-group'
 
-        const header = document.createElement('div')
-        header.className = 'group-header'
+function createGroup (name, bindings) {
+    const group = document.createElement('div')
+    group.className = 'binding-group'
 
-        const nameEl = document.createElement('span')
-        nameEl.className = 'group-name'
-        nameEl.textContent = name
+    const header = document.createElement('div')
+    header.className = 'group-header'
 
-        const count = document.createElement('span')
-        count.className = 'group-count'
-        count.textContent = bindings.length
+    const nameEl = document.createElement('span')
+    nameEl.className = 'group-name'
+    nameEl.textContent = name
 
-        header.appendChild(nameEl)
-        header.appendChild(count)
-        group.appendChild(header)
+    const count = document.createElement('span')
+    count.className = 'group-count'
+    count.textContent = bindings.length
 
-        for (const binding of bindings) {
-            group.appendChild(createBindingCard(binding))
-        }
+    header.appendChild(nameEl)
+    header.appendChild(count)
+    group.appendChild(header)
 
-        return group
+    for (const binding of bindings) {
+        group.appendChild(createBindingCard(binding))
     }
 
+    return group
 }
 
 

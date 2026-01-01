@@ -55,7 +55,8 @@ export default class CanvasObjectRenderer {
     }
 
 
-    render () { // eslint-disable-line class-methods-use-this
+    render () { // eslint-disable-line class-methods-use-this -- clean
+
     }
 
 

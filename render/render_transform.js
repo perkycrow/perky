@@ -6,27 +6,27 @@ export default class RenderTransform {
     }
 
 
-    init () { // eslint-disable-line class-methods-use-this
+    init () { // eslint-disable-line class-methods-use-this -- clean
 
     }
 
 
-    apply (context, matrices) {// eslint-disable-line class-methods-use-this
+    apply (context, matrices) {// eslint-disable-line class-methods-use-this -- clean
         return matrices
     }
 
 
-    getProgram () { // eslint-disable-line class-methods-use-this
+    getProgram () { // eslint-disable-line class-methods-use-this -- clean
         return null
     }
 
 
-    applyUniforms () { // eslint-disable-line class-methods-use-this
+    applyUniforms () { // eslint-disable-line class-methods-use-this -- clean
 
     }
 
 
-    dispose () { // eslint-disable-line class-methods-use-this
+    dispose () { // eslint-disable-line class-methods-use-this -- clean
 
     }
 

@@ -48,7 +48,7 @@ export default class InputControl extends Notifier {
     }
 
 
-    getDefaultValue () { // eslint-disable-line class-methods-use-this
+    getDefaultValue () { // eslint-disable-line class-methods-use-this -- clean
         return 0
     }
 

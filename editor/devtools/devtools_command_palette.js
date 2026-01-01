@@ -103,33 +103,11 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
 
         for (const app of apps) {
             if (app.$status === 'started') {
-                this.#collectActionsFromApp(app, actions)
+                collectActionsFromApp(app, actions)
             }
         }
 
         return actions
-    }
-
-
-    #collectActionsFromApp (app, actions) { // eslint-disable-line class-methods-use-this
-        const actionsMap = app.actionDispatcher?.listAllActions()
-        if (!actionsMap) {
-            return
-        }
-
-        for (const [controllerName, actionNames] of actionsMap) {
-            for (const actionName of actionNames) {
-                actions.push({
-                    id: `action:${app.$id}:${controllerName}:${actionName}`,
-                    title: actionName,
-                    subtitle: app.$id,
-                    type: 'action',
-                    icon: ICONS.action,
-                    app,
-                    actionName
-                })
-            }
-        }
     }
 
 
@@ -447,7 +425,7 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
         } else if (cmd.type === 'action') {
             const input = this.#inputEl.value
             const {args} = parseCommand(input)
-            const historyInput = this.#buildHistoryInput(cmd.actionName, args)
+            const historyInput = buildHistoryInput(cmd.actionName, args)
 
             this.#addToHistory(historyInput, cmd)
             cmd.app.actionDispatcher.execute(cmd.actionName, ...args)
@@ -481,25 +459,6 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
     }
 
 
-    #buildHistoryInput (actionName, args) { // eslint-disable-line class-methods-use-this
-        if (args.length === 0) {
-            return actionName
-        }
-
-        const argsString = args.map(arg => {
-            if (typeof arg === 'string') {
-                return `"${arg}"`
-            }
-            if (typeof arg === 'object') {
-                return JSON.stringify(arg)
-            }
-            return String(arg)
-        }).join(', ')
-
-        return `${actionName} ${argsString}`
-    }
-
-
     #executeHistoryEntry (entry) {
         this.#inputEl.value = entry.input
         this.#onInput()
@@ -526,6 +485,47 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
         }
     }
 
+}
+
+
+function collectActionsFromApp (app, actions) {
+    const actionsMap = app.actionDispatcher?.listAllActions()
+    if (!actionsMap) {
+        return
+    }
+
+    for (const [controllerName, actionNames] of actionsMap) {
+        for (const actionName of actionNames) {
+            actions.push({
+                id: `action:${app.$id}:${controllerName}:${actionName}`,
+                title: actionName,
+                subtitle: app.$id,
+                type: 'action',
+                icon: ICONS.action,
+                app,
+                actionName
+            })
+        }
+    }
+}
+
+
+function buildHistoryInput (actionName, args) {
+    if (args.length === 0) {
+        return actionName
+    }
+
+    const argsString = args.map(arg => {
+        if (typeof arg === 'string') {
+            return `"${arg}"`
+        }
+        if (typeof arg === 'object') {
+            return JSON.stringify(arg)
+        }
+        return String(arg)
+    }).join(', ')
+
+    return `${actionName} ${argsString}`
 }
 
 

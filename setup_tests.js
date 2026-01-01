@@ -4,11 +4,11 @@ global.ResizeObserver = class ResizeObserver {
         this.callback = callback
     }
 
-    observe () { } // eslint-disable-line class-methods-use-this
+    observe () { } // eslint-disable-line class-methods-use-this -- clean
 
-    unobserve () { } // eslint-disable-line class-methods-use-this
+    unobserve () { } // eslint-disable-line class-methods-use-this -- clean
 
-    disconnect () { } // eslint-disable-line class-methods-use-this
+    disconnect () { } // eslint-disable-line class-methods-use-this -- clean
 }
 
 

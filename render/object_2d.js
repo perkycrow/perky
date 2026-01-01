@@ -101,7 +101,7 @@ export default class Object2D extends Transform2D {
     }
 
 
-    getBounds () { // eslint-disable-line class-methods-use-this
+    getBounds () { // eslint-disable-line class-methods-use-this -- clean
         return {
             minX: 0,
             minY: 0,
@@ -148,12 +148,12 @@ export default class Object2D extends Transform2D {
     }
 
 
-    get renderHints () { // eslint-disable-line class-methods-use-this
+    get renderHints () { // eslint-disable-line class-methods-use-this -- clean
         return null
     }
 
 
-    render () { // eslint-disable-line class-methods-use-this
+    render () { // eslint-disable-line class-methods-use-this -- clean
 
     }
 
