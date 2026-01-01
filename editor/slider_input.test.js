@@ -77,88 +77,60 @@ describe('SliderInput', () => {
     })
 
 
-    describe('setValue', () => {
-
-        test('should set value directly', () => {
-            slider.setValue(42)
-            expect(slider.value).toBe(42)
-        })
-
+    test('setValue should set value directly', () => {
+        slider.setValue(42)
+        expect(slider.value).toBe(42)
     })
 
 
-    describe('setMin', () => {
-
-        test('should set min value', () => {
-            slider.setMin(10)
-            const range = slider.shadowRoot.querySelector('input[type="range"]')
-            expect(range.min).toBe('10')
-        })
-
+    test('setMin should set min value', () => {
+        slider.setMin(10)
+        const range = slider.shadowRoot.querySelector('input[type="range"]')
+        expect(range.min).toBe('10')
     })
 
 
-    describe('setMax', () => {
-
-        test('should set max value', () => {
-            slider.setMax(200)
-            const range = slider.shadowRoot.querySelector('input[type="range"]')
-            expect(range.max).toBe('200')
-        })
-
+    test('setMax should set max value', () => {
+        slider.setMax(200)
+        const range = slider.shadowRoot.querySelector('input[type="range"]')
+        expect(range.max).toBe('200')
     })
 
 
-    describe('setStep', () => {
-
-        test('should set step value', () => {
-            slider.setStep(5)
-            const range = slider.shadowRoot.querySelector('input[type="range"]')
-            expect(range.step).toBe('5')
-        })
-
+    test('setStep should set step value', () => {
+        slider.setStep(5)
+        const range = slider.shadowRoot.querySelector('input[type="range"]')
+        expect(range.step).toBe('5')
     })
 
 
-    describe('setLabel', () => {
-
-        test('should set label text', () => {
-            slider.setLabel('Volume')
-            const label = slider.shadowRoot.querySelector('.slider-input-label')
-            expect(label.textContent).toBe('Volume')
-        })
-
+    test('setLabel should set label text', () => {
+        slider.setLabel('Volume')
+        const label = slider.shadowRoot.querySelector('.slider-input-label')
+        expect(label.textContent).toBe('Volume')
     })
 
 
-    describe('observedAttributes', () => {
-
-        test('should include expected attributes', () => {
-            const observed = slider.constructor.observedAttributes
-            expect(observed).toContain('value')
-            expect(observed).toContain('min')
-            expect(observed).toContain('max')
-            expect(observed).toContain('step')
-            expect(observed).toContain('label')
-        })
-
+    test('observedAttributes should include expected attributes', () => {
+        const observed = slider.constructor.observedAttributes
+        expect(observed).toContain('value')
+        expect(observed).toContain('min')
+        expect(observed).toContain('max')
+        expect(observed).toContain('step')
+        expect(observed).toContain('label')
     })
 
 
-    describe('change event', () => {
+    test('change event should emit change event when slider moved', () => {
+        const handler = vi.fn()
+        slider.addEventListener('change', handler)
 
-        test('should emit change event when slider moved', () => {
-            const handler = vi.fn()
-            slider.addEventListener('change', handler)
+        const range = slider.shadowRoot.querySelector('input[type="range"]')
+        range.value = 50
+        range.dispatchEvent(new Event('input'))
 
-            const range = slider.shadowRoot.querySelector('input[type="range"]')
-            range.value = 50
-            range.dispatchEvent(new Event('input'))
-
-            expect(handler).toHaveBeenCalled()
-            expect(handler.mock.calls[0][0].detail.value).toBe(50)
-        })
-
+        expect(handler).toHaveBeenCalled()
+        expect(handler.mock.calls[0][0].detail.value).toBe(50)
     })
 
 

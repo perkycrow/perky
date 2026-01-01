@@ -107,12 +107,8 @@ describe('WebGLCanvasInspector', () => {
     })
 
 
-    describe('matches', () => {
-
-        test('static matches method exists', () => {
-            expect(typeof WebGLCanvasInspector.matches).toBe('function')
-        })
-
+    test('matches static matches method exists', () => {
+        expect(typeof WebGLCanvasInspector.matches).toBe('function')
     })
 
 
@@ -286,23 +282,19 @@ describe('WebGLCanvasInspector', () => {
     })
 
 
-    describe('clearContent', () => {
+    test('clearContent clears and re-renders on module change', () => {
+        const module1 = new MockWebGLCanvas2D({width: 800, height: 600})
+        inspector.setModule(module1)
 
-        test('clears and re-renders on module change', () => {
-            const module1 = new MockWebGLCanvas2D({width: 800, height: 600})
-            inspector.setModule(module1)
+        const module2 = new MockWebGLCanvas2D({width: 1920, height: 1080})
+        inspector.setModule(module2)
 
-            const module2 = new MockWebGLCanvas2D({width: 1920, height: 1080})
-            inspector.setModule(module2)
+        const values = inspector.gridEl.querySelectorAll('.inspector-value')
+        const hasNew = Array.from(values).some(v => v.textContent === '1920×1080')
+        const hasOld = Array.from(values).some(v => v.textContent === '800×600')
 
-            const values = inspector.gridEl.querySelectorAll('.inspector-value')
-            const hasNew = Array.from(values).some(v => v.textContent === '1920×1080')
-            const hasOld = Array.from(values).some(v => v.textContent === '800×600')
-
-            expect(hasNew).toBe(true)
-            expect(hasOld).toBe(false)
-        })
-
+        expect(hasNew).toBe(true)
+        expect(hasOld).toBe(false)
     })
 
 })

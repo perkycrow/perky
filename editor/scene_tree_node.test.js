@@ -82,27 +82,19 @@ describe('SceneTreeNode', () => {
     })
 
 
-    describe('refresh', () => {
-
-        test('should update the node', () => {
-            const obj = createMockObject()
-            node.setObject(obj)
-            obj.x = 100
-            node.refresh()
-            expect(node.getObject()).toBe(obj)
-        })
-
+    test('refresh should update the node', () => {
+        const obj = createMockObject()
+        node.setObject(obj)
+        obj.x = 100
+        node.refresh()
+        expect(node.getObject()).toBe(obj)
     })
 
 
-    describe('getItem', () => {
-
-        test('should return the object', () => {
-            const obj = createMockObject()
-            node.setObject(obj)
-            expect(node.getItem()).toBe(obj)
-        })
-
+    test('getItem should return the object', () => {
+        const obj = createMockObject()
+        node.setObject(obj)
+        expect(node.getItem()).toBe(obj)
     })
 
 
@@ -168,62 +160,46 @@ describe('SceneTreeNode', () => {
     })
 
 
-    describe('getSelectDetail', () => {
-
-        test('should return object with object property', () => {
-            const obj = createMockObject()
-            node.setObject(obj)
-            expect(node.getSelectDetail()).toEqual({object: obj})
-        })
-
+    test('getSelectDetail should return object with object property', () => {
+        const obj = createMockObject()
+        node.setObject(obj)
+        expect(node.getSelectDetail()).toEqual({object: obj})
     })
 
 
-    describe('getToggleDetail', () => {
-
-        test('should return object with object and expanded state', () => {
-            const obj = createMockObject()
-            node.setObject(obj)
-            node.setExpanded(true)
-            expect(node.getToggleDetail()).toEqual({object: obj, expanded: true})
-        })
-
+    test('getToggleDetail should return object with object and expanded state', () => {
+        const obj = createMockObject()
+        node.setObject(obj)
+        node.setExpanded(true)
+        expect(node.getToggleDetail()).toEqual({object: obj, expanded: true})
     })
 
 
-    describe('clearChildNodes', () => {
+    test('clearChildNodes should clear child nodes', () => {
+        node.setObject(createMockObject({
+            children: [createMockObject()]
+        }))
+        node.setExpanded(true)
 
-        test('should clear child nodes', () => {
-            node.setObject(createMockObject({
-                children: [createMockObject()]
-            }))
-            node.setExpanded(true)
-
-            node.clearChildNodes()
-            expect(node.childrenEl.children.length).toBe(0)
-        })
-
+        node.clearChildNodes()
+        expect(node.childrenEl.children.length).toBe(0)
     })
 
 
-    describe('navigate:entity event', () => {
+    test('navigate:entity event should emit navigate:entity when entity link clicked', () => {
+        const entity = {$id: 'player', constructor: {name: 'Entity'}}
+        const obj = createMockObject({$entity: entity})
+        node.setObject(obj)
 
-        test('should emit navigate:entity when entity link clicked', () => {
-            const entity = {$id: 'player', constructor: {name: 'Entity'}}
-            const obj = createMockObject({$entity: entity})
-            node.setObject(obj)
+        const handler = vi.fn()
+        node.addEventListener('navigate:entity', handler)
 
-            const handler = vi.fn()
-            node.addEventListener('navigate:entity', handler)
-
-            const propsEl = node.shadowRoot.querySelector('.node-props')
-            if (propsEl) {
-                propsEl.click()
-                expect(handler).toHaveBeenCalled()
-                expect(handler.mock.calls[0][0].detail.entity).toBe(entity)
-            }
-        })
-
+        const propsEl = node.shadowRoot.querySelector('.node-props')
+        if (propsEl) {
+            propsEl.click()
+            expect(handler).toHaveBeenCalled()
+            expect(handler.mock.calls[0][0].detail.entity).toBe(entity)
+        }
     })
 
 })

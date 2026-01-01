@@ -41,35 +41,23 @@ describe('Vec2Input', () => {
     })
 
 
-    describe('value property', () => {
-
-        test('should get and set value', () => {
-            const vec = {x: 10, y: 20}
-            vec2Input.value = vec
-            expect(vec2Input.value).toBe(vec)
-        })
-
+    test('value property should get and set value', () => {
+        const vec = {x: 10, y: 20}
+        vec2Input.value = vec
+        expect(vec2Input.value).toBe(vec)
     })
 
 
-    describe('setLabel', () => {
-
-        test('should set label text', () => {
-            vec2Input.setLabel('Position')
-            const label = vec2Input.shadowRoot.querySelector('.vec2-input-label')
-            expect(label.textContent).toBe('Position')
-        })
-
+    test('setLabel should set label text', () => {
+        vec2Input.setLabel('Position')
+        const label = vec2Input.shadowRoot.querySelector('.vec2-input-label')
+        expect(label.textContent).toBe('Position')
     })
 
 
-    describe('observedAttributes', () => {
-
-        test('should include expected attributes', () => {
-            const observed = vec2Input.constructor.observedAttributes
-            expect(observed).toContain('label')
-        })
-
+    test('observedAttributes should include expected attributes', () => {
+        const observed = vec2Input.constructor.observedAttributes
+        expect(observed).toContain('label')
     })
 
 

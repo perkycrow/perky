@@ -78,12 +78,8 @@ describe('GameLoopInspector', () => {
     })
 
 
-    describe('matches', () => {
-
-        test('static matches method exists', () => {
-            expect(typeof GameLoopInspector.matches).toBe('function')
-        })
-
+    test('matches static matches method exists', () => {
+        expect(typeof GameLoopInspector.matches).toBe('function')
     })
 
 

@@ -84,19 +84,15 @@ describe('AppsTool', () => {
     })
 
 
-    describe('onStateSet', () => {
+    test('onStateSet registers appmanager:change listener', () => {
+        const state = {
+            appManager: null,
+            addEventListener: vi.fn()
+        }
 
-        test('registers appmanager:change listener', () => {
-            const state = {
-                appManager: null,
-                addEventListener: vi.fn()
-            }
+        tool.setState(state)
 
-            tool.setState(state)
-
-            expect(state.addEventListener).toHaveBeenCalledWith('appmanager:change', expect.any(Function))
-        })
-
+        expect(state.addEventListener).toHaveBeenCalledWith('appmanager:change', expect.any(Function))
     })
 
 
@@ -162,21 +158,17 @@ describe('AppsTool', () => {
     })
 
 
-    describe('onActivate', () => {
+    test('onActivate refreshes the tool', () => {
+        const state = {
+            appManager: {
+                constructors: {keys: []},
+                list: () => []
+            },
+            addEventListener: vi.fn()
+        }
+        tool.setState(state)
 
-        test('refreshes the tool', () => {
-            const state = {
-                appManager: {
-                    constructors: {keys: []},
-                    list: () => []
-                },
-                addEventListener: vi.fn()
-            }
-            tool.setState(state)
-
-            expect(() => tool.onActivate()).not.toThrow()
-        })
-
+        expect(() => tool.onActivate()).not.toThrow()
     })
 
 })

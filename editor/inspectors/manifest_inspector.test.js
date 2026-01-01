@@ -56,12 +56,8 @@ describe('ManifestInspector', () => {
     })
 
 
-    describe('matches', () => {
-
-        test('static matches method exists', () => {
-            expect(typeof ManifestInspector.matches).toBe('function')
-        })
-
+    test('matches static matches method exists', () => {
+        expect(typeof ManifestInspector.matches).toBe('function')
     })
 
 

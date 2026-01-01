@@ -106,18 +106,14 @@ describe('ExplorerTool', () => {
     })
 
 
-    describe('onActivate', () => {
+    test('onActivate does not throw when state has no module', () => {
+        const state = {
+            module: null,
+            addEventListener: vi.fn()
+        }
+        tool.setState(state)
 
-        test('does not throw when state has no module', () => {
-            const state = {
-                module: null,
-                addEventListener: vi.fn()
-            }
-            tool.setState(state)
-
-            expect(() => tool.onActivate()).not.toThrow()
-        })
-
+        expect(() => tool.onActivate()).not.toThrow()
     })
 
 })

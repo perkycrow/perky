@@ -137,15 +137,11 @@ describe('BaseInspector', () => {
     })
 
 
-    describe('addSeparator', () => {
+    test('addSeparator should add separator element', () => {
+        inspector.addSeparator()
 
-        test('should add separator element', () => {
-            inspector.addSeparator()
-
-            const separator = inspector.gridEl.querySelector('.inspector-separator')
-            expect(separator).not.toBeNull()
-        })
-
+        const separator = inspector.gridEl.querySelector('.inspector-separator')
+        expect(separator).not.toBeNull()
     })
 
 
@@ -172,18 +168,14 @@ describe('BaseInspector', () => {
     })
 
 
-    describe('clearContent', () => {
+    test('clearContent should clear grid and actions', () => {
+        inspector.addRow('Label', 'Value')
+        inspector.actionsEl.appendChild(inspector.createButton('', 'Test', () => { }))
 
-        test('should clear grid and actions', () => {
-            inspector.addRow('Label', 'Value')
-            inspector.actionsEl.appendChild(inspector.createButton('', 'Test', () => { }))
+        inspector.clearContent()
 
-            inspector.clearContent()
-
-            expect(inspector.gridEl.innerHTML).toBe('')
-            expect(inspector.actionsEl.innerHTML).toBe('')
-        })
-
+        expect(inspector.gridEl.innerHTML).toBe('')
+        expect(inspector.actionsEl.innerHTML).toBe('')
     })
 
 })

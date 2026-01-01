@@ -150,33 +150,25 @@ describe('ExplorerContextMenu', () => {
     })
 
 
-    describe('hide', () => {
+    test('hide should hide the menu', () => {
+        const actions = [{label: 'Test', icon: '🔍', action: vi.fn()}]
 
-        test('should hide the menu', () => {
-            const actions = [{label: 'Test', icon: '🔍', action: vi.fn()}]
+        menu.show(actions, {}, {x: 100, y: 100})
+        menu.hide()
 
-            menu.show(actions, {}, {x: 100, y: 100})
-            menu.hide()
-
-            expect(menu.style.display).toBe('none')
-        })
-
+        expect(menu.style.display).toBe('none')
     })
 
 
-    describe('keyboard events', () => {
+    test('keyboard events should hide on Escape key', () => {
+        const actions = [{label: 'Test', icon: '🔍', action: vi.fn()}]
 
-        test('should hide on Escape key', () => {
-            const actions = [{label: 'Test', icon: '🔍', action: vi.fn()}]
+        menu.show(actions, {}, {x: 100, y: 100})
 
-            menu.show(actions, {}, {x: 100, y: 100})
+        const event = new KeyboardEvent('keydown', {key: 'Escape'})
+        document.dispatchEvent(event)
 
-            const event = new KeyboardEvent('keydown', {key: 'Escape'})
-            document.dispatchEvent(event)
-
-            expect(menu.style.display).toBe('none')
-        })
-
+        expect(menu.style.display).toBe('none')
     })
 
 })

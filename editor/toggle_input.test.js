@@ -60,35 +60,23 @@ describe('ToggleInput', () => {
     })
 
 
-    describe('setChecked', () => {
-
-        test('should set checked directly', () => {
-            toggle.setChecked(true)
-            expect(toggle.checked).toBe(true)
-        })
-
+    test('setChecked should set checked directly', () => {
+        toggle.setChecked(true)
+        expect(toggle.checked).toBe(true)
     })
 
 
-    describe('setLabel', () => {
-
-        test('should set label text', () => {
-            toggle.setLabel('Enabled')
-            const label = toggle.shadowRoot.querySelector('.toggle-input-label')
-            expect(label.textContent).toBe('Enabled')
-        })
-
+    test('setLabel should set label text', () => {
+        toggle.setLabel('Enabled')
+        const label = toggle.shadowRoot.querySelector('.toggle-input-label')
+        expect(label.textContent).toBe('Enabled')
     })
 
 
-    describe('observedAttributes', () => {
-
-        test('should include expected attributes', () => {
-            const observed = toggle.constructor.observedAttributes
-            expect(observed).toContain('checked')
-            expect(observed).toContain('label')
-        })
-
+    test('observedAttributes should include expected attributes', () => {
+        const observed = toggle.constructor.observedAttributes
+        expect(observed).toContain('checked')
+        expect(observed).toContain('label')
     })
 
 

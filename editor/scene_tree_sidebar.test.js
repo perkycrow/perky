@@ -107,17 +107,13 @@ describe('SceneTreeSidebar', () => {
     })
 
 
-    describe('close', () => {
+    test('close should emit sidebar:close event', () => {
+        const handler = vi.fn()
+        sidebar.addEventListener('sidebar:close', handler)
 
-        test('should emit sidebar:close event', () => {
-            const handler = vi.fn()
-            sidebar.addEventListener('sidebar:close', handler)
+        sidebar.close()
 
-            sidebar.close()
-
-            expect(handler).toHaveBeenCalled()
-        })
-
+        expect(handler).toHaveBeenCalled()
     })
 
 
@@ -168,22 +164,18 @@ describe('SceneTreeSidebar', () => {
     })
 
 
-    describe('navigate:entity event', () => {
+    test('navigate:entity event should bubble navigate:entity events from tree', () => {
+        const handler = vi.fn()
+        sidebar.addEventListener('navigate:entity', handler)
 
-        test('should bubble navigate:entity events from tree', () => {
-            const handler = vi.fn()
-            sidebar.addEventListener('navigate:entity', handler)
+        const rootNode = sidebar.shadowRoot.querySelector('scene-tree-node')
+        rootNode.dispatchEvent(new CustomEvent('navigate:entity', {
+            bubbles: true,
+            composed: true,
+            detail: {entity: {$id: 'test'}}
+        }))
 
-            const rootNode = sidebar.shadowRoot.querySelector('scene-tree-node')
-            rootNode.dispatchEvent(new CustomEvent('navigate:entity', {
-                bubbles: true,
-                composed: true,
-                detail: {entity: {$id: 'test'}}
-            }))
-
-            expect(handler).toHaveBeenCalled()
-        })
-
+        expect(handler).toHaveBeenCalled()
     })
 
 })

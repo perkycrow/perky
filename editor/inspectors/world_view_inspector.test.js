@@ -52,12 +52,8 @@ describe('WorldViewInspector', () => {
     })
 
 
-    describe('matches', () => {
-
-        test('static matches method exists', () => {
-            expect(typeof WorldViewInspector.matches).toBe('function')
-        })
-
+    test('matches static matches method exists', () => {
+        expect(typeof WorldViewInspector.matches).toBe('function')
     })
 
 
@@ -216,27 +212,23 @@ describe('WorldViewInspector', () => {
     })
 
 
-    describe('clearContent', () => {
-
-        test('clears and re-renders on module change', () => {
-            const module1 = new MockWorldView({
-                world: {$id: 'world-1'}
-            })
-            inspector.setModule(module1)
-
-            const module2 = new MockWorldView({
-                world: {$id: 'world-2'}
-            })
-            inspector.setModule(module2)
-
-            const values = inspector.gridEl.querySelectorAll('.inspector-value')
-            const hasNew = Array.from(values).some(v => v.textContent === 'world-2')
-            const hasOld = Array.from(values).some(v => v.textContent === 'world-1')
-
-            expect(hasNew).toBe(true)
-            expect(hasOld).toBe(false)
+    test('clearContent clears and re-renders on module change', () => {
+        const module1 = new MockWorldView({
+            world: {$id: 'world-1'}
         })
+        inspector.setModule(module1)
 
+        const module2 = new MockWorldView({
+            world: {$id: 'world-2'}
+        })
+        inspector.setModule(module2)
+
+        const values = inspector.gridEl.querySelectorAll('.inspector-value')
+        const hasNew = Array.from(values).some(v => v.textContent === 'world-2')
+        const hasOld = Array.from(values).some(v => v.textContent === 'world-1')
+
+        expect(hasNew).toBe(true)
+        expect(hasOld).toBe(false)
     })
 
 })

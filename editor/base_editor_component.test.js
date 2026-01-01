@@ -107,19 +107,15 @@ describe('BaseEditorComponent', () => {
     })
 
 
-    describe('disconnectedCallback', () => {
+    test('disconnectedCallback should clean listeners when removed from DOM', () => {
+        const target = new Notifier()
+        const callback = vi.fn()
 
-        test('should clean listeners when removed from DOM', () => {
-            const target = new Notifier()
-            const callback = vi.fn()
+        component.listenTo(target, 'test', callback)
+        component.remove()
 
-            component.listenTo(target, 'test', callback)
-            component.remove()
-
-            target.emit('test', 'value')
-            expect(callback).not.toHaveBeenCalled()
-        })
-
+        target.emit('test', 'value')
+        expect(callback).not.toHaveBeenCalled()
     })
 
 })

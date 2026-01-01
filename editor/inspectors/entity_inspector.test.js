@@ -82,12 +82,8 @@ describe('EntityInspector', () => {
     })
 
 
-    describe('matches', () => {
-
-        test('static matches method exists', () => {
-            expect(typeof EntityInspector.matches).toBe('function')
-        })
-
+    test('matches static matches method exists', () => {
+        expect(typeof EntityInspector.matches).toBe('function')
     })
 
 
@@ -112,20 +108,16 @@ describe('EntityInspector', () => {
     })
 
 
-    describe('position input', () => {
+    test('position input updates when module changes', () => {
+        const module1 = new MockEntity({x: 10, y: 20})
+        inspector.setModule(module1)
 
-        test('updates when module changes', () => {
-            const module1 = new MockEntity({x: 10, y: 20})
-            inspector.setModule(module1)
+        const input = inspector.shadowRoot.querySelector('vec2-input')
+        expect(input.value).toEqual({x: 10, y: 20})
 
-            const input = inspector.shadowRoot.querySelector('vec2-input')
-            expect(input.value).toEqual({x: 10, y: 20})
-
-            const module2 = new MockEntity({x: 50, y: 60})
-            inspector.setModule(module2)
-            expect(input.value).toEqual({x: 50, y: 60})
-        })
-
+        const module2 = new MockEntity({x: 50, y: 60})
+        inspector.setModule(module2)
+        expect(input.value).toEqual({x: 50, y: 60})
     })
 
 })

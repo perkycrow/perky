@@ -60,90 +60,54 @@ describe('PerkyDevTools', () => {
     })
 
 
-    describe('state getter', () => {
-
-        test('returns state object', () => {
-            expect(devtools.state).toBeDefined()
-            expect(devtools.state).not.toBeNull()
-        })
-
+    test('state getter returns state object', () => {
+        expect(devtools.state).toBeDefined()
+        expect(devtools.state).not.toBeNull()
     })
 
 
-    describe('logger getter', () => {
-
-        test('returns logger element', () => {
-            const logger = devtools.logger
-            expect(logger).not.toBeNull()
-            expect(logger.tagName.toLowerCase()).toBe('perky-logger')
-        })
-
+    test('logger getter returns logger element', () => {
+        const logger = devtools.logger
+        expect(logger).not.toBeNull()
+        expect(logger.tagName.toLowerCase()).toBe('perky-logger')
     })
 
 
-    describe('setModule', () => {
-
-        test('delegates to state', () => {
-            const module = {name: 'test'}
-            expect(() => devtools.setModule(module)).not.toThrow()
-        })
-
+    test('setModule delegates to state', () => {
+        const module = {name: 'test'}
+        expect(() => devtools.setModule(module)).not.toThrow()
     })
 
 
-    describe('setAppManager', () => {
-
-        test('delegates to state', () => {
-            const appManager = {list: () => []}
-            expect(() => devtools.setAppManager(appManager)).not.toThrow()
-        })
-
+    test('setAppManager delegates to state', () => {
+        const appManager = {list: () => []}
+        expect(() => devtools.setAppManager(appManager)).not.toThrow()
     })
 
 
-    describe('openTool', () => {
-
-        test('delegates to state', () => {
-            expect(() => devtools.openTool('explorer')).not.toThrow()
-        })
-
+    test('openTool delegates to state', () => {
+        expect(() => devtools.openTool('explorer')).not.toThrow()
     })
 
 
-    describe('closeSidebar', () => {
-
-        test('delegates to state', () => {
-            expect(() => devtools.closeSidebar()).not.toThrow()
-        })
-
+    test('closeSidebar delegates to state', () => {
+        expect(() => devtools.closeSidebar()).not.toThrow()
     })
 
 
-    describe('toggleLogger', () => {
-
-        test('delegates to state', () => {
-            expect(() => devtools.toggleLogger()).not.toThrow()
-        })
-
+    test('toggleLogger delegates to state', () => {
+        expect(() => devtools.toggleLogger()).not.toThrow()
     })
 
 
-    describe('toggleCommandPalette', () => {
-
-        test('delegates to state', () => {
-            vi.spyOn(devtools.state, 'toggleCommandPalette').mockImplementation(vi.fn())
-            expect(() => devtools.toggleCommandPalette()).not.toThrow()
-        })
-
+    test('toggleCommandPalette delegates to state', () => {
+        vi.spyOn(devtools.state, 'toggleCommandPalette').mockImplementation(vi.fn())
+        expect(() => devtools.toggleCommandPalette()).not.toThrow()
     })
 
 
-    describe('refreshTools', () => {
-
-        test('calls refreshTools on dock', () => {
-            expect(() => devtools.refreshTools()).not.toThrow()
-        })
-
+    test('refreshTools calls refreshTools on dock', () => {
+        expect(() => devtools.refreshTools()).not.toThrow()
     })
 
 
@@ -181,24 +145,20 @@ describe('PerkyDevTools', () => {
     })
 
 
-    describe('disconnectedCallback', () => {
+    test('disconnectedCallback cleans up keyboard handler', () => {
+        const stub = vi.fn()
+        vi.spyOn(devtools.state, 'toggleCommandPalette').mockImplementation(stub)
 
-        test('cleans up keyboard handler', () => {
-            const stub = vi.fn()
-            vi.spyOn(devtools.state, 'toggleCommandPalette').mockImplementation(stub)
+        devtools.remove()
 
-            devtools.remove()
-
-            const event = new KeyboardEvent('keydown', {
-                key: 'k',
-                ctrlKey: true,
-                bubbles: true
-            })
-            document.dispatchEvent(event)
-
-            expect(stub).not.toHaveBeenCalled()
+        const event = new KeyboardEvent('keydown', {
+            key: 'k',
+            ctrlKey: true,
+            bubbles: true
         })
+        document.dispatchEvent(event)
 
+        expect(stub).not.toHaveBeenCalled()
     })
 
 })

@@ -56,12 +56,8 @@ describe('CanvasLayerInspector', () => {
     })
 
 
-    describe('matches', () => {
-
-        test('static matches method exists', () => {
-            expect(typeof CanvasLayerInspector.matches).toBe('function')
-        })
-
+    test('matches static matches method exists', () => {
+        expect(typeof CanvasLayerInspector.matches).toBe('function')
     })
 
 

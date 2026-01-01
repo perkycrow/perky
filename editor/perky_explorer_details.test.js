@@ -111,40 +111,28 @@ describe('PerkyExplorerDetails', () => {
     })
 
 
-    describe('focus:module event', () => {
+    test('focus:module event should emit focus:module event when focus button clicked', () => {
+        const module = createMockModule()
+        details.setModule(module)
 
-        test('should emit focus:module event when focus button clicked', () => {
-            const module = createMockModule()
-            details.setModule(module)
+        const handler = vi.fn()
+        details.addEventListener('focus:module', handler)
 
-            const handler = vi.fn()
-            details.addEventListener('focus:module', handler)
+        const focusBtn = details.shadowRoot.querySelector('.details-focus-btn')
+        focusBtn.click()
 
-            const focusBtn = details.shadowRoot.querySelector('.details-focus-btn')
-            focusBtn.click()
-
-            expect(handler).toHaveBeenCalled()
-            expect(handler.mock.calls[0][0].detail.module).toBe(module)
-        })
-
+        expect(handler).toHaveBeenCalled()
+        expect(handler.mock.calls[0][0].detail.module).toBe(module)
     })
 
 
-    describe('registerInspector', () => {
-
-        test('should be a static method', () => {
-            expect(typeof PerkyExplorerDetails.registerInspector).toBe('function')
-        })
-
+    test('registerInspector should be a static method', () => {
+        expect(typeof PerkyExplorerDetails.registerInspector).toBe('function')
     })
 
 
-    describe('unregisterInspector', () => {
-
-        test('should be a static method', () => {
-            expect(typeof PerkyExplorerDetails.unregisterInspector).toBe('function')
-        })
-
+    test('unregisterInspector should be a static method', () => {
+        expect(typeof PerkyExplorerDetails.unregisterInspector).toBe('function')
     })
 
 })

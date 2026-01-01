@@ -94,23 +94,19 @@ describe('DevToolsSidebar', () => {
     })
 
 
-    describe('close button', () => {
+    test('close button calls closeSidebar on state when clicked', () => {
+        const state = {
+            addEventListener: vi.fn(),
+            sidebarOpen: false,
+            activeTool: null,
+            closeSidebar: vi.fn()
+        }
+        sidebar.setState(state)
 
-        test('calls closeSidebar on state when clicked', () => {
-            const state = {
-                addEventListener: vi.fn(),
-                sidebarOpen: false,
-                activeTool: null,
-                closeSidebar: vi.fn()
-            }
-            sidebar.setState(state)
+        const closeBtn = sidebar.shadowRoot.querySelector('.sidebar-close')
+        closeBtn.click()
 
-            const closeBtn = sidebar.shadowRoot.querySelector('.sidebar-close')
-            closeBtn.click()
-
-            expect(state.closeSidebar).toHaveBeenCalled()
-        })
-
+        expect(state.closeSidebar).toHaveBeenCalled()
     })
 
 

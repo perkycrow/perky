@@ -82,14 +82,10 @@ describe('PerkyExplorerNode', () => {
     })
 
 
-    describe('getItem', () => {
-
-        test('should return the module', () => {
-            const module = createMockModule()
-            node.setModule(module)
-            expect(node.getItem()).toBe(module)
-        })
-
+    test('getItem should return the module', () => {
+        const module = createMockModule()
+        node.setModule(module)
+        expect(node.getItem()).toBe(module)
     })
 
 
@@ -155,41 +151,29 @@ describe('PerkyExplorerNode', () => {
     })
 
 
-    describe('getSelectDetail', () => {
-
-        test('should return object with module', () => {
-            const module = createMockModule()
-            node.setModule(module)
-            expect(node.getSelectDetail()).toEqual({module})
-        })
-
+    test('getSelectDetail should return object with module', () => {
+        const module = createMockModule()
+        node.setModule(module)
+        expect(node.getSelectDetail()).toEqual({module})
     })
 
 
-    describe('getToggleDetail', () => {
-
-        test('should return object with module and expanded state', () => {
-            const module = createMockModule()
-            node.setModule(module)
-            node.setExpanded(true)
-            expect(node.getToggleDetail()).toEqual({module, expanded: true})
-        })
-
+    test('getToggleDetail should return object with module and expanded state', () => {
+        const module = createMockModule()
+        node.setModule(module)
+        node.setExpanded(true)
+        expect(node.getToggleDetail()).toEqual({module, expanded: true})
     })
 
 
-    describe('clearChildNodes', () => {
+    test('clearChildNodes should clear child nodes', () => {
+        node.setModule(createMockModule({
+            children: [createMockModule({$id: 'child'})]
+        }))
+        node.setExpanded(true)
 
-        test('should clear child nodes', () => {
-            node.setModule(createMockModule({
-                children: [createMockModule({$id: 'child'})]
-            }))
-            node.setExpanded(true)
-
-            node.clearChildNodes()
-            expect(node.childrenEl.children.length).toBe(0)
-        })
-
+        node.clearChildNodes()
+        expect(node.childrenEl.children.length).toBe(0)
     })
 
 })

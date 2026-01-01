@@ -63,45 +63,29 @@ describe('NumberInput', () => {
     })
 
 
-    describe('setValue', () => {
-
-        test('should set value directly', () => {
-            input.setValue(100)
-            expect(input.value).toBe(100)
-        })
-
+    test('setValue should set value directly', () => {
+        input.setValue(100)
+        expect(input.value).toBe(100)
     })
 
 
-    describe('setStep', () => {
-
-        test('should set step value', () => {
-            input.setStep(0.5)
-            expect(input.value).toBe(0)
-        })
-
+    test('setStep should set step value', () => {
+        input.setStep(0.5)
+        expect(input.value).toBe(0)
     })
 
 
-    describe('setPrecision', () => {
-
-        test('should set precision value', () => {
-            input.setPrecision(3)
-            input.setValue(1.23456)
-            expect(input.value).toBe(1.23456)
-        })
-
+    test('setPrecision should set precision value', () => {
+        input.setPrecision(3)
+        input.setValue(1.23456)
+        expect(input.value).toBe(1.23456)
     })
 
 
-    describe('setLabel', () => {
-
-        test('should set label text', () => {
-            input.setLabel('x')
-            const label = input.shadowRoot.querySelector('.number-input-label')
-            expect(label.textContent).toBe('x')
-        })
-
+    test('setLabel should set label text', () => {
+        input.setLabel('x')
+        const label = input.shadowRoot.querySelector('.number-input-label')
+        expect(label.textContent).toBe('x')
     })
 
 
@@ -123,34 +107,26 @@ describe('NumberInput', () => {
     })
 
 
-    describe('observedAttributes', () => {
-
-        test('should include expected attributes', () => {
-            const observed = input.constructor.observedAttributes
-            expect(observed).toContain('value')
-            expect(observed).toContain('step')
-            expect(observed).toContain('precision')
-            expect(observed).toContain('label')
-            expect(observed).toContain('min')
-            expect(observed).toContain('max')
-        })
-
+    test('observedAttributes should include expected attributes', () => {
+        const observed = input.constructor.observedAttributes
+        expect(observed).toContain('value')
+        expect(observed).toContain('step')
+        expect(observed).toContain('precision')
+        expect(observed).toContain('label')
+        expect(observed).toContain('min')
+        expect(observed).toContain('max')
     })
 
 
-    describe('change event', () => {
+    test('change event should emit change event when value changes via stepper', () => {
+        const handler = vi.fn()
+        input.addEventListener('change', handler)
 
-        test('should emit change event when value changes via stepper', () => {
-            const handler = vi.fn()
-            input.addEventListener('change', handler)
+        const incrementBtn = input.shadowRoot.querySelectorAll('.number-input-stepper')[1]
+        incrementBtn.click()
 
-            const incrementBtn = input.shadowRoot.querySelectorAll('.number-input-stepper')[1]
-            incrementBtn.click()
-
-            expect(handler).toHaveBeenCalled()
-            expect(handler.mock.calls[0][0].detail.value).toBeGreaterThan(0)
-        })
-
+        expect(handler).toHaveBeenCalled()
+        expect(handler.mock.calls[0][0].detail.value).toBeGreaterThan(0)
     })
 
 })

@@ -68,12 +68,8 @@ describe('InputBinderInspector', () => {
     })
 
 
-    describe('matches', () => {
-
-        test('static matches method exists', () => {
-            expect(typeof InputBinderInspector.matches).toBe('function')
-        })
-
+    test('matches static matches method exists', () => {
+        expect(typeof InputBinderInspector.matches).toBe('function')
     })
 
 
@@ -270,24 +266,20 @@ describe('InputBinderInspector', () => {
     })
 
 
-    describe('grouping by device', () => {
+    test('grouping by device groups bindings by device name', () => {
+        const bindings = [
+            new MockBinding({deviceName: 'keyboard'}),
+            new MockBinding({deviceName: 'keyboard'}),
+            new MockBinding({deviceName: 'gamepad'})
+        ]
+        const module = new MockInputBinder(bindings)
+        inspector.setModule(module)
 
-        test('groups bindings by device name', () => {
-            const bindings = [
-                new MockBinding({deviceName: 'keyboard'}),
-                new MockBinding({deviceName: 'keyboard'}),
-                new MockBinding({deviceName: 'gamepad'})
-            ]
-            const module = new MockInputBinder(bindings)
-            inspector.setModule(module)
+        const deviceBtn = inspector.shadowRoot.querySelectorAll('.view-btn')[1]
+        deviceBtn.click()
 
-            const deviceBtn = inspector.shadowRoot.querySelectorAll('.view-btn')[1]
-            deviceBtn.click()
-
-            const groups = inspector.shadowRoot.querySelectorAll('.binding-group')
-            expect(groups.length).toBe(2)
-        })
-
+        const groups = inspector.shadowRoot.querySelectorAll('.binding-group')
+        expect(groups.length).toBe(2)
     })
 
 })

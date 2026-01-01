@@ -70,16 +70,12 @@ describe('ActionControllerInspector', () => {
     })
 
 
-    describe('matches', () => {
+    test('matches returns true for ActionController instances', () => {
+        const mock = new MockActionController()
+        Object.setPrototypeOf(mock, {constructor: {name: 'ActionController'}})
 
-        test('returns true for ActionController instances', () => {
-            const mock = new MockActionController()
-            Object.setPrototypeOf(mock, {constructor: {name: 'ActionController'}})
-
-            const matches = ActionControllerInspector.matches
-            expect(typeof matches).toBe('function')
-        })
-
+        const matches = ActionControllerInspector.matches
+        expect(typeof matches).toBe('function')
     })
 
 
@@ -158,19 +154,15 @@ describe('ActionControllerInspector', () => {
     })
 
 
-    describe('execute button', () => {
+    test('execute button calls module.execute when clicked', () => {
+        const module = new MockActionController(['jump'])
+        module.execute = vi.fn()
+        inspector.setModule(module)
 
-        test('calls module.execute when clicked', () => {
-            const module = new MockActionController(['jump'])
-            module.execute = vi.fn()
-            inspector.setModule(module)
+        const btn = inspector.shadowRoot.querySelector('.execute-btn')
+        btn.click()
 
-            const btn = inspector.shadowRoot.querySelector('.execute-btn')
-            btn.click()
-
-            expect(module.execute).toHaveBeenCalledWith('jump')
-        })
-
+        expect(module.execute).toHaveBeenCalledWith('jump')
     })
 
 })

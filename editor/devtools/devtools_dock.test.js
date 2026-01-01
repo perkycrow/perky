@@ -131,20 +131,16 @@ describe('DevToolsDock', () => {
     })
 
 
-    describe('refreshTools', () => {
+    test('refreshTools re-renders the dock', () => {
+        const state = {
+            addEventListener: vi.fn(),
+            toggleTool: vi.fn(),
+            sidebarOpen: false,
+            toggleSidebar: vi.fn()
+        }
+        dock.setState(state)
 
-        test('re-renders the dock', () => {
-            const state = {
-                addEventListener: vi.fn(),
-                toggleTool: vi.fn(),
-                sidebarOpen: false,
-                toggleSidebar: vi.fn()
-            }
-            dock.setState(state)
-
-            expect(() => dock.refreshTools()).not.toThrow()
-        })
-
+        expect(() => dock.refreshTools()).not.toThrow()
     })
 
 })

@@ -61,12 +61,8 @@ describe('Object2DInspector', () => {
     })
 
 
-    describe('matches', () => {
-
-        test('static matches method exists', () => {
-            expect(typeof Object2DInspector.matches).toBe('function')
-        })
-
+    test('matches static matches method exists', () => {
+        expect(typeof Object2DInspector.matches).toBe('function')
     })
 
 
@@ -243,23 +239,19 @@ describe('Object2DInspector', () => {
     })
 
 
-    describe('clearContent', () => {
+    test('clearContent clears and re-renders on module change', () => {
+        const module1 = new MockObject2D({x: 100})
+        inspector.setModule(module1)
 
-        test('clears and re-renders on module change', () => {
-            const module1 = new MockObject2D({x: 100})
-            inspector.setModule(module1)
+        const module2 = new MockObject2D({x: 500})
+        inspector.setModule(module2)
 
-            const module2 = new MockObject2D({x: 500})
-            inspector.setModule(module2)
+        const values = inspector.gridEl.querySelectorAll('.inspector-value')
+        const hasNewX = Array.from(values).some(v => v.textContent === '500')
+        const hasOldX = Array.from(values).some(v => v.textContent === '100')
 
-            const values = inspector.gridEl.querySelectorAll('.inspector-value')
-            const hasNewX = Array.from(values).some(v => v.textContent === '500')
-            const hasOldX = Array.from(values).some(v => v.textContent === '100')
-
-            expect(hasNewX).toBe(true)
-            expect(hasOldX).toBe(false)
-        })
-
+        expect(hasNewX).toBe(true)
+        expect(hasOldX).toBe(false)
     })
 
 })

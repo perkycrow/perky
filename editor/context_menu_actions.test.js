@@ -182,25 +182,21 @@ describe('getActionsForModule GameLoop actions', () => {
 })
 
 
-describe('registerActionProvider', () => {
+test('registerActionProvider should allow registering custom action providers', () => {
+    class CustomModule extends PerkyModule {
+        customMethod () {}
+    }
 
-    test('should allow registering custom action providers', () => {
-        class CustomModule extends PerkyModule {
-            customMethod () {}
-        }
-
-        registerActionProvider({
-            matches: (module) => module instanceof CustomModule,
-            getActions: () => [
-                {label: 'Custom Action', icon: '⭐', action: vi.fn()}
-            ]
-        })
-
-        const customModule = new CustomModule({$id: 'custom'})
-        const actions = getActionsForModule(customModule, {})
-
-        const customAction = actions.find(a => a.label === 'Custom Action')
-        expect(customAction).toBeDefined()
+    registerActionProvider({
+        matches: (module) => module instanceof CustomModule,
+        getActions: () => [
+            {label: 'Custom Action', icon: '⭐', action: vi.fn()}
+        ]
     })
 
+    const customModule = new CustomModule({$id: 'custom'})
+    const actions = getActionsForModule(customModule, {})
+
+    const customAction = actions.find(a => a.label === 'Custom Action')
+    expect(customAction).toBeDefined()
 })

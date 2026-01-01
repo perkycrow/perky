@@ -111,39 +111,23 @@ describe('BaseTool', () => {
     })
 
 
-    describe('onStateSet', () => {
-
-        test('is a no-op by default', () => {
-            expect(() => tool.onStateSet({})).not.toThrow()
-        })
-
+    test('onStateSet is a no-op by default', () => {
+        expect(() => tool.onStateSet({})).not.toThrow()
     })
 
 
-    describe('onActivate', () => {
-
-        test('is a no-op by default', () => {
-            expect(() => tool.onActivate()).not.toThrow()
-        })
-
+    test('onActivate is a no-op by default', () => {
+        expect(() => tool.onActivate()).not.toThrow()
     })
 
 
-    describe('onDeactivate', () => {
-
-        test('is a no-op by default', () => {
-            expect(() => tool.onDeactivate()).not.toThrow()
-        })
-
+    test('onDeactivate is a no-op by default', () => {
+        expect(() => tool.onDeactivate()).not.toThrow()
     })
 
 
-    describe('static register', () => {
-
-        test('is a function', () => {
-            expect(typeof BaseTool.register).toBe('function')
-        })
-
+    test('static register is a function', () => {
+        expect(typeof BaseTool.register).toBe('function')
     })
 
 })

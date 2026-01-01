@@ -107,12 +107,8 @@ describe('RenderGroupInspector', () => {
     })
 
 
-    describe('matches', () => {
-
-        test('static matches method exists', () => {
-            expect(typeof RenderGroupInspector.matches).toBe('function')
-        })
-
+    test('matches static matches method exists', () => {
+        expect(typeof RenderGroupInspector.matches).toBe('function')
     })
 
 

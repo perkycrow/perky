@@ -210,28 +210,24 @@ describe('BaseTreeNode', () => {
     })
 
 
-    describe('traverse', () => {
+    test('traverse should call function for each node', () => {
+        const item = {
+            name: 'Root',
+            children: [
+                {name: 'Child1', children: []},
+                {name: 'Child2', children: []}
+            ]
+        }
 
-        test('should call function for each node', () => {
-            const item = {
-                name: 'Root',
-                children: [
-                    {name: 'Child1', children: []},
-                    {name: 'Child2', children: []}
-                ]
-            }
+        node.setItem(item)
+        node.setExpanded(true)
 
-            node.setItem(item)
-            node.setExpanded(true)
+        const visited = []
+        node.traverse(n => visited.push(n.getItem()?.name))
 
-            const visited = []
-            node.traverse(n => visited.push(n.getItem()?.name))
-
-            expect(visited).toContain('Root')
-            expect(visited).toContain('Child1')
-            expect(visited).toContain('Child2')
-        })
-
+        expect(visited).toContain('Root')
+        expect(visited).toContain('Child1')
+        expect(visited).toContain('Child2')
     })
 
 
@@ -267,27 +263,23 @@ describe('BaseTreeNode', () => {
     })
 
 
-    describe('deselectAll', () => {
+    test('deselectAll should deselect all nodes in tree', () => {
+        const item = {
+            name: 'Root',
+            children: [{name: 'Child', children: []}]
+        }
 
-        test('should deselect all nodes in tree', () => {
-            const item = {
-                name: 'Root',
-                children: [{name: 'Child', children: []}]
-            }
+        node.setItem(item)
+        node.setExpanded(true)
+        node.setSelected(true)
 
-            node.setItem(item)
-            node.setExpanded(true)
-            node.setSelected(true)
+        const childNode = node.findNode(n => n.getItem()?.name === 'Child')
+        childNode.setSelected(true)
 
-            const childNode = node.findNode(n => n.getItem()?.name === 'Child')
-            childNode.setSelected(true)
+        node.deselectAll()
 
-            node.deselectAll()
-
-            expect(node.selected).toBe(false)
-            expect(childNode.selected).toBe(false)
-        })
-
+        expect(node.selected).toBe(false)
+        expect(childNode.selected).toBe(false)
     })
 
 })

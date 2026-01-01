@@ -63,12 +63,8 @@ describe('ActionDispatcherInspector', () => {
     })
 
 
-    describe('matches', () => {
-
-        test('static matches method exists', () => {
-            expect(typeof ActionDispatcherInspector.matches).toBe('function')
-        })
-
+    test('matches static matches method exists', () => {
+        expect(typeof ActionDispatcherInspector.matches).toBe('function')
     })
 
 
@@ -178,22 +174,18 @@ describe('ActionDispatcherInspector', () => {
     })
 
 
-    describe('execute button', () => {
+    test('execute button calls module.executeTo when clicked', () => {
+        const actionsMap = new Map([
+            ['player', ['jump']]
+        ])
+        const module = new MockActionDispatcher(actionsMap)
+        module.executeTo = vi.fn()
+        inspector.setModule(module)
 
-        test('calls module.executeTo when clicked', () => {
-            const actionsMap = new Map([
-                ['player', ['jump']]
-            ])
-            const module = new MockActionDispatcher(actionsMap)
-            module.executeTo = vi.fn()
-            inspector.setModule(module)
+        const btn = inspector.shadowRoot.querySelector('.execute-btn')
+        btn.click()
 
-            const btn = inspector.shadowRoot.querySelector('.execute-btn')
-            btn.click()
-
-            expect(module.executeTo).toHaveBeenCalledWith('player', 'jump')
-        })
-
+        expect(module.executeTo).toHaveBeenCalledWith('player', 'jump')
     })
 
 })

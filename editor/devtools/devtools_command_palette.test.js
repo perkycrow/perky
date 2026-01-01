@@ -60,15 +60,11 @@ describe('DevToolsCommandPalette', () => {
     })
 
 
-    describe('setState', () => {
-
-        test('accepts state object', () => {
-            const state = {
-                appManager: {list: () => []}
-            }
-            expect(() => palette.setState(state)).not.toThrow()
-        })
-
+    test('setState accepts state object', () => {
+        const state = {
+            appManager: {list: () => []}
+        }
+        expect(() => palette.setState(state)).not.toThrow()
     })
 
 
@@ -112,54 +108,42 @@ describe('DevToolsCommandPalette', () => {
     })
 
 
-    describe('keyboard navigation', () => {
+    test('keyboard navigation handles Escape key', () => {
+        const state = {
+            appManager: {list: () => []},
+            closeCommandPalette: vi.fn()
+        }
+        palette.setState(state)
+        palette.show()
 
-        test('handles Escape key', () => {
-            const state = {
-                appManager: {list: () => []},
-                closeCommandPalette: vi.fn()
-            }
-            palette.setState(state)
-            palette.show()
+        const input = palette.shadowRoot.querySelector('.command-palette-input')
+        const event = new KeyboardEvent('keydown', {key: 'Escape', bubbles: true})
+        input.dispatchEvent(event)
 
-            const input = palette.shadowRoot.querySelector('.command-palette-input')
-            const event = new KeyboardEvent('keydown', {key: 'Escape', bubbles: true})
-            input.dispatchEvent(event)
-
-            expect(state.closeCommandPalette).toHaveBeenCalled()
-        })
-
+        expect(state.closeCommandPalette).toHaveBeenCalled()
     })
 
 
-    describe('overlay click', () => {
+    test('overlay click closes when clicking on overlay background', () => {
+        const state = {
+            appManager: {list: () => []},
+            closeCommandPalette: vi.fn()
+        }
+        palette.setState(state)
+        palette.show()
 
-        test('closes when clicking on overlay background', () => {
-            const state = {
-                appManager: {list: () => []},
-                closeCommandPalette: vi.fn()
-            }
-            palette.setState(state)
-            palette.show()
+        const overlay = palette.shadowRoot.querySelector('.command-palette-overlay')
+        overlay.click()
 
-            const overlay = palette.shadowRoot.querySelector('.command-palette-overlay')
-            overlay.click()
-
-            expect(state.closeCommandPalette).toHaveBeenCalled()
-        })
-
+        expect(state.closeCommandPalette).toHaveBeenCalled()
     })
 
 
-    describe('input handling', () => {
-
-        test('shows hint when input is empty', () => {
-            palette.show()
-            const hint = palette.shadowRoot.querySelector('.command-palette-hint')
-            expect(hint).not.toBeNull()
-            expect(hint.textContent).toContain('Type to search')
-        })
-
+    test('input handling shows hint when input is empty', () => {
+        palette.show()
+        const hint = palette.shadowRoot.querySelector('.command-palette-hint')
+        expect(hint).not.toBeNull()
+        expect(hint.textContent).toContain('Type to search')
     })
 
 })
