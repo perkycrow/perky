@@ -7,6 +7,7 @@ import Asset from './asset'
 export default class Manifest extends PerkyModule {
 
     static $category = 'manifest'
+    static $lifecycle = false
 
     #data
 

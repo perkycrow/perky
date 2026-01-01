@@ -22,7 +22,6 @@ export default class Application extends PerkyModule {
 
         this.create(Manifest, {
             $bind: 'manifest',
-            $lifecycle: false,
             data: manifestData.export ? manifestData.export() : manifestData
         })
 

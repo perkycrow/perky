@@ -29,11 +29,12 @@ export default class PerkyModule extends Notifier {
 
     static $category = 'perkyModule'
     static $name = null
+    static $lifecycle = true
     static $eagerStart = true
     static $tags = []
 
 
-    constructor (options = {}) {
+    constructor (options = {}) { // eslint-disable-line complexity
         super()
 
         this.options = {...options}
@@ -41,8 +42,8 @@ export default class PerkyModule extends Notifier {
         this.#id = options.$id || this.#name
         this.#category = options.$category || this.constructor.$category
         this.#bind = options.$bind
-        this.#eagerStart = options.$eagerStart
-        this.#lifecycle = options.$lifecycle !== false
+        this.#eagerStart = (options.$eagerStart ?? this.constructor.$eagerStart) !== false
+        this.#lifecycle = (options.$lifecycle ?? this.constructor.$lifecycle) !== false
 
         this.#tags = new ObservableSet([
             ...this.constructor.$tags,
@@ -273,6 +274,7 @@ export default class PerkyModule extends Notifier {
         options.$category ||= Child.$category
         options.$name ||= Child.$name || options.$category
         options.$id ||= uniqueId(this.#childrenRegistry, options.$name)
+        options.$lifecycle = options.$lifecycle ?? Child.$lifecycle ?? true
         options.$eagerStart = options.$eagerStart ?? Child.$eagerStart ?? true
 
         return this.#addChild(new Child(options), options)
