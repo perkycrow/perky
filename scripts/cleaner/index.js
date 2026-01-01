@@ -9,6 +9,7 @@ import {
     auditSwitches
 } from './eslint.js'
 import {auditTests} from './tests.js'
+import {auditWhitespace, fixWhitespace} from './whitespace.js'
 import {bold, cyan, dim, green, yellow} from './format.js'
 
 
@@ -49,6 +50,7 @@ function printDigest (results) {
     console.log('')
 
     const sections = [
+        {key: 'whitespace', label: 'Whitespace'},
         {key: 'imports', label: 'Imports'},
         {key: 'unusedDirectives', label: 'Unused Directives'},
         {key: 'eslint', label: 'ESLint'},
@@ -75,6 +77,7 @@ export async function runAudit (rootDir, options = {}) {
 
     const results = {}
 
+    results.whitespace = auditWhitespace(rootDir)
     results.comments = auditComments(rootDir)
     results.imports = auditImports(rootDir)
     results.unusedDirectives = auditUnusedDirectives(rootDir)
@@ -93,6 +96,7 @@ export function runFix (rootDir, options = {}) {
     const dryRun = options.dryRun ?? false
     const results = {}
 
+    results.whitespace = fixWhitespace(rootDir, dryRun)
     results.comments = fixComments(rootDir, dryRun)
     results.imports = fixImports(rootDir, dryRun)
     results.unusedDirectives = fixUnusedDirectives(rootDir, dryRun)
