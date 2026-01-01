@@ -1,5 +1,4 @@
 import WorldController from '../../game/world_controller'
-import Enemy from '../enemy'
 
 
 export default class GameController extends WorldController {
@@ -27,72 +26,19 @@ export default class GameController extends WorldController {
         this.enemiesToSpawn = 0
         this.spawnTimer = 0
         this.waveActive = false
+
+        this.on('world:set', (world) => {
+            this.listenTo(world, 'enemy:destroyed', () => this.onEnemyDestroyed())
+        })
     }
 
 
     update (game, deltaTime) {
         this.world.update(deltaTime, game)
         this.updateWaveSpawning(deltaTime)
-        this.checkCollisions()
-        this.cleanupDeadEntities()
+        this.world.checkCollisions()
+        this.world.cleanup()
         this.checkWaveComplete()
-    }
-
-
-    cleanupDeadEntities () {
-        this.cleanupProjectiles()
-        this.cleanupEnemies()
-    }
-
-
-    cleanupProjectiles () {
-        const projectiles = this.world.childrenByTags('projectile')
-        for (const projectile of projectiles) {
-            if (!projectile.alive) {
-                this.world.removeChild(projectile.$id)
-            }
-        }
-    }
-
-
-    cleanupEnemies () {
-        const enemies = this.world.childrenByTags('enemy')
-        for (const enemy of enemies) {
-            if (!enemy.alive) {
-                this.world.removeChild(enemy.$id)
-            }
-        }
-    }
-
-
-    checkCollisions () {
-        const projectiles = this.world.childrenByTags('projectile')
-        const enemies = this.world.childrenByTags('enemy')
-
-        for (const projectile of projectiles) {
-            if (!projectile.alive) {
-                continue
-            }
-
-            for (const enemy of enemies) {
-                if (!enemy.alive) {
-                    continue
-                }
-
-                const dx = projectile.x - enemy.x
-                const dy = projectile.y - enemy.y
-                const distance = Math.sqrt(dx * dx + dy * dy)
-
-                const hitRadius = 0.4
-
-                if (distance < hitRadius) {
-                    projectile.alive = false
-                    enemy.alive = false
-                    this.onEnemyDestroyed()
-                    break
-                }
-            }
-        }
     }
 
 
@@ -210,11 +156,7 @@ export default class GameController extends WorldController {
 
 
     spawnEnemy (options = {}) {
-        return this.execute('spawn', Enemy, {
-            x: options.x || 0,
-            y: options.y || 0,
-            maxSpeed: options.maxSpeed || 0.5
-        })
+        return this.world.spawnEnemy(options)
     }
 
 }
