@@ -1,4 +1,4 @@
-import {describe, it, expect, vi} from 'vitest'
+import {describe, test, expect, vi} from 'vitest'
 import {createInputStyles, emitChange, handleAttributeChange} from './base_input.js'
 
 
@@ -6,14 +6,14 @@ describe('base_input', () => {
 
     describe('createInputStyles', () => {
 
-        it('should return a string containing host styles', () => {
+        test('should return a string containing host styles', () => {
             const styles = createInputStyles('')
             expect(styles).toContain(':host')
             expect(styles).toContain('display: inline-flex')
         })
 
 
-        it('should include custom styles', () => {
+        test('should include custom styles', () => {
             const customStyles = '.custom { color: red; }'
             const styles = createInputStyles(customStyles)
             expect(styles).toContain('.custom { color: red; }')
@@ -24,7 +24,7 @@ describe('base_input', () => {
 
     describe('emitChange', () => {
 
-        it('should dispatch a CustomEvent with detail', () => {
+        test('should dispatch a CustomEvent with detail', () => {
             const element = document.createElement('div')
             const handler = vi.fn()
             element.addEventListener('change', handler)
@@ -36,7 +36,7 @@ describe('base_input', () => {
         })
 
 
-        it('should bubble', () => {
+        test('should bubble', () => {
             const parent = document.createElement('div')
             const child = document.createElement('div')
             parent.appendChild(child)
@@ -53,14 +53,14 @@ describe('base_input', () => {
 
     describe('handleAttributeChange', () => {
 
-        it('should return false if old and new values are the same', () => {
+        test('should return false if old and new values are the same', () => {
             const component = {}
             const result = handleAttributeChange(component, 'value', '10', '10')
             expect(result).toBe(false)
         })
 
 
-        it('should call setValue for value attribute', () => {
+        test('should call setValue for value attribute', () => {
             const component = {setValue: vi.fn()}
             const result = handleAttributeChange(component, 'value', null, '42')
             expect(result).toBe(true)
@@ -68,7 +68,7 @@ describe('base_input', () => {
         })
 
 
-        it('should call setMin for min attribute', () => {
+        test('should call setMin for min attribute', () => {
             const component = {setMin: vi.fn()}
             const result = handleAttributeChange(component, 'min', null, '5')
             expect(result).toBe(true)
@@ -76,7 +76,7 @@ describe('base_input', () => {
         })
 
 
-        it('should call setMax for max attribute', () => {
+        test('should call setMax for max attribute', () => {
             const component = {setMax: vi.fn()}
             const result = handleAttributeChange(component, 'max', null, '100')
             expect(result).toBe(true)
@@ -84,7 +84,7 @@ describe('base_input', () => {
         })
 
 
-        it('should call setStep for step attribute', () => {
+        test('should call setStep for step attribute', () => {
             const component = {setStep: vi.fn()}
             const result = handleAttributeChange(component, 'step', null, '0.5')
             expect(result).toBe(true)
@@ -92,7 +92,7 @@ describe('base_input', () => {
         })
 
 
-        it('should call setLabel for label attribute', () => {
+        test('should call setLabel for label attribute', () => {
             const component = {setLabel: vi.fn()}
             const result = handleAttributeChange(component, 'label', null, 'x')
             expect(result).toBe(true)
@@ -100,7 +100,7 @@ describe('base_input', () => {
         })
 
 
-        it('should call setPrecision for precision attribute', () => {
+        test('should call setPrecision for precision attribute', () => {
             const component = {setPrecision: vi.fn()}
             const result = handleAttributeChange(component, 'precision', null, '3')
             expect(result).toBe(true)
@@ -108,7 +108,7 @@ describe('base_input', () => {
         })
 
 
-        it('should call setChecked for checked attribute', () => {
+        test('should call setChecked for checked attribute', () => {
             const component = {setChecked: vi.fn()}
             const result = handleAttributeChange(component, 'checked', null, '')
             expect(result).toBe(true)
@@ -116,7 +116,7 @@ describe('base_input', () => {
         })
 
 
-        it('should call setChecked with false when checked is removed', () => {
+        test('should call setChecked with false when checked is removed', () => {
             const component = {setChecked: vi.fn()}
             const result = handleAttributeChange(component, 'checked', '', null)
             expect(result).toBe(true)
@@ -124,28 +124,28 @@ describe('base_input', () => {
         })
 
 
-        it('should return false for unknown attributes', () => {
+        test('should return false for unknown attributes', () => {
             const component = {}
             const result = handleAttributeChange(component, 'unknown', null, 'value')
             expect(result).toBe(false)
         })
 
 
-        it('should use default value 0 for invalid number in value', () => {
+        test('should use default value 0 for invalid number in value', () => {
             const component = {setValue: vi.fn()}
             handleAttributeChange(component, 'value', null, 'invalid')
             expect(component.setValue).toHaveBeenCalledWith(0)
         })
 
 
-        it('should use default value 100 for invalid max', () => {
+        test('should use default value 100 for invalid max', () => {
             const component = {setMax: vi.fn()}
             handleAttributeChange(component, 'max', null, 'invalid')
             expect(component.setMax).toHaveBeenCalledWith(100)
         })
 
 
-        it('should use empty string for null label', () => {
+        test('should use empty string for null label', () => {
             const component = {setLabel: vi.fn()}
             handleAttributeChange(component, 'label', 'old', null)
             expect(component.setLabel).toHaveBeenCalledWith('')

@@ -238,8 +238,8 @@ function printItUsageAudit (issues) {
     hint('These files need refactoring to follow unit test conventions')
     divider()
 
-    for (const {file, count} of issues) {
-        listItem(file, count)
+    for (const {file} of issues) {
+        listItem(file)
     }
 }
 
@@ -256,8 +256,8 @@ function printSingleTestDescribesAudit (issues) {
     hint('Use describe() only when testing multiple scenarios of the same feature')
     divider()
 
-    for (const {file, issues: fileIssues} of issues) {
-        listItem(file, fileIssues.length)
+    for (const {file} of issues) {
+        listItem(file)
     }
 }
 
@@ -271,6 +271,9 @@ function printMissingTestsAudit (missing) {
     }
 
     hint('Create test files that import and test exported functions')
+    hint('Use test() not it() - these are unit tests, not BDD specs')
+    hint('Keep it flat: use describe() only when grouping related tests')
+    hint('Sentences are for edge cases, simple methods can use test("methodName")')
     divider()
 
     for (const {expectedTest} of missing) {

@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import BaseTreeNode from './base_tree_node.js'
 
 
@@ -79,27 +79,27 @@ describe('BaseTreeNode', () => {
 
     describe('initialization', () => {
 
-        it('should extend HTMLElement', () => {
+        test('should extend HTMLElement', () => {
             expect(node).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('should have shadow DOM', () => {
             expect(node.shadowRoot).not.toBeNull()
         })
 
 
-        it('should have content element', () => {
+        test('should have content element', () => {
             expect(node.contentEl).not.toBeNull()
         })
 
 
-        it('should have toggle element', () => {
+        test('should have toggle element', () => {
             expect(node.toggleEl).not.toBeNull()
         })
 
 
-        it('should have children container element', () => {
+        test('should have children container element', () => {
             expect(node.childrenEl).not.toBeNull()
         })
 
@@ -108,12 +108,12 @@ describe('BaseTreeNode', () => {
 
     describe('depth', () => {
 
-        it('should default to 0', () => {
+        test('should default to 0', () => {
             expect(node.depth).toBe(0)
         })
 
 
-        it('should be settable via setDepth', () => {
+        test('should be settable via setDepth', () => {
             node.setDepth(3)
             expect(node.depth).toBe(3)
         })
@@ -123,31 +123,31 @@ describe('BaseTreeNode', () => {
 
     describe('expand/collapse', () => {
 
-        it('should default to collapsed', () => {
+        test('should default to collapsed', () => {
             expect(node.expanded).toBe(false)
         })
 
 
-        it('should expand via setExpanded(true)', () => {
+        test('should expand via setExpanded(true)', () => {
             node.setExpanded(true)
             expect(node.expanded).toBe(true)
         })
 
 
-        it('should collapse via setExpanded(false)', () => {
+        test('should collapse via setExpanded(false)', () => {
             node.setExpanded(true)
             node.setExpanded(false)
             expect(node.expanded).toBe(false)
         })
 
 
-        it('should have expand() shortcut', () => {
+        test('should have expand() shortcut', () => {
             node.expand()
             expect(node.expanded).toBe(true)
         })
 
 
-        it('should have collapse() shortcut', () => {
+        test('should have collapse() shortcut', () => {
             node.expand()
             node.collapse()
             expect(node.expanded).toBe(false)
@@ -158,24 +158,24 @@ describe('BaseTreeNode', () => {
 
     describe('selection', () => {
 
-        it('should default to not selected', () => {
+        test('should default to not selected', () => {
             expect(node.selected).toBe(false)
         })
 
 
-        it('should be settable via setSelected', () => {
+        test('should be settable via setSelected', () => {
             node.setSelected(true)
             expect(node.selected).toBe(true)
         })
 
 
-        it('should add selected class to content', () => {
+        test('should add selected class to content', () => {
             node.setSelected(true)
             expect(node.contentEl.classList.contains('selected')).toBe(true)
         })
 
 
-        it('should remove selected class when deselected', () => {
+        test('should remove selected class when deselected', () => {
             node.setSelected(true)
             node.setSelected(false)
             expect(node.contentEl.classList.contains('selected')).toBe(false)
@@ -186,7 +186,7 @@ describe('BaseTreeNode', () => {
 
     describe('events', () => {
 
-        it('should emit node:select when node is clicked', () => {
+        test('should emit node:select when node is clicked', () => {
             const handler = vi.fn()
             node.addEventListener('node:select', handler)
 
@@ -197,7 +197,7 @@ describe('BaseTreeNode', () => {
         })
 
 
-        it('should emit node:toggle when toggle is clicked', () => {
+        test('should emit node:toggle when toggle is clicked', () => {
             const handler = vi.fn()
             node.setItem({name: 'Test', children: [{name: 'Child'}]})
             node.addEventListener('node:toggle', handler)
@@ -212,7 +212,7 @@ describe('BaseTreeNode', () => {
 
     describe('traverse', () => {
 
-        it('should call function for each node', () => {
+        test('should call function for each node', () => {
             const item = {
                 name: 'Root',
                 children: [
@@ -237,7 +237,7 @@ describe('BaseTreeNode', () => {
 
     describe('findNode', () => {
 
-        it('should find node matching predicate', () => {
+        test('should find node matching predicate', () => {
             const item = {
                 name: 'Root',
                 children: [
@@ -255,7 +255,7 @@ describe('BaseTreeNode', () => {
         })
 
 
-        it('should return null if no match', () => {
+        test('should return null if no match', () => {
             const item = {name: 'Root', children: []}
             node.setItem(item)
 
@@ -269,7 +269,7 @@ describe('BaseTreeNode', () => {
 
     describe('deselectAll', () => {
 
-        it('should deselect all nodes in tree', () => {
+        test('should deselect all nodes in tree', () => {
             const item = {
                 name: 'Root',
                 children: [{name: 'Child', children: []}]

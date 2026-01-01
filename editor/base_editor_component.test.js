@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import BaseEditorComponent from './base_editor_component.js'
 import Notifier from '../core/notifier.js'
 
@@ -29,12 +29,12 @@ describe('BaseEditorComponent', () => {
 
     describe('initialization', () => {
 
-        it('should extend HTMLElement', () => {
+        test('should extend HTMLElement', () => {
             expect(component).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('should have shadow DOM', () => {
             expect(component.shadowRoot).not.toBeNull()
         })
 
@@ -43,7 +43,7 @@ describe('BaseEditorComponent', () => {
 
     describe('listenTo', () => {
 
-        it('should register listener on target', () => {
+        test('should register listener on target', () => {
             const target = new Notifier()
             const callback = vi.fn()
 
@@ -54,7 +54,7 @@ describe('BaseEditorComponent', () => {
         })
 
 
-        it('should track multiple listeners', () => {
+        test('should track multiple listeners', () => {
             const target1 = new Notifier()
             const target2 = new Notifier()
             const callback1 = vi.fn()
@@ -75,7 +75,7 @@ describe('BaseEditorComponent', () => {
 
     describe('cleanListeners', () => {
 
-        it('should remove all registered listeners', () => {
+        test('should remove all registered listeners', () => {
             const target = new Notifier()
             const callback = vi.fn()
 
@@ -87,7 +87,7 @@ describe('BaseEditorComponent', () => {
         })
 
 
-        it('should handle multiple listeners from multiple targets', () => {
+        test('should handle multiple listeners from multiple targets', () => {
             const target1 = new Notifier()
             const target2 = new Notifier()
             const callback1 = vi.fn()
@@ -109,7 +109,7 @@ describe('BaseEditorComponent', () => {
 
     describe('disconnectedCallback', () => {
 
-        it('should clean listeners when removed from DOM', () => {
+        test('should clean listeners when removed from DOM', () => {
             const target = new Notifier()
             const callback = vi.fn()
 
