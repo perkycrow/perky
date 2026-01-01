@@ -15,16 +15,6 @@ class MockBinding {
 }
 
 
-class MockCompositeBinding extends MockBinding {
-
-    constructor (options = {}) {
-        super(options)
-        this.controls = options.controls || []
-    }
-
-}
-
-
 class MockInputBinder {
 
     constructor (bindings = []) {

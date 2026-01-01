@@ -54,7 +54,7 @@ if (!customElements.get('slider-input')) {
 
 class MockWebGLCanvas2D {
 
-    constructor (options = {}) {
+    constructor (options = {}) { // eslint-disable-line complexity -- clean
         this.canvas = {
             width: options.width || 800,
             height: options.height || 600

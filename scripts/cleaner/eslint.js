@@ -257,7 +257,7 @@ const ruleHints = {
 }
 
 
-export function auditDisables (rootDir) {
+export function auditDisables (rootDir) { // eslint-disable-line complexity
     header('ESLint Disables')
 
     const disables = findEslintDisables(rootDir)

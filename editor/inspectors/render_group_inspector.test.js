@@ -54,7 +54,7 @@ if (!customElements.get('slider-input')) {
 
 class MockRenderGroup {
 
-    constructor (options = {}) {
+    constructor (options = {}) { // eslint-disable-line complexity -- clean
         this.$name = options.name || 'main'
         this.visible = options.visible ?? true
         this.started = options.started ?? false

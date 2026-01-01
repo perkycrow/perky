@@ -4,7 +4,7 @@ import Object2DInspector from './object_2d_inspector.js'
 
 class MockObject2D {
 
-    constructor (options = {}) {
+    constructor (options = {}) { // eslint-disable-line complexity -- clean
         this.visible = options.visible ?? true
         this.opacity = options.opacity ?? 1
         this.x = options.x ?? 0

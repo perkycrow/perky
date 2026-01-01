@@ -4,7 +4,7 @@ import CanvasLayerInspector from './canvas_layer_inspector.js'
 
 class MockCanvasLayer {
 
-    constructor (options = {}) {
+    constructor (options = {}) { // eslint-disable-line complexity -- clean
         this.rendererType = options.rendererType || '2d'
         this.zIndex = options.zIndex ?? 0
         this.visible = options.visible ?? true
