@@ -1,4 +1,4 @@
-import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach} from 'vitest'
 import RenderGroupInspector from './render_group_inspector.js'
 
 
