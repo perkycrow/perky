@@ -86,7 +86,9 @@ describe('PerkyDevTools', () => {
 
 
     test('openTool delegates to state', () => {
+        vi.spyOn(console, 'warn').mockImplementation(() => {})
         expect(() => devtools.openTool('explorer')).not.toThrow()
+        console.warn.mockRestore()
     })
 
 
