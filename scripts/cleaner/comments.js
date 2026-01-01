@@ -146,21 +146,9 @@ export function auditComments (rootDir) {
 }
 
 
-function printSummary (filesScanned, filesWithComments, commentsFound, dryRun) {
-    console.log('\n=== COMMENT SUMMARY ===')
-    console.log(`Total files scanned: ${filesScanned}`)
-    console.log(`Files with comments: ${filesWithComments}`)
-    console.log(`Total comments found: ${commentsFound}`)
-
-    if (dryRun && commentsFound > 0) {
-        console.log('\nRun without --dry-run to apply changes.')
-    }
-}
-
-
 export function fixComments (rootDir, dryRun = false) {
-    console.log(dryRun ? '=== DRY RUN: COMMENTS ===' : '=== FIXING COMMENTS ===')
-    console.log(`Root directory: ${rootDir}\n`)
+    const title = dryRun ? 'Comments (dry run)' : 'Fixing Comments'
+    header(title)
 
     const files = findJsFiles(rootDir)
     let totalFilesWithComments = 0
@@ -172,14 +160,14 @@ export function fixComments (rootDir, dryRun = false) {
         if (result) {
             totalFilesWithComments++
             totalCommentsFound += result.count
-            console.log(`\n${result.relativePath}: ${result.count} comment(s)`)
-            if (!dryRun) {
-                console.log('  -> Cleaned')
-            }
         }
     }
 
-    printSummary(files.length, totalFilesWithComments, totalCommentsFound, dryRun)
+    if (totalFilesWithComments === 0) {
+        success('No comments to remove')
+    } else {
+        success(`Cleaned ${totalCommentsFound} comment(s) in ${totalFilesWithComments} file(s)`)
+    }
 
     return {filesScanned: files.length, filesWithComments: totalFilesWithComments, commentsFound: totalCommentsFound}
 }

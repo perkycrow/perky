@@ -116,45 +116,27 @@ export function auditImports (rootDir) {
 }
 
 
-function processFileIssues (filePath, fileIssues, rootDir, dryRun) {
-    const relativePath = path.relative(rootDir, filePath)
-    console.log(`${relativePath}:`)
-
-    for (const issue of fileIssues) {
-        const marker = issue.isDirectory ? ' [DIR]' : ''
-        console.log(`  Line ${issue.line}: ${issue.importPath} -> ${issue.correctedPath}${marker}`)
-    }
-
-    if (!dryRun) {
-        fixMissingExtension(filePath, fileIssues)
-        console.log('  -> Fixed')
-    }
-}
-
-
 export function fixImports (rootDir, dryRun = false) {
-    console.log(dryRun ? '\n=== DRY RUN: IMPORTS ===' : '\n=== FIXING IMPORTS ===')
-    console.log('')
+    const title = dryRun ? 'Import Extensions (dry run)' : 'Fixing Imports'
+    header(title)
 
     const issues = findMissingJsExtensions(rootDir)
 
     if (issues.length === 0) {
-        console.log('No missing .js extensions found.')
+        success('No missing .js extensions')
         return {filesFixed: 0, importsFixed: 0}
     }
 
     const byFile = groupBy(issues, i => i.filePath)
 
     for (const [filePath, fileIssues] of Object.entries(byFile)) {
-        processFileIssues(filePath, fileIssues, rootDir, dryRun)
+        if (!dryRun) {
+            fixMissingExtension(filePath, fileIssues)
+        }
     }
 
     const filesCount = Object.keys(byFile).length
-    console.log(`\nTotal: ${issues.length} import(s) fixed in ${filesCount} file(s)`)
-
-    if (dryRun) {
-        console.log('Run without --dry-run to apply fixes.')
-    }
+    success(`Fixed ${issues.length} import(s) in ${filesCount} file(s)`)
 
     return {filesFixed: filesCount, importsFixed: issues.length}
 }

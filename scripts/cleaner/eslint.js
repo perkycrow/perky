@@ -134,34 +134,26 @@ export function auditUnusedDirectives (rootDir) {
 
 
 export function fixUnusedDirectives (rootDir, dryRun = false) {
-    console.log(dryRun ? '\n=== DRY RUN: UNUSED DIRECTIVES ===' : '\n=== FIXING UNUSED DIRECTIVES ===')
-    console.log('')
+    const title = dryRun ? 'Unused Directives (dry run)' : 'Fixing Unused Directives'
+    header(title)
 
     const unused = findUnusedEslintDirectives(rootDir)
 
     if (unused.length === 0) {
-        console.log('No unused eslint-disable directives found.')
+        success('No unused eslint-disable directives')
         return {filesFixed: 0, directivesRemoved: 0}
     }
 
     let totalDirectives = 0
 
     for (const file of unused) {
-        console.log(`${file.relativePath}:`)
-        file.directives.forEach(d => console.log(`  Line ${d.line}: ${d.message}`))
         totalDirectives += file.directives.length
-
         if (!dryRun) {
             fixFileDirectives(file)
-            console.log('  -> Fixed')
         }
     }
 
-    console.log(`\nTotal: ${totalDirectives} unused directive(s) in ${unused.length} file(s)`)
-
-    if (dryRun) {
-        console.log('Run without --dry-run to remove them.')
-    }
+    success(`Removed ${totalDirectives} directive(s) in ${unused.length} file(s)`)
 
     return {filesFixed: unused.length, directivesRemoved: totalDirectives}
 }
@@ -203,15 +195,10 @@ export function auditEslint (rootDir) {
 
 
 export function fixEslint (rootDir) {
-    console.log('\n=== AUTO-FIXING ESLINT ERRORS ===\n')
+    header('Auto-fixing ESLint')
 
-    const {error} = runEslintCommand('--fix .', rootDir)
-
-    if (error) {
-        console.log('Auto-fix completed (some issues may remain).')
-    } else {
-        console.log('Auto-fix completed.')
-    }
+    runEslintCommand('--fix .', rootDir)
+    success('Auto-fix completed')
 
     return auditEslint(rootDir)
 }
