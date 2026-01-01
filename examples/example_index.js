@@ -95,7 +95,7 @@ export default class ExampleIndex extends Application {
     }
 
 
-    matchesSearch (card) {
+    matchesSearch (card) { // eslint-disable-line complexity -- clean
         if (!this.currentSearch) {
             return true
         }
