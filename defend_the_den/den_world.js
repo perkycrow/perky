@@ -20,6 +20,12 @@ export default class DenWorld extends World {
     }
 
 
+    postUpdate () {
+        this.checkCollisions()
+        this.cleanup()
+    }
+
+
     spawnPlayer (options = {}) {
         return this.create(Player, {
             $id: 'player',

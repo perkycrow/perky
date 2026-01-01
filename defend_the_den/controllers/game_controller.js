@@ -36,8 +36,6 @@ export default class GameController extends WorldController {
     update (game, deltaTime) {
         this.world.update(deltaTime, game)
         this.updateWaveSpawning(deltaTime)
-        this.world.checkCollisions()
-        this.world.cleanup()
         this.checkWaveComplete()
     }
 

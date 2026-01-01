@@ -23,10 +23,17 @@ export default class World extends PerkyModule {
                 entity.update?.(deltaTime)
             }
         }
+
+        this.postUpdate(deltaTime, context)
     }
 
 
     preUpdate () {
+        // Override in subclass
+    }
+
+
+    postUpdate () {
         // Override in subclass
     }
 
