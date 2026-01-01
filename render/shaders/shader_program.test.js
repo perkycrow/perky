@@ -63,7 +63,7 @@ function createMockGL () {
 
         getUniformLocation: vi.fn((program, name) => ({program, name})),
 
-        getAttribLocation: vi.fn((program, name) => shaders.length + programs.length),
+        getAttribLocation: vi.fn(() => shaders.length + programs.length),
 
         uniform1f: vi.fn(),
 

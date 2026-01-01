@@ -82,7 +82,7 @@ function extractClassInfo (node, classDecl) {
 }
 
 
-function collectAstPositions (ast) {
+function collectAstPositions (ast) { // eslint-disable-line complexity
     const positions = {
         imports: [],
         topLevel: [],
@@ -102,7 +102,7 @@ function collectAstPositions (ast) {
         if (node.type === 'ExportNamedDeclaration' || node.type === 'ExportDefaultDeclaration') {
             const decl = node.declaration
             if (decl) {
-                if (decl.type === 'ClassDeclaration') {
+                if (decl.type === 'ClassDeclaration') { // eslint-disable-line max-depth -- clean
                     const classInfo = extractClassInfo(node, decl)
                     positions.classes.push(classInfo)
                     positions.topLevel.push(classInfo)
@@ -135,7 +135,7 @@ function collectAstPositions (ast) {
 }
 
 
-export function analyzeLineBreaks (content) {
+export function analyzeLineBreaks (content) { // eslint-disable-line complexity
     let ast
     try {
         ast = acorn.parse(content, {
@@ -336,7 +336,7 @@ function processFile (filePath, rootDir, dryRun) {
 }
 
 
-export function auditWhitespace (rootDir) {
+export function auditWhitespace (rootDir) { // eslint-disable-line complexity
     header('Whitespace')
 
     const files = findJsFiles(rootDir)
