@@ -69,8 +69,10 @@ function printDigest (results) {
 }
 
 
-export async function runAudit (rootDir) {
-    printBanner()
+export async function runAudit (rootDir, options = {}) {
+    if (options.showBanner !== false) {
+        printBanner()
+    }
 
     const results = {}
 
@@ -103,6 +105,7 @@ export function runFix (rootDir, options = {}) {
 
 
 export async function runAll (rootDir) {
+    printBanner()
     runFix(rootDir)
-    await runAudit(rootDir)
+    await runAudit(rootDir, {showBanner: false})
 }
