@@ -50,7 +50,6 @@ function printDigest (results) {
     console.log('')
 
     const sections = [
-        {key: 'whitespace', label: 'Whitespace'},
         {key: 'imports', label: 'Imports'},
         {key: 'unusedDirectives', label: 'Unused Directives'},
         {key: 'eslint', label: 'ESLint'},
