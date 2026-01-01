@@ -3,7 +3,7 @@ import path from 'path'
 import {isExcludedFile, isInsideString, isProtectedComment, findJsFiles} from './utils.js'
 
 
-function isUrlComment (textBefore) {
+export function isUrlComment (textBefore) {
     return /https?:$/.test(textBefore)
 }
 
@@ -60,7 +60,7 @@ function normalizeWhitespace (content) {
 }
 
 
-function cleanFileContent (content) {
+export function cleanFileContent (content) {
     const originalContent = content
     let allComments = []
 

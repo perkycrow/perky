@@ -5,7 +5,7 @@ import {findJsFiles, groupBy} from './utils.js'
 import {RULE_ADVICE} from './config.js'
 
 
-function isUnusedDirectiveMessage (message) {
+export function isUnusedDirectiveMessage (message) {
     return message && message.includes('Unused eslint-disable directive')
 }
 
@@ -65,7 +65,7 @@ function findUnusedEslintDirectives (rootDir) {
 }
 
 
-function removeUnusedDirective (content, line) {
+export function removeUnusedDirective (content, line) {
     const lines = content.split('\n')
     const lineIndex = line - 1
 

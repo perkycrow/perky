@@ -23,7 +23,7 @@ function resolveImportPath (fileDir, importPath) {
 }
 
 
-function hasJsExtension (importPath) {
+export function hasJsExtension (importPath) {
     return importPath.endsWith('.js') || importPath.endsWith('.json') || importPath.endsWith('.css')
 }
 
