@@ -12,7 +12,7 @@ export default class Enemy extends Entity {
         const {
             maxSpeed = 3,
             boundaries = {min: -0.85, max: 1.55},
-            hp = 2
+            hp = 3
         } = params
 
         this.velocity.set(-maxSpeed, 0)
@@ -38,6 +38,36 @@ export default class Enemy extends Entity {
         this.shuffleProgress = Math.random()
         this.minSpeedRatio = 0.15
         this.maxSpeedRatio = 1.0
+        this.speedMultiplier = 1.0
+
+        this.updateShuffleForDamage()
+    }
+
+
+    get damageRatio () {
+        return 1 - (this.hp / this.maxHp)
+    }
+
+
+    updateShuffleForDamage () {
+        const hpLost = this.maxHp - this.hp
+
+        if (hpLost === 0) {
+            this.shuffleDuration = 0.8 + Math.random() * 0.6
+            this.minSpeedRatio = 0.2
+            this.maxSpeedRatio = 1.0
+            this.speedMultiplier = 1.0
+        } else if (hpLost === 1) {
+            this.shuffleDuration = 1.2 + Math.random() * 0.8
+            this.minSpeedRatio = 0.05
+            this.maxSpeedRatio = 1.1
+            this.speedMultiplier = 1.0
+        } else {
+            this.shuffleDuration = 0.4 + Math.random() * 0.3
+            this.minSpeedRatio = 0.3
+            this.maxSpeedRatio = 1.3
+            this.speedMultiplier = 2.0
+        }
     }
 
 
@@ -51,6 +81,8 @@ export default class Enemy extends Entity {
         this.stunTimer = this.stunDuration
 
         this.hitFlashTimer = this.hitFlashDuration
+
+        this.updateShuffleForDamage()
 
         if (this.hp <= 0) {
             this.alive = false
@@ -110,7 +142,7 @@ export default class Enemy extends Entity {
         const easedWave = Easing.easeInOutQuad((wave + 1) / 2)
         const speedRatio = this.minSpeedRatio + easedWave * (this.maxSpeedRatio - this.minSpeedRatio)
 
-        this.position.add(this.velocity.clone().multiplyScalar(deltaTime * speedRatio))
+        this.position.add(this.velocity.clone().multiplyScalar(deltaTime * speedRatio * this.speedMultiplier))
     }
 
 
