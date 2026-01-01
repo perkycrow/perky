@@ -279,9 +279,17 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
 
     #filterCommands (query, source) {
         if (query) {
-            this.#filteredCommands = source.filter(cmd =>
-                cmd.title.toLowerCase().includes(query) ||
-                cmd.subtitle.toLowerCase().includes(query))
+            this.#filteredCommands = source
+                .map(cmd => ({
+                    cmd,
+                    score: Math.max(
+                        fuzzyScore(query, cmd.title.toLowerCase()),
+                        fuzzyScore(query, cmd.subtitle.toLowerCase())
+                    )
+                }))
+                .filter(({score}) => score > 0)
+                .sort((a, b) => b.score - a.score)
+                .map(({cmd}) => cmd)
         } else {
             this.#filteredCommands = [...source]
         }
@@ -495,6 +503,34 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
         }
     }
 
+}
+
+
+function fuzzyScore (query, target) { // eslint-disable-line complexity
+    if (target.includes(query)) {
+        return 100 + (query.length / target.length) * 50
+    }
+
+    let queryIndex = 0
+    let score = 0
+    let lastMatchIndex = -1
+
+    for (let i = 0; i < target.length && queryIndex < query.length; i++) {
+        if (target[i] === query[queryIndex]) {
+            score += 10
+            if (lastMatchIndex === i - 1) {
+                score += 5
+            }
+            lastMatchIndex = i
+            queryIndex++
+        }
+    }
+
+    if (queryIndex < query.length) {
+        return 0
+    }
+
+    return score
 }
 
 
