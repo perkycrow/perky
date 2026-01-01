@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import ExplorerContextMenu from './explorer_context_menu.js'
 
 
@@ -24,17 +24,17 @@ describe('ExplorerContextMenu', () => {
 
     describe('initialization', () => {
 
-        it('should be a custom element', () => {
+        test('should be a custom element', () => {
             expect(menu).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('should have shadow DOM', () => {
             expect(menu.shadowRoot).not.toBeNull()
         })
 
 
-        it('should be hidden by default', () => {
+        test('should be hidden by default', () => {
             expect(menu.style.display).toBe('none')
         })
 
@@ -43,7 +43,7 @@ describe('ExplorerContextMenu', () => {
 
     describe('show', () => {
 
-        it('should display the menu', () => {
+        test('should display the menu', () => {
             const actions = [{label: 'Test', icon: '🔍', action: vi.fn()}]
 
             menu.show(actions, {}, {x: 100, y: 100})
@@ -52,7 +52,7 @@ describe('ExplorerContextMenu', () => {
         })
 
 
-        it('should render actions', () => {
+        test('should render actions', () => {
             const actions = [
                 {label: 'Action 1', icon: '🔍', action: vi.fn()},
                 {label: 'Action 2', icon: '⚙', action: vi.fn()}
@@ -67,7 +67,7 @@ describe('ExplorerContextMenu', () => {
         })
 
 
-        it('should render separators', () => {
+        test('should render separators', () => {
             const actions = [
                 {label: 'Action 1', icon: '🔍', action: vi.fn()},
                 {separator: true},
@@ -81,7 +81,7 @@ describe('ExplorerContextMenu', () => {
         })
 
 
-        it('should mark disabled actions', () => {
+        test('should mark disabled actions', () => {
             const actions = [
                 {label: 'Disabled', icon: '⚙', action: vi.fn(), disabled: true}
             ]
@@ -93,7 +93,7 @@ describe('ExplorerContextMenu', () => {
         })
 
 
-        it('should mark danger actions', () => {
+        test('should mark danger actions', () => {
             const actions = [
                 {label: 'Delete', icon: '🗑', action: vi.fn(), danger: true}
             ]
@@ -109,7 +109,7 @@ describe('ExplorerContextMenu', () => {
 
     describe('action execution', () => {
 
-        it('should call action when clicking item', () => {
+        test('should call action when clicking item', () => {
             const actionFn = vi.fn()
             const module = {$id: 'test'}
             const actions = [{label: 'Test', icon: '🔍', action: actionFn}]
@@ -123,7 +123,7 @@ describe('ExplorerContextMenu', () => {
         })
 
 
-        it('should hide menu after action is executed', () => {
+        test('should hide menu after action is executed', () => {
             const actions = [{label: 'Test', icon: '🔍', action: vi.fn()}]
 
             menu.show(actions, {}, {x: 100, y: 100})
@@ -135,7 +135,7 @@ describe('ExplorerContextMenu', () => {
         })
 
 
-        it('should not call action for disabled items', () => {
+        test('should not call action for disabled items', () => {
             const actionFn = vi.fn()
             const actions = [{label: 'Test', icon: '🔍', action: actionFn, disabled: true}]
 
@@ -152,7 +152,7 @@ describe('ExplorerContextMenu', () => {
 
     describe('hide', () => {
 
-        it('should hide the menu', () => {
+        test('should hide the menu', () => {
             const actions = [{label: 'Test', icon: '🔍', action: vi.fn()}]
 
             menu.show(actions, {}, {x: 100, y: 100})
@@ -166,7 +166,7 @@ describe('ExplorerContextMenu', () => {
 
     describe('keyboard events', () => {
 
-        it('should hide on Escape key', () => {
+        test('should hide on Escape key', () => {
             const actions = [{label: 'Test', icon: '🔍', action: vi.fn()}]
 
             menu.show(actions, {}, {x: 100, y: 100})

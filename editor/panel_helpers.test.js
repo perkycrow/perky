@@ -1,4 +1,4 @@
-import {describe, it, expect, vi} from 'vitest'
+import {describe, test, expect, vi} from 'vitest'
 import {createPanelHeader} from './panel_helpers.js'
 
 
@@ -6,14 +6,14 @@ describe('panel_helpers', () => {
 
     describe('createPanelHeader', () => {
 
-        it('should create header element', () => {
+        test('should create header element', () => {
             const {header} = createPanelHeader({icon: '🎮', title: 'Test'})
             expect(header).toBeInstanceOf(HTMLElement)
             expect(header.className).toBe('panel-header')
         })
 
 
-        it('should display icon and title', () => {
+        test('should display icon and title', () => {
             const {header} = createPanelHeader({icon: '🎮', title: 'Game'})
             const titleEl = header.querySelector('.panel-title')
             expect(titleEl.textContent).toContain('🎮')
@@ -21,14 +21,14 @@ describe('panel_helpers', () => {
         })
 
 
-        it('should create buttons container', () => {
+        test('should create buttons container', () => {
             const {header} = createPanelHeader({icon: '🎮', title: 'Test', buttons: []})
             const buttonsEl = header.querySelector('.panel-buttons')
             expect(buttonsEl).not.toBeNull()
         })
 
 
-        it('should create button elements from config', () => {
+        test('should create button elements from config', () => {
             const onClick = vi.fn()
             const {header} = createPanelHeader({
                 icon: '🎮',
@@ -44,7 +44,7 @@ describe('panel_helpers', () => {
         })
 
 
-        it('should call button onClick handler', () => {
+        test('should call button onClick handler', () => {
             const onClick = vi.fn()
             const {header} = createPanelHeader({
                 icon: '🎮',
@@ -61,7 +61,7 @@ describe('panel_helpers', () => {
         })
 
 
-        it('should stop propagation on button click', () => {
+        test('should stop propagation on button click', () => {
             const headerHandler = vi.fn()
             const buttonHandler = vi.fn()
 
@@ -82,7 +82,7 @@ describe('panel_helpers', () => {
         })
 
 
-        it('should return button refs by id', () => {
+        test('should return button refs by id', () => {
             const {buttons} = createPanelHeader({
                 icon: '🎮',
                 title: 'Test',
@@ -97,7 +97,7 @@ describe('panel_helpers', () => {
         })
 
 
-        it('should attach onClick handler to header', () => {
+        test('should attach onClick handler to header', () => {
             const onClick = vi.fn()
             const {header} = createPanelHeader({
                 icon: '🎮',

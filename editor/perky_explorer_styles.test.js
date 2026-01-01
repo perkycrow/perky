@@ -1,4 +1,4 @@
-import {describe, it, expect} from 'vitest'
+import {describe, test, expect} from 'vitest'
 import {
     cssVariables,
     explorerStyles,
@@ -13,13 +13,13 @@ describe('perky_explorer_styles', () => {
 
     describe('cssVariables', () => {
 
-        it('should be a non-empty string', () => {
+        test('should be a non-empty string', () => {
             expect(typeof cssVariables).toBe('string')
             expect(cssVariables.length).toBeGreaterThan(0)
         })
 
 
-        it('should contain color variables', () => {
+        test('should contain color variables', () => {
             expect(cssVariables).toContain('--bg-primary')
             expect(cssVariables).toContain('--bg-secondary')
             expect(cssVariables).toContain('--fg-primary')
@@ -28,14 +28,14 @@ describe('perky_explorer_styles', () => {
         })
 
 
-        it('should contain status variables', () => {
+        test('should contain status variables', () => {
             expect(cssVariables).toContain('--status-started')
             expect(cssVariables).toContain('--status-stopped')
             expect(cssVariables).toContain('--status-disposed')
         })
 
 
-        it('should contain font variable', () => {
+        test('should contain font variable', () => {
             expect(cssVariables).toContain('--font-mono')
         })
 
@@ -44,20 +44,20 @@ describe('perky_explorer_styles', () => {
 
     describe('explorerStyles', () => {
 
-        it('should be a non-empty string', () => {
+        test('should be a non-empty string', () => {
             expect(typeof explorerStyles).toBe('string')
             expect(explorerStyles.length).toBeGreaterThan(0)
         })
 
 
-        it('should contain explorer class styles', () => {
+        test('should contain explorer class styles', () => {
             expect(explorerStyles).toContain('.explorer')
             expect(explorerStyles).toContain('.explorer-header')
             expect(explorerStyles).toContain('.explorer-tree')
         })
 
 
-        it('should contain button styles', () => {
+        test('should contain button styles', () => {
             expect(explorerStyles).toContain('.explorer-btn')
         })
 
@@ -66,13 +66,13 @@ describe('perky_explorer_styles', () => {
 
     describe('nodeStyles', () => {
 
-        it('should be a non-empty string', () => {
+        test('should be a non-empty string', () => {
             expect(typeof nodeStyles).toBe('string')
             expect(nodeStyles.length).toBeGreaterThan(0)
         })
 
 
-        it('should contain node class styles', () => {
+        test('should contain node class styles', () => {
             expect(nodeStyles).toContain('.node-content')
             expect(nodeStyles).toContain('.node-toggle')
             expect(nodeStyles).toContain('.node-status')
@@ -80,7 +80,7 @@ describe('perky_explorer_styles', () => {
         })
 
 
-        it('should contain status styles', () => {
+        test('should contain status styles', () => {
             expect(nodeStyles).toContain('.node-status.started')
             expect(nodeStyles).toContain('.node-status.stopped')
             expect(nodeStyles).toContain('.node-status.disposed')
@@ -91,13 +91,13 @@ describe('perky_explorer_styles', () => {
 
     describe('detailsStyles', () => {
 
-        it('should be a non-empty string', () => {
+        test('should be a non-empty string', () => {
             expect(typeof detailsStyles).toBe('string')
             expect(detailsStyles.length).toBeGreaterThan(0)
         })
 
 
-        it('should contain details class styles', () => {
+        test('should contain details class styles', () => {
             expect(detailsStyles).toContain('.details-title')
             expect(detailsStyles).toContain('.details-grid')
             expect(detailsStyles).toContain('.details-label')
@@ -105,12 +105,12 @@ describe('perky_explorer_styles', () => {
         })
 
 
-        it('should contain status styles', () => {
+        test('should contain status styles', () => {
             expect(detailsStyles).toContain('.details-status')
         })
 
 
-        it('should contain tag styles', () => {
+        test('should contain tag styles', () => {
             expect(detailsStyles).toContain('.details-tags')
             expect(detailsStyles).toContain('.details-tag')
         })
@@ -120,26 +120,26 @@ describe('perky_explorer_styles', () => {
 
     describe('inspectorStyles', () => {
 
-        it('should be a non-empty string', () => {
+        test('should be a non-empty string', () => {
             expect(typeof inspectorStyles).toBe('string')
             expect(inspectorStyles.length).toBeGreaterThan(0)
         })
 
 
-        it('should contain inspector class styles', () => {
+        test('should contain inspector class styles', () => {
             expect(inspectorStyles).toContain('.inspector-grid')
             expect(inspectorStyles).toContain('.inspector-label')
             expect(inspectorStyles).toContain('.inspector-value')
         })
 
 
-        it('should contain button styles', () => {
+        test('should contain button styles', () => {
             expect(inspectorStyles).toContain('.inspector-btn')
             expect(inspectorStyles).toContain('.inspector-btn.primary')
         })
 
 
-        it('should contain action styles', () => {
+        test('should contain action styles', () => {
             expect(inspectorStyles).toContain('.inspector-actions')
         })
 
@@ -148,13 +148,13 @@ describe('perky_explorer_styles', () => {
 
     describe('panelStyles', () => {
 
-        it('should be a non-empty string', () => {
+        test('should be a non-empty string', () => {
             expect(typeof panelStyles).toBe('string')
             expect(panelStyles.length).toBeGreaterThan(0)
         })
 
 
-        it('should contain panel class styles', () => {
+        test('should contain panel class styles', () => {
             expect(panelStyles).toContain('.panel-header')
             expect(panelStyles).toContain('.panel-title')
             expect(panelStyles).toContain('.panel-buttons')
@@ -162,7 +162,7 @@ describe('perky_explorer_styles', () => {
         })
 
 
-        it('should contain tree styles', () => {
+        test('should contain tree styles', () => {
             expect(panelStyles).toContain('.panel-tree')
         })
 

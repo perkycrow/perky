@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './toggle_input.js'
 
 
@@ -24,17 +24,17 @@ describe('ToggleInput', () => {
 
     describe('initialization', () => {
 
-        it('should extend HTMLElement', () => {
+        test('should extend HTMLElement', () => {
             expect(toggle).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('should have shadow DOM', () => {
             expect(toggle.shadowRoot).not.toBeNull()
         })
 
 
-        it('should have default checked of false', () => {
+        test('should have default checked of false', () => {
             expect(toggle.checked).toBe(false)
         })
 
@@ -43,13 +43,13 @@ describe('ToggleInput', () => {
 
     describe('checked property', () => {
 
-        it('should get and set checked', () => {
+        test('should get and set checked', () => {
             toggle.checked = true
             expect(toggle.checked).toBe(true)
         })
 
 
-        it('should coerce to boolean', () => {
+        test('should coerce to boolean', () => {
             toggle.checked = 1
             expect(toggle.checked).toBe(true)
 
@@ -62,7 +62,7 @@ describe('ToggleInput', () => {
 
     describe('setChecked', () => {
 
-        it('should set checked directly', () => {
+        test('should set checked directly', () => {
             toggle.setChecked(true)
             expect(toggle.checked).toBe(true)
         })
@@ -72,7 +72,7 @@ describe('ToggleInput', () => {
 
     describe('setLabel', () => {
 
-        it('should set label text', () => {
+        test('should set label text', () => {
             toggle.setLabel('Enabled')
             const label = toggle.shadowRoot.querySelector('.toggle-input-label')
             expect(label.textContent).toBe('Enabled')
@@ -83,7 +83,7 @@ describe('ToggleInput', () => {
 
     describe('observedAttributes', () => {
 
-        it('should include expected attributes', () => {
+        test('should include expected attributes', () => {
             const observed = toggle.constructor.observedAttributes
             expect(observed).toContain('checked')
             expect(observed).toContain('label')
@@ -94,14 +94,14 @@ describe('ToggleInput', () => {
 
     describe('visual state', () => {
 
-        it('should add checked class when checked', () => {
+        test('should add checked class when checked', () => {
             toggle.setChecked(true)
             const track = toggle.shadowRoot.querySelector('.toggle-input-track')
             expect(track.classList.contains('checked')).toBe(true)
         })
 
 
-        it('should remove checked class when unchecked', () => {
+        test('should remove checked class when unchecked', () => {
             toggle.setChecked(true)
             toggle.setChecked(false)
             const track = toggle.shadowRoot.querySelector('.toggle-input-track')
@@ -113,7 +113,7 @@ describe('ToggleInput', () => {
 
     describe('click behavior', () => {
 
-        it('should toggle when track clicked', () => {
+        test('should toggle when track clicked', () => {
             const track = toggle.shadowRoot.querySelector('.toggle-input-track')
             track.click()
             expect(toggle.checked).toBe(true)
@@ -123,7 +123,7 @@ describe('ToggleInput', () => {
         })
 
 
-        it('should toggle when label clicked', () => {
+        test('should toggle when label clicked', () => {
             toggle.setLabel('Test')
             const label = toggle.shadowRoot.querySelector('.toggle-input-label')
             label.click()
@@ -135,7 +135,7 @@ describe('ToggleInput', () => {
 
     describe('change event', () => {
 
-        it('should emit change event when toggled', () => {
+        test('should emit change event when toggled', () => {
             const handler = vi.fn()
             toggle.addEventListener('change', handler)
 
@@ -147,7 +147,7 @@ describe('ToggleInput', () => {
         })
 
 
-        it('should emit correct state in change event', () => {
+        test('should emit correct state in change event', () => {
             toggle.setChecked(true)
 
             const handler = vi.fn()

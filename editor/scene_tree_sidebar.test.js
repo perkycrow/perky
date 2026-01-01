@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './scene_tree_sidebar.js'
 
 
@@ -24,29 +24,29 @@ describe('SceneTreeSidebar', () => {
 
     describe('initialization', () => {
 
-        it('should extend HTMLElement', () => {
+        test('should extend HTMLElement', () => {
             expect(sidebar).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('should have shadow DOM', () => {
             expect(sidebar.shadowRoot).not.toBeNull()
         })
 
 
-        it('should have header', () => {
+        test('should have header', () => {
             const header = sidebar.shadowRoot.querySelector('.panel-header')
             expect(header).not.toBeNull()
         })
 
 
-        it('should have tree container', () => {
+        test('should have tree container', () => {
             const tree = sidebar.shadowRoot.querySelector('.panel-tree')
             expect(tree).not.toBeNull()
         })
 
 
-        it('should have details panel', () => {
+        test('should have details panel', () => {
             const details = sidebar.shadowRoot.querySelector('.panel-details')
             expect(details).not.toBeNull()
         })
@@ -56,14 +56,14 @@ describe('SceneTreeSidebar', () => {
 
     describe('setContent', () => {
 
-        it('should set the content', () => {
+        test('should set the content', () => {
             const content = createMockContainer()
             sidebar.setContent(content)
             expect(sidebar.getContent()).toBe(content)
         })
 
 
-        it('should accept worldRenderer as second parameter', () => {
+        test('should accept worldRenderer as second parameter', () => {
             const content = createMockContainer()
             const worldRenderer = createMockWorldRenderer()
             sidebar.setContent(content, worldRenderer)
@@ -71,7 +71,7 @@ describe('SceneTreeSidebar', () => {
         })
 
 
-        it('should show root node when content is set', () => {
+        test('should show root node when content is set', () => {
             const content = createMockContainer()
             sidebar.setContent(content)
 
@@ -80,7 +80,7 @@ describe('SceneTreeSidebar', () => {
         })
 
 
-        it('should hide root node when content is null', () => {
+        test('should hide root node when content is null', () => {
             sidebar.setContent(createMockContainer())
             sidebar.setContent(null)
 
@@ -93,12 +93,12 @@ describe('SceneTreeSidebar', () => {
 
     describe('getContent', () => {
 
-        it('should return null when no content set', () => {
+        test('should return null when no content set', () => {
             expect(sidebar.getContent()).toBeNull()
         })
 
 
-        it('should return the set content', () => {
+        test('should return the set content', () => {
             const content = createMockContainer()
             sidebar.setContent(content)
             expect(sidebar.getContent()).toBe(content)
@@ -109,7 +109,7 @@ describe('SceneTreeSidebar', () => {
 
     describe('close', () => {
 
-        it('should emit sidebar:close event', () => {
+        test('should emit sidebar:close event', () => {
             const handler = vi.fn()
             sidebar.addEventListener('sidebar:close', handler)
 
@@ -123,12 +123,12 @@ describe('SceneTreeSidebar', () => {
 
     describe('refresh', () => {
 
-        it('should not throw when no content', () => {
+        test('should not throw when no content', () => {
             expect(() => sidebar.refresh()).not.toThrow()
         })
 
 
-        it('should update tree when content is set', () => {
+        test('should update tree when content is set', () => {
             const content = createMockContainer()
             sidebar.setContent(content)
 
@@ -140,21 +140,21 @@ describe('SceneTreeSidebar', () => {
 
     describe('header buttons', () => {
 
-        it('should have refresh button', () => {
+        test('should have refresh button', () => {
             const buttons = sidebar.shadowRoot.querySelectorAll('.panel-btn')
             const refreshBtn = Array.from(buttons).find(b => b.textContent === '↻')
             expect(refreshBtn).not.toBeNull()
         })
 
 
-        it('should have close button', () => {
+        test('should have close button', () => {
             const buttons = sidebar.shadowRoot.querySelectorAll('.panel-btn')
             const closeBtn = Array.from(buttons).find(b => b.textContent === '✕')
             expect(closeBtn).not.toBeNull()
         })
 
 
-        it('should call close when close button clicked', () => {
+        test('should call close when close button clicked', () => {
             const handler = vi.fn()
             sidebar.addEventListener('sidebar:close', handler)
 
@@ -170,7 +170,7 @@ describe('SceneTreeSidebar', () => {
 
     describe('navigate:entity event', () => {
 
-        it('should bubble navigate:entity events from tree', () => {
+        test('should bubble navigate:entity events from tree', () => {
             const handler = vi.fn()
             sidebar.addEventListener('navigate:entity', handler)
 

@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import PerkyExplorer from './perky_explorer.js'
 import PerkyModule from '../core/perky_module.js'
 
@@ -77,25 +77,25 @@ describe('PerkyExplorer', () => {
 
     describe('initialization', () => {
 
-        it('should be a custom element', () => {
+        test('should be a custom element', () => {
             expect(explorer).toBeInstanceOf(PerkyExplorer)
             expect(explorer).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('should have shadow DOM', () => {
             expect(explorer.shadowRoot).not.toBeNull()
         })
 
 
-        it('should show empty state when no module is set', () => {
+        test('should show empty state when no module is set', () => {
             const emptyMessage = explorer.shadowRoot.querySelector('.explorer-empty')
             expect(emptyMessage).not.toBeNull()
             expect(emptyMessage.textContent).toContain('No module attached')
         })
 
 
-        it('should have a header with title', () => {
+        test('should have a header with title', () => {
             const title = explorer.shadowRoot.querySelector('.explorer-title')
             expect(title).not.toBeNull()
             expect(title.textContent).toContain('Perky Explorer')
@@ -106,7 +106,7 @@ describe('PerkyExplorer', () => {
 
     describe('setModule', () => {
 
-        it('should render the module tree', () => {
+        test('should render the module tree', () => {
             const module = new PerkyModule({$id: 'root', $category: 'app'})
             explorer.setModule(module)
 
@@ -118,7 +118,7 @@ describe('PerkyExplorer', () => {
         })
 
 
-        it('should return the module via getModule', () => {
+        test('should return the module via getModule', () => {
             const module = new PerkyModule({$id: 'root'})
             explorer.setModule(module)
 
@@ -126,7 +126,7 @@ describe('PerkyExplorer', () => {
         })
 
 
-        it('should expand the root node by default', () => {
+        test('should expand the root node by default', () => {
             const parent = new PerkyModule({$id: 'parent'})
             parent.create(PerkyModule, {$id: 'child'})
 
@@ -138,7 +138,7 @@ describe('PerkyExplorer', () => {
         })
 
 
-        it('should render children in the tree', () => {
+        test('should render children in the tree', () => {
             const parent = new PerkyModule({$id: 'parent'})
             parent.create(PerkyModule, {$id: 'child1', $category: 'test'})
             parent.create(PerkyModule, {$id: 'child2', $category: 'test'})
@@ -158,7 +158,7 @@ describe('PerkyExplorer', () => {
 
     describe('status indicators', () => {
 
-        it('should show stopped status when module not started', () => {
+        test('should show stopped status when module not started', () => {
             const module = new PerkyModule({$id: 'test'})
             explorer.setModule(module)
 
@@ -168,7 +168,7 @@ describe('PerkyExplorer', () => {
         })
 
 
-        it('should show started status when module is running', () => {
+        test('should show started status when module is running', () => {
             const module = new PerkyModule({$id: 'test'})
             module.start()
             explorer.setModule(module)
@@ -179,7 +179,7 @@ describe('PerkyExplorer', () => {
         })
 
 
-        it('should show disposed status when module is disposed', () => {
+        test('should show disposed status when module is disposed', () => {
             const module = new PerkyModule({$id: 'test'})
             module.dispose()
             explorer.setModule(module)
@@ -194,7 +194,7 @@ describe('PerkyExplorer', () => {
 
     describe('collapse/expand', () => {
 
-        it('should toggle tree visibility when clicking header', () => {
+        test('should toggle tree visibility when clicking header', () => {
             const module = new PerkyModule({$id: 'test'})
             explorer.setModule(module)
 
@@ -210,7 +210,7 @@ describe('PerkyExplorer', () => {
         })
 
 
-        it('should toggle child nodes when clicking arrow', () => {
+        test('should toggle child nodes when clicking arrow', () => {
             const parent = new PerkyModule({$id: 'parent'})
             parent.create(PerkyModule, {$id: 'child'})
             explorer.setModule(parent)
@@ -232,7 +232,7 @@ describe('PerkyExplorer', () => {
 
     describe('selection and details', () => {
 
-        it('should show details panel when node is clicked', () => {
+        test('should show details panel when node is clicked', () => {
             const module = new PerkyModule({
                 $id: 'test-module',
                 $name: 'TestModule',
@@ -250,7 +250,7 @@ describe('PerkyExplorer', () => {
         })
 
 
-        it('should display module properties in details', () => {
+        test('should display module properties in details', () => {
             const module = new PerkyModule({
                 $id: 'test-module',
                 $name: 'TestName',
@@ -269,7 +269,7 @@ describe('PerkyExplorer', () => {
         })
 
 
-        it('should display tags in details', () => {
+        test('should display tags in details', () => {
             const module = new PerkyModule({
                 $id: 'test',
                 $tags: ['alpha', 'beta']
@@ -289,7 +289,7 @@ describe('PerkyExplorer', () => {
         })
 
 
-        it('should mark selected node with selected class', () => {
+        test('should mark selected node with selected class', () => {
             const module = new PerkyModule({$id: 'test'})
             explorer.setModule(module)
 
@@ -306,7 +306,7 @@ describe('PerkyExplorer', () => {
 
     describe('minimize', () => {
 
-        it('should minimize when clicking minimize button', () => {
+        test('should minimize when clicking minimize button', () => {
             const module = new PerkyModule({$id: 'test'})
             explorer.setModule(module)
 
@@ -318,7 +318,7 @@ describe('PerkyExplorer', () => {
         })
 
 
-        it('should restore when clicking minimized icon', () => {
+        test('should restore when clicking minimized icon', () => {
             const module = new PerkyModule({$id: 'test'})
             explorer.setModule(module)
 
@@ -337,7 +337,7 @@ describe('PerkyExplorer', () => {
 
     describe('live updates', () => {
 
-        it('should update when child is added', () => {
+        test('should update when child is added', () => {
             const parent = new PerkyModule({$id: 'parent'})
             explorer.setModule(parent)
 
@@ -352,7 +352,7 @@ describe('PerkyExplorer', () => {
         })
 
 
-        it('should update when module starts', () => {
+        test('should update when module starts', () => {
             const module = new PerkyModule({$id: 'test'})
             explorer.setModule(module)
 
@@ -371,7 +371,7 @@ describe('PerkyExplorer', () => {
 
     describe('cleanup', () => {
 
-        it('should clean up listeners when disconnected', () => {
+        test('should clean up listeners when disconnected', () => {
             const module = new PerkyModule({$id: 'test'})
             explorer.setModule(module)
 
@@ -384,7 +384,7 @@ describe('PerkyExplorer', () => {
         })
 
 
-        it('should clean up listeners when setting new module', () => {
+        test('should clean up listeners when setting new module', () => {
             const module1 = new PerkyModule({$id: 'first'})
             const module2 = new PerkyModule({$id: 'second'})
 

@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './perky_explorer_node.js'
 
 
@@ -24,17 +24,17 @@ describe('PerkyExplorerNode', () => {
 
     describe('initialization', () => {
 
-        it('should extend HTMLElement', () => {
+        test('should extend HTMLElement', () => {
             expect(node).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('should have shadow DOM', () => {
             expect(node.shadowRoot).not.toBeNull()
         })
 
 
-        it('should have childNodeTag set to perky-explorer-node', () => {
+        test('should have childNodeTag set to perky-explorer-node', () => {
             expect(node.constructor.childNodeTag).toBe('perky-explorer-node')
         })
 
@@ -43,21 +43,21 @@ describe('PerkyExplorerNode', () => {
 
     describe('setModule', () => {
 
-        it('should set the module', () => {
+        test('should set the module', () => {
             const module = createMockModule()
             node.setModule(module)
             expect(node.getModule()).toBe(module)
         })
 
 
-        it('should set depth', () => {
+        test('should set depth', () => {
             const module = createMockModule()
             node.setModule(module, 2)
             expect(node.depth).toBe(2)
         })
 
 
-        it('should reset selection', () => {
+        test('should reset selection', () => {
             node.setSelected(true)
             node.setModule(createMockModule())
             expect(node.selected).toBe(false)
@@ -68,12 +68,12 @@ describe('PerkyExplorerNode', () => {
 
     describe('getModule', () => {
 
-        it('should return null when no module set', () => {
+        test('should return null when no module set', () => {
             expect(node.getModule()).toBeNull()
         })
 
 
-        it('should return the set module', () => {
+        test('should return the set module', () => {
             const module = createMockModule()
             node.setModule(module)
             expect(node.getModule()).toBe(module)
@@ -84,7 +84,7 @@ describe('PerkyExplorerNode', () => {
 
     describe('getItem', () => {
 
-        it('should return the module', () => {
+        test('should return the module', () => {
             const module = createMockModule()
             node.setModule(module)
             expect(node.getItem()).toBe(module)
@@ -95,18 +95,18 @@ describe('PerkyExplorerNode', () => {
 
     describe('hasChildren', () => {
 
-        it('should return falsy when no module', () => {
+        test('should return falsy when no module', () => {
             expect(node.hasChildren()).toBeFalsy()
         })
 
 
-        it('should return false when module has no children', () => {
+        test('should return false when module has no children', () => {
             node.setModule(createMockModule({children: []}))
             expect(node.hasChildren()).toBe(false)
         })
 
 
-        it('should return true when module has children', () => {
+        test('should return true when module has children', () => {
             node.setModule(createMockModule({
                 children: [createMockModule({$id: 'child'})]
             }))
@@ -118,12 +118,12 @@ describe('PerkyExplorerNode', () => {
 
     describe('getChildren', () => {
 
-        it('should return empty array when no module', () => {
+        test('should return empty array when no module', () => {
             expect(node.getChildren()).toEqual([])
         })
 
 
-        it('should return module children', () => {
+        test('should return module children', () => {
             const children = [createMockModule({$id: 'child1'})]
             node.setModule(createMockModule({children}))
             expect(node.getChildren()).toBe(children)
@@ -134,7 +134,7 @@ describe('PerkyExplorerNode', () => {
 
     describe('createChildNode', () => {
 
-        it('should create perky-explorer-node element', () => {
+        test('should create perky-explorer-node element', () => {
             node.setModule(createMockModule())
             const child = createMockModule({$id: 'child'})
             const childNode = node.createChildNode(child)
@@ -143,7 +143,7 @@ describe('PerkyExplorerNode', () => {
         })
 
 
-        it('should set child module with incremented depth', () => {
+        test('should set child module with incremented depth', () => {
             node.setModule(createMockModule(), 1)
             const child = createMockModule({$id: 'child'})
             const childNode = node.createChildNode(child)
@@ -157,7 +157,7 @@ describe('PerkyExplorerNode', () => {
 
     describe('getSelectDetail', () => {
 
-        it('should return object with module', () => {
+        test('should return object with module', () => {
             const module = createMockModule()
             node.setModule(module)
             expect(node.getSelectDetail()).toEqual({module})
@@ -168,7 +168,7 @@ describe('PerkyExplorerNode', () => {
 
     describe('getToggleDetail', () => {
 
-        it('should return object with module and expanded state', () => {
+        test('should return object with module and expanded state', () => {
             const module = createMockModule()
             node.setModule(module)
             node.setExpanded(true)
@@ -180,7 +180,7 @@ describe('PerkyExplorerNode', () => {
 
     describe('clearChildNodes', () => {
 
-        it('should clear child nodes', () => {
+        test('should clear child nodes', () => {
             node.setModule(createMockModule({
                 children: [createMockModule({$id: 'child'})]
             }))

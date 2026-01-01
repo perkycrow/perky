@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './number_input.js'
 
 
@@ -24,17 +24,17 @@ describe('NumberInput', () => {
 
     describe('initialization', () => {
 
-        it('should extend HTMLElement', () => {
+        test('should extend HTMLElement', () => {
             expect(input).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('should have shadow DOM', () => {
             expect(input.shadowRoot).not.toBeNull()
         })
 
 
-        it('should have default value of 0', () => {
+        test('should have default value of 0', () => {
             expect(input.value).toBe(0)
         })
 
@@ -43,19 +43,19 @@ describe('NumberInput', () => {
 
     describe('value property', () => {
 
-        it('should get and set value', () => {
+        test('should get and set value', () => {
             input.value = 42
             expect(input.value).toBe(42)
         })
 
 
-        it('should parse string values', () => {
+        test('should parse string values', () => {
             input.value = '3.14'
             expect(input.value).toBe(3.14)
         })
 
 
-        it('should default invalid values to 0', () => {
+        test('should default invalid values to 0', () => {
             input.value = 'invalid'
             expect(input.value).toBe(0)
         })
@@ -65,7 +65,7 @@ describe('NumberInput', () => {
 
     describe('setValue', () => {
 
-        it('should set value directly', () => {
+        test('should set value directly', () => {
             input.setValue(100)
             expect(input.value).toBe(100)
         })
@@ -75,7 +75,7 @@ describe('NumberInput', () => {
 
     describe('setStep', () => {
 
-        it('should set step value', () => {
+        test('should set step value', () => {
             input.setStep(0.5)
             expect(input.value).toBe(0)
         })
@@ -85,7 +85,7 @@ describe('NumberInput', () => {
 
     describe('setPrecision', () => {
 
-        it('should set precision value', () => {
+        test('should set precision value', () => {
             input.setPrecision(3)
             input.setValue(1.23456)
             expect(input.value).toBe(1.23456)
@@ -96,7 +96,7 @@ describe('NumberInput', () => {
 
     describe('setLabel', () => {
 
-        it('should set label text', () => {
+        test('should set label text', () => {
             input.setLabel('x')
             const label = input.shadowRoot.querySelector('.number-input-label')
             expect(label.textContent).toBe('x')
@@ -107,14 +107,14 @@ describe('NumberInput', () => {
 
     describe('min/max constraints', () => {
 
-        it('should clamp value to min', () => {
+        test('should clamp value to min', () => {
             input.setMin(0)
             input.value = -10
             expect(input.value).toBe(0)
         })
 
 
-        it('should clamp value to max', () => {
+        test('should clamp value to max', () => {
             input.setMax(100)
             input.value = 200
             expect(input.value).toBe(100)
@@ -125,7 +125,7 @@ describe('NumberInput', () => {
 
     describe('observedAttributes', () => {
 
-        it('should include expected attributes', () => {
+        test('should include expected attributes', () => {
             const observed = input.constructor.observedAttributes
             expect(observed).toContain('value')
             expect(observed).toContain('step')
@@ -140,7 +140,7 @@ describe('NumberInput', () => {
 
     describe('change event', () => {
 
-        it('should emit change event when value changes via stepper', () => {
+        test('should emit change event when value changes via stepper', () => {
             const handler = vi.fn()
             input.addEventListener('change', handler)
 

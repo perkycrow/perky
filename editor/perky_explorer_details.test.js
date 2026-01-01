@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './perky_explorer_details.js'
 import PerkyExplorerDetails from './perky_explorer_details.js'
 
@@ -25,17 +25,17 @@ describe('PerkyExplorerDetails', () => {
 
     describe('initialization', () => {
 
-        it('should extend HTMLElement', () => {
+        test('should extend HTMLElement', () => {
             expect(details).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('should have shadow DOM', () => {
             expect(details.shadowRoot).not.toBeNull()
         })
 
 
-        it('should show empty state when no module', () => {
+        test('should show empty state when no module', () => {
             details.clear()
             const empty = details.shadowRoot.querySelector('.details-empty')
             expect(empty).not.toBeNull()
@@ -47,14 +47,14 @@ describe('PerkyExplorerDetails', () => {
 
     describe('setModule', () => {
 
-        it('should set the module', () => {
+        test('should set the module', () => {
             const module = createMockModule()
             details.setModule(module)
             expect(details.getModule()).toBe(module)
         })
 
 
-        it('should display module id in title', () => {
+        test('should display module id in title', () => {
             const module = createMockModule({$id: 'player'})
             details.setModule(module)
 
@@ -63,7 +63,7 @@ describe('PerkyExplorerDetails', () => {
         })
 
 
-        it('should display status indicator', () => {
+        test('should display status indicator', () => {
             const module = createMockModule({$status: 'started'})
             details.setModule(module)
 
@@ -76,12 +76,12 @@ describe('PerkyExplorerDetails', () => {
 
     describe('getModule', () => {
 
-        it('should return null when no module set', () => {
+        test('should return null when no module set', () => {
             expect(details.getModule()).toBeNull()
         })
 
 
-        it('should return the set module', () => {
+        test('should return the set module', () => {
             const module = createMockModule()
             details.setModule(module)
             expect(details.getModule()).toBe(module)
@@ -92,7 +92,7 @@ describe('PerkyExplorerDetails', () => {
 
     describe('clear', () => {
 
-        it('should clear the module', () => {
+        test('should clear the module', () => {
             const module = createMockModule()
             details.setModule(module)
             details.clear()
@@ -100,7 +100,7 @@ describe('PerkyExplorerDetails', () => {
         })
 
 
-        it('should show empty state after clear', () => {
+        test('should show empty state after clear', () => {
             details.setModule(createMockModule())
             details.clear()
 
@@ -113,7 +113,7 @@ describe('PerkyExplorerDetails', () => {
 
     describe('focus:module event', () => {
 
-        it('should emit focus:module event when focus button clicked', () => {
+        test('should emit focus:module event when focus button clicked', () => {
             const module = createMockModule()
             details.setModule(module)
 
@@ -132,7 +132,7 @@ describe('PerkyExplorerDetails', () => {
 
     describe('registerInspector', () => {
 
-        it('should be a static method', () => {
+        test('should be a static method', () => {
             expect(typeof PerkyExplorerDetails.registerInspector).toBe('function')
         })
 
@@ -141,7 +141,7 @@ describe('PerkyExplorerDetails', () => {
 
     describe('unregisterInspector', () => {
 
-        it('should be a static method', () => {
+        test('should be a static method', () => {
             expect(typeof PerkyExplorerDetails.unregisterInspector).toBe('function')
         })
 

@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import BaseInspector from './base_inspector.js'
 import Notifier from '../../core/notifier.js'
 
@@ -43,22 +43,22 @@ describe('BaseInspector', () => {
 
     describe('initialization', () => {
 
-        it('should extend HTMLElement', () => {
+        test('should extend HTMLElement', () => {
             expect(inspector).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('should have shadow DOM', () => {
             expect(inspector.shadowRoot).not.toBeNull()
         })
 
 
-        it('should have grid element after buildDOM', () => {
+        test('should have grid element after buildDOM', () => {
             expect(inspector.gridEl).not.toBeNull()
         })
 
 
-        it('should have actions element after buildDOM', () => {
+        test('should have actions element after buildDOM', () => {
             expect(inspector.actionsEl).not.toBeNull()
         })
 
@@ -67,14 +67,14 @@ describe('BaseInspector', () => {
 
     describe('setModule', () => {
 
-        it('should store the module', () => {
+        test('should store the module', () => {
             const module = {name: 'test'}
             inspector.setModule(module)
             expect(inspector.getModule()).toBe(module)
         })
 
 
-        it('should call onModuleSet hook', () => {
+        test('should call onModuleSet hook', () => {
             const module = {name: 'test'}
             inspector.setModule(module)
 
@@ -83,14 +83,14 @@ describe('BaseInspector', () => {
         })
 
 
-        it('should expose module via module getter', () => {
+        test('should expose module via module getter', () => {
             const module = {name: 'test'}
             inspector.setModule(module)
             expect(inspector.module).toBe(module)
         })
 
 
-        it('should clean listeners when setting new module', () => {
+        test('should clean listeners when setting new module', () => {
             const target = new Notifier()
             const callback = vi.fn()
 
@@ -106,7 +106,7 @@ describe('BaseInspector', () => {
 
     describe('addRow', () => {
 
-        it('should create label and value elements', () => {
+        test('should create label and value elements', () => {
             inspector.addRow('Label', 'Value')
 
             const label = inspector.gridEl.querySelector('.inspector-label')
@@ -117,19 +117,19 @@ describe('BaseInspector', () => {
         })
 
 
-        it('should return the value element', () => {
+        test('should return the value element', () => {
             const valueEl = inspector.addRow('Label', 'Value')
             expect(valueEl.textContent).toBe('Value')
         })
 
 
-        it('should add accent class when isAccent is true', () => {
+        test('should add accent class when isAccent is true', () => {
             const valueEl = inspector.addRow('Label', 'Value', true)
             expect(valueEl.classList.contains('accent')).toBe(true)
         })
 
 
-        it('should support function as value', () => {
+        test('should support function as value', () => {
             const valueEl = inspector.addRow('Label', () => 'computed')
             expect(valueEl.textContent).toBe('computed')
         })
@@ -139,7 +139,7 @@ describe('BaseInspector', () => {
 
     describe('addSeparator', () => {
 
-        it('should add separator element', () => {
+        test('should add separator element', () => {
             inspector.addSeparator()
 
             const separator = inspector.gridEl.querySelector('.inspector-separator')
@@ -151,7 +151,7 @@ describe('BaseInspector', () => {
 
     describe('createButton', () => {
 
-        it('should create button element', () => {
+        test('should create button element', () => {
             const btn = inspector.createButton('🔥', 'Fire', () => { })
 
             expect(btn.tagName).toBe('BUTTON')
@@ -160,7 +160,7 @@ describe('BaseInspector', () => {
         })
 
 
-        it('should call onClick when clicked', () => {
+        test('should call onClick when clicked', () => {
             const onClick = vi.fn()
             const btn = inspector.createButton('', 'Click', onClick)
 
@@ -174,7 +174,7 @@ describe('BaseInspector', () => {
 
     describe('clearContent', () => {
 
-        it('should clear grid and actions', () => {
+        test('should clear grid and actions', () => {
             inspector.addRow('Label', 'Value')
             inspector.actionsEl.appendChild(inspector.createButton('', 'Test', () => { }))
 

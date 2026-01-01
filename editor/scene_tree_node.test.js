@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './scene_tree_node.js'
 
 
@@ -24,17 +24,17 @@ describe('SceneTreeNode', () => {
 
     describe('initialization', () => {
 
-        it('should extend HTMLElement', () => {
+        test('should extend HTMLElement', () => {
             expect(node).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('should have shadow DOM', () => {
             expect(node.shadowRoot).not.toBeNull()
         })
 
 
-        it('should have childNodeTag set to scene-tree-node', () => {
+        test('should have childNodeTag set to scene-tree-node', () => {
             expect(node.constructor.childNodeTag).toBe('scene-tree-node')
         })
 
@@ -43,21 +43,21 @@ describe('SceneTreeNode', () => {
 
     describe('setObject', () => {
 
-        it('should set the object', () => {
+        test('should set the object', () => {
             const obj = createMockObject()
             node.setObject(obj)
             expect(node.getObject()).toBe(obj)
         })
 
 
-        it('should set depth', () => {
+        test('should set depth', () => {
             const obj = createMockObject()
             node.setObject(obj, 3)
             expect(node.depth).toBe(3)
         })
 
 
-        it('should reset selection', () => {
+        test('should reset selection', () => {
             node.setSelected(true)
             node.setObject(createMockObject())
             expect(node.selected).toBe(false)
@@ -68,12 +68,12 @@ describe('SceneTreeNode', () => {
 
     describe('getObject', () => {
 
-        it('should return null when no object set', () => {
+        test('should return null when no object set', () => {
             expect(node.getObject()).toBeNull()
         })
 
 
-        it('should return the set object', () => {
+        test('should return the set object', () => {
             const obj = createMockObject()
             node.setObject(obj)
             expect(node.getObject()).toBe(obj)
@@ -84,7 +84,7 @@ describe('SceneTreeNode', () => {
 
     describe('refresh', () => {
 
-        it('should update the node', () => {
+        test('should update the node', () => {
             const obj = createMockObject()
             node.setObject(obj)
             obj.x = 100
@@ -97,7 +97,7 @@ describe('SceneTreeNode', () => {
 
     describe('getItem', () => {
 
-        it('should return the object', () => {
+        test('should return the object', () => {
             const obj = createMockObject()
             node.setObject(obj)
             expect(node.getItem()).toBe(obj)
@@ -108,18 +108,18 @@ describe('SceneTreeNode', () => {
 
     describe('hasChildren', () => {
 
-        it('should return falsy when no object', () => {
+        test('should return falsy when no object', () => {
             expect(node.hasChildren()).toBeFalsy()
         })
 
 
-        it('should return false when object has no children', () => {
+        test('should return false when object has no children', () => {
             node.setObject(createMockObject({children: []}))
             expect(node.hasChildren()).toBe(false)
         })
 
 
-        it('should return true when object has children', () => {
+        test('should return true when object has children', () => {
             node.setObject(createMockObject({
                 children: [createMockObject()]
             }))
@@ -131,12 +131,12 @@ describe('SceneTreeNode', () => {
 
     describe('getChildren', () => {
 
-        it('should return empty array when no object', () => {
+        test('should return empty array when no object', () => {
             expect(node.getChildren()).toEqual([])
         })
 
 
-        it('should return object children', () => {
+        test('should return object children', () => {
             const children = [createMockObject()]
             node.setObject(createMockObject({children}))
             expect(node.getChildren()).toBe(children)
@@ -147,7 +147,7 @@ describe('SceneTreeNode', () => {
 
     describe('createChildNode', () => {
 
-        it('should create scene-tree-node element', () => {
+        test('should create scene-tree-node element', () => {
             node.setObject(createMockObject())
             const child = createMockObject()
             const childNode = node.createChildNode(child)
@@ -156,7 +156,7 @@ describe('SceneTreeNode', () => {
         })
 
 
-        it('should set child object with incremented depth', () => {
+        test('should set child object with incremented depth', () => {
             node.setObject(createMockObject(), 1)
             const child = createMockObject()
             const childNode = node.createChildNode(child)
@@ -170,7 +170,7 @@ describe('SceneTreeNode', () => {
 
     describe('getSelectDetail', () => {
 
-        it('should return object with object property', () => {
+        test('should return object with object property', () => {
             const obj = createMockObject()
             node.setObject(obj)
             expect(node.getSelectDetail()).toEqual({object: obj})
@@ -181,7 +181,7 @@ describe('SceneTreeNode', () => {
 
     describe('getToggleDetail', () => {
 
-        it('should return object with object and expanded state', () => {
+        test('should return object with object and expanded state', () => {
             const obj = createMockObject()
             node.setObject(obj)
             node.setExpanded(true)
@@ -193,7 +193,7 @@ describe('SceneTreeNode', () => {
 
     describe('clearChildNodes', () => {
 
-        it('should clear child nodes', () => {
+        test('should clear child nodes', () => {
             node.setObject(createMockObject({
                 children: [createMockObject()]
             }))
@@ -208,7 +208,7 @@ describe('SceneTreeNode', () => {
 
     describe('navigate:entity event', () => {
 
-        it('should emit navigate:entity when entity link clicked', () => {
+        test('should emit navigate:entity when entity link clicked', () => {
             const entity = {$id: 'player', constructor: {name: 'Entity'}}
             const obj = createMockObject({$entity: entity})
             node.setObject(obj)
