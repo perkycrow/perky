@@ -50,10 +50,7 @@ export default class GameController extends WorldController {
 
 
     updateEntities (deltaTime) {
-        const updatables = this.world.childrenByTags('updatable')
-        for (const entity of updatables) {
-            entity.update(deltaTime)
-        }
+        this.world.update(deltaTime)
     }
 
 
@@ -217,7 +214,6 @@ export default class GameController extends WorldController {
         const player = this.world.getChild('player')
 
         this.world.create(Projectile, {
-            $tags: ['updatable'],
             x: player.x + 0.3,
             y: player.y,
             velocityX: 12,
@@ -230,8 +226,6 @@ export default class GameController extends WorldController {
     spawnPlayer (options = {}) {
         return this.execute('spawn', Player, {
             $id: 'player',
-            $category: 'entity',
-            $tags: ['updatable', 'controllable', 'player'],
             x: options.x || 0,
             y: options.y || 0
         })
@@ -240,8 +234,6 @@ export default class GameController extends WorldController {
 
     spawnEnemy (options = {}) {
         return this.execute('spawn', Enemy, {
-            $category: 'entity',
-            $tags: ['updatable', 'enemy'],
             x: options.x || 0,
             y: options.y || 0,
             maxSpeed: options.maxSpeed || 0.5

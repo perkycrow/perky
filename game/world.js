@@ -10,4 +10,17 @@ export default class World extends PerkyModule {
         return this.childrenByCategory('entity')
     }
 
+
+    update (deltaTime) {
+        if (!this.started) {
+            return
+        }
+
+        for (const entity of this.entities) {
+            if (entity.started) {
+                entity.update?.(deltaTime)
+            }
+        }
+    }
+
 }

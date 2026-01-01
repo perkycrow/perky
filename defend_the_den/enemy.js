@@ -3,6 +3,8 @@ import Entity from '../game/entity'
 
 export default class Enemy extends Entity {
 
+    static $tags = ['enemy']
+
     constructor (params = {}) {
         super(params)
 
