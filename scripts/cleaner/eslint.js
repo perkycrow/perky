@@ -278,7 +278,7 @@ export function auditDisables (rootDir) { // eslint-disable-line complexity
     const byRule = groupBy(unclean, d => d.rule)
     const sortedRules = Object.entries(byRule).sort((a, b) => b[1].length - a[1].length)
 
-    hint('Consider fixing the underlying issue instead of suppressing')
+    hint('Fix the issue OR if REALLY legit, add "-- clean" at end of eslint comment')
     divider()
 
     for (const [rule, occurrences] of sortedRules) {
