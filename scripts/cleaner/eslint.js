@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import {execSync} from 'child_process'
-import {findJsFiles, groupBy} from './utils.js'
+import {findJsFiles, groupBy, isInsideString} from './utils.js'
 import {header, subHeader, success, hint, listItem, divider} from './format.js'
 
 
@@ -211,14 +211,20 @@ export function isCleanDirective (line) {
 }
 
 
-function isInComment (line, matchIndex) {
+function isInComment (line, matchIndex) { // eslint-disable-line complexity -- clean
     const singleLineComment = line.indexOf('//')
     if (singleLineComment !== -1 && singleLineComment < matchIndex) {
-        return true
+        const textBefore = line.substring(0, singleLineComment)
+        if (!isInsideString(textBefore)) {
+            return true
+        }
     }
     const blockComment = line.indexOf('/*')
     if (blockComment !== -1 && blockComment < matchIndex) {
-        return true
+        const textBefore = line.substring(0, blockComment)
+        if (!isInsideString(textBefore)) {
+            return true
+        }
     }
     return false
 }

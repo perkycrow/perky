@@ -40,7 +40,8 @@ export default class WebGLObjectRenderer {
     }
 
 
-    flush (matrices, renderContext = null) { // eslint-disable-line no-unused-vars, class-methods-use-this
+    flush () { // eslint-disable-line class-methods-use-this -- clean
+
     }
 
 

@@ -135,7 +135,7 @@ function collectAstPositions (ast) { // eslint-disable-line complexity
 }
 
 
-export function analyzeLineBreaks (content) { // eslint-disable-line complexity
+export function analyzeLineBreaks (content) {
     let ast
     try {
         ast = acorn.parse(content, {

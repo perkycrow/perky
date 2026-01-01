@@ -23,27 +23,27 @@ export default class BaseTreeNode extends BaseEditorComponent {
     }
 
 
-    getItem () { // eslint-disable-line class-methods-use-this
+    getItem () { // eslint-disable-line class-methods-use-this -- clean
         throw new Error('getItem() must be implemented by subclass')
     }
 
 
-    hasChildren () { // eslint-disable-line class-methods-use-this
+    hasChildren () { // eslint-disable-line class-methods-use-this -- clean
         throw new Error('hasChildren() must be implemented by subclass')
     }
 
 
-    getChildren () { // eslint-disable-line class-methods-use-this
+    getChildren () { // eslint-disable-line class-methods-use-this -- clean
         throw new Error('getChildren() must be implemented by subclass')
     }
 
 
-    createChildNode (child) { // eslint-disable-line class-methods-use-this, no-unused-vars
+    createChildNode () { // eslint-disable-line class-methods-use-this -- clean
         throw new Error('createChildNode() must be implemented by subclass')
     }
 
 
-    renderNodeContent () { // eslint-disable-line class-methods-use-this
+    renderNodeContent () { // eslint-disable-line class-methods-use-this -- clean
         throw new Error('renderNodeContent() must be implemented by subclass')
     }
 
