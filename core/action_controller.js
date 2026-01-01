@@ -110,6 +110,9 @@ function isInternalMethod (methodName) {
 }
 
 
+const ignoredPrefixes = ['_', '#', 'on', 'update', 'get', 'check']
+
+
 function extractPrototypeMethods (instance) { // eslint-disable-line complexity
     const methods = []
     const proto = Object.getPrototypeOf(instance)
@@ -120,7 +123,7 @@ function extractPrototypeMethods (instance) { // eslint-disable-line complexity
             continue
         }
 
-        if (method.startsWith('_') || method.startsWith('#')) {
+        if (ignoredPrefixes.some(prefix => method.startsWith(prefix))) {
             continue
         }
 
