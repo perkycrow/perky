@@ -6,7 +6,7 @@ export default class Camera2D extends PerkyModule {
 
     static $category = 'camera'
 
-    constructor (options = {}) { // eslint-disable-line complexity
+    constructor (options = {}) { // eslint-disable-line complexity -- clean
         super(options)
 
         this.x = options.x ?? 0
@@ -105,7 +105,7 @@ export default class Camera2D extends PerkyModule {
     }
 
 
-    animateTo (config, options = {}) { // eslint-disable-line complexity
+    animateTo (config, options = {}) { // eslint-disable-line complexity -- clean
         const duration = options.duration ?? 1
         const easing = options.easing ?? 'easeOutQuad'
         const onComplete = options.onComplete ?? null

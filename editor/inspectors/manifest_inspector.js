@@ -381,10 +381,7 @@ function groupAssetsByType (assets) {
 }
 
 
-function createAssetCard (asset, createDataGrid) { // eslint-disable-line complexity
-    const card = document.createElement('div')
-    card.className = 'asset-card'
-
+function createAssetHeader (asset) {
     const header = document.createElement('div')
     header.className = 'asset-header'
 
@@ -403,8 +400,12 @@ function createAssetCard (asset, createDataGrid) { // eslint-disable-line comple
     header.appendChild(icon)
     header.appendChild(name)
     header.appendChild(typeBadge)
-    card.appendChild(header)
 
+    return header
+}
+
+
+function createAssetDetails (asset) {
     const details = document.createElement('div')
     details.className = 'asset-details'
 
@@ -423,33 +424,63 @@ function createAssetCard (asset, createDataGrid) { // eslint-disable-line comple
         addAssetRow(details, 'loaded', 'Yes')
     }
 
-    card.appendChild(details)
+    return details
+}
 
-    if (asset.tags && asset.tags.length > 0) {
-        const tagsContainer = document.createElement('div')
-        tagsContainer.className = 'asset-tags'
 
-        for (const tag of asset.tags) {
-            const tagEl = document.createElement('span')
-            tagEl.className = 'asset-tag'
-            tagEl.textContent = tag
-            tagsContainer.appendChild(tagEl)
-        }
-
-        card.appendChild(tagsContainer)
+function createAssetTags (asset) {
+    if (!asset.tags || asset.tags.length === 0) {
+        return null
     }
 
-    if (asset.config && Object.keys(asset.config).length > 0) {
-        const configSection = document.createElement('div')
-        configSection.className = 'asset-config'
+    const tagsContainer = document.createElement('div')
+    tagsContainer.className = 'asset-tags'
 
-        const configTitle = document.createElement('div')
-        configTitle.className = 'config-title'
-        configTitle.textContent = 'Config'
-        configSection.appendChild(configTitle)
+    for (const tag of asset.tags) {
+        const tagEl = document.createElement('span')
+        tagEl.className = 'asset-tag'
+        tagEl.textContent = tag
+        tagsContainer.appendChild(tagEl)
+    }
 
-        configSection.appendChild(createDataGrid(asset.config))
-        card.appendChild(configSection)
+    return tagsContainer
+}
+
+
+function createAssetConfig (asset, createDataGrid) {
+    if (!asset.config || Object.keys(asset.config).length === 0) {
+        return null
+    }
+
+    const configSection = document.createElement('div')
+    configSection.className = 'asset-config'
+
+    const configTitle = document.createElement('div')
+    configTitle.className = 'config-title'
+    configTitle.textContent = 'Config'
+    configSection.appendChild(configTitle)
+
+    configSection.appendChild(createDataGrid(asset.config))
+
+    return configSection
+}
+
+
+function createAssetCard (asset, createDataGrid) {
+    const card = document.createElement('div')
+    card.className = 'asset-card'
+
+    card.appendChild(createAssetHeader(asset))
+    card.appendChild(createAssetDetails(asset))
+
+    const tags = createAssetTags(asset)
+    if (tags) {
+        card.appendChild(tags)
+    }
+
+    const config = createAssetConfig(asset, createDataGrid)
+    if (config) {
+        card.appendChild(config)
     }
 
     const preview = createSourcePreview(asset)
@@ -489,62 +520,58 @@ function addAssetRowElement (container, label, element) {
 }
 
 
-function getAssetIcon (asset) { // eslint-disable-line complexity
+const ASSET_ICON_PATTERNS = [
+    {keywords: ['texture', 'image', 'sprite'], icon: '🖼'},
+    {keywords: ['audio', 'sound', 'music'], icon: '🔊'},
+    {keywords: ['font'], icon: '🔤'},
+    {keywords: ['shader'], icon: '✨'},
+    {keywords: ['scene'], icon: '🎬'},
+    {keywords: ['script'], icon: '📜'},
+    {keywords: ['data', 'json'], icon: '📄'}
+]
+
+
+function getAssetIcon (asset) {
     const type = asset.type?.toLowerCase() || ''
 
-    if (type.includes('texture') || type.includes('image') || type.includes('sprite')) {
-        return '🖼'
-    }
-    if (type.includes('audio') || type.includes('sound') || type.includes('music')) {
-        return '🔊'
-    }
-    if (type.includes('font')) {
-        return '🔤'
-    }
-    if (type.includes('shader')) {
-        return '✨'
-    }
-    if (type.includes('scene')) {
-        return '🎬'
-    }
-    if (type.includes('script')) {
-        return '📜'
-    }
-    if (type.includes('data') || type.includes('json')) {
-        return '📄'
+    for (const {keywords, icon} of ASSET_ICON_PATTERNS) {
+        if (keywords.some((keyword) => type.includes(keyword))) {
+            return icon
+        }
     }
 
     return '📦'
 }
 
 
-function createSourcePreview (asset) { // eslint-disable-line complexity
-    const source = asset.source
+function getImageSrc (source) {
+    if (source instanceof HTMLImageElement) {
+        return source.src
+    }
+    if (source instanceof HTMLCanvasElement) {
+        return source.toDataURL()
+    }
+    return null
+}
 
-    if (!source) {
+
+function createSourcePreview (asset) {
+    const source = asset.source
+    const src = getImageSrc(source)
+
+    if (!src) {
         return null
     }
 
-    if (source instanceof HTMLImageElement || source instanceof HTMLCanvasElement) {
-        const preview = document.createElement('div')
-        preview.className = 'asset-preview'
+    const preview = document.createElement('div')
+    preview.className = 'asset-preview'
 
-        if (source instanceof HTMLImageElement) {
-            const img = document.createElement('img')
-            img.src = source.src
-            img.alt = asset.name || asset.id
-            preview.appendChild(img)
-        } else {
-            const img = document.createElement('img')
-            img.src = source.toDataURL()
-            img.alt = asset.name || asset.id
-            preview.appendChild(img)
-        }
+    const img = document.createElement('img')
+    img.src = src
+    img.alt = asset.name || asset.id
+    preview.appendChild(img)
 
-        return preview
-    }
-
-    return null
+    return preview
 }
 
 
