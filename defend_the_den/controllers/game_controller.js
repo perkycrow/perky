@@ -1,6 +1,4 @@
 import WorldController from '../../game/world_controller'
-import Player from '../player'
-import Projectile from '../projectile'
 import Enemy from '../enemy'
 
 
@@ -43,9 +41,8 @@ export default class GameController extends WorldController {
 
 
     updatePlayer (game, deltaTime) {
-        const player = this.world.getChild('player')
         const direction = game.getDirection('move')
-        player.move(direction, deltaTime)
+        this.world.player.move(direction, deltaTime)
     }
 
 
@@ -211,24 +208,16 @@ export default class GameController extends WorldController {
 
 
     shoot () {
-        const player = this.world.getChild('player')
-
-        this.world.create(Projectile, {
+        const player = this.world.player
+        this.world.spawnProjectile({
             x: player.x + 0.3,
-            y: player.y,
-            velocityX: 12,
-            velocityY: 1,
-            gravity: -8
+            y: player.y
         })
     }
 
 
     spawnPlayer (options = {}) {
-        return this.execute('spawn', Player, {
-            $id: 'player',
-            x: options.x || 0,
-            y: options.y || 0
-        })
+        return this.world.spawnPlayer(options)
     }
 
 
