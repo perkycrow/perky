@@ -10,21 +10,15 @@ import {
 } from './eslint.js'
 
 
-export function runAudit (rootDir, options = {}) {
+export function runAudit (rootDir) {
     const results = {}
 
     results.comments = auditComments(rootDir)
     results.imports = auditImports(rootDir)
     results.unusedDirectives = auditUnusedDirectives(rootDir)
     results.eslint = auditEslint(rootDir)
-
-    if (options.disables) {
-        results.disables = auditDisables(rootDir)
-    }
-
-    if (options.switches) {
-        results.switches = auditSwitches(rootDir)
-    }
+    results.disables = auditDisables(rootDir)
+    results.switches = auditSwitches(rootDir)
 
     return results
 }
@@ -44,10 +38,9 @@ export function runFix (rootDir, options = {}) {
 }
 
 
-export function runAll (rootDir, options = {}) {
-    const dryRun = options.dryRun ?? false
+export function runAll (rootDir) {
+    console.log('=== CLEANER ===\n')
 
-    console.log('=== CODEBASE CLEANER ===\n')
-
-    return runFix(rootDir, {dryRun})
+    runAudit(rootDir)
+    runFix(rootDir)
 }

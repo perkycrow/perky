@@ -18,7 +18,7 @@ export const PROTECTED_COMMENT_PATTERNS = [
 ]
 
 export const EXCLUDED_FILES = [
-    'scripts/codebase_cleaner.js'
+    'scripts/cleaner.js'
 ]
 
 export const EXCLUDED_PATTERNS = [

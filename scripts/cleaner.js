@@ -16,19 +16,25 @@ const hasFlag = (flag) => args.includes(flag)
 const dryRun = hasFlag('--dry-run')
 const auditMode = hasFlag('--audit')
 const fixMode = hasFlag('--fix')
-const disables = hasFlag('--disables')
-const switches = hasFlag('--switches')
+
+
+function printHelp () {
+    console.log('Usage: yarn cleaner [options]\n')
+    console.log('Options:')
+    console.log('  --audit     Audit only (no changes)')
+    console.log('  --fix       Fix issues')
+    console.log('  --dry-run   Preview fixes without applying\n')
+    console.log('Shortcuts:')
+    console.log('  yarn clean  = yarn cleaner --audit --fix')
+}
 
 
 if (auditMode && fixMode) {
-    console.log('Error: Cannot use both --audit and --fix together.')
-    process.exit(1)
-}
-
-if (auditMode) {
-    runAudit(rootDir, {disables, switches})
+    runAll(rootDir)
+} else if (auditMode) {
+    runAudit(rootDir)
 } else if (fixMode) {
     runFix(rootDir, {dryRun})
 } else {
-    runAll(rootDir, {dryRun})
+    printHelp()
 }
