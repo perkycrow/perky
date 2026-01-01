@@ -29,7 +29,7 @@ export default class Layer extends PerkyModule {
     }
 
 
-    calculateViewport (containerWidth, containerHeight) { // eslint-disable-line complexity
+    calculateViewport (containerWidth, containerHeight) { // eslint-disable-line complexity -- clean
         const vp = this.viewport
 
         const width = typeof vp.width === 'string' && vp.width.endsWith('%')

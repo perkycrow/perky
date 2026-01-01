@@ -11,7 +11,7 @@ export function traverseAndCollect (object, rendererRegistry, options = {}) {
 }
 
 
-function traverseNode (object, ctx, parentOpacity) { // eslint-disable-line complexity
+function traverseNode (object, ctx, parentOpacity) { // eslint-disable-line complexity -- clean
     if (!object.visible) {
         return
     }

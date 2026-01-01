@@ -3,7 +3,7 @@ import Transform2D from './transform_2d.js'
 
 export default class Object2D extends Transform2D {
 
-    constructor (options = {}) { // eslint-disable-line complexity
+    constructor (options = {}) { // eslint-disable-line complexity -- clean
         super()
 
         this.visible = options.visible ?? true

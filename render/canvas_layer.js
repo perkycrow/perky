@@ -11,7 +11,7 @@ const RENDERERS = {
 
 export default class CanvasLayer extends Layer {
 
-    constructor (options = {}) { // eslint-disable-line complexity
+    constructor (options = {}) { // eslint-disable-line complexity -- clean
         super(options)
 
         this.canvas = document.createElement('canvas')

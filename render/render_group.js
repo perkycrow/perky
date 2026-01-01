@@ -12,7 +12,7 @@ export default class RenderGroup extends PerkyModule {
     static $category = 'renderGroup'
     static $name = 'renderGroup'
 
-    constructor (options = {}) { // eslint-disable-line complexity
+    constructor (options = {}) { // eslint-disable-line complexity -- clean
         super(options)
 
         this.content = options.content ?? null

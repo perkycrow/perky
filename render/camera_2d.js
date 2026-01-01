@@ -191,7 +191,7 @@ export default class Camera2D extends PerkyModule {
     }
 
 
-    update (deltaTime = 0) { // eslint-disable-line complexity
+    update (deltaTime = 0) { // eslint-disable-line complexity -- clean
         if (this.followTarget) {
             const dx = this.followTarget.x - this.x
             const dy = this.followTarget.y - this.y
@@ -288,7 +288,7 @@ export default class Camera2D extends PerkyModule {
     }
 
 
-    isVisible (bounds) { // eslint-disable-line complexity
+    isVisible (bounds) { // eslint-disable-line complexity -- clean
         if (!bounds || (bounds.width === 0 && bounds.height === 0)) {
             return false
         }

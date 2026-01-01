@@ -85,7 +85,7 @@ export default class HTMLLayer extends Layer {
     }
 
 
-    createWorldElement (content, worldX, worldY, options = {}) { // eslint-disable-line complexity
+    createWorldElement (content, worldX, worldY, options = {}) { // eslint-disable-line complexity -- clean
         const el = document.createElement('div')
         el.innerHTML = content
         el.style.position = 'absolute'
