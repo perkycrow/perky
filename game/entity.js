@@ -36,7 +36,7 @@ export default class Entity extends PerkyModule {
     }
 
 
-    update () { // eslint-disable-line class-methods-use-this
+    update () { // eslint-disable-line class-methods-use-this -- clean
 
     }
 

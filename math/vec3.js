@@ -445,7 +445,7 @@ export default class Vec3 {
     }
 
 
-    get isVector3 () { // eslint-disable-line class-methods-use-this
+    get isVector3 () { // eslint-disable-line class-methods-use-this -- clean
         return true
     }
 

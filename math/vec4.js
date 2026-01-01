@@ -392,7 +392,7 @@ export default class Vec4 {
     }
 
 
-    get isVector4 () { // eslint-disable-line class-methods-use-this
+    get isVector4 () { // eslint-disable-line class-methods-use-this -- clean
         return true
     }
 

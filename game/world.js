@@ -27,12 +27,12 @@ export default class World extends PerkyModule {
     }
 
 
-    preUpdate () { // eslint-disable-line class-methods-use-this
+    preUpdate () { // eslint-disable-line class-methods-use-this -- clean
 
     }
 
 
-    postUpdate () { // eslint-disable-line class-methods-use-this
+    postUpdate () { // eslint-disable-line class-methods-use-this -- clean
 
     }
 
