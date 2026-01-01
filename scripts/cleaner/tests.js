@@ -157,7 +157,7 @@ function findSingleTestDescribesAll (rootDir) {
 }
 
 
-function shouldExcludeFromTestAudit (relativePath, excludeDirs = []) { // eslint-disable-line complexity
+function shouldExcludeFromTestAudit (relativePath, excludeDirs = []) { // eslint-disable-line complexity -- clean
     if (!relativePath.includes('/')) {
         return true
     }
@@ -194,7 +194,7 @@ function shouldExcludeFromTestAudit (relativePath, excludeDirs = []) { // eslint
 }
 
 
-async function findFilesWithoutTests (rootDir) { // eslint-disable-line complexity
+async function findFilesWithoutTests (rootDir) { // eslint-disable-line complexity -- clean
     const config = await loadConfig(rootDir)
     const excludeDirs = config.missingTests?.excludeDirs || []
     const files = findJsFiles(rootDir)

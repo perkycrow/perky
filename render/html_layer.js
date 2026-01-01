@@ -171,101 +171,16 @@ export default class HTMLLayer extends Layer {
             return this
         }
 
+        const ctx = {
+            camera: this.camera,
+            ppu: this.camera.pixelsPerUnit,
+            zoomChanged: force || this.worldElements.some(el => el.lastZoom !== this.camera.zoom),
+            force,
+            threshold: this.updateThreshold
+        }
 
-        const ppu = this.camera.pixelsPerUnit
-        const zoomChanged = force || this.worldElements.some(el => el.lastZoom !== this.camera.zoom)
-
-        this.worldElements.forEach(worldEl => { // eslint-disable-line complexity
-
-            if (worldEl.targetObject) {
-                worldEl.worldX = worldEl.targetObject.x
-                worldEl.worldY = worldEl.targetObject.y
-            }
-
-            if (worldEl.autoCenter && zoomChanged) {
-                const rect = worldEl.element.getBoundingClientRect()
-                if (worldEl.autoCenter === true || worldEl.autoCenter === 'x') {
-                    worldEl.worldOffsetX = -(rect.width / 2) / ppu
-                }
-                if (worldEl.autoCenter === true || worldEl.autoCenter === 'y') {
-                    worldEl.worldOffsetY = (rect.height / 2) / ppu
-                }
-            }
-
-            const screen = this.camera.worldToScreenCSS(worldEl.worldX, worldEl.worldY)
-
-            const worldOffsetXPx = worldEl.worldOffsetX * ppu
-            const worldOffsetYPx = -worldEl.worldOffsetY * ppu
-
-            const finalX = screen.x + worldEl.offsetX + worldOffsetXPx
-            const finalY = screen.y + worldEl.offsetY + worldOffsetYPx
-
-
-            const cssWidth = this.camera.viewportWidth
-            const cssHeight = this.camera.viewportHeight
-
-            const isVisible = (
-                finalX >= -100 && finalX <= cssWidth + 100 &&
-                finalY >= -100 && finalY <= cssHeight + 100
-            )
-
-            if (!isVisible) {
-                if (worldEl.visible) {
-                    worldEl.element.style.display = 'none'
-                    worldEl.visible = false
-                }
-                worldEl.lastZoom = this.camera.zoom
-                return
-            }
-
-            if (!force && worldEl.lastScreenX !== null) {
-                const dx = Math.abs(finalX - worldEl.lastScreenX)
-                const dy = Math.abs(finalY - worldEl.lastScreenY)
-                if (dx < this.updateThreshold && dy < this.updateThreshold) {
-                    worldEl.lastZoom = this.camera.zoom
-                    return
-                }
-            }
-
-            if (!worldEl.visible) {
-                worldEl.element.style.display = 'block'
-                worldEl.visible = true
-            }
-
-            let transformStr = `translate(${finalX}px, ${finalY}px)`
-
-            let scaleX = worldEl.worldScaleX
-            let scaleY = worldEl.worldScaleY
-            let rotationDeg = 0
-            let needsScale = false
-
-            if (worldEl.inheritTransform && worldEl.targetObject) {
-                const rotation = worldEl.targetObject.rotation || 0
-                const targetScaleX = worldEl.targetObject.scaleX || 1
-                const targetScaleY = worldEl.targetObject.scaleY || 1
-
-                scaleX *= targetScaleX
-                scaleY *= targetScaleY
-
-                rotationDeg = -rotation * (180 / Math.PI)
-
-                needsScale = true
-            } else if (worldEl.worldScaleX !== 1 || worldEl.worldScaleY !== 1) {
-                needsScale = true
-            }
-
-            if (rotationDeg !== 0) {
-                transformStr += ` rotate(${rotationDeg}deg)`
-            }
-
-            if (needsScale) {
-                transformStr += ` scale(${scaleX}, ${scaleY})`
-            }
-
-            worldEl.element.style.transform = transformStr
-            worldEl.lastScreenX = finalX
-            worldEl.lastScreenY = finalY
-            worldEl.lastZoom = this.camera.zoom
+        this.worldElements.forEach(worldEl => {
+            updateSingleWorldElement(worldEl, ctx)
         })
 
         return this
@@ -293,4 +208,122 @@ export default class HTMLLayer extends Layer {
         return units * ppu
     }
 
+}
+
+
+function syncTargetPosition (worldEl) {
+    if (worldEl.targetObject) {
+        worldEl.worldX = worldEl.targetObject.x
+        worldEl.worldY = worldEl.targetObject.y
+    }
+}
+
+
+function updateAutoCenter (worldEl, ppu) {
+    const rect = worldEl.element.getBoundingClientRect()
+    if (worldEl.autoCenter === true || worldEl.autoCenter === 'x') {
+        worldEl.worldOffsetX = -(rect.width / 2) / ppu
+    }
+    if (worldEl.autoCenter === true || worldEl.autoCenter === 'y') {
+        worldEl.worldOffsetY = (rect.height / 2) / ppu
+    }
+}
+
+
+function computeFinalPosition (worldEl, camera, ppu) {
+    const screen = camera.worldToScreenCSS(worldEl.worldX, worldEl.worldY)
+    const worldOffsetXPx = worldEl.worldOffsetX * ppu
+    const worldOffsetYPx = -worldEl.worldOffsetY * ppu
+    return {
+        x: screen.x + worldEl.offsetX + worldOffsetXPx,
+        y: screen.y + worldEl.offsetY + worldOffsetYPx
+    }
+}
+
+
+function isElementVisible (finalX, finalY, camera) {
+    return (
+        finalX >= -100 && finalX <= camera.viewportWidth + 100 &&
+        finalY >= -100 && finalY <= camera.viewportHeight + 100
+    )
+}
+
+
+function shouldSkipUpdate (worldEl, final, force, threshold) {
+    if (force || worldEl.lastScreenX === null) {
+        return false
+    }
+    const dx = Math.abs(final.x - worldEl.lastScreenX)
+    const dy = Math.abs(final.y - worldEl.lastScreenY)
+    return dx < threshold && dy < threshold
+}
+
+
+function setElementVisibility (worldEl, visible) {
+    if (worldEl.visible !== visible) {
+        worldEl.element.style.display = visible ? 'block' : 'none'
+        worldEl.visible = visible
+    }
+}
+
+
+function shouldInheritTransform (worldEl) {
+    return worldEl.inheritTransform && worldEl.targetObject
+}
+
+
+function computeTransformScale (worldEl) {
+    let scaleX = worldEl.worldScaleX
+    let scaleY = worldEl.worldScaleY
+    let rotationDeg = 0
+
+    if (shouldInheritTransform(worldEl)) {
+        scaleX *= worldEl.targetObject.scaleX || 1
+        scaleY *= worldEl.targetObject.scaleY || 1
+        rotationDeg = -(worldEl.targetObject.rotation || 0) * (180 / Math.PI)
+    }
+
+    return {scaleX, scaleY, rotationDeg, needsScale: scaleX !== 1 || scaleY !== 1}
+}
+
+
+function buildTransformString (finalX, finalY, transform) {
+    let str = `translate(${finalX}px, ${finalY}px)`
+    if (transform.rotationDeg !== 0) {
+        str += ` rotate(${transform.rotationDeg}deg)`
+    }
+    if (transform.needsScale) {
+        str += ` scale(${transform.scaleX}, ${transform.scaleY})`
+    }
+    return str
+}
+
+
+function updateSingleWorldElement (worldEl, ctx) {
+    syncTargetPosition(worldEl)
+
+    if (worldEl.autoCenter && ctx.zoomChanged) {
+        updateAutoCenter(worldEl, ctx.ppu)
+    }
+
+    const final = computeFinalPosition(worldEl, ctx.camera, ctx.ppu)
+
+    if (!isElementVisible(final.x, final.y, ctx.camera)) {
+        setElementVisibility(worldEl, false)
+        worldEl.lastZoom = ctx.camera.zoom
+        return
+    }
+
+    if (shouldSkipUpdate(worldEl, final, ctx.force, ctx.threshold)) {
+        worldEl.lastZoom = ctx.camera.zoom
+        return
+    }
+
+    setElementVisibility(worldEl, true)
+
+    const transform = computeTransformScale(worldEl)
+    worldEl.element.style.transform = buildTransformString(final.x, final.y, transform)
+    worldEl.lastScreenX = final.x
+    worldEl.lastScreenY = final.y
+    worldEl.lastZoom = ctx.camera.zoom
 }
