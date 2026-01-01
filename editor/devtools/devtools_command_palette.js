@@ -1,9 +1,9 @@
 import BaseEditorComponent from '../base_editor_component.js'
-import {buildSpotlightStyles} from './devtools_styles.js'
+import {buildCommandPaletteStyles} from './devtools_styles.js'
 import {getAllTools} from './devtools_registry.js'
 
 
-export default class DevToolsSpotlight extends BaseEditorComponent {
+export default class DevToolsCommandPalette extends BaseEditorComponent {
 
     #state = null
     #overlayEl = null
@@ -51,25 +51,25 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
         this.shadowRoot.appendChild(style)
 
         this.#overlayEl = document.createElement('div')
-        this.#overlayEl.className = 'spotlight-overlay hidden'
+        this.#overlayEl.className = 'command-palette-overlay hidden'
         this.#overlayEl.addEventListener('click', (e) => {
             if (e.target === this.#overlayEl) {
-                this.#state?.closeSpotlight()
+                this.#state?.closeCommandPalette()
             }
         })
 
         this.#containerEl = document.createElement('div')
-        this.#containerEl.className = 'spotlight-container'
+        this.#containerEl.className = 'command-palette-container'
 
         const inputWrapper = document.createElement('div')
-        inputWrapper.className = 'spotlight-input-wrapper'
+        inputWrapper.className = 'command-palette-input-wrapper'
 
         const icon = document.createElement('span')
-        icon.className = 'spotlight-icon'
+        icon.className = 'command-palette-icon'
         icon.textContent = '>_'
 
         this.#inputEl = document.createElement('input')
-        this.#inputEl.className = 'spotlight-input'
+        this.#inputEl.className = 'command-palette-input'
         this.#inputEl.type = 'text'
         this.#inputEl.placeholder = 'Type a command...'
         this.#inputEl.addEventListener('input', () => this.#onInput())
@@ -79,7 +79,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
         inputWrapper.appendChild(this.#inputEl)
 
         this.#resultsEl = document.createElement('div')
-        this.#resultsEl.className = 'spotlight-results'
+        this.#resultsEl.className = 'command-palette-results'
 
         this.#containerEl.appendChild(inputWrapper)
         this.#containerEl.appendChild(this.#resultsEl)
@@ -125,7 +125,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
                     icon: ICONS.action,
                     action: () => {
                         app.actionDispatcher.execute(actionName)
-                        this.#state?.closeSpotlight()
+                        this.#state?.closeCommandPalette()
                     }
                 })
             }
@@ -146,7 +146,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
                 icon: Tool.toolIcon,
                 action: () => {
                     this.#state?.openTool(Tool.toolId)
-                    this.#state?.closeSpotlight()
+                    this.#state?.closeCommandPalette()
                 }
             })
         }
@@ -159,7 +159,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
             icon: ICONS.logger,
             action: () => {
                 this.#state?.toggleLogger()
-                this.#state?.closeSpotlight()
+                this.#state?.closeCommandPalette()
             }
         })
 
@@ -171,7 +171,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
             icon: ICONS.close,
             action: () => {
                 this.#state?.closeSidebar()
-                this.#state?.closeSpotlight()
+                this.#state?.closeCommandPalette()
             }
         })
 
@@ -188,7 +188,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
                     icon: ICONS.spawn,
                     action: async () => {
                         await appManager.spawn(name)
-                        this.#state?.closeSpotlight()
+                        this.#state?.closeCommandPalette()
                     }
                 })
             }
@@ -204,7 +204,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
                         icon: ICONS.stop,
                         action: () => {
                             appManager.stopApp(app.$id)
-                            this.#state?.closeSpotlight()
+                            this.#state?.closeCommandPalette()
                         }
                     })
                 } else if (app.$status === 'stopped') {
@@ -216,7 +216,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
                         icon: ICONS.start,
                         action: () => {
                             appManager.startApp(app.$id)
-                            this.#state?.closeSpotlight()
+                            this.#state?.closeCommandPalette()
                         }
                     })
                 }
@@ -229,7 +229,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
                     icon: ICONS.dispose,
                     action: () => {
                         appManager.disposeApp(app.$id)
-                        this.#state?.closeSpotlight()
+                        this.#state?.closeCommandPalette()
                     }
                 })
             }
@@ -277,12 +277,12 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
             const query = this.#inputEl.value.trim()
             if (query) {
                 const empty = document.createElement('div')
-                empty.className = 'spotlight-empty'
+                empty.className = 'command-palette-empty'
                 empty.textContent = 'No results found'
                 this.#resultsEl.appendChild(empty)
             } else {
                 const hint = document.createElement('div')
-                hint.className = 'spotlight-hint'
+                hint.className = 'command-palette-hint'
                 hint.textContent = 'Type to search actions, / for commands'
                 this.#resultsEl.appendChild(hint)
             }
@@ -293,7 +293,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
 
         for (const [subtitle, commands] of Object.entries(groups)) {
             const sectionTitle = document.createElement('div')
-            sectionTitle.className = 'spotlight-section-title'
+            sectionTitle.className = 'command-palette-section-title'
             sectionTitle.textContent = subtitle
             this.#resultsEl.appendChild(sectionTitle)
 
@@ -323,18 +323,18 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
 
     #createResultItem (cmd) {
         const result = document.createElement('div')
-        result.className = 'spotlight-result'
+        result.className = 'command-palette-result'
         result.dataset.id = cmd.id
 
         const icon = document.createElement('span')
-        icon.className = 'spotlight-result-icon'
+        icon.className = 'command-palette-result-icon'
         icon.innerHTML = cmd.icon
 
         const text = document.createElement('div')
-        text.className = 'spotlight-result-text'
+        text.className = 'command-palette-result-text'
 
         const title = document.createElement('div')
-        title.className = 'spotlight-result-title'
+        title.className = 'command-palette-result-title'
         title.textContent = cmd.title
 
         text.appendChild(title)
@@ -356,13 +356,13 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
 
 
     #updateSelection () {
-        const results = this.#resultsEl.querySelectorAll('.spotlight-result')
+        const results = this.#resultsEl.querySelectorAll('.command-palette-result')
         results.forEach((el) => {
             const cmdIndex = this.#filteredCommands.findIndex(c => c.id === el.dataset.id)
             el.classList.toggle('selected', cmdIndex === this.#selectedIndex)
         })
 
-        const selectedEl = this.#resultsEl.querySelector('.spotlight-result.selected')
+        const selectedEl = this.#resultsEl.querySelector('.command-palette-result.selected')
         if (selectedEl) {
             selectedEl.scrollIntoView({block: 'nearest'})
         }
@@ -395,7 +395,7 @@ export default class DevToolsSpotlight extends BaseEditorComponent {
 
         case 'Escape':
             e.preventDefault()
-            this.#state?.closeSpotlight()
+            this.#state?.closeCommandPalette()
             break
 
         default:
@@ -417,7 +417,7 @@ const ICONS = {
 }
 
 
-const STYLES = buildSpotlightStyles()
+const STYLES = buildCommandPaletteStyles()
 
 
-customElements.define('devtools-spotlight', DevToolsSpotlight)
+customElements.define('devtools-command-palette', DevToolsCommandPalette)

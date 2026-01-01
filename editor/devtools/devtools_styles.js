@@ -172,8 +172,8 @@ export const sidebarStyles = `
 `
 
 
-export const spotlightStyles = `
-    .spotlight-overlay {
+export const commandPaletteStyles = `
+    .command-palette-overlay {
         position: fixed;
         top: 0;
         left: 0;
@@ -187,7 +187,11 @@ export const spotlightStyles = `
         padding-top: 15vh;
     }
 
-    .spotlight-container {
+    .command-palette-overlay.hidden {
+        display: none;
+    }
+
+    .command-palette-container {
         width: 500px;
         max-width: 90vw;
         background: var(--bg-primary);
@@ -197,7 +201,7 @@ export const spotlightStyles = `
         overflow: hidden;
     }
 
-    .spotlight-input-wrapper {
+    .command-palette-input-wrapper {
         display: flex;
         align-items: center;
         padding: 12px 16px;
@@ -205,12 +209,12 @@ export const spotlightStyles = `
         border-bottom: 1px solid var(--border);
     }
 
-    .spotlight-icon {
+    .command-palette-icon {
         font-size: 18px;
         color: var(--fg-muted);
     }
 
-    .spotlight-input {
+    .command-palette-input {
         flex: 1;
         background: transparent;
         border: none;
@@ -220,16 +224,16 @@ export const spotlightStyles = `
         outline: none;
     }
 
-    .spotlight-input::placeholder {
+    .command-palette-input::placeholder {
         color: var(--fg-muted);
     }
 
-    .spotlight-results {
+    .command-palette-results {
         max-height: 300px;
         overflow-y: auto;
     }
 
-    .spotlight-result {
+    .command-palette-result {
         display: flex;
         align-items: center;
         padding: 10px 16px;
@@ -238,16 +242,16 @@ export const spotlightStyles = `
         transition: background 0.1s;
     }
 
-    .spotlight-result:hover,
-    .spotlight-result.selected {
+    .command-palette-result:hover,
+    .command-palette-result.selected {
         background: var(--bg-hover);
     }
 
-    .spotlight-result.selected {
+    .command-palette-result.selected {
         background: var(--bg-selected);
     }
 
-    .spotlight-result-icon {
+    .command-palette-result-icon {
         font-size: 18px;
         width: 24px;
         text-align: center;
@@ -257,7 +261,7 @@ export const spotlightStyles = `
         color: var(--fg-muted);
     }
 
-    .spotlight-result-icon svg {
+    .command-palette-result-icon svg {
         width: 18px;
         height: 18px;
         stroke: currentColor;
@@ -265,22 +269,22 @@ export const spotlightStyles = `
         fill: none;
     }
 
-    .spotlight-result-text {
+    .command-palette-result-text {
         flex: 1;
     }
 
-    .spotlight-result-title {
+    .command-palette-result-title {
         font-size: 14px;
         color: var(--fg-primary);
     }
 
-    .spotlight-result-subtitle {
+    .command-palette-result-subtitle {
         font-size: 11px;
         color: var(--fg-muted);
         margin-top: 2px;
     }
 
-    .spotlight-result-shortcut {
+    .command-palette-result-shortcut {
         font-size: 11px;
         color: var(--fg-muted);
         padding: 2px 6px;
@@ -288,14 +292,15 @@ export const spotlightStyles = `
         border-radius: 4px;
     }
 
-    .spotlight-empty {
+    .command-palette-empty,
+    .command-palette-hint {
         padding: 20px 16px;
         text-align: center;
         color: var(--fg-muted);
         font-size: 13px;
     }
 
-    .spotlight-section-title {
+    .command-palette-section-title {
         padding: 8px 16px 4px;
         font-size: 10px;
         text-transform: uppercase;
@@ -326,11 +331,11 @@ export function buildSidebarStyles (...additionalStyles) {
 }
 
 
-export function buildSpotlightStyles (...additionalStyles) {
+export function buildCommandPaletteStyles (...additionalStyles) {
     return buildEditorStyles(
         editorScrollbarStyles,
         editorBaseStyles,
-        spotlightStyles,
+        commandPaletteStyles,
         ...additionalStyles
     )
 }

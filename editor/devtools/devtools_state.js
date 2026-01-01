@@ -2,7 +2,7 @@ export default class DevToolsState extends EventTarget {
 
     #sidebarOpen = false
     #activeTool = null
-    #spotlightOpen = false
+    #commandPaletteOpen = false
     #loggerOpen = false
     #module = null
     #appManager = null
@@ -18,8 +18,8 @@ export default class DevToolsState extends EventTarget {
     }
 
 
-    get spotlightOpen () {
-        return this.#spotlightOpen
+    get commandPaletteOpen () {
+        return this.#commandPaletteOpen
     }
 
 
@@ -85,31 +85,31 @@ export default class DevToolsState extends EventTarget {
     }
 
 
-    openSpotlight () {
-        if (this.#spotlightOpen) {
+    openCommandPalette () {
+        if (this.#commandPaletteOpen) {
             return
         }
 
-        this.#spotlightOpen = true
-        this.dispatchEvent(new CustomEvent('spotlight:open'))
+        this.#commandPaletteOpen = true
+        this.dispatchEvent(new CustomEvent('commandpalette:open'))
     }
 
 
-    closeSpotlight () {
-        if (!this.#spotlightOpen) {
+    closeCommandPalette () {
+        if (!this.#commandPaletteOpen) {
             return
         }
 
-        this.#spotlightOpen = false
-        this.dispatchEvent(new CustomEvent('spotlight:close'))
+        this.#commandPaletteOpen = false
+        this.dispatchEvent(new CustomEvent('commandpalette:close'))
     }
 
 
-    toggleSpotlight () {
-        if (this.#spotlightOpen) {
-            this.closeSpotlight()
+    toggleCommandPalette () {
+        if (this.#commandPaletteOpen) {
+            this.closeCommandPalette()
         } else {
-            this.openSpotlight()
+            this.openCommandPalette()
         }
     }
 

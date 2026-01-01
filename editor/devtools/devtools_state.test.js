@@ -24,8 +24,8 @@ describe('DevToolsState', () => {
         })
 
 
-        test('spotlightOpen is false', () => {
-            expect(state.spotlightOpen).toBe(false)
+        test('commandPaletteOpen is false', () => {
+            expect(state.commandPaletteOpen).toBe(false)
         })
 
 
@@ -157,47 +157,47 @@ describe('DevToolsState', () => {
     })
 
 
-    describe('spotlight', () => {
+    describe('commandPalette', () => {
 
-        test('openSpotlight opens spotlight', () => {
-            state.openSpotlight()
-            expect(state.spotlightOpen).toBe(true)
+        test('openCommandPalette opens command palette', () => {
+            state.openCommandPalette()
+            expect(state.commandPaletteOpen).toBe(true)
         })
 
 
-        test('closeSpotlight closes spotlight', () => {
-            state.openSpotlight()
-            state.closeSpotlight()
-            expect(state.spotlightOpen).toBe(false)
+        test('closeCommandPalette closes command palette', () => {
+            state.openCommandPalette()
+            state.closeCommandPalette()
+            expect(state.commandPaletteOpen).toBe(false)
         })
 
 
-        test('toggleSpotlight toggles state', () => {
-            state.toggleSpotlight()
-            expect(state.spotlightOpen).toBe(true)
+        test('toggleCommandPalette toggles state', () => {
+            state.toggleCommandPalette()
+            expect(state.commandPaletteOpen).toBe(true)
 
-            state.toggleSpotlight()
-            expect(state.spotlightOpen).toBe(false)
+            state.toggleCommandPalette()
+            expect(state.commandPaletteOpen).toBe(false)
         })
 
 
-        test('dispatches spotlight:open event', () => {
+        test('dispatches commandpalette:open event', () => {
             const handler = vi.fn()
-            state.addEventListener('spotlight:open', handler)
+            state.addEventListener('commandpalette:open', handler)
 
-            state.openSpotlight()
+            state.openCommandPalette()
 
             expect(handler).toHaveBeenCalled()
         })
 
 
-        test('dispatches spotlight:close event', () => {
-            state.openSpotlight()
+        test('dispatches commandpalette:close event', () => {
+            state.openCommandPalette()
 
             const handler = vi.fn()
-            state.addEventListener('spotlight:close', handler)
+            state.addEventListener('commandpalette:close', handler)
 
-            state.closeSpotlight()
+            state.closeCommandPalette()
 
             expect(handler).toHaveBeenCalled()
         })

@@ -11,7 +11,7 @@ export default class PerkyDevTools extends BaseEditorComponent {
     #dockEl = null
     #sidebarEl = null
     #loggerEl = null
-    #spotlightEl = null
+    #commandPaletteEl = null
     #keyboardHandler = null
 
 
@@ -62,8 +62,8 @@ export default class PerkyDevTools extends BaseEditorComponent {
     }
 
 
-    toggleSpotlight () {
-        this.#state.toggleSpotlight()
+    toggleCommandPalette () {
+        this.#state.toggleCommandPalette()
     }
 
 
@@ -101,12 +101,12 @@ export default class PerkyDevTools extends BaseEditorComponent {
             this.#loggerEl.classList.add('sidebar-open')
         }
 
-        this.#state.addEventListener('spotlight:open', () => {
-            this.#showSpotlight()
+        this.#state.addEventListener('commandpalette:open', () => {
+            this.#showCommandPalette()
         })
 
-        this.#state.addEventListener('spotlight:close', () => {
-            this.#hideSpotlight()
+        this.#state.addEventListener('commandpalette:close', () => {
+            this.#hideCommandPalette()
         })
 
         this.shadowRoot.appendChild(this.#dockEl)
@@ -119,12 +119,12 @@ export default class PerkyDevTools extends BaseEditorComponent {
         this.#keyboardHandler = (e) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
                 e.preventDefault()
-                this.#state.toggleSpotlight()
+                this.#state.toggleCommandPalette()
             }
 
-            if (e.key === 'Escape' && this.#state.spotlightOpen) {
+            if (e.key === 'Escape' && this.#state.commandPaletteOpen) {
                 e.preventDefault()
-                this.#state.closeSpotlight()
+                this.#state.closeCommandPalette()
             }
         }
 
@@ -140,19 +140,19 @@ export default class PerkyDevTools extends BaseEditorComponent {
     }
 
 
-    async #showSpotlight () {
-        if (!this.#spotlightEl) {
-            const {default: DevToolsSpotlight} = await import('./devtools_spotlight.js')
-            this.#spotlightEl = new DevToolsSpotlight()
-            this.#spotlightEl.setState(this.#state)
-            this.shadowRoot.appendChild(this.#spotlightEl)
+    async #showCommandPalette () {
+        if (!this.#commandPaletteEl) {
+            const {default: DevToolsCommandPalette} = await import('./devtools_command_palette.js')
+            this.#commandPaletteEl = new DevToolsCommandPalette()
+            this.#commandPaletteEl.setState(this.#state)
+            this.shadowRoot.appendChild(this.#commandPaletteEl)
         }
-        this.#spotlightEl.show()
+        this.#commandPaletteEl.show()
     }
 
 
-    #hideSpotlight () {
-        this.#spotlightEl?.hide()
+    #hideCommandPalette () {
+        this.#commandPaletteEl?.hide()
     }
 
 
