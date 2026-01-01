@@ -283,7 +283,7 @@ export function auditDisables (rootDir) { // eslint-disable-line complexity -- c
 
     if (disables.length === 0) {
         success('No eslint-disable directives found')
-        return {directivesFound: 0, rulesFound: 0, cleanCount: 0}
+        return {uncleanCount: 0}
     }
 
     const unclean = disables.filter(d => !d.isClean)
@@ -291,7 +291,7 @@ export function auditDisables (rootDir) { // eslint-disable-line complexity -- c
 
     if (unclean.length === 0) {
         success(`All ${clean.length} directive(s) are marked clean`)
-        return {directivesFound: disables.length, rulesFound: 0, cleanCount: clean.length}
+        return {uncleanCount: 0}
     }
 
     const byRule = groupBy(unclean, d => d.rule)
@@ -315,7 +315,7 @@ export function auditDisables (rootDir) { // eslint-disable-line complexity -- c
         success(`${clean.length} directive(s) marked clean`)
     }
 
-    return {directivesFound: disables.length, rulesFound: sortedRules.length, cleanCount: clean.length}
+    return {uncleanCount: unclean.length}
 }
 
 
