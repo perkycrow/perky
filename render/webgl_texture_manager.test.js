@@ -213,26 +213,22 @@ describe(WebGLTextureManager, () => {
     })
 
 
-    describe('flushIfFull', () => {
-
-        test('flushes oldest zombies when over limit', () => {
-            const smallManager = new WebGLTextureManager({
-                gl,
-                maxZombieSize: 1000,
-                autoFlush: false
-            })
-
-            const images = []
-            for (let i = 0; i < 5; i++) {
-                const image = createMockImage(100, 100)
-                images.push(image)
-                smallManager.acquire(image)
-                smallManager.release(image)
-            }
-
-            expect(gl.deleteTexture).toHaveBeenCalled()
+    test('flushIfFull flushes oldest zombies when over limit', () => {
+        const smallManager = new WebGLTextureManager({
+            gl,
+            maxZombieSize: 1000,
+            autoFlush: false
         })
 
+        const images = []
+        for (let i = 0; i < 5; i++) {
+            const image = createMockImage(100, 100)
+            images.push(image)
+            smallManager.acquire(image)
+            smallManager.release(image)
+        }
+
+        expect(gl.deleteTexture).toHaveBeenCalled()
     })
 
 
@@ -301,23 +297,19 @@ describe(WebGLTextureManager, () => {
     })
 
 
-    describe('stats', () => {
+    test('stats returns correct stats', () => {
+        const image1 = createMockImage(100, 100)
+        const image2 = createMockImage(200, 200)
 
-        test('returns correct stats', () => {
-            const image1 = createMockImage(100, 100)
-            const image2 = createMockImage(200, 200)
+        manager.acquire(image1)
+        manager.acquire(image2)
+        manager.release(image2)
 
-            manager.acquire(image1)
-            manager.acquire(image2)
-            manager.release(image2)
+        const stats = manager.stats
 
-            const stats = manager.stats
-
-            expect(stats.activeCount).toBe(1)
-            expect(stats.zombieCount).toBe(1)
-            expect(stats.totalCount).toBe(2)
-        })
-
+        expect(stats.activeCount).toBe(1)
+        expect(stats.zombieCount).toBe(1)
+        expect(stats.totalCount).toBe(2)
     })
 
 
@@ -368,21 +360,17 @@ describe(WebGLTextureManager, () => {
     })
 
 
-    describe('dispose', () => {
+    test('dispose deletes all textures', () => {
+        const image1 = createMockImage()
+        const image2 = createMockImage()
 
-        test('deletes all textures', () => {
-            const image1 = createMockImage()
-            const image2 = createMockImage()
+        manager.acquire(image1)
+        manager.acquire(image2)
+        manager.release(image2)
 
-            manager.acquire(image1)
-            manager.acquire(image2)
-            manager.release(image2)
+        manager.dispose()
 
-            manager.dispose()
-
-            expect(gl.deleteTexture).toHaveBeenCalledTimes(2)
-        })
-
+        expect(gl.deleteTexture).toHaveBeenCalledTimes(2)
     })
 
 })

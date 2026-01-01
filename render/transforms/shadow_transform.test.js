@@ -1,4 +1,4 @@
-import {describe, test, expect, beforeEach, vi} from 'vitest'
+import {describe, test, expect, vi} from 'vitest'
 import ShadowTransform from './shadow_transform.js'
 import RenderTransform from '../render_transform.js'
 
@@ -40,92 +40,67 @@ describe(ShadowTransform, () => {
     })
 
 
-    describe('init', () => {
-
-        test('registers shadow shader', () => {
-            const transform = new ShadowTransform()
-            const mockProgram = {uniforms: {}}
-            const mockContext = {
-                shaderRegistry: {
-                    register: vi.fn(() => mockProgram)
-                }
+    test('init registers shadow shader', () => {
+        const transform = new ShadowTransform()
+        const mockProgram = {uniforms: {}}
+        const mockContext = {
+            shaderRegistry: {
+                register: vi.fn(() => mockProgram)
             }
+        }
 
-            transform.init(mockContext)
+        transform.init(mockContext)
 
-            expect(mockContext.shaderRegistry.register).toHaveBeenCalledWith(
-                'shadow',
-                expect.objectContaining({
-                    vertex: expect.any(String),
-                    fragment: expect.any(String)
-                })
-            )
-        })
-
-    })
-
-
-    describe('getProgram', () => {
-
-        let transform
-        let mockProgram
-
-        beforeEach(() => {
-            transform = new ShadowTransform()
-            mockProgram = {uniforms: {}}
-            const mockContext = {
-                shaderRegistry: {
-                    register: vi.fn(() => mockProgram)
-                }
-            }
-            transform.init(mockContext)
-        })
-
-
-        test('returns program after init', () => {
-            expect(transform.getProgram()).toBe(mockProgram)
-        })
-
-    })
-
-
-    describe('applyUniforms', () => {
-
-        let transform
-        let mockGL
-        let mockProgram
-
-        beforeEach(() => {
-            transform = new ShadowTransform({
-                skewX: 0.7,
-                scaleY: 0.4,
-                offsetY: 5,
-                color: [0.2, 0.2, 0.2, 0.6]
+        expect(mockContext.shaderRegistry.register).toHaveBeenCalledWith(
+            'shadow',
+            expect.objectContaining({
+                vertex: expect.any(String),
+                fragment: expect.any(String)
             })
-            mockGL = {
-                uniform1f: vi.fn(),
-                uniform4fv: vi.fn()
+        )
+    })
+
+
+    test('getProgram returns program after init', () => {
+        const transform = new ShadowTransform()
+        const mockProgram = {uniforms: {}}
+        const mockContext = {
+            shaderRegistry: {
+                register: vi.fn(() => mockProgram)
             }
-            mockProgram = {
-                uniforms: {
-                    uShadowSkewX: 'skewLoc',
-                    uShadowScaleY: 'scaleLoc',
-                    uShadowOffsetY: 'offsetLoc',
-                    uShadowColor: 'colorLoc'
-                }
+        }
+        transform.init(mockContext)
+
+        expect(transform.getProgram()).toBe(mockProgram)
+    })
+
+
+    test('applyUniforms sets shadow uniforms', () => {
+        const transform = new ShadowTransform({
+            skewX: 0.7,
+            scaleY: 0.4,
+            offsetY: 5,
+            color: [0.2, 0.2, 0.2, 0.6]
+        })
+        const mockGL = {
+            uniform1f: vi.fn(),
+            uniform4fv: vi.fn()
+        }
+        const mockProgram = {
+            uniforms: {
+                uShadowSkewX: 'skewLoc',
+                uShadowScaleY: 'scaleLoc',
+                uShadowOffsetY: 'offsetLoc',
+                uShadowColor: 'colorLoc'
             }
-        })
+        }
 
+        transform.applyUniforms(mockGL, mockProgram)
 
-        test('sets shadow uniforms', () => {
-            transform.applyUniforms(mockGL, mockProgram)
-
-            expect(mockGL.uniform1f).toHaveBeenCalledWith('skewLoc', 0.7)
-            expect(mockGL.uniform1f).toHaveBeenCalledWith('scaleLoc', 0.4)
-            expect(mockGL.uniform1f).toHaveBeenCalledWith('offsetLoc', 5)
-            expect(mockGL.uniform4fv).toHaveBeenCalledWith('colorLoc', [0.2, 0.2, 0.2, 0.6])
-        })
-
+        expect(mockGL.uniform1f).toHaveBeenCalledWith('skewLoc', 0.7)
+        expect(mockGL.uniform1f).toHaveBeenCalledWith('scaleLoc', 0.4)
+        expect(mockGL.uniform1f).toHaveBeenCalledWith('offsetLoc', 5)
+        expect(mockGL.uniform4fv).toHaveBeenCalledWith('colorLoc', [0.2, 0.2, 0.2, 0.6])
     })
 
 

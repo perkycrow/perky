@@ -632,41 +632,29 @@ describe('Vec3', () => {
     })
 
 
-    describe('reflection', () => {
-
-        test('reflect', () => {
-            const vec = new Vec3(1, -1, 0)
-            const normal = new Vec3(0, 1, 0)
-            expect(vec.reflect(normal)).toBe(vec)
-            expect(vec.x).toBeCloseTo(1)
-            expect(vec.y).toBeCloseTo(1)
-            expect(vec.z).toBeCloseTo(0)
-        })
-
+    test('reflect', () => {
+        const vec = new Vec3(1, -1, 0)
+        const normal = new Vec3(0, 1, 0)
+        expect(vec.reflect(normal)).toBe(vec)
+        expect(vec.x).toBeCloseTo(1)
+        expect(vec.y).toBeCloseTo(1)
+        expect(vec.z).toBeCloseTo(0)
     })
 
 
-    describe('rotation', () => {
-
-        test('applyAxisAngle', () => {
-            const vec = new Vec3(1, 0, 0)
-            const axis = new Vec3(0, 0, 1)
-            expect(vec.applyAxisAngle(axis, Math.PI / 2)).toBe(vec)
-            expect(vec.x).toBeCloseTo(0)
-            expect(vec.y).toBeCloseTo(1)
-            expect(vec.z).toBeCloseTo(0)
-        })
-
+    test('applyAxisAngle', () => {
+        const vec = new Vec3(1, 0, 0)
+        const axis = new Vec3(0, 0, 1)
+        expect(vec.applyAxisAngle(axis, Math.PI / 2)).toBe(vec)
+        expect(vec.x).toBeCloseTo(0)
+        expect(vec.y).toBeCloseTo(1)
+        expect(vec.z).toBeCloseTo(0)
     })
 
 
-    describe('type checking', () => {
-
-        test('isVector3', () => {
-            const vec = new Vec3()
-            expect(vec.isVector3).toBe(true)
-        })
-
+    test('isVector3', () => {
+        const vec = new Vec3()
+        expect(vec.isVector3).toBe(true)
     })
 
 

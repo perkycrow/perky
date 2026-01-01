@@ -311,22 +311,18 @@ describe('collision_detector', () => {
     })
 
 
-    describe('circle vs box with normal flipping', () => {
+    test('circle vs box normal is flipped when circle is first shape', () => {
+        const circle = createCircleShape(12, 0, 3)
+        const box = createBoxShape(0, 0, 20, 20)
 
-        test('normal is flipped when circle is first shape', () => {
-            const circle = createCircleShape(12, 0, 3)
-            const box = createBoxShape(0, 0, 20, 20)
-            
-            const circleVsBox = detectCollision(circle, box)
-            const boxVsCircle = detectCollision(box, circle)
-            
-            expect(circleVsBox).not.toBeNull()
-            expect(boxVsCircle).not.toBeNull()
+        const circleVsBox = detectCollision(circle, box)
+        const boxVsCircle = detectCollision(box, circle)
 
-            expect(circleVsBox.normal.x).toBe(-boxVsCircle.normal.x)
-            expect(circleVsBox.normal.y).toBe(-boxVsCircle.normal.y)
-        })
+        expect(circleVsBox).not.toBeNull()
+        expect(boxVsCircle).not.toBeNull()
 
+        expect(circleVsBox.normal.x).toBe(-boxVsCircle.normal.x)
+        expect(circleVsBox.normal.y).toBe(-boxVsCircle.normal.y)
     })
 
 }) 

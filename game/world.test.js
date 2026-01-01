@@ -12,8 +12,17 @@ describe('World', () => {
     })
 
 
-    test('has correct $category', () => {
-        expect(World.$category).toBe('world')
+    describe('static properties', () => {
+
+        test('has correct $category', () => {
+            expect(World.$category).toBe('world')
+        })
+
+
+        test('extends PerkyModule', () => {
+            expect(world.constructor.name).toBe('World')
+        })
+
     })
 
 

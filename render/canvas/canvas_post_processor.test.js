@@ -91,14 +91,10 @@ describe('CanvasPostProcessor', () => {
     })
 
 
-    describe('addManualEffect', () => {
-
-        test('returns this for chaining', () => {
-            const effect = {apply: () => {}}
-            const result = processor.addManualEffect(effect)
-            expect(result).toBe(processor)
-        })
-
+    test('addManualEffect returns this for chaining', () => {
+        const effect = {apply: () => {}}
+        const result = processor.addManualEffect(effect)
+        expect(result).toBe(processor)
     })
 
 
@@ -335,15 +331,11 @@ describe('CanvasPostProcessor', () => {
     })
 
 
-    describe('dispose', () => {
+    test('dispose clears filters', () => {
+        processor.addFilter('blur', 5)
+        processor.dispose()
 
-        test('clears filters', () => {
-            processor.addFilter('blur', 5)
-            processor.dispose()
-
-            expect(processor.filters).toEqual([])
-        })
-
+        expect(processor.filters).toEqual([])
     })
 
 })

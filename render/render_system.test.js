@@ -189,47 +189,36 @@ describe('RenderSystem', () => {
     })
 
 
-    describe('lifecycle', () => {
+    test('dispose does not crash when called twice', () => {
+        renderSystem.dispose()
 
-        test('dispose does not crash when called twice', () => {
+        expect(() => {
             renderSystem.dispose()
-
-            expect(() => {
-                renderSystem.dispose()
-            }).not.toThrow()
-        })
-
+        }).not.toThrow()
     })
 
 
-    describe('delegation', () => {
+    test('install delegates methods to host', () => {
+        const host = {
+            on: vi.fn()
+        }
 
-        test('install delegates methods to host', () => {
-            const host = {
-                on: vi.fn()
-            }
+        renderSystem.install(host)
 
-            renderSystem.install(host)
-
-            expect(host.createLayer).toBeDefined()
-            expect(host.getLayer).toBeDefined()
-            expect(host.renderAll).toBeDefined()
-        })
-
+        expect(host.createLayer).toBeDefined()
+        expect(host.getLayer).toBeDefined()
+        expect(host.renderAll).toBeDefined()
     })
 
-    describe('childrenByCategory', () => {
 
-        test('returns only layers', () => {
-            renderSystem.createLayer('layer1', 'canvas')
-            renderSystem.createLayer('layer2', 'canvas')
+    test('childrenByCategory returns only layers', () => {
+        renderSystem.createLayer('layer1', 'canvas')
+        renderSystem.createLayer('layer2', 'canvas')
 
-            const layers = renderSystem.childrenByCategory('layer')
+        const layers = renderSystem.childrenByCategory('layer')
 
-            expect(layers).toHaveLength(2)
-            expect(layers.every(l => l.$category === 'layer')).toBe(true)
-        })
-
+        expect(layers).toHaveLength(2)
+        expect(layers.every(l => l.$category === 'layer')).toBe(true)
     })
 
 })

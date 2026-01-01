@@ -194,17 +194,18 @@ describe('Inflector', () => {
 
     describe('uncountables', () => {
 
-        test('uncountable words stay the same', () => {
+        test('uncountable words stay the same in plural', () => {
             expect(inflector.plural('fish')).toBe('fish')
-            expect(inflector.singular('fish')).toBe('fish')
-
             expect(inflector.plural('sheep')).toBe('sheep')
-            expect(inflector.singular('sheep')).toBe('sheep')
-
             expect(inflector.plural('deer')).toBe('deer')
-            expect(inflector.singular('deer')).toBe('deer')
-
             expect(inflector.plural('moose')).toBe('moose')
+        })
+
+
+        test('uncountable words stay the same in singular', () => {
+            expect(inflector.singular('fish')).toBe('fish')
+            expect(inflector.singular('sheep')).toBe('sheep')
+            expect(inflector.singular('deer')).toBe('deer')
             expect(inflector.singular('moose')).toBe('moose')
         })
 

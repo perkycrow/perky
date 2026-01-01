@@ -227,24 +227,16 @@ describe('WebGLCanvas2D', () => {
     })
 
 
-    describe('applyPixelRatio', () => {
-
-        test('updates viewport on pixel ratio change', () => {
-            expect(() => renderer.setPixelRatio(2)).not.toThrow()
-        })
-
+    test('setPixelRatio updates viewport on pixel ratio change', () => {
+        expect(() => renderer.setPixelRatio(2)).not.toThrow()
     })
 
 
-    describe('onDispose', () => {
+    test('dispose cleans up resources', () => {
+        renderer.dispose()
 
-        test('cleans up resources', () => {
-            renderer.dispose()
-
-            expect(renderer.gl).toBe(null)
-            expect(renderer.canvas).toBe(null)
-        })
-
+        expect(renderer.gl).toBe(null)
+        expect(renderer.canvas).toBe(null)
     })
 
 })

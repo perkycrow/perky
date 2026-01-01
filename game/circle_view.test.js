@@ -93,30 +93,22 @@ describe('CircleView', () => {
     })
 
 
-    describe('sync', () => {
+    test('sync updates circle position from entity', () => {
+        entity.x = 100
+        entity.y = 200
+        view.sync()
 
-        test('updates circle position from entity', () => {
-            entity.x = 100
-            entity.y = 200
-            view.sync()
-
-            expect(view.root.x).toBe(100)
-            expect(view.root.y).toBe(200)
-        })
-
+        expect(view.root.x).toBe(100)
+        expect(view.root.y).toBe(200)
     })
 
 
-    describe('dispose', () => {
+    test('dispose cleans up properly', () => {
+        context.group.addChild(view.root)
+        view.dispose()
 
-        test('cleans up properly', () => {
-            context.group.addChild(view.root)
-            view.dispose()
-
-            expect(view.root).toBeNull()
-            expect(view.entity).toBeNull()
-        })
-
+        expect(view.root).toBeNull()
+        expect(view.entity).toBeNull()
     })
 
 })

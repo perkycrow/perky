@@ -73,23 +73,19 @@ describe('CanvasObjectRenderer', () => {
     })
 
 
-    describe('reset', () => {
+    test('reset clears collected objects', () => {
+        renderer.init(mockContext)
+        const obj = {worldMatrix: [1, 0, 0, 1, 0, 0]}
+        renderer.collect(obj, 1)
+        renderer.reset()
 
-        test('clears collected objects', () => {
-            renderer.init(mockContext)
-            const obj = {worldMatrix: [1, 0, 0, 1, 0, 0]}
-            renderer.collect(obj, 1)
-            renderer.reset()
+        let transformCalled = false
+        ctx.transform = () => {
+            transformCalled = true
+        }
+        renderer.flush()
 
-            let transformCalled = false
-            ctx.transform = () => {
-                transformCalled = true
-            }
-            renderer.flush()
-
-            expect(transformCalled).toBe(false)
-        })
-
+        expect(transformCalled).toBe(false)
     })
 
 
@@ -158,12 +154,8 @@ describe('CanvasObjectRenderer', () => {
     })
 
 
-    describe('render', () => {
-
-        test('is a no-op by default', () => {
-            expect(() => renderer.render()).not.toThrow()
-        })
-
+    test('render is a no-op by default', () => {
+        expect(() => renderer.render()).not.toThrow()
     })
 
 

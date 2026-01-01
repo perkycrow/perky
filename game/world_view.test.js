@@ -178,17 +178,13 @@ describe('WorldView', () => {
     })
 
 
-    describe('clearRegistry', () => {
+    test('clearRegistry clears all registrations', () => {
+        worldView.register(MockEntity, MockEntityView)
+        worldView.register(AnotherMockEntity, MockEntityView)
 
-        test('clears all registrations', () => {
-            worldView.register(MockEntity, MockEntityView)
-            worldView.register(AnotherMockEntity, MockEntityView)
+        const result = worldView.clearRegistry()
 
-            const result = worldView.clearRegistry()
-
-            expect(result).toBe(worldView)
-        })
-
+        expect(result).toBe(worldView)
     })
 
 
@@ -239,47 +235,39 @@ describe('WorldView', () => {
     })
 
 
-    describe('onStop', () => {
+    test('onStop disposes all views', () => {
+        worldView.register(MockEntity, MockEntityView)
+        worldView.onStart()
 
-        test('disposes all views', () => {
-            worldView.register(MockEntity, MockEntityView)
-            worldView.onStart()
+        const entity = new MockEntity({$id: 'stop-test'})
+        mockWorld.addEntity(entity)
 
-            const entity = new MockEntity({$id: 'stop-test'})
-            mockWorld.addEntity(entity)
+        const views = worldView.getViews('stop-test')
+        expect(views.length).toBe(1)
 
-            const views = worldView.getViews('stop-test')
-            expect(views.length).toBe(1)
+        worldView.onStop()
 
-            worldView.onStop()
-
-            // After stop, views should be cleared
-            expect(worldView.getViews('stop-test').length).toBe(0)
-        })
-
+        // After stop, views should be cleared
+        expect(worldView.getViews('stop-test').length).toBe(0)
     })
 
 
-    describe('sync', () => {
+    test('sync calls sync on all views', () => {
+        worldView.register(MockEntity, MockEntityView)
+        worldView.onStart()
 
-        test('calls sync on all views', () => {
-            worldView.register(MockEntity, MockEntityView)
-            worldView.onStart()
+        const entity1 = new MockEntity({$id: 'sync-1'})
+        const entity2 = new MockEntity({$id: 'sync-2'})
+        mockWorld.addEntity(entity1)
+        mockWorld.addEntity(entity2)
 
-            const entity1 = new MockEntity({$id: 'sync-1'})
-            const entity2 = new MockEntity({$id: 'sync-2'})
-            mockWorld.addEntity(entity1)
-            mockWorld.addEntity(entity2)
+        worldView.sync()
 
-            worldView.sync()
+        const views1 = worldView.getViews('sync-1')
+        const views2 = worldView.getViews('sync-2')
 
-            const views1 = worldView.getViews('sync-1')
-            const views2 = worldView.getViews('sync-2')
-
-            expect(views1[0].syncCalled).toBe(true)
-            expect(views2[0].syncCalled).toBe(true)
-        })
-
+        expect(views1[0].syncCalled).toBe(true)
+        expect(views2[0].syncCalled).toBe(true)
     })
 
 

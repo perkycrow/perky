@@ -568,13 +568,9 @@ describe('Vec2', () => {
     })
 
 
-    describe('type checking', () => {
-
-        test('isVector2', () => {
-            const vec = new Vec2()
-            expect(vec.isVector2).toBe(true)
-        })
-
+    test('isVector2', () => {
+        const vec = new Vec2()
+        expect(vec.isVector2).toBe(true)
     })
 
 

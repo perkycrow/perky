@@ -559,21 +559,17 @@ describe('Vec4', () => {
     })
 
 
-    describe('random', () => {
-
-        test('random', () => {
-            const vec = new Vec4()
-            expect(vec.random()).toBe(vec)
-            expect(vec.x).toBeGreaterThanOrEqual(0)
-            expect(vec.x).toBeLessThan(1)
-            expect(vec.y).toBeGreaterThanOrEqual(0)
-            expect(vec.y).toBeLessThan(1)
-            expect(vec.z).toBeGreaterThanOrEqual(0)
-            expect(vec.z).toBeLessThan(1)
-            expect(vec.w).toBeGreaterThanOrEqual(0)
-            expect(vec.w).toBeLessThan(1)
-        })
-
+    test('random', () => {
+        const vec = new Vec4()
+        expect(vec.random()).toBe(vec)
+        expect(vec.x).toBeGreaterThanOrEqual(0)
+        expect(vec.x).toBeLessThan(1)
+        expect(vec.y).toBeGreaterThanOrEqual(0)
+        expect(vec.y).toBeLessThan(1)
+        expect(vec.z).toBeGreaterThanOrEqual(0)
+        expect(vec.z).toBeLessThan(1)
+        expect(vec.w).toBeGreaterThanOrEqual(0)
+        expect(vec.w).toBeLessThan(1)
     })
 
 
@@ -624,13 +620,9 @@ describe('Vec4', () => {
     })
 
 
-    describe('type checking', () => {
-
-        test('isVector4', () => {
-            const vec = new Vec4()
-            expect(vec.isVector4).toBe(true)
-        })
-
+    test('isVector4', () => {
+        const vec = new Vec4()
+        expect(vec.isVector4).toBe(true)
     })
 
 
