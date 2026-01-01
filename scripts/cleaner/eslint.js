@@ -243,6 +243,13 @@ function findEslintDisables (rootDir) {
 }
 
 
+const ruleHints = {
+    complexity: 'Split into smaller functions or methods (use a function below the class if "this" is not needed). Acceptable in constructors or algorithmic functions where abstraction hurts readability/performance',
+    'class-methods-use-this': 'Private method (#)? Use a function below the class. Public? Check if it needs to be exposed, if not use a function below the class',
+    'no-unused-vars': 'Remove the unused variable'
+}
+
+
 export function auditDisables (rootDir) {
     header('ESLint Disables')
 
@@ -261,6 +268,9 @@ export function auditDisables (rootDir) {
 
     for (const [rule, occurrences] of sortedRules) {
         subHeader(`${rule} (${occurrences.length})`)
+        if (ruleHints[rule]) {
+            hint(ruleHints[rule])
+        }
         for (const occ of occurrences) {
             listItem(`${occ.file}:${occ.line}`)
         }
