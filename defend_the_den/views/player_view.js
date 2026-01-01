@@ -33,6 +33,15 @@ export default class PlayerView extends EntityView {
         } else {
             this.root.image = this.images.right
         }
+
+        if (this.entity.shootRecoilTimer > 0) {
+            const t = this.entity.shootRecoilTimer / this.entity.shootRecoilDuration
+            this.root.scaleX = 1 - t * 0.08
+            this.root.scaleY = 1 + t * 0.05
+        } else {
+            this.root.scaleX = 1
+            this.root.scaleY = 1
+        }
     }
 
 }
