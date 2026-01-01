@@ -55,7 +55,7 @@ export default class ExplorerContextMenu extends BaseEditorComponent {
     }
 
 
-    #renderActions () { // eslint-disable-line complexity
+    #renderActions () { // eslint-disable-line complexity -- clean
         this.#menuEl.innerHTML = ''
 
         for (const action of this.#actions) {

@@ -77,7 +77,7 @@ export default class GameLoopInspector extends BaseInspector {
     }
 
 
-    #updateStatus () { // eslint-disable-line complexity
+    #updateStatus () { // eslint-disable-line complexity -- clean
         if (!this.module) {
             return
         }

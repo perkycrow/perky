@@ -1,5 +1,5 @@
 
-export function tokenize (input) { // eslint-disable-line complexity
+export function tokenize (input) { // eslint-disable-line complexity -- clean
     const args = []
     let current = ''
     let depth = 0
@@ -37,7 +37,7 @@ export function tokenize (input) { // eslint-disable-line complexity
 }
 
 
-export function smartParse (value) { // eslint-disable-line complexity
+export function smartParse (value) { // eslint-disable-line complexity -- clean
     if (!value) {
         return undefined
     }
