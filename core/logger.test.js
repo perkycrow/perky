@@ -121,41 +121,35 @@ describe('Logger', () => {
     })
 
 
-    describe('clear', () => {
-        test('emits clear event', () => {
-            const listener = vi.fn()
-            logger.on('clear', listener)
+    test('clear emits clear event', () => {
+        const listener = vi.fn()
+        logger.on('clear', listener)
 
-            logger.clear()
+        logger.clear()
 
-            expect(listener).toHaveBeenCalledTimes(1)
-        })
+        expect(listener).toHaveBeenCalledTimes(1)
     })
 
 
-    describe('spacer', () => {
-        test('emits spacer event', () => {
-            const listener = vi.fn()
-            logger.on('spacer', listener)
+    test('spacer emits spacer event', () => {
+        const listener = vi.fn()
+        logger.on('spacer', listener)
 
-            logger.spacer()
+        logger.spacer()
 
-            expect(listener).toHaveBeenCalledTimes(1)
-        })
+        expect(listener).toHaveBeenCalledTimes(1)
     })
 
 
-    describe('title', () => {
-        test('emits title event with title payload', () => {
-            const listener = vi.fn()
-            logger.on('title', listener)
+    test('title emits title event with title payload', () => {
+        const listener = vi.fn()
+        logger.on('title', listener)
 
-            logger.title('My Title')
+        logger.title('My Title')
 
-            const payload = listener.mock.calls[0][0]
-            expect(payload.title).toBe('My Title')
-            expect(payload.event).toBe('title')
-        })
+        const payload = listener.mock.calls[0][0]
+        expect(payload.title).toBe('My Title')
+        expect(payload.event).toBe('title')
     })
 
 

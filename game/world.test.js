@@ -12,12 +12,8 @@ describe('World', () => {
     })
 
 
-    describe('constructor', () => {
-
-        test('has correct $category', () => {
-            expect(World.$category).toBe('world')
-        })
-
+    test('has correct $category', () => {
+        expect(World.$category).toBe('world')
     })
 
 
