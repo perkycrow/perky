@@ -32,7 +32,9 @@ function createMockGL () {
         FRAMEBUFFER_INCOMPLETE_ATTACHMENT: 0x8CD6,
 
         getParameter: vi.fn((param) => {
-            if (param === 0x8D57) return 8
+            if (param === 0x8D57) {
+                return 8
+            }
             return 0
         }),
 
