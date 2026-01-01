@@ -69,7 +69,7 @@ function printDigest (results) {
 }
 
 
-export function runAudit (rootDir) {
+export async function runAudit (rootDir) {
     printBanner()
 
     const results = {}
@@ -80,7 +80,7 @@ export function runAudit (rootDir) {
     results.eslint = auditEslint(rootDir)
     results.disables = auditDisables(rootDir)
     results.switches = auditSwitches(rootDir)
-    results.tests = auditTests(rootDir)
+    results.tests = await auditTests(rootDir)
 
     printDigest(results)
 
@@ -102,7 +102,7 @@ export function runFix (rootDir, options = {}) {
 }
 
 
-export function runAll (rootDir) {
+export async function runAll (rootDir) {
     runFix(rootDir)
-    runAudit(rootDir)
+    await runAudit(rootDir)
 }

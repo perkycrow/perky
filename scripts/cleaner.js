@@ -30,9 +30,9 @@ function printHelp () {
 
 
 if (auditMode && fixMode) {
-    runAll(rootDir)
+    await runAll(rootDir)
 } else if (auditMode) {
-    runAudit(rootDir)
+    await runAudit(rootDir)
 } else if (fixMode) {
     runFix(rootDir, {dryRun})
 } else {

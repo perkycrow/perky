@@ -4,6 +4,15 @@ import {findJsFiles, isExcludedFile} from './utils.js'
 import {header, success, hint, listItem, divider} from './format.js'
 
 
+function loadConfig (rootDir) {
+    const configPath = path.join(rootDir, 'cleaner.config.js')
+    if (fs.existsSync(configPath)) {
+        return import(configPath).then((module) => module.default || {})
+    }
+    return Promise.resolve({})
+}
+
+
 function findTestFiles (rootDir) {
     return findJsFiles(rootDir).filter((filePath) => {
         const relativePath = path.relative(rootDir, filePath)
@@ -142,7 +151,7 @@ function findSingleTestDescribesAll (rootDir) {
 }
 
 
-function shouldExcludeFromTestAudit (relativePath) { // eslint-disable-line complexity
+function shouldExcludeFromTestAudit (relativePath, excludeDirs = []) { // eslint-disable-line complexity
     if (!relativePath.includes('/')) {
         return true
     }
@@ -159,6 +168,12 @@ function shouldExcludeFromTestAudit (relativePath) { // eslint-disable-line comp
         return true
     }
 
+    for (const dir of excludeDirs) {
+        if (relativePath.startsWith(dir)) {
+            return true
+        }
+    }
+
     if (relativePath.endsWith('_controller.js') &&
         !relativePath.startsWith('game/') &&
         !relativePath.startsWith('application/')) {
@@ -173,7 +188,9 @@ function shouldExcludeFromTestAudit (relativePath) { // eslint-disable-line comp
 }
 
 
-function findFilesWithoutTests (rootDir) {
+async function findFilesWithoutTests (rootDir) { // eslint-disable-line complexity
+    const config = await loadConfig(rootDir)
+    const excludeDirs = config.missingTests?.excludeDirs || []
     const files = findJsFiles(rootDir)
     const missing = []
 
@@ -188,7 +205,7 @@ function findFilesWithoutTests (rootDir) {
             continue
         }
 
-        if (shouldExcludeFromTestAudit(relativePath)) {
+        if (shouldExcludeFromTestAudit(relativePath, excludeDirs)) {
             continue
         }
 
@@ -284,8 +301,8 @@ function printMissingTestsAudit (missing) {
 }
 
 
-export function auditTests (rootDir) {
-    const missing = findFilesWithoutTests(rootDir)
+export async function auditTests (rootDir) {
+    const missing = await findFilesWithoutTests(rootDir)
     const deepNesting = findDeepNesting(rootDir)
     const itUsage = findItUsage(rootDir)
     const singleTestDescribes = findSingleTestDescribesAll(rootDir)
