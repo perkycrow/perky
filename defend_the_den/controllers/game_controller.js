@@ -31,23 +31,11 @@ export default class GameController extends WorldController {
 
 
     update (game, deltaTime) {
-        this.updatePlayer(game, deltaTime)
-        this.updateEntities(deltaTime)
+        this.world.update(deltaTime, game)
         this.updateWaveSpawning(deltaTime)
         this.checkCollisions()
         this.cleanupDeadEntities()
         this.checkWaveComplete()
-    }
-
-
-    updatePlayer (game, deltaTime) {
-        const direction = game.getDirection('move')
-        this.world.player.move(direction, deltaTime)
-    }
-
-
-    updateEntities (deltaTime) {
-        this.world.update(deltaTime)
     }
 
 

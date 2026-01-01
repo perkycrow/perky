@@ -14,9 +14,14 @@ export default class Player extends Entity {
     }
 
 
-    move (direction, deltaTime) {
-        if (direction.length() > 0) {
-            const accel = direction.clone().multiplyScalar(this.acceleration * deltaTime)
+    move (direction) {
+        this.direction = direction
+    }
+
+
+    update (deltaTime) {
+        if (this.direction?.length() > 0) {
+            const accel = this.direction.clone().multiplyScalar(this.acceleration * deltaTime)
             this.velocity.add(accel)
         } else {
             this.velocity.multiplyScalar(Math.pow(0.01, deltaTime * 60))
@@ -25,10 +30,7 @@ export default class Player extends Entity {
         if (this.velocity.length() > this.maxSpeed) {
             this.velocity.normalize().multiplyScalar(this.maxSpeed)
         }
-    }
 
-
-    update (deltaTime) {
         if (this.velocity.length() < 0.01) {
             this.velocity.set(0, 0)
         }

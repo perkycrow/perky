@@ -11,16 +11,23 @@ export default class World extends PerkyModule {
     }
 
 
-    update (deltaTime) {
+    update (deltaTime, context) {
         if (!this.started) {
             return
         }
+
+        this.preUpdate(deltaTime, context)
 
         for (const entity of this.entities) {
             if (entity.started) {
                 entity.update?.(deltaTime)
             }
         }
+    }
+
+
+    preUpdate () {
+        // Override in subclass
     }
 
 }

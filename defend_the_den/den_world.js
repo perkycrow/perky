@@ -13,6 +13,12 @@ export default class DenWorld extends World {
     }
 
 
+    preUpdate (deltaTime, context) {
+        const direction = context.getDirection('move')
+        this.player.move(direction)
+    }
+
+
     spawnPlayer (options = {}) {
         return this.create(Player, {
             $id: 'player',
