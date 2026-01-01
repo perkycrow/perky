@@ -3,6 +3,144 @@ import path from 'path'
 import {findJsFiles, isExcludedFile} from './utils.js'
 
 
+function findTestFiles (rootDir) {
+    return findJsFiles(rootDir).filter((filePath) => {
+        const relativePath = path.relative(rootDir, filePath)
+        return relativePath.endsWith('.test.js') && !relativePath.startsWith('scripts/cleaner/')
+    })
+}
+
+
+function countLeadingSpaces (line) {
+    const match = line.match(/^(\s*)/)
+    return match ? match[1].length : 0
+}
+
+
+function isTestLine (line) {
+    const trimmed = line.trim()
+    return trimmed.startsWith('describe(') || trimmed.startsWith('test(') || trimmed.startsWith('it(')
+}
+
+
+function analyzeFileNesting (filePath, rootDir, indentThreshold) {
+    const relativePath = path.relative(rootDir, filePath)
+    const content = fs.readFileSync(filePath, 'utf-8')
+    const lines = content.split('\n')
+    const deepLines = []
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i]
+        const indent = countLeadingSpaces(line)
+        if (isTestLine(line) && indent >= indentThreshold) {
+            deepLines.push({line: i + 1, indent, text: line.trim().substring(0, 50)})
+        }
+    }
+
+    return deepLines.length > 0 ? {file: relativePath, deepLines} : null
+}
+
+
+function findDeepNesting (rootDir) {
+    const files = findTestFiles(rootDir)
+    const indentThreshold = 12
+
+    return files
+        .map((filePath) => analyzeFileNesting(filePath, rootDir, indentThreshold))
+        .filter(Boolean)
+}
+
+
+function analyzeFileItUsage (filePath, rootDir) {
+    const relativePath = path.relative(rootDir, filePath)
+    const content = fs.readFileSync(filePath, 'utf-8')
+    const lines = content.split('\n')
+    const itLines = []
+
+    for (let i = 0; i < lines.length; i++) {
+        if (/\bit\s*\(/.test(lines[i])) {
+            itLines.push({line: i + 1, text: lines[i].trim().substring(0, 60)})
+        }
+    }
+
+    return itLines.length > 0 ? {file: relativePath, count: itLines.length, lines: itLines} : null
+}
+
+
+function findItUsage (rootDir) {
+    const files = findTestFiles(rootDir)
+
+    return files
+        .map((filePath) => analyzeFileItUsage(filePath, rootDir))
+        .filter(Boolean)
+}
+
+
+function processDescribeLine (trimmed, lineNum, indent, stack) {
+    if (trimmed.startsWith('describe(')) {
+        stack.push({line: lineNum, indent, testCount: 0, text: trimmed.substring(0, 40)})
+    }
+}
+
+
+function processTestLine (trimmed, indent, stack) {
+    if (!trimmed.startsWith('test(') && !trimmed.startsWith('it(')) {
+        return
+    }
+    for (let i = stack.length - 1; i >= 0; i--) {
+        if (stack[i].indent < indent) {
+            stack[i].testCount++
+            break
+        }
+    }
+}
+
+
+function processClosingBrace (trimmed, indent, stack, issues) {
+    if (trimmed !== '})' || stack.length === 0) {
+        return
+    }
+    const last = stack[stack.length - 1]
+    if (last.indent < indent) {
+        return
+    }
+    const closed = stack.pop()
+    if (closed.testCount === 1) {
+        issues.push({line: closed.line, text: closed.text})
+    }
+}
+
+
+function findSingleTestDescribes (filePath, rootDir) {
+    const relativePath = path.relative(rootDir, filePath)
+    const content = fs.readFileSync(filePath, 'utf-8')
+    const lines = content.split('\n')
+    const issues = []
+    const stack = []
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i]
+        const trimmed = line.trim()
+        const indent = countLeadingSpaces(line)
+
+        processDescribeLine(trimmed, i + 1, indent, stack)
+        processTestLine(trimmed, indent, stack)
+        processClosingBrace(trimmed, indent, stack, issues)
+    }
+
+    return issues.length > 0 ? {file: relativePath, issues} : null
+}
+
+
+function findSingleTestDescribesAll (rootDir) {
+    const files = findTestFiles(rootDir)
+
+    return files
+        .map((filePath) => findSingleTestDescribes(filePath, rootDir))
+        .filter(Boolean)
+}
+
+
 function shouldExcludeFromTestAudit (relativePath) { // eslint-disable-line complexity
     if (!relativePath.includes('/')) {
         return true
@@ -67,14 +205,70 @@ function findFilesWithoutTests (rootDir) {
 }
 
 
-export function auditTests (rootDir) {
-    console.log('\n=== MISSING TESTS ===\n')
+function printDeepNestingAudit (issues) {
+    console.log('\n=== DEEP NESTING IN TESTS ===\n')
 
-    const missing = findFilesWithoutTests(rootDir)
+    if (issues.length === 0) {
+        console.log('No deeply nested tests found.\n')
+        return
+    }
+
+    console.log('The following test files have deeply nested describe/test blocks.')
+    console.log('Consider flattening the structure - each describe should group')
+    console.log('related tests, not create unnecessary hierarchy.\n')
+
+    for (const {file} of issues) {
+        console.log(`- ${file}`)
+    }
+
+    console.log('')
+}
+
+
+function printItUsageAudit (issues) {
+    console.log('\n=== IT() USAGE IN TESTS ===\n')
+
+    if (issues.length === 0) {
+        console.log('All test files use test() syntax.\n')
+        return
+    }
+
+    console.log('The following test files use it() instead of test().')
+    console.log('For consistency and clarity in unit tests, prefer test() syntax.\n')
+
+    for (const {file, count} of issues) {
+        console.log(`- ${file} (${count} occurrences)`)
+    }
+
+    console.log('')
+}
+
+
+function printSingleTestDescribesAudit (issues) {
+    console.log('\n=== SINGLE-TEST DESCRIBES ===\n')
+
+    if (issues.length === 0) {
+        console.log('No unnecessary describe blocks found.\n')
+        return
+    }
+
+    console.log('The following test files have describe blocks containing only one test.')
+    console.log('Consider removing the describe wrapper or adding more related tests.\n')
+
+    for (const {file, issues: fileIssues} of issues) {
+        console.log(`- ${file} (${fileIssues.length} occurrences)`)
+    }
+
+    console.log('')
+}
+
+
+function printMissingTestsAudit (missing) {
+    console.log('\n=== MISSING TESTS ===\n')
 
     if (missing.length === 0) {
         console.log('All files have corresponding test files.\n')
-        return {filesWithoutTests: 0}
+        return
     }
 
     console.log('Create the following test files. Each test file should import')
@@ -85,6 +279,24 @@ export function auditTests (rootDir) {
     }
 
     console.log('')
+}
 
-    return {filesWithoutTests: missing.length}
+
+export function auditTests (rootDir) {
+    const missing = findFilesWithoutTests(rootDir)
+    const deepNesting = findDeepNesting(rootDir)
+    const itUsage = findItUsage(rootDir)
+    const singleTestDescribes = findSingleTestDescribesAll(rootDir)
+
+    printMissingTestsAudit(missing)
+    printDeepNestingAudit(deepNesting)
+    printItUsageAudit(itUsage)
+    printSingleTestDescribesAudit(singleTestDescribes)
+
+    return {
+        filesWithoutTests: missing.length,
+        filesWithDeepNesting: deepNesting.length,
+        filesWithItUsage: itUsage.length,
+        filesWithSingleTestDescribes: singleTestDescribes.length
+    }
 }
