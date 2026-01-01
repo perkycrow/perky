@@ -54,4 +54,11 @@ describe('Entity', () => {
         expect(entity.position.y).toBe(84)
     })
 
+
+    test('has update method', () => {
+        const entity = new Entity()
+
+        expect(typeof entity.update).toBe('function')
+    })
+
 })
