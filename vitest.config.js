@@ -2,8 +2,7 @@ import {defineConfig} from 'vitest/config'
 
 
 const ignoredMessages = [
-    'Lit is in dev mode.',
-    'Element perky-code scheduled an update'
+
 ]
 
 export default defineConfig({
