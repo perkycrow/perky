@@ -438,14 +438,34 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
         } else if (cmd.type === 'action') {
             const input = this.#inputEl.value
             const {args} = parseCommand(input)
+            const historyInput = this.#buildHistoryInput(cmd.actionName, args)
 
-            this.#addToHistory(input, cmd)
+            this.#addToHistory(historyInput, cmd)
             cmd.app.actionDispatcher.execute(cmd.actionName, ...args)
             this.#state?.closeCommandPalette()
         } else if (cmd.action) {
             this.#addToHistory(cmd.title, cmd)
             cmd.action()
         }
+    }
+
+
+    #buildHistoryInput (actionName, args) { // eslint-disable-line class-methods-use-this
+        if (args.length === 0) {
+            return actionName
+        }
+
+        const argsString = args.map(arg => {
+            if (typeof arg === 'string') {
+                return `"${arg}"`
+            }
+            if (typeof arg === 'object') {
+                return JSON.stringify(arg)
+            }
+            return String(arg)
+        }).join(', ')
+
+        return `${actionName} ${argsString}`
     }
 
 
