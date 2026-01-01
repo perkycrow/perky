@@ -470,35 +470,18 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
             return
         }
 
-        const input = this.#inputEl.value.trim()
+        const handlers = {
+            spawn: () => appManager.spawn(arg),
+            start: () => appManager.startApp(arg),
+            stop: () => appManager.stopApp(arg),
+            dispose: () => appManager.disposeApp(arg)
+        }
 
-        switch (commandId) {
-        case 'spawn':
-            this.#addToHistory(input, {id: commandId})
-            appManager.spawn(arg)
+        const handler = handlers[commandId]
+        if (handler) {
+            this.#addToHistory(this.#inputEl.value.trim(), {id: commandId})
+            handler()
             this.#state?.closeCommandPalette()
-            break
-
-        case 'start':
-            this.#addToHistory(input, {id: commandId})
-            appManager.startApp(arg)
-            this.#state?.closeCommandPalette()
-            break
-
-        case 'stop':
-            this.#addToHistory(input, {id: commandId})
-            appManager.stopApp(arg)
-            this.#state?.closeCommandPalette()
-            break
-
-        case 'dispose':
-            this.#addToHistory(input, {id: commandId})
-            appManager.disposeApp(arg)
-            this.#state?.closeCommandPalette()
-            break
-
-        default:
-            break
         }
     }
 
