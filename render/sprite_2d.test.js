@@ -1,4 +1,4 @@
-import {describe, it, expect, vi, beforeEach} from 'vitest'
+import {describe, test, expect, vi, beforeEach} from 'vitest'
 import Sprite2D from './sprite_2d.js'
 import CanvasSpriteRenderer from './canvas/canvas_sprite_renderer.js'
 
@@ -27,20 +27,20 @@ describe('Sprite2D', () => {
         })
     })
 
-    it('should initialize with frame and options', () => {
+    test('initializes with frame and options', () => {
         expect(sprite.currentFrame).toBe(mockFrame)
         expect(sprite.width).toBe(5)
         expect(sprite.height).toBeNull()
     })
 
-    it('should calculate bounds based on frame and width', () => {
+    test('getBounds calculates bounds from frame and width', () => {
         const bounds = sprite.getBounds()
 
         expect(bounds.width).toBe(5)
         expect(bounds.height).toBe(5)
     })
 
-    it('should calculate bounds based on frame and height', () => {
+    test('getBounds calculates bounds from frame and height', () => {
         sprite = new Sprite2D({
             frame: mockFrame,
             height: 10
@@ -51,7 +51,7 @@ describe('Sprite2D', () => {
         expect(bounds.height).toBe(10)
     })
 
-    it('should manage animations', () => {
+    test('addAnimation stores animation', () => {
         const mockAnim = {
             play: vi.fn(),
             stop: vi.fn()
@@ -59,12 +59,31 @@ describe('Sprite2D', () => {
 
         sprite.addAnimation('walk', mockAnim)
         expect(sprite.animations.get('walk')).toBe(mockAnim)
+    })
 
+    test('play starts animation', () => {
+        const mockAnim = {
+            play: vi.fn(),
+            stop: vi.fn()
+        }
+
+        sprite.addAnimation('walk', mockAnim)
         sprite.play('walk')
+
         expect(sprite.currentAnimation).toBe(mockAnim)
         expect(mockAnim.play).toHaveBeenCalled()
+    })
 
+    test('stop stops current animation', () => {
+        const mockAnim = {
+            play: vi.fn(),
+            stop: vi.fn()
+        }
+
+        sprite.addAnimation('walk', mockAnim)
+        sprite.play('walk')
         sprite.stop()
+
         expect(sprite.currentAnimation).toBeNull()
         expect(mockAnim.stop).toHaveBeenCalled()
     })
@@ -102,12 +121,12 @@ describe('CanvasSpriteRenderer', () => {
     })
 
 
-    it('handles Sprite2D class', () => {
+    test('handles Sprite2D class', () => {
         expect(CanvasSpriteRenderer.handles).toContain(Sprite2D)
     })
 
 
-    it('should render frame using image from frame data', () => {
+    test('render draws frame using image from frame data', () => {
         const sprite = new Sprite2D({
             frame: mockFrame,
             width: 5
@@ -117,9 +136,9 @@ describe('CanvasSpriteRenderer', () => {
 
         expect(ctx.drawImage).toHaveBeenCalledWith(
             mockImage,
-            0, 0, 10, 10, // Source x, y, w, h
-            expect.any(Number), expect.any(Number), // Dest x, y
-            5, 5 // Dest w, h
+            0, 0, 10, 10,
+            expect.any(Number), expect.any(Number),
+            5, 5
         )
     })
 })

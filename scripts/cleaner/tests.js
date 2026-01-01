@@ -234,6 +234,7 @@ function printItUsageAudit (issues) {
     hint('Use test() instead of it() for unit tests')
     hint('it() = BDD specs ("it should do X") - describes behavior from user perspective')
     hint('test() = unit tests ("test X does Y") - verifies implementation directly')
+    hint('Sentences are for edge cases, simple methods can use test("methodName")')
     hint('These files need refactoring to follow unit test conventions')
     divider()
 

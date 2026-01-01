@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach} from 'vitest'
+import {describe, test, expect, beforeEach} from 'vitest'
 import BaseRenderer from './base_renderer.js'
 
 
@@ -16,42 +16,42 @@ describe('BaseRenderer', () => {
 
     describe('constructor', () => {
 
-        it('should create a BaseRenderer instance', () => {
+        test('creates BaseRenderer instance', () => {
             expect(renderer).toBeInstanceOf(BaseRenderer)
         })
 
 
-        it('should create a canvas element', () => {
+        test('creates canvas element', () => {
             expect(renderer.canvas).toBeInstanceOf(HTMLCanvasElement)
         })
 
 
-        it('should use provided canvas', () => {
+        test('uses provided canvas', () => {
             const customCanvas = document.createElement('canvas')
             const r = new BaseRenderer({canvas: customCanvas})
             expect(r.canvas).toBe(customCanvas)
         })
 
 
-        it('should set default dimensions', () => {
+        test('sets default dimensions', () => {
             expect(renderer.displayWidth).toBeDefined()
             expect(renderer.displayHeight).toBeDefined()
         })
 
 
-        it('should set custom dimensions', () => {
+        test('sets custom dimensions', () => {
             const r = new BaseRenderer({width: 1024, height: 768})
             expect(r.displayWidth).toBe(1024)
             expect(r.displayHeight).toBe(768)
         })
 
 
-        it('should have category renderer', () => {
+        test('has category renderer', () => {
             expect(renderer.$category).toBe('renderer')
         })
 
 
-        it('should create default camera', () => {
+        test('creates default camera', () => {
             expect(renderer.camera).toBeDefined()
         })
 
@@ -60,12 +60,12 @@ describe('BaseRenderer', () => {
 
     describe('container', () => {
 
-        it('should get container from canvas parent', () => {
+        test('gets container from canvas parent', () => {
             expect(renderer.container).toBe(container)
         })
 
 
-        it('should set container and append canvas', () => {
+        test('sets container and appends canvas', () => {
             const newContainer = document.createElement('div')
             renderer.container = newContainer
             expect(renderer.canvas.parentElement).toBe(newContainer)
@@ -76,25 +76,25 @@ describe('BaseRenderer', () => {
 
     describe('autoFitEnabled', () => {
 
-        it('should be disabled by default', () => {
+        test('disabled by default', () => {
             expect(renderer.autoFitEnabled).toBe(false)
         })
 
 
-        it('should enable autoFit', () => {
+        test('enables autoFit', () => {
             renderer.autoFitEnabled = true
             expect(renderer.autoFitEnabled).toBe(true)
         })
 
 
-        it('should disable autoFit', () => {
+        test('disables autoFit', () => {
             renderer.autoFitEnabled = true
             renderer.autoFitEnabled = false
             expect(renderer.autoFitEnabled).toBe(false)
         })
 
 
-        it('should be enabled via option', () => {
+        test('enabled via option', () => {
             const r = new BaseRenderer({autoFit: true, container})
             expect(r.autoFitEnabled).toBe(true)
         })
@@ -104,18 +104,18 @@ describe('BaseRenderer', () => {
 
     describe('pixelRatio', () => {
 
-        it('should default to 1', () => {
+        test('defaults to 1', () => {
             expect(renderer.pixelRatio).toBe(1)
         })
 
 
-        it('should set custom pixelRatio', () => {
+        test('sets custom pixelRatio', () => {
             const r = new BaseRenderer({pixelRatio: 2})
             expect(r.pixelRatio).toBe(2)
         })
 
 
-        it('should apply pixelRatio to canvas dimensions', () => {
+        test('applyPixelRatio scales canvas dimensions', () => {
             renderer.displayWidth = 100
             renderer.displayHeight = 100
             renderer.pixelRatio = 2
@@ -126,13 +126,13 @@ describe('BaseRenderer', () => {
         })
 
 
-        it('should set pixelRatio via setPixelRatio', () => {
+        test('setPixelRatio updates pixelRatio', () => {
             renderer.setPixelRatio(3)
             expect(renderer.pixelRatio).toBe(3)
         })
 
 
-        it('should return this from setPixelRatio', () => {
+        test('setPixelRatio returns this', () => {
             expect(renderer.setPixelRatio(2)).toBe(renderer)
         })
 
@@ -141,21 +141,21 @@ describe('BaseRenderer', () => {
 
     describe('resize', () => {
 
-        it('should update display dimensions', () => {
+        test('updates display dimensions', () => {
             renderer.resize(500, 400)
             expect(renderer.displayWidth).toBe(500)
             expect(renderer.displayHeight).toBe(400)
         })
 
 
-        it('should update canvas style', () => {
+        test('updates canvas style', () => {
             renderer.resize(500, 400)
             expect(renderer.canvas.style.width).toBe('500px')
             expect(renderer.canvas.style.height).toBe('400px')
         })
 
 
-        it('should return this', () => {
+        test('returns this', () => {
             expect(renderer.resize(100, 100)).toBe(renderer)
         })
 
@@ -164,12 +164,12 @@ describe('BaseRenderer', () => {
 
     describe('resizeToContainer', () => {
 
-        it('should return this', () => {
+        test('returns this', () => {
             expect(renderer.resizeToContainer()).toBe(renderer)
         })
 
 
-        it('should not throw without container', () => {
+        test('does not throw without container', () => {
             const r = new BaseRenderer({})
             expect(() => r.resizeToContainer()).not.toThrow()
         })
@@ -179,19 +179,19 @@ describe('BaseRenderer', () => {
 
     describe('dispose', () => {
 
-        it('should set canvas to null', () => {
+        test('sets canvas to null', () => {
             renderer.dispose()
             expect(renderer.canvas).toBeNull()
         })
 
 
-        it('should set camera to null', () => {
+        test('sets camera to null', () => {
             renderer.dispose()
             expect(renderer.camera).toBeNull()
         })
 
 
-        it('should remove canvas from DOM', () => {
+        test('removes canvas from DOM', () => {
             renderer.dispose()
             expect(container.children.length).toBe(0)
         })

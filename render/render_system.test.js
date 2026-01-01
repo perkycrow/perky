@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, vi} from 'vitest'
 import RenderSystem from './render_system.js'
 import PerkyView from '../application/perky_view.js'
 
@@ -17,13 +17,13 @@ describe('RenderSystem', () => {
 
     describe('constructor', () => {
 
-        it('should create a RenderSystem instance', () => {
+        test('creates RenderSystem instance with PerkyView', () => {
             expect(renderSystem).toBeInstanceOf(RenderSystem)
             expect(renderSystem.view).toBeInstanceOf(PerkyView)
         })
 
 
-        it('should set layer dimensions from options', () => {
+        test('sets layer dimensions from options', () => {
             const customRenderSystem = new RenderSystem({
                 container,
                 width: 1024,
@@ -35,7 +35,7 @@ describe('RenderSystem', () => {
         })
 
 
-        it('should have category renderSystem', () => {
+        test('has category renderSystem', () => {
             expect(renderSystem.$category).toBe('renderSystem')
         })
 
@@ -44,7 +44,7 @@ describe('RenderSystem', () => {
 
     describe('layer management', () => {
 
-        it('should create a canvas layer', () => {
+        test('createLayer creates and returns canvas layer', () => {
             const layer = renderSystem.createLayer('test', 'canvas')
 
             expect(layer).toBeDefined()
@@ -52,7 +52,7 @@ describe('RenderSystem', () => {
         })
 
 
-        it('should get a layer by name', () => {
+        test('getLayer retrieves layer by name', () => {
             renderSystem.createLayer('game', 'canvas')
             const layer = renderSystem.getLayer('game')
 
@@ -61,7 +61,7 @@ describe('RenderSystem', () => {
         })
 
 
-        it('should remove a layer', () => {
+        test('removeLayer removes layer', () => {
             renderSystem.createLayer('temp', 'canvas')
             expect(renderSystem.getLayer('temp')).toBeDefined()
 
@@ -70,7 +70,7 @@ describe('RenderSystem', () => {
         })
 
 
-        it('should get canvas layer', () => {
+        test('getCanvas retrieves canvas from layer', () => {
             renderSystem.createLayer('game', 'canvas')
             const canvas = renderSystem.getCanvas('game')
 
@@ -87,12 +87,12 @@ describe('RenderSystem', () => {
         })
 
 
-        it('should render all layers', () => {
+        test('renderAll does not throw', () => {
             expect(() => renderSystem.renderAll()).not.toThrow()
         })
 
 
-        it('should render a specific layer', () => {
+        test('renderLayer renders specific layer', () => {
             expect(() => renderSystem.renderLayer('game')).not.toThrow()
         })
 
@@ -106,7 +106,7 @@ describe('RenderSystem', () => {
         })
 
 
-        it('should show a layer', () => {
+        test('showLayer calls setVisible with true', () => {
             const layer = renderSystem.getLayer('ui')
             const spy = vi.spyOn(layer, 'setVisible')
 
@@ -116,7 +116,7 @@ describe('RenderSystem', () => {
         })
 
 
-        it('should hide a layer', () => {
+        test('hideLayer calls setVisible with false', () => {
             const layer = renderSystem.getLayer('ui')
             const spy = vi.spyOn(layer, 'setVisible')
 
@@ -130,21 +130,21 @@ describe('RenderSystem', () => {
 
     describe('camera management', () => {
 
-        it('should get main camera by default', () => {
+        test('getCamera returns main camera by default', () => {
             const camera = renderSystem.getCamera()
 
             expect(camera).toBeDefined()
         })
 
 
-        it('should get camera by id', () => {
+        test('getCamera retrieves camera by id', () => {
             const camera = renderSystem.getCamera('main')
 
             expect(camera).toBeDefined()
         })
 
 
-        it('should set a camera', () => {
+        test('setCamera creates camera with options', () => {
             const camera = renderSystem.setCamera('test', {unitsInView: 5})
 
             expect(renderSystem.getCamera('test')).toBe(camera)
@@ -152,7 +152,7 @@ describe('RenderSystem', () => {
         })
 
 
-        it('should create a camera with createCamera', () => {
+        test('createCamera creates camera with full options', () => {
             const camera = renderSystem.createCamera('secondary', {
                 unitsInView: {width: 20},
                 zoom: 2
@@ -166,7 +166,7 @@ describe('RenderSystem', () => {
         })
 
 
-        it('should replace existing camera with setCamera', () => {
+        test('setCamera replaces existing camera', () => {
             const first = renderSystem.setCamera('test', {zoom: 1})
             const second = renderSystem.setCamera('test', {zoom: 2})
 
@@ -176,7 +176,7 @@ describe('RenderSystem', () => {
         })
 
 
-        it('should list cameras by category', () => {
+        test('childrenByCategory lists all cameras', () => {
             renderSystem.createCamera('secondary', {})
 
             const cameras = renderSystem.childrenByCategory('camera')
@@ -191,7 +191,7 @@ describe('RenderSystem', () => {
 
     describe('lifecycle', () => {
 
-        it('should not crash if disposed twice', () => {
+        test('dispose does not crash when called twice', () => {
             renderSystem.dispose()
 
             expect(() => {
@@ -204,7 +204,7 @@ describe('RenderSystem', () => {
 
     describe('delegation', () => {
 
-        it('should delegate methods to host on install', () => {
+        test('install delegates methods to host', () => {
             const host = {
                 on: vi.fn()
             }
@@ -220,7 +220,7 @@ describe('RenderSystem', () => {
 
     describe('childrenByCategory', () => {
 
-        it('should return only layers', () => {
+        test('returns only layers', () => {
             renderSystem.createLayer('layer1', 'canvas')
             renderSystem.createLayer('layer2', 'canvas')
 
