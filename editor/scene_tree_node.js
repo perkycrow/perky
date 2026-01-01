@@ -40,7 +40,6 @@ export default class SceneTreeNode extends BaseTreeNode {
     #labelEl = null
     #propsEl = null
 
-
     constructor () {
         super(sceneTreeNodeStyles)
     }

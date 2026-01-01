@@ -8,7 +8,6 @@ export default class PerkyExplorerNode extends BaseTreeNode {
     #module = null
     #childNodes = new Map()
 
-
     constructor () {
         super()
     }
@@ -212,4 +211,3 @@ export default class PerkyExplorerNode extends BaseTreeNode {
 
 
 customElements.define('perky-explorer-node', PerkyExplorerNode)
-

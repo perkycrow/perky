@@ -5,7 +5,6 @@ export default class ButtonControl extends InputControl {
 
     static defaultPressThreshold = 0.1
 
-
     constructor (params = {}) {
         super(params)
 
@@ -15,7 +14,7 @@ export default class ButtonControl extends InputControl {
 
     setValue (value, event = null) {
         this.lastEvent = event
-        
+
         if (super.setValue(value, event)) {
 
             if (this.isPressed && !this.wasPressed) {
@@ -47,7 +46,7 @@ export default class ButtonControl extends InputControl {
         this.setValue(1, event)
     }
 
-    
+
     release (event = null) {
         this.setValue(0, event)
     }

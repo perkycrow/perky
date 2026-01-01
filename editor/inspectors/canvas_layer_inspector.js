@@ -15,6 +15,7 @@ export default class CanvasLayerInspector extends BaseInspector {
         this.buildDOM()
     }
 
+
     onModuleSet (module) {
         if (module) {
             this.#update()

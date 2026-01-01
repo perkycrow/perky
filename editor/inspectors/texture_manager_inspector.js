@@ -186,7 +186,6 @@ export default class TextureManagerInspector extends BaseInspector {
     #autoFlushEl = null
     #maxSizeEl = null
 
-
     constructor () {
         super(customStyles)
         this.buildDOM()

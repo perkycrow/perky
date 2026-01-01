@@ -8,7 +8,6 @@ export default class RenderPass {
     #program = null
     #uniforms = {}
 
-
     constructor () {
         this.#uniforms = {...this.constructor.defaultUniforms}
     }

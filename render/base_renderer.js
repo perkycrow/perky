@@ -9,7 +9,6 @@ export default class BaseRenderer extends PerkyModule {
     #resizeObserver = null
     #autoFitEnabled = false
 
-
     constructor (options = {}) { // eslint-disable-line complexity
         super(options)
 

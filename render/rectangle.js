@@ -5,7 +5,7 @@ export default class Rectangle extends Object2D {
 
     constructor (options = {}) {
         super(options)
-        
+
         this.width = options.width ?? 10
         this.height = options.height ?? 10
         this.color = options.color ?? '#000000'
@@ -17,7 +17,7 @@ export default class Rectangle extends Object2D {
     getBounds () {
         const offsetX = -this.width * this.anchorX
         const offsetY = -this.height * this.anchorY
-        
+
         return {
             minX: offsetX,
             minY: offsetY,
@@ -27,7 +27,5 @@ export default class Rectangle extends Object2D {
             height: this.height
         }
     }
-
-
 
 }

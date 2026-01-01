@@ -18,6 +18,7 @@ export default class Vec3 {
         }
     }
 
+
     set (x, y, z) {
         this.x = x
         this.y = y
@@ -25,20 +26,24 @@ export default class Vec3 {
         return this
     }
 
+
     setX (x) {
         this.x = x
         return this
     }
+
 
     setY (y) {
         this.y = y
         return this
     }
 
+
     setZ (z) {
         this.z = z
         return this
     }
+
 
     setScalar (scalar) {
         this.x = scalar
@@ -47,6 +52,7 @@ export default class Vec3 {
         return this
     }
 
+
     copy (v) {
         this.x = v.x
         this.y = v.y
@@ -54,9 +60,11 @@ export default class Vec3 {
         return this
     }
 
+
     clone () {
         return new Vec3(this.x, this.y, this.z)
     }
+
 
     add (v) {
         this.x += v.x
@@ -65,12 +73,14 @@ export default class Vec3 {
         return this
     }
 
+
     addScalar (s) {
         this.x += s
         this.y += s
         this.z += s
         return this
     }
+
 
     addVectors (a, b) {
         this.x = a.x + b.x
@@ -79,12 +89,14 @@ export default class Vec3 {
         return this
     }
 
+
     addScaledVector (v, s) {
         this.x += v.x * s
         this.y += v.y * s
         this.z += v.z * s
         return this
     }
+
 
     sub (v) {
         this.x -= v.x
@@ -93,12 +105,14 @@ export default class Vec3 {
         return this
     }
 
+
     subScalar (s) {
         this.x -= s
         this.y -= s
         this.z -= s
         return this
     }
+
 
     subVectors (a, b) {
         this.x = a.x - b.x
@@ -107,12 +121,14 @@ export default class Vec3 {
         return this
     }
 
+
     multiply (v) {
         this.x *= v.x
         this.y *= v.y
         this.z *= v.z
         return this
     }
+
 
     multiplyScalar (scalar) {
         this.x *= scalar
@@ -121,12 +137,14 @@ export default class Vec3 {
         return this
     }
 
+
     multiplyVectors (a, b) {
         this.x = a.x * b.x
         this.y = a.y * b.y
         this.z = a.z * b.z
         return this
     }
+
 
     divide (v) {
         this.x /= v.x
@@ -135,17 +153,21 @@ export default class Vec3 {
         return this
     }
 
+
     divideScalar (scalar) {
         return this.multiplyScalar(1 / scalar)
     }
+
 
     dot (v) {
         return this.x * v.x + this.y * v.y + this.z * v.z
     }
 
+
     cross (v) {
         return this.crossVectors(this, v)
     }
+
 
     crossVectors (a, b) {
         const ax = a.x
@@ -162,25 +184,31 @@ export default class Vec3 {
         return this
     }
 
+
     lengthSq () {
         return this.x * this.x + this.y * this.y + this.z * this.z
     }
+
 
     length () {
         return Math.sqrt(this.lengthSq())
     }
 
+
     manhattanLength () {
         return Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.z)
     }
+
 
     normalize () {
         return this.divideScalar(this.length() || 1)
     }
 
+
     setLength (length) {
         return this.normalize().multiplyScalar(length)
     }
+
 
     angleTo (v) {
         const denominator = Math.sqrt(this.lengthSq() * v.lengthSq())
@@ -191,9 +219,11 @@ export default class Vec3 {
         return Math.acos(Math.max(-1, Math.min(1, theta)))
     }
 
+
     distanceTo (v) {
         return Math.sqrt(this.distanceToSquared(v))
     }
+
 
     distanceToSquared (v) {
         const dx = this.x - v.x
@@ -202,9 +232,11 @@ export default class Vec3 {
         return dx * dx + dy * dy + dz * dz
     }
 
+
     manhattanDistanceTo (v) {
         return Math.abs(this.x - v.x) + Math.abs(this.y - v.y) + Math.abs(this.z - v.z)
     }
+
 
     lerp (v, alpha) {
         this.x += (v.x - this.x) * alpha
@@ -213,6 +245,7 @@ export default class Vec3 {
         return this
     }
 
+
     lerpVectors (v1, v2, alpha) {
         this.x = v1.x + (v2.x - v1.x) * alpha
         this.y = v1.y + (v2.y - v1.y) * alpha
@@ -220,9 +253,11 @@ export default class Vec3 {
         return this
     }
 
+
     equals (v) {
         return v.x === this.x && v.y === this.y && v.z === this.z
     }
+
 
     fromArray (array, offset = 0) {
         this.x = array[offset]
@@ -231,12 +266,14 @@ export default class Vec3 {
         return this
     }
 
+
     toArray (array = [], offset = 0) {
         array[offset] = this.x
         array[offset + 1] = this.y
         array[offset + 2] = this.z
         return array
     }
+
 
     negate () {
         this.x = -this.x
@@ -245,12 +282,14 @@ export default class Vec3 {
         return this
     }
 
+
     min (v) {
         this.x = Math.min(this.x, v.x)
         this.y = Math.min(this.y, v.y)
         this.z = Math.min(this.z, v.z)
         return this
     }
+
 
     max (v) {
         this.x = Math.max(this.x, v.x)
@@ -259,12 +298,14 @@ export default class Vec3 {
         return this
     }
 
+
     clamp (min, max) {
         this.x = Math.max(min.x, Math.min(max.x, this.x))
         this.y = Math.max(min.y, Math.min(max.y, this.y))
         this.z = Math.max(min.z, Math.min(max.z, this.z))
         return this
     }
+
 
     clampScalar (minVal, maxVal) {
         this.x = Math.max(minVal, Math.min(maxVal, this.x))
@@ -273,12 +314,14 @@ export default class Vec3 {
         return this
     }
 
+
     clampLength (min, max) {
         const length = this.length()
         return this.divideScalar(length || 1).multiplyScalar(
             Math.max(min, Math.min(max, length))
         )
     }
+
 
     floor () {
         this.x = Math.floor(this.x)
@@ -287,12 +330,14 @@ export default class Vec3 {
         return this
     }
 
+
     ceil () {
         this.x = Math.ceil(this.x)
         this.y = Math.ceil(this.y)
         this.z = Math.ceil(this.z)
         return this
     }
+
 
     round () {
         this.x = Math.round(this.x)
@@ -301,6 +346,7 @@ export default class Vec3 {
         return this
     }
 
+
     roundToZero () {
         this.x = Math.trunc(this.x)
         this.y = Math.trunc(this.y)
@@ -308,12 +354,14 @@ export default class Vec3 {
         return this
     }
 
+
     random () {
         this.x = Math.random()
         this.y = Math.random()
         this.z = Math.random()
         return this
     }
+
 
     randomDirection () {
         const u = (Math.random() - 0.5) * 2
@@ -327,9 +375,11 @@ export default class Vec3 {
         return this
     }
 
+
     reflect (normal) {
         return this.sub(new Vec3().copy(normal).multiplyScalar(2 * this.dot(normal)))
     }
+
 
     projectOnVector (v) {
         const denominator = v.lengthSq()
@@ -340,10 +390,12 @@ export default class Vec3 {
         return this.copy(v).multiplyScalar(scalar)
     }
 
+
     projectOnPlane (planeNormal) {
         const projected = new Vec3().copy(this).projectOnVector(planeNormal)
         return this.sub(projected)
     }
+
 
     applyAxisAngle (axis, angle) {
         const halfAngle = angle / 2
@@ -366,6 +418,7 @@ export default class Vec3 {
         return this
     }
 
+
     getComponent (index) {
         if (index === 0) {
             return this.x
@@ -376,6 +429,7 @@ export default class Vec3 {
         }
         throw new Error(`index out of range: ${index}`)
     }
+
 
     setComponent (index, value) {
         if (index === 0) {
@@ -390,9 +444,11 @@ export default class Vec3 {
         return this
     }
 
+
     get isVector3 () { // eslint-disable-line class-methods-use-this
         return true
     }
+
 
     *[Symbol.iterator] () {
         yield this.x

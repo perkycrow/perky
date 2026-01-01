@@ -29,7 +29,6 @@ export default class PerkyLogger extends HTMLElement {
     #onSpacer = null
     #onTitle = null
 
-
     constructor () {
         super()
         this.attachShadow({mode: 'open'})

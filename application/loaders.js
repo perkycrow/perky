@@ -36,7 +36,7 @@ export async function loadBlob (params) {
 export async function loadImage (params) {
     const blob = await loadBlob(params)
     const url = URL.createObjectURL(blob)
-    
+
     return new Promise((resolve, reject) => {
         const img = new Image()
 
@@ -164,4 +164,3 @@ export const loaders = {
     audio: loadAudio,
     font: loadFont
 }
-

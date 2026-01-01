@@ -3,7 +3,6 @@ export default class FullscreenQuad {
     #vertexBuffer = null
     #texCoordBuffer = null
 
-
     constructor (gl) {
         this.#createBuffers(gl)
     }

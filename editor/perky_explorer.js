@@ -33,7 +33,6 @@ export default class PerkyExplorer extends BaseEditorComponent {
     #rootModule = null
     #contextMenuEl = null
 
-
     connectedCallback () {
         this.#buildDOM()
     }
@@ -499,7 +498,6 @@ export default class PerkyExplorer extends BaseEditorComponent {
             this.#headerEl.querySelector('.explorer-title').innerHTML = '<span class="explorer-title-icon">📦</span> Perky Explorer'
         }
     }
-
 
 }
 

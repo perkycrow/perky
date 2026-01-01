@@ -4,7 +4,6 @@ export default class WebGLObjectRenderer {
     #context = null
     #collected = []
 
-
     static get handles () {
         return []
     }

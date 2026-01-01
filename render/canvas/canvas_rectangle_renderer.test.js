@@ -36,7 +36,9 @@ describe('CanvasRectangleRenderer', () => {
 
         test('fills rectangle with color', () => {
             let fillRectArgs = null
-            ctx.fillRect = (...args) => { fillRectArgs = args }
+            ctx.fillRect = (...args) => {
+                fillRectArgs = args
+            }
 
             const rect = {
                 width: 100,
@@ -59,7 +61,9 @@ describe('CanvasRectangleRenderer', () => {
 
         test('applies anchor offset', () => {
             let fillRectArgs = null
-            ctx.fillRect = (...args) => { fillRectArgs = args }
+            ctx.fillRect = (...args) => {
+                fillRectArgs = args
+            }
 
             const rect = {
                 width: 100,
@@ -79,7 +83,9 @@ describe('CanvasRectangleRenderer', () => {
 
         test('does not fill when color is transparent', () => {
             let filled = false
-            ctx.fillRect = () => { filled = true }
+            ctx.fillRect = () => {
+                filled = true
+            }
 
             const rect = {
                 width: 100,
@@ -98,7 +104,9 @@ describe('CanvasRectangleRenderer', () => {
 
         test('does not fill when color is null', () => {
             let filled = false
-            ctx.fillRect = () => { filled = true }
+            ctx.fillRect = () => {
+                filled = true
+            }
 
             const rect = {
                 width: 100,
@@ -117,7 +125,9 @@ describe('CanvasRectangleRenderer', () => {
 
         test('draws stroke when strokeWidth > 0', () => {
             let strokeRectArgs = null
-            ctx.strokeRect = (...args) => { strokeRectArgs = args }
+            ctx.strokeRect = (...args) => {
+                strokeRectArgs = args
+            }
 
             const rect = {
                 width: 100,
@@ -142,7 +152,9 @@ describe('CanvasRectangleRenderer', () => {
 
         test('does not stroke when strokeWidth is 0', () => {
             let stroked = false
-            ctx.strokeRect = () => { stroked = true }
+            ctx.strokeRect = () => {
+                stroked = true
+            }
 
             const rect = {
                 width: 100,
@@ -162,8 +174,12 @@ describe('CanvasRectangleRenderer', () => {
         test('can draw stroke-only rectangle', () => {
             let filled = false
             let stroked = false
-            ctx.fillRect = () => { filled = true }
-            ctx.strokeRect = () => { stroked = true }
+            ctx.fillRect = () => {
+                filled = true
+            }
+            ctx.strokeRect = () => {
+                stroked = true
+            }
 
             const rect = {
                 width: 100,

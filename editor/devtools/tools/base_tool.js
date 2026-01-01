@@ -12,7 +12,6 @@ export default class BaseTool extends BaseEditorComponent {
 
     #state = null
 
-
     get state () {
         return this.#state
     }

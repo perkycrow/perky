@@ -14,7 +14,6 @@ export default class Canvas2D extends BaseRenderer {
     #rendererRegistry = new Map()
     #renderers = []
 
-
     constructor (options = {}) {
         super(options)
 

@@ -26,7 +26,6 @@ export default class WebGLCanvas2D extends BaseRenderer {
     #compositeQuad = null
     #compositeProgram = null
 
-
     constructor (options = {}) {
         super(options)
 
@@ -180,21 +179,6 @@ export default class WebGLCanvas2D extends BaseRenderer {
     }
 
 
-    /**
-     * Set render groups for multi-layer rendering.
-     * Each group is rendered to its own framebuffer, processed with its own
-     * post-passes, then all groups are composited together before global post-processing.
-     *
-     * @param {Object[]} configs - Array of RenderGroup config objects in render order (back to front)
-     * @returns {this}
-     *
-     * @example
-     * renderer.setRenderGroups([
-     *     {$name: 'background', content: bgGroup},
-     *     {$name: 'shadows', content: shadowGroup},
-     *     {$name: 'entities', content: entityGroup, postPasses: [colorGrade]}
-     * ])
-     */
     setRenderGroups (configs) {
         this.clearRenderGroups()
 

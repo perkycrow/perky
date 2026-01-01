@@ -140,7 +140,6 @@ export default class Notifier {
         })
     }
 
-
     static notifierMethods = [
         'getListenersFor',
         'on',

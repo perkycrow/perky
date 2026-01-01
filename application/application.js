@@ -14,7 +14,6 @@ export default class Application extends PerkyModule {
 
     static $eagerStart = false
 
-
     constructor (options = {}) {
         super(options)
 

@@ -1,5 +1,6 @@
 import Notifier from '../core/notifier.js'
 
+
 const VALUE = Symbol('value')
 const OLD_VALUE = Symbol('oldValue')
 
@@ -8,7 +9,6 @@ export default class InputControl extends Notifier {
 
     static VALUE = VALUE
     static OLD_VALUE = OLD_VALUE
-
 
     constructor ({device, name, value}) {
         super()

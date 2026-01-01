@@ -19,7 +19,6 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
     #history = []
     #maxHistory = 20
 
-
     connectedCallback () {
         this.#buildDOM()
         this.#rebuildAll()

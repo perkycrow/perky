@@ -9,7 +9,6 @@ export default class ServiceClient extends PerkyModule {
 
     static $eagerStart = false
 
-
     constructor ({transport, target, ...options} = {}) {
         super(options)
 

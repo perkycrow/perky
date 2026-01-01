@@ -1,5 +1,6 @@
 import Object2D from './object_2d.js'
 
+
 export default class Sprite2D extends Object2D {
 
     constructor (options = {}) {
@@ -14,13 +15,16 @@ export default class Sprite2D extends Object2D {
         this.currentAnimation = null
     }
 
+
     setFrame (frame) {
         this.currentFrame = frame
     }
 
+
     addAnimation (name, animation) {
         this.animations.set(name, animation)
     }
+
 
     play (name) {
         const animation = this.animations.get(name)
@@ -33,12 +37,14 @@ export default class Sprite2D extends Object2D {
         }
     }
 
+
     stop () {
         if (this.currentAnimation) {
             this.currentAnimation.stop()
             this.currentAnimation = null
         }
     }
+
 
     getBounds () {
         if (!this.currentFrame) {

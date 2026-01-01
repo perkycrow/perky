@@ -1,5 +1,6 @@
 import InputControl from '../input_control.js'
 
+
 const {VALUE, OLD_VALUE} = InputControl
 
 
@@ -41,30 +42,34 @@ export default class NavigationControl extends InputControl {
         return this.value.deltaZ
     }
 
+
     get event () {
         return this.value.event
     }
+
 
     get isTrackpadPinchZoom () {
         return this.event && (this.event.ctrlKey || this.event.metaKey)
     }
 
+
     get isMouseWheelZoom () {
         if (!this.event || this.isTrackpadPinchZoom) {
             return false
         }
-        
+
         const isVerticalOnly = Math.abs(this.deltaX) <= 0.1
         const isSignificantVertical = Math.abs(this.deltaY) >= 10
-        
+
         return isVerticalOnly && isSignificantVertical
     }
+
 
     get isTrackpadPan () {
         if (!this.event || this.isTrackpadPinchZoom) {
             return false
         }
-        
+
         return Math.abs(this.deltaX) > 0.1 || Math.abs(this.deltaY) > 0.1
     }
 

@@ -5,7 +5,7 @@ export default class Circle extends Object2D {
 
     constructor (options = {}) {
         super(options)
-        
+
         this.radius = options.radius ?? 10
         this.color = options.color ?? '#000000'
         this.strokeColor = options.strokeColor ?? '#000000'

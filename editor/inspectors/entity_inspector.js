@@ -12,7 +12,6 @@ export default class EntityInspector extends BaseInspector {
 
     #positionInput = null
 
-
     constructor () {
         super()
         this.buildDOM()
@@ -41,4 +40,3 @@ export default class EntityInspector extends BaseInspector {
 customElements.define('entity-inspector', EntityInspector)
 
 PerkyExplorerDetails.registerInspector(EntityInspector)
-

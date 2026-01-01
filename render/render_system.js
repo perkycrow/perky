@@ -60,17 +60,21 @@ export default class RenderSystem extends PerkyModule {
         return this.view.element
     }
 
+
     get container () {
         return this.view.container
     }
+
 
     mount (container) {
         return this.view.mount(container)
     }
 
+
     dismount () {
         return this.view.dismount()
     }
+
 
     get mounted () {
         return this.view.mounted
@@ -145,7 +149,6 @@ export default class RenderSystem extends PerkyModule {
 
         return null
     }
-
 
 
     createLayer (name, type = 'canvas', options = {}) {

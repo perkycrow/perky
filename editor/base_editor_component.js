@@ -2,7 +2,6 @@ export default class BaseEditorComponent extends HTMLElement {
 
     #listeners = []
 
-
     constructor () {
         super()
         this.attachShadow({mode: 'open'})

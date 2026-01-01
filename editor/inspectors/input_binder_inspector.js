@@ -211,7 +211,6 @@ export default class InputBinderInspector extends BaseInspector {
     #viewMode = 'action'
     #containerEl = null
 
-
     constructor () {
         super(customStyles)
         this.buildDOM()
@@ -365,7 +364,6 @@ export default class InputBinderInspector extends BaseInspector {
 
         return group
     }
-
 
 }
 

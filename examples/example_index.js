@@ -1,6 +1,7 @@
 import Application from '../application/application.js'
 import {toPascalCase} from '../core/utils.js'
 
+
 const baseHtml = `
     <div class="search-container">
         <div class="search-wrapper">
@@ -57,7 +58,7 @@ export default class ExampleIndex extends Application {
             const card = createCard(example)
             card.classList.add('card-entering')
             this.grid.appendChild(card)
-            
+
             requestAnimationFrame(() => {
                 card.classList.remove('card-entering')
                 card.classList.add('card-visible')
@@ -66,12 +67,10 @@ export default class ExampleIndex extends Application {
     }
 
 
-
-
     setupSearchListener () {
         this.searchInput.addEventListener('input', (e) => {
             this.currentSearch = e.target.value.toLowerCase().trim()
-            
+
             requestAnimationFrame(() => {
                 const exampleCards = this.grid.querySelectorAll('.example-card')
                 this.applySearch(exampleCards)
@@ -96,18 +95,17 @@ export default class ExampleIndex extends Application {
     }
 
 
-    // eslint-disable-next-line complexity
     matchesSearch (card) {
         if (!this.currentSearch) {
             return true
         }
-        
+
         const searchTerm = this.currentSearch
         const title = card.dataset.title || ''
         const description = card.dataset.description || ''
         const category = card.dataset.category || ''
         const cardTags = card.dataset.tags.split(',')
-        
+
         if (matchesTitle(title, searchTerm)) {
             return true
         }
@@ -120,10 +118,9 @@ export default class ExampleIndex extends Application {
         if (matchesTags(cardTags, searchTerm)) {
             return true
         }
-        
+
         return false
     }
-
 
 }
 
@@ -135,7 +132,7 @@ function createCard (example) {
     card.dataset.category = example.category.toLowerCase()
     card.dataset.title = example.title.toLowerCase()
     card.dataset.description = example.description.toLowerCase()
-    
+
     card.innerHTML = `
         <div class="card-header">
             <div class="category-badge category-${example.category}">
@@ -158,7 +155,7 @@ function createCard (example) {
             </div>
         </div>
     `
-    
+
     return card
 }
 
@@ -186,10 +183,10 @@ function hideCard (card) {
     if (card.transitionHandler) {
         card.removeEventListener('transitionend', card.transitionHandler)
     }
-    
+
     card.classList.remove('card-visible')
     card.classList.add('card-hidden')
-    
+
     const handleTransitionEnd = (event) => {
         if (event.target === card && event.propertyName === 'opacity') {
             card.style.display = 'none'
@@ -197,7 +194,7 @@ function hideCard (card) {
             delete card.transitionHandler
         }
     }
-    
+
     card.transitionHandler = handleTransitionEnd
     card.addEventListener('transitionend', handleTransitionEnd)
 }
@@ -221,4 +218,3 @@ function matchesCategory (category, searchTerm) {
 function matchesTags (tags, searchTerm) {
     return tags.some(tag => tag.includes(searchTerm))
 }
-

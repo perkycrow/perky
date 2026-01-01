@@ -28,7 +28,7 @@ export default class BoxShape {
     getBounds () {
         const halfWidth = (this.scaledWidth || this.width) / 2
         const halfHeight = (this.scaledHeight || this.height) / 2
-        
+
         return {
             left: this.x - halfWidth,
             right: this.x + halfWidth,

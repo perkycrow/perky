@@ -1,8 +1,6 @@
 import {cssVariables} from './perky_explorer_styles.js'
 
 
-// === STYLE HELPERS ===
-
 export function createInputStyles (customStyles) {
     return `
         :host {

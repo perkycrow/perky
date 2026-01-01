@@ -34,7 +34,7 @@ export default class CollisionResolver {
             x: -normal.x * separationDistance * ratioA,
             y: -normal.y * separationDistance * ratioA
         }
-        
+
         const separationB = {
             x: normal.x * separationDistance * ratioB,
             y: normal.y * separationDistance * ratioB
@@ -44,7 +44,7 @@ export default class CollisionResolver {
             bodyA.position.x += separationA.x
             bodyA.position.y += separationA.y
         }
-        
+
         if (!isStatic(bodyB)) {
             bodyB.position.x += separationB.x
             bodyB.position.y += separationB.y
@@ -75,7 +75,7 @@ export default class CollisionResolver {
         const massA = bodyA.userData?.mass || 1
         const massB = bodyB.userData?.mass || 1
         const totalMass = massA + massB
-        
+
         const impulse = {
             x: impulseScalar * normal.x / totalMass,
             y: impulseScalar * normal.y / totalMass
@@ -86,7 +86,7 @@ export default class CollisionResolver {
             velA.y -= impulse.y * massB
             setVelocity(bodyA, velA)
         }
-        
+
         if (!isStatic(bodyB)) {
             velB.x += impulse.x * massA
             velB.y += impulse.y * massA
@@ -99,10 +99,10 @@ export default class CollisionResolver {
 
     applyFriction (bodyA, bodyB, collision, impulse) {
         const {normal} = collision
-        
+
         const velA = getVelocity(bodyA)
         const velB = getVelocity(bodyB)
-        
+
         const relativeVel = {
             x: velB.x - velA.x,
             y: velB.y - velA.y
@@ -132,13 +132,13 @@ export default class CollisionResolver {
         const massA = bodyA.userData?.mass || 1
         const massB = bodyB.userData?.mass || 1
         const totalMass = massA + massB
-        
+
         if (!isStatic(bodyA)) {
             velA.x -= frictionForce.x * massB / totalMass
             velA.y -= frictionForce.y * massB / totalMass
             setVelocity(bodyA, velA)
         }
-        
+
         if (!isStatic(bodyB)) {
             velB.x += frictionForce.x * massA / totalMass
             velB.y += frictionForce.y * massA / totalMass
@@ -147,7 +147,6 @@ export default class CollisionResolver {
     }
 
 }
-
 
 
 function getRestitution (bodyA, bodyB, restitution) {

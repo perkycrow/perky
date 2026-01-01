@@ -267,7 +267,6 @@ export default class InputSystem extends PerkyModule {
     }
 
 
-
     isActionPressed (actionName, controllerName = null) {
         const bindings = this.inputBinder.getBindingsForAction(actionName, controllerName, 'pressed')
 

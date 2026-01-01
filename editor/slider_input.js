@@ -96,7 +96,6 @@ export default class SliderInput extends HTMLElement {
     #labelEl = null
     #valueEl = null
 
-
     static get observedAttributes () {
         return ['value', 'min', 'max', 'step', 'label']
     }

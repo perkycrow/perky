@@ -5,7 +5,6 @@ export default class ShaderProgram {
     #uniforms = {}
     #attributes = {}
 
-
     constructor (gl, vertexSource, fragmentSource) {
         this.#gl = gl
         this.#program = this.#createProgram(vertexSource, fragmentSource)

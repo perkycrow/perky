@@ -1,5 +1,6 @@
 import PerkyModule from '../core/perky_module.js'
 
+
 export const BLEND_MODES = {
     normal: 'normal',
     additive: 'additive',
@@ -24,9 +25,7 @@ export default class RenderGroup extends PerkyModule {
         this.#initialized = false
     }
 
-
     #initialized = false
-
 
     onInstall () {
         const renderer = this.host

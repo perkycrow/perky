@@ -13,7 +13,6 @@ export default class GameLoopInspector extends BaseInspector {
     #statusValueEl = null
     #toggleBtn = null
 
-
     constructor () {
         super()
         this.buildDOM()

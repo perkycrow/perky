@@ -3,7 +3,6 @@ export default class CanvasObjectRenderer {
     #context = null
     #collected = []
 
-
     static get handles () {
         return []
     }

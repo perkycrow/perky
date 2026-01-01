@@ -7,7 +7,6 @@ export default class DevToolsState extends EventTarget {
     #module = null
     #appManager = null
 
-
     get sidebarOpen () {
         return this.#sidebarOpen
     }

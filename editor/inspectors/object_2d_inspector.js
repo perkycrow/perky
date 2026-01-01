@@ -15,6 +15,7 @@ export default class Object2DInspector extends BaseInspector {
         this.buildDOM()
     }
 
+
     onModuleSet (module) {
         if (module) {
             this.#render()

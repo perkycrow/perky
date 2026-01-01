@@ -5,13 +5,13 @@ export default class Object2D extends Transform2D {
 
     constructor (options = {}) { // eslint-disable-line complexity
         super()
-        
+
         this.visible = options.visible ?? true
         this.opacity = options.opacity ?? 1
         this.depth = options.depth ?? 0
         this.anchorX = options.anchorX ?? 0.5
         this.anchorY = options.anchorY ?? 0.5
-        
+
         if (options.x !== undefined) {
             this.x = options.x
         }

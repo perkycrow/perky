@@ -52,6 +52,7 @@ export default class DefendTheDen extends Game {
         })
     }
 
+
     configureGame () {
 
         this.world = this.create(DenWorld)
@@ -87,6 +88,7 @@ export default class DefendTheDen extends Game {
         })
     }
 
+
     onStart () {
         this.execute('spawnPlayer', {x: -2.5})
 
@@ -95,4 +97,3 @@ export default class DefendTheDen extends Game {
     }
 
 }
-

@@ -18,7 +18,6 @@ export default class CanvasPostProcessor {
     #filters = []
     #manualEffects = []
 
-
     constructor (ctx) {
         this.#ctx = ctx
     }

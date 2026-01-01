@@ -35,7 +35,9 @@ describe('CanvasImageRenderer', () => {
 
         test('does not draw when image is null', () => {
             let drawn = false
-            ctx.drawImage = () => { drawn = true }
+            ctx.drawImage = () => {
+                drawn = true
+            }
 
             const image = {
                 image: null,
@@ -53,7 +55,9 @@ describe('CanvasImageRenderer', () => {
 
         test('does not draw when image is not complete', () => {
             let drawn = false
-            ctx.drawImage = () => { drawn = true }
+            ctx.drawImage = () => {
+                drawn = true
+            }
 
             const image = {
                 image: {complete: false},
@@ -71,7 +75,9 @@ describe('CanvasImageRenderer', () => {
 
         test('draws image when complete', () => {
             let drawn = false
-            ctx.drawImage = () => { drawn = true }
+            ctx.drawImage = () => {
+                drawn = true
+            }
 
             const image = {
                 image: {complete: true},
@@ -90,8 +96,12 @@ describe('CanvasImageRenderer', () => {
         test('saves and restores context', () => {
             let saved = false
             let restored = false
-            ctx.save = () => { saved = true }
-            ctx.restore = () => { restored = true }
+            ctx.save = () => {
+                saved = true
+            }
+            ctx.restore = () => {
+                restored = true
+            }
 
             const image = {
                 image: {complete: true},
@@ -110,7 +120,9 @@ describe('CanvasImageRenderer', () => {
 
         test('flips Y axis with scale', () => {
             let scaleArgs = null
-            ctx.scale = (...args) => { scaleArgs = args }
+            ctx.scale = (...args) => {
+                scaleArgs = args
+            }
 
             const image = {
                 image: {complete: true},
@@ -128,7 +140,9 @@ describe('CanvasImageRenderer', () => {
 
         test('draws with correct parameters', () => {
             let drawArgs = null
-            ctx.drawImage = (...args) => { drawArgs = args }
+            ctx.drawImage = (...args) => {
+                drawArgs = args
+            }
 
             const imgElement = {complete: true}
             const image = {
@@ -151,7 +165,9 @@ describe('CanvasImageRenderer', () => {
 
         test('applies anchor offset', () => {
             let drawArgs = null
-            ctx.drawImage = (...args) => { drawArgs = args }
+            ctx.drawImage = (...args) => {
+                drawArgs = args
+            }
 
             const image = {
                 image: {complete: true},

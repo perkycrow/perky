@@ -78,7 +78,6 @@ export default class KeyboardDevice extends InputDevice {
         })
     }
 
-
 }
 
 
@@ -102,4 +101,3 @@ function shouldIgnoreEvent (event) {
     }
     return false
 }
-

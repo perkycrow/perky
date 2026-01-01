@@ -231,4 +231,3 @@ function multiplyMatrices (a, b, out) {
     out[4] = a0 * b[4] + a2 * b[5] + a4
     out[5] = a1 * b[4] + a3 * b[5] + a5
 }
-

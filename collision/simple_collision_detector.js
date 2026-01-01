@@ -148,4 +148,4 @@ function getDefaultRadius (object) {
     }
 
     return 1
-} 
+}

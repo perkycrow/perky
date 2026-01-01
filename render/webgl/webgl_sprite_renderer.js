@@ -8,7 +8,6 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
 
     #spriteBatch = null
 
-
     static get handles () {
         return [Image2D, Sprite2D]
     }

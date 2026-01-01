@@ -112,8 +112,12 @@ describe('CanvasPostProcessor', () => {
             processor.removeManualEffect(effect1)
 
             let appliedCount = 0
-            effect1.apply = () => { appliedCount++ }
-            effect2.apply = () => { appliedCount++ }
+            effect1.apply = () => {
+                appliedCount++
+            }
+            effect2.apply = () => {
+                appliedCount++
+            }
 
             processor.finish(800, 600)
 
@@ -288,8 +292,12 @@ describe('CanvasPostProcessor', () => {
         test('saves and restores context', () => {
             let saved = false
             let restored = false
-            ctx.save = () => { saved = true }
-            ctx.restore = () => { restored = true }
+            ctx.save = () => {
+                saved = true
+            }
+            ctx.restore = () => {
+                restored = true
+            }
 
             processor.applyVignette()
 
@@ -300,7 +308,9 @@ describe('CanvasPostProcessor', () => {
 
         test('fills rect with gradient', () => {
             let fillRectArgs = null
-            ctx.fillRect = (...args) => { fillRectArgs = args }
+            ctx.fillRect = (...args) => {
+                fillRectArgs = args
+            }
 
             processor.applyVignette()
 
@@ -311,7 +321,9 @@ describe('CanvasPostProcessor', () => {
         test('uses default intensity and softness', () => {
             let colorStops = []
             ctx.createRadialGradient = () => ({
-                addColorStop: (pos, color) => { colorStops.push({pos, color}) }
+                addColorStop: (pos, color) => {
+                    colorStops.push({pos, color})
+                }
             })
 
             processor.applyVignette()

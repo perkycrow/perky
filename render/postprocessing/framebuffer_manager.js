@@ -25,7 +25,6 @@ export default class FramebufferManager {
     #currentPingPong = 0
     #namedBuffers = new Map()
 
-
     constructor (gl, width, height, samples = 4) {
         this.#gl = gl
         this.#width = width

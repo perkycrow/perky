@@ -10,7 +10,6 @@ export default class Random {
     #s2
     #seed
 
-
     constructor (seed = Random.generateSeed()) {
         this.#seed = seed
         this.#initSeed(seed)

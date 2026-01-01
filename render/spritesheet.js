@@ -8,6 +8,7 @@ export default class Spritesheet {
         this.#initializeFrames(this.data.frames)
     }
 
+
     #initializeFrames (frames) {
         if (!Array.isArray(frames)) {
             return
@@ -21,9 +22,11 @@ export default class Spritesheet {
         })
     }
 
+
     getFrame (name) {
         return this.framesMap.get(name)
     }
+
 
     getFrames (names) {
         if (!names) {
@@ -35,7 +38,9 @@ export default class Spritesheet {
         return names.map(name => this.getFrame(name)).filter(frame => frame !== undefined)
     }
 
+
     listFrames () {
         return Array.from(this.framesMap.keys())
     }
+
 }

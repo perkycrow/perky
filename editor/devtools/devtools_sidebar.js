@@ -23,7 +23,6 @@ export default class DevToolsSidebar extends BaseEditorComponent {
     #currentToolEl = null
     #currentToolId = null
 
-
     connectedCallback () {
         this.#buildDOM()
     }

@@ -14,7 +14,6 @@ export default class PerkyDevTools extends BaseEditorComponent {
     #commandPaletteEl = null
     #keyboardHandler = null
 
-
     get state () {
         return this.#state
     }

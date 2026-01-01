@@ -6,8 +6,6 @@ import {uniqueId, delegateProperties} from './utils.js'
 
 export default class PerkyModule extends Notifier {
 
-    // === PRIVATE FIELDS ===
-
     #id
     #name
     #category
@@ -33,7 +31,6 @@ export default class PerkyModule extends Notifier {
     static $eagerStart = true
     static $tags = []
 
-
     constructor (options = {}) { // eslint-disable-line complexity -- clean
         super()
 
@@ -54,8 +51,6 @@ export default class PerkyModule extends Notifier {
         this.#childrenRegistry.addIndex('$category')
     }
 
-
-    // === IDENTITY ===
 
     get $id () {
         return this.#id
@@ -117,8 +112,6 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    // === STATE ===
-
     get host () {
         return this.#host
     }
@@ -171,8 +164,6 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    // === LIFECYCLE ===
-
     start () {
         if (this.#started) {
             return false
@@ -224,8 +215,6 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    // === INSTALLATION ===
-
     install (host, options) {
         if (this.#installed) {
             return this.uninstall()
@@ -257,8 +246,6 @@ export default class PerkyModule extends Notifier {
         return true
     }
 
-
-    // === CHILDREN ===
 
     get children () {
         return this.#childrenRegistry.all
@@ -334,8 +321,6 @@ export default class PerkyModule extends Notifier {
         return this.lookup('$category', category)
     }
 
-
-    // === TAGS ===
 
     get $tags () {
         return this.#tags.toArray()
@@ -460,8 +445,6 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    // === DELEGATION ===
-
     delegateTo (host, names) {
         delegateProperties(host, this, names)
 
@@ -507,9 +490,6 @@ export default class PerkyModule extends Notifier {
         this.#eventDelegations.length = 0
     }
 
-
-    // === STATIC METHODS LIST ===
-
     static perkyModuleMethods = Notifier.notifierMethods.concat([
         'start',
         'stop',
@@ -538,8 +518,6 @@ export default class PerkyModule extends Notifier {
 
 }
 
-
-// === PRIVATE HELPERS ===
 
 function setupLifecycle (host, child, options) {
     const {$lifecycle = true} = options

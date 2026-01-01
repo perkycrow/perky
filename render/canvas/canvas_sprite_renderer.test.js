@@ -35,7 +35,9 @@ describe('CanvasSpriteRenderer', () => {
 
         test('does not draw without currentFrame', () => {
             let drawn = false
-            ctx.drawImage = () => { drawn = true }
+            ctx.drawImage = () => {
+                drawn = true
+            }
 
             const sprite = {
                 image: null,
@@ -54,7 +56,9 @@ describe('CanvasSpriteRenderer', () => {
 
         test('does not draw when image is not complete', () => {
             let drawn = false
-            ctx.drawImage = () => { drawn = true }
+            ctx.drawImage = () => {
+                drawn = true
+            }
 
             const sprite = {
                 image: {complete: false, naturalWidth: 100},
@@ -73,7 +77,9 @@ describe('CanvasSpriteRenderer', () => {
 
         test('does not draw when naturalWidth is 0', () => {
             let drawn = false
-            ctx.drawImage = () => { drawn = true }
+            ctx.drawImage = () => {
+                drawn = true
+            }
 
             const sprite = {
                 image: {complete: true, naturalWidth: 0},
@@ -92,7 +98,9 @@ describe('CanvasSpriteRenderer', () => {
 
         test('draws sprite from currentFrame', () => {
             let drawArgs = null
-            ctx.drawImage = (...args) => { drawArgs = args }
+            ctx.drawImage = (...args) => {
+                drawArgs = args
+            }
 
             const img = {complete: true, naturalWidth: 256}
             const sprite = {
@@ -119,7 +127,9 @@ describe('CanvasSpriteRenderer', () => {
 
         test('uses currentFrame.image when sprite.image is null', () => {
             let drawArgs = null
-            ctx.drawImage = (...args) => { drawArgs = args }
+            ctx.drawImage = (...args) => {
+                drawArgs = args
+            }
 
             const frameImg = {complete: true, naturalWidth: 256}
             const sprite = {
@@ -142,7 +152,9 @@ describe('CanvasSpriteRenderer', () => {
 
         test('scales by width when width is set', () => {
             let drawArgs = null
-            ctx.drawImage = (...args) => { drawArgs = args }
+            ctx.drawImage = (...args) => {
+                drawArgs = args
+            }
 
             const img = {complete: true, naturalWidth: 256}
             const sprite = {
@@ -166,7 +178,9 @@ describe('CanvasSpriteRenderer', () => {
 
         test('scales by height when height is set', () => {
             let drawArgs = null
-            ctx.drawImage = (...args) => { drawArgs = args }
+            ctx.drawImage = (...args) => {
+                drawArgs = args
+            }
 
             const img = {complete: true, naturalWidth: 256}
             const sprite = {
@@ -190,7 +204,9 @@ describe('CanvasSpriteRenderer', () => {
 
         test('applies anchor offset', () => {
             let drawArgs = null
-            ctx.drawImage = (...args) => { drawArgs = args }
+            ctx.drawImage = (...args) => {
+                drawArgs = args
+            }
 
             const img = {complete: true, naturalWidth: 256}
             const sprite = {
@@ -214,8 +230,12 @@ describe('CanvasSpriteRenderer', () => {
         test('saves and restores context', () => {
             let saved = false
             let restored = false
-            ctx.save = () => { saved = true }
-            ctx.restore = () => { restored = true }
+            ctx.save = () => {
+                saved = true
+            }
+            ctx.restore = () => {
+                restored = true
+            }
 
             const img = {complete: true, naturalWidth: 256}
             const sprite = {
@@ -239,7 +259,9 @@ describe('CanvasSpriteRenderer', () => {
 
         test('flips Y axis with scale', () => {
             let scaleArgs = null
-            ctx.scale = (...args) => { scaleArgs = args }
+            ctx.scale = (...args) => {
+                scaleArgs = args
+            }
 
             const img = {complete: true, naturalWidth: 256}
             const sprite = {

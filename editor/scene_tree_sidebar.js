@@ -48,7 +48,6 @@ export default class SceneTreeSidebar extends BaseEditorComponent {
     #selectedObject = null
     #refreshTimeout = null
 
-
     constructor () {
         super()
         this.#buildDOM()

@@ -17,7 +17,6 @@ export default class GameController extends WorldController {
         {enemyCount: 12, enemySpeed: 0.8, spawnInterval: 0.8, spawnY: {min: -1.5, max: 1}}
     ]
 
-
     constructor (options = {}) {
         super(options)
 
@@ -158,4 +157,3 @@ export default class GameController extends WorldController {
     }
 
 }
-

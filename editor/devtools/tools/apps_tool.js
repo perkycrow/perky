@@ -67,7 +67,6 @@ export default class AppsTool extends BaseTool {
     #runningListEl = null
     #appManager = null
 
-
     connectedCallback () {
         this.#buildDOM()
     }

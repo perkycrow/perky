@@ -2,15 +2,15 @@ export function detectCollision (shapeA, shapeB) {
     if (isBoxVsBox(shapeA, shapeB)) {
         return detectBoxCollision(shapeA, shapeB)
     }
-    
+
     if (isCircleVsCircle(shapeA, shapeB)) {
         return detectCircleCollision(shapeA, shapeB)
     }
-    
+
     if (isBoxVsCircle(shapeA, shapeB)) {
         return detectBoxCircleCollision(shapeA, shapeB)
     }
-    
+
     if (isCircleVsBox(shapeA, shapeB)) {
         const collision = detectBoxCircleCollision(shapeB, shapeA)
         if (collision) {
@@ -47,19 +47,19 @@ export function isCircleVsBox (shapeA, shapeB) {
 function detectBoxCollision (boxA, boxB) {
     const boundsA = boxA.getBounds()
     const boundsB = boxB.getBounds()
-    
+
     if (boundsA.right < boundsB.left || boundsA.left > boundsB.right ||
         boundsA.bottom < boundsB.top || boundsA.top > boundsB.bottom) {
         return null
     }
-    
+
     const overlapX = Math.min(boundsA.right - boundsB.left, boundsB.right - boundsA.left)
     const overlapY = Math.min(boundsA.bottom - boundsB.top, boundsB.bottom - boundsA.top)
-    
+
     if (overlapX < overlapY) {
         return createHorizontalCollision(boundsA, boundsB, overlapX)
     }
-    
+
     return createVerticalCollision(boundsA, boundsB, overlapY)
 }
 
@@ -93,19 +93,19 @@ function createVerticalCollision (boundsA, boundsB, overlapY) {
 function detectCircleCollision (circleA, circleB) {
     const posA = circleA.getWorldPosition()
     const posB = circleB.getWorldPosition()
-    
+
     const dx = posB.x - posA.x
     const dy = posB.y - posA.y
     const distance = Math.sqrt(dx * dx + dy * dy)
     const minDistance = circleA.radius + circleB.radius
-    
+
     if (distance >= minDistance || distance === 0) {
         return null
     }
-    
+
     const normalX = dx / distance
     const normalY = dy / distance
-    
+
     return {
         depth: minDistance - distance,
         normal: {x: normalX, y: normalY},
@@ -120,25 +120,25 @@ function detectCircleCollision (circleA, circleB) {
 function detectBoxCircleCollision (box, circle) {
     const boxBounds = box.getBounds()
     const circlePos = circle.getWorldPosition()
-    
+
     const closestX = Math.max(boxBounds.left, Math.min(circlePos.x, boxBounds.right))
     const closestY = Math.max(boxBounds.top, Math.min(circlePos.y, boxBounds.bottom))
-    
+
     const dx = circlePos.x - closestX
     const dy = circlePos.y - closestY
     const distance = Math.sqrt(dx * dx + dy * dy)
-    
+
     if (distance >= circle.radius) {
         return null
     }
-    
+
     if (distance === 0) {
         return handleCircleInsideBox(boxBounds, circlePos, circle.radius)
     }
-    
+
     const normalX = dx / distance
     const normalY = dy / distance
-    
+
     return {
         depth: circle.radius - distance,
         normal: {x: normalX, y: normalY},
@@ -156,7 +156,7 @@ function handleCircleInsideBox (boxBounds, circlePos, radius) {
     ]
 
     const minPen = penetrations.reduce((min, pen) => (pen.depth < min.depth ? pen : min))
-    
+
     return {
         depth: radius - minPen.depth,
         normal: minPen.normal,

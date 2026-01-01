@@ -9,7 +9,6 @@ export default class BaseInspector extends BaseEditorComponent {
     #actionsEl = null
     #customStyles = ''
 
-
     constructor (customStyles = '') {
         super()
         this.#customStyles = customStyles

@@ -207,12 +207,10 @@ export default class ManifestInspector extends BaseInspector {
         return module instanceof Manifest
     }
 
-
     #sectionsState = {
         config: true,
         assets: true
     }
-
 
     constructor () {
         super(customStyles)
@@ -364,7 +362,6 @@ export default class ManifestInspector extends BaseInspector {
 
         return section
     }
-
 
 }
 

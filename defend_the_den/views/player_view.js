@@ -36,4 +36,3 @@ export default class PlayerView extends EntityView {
     }
 
 }
-

@@ -10,7 +10,6 @@ export default class WebGLSpriteBatch {
     #tempCorners = new Float32Array(8)
     #tempTexCoords = new Float32Array(8)
 
-
     constructor (gl, spriteProgram, textureManager, options = {}) {
         this.gl = gl
         this.spriteProgram = spriteProgram

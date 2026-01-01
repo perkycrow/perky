@@ -5,7 +5,7 @@ export default class Image2D extends Object2D {
 
     constructor (options = {}) {
         super(options)
-        
+
         this.image = options.image ?? null
         this.width = options.width ?? 10
         this.height = options.height ?? 10
@@ -15,7 +15,7 @@ export default class Image2D extends Object2D {
     getBounds () {
         const offsetX = -this.width * this.anchorX
         const offsetY = -this.height * this.anchorY
-        
+
         return {
             minX: offsetX,
             minY: offsetY,
@@ -25,7 +25,5 @@ export default class Image2D extends Object2D {
             height: this.height
         }
     }
-
-
 
 }

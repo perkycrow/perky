@@ -151,7 +151,6 @@ export default class NumberInput extends HTMLElement {
         document.removeEventListener('mouseup', this.#onDragEnd)
     }
 
-
     static get observedAttributes () {
         return ['value', 'step', 'precision', 'label', 'min', 'max']
     }

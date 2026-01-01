@@ -19,7 +19,6 @@ export default class PerkyCode extends HTMLElement {
     #titleEl = null
     #copyTimeoutId = null
 
-
     constructor () {
         super()
         this.attachShadow({mode: 'open'})

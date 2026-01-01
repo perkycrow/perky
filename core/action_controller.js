@@ -87,7 +87,6 @@ export default class ActionController extends PerkyModule {
         return normalized
     }
 
-
     static actionControllerMethods = this.perkyModuleMethods.concat([
         'addAction',
         'getAction',

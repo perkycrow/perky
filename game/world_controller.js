@@ -5,7 +5,6 @@ export default class WorldController extends ActionController {
 
     #world = null
 
-
     get world () {
         return this.#world
     }

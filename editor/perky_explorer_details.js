@@ -11,7 +11,6 @@ export default class PerkyExplorerDetails extends BaseEditorComponent {
     #titleEl = null
     #contentEl = null
 
-
     connectedCallback () {
         this.#buildDOM()
     }
@@ -248,4 +247,3 @@ function formatTags (tags) {
 
 
 customElements.define('perky-explorer-details', PerkyExplorerDetails)
-

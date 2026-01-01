@@ -108,7 +108,6 @@ export default class ActionDispatcherInspector extends BaseInspector {
 
     #containerEl = null
 
-
     constructor () {
         super(customStyles)
         this.buildDOM()

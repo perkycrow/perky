@@ -2,6 +2,7 @@ import ApplicationManager from '../application/application_manager.js'
 import DefendTheDen from './defend_the_den.js'
 import '../editor/devtools/index.js'
 
+
 async function init () {
     const appManager = new ApplicationManager()
     appManager.register('defendTheDen', DefendTheDen)

@@ -16,12 +16,12 @@ export default class BaseTreeNode extends BaseEditorComponent {
 
     #customStyles = ''
 
-
     constructor (customStyles = '') {
         super()
         this.#customStyles = customStyles
         this.#buildDOM()
     }
+
 
     getItem () { // eslint-disable-line class-methods-use-this
         throw new Error('getItem() must be implemented by subclass')

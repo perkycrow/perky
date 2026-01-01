@@ -5,7 +5,6 @@ export default class WebGLPrimitiveRenderer extends WebGLObjectRenderer {
 
     #vertexBuffer = null
 
-
     get vertexBuffer () {
         return this.#vertexBuffer
     }

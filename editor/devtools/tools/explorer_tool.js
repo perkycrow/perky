@@ -13,7 +13,6 @@ export default class ExplorerTool extends BaseTool {
 
     #explorerEl = null
 
-
     connectedCallback () {
         this.#buildDOM()
     }

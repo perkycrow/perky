@@ -133,7 +133,6 @@ export default class MouseDevice extends InputDevice {
         navigationControl.setValue(event, event)
     }
 
-
 }
 
 

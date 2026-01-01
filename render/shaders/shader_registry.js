@@ -7,7 +7,6 @@ export default class ShaderRegistry {
     #programs = new Map()
     #defaults = new Map()
 
-
     constructor (gl) {
         this.#gl = gl
     }

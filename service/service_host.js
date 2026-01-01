@@ -10,7 +10,6 @@ export default class ServiceHost extends PerkyModule {
 
     static $eagerStart = false
 
-
     constructor ({transport, target, ...options} = {}) {
         super(options)
 

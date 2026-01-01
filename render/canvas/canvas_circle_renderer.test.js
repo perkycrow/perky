@@ -38,7 +38,9 @@ describe('CanvasCircleRenderer', () => {
 
         test('draws circle with correct offset for default anchor', () => {
             let arcArgs = null
-            ctx.arc = (...args) => { arcArgs = args }
+            ctx.arc = (...args) => {
+                arcArgs = args
+            }
 
             const circle = {
                 radius: 50,
@@ -60,7 +62,9 @@ describe('CanvasCircleRenderer', () => {
 
         test('draws circle with correct offset for top-left anchor', () => {
             let arcArgs = null
-            ctx.arc = (...args) => { arcArgs = args }
+            ctx.arc = (...args) => {
+                arcArgs = args
+            }
 
             const circle = {
                 radius: 50,
@@ -94,7 +98,9 @@ describe('CanvasCircleRenderer', () => {
 
         test('draws stroke when strokeWidth > 0', () => {
             let stroked = false
-            ctx.stroke = () => { stroked = true }
+            ctx.stroke = () => {
+                stroked = true
+            }
 
             const circle = {
                 radius: 40,
@@ -115,7 +121,9 @@ describe('CanvasCircleRenderer', () => {
 
         test('does not draw stroke when strokeWidth is 0', () => {
             let stroked = false
-            ctx.stroke = () => { stroked = true }
+            ctx.stroke = () => {
+                stroked = true
+            }
 
             const circle = {
                 radius: 40,

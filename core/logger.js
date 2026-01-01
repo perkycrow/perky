@@ -16,7 +16,6 @@ class Logger extends Notifier {
     #maxHistory = 100
     #consoleOutput = true
 
-
     get history () {
         return this.#history
     }

@@ -48,7 +48,6 @@ export default class Vec2Input extends HTMLElement {
     #label = ''
     #labelEl = null
 
-
     static get observedAttributes () {
         return ['label']
     }

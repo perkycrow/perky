@@ -9,14 +9,14 @@ export default class PathfindingService extends ServiceHost {
 
     constructor (config = {}) {
         super(config)
-        
+
         this.grid = null
         this.pathfinder = new Pathfinder({
             heuristic: heuristics[config.heuristic] ?? heuristics.manhattan,
             allowDiagonal: config.allowDiagonal ?? true,
             isWalkable: isWalkable
         })
-        
+
         this.pathCache = new Map()
         this.maxCacheSize = config.maxCacheSize || 500
     }
@@ -25,7 +25,7 @@ export default class PathfindingService extends ServiceHost {
     setGrid (req, res) {
         try {
             const {gridData} = req.params
-            
+
             if (!gridData) {
                 res.error('Missing gridData parameter')
                 return
@@ -44,13 +44,13 @@ export default class PathfindingService extends ServiceHost {
             }
 
             this.pathCache.clear()
-            
+
             res.send({
                 success: true,
                 gridSize: `${gridData.width}x${gridData.height}`,
                 cellCount: Object.keys(gridData.cells || {}).length
             })
-            
+
         } catch (error) {
             res.error(`Failed to set grid: ${error.message}`)
         }
@@ -60,28 +60,28 @@ export default class PathfindingService extends ServiceHost {
     setCell (req, res) {
         try {
             const {coords, value} = req.params
-            
+
             if (!this.grid) {
                 res.error('No grid set. Call setGrid first.')
                 return
             }
-            
+
             if (!coords || (coords.x === undefined || coords.y === undefined)) {
                 res.error('Missing or invalid coords parameter')
                 return
             }
-            
+
             this.grid.setCell(coords, value)
 
             this.pathCache.clear()
-            
+
             res.send({
                 success: true,
                 coords,
                 value,
                 cacheCleared: true
             })
-            
+
         } catch (error) {
             res.error(`Failed to set cell: ${error.message}`)
         }
@@ -91,12 +91,12 @@ export default class PathfindingService extends ServiceHost {
     findPath (req, res) { // eslint-disable-line complexity
         try {
             const {start, goal, options = {}} = req.params
-            
+
             if (!this.grid) {
                 res.error('No grid set. Call setGrid first.')
                 return
             }
-            
+
             if (!start || !goal) {
                 res.error('Missing start or goal coordinates')
                 return
@@ -105,7 +105,7 @@ export default class PathfindingService extends ServiceHost {
             if (options.heuristic && heuristics[options.heuristic]) {
                 this.pathfinder.setHeuristic(heuristics[options.heuristic])
             }
-            
+
             if (typeof options.allowDiagonal === 'boolean') {
                 this.pathfinder.setAllowDiagonal(options.allowDiagonal)
             }
@@ -123,7 +123,7 @@ export default class PathfindingService extends ServiceHost {
             const startTime = performance.now()
             const path = this.pathfinder.findPath(this.grid, start, goal)
             const calculationTime = performance.now() - startTime
-            
+
             const result = {
                 path: path || [],
                 found: Boolean(path),
@@ -133,9 +133,9 @@ export default class PathfindingService extends ServiceHost {
             }
 
             this.cacheResult(cacheKey, result)
-            
+
             res.send(result)
-            
+
         } catch (error) {
             res.error(`Pathfinding failed: ${error.message}`)
         }
@@ -147,7 +147,7 @@ export default class PathfindingService extends ServiceHost {
             const firstKey = this.pathCache.keys().next().value
             this.pathCache.delete(firstKey)
         }
-        
+
         this.pathCache.set(key, {
             path: result.path,
             found: result.found,
@@ -157,7 +157,6 @@ export default class PathfindingService extends ServiceHost {
     }
 
 }
-
 
 
 function parseCellKey (key) {

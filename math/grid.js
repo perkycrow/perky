@@ -1,5 +1,6 @@
 import {exportValue} from '../core/utils.js'
 
+
 export const fourDirections = {
     up:    {x:  0, y:  1},
     right: {x:  1, y:  0},
@@ -23,7 +24,7 @@ export default class Grid {
 
     constructor (options = {}) {
         const {width = null, height = null} = options
-        
+
         this.width = width
         this.height = height
         this.cells = new Map()
@@ -38,7 +39,7 @@ export default class Grid {
 
     setCell (coords, value) {
         const key = getCellKey(coords)
-        
+
         if (value === undefined) {
             this.cells.delete(key)
         } else {
@@ -51,7 +52,7 @@ export default class Grid {
         if (this.width === null || this.height === null) {
             return true
         }
-        
+
         return coords.x >= 0 && coords.x < this.width &&
                coords.y >= 0 && coords.y < this.height
     }
@@ -78,6 +79,7 @@ export default class Grid {
             callback(coords, value)
         }
     }
+
 
     neighbourOf (coords, step) {
         return {

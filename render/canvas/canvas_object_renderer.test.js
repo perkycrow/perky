@@ -82,7 +82,9 @@ describe('CanvasObjectRenderer', () => {
             renderer.reset()
 
             let transformCalled = false
-            ctx.transform = () => { transformCalled = true }
+            ctx.transform = () => {
+                transformCalled = true
+            }
             renderer.flush()
 
             expect(transformCalled).toBe(false)
@@ -97,7 +99,9 @@ describe('CanvasObjectRenderer', () => {
             renderer.init(mockContext)
 
             let transformArgs = null
-            ctx.transform = (...args) => { transformArgs = args }
+            ctx.transform = (...args) => {
+                transformArgs = args
+            }
 
             const obj = {worldMatrix: [1, 2, 3, 4, 5, 6]}
             renderer.collect(obj, 1)
@@ -134,8 +138,12 @@ describe('CanvasObjectRenderer', () => {
 
             let saveCount = 0
             let restoreCount = 0
-            ctx.save = () => { saveCount++ }
-            ctx.restore = () => { restoreCount++ }
+            ctx.save = () => {
+                saveCount++
+            }
+            ctx.restore = () => {
+                restoreCount++
+            }
 
             const obj1 = {worldMatrix: [1, 0, 0, 1, 0, 0]}
             const obj2 = {worldMatrix: [1, 0, 0, 1, 0, 0]}
@@ -176,7 +184,9 @@ describe('CanvasObjectRenderer', () => {
 
             renderer.init(mockContext)
             let transformCalled = false
-            ctx.transform = () => { transformCalled = true }
+            ctx.transform = () => {
+                transformCalled = true
+            }
             renderer.flush()
 
             expect(transformCalled).toBe(false)

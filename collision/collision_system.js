@@ -33,7 +33,7 @@ export default class CollisionSystem {
         this.collisionBodies = []
         this.staticBodies = []
         this.debugEnabled = false
-        
+
         if (this.spatialGrid) {
             this.setupSpatialGrid()
         }
@@ -45,10 +45,10 @@ export default class CollisionSystem {
             console.warn('CollisionSystem: spatialGrid requires bounds to be set')
             return
         }
-        
+
         const cols = Math.ceil(this.bounds.width / this.gridSize)
         const rows = Math.ceil(this.bounds.height / this.gridSize)
-        
+
         this.grid = Array(rows).fill(null).map(() => Array(cols).fill(null).map(() => []))
         this.gridCols = cols
         this.gridRows = rows
@@ -58,19 +58,19 @@ export default class CollisionSystem {
     addBody (object, options = {}) {
         const renderType = object.constructor.name.toLowerCase()
         const createShape = SHAPE_CREATORS[renderType] || SHAPE_CREATORS.default
-        
+
         object.collisionShape = createShape(object)
         object.collisionShape.body = object
-        
+
         const bodyOptions = getBodyOptions(options)
         Object.assign(object, bodyOptions)
-        
+
         if (object.isStatic) {
             this.staticBodies.push(object)
         } else {
             this.collisionBodies.push(object)
         }
-        
+
         return object
     }
 
@@ -80,7 +80,7 @@ export default class CollisionSystem {
         if (dynamicIndex !== -1) {
             this.collisionBodies.splice(dynamicIndex, 1)
         }
-        
+
         const staticIndex = this.staticBodies.indexOf(object)
         if (staticIndex !== -1) {
             this.staticBodies.splice(staticIndex, 1)
@@ -115,7 +115,7 @@ export default class CollisionSystem {
 
     detectCollisions () {
         const allBodies = [...this.collisionBodies, ...this.staticBodies]
-        
+
         if (this.spatialGrid) {
             this.detectCollisionsWithGrid(allBodies)
         } else {
@@ -162,7 +162,7 @@ export default class CollisionSystem {
         if (bodyA.isStatic && bodyB.isStatic) {
             return
         }
-        
+
         const collision = detectCollision(bodyA.collisionShape, bodyB.collisionShape)
         if (collision) {
             this.resolver.resolve(bodyA, bodyB, collision)
@@ -182,7 +182,7 @@ export default class CollisionSystem {
         }
     }
 
-    
+
     populateGrid (bodies) {
         bodies.forEach(body => {
             this.addBodyToGrid(body)
@@ -196,7 +196,7 @@ export default class CollisionSystem {
         const endCol = Math.min(this.gridCols - 1, Math.floor((bounds.right - this.bounds.x) / this.gridSize))
         const startRow = Math.max(0, Math.floor((bounds.top - this.bounds.y) / this.gridSize))
         const endRow = Math.min(this.gridRows - 1, Math.floor((bounds.bottom - this.bounds.y) / this.gridSize))
-        
+
         for (let row = startRow; row <= endRow; row++) {
             for (let col = startCol; col <= endCol; col++) {
                 this.grid[row][col].push(body)
@@ -204,7 +204,7 @@ export default class CollisionSystem {
         }
     }
 
-    
+
     updatePositions (deltaTime) {
         this.collisionBodies.forEach(body => {
             if (!body.isStatic) {
@@ -219,18 +219,18 @@ export default class CollisionSystem {
         if (!this.debugEnabled) {
             return
         }
-        
+
         ctx.save()
         ctx.strokeStyle = '#00ff00'
         ctx.fillStyle = 'rgba(0, 255, 0, 0.1)'
         ctx.lineWidth = 1
-        
+
         const allBodies = [...this.collisionBodies, ...this.staticBodies]
-        
+
         allBodies.forEach(body => {
             drawBodyDebug(ctx, body)
         })
-        
+
         ctx.restore()
     }
 
@@ -248,10 +248,10 @@ export default class CollisionSystem {
     queryAABB (bounds) {
 
         this.updateShapes()
-        
+
         const overlappingBodies = []
         const allBodies = [...this.collisionBodies, ...this.staticBodies]
-        
+
 
         const queryBounds = {
             left: bounds.x,
@@ -259,15 +259,15 @@ export default class CollisionSystem {
             top: bounds.y,
             bottom: bounds.y + bounds.height
         }
-        
+
         for (const body of allBodies) {
             const bodyBounds = body.collisionShape.getBounds()
-            
+
             if (boundsOverlap(queryBounds, bodyBounds)) {
                 overlappingBodies.push(body)
             }
         }
-        
+
         return overlappingBodies
     }
 
@@ -275,7 +275,7 @@ export default class CollisionSystem {
     queryPoint (x, y) {
 
         this.updateShapes()
-        
+
         const allBodies = [...this.collisionBodies, ...this.staticBodies]
         return allBodies.filter(body => body.collisionShape.containsPoint(x, y))
     }
@@ -284,7 +284,7 @@ export default class CollisionSystem {
     queryRadius (x, y, radius) {
 
         this.updateShapes()
-        
+
         const allBodies = [...this.collisionBodies, ...this.staticBodies]
         return allBodies.filter(body => {
             const bounds = body.collisionShape.getBounds()
@@ -295,14 +295,14 @@ export default class CollisionSystem {
         })
     }
 
-    
+
     enableDebugDraw (scene) {
         this.debugScene = scene
         this.debugEnabled = true
         return this
     }
 
-    
+
     pauseBody (body) {
         if (body.velocity) {
             body.pausedVelocity = {...body.velocity}
@@ -313,7 +313,7 @@ export default class CollisionSystem {
         return this
     }
 
-    
+
     resumeBody (body) {
         if (body.pausedVelocity) {
             body.velocity = body.pausedVelocity
@@ -323,20 +323,19 @@ export default class CollisionSystem {
         return this
     }
 
-    
+
     setCollisionCallback (callback) {
         this.onCollision = callback
         return this
     }
 
-    
+
     setGravity (x, y) {
         this.gravity.x = x
         this.gravity.y = y
     }
 
 }
-
 
 
 function getBodyOptions (options) {
@@ -362,16 +361,16 @@ function drawBodyDebug (ctx, body) {
     const bounds = body.collisionShape.getBounds()
     const canvasX = bounds.centerX + ctx.canvas.width / 2
     const canvasY = -bounds.centerY + ctx.canvas.height / 2
-    
+
     ctx.save()
     ctx.translate(canvasX, canvasY)
-    
+
     if (body.collisionShape.type === 'circle') {
         drawCircleDebug(ctx, body.collisionShape)
     } else if (body.collisionShape.type === 'box') {
         drawBoxDebug(ctx, bounds)
     }
-    
+
     ctx.restore()
 }
 

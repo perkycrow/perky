@@ -30,7 +30,7 @@ export default class CircleShape {
 
     getBounds () {
         const radius = this.scaledRadius || this.radius
-        
+
         return {
             left: this.x - radius,
             right: this.x + radius,

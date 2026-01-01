@@ -8,7 +8,6 @@ export default class ExplorerContextMenu extends BaseEditorComponent {
     #actions = []
     #module = null
 
-
     constructor () {
         super()
         this.#buildDOM()
@@ -126,7 +125,6 @@ export default class ExplorerContextMenu extends BaseEditorComponent {
         this.style.left = `${Math.max(10, finalX)}px`
         this.style.top = `${Math.max(10, finalY)}px`
     }
-
 
     #handleOutsideClick = (e) => {
         if (e.type === 'contextmenu') {

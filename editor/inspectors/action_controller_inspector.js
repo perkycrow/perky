@@ -92,7 +92,6 @@ export default class ActionControllerInspector extends BaseInspector {
 
     #containerEl = null
 
-
     constructor () {
         super(customStyles)
         this.buildDOM()

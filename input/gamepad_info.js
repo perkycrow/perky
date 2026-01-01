@@ -21,10 +21,10 @@ export default class GamepadInfo {
 
 
     #parseRawId () {
-        const parsedResult = GamepadInfo.#parseRawIdFirefox(this.raw) || 
-                           GamepadInfo.#parseRawIdChrome(this.raw) || 
+        const parsedResult = GamepadInfo.#parseRawIdFirefox(this.raw) ||
+                           GamepadInfo.#parseRawIdChrome(this.raw) ||
                            {name: this.raw}
-        
+
         if (parsedResult) {
             Object.assign(this, parsedResult)
         }
@@ -59,7 +59,7 @@ export default class GamepadInfo {
     static #parseRawIdFirefox (rawId) {
         const firefoxPattern = /^([0-9a-f]{1,4})-([0-9a-f]{1,4})-(.+)$/i
         const match = rawId.match(firefoxPattern)
-      
+
         if (match) {
             return {
                 vendor: match[1],
@@ -74,7 +74,7 @@ export default class GamepadInfo {
     static #parseRawIdChrome (rawId) {
         const chromePattern = /^(.+) \(.*[Vv]endor: ?([0-9a-f]{1,4}).*[Pp]roduct: ?([0-9a-f]{1,4}).*\)$/i
         const match = rawId.match(chromePattern)
-      
+
         if (match) {
             return {
                 name: match[1],
@@ -97,7 +97,7 @@ export default class GamepadInfo {
             '0e8f': 'generic',
             '2dc8': '8bitdo'
         }
-      
+
         return vendorMap[vendor.toLowerCase()] || 'generic'
     }
 
@@ -112,7 +112,7 @@ export default class GamepadInfo {
             {regex: /logitech/i, type: 'logitech'},
             {regex: /8bitdo/i, type: '8bitdo'}
         ]
-      
+
         return patterns.find(p => p.regex.test(nameLC))?.type || 'generic'
     }
 
@@ -125,7 +125,7 @@ export default class GamepadInfo {
             {check: s => s.includes('dualshock 3') || s.includes('ds3'), model: 'ds3'},
             {check: s => s.includes('dualsense'), model: 'dualsense'}
         ]
-      
+
         return modelMap.find(m => m.check(nameLC))?.model || 'unknown'
     }
 

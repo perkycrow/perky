@@ -6,12 +6,14 @@ export default class EntityView {
         this.root = null
     }
 
+
     sync () {
         if (this.root) {
             this.root.x = this.entity.x
             this.root.y = this.entity.y
         }
     }
+
 
     dispose () {
         if (this.root && this.context.group) {
@@ -23,4 +25,3 @@ export default class EntityView {
     }
 
 }
-

@@ -72,7 +72,6 @@ export default class ToggleInput extends HTMLElement {
     #toggle = null
     #labelEl = null
 
-
     static get observedAttributes () {
         return ['checked', 'label']
     }

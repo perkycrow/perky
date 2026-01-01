@@ -11,7 +11,6 @@ export default class PostProcessor {
     #passes = []
     #enabled = true
 
-
     constructor (gl, shaderRegistry, width, height) {
         this.#gl = gl
         this.#shaderRegistry = shaderRegistry
