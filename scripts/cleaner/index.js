@@ -26,20 +26,16 @@ function isClean (result) {
     if (!result) {
         return true
     }
-    if (result.filesWithComments > 0) {
-        return false
+    if (Array.isArray(result)) {
+        return result.length === 0
     }
-    if (result.filesWithIssues > 0) {
-        return false
-    }
-    if (result.count > 0) {
-        return false
-    }
-    if (result.missingTests > 0) {
-        return false
-    }
-    if (Array.isArray(result) && result.length > 0) {
-        return false
+    if (typeof result === 'object') {
+        return Object.values(result).every((value) => {
+            if (typeof value === 'number') {
+                return value === 0
+            }
+            return true
+        })
     }
     return true
 }
