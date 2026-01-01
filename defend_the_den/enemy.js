@@ -1,4 +1,5 @@
 import Entity from '../game/entity.js'
+import Easing from '../math/easing.js'
 
 
 export default class Enemy extends Entity {
@@ -31,6 +32,12 @@ export default class Enemy extends Entity {
 
         this.hitFlashTimer = 0
         this.hitFlashDuration = 0.1
+
+        this.shuffleTimer = 0
+        this.shuffleDuration = 0.8 + Math.random() * 0.6
+        this.shuffleProgress = Math.random()
+        this.minSpeedRatio = 0.15
+        this.maxSpeedRatio = 1.0
     }
 
 
@@ -92,9 +99,18 @@ export default class Enemy extends Entity {
 
 
     applyMovement (deltaTime) {
-        if (!this.isStunned) {
-            this.position.add(this.velocity.clone().multiplyScalar(deltaTime))
+        if (this.isStunned) {
+            return
         }
+
+        this.shuffleTimer += deltaTime
+        this.shuffleProgress = (this.shuffleTimer / this.shuffleDuration) % 1
+
+        const wave = Math.sin(this.shuffleProgress * Math.PI * 2)
+        const easedWave = Easing.easeInOutQuad((wave + 1) / 2)
+        const speedRatio = this.minSpeedRatio + easedWave * (this.maxSpeedRatio - this.minSpeedRatio)
+
+        this.position.add(this.velocity.clone().multiplyScalar(deltaTime * speedRatio))
     }
 
 
