@@ -9,7 +9,7 @@ import {
     auditSwitches
 } from './eslint.js'
 import {auditTests} from './tests.js'
-import {bold, cyan, dim} from './format.js'
+import {bold, cyan, dim, green, yellow} from './format.js'
 
 
 function printBanner () {
@@ -18,6 +18,57 @@ function printBanner () {
     console.log(cyan('  │') + bold('        PERKY CLEANER        ') + cyan('│'))
     console.log(cyan('  ╰─────────────────────────────╯'))
     console.log(dim('  Code quality & consistency tool'))
+    console.log('')
+}
+
+
+function isClean (result) {
+    if (!result) {
+        return true
+    }
+    if (result.filesWithComments > 0) {
+        return false
+    }
+    if (result.filesWithIssues > 0) {
+        return false
+    }
+    if (result.count > 0) {
+        return false
+    }
+    if (result.missingTests > 0) {
+        return false
+    }
+    if (Array.isArray(result) && result.length > 0) {
+        return false
+    }
+    return true
+}
+
+
+function printDigest (results) {
+    console.log('')
+    console.log(cyan('  ╭─────────────────────────────╮'))
+    console.log(cyan('  │') + bold('           DIGEST            ') + cyan('│'))
+    console.log(cyan('  ╰─────────────────────────────╯'))
+    console.log('')
+
+    const sections = [
+        {key: 'comments', label: 'Comments'},
+        {key: 'imports', label: 'Imports'},
+        {key: 'unusedDirectives', label: 'Unused Directives'},
+        {key: 'eslint', label: 'ESLint'},
+        {key: 'disables', label: 'Disables'},
+        {key: 'switches', label: 'Switches'},
+        {key: 'tests', label: 'Tests'}
+    ]
+
+    for (const {key, label} of sections) {
+        const clean = isClean(results[key])
+        const status = clean ? green('✓') : yellow('!')
+        const statusText = clean ? dim('clean') : yellow('issues found')
+        console.log(`  ${status} ${label.padEnd(20)} ${statusText}`)
+    }
+
     console.log('')
 }
 
@@ -34,6 +85,8 @@ export function runAudit (rootDir) {
     results.disables = auditDisables(rootDir)
     results.switches = auditSwitches(rootDir)
     results.tests = auditTests(rootDir)
+
+    printDigest(results)
 
     return results
 }
@@ -54,6 +107,6 @@ export function runFix (rootDir, options = {}) {
 
 
 export function runAll (rootDir) {
-    runAudit(rootDir)
     runFix(rootDir)
+    runAudit(rootDir)
 }
