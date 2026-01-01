@@ -52,6 +52,13 @@ export default class WaveProgressBar extends PerkyModule {
     }
 
 
+    onDispose () {
+        if (this.root?.parentNode) {
+            this.root.parentNode.removeChild(this.root)
+        }
+    }
+
+
     #updateWave (waveNumber) {
         this.labelEl.textContent = waveNumber + 1
         this.#updateProgress(0)

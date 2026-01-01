@@ -1,5 +1,5 @@
 import Game from '../game/game'
-import DenWorld from './world'
+import DenWorld from './den_world'
 
 import GameController from './controllers/game_controller'
 import GameRenderer from './game_renderer'
