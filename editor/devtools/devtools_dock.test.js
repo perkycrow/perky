@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './devtools_dock.js'
 
 
@@ -24,23 +24,23 @@ describe('DevToolsDock', () => {
 
     describe('initialization', () => {
 
-        it('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(dock).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(dock.shadowRoot).not.toBeNull()
         })
 
 
-        it('should create dock element', () => {
+        test('creates dock element', () => {
             const dockEl = dock.shadowRoot.querySelector('.devtools-dock')
             expect(dockEl).not.toBeNull()
         })
 
 
-        it('should start minimized', () => {
+        test('starts minimized', () => {
             const dockEl = dock.shadowRoot.querySelector('.devtools-dock')
             expect(dockEl.classList.contains('minimized')).toBe(true)
         })
@@ -50,7 +50,7 @@ describe('DevToolsDock', () => {
 
     describe('setState', () => {
 
-        it('should accept state object', () => {
+        test('accepts state object', () => {
             const state = {
                 addEventListener: vi.fn()
             }
@@ -58,7 +58,7 @@ describe('DevToolsDock', () => {
         })
 
 
-        it('should register event listeners on state', () => {
+        test('registers event listeners on state', () => {
             const state = {
                 addEventListener: vi.fn()
             }
@@ -76,13 +76,13 @@ describe('DevToolsDock', () => {
 
     describe('minimized state', () => {
 
-        it('should show crow button when minimized', () => {
+        test('shows crow button when minimized', () => {
             const buttons = dock.shadowRoot.querySelectorAll('.dock-button')
             expect(buttons.length).toBe(1)
         })
 
 
-        it('should expand when crow button is clicked', () => {
+        test('expands when crow button is clicked', () => {
             const state = {
                 addEventListener: vi.fn(),
                 toggleTool: vi.fn(),
@@ -117,13 +117,13 @@ describe('DevToolsDock', () => {
         })
 
 
-        it('should show multiple buttons when expanded', () => {
+        test('shows multiple buttons when expanded', () => {
             const buttons = dock.shadowRoot.querySelectorAll('.dock-button')
             expect(buttons.length).toBeGreaterThan(1)
         })
 
 
-        it('should show separators', () => {
+        test('shows separators', () => {
             const separators = dock.shadowRoot.querySelectorAll('.dock-separator')
             expect(separators.length).toBeGreaterThan(0)
         })
@@ -133,7 +133,7 @@ describe('DevToolsDock', () => {
 
     describe('refreshTools', () => {
 
-        it('should re-render the dock', () => {
+        test('re-renders the dock', () => {
             const state = {
                 addEventListener: vi.fn(),
                 toggleTool: vi.fn(),

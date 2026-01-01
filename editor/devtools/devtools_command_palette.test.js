@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './devtools_command_palette.js'
 
 
@@ -24,35 +24,35 @@ describe('DevToolsCommandPalette', () => {
 
     describe('initialization', () => {
 
-        it('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(palette).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(palette.shadowRoot).not.toBeNull()
         })
 
 
-        it('should create overlay element', () => {
+        test('creates overlay element', () => {
             const overlay = palette.shadowRoot.querySelector('.command-palette-overlay')
             expect(overlay).not.toBeNull()
         })
 
 
-        it('should create input element', () => {
+        test('creates input element', () => {
             const input = palette.shadowRoot.querySelector('.command-palette-input')
             expect(input).not.toBeNull()
         })
 
 
-        it('should create results container', () => {
+        test('creates results container', () => {
             const results = palette.shadowRoot.querySelector('.command-palette-results')
             expect(results).not.toBeNull()
         })
 
 
-        it('should be hidden by default', () => {
+        test('hidden by default', () => {
             const overlay = palette.shadowRoot.querySelector('.command-palette-overlay')
             expect(overlay.classList.contains('hidden')).toBe(true)
         })
@@ -62,7 +62,7 @@ describe('DevToolsCommandPalette', () => {
 
     describe('setState', () => {
 
-        it('should accept state object', () => {
+        test('accepts state object', () => {
             const state = {
                 appManager: {list: () => []}
             }
@@ -74,14 +74,14 @@ describe('DevToolsCommandPalette', () => {
 
     describe('show', () => {
 
-        it('should remove hidden class from overlay', () => {
+        test('removes hidden class from overlay', () => {
             palette.show()
             const overlay = palette.shadowRoot.querySelector('.command-palette-overlay')
             expect(overlay.classList.contains('hidden')).toBe(false)
         })
 
 
-        it('should clear input value', () => {
+        test('clears input value', () => {
             const input = palette.shadowRoot.querySelector('.command-palette-input')
             input.value = 'test'
             palette.show()
@@ -93,7 +93,7 @@ describe('DevToolsCommandPalette', () => {
 
     describe('hide', () => {
 
-        it('should add hidden class to overlay', () => {
+        test('adds hidden class to overlay', () => {
             palette.show()
             palette.hide()
             const overlay = palette.shadowRoot.querySelector('.command-palette-overlay')
@@ -101,7 +101,7 @@ describe('DevToolsCommandPalette', () => {
         })
 
 
-        it('should clear input value', () => {
+        test('clears input value', () => {
             const input = palette.shadowRoot.querySelector('.command-palette-input')
             palette.show()
             input.value = 'test'
@@ -114,7 +114,7 @@ describe('DevToolsCommandPalette', () => {
 
     describe('keyboard navigation', () => {
 
-        it('should handle Escape key', () => {
+        test('handles Escape key', () => {
             const state = {
                 appManager: {list: () => []},
                 closeCommandPalette: vi.fn()
@@ -134,7 +134,7 @@ describe('DevToolsCommandPalette', () => {
 
     describe('overlay click', () => {
 
-        it('should close when clicking on overlay background', () => {
+        test('closes when clicking on overlay background', () => {
             const state = {
                 appManager: {list: () => []},
                 closeCommandPalette: vi.fn()
@@ -153,7 +153,7 @@ describe('DevToolsCommandPalette', () => {
 
     describe('input handling', () => {
 
-        it('should show hint when input is empty', () => {
+        test('shows hint when input is empty', () => {
             palette.show()
             const hint = palette.shadowRoot.querySelector('.command-palette-hint')
             expect(hint).not.toBeNull()

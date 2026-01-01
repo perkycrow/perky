@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './perky_devtools.js'
 
 
@@ -24,35 +24,35 @@ describe('PerkyDevTools', () => {
 
     describe('initialization', () => {
 
-        it('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(devtools).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(devtools.shadowRoot).not.toBeNull()
         })
 
 
-        it('should create dock element', () => {
+        test('creates dock element', () => {
             const dock = devtools.shadowRoot.querySelector('devtools-dock')
             expect(dock).not.toBeNull()
         })
 
 
-        it('should create sidebar element', () => {
+        test('creates sidebar element', () => {
             const sidebar = devtools.shadowRoot.querySelector('devtools-sidebar')
             expect(sidebar).not.toBeNull()
         })
 
 
-        it('should create logger element', () => {
+        test('creates logger element', () => {
             const logger = devtools.shadowRoot.querySelector('perky-logger')
             expect(logger).not.toBeNull()
         })
 
 
-        it('should have logger hidden by default', () => {
+        test('logger hidden by default', () => {
             const logger = devtools.shadowRoot.querySelector('perky-logger')
             expect(logger.classList.contains('hidden')).toBe(true)
         })
@@ -62,7 +62,7 @@ describe('PerkyDevTools', () => {
 
     describe('state getter', () => {
 
-        it('should return state object', () => {
+        test('returns state object', () => {
             expect(devtools.state).toBeDefined()
             expect(devtools.state).not.toBeNull()
         })
@@ -72,7 +72,7 @@ describe('PerkyDevTools', () => {
 
     describe('logger getter', () => {
 
-        it('should return logger element', () => {
+        test('returns logger element', () => {
             const logger = devtools.logger
             expect(logger).not.toBeNull()
             expect(logger.tagName.toLowerCase()).toBe('perky-logger')
@@ -83,7 +83,7 @@ describe('PerkyDevTools', () => {
 
     describe('setModule', () => {
 
-        it('should delegate to state', () => {
+        test('delegates to state', () => {
             const module = {name: 'test'}
             expect(() => devtools.setModule(module)).not.toThrow()
         })
@@ -93,7 +93,7 @@ describe('PerkyDevTools', () => {
 
     describe('setAppManager', () => {
 
-        it('should delegate to state', () => {
+        test('delegates to state', () => {
             const appManager = {list: () => []}
             expect(() => devtools.setAppManager(appManager)).not.toThrow()
         })
@@ -103,7 +103,7 @@ describe('PerkyDevTools', () => {
 
     describe('openTool', () => {
 
-        it('should delegate to state', () => {
+        test('delegates to state', () => {
             expect(() => devtools.openTool('explorer')).not.toThrow()
         })
 
@@ -112,7 +112,7 @@ describe('PerkyDevTools', () => {
 
     describe('closeSidebar', () => {
 
-        it('should delegate to state', () => {
+        test('delegates to state', () => {
             expect(() => devtools.closeSidebar()).not.toThrow()
         })
 
@@ -121,7 +121,7 @@ describe('PerkyDevTools', () => {
 
     describe('toggleLogger', () => {
 
-        it('should delegate to state', () => {
+        test('delegates to state', () => {
             expect(() => devtools.toggleLogger()).not.toThrow()
         })
 
@@ -130,7 +130,7 @@ describe('PerkyDevTools', () => {
 
     describe('toggleCommandPalette', () => {
 
-        it('should delegate to state', () => {
+        test('delegates to state', () => {
             vi.spyOn(devtools.state, 'toggleCommandPalette').mockImplementation(vi.fn())
             expect(() => devtools.toggleCommandPalette()).not.toThrow()
         })
@@ -140,7 +140,7 @@ describe('PerkyDevTools', () => {
 
     describe('refreshTools', () => {
 
-        it('should call refreshTools on dock', () => {
+        test('calls refreshTools on dock', () => {
             expect(() => devtools.refreshTools()).not.toThrow()
         })
 
@@ -149,7 +149,7 @@ describe('PerkyDevTools', () => {
 
     describe('keyboard shortcuts', () => {
 
-        it('should toggle command palette on Ctrl+K', () => {
+        test('toggles command palette on Ctrl+K', () => {
             const stub = vi.fn()
             vi.spyOn(devtools.state, 'toggleCommandPalette').mockImplementation(stub)
 
@@ -164,7 +164,7 @@ describe('PerkyDevTools', () => {
         })
 
 
-        it('should toggle command palette on Meta+K', () => {
+        test('toggles command palette on Meta+K', () => {
             const stub = vi.fn()
             vi.spyOn(devtools.state, 'toggleCommandPalette').mockImplementation(stub)
 
@@ -183,7 +183,7 @@ describe('PerkyDevTools', () => {
 
     describe('disconnectedCallback', () => {
 
-        it('should clean up keyboard handler', () => {
+        test('cleans up keyboard handler', () => {
             const stub = vi.fn()
             vi.spyOn(devtools.state, 'toggleCommandPalette').mockImplementation(stub)
 

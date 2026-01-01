@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import BaseTool from './base_tool.js'
 
 
@@ -35,27 +35,27 @@ describe('BaseTool', () => {
 
     describe('static properties', () => {
 
-        it('should have default toolId', () => {
+        test('toolId', () => {
             expect(BaseTool.toolId).toBe('base')
         })
 
 
-        it('should have default toolName', () => {
+        test('toolName', () => {
             expect(BaseTool.toolName).toBe('Base Tool')
         })
 
 
-        it('should have default toolIcon', () => {
+        test('toolIcon', () => {
             expect(BaseTool.toolIcon).toBe('🔧')
         })
 
 
-        it('should have default location', () => {
+        test('location', () => {
             expect(BaseTool.location).toBe('sidebar')
         })
 
 
-        it('should have default order', () => {
+        test('order', () => {
             expect(BaseTool.order).toBe(100)
         })
 
@@ -64,12 +64,12 @@ describe('BaseTool', () => {
 
     describe('initialization', () => {
 
-        it('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(tool).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(tool.shadowRoot).not.toBeNull()
         })
 
@@ -78,12 +78,12 @@ describe('BaseTool', () => {
 
     describe('state getter', () => {
 
-        it('should return null before setState', () => {
+        test('returns null before setState', () => {
             expect(tool.state).toBeNull()
         })
 
 
-        it('should return state after setState', () => {
+        test('returns state after setState', () => {
             const state = {test: true}
             tool.setState(state)
             expect(tool.state).toBe(state)
@@ -94,14 +94,14 @@ describe('BaseTool', () => {
 
     describe('setState', () => {
 
-        it('should store state', () => {
+        test('stores state', () => {
             const state = {value: 42}
             tool.setState(state)
             expect(tool.state).toBe(state)
         })
 
 
-        it('should call onStateSet', () => {
+        test('calls onStateSet', () => {
             const spy = vi.spyOn(tool, 'onStateSet')
             const state = {value: 42}
             tool.setState(state)
@@ -113,7 +113,7 @@ describe('BaseTool', () => {
 
     describe('onStateSet', () => {
 
-        it('should be a no-op by default', () => {
+        test('is a no-op by default', () => {
             expect(() => tool.onStateSet({})).not.toThrow()
         })
 
@@ -122,7 +122,7 @@ describe('BaseTool', () => {
 
     describe('onActivate', () => {
 
-        it('should be a no-op by default', () => {
+        test('is a no-op by default', () => {
             expect(() => tool.onActivate()).not.toThrow()
         })
 
@@ -131,7 +131,7 @@ describe('BaseTool', () => {
 
     describe('onDeactivate', () => {
 
-        it('should be a no-op by default', () => {
+        test('is a no-op by default', () => {
             expect(() => tool.onDeactivate()).not.toThrow()
         })
 
@@ -140,7 +140,7 @@ describe('BaseTool', () => {
 
     describe('static register', () => {
 
-        it('should be a function', () => {
+        test('is a function', () => {
             expect(typeof BaseTool.register).toBe('function')
         })
 

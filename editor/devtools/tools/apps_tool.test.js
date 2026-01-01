@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './apps_tool.js'
 
 
@@ -24,28 +24,28 @@ describe('AppsTool', () => {
 
     describe('static properties', () => {
 
-        it('should have toolId', () => {
+        test('toolId', () => {
             expect(tool.constructor.toolId).toBe('apps')
         })
 
 
-        it('should have toolName', () => {
+        test('toolName', () => {
             expect(tool.constructor.toolName).toBe('Applications')
         })
 
 
-        it('should have toolIcon', () => {
+        test('toolIcon', () => {
             expect(tool.constructor.toolIcon).toBeDefined()
             expect(tool.constructor.toolIcon).toContain('<svg')
         })
 
 
-        it('should have location set to sidebar', () => {
+        test('location', () => {
             expect(tool.constructor.location).toBe('sidebar')
         })
 
 
-        it('should have order', () => {
+        test('order', () => {
             expect(tool.constructor.order).toBe(20)
         })
 
@@ -54,29 +54,29 @@ describe('AppsTool', () => {
 
     describe('initialization', () => {
 
-        it('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(tool).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(tool.shadowRoot).not.toBeNull()
         })
 
 
-        it('should create container element', () => {
+        test('creates container element', () => {
             const containerEl = tool.shadowRoot.querySelector('.apps-container')
             expect(containerEl).not.toBeNull()
         })
 
 
-        it('should create registered apps section', () => {
+        test('creates registered apps section', () => {
             const section = tool.shadowRoot.querySelector('.apps-list[data-type="registered"]')
             expect(section).not.toBeNull()
         })
 
 
-        it('should create running apps section', () => {
+        test('creates running apps section', () => {
             const section = tool.shadowRoot.querySelector('.apps-list[data-type="running"]')
             expect(section).not.toBeNull()
         })
@@ -86,7 +86,7 @@ describe('AppsTool', () => {
 
     describe('onStateSet', () => {
 
-        it('should register appmanager:change listener', () => {
+        test('registers appmanager:change listener', () => {
             const state = {
                 appManager: null,
                 addEventListener: vi.fn()
@@ -102,7 +102,7 @@ describe('AppsTool', () => {
 
     describe('without appManager', () => {
 
-        it('should show no AppManager message in registered list', () => {
+        test('shows no AppManager message in registered list', () => {
             const state = {
                 appManager: null,
                 addEventListener: vi.fn()
@@ -114,7 +114,7 @@ describe('AppsTool', () => {
         })
 
 
-        it('should show no AppManager message in running list', () => {
+        test('shows no AppManager message in running list', () => {
             const state = {
                 appManager: null,
                 addEventListener: vi.fn()
@@ -130,7 +130,7 @@ describe('AppsTool', () => {
 
     describe('with appManager', () => {
 
-        it('should show no apps registered when empty', () => {
+        test('shows no apps registered when empty', () => {
             const state = {
                 appManager: {
                     constructors: {keys: []},
@@ -145,7 +145,7 @@ describe('AppsTool', () => {
         })
 
 
-        it('should show no apps running when empty', () => {
+        test('shows no apps running when empty', () => {
             const state = {
                 appManager: {
                     constructors: {keys: []},
@@ -164,7 +164,7 @@ describe('AppsTool', () => {
 
     describe('onActivate', () => {
 
-        it('should refresh the tool', () => {
+        test('refreshes the tool', () => {
             const state = {
                 appManager: {
                     constructors: {keys: []},

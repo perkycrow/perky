@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './explorer_tool.js'
 
 
@@ -24,28 +24,28 @@ describe('ExplorerTool', () => {
 
     describe('static properties', () => {
 
-        it('should have toolId', () => {
+        test('toolId', () => {
             expect(tool.constructor.toolId).toBe('explorer')
         })
 
 
-        it('should have toolName', () => {
+        test('toolName', () => {
             expect(tool.constructor.toolName).toBe('Explorer')
         })
 
 
-        it('should have toolIcon', () => {
+        test('toolIcon', () => {
             expect(tool.constructor.toolIcon).toBeDefined()
             expect(tool.constructor.toolIcon).toContain('<svg')
         })
 
 
-        it('should have location set to sidebar', () => {
+        test('location', () => {
             expect(tool.constructor.location).toBe('sidebar')
         })
 
 
-        it('should have order', () => {
+        test('order', () => {
             expect(tool.constructor.order).toBe(10)
         })
 
@@ -54,23 +54,23 @@ describe('ExplorerTool', () => {
 
     describe('initialization', () => {
 
-        it('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(tool).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(tool.shadowRoot).not.toBeNull()
         })
 
 
-        it('should create perky-explorer element', () => {
+        test('creates perky-explorer element', () => {
             const explorer = tool.shadowRoot.querySelector('perky-explorer')
             expect(explorer).not.toBeNull()
         })
 
 
-        it('should set embedded attribute on explorer', () => {
+        test('sets embedded attribute on explorer', () => {
             const explorer = tool.shadowRoot.querySelector('perky-explorer')
             expect(explorer.embedded).toBe(true)
         })
@@ -80,7 +80,7 @@ describe('ExplorerTool', () => {
 
     describe('onStateSet', () => {
 
-        it('should register module:change listener', () => {
+        test('registers module:change listener', () => {
             const state = {
                 module: null,
                 addEventListener: vi.fn()
@@ -92,7 +92,7 @@ describe('ExplorerTool', () => {
         })
 
 
-        it('should have explorer element when state has module', () => {
+        test('has explorer element when state has module', () => {
             const state = {
                 module: null,
                 addEventListener: vi.fn()
@@ -108,7 +108,7 @@ describe('ExplorerTool', () => {
 
     describe('onActivate', () => {
 
-        it('should not throw when state has no module', () => {
+        test('does not throw when state has no module', () => {
             const state = {
                 module: null,
                 addEventListener: vi.fn()

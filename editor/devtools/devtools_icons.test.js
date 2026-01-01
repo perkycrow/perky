@@ -1,4 +1,4 @@
-import {describe, it, expect} from 'vitest'
+import {describe, test, expect} from 'vitest'
 import {ICONS} from './devtools_icons.js'
 
 
@@ -6,97 +6,97 @@ describe('devtools_icons', () => {
 
     describe('ICONS', () => {
 
-        it('should be an object', () => {
+        test('is an object', () => {
             expect(typeof ICONS).toBe('object')
             expect(ICONS).not.toBeNull()
         })
 
 
-        it('should contain action icon', () => {
+        test('action', () => {
             expect(ICONS.action).toBeDefined()
             expect(ICONS.action).toContain('<svg')
         })
 
 
-        it('should contain start icon', () => {
+        test('start', () => {
             expect(ICONS.start).toBeDefined()
             expect(ICONS.start).toContain('<svg')
         })
 
 
-        it('should contain stop icon', () => {
+        test('stop', () => {
             expect(ICONS.stop).toBeDefined()
             expect(ICONS.stop).toContain('<svg')
         })
 
 
-        it('should contain close icon', () => {
+        test('close', () => {
             expect(ICONS.close).toBeDefined()
             expect(ICONS.close).toContain('<svg')
         })
 
 
-        it('should contain spawn icon', () => {
+        test('spawn', () => {
             expect(ICONS.spawn).toBeDefined()
             expect(ICONS.spawn).toContain('<svg')
         })
 
 
-        it('should contain dispose icon', () => {
+        test('dispose', () => {
             expect(ICONS.dispose).toBeDefined()
             expect(ICONS.dispose).toContain('<svg')
         })
 
 
-        it('should contain apps icon', () => {
+        test('apps', () => {
             expect(ICONS.apps).toBeDefined()
             expect(ICONS.apps).toContain('<svg')
         })
 
 
-        it('should contain explorer icon', () => {
+        test('explorer', () => {
             expect(ICONS.explorer).toBeDefined()
             expect(ICONS.explorer).toContain('<svg')
         })
 
 
-        it('should contain logger icon', () => {
+        test('logger', () => {
             expect(ICONS.logger).toBeDefined()
             expect(ICONS.logger).toContain('<svg')
         })
 
 
-        it('should contain terminal icon', () => {
+        test('terminal', () => {
             expect(ICONS.terminal).toBeDefined()
             expect(ICONS.terminal).toContain('<svg')
         })
 
 
-        it('should contain chevronLeft icon', () => {
+        test('chevronLeft', () => {
             expect(ICONS.chevronLeft).toBeDefined()
             expect(ICONS.chevronLeft).toContain('<svg')
         })
 
 
-        it('should contain chevronRight icon', () => {
+        test('chevronRight', () => {
             expect(ICONS.chevronRight).toBeDefined()
             expect(ICONS.chevronRight).toContain('<svg')
         })
 
 
-        it('should contain history icon', () => {
+        test('history', () => {
             expect(ICONS.history).toBeDefined()
             expect(ICONS.history).toContain('<svg')
         })
 
 
-        it('should contain crow icon', () => {
+        test('crow', () => {
             expect(ICONS.crow).toBeDefined()
             expect(ICONS.crow).toContain('<svg')
         })
 
 
-        it('should have valid SVG viewBox attribute', () => {
+        test('all icons have valid SVG viewBox attribute', () => {
             for (const [name, icon] of Object.entries(ICONS)) {
                 expect(icon).toContain('viewBox', `${name} icon should have viewBox`)
             }

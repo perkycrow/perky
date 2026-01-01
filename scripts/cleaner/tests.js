@@ -235,7 +235,8 @@ function printItUsageAudit (issues) {
     hint('it() = BDD specs ("it should do X") - describes behavior from user perspective')
     hint('test() = unit tests ("test X does Y") - verifies implementation directly')
     hint('Sentences are for edge cases, simple methods can use test("methodName")')
-    hint('These files need refactoring to follow unit test conventions')
+    hint('Refactor these files from BDD style to unit test philosophy')
+    hint('Run yarn test after changes to ensure nothing breaks')
     divider()
 
     for (const {file} of issues) {

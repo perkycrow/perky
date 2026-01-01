@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './devtools_sidebar.js'
 
 
@@ -24,41 +24,41 @@ describe('DevToolsSidebar', () => {
 
     describe('initialization', () => {
 
-        it('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(sidebar).toBeInstanceOf(HTMLElement)
         })
 
 
-        it('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(sidebar.shadowRoot).not.toBeNull()
         })
 
 
-        it('should create sidebar element', () => {
+        test('creates sidebar element', () => {
             const sidebarEl = sidebar.shadowRoot.querySelector('.devtools-sidebar')
             expect(sidebarEl).not.toBeNull()
         })
 
 
-        it('should be hidden by default', () => {
+        test('hidden by default', () => {
             const sidebarEl = sidebar.shadowRoot.querySelector('.devtools-sidebar')
             expect(sidebarEl.classList.contains('hidden')).toBe(true)
         })
 
 
-        it('should have a header', () => {
+        test('has a header', () => {
             const header = sidebar.shadowRoot.querySelector('.sidebar-header')
             expect(header).not.toBeNull()
         })
 
 
-        it('should have a close button', () => {
+        test('has a close button', () => {
             const closeBtn = sidebar.shadowRoot.querySelector('.sidebar-close')
             expect(closeBtn).not.toBeNull()
         })
 
 
-        it('should have a content area', () => {
+        test('has a content area', () => {
             const content = sidebar.shadowRoot.querySelector('.sidebar-content')
             expect(content).not.toBeNull()
         })
@@ -68,7 +68,7 @@ describe('DevToolsSidebar', () => {
 
     describe('setState', () => {
 
-        it('should accept state object', () => {
+        test('accepts state object', () => {
             const state = {
                 addEventListener: vi.fn(),
                 sidebarOpen: false,
@@ -78,7 +78,7 @@ describe('DevToolsSidebar', () => {
         })
 
 
-        it('should register event listeners', () => {
+        test('registers event listeners', () => {
             const state = {
                 addEventListener: vi.fn(),
                 sidebarOpen: false,
@@ -96,7 +96,7 @@ describe('DevToolsSidebar', () => {
 
     describe('close button', () => {
 
-        it('should call closeSidebar on state when clicked', () => {
+        test('calls closeSidebar on state when clicked', () => {
             const state = {
                 addEventListener: vi.fn(),
                 sidebarOpen: false,
@@ -116,13 +116,13 @@ describe('DevToolsSidebar', () => {
 
     describe('title', () => {
 
-        it('should have title icon element', () => {
+        test('has title icon element', () => {
             const titleIcon = sidebar.shadowRoot.querySelector('.sidebar-title-icon')
             expect(titleIcon).not.toBeNull()
         })
 
 
-        it('should have title text element', () => {
+        test('has title text element', () => {
             const title = sidebar.shadowRoot.querySelector('.sidebar-title')
             expect(title).not.toBeNull()
         })
