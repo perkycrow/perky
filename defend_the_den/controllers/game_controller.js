@@ -9,13 +9,13 @@ export default class GameController extends WorldController {
         shoot: 'Space'
     }
 
-    static waveConfigs = [
-        {enemyCount: 3, enemySpeed: 0.4, spawnInterval: 2.0, spawnY: {min: -1.5, max: 1}},
-        {enemyCount: 5, enemySpeed: 0.5, spawnInterval: 1.5, spawnY: {min: -1.5, max: 1}},
-        {enemyCount: 7, enemySpeed: 0.6, spawnInterval: 1.2, spawnY: {min: -1.5, max: 1}},
-        {enemyCount: 10, enemySpeed: 0.7, spawnInterval: 1.0, spawnY: {min: -1.5, max: 1}},
-        {enemyCount: 12, enemySpeed: 0.8, spawnInterval: 0.8, spawnY: {min: -1.5, max: 1}}
-    ]
+    static waveSettings = {
+        baseEnemyCount: 3,
+        enemyCountGrowth: 2,
+        enemySpeed: 0.5,
+        spawnInterval: {min: 0.8, max: 1.5},
+        spawnY: {min: -1.5, max: 1}
+    }
 
     constructor (options = {}) {
         super(options)
@@ -24,6 +24,7 @@ export default class GameController extends WorldController {
         this.enemiesSpawned = 0
         this.enemiesToSpawn = 0
         this.spawnTimer = 0
+        this.nextSpawnTime = 0
         this.waveActive = false
 
         this.on('world:set', (world) => {
@@ -58,6 +59,7 @@ export default class GameController extends WorldController {
         this.enemiesKilled = 0
         this.enemiesToSpawn = config.enemyCount
         this.spawnTimer = 0
+        this.nextSpawnTime = 0
         this.waveActive = true
 
         this.emit('wave:start', waveNumber)
@@ -66,18 +68,12 @@ export default class GameController extends WorldController {
 
 
     getWaveConfig (waveNumber) {
-        const configs = this.constructor.waveConfigs
-        if (waveNumber < configs.length) {
-            return configs[waveNumber]
-        }
-
-        const lastConfig = configs[configs.length - 1]
-        const extraWaves = waveNumber - configs.length + 1
+        const settings = this.constructor.waveSettings
         return {
-            enemyCount: lastConfig.enemyCount + extraWaves * 2,
-            enemySpeed: Math.min(lastConfig.enemySpeed + extraWaves * 0.1, 1.5),
-            spawnInterval: Math.max(lastConfig.spawnInterval - extraWaves * 0.1, 0.3),
-            spawnY: lastConfig.spawnY
+            enemyCount: settings.baseEnemyCount + waveNumber * settings.enemyCountGrowth,
+            enemySpeed: settings.enemySpeed,
+            spawnInterval: settings.spawnInterval,
+            spawnY: settings.spawnY
         }
     }
 
@@ -93,10 +89,11 @@ export default class GameController extends WorldController {
 
         this.spawnTimer += deltaTime
 
-        const config = this.getWaveConfig(this.currentWave)
+        if (this.spawnTimer >= this.nextSpawnTime) {
+            const config = this.getWaveConfig(this.currentWave)
 
-        if (this.spawnTimer >= config.spawnInterval) {
             this.spawnTimer = 0
+            this.nextSpawnTime = config.spawnInterval.min + Math.random() * (config.spawnInterval.max - config.spawnInterval.min)
 
             const randomY = config.spawnY.min + Math.random() * (config.spawnY.max - config.spawnY.min)
 
