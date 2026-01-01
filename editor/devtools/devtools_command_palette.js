@@ -1,6 +1,7 @@
 import BaseEditorComponent from '../base_editor_component.js'
 import {buildCommandPaletteStyles} from './devtools_styles.js'
 import {getAllTools} from './devtools_registry.js'
+import {parseCommand} from './command_parser.js'
 
 
 export default class DevToolsCommandPalette extends BaseEditorComponent {
@@ -109,7 +110,7 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
     }
 
 
-    #collectActionsFromApp (app, actions) {
+    #collectActionsFromApp (app, actions) { // eslint-disable-line class-methods-use-this
         const actionsMap = app.actionDispatcher?.listAllActions()
         if (!actionsMap) {
             return
@@ -123,10 +124,8 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
                     subtitle: app.$id,
                     type: 'action',
                     icon: ICONS.action,
-                    action: () => {
-                        app.actionDispatcher.execute(actionName)
-                        this.#state?.closeCommandPalette()
-                    }
+                    app,
+                    actionName
                 })
             }
         }
@@ -242,12 +241,13 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
     #onInput () {
         const raw = this.#inputEl.value
         const query = raw.trim().toLowerCase()
+        const commandPart = query.split(' ')[0]
 
         if (raw.startsWith('/')) {
-            const commandQuery = query.slice(1)
+            const commandQuery = commandPart.slice(1)
             this.#filterCommands(commandQuery, this.#internalCommands)
         } else if (query) {
-            this.#filterCommands(query, this.#appActions)
+            this.#filterCommands(commandPart, this.#appActions)
         } else {
             this.#filteredCommands = []
             this.#selectedIndex = 0
@@ -342,7 +342,7 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
         result.appendChild(icon)
         result.appendChild(text)
 
-        result.addEventListener('click', () => cmd.action())
+        result.addEventListener('click', () => this.#executeCommand(cmd))
         result.addEventListener('mouseenter', () => {
             const index = this.#filteredCommands.findIndex(c => c.id === cmd.id)
             if (index >= 0) {
@@ -388,9 +388,7 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
 
         case 'Enter':
             e.preventDefault()
-            if (this.#filteredCommands[this.#selectedIndex]) {
-                this.#filteredCommands[this.#selectedIndex].action()
-            }
+            this.#executeCurrentCommand()
             break
 
         case 'Escape':
@@ -400,6 +398,28 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
 
         default:
             break
+        }
+    }
+
+
+    #executeCurrentCommand () {
+        const selected = this.#filteredCommands[this.#selectedIndex]
+
+        if (selected) {
+            this.#executeCommand(selected)
+        }
+    }
+
+
+    #executeCommand (cmd) {
+        if (cmd.type === 'action') {
+            const input = this.#inputEl.value
+            const {args} = parseCommand(input)
+
+            cmd.app.actionDispatcher.execute(cmd.actionName, ...args)
+            this.#state?.closeCommandPalette()
+        } else if (cmd.action) {
+            cmd.action()
         }
     }
 
