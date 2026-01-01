@@ -103,7 +103,7 @@ export default class Inflector {
     }
 
 
-    toCamelCase (string) { // eslint-disable-line class-methods-use-this
+    toCamelCase (string) { // eslint-disable-line class-methods-use-this -- clean
         return string
             .replace(/[-_\s]([a-z])/g, (match, letter) => letter.toUpperCase())
             .replace(/^[A-Z]/, letter => letter.toLowerCase())
@@ -115,7 +115,7 @@ export default class Inflector {
     }
 
 
-    toSnakeCase (string) { // eslint-disable-line class-methods-use-this
+    toSnakeCase (string) { // eslint-disable-line class-methods-use-this -- clean
         return string
             .replace(/[-\s]/g, '_')
             .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
@@ -125,7 +125,7 @@ export default class Inflector {
     }
 
 
-    toKebabCase (string) { // eslint-disable-line class-methods-use-this
+    toKebabCase (string) { // eslint-disable-line class-methods-use-this -- clean
         return string
             .replace(/[_\s]/g, '-')
             .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
