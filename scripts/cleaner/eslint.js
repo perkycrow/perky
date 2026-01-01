@@ -211,6 +211,19 @@ export function isCleanDirective (line) {
 }
 
 
+function isInComment (line, matchIndex) {
+    const singleLineComment = line.indexOf('//')
+    if (singleLineComment !== -1 && singleLineComment < matchIndex) {
+        return true
+    }
+    const blockComment = line.indexOf('/*')
+    if (blockComment !== -1 && blockComment < matchIndex) {
+        return true
+    }
+    return false
+}
+
+
 function findEslintDisables (rootDir) {
     const files = findJsFiles(rootDir)
     const disables = []
@@ -229,7 +242,7 @@ function findEslintDisables (rootDir) {
         lines.forEach((line, index) => {
             for (const pattern of patterns) {
                 const match = line.match(pattern)
-                if (match) {
+                if (match && isInComment(line, match.index)) {
                     const rules = match[1].split(',').map(r => r.trim())
                     const isClean = isCleanDirective(line)
                     rules.forEach(rule => {
