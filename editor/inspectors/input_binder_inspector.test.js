@@ -17,13 +17,15 @@ class MockBinding {
 
 class MockInputBinder {
 
+    #bindings
+
     constructor (bindings = []) {
-        this._bindings = bindings
+        this.#bindings = bindings
     }
 
 
     getAllBindings () {
-        return this._bindings
+        return this.#bindings
     }
 
 }

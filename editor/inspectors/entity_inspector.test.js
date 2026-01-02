@@ -4,19 +4,16 @@ import EntityInspector from './entity_inspector.js'
 
 class MockVec2Input extends HTMLElement {
 
-    constructor () {
-        super()
-        this._value = null
-    }
+    #value = null
 
 
     set value (v) {
-        this._value = v
+        this.#value = v
     }
 
 
     get value () {
-        return this._value
+        return this.#value
     }
 
 }

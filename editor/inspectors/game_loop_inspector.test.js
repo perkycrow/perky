@@ -5,17 +5,19 @@ import Notifier from '../../core/notifier.js'
 
 class MockGameLoop extends Notifier {
 
+    #currentFps
+
     constructor (options = {}) {
         super()
         this.fps = options.fps ?? 60
         this.started = options.started ?? false
         this.paused = options.paused ?? false
-        this._currentFps = options.currentFps ?? 0
+        this.#currentFps = options.currentFps ?? 0
     }
 
 
     getCurrentFps () {
-        return this._currentFps
+        return this.#currentFps
     }
 
 

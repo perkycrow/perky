@@ -4,19 +4,16 @@ import RenderGroupInspector from './render_group_inspector.js'
 
 class MockToggleInput extends HTMLElement {
 
-    constructor () {
-        super()
-        this._checked = false
-    }
+    #checked = false
 
 
     set checked (v) {
-        this._checked = v
+        this.#checked = v
     }
 
 
     get checked () {
-        return this._checked
+        return this.#checked
     }
 
 }
@@ -24,19 +21,16 @@ class MockToggleInput extends HTMLElement {
 
 class MockSliderInput extends HTMLElement {
 
-    constructor () {
-        super()
-        this._value = 0
-    }
+    #value = 0
 
 
     set value (v) {
-        this._value = v
+        this.#value = v
     }
 
 
     get value () {
-        return this._value
+        return this.#value
     }
 
 }

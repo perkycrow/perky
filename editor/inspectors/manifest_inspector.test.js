@@ -4,19 +4,22 @@ import ManifestInspector from './manifest_inspector.js'
 
 class MockManifest {
 
+    #config
+    #assets
+
     constructor (config = {}, assets = []) {
-        this._config = config
-        this._assets = assets
+        this.#config = config
+        this.#assets = assets
     }
 
 
     getConfig () {
-        return this._config
+        return this.#config
     }
 
 
     getAllAssets () {
-        return this._assets
+        return this.#assets
     }
 
 }

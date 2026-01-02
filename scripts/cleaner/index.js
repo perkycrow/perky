@@ -9,6 +9,7 @@ import {
     auditDisables,
     auditSwitches
 } from './eslint.js'
+import {auditPrivacy} from './privacy.js'
 import {auditTests} from './tests.js'
 import {auditWhitespace, fixWhitespace} from './whitespace.js'
 import {bold, cyan, dim, green, yellow} from './format.js'
@@ -57,6 +58,7 @@ function printDigest (results) {
         {key: 'eslint', label: 'ESLint'},
         {key: 'disables', label: 'Disables'},
         {key: 'switches', label: 'Switches'},
+        {key: 'privacy', label: 'Privacy'},
         {key: 'tests', label: 'Tests'}
     ]
 
@@ -86,6 +88,7 @@ export async function runAudit (rootDir, options = {}) {
     results.eslint = auditEslint(rootDir)
     results.disables = auditDisables(rootDir)
     results.switches = auditSwitches(rootDir)
+    results.privacy = auditPrivacy(rootDir)
     results.tests = await auditTests(rootDir)
 
     printDigest(results)

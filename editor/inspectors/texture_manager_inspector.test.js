@@ -5,11 +5,13 @@ import Notifier from '../../core/notifier.js'
 
 class MockTextureManager extends Notifier {
 
+    #stats
+
     constructor (options = {}) {
         super()
         this.maxZombieSize = options.maxZombieSize ?? 1024 * 1024
         this.autoFlushEnabled = options.autoFlushEnabled ?? true
-        this._stats = options.stats || {
+        this.#stats = options.stats || {
             activeCount: 0,
             activeSize: 0,
             zombieCount: 0,
@@ -20,7 +22,12 @@ class MockTextureManager extends Notifier {
 
 
     get stats () {
-        return this._stats
+        return this.#stats
+    }
+
+
+    updateStats (updates) {
+        Object.assign(this.#stats, updates)
     }
 
 
@@ -262,7 +269,7 @@ describe('TextureManagerInspector', () => {
             })
             inspector.setModule(module)
 
-            module._stats.activeCount = 5
+            module.updateStats({activeCount: 5})
             module.emit('create')
 
             const activeCard = inspector.shadowRoot.querySelector('.stat-value.active')
@@ -276,7 +283,7 @@ describe('TextureManagerInspector', () => {
             })
             inspector.setModule(module)
 
-            module._stats.zombieCount = 3
+            module.updateStats({zombieCount: 3})
             module.emit('zombie')
 
             const zombieCard = inspector.shadowRoot.querySelector('.stat-value.zombie')
@@ -295,7 +302,7 @@ describe('TextureManagerInspector', () => {
             })
             inspector.setModule(module2)
 
-            module1._stats.activeCount = 99
+            module1.updateStats({activeCount: 99})
             module1.emit('create')
 
             const activeCard = inspector.shadowRoot.querySelector('.stat-value.active')
