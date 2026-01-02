@@ -115,7 +115,7 @@ export default class ShaderEffectRegistry {
     }
 
 
-    #compileShader (effectTypes, cacheKey) { // eslint-disable-line complexity -- clean
+    #compileShader (effectTypes, cacheKey) {
         const fragments = []
         const uniforms = new Map([
             ['uTexture', 'sampler2D'],
