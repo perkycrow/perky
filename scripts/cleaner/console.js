@@ -9,7 +9,8 @@ const CONSOLE_PATTERN = /\bconsole\.(log|warn|error|info|debug)\s*\(/g
 const EXCLUDED_PATTERNS = [
     /\.test\.js$/,
     /^scripts\//,
-    /^core\/logger\.js$/
+    /^core\/logger\.js$/,
+    /^core\/debug\.js$/
 ]
 
 
