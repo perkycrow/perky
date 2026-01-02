@@ -34,17 +34,17 @@ export default class ShaderEffect {
     }
 
 
-    getHints () { // eslint-disable-line class-methods-use-this
+    getHints () { // eslint-disable-line class-methods-use-this -- clean
         return null
     }
 
 
-    update () { // eslint-disable-line class-methods-use-this
+    update () { // eslint-disable-line class-methods-use-this -- clean
 
     }
 
 
-    dispose () { // eslint-disable-line class-methods-use-this
+    dispose () { // eslint-disable-line class-methods-use-this -- clean
 
     }
 

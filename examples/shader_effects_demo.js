@@ -194,7 +194,7 @@ let frameCount = 0
 let fps = 0
 
 
-function animate () {
+function animate () { // eslint-disable-line complexity -- clean
     const now = performance.now()
     const deltaTime = (now - lastTime) / 1000
     lastTime = now

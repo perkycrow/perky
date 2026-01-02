@@ -109,7 +109,7 @@ export default class ShaderEffectRegistry {
             const Effect = this.#effects.get(typeName)
 
             if (Effect?.shader?.fragment) {
-                const snippet = this.#wrapSnippet(Effect, paramOffset)
+                const snippet = wrapSnippet(Effect, paramOffset)
                 fragments.push(snippet)
 
                 paramOffset += Effect.shader.params?.length || 0
@@ -125,7 +125,7 @@ export default class ShaderEffectRegistry {
             }
         }
 
-        const fragmentSource = this.#buildFragment(fragments, uniforms)
+        const fragmentSource = buildFragment(fragments, uniforms)
 
         return this.#shaderRegistry.register(`sprite_effect_${cacheKey}`, {
             vertex: SPRITE_VERTEX,
@@ -136,40 +136,52 @@ export default class ShaderEffectRegistry {
     }
 
 
-    #wrapSnippet (EffectClass, paramOffset) {
-        const {params = [], fragment} = EffectClass.shader
-        const name = EffectClass.name
+    dispose () {
+        this.#effects.clear()
+        this.#shaderCache.clear()
+        this.#uniformValues.clear()
+        this.#uniformTypes.clear()
+        this.#gl = null
+        this.#shaderRegistry = null
+    }
 
-        const paramDeclarations = params.map((paramName, index) => {
-            const globalIndex = paramOffset + index
+}
 
-            if (globalIndex >= 4) {
-                console.warn(`[ShaderEffect] ${name}: param "${paramName}" exceeds 4 params limit, ignored`)
-                return null
-            }
 
-            const slot = PARAM_SLOTS[globalIndex]
-            return `float ${paramName} = effectParams.${slot};`
-        }).filter(Boolean).join('\n        ')
+function wrapSnippet (EffectClass, paramOffset) {
+    const {params = [], fragment} = EffectClass.shader
+    const name = EffectClass.name
 
-        return `
+    const paramDeclarations = params.map((paramName, index) => {
+        const globalIndex = paramOffset + index
+
+        if (globalIndex >= 4) {
+            console.warn(`[ShaderEffect] ${name}: param "${paramName}" exceeds 4 params limit, ignored`)
+            return null
+        }
+
+        const slot = PARAM_SLOTS[globalIndex]
+        return `float ${paramName} = effectParams.${slot};`
+    }).filter(Boolean).join('\n        ')
+
+    return `
     // === ${name} ===
     {
         ${paramDeclarations}
         ${fragment}
     }
     // === End ${name} ===`
-    }
+}
 
 
-    #buildFragment (snippets, uniforms) {
-        const uniformDeclarations = Array.from(uniforms.entries())
-            .filter(([name]) => name !== 'uTexture' && name !== 'uTexelSize')
-            .filter(([name]) => !name.startsWith('uProjection') && !name.startsWith('uView') && !name.startsWith('uModel'))
-            .map(([name, type]) => `uniform ${type} ${name};`)
-            .join('\n')
+function buildFragment (snippets, uniforms) {
+    const uniformDeclarations = Array.from(uniforms.entries())
+        .filter(([name]) => name !== 'uTexture' && name !== 'uTexelSize')
+        .filter(([name]) => !name.startsWith('uProjection') && !name.startsWith('uView') && !name.startsWith('uModel'))
+        .map(([name, type]) => `uniform ${type} ${name};`)
+        .join('\n')
 
-        return `#version 300 es
+    return `#version 300 es
 precision mediump float;
 
 uniform sampler2D uTexture;
@@ -198,16 +210,4 @@ ${snippets.join('\n')}
     fragColor = vec4(color.rgb, color.a * vOpacity);
 }
 `
-    }
-
-
-    dispose () {
-        this.#effects.clear()
-        this.#shaderCache.clear()
-        this.#uniformValues.clear()
-        this.#uniformTypes.clear()
-        this.#gl = null
-        this.#shaderRegistry = null
-    }
-
 }
