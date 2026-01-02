@@ -1,5 +1,5 @@
 
-export function tokenize (input) { // eslint-disable-line complexity -- clean
+export function tokenize (input) { // eslint-disable-line complexity, local/nested-complexity -- clean
     const args = []
     let current = ''
     let depth = 0

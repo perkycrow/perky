@@ -300,6 +300,7 @@ function findEslintDisables (rootDir) {
 
 const ruleHints = {
     complexity: 'Split into smaller functions or methods (use a function below the class if "this" is not needed). Acceptable in constructors or algorithmic functions where abstraction hurts readability/performance',
+    'local/nested-complexity': 'Reduce nesting depth by using early returns, extracting nested conditions into separate functions, or flattening logic',
     'class-methods-use-this': 'Private method (#)? Use a function below the class. Public? Check if it needs to be exposed, if not use a function below the class',
     'no-unused-vars': 'Remove the unused variable'
 }
