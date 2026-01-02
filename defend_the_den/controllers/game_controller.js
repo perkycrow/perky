@@ -137,7 +137,14 @@ export default class GameController extends WorldController {
 
     shoot () {
         const player = this.world.player
+
+        if (!player.canShoot()) {
+            return
+        }
+
+        player.shootCooldown = player.shootCooldownDuration
         player.shootRecoilTimer = player.shootRecoilDuration
+
         this.world.spawnProjectile({
             x: player.x + 0.3,
             y: player.y

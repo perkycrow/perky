@@ -40,9 +40,9 @@ export default class DenWorld extends World {
         return this.create(Projectile, {
             x: options.x || 0,
             y: options.y || 0,
-            velocityX: options.velocityX || 12,
-            velocityY: options.velocityY || 1,
-            gravity: options.gravity || -8
+            velocityX: options.velocityX || 7,
+            velocityY: options.velocityY || 1.5,
+            gravity: options.gravity || -3
         })
     }
 

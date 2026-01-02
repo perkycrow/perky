@@ -6,11 +6,14 @@ export default class Player extends Entity {
     constructor (params = {}) {
         super(params)
 
-        const {maxSpeed = 8, acceleration = 80, boundaries = {min: -0.85, max: 1.55}} = params
+        const {maxSpeed = 3, acceleration = 25, boundaries = {min: -0.85, max: 1.55}} = params
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
         this.boundaries = boundaries
+
+        this.shootCooldown = 0
+        this.shootCooldownDuration = 0.35
 
         this.shootRecoilTimer = 0
         this.shootRecoilDuration = 0.1
@@ -22,7 +25,13 @@ export default class Player extends Entity {
     }
 
 
+    canShoot () {
+        return this.shootCooldown <= 0
+    }
+
+
     update (deltaTime) {
+        updateShootCooldown(this, deltaTime)
         updateRecoilTimer(this, deltaTime)
         applyMovement(this, deltaTime)
         clampVelocity(this)
@@ -30,6 +39,13 @@ export default class Player extends Entity {
         clampToBoundaries(this)
     }
 
+}
+
+
+function updateShootCooldown (player, deltaTime) {
+    if (player.shootCooldown > 0) {
+        player.shootCooldown -= deltaTime
+    }
 }
 
 
