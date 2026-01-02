@@ -4,12 +4,8 @@ import SpriteEffect from './sprite_effect.js'
 
 describe('SpriteEffect', () => {
 
-    describe('static type', () => {
-
-        test('has base type', () => {
-            expect(SpriteEffect.type).toBe('base')
-        })
-
+    test('has base type', () => {
+        expect(SpriteEffect.type).toBe('base')
     })
 
 
@@ -29,14 +25,10 @@ describe('SpriteEffect', () => {
     })
 
 
-    describe('enabled', () => {
-
-        test('can be set', () => {
-            const effect = new SpriteEffect()
-            effect.enabled = false
-            expect(effect.enabled).toBe(false)
-        })
-
+    test('enabled can be set', () => {
+        const effect = new SpriteEffect()
+        effect.enabled = false
+        expect(effect.enabled).toBe(false)
     })
 
 
@@ -60,33 +52,21 @@ describe('SpriteEffect', () => {
     })
 
 
-    describe('getHints', () => {
-
-        test('returns null by default', () => {
-            const effect = new SpriteEffect()
-            expect(effect.getHints()).toBe(null)
-        })
-
+    test('getHints returns null by default', () => {
+        const effect = new SpriteEffect()
+        expect(effect.getHints()).toBe(null)
     })
 
 
-    describe('update', () => {
-
-        test('exists and accepts deltaTime', () => {
-            const effect = new SpriteEffect()
-            expect(() => effect.update(16)).not.toThrow()
-        })
-
+    test('update exists and accepts deltaTime', () => {
+        const effect = new SpriteEffect()
+        expect(() => effect.update(16)).not.toThrow()
     })
 
 
-    describe('dispose', () => {
-
-        test('exists and can be called', () => {
-            const effect = new SpriteEffect()
-            expect(() => effect.dispose()).not.toThrow()
-        })
-
+    test('dispose exists and can be called', () => {
+        const effect = new SpriteEffect()
+        expect(() => effect.dispose()).not.toThrow()
     })
 
 })

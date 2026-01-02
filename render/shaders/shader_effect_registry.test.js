@@ -279,12 +279,8 @@ describe('ShaderEffectRegistry', () => {
     })
 
 
-    describe('getUniform', () => {
-
-        test('returns undefined for unset uniform', () => {
-            expect(registry.getUniform('uNonExistent')).toBeUndefined()
-        })
-
+    test('getUniform returns undefined for unset uniform', () => {
+        expect(registry.getUniform('uNonExistent')).toBeUndefined()
     })
 
 

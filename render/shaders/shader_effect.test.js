@@ -39,14 +39,10 @@ describe('ShaderEffect', () => {
     })
 
 
-    describe('enabled', () => {
-
-        test('can be set', () => {
-            const effect = new ShaderEffect()
-            effect.enabled = false
-            expect(effect.enabled).toBe(false)
-        })
-
+    test('enabled can be set', () => {
+        const effect = new ShaderEffect()
+        effect.enabled = false
+        expect(effect.enabled).toBe(false)
     })
 
 
@@ -110,33 +106,21 @@ describe('ShaderEffect', () => {
     })
 
 
-    describe('getHints', () => {
-
-        test('returns null', () => {
-            const effect = new ShaderEffect()
-            expect(effect.getHints()).toBe(null)
-        })
-
+    test('getHints returns null', () => {
+        const effect = new ShaderEffect()
+        expect(effect.getHints()).toBe(null)
     })
 
 
-    describe('update', () => {
-
-        test('exists and can be called', () => {
-            const effect = new ShaderEffect()
-            expect(() => effect.update(16)).not.toThrow()
-        })
-
+    test('update exists and can be called', () => {
+        const effect = new ShaderEffect()
+        expect(() => effect.update(16)).not.toThrow()
     })
 
 
-    describe('dispose', () => {
-
-        test('exists and can be called', () => {
-            const effect = new ShaderEffect()
-            expect(() => effect.dispose()).not.toThrow()
-        })
-
+    test('dispose exists and can be called', () => {
+        const effect = new ShaderEffect()
+        expect(() => effect.dispose()).not.toThrow()
     })
 
 })

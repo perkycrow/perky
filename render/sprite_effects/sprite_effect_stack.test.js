@@ -67,14 +67,10 @@ class AnotherShaderEffect extends ShaderEffect {
 
 describe('SpriteEffectStack', () => {
 
-    describe('constructor', () => {
-
-        test('creates with empty effects', () => {
-            const stack = new SpriteEffectStack()
-            expect(stack.count).toBe(0)
-            expect(stack.effects).toEqual([])
-        })
-
+    test('creates with empty effects', () => {
+        const stack = new SpriteEffectStack()
+        expect(stack.count).toBe(0)
+        expect(stack.effects).toEqual([])
     })
 
 
@@ -294,20 +290,16 @@ describe('SpriteEffectStack', () => {
     })
 
 
-    describe('dispose', () => {
+    test('dispose clears all effects', () => {
+        const stack = new SpriteEffectStack()
+        const effect = new MockEffect()
+        effect.dispose = vi.fn()
 
-        test('clears all effects', () => {
-            const stack = new SpriteEffectStack()
-            const effect = new MockEffect()
-            effect.dispose = vi.fn()
+        stack.add(effect)
+        stack.dispose()
 
-            stack.add(effect)
-            stack.dispose()
-
-            expect(stack.count).toBe(0)
-            expect(effect.dispose).toHaveBeenCalled()
-        })
-
+        expect(stack.count).toBe(0)
+        expect(effect.dispose).toHaveBeenCalled()
     })
 
 

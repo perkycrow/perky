@@ -5,13 +5,9 @@ import ShaderEffect from '../../shader_effect.js'
 
 describe('OutlineEffect', () => {
 
-    describe('inheritance', () => {
-
-        test('extends ShaderEffect', () => {
-            const effect = new OutlineEffect()
-            expect(effect).toBeInstanceOf(ShaderEffect)
-        })
-
+    test('extends ShaderEffect', () => {
+        const effect = new OutlineEffect()
+        expect(effect).toBeInstanceOf(ShaderEffect)
     })
 
 
@@ -52,23 +48,15 @@ describe('OutlineEffect', () => {
     })
 
 
-    describe('getParams', () => {
-
-        test('returns width value', () => {
-            const effect = new OutlineEffect({width: 0.03})
-            expect(effect.getParams()).toEqual([0.03])
-        })
-
+    test('getParams returns width value', () => {
+        const effect = new OutlineEffect({width: 0.03})
+        expect(effect.getParams()).toEqual([0.03])
     })
 
 
-    describe('type', () => {
-
-        test('returns class name', () => {
-            const effect = new OutlineEffect()
-            expect(effect.type).toBe('OutlineEffect')
-        })
-
+    test('type returns class name', () => {
+        const effect = new OutlineEffect()
+        expect(effect.type).toBe('OutlineEffect')
     })
 
 })

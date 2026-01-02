@@ -5,13 +5,9 @@ import ShaderEffect from '../../render/shaders/shader_effect.js'
 
 describe('ChromaticEffect', () => {
 
-    describe('inheritance', () => {
-
-        test('extends ShaderEffect', () => {
-            const effect = new ChromaticEffect()
-            expect(effect).toBeInstanceOf(ShaderEffect)
-        })
-
+    test('extends ShaderEffect', () => {
+        const effect = new ChromaticEffect()
+        expect(effect).toBeInstanceOf(ShaderEffect)
     })
 
 
@@ -53,23 +49,15 @@ describe('ChromaticEffect', () => {
     })
 
 
-    describe('getParams', () => {
-
-        test('returns intensity value', () => {
-            const effect = new ChromaticEffect({intensity: 0.3})
-            expect(effect.getParams()).toEqual([0.3])
-        })
-
+    test('getParams returns intensity value', () => {
+        const effect = new ChromaticEffect({intensity: 0.3})
+        expect(effect.getParams()).toEqual([0.3])
     })
 
 
-    describe('type', () => {
-
-        test('returns class name', () => {
-            const effect = new ChromaticEffect()
-            expect(effect.type).toBe('ChromaticEffect')
-        })
-
+    test('type returns class name', () => {
+        const effect = new ChromaticEffect()
+        expect(effect.type).toBe('ChromaticEffect')
     })
 
 })

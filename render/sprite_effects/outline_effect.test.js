@@ -40,42 +40,30 @@ describe('OutlineEffect', () => {
     })
 
 
-    describe('width', () => {
-
-        test('can be set', () => {
-            const effect = new OutlineEffect()
-            effect.width = 0.1
-            expect(effect.width).toBe(0.1)
-        })
-
+    test('width can be set', () => {
+        const effect = new OutlineEffect()
+        effect.width = 0.1
+        expect(effect.width).toBe(0.1)
     })
 
 
-    describe('color', () => {
-
-        test('can be set', () => {
-            const effect = new OutlineEffect()
-            effect.color = [0, 1, 0, 1]
-            expect(effect.color).toEqual([0, 1, 0, 1])
-        })
-
+    test('color can be set', () => {
+        const effect = new OutlineEffect()
+        effect.color = [0, 1, 0, 1]
+        expect(effect.color).toEqual([0, 1, 0, 1])
     })
 
 
-    describe('getHints', () => {
-
-        test('returns width and color', () => {
-            const effect = new OutlineEffect({
-                width: 0.03,
-                color: [0, 0, 1, 1]
-            })
-
-            expect(effect.getHints()).toEqual({
-                width: 0.03,
-                color: [0, 0, 1, 1]
-            })
+    test('getHints returns width and color', () => {
+        const effect = new OutlineEffect({
+            width: 0.03,
+            color: [0, 0, 1, 1]
         })
 
+        expect(effect.getHints()).toEqual({
+            width: 0.03,
+            color: [0, 0, 1, 1]
+        })
     })
 
 })

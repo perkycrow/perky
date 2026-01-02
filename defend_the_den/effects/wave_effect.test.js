@@ -5,13 +5,9 @@ import ShaderEffect from '../../render/shaders/shader_effect.js'
 
 describe('WaveEffect', () => {
 
-    describe('inheritance', () => {
-
-        test('extends ShaderEffect', () => {
-            const effect = new WaveEffect()
-            expect(effect).toBeInstanceOf(ShaderEffect)
-        })
-
+    test('extends ShaderEffect', () => {
+        const effect = new WaveEffect()
+        expect(effect).toBeInstanceOf(ShaderEffect)
     })
 
 
@@ -65,23 +61,15 @@ describe('WaveEffect', () => {
     })
 
 
-    describe('getParams', () => {
-
-        test('returns amplitude and frequency values', () => {
-            const effect = new WaveEffect({amplitude: 0.3, frequency: 1.5})
-            expect(effect.getParams()).toEqual([0.3, 1.5])
-        })
-
+    test('getParams returns amplitude and frequency values', () => {
+        const effect = new WaveEffect({amplitude: 0.3, frequency: 1.5})
+        expect(effect.getParams()).toEqual([0.3, 1.5])
     })
 
 
-    describe('type', () => {
-
-        test('returns class name', () => {
-            const effect = new WaveEffect()
-            expect(effect.type).toBe('WaveEffect')
-        })
-
+    test('type returns class name', () => {
+        const effect = new WaveEffect()
+        expect(effect.type).toBe('WaveEffect')
     })
 
 })

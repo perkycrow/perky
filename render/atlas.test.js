@@ -285,25 +285,21 @@ describe('Atlas', () => {
     })
 
 
-    describe('getShaderParams', () => {
-
-        test('returns normalized tile dimensions and grid info', () => {
-            const atlas = new Atlas({
-                image: createMockImage(256, 128),
-                tileWidth: 64,
-                tileHeight: 64,
-                columns: 4,
-                rows: 2
-            })
-
-            const params = atlas.getShaderParams()
-
-            expect(params.tileWidth).toBe(0.25)
-            expect(params.tileHeight).toBe(0.5)
-            expect(params.columns).toBe(4)
-            expect(params.rows).toBe(2)
+    test('getShaderParams returns normalized tile dimensions and grid info', () => {
+        const atlas = new Atlas({
+            image: createMockImage(256, 128),
+            tileWidth: 64,
+            tileHeight: 64,
+            columns: 4,
+            rows: 2
         })
 
+        const params = atlas.getShaderParams()
+
+        expect(params.tileWidth).toBe(0.25)
+        expect(params.tileHeight).toBe(0.5)
+        expect(params.columns).toBe(4)
+        expect(params.rows).toBe(2)
     })
 
 })

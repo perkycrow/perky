@@ -66,46 +66,34 @@ describe('SplatterEffect', () => {
     })
 
 
-    describe('pattern', () => {
-
-        test('can be set', () => {
-            const effect = new SplatterEffect()
-            effect.pattern = 5
-            expect(effect.pattern).toBe(5)
-        })
-
+    test('pattern can be set', () => {
+        const effect = new SplatterEffect()
+        effect.pattern = 5
+        expect(effect.pattern).toBe(5)
     })
 
 
-    describe('atlas', () => {
-
-        test('can be set', () => {
-            const mockAtlas = {name: 'dirt'}
-            const effect = new SplatterEffect()
-            effect.atlas = mockAtlas
-            expect(effect.atlas).toBe(mockAtlas)
-        })
-
+    test('atlas can be set', () => {
+        const mockAtlas = {name: 'dirt'}
+        const effect = new SplatterEffect()
+        effect.atlas = mockAtlas
+        expect(effect.atlas).toBe(mockAtlas)
     })
 
 
-    describe('getHints', () => {
-
-        test('returns intensity, pattern and atlas', () => {
-            const mockAtlas = {name: 'blood'}
-            const effect = new SplatterEffect({
-                intensity: 0.8,
-                pattern: 2,
-                atlas: mockAtlas
-            })
-
-            expect(effect.getHints()).toEqual({
-                intensity: 0.8,
-                pattern: 2,
-                atlas: mockAtlas
-            })
+    test('getHints returns intensity, pattern and atlas', () => {
+        const mockAtlas = {name: 'blood'}
+        const effect = new SplatterEffect({
+            intensity: 0.8,
+            pattern: 2,
+            atlas: mockAtlas
         })
 
+        expect(effect.getHints()).toEqual({
+            intensity: 0.8,
+            pattern: 2,
+            atlas: mockAtlas
+        })
     })
 
 })
