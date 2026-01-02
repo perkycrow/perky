@@ -23,27 +23,27 @@ export default class BaseTreeNode extends BaseEditorComponent {
     }
 
 
-    getItem () { // eslint-disable-line class-methods-use-this -- clean
+    getItem () { // eslint-disable-line local/class-methods-use-this -- clean
         throw new Error('getItem() must be implemented by subclass')
     }
 
 
-    hasChildren () { // eslint-disable-line class-methods-use-this -- clean
+    hasChildren () { // eslint-disable-line local/class-methods-use-this -- clean
         throw new Error('hasChildren() must be implemented by subclass')
     }
 
 
-    getChildren () { // eslint-disable-line class-methods-use-this -- clean
+    getChildren () { // eslint-disable-line local/class-methods-use-this -- clean
         throw new Error('getChildren() must be implemented by subclass')
     }
 
 
-    createChildNode () { // eslint-disable-line class-methods-use-this -- clean
+    createChildNode () { // eslint-disable-line local/class-methods-use-this -- clean
         throw new Error('createChildNode() must be implemented by subclass')
     }
 
 
-    renderNodeContent () { // eslint-disable-line class-methods-use-this -- clean
+    renderNodeContent () { // eslint-disable-line local/class-methods-use-this -- clean
         throw new Error('renderNodeContent() must be implemented by subclass')
     }
 
@@ -200,7 +200,7 @@ export default class BaseTreeNode extends BaseEditorComponent {
     }
 
 
-    getSelectDetail () { // eslint-disable-line class-methods-use-this -- clean
+    getSelectDetail () { // eslint-disable-line local/class-methods-use-this -- clean
         return {}
     }
 

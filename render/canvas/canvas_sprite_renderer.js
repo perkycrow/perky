@@ -9,7 +9,7 @@ export default class CanvasSpriteRenderer extends CanvasObjectRenderer {
     }
 
 
-    render (sprite, ctx) { // eslint-disable-line class-methods-use-this, local/nested-complexity -- clean
+    render (sprite, ctx) { // eslint-disable-line local/nested-complexity -- clean
         const img = sprite.image || (sprite.currentFrame ? sprite.currentFrame.image : null)
 
         if (img && img.complete && img.naturalWidth > 0 && sprite.currentFrame) {

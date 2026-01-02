@@ -24,17 +24,17 @@ export default class SpriteEffect {
     }
 
 
-    getHints () { // eslint-disable-line class-methods-use-this -- clean
+    getHints () { // eslint-disable-line local/class-methods-use-this -- clean
         return null
     }
 
 
-    update () { // eslint-disable-line class-methods-use-this -- clean
+    update () {
 
     }
 
 
-    dispose () { // eslint-disable-line class-methods-use-this -- clean
+    dispose () {
 
     }
 

@@ -6,7 +6,7 @@ const {VALUE, OLD_VALUE} = InputControl
 
 export default class NavigationControl extends InputControl {
 
-    getDefaultValue () { // eslint-disable-line class-methods-use-this -- clean
+    getDefaultValue () { // eslint-disable-line local/class-methods-use-this -- clean
         return {deltaX: 0, deltaY: 0, deltaZ: 0, event: null}
     }
 

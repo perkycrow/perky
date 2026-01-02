@@ -363,7 +363,7 @@ export default class Vec2 {
     }
 
 
-    get isVector2 () { // eslint-disable-line class-methods-use-this -- clean
+    get isVector2 () { // eslint-disable-line local/class-methods-use-this -- clean
         return true
     }
 

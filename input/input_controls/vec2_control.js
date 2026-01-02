@@ -6,7 +6,7 @@ const {VALUE, OLD_VALUE} = InputControl
 
 export default class Vec2Control extends InputControl {
 
-    getDefaultValue () { // eslint-disable-line class-methods-use-this -- clean
+    getDefaultValue () { // eslint-disable-line local/class-methods-use-this -- clean
         return new Vec2()
     }
 
