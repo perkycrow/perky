@@ -147,25 +147,18 @@ function createSprites (count) {
 
         const combo = effectCombinations[i % effectCombinations.length]
 
+        const effectFactories = {
+            outline: () => new OutlineEffect({width: 0.02 + Math.random() * 0.02}),
+            chromatic: () => new ChromaticEffect({intensity: 0.2 + Math.random() * 0.3}),
+            wave: () => new WaveEffect({
+                amplitude: 0.3 + Math.random() * 0.4,
+                frequency: 0.5 + Number(Math.random())
+            }),
+            pulse: () => new PulseEffect({intensity: 0.5 + Math.random() * 0.5})
+        }
+
         for (const effectName of combo) {
-            let effect
-            switch (effectName) {
-            case 'outline':
-                effect = new OutlineEffect({width: 0.02 + Math.random() * 0.02})
-                break
-            case 'chromatic':
-                effect = new ChromaticEffect({intensity: 0.2 + Math.random() * 0.3})
-                break
-            case 'wave':
-                effect = new WaveEffect({
-                    amplitude: 0.3 + Math.random() * 0.4,
-                    frequency: 0.5 + Number(Math.random())
-                })
-                break
-            case 'pulse':
-                effect = new PulseEffect({intensity: 0.5 + Math.random() * 0.5})
-                break
-            }
+            const effect = effectFactories[effectName]?.()
             if (effect) {
                 sprite.image.effects.add(effect)
                 sprite.effects[effectName] = effect

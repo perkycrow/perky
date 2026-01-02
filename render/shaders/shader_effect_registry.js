@@ -41,6 +41,14 @@ export default class ShaderEffectRegistry {
 
 
     applyUniforms (gl, program) {
+        const uniformSetters = {
+            float: (loc, val) => gl.uniform1f(loc, val),
+            vec2: (loc, val) => gl.uniform2fv(loc, val),
+            vec3: (loc, val) => gl.uniform3fv(loc, val),
+            vec4: (loc, val) => gl.uniform4fv(loc, val),
+            int: (loc, val) => gl.uniform1i(loc, val)
+        }
+
         for (const [name, value] of this.#uniformValues) {
             const location = program.uniforms[name]
             if (location === undefined || location === -1) {
@@ -48,24 +56,8 @@ export default class ShaderEffectRegistry {
             }
 
             const type = this.#uniformTypes.get(name) || DEFAULT_UNIFORM_TYPES[name] || 'float'
-
-            switch (type) {
-            case 'float':
-                gl.uniform1f(location, value)
-                break
-            case 'vec2':
-                gl.uniform2fv(location, value)
-                break
-            case 'vec3':
-                gl.uniform3fv(location, value)
-                break
-            case 'vec4':
-                gl.uniform4fv(location, value)
-                break
-            case 'int':
-                gl.uniform1i(location, value)
-                break
-            }
+            const setter = uniformSetters[type] || uniformSetters.float
+            setter(location, value)
         }
     }
 
