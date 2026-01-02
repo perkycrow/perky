@@ -24,12 +24,12 @@ class MockTextureManager extends Notifier {
     }
 
 
-    flush () {
+    flush () { // eslint-disable-line local/class-methods-use-this -- clean
         return {count: 5, size: 1000}
     }
 
 
-    flushStale () {
+    flushStale () { // eslint-disable-line local/class-methods-use-this -- clean
         return {count: 2, size: 500}
     }
 
