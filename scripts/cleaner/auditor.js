@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import {findJsFiles} from './utils.js'
-import {header, success, hint, listItem, divider} from './format.js'
+import {header, success, successCompact, hint, listItem, divider} from './format.js'
 import {EXCLUSIONS} from './config.js'
 
 
@@ -18,6 +18,7 @@ export default class Auditor {
         this.#rootDir = rootDir
         this.#options = {
             dryRun: false,
+            compact: false,
             ...options
         }
     }
@@ -38,9 +39,12 @@ export default class Auditor {
     }
 
 
-    audit () {
-        this.#printHeader()
+    get compact () {
+        return this.#options.compact
+    }
 
+
+    audit () {
         const files = this.#scanFiles()
         const issues = []
         let issueCount = 0
@@ -76,12 +80,6 @@ export default class Auditor {
         if (!this.constructor.$canFix) {
             throw new Error(`${this.constructor.$name} does not support fix operations`)
         }
-
-        const title = this.dryRun
-            ? `${this.constructor.$name} (dry run)`
-            : `Fixing ${this.constructor.$name}`
-
-        header(title)
 
         const files = this.#scanFiles()
         let filesFixed = 0
@@ -143,8 +141,13 @@ export default class Auditor {
     }
 
 
-    #printHeader () {
-        header(this.constructor.$name)
+    printClean (message) {
+        if (this.compact) {
+            successCompact(message)
+        } else {
+            header(this.constructor.$name)
+            success(message)
+        }
     }
 
 
@@ -167,10 +170,19 @@ export default class Auditor {
 
 
     #printResults (issues) {
+        const message = `No ${this.constructor.$name.toLowerCase()} issues found`
+
         if (issues.length === 0) {
-            success(`No ${this.constructor.$name.toLowerCase()} issues found`)
+            if (this.compact) {
+                successCompact(message)
+            } else {
+                header(this.constructor.$name)
+                success(message)
+            }
             return
         }
+
+        header(this.constructor.$name)
 
         const hintText = this.getHint()
         if (hintText) {
@@ -185,9 +197,17 @@ export default class Auditor {
 
 
     #printFixSummary (filesFixed, issuesFixed) {
+        const message = `No ${this.constructor.$name.toLowerCase()} issues to fix`
+
         if (filesFixed === 0) {
-            success(`No ${this.constructor.$name.toLowerCase()} issues to fix`)
+            if (this.compact) {
+                successCompact(message)
+            } else {
+                header(`Fixing ${this.constructor.$name}`)
+                success(message)
+            }
         } else {
+            header(`Fixing ${this.constructor.$name}`)
             success(`Fixed ${issuesFixed} issue(s) in ${filesFixed} file(s)`)
         }
     }

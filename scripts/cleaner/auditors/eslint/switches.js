@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import EslintAuditor from './base.js'
 import {findJsFiles, groupBy} from '../../utils.js'
-import {header, success, hint, listItem, divider} from '../../format.js'
+import {header, hint, listItem, divider} from '../../format.js'
 
 
 export default class SwitchesAuditor extends EslintAuditor {
@@ -11,14 +11,14 @@ export default class SwitchesAuditor extends EslintAuditor {
     static $canFix = false
 
     audit () {
-        header(this.constructor.$name)
-
         const switches = this.#findSwitchStatements()
 
         if (switches.length === 0) {
-            success('No switch statements found')
+            this.printClean('No switch statements found')
             return {switchesFound: 0, filesWithSwitches: 0}
         }
+
+        header(this.constructor.$name)
 
         const byFile = groupBy(switches, s => s.file)
         const files = Object.keys(byFile)

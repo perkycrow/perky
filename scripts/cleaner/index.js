@@ -108,10 +108,11 @@ export async function runAudit (rootDir, options = {}) {
         printBanner()
     }
 
+    const auditorOptions = {compact: true, ...options}
     const results = {}
 
     for (const AuditorClass of AUDIT_AUDITORS) {
-        const auditor = new AuditorClass(rootDir, options)
+        const auditor = new AuditorClass(rootDir, auditorOptions)
         const key = getAuditorKey(AuditorClass)
 
         if (auditor.audit.constructor.name === 'AsyncFunction') {
@@ -128,6 +129,7 @@ export async function runAudit (rootDir, options = {}) {
 
 
 export function runFix (rootDir, options = {}) {
+    const auditorOptions = {compact: true, ...options}
     const results = {}
 
     for (const AuditorClass of FIX_AUDITORS) {
@@ -135,7 +137,7 @@ export function runFix (rootDir, options = {}) {
             continue
         }
 
-        const auditor = new AuditorClass(rootDir, options)
+        const auditor = new AuditorClass(rootDir, auditorOptions)
         const key = getAuditorKey(AuditorClass)
         results[key] = auditor.fix()
     }

@@ -2,25 +2,24 @@ import fs from 'fs'
 import path from 'path'
 import Auditor from '../../auditor.js'
 import {findJsFiles} from '../../utils.js'
-import {header, success, hint, listItem, divider} from '../../format.js'
+import {header, hint, listItem, divider} from '../../format.js'
 
 
 export default class SingleDescribesAuditor extends Auditor {
 
-    static $name = 'Single-Test Describes'
+    static $name = 'Single Test Describes'
     static $category = 'tests'
     static $canFix = false
 
     audit () {
-        header(this.constructor.$name)
-
         const issues = this.#findSingleTestDescribes()
 
         if (issues.length === 0) {
-            success('No unnecessary describe blocks found')
+            this.printClean('No unnecessary describe blocks found')
             return {filesWithSingleTestDescribes: 0}
         }
 
+        header(this.constructor.$name)
         hint('Remove describe wrapper or add more related tests')
         hint('Use describe() only when testing multiple scenarios of the same feature')
         divider()

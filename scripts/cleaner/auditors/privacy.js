@@ -5,7 +5,7 @@ import {gray} from '../format.js'
 
 export default class PrivacyAuditor extends Auditor {
 
-    static $name = 'Underscore Privacy Convention'
+    static $name = 'Privacy'
     static $category = 'privacy'
     static $canFix = false
 

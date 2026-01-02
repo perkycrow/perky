@@ -1,7 +1,7 @@
 import path from 'path'
 import EslintAuditor from './base.js'
 import {groupBy} from '../../utils.js'
-import {header, success, hint, subHeader, listItem, divider} from '../../format.js'
+import {header, hint, subHeader, listItem, divider} from '../../format.js'
 
 
 const RULE_HINTS = {
@@ -21,12 +21,11 @@ export default class EslintErrorsAuditor extends EslintAuditor {
     static $canFix = true
 
     audit () {
-        header(this.constructor.$name)
-
         const {output} = this.runEslintCommand('--format json .')
         const data = this.parseEslintJson(output)
 
         if (!data) {
+            header(this.constructor.$name)
             hint('Failed to parse ESLint output')
             return {errorCount: 0, warningCount: 0, filesWithIssues: 0}
         }
@@ -34,9 +33,11 @@ export default class EslintErrorsAuditor extends EslintAuditor {
         const allMessages = extractAllMessages(data, this.rootDir)
 
         if (allMessages.length === 0) {
-            success('No ESLint errors or warnings')
+            this.printClean('No ESLint errors or warnings')
             return {errorCount: 0, warningCount: 0, filesWithIssues: 0}
         }
+
+        header(this.constructor.$name)
 
         const byRule = groupBy(allMessages, m => m.rule)
         const sortedRules = Object.entries(byRule).sort((a, b) => b[1].length - a[1].length)
@@ -63,10 +64,8 @@ export default class EslintErrorsAuditor extends EslintAuditor {
 
 
     fix () {
-        header('Auto-fixing ESLint')
-
         this.runEslintCommand('--fix .')
-        success('Auto-fix completed')
+        this.printClean('ESLint auto-fix completed')
 
         return this.audit()
     }

@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import Auditor from '../../auditor.js'
 import {findJsFiles} from '../../utils.js'
-import {header, success, hint, listItem, divider} from '../../format.js'
+import {header, hint, listItem, divider} from '../../format.js'
 
 
 export default class DeepNestingAuditor extends Auditor {
@@ -12,15 +12,14 @@ export default class DeepNestingAuditor extends Auditor {
     static $canFix = false
 
     audit () {
-        header(this.constructor.$name)
-
         const issues = this.#findDeepNesting()
 
         if (issues.length === 0) {
-            success('No deeply nested tests found')
+            this.printClean('No deeply nested tests found')
             return {filesWithDeepNesting: 0}
         }
 
+        header(this.constructor.$name)
         hint('Flatten structure - each describe should group related tests')
         hint('Too many nested describes - try to flatten by removing unnecessary wrappers')
         divider()

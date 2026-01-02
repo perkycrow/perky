@@ -3,7 +3,7 @@ import path from 'path'
 import {pathToFileURL} from 'url'
 import Auditor from '../../auditor.js'
 import {findJsFiles, isExcludedFile} from '../../utils.js'
-import {header, success, hint, listItem, divider} from '../../format.js'
+import {header, hint, listItem, divider} from '../../format.js'
 
 
 export default class MissingTestsAuditor extends Auditor {
@@ -13,15 +13,14 @@ export default class MissingTestsAuditor extends Auditor {
     static $canFix = false
 
     async audit () {
-        header(this.constructor.$name)
-
         const missing = await this.#findFilesWithoutTests()
 
         if (missing.length === 0) {
-            success('All files have corresponding test files')
+            this.printClean('All files have corresponding test files')
             return {filesWithoutTests: 0}
         }
 
+        header(this.constructor.$name)
         hint('Create test files that import and test exported functions')
         hint('Use test() not it() - these are unit tests, not BDD specs')
         hint('Keep it flat: use describe() only when grouping related tests')

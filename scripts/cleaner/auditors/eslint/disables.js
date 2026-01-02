@@ -19,12 +19,10 @@ export default class DisablesAuditor extends EslintAuditor {
     static $canFix = false
 
     audit () {
-        header(this.constructor.$name)
-
         const disables = this.#findEslintDisables()
 
         if (disables.length === 0) {
-            success('No eslint-disable directives found')
+            this.printClean('No eslint-disable directives found')
             return {uncleanCount: 0}
         }
 
@@ -32,10 +30,11 @@ export default class DisablesAuditor extends EslintAuditor {
         const clean = disables.filter(d => d.isClean)
 
         if (unclean.length === 0) {
-            success(`All ${clean.length} directive(s) are marked clean`)
+            this.printClean(`All ${clean.length} directive(s) are marked clean`)
             return {uncleanCount: 0}
         }
 
+        header(this.constructor.$name)
         hint('Fix the issue OR if REALLY legit, add "-- clean" at end of eslint comment')
         divider()
 

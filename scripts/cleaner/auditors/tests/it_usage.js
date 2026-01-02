@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import Auditor from '../../auditor.js'
 import {findJsFiles} from '../../utils.js'
-import {header, success, hint, listItem, divider} from '../../format.js'
+import {header, hint, listItem, divider} from '../../format.js'
 
 
 export default class ItUsageAuditor extends Auditor {
@@ -12,15 +12,14 @@ export default class ItUsageAuditor extends Auditor {
     static $canFix = false
 
     audit () {
-        header(this.constructor.$name)
-
         const issues = this.#findItUsage()
 
         if (issues.length === 0) {
-            success('All test files use test() syntax')
+            this.printClean('All test files use test() syntax')
             return {filesWithItUsage: 0}
         }
 
+        header(this.constructor.$name)
         hint('Use test() instead of it() for unit tests')
         hint('it() = BDD specs ("it should do X") - describes behavior from user perspective')
         hint('test() = unit tests ("test X does Y") - verifies implementation directly')

@@ -10,14 +10,14 @@ export default class DirectivesAuditor extends EslintAuditor {
     static $canFix = true
 
     audit () {
-        header(this.constructor.$name)
-
         const unused = this.#findUnusedDirectives()
 
         if (unused.length === 0) {
-            success('No unused eslint-disable directives')
+            this.printClean('No unused eslint-disable directives')
             return {filesWithIssues: 0, directivesFound: 0}
         }
+
+        header(this.constructor.$name)
 
         const filesWithIssues = unused.map(f => f.relativePath)
         const totalDirectives = unused.reduce((sum, f) => sum + f.directives.length, 0)
@@ -34,15 +34,15 @@ export default class DirectivesAuditor extends EslintAuditor {
 
 
     fix () {
-        const title = this.dryRun ? 'Unused Directives (dry run)' : 'Fixing Unused Directives'
-        header(title)
-
         const unused = this.#findUnusedDirectives()
 
         if (unused.length === 0) {
-            success('No unused eslint-disable directives')
+            this.printClean('No unused eslint-disable directives')
             return {filesFixed: 0, directivesRemoved: 0}
         }
+
+        const title = this.dryRun ? 'Unused Directives (dry run)' : 'Fixing Unused Directives'
+        header(title)
 
         let totalDirectives = 0
 
