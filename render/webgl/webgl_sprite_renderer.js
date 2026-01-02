@@ -47,6 +47,7 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
         const identityMatrix = [1, 0, 0, 0, 1, 0, 0, 0, 1]
         gl.uniformMatrix3fv(program.uniforms.uModelMatrix, false, identityMatrix)
 
+        setEffectUniforms(gl, program)
 
         if (transform) {
             transform.applyUniforms(gl, program, matrices)
@@ -64,4 +65,17 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
         super.dispose()
     }
 
+}
+
+
+function setEffectUniforms (gl, program) { // eslint-disable-line complexity -- clean
+    const uTexelSize = program.uniforms.uTexelSize
+    if (uTexelSize !== undefined && uTexelSize !== -1 && gl.uniform2f) {
+        gl.uniform2f(uTexelSize, 1.0 / 512, 1.0 / 512)
+    }
+
+    const uOutlineColor = program.uniforms.uOutlineColor
+    if (uOutlineColor !== undefined && uOutlineColor !== -1 && gl.uniform4f) {
+        gl.uniform4f(uOutlineColor, 1.0, 1.0, 1.0, 1.0)
+    }
 }

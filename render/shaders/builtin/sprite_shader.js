@@ -32,6 +32,8 @@ export const SPRITE_FRAGMENT = `#version 300 es
 precision mediump float;
 
 uniform sampler2D uTexture;
+uniform vec2 uTexelSize;
+uniform vec4 uOutlineColor;
 
 in vec2 vTexCoord;
 in float vOpacity;
@@ -42,6 +44,22 @@ out vec4 fragColor;
 
 void main() {
     vec4 color = texture(uTexture, vTexCoord);
+    float outlineWidth = vEffectParams.x;
+
+
+    if (outlineWidth > 0.0 && color.a < 0.5) {
+        vec2 offset = uTexelSize * outlineWidth * 100.0;
+
+        float neighborAlpha = 0.0;
+        neighborAlpha += texture(uTexture, vTexCoord + vec2(-offset.x, 0.0)).a;
+        neighborAlpha += texture(uTexture, vTexCoord + vec2(offset.x, 0.0)).a;
+        neighborAlpha += texture(uTexture, vTexCoord + vec2(0.0, -offset.y)).a;
+        neighborAlpha += texture(uTexture, vTexCoord + vec2(0.0, offset.y)).a;
+
+        if (neighborAlpha > 0.0) {
+            color = uOutlineColor;
+        }
+    }
 
 
     if (vTintColor.a > 0.0) {
@@ -56,6 +74,13 @@ void main() {
 export const SPRITE_SHADER_DEF = {
     vertex: SPRITE_VERTEX,
     fragment: SPRITE_FRAGMENT,
-    uniforms: ['uProjectionMatrix', 'uViewMatrix', 'uModelMatrix', 'uTexture'],
+    uniforms: [
+        'uProjectionMatrix',
+        'uViewMatrix',
+        'uModelMatrix',
+        'uTexture',
+        'uTexelSize',
+        'uOutlineColor'
+    ],
     attributes: ['aPosition', 'aTexCoord', 'aOpacity', 'aTintColor', 'aEffectParams']
 }
