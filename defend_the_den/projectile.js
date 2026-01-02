@@ -9,9 +9,9 @@ export default class Projectile extends Entity {
         super(params)
 
         const {
-            velocityX = 5,
-            velocityY = 3,
-            gravity = -10,
+            velocityX = 6,
+            velocityY = 2.5,
+            gravity = -8,
             drag = 0.5
         } = params
 

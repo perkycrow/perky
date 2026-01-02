@@ -41,8 +41,8 @@ export default class DenWorld extends World {
             x: options.x || 0,
             y: options.y || 0,
             velocityX: options.velocityX || 7,
-            velocityY: options.velocityY || 1.5,
-            gravity: options.gravity || -3
+            velocityY: options.velocityY || 0.6,
+            gravity: options.gravity || -1.8
         })
     }
 

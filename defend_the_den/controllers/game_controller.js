@@ -147,7 +147,7 @@ export default class GameController extends WorldController {
 
         this.world.spawnProjectile({
             x: player.x + 0.3,
-            y: player.y
+            y: player.y + 0.1
         })
     }
 
