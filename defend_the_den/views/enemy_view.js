@@ -34,10 +34,10 @@ export default class EnemyView extends EntityView {
         this.root.y = this.entity.y
 
         if (this.entity.hitFlashTimer > 0) {
-            const flash = Math.sin(this.entity.hitFlashTimer * 60) > 0
-            this.root.opacity = flash ? 0.5 : 1
+            const flashIntensity = this.entity.hitFlashTimer / this.entity.hitFlashDuration
+            this.root.tint = [1, 0.2, 0.2, flashIntensity * 0.7]
         } else {
-            this.root.opacity = 1
+            this.root.tint = null
         }
 
         if (this.entity.isStunned) {

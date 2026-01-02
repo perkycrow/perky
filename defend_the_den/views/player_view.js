@@ -1,5 +1,6 @@
 import EntityView from '../../game/entity_view.js'
 import Image2D from '../../render/image_2d.js'
+import OutlineEffect from '../../render/sprite_effects/outline_effect.js'
 
 
 export default class PlayerView extends EntityView {
@@ -20,6 +21,11 @@ export default class PlayerView extends EntityView {
             width: 1,
             height: 1
         })
+
+        this.root.effects.add(new OutlineEffect({
+            width: 0.03,
+            color: [1, 1, 0, 1]
+        }))
     }
 
 
