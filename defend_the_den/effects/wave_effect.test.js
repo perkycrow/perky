@@ -13,20 +13,20 @@ describe('WaveEffect', () => {
 
     describe('static shader', () => {
 
-        test('has amplitude and frequency params', () => {
+        test('has amplitude and phase params', () => {
             expect(WaveEffect.shader.params).toContain('amplitude')
-            expect(WaveEffect.shader.params).toContain('frequency')
+            expect(WaveEffect.shader.params).toContain('phase')
         })
 
 
-        test('has uTime uniform', () => {
-            expect(WaveEffect.shader.uniforms).toContain('uTime')
+        test('has no extra uniforms', () => {
+            expect(WaveEffect.shader.uniforms).toBeUndefined()
         })
 
 
         test('has fragment code with wave distortion', () => {
             expect(WaveEffect.shader.fragment).toContain('sin')
-            expect(WaveEffect.shader.fragment).toContain('uTime')
+            expect(WaveEffect.shader.fragment).toContain('phase')
             expect(WaveEffect.shader.fragment).toContain('distorted')
         })
 
@@ -41,9 +41,9 @@ describe('WaveEffect', () => {
         })
 
 
-        test('creates with default frequency', () => {
+        test('creates with default phase', () => {
             const effect = new WaveEffect()
-            expect(effect.frequency).toBe(1.0)
+            expect(effect.phase).toBe(0)
         })
 
 
@@ -53,16 +53,16 @@ describe('WaveEffect', () => {
         })
 
 
-        test('creates with custom frequency', () => {
-            const effect = new WaveEffect({frequency: 2.0})
-            expect(effect.frequency).toBe(2.0)
+        test('creates with custom phase', () => {
+            const effect = new WaveEffect({phase: 2.0})
+            expect(effect.phase).toBe(2.0)
         })
 
     })
 
 
-    test('getParams returns amplitude and frequency values', () => {
-        const effect = new WaveEffect({amplitude: 0.3, frequency: 1.5})
+    test('getParams returns amplitude and phase values', () => {
+        const effect = new WaveEffect({amplitude: 0.3, phase: 1.5})
         expect(effect.getParams()).toEqual([0.3, 1.5])
     })
 

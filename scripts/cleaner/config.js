@@ -17,13 +17,10 @@ export const PROTECTED_COMMENT_PATTERNS = [
     /^\s*=+\s+.+\s+=+\s*$/
 ]
 
-export const EXCLUDED_FILES = [
-    'scripts/cleaner.js'
-]
+export const EXCLUDED_FILES = []
 
 export const EXCLUDED_PATTERNS = [
-    /\.test\.js$/,
-    /^scripts\/cleaner\//
+    /\.test\.js$/
 ]
 
 export const RULE_ADVICE = new Map([
@@ -34,3 +31,37 @@ export const RULE_ADVICE = new Map([
     ['max-statements-per-line', 'Put each statement on its own line'],
     ['max-nested-callbacks', 'Reduce nesting or extract into functions']
 ])
+
+
+export const EXCLUSIONS = {
+    default: [
+        /\.test\.js$/
+    ],
+
+    comments: [
+        /\.test\.js$/,
+        'scripts/cleaner/auditors/comments.js',
+        'scripts/cleaner/config.js'
+    ],
+
+    whitespace: [
+        /\.test\.js$/
+    ],
+
+    imports: [
+        /\.test\.js$/
+    ],
+
+    console: [
+        /\.test\.js$/,
+        /^scripts\//,
+        /^core\/logger\.js$/,
+        /^core\/debug\.js$/
+    ],
+
+    privacy: [],
+
+    eslint: [],
+
+    tests: []
+}

@@ -10,26 +10,17 @@ import {
 
 describe('isExcludedFile', () => {
 
-    test('excludes files in EXCLUDED_FILES', () => {
-        expect(isExcludedFile('scripts/cleaner.js')).toBe(true)
-    })
-
-
     test('excludes test files', () => {
         expect(isExcludedFile('core/utils.test.js')).toBe(true)
         expect(isExcludedFile('some/path/file.test.js')).toBe(true)
     })
 
 
-    test('excludes cleaner directory', () => {
-        expect(isExcludedFile('scripts/cleaner/comments.js')).toBe(true)
-        expect(isExcludedFile('scripts/cleaner/utils.js')).toBe(true)
-    })
-
-
     test('does not exclude regular files', () => {
         expect(isExcludedFile('core/utils.js')).toBe(false)
         expect(isExcludedFile('game/entity.js')).toBe(false)
+        expect(isExcludedFile('scripts/cleaner/comments.js')).toBe(false)
+        expect(isExcludedFile('scripts/cleaner.js')).toBe(false)
     })
 
 })

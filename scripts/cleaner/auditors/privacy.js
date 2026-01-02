@@ -1,17 +1,34 @@
-import fs from 'fs'
-import path from 'path'
 import * as acorn from 'acorn'
-import {findJsFiles} from './utils.js'
-import {header, success, hint, listItem, divider, gray} from './format.js'
+import Auditor from '../auditor.js'
+import {gray} from '../format.js'
 
 
-const EXCLUDED_PATTERNS = [
-    /^scripts\/cleaner\//
-]
+export default class PrivacyAuditor extends Auditor {
+
+    static $name = 'Underscore Privacy Convention'
+    static $category = 'privacy'
+    static $canFix = false
+
+    analyze (content) { // eslint-disable-line local/class-methods-use-this -- clean
+        const ast = parseContent(content)
+
+        if (!ast) {
+            return []
+        }
+
+        return findUnderscoreMembers(ast)
+    }
 
 
-function isExcludedForPrivacy (relativePath) {
-    return EXCLUDED_PATTERNS.some(pattern => pattern.test(relativePath))
+    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
+        return 'Use # for real privacy, extract to module-level function, or just remove the _'
+    }
+
+
+    formatIssue (issue) { // eslint-disable-line local/class-methods-use-this -- clean
+        return `${gray(`L${issue.line}:`)} ${issue.type}: ${issue.name}`
+    }
+
 }
 
 
@@ -121,63 +138,4 @@ function findUnderscoreMembers (ast) {
     })
 
     return issues
-}
-
-
-function scanFiles (rootDir) {
-    const files = findJsFiles(rootDir)
-    const filesWithIssues = []
-    let totalIssues = 0
-
-    for (const filePath of files) {
-        const relativePath = path.relative(rootDir, filePath)
-
-        if (isExcludedForPrivacy(relativePath)) {
-            continue
-        }
-
-        const content = fs.readFileSync(filePath, 'utf-8')
-        const ast = parseContent(content)
-
-        if (!ast) {
-            continue
-        }
-
-        const issues = findUnderscoreMembers(ast)
-
-        if (issues.length > 0) {
-            filesWithIssues.push({path: relativePath, issues})
-            totalIssues += issues.length
-        }
-    }
-
-    return {filesWithIssues, totalIssues}
-}
-
-
-function printResults (filesWithIssues) {
-    for (const file of filesWithIssues) {
-        listItem(file.path, file.issues.length)
-        for (const issue of file.issues) {
-            console.log(`      ${gray(`L${issue.line}:`)} ${issue.type}: ${issue.name}`)
-        }
-    }
-}
-
-
-export function auditPrivacy (rootDir) {
-    header('Underscore Privacy Convention')
-
-    const {filesWithIssues, totalIssues} = scanFiles(rootDir)
-
-    if (filesWithIssues.length === 0) {
-        success('No underscore-prefixed members found')
-        return {issueCount: 0}
-    }
-
-    hint('Use # for real privacy, extract to module-level function, or just remove the _')
-    divider()
-    printResults(filesWithIssues)
-
-    return {issueCount: totalIssues}
 }

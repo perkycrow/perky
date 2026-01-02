@@ -1,8 +1,35 @@
-import fs from 'fs'
-import path from 'path'
 import * as acorn from 'acorn'
-import {isExcludedFile, findJsFiles} from './utils.js'
-import {header, success, listItem, divider, dim, yellow} from './format.js'
+import Auditor from '../auditor.js'
+
+
+export default class WhitespaceAuditor extends Auditor {
+
+    static $name = 'Whitespace'
+    static $category = 'whitespace'
+    static $canFix = true
+
+    analyze (content) { // eslint-disable-line local/class-methods-use-this -- clean
+        const {issues} = processContent(content)
+        return issues.map(issue => ({text: issue}))
+    }
+
+
+    repair (content) { // eslint-disable-line local/class-methods-use-this -- clean
+        const {result, modified, issues} = processContent(content)
+
+        return {
+            result,
+            fixed: modified,
+            fixCount: issues.length
+        }
+    }
+
+
+    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
+        return null
+    }
+
+}
 
 
 export function fixTrailingWhitespace (content) {
@@ -375,106 +402,4 @@ export function processContent (content) {
     }
 
     return {result, modified, issues}
-}
-
-
-function processFile (filePath, rootDir, dryRun) {
-    const relativePath = path.relative(rootDir, filePath)
-
-    if (isExcludedFile(relativePath)) {
-        return null
-    }
-
-    const content = fs.readFileSync(filePath, 'utf-8')
-    const {result, modified, issues} = processContent(content)
-
-    if (!modified) {
-        return null
-    }
-
-    if (!dryRun) {
-        fs.writeFileSync(filePath, result, 'utf-8')
-    }
-
-    return {relativePath, issues}
-}
-
-
-function collectFilesWithIssues (files, rootDir) {
-    const filesWithIssues = []
-
-    for (const filePath of files) {
-        const relativePath = path.relative(rootDir, filePath)
-
-        if (isExcludedFile(relativePath)) {
-            continue
-        }
-
-        const content = fs.readFileSync(filePath, 'utf-8')
-        const {modified, issues} = processContent(content)
-
-        if (modified) {
-            filesWithIssues.push({relativePath, issues})
-        }
-    }
-
-    return filesWithIssues
-}
-
-
-function printFilesWithIssues (filesWithIssues) {
-    for (const {relativePath, issues} of filesWithIssues) {
-        listItem(relativePath)
-        for (const issue of issues) {
-            console.log(dim(`      ${issue}`))
-        }
-    }
-}
-
-
-export function auditWhitespace (rootDir) {
-    header('Whitespace')
-
-    const files = findJsFiles(rootDir)
-    const filesWithIssues = collectFilesWithIssues(files, rootDir)
-
-    if (filesWithIssues.length === 0) {
-        success('No whitespace issues')
-        return {filesScanned: files.length, filesWithIssues: 0}
-    }
-
-    console.log(yellow(`Found issues in ${filesWithIssues.length} file(s):`))
-    divider()
-    printFilesWithIssues(filesWithIssues)
-
-    return {filesScanned: files.length, filesWithIssues: filesWithIssues.length}
-}
-
-
-export function fixWhitespace (rootDir, dryRun = false) {
-    const title = dryRun ? 'Whitespace (dry run)' : 'Fixing Whitespace'
-    header(title)
-
-    const files = findJsFiles(rootDir)
-    let totalFilesFixed = 0
-
-    for (const filePath of files) {
-        const result = processFile(filePath, rootDir, dryRun)
-
-        if (result) {
-            totalFilesFixed++
-            listItem(result.relativePath)
-            for (const issue of result.issues) {
-                console.log(dim(`      ${issue}`))
-            }
-        }
-    }
-
-    if (totalFilesFixed === 0) {
-        success('No whitespace issues to fix')
-    } else {
-        success(`Fixed whitespace in ${totalFilesFixed} file(s)`)
-    }
-
-    return {filesScanned: files.length, filesFixed: totalFilesFixed}
 }

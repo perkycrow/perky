@@ -1,18 +1,46 @@
-import {auditComments, fixComments} from './comments.js'
-import {auditConsole} from './console.js'
-import {auditImports, fixImports} from './imports.js'
-import {
-    auditUnusedDirectives,
-    fixUnusedDirectives,
-    auditEslint,
-    fixEslint,
-    auditDisables,
-    auditSwitches
-} from './eslint.js'
-import {auditPrivacy} from './privacy.js'
-import {auditTests} from './tests.js'
-import {auditWhitespace, fixWhitespace} from './whitespace.js'
+import CommentsAuditor from './auditors/comments.js'
+import WhitespaceAuditor from './auditors/whitespace.js'
+import ImportsAuditor from './auditors/imports.js'
+import ConsoleAuditor from './auditors/console.js'
+import PrivacyAuditor from './auditors/privacy.js'
+
+import EslintErrorsAuditor from './auditors/eslint/errors.js'
+import DirectivesAuditor from './auditors/eslint/directives.js'
+import DisablesAuditor from './auditors/eslint/disables.js'
+import SwitchesAuditor from './auditors/eslint/switches.js'
+
+import MissingTestsAuditor from './auditors/tests/missing.js'
+import DeepNestingAuditor from './auditors/tests/deep_nesting.js'
+import ItUsageAuditor from './auditors/tests/it_usage.js'
+import SingleDescribesAuditor from './auditors/tests/single_describes.js'
+
 import {bold, cyan, dim, green, yellow} from './format.js'
+
+
+const AUDIT_AUDITORS = [
+    WhitespaceAuditor,
+    CommentsAuditor,
+    ImportsAuditor,
+    ConsoleAuditor,
+    DirectivesAuditor,
+    EslintErrorsAuditor,
+    DisablesAuditor,
+    SwitchesAuditor,
+    PrivacyAuditor,
+    MissingTestsAuditor,
+    DeepNestingAuditor,
+    ItUsageAuditor,
+    SingleDescribesAuditor
+]
+
+
+const FIX_AUDITORS = [
+    WhitespaceAuditor,
+    CommentsAuditor,
+    ImportsAuditor,
+    DirectivesAuditor,
+    EslintErrorsAuditor
+]
 
 
 function printBanner () {
@@ -33,9 +61,17 @@ function isClean (result) {
         return result.length === 0
     }
     if (typeof result === 'object') {
-        return Object.values(result).every((value) => {
+        const ignoredKeys = new Set(['filesScanned', 'issues'])
+
+        return Object.entries(result).every(([key, value]) => {
+            if (ignoredKeys.has(key)) {
+                return true
+            }
             if (typeof value === 'number') {
                 return value === 0
+            }
+            if (Array.isArray(value)) {
+                return value.length === 0
             }
             return true
         })
@@ -51,25 +87,19 @@ function printDigest (results) {
     console.log(cyan('  ╰─────────────────────────────╯'))
     console.log('')
 
-    const sections = [
-        {key: 'imports', label: 'Imports'},
-        {key: 'console', label: 'Console'},
-        {key: 'unusedDirectives', label: 'Unused Directives'},
-        {key: 'eslint', label: 'ESLint'},
-        {key: 'disables', label: 'Disables'},
-        {key: 'switches', label: 'Switches'},
-        {key: 'privacy', label: 'Privacy'},
-        {key: 'tests', label: 'Tests'}
-    ]
-
-    for (const {key, label} of sections) {
-        const clean = isClean(results[key])
+    for (const [name, result] of Object.entries(results)) {
+        const clean = isClean(result)
         const status = clean ? green('✓') : yellow('!')
         const statusText = clean ? dim('clean') : yellow('issues found')
-        console.log(`  ${status} ${label.padEnd(20)} ${statusText}`)
+        console.log(`  ${status} ${name.padEnd(24)} ${statusText}`)
     }
 
     console.log('')
+}
+
+
+function getAuditorKey (AuditorClass) {
+    return AuditorClass.$name.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '')
 }
 
 
@@ -80,16 +110,16 @@ export async function runAudit (rootDir, options = {}) {
 
     const results = {}
 
-    results.whitespace = auditWhitespace(rootDir)
-    results.comments = auditComments(rootDir)
-    results.imports = auditImports(rootDir)
-    results.console = auditConsole(rootDir)
-    results.unusedDirectives = auditUnusedDirectives(rootDir)
-    results.eslint = auditEslint(rootDir)
-    results.disables = auditDisables(rootDir)
-    results.switches = auditSwitches(rootDir)
-    results.privacy = auditPrivacy(rootDir)
-    results.tests = await auditTests(rootDir)
+    for (const AuditorClass of AUDIT_AUDITORS) {
+        const auditor = new AuditorClass(rootDir, options)
+        const key = getAuditorKey(AuditorClass)
+
+        if (auditor.audit.constructor.name === 'AsyncFunction') {
+            results[key] = await auditor.audit()
+        } else {
+            results[key] = auditor.audit()
+        }
+    }
 
     printDigest(results)
 
@@ -98,15 +128,17 @@ export async function runAudit (rootDir, options = {}) {
 
 
 export function runFix (rootDir, options = {}) {
-    const dryRun = options.dryRun ?? false
     const results = {}
 
-    results.whitespace = fixWhitespace(rootDir, dryRun)
-    results.comments = fixComments(rootDir, dryRun)
-    results.imports = fixImports(rootDir, dryRun)
-    results.unusedDirectives = fixUnusedDirectives(rootDir, dryRun)
+    for (const AuditorClass of FIX_AUDITORS) {
+        if (!AuditorClass.$canFix) {
+            continue
+        }
 
-    results.eslint = dryRun ? auditEslint(rootDir) : fixEslint(rootDir)
+        const auditor = new AuditorClass(rootDir, options)
+        const key = getAuditorKey(AuditorClass)
+        results[key] = auditor.fix()
+    }
 
     return results
 }

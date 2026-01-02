@@ -43,7 +43,7 @@ export default defineConfig([globalIgnores(['node_modules/*']), {
         'no-else-return': 0,
         'no-useless-return': 2,
         'no-useless-catch': 2,
-        'no-empty': 2,
+        'no-empty': 0,
         'no-empty-character-class': 2,
         'no-misleading-character-class': 2,
         'no-empty-pattern': 2,

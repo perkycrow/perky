@@ -1,0 +1,125 @@
+import fs from 'fs'
+import path from 'path'
+import Auditor from '../../auditor.js'
+import {findJsFiles} from '../../utils.js'
+import {header, success, hint, listItem, divider} from '../../format.js'
+
+
+export default class SingleDescribesAuditor extends Auditor {
+
+    static $name = 'Single-Test Describes'
+    static $category = 'tests'
+    static $canFix = false
+
+    audit () {
+        header(this.constructor.$name)
+
+        const issues = this.#findSingleTestDescribes()
+
+        if (issues.length === 0) {
+            success('No unnecessary describe blocks found')
+            return {filesWithSingleTestDescribes: 0}
+        }
+
+        hint('Remove describe wrapper or add more related tests')
+        hint('Use describe() only when testing multiple scenarios of the same feature')
+        divider()
+
+        for (const {file} of issues) {
+            listItem(file)
+        }
+
+        return {filesWithSingleTestDescribes: issues.length}
+    }
+
+
+    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
+        return []
+    }
+
+
+    #findSingleTestDescribes () {
+        const files = findTestFiles(this.rootDir)
+
+        return files
+            .map((filePath) => findSingleTestDescribes(filePath, this.rootDir))
+            .filter(Boolean)
+    }
+
+}
+
+
+function findTestFiles (rootDir) {
+    return findJsFiles(rootDir).filter((filePath) => {
+        const relativePath = path.relative(rootDir, filePath)
+        return relativePath.endsWith('.test.js') && !relativePath.startsWith('scripts/cleaner/')
+    })
+}
+
+
+function countLeadingSpaces (line) {
+    const match = line.match(/^(\s*)/)
+    return match ? match[1].length : 0
+}
+
+
+function processDescribeLine (trimmed, lineNum, indent, stack) {
+    if (trimmed.startsWith('describe(')) {
+        for (let i = stack.length - 1; i >= 0; i--) {
+            if (stack[i].indent < indent) {
+                stack[i].testCount++
+                break
+            }
+        }
+        stack.push({line: lineNum, indent, testCount: 0, text: trimmed.substring(0, 40)})
+    }
+}
+
+
+function processTestLine (trimmed, indent, stack) {
+    if (!trimmed.startsWith('test(') && !trimmed.startsWith('it(')) {
+        return
+    }
+    for (let i = stack.length - 1; i >= 0; i--) {
+        if (stack[i].indent < indent) {
+            stack[i].testCount++
+            break
+        }
+    }
+}
+
+
+function processClosingBrace (trimmed, indent, stack, issues) {
+    if (trimmed !== '})' || stack.length === 0) {
+        return
+    }
+    const last = stack[stack.length - 1]
+    if (last.indent < indent) {
+        return
+    }
+    const closed = stack.pop()
+    if (closed.testCount === 1) {
+        issues.push({line: closed.line, text: closed.text})
+    }
+}
+
+
+function findSingleTestDescribes (filePath, rootDir) {
+    const relativePath = path.relative(rootDir, filePath)
+    const content = fs.readFileSync(filePath, 'utf-8')
+    const lines = content.split('\n')
+    const issues = []
+    const stack = []
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i]
+        const trimmed = line.trim()
+        const indent = countLeadingSpaces(line)
+
+        processDescribeLine(trimmed, i + 1, indent, stack)
+        processTestLine(trimmed, indent, stack)
+        processClosingBrace(trimmed, indent, stack, issues)
+    }
+
+    return issues.length > 0 ? {file: relativePath, issues} : null
+}
