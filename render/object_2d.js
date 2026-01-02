@@ -194,6 +194,12 @@ export default class Object2D extends Transform2D {
                 hints.effects = effectHints
                 hints.effectParams = buildEffectParams(effectHints)
             }
+
+            const shaderEffectTypes = this.#effects.getShaderEffectTypes()
+            if (shaderEffectTypes.length > 0) {
+                hints.shaderEffectTypes = shaderEffectTypes
+                hints.effectParams = this.#effects.getShaderEffectParams()
+            }
         }
 
         return hints

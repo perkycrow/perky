@@ -7,6 +7,7 @@ import Sprite2D from '../sprite_2d.js'
 export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
 
     #spriteBatch = null
+    #shaderEffectRegistry = null
 
     static get handles () {
         return [Image2D, Sprite2D]
@@ -20,6 +21,7 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
             context.spriteProgram,
             context.textureManager
         )
+        this.#shaderEffectRegistry = context.shaderEffectRegistry
     }
 
 
@@ -31,29 +33,68 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
 
 
     flush (matrices, renderContext = null) {
-
-        for (const {object, opacity, hints} of this.collected) {
-            this.#spriteBatch.addSprite(object, opacity, hints)
-        }
-
         const gl = this.gl
         const transform = renderContext?.transform
-        const program = transform?.getProgram() || this.context.spriteProgram
-
-        gl.useProgram(program.program)
-        gl.uniformMatrix3fv(program.uniforms.uProjectionMatrix, false, matrices.projectionMatrix)
-        gl.uniformMatrix3fv(program.uniforms.uViewMatrix, false, matrices.viewMatrix)
-
         const identityMatrix = [1, 0, 0, 0, 1, 0, 0, 0, 1]
-        gl.uniformMatrix3fv(program.uniforms.uModelMatrix, false, identityMatrix)
 
-        setEffectUniforms(gl, program)
+        const batches = this.#groupByShaderEffects()
 
-        if (transform) {
-            transform.applyUniforms(gl, program, matrices)
+        for (const [effectKey, items] of batches) {
+            const program = this.#getProgramForEffects(effectKey, transform)
+
+            for (const {object, opacity, hints} of items) {
+                this.#spriteBatch.addSprite(object, opacity, hints)
+            }
+
+            gl.useProgram(program.program)
+            gl.uniformMatrix3fv(program.uniforms.uProjectionMatrix, false, matrices.projectionMatrix)
+            gl.uniformMatrix3fv(program.uniforms.uViewMatrix, false, matrices.viewMatrix)
+            gl.uniformMatrix3fv(program.uniforms.uModelMatrix, false, identityMatrix)
+
+            setEffectUniforms(gl, program)
+
+            if (transform) {
+                transform.applyUniforms(gl, program, matrices)
+            }
+
+            this.#spriteBatch.end(program)
+        }
+    }
+
+
+    #groupByShaderEffects () {
+        const batches = new Map()
+
+        for (const item of this.collected) {
+            const effectTypes = item.hints?.shaderEffectTypes || []
+            const key = effectTypes.sort().join('|')
+
+            if (!batches.has(key)) {
+                batches.set(key, [])
+            }
+            batches.get(key).push(item)
         }
 
-        this.#spriteBatch.end(program)
+        return batches
+    }
+
+
+    #getProgramForEffects (effectKey, transform) {
+        if (transform?.getProgram()) {
+            return transform.getProgram()
+        }
+
+        if (!effectKey || !this.#shaderEffectRegistry) {
+            return this.context.spriteProgram
+        }
+
+        const effectTypes = effectKey.split('|').filter(Boolean)
+
+        if (effectTypes.length === 0) {
+            return this.context.spriteProgram
+        }
+
+        return this.#shaderEffectRegistry.getShaderForEffects(effectTypes)
     }
 
 
@@ -62,6 +103,7 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
             this.#spriteBatch.dispose()
             this.#spriteBatch = null
         }
+        this.#shaderEffectRegistry = null
         super.dispose()
     }
 

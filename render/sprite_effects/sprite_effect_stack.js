@@ -1,3 +1,6 @@
+import ShaderEffect from '../shaders/shader_effect.js'
+
+
 export default class SpriteEffectStack {
 
     #effects = []
@@ -89,6 +92,41 @@ export default class SpriteEffectStack {
 
     dispose () {
         this.clear()
+    }
+
+
+    getShaderEffectTypes () {
+        const types = []
+
+        for (const effect of this.#effects) {
+            if (effect.enabled && effect instanceof ShaderEffect) {
+                types.push(effect.type)
+            }
+        }
+
+        return types
+    }
+
+
+    getShaderEffectParams () {
+        const params = [0, 0, 0, 0]
+        let offset = 0
+
+        for (const effect of this.#effects) {
+            if (!effect.enabled || !(effect instanceof ShaderEffect)) {
+                continue
+            }
+
+            const effectParams = effect.getParams()
+
+            for (let i = 0; i < effectParams.length && offset + i < 4; i++) {
+                params[offset + i] = effectParams[i]
+            }
+
+            offset += effectParams.length
+        }
+
+        return params
     }
 
 }

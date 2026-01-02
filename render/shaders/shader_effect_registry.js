@@ -1,0 +1,163 @@
+import {SPRITE_VERTEX} from './builtin/sprite_shader.js'
+
+
+const SPRITE_ATTRIBUTES = ['aPosition', 'aTexCoord', 'aOpacity', 'aTintColor', 'aEffectParams']
+
+const PARAM_SLOTS = ['x', 'y', 'z', 'w']
+
+
+export default class ShaderEffectRegistry {
+
+    #gl = null
+    #shaderRegistry = null
+    #effects = new Map()
+    #shaderCache = new Map()
+
+    constructor (gl, shaderRegistry) {
+        this.#gl = gl
+        this.#shaderRegistry = shaderRegistry
+    }
+
+
+    register (EffectClass) {
+        const name = EffectClass.name
+        this.#effects.set(name, EffectClass)
+        return this
+    }
+
+
+    get (name) {
+        return this.#effects.get(name) || null
+    }
+
+
+    has (name) {
+        return this.#effects.has(name)
+    }
+
+
+    getShaderForEffects (effectTypes) {
+        const sortedTypes = [...effectTypes].sort()
+        const cacheKey = sortedTypes.join('|') || 'base'
+
+        if (this.#shaderCache.has(cacheKey)) {
+            return this.#shaderCache.get(cacheKey)
+        }
+
+        const shader = this.#compileShader(sortedTypes, cacheKey)
+        this.#shaderCache.set(cacheKey, shader)
+        return shader
+    }
+
+
+    #compileShader (effectTypes, cacheKey) {
+        const fragments = []
+        const uniforms = new Set([
+            'uTexture',
+            'uTexelSize',
+            'uProjectionMatrix',
+            'uViewMatrix',
+            'uModelMatrix'
+        ])
+
+        let paramOffset = 0
+
+        for (const typeName of effectTypes) {
+            const Effect = this.#effects.get(typeName)
+
+            if (Effect?.shader?.fragment) {
+                const snippet = this.#wrapSnippet(Effect, paramOffset)
+                fragments.push(snippet)
+
+                paramOffset += Effect.shader.params?.length || 0
+
+                for (const uniform of Effect.shader.uniforms || []) {
+                    uniforms.add(uniform)
+                }
+            }
+        }
+
+        const fragmentSource = this.#buildFragment(fragments, uniforms)
+
+        return this.#shaderRegistry.register(`sprite_effect_${cacheKey}`, {
+            vertex: SPRITE_VERTEX,
+            fragment: fragmentSource,
+            uniforms: Array.from(uniforms),
+            attributes: SPRITE_ATTRIBUTES
+        })
+    }
+
+
+    #wrapSnippet (EffectClass, paramOffset) {
+        const {params = [], fragment} = EffectClass.shader
+        const name = EffectClass.name
+
+        const paramDeclarations = params.map((paramName, index) => {
+            const globalIndex = paramOffset + index
+
+            if (globalIndex >= 4) {
+                console.warn(`[ShaderEffect] ${name}: param "${paramName}" exceeds 4 params limit, ignored`)
+                return null
+            }
+
+            const slot = PARAM_SLOTS[globalIndex]
+            return `float ${paramName} = effectParams.${slot};`
+        }).filter(Boolean).join('\n        ')
+
+        return `
+    // === ${name} ===
+    {
+        ${paramDeclarations}
+        ${fragment}
+    }
+    // === End ${name} ===`
+    }
+
+
+    #buildFragment (snippets, uniforms) {
+        const uniformDeclarations = Array.from(uniforms)
+            .filter(name => name !== 'uTexture' && name !== 'uTexelSize')
+            .filter(name => !name.startsWith('uProjection') && !name.startsWith('uView') && !name.startsWith('uModel'))
+            .map(name => `uniform float ${name};`)
+            .join('\n')
+
+        return `#version 300 es
+precision mediump float;
+
+uniform sampler2D uTexture;
+uniform vec2 uTexelSize;
+${uniformDeclarations}
+
+in vec2 vTexCoord;
+in float vOpacity;
+in vec4 vTintColor;
+in vec4 vEffectParams;
+
+out vec4 fragColor;
+
+void main() {
+    vec4 color = texture(uTexture, vTexCoord);
+    vec2 texCoord = vTexCoord;
+    vec2 texelSize = uTexelSize;
+    vec4 effectParams = vEffectParams;
+${snippets.join('\n')}
+
+
+    if (vTintColor.a > 0.0) {
+        color.rgb = mix(color.rgb, vTintColor.rgb, vTintColor.a);
+    }
+
+    fragColor = vec4(color.rgb, color.a * vOpacity);
+}
+`
+    }
+
+
+    dispose () {
+        this.#effects.clear()
+        this.#shaderCache.clear()
+        this.#gl = null
+        this.#shaderRegistry = null
+    }
+
+}

@@ -1,6 +1,7 @@
 import BaseRenderer from './base_renderer.js'
 import {traverseAndCollect} from './traverse.js'
 import ShaderRegistry from './shaders/shader_registry.js'
+import ShaderEffectRegistry from './shaders/shader_effect_registry.js'
 import {SPRITE_SHADER_DEF} from './shaders/builtin/sprite_shader.js'
 import {PRIMITIVE_SHADER_DEF} from './shaders/builtin/primitive_shader.js'
 import PostProcessor from './postprocessing/post_processor.js'
@@ -21,6 +22,7 @@ export default class WebGLCanvas2D extends BaseRenderer {
     #rendererRegistry = new Map()
     #renderers = []
     #shaderRegistry = null
+    #shaderEffectRegistry = null
     #postProcessor = null
 
     #compositeQuad = null
@@ -63,6 +65,7 @@ export default class WebGLCanvas2D extends BaseRenderer {
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
         this.#shaderRegistry = new ShaderRegistry(gl)
+        this.#shaderEffectRegistry = new ShaderEffectRegistry(gl, this.#shaderRegistry)
         this.#setupBuiltinShaders()
 
         this.create(WebGLTextureManager, {
@@ -100,7 +103,8 @@ export default class WebGLCanvas2D extends BaseRenderer {
             gl: this.gl,
             spriteProgram: this.spriteProgram,
             primitiveProgram: this.primitiveProgram,
-            textureManager: this.textureManager
+            textureManager: this.textureManager,
+            shaderEffectRegistry: this.#shaderEffectRegistry
         }
 
         renderer.init(context)
@@ -149,6 +153,16 @@ export default class WebGLCanvas2D extends BaseRenderer {
 
     get shaderRegistry () {
         return this.#shaderRegistry
+    }
+
+
+    get shaderEffectRegistry () {
+        return this.#shaderEffectRegistry
+    }
+
+
+    registerShaderEffect (EffectClass) {
+        return this.#shaderEffectRegistry.register(EffectClass)
     }
 
 
@@ -260,6 +274,11 @@ export default class WebGLCanvas2D extends BaseRenderer {
         if (this.#postProcessor) {
             this.#postProcessor.dispose()
             this.#postProcessor = null
+        }
+
+        if (this.#shaderEffectRegistry) {
+            this.#shaderEffectRegistry.dispose()
+            this.#shaderEffectRegistry = null
         }
 
         if (this.#shaderRegistry) {
