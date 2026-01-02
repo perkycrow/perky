@@ -256,6 +256,81 @@ describe('ShaderEffectRegistry', () => {
     })
 
 
+    describe('setUniform', () => {
+
+        test('stores uniform value', () => {
+            registry.setUniform('uTime', 1.5)
+            expect(registry.getUniform('uTime')).toBe(1.5)
+        })
+
+
+        test('returns this for chaining', () => {
+            const result = registry.setUniform('uTime', 1.0)
+            expect(result).toBe(registry)
+        })
+
+
+        test('overwrites existing value', () => {
+            registry.setUniform('uTime', 1.0)
+            registry.setUniform('uTime', 2.0)
+            expect(registry.getUniform('uTime')).toBe(2.0)
+        })
+
+    })
+
+
+    describe('getUniform', () => {
+
+        test('returns undefined for unset uniform', () => {
+            expect(registry.getUniform('uNonExistent')).toBeUndefined()
+        })
+
+    })
+
+
+    describe('applyUniforms', () => {
+
+        test('applies float uniform', () => {
+            const mockProgram = {
+                uniforms: {uTime: 1}
+            }
+            gl.uniform1f = vi.fn()
+
+            registry.setUniform('uTime', 2.5)
+            registry.applyUniforms(gl, mockProgram)
+
+            expect(gl.uniform1f).toHaveBeenCalledWith(1, 2.5)
+        })
+
+
+        test('skips uniform if not in program', () => {
+            const mockProgram = {
+                uniforms: {}
+            }
+            gl.uniform1f = vi.fn()
+
+            registry.setUniform('uTime', 2.5)
+            registry.applyUniforms(gl, mockProgram)
+
+            expect(gl.uniform1f).not.toHaveBeenCalled()
+        })
+
+
+        test('applies vec2 uniform', () => {
+            const mockProgram = {
+                uniforms: {uOffset: 1}
+            }
+            gl.uniform2fv = vi.fn()
+
+            registry.setUniform('uOffset', [0.1, 0.2], 'vec2')
+            registry.applyUniforms(gl, mockProgram)
+
+            expect(gl.uniform2fv).toHaveBeenCalledWith(1, [0.1, 0.2])
+        })
+
+    })
+
+
     describe('dispose', () => {
 
         test('clears all registered effects', () => {
@@ -266,6 +341,13 @@ describe('ShaderEffectRegistry', () => {
 
             expect(registry.has('ChromaticEffect')).toBe(false)
             expect(registry.has('WaveEffect')).toBe(false)
+        })
+
+
+        test('clears uniform values', () => {
+            registry.setUniform('uTime', 1.0)
+            registry.dispose()
+            expect(registry.getUniform('uTime')).toBeUndefined()
         })
 
     })

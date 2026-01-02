@@ -166,6 +166,17 @@ export default class WebGLCanvas2D extends BaseRenderer {
     }
 
 
+    setUniform (name, value, type = null) {
+        this.#shaderEffectRegistry.setUniform(name, value, type)
+        return this
+    }
+
+
+    getUniform (name) {
+        return this.#shaderEffectRegistry.getUniform(name)
+    }
+
+
     registerShader (id, definition) {
         return this.#shaderRegistry.register(id, definition)
     }

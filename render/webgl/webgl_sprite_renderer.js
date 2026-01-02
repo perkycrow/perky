@@ -55,6 +55,10 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
 
             setEffectUniforms(gl, program)
 
+            if (this.#shaderEffectRegistry) {
+                this.#shaderEffectRegistry.applyUniforms(gl, program)
+            }
+
             if (transform) {
                 transform.applyUniforms(gl, program, matrices)
             }

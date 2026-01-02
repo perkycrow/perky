@@ -3,6 +3,7 @@ import Image2D from '../../render/image_2d.js'
 import ImpactSquashEffect from '../effects/impact_squash_effect.js'
 import ChromaticEffect from '../effects/chromatic_effect.js'
 import OutlineEffect from '../../render/shaders/builtin/effects/outline_effect.js'
+import WaveEffect from '../effects/wave_effect.js'
 
 
 export default class EnemyView extends EntityView {
@@ -36,6 +37,9 @@ export default class EnemyView extends EntityView {
 
         this.outlineEffect = new OutlineEffect({width: 0.03})
         this.root.effects.add(this.outlineEffect)
+
+        this.waveEffect = new WaveEffect({amplitude: 0.5, frequency: 1.0})
+        this.root.effects.add(this.waveEffect)
 
         this.lastHp = entity.hp
     }

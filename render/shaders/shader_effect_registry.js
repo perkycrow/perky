@@ -6,16 +6,67 @@ const SPRITE_ATTRIBUTES = ['aPosition', 'aTexCoord', 'aOpacity', 'aTintColor', '
 const PARAM_SLOTS = ['x', 'y', 'z', 'w']
 
 
+const DEFAULT_UNIFORM_TYPES = {
+    uTime: 'float'
+}
+
+
 export default class ShaderEffectRegistry {
 
     #gl = null
     #shaderRegistry = null
     #effects = new Map()
     #shaderCache = new Map()
+    #uniformValues = new Map()
+    #uniformTypes = new Map()
 
     constructor (gl, shaderRegistry) {
         this.#gl = gl
         this.#shaderRegistry = shaderRegistry
+    }
+
+
+    setUniform (name, value, type = null) {
+        this.#uniformValues.set(name, value)
+        if (type) {
+            this.#uniformTypes.set(name, type)
+        }
+        return this
+    }
+
+
+    getUniform (name) {
+        return this.#uniformValues.get(name)
+    }
+
+
+    applyUniforms (gl, program) {
+        for (const [name, value] of this.#uniformValues) {
+            const location = program.uniforms[name]
+            if (location === undefined || location === -1) {
+                continue
+            }
+
+            const type = this.#uniformTypes.get(name) || DEFAULT_UNIFORM_TYPES[name] || 'float'
+
+            switch (type) {
+                case 'float':
+                    gl.uniform1f(location, value)
+                    break
+                case 'vec2':
+                    gl.uniform2fv(location, value)
+                    break
+                case 'vec3':
+                    gl.uniform3fv(location, value)
+                    break
+                case 'vec4':
+                    gl.uniform4fv(location, value)
+                    break
+                case 'int':
+                    gl.uniform1i(location, value)
+                    break
+            }
+        }
     }
 
 
@@ -156,6 +207,8 @@ ${snippets.join('\n')}
     dispose () {
         this.#effects.clear()
         this.#shaderCache.clear()
+        this.#uniformValues.clear()
+        this.#uniformTypes.clear()
         this.#gl = null
         this.#shaderRegistry = null
     }

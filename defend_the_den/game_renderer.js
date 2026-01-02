@@ -15,6 +15,7 @@ import ImpactParticles from './impact_particles.js'
 
 import ChromaticEffect from './effects/chromatic_effect.js'
 import OutlineEffect from '../render/shaders/builtin/effects/outline_effect.js'
+import WaveEffect from './effects/wave_effect.js'
 
 
 export default class GameRenderer extends PerkyModule {
@@ -64,6 +65,7 @@ export default class GameRenderer extends PerkyModule {
         const gameLayer = this.game.getCanvas('game')
         gameLayer.renderer.registerShaderEffect(ChromaticEffect)
         gameLayer.renderer.registerShaderEffect(OutlineEffect)
+        gameLayer.renderer.registerShaderEffect(WaveEffect)
     }
 
 
@@ -123,6 +125,7 @@ export default class GameRenderer extends PerkyModule {
         this.impactParticles.update(deltaTime)
 
         const gameLayer = this.game.getCanvas('game')
+        gameLayer.renderer.setUniform('uTime', performance.now() / 1000)
         gameLayer.markDirty()
         gameLayer.render()
     }
