@@ -38,7 +38,7 @@ export default class EnemyView extends EntityView {
         this.outlineEffect = new OutlineEffect({width: 0.03})
         this.root.effects.add(this.outlineEffect)
 
-        this.waveEffect = new WaveEffect({amplitude: 0.5, frequency: 1.0})
+        this.waveEffect = new WaveEffect({amplitude: 0.1})
         this.root.effects.add(this.waveEffect)
 
         this.lastHp = entity.hp
@@ -55,6 +55,7 @@ export default class EnemyView extends EntityView {
         this.syncHitFlash()
         this.syncStun()
         this.syncSquash()
+        this.syncWave()
     }
 
 
@@ -102,6 +103,11 @@ export default class EnemyView extends EntityView {
             this.root.scaleX = this.baseScaleX
             this.root.scaleY = this.baseScaleY
         }
+    }
+
+
+    syncWave () {
+        this.waveEffect.phase = this.entity.shuffleProgress * Math.PI * 2
     }
 
 }
