@@ -62,6 +62,18 @@ describe('cleanFileContent', () => {
     })
 
 
+    test('preserves comments inside multiline template literals', () => {
+        const content = `const shader = \`
+    // === Effect ===
+    color = vec4(1.0);
+    // === End Effect ===\``
+        const {result, comments} = cleanFileContent(content)
+
+        expect(result).toBe(content)
+        expect(comments).toHaveLength(0)
+    })
+
+
     test('preserves URL comments', () => {
         const content = 'const url = "https://example.com"'
         const {result, comments} = cleanFileContent(content)

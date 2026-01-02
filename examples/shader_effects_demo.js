@@ -150,21 +150,21 @@ function createSprites (count) {
         for (const effectName of combo) {
             let effect
             switch (effectName) {
-                case 'outline':
-                    effect = new OutlineEffect({width: 0.02 + Math.random() * 0.02})
-                    break
-                case 'chromatic':
-                    effect = new ChromaticEffect({intensity: 0.2 + Math.random() * 0.3})
-                    break
-                case 'wave':
-                    effect = new WaveEffect({
-                        amplitude: 0.3 + Math.random() * 0.4,
-                        frequency: 0.5 + Math.random() * 1.0
-                    })
-                    break
-                case 'pulse':
-                    effect = new PulseEffect({intensity: 0.5 + Math.random() * 0.5})
-                    break
+            case 'outline':
+                effect = new OutlineEffect({width: 0.02 + Math.random() * 0.02})
+                break
+            case 'chromatic':
+                effect = new ChromaticEffect({intensity: 0.2 + Math.random() * 0.3})
+                break
+            case 'wave':
+                effect = new WaveEffect({
+                    amplitude: 0.3 + Math.random() * 0.4,
+                    frequency: 0.5 + Number(Math.random())
+                })
+                break
+            case 'pulse':
+                effect = new PulseEffect({intensity: 0.5 + Math.random() * 0.5})
+                break
             }
             if (effect) {
                 sprite.image.effects.add(effect)
@@ -222,10 +222,18 @@ function animate () {
         sprite.image.y += sprite.vy * deltaTime
         sprite.image.rotation += sprite.rotationSpeed * deltaTime
 
-        if (sprite.image.x < -5) sprite.vx = Math.abs(sprite.vx)
-        if (sprite.image.x > 5) sprite.vx = -Math.abs(sprite.vx)
-        if (sprite.image.y < -5) sprite.vy = Math.abs(sprite.vy)
-        if (sprite.image.y > 5) sprite.vy = -Math.abs(sprite.vy)
+        if (sprite.image.x < -5) {
+            sprite.vx = Math.abs(sprite.vx)
+        }
+        if (sprite.image.x > 5) {
+            sprite.vx = -Math.abs(sprite.vx)
+        }
+        if (sprite.image.y < -5) {
+            sprite.vy = Math.abs(sprite.vy)
+        }
+        if (sprite.image.y > 5) {
+            sprite.vy = -Math.abs(sprite.vy)
+        }
     }
 
     layer.markDirty()

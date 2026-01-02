@@ -50,21 +50,21 @@ export default class ShaderEffectRegistry {
             const type = this.#uniformTypes.get(name) || DEFAULT_UNIFORM_TYPES[name] || 'float'
 
             switch (type) {
-                case 'float':
-                    gl.uniform1f(location, value)
-                    break
-                case 'vec2':
-                    gl.uniform2fv(location, value)
-                    break
-                case 'vec3':
-                    gl.uniform3fv(location, value)
-                    break
-                case 'vec4':
-                    gl.uniform4fv(location, value)
-                    break
-                case 'int':
-                    gl.uniform1i(location, value)
-                    break
+            case 'float':
+                gl.uniform1f(location, value)
+                break
+            case 'vec2':
+                gl.uniform2fv(location, value)
+                break
+            case 'vec3':
+                gl.uniform3fv(location, value)
+                break
+            case 'vec4':
+                gl.uniform4fv(location, value)
+                break
+            case 'int':
+                gl.uniform1i(location, value)
+                break
             }
         }
     }

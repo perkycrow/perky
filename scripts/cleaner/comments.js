@@ -12,8 +12,9 @@ export function isUrlComment (textBefore) {
 function removeSingleLineComments (content) {
     const comments = []
 
-    const result = content.replace(/^(.*?)\/\/(.*)$/gm, (match, before, after) => {
-        if (isUrlComment(before) || isInsideString(before) || isProtectedComment(after)) {
+    const result = content.replace(/^(.*?)\/\/(.*)$/gm, (match, before, after, offset) => {
+        const textFromStart = content.substring(0, offset) + before
+        if (isUrlComment(before) || isInsideString(textFromStart) || isProtectedComment(after)) {
             return match
         }
         comments.push({type: 'single-line', text: '//' + after.trim()})
