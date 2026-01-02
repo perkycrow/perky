@@ -1,6 +1,6 @@
 import ApplicationManager from '../application/application_manager.js'
 import DefendTheDen from './defend_the_den.js'
-import '../editor/devtools/index.js'
+import {PerkyDevTools} from '../editor/devtools/index.js'
 
 
 async function init () {
@@ -14,7 +14,7 @@ async function init () {
         preload: 'all'
     })
 
-    const devtools = document.createElement('perky-devtools')
+    const devtools = new PerkyDevTools()
     document.body.appendChild(devtools)
     devtools.setModule(app)
     devtools.setAppManager(appManager)

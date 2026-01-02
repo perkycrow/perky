@@ -3,16 +3,18 @@
   "version": "0.1.0",
   "description": "A modular framework for JavaScript game development",
   "type": "module",
-  "sideEffects": false,
   "license": "Apache-2.0",
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "test": "vitest run",
+    "dev:build": "vite build --config vite.examples.config.js",
+    "dev:preview": "vite preview --config vite.examples.config.js",
     "den": "vite serve defend_the_den --port 3000",
+    "den:build": "vite build --config vite.den.config.js",
+    "den:preview": "vite preview --config vite.den.config.js",
+    "test": "vitest run",
     "cleaner": "node scripts/cleaner.js",
     "clean": "node scripts/cleaner.js --audit --fix"
   },
