@@ -62,6 +62,20 @@
       ],
       "title": "Depth Sorting Demo",
       "description": "Orbiting moon demo showing automatic depth sorting based on position."
+    },
+    {
+      "id": "shader_effects_demo",
+      "file": "shader_effects_demo.html",
+      "category": "render",
+      "tags": [
+        "render",
+        "webgl",
+        "shader",
+        "effects",
+        "performance"
+      ],
+      "title": "Shader Effects Stress Test",
+      "description": "Performance test combining multiple custom shader effects (Outline, Chromatic, Wave, Pulse) with batching optimization."
     }
   ]
 }
