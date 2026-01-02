@@ -1,6 +1,7 @@
 import BaseEditorComponent from '../base_editor_component.js'
 import {buildSidebarStyles} from './devtools_styles.js'
 import {getTool} from './devtools_registry.js'
+import logger from '../../core/logger.js'
 
 
 function createSidebarContent () {
@@ -111,7 +112,7 @@ export default class DevToolsSidebar extends BaseEditorComponent {
 
         const Tool = getTool(toolId)
         if (!Tool) {
-            console.warn(`Tool not found: ${toolId}`)
+            logger.warn(`Tool not found: ${toolId}`)
             return
         }
 

@@ -108,7 +108,7 @@ export function printDiagnostics () {
 
     console.group('🔍 Memory Diagnostics')
     for (const [className, refs] of instances.entries()) {
-        console.log(`${className}: ${refs.size} instances`)
+        logger.info(`${className}: ${refs.size} instances`)
     }
     console.groupEnd()
 }

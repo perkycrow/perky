@@ -1,3 +1,6 @@
+import logger from '../../core/logger.js'
+
+
 export default class FullscreenQuad {
 
     #vertexBuffer = null
@@ -38,7 +41,7 @@ export default class FullscreenQuad {
         const texCoordAttr = program.attributes.aTexCoord
 
         if (positionAttr === undefined || positionAttr === -1) {
-            console.warn('FullscreenQuad: aPosition attribute not found')
+            logger.warn('FullscreenQuad: aPosition attribute not found')
             return
         }
 

@@ -1,4 +1,5 @@
 import {buildEditorStyles, editorHeaderStyles, editorButtonStyles, editorScrollbarStyles} from './editor_theme.js'
+import logger from '../core/logger.js'
 
 
 export default class PerkyCode extends HTMLElement {
@@ -286,7 +287,7 @@ export default class PerkyCode extends HTMLElement {
             this.#loading = false
             this.#error = error.message
             this.#updateView()
-            console.error('Error loading code:', error)
+            logger.error('Error loading code:', error)
         }
     }
 
@@ -394,7 +395,7 @@ export default class PerkyCode extends HTMLElement {
                 this.#copyTimeoutId = null
             }, 2000)
         } catch (error) {
-            console.error('Failed to copy to clipboard:', error)
+            logger.error('Failed to copy to clipboard:', error)
         }
     }
 

@@ -1,4 +1,5 @@
 import {SPRITE_VERTEX} from './builtin/sprite_shader.js'
+import logger from '../../core/logger.js'
 
 
 const SPRITE_ATTRIBUTES = ['aPosition', 'aTexCoord', 'aOpacity', 'aTintColor', 'aEffectParams']
@@ -171,7 +172,7 @@ function wrapSnippet (EffectClass, paramOffset) {
         const globalIndex = paramOffset + index
 
         if (globalIndex >= 4) {
-            console.warn(`[ShaderEffect] ${name}: param "${paramName}" exceeds 4 params limit, ignored`)
+            logger.warn(`[ShaderEffect] ${name}: param "${paramName}" exceeds 4 params limit, ignored`)
             return null
         }
 

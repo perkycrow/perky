@@ -1,3 +1,6 @@
+import logger from '../core/logger.js'
+
+
 let service = null
 
 self.addEventListener('message', async (event) => {
@@ -14,6 +17,6 @@ self.addEventListener('message', async (event) => {
         service = new ServiceClass(config)
 
     } catch (error) {
-        console.error('Service init failed:', error.message)
+        logger.error('Service init failed:', error.message)
     }
 })

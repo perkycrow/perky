@@ -2,6 +2,7 @@ import {detectCollision} from './collision_detector.js'
 import CollisionResolver from './collision_resolver.js'
 import BoxShape from './shapes/box_shape.js'
 import CircleShape from './shapes/circle_shape.js'
+import logger from '../core/logger.js'
 
 
 const SHAPE_CREATORS = {
@@ -42,7 +43,7 @@ export default class CollisionSystem {
 
     setupSpatialGrid () {
         if (!this.bounds) {
-            console.warn('CollisionSystem: spatialGrid requires bounds to be set')
+            logger.warn('CollisionSystem: spatialGrid requires bounds to be set')
             return
         }
 

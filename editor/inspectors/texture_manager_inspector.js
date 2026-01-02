@@ -2,6 +2,7 @@ import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
 import WebGLTextureManager from '../../render/webgl_texture_manager.js'
 import {formatBytes} from '../../core/utils.js'
+import logger from '../../core/logger.js'
 
 
 function createStatCard (label, value, sub, className = '') {
@@ -285,7 +286,7 @@ export default class TextureManagerInspector extends BaseInspector {
 
         const result = this.module.flush()
         if (result.count > 0) {
-            console.log(`[TextureManager] Flushed ${result.count} textures (${formatBytes(result.size)})`)
+            logger.info(`[TextureManager] Flushed ${result.count} textures (${formatBytes(result.size)})`)
         }
         this.#updateAll()
     }
@@ -298,7 +299,7 @@ export default class TextureManagerInspector extends BaseInspector {
 
         const result = this.module.flushStale()
         if (result.count > 0) {
-            console.log(`[TextureManager] Flushed ${result.count} stale textures (${formatBytes(result.size)})`)
+            logger.info(`[TextureManager] Flushed ${result.count} stale textures (${formatBytes(result.size)})`)
         }
         this.#updateAll()
     }

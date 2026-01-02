@@ -84,20 +84,16 @@ function printResults (filesWithConsole) {
 export function auditConsole (rootDir) {
     header('Console Statements')
 
-    const {files, filesWithConsole, totalStatements} = scanFiles(rootDir)
+    const {filesWithConsole, totalStatements} = scanFiles(rootDir)
 
     if (filesWithConsole.length === 0) {
         success('No console statements found')
-        return {filesScanned: files.length, filesWithConsole: 0, statementsFound: 0}
+        return {issueCount: 0}
     }
 
     hint('Use Logger instead: import logger from \'core/logger.js\'')
     divider()
     printResults(filesWithConsole)
 
-    return {
-        filesScanned: files.length,
-        filesWithConsole: filesWithConsole.length,
-        statementsFound: totalStatements
-    }
+    return {issueCount: totalStatements}
 }
