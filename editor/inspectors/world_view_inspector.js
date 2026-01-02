@@ -86,7 +86,7 @@ export default class WorldViewInspector extends BaseInspector {
             composed: true,
             detail: {
                 content: this.module.rootGroup,
-                worldRenderer: this.module
+                worldView: this.module
             }
         }))
     }
