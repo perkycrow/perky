@@ -3,6 +3,9 @@ import Sprite2D from '../sprite_2d.js'
 
 
 const DEFAULT_TEX_COORDS = [0, 1, 1, 1, 1, 0, 0, 0]
+const DEFAULT_TINT = [0, 0, 0, 0]
+const DEFAULT_EFFECT_PARAMS = [0, 0, 0, 0]
+const FLOATS_PER_VERTEX = 14
 
 
 function extractImageAndFrame (object) {
@@ -78,7 +81,7 @@ export default class WebGLSpriteBatch {
         this.maxSprites = options.maxSprites ?? 1000
 
 
-        this.vertexData = new Float32Array(this.maxSprites * 4 * 6)
+        this.vertexData = new Float32Array(this.maxSprites * 4 * FLOATS_PER_VERTEX)
         this.indexData = new Uint16Array(this.maxSprites * 6)
 
         for (let i = 0; i < this.maxSprites; i++) {
@@ -126,8 +129,10 @@ export default class WebGLSpriteBatch {
     }
 
 
-    #writeVertices (corners, texCoords, effectiveOpacity) {
+    #writeVertices (corners, texCoords, effectiveOpacity, hints) {
         const anchorY = Math.min(corners[1], corners[3])
+        const t = hints?.tint || DEFAULT_TINT
+        const ep = hints?.effectParams || DEFAULT_EFFECT_PARAMS
 
         for (let i = 0; i < 4; i++) {
             const idx = this.vertexIndex
@@ -139,15 +144,23 @@ export default class WebGLSpriteBatch {
             this.vertexData[idx + 3] = texCoords[ci + 1]
             this.vertexData[idx + 4] = effectiveOpacity
             this.vertexData[idx + 5] = anchorY
+            this.vertexData[idx + 6] = t[0]
+            this.vertexData[idx + 7] = t[1]
+            this.vertexData[idx + 8] = t[2]
+            this.vertexData[idx + 9] = t[3]
+            this.vertexData[idx + 10] = ep[0]
+            this.vertexData[idx + 11] = ep[1]
+            this.vertexData[idx + 12] = ep[2]
+            this.vertexData[idx + 13] = ep[3]
 
-            this.vertexIndex += 6
+            this.vertexIndex += FLOATS_PER_VERTEX
         }
 
         this.spriteCount++
     }
 
 
-    addSprite (object, effectiveOpacity) {
+    addSprite (object, effectiveOpacity, hints = null) {
         const {image, frame} = extractImageAndFrame(object)
         const texture = getValidTexture(image, this.textureManager)
 
@@ -163,7 +176,7 @@ export default class WebGLSpriteBatch {
         transformCorners(object.worldMatrix, object.getBounds(), corners)
         computeTexCoords(frame, image, texCoords)
 
-        this.#writeVertices(corners, texCoords, effectiveOpacity)
+        this.#writeVertices(corners, texCoords, effectiveOpacity, hints)
     }
 
 
@@ -184,7 +197,7 @@ export default class WebGLSpriteBatch {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
         gl.bufferData(gl.ARRAY_BUFFER, this.vertexData.subarray(0, this.vertexIndex), gl.DYNAMIC_DRAW)
 
-        const stride = 6 * 4
+        const stride = FLOATS_PER_VERTEX * 4
 
         gl.enableVertexAttribArray(program.attributes.aPosition)
         gl.vertexAttribPointer(program.attributes.aPosition, 2, gl.FLOAT, false, stride, 0)
@@ -195,17 +208,33 @@ export default class WebGLSpriteBatch {
         gl.enableVertexAttribArray(program.attributes.aOpacity)
         gl.vertexAttribPointer(program.attributes.aOpacity, 1, gl.FLOAT, false, stride, 4 * 4)
 
-
-        if (program.attributes.aAnchorY !== undefined && program.attributes.aAnchorY !== -1) {
-            gl.enableVertexAttribArray(program.attributes.aAnchorY)
-            gl.vertexAttribPointer(program.attributes.aAnchorY, 1, gl.FLOAT, false, stride, 5 * 4)
-        }
+        this.#bindOptionalAttributes(program, stride)
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
         gl.drawElements(gl.TRIANGLES, this.spriteCount * 6, gl.UNSIGNED_SHORT, 0)
 
         this.spriteCount = 0
         this.vertexIndex = 0
+    }
+
+
+    #bindOptionalAttributes (program, stride) {
+        const gl = this.gl
+        const attrs = program.attributes
+
+        const optionalAttrs = [
+            {name: 'aAnchorY', size: 1, offset: 5 * 4},
+            {name: 'aTintColor', size: 4, offset: 6 * 4},
+            {name: 'aEffectParams', size: 4, offset: 10 * 4}
+        ]
+
+        for (const {name, size, offset} of optionalAttrs) {
+            const location = attrs[name]
+            if (location !== undefined && location !== -1) {
+                gl.enableVertexAttribArray(location)
+                gl.vertexAttribPointer(location, size, gl.FLOAT, false, stride, offset)
+            }
+        }
     }
 
 

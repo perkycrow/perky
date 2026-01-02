@@ -33,6 +33,16 @@ describe('SPRITE_VERTEX', () => {
     })
 
 
+    test('declares aTintColor attribute', () => {
+        expect(SPRITE_VERTEX).toContain('in vec4 aTintColor')
+    })
+
+
+    test('declares aEffectParams attribute', () => {
+        expect(SPRITE_VERTEX).toContain('in vec4 aEffectParams')
+    })
+
+
     test('declares matrix uniforms', () => {
         expect(SPRITE_VERTEX).toContain('uniform mat3 uProjectionMatrix')
         expect(SPRITE_VERTEX).toContain('uniform mat3 uViewMatrix')
@@ -89,7 +99,13 @@ describe('SPRITE_SHADER_DEF', () => {
 
 
     test('has attributes array', () => {
-        expect(SPRITE_SHADER_DEF.attributes).toEqual(['aPosition', 'aTexCoord', 'aOpacity'])
+        expect(SPRITE_SHADER_DEF.attributes).toEqual([
+            'aPosition',
+            'aTexCoord',
+            'aOpacity',
+            'aTintColor',
+            'aEffectParams'
+        ])
     })
 
 })

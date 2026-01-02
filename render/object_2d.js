@@ -1,7 +1,11 @@
 import Transform2D from './transform_2d.js'
+import SpriteEffectStack from './sprite_effects/sprite_effect_stack.js'
 
 
 export default class Object2D extends Transform2D {
+
+    #tint = null
+    #effects = null
 
     constructor (options = {}) { // eslint-disable-line complexity -- clean
         super()
@@ -11,6 +15,10 @@ export default class Object2D extends Transform2D {
         this.depth = options.depth ?? 0
         this.anchorX = options.anchorX ?? 0.5
         this.anchorY = options.anchorY ?? 0.5
+
+        if (options.tint !== undefined) {
+            this.#tint = options.tint
+        }
 
         if (options.x !== undefined) {
             this.x = options.x
@@ -33,6 +41,24 @@ export default class Object2D extends Transform2D {
         if (options.pivotY !== undefined) {
             this.pivotY = options.pivotY
         }
+    }
+
+
+    get tint () {
+        return this.#tint
+    }
+
+
+    set tint (value) {
+        this.#tint = value
+    }
+
+
+    get effects () {
+        if (!this.#effects) {
+            this.#effects = new SpriteEffectStack()
+        }
+        return this.#effects
     }
 
 
@@ -148,8 +174,29 @@ export default class Object2D extends Transform2D {
     }
 
 
-    get renderHints () { // eslint-disable-line class-methods-use-this -- clean
-        return null
+    get renderHints () { // eslint-disable-line complexity -- clean
+        const hasTint = this.#tint !== null
+        const hasEffects = this.#effects !== null && this.#effects.count > 0
+
+        if (!hasTint && !hasEffects) {
+            return null
+        }
+
+        const hints = {}
+
+        if (hasTint) {
+            hints.tint = this.#tint
+        }
+
+        if (hasEffects) {
+            const effectHints = this.#effects.getHints()
+            if (effectHints) {
+                hints.effects = effectHints
+                hints.effectParams = buildEffectParams(effectHints)
+            }
+        }
+
+        return hints
     }
 
 
@@ -157,4 +204,14 @@ export default class Object2D extends Transform2D {
 
     }
 
+}
+
+
+function buildEffectParams (effectHints) {
+    return [
+        effectHints.outline?.width || 0,
+        effectHints.splatter?.intensity || 0,
+        effectHints.splatter?.pattern || 0,
+        0
+    ]
 }
