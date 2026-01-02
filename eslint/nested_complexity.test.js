@@ -13,12 +13,11 @@ const ruleTester = new RuleTester({
 
 describe('nested-complexity', () => {
 
-    test('reports nested complexity correctly', () => {
-        ruleTester.run('nested-complexity', nestedComplexity, {
-            valid: [
+    describe('valid cases', () => {
 
-                // Sequence of conditions without nesting = complexity 1
-                {
+        test('sequence of conditions without nesting = complexity 1', () => {
+            ruleTester.run('nested-complexity', nestedComplexity, {
+                valid: [{
                     code: `
                         function test(params) {
                             const a = params.a || 'default'
@@ -28,10 +27,14 @@ describe('nested-complexity', () => {
                         }
                     `,
                     options: [4]
-                },
+                }],
+                invalid: []
+            })
+        })
 
-                // Simple if = complexity 1
-                {
+        test('simple if = complexity 1', () => {
+            ruleTester.run('nested-complexity', nestedComplexity, {
+                valid: [{
                     code: `
                         function test(a) {
                             if (a) {
@@ -41,10 +44,14 @@ describe('nested-complexity', () => {
                         }
                     `,
                     options: [4]
-                },
+                }],
+                invalid: []
+            })
+        })
 
-                // Two sequential ifs = complexity 1 (not nested)
-                {
+        test('two sequential ifs = complexity 1 (not nested)', () => {
+            ruleTester.run('nested-complexity', nestedComplexity, {
+                valid: [{
                     code: `
                         function test(a, b) {
                             if (a) {
@@ -57,10 +64,14 @@ describe('nested-complexity', () => {
                         }
                     `,
                     options: [4]
-                },
+                }],
+                invalid: []
+            })
+        })
 
-                // Nested if = complexity 2
-                {
+        test('nested if = complexity 2', () => {
+            ruleTester.run('nested-complexity', nestedComplexity, {
+                valid: [{
                     code: `
                         function test(a, b) {
                             if (a) {
@@ -72,10 +83,14 @@ describe('nested-complexity', () => {
                         }
                     `,
                     options: [2]
-                },
+                }],
+                invalid: []
+            })
+        })
 
-                // Condition with && = complexity 2
-                {
+        test('condition with && = complexity 2', () => {
+            ruleTester.run('nested-complexity', nestedComplexity, {
+                valid: [{
                     code: `
                         function test(a, b) {
                             if (a && b) {
@@ -85,10 +100,14 @@ describe('nested-complexity', () => {
                         }
                     `,
                     options: [2]
-                },
+                }],
+                invalid: []
+            })
+        })
 
-                // for + if = complexity 2
-                {
+        test('for + if = complexity 2', () => {
+            ruleTester.run('nested-complexity', nestedComplexity, {
+                valid: [{
                     code: `
                         function test(items) {
                             for (const item of items) {
@@ -99,13 +118,19 @@ describe('nested-complexity', () => {
                         }
                     `,
                     options: [2]
-                }
-            ],
+                }],
+                invalid: []
+            })
+        })
 
-            invalid: [
+    })
 
-                // Triple nesting = complexity 3, max 2
-                {
+    describe('invalid cases', () => {
+
+        test('triple nesting = complexity 3, max 2', () => {
+            ruleTester.run('nested-complexity', nestedComplexity, {
+                valid: [],
+                invalid: [{
                     code: `
                         function test(a, b, c) {
                             if (a) {
@@ -121,10 +146,14 @@ describe('nested-complexity', () => {
                     errors: [{
                         message: 'Nested complexity of 3 exceeds maximum allowed of 2.'
                     }]
-                },
+                }]
+            })
+        })
 
-                // for + if + if = complexity 3, max 2
-                {
+        test('for + if + if = complexity 3, max 2', () => {
+            ruleTester.run('nested-complexity', nestedComplexity, {
+                valid: [],
+                invalid: [{
                     code: `
                         function test(items) {
                             for (const item of items) {
@@ -140,10 +169,14 @@ describe('nested-complexity', () => {
                     errors: [{
                         message: 'Nested complexity of 3 exceeds maximum allowed of 2.'
                     }]
-                },
+                }]
+            })
+        })
 
-                // Complex nested condition
-                {
+        test('complex nested condition', () => {
+            ruleTester.run('nested-complexity', nestedComplexity, {
+                valid: [],
+                invalid: [{
                     code: `
                         function test(a, b, c) {
                             if (a && b) {
@@ -157,10 +190,14 @@ describe('nested-complexity', () => {
                     errors: [{
                         message: 'Nested complexity of 3 exceeds maximum allowed of 2.'
                     }]
-                },
+                }]
+            })
+        })
 
-                // Switch with nested if
-                {
+        test('switch with nested if', () => {
+            ruleTester.run('nested-complexity', nestedComplexity, {
+                valid: [],
+                invalid: [{
                     code: `
                         function test(type, value) {
                             switch (type) {
@@ -178,9 +215,10 @@ describe('nested-complexity', () => {
                     errors: [{
                         message: 'Nested complexity of 3 exceeds maximum allowed of 2.'
                     }]
-                }
-            ]
+                }]
+            })
         })
+
     })
 
 })

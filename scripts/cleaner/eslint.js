@@ -351,6 +351,19 @@ export function auditDisables (rootDir) {
 
 // === SWITCH AUDIT ===
 
+function isInsideTemplateString (content, targetIndex) {
+    let inTemplate = false
+
+    for (let i = 0; i < targetIndex; i++) {
+        if (content[i] === '`' && (i === 0 || content[i - 1] !== '\\')) {
+            inTemplate = !inTemplate
+        }
+    }
+
+    return inTemplate
+}
+
+
 function findSwitchStatements (rootDir) {
     const files = findJsFiles(rootDir)
     const switches = []
@@ -358,18 +371,24 @@ function findSwitchStatements (rootDir) {
     for (const filePath of files) {
         const relativePath = path.relative(rootDir, filePath)
         const content = fs.readFileSync(filePath, 'utf-8')
-        const lines = content.split('\n')
+        const regex = /\bswitch\s*\(/g
+        let match
 
-        lines.forEach((line, index) => {
-            const match = line.match(/\bswitch\s*\(/)
-            if (match) {
-                switches.push({
-                    file: relativePath,
-                    line: index + 1,
-                    context: line.trim()
-                })
+        while ((match = regex.exec(content)) !== null) {
+            if (isInsideTemplateString(content, match.index)) {
+                continue
             }
-        })
+
+            const lineNumber = content.substring(0, match.index).split('\n').length
+            const lines = content.split('\n')
+            const line = lines[lineNumber - 1]
+
+            switches.push({
+                file: relativePath,
+                line: lineNumber,
+                context: line.trim()
+            })
+        }
     }
 
     return switches

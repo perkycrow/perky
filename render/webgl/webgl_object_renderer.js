@@ -40,7 +40,7 @@ export default class WebGLObjectRenderer {
     }
 
 
-    flush () { // eslint-disable-line class-methods-use-this -- clean
+    flush () {
 
     }
 

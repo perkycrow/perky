@@ -23,17 +23,17 @@ export default class BaseTool extends BaseEditorComponent {
     }
 
 
-    onStateSet () { // eslint-disable-line class-methods-use-this -- clean
+    onStateSet () {
 
     }
 
 
-    onActivate () { // eslint-disable-line class-methods-use-this -- clean
+    onActivate () {
 
     }
 
 
-    onDeactivate () { // eslint-disable-line class-methods-use-this -- clean
+    onDeactivate () {
 
     }
 

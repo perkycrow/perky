@@ -40,17 +40,17 @@ function getConditionDepth (node) {
 }
 
 
+const NODES_WITH_TEST_CONDITION = new Set([
+    'IfStatement',
+    'ConditionalExpression',
+    'WhileStatement',
+    'DoWhileStatement',
+    'ForStatement'
+])
+
+
 function getCondition (node) {
-    switch (node.type) {
-    case 'IfStatement':
-    case 'ConditionalExpression':
-    case 'WhileStatement':
-    case 'DoWhileStatement':
-    case 'ForStatement':
-        return node.test
-    default:
-        return null
-    }
+    return NODES_WITH_TEST_CONDITION.has(node.type) ? node.test : null
 }
 
 

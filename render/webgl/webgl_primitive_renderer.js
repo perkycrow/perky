@@ -34,7 +34,7 @@ export default class WebGLPrimitiveRenderer extends WebGLObjectRenderer {
     }
 
 
-    renderObject () { // eslint-disable-line class-methods-use-this -- clean
+    renderObject () {
 
     }
 
