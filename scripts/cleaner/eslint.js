@@ -12,10 +12,11 @@ export function isUnusedDirectiveMessage (message) {
 
 function runEslintCommand (args, rootDir) {
     try {
-        const output = execSync(`npx eslint ${args}`, {
+        const output = execSync(`yarn eslint ${args}`, {
             cwd: rootDir,
             encoding: 'utf-8',
-            stdio: ['pipe', 'pipe', 'pipe']
+            stdio: ['pipe', 'pipe', 'pipe'],
+            maxBuffer: 10 * 1024 * 1024
         })
         return {output, error: null}
     } catch (error) {
