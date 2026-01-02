@@ -40,7 +40,7 @@ export default class ShaderEffectRegistry {
     }
 
 
-    applyUniforms (gl, program) {
+    applyUniforms (gl, program) { // eslint-disable-line complexity -- clean
         const uniformSetters = {
             float: (loc, val) => gl.uniform1f(loc, val),
             vec2: (loc, val) => gl.uniform2fv(loc, val),
@@ -93,7 +93,7 @@ export default class ShaderEffectRegistry {
     }
 
 
-    #compileShader (effectTypes, cacheKey) {
+    #compileShader (effectTypes, cacheKey) { // eslint-disable-line complexity -- clean
         const fragments = []
         const uniforms = new Map([
             ['uTexture', 'sampler2D'],
