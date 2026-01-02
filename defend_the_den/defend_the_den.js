@@ -6,6 +6,7 @@ import GameRenderer from './game_renderer.js'
 import WaveProgressBar from './ui/wave_progress_bar.js'
 
 import VignettePass from '../render/postprocessing/passes/vignette_pass.js'
+import DayNightPass from '../render/postprocessing/passes/day_night_pass.js'
 
 import manifest from './manifest.js'
 import debug from '../core/debug.js'
@@ -73,8 +74,17 @@ export default class DefendTheDen extends Game {
         gameController.world = this.world
 
         const gameLayer = this.getCanvas('game')
+
+        this.dayNightPass = new DayNightPass()
+        gameLayer.renderer.addPostPass(this.dayNightPass)
+        this.dayNightPass.setNight()
+
         const vignettePass = new VignettePass()
         gameLayer.renderer.addPostPass(vignettePass)
+
+        this.on('update', (delta, time) => {
+            this.dayNightPass.setUniform('uTime', time)
+        })
 
         const uiLayer = this.getHTML('ui')
         const waveProgress = this.create(WaveProgressBar, {
