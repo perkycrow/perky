@@ -3,51 +3,6 @@
   "version": "0.1.0",
   "description": "A modular framework for JavaScript game development",
   "type": "module",
-  "files": [
-    "core/**/*.js",
-    "canvas/**/*.js",
-    "audio/**/*.js",
-    "ui/**/*.js",
-    "input/**/*.js",
-    "application/**/*.js",
-    "game/**/*.js",
-    "math/**/*.js",
-    "editor/**/*.js",
-    "**/*.css",
-    "README.md",
-    "LICENSE"
-  ],
-  "exports": {
-    "./core/*": {
-      "import": "./core/*.js"
-    },
-    "./canvas/*": {
-      "import": "./canvas/*.js"
-    },
-    "./audio/*": {
-      "import": "./audio/*.js"
-    },
-    "./ui/*": {
-      "import": "./ui/*.js"
-    },
-    "./ui/*.css": "./ui/*.css",
-    "./input/*": {
-      "import": "./input/*.js"
-    },
-    "./application/*": {
-      "import": "./application/*.js"
-    },
-    "./game/*": {
-      "import": "./game/*.js"
-    },
-    "./math/*": {
-      "import": "./math/*.js"
-    },
-    "./editor/*": {
-      "import": "./editor/*.js"
-    },
-    "./**/*.css": "./**/*.css"
-  },
   "sideEffects": false,
   "license": "Apache-2.0",
   "publishConfig": {
@@ -56,10 +11,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:watch": "chokidar 'src/**/*' -c 'yarn build' --initial",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "mist": "vite serve mistbrewer --port 3000",
     "den": "vite serve defend_the_den --port 3000",
     "cleaner": "node scripts/cleaner.js",
     "clean": "node scripts/cleaner.js --audit --fix"
@@ -74,12 +26,12 @@
   "author": "PerkyCrow <contact@perkycrow.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/perkycrow/core.git"
+    "url": "git+https://github.com/perkycrow/perky.git"
   },
   "bugs": {
-    "url": "https://github.com/perkycrow/core/issues"
+    "url": "https://github.com/perkycrow/perky/issues"
   },
-  "homepage": "https://github.com/perkycrow/core#readme",
+  "homepage": "https://github.com/perkycrow/perky#readme",
   "engines": {
     "node": ">=16.0.0"
   },
