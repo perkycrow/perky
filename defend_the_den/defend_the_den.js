@@ -82,8 +82,11 @@ export default class DefendTheDen extends Game {
         const vignettePass = new VignettePass()
         gameLayer.renderer.addPostPass(vignettePass)
 
-        this.on('update', (delta, time) => {
-            this.dayNightPass.setUniform('uTime', time)
+        this.elapsedTime = 0
+        this.on('update', (delta) => {
+            this.elapsedTime += delta
+            this.dayNightPass.setUniform('uTime', this.elapsedTime)
+            this.dayNightPass.setTimeOfDay(this.elapsedTime * 0.1)
         })
 
         const uiLayer = this.getHTML('ui')

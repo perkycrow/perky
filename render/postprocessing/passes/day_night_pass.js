@@ -34,7 +34,7 @@ export default class DayNightPass extends RenderPass {
 
                 float blueness = color.b - max(color.r, color.g);
                 float skyFactor = smoothstep(-0.08, 0.15, blueness);
-                float skyDarkening = uDarkness + skyFactor * 0.35;
+                float skyDarkening = min(uDarkness + skyFactor * 0.35, 0.85);
 
                 vec3 rgb = color.rgb * (1.0 - skyDarkening);
 
@@ -44,18 +44,19 @@ export default class DayNightPass extends RenderPass {
 
                 if (blueness > 0.0 && uStarsIntensity > 0.0) {
                     vec2 gridSize = vec2(100.0, 60.0);
-                    vec2 starCoord = floor(vTexCoord * gridSize);
+                    vec2 starOffset = vec2(uTime * 0.02, 0.0);
+                    vec2 starCoord = floor((vTexCoord + starOffset) * gridSize);
                     float starRand = random(starCoord);
 
                     if (starRand > 0.92) {
-                        vec2 cellUV = fract(vTexCoord * gridSize);
+                        vec2 cellUV = fract((vTexCoord + starOffset) * gridSize);
                         vec2 starPos = vec2(random(starCoord + 0.1), random(starCoord + 0.2));
                         float dist = length(cellUV - starPos);
 
                         float starSize = 0.08 + random(starCoord + 0.3) * 0.08;
                         float star = smoothstep(starSize, 0.0, dist);
 
-                        float twinkle = sin(uTime * (1.5 + starRand * 2.0) + starRand * 6.28) * 0.5 + 0.5;
+                        float twinkle = sin(uTime * (1.5 + starRand * 2.0) + starRand * 6.28) * 0.3 + 0.7;
                         float skyBlend = (luminance - uStarsThreshold) / (1.0 - uStarsThreshold);
                         float starBrightness = uStarsIntensity * star * twinkle * skyBlend;
                         rgb += vec3(starBrightness);
@@ -88,19 +89,81 @@ export default class DayNightPass extends RenderPass {
     }
 
 
-    setNight() {
-        this.setUniform('uDarkness', 0.4)
-        this.setUniform('uTintStrength', 0.5)
-        this.setUniform('uTintColor', [0.4, 0.5, 0.8])
-        this.setUniform('uStarsIntensity', 1.2)
-        this.setUniform('uStarsThreshold', 0.55)
+    static phases = {
+        night: {
+            darkness: 0.4,
+            tintStrength: 0.5,
+            tintColor: [0.4, 0.5, 0.8],
+            starsIntensity: 1.2
+        },
+        dawn: {
+            darkness: 0.15,
+            tintStrength: 0.4,
+            tintColor: [1.0, 0.6, 0.5],
+            starsIntensity: 0.0
+        },
+        day: {
+            darkness: 0.0,
+            tintStrength: 0.0,
+            tintColor: [1.0, 1.0, 1.0],
+            starsIntensity: 0.0
+        },
+        dusk: {
+            darkness: 0.2,
+            tintStrength: 0.35,
+            tintColor: [1.0, 0.5, 0.4],
+            starsIntensity: 0.0
+        }
+    }
+
+
+    setTimeOfDay(t) {
+        const time = ((t % 1) + 1) % 1
+
+        let fromPhase, toPhase, blend
+
+        if (time < 0.33) {
+            fromPhase = DayNightPass.phases.dawn
+            toPhase = DayNightPass.phases.day
+            blend = time / 0.33
+        } else if (time < 0.66) {
+            fromPhase = DayNightPass.phases.day
+            toPhase = DayNightPass.phases.night
+            blend = (time - 0.33) / 0.33
+        } else {
+            fromPhase = DayNightPass.phases.night
+            toPhase = DayNightPass.phases.dawn
+            blend = (time - 0.66) / 0.34
+        }
+
+        const smoothBlend = blend * blend * (3 - 2 * blend)
+
+        const lerp = (a, b, t) => a + (b - a) * t
+        const lerpColor = (a, b, t) => [
+            lerp(a[0], b[0], t),
+            lerp(a[1], b[1], t),
+            lerp(a[2], b[2], t)
+        ]
+
+        this.setUniform('uDarkness', lerp(fromPhase.darkness, toPhase.darkness, smoothBlend))
+        this.setUniform('uTintStrength', lerp(fromPhase.tintStrength, toPhase.tintStrength, smoothBlend))
+        this.setUniform('uTintColor', lerpColor(fromPhase.tintColor, toPhase.tintColor, smoothBlend))
+        this.setUniform('uStarsIntensity', lerp(fromPhase.starsIntensity, toPhase.starsIntensity, smoothBlend))
+    }
+
+
+    setDawn() {
+        this.setTimeOfDay(0.0)
     }
 
 
     setDay() {
-        this.setUniform('uDarkness', 0.0)
-        this.setUniform('uTintStrength', 0.0)
-        this.setUniform('uStarsIntensity', 0.0)
+        this.setTimeOfDay(0.33)
+    }
+
+
+    setNight() {
+        this.setTimeOfDay(0.66)
     }
 
 }
