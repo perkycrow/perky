@@ -93,6 +93,28 @@ export default class ShaderEffectRegistry {
     }
 
 
+    #collectUniforms (effectUniforms, uniforms) {
+        for (const uniform of effectUniforms) {
+            const {name, type} = this.#parseUniform(uniform)
+            if (name) {
+                uniforms.set(name, type)
+            }
+        }
+    }
+
+
+    #parseUniform (uniform) {
+        if (typeof uniform === 'string') {
+            const type = this.#uniformTypes.get(uniform) || DEFAULT_UNIFORM_TYPES[uniform] || 'float'
+            return {name: uniform, type}
+        }
+        if (uniform.name && uniform.type) {
+            return {name: uniform.name, type: uniform.type}
+        }
+        return {name: null, type: null}
+    }
+
+
     #compileShader (effectTypes, cacheKey) { // eslint-disable-line complexity -- clean
         const fragments = []
         const uniforms = new Map([
@@ -114,14 +136,7 @@ export default class ShaderEffectRegistry {
 
                 paramOffset += Effect.shader.params?.length || 0
 
-                const effectUniforms = Effect.shader.uniforms || []
-                for (const uniform of effectUniforms) {
-                    if (typeof uniform === 'string') {
-                        uniforms.set(uniform, this.#uniformTypes.get(uniform) || DEFAULT_UNIFORM_TYPES[uniform] || 'float')
-                    } else if (uniform.name && uniform.type) {
-                        uniforms.set(uniform.name, uniform.type)
-                    }
-                }
+                this.#collectUniforms(Effect.shader.uniforms || [], uniforms)
             }
         }
 
