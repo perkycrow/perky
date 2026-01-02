@@ -1,4 +1,5 @@
 import {auditComments, fixComments} from './comments.js'
+import {auditConsole} from './console.js'
 import {auditImports, fixImports} from './imports.js'
 import {
     auditUnusedDirectives,
@@ -51,6 +52,7 @@ function printDigest (results) {
 
     const sections = [
         {key: 'imports', label: 'Imports'},
+        {key: 'console', label: 'Console'},
         {key: 'unusedDirectives', label: 'Unused Directives'},
         {key: 'eslint', label: 'ESLint'},
         {key: 'disables', label: 'Disables'},
@@ -79,6 +81,7 @@ export async function runAudit (rootDir, options = {}) {
     results.whitespace = auditWhitespace(rootDir)
     results.comments = auditComments(rootDir)
     results.imports = auditImports(rootDir)
+    results.console = auditConsole(rootDir)
     results.unusedDirectives = auditUnusedDirectives(rootDir)
     results.eslint = auditEslint(rootDir)
     results.disables = auditDisables(rootDir)
