@@ -1,6 +1,6 @@
 export default class Atlas {
 
-    constructor (options = {}) { // eslint-disable-line complexity -- clean
+    constructor (options = {}) {
         this.image = options.image || null
         this.tileWidth = options.tileWidth || 0
         this.tileHeight = options.tileHeight || 0

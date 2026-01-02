@@ -194,7 +194,7 @@ function shouldExcludeFromTestAudit (relativePath, excludeDirs = []) { // eslint
 }
 
 
-async function findFilesWithoutTests (rootDir) { // eslint-disable-line complexity -- clean
+async function findFilesWithoutTests (rootDir) {  
     const config = await loadConfig(rootDir)
     const excludeDirs = config.missingTests?.excludeDirs || []
     const files = findJsFiles(rootDir)

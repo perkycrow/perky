@@ -41,7 +41,7 @@ export default class ShaderEffectRegistry {
     }
 
 
-    applyUniforms (gl, program) { // eslint-disable-line complexity -- clean
+    applyUniforms (gl, program) {
         const uniformSetters = {
             float: (loc, val) => gl.uniform1f(loc, val),
             vec2: (loc, val) => gl.uniform2fv(loc, val),

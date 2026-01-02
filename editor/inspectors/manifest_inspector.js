@@ -300,7 +300,7 @@ export default class ManifestInspector extends BaseInspector {
     }
 
 
-    #createDataGrid (data, depth = 0) { // eslint-disable-line complexity -- clean
+    #createDataGrid (data, depth = 0) {
         const grid = document.createElement('div')
         grid.className = 'data-grid'
 

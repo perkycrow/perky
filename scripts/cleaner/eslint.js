@@ -240,7 +240,7 @@ export function isCleanDirective (line) {
 }
 
 
-function isInComment (line, matchIndex) { // eslint-disable-line complexity -- clean
+function isInComment (line, matchIndex) {  
     const singleLineComment = line.indexOf('//')
     if (singleLineComment !== -1 && singleLineComment < matchIndex) {
         const textBefore = line.substring(0, singleLineComment)
@@ -305,7 +305,7 @@ const ruleHints = {
 }
 
 
-export function auditDisables (rootDir) { // eslint-disable-line complexity -- clean
+export function auditDisables (rootDir) {  
     header('ESLint Disables')
 
     const disables = findEslintDisables(rootDir)

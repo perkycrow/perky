@@ -174,7 +174,7 @@ export default class Object2D extends Transform2D {
     }
 
 
-    get renderHints () { // eslint-disable-line complexity -- clean
+    get renderHints () {
         const hasTint = this.#tint !== null
         const hasEffects = this.#effects !== null && this.#effects.count > 0
 

@@ -1,6 +1,6 @@
 export default class Vec2 {
 
-    constructor (x = 0, y = 0) { // eslint-disable-line complexity -- clean
+    constructor (x = 0, y = 0) {
         if (typeof x === 'object') {
             if (Array.isArray(x)) {
                 this.x = x[0] ?? 0

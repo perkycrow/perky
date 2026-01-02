@@ -50,16 +50,30 @@ export default class EnemyView extends EntityView {
             return
         }
 
+        this.syncDamage(deltaTime)
+        this.syncPosition()
+        this.syncHitFlash()
+        this.syncStun()
+        this.syncSquash()
+    }
+
+
+    syncDamage (deltaTime) {
         if (this.entity.hp < this.lastHp) {
             this.impactSquash.trigger({x: 1, y: 0})
             this.lastHp = this.entity.hp
         }
-
         this.impactSquash.update(deltaTime)
+    }
 
+
+    syncPosition () {
         this.root.x = this.entity.x
         this.root.y = this.entity.y
+    }
 
+
+    syncHitFlash () {
         if (this.entity.hitFlashTimer > 0) {
             const flashIntensity = this.entity.hitFlashTimer / this.entity.hitFlashDuration
             this.root.tint = [1, 0.2, 0.2, flashIntensity * 0.7]
@@ -68,12 +82,18 @@ export default class EnemyView extends EntityView {
             this.root.tint = null
             this.chromaticEffect.intensity = 0
         }
+    }
 
+
+    syncStun () {
         if (this.entity.isStunned) {
             const shake = Math.sin(Date.now() * 0.05) * 0.02
             this.root.x += shake
         }
+    }
 
+
+    syncSquash () {
         const squashHints = this.impactSquash.getHints()
         if (squashHints) {
             this.root.scaleX = this.baseScaleX * squashHints.scaleX

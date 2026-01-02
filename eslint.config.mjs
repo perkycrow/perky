@@ -1,7 +1,11 @@
 import {defineConfig, globalIgnores} from 'eslint/config'
 import globals from 'globals'
+import localPlugin from './eslint/index.js'
 
 export default defineConfig([globalIgnores(['node_modules/*']), {
+    plugins: {
+        local: localPlugin
+    },
     languageOptions: {
         globals: {
             ...globals.browser,
@@ -160,7 +164,8 @@ export default defineConfig([globalIgnores(['node_modules/*']), {
         'comma-dangle': [2, 'never'],
         'comma-spacing': 2,
         'comma-style': 2,
-        complexity: [2, 6],
+        complexity: [2, 9],
+        'local/nested-complexity': [2, 4],
         'computed-property-spacing': [2, 'never'],
         'consistent-return': 2,
         'consistent-this': [0, 'that'],

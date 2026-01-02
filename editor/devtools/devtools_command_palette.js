@@ -529,7 +529,7 @@ function buildHistoryInput (actionName, args) {
 }
 
 
-function fuzzyScore (query, target) { // eslint-disable-line complexity -- clean
+function fuzzyScore (query, target) {
     if (target.includes(query)) {
         return 100 + (query.length / target.length) * 50
     }

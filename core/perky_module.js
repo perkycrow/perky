@@ -31,7 +31,7 @@ export default class PerkyModule extends Notifier {
     static $eagerStart = true
     static $tags = []
 
-    constructor (options = {}) { // eslint-disable-line complexity -- clean
+    constructor (options = {}) {
         super()
 
         this.options = {...options}

@@ -105,7 +105,7 @@ export default class Camera2D extends PerkyModule {
     }
 
 
-    animateTo (config, options = {}) { // eslint-disable-line complexity -- clean
+    animateTo (config, options = {}) {
         const duration = options.duration ?? 1
         const easing = options.easing ?? 'easeOutQuad'
         const onComplete = options.onComplete ?? null
@@ -288,7 +288,7 @@ export default class Camera2D extends PerkyModule {
     }
 
 
-    isVisible (bounds) { // eslint-disable-line complexity -- clean
+    isVisible (bounds) {
         if (!bounds || (bounds.width === 0 && bounds.height === 0)) {
             return false
         }

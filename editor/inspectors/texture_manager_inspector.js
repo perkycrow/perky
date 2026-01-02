@@ -317,7 +317,7 @@ export default class TextureManagerInspector extends BaseInspector {
     }
 
 
-    #updateAll () { // eslint-disable-line complexity -- clean
+    #updateAll () {
         if (!this.module) {
             return
         }

@@ -9,7 +9,7 @@ export default class BaseRenderer extends PerkyModule {
     #resizeObserver = null
     #autoFitEnabled = false
 
-    constructor (options = {}) { // eslint-disable-line complexity -- clean
+    constructor (options = {}) {
         super(options)
 
         this.canvas = options.canvas || document.createElement('canvas')
