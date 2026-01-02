@@ -13,6 +13,9 @@ import EnemyView from './views/enemy_view.js'
 import ProjectileView from './views/projectile_view.js'
 import ImpactParticles from './impact_particles.js'
 
+import ChromaticEffect from './effects/chromatic_effect.js'
+import OutlineEffect from '../render/shaders/builtin/effects/outline_effect.js'
+
 
 export default class GameRenderer extends PerkyModule {
 
@@ -51,8 +54,16 @@ export default class GameRenderer extends PerkyModule {
 
 
     onStart () {
+        this.#registerShaderEffects()
         this.#buildScene()
         this.#setupRenderGroups()
+    }
+
+
+    #registerShaderEffects () {
+        const gameLayer = this.game.getCanvas('game')
+        gameLayer.renderer.registerShaderEffect(ChromaticEffect)
+        gameLayer.renderer.registerShaderEffect(OutlineEffect)
     }
 
 

@@ -110,6 +110,16 @@ describe('ShaderEffect', () => {
     })
 
 
+    describe('getHints', () => {
+
+        test('returns null', () => {
+            const effect = new ShaderEffect()
+            expect(effect.getHints()).toBe(null)
+        })
+
+    })
+
+
     describe('update', () => {
 
         test('exists and can be called', () => {

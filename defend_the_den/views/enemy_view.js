@@ -1,6 +1,8 @@
 import EntityView from '../../game/entity_view.js'
 import Image2D from '../../render/image_2d.js'
 import ImpactSquashEffect from '../effects/impact_squash_effect.js'
+import ChromaticEffect from '../effects/chromatic_effect.js'
+import OutlineEffect from '../../render/shaders/builtin/effects/outline_effect.js'
 
 
 export default class EnemyView extends EntityView {
@@ -29,6 +31,12 @@ export default class EnemyView extends EntityView {
             intensity: 0.6
         })
 
+        this.chromaticEffect = new ChromaticEffect({intensity: 0})
+        this.root.effects.add(this.chromaticEffect)
+
+        this.outlineEffect = new OutlineEffect({width: 0.03})
+        this.root.effects.add(this.outlineEffect)
+
         this.lastHp = entity.hp
     }
 
@@ -51,8 +59,10 @@ export default class EnemyView extends EntityView {
         if (this.entity.hitFlashTimer > 0) {
             const flashIntensity = this.entity.hitFlashTimer / this.entity.hitFlashDuration
             this.root.tint = [1, 0.2, 0.2, flashIntensity * 0.7]
+            this.chromaticEffect.intensity = flashIntensity * 0.5
         } else {
             this.root.tint = null
+            this.chromaticEffect.intensity = 0
         }
 
         if (this.entity.isStunned) {

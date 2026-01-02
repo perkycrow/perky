@@ -74,11 +74,6 @@ describe('SPRITE_FRAGMENT', () => {
     })
 
 
-    test('declares uOutlineColor uniform', () => {
-        expect(SPRITE_FRAGMENT).toContain('uniform vec4 uOutlineColor')
-    })
-
-
     test('declares fragColor output', () => {
         expect(SPRITE_FRAGMENT).toContain('out vec4 fragColor')
     })
@@ -104,8 +99,7 @@ describe('SPRITE_SHADER_DEF', () => {
             'uViewMatrix',
             'uModelMatrix',
             'uTexture',
-            'uTexelSize',
-            'uOutlineColor'
+            'uTexelSize'
         ])
     })
 

@@ -34,6 +34,11 @@ export default class ShaderEffect {
     }
 
 
+    getHints () { // eslint-disable-line class-methods-use-this
+        return null
+    }
+
+
     update () { // eslint-disable-line class-methods-use-this
 
     }

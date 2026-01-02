@@ -42,6 +42,8 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
         for (const [effectKey, items] of batches) {
             const program = this.#getProgramForEffects(effectKey, transform)
 
+            this.#spriteBatch.begin(program)
+
             for (const {object, opacity, hints} of items) {
                 this.#spriteBatch.addSprite(object, opacity, hints)
             }
@@ -110,14 +112,9 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
 }
 
 
-function setEffectUniforms (gl, program) { // eslint-disable-line complexity -- clean
+function setEffectUniforms (gl, program) {
     const uTexelSize = program.uniforms.uTexelSize
-    if (uTexelSize !== undefined && uTexelSize !== -1 && gl.uniform2f) {
+    if (uTexelSize !== undefined && uTexelSize !== -1) {
         gl.uniform2f(uTexelSize, 1.0 / 512, 1.0 / 512)
-    }
-
-    const uOutlineColor = program.uniforms.uOutlineColor
-    if (uOutlineColor !== undefined && uOutlineColor !== -1 && gl.uniform4f) {
-        gl.uniform4f(uOutlineColor, 1.0, 1.0, 1.0, 1.0)
     }
 }
