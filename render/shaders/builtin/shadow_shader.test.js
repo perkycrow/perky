@@ -33,8 +33,8 @@ describe('SHADOW_VERTEX', () => {
     })
 
 
-    test('declares aFeetY attribute', () => {
-        expect(SHADOW_VERTEX).toContain('in float aFeetY')
+    test('declares aAnchorY attribute', () => {
+        expect(SHADOW_VERTEX).toContain('in float aAnchorY')
     })
 
 
@@ -103,7 +103,7 @@ describe('SHADOW_SHADER_DEF', () => {
 
 
     test('has attributes array', () => {
-        expect(SHADOW_SHADER_DEF.attributes).toEqual(['aPosition', 'aTexCoord', 'aOpacity', 'aFeetY'])
+        expect(SHADOW_SHADER_DEF.attributes).toEqual(['aPosition', 'aTexCoord', 'aOpacity', 'aAnchorY'])
     })
 
 })

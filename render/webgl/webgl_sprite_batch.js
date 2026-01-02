@@ -127,7 +127,7 @@ export default class WebGLSpriteBatch {
 
 
     #writeVertices (corners, texCoords, effectiveOpacity) {
-        const feetY = Math.min(corners[1], corners[3])
+        const anchorY = Math.min(corners[1], corners[3])
 
         for (let i = 0; i < 4; i++) {
             const idx = this.vertexIndex
@@ -138,7 +138,7 @@ export default class WebGLSpriteBatch {
             this.vertexData[idx + 2] = texCoords[ci]
             this.vertexData[idx + 3] = texCoords[ci + 1]
             this.vertexData[idx + 4] = effectiveOpacity
-            this.vertexData[idx + 5] = feetY
+            this.vertexData[idx + 5] = anchorY
 
             this.vertexIndex += 6
         }
@@ -196,9 +196,9 @@ export default class WebGLSpriteBatch {
         gl.vertexAttribPointer(program.attributes.aOpacity, 1, gl.FLOAT, false, stride, 4 * 4)
 
 
-        if (program.attributes.aFeetY !== undefined && program.attributes.aFeetY !== -1) {
-            gl.enableVertexAttribArray(program.attributes.aFeetY)
-            gl.vertexAttribPointer(program.attributes.aFeetY, 1, gl.FLOAT, false, stride, 5 * 4)
+        if (program.attributes.aAnchorY !== undefined && program.attributes.aAnchorY !== -1) {
+            gl.enableVertexAttribArray(program.attributes.aAnchorY)
+            gl.vertexAttribPointer(program.attributes.aAnchorY, 1, gl.FLOAT, false, stride, 5 * 4)
         }
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)

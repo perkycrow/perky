@@ -2,7 +2,7 @@ export const SHADOW_VERTEX = `#version 300 es
 in vec2 aPosition;
 in vec2 aTexCoord;
 in float aOpacity;
-in float aFeetY;
+in float aAnchorY;
 
 uniform mat3 uProjectionMatrix;
 uniform mat3 uViewMatrix;
@@ -18,12 +18,12 @@ out float vOpacity;
 void main() {
 
 
-    float distFromFeet = aPosition.y - aFeetY;
+    float distFromAnchor = aPosition.y - aAnchorY;
 
 
     vec2 shadowPos = aPosition;
-    shadowPos.x += uShadowSkewX * distFromFeet;
-    shadowPos.y = aFeetY + distFromFeet * uShadowScaleY + uShadowOffsetY;
+    shadowPos.x += uShadowSkewX * distFromAnchor;
+    shadowPos.y = aAnchorY + distFromAnchor * uShadowScaleY + uShadowOffsetY;
 
     vec3 worldPos = uModelMatrix * vec3(shadowPos, 1.0);
     vec3 viewPos = uViewMatrix * worldPos;
@@ -69,5 +69,5 @@ export const SHADOW_SHADER_DEF = {
         'uTexture',
         'uShadowColor'
     ],
-    attributes: ['aPosition', 'aTexCoord', 'aOpacity', 'aFeetY']
+    attributes: ['aPosition', 'aTexCoord', 'aOpacity', 'aAnchorY']
 }
