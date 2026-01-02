@@ -77,10 +77,10 @@ export default class WorldView extends PerkyModule {
     }
 
 
-    sync () {
+    sync (deltaTime = 0) {
         for (const views of this.#views.values()) {
             for (const view of views) {
-                view.sync()
+                view.sync(deltaTime)
             }
         }
     }

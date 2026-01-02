@@ -1,5 +1,6 @@
 import EntityView from '../../game/entity_view.js'
 import Image2D from '../../render/image_2d.js'
+import ImpactSquashEffect from '../effects/impact_squash_effect.js'
 
 
 export default class EnemyView extends EntityView {
@@ -22,13 +23,27 @@ export default class EnemyView extends EntityView {
             anchorX: config.anchorX ?? 0.5,
             anchorY: config.anchorY ?? 0.5
         })
+
+        this.impactSquash = new ImpactSquashEffect({
+            duration: 0.4,
+            intensity: 0.6
+        })
+
+        this.lastHp = entity.hp
     }
 
 
-    sync () {
+    sync (deltaTime = 0) {
         if (!this.root) {
             return
         }
+
+        if (this.entity.hp < this.lastHp) {
+            this.impactSquash.trigger({x: 1, y: 0})
+            this.lastHp = this.entity.hp
+        }
+
+        this.impactSquash.update(deltaTime)
 
         this.root.x = this.entity.x
         this.root.y = this.entity.y
@@ -43,6 +58,15 @@ export default class EnemyView extends EntityView {
         if (this.entity.isStunned) {
             const shake = Math.sin(Date.now() * 0.05) * 0.02
             this.root.x += shake
+        }
+
+        const squashHints = this.impactSquash.getHints()
+        if (squashHints) {
+            this.root.scaleX = this.baseScaleX * squashHints.scaleX
+            this.root.scaleY = this.baseScaleY * squashHints.scaleY
+        } else {
+            this.root.scaleX = this.baseScaleX
+            this.root.scaleY = this.baseScaleY
         }
     }
 

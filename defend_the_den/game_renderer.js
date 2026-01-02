@@ -106,9 +106,9 @@ export default class GameRenderer extends PerkyModule {
 
 
     render () {
-        this.worldView.sync()
-
         const deltaTime = this.game.clock?.deltaTime ?? 0.016
+
+        this.worldView.sync(deltaTime)
         this.impactParticles.update(deltaTime)
 
         const gameLayer = this.game.getCanvas('game')
