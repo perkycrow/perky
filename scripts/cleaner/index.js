@@ -81,6 +81,15 @@ function isClean (result) {
 
 
 function printDigest (results) {
+    const allClean = Object.values(results).every(isClean)
+
+    if (allClean) {
+        console.log('')
+        console.log(green('✓') + bold(' All clean!'))
+        console.log('')
+        return
+    }
+
     console.log('')
     console.log(cyan('  ╭─────────────────────────────╮'))
     console.log(cyan('  │') + bold('           DIGEST            ') + cyan('│'))
