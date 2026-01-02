@@ -1,6 +1,7 @@
 import {describe, test, expect, vi} from 'vitest'
 import SpriteEffectStack from './sprite_effect_stack.js'
 import SpriteEffect from './sprite_effect.js'
+import ShaderEffect from '../shaders/shader_effect.js'
 
 
 class MockEffect extends SpriteEffect {
@@ -23,6 +24,44 @@ class AnotherEffect extends SpriteEffect {
     getHints () {
         return {other: true}
     }
+}
+
+
+class MockShaderEffect extends ShaderEffect {
+
+    static shader = {
+        params: ['intensity', 'amount'],
+        uniforms: [],
+        fragment: ''
+    }
+
+    intensity = 0.5
+    amount = 1.0
+
+    constructor (options = {}) {
+        super(options)
+        this.intensity = options.intensity ?? 0.5
+        this.amount = options.amount ?? 1.0
+    }
+
+}
+
+
+class AnotherShaderEffect extends ShaderEffect {
+
+    static shader = {
+        params: ['strength'],
+        uniforms: [],
+        fragment: ''
+    }
+
+    strength = 0.8
+
+    constructor (options = {}) {
+        super(options)
+        this.strength = options.strength ?? 0.8
+    }
+
 }
 
 
@@ -267,6 +306,106 @@ describe('SpriteEffectStack', () => {
 
             expect(stack.count).toBe(0)
             expect(effect.dispose).toHaveBeenCalled()
+        })
+
+    })
+
+
+    describe('getShaderEffectTypes', () => {
+
+        test('returns empty array when no effects', () => {
+            const stack = new SpriteEffectStack()
+            expect(stack.getShaderEffectTypes()).toEqual([])
+        })
+
+
+        test('returns types of enabled ShaderEffects only', () => {
+            const stack = new SpriteEffectStack()
+            stack.add(new MockShaderEffect())
+            stack.add(new AnotherShaderEffect())
+
+            const types = stack.getShaderEffectTypes()
+
+            expect(types).toEqual(['MockShaderEffect', 'AnotherShaderEffect'])
+        })
+
+
+        test('excludes regular SpriteEffects', () => {
+            const stack = new SpriteEffectStack()
+            stack.add(new MockEffect())
+            stack.add(new MockShaderEffect())
+
+            const types = stack.getShaderEffectTypes()
+
+            expect(types).toEqual(['MockShaderEffect'])
+        })
+
+
+        test('excludes disabled ShaderEffects', () => {
+            const stack = new SpriteEffectStack()
+            const effect = new MockShaderEffect()
+            effect.enabled = false
+            stack.add(effect)
+
+            expect(stack.getShaderEffectTypes()).toEqual([])
+        })
+
+    })
+
+
+    describe('getShaderEffectParams', () => {
+
+        test('returns zeros when no effects', () => {
+            const stack = new SpriteEffectStack()
+            expect(stack.getShaderEffectParams()).toEqual([0, 0, 0, 0])
+        })
+
+
+        test('returns params from single ShaderEffect', () => {
+            const stack = new SpriteEffectStack()
+            stack.add(new MockShaderEffect({intensity: 0.7, amount: 0.3}))
+
+            expect(stack.getShaderEffectParams()).toEqual([0.7, 0.3, 0, 0])
+        })
+
+
+        test('combines params from multiple ShaderEffects', () => {
+            const stack = new SpriteEffectStack()
+            stack.add(new MockShaderEffect({intensity: 0.5, amount: 0.2}))
+            stack.add(new AnotherShaderEffect({strength: 0.9}))
+
+            expect(stack.getShaderEffectParams()).toEqual([0.5, 0.2, 0.9, 0])
+        })
+
+
+        test('ignores params beyond 4 limit', () => {
+            const stack = new SpriteEffectStack()
+            stack.add(new MockShaderEffect({intensity: 0.1, amount: 0.2}))
+            stack.add(new AnotherShaderEffect({strength: 0.3}))
+
+            const params = stack.getShaderEffectParams()
+
+            expect(params).toEqual([0.1, 0.2, 0.3, 0])
+            expect(params.length).toBe(4)
+        })
+
+
+        test('excludes disabled ShaderEffects', () => {
+            const stack = new SpriteEffectStack()
+            const effect = new MockShaderEffect({intensity: 0.9, amount: 0.8})
+            effect.enabled = false
+            stack.add(effect)
+
+            expect(stack.getShaderEffectParams()).toEqual([0, 0, 0, 0])
+        })
+
+
+        test('excludes regular SpriteEffects', () => {
+            const stack = new SpriteEffectStack()
+            stack.add(new MockEffect())
+            stack.add(new MockShaderEffect({intensity: 0.5, amount: 0.3}))
+
+            expect(stack.getShaderEffectParams()).toEqual([0.5, 0.3, 0, 0])
         })
 
     })

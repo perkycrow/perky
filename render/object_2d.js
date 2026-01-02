@@ -192,7 +192,6 @@ export default class Object2D extends Transform2D {
             const effectHints = this.#effects.getHints()
             if (effectHints) {
                 hints.effects = effectHints
-                hints.effectParams = buildEffectParams(effectHints)
             }
 
             const shaderEffectTypes = this.#effects.getShaderEffectTypes()
@@ -210,14 +209,4 @@ export default class Object2D extends Transform2D {
 
     }
 
-}
-
-
-function buildEffectParams (effectHints) {
-    return [
-        effectHints.outline?.width || 0,
-        effectHints.splatter?.intensity || 0,
-        effectHints.splatter?.pattern || 0,
-        0
-    ]
 }

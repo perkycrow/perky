@@ -53,7 +53,7 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
             gl.uniformMatrix3fv(program.uniforms.uViewMatrix, false, matrices.viewMatrix)
             gl.uniformMatrix3fv(program.uniforms.uModelMatrix, false, identityMatrix)
 
-            setEffectUniforms(gl, program)
+            setEffectUniforms(gl, program, this.#spriteBatch.currentTextureSize)
 
             if (this.#shaderEffectRegistry) {
                 this.#shaderEffectRegistry.applyUniforms(gl, program)
@@ -73,7 +73,7 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
 
         for (const item of this.collected) {
             const effectTypes = item.hints?.shaderEffectTypes || []
-            const key = effectTypes.sort().join('|')
+            const key = [...effectTypes].sort().join('|')
 
             if (!batches.has(key)) {
                 batches.set(key, [])
@@ -116,9 +116,9 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
 }
 
 
-function setEffectUniforms (gl, program) {
+function setEffectUniforms (gl, program, textureSize) {
     const uTexelSize = program.uniforms.uTexelSize
     if (uTexelSize !== undefined && uTexelSize !== -1) {
-        gl.uniform2f(uTexelSize, 1.0 / 512, 1.0 / 512)
+        gl.uniform2f(uTexelSize, 1.0 / textureSize.width, 1.0 / textureSize.height)
     }
 }

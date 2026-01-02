@@ -103,12 +103,12 @@ export default class ShaderEffectRegistry {
 
     #compileShader (effectTypes, cacheKey) {
         const fragments = []
-        const uniforms = new Set([
-            'uTexture',
-            'uTexelSize',
-            'uProjectionMatrix',
-            'uViewMatrix',
-            'uModelMatrix'
+        const uniforms = new Map([
+            ['uTexture', 'sampler2D'],
+            ['uTexelSize', 'vec2'],
+            ['uProjectionMatrix', 'mat3'],
+            ['uViewMatrix', 'mat3'],
+            ['uModelMatrix', 'mat3']
         ])
 
         let paramOffset = 0
@@ -122,8 +122,13 @@ export default class ShaderEffectRegistry {
 
                 paramOffset += Effect.shader.params?.length || 0
 
-                for (const uniform of Effect.shader.uniforms || []) {
-                    uniforms.add(uniform)
+                const effectUniforms = Effect.shader.uniforms || []
+                for (const uniform of effectUniforms) {
+                    if (typeof uniform === 'string') {
+                        uniforms.set(uniform, this.#uniformTypes.get(uniform) || DEFAULT_UNIFORM_TYPES[uniform] || 'float')
+                    } else if (uniform.name && uniform.type) {
+                        uniforms.set(uniform.name, uniform.type)
+                    }
                 }
             }
         }
@@ -133,7 +138,7 @@ export default class ShaderEffectRegistry {
         return this.#shaderRegistry.register(`sprite_effect_${cacheKey}`, {
             vertex: SPRITE_VERTEX,
             fragment: fragmentSource,
-            uniforms: Array.from(uniforms),
+            uniforms: Array.from(uniforms.keys()),
             attributes: SPRITE_ATTRIBUTES
         })
     }
@@ -166,10 +171,10 @@ export default class ShaderEffectRegistry {
 
 
     #buildFragment (snippets, uniforms) {
-        const uniformDeclarations = Array.from(uniforms)
-            .filter(name => name !== 'uTexture' && name !== 'uTexelSize')
-            .filter(name => !name.startsWith('uProjection') && !name.startsWith('uView') && !name.startsWith('uModel'))
-            .map(name => `uniform float ${name};`)
+        const uniformDeclarations = Array.from(uniforms.entries())
+            .filter(([name]) => name !== 'uTexture' && name !== 'uTexelSize')
+            .filter(([name]) => !name.startsWith('uProjection') && !name.startsWith('uView') && !name.startsWith('uModel'))
+            .map(([name, type]) => `uniform ${type} ${name};`)
             .join('\n')
 
         return `#version 300 es

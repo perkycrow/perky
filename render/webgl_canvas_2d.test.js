@@ -109,6 +109,52 @@ describe('WebGLCanvas2D', () => {
     })
 
 
+    describe('shaderEffectRegistry', () => {
+
+        test('has shaderEffectRegistry accessor', () => {
+            expect(renderer.shaderEffectRegistry).toBeDefined()
+        })
+
+
+        test('registerShaderEffect registers an effect class', () => {
+            class TestEffect {
+                static shader = {
+                    params: [],
+                    uniforms: [],
+                    fragment: ''
+                }
+            }
+
+            expect(() => renderer.registerShaderEffect(TestEffect)).not.toThrow()
+            expect(renderer.shaderEffectRegistry.has('TestEffect')).toBe(true)
+        })
+
+
+        test('setUniform stores uniform value', () => {
+            renderer.setUniform('uTime', 1.5)
+            expect(renderer.getUniform('uTime')).toBe(1.5)
+        })
+
+
+        test('setUniform with type stores uniform value and type', () => {
+            renderer.setUniform('uResolution', [800, 600], 'vec2')
+            expect(renderer.getUniform('uResolution')).toEqual([800, 600])
+        })
+
+
+        test('setUniform returns this for chaining', () => {
+            const result = renderer.setUniform('uTime', 1.0)
+            expect(result).toBe(renderer)
+        })
+
+
+        test('getUniform returns undefined for unknown uniform', () => {
+            expect(renderer.getUniform('uUnknown')).toBeUndefined()
+        })
+
+    })
+
+
     describe('postProcessor', () => {
 
         test('has postProcessor accessor', () => {

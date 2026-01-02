@@ -103,6 +103,7 @@ export default class WebGLSpriteBatch {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indexData, gl.STATIC_DRAW)
 
         this.currentTexture = null
+        this.currentTextureSize = {width: 1, height: 1}
         this.spriteCount = 0
         this.vertexIndex = 0
         this.activeProgram = null
@@ -169,6 +170,11 @@ export default class WebGLSpriteBatch {
         }
 
         this.#ensureTexture(texture)
+
+        if (image) {
+            this.currentTextureSize.width = image.width || 1
+            this.currentTextureSize.height = image.height || 1
+        }
 
         const corners = this.#tempCorners
         const texCoords = this.#tempTexCoords
