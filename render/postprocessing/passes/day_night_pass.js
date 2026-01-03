@@ -41,26 +41,32 @@ export default class DayNightPass extends RenderPass {
             const vec3 SUN_COLOR_LOW = vec3(1.0, 0.5, 0.2);
             const vec3 GOLDEN_TINT = vec3(1.0, 0.75, 0.55);
 
-            // Ambiance colors (progress: 0=midnight, 0.25=dawn, 0.5=noon, 0.75=dusk)
-            const vec3 TINT_MIDNIGHT = vec3(0.4, 0.5, 0.8);
-            const vec3 TINT_DAWN = vec3(0.95, 0.7, 0.85);  // Soft pink-violet dawn
-            const vec3 TINT_NOON = vec3(1.0, 1.0, 1.0);
-            const vec3 TINT_DUSK = vec3(0.9, 0.5, 0.7);    // Purple-pink dusk
+            // ─────────────────────────────────────────────────────────────
+            // Ambiance based on sun position (not time!)
+            // ─────────────────────────────────────────────────────────────
+            // Night: sun fully below terrain
+            const vec3 TINT_NIGHT = vec3(0.4, 0.5, 0.8);
+            const float DARK_NIGHT = 0.4;
+            const float TINT_STR_NIGHT = 0.5;
+            const float STARS_NIGHT = 1.2;
 
-            const float DARKNESS_MIDNIGHT = 0.4;
-            const float DARKNESS_DAWN = 0.08;
-            const float DARKNESS_NOON = 0.0;
-            const float DARKNESS_DUSK = 0.35;
+            // Horizon: sun approaching/leaving terrain
+            const vec3 TINT_HORIZON = vec3(1.0, 0.7, 0.55);
+            const float DARK_HORIZON = 0.12;
+            const float TINT_STR_HORIZON = 0.5;
 
-            const float TINT_STRENGTH_MIDNIGHT = 0.5;
-            const float TINT_STRENGTH_DAWN = 0.5;
-            const float TINT_STRENGTH_NOON = 0.0;
-            const float TINT_STRENGTH_DUSK = 0.55;
+            // Rays: sun intersecting terrain
+            const vec3 TINT_RAYS = vec3(1.0, 0.6, 0.5);
+            const float DARK_RAYS = 0.05;
+            const float TINT_STR_RAYS = 0.6;
 
-            const float STARS_MIDNIGHT = 1.2;
-            const float STARS_DAWN = 0.0;
-            const float STARS_NOON = 0.0;
-            const float STARS_DUSK = 0.0;
+            // Day: sun fully in sky
+            const vec3 TINT_DAY = vec3(1.0, 1.0, 1.0);
+            const float DARK_DAY = 0.0;
+            const float TINT_STR_DAY = 0.0;
+
+            // How far above/below terrain for horizon effect (smaller = faster transition to day)
+            const float HORIZON_RANGE = 0.4;
 
             // Sun disc/halo - very soft atmospheric style
             const float DISC_OUTER = 0.06;
@@ -81,7 +87,7 @@ export default class DayNightPass extends RenderPass {
             // DEBUG: uncomment to visualize hill circles
             // #define DEBUG_HILLS
             // DEBUG: uncomment to visualize sun trajectory
-            // #define DEBUG_SUN_PATH
+            #define DEBUG_SUN_PATH
 
             // ─────────────────────────────────────────────────────────────
             // Utilities
@@ -91,13 +97,8 @@ export default class DayNightPass extends RenderPass {
             }
 
             // ─────────────────────────────────────────────────────────────
-            // Day/Night cycle ambiance calculations
+            // Ambiance calculations (based on sun position, not time!)
             // ─────────────────────────────────────────────────────────────
-            // progress: 0=midnight, 0.25=dawn, 0.5=noon, 0.75=dusk, 1=midnight
-
-            float smoothBlend(float t) {
-                return t * t * (3.0 - 2.0 * t);
-            }
 
             struct Ambiance {
                 float darkness;
@@ -107,56 +108,47 @@ export default class DayNightPass extends RenderPass {
                 float sunProgress;
             };
 
-            Ambiance getAmbiance() {
+            // Calculate ambiance from sun position relative to terrain
+            // sunState: how far sun is above terrain (negative = below)
+            // intersectStrength: 0-1 when sun intersects terrain
+            Ambiance getAmbianceFromSun(float sunTop, float sunBottom, float terrainY, float intersectStrength) {
                 Ambiance a;
 
-                // Game mapping: 0=dawn, 0.25=day, 0.5=dusk, 0.75=night
-                float phase = uDayNightProgress * 4.0;
-                int phaseIndex = int(floor(phase));
-                float blend = smoothBlend(fract(phase));
+                // Sun position relative to terrain
+                float aboveTerrain = sunBottom - terrainY;  // positive = fully in sky
+                float belowTerrain = terrainY - sunTop;     // positive = fully below
 
-                // Phase transitions: dawn->day->dusk->night->dawn
-                if (phaseIndex == 0) {
-                    // dawn -> day (0.0 - 0.25)
-                    a.darkness = mix(DARKNESS_DAWN, DARKNESS_NOON, blend);
-                    a.tintStrength = mix(TINT_STRENGTH_DAWN, TINT_STRENGTH_NOON, blend);
-                    a.tintColor = mix(TINT_DAWN, TINT_NOON, blend);
-                    a.starsIntensity = mix(STARS_DAWN, STARS_NOON, blend);
-                } else if (phaseIndex == 1) {
-                    // day -> dusk (0.25 - 0.5)
-                    a.darkness = mix(DARKNESS_NOON, DARKNESS_DUSK, blend);
-                    a.tintStrength = mix(TINT_STRENGTH_NOON, TINT_STRENGTH_DUSK, blend);
-                    a.tintColor = mix(TINT_NOON, TINT_DUSK, blend);
-                    a.starsIntensity = mix(STARS_NOON, STARS_DUSK, blend);
-                } else if (phaseIndex == 2) {
-                    // dusk -> night (0.5 - 0.75)
-                    a.darkness = mix(DARKNESS_DUSK, DARKNESS_MIDNIGHT, blend);
-                    a.tintStrength = mix(TINT_STRENGTH_DUSK, TINT_STRENGTH_MIDNIGHT, blend);
-                    a.tintColor = mix(TINT_DUSK, TINT_MIDNIGHT, blend);
-                    a.starsIntensity = mix(STARS_DUSK, STARS_MIDNIGHT, blend);
-                } else {
-                    // night -> dawn (0.75 - 1.0)
-                    a.darkness = mix(DARKNESS_MIDNIGHT, DARKNESS_DAWN, blend);
-                    a.tintStrength = mix(TINT_STRENGTH_MIDNIGHT, TINT_STRENGTH_DAWN, blend);
-                    a.tintColor = mix(TINT_MIDNIGHT, TINT_DAWN, blend);
-                    a.starsIntensity = mix(STARS_MIDNIGHT, STARS_DAWN, blend);
-                }
+                // Smooth blend factors
+                float nightFactor = smoothstep(0.0, HORIZON_RANGE, belowTerrain);
+                float dayFactor = smoothstep(0.0, HORIZON_RANGE, aboveTerrain);
+                float horizonFactor = 1.0 - nightFactor - dayFactor;
+                float raysFactor = intersectStrength;
 
-                // Sun progress: visible during dawn+day (0 to 0.5)
-                // Tweak these to align sun with hill intersections at phase transitions
-                const float SUN_AT_DAWN_END = 0.285;  // sunProgress when progress=0.25 (dawn->day)
-                const float SUN_AT_DAY_END = 0.7185;   // sunProgress when progress=0.5 (day->dusk)
+                // Mix ambiance based on sun state
+                // Start with night/day/horizon blend
+                a.tintColor = mix(
+                    mix(TINT_HORIZON, TINT_NIGHT, nightFactor),
+                    TINT_DAY,
+                    dayFactor
+                );
+                a.darkness = mix(
+                    mix(DARK_HORIZON, DARK_NIGHT, nightFactor),
+                    DARK_DAY,
+                    dayFactor
+                );
+                a.tintStrength = mix(
+                    mix(TINT_STR_HORIZON, TINT_STR_NIGHT, nightFactor),
+                    TINT_STR_DAY,
+                    dayFactor
+                );
 
-                if (uDayNightProgress >= 0.0 && uDayNightProgress <= 0.5) {
-                    // Linear interpolation from SUN_AT_DAWN_END to SUN_AT_DAY_END
-                    // At progress=0: extrapolate backwards
-                    // At progress=0.25: SUN_AT_DAWN_END
-                    // At progress=0.5: SUN_AT_DAY_END
-                    float slope = (SUN_AT_DAY_END - SUN_AT_DAWN_END) / 0.25;
-                    a.sunProgress = SUN_AT_DAWN_END + slope * (uDayNightProgress - 0.25);
-                } else {
-                    a.sunProgress = -1.0;
-                }
+                // Override with rays ambiance when sun intersects terrain
+                a.tintColor = mix(a.tintColor, TINT_RAYS, raysFactor);
+                a.darkness = mix(a.darkness, DARK_RAYS, raysFactor);
+                a.tintStrength = mix(a.tintStrength, TINT_STR_RAYS, raysFactor);
+
+                // Stars only at night
+                a.starsIntensity = STARS_NIGHT * nightFactor;
 
                 return a;
             }
@@ -440,8 +432,20 @@ export default class DayNightPass extends RenderPass {
                 float skyBlend = terrainFactor(world);  // Smooth 0-1 transition at terrain edge
                 bool inSky = skyBlend > 0.5;
 
-                // Get ambiance from day/night progress
-                Ambiance ambiance = getAmbiance();
+                // Calculate sun position from progress
+                // Game waves: 0-0.25=dawn, 0.25-0.5=day, 0.5-0.75=dusk, 0.75-1=night
+                // We want: end of dawn (0.25) = sun at intersection
+                //          start of dusk (0.5) = sun at intersection
+                float sunProgress = 0.29 + (uDayNightProgress - 0.25) * 1.68;
+                bool sunVisible = sunProgress >= 0.0 && sunProgress <= 1.0;
+
+                // Get sun data (clamp to valid range)
+                SunData sun = getSunDataFromProgress(clamp(sunProgress, 0.0, 1.0));
+
+                // Get ambiance based on sun position
+                // Always use sun-based ambiance - it handles below-horizon naturally
+                Ambiance ambiance = getAmbianceFromSun(sun.top, sun.bottom, sun.terrainY, sun.intersectStrength);
+                ambiance.sunProgress = sunProgress;
 
                 // Sky detection
                 float blueness = color.b - max(color.r, color.g);
@@ -453,15 +457,12 @@ export default class DayNightPass extends RenderPass {
                 rgb = mix(rgb, rgb * ambiance.tintColor, ambiance.tintStrength);
 
                 // Sun effects
-                bool sunVisible = ambiance.sunProgress >= 0.0 && ambiance.sunProgress <= 1.0;
                 if (sunVisible) {
-                    SunData sun = getSunDataFromProgress(ambiance.sunProgress);
-
                     if (blueness > 0.0) {
-                        rgb = applyGoldenHour(rgb, sun.pos.y, ambiance.sunProgress);
+                        rgb = applyGoldenHour(rgb, sun.pos.y, sunProgress);
                     }
                     // Use skyBlend for smooth sun disc transition at horizon
-                    vec3 sunDiscEffect = applySunDisc(vec3(0.0), vTexCoord, sun, ambiance.sunProgress);
+                    vec3 sunDiscEffect = applySunDisc(vec3(0.0), vTexCoord, sun, sunProgress);
                     rgb += sunDiscEffect * skyBlend;
 
                     if (sun.intersectsTerrain) {
@@ -478,7 +479,7 @@ export default class DayNightPass extends RenderPass {
                 #endif
 
                 #ifdef DEBUG_SUN_PATH
-                rgb = debugSunPath(rgb, world, ambiance.sunProgress);
+                rgb = debugSunPath(rgb, world, sunProgress);
                 #endif
 
                 // Stars
