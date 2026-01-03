@@ -231,17 +231,36 @@ export default class DayNightPass extends RenderPass {
 
 
     getShadowParams (t) {
-        const time = ((t % 1) + 1) % 1
+        const cycleOffset = -0.0625
+        const time = (((t + cycleOffset) % 1) + 1) % 1
 
-        const angle = time * Math.PI * 2
+        const sunStart = 0.03
+        const sunEnd = 0.60
 
-        const skewX = Math.cos(angle) * 0.8
+        let sunProgress
+        if (time >= sunStart && time < sunEnd) {
+            sunProgress = (time - sunStart) / (sunEnd - sunStart)
+        } else {
+            sunProgress = -1
+        }
 
-        const shadowDirection = -Math.sin(angle)
-        const scaleY = shadowDirection * 0.5
+        if (sunProgress < 0 || sunProgress > 1) {
+            return {
+                skewX: 0,
+                scaleY: -0.3,
+                offsetY: 0.06,
+                color: [0, 0, 0, 0.1]
+            }
+        }
 
-        const lightHeight = Math.sin(angle)
-        const alpha = 0.15 + Math.abs(lightHeight) * 0.15
+        const sunAngle = (sunProgress - 0.5) * Math.PI
+
+        const skewX = -Math.sin(sunAngle) * 0.8
+
+        const sunHeight = Math.cos(sunAngle)
+        const scaleY = -0.2 - sunHeight * 0.3
+
+        const alpha = 0.15 + sunHeight * 0.15
 
         return {
             skewX,
