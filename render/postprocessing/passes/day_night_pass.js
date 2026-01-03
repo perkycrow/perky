@@ -45,20 +45,36 @@ export default class DayNightPass extends RenderPass {
             // Ambiance based on sun position (not time!)
             // ─────────────────────────────────────────────────────────────
             // Night: sun fully below terrain
-            const vec3 TINT_NIGHT = vec3(0.4, 0.5, 0.8);
-            const float DARK_NIGHT = 0.4;
-            const float TINT_STR_NIGHT = 0.5;
+            const vec3 TINT_NIGHT = vec3(0.5, 0.65, 1.0);
+            const float DARK_NIGHT = 0.2;  // Reduced - we use color shift instead
+            const float TINT_STR_NIGHT = 0.35;
             const float STARS_NIGHT = 1.2;
 
-            // Horizon: sun approaching/leaving terrain
-            const vec3 TINT_HORIZON = vec3(1.0, 0.7, 0.55);
-            const float DARK_HORIZON = 0.12;
-            const float TINT_STR_HORIZON = 0.5;
+            // Purkinje effect: night vision shifts sensitivity toward blue-green
+            const vec3 PURKINJE_WEIGHTS = vec3(0.1, 0.5, 0.4);
+            const float PURKINJE_STRENGTH = 0.4;
 
-            // Rays: sun intersecting terrain
-            const vec3 TINT_RAYS = vec3(1.0, 0.6, 0.5);
+            // Selective desaturation: warm colors fade more at night
+            const float DESAT_WARM = 0.6;   // How much to desaturate reds/oranges
+            const float DESAT_COOL = 0.1;   // Keep blues/greens more vivid
+
+            // Dawn: warm golden/orange sunrise
+            const vec3 TINT_DAWN = vec3(1.0, 0.8, 0.6);
+            const float DARK_DAWN = 0.1;
+            const float TINT_STR_DAWN = 0.45;
+
+            // Dusk: cool purple/pink sunset
+            const vec3 TINT_DUSK = vec3(0.9, 0.6, 0.8);
+            const float DARK_DUSK = 0.15;
+            const float TINT_STR_DUSK = 0.5;
+
+            // Rays dawn: golden orange rays
+            const vec3 TINT_RAYS_DAWN = vec3(1.0, 0.7, 0.4);
             const float DARK_RAYS = 0.05;
-            const float TINT_STR_RAYS = 0.6;
+            const float TINT_STR_RAYS = 0.55;
+
+            // Rays dusk: purple/magenta rays
+            const vec3 TINT_RAYS_DUSK = vec3(0.95, 0.5, 0.6);
 
             // Day: sun fully in sky
             const vec3 TINT_DAY = vec3(1.0, 1.0, 1.0);
@@ -103,12 +119,13 @@ export default class DayNightPass extends RenderPass {
                 vec3 tintColor;
                 float starsIntensity;
                 float sunProgress;
+                float nightFactor;  // 0=day, 1=full night - for Purkinje/desat effects
             };
 
             // Calculate ambiance from sun position relative to terrain
-            // sunState: how far sun is above terrain (negative = below)
+            // sunProgress: 0=dawn start, 0.5=zenith, 1=dusk end
             // intersectStrength: 0-1 when sun intersects terrain
-            Ambiance getAmbianceFromSun(float sunTop, float sunBottom, float terrainY, float intersectStrength) {
+            Ambiance getAmbianceFromSun(float sunTop, float sunBottom, float terrainY, float intersectStrength, float sunProgress) {
                 Ambiance a;
 
                 // Sun position relative to terrain
@@ -118,34 +135,45 @@ export default class DayNightPass extends RenderPass {
                 // Smooth blend factors
                 float nightFactor = smoothstep(0.0, HORIZON_RANGE, belowTerrain);
                 float dayFactor = smoothstep(0.0, HORIZON_RANGE, aboveTerrain);
-                float horizonFactor = 1.0 - nightFactor - dayFactor;
                 float raysFactor = intersectStrength;
+
+                // Dawn vs Dusk: sunProgress < 0.5 = dawn, > 0.5 = dusk
+                float duskFactor = smoothstep(0.35, 0.65, sunProgress);
+
+                // Interpolate horizon colors between dawn and dusk
+                vec3 horizonTint = mix(TINT_DAWN, TINT_DUSK, duskFactor);
+                float horizonDark = mix(DARK_DAWN, DARK_DUSK, duskFactor);
+                float horizonTintStr = mix(TINT_STR_DAWN, TINT_STR_DUSK, duskFactor);
 
                 // Mix ambiance based on sun state
                 // Start with night/day/horizon blend
                 a.tintColor = mix(
-                    mix(TINT_HORIZON, TINT_NIGHT, nightFactor),
+                    mix(horizonTint, TINT_NIGHT, nightFactor),
                     TINT_DAY,
                     dayFactor
                 );
                 a.darkness = mix(
-                    mix(DARK_HORIZON, DARK_NIGHT, nightFactor),
+                    mix(horizonDark, DARK_NIGHT, nightFactor),
                     DARK_DAY,
                     dayFactor
                 );
                 a.tintStrength = mix(
-                    mix(TINT_STR_HORIZON, TINT_STR_NIGHT, nightFactor),
+                    mix(horizonTintStr, TINT_STR_NIGHT, nightFactor),
                     TINT_STR_DAY,
                     dayFactor
                 );
 
                 // Override with rays ambiance when sun intersects terrain
-                a.tintColor = mix(a.tintColor, TINT_RAYS, raysFactor);
+                vec3 raysTint = mix(TINT_RAYS_DAWN, TINT_RAYS_DUSK, duskFactor);
+                a.tintColor = mix(a.tintColor, raysTint, raysFactor);
                 a.darkness = mix(a.darkness, DARK_RAYS, raysFactor);
                 a.tintStrength = mix(a.tintStrength, TINT_STR_RAYS, raysFactor);
 
                 // Stars only at night
                 a.starsIntensity = STARS_NIGHT * nightFactor;
+
+                // Export night factor for Purkinje/desaturation effects
+                a.nightFactor = nightFactor;
 
                 return a;
             }
@@ -236,6 +264,64 @@ export default class DayNightPass extends RenderPass {
             }
 
             // ─────────────────────────────────────────────────────────────
+            // Color utilities
+            // ─────────────────────────────────────────────────────────────
+            vec3 rgbToHsl(vec3 c) {
+                float maxC = max(c.r, max(c.g, c.b));
+                float minC = min(c.r, min(c.g, c.b));
+                float l = (maxC + minC) * 0.5;
+                if (maxC == minC) return vec3(0.0, 0.0, l);
+                float d = maxC - minC;
+                float s = l > 0.5 ? d / (2.0 - maxC - minC) : d / (maxC + minC);
+                float h;
+                if (maxC == c.r) h = (c.g - c.b) / d + (c.g < c.b ? 6.0 : 0.0);
+                else if (maxC == c.g) h = (c.b - c.r) / d + 2.0;
+                else h = (c.r - c.g) / d + 4.0;
+                return vec3(h / 6.0, s, l);
+            }
+
+            float hueToRgb(float p, float q, float t) {
+                if (t < 0.0) t += 1.0;
+                if (t > 1.0) t -= 1.0;
+                if (t < 1.0/6.0) return p + (q - p) * 6.0 * t;
+                if (t < 0.5) return q;
+                if (t < 2.0/3.0) return p + (q - p) * (2.0/3.0 - t) * 6.0;
+                return p;
+            }
+
+            vec3 hslToRgb(vec3 hsl) {
+                if (hsl.y == 0.0) return vec3(hsl.z);
+                float q = hsl.z < 0.5 ? hsl.z * (1.0 + hsl.y) : hsl.z + hsl.y - hsl.z * hsl.y;
+                float p = 2.0 * hsl.z - q;
+                return vec3(
+                    hueToRgb(p, q, hsl.x + 1.0/3.0),
+                    hueToRgb(p, q, hsl.x),
+                    hueToRgb(p, q, hsl.x - 1.0/3.0)
+                );
+            }
+
+            // Apply Purkinje shift: boost blue-green perception at night
+            vec3 applyPurkinje(vec3 rgb, float nightFactor) {
+                float lum = dot(rgb, vec3(0.299, 0.587, 0.114));
+                float purkinjeL = dot(rgb, PURKINJE_WEIGHTS);
+                float shiftedL = mix(lum, purkinjeL, nightFactor * PURKINJE_STRENGTH);
+                // Preserve relative color but shift luminance perception
+                vec3 normalized = rgb / max(lum, 0.001);
+                return normalized * shiftedL;
+            }
+
+            // Selective desaturation: warm colors lose saturation at night
+            vec3 applyNightDesaturation(vec3 rgb, float nightFactor) {
+                vec3 hsl = rgbToHsl(rgb);
+                // Hue 0-0.15 = red/orange (warm), 0.5-0.7 = blue/cyan (cool)
+                float warmness = 1.0 - smoothstep(0.0, 0.2, hsl.x) * smoothstep(0.5, 0.15, hsl.x);
+                // More desaturation for warm colors
+                float desat = mix(DESAT_COOL, DESAT_WARM, warmness);
+                hsl.y *= 1.0 - desat * nightFactor;
+                return hslToRgb(hsl);
+            }
+
+            // ─────────────────────────────────────────────────────────────
             // Effects
             // ─────────────────────────────────────────────────────────────
             float rayPattern(float angle, float dist) {
@@ -284,36 +370,51 @@ export default class DayNightPass extends RenderPass {
             }
 
             vec3 applyRays(vec3 rgb, vec2 world, SunData sun, float terrain, bool inSky) {
-                float shimmer = sin(uTime * 0.3) * 0.1 + 0.9;
                 vec2 rayOrigin = vec2(sun.pos.x, sun.terrainY);
                 vec2 toPixel = world - rayOrigin;
                 float dist = length(toPixel);
                 float angle = atan(toPixel.y, toPixel.x);
-                float pattern = rayPattern(angle, dist);
 
-                // Softer, more atmospheric color for rays
+                // Warm color for rays
                 float lowSunFactor = 1.0 - smoothstep(0.0, 1.5, sun.pos.y);
                 vec3 rayColor = mix(sun.color, vec3(1.0, 0.7, 0.5), lowSunFactor * 0.4);
 
+                // Subtle shimmer
+                float shimmer = sin(uTime * 0.2) * 0.05 + 0.95;
+
                 if (inSky) {
-                    // Softer fade from origin
-                    float originFade = smoothstep(0.0, 1.2, dist);
-                    // Bias rays upward (fan effect like in reference)
-                    float upwardBias = smoothstep(-0.5, 1.5, toPixel.y / max(dist, 0.01));
-                    // Longer, softer falloff for sky rays
-                    float falloff = exp(-dist * 0.4) * smoothstep(0.1, 0.6, dist);
-                    rgb += rayColor * pattern * falloff * sun.intersectStrength * shimmer * originFade * upwardBias * 1.5;
+                    // Upward bias for fan effect
+                    float upwardBias = smoothstep(-0.3, 1.0, toPixel.y / max(dist, 0.01));
+
+                    // Layer 1: Atmospheric glow (soft, diffuse)
+                    float atmoFalloff = exp(-dist * 0.6) * smoothstep(0.0, 0.4, dist);
+                    float atmoGlow = atmoFalloff * upwardBias * 0.25;
+
+                    // Layer 2: Stylized rays (sharper, on top)
+                    float pattern = rayPattern(angle, dist);
+                    float rayFalloff = exp(-dist * 0.5) * smoothstep(0.1, 0.5, dist);
+                    float stylizedRays = pattern * rayFalloff * upwardBias * 0.4;
+
+                    // Combine layers
+                    float combined = (atmoGlow + stylizedRays) * sun.intersectStrength * shimmer;
+                    rgb += rayColor * combined;
                 } else {
-                    // Slight horizontal stretch on ground
+                    // Ground rays - stretched horizontally
                     vec2 stretchedPixel = toPixel * vec2(0.7, 1.0);
                     float stretchedAngle = atan(stretchedPixel.y, stretchedPixel.x);
-                    float groundPattern = rayPattern(stretchedAngle, dist);
 
-                    float originFade = smoothstep(0.0, 0.8, dist);
-                    float falloff = exp(-dist * 0.5) * smoothstep(4.0, 0.3, abs(world.x - sun.pos.x));
-                    // Fade out toward bottom of screen
-                    float bottomFade = smoothstep(-2.0, 0.5, world.y);
-                    rgb += rayColor * groundPattern * falloff * sun.intersectStrength * shimmer * originFade * bottomFade * 0.7;
+                    // Layer 1: Soft ground glow
+                    float groundGlow = exp(-dist * 0.7) * smoothstep(3.0, 0.5, abs(world.x - sun.pos.x)) * 0.15;
+
+                    // Layer 2: Ground ray pattern
+                    float groundPattern = rayPattern(stretchedAngle, dist);
+                    float groundRayFalloff = exp(-dist * 0.6) * smoothstep(3.5, 0.3, abs(world.x - sun.pos.x));
+                    float stylizedGroundRays = groundPattern * groundRayFalloff * 0.25;
+
+                    // Fade toward bottom
+                    float bottomFade = smoothstep(-2.0, 0.3, world.y);
+                    float combined = (groundGlow + stylizedGroundRays) * sun.intersectStrength * shimmer * bottomFade;
+                    rgb += rayColor * combined;
                 }
                 return rgb;
             }
@@ -454,16 +555,27 @@ export default class DayNightPass extends RenderPass {
 
                 // Get ambiance based on sun position
                 // Always use sun-based ambiance - it handles below-horizon naturally
-                Ambiance ambiance = getAmbianceFromSun(sun.top, sun.bottom, sun.terrainY, sun.intersectStrength);
+                Ambiance ambiance = getAmbianceFromSun(sun.top, sun.bottom, sun.terrainY, sun.intersectStrength, clamp(sunProgress, 0.0, 1.0));
                 ambiance.sunProgress = sunProgress;
 
                 // Sky detection
                 float blueness = color.b - max(color.r, color.g);
                 float skyFactor = smoothstep(-0.08, 0.15, blueness);
 
-                // Base color with darkness and tint
+                // Start with original color
+                vec3 rgb = color.rgb;
+
+                // Apply night vision effects (Purkinje + selective desaturation)
+                if (ambiance.nightFactor > 0.0) {
+                    rgb = applyPurkinje(rgb, ambiance.nightFactor);
+                    rgb = applyNightDesaturation(rgb, ambiance.nightFactor);
+                }
+
+                // Apply reduced darkness (contrast preservation)
                 float darkness = min(ambiance.darkness + skyFactor * SKY_EXTRA_DARKNESS, MAX_DARKNESS);
-                vec3 rgb = color.rgb * (1.0 - darkness);
+                rgb *= (1.0 - darkness);
+
+                // Apply color tint
                 rgb = mix(rgb, rgb * ambiance.tintColor, ambiance.tintStrength);
 
                 // Sun effects
