@@ -14,7 +14,7 @@ export default class VignettePass extends RenderPass {
             }
         `,
         fragment: `#version 300 es
-            precision mediump float;
+            precision highp float;
             uniform sampler2D uTexture;
             uniform float uIntensity;
             uniform float uSmoothness;
@@ -22,22 +22,24 @@ export default class VignettePass extends RenderPass {
             uniform vec3 uColor;
             in vec2 vTexCoord;
             out vec4 fragColor;
+
+            float dither(vec2 coord) {
+                return (fract(sin(dot(coord, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 255.0;
+            }
+
             void main() {
                 vec4 color = texture(uTexture, vTexCoord);
                 vec2 uv = vTexCoord * 2.0 - 1.0;
 
-
                 uv.x *= mix(1.0, 0.7, uRoundness);
 
-
                 float dist = dot(uv, uv);
-
 
                 float vignette = 1.0 - dist * uIntensity;
                 vignette = smoothstep(0.0, uSmoothness, vignette);
 
-
                 vec3 finalColor = mix(uColor, color.rgb, vignette);
+                finalColor += dither(gl_FragCoord.xy);
 
                 fragColor = vec4(finalColor, color.a);
             }
