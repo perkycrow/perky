@@ -16,12 +16,8 @@ export default class DayNightPass extends RenderPass {
         fragment: `#version 300 es
             precision mediump float;
             uniform sampler2D uTexture;
-            uniform float uDarkness;
-            uniform float uTintStrength;
-            uniform vec3 uTintColor;
-            uniform float uStarsIntensity;
+            uniform float uDayNightProgress;
             uniform float uTime;
-            uniform float uSunProgress;
             uniform float uAspectRatio;
             uniform vec2 uHill1;
             uniform float uHill1R;
@@ -45,6 +41,27 @@ export default class DayNightPass extends RenderPass {
             const vec3 SUN_COLOR_LOW = vec3(1.0, 0.5, 0.2);
             const vec3 GOLDEN_TINT = vec3(1.0, 0.75, 0.55);
 
+            // Ambiance colors (progress: 0=midnight, 0.25=dawn, 0.5=noon, 0.75=dusk)
+            const vec3 TINT_MIDNIGHT = vec3(0.4, 0.5, 0.8);
+            const vec3 TINT_DAWN = vec3(1.0, 0.65, 0.45);
+            const vec3 TINT_NOON = vec3(1.0, 1.0, 1.0);
+            const vec3 TINT_DUSK = vec3(1.0, 0.35, 0.25);
+
+            const float DARKNESS_MIDNIGHT = 0.4;
+            const float DARKNESS_DAWN = 0.08;
+            const float DARKNESS_NOON = 0.0;
+            const float DARKNESS_DUSK = 0.35;
+
+            const float TINT_STRENGTH_MIDNIGHT = 0.5;
+            const float TINT_STRENGTH_DAWN = 0.5;
+            const float TINT_STRENGTH_NOON = 0.0;
+            const float TINT_STRENGTH_DUSK = 0.55;
+
+            const float STARS_MIDNIGHT = 1.2;
+            const float STARS_DAWN = 0.0;
+            const float STARS_NOON = 0.0;
+            const float STARS_DUSK = 0.0;
+
             // Sun disc/halo
             const float DISC_OUTER = 0.03;
             const float DISC_INNER = 0.025;
@@ -62,13 +79,84 @@ export default class DayNightPass extends RenderPass {
             // DEBUG: uncomment to visualize hill circles
             // #define DEBUG_HILLS
             // DEBUG: uncomment to visualize sun trajectory
-            #define DEBUG_SUN_PATH
+            // #define DEBUG_SUN_PATH
 
             // ─────────────────────────────────────────────────────────────
             // Utilities
             // ─────────────────────────────────────────────────────────────
             float random(vec2 st) {
                 return fract(sin(dot(st, vec2(12.9898, 78.233))) * 43758.5453);
+            }
+
+            // ─────────────────────────────────────────────────────────────
+            // Day/Night cycle ambiance calculations
+            // ─────────────────────────────────────────────────────────────
+            // progress: 0=midnight, 0.25=dawn, 0.5=noon, 0.75=dusk, 1=midnight
+
+            float smoothBlend(float t) {
+                return t * t * (3.0 - 2.0 * t);
+            }
+
+            struct Ambiance {
+                float darkness;
+                float tintStrength;
+                vec3 tintColor;
+                float starsIntensity;
+                float sunProgress;
+            };
+
+            Ambiance getAmbiance() {
+                Ambiance a;
+
+                // Game mapping: 0=dawn, 0.25=day, 0.5=dusk, 0.75=night
+                float phase = uDayNightProgress * 4.0;
+                int phaseIndex = int(floor(phase));
+                float blend = smoothBlend(fract(phase));
+
+                // Phase transitions: dawn->day->dusk->night->dawn
+                if (phaseIndex == 0) {
+                    // dawn -> day (0.0 - 0.25)
+                    a.darkness = mix(DARKNESS_DAWN, DARKNESS_NOON, blend);
+                    a.tintStrength = mix(TINT_STRENGTH_DAWN, TINT_STRENGTH_NOON, blend);
+                    a.tintColor = mix(TINT_DAWN, TINT_NOON, blend);
+                    a.starsIntensity = mix(STARS_DAWN, STARS_NOON, blend);
+                } else if (phaseIndex == 1) {
+                    // day -> dusk (0.25 - 0.5)
+                    a.darkness = mix(DARKNESS_NOON, DARKNESS_DUSK, blend);
+                    a.tintStrength = mix(TINT_STRENGTH_NOON, TINT_STRENGTH_DUSK, blend);
+                    a.tintColor = mix(TINT_NOON, TINT_DUSK, blend);
+                    a.starsIntensity = mix(STARS_NOON, STARS_DUSK, blend);
+                } else if (phaseIndex == 2) {
+                    // dusk -> night (0.5 - 0.75)
+                    a.darkness = mix(DARKNESS_DUSK, DARKNESS_MIDNIGHT, blend);
+                    a.tintStrength = mix(TINT_STRENGTH_DUSK, TINT_STRENGTH_MIDNIGHT, blend);
+                    a.tintColor = mix(TINT_DUSK, TINT_MIDNIGHT, blend);
+                    a.starsIntensity = mix(STARS_DUSK, STARS_MIDNIGHT, blend);
+                } else {
+                    // night -> dawn (0.75 - 1.0)
+                    a.darkness = mix(DARKNESS_MIDNIGHT, DARKNESS_DAWN, blend);
+                    a.tintStrength = mix(TINT_STRENGTH_MIDNIGHT, TINT_STRENGTH_DAWN, blend);
+                    a.tintColor = mix(TINT_MIDNIGHT, TINT_DAWN, blend);
+                    a.starsIntensity = mix(STARS_MIDNIGHT, STARS_DAWN, blend);
+                }
+
+                // Sun progress: visible during dawn+day (0 to 0.5)
+                // Tweak these to align sun with hill intersections at phase transitions
+                const float SUN_AT_DAWN_END = 0.285;  // sunProgress when progress=0.25 (dawn->day)
+                const float SUN_AT_DAY_END = 0.7185;   // sunProgress when progress=0.5 (day->dusk)
+
+                if (uDayNightProgress >= 0.0 && uDayNightProgress <= 0.5) {
+                    // Linear interpolation from SUN_AT_DAWN_END to SUN_AT_DAY_END
+                    // At progress=0: extrapolate backwards
+                    // At progress=0.25: SUN_AT_DAWN_END
+                    // At progress=0.5: SUN_AT_DAY_END
+                    float slope = (SUN_AT_DAY_END - SUN_AT_DAWN_END) / 0.25;
+                    a.sunProgress = SUN_AT_DAWN_END + slope * (uDayNightProgress - 0.25);
+                } else {
+                    a.sunProgress = -1.0;
+                }
+
+                return a;
             }
 
             // ─────────────────────────────────────────────────────────────
@@ -134,9 +222,9 @@ export default class DayNightPass extends RenderPass {
                 return mix(SUN_COLOR_HIGH, SUN_COLOR_LOW, h);
             }
 
-            SunData getSunData() {
+            SunData getSunDataFromProgress(float progress) {
                 SunData s;
-                s.pos = calcSunPos(uSunProgress);
+                s.pos = calcSunPos(progress);
                 s.color = calcSunColor(s.pos.y);
                 s.terrainY = terrainHeight(s.pos.x);
                 s.top = s.pos.y + SUN_RADIUS;
@@ -159,18 +247,19 @@ export default class DayNightPass extends RenderPass {
                 return (r1 + r2) * 0.4;
             }
 
-            vec3 applyGoldenHour(vec3 rgb, float sunY) {
+            vec3 applyGoldenHour(vec3 rgb, float sunY, float sunProgress) {
                 float golden = 1.0 - smoothstep(0.3, 1.5, sunY);
-                float sunFade = smoothstep(0.0, 0.1, uSunProgress) * smoothstep(1.0, 0.9, uSunProgress);
+                float sunFade = smoothstep(0.0, 0.1, sunProgress) * smoothstep(1.0, 0.9, sunProgress);
                 return rgb * mix(vec3(1.0), GOLDEN_TINT, golden * 0.4 * sunFade);
             }
 
-            vec3 applySunDisc(vec3 rgb, vec2 uv, SunData sun, float skyFactor) {
-                vec2 diff = (uv - worldToScreen(sun.pos)) * vec2(uAspectRatio, 1.0);
+            vec3 applySunDisc(vec3 rgb, vec2 uv, SunData sun) {
+                vec2 sunScreen = worldToScreen(sun.pos);
+                vec2 diff = (uv - sunScreen) * vec2(uAspectRatio, 1.0);
                 float d = length(diff);
                 float disc = smoothstep(DISC_OUTER, DISC_INNER, d);
                 float halo = smoothstep(HALO_OUTER, HALO_INNER, d) * HALO_STRENGTH;
-                return rgb + sun.color * (disc + halo) * skyFactor;
+                return rgb + sun.color * (disc + halo);
             }
 
             vec3 applyRays(vec3 rgb, vec2 world, SunData sun, float terrain, bool inSky) {
@@ -192,7 +281,7 @@ export default class DayNightPass extends RenderPass {
                 return rgb;
             }
 
-            vec3 applyStars(vec3 rgb, vec2 uv, vec4 baseColor) {
+            vec3 applyStars(vec3 rgb, vec2 uv, vec4 baseColor, float starsIntensity) {
                 vec2 starUV = uv + STAR_SPEED * uTime;
                 vec2 cell = floor(starUV * STAR_GRID);
                 float r = random(cell);
@@ -203,7 +292,7 @@ export default class DayNightPass extends RenderPass {
                     float star = smoothstep(0.12, 0.0, length(cellUV - starPos));
                     float twinkle = sin(uTime * (1.5 + r * 2.0) + r * 6.28) * 0.3 + 0.7;
                     float lum = dot(baseColor.rgb, vec3(0.299, 0.587, 0.114));
-                    rgb += vec3(uStarsIntensity * star * twinkle * smoothstep(0.5, 1.0, lum));
+                    rgb += vec3(starsIntensity * star * twinkle * smoothstep(0.5, 1.0, lum));
                 }
                 return rgb;
             }
@@ -235,7 +324,7 @@ export default class DayNightPass extends RenderPass {
             #endif
 
             #ifdef DEBUG_SUN_PATH
-            vec3 debugSunPath(vec3 rgb, vec2 world) {
+            vec3 debugSunPath(vec3 rgb, vec2 world, float sunProgress) {
                 float minDist = 1000.0;
                 float closestProgress = 0.0;
 
@@ -273,11 +362,13 @@ export default class DayNightPass extends RenderPass {
                     rgb = mix(rgb, vec3(1.0, 1.0, 1.0), 0.9);
                 }
 
-                // Current sun position - red circle
-                vec2 currentPos = calcSunPos(uSunProgress);
-                float distToCurrent = length(world - currentPos);
-                if (distToCurrent < SUN_RADIUS + 0.02 && distToCurrent > SUN_RADIUS - 0.02) {
-                    rgb = mix(rgb, vec3(1.0, 0.0, 0.0), 0.9);
+                // Current sun position - red circle (only if sun is visible)
+                if (sunProgress >= 0.0 && sunProgress <= 1.0) {
+                    vec2 currentPos = calcSunPos(sunProgress);
+                    float distToCurrent = length(world - currentPos);
+                    if (distToCurrent < SUN_RADIUS + 0.02 && distToCurrent > SUN_RADIUS - 0.02) {
+                        rgb = mix(rgb, vec3(1.0, 0.0, 0.0), 0.9);
+                    }
                 }
 
                 // Draw terrain intersection points (green dots where sun touches hills)
@@ -309,25 +400,28 @@ export default class DayNightPass extends RenderPass {
                 float terrain = terrainHeight(world.x);
                 bool inSky = world.y > terrain;
 
+                // Get ambiance from day/night progress
+                Ambiance ambiance = getAmbiance();
+
                 // Sky detection
                 float blueness = color.b - max(color.r, color.g);
                 float skyFactor = smoothstep(-0.08, 0.15, blueness);
 
                 // Base color with darkness and tint
-                float darkness = min(uDarkness + skyFactor * SKY_EXTRA_DARKNESS, MAX_DARKNESS);
+                float darkness = min(ambiance.darkness + skyFactor * SKY_EXTRA_DARKNESS, MAX_DARKNESS);
                 vec3 rgb = color.rgb * (1.0 - darkness);
-                rgb = mix(rgb, rgb * uTintColor, uTintStrength);
+                rgb = mix(rgb, rgb * ambiance.tintColor, ambiance.tintStrength);
 
                 // Sun effects
-                bool sunVisible = uSunProgress > 0.0 && uSunProgress < 1.0;
+                bool sunVisible = ambiance.sunProgress >= 0.0 && ambiance.sunProgress <= 1.0;
                 if (sunVisible) {
-                    SunData sun = getSunData();
+                    SunData sun = getSunDataFromProgress(ambiance.sunProgress);
 
                     if (blueness > 0.0) {
-                        rgb = applyGoldenHour(rgb, sun.pos.y);
+                        rgb = applyGoldenHour(rgb, sun.pos.y, ambiance.sunProgress);
                     }
                     if (inSky) {
-                        rgb = applySunDisc(rgb, vTexCoord, sun, skyFactor);
+                        rgb = applySunDisc(rgb, vTexCoord, sun);
                     }
                     if (sun.intersectsTerrain) {
                         rgb = applyRays(rgb, world, sun, terrain, inSky);
@@ -343,112 +437,71 @@ export default class DayNightPass extends RenderPass {
                 #endif
 
                 #ifdef DEBUG_SUN_PATH
-                rgb = debugSunPath(rgb, world);
+                rgb = debugSunPath(rgb, world, ambiance.sunProgress);
                 #endif
 
                 // Stars
-                if (blueness > 0.0 && uStarsIntensity > 0.0) {
-                    rgb = applyStars(rgb, vTexCoord, color);
+                if (blueness > 0.0 && ambiance.starsIntensity > 0.0) {
+                    rgb = applyStars(rgb, vTexCoord, color, ambiance.starsIntensity);
                 }
 
                 fragColor = vec4(clamp(rgb, 0.0, 1.0), color.a);
             }
         `,
-        uniforms: ['uTexture', 'uDarkness', 'uTintStrength', 'uTintColor', 'uStarsIntensity', 'uTime', 'uSunProgress', 'uAspectRatio', 'uHill1', 'uHill1R', 'uHill2', 'uHill2R', 'uCameraRatio'],
+        uniforms: ['uTexture', 'uDayNightProgress', 'uTime', 'uAspectRatio', 'uHill1', 'uHill1R', 'uHill2', 'uHill2R', 'uCameraRatio'],
         attributes: ['aPosition', 'aTexCoord']
     }
 
     static defaultUniforms = {
-        uDarkness: 0.4,
-        uTintStrength: 0.5,
-        uTintColor: [0.4, 0.5, 0.8],
-        uStarsIntensity: 1.2,
+        uDayNightProgress: 0.0,
         uHill1: [-4.5, -20.68],
         uHill1R: 22.65,
         uHill2: [3.55, -14.0],
         uHill2R: 15.95,
         uCameraRatio: 1.4,
         uTime: 0.0,
-        uSunProgress: -1.0,
         uAspectRatio: 1.0
     }
 
     static uniformConfig = {
-        uDarkness: {min: 0, max: 1, step: 0.01},
-        uTintStrength: {min: 0, max: 1, step: 0.01},
-        uTintColor: {type: 'color'},
-        uStarsIntensity: {min: 0, max: 1, step: 0.01},
-        uSunProgress: {min: -0.5, max: 1.5, step: 0.01},
+        uDayNightProgress: {min: 0, max: 1, step: 0.01},
         uHill1: {type: 'vec2'},
         uHill1R: {min: 0, max: 30, step: 0.1},
         uHill2: {type: 'vec2'},
         uHill2R: {min: 0, max: 30, step: 0.1}
     }
 
-    static phases = [
-        {name: 'dawn', darkness: 0.08, tintStrength: 0.5, tintColor: [1.0, 0.65, 0.45], starsIntensity: 0.0},
-        {name: 'day', darkness: 0.0, tintStrength: 0.0, tintColor: [1.0, 1.0, 1.0], starsIntensity: 0.0},
-        {name: 'dusk', darkness: 0.35, tintStrength: 0.55, tintColor: [1.0, 0.35, 0.25], starsIntensity: 0.0},
-        {name: 'night', darkness: 0.4, tintStrength: 0.5, tintColor: [0.4, 0.5, 0.8], starsIntensity: 1.2}
-    ]
-
-    static sunStart = 0.03
-    static sunEnd = 0.60
-    static cycleOffset = -0.0625
-
-    setTimeOfDay (t) {
-        const time = (((t + DayNightPass.cycleOffset) % 1) + 1) % 1
-        const phases = DayNightPass.phases
-
-        const phaseIndex = Math.floor(time * 4)
-        const blend = (time * 4) % 1
-        const smooth = blend * blend * (3 - 2 * blend)
-
-        const from = phases[phaseIndex]
-        const to = phases[(phaseIndex + 1) % 4]
-
-        const lerp = (a, b) => a + (b - a) * smooth
-
-        this.setUniform('uDarkness', lerp(from.darkness, to.darkness))
-        this.setUniform('uTintStrength', lerp(from.tintStrength, to.tintStrength))
-        this.setUniform('uTintColor', from.tintColor.map((v, i) => lerp(v, to.tintColor[i])))
-        this.setUniform('uStarsIntensity', lerp(from.starsIntensity, to.starsIntensity))
-
-        const {sunStart, sunEnd} = DayNightPass
-        const sunProgress = (time >= sunStart && time < sunEnd)
-            ? (time - sunStart) / (sunEnd - sunStart)
-            : -1.0
-        this.setUniform('uSunProgress', sunProgress)
+    setProgress (progress) {
+        // Direct pass-through: 0=dawn, 0.25=day, 0.5=dusk, 0.75=night
+        this.setUniform('uDayNightProgress', ((progress % 1) + 1) % 1)
     }
 
     setDawn () {
-        this.setTimeOfDay(0.0)
+        this.setProgress(0.0)
     }
 
     setDay () {
-        this.setTimeOfDay(0.25)
+        this.setProgress(0.25)
     }
 
     setDusk () {
-        this.setTimeOfDay(0.5)
+        this.setProgress(0.5)
     }
 
     setNight () {
-        this.setTimeOfDay(0.75)
+        this.setProgress(0.75)
     }
 
-    getShadowParams (t) {
-        const time = (((t + DayNightPass.cycleOffset) % 1) + 1) % 1
-        const {sunStart, sunEnd} = DayNightPass
+    getShadowParams (progress) {
+        // Input uses game mapping: 0=dawn, 0.25=noon, 0.5=dusk, 0.75=midnight
+        // Sun visible from dawn (0) to dusk (0.5)
+        const p = ((progress % 1) + 1) % 1
 
-        const sunProgress = (time >= sunStart && time < sunEnd)
-            ? (time - sunStart) / (sunEnd - sunStart)
-            : -1
-
-        if (sunProgress < 0 || sunProgress > 1) {
+        if (p > 0.5) {
             return {skewX: 0, scaleY: -0.3, offsetY: 0.06, color: [0, 0, 0, 0.1]}
         }
 
+        const sunProgress = p / 0.5  // 0->1 over dawn to dusk
         const angle = sunProgress * Math.PI
         const sunX = -Math.cos(angle) * 3.0
         const sunY = Math.sin(angle) * 2.5

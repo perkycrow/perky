@@ -133,7 +133,7 @@ export default class DefendTheDen extends Game {
             this.elapsedTime += delta * timeScale
 
             this.dayNightPass.setUniform('uTime', this.elapsedTime)
-            this.dayNightPass.setTimeOfDay(timeOfDay)
+            this.dayNightPass.setProgress(timeOfDay)
 
             if (this.renderer.shadowTransform) {
                 const shadowParams = this.dayNightPass.getShadowParams(timeOfDay)
