@@ -146,11 +146,12 @@ export default class DayNightPass extends RenderPass {
         }
     }
 
-
-    setTimeOfDay(t) {
+    setTimeOfDay (t) {
         const time = ((t % 1) + 1) % 1
 
-        let fromPhase, toPhase, blend
+        let fromPhase
+        let toPhase
+        let blend
 
         if (time < 0.25) {
             fromPhase = DayNightPass.phases.dawn
@@ -194,22 +195,22 @@ export default class DayNightPass extends RenderPass {
     }
 
 
-    setDawn() {
+    setDawn () {
         this.setTimeOfDay(0.0)
     }
 
 
-    setDay() {
+    setDay () {
         this.setTimeOfDay(0.25)
     }
 
 
-    setDusk() {
+    setDusk () {
         this.setTimeOfDay(0.5)
     }
 
 
-    setNight() {
+    setNight () {
         this.setTimeOfDay(0.75)
     }
 
