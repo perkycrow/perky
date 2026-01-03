@@ -410,22 +410,27 @@ export default class DayNightPass extends RenderPass {
                     float combined = (atmoGlow + stylizedRays) * sun.intersectStrength * shimmer;
                     rgb += rayColor * combined;
                 } else {
-                    // Ground rays - stretched horizontally
-                    vec2 stretchedPixel = toPixel * vec2(0.7, 1.0);
+                    // Ground rays - more atmospheric, less pattern
+                    vec2 stretchedPixel = toPixel * vec2(0.6, 1.0);
                     float stretchedAngle = atan(stretchedPixel.y, stretchedPixel.x);
 
-                    // Layer 1: Soft ground glow
-                    float groundGlow = exp(-dist * 0.7) * smoothstep(3.0, 0.5, abs(world.x - sun.pos.x)) * 0.15;
+                    // Radial falloff from sun position
+                    float radialFade = smoothstep(4.0, 0.0, abs(world.x - sun.pos.x));
 
-                    // Layer 2: Ground ray pattern
+                    // Layer 1: Dominant atmospheric glow (soft, wide)
+                    float atmoGlow = exp(-dist * 0.4) * radialFade * 0.2;
+
+                    // Layer 2: Subtle ray pattern (less prominent)
                     float groundPattern = rayPattern(stretchedAngle, dist);
-                    float groundRayFalloff = exp(-dist * 0.6) * smoothstep(3.5, 0.3, abs(world.x - sun.pos.x));
-                    float stylizedGroundRays = groundPattern * groundRayFalloff * 0.25;
+                    float stylizedRays = groundPattern * exp(-dist * 0.5) * radialFade * 0.1;
 
-                    // Fade toward bottom
-                    float bottomFade = smoothstep(-2.0, 0.3, world.y);
-                    float combined = (groundGlow + stylizedGroundRays) * sun.intersectStrength * shimmer * bottomFade;
-                    rgb += rayColor * combined;
+                    // Faster fade toward bottom - god rays dissipate quickly
+                    float bottomFade = smoothstep(-1.5, 0.8, world.y);
+
+                    // Combine with screen-like blend for softer result
+                    float combined = (atmoGlow + stylizedRays) * sun.intersectStrength * shimmer * bottomFade;
+                    vec3 glowColor = rayColor * combined;
+                    rgb = rgb + glowColor * (1.0 - rgb * 0.3);  // Soft screen-ish blend
                 }
                 return rgb;
             }
