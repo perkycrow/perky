@@ -85,7 +85,7 @@ export default class DefendTheDen extends Game {
         this.elapsedTime = 0
         this.currentWave = -1
         this.currentDay = -1
-        this.paused = false
+        this.dayPaused = false
         this.waitingForClear = false
 
         this.spawnRatio = 0.66
@@ -98,7 +98,7 @@ export default class DefendTheDen extends Game {
             this.dayNightPass.setUniform('uAspectRatio', gameLayer.canvas.width / gameLayer.canvas.height)
             this.dayNightPass.setUniform('uCameraRatio', this.camera.unitsInView.width / this.camera.unitsInView.height)
 
-            if (this.paused) {
+            if (this.dayPaused) {
                 return
             }
 
@@ -154,7 +154,7 @@ export default class DefendTheDen extends Game {
                 this.emit('wave:start', {wave, dayNumber})
             }
 
-            gameController.setSpawning(isSpawning && !this.paused)
+            gameController.setSpawning(isSpawning && !this.dayPaused)
 
             this.emit('wave:tick', {wave, progress: waveProgress, dayNumber, timeOfDay, isSpawning})
         })
@@ -179,12 +179,12 @@ export default class DefendTheDen extends Game {
 
     #announceDay (dayNumber, gameController) {
         if (dayNumber > 0) {
-            this.paused = true
+            this.dayPaused = true
             gameController.setSpawning(false)
             this.emit('day:announce', {dayNumber})
 
             setTimeout(() => {
-                this.paused = false
+                this.dayPaused = false
                 this.emit('day:start', {dayNumber})
             }, this.dayAnnouncementDuration * 1000)
         } else {

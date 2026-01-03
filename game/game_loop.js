@@ -5,10 +5,11 @@ export default class GameLoop extends PerkyModule {
 
     static $category = 'gameLoop'
 
+    #paused = false
+
     constructor (params = {}) {
         super(params)
 
-        this.paused = false
         this.lastTime = 0
         this.accumulator = 0
         this.maxFrameSkip = params.maxFrameSkip || 5
@@ -39,13 +40,23 @@ export default class GameLoop extends PerkyModule {
     }
 
 
+    get paused () {
+        return this.#paused
+    }
+
+
+    set paused (value) {
+        this.#paused = value
+    }
+
+
     get running () {
-        return super.running && !this.paused
+        return super.running && !this.#paused
     }
 
 
     onStart () {
-        this.paused = false
+        this.#paused = false
         this.lastTime = performance.now()
         this.accumulator = 0
         this.frameCount = 0
@@ -56,11 +67,11 @@ export default class GameLoop extends PerkyModule {
 
 
     pause (...args) {
-        if (!this.started || this.paused) {
+        if (!this.started || this.#paused) {
             return false
         }
 
-        this.paused = true
+        this.#paused = true
         this.emit('pause', ...args)
 
         return true
@@ -68,11 +79,11 @@ export default class GameLoop extends PerkyModule {
 
 
     resume (...args) {
-        if (!this.started || !this.paused) {
+        if (!this.started || !this.#paused) {
             return false
         }
 
-        this.paused = false
+        this.#paused = false
         this.lastTime = performance.now()
         this.emit('resume', ...args)
 
