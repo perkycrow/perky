@@ -673,18 +673,19 @@ export default class DayNightPass extends RenderPass {
     }
 
     getShadowParams (progress) {
-        // Input uses game mapping: 0=dawn, 0.25=noon, 0.5=dusk, 0.75=midnight
-        // Sun visible from dawn (0) to dusk (0.5)
+        // Must match shader formula: sunProgress = 0.29 + (uDayNightProgress - 0.25) * 1.68
         const p = ((progress % 1) + 1) % 1
+        const sunProgress = 0.29 + (p - 0.25) * 1.68
 
-        if (p > 0.5) {
+        // Sun not visible (sunProgress outside 0-1 range)
+        if (sunProgress < 0 || sunProgress > 1) {
             return {skewX: 0, scaleY: -0.3, offsetY: 0.06, color: [0, 0, 0, 0.1]}
         }
 
-        const sunProgress = p / 0.5  // 0->1 over dawn to dusk
+        // Match shader: SUN_ARC = vec2(2.95, 2.325)
         const angle = sunProgress * Math.PI
-        const sunX = -Math.cos(angle) * 3.0
-        const sunY = Math.sin(angle) * 2.5
+        const sunX = -Math.cos(angle) * 2.95
+        const sunY = Math.sin(angle) * 2.325
 
         return {
             skewX: -sunX * 0.25,
