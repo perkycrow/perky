@@ -68,14 +68,11 @@ export default class DayNightPass extends RenderPass {
             // How far above/below terrain for horizon effect (smaller = faster transition to day)
             const float HORIZON_RANGE = 0.4;
 
-            // Sun disc/halo - very soft atmospheric style
-            const float DISC_OUTER = 0.06;
-            const float DISC_INNER = 0.0;
-            const float HALO_OUTER = 0.4;
-            const float HALO_INNER = 0.03;
-            const float HALO_STRENGTH = 0.35;
-            const float GLOW_RADIUS = 0.6;
-            const float GLOW_STRENGTH = 0.3;
+            // Sun disc/halo - stylized illustrative style
+            const float SUN_DISC_SIZE = 0.045;        // Size of solid sun disc
+            const float SUN_DISC_EDGE = 0.004;        // Soft edge thickness (smaller = sharper)
+            const float HALO_SIZE = 0.012;            // Halo extends this far beyond disc
+            const float HALO_STRENGTH = 0.4;          // Halo opacity
 
             // Stars
             const vec2 STAR_GRID = vec2(100.0, 60.0);
@@ -87,7 +84,7 @@ export default class DayNightPass extends RenderPass {
             // DEBUG: uncomment to visualize hill circles
             // #define DEBUG_HILLS
             // DEBUG: uncomment to visualize sun trajectory
-            #define DEBUG_SUN_PATH
+            // #define DEBUG_SUN_PATH
 
             // ─────────────────────────────────────────────────────────────
             // Utilities
@@ -242,14 +239,13 @@ export default class DayNightPass extends RenderPass {
             // Effects
             // ─────────────────────────────────────────────────────────────
             float rayPattern(float angle, float dist) {
-                float t = uTime * 0.008;
-                // Softer, more diffuse rays - wider and less sharp
-                float s = mix(1.8, 1.2, smoothstep(0.0, 3.0, dist));
-                // Fewer, wider rays for atmospheric look
-                float r1 = pow(abs(sin(angle * 4.0 + t)), s);
-                float r2 = pow(abs(sin(angle * 6.0 + 1.5 - t * 0.4)), s);
-                float r3 = pow(abs(sin(angle * 3.0 - t * 0.2)), s) * 0.5;
-                return (r1 + r2 + r3) * 0.25;
+                // Main rays - evenly spaced
+                float mainRays = smoothstep(0.2, 0.5, sin(angle * 10.0));
+                // Secondary rays - offset, dimmer
+                float secondaryRays = smoothstep(0.3, 0.6, sin(angle * 10.0 + 0.5)) * 0.4;
+                // Variation in intensity per ray
+                float variation = 0.7 + 0.3 * sin(angle * 5.0);
+                return (mainRays + secondaryRays) * variation * 0.4;
             }
 
             vec3 applyGoldenHour(vec3 rgb, float sunY, float sunProgress) {
@@ -263,23 +259,28 @@ export default class DayNightPass extends RenderPass {
                 vec2 diff = (uv - sunScreen) * vec2(uAspectRatio, 1.0);
                 float d = length(diff);
 
-                // Very soft disc - pure gaussian, no hard edge
-                float disc = exp(-d * d / 0.0008) * 0.7;
+                // Defined sun disc with sharp edge
+                float disc = 1.0 - smoothstep(SUN_DISC_SIZE - SUN_DISC_EDGE, SUN_DISC_SIZE, d);
 
-                // Extended soft halo
-                float halo = exp(-d * d / 0.02) * HALO_STRENGTH;
-
-                // Large atmospheric glow
-                float glow = exp(-d * d / (GLOW_RADIUS * GLOW_RADIUS)) * GLOW_STRENGTH;
+                // Halo: semi-transparent ring with sharp outer edge
+                float haloStart = SUN_DISC_SIZE;
+                float haloEnd = SUN_DISC_SIZE + HALO_SIZE;
+                // Sharp cutoff at outer edge, constant opacity inside
+                float halo = smoothstep(haloEnd, haloEnd - 0.005, d) * HALO_STRENGTH;
+                // Don't add halo where disc already is
+                halo *= (1.0 - disc);
 
                 // Sun color shifts more orange/pink when low
                 float lowSunFactor = 1.0 - smoothstep(0.0, 1.5, sun.pos.y);
-                vec3 glowColor = mix(sun.color, vec3(1.0, 0.6, 0.4), lowSunFactor * 0.5);
+                vec3 discColor = mix(sun.color, vec3(1.0, 0.85, 0.7), lowSunFactor * 0.3);
+                vec3 haloColor = mix(sun.color, vec3(1.0, 0.7, 0.5), lowSunFactor * 0.5);
 
                 // Fade effects at sunrise/sunset edges
                 float edgeFade = smoothstep(0.0, 0.15, sunProgress) * smoothstep(1.0, 0.85, sunProgress);
 
-                return rgb + glowColor * (disc + halo + glow) * edgeFade;
+                // Combine: solid disc + attached halo glow
+                vec3 result = discColor * disc + haloColor * halo;
+                return rgb + result * edgeFade;
             }
 
             vec3 applyRays(vec3 rgb, vec2 world, SunData sun, float terrain, bool inSky) {
@@ -290,24 +291,29 @@ export default class DayNightPass extends RenderPass {
                 float angle = atan(toPixel.y, toPixel.x);
                 float pattern = rayPattern(angle, dist);
 
-                // Softer fade from origin
-                float originFade = smoothstep(0.0, 1.2, dist);
-
-                // Bias rays upward (fan effect like in reference)
-                float upwardBias = smoothstep(-0.5, 1.5, toPixel.y / max(dist, 0.01));
-
                 // Softer, more atmospheric color for rays
                 float lowSunFactor = 1.0 - smoothstep(0.0, 1.5, sun.pos.y);
                 vec3 rayColor = mix(sun.color, vec3(1.0, 0.7, 0.5), lowSunFactor * 0.4);
 
                 if (inSky) {
+                    // Softer fade from origin
+                    float originFade = smoothstep(0.0, 1.2, dist);
+                    // Bias rays upward (fan effect like in reference)
+                    float upwardBias = smoothstep(-0.5, 1.5, toPixel.y / max(dist, 0.01));
                     // Longer, softer falloff for sky rays
                     float falloff = exp(-dist * 0.4) * smoothstep(0.1, 0.6, dist);
                     rgb += rayColor * pattern * falloff * sun.intersectStrength * shimmer * originFade * upwardBias * 1.5;
                 } else {
-                    // Subtle ground reflection
-                    float falloff = exp(-dist * 0.6) * smoothstep(3.0, 0.3, abs(world.x - sun.pos.x));
-                    rgb += rayColor * pattern * falloff * sun.intersectStrength * shimmer * originFade * 0.6;
+                    // Slight horizontal stretch on ground
+                    vec2 stretchedPixel = toPixel * vec2(0.7, 1.0);
+                    float stretchedAngle = atan(stretchedPixel.y, stretchedPixel.x);
+                    float groundPattern = rayPattern(stretchedAngle, dist);
+
+                    float originFade = smoothstep(0.0, 0.8, dist);
+                    float falloff = exp(-dist * 0.5) * smoothstep(4.0, 0.3, abs(world.x - sun.pos.x));
+                    // Fade out toward bottom of screen
+                    float bottomFade = smoothstep(-2.0, 0.5, world.y);
+                    rgb += rayColor * groundPattern * falloff * sun.intersectStrength * shimmer * originFade * bottomFade * 0.7;
                 }
                 return rgb;
             }
