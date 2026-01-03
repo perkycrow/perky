@@ -44,10 +44,21 @@ export default class DayNightPass extends RenderPass {
 
                 float luminance = dot(color.rgb, vec3(0.299, 0.587, 0.114));
 
+                // Dynamic golden hour tint based on sun height
                 if (blueness > 0.0 && uSunPosition > -0.2 && uSunPosition < 1.2) {
                     float sunX = uSunPosition;
                     float sunY = 1.0 - 4.0 * (sunX - 0.5) * (sunX - 0.5);
-                    sunY = sunY * 0.7 + 0.25;
+                    sunY = sunY * 0.45 + 0.50;
+
+                    float goldenHourFactor = 1.0 - smoothstep(0.85, 0.93, sunY);
+                    vec3 goldenTint = mix(vec3(1.0, 1.0, 1.0), vec3(1.0, 0.75, 0.55), goldenHourFactor * 0.4);
+                    rgb = rgb * goldenTint;
+                }
+
+                if (blueness > 0.0 && uSunPosition > -0.2 && uSunPosition < 1.2) {
+                    float sunX = uSunPosition;
+                    float sunY = 1.0 - 4.0 * (sunX - 0.5) * (sunX - 0.5);
+                    sunY = sunY * 0.45 + 0.50;
                     vec2 sunPos = vec2(sunX, sunY);
 
                     vec2 diff = vTexCoord - sunPos;
@@ -58,8 +69,9 @@ export default class DayNightPass extends RenderPass {
                     float sunRing = smoothstep(0.055, 0.05, distToSun) - smoothstep(0.045, 0.04, distToSun);
                     float sunHalo = smoothstep(0.12, 0.05, distToSun) * 0.3;
 
-                    vec3 sunColor = mix(vec3(1.0, 0.95, 0.7), vec3(1.0, 0.6, 0.3), smoothstep(0.2, 0.9, abs(uSunPosition - 0.5)));
-                    vec3 ringColor = vec3(1.0, 0.85, 0.5);
+                    float horizonFactor = 1.0 - smoothstep(0.85, 0.95, sunY);
+                    vec3 sunColor = mix(vec3(1.0, 0.95, 0.8), vec3(1.0, 0.4, 0.15), horizonFactor);
+                    vec3 ringColor = mix(vec3(1.0, 0.9, 0.6), vec3(1.0, 0.5, 0.2), horizonFactor);
 
                     rgb += sunColor * sunDisc * skyFactor;
                     rgb += ringColor * sunRing * 0.6 * skyFactor;
@@ -68,7 +80,7 @@ export default class DayNightPass extends RenderPass {
 
                 if (blueness > 0.0 && uStarsIntensity > 0.0) {
                     vec2 gridSize = vec2(100.0, 60.0);
-                    vec2 starOffset = vec2(uTime * 0.02, 0.0);
+                    vec2 starOffset = vec2(uTime * 0.015, uTime * 0.008);
                     vec2 starCoord = floor((vTexCoord + starOffset) * gridSize);
                     float starRand = random(starCoord);
 
@@ -124,9 +136,9 @@ export default class DayNightPass extends RenderPass {
             sunPosition: -0.5
         },
         dawn: {
-            darkness: 0.15,
-            tintStrength: 0.4,
-            tintColor: [1.0, 0.6, 0.5],
+            darkness: 0.08,
+            tintStrength: 0.5,
+            tintColor: [1.0, 0.65, 0.45],
             starsIntensity: 0.0,
             sunPosition: 0.15
         },
@@ -138,16 +150,17 @@ export default class DayNightPass extends RenderPass {
             sunPosition: 0.5
         },
         dusk: {
-            darkness: 0.2,
-            tintStrength: 0.35,
-            tintColor: [1.0, 0.5, 0.4],
+            darkness: 0.35,
+            tintStrength: 0.55,
+            tintColor: [1.0, 0.35, 0.25],
             starsIntensity: 0.0,
             sunPosition: 0.85
         }
     }
 
     setTimeOfDay (t) {
-        const time = ((t % 1) + 1) % 1
+        const cycleOffset = -0.0625
+        const time = (((t + cycleOffset) % 1) + 1) % 1
 
         let fromPhase
         let toPhase
@@ -186,8 +199,10 @@ export default class DayNightPass extends RenderPass {
         this.setUniform('uStarsIntensity', lerp(fromPhase.starsIntensity, toPhase.starsIntensity, smoothBlend))
 
         let sunPos
-        if (time < 0.5) {
-            sunPos = time * 2
+        const sunStart = 0.03
+        const sunEnd = 0.60
+        if (time >= sunStart && time < sunEnd) {
+            sunPos = (time - sunStart) / (sunEnd - sunStart)
         } else {
             sunPos = -0.5
         }

@@ -83,9 +83,51 @@ export default class DefendTheDen extends Game {
         gameLayer.renderer.addPostPass(vignettePass)
 
         this.elapsedTime = 0
+        this.currentWave = -1
+        this.currentDay = -1
+        this.paused = false
+        this.waitingForClear = false
+
+        this.spawnRatio = 0.66
+        this.waveDuration = 10
+        this.dayDuration = this.waveDuration * 4
+        this.dayAnnouncementDuration = 3
+        this.catchUpSpeed = 3
+
         this.on('update', (delta) => {
-            this.elapsedTime += delta
-            const timeOfDay = this.elapsedTime * 0.1
+            if (this.paused) {
+                return
+            }
+
+            if (this.waitingForClear) {
+                this.#checkWaveClear()
+                return
+            }
+
+            const timeInDay = this.elapsedTime % this.dayDuration
+            const timeOfDay = timeInDay / this.dayDuration
+            const dayNumber = Math.floor(this.elapsedTime / this.dayDuration)
+
+            const wave = Math.floor(timeOfDay * 4)
+            const waveProgress = (timeOfDay * 4) % 1
+            const isSpawning = waveProgress < this.spawnRatio
+            const isInCooldown = !isSpawning
+
+            const hasEnemies = this.world.childrenByTags('enemy').length > 0
+
+            let timeScale = 1
+            if (isInCooldown && !hasEnemies) {
+                timeScale = this.catchUpSpeed
+            }
+
+            if (waveProgress >= 0.99 && hasEnemies) {
+                this.waitingForClear = true
+                gameController.setSpawning(false)
+                this.emit('wave:tick', {wave, progress: 1, dayNumber, timeOfDay, isSpawning: false})
+                return
+            }
+
+            this.elapsedTime += delta * timeScale
 
             this.dayNightPass.setUniform('uTime', this.elapsedTime)
             this.dayNightPass.setUniform('uAspectRatio', gameLayer.canvas.width / gameLayer.canvas.height)
@@ -98,14 +140,29 @@ export default class DefendTheDen extends Game {
                 this.renderer.shadowTransform.offsetY = shadowParams.offsetY
                 this.renderer.shadowTransform.color = shadowParams.color
             }
+
+            if (dayNumber !== this.currentDay) {
+                this.currentDay = dayNumber
+                this.#announceDay(dayNumber, gameController)
+            }
+
+            if (wave !== this.currentWave) {
+                this.currentWave = wave
+                gameController.onWaveStart(wave, dayNumber)
+                this.emit('wave:start', {wave, dayNumber})
+            }
+
+            gameController.setSpawning(isSpawning && !this.paused)
+
+            this.emit('wave:tick', {wave, progress: waveProgress, dayNumber, timeOfDay, isSpawning})
         })
 
         const uiLayer = this.getHTML('ui')
-        const waveProgress = this.create(WaveProgressBar, {
+        const waveProgressBar = this.create(WaveProgressBar, {
             $id: 'waveProgress',
-            gameController
+            game: this
         })
-        waveProgress.mount(uiLayer)
+        waveProgressBar.mount(uiLayer)
 
         this.on('render', () => {
             this.renderer.render()
@@ -115,9 +172,32 @@ export default class DefendTheDen extends Game {
 
     onStart () {
         this.execute('spawnPlayer', {x: -2.5})
+    }
 
-        const gameController = this.getController('game')
-        gameController.startWave(0)
+
+    #announceDay (dayNumber, gameController) {
+        if (dayNumber > 0) {
+            this.paused = true
+            gameController.setSpawning(false)
+            this.emit('day:announce', {dayNumber})
+
+            setTimeout(() => {
+                this.paused = false
+                this.emit('day:start', {dayNumber})
+            }, this.dayAnnouncementDuration * 1000)
+        } else {
+            this.emit('day:start', {dayNumber})
+        }
+    }
+
+
+    #checkWaveClear () {
+        const enemies = this.world.childrenByTags('enemy')
+
+        if (enemies.length === 0) {
+            this.waitingForClear = false
+            this.elapsedTime = Math.ceil(this.elapsedTime / this.waveDuration) * this.waveDuration
+        }
     }
 
 }

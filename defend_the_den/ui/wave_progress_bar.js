@@ -3,43 +3,73 @@ import PerkyModule from '../../core/perky_module.js'
 
 export default class WaveProgressBar extends PerkyModule {
 
+    static phaseNames = ['Dawn', 'Day', 'Dusk', 'Night']
+
     constructor (options = {}) {
         super(options)
 
-        this.gameController = options.gameController
+        this.game = options.game
+        this.currentDay = 0
 
         this.root = document.createElement('div')
         this.root.className = 'wave-progress'
         this.root.innerHTML = `
-            <div class="wave-progress-label">Wave <span class="wave-number">1</span></div>
+            <div class="wave-progress-label"><span class="wave-name">Dawn</span> - <span class="day-label">Day 1</span></div>
             <div class="wave-progress-track">
                 <div class="wave-progress-fill"></div>
             </div>
+            <div class="day-announcement" style="display: none;">
+                <span class="day-number">Day 1</span>
+            </div>
         `
 
-        this.labelEl = this.root.querySelector('.wave-number')
+        this.nameEl = this.root.querySelector('.wave-name')
+        this.dayLabelEl = this.root.querySelector('.day-label')
         this.fillEl = this.root.querySelector('.wave-progress-fill')
+        this.dayAnnouncementEl = this.root.querySelector('.day-announcement')
+        this.dayNumberEl = this.root.querySelector('.day-number')
 
         this.#applyStyles()
     }
 
 
     onStart () {
-        if (!this.gameController) {
+        if (!this.game) {
             return
         }
 
-        this.listenTo(this.gameController, 'wave:start', (waveNumber) => {
-            this.#updateWave(waveNumber)
+        this.listenTo(this.game, 'wave:start', ({wave, dayNumber}) => {
+            this.#updateWave(wave, dayNumber)
         })
 
-        this.listenTo(this.gameController, 'wave:progress', (progress) => {
+        this.listenTo(this.game, 'wave:tick', ({progress}) => {
             this.#updateProgress(progress)
         })
 
-        this.listenTo(this.gameController, 'wave:complete', () => {
-            this.#updateProgress(1)
+        this.listenTo(this.game, 'day:announce', ({dayNumber}) => {
+            this.#showDayAnnouncement(dayNumber)
         })
+
+        this.listenTo(this.game, 'day:start', ({dayNumber}) => {
+            this.#hideDayAnnouncement()
+            this.#updateDayLabel(dayNumber)
+        })
+    }
+
+
+    #showDayAnnouncement (dayNumber) {
+        this.dayNumberEl.textContent = `Day ${dayNumber + 1}`
+        this.dayAnnouncementEl.style.display = 'block'
+    }
+
+
+    #hideDayAnnouncement () {
+        this.dayAnnouncementEl.style.display = 'none'
+    }
+
+
+    #updateDayLabel (dayNumber) {
+        this.dayLabelEl.textContent = `Day ${dayNumber + 1}`
     }
 
 
@@ -59,8 +89,10 @@ export default class WaveProgressBar extends PerkyModule {
     }
 
 
-    #updateWave (waveNumber) {
-        this.labelEl.textContent = waveNumber + 1
+    #updateWave (wave, dayNumber) {
+        const phaseName = WaveProgressBar.phaseNames[wave] || 'Dawn'
+        this.nameEl.textContent = phaseName
+        this.#updateDayLabel(dayNumber)
         this.#updateProgress(0)
     }
 
@@ -92,7 +124,7 @@ export default class WaveProgressBar extends PerkyModule {
                 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
             }
 
-            .wave-progress-label .wave-number {
+            .wave-progress-label .wave-name {
                 font-weight: 700;
                 color: #fff;
             }
@@ -116,6 +148,23 @@ export default class WaveProgressBar extends PerkyModule {
                 border-radius: 2px;
                 transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                 box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+            }
+
+            .day-announcement {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                text-align: center;
+            }
+
+            .day-number {
+                font-size: 48px;
+                font-weight: 700;
+                color: #fff;
+                text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+                letter-spacing: 4px;
+                text-transform: uppercase;
             }
         `
         this.root.appendChild(style)

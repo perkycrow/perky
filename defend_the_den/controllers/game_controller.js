@@ -10,10 +10,10 @@ export default class GameController extends WorldController {
     }
 
     static waveSettings = {
-        baseEnemyCount: 3,
-        enemyCountGrowth: 2,
-        enemySpeed: 0.5,
-        spawnInterval: {min: 0.8, max: 1.5},
+        baseEnemySpeed: 0.4,
+        speedGrowthPerDay: 0.05,
+        baseSpawnInterval: {min: 1.2, max: 2.0},
+        spawnIntervalDecreasePerDay: 0.1,
         spawnY: {min: -1.5, max: 1}
     }
 
@@ -21,79 +21,68 @@ export default class GameController extends WorldController {
         super(options)
 
         this.currentWave = 0
-        this.enemiesSpawned = 0
-        this.enemiesToSpawn = 0
+        this.currentDay = 0
         this.spawnTimer = 0
         this.nextSpawnTime = 0
-        this.waveActive = false
-
-        this.on('world:set', (world) => {
-            this.listenTo(world, 'enemy:destroyed', () => this.onEnemyDestroyed())
-        })
+        this.isSpawning = false
     }
 
 
     update (game, deltaTime) {
         this.world.update(deltaTime, game)
         this.updateWaveSpawning(deltaTime)
-        this.checkWaveComplete()
     }
 
 
-    onEnemyDestroyed () {
-        this.enemiesKilled++
-
-        const progress = this.enemiesToSpawn > 0
-            ? this.enemiesKilled / this.enemiesToSpawn
-            : 0
-
-        this.emit('wave:progress', progress)
-    }
-
-
-    startWave (waveNumber = this.currentWave) {
-        this.currentWave = waveNumber
-        const config = this.getWaveConfig(waveNumber)
-
-        this.enemiesSpawned = 0
-        this.enemiesKilled = 0
-        this.enemiesToSpawn = config.enemyCount
+    onWaveStart (wave, dayNumber) {
+        this.currentWave = wave
+        this.currentDay = dayNumber
         this.spawnTimer = 0
-        this.nextSpawnTime = 0
-        this.waveActive = true
-
-        this.emit('wave:start', waveNumber)
-        this.emit('wave:progress', 0)
+        this.nextSpawnTime = this.getNextSpawnTime()
     }
 
 
-    getWaveConfig (waveNumber) {
+    setSpawning (isSpawning) {
+        this.isSpawning = isSpawning
+    }
+
+
+    getSpawnConfig () {
         const settings = this.constructor.waveSettings
+        const dayFactor = Math.min(this.currentDay, 10)
+
+        const intervalDecrease = dayFactor * settings.spawnIntervalDecreasePerDay
+        const minInterval = Math.max(0.3, settings.baseSpawnInterval.min - intervalDecrease)
+        const maxInterval = Math.max(0.5, settings.baseSpawnInterval.max - intervalDecrease)
+
+        const enemySpeed = settings.baseEnemySpeed + dayFactor * settings.speedGrowthPerDay
+
         return {
-            enemyCount: settings.baseEnemyCount + waveNumber * settings.enemyCountGrowth,
-            enemySpeed: settings.enemySpeed,
-            spawnInterval: settings.spawnInterval,
+            enemySpeed,
+            spawnInterval: {min: minInterval, max: maxInterval},
             spawnY: settings.spawnY
         }
     }
 
 
-    updateWaveSpawning (deltaTime) {
-        if (!this.waveActive) {
-            return
-        }
+    getNextSpawnTime () {
+        const config = this.getSpawnConfig()
+        return config.spawnInterval.min + Math.random() * (config.spawnInterval.max - config.spawnInterval.min)
+    }
 
-        if (this.enemiesSpawned >= this.enemiesToSpawn) {
+
+    updateWaveSpawning (deltaTime) {
+        if (!this.isSpawning) {
             return
         }
 
         this.spawnTimer += deltaTime
 
         if (this.spawnTimer >= this.nextSpawnTime) {
-            const config = this.getWaveConfig(this.currentWave)
+            const config = this.getSpawnConfig()
 
             this.spawnTimer = 0
-            this.nextSpawnTime = config.spawnInterval.min + Math.random() * (config.spawnInterval.max - config.spawnInterval.min)
+            this.nextSpawnTime = this.getNextSpawnTime()
 
             const randomY = config.spawnY.min + Math.random() * (config.spawnY.max - config.spawnY.min)
 
@@ -102,36 +91,7 @@ export default class GameController extends WorldController {
                 y: randomY,
                 maxSpeed: config.enemySpeed
             })
-
-            this.enemiesSpawned++
         }
-    }
-
-
-    checkWaveComplete () {
-        if (!this.waveActive) {
-            return
-        }
-
-        if (this.enemiesSpawned < this.enemiesToSpawn) {
-            return
-        }
-
-        const enemies = this.world.childrenByTags('enemy')
-        if (enemies.length === 0) {
-            this.onWaveComplete()
-        }
-    }
-
-
-    onWaveComplete () {
-        this.waveActive = false
-
-        this.emit('wave:complete', this.currentWave)
-
-        setTimeout(() => {
-            this.startWave(this.currentWave + 1)
-        }, 2000)
     }
 
 
