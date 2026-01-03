@@ -85,10 +85,10 @@ export default class DayNightPass extends RenderPass {
             const float HORIZON_RANGE = 0.4;
 
             // Sun disc/halo - stylized illustrative style
-            const float SUN_DISC_SIZE = 0.045;        // Size of solid sun disc
-            const float SUN_DISC_EDGE = 0.004;        // Soft edge thickness (smaller = sharper)
-            const float HALO_SIZE = 0.012;            // Halo extends this far beyond disc
-            const float HALO_STRENGTH = 0.4;          // Halo opacity
+            const float SUN_DISC_SIZE = 0.035;        // Size of solid sun disc
+            const float SUN_DISC_EDGE = 0.006;        // Soft edge thickness (larger = softer)
+            const float HALO_SIZE = 0.010;            // Halo extends this far beyond disc
+            const float HALO_STRENGTH = 0.2;          // Halo opacity
 
             // Stars
             const vec2 STAR_GRID = vec2(100.0, 60.0);
@@ -345,21 +345,32 @@ export default class DayNightPass extends RenderPass {
                 vec2 diff = (uv - sunScreen) * vec2(uAspectRatio, 1.0);
                 float d = length(diff);
 
-                // Defined sun disc with sharp edge
+                // Defined sun disc with soft edge
                 float disc = 1.0 - smoothstep(SUN_DISC_SIZE - SUN_DISC_EDGE, SUN_DISC_SIZE, d);
 
-                // Halo: semi-transparent ring with sharp outer edge
-                float haloStart = SUN_DISC_SIZE;
+                // Halo: smooth gradient fade (no hard edge)
                 float haloEnd = SUN_DISC_SIZE + HALO_SIZE;
-                // Sharp cutoff at outer edge, constant opacity inside
-                float halo = smoothstep(haloEnd, haloEnd - 0.005, d) * HALO_STRENGTH;
-                // Don't add halo where disc already is
+                float halo = smoothstep(haloEnd, SUN_DISC_SIZE, d) * HALO_STRENGTH;
                 halo *= (1.0 - disc);
+                // Fade halo when sun leaves intersection
+                halo *= sun.intersectStrength;
 
-                // Sun color shifts more orange/pink when low
-                float lowSunFactor = 1.0 - smoothstep(0.0, 1.5, sun.pos.y);
-                vec3 discColor = mix(sun.color, vec3(1.0, 0.85, 0.7), lowSunFactor * 0.3);
-                vec3 haloColor = mix(sun.color, vec3(1.0, 0.7, 0.5), lowSunFactor * 0.5);
+                // Dawn vs Dusk color tinting
+                float duskFactor = smoothstep(0.35, 0.65, sunProgress);
+                vec3 dawnTint = vec3(1.0, 0.85, 0.6);   // Warm orange-yellow
+                vec3 duskTint = vec3(1.0, 0.7, 0.75);   // Soft pink-orange
+
+                // Low sun = more tinted, high sun = whiter
+                float lowSunFactor = 1.0 - smoothstep(0.0, 1.2, sun.pos.y);
+                vec3 horizonTint = mix(dawnTint, duskTint, duskFactor);
+
+                // Apply tint based on sun height
+                vec3 discColor = mix(sun.color, horizonTint, lowSunFactor * 0.5);
+                vec3 haloColor = mix(sun.color, horizonTint, lowSunFactor * 0.7);
+
+                // Reduce intensity - sun should be visible but not glaring
+                discColor *= 0.7;
+                haloColor *= 0.6;
 
                 // Fade effects at sunrise/sunset edges
                 float edgeFade = smoothstep(0.0, 0.15, sunProgress) * smoothstep(1.0, 0.85, sunProgress);
