@@ -36,7 +36,7 @@ export default class DayNightPass extends RenderPass {
             // ─────────────────────────────────────────────────────────────
             const float PI = 3.14159265;
             const vec2 WORLD_SIZE = vec2(7.0, 5.0);
-            const vec2 SUN_ARC = vec2(3.0, 2.5);
+            const vec2 SUN_ARC = vec2(2.95, 2.325);
             const float SUN_RADIUS = 0.15;
             // Lighting constants
             const float SKY_EXTRA_DARKNESS = 0.35;
@@ -61,6 +61,8 @@ export default class DayNightPass extends RenderPass {
             // #define DEBUG_SUN_RADIUS
             // DEBUG: uncomment to visualize hill circles
             // #define DEBUG_HILLS
+            // DEBUG: uncomment to visualize sun trajectory
+            #define DEBUG_SUN_PATH
 
             // ─────────────────────────────────────────────────────────────
             // Utilities
@@ -232,6 +234,72 @@ export default class DayNightPass extends RenderPass {
             }
             #endif
 
+            #ifdef DEBUG_SUN_PATH
+            vec3 debugSunPath(vec3 rgb, vec2 world) {
+                float minDist = 1000.0;
+                float closestProgress = 0.0;
+
+                // Sample trajectory to find closest point
+                for (float p = 0.0; p <= 1.0; p += 0.01) {
+                    vec2 sunPos = calcSunPos(p);
+                    float d = length(world - sunPos);
+                    if (d < minDist) {
+                        minDist = d;
+                        closestProgress = p;
+                    }
+                }
+
+                // Draw trajectory line (yellow)
+                if (minDist < 0.04) {
+                    rgb = mix(rgb, vec3(1.0, 1.0, 0.0), 0.8);
+                }
+
+                // Draw markers at key positions
+                // Dawn intersection (progress ~0) - cyan
+                vec2 dawnPos = calcSunPos(0.0);
+                if (length(world - dawnPos) < 0.08) {
+                    rgb = mix(rgb, vec3(0.0, 1.0, 1.0), 0.9);
+                }
+
+                // Dusk intersection (progress ~1) - magenta
+                vec2 duskPos = calcSunPos(1.0);
+                if (length(world - duskPos) < 0.08) {
+                    rgb = mix(rgb, vec3(1.0, 0.0, 1.0), 0.9);
+                }
+
+                // Zenith (progress = 0.5) - white
+                vec2 zenithPos = calcSunPos(0.5);
+                if (length(world - zenithPos) < 0.08) {
+                    rgb = mix(rgb, vec3(1.0, 1.0, 1.0), 0.9);
+                }
+
+                // Current sun position - red circle
+                vec2 currentPos = calcSunPos(uSunProgress);
+                float distToCurrent = length(world - currentPos);
+                if (distToCurrent < SUN_RADIUS + 0.02 && distToCurrent > SUN_RADIUS - 0.02) {
+                    rgb = mix(rgb, vec3(1.0, 0.0, 0.0), 0.9);
+                }
+
+                // Draw terrain intersection points (green dots where sun touches hills)
+                for (float p = 0.0; p <= 1.0; p += 0.01) {
+                    vec2 sunPos = calcSunPos(p);
+                    float terrainY = terrainHeight(sunPos.x);
+                    float sunBottom = sunPos.y - SUN_RADIUS;
+                    float sunTop = sunPos.y + SUN_RADIUS;
+
+                    // Check if sun intersects terrain at this progress
+                    if (sunBottom < terrainY && sunTop > terrainY) {
+                        vec2 intersectPoint = vec2(sunPos.x, terrainY);
+                        if (length(world - intersectPoint) < 0.06) {
+                            rgb = mix(rgb, vec3(0.0, 1.0, 0.0), 0.9);
+                        }
+                    }
+                }
+
+                return rgb;
+            }
+            #endif
+
             // ─────────────────────────────────────────────────────────────
             // Main
             // ─────────────────────────────────────────────────────────────
@@ -272,6 +340,10 @@ export default class DayNightPass extends RenderPass {
 
                 #ifdef DEBUG_HILLS
                 rgb = debugHills(rgb, world);
+                #endif
+
+                #ifdef DEBUG_SUN_PATH
+                rgb = debugSunPath(rgb, world);
                 #endif
 
                 // Stars
