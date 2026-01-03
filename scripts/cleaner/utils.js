@@ -25,7 +25,7 @@ export function isInsideString (textBefore) {
 
 
 export function shouldSkipDirectory (name) {
-    return name === 'node_modules' || name.startsWith('.')
+    return name === 'node_modules' || name === 'dist' || name.startsWith('.')
 }
 
 

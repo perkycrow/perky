@@ -12,7 +12,7 @@ export default class EslintAuditor extends Auditor {
                 cwd: this.rootDir,
                 encoding: 'utf-8',
                 stdio: ['pipe', 'pipe', 'pipe'],
-                maxBuffer: 10 * 1024 * 1024
+                maxBuffer: 50 * 1024 * 1024
             })
             return {output, error: null}
         } catch (error) {

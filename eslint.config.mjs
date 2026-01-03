@@ -2,7 +2,7 @@ import {defineConfig, globalIgnores} from 'eslint/config'
 import globals from 'globals'
 import localPlugin from './eslint/index.js'
 
-export default defineConfig([globalIgnores(['node_modules/*']), {
+export default defineConfig([globalIgnores(['node_modules/*', 'dist/*']), {
     plugins: {
         local: localPlugin
     },
