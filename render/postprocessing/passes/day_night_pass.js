@@ -43,9 +43,9 @@ export default class DayNightPass extends RenderPass {
 
             // Ambiance colors (progress: 0=midnight, 0.25=dawn, 0.5=noon, 0.75=dusk)
             const vec3 TINT_MIDNIGHT = vec3(0.4, 0.5, 0.8);
-            const vec3 TINT_DAWN = vec3(1.0, 0.65, 0.45);
+            const vec3 TINT_DAWN = vec3(0.95, 0.7, 0.85);  // Soft pink-violet dawn
             const vec3 TINT_NOON = vec3(1.0, 1.0, 1.0);
-            const vec3 TINT_DUSK = vec3(1.0, 0.35, 0.25);
+            const vec3 TINT_DUSK = vec3(0.9, 0.5, 0.7);    // Purple-pink dusk
 
             const float DARKNESS_MIDNIGHT = 0.4;
             const float DARKNESS_DAWN = 0.08;
@@ -62,12 +62,14 @@ export default class DayNightPass extends RenderPass {
             const float STARS_NOON = 0.0;
             const float STARS_DUSK = 0.0;
 
-            // Sun disc/halo
-            const float DISC_OUTER = 0.03;
-            const float DISC_INNER = 0.025;
-            const float HALO_OUTER = 0.08;
+            // Sun disc/halo - very soft atmospheric style
+            const float DISC_OUTER = 0.06;
+            const float DISC_INNER = 0.0;
+            const float HALO_OUTER = 0.4;
             const float HALO_INNER = 0.03;
-            const float HALO_STRENGTH = 0.3;
+            const float HALO_STRENGTH = 0.35;
+            const float GLOW_RADIUS = 0.6;
+            const float GLOW_STRENGTH = 0.3;
 
             // Stars
             const vec2 STAR_GRID = vec2(100.0, 60.0);
@@ -199,6 +201,14 @@ export default class DayNightPass extends RenderPass {
                 return max(hillHeight(uHill1, uHill1R, x), hillHeight(uHill2, uHill2R, x));
             }
 
+            // Smooth terrain detection with anti-aliasing
+            float terrainFactor(vec2 world) {
+                float terrain = terrainHeight(world.x);
+                // Use screen-space derivative for smooth edge
+                float pixelSize = fwidth(world.y) * 2.0;
+                return smoothstep(terrain - pixelSize, terrain + pixelSize, world.y);
+            }
+
             // ─────────────────────────────────────────────────────────────
             // Sun calculations
             // ─────────────────────────────────────────────────────────────
@@ -240,11 +250,14 @@ export default class DayNightPass extends RenderPass {
             // Effects
             // ─────────────────────────────────────────────────────────────
             float rayPattern(float angle, float dist) {
-                float t = uTime * 0.015;
-                float s = mix(3.0, 1.5, smoothstep(0.0, 2.0, dist));
-                float r1 = pow(abs(sin(angle * 6.0 + t)), s);
-                float r2 = pow(abs(sin(angle * 9.0 + 2.0 - t * 0.6)), s);
-                return (r1 + r2) * 0.4;
+                float t = uTime * 0.008;
+                // Softer, more diffuse rays - wider and less sharp
+                float s = mix(1.8, 1.2, smoothstep(0.0, 3.0, dist));
+                // Fewer, wider rays for atmospheric look
+                float r1 = pow(abs(sin(angle * 4.0 + t)), s);
+                float r2 = pow(abs(sin(angle * 6.0 + 1.5 - t * 0.4)), s);
+                float r3 = pow(abs(sin(angle * 3.0 - t * 0.2)), s) * 0.5;
+                return (r1 + r2 + r3) * 0.25;
             }
 
             vec3 applyGoldenHour(vec3 rgb, float sunY, float sunProgress) {
@@ -253,30 +266,56 @@ export default class DayNightPass extends RenderPass {
                 return rgb * mix(vec3(1.0), GOLDEN_TINT, golden * 0.4 * sunFade);
             }
 
-            vec3 applySunDisc(vec3 rgb, vec2 uv, SunData sun) {
+            vec3 applySunDisc(vec3 rgb, vec2 uv, SunData sun, float sunProgress) {
                 vec2 sunScreen = worldToScreen(sun.pos);
                 vec2 diff = (uv - sunScreen) * vec2(uAspectRatio, 1.0);
                 float d = length(diff);
-                float disc = smoothstep(DISC_OUTER, DISC_INNER, d);
-                float halo = smoothstep(HALO_OUTER, HALO_INNER, d) * HALO_STRENGTH;
-                return rgb + sun.color * (disc + halo);
+
+                // Very soft disc - pure gaussian, no hard edge
+                float disc = exp(-d * d / 0.0008) * 0.7;
+
+                // Extended soft halo
+                float halo = exp(-d * d / 0.02) * HALO_STRENGTH;
+
+                // Large atmospheric glow
+                float glow = exp(-d * d / (GLOW_RADIUS * GLOW_RADIUS)) * GLOW_STRENGTH;
+
+                // Sun color shifts more orange/pink when low
+                float lowSunFactor = 1.0 - smoothstep(0.0, 1.5, sun.pos.y);
+                vec3 glowColor = mix(sun.color, vec3(1.0, 0.6, 0.4), lowSunFactor * 0.5);
+
+                // Fade effects at sunrise/sunset edges
+                float edgeFade = smoothstep(0.0, 0.15, sunProgress) * smoothstep(1.0, 0.85, sunProgress);
+
+                return rgb + glowColor * (disc + halo + glow) * edgeFade;
             }
 
             vec3 applyRays(vec3 rgb, vec2 world, SunData sun, float terrain, bool inSky) {
-                float shimmer = sin(uTime * 0.5) * 0.15 + 0.85;
+                float shimmer = sin(uTime * 0.3) * 0.1 + 0.9;
                 vec2 rayOrigin = vec2(sun.pos.x, sun.terrainY);
                 vec2 toPixel = world - rayOrigin;
                 float dist = length(toPixel);
                 float angle = atan(toPixel.y, toPixel.x);
                 float pattern = rayPattern(angle, dist);
-                float originFade = smoothstep(0.0, 0.8, dist);
+
+                // Softer fade from origin
+                float originFade = smoothstep(0.0, 1.2, dist);
+
+                // Bias rays upward (fan effect like in reference)
+                float upwardBias = smoothstep(-0.5, 1.5, toPixel.y / max(dist, 0.01));
+
+                // Softer, more atmospheric color for rays
+                float lowSunFactor = 1.0 - smoothstep(0.0, 1.5, sun.pos.y);
+                vec3 rayColor = mix(sun.color, vec3(1.0, 0.7, 0.5), lowSunFactor * 0.4);
 
                 if (inSky) {
-                    float falloff = exp(-dist * 0.8) * smoothstep(0.15, 0.5, dist);
-                    rgb += sun.color * pattern * falloff * sun.intersectStrength * shimmer * originFade * 2.0;
+                    // Longer, softer falloff for sky rays
+                    float falloff = exp(-dist * 0.4) * smoothstep(0.1, 0.6, dist);
+                    rgb += rayColor * pattern * falloff * sun.intersectStrength * shimmer * originFade * upwardBias * 1.5;
                 } else {
-                    float falloff = exp(-dist * 0.5) * smoothstep(2.5, 0.2, abs(world.x - sun.pos.x));
-                    rgb += sun.color * pattern * falloff * sun.intersectStrength * shimmer * originFade * 1.2;
+                    // Subtle ground reflection
+                    float falloff = exp(-dist * 0.6) * smoothstep(3.0, 0.3, abs(world.x - sun.pos.x));
+                    rgb += rayColor * pattern * falloff * sun.intersectStrength * shimmer * originFade * 0.6;
                 }
                 return rgb;
             }
@@ -398,7 +437,8 @@ export default class DayNightPass extends RenderPass {
                 vec4 color = texture(uTexture, vTexCoord);
                 vec2 world = screenToWorld(vTexCoord);
                 float terrain = terrainHeight(world.x);
-                bool inSky = world.y > terrain;
+                float skyBlend = terrainFactor(world);  // Smooth 0-1 transition at terrain edge
+                bool inSky = skyBlend > 0.5;
 
                 // Get ambiance from day/night progress
                 Ambiance ambiance = getAmbiance();
@@ -420,9 +460,10 @@ export default class DayNightPass extends RenderPass {
                     if (blueness > 0.0) {
                         rgb = applyGoldenHour(rgb, sun.pos.y, ambiance.sunProgress);
                     }
-                    if (inSky) {
-                        rgb = applySunDisc(rgb, vTexCoord, sun);
-                    }
+                    // Use skyBlend for smooth sun disc transition at horizon
+                    vec3 sunDiscEffect = applySunDisc(vec3(0.0), vTexCoord, sun, ambiance.sunProgress);
+                    rgb += sunDiscEffect * skyBlend;
+
                     if (sun.intersectsTerrain) {
                         rgb = applyRays(rgb, world, sun, terrain, inSky);
                     }
