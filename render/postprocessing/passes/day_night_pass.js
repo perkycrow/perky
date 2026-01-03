@@ -65,9 +65,9 @@ export default class DayNightPass extends RenderPass {
                     diff.x *= uAspectRatio;
                     float distToSun = length(diff);
 
-                    float sunDisc = smoothstep(0.045, 0.04, distToSun);
-                    float sunRing = smoothstep(0.055, 0.05, distToSun) - smoothstep(0.045, 0.04, distToSun);
-                    float sunHalo = smoothstep(0.12, 0.05, distToSun) * 0.3;
+                    float sunDisc = smoothstep(0.03, 0.025, distToSun);
+                    float sunRing = smoothstep(0.038, 0.033, distToSun) - smoothstep(0.03, 0.025, distToSun);
+                    float sunHalo = smoothstep(0.08, 0.03, distToSun) * 0.25;
 
                     float horizonFactor = 1.0 - smoothstep(0.85, 0.95, sunY);
                     vec3 sunColor = mix(vec3(1.0, 0.95, 0.8), vec3(1.0, 0.4, 0.15), horizonFactor);
