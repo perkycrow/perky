@@ -214,4 +214,26 @@ export default class DayNightPass extends RenderPass {
         this.setTimeOfDay(0.75)
     }
 
+
+    getShadowParams (t) {
+        const time = ((t % 1) + 1) % 1
+
+        const angle = time * Math.PI * 2
+
+        const skewX = Math.cos(angle) * 0.8
+
+        const shadowDirection = -Math.sin(angle)
+        const scaleY = shadowDirection * 0.5
+
+        const lightHeight = Math.sin(angle)
+        const alpha = 0.15 + Math.abs(lightHeight) * 0.15
+
+        return {
+            skewX,
+            scaleY,
+            offsetY: 0.06,
+            color: [0, 0, 0, alpha]
+        }
+    }
+
 }

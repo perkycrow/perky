@@ -85,9 +85,19 @@ export default class DefendTheDen extends Game {
         this.elapsedTime = 0
         this.on('update', (delta) => {
             this.elapsedTime += delta
+            const timeOfDay = this.elapsedTime * 0.1
+
             this.dayNightPass.setUniform('uTime', this.elapsedTime)
             this.dayNightPass.setUniform('uAspectRatio', gameLayer.canvas.width / gameLayer.canvas.height)
-            this.dayNightPass.setTimeOfDay(this.elapsedTime * 0.1)
+            this.dayNightPass.setTimeOfDay(timeOfDay)
+
+            if (this.renderer.shadowTransform) {
+                const shadowParams = this.dayNightPass.getShadowParams(timeOfDay)
+                this.renderer.shadowTransform.skewX = shadowParams.skewX
+                this.renderer.shadowTransform.scaleY = shadowParams.scaleY
+                this.renderer.shadowTransform.offsetY = shadowParams.offsetY
+                this.renderer.shadowTransform.color = shadowParams.color
+            }
         })
 
         const uiLayer = this.getHTML('ui')

@@ -95,6 +95,13 @@ export default class GameRenderer extends PerkyModule {
     #setupRenderGroups () {
         const gameLayer = this.game.getCanvas('game')
 
+        this.shadowTransform = new ShadowTransform({
+            skewX: 0.1,
+            scaleY: -0.5,
+            offsetY: 0.06,
+            color: [0, 0, 0, 0.3]
+        })
+
         gameLayer.renderer.setRenderGroups([
             {
                 $name: 'background',
@@ -103,12 +110,7 @@ export default class GameRenderer extends PerkyModule {
             {
                 $name: 'shadows',
                 content: this.entitiesGroup,
-                renderTransform: new ShadowTransform({
-                    skewX: 0.1,
-                    scaleY: -0.5,
-                    offsetY: 0.06,
-                    color: [0, 0, 0, 0.3]
-                })
+                renderTransform: this.shadowTransform
             },
             {
                 $name: 'entities',
