@@ -118,10 +118,11 @@ export default class DayNightPass extends RenderPass {
                     float sunTerrain = terrainHeight(sun.x);
                     vec3 sColor = sunColor(sun.y);
 
-                    // Golden hour tint on sky
+                    // Golden hour tint on sky (fade in/out at sunrise/sunset)
                     if (blueness > 0.0) {
                         float golden = 1.0 - smoothstep(0.3, 1.5, sun.y);
-                        rgb *= mix(vec3(1.0), vec3(1.0, 0.75, 0.55), golden * 0.4);
+                        float sunFade = smoothstep(0.0, 0.1, uSunProgress) * smoothstep(1.0, 0.9, uSunProgress);
+                        rgb *= mix(vec3(1.0), vec3(1.0, 0.75, 0.55), golden * 0.4 * sunFade);
                     }
 
                     // Sun disc + halo (only in sky)
@@ -224,10 +225,10 @@ export default class DayNightPass extends RenderPass {
     }
 
     static defaultUniforms = {
-        uDarkness: 0.0,
-        uTintStrength: 0.0,
-        uTintColor: [1.0, 1.0, 1.0],
-        uStarsIntensity: 0.0,
+        uDarkness: 0.4,
+        uTintStrength: 0.5,
+        uTintColor: [0.4, 0.5, 0.8],
+        uStarsIntensity: 1.2,
         uHill1: [-4.5, -20.68],
         uHill1R: 22.65,
         uHill2: [3.55, -14.0],
