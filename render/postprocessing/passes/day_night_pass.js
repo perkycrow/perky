@@ -31,64 +31,124 @@ export default class DayNightPass extends RenderPass {
             in vec2 vTexCoord;
             out vec4 fragColor;
 
+            // ─────────────────────────────────────────────────────────────
+            // Constants
+            // ─────────────────────────────────────────────────────────────
             const float PI = 3.14159265;
             const vec2 WORLD_SIZE = vec2(7.0, 5.0);
             const vec2 SUN_ARC = vec2(3.0, 2.5);
             const float SUN_RADIUS = 0.15;
+            // Lighting constants
+            const float SKY_EXTRA_DARKNESS = 0.35;
+            const float MAX_DARKNESS = 0.85;
+            const vec3 SUN_COLOR_HIGH = vec3(1.0, 0.95, 0.85);
+            const vec3 SUN_COLOR_LOW = vec3(1.0, 0.5, 0.2);
+            const vec3 GOLDEN_TINT = vec3(1.0, 0.75, 0.55);
+
+            // Sun disc/halo
+            const float DISC_OUTER = 0.03;
+            const float DISC_INNER = 0.025;
+            const float HALO_OUTER = 0.08;
+            const float HALO_INNER = 0.03;
+            const float HALO_STRENGTH = 0.3;
+
+            // Stars
+            const vec2 STAR_GRID = vec2(100.0, 60.0);
+            const vec2 STAR_SPEED = vec2(0.008, 0.003);
+            const float STAR_THRESHOLD = 0.92;
 
             // DEBUG: uncomment to visualize sun radius and terrain intersection
             // #define DEBUG_SUN_RADIUS
             // DEBUG: uncomment to visualize hill circles
             // #define DEBUG_HILLS
 
+            // ─────────────────────────────────────────────────────────────
+            // Utilities
+            // ─────────────────────────────────────────────────────────────
             float random(vec2 st) {
                 return fract(sin(dot(st, vec2(12.9898, 78.233))) * 43758.5453);
             }
 
-            vec2 screenToWorld(vec2 uv) {
+            // ─────────────────────────────────────────────────────────────
+            // Coordinate transforms
+            // ─────────────────────────────────────────────────────────────
+            void getScreenWorldParams(out vec2 margin, out vec2 scale) {
                 float ratio = uAspectRatio / uCameraRatio;
-                vec2 margin = vec2(
+                margin = vec2(
                     uAspectRatio > uCameraRatio ? (1.0 - 1.0/ratio) * 0.5 : 0.0,
                     uAspectRatio < uCameraRatio ? (1.0 - ratio) * 0.5 : 0.0
                 );
-                vec2 scale = vec2(
+                scale = vec2(
                     uAspectRatio > uCameraRatio ? ratio : 1.0,
                     uAspectRatio < uCameraRatio ? 1.0/ratio : 1.0
                 );
+            }
+
+            vec2 screenToWorld(vec2 uv) {
+                vec2 margin, scale;
+                getScreenWorldParams(margin, scale);
                 return ((uv - margin) * scale - 0.5) * WORLD_SIZE;
             }
 
             vec2 worldToScreen(vec2 w) {
-                float ratio = uAspectRatio / uCameraRatio;
-                vec2 margin = vec2(
-                    uAspectRatio > uCameraRatio ? (1.0 - 1.0/ratio) * 0.5 : 0.0,
-                    uAspectRatio < uCameraRatio ? (1.0 - ratio) * 0.5 : 0.0
-                );
-                vec2 scale = vec2(
-                    uAspectRatio > uCameraRatio ? 1.0/ratio : 1.0,
-                    uAspectRatio < uCameraRatio ? ratio : 1.0
-                );
-                return (w / WORLD_SIZE + 0.5) * scale + margin;
+                vec2 margin, scale;
+                getScreenWorldParams(margin, scale);
+                return (w / WORLD_SIZE + 0.5) / scale + margin;
+            }
+
+            // ─────────────────────────────────────────────────────────────
+            // Terrain
+            // ─────────────────────────────────────────────────────────────
+            float hillHeight(vec2 center, float radius, float x) {
+                float dx = x - center.x;
+                float rSq = radius * radius;
+                return center.y + sqrt(rSq - dx * dx);
             }
 
             float terrainHeight(float x) {
-                float dx1 = x - uHill1.x;
-                float dx2 = x - uHill2.x;
-                float h1 = dx1*dx1 < uHill1R*uHill1R ? uHill1.y + sqrt(uHill1R*uHill1R - dx1*dx1) : -999.0;
-                float h2 = dx2*dx2 < uHill2R*uHill2R ? uHill2.y + sqrt(uHill2R*uHill2R - dx2*dx2) : -999.0;
-                return max(h1, h2);
+                return max(hillHeight(uHill1, uHill1R, x), hillHeight(uHill2, uHill2R, x));
             }
 
-            vec2 sunPos(float p) {
-                float a = p * PI;
+            // ─────────────────────────────────────────────────────────────
+            // Sun calculations
+            // ─────────────────────────────────────────────────────────────
+            struct SunData {
+                vec2 pos;
+                vec3 color;
+                float terrainY;
+                float top;
+                float bottom;
+                bool intersectsTerrain;
+                float intersectStrength;
+            };
+
+            vec2 calcSunPos(float progress) {
+                float a = progress * PI;
                 return vec2(-cos(a), sin(a)) * SUN_ARC;
             }
 
-            vec3 sunColor(float y) {
+            vec3 calcSunColor(float y) {
                 float h = 1.0 - smoothstep(0.3, 1.5, y);
-                return mix(vec3(1.0, 0.95, 0.85), vec3(1.0, 0.5, 0.2), h);
+                return mix(SUN_COLOR_HIGH, SUN_COLOR_LOW, h);
             }
 
+            SunData getSunData() {
+                SunData s;
+                s.pos = calcSunPos(uSunProgress);
+                s.color = calcSunColor(s.pos.y);
+                s.terrainY = terrainHeight(s.pos.x);
+                s.top = s.pos.y + SUN_RADIUS;
+                s.bottom = s.pos.y - SUN_RADIUS;
+                s.intersectsTerrain = s.bottom < s.terrainY && s.top > s.terrainY;
+                s.intersectStrength = s.intersectsTerrain
+                    ? min(s.terrainY - s.bottom, s.top - s.terrainY) / SUN_RADIUS
+                    : 0.0;
+                return s;
+            }
+
+            // ─────────────────────────────────────────────────────────────
+            // Effects
+            // ─────────────────────────────────────────────────────────────
             float rayPattern(float angle, float dist) {
                 float t = uTime * 0.015;
                 float s = mix(3.0, 1.5, smoothstep(0.0, 2.0, dist));
@@ -97,124 +157,126 @@ export default class DayNightPass extends RenderPass {
                 return (r1 + r2) * 0.4;
             }
 
+            vec3 applyGoldenHour(vec3 rgb, float sunY) {
+                float golden = 1.0 - smoothstep(0.3, 1.5, sunY);
+                float sunFade = smoothstep(0.0, 0.1, uSunProgress) * smoothstep(1.0, 0.9, uSunProgress);
+                return rgb * mix(vec3(1.0), GOLDEN_TINT, golden * 0.4 * sunFade);
+            }
+
+            vec3 applySunDisc(vec3 rgb, vec2 uv, SunData sun, float skyFactor) {
+                vec2 diff = (uv - worldToScreen(sun.pos)) * vec2(uAspectRatio, 1.0);
+                float d = length(diff);
+                float disc = smoothstep(DISC_OUTER, DISC_INNER, d);
+                float halo = smoothstep(HALO_OUTER, HALO_INNER, d) * HALO_STRENGTH;
+                return rgb + sun.color * (disc + halo) * skyFactor;
+            }
+
+            vec3 applyRays(vec3 rgb, vec2 world, SunData sun, float terrain, bool inSky) {
+                float shimmer = sin(uTime * 0.5) * 0.15 + 0.85;
+                vec2 rayOrigin = vec2(sun.pos.x, sun.terrainY);
+                vec2 toPixel = world - rayOrigin;
+                float dist = length(toPixel);
+                float angle = atan(toPixel.y, toPixel.x);
+                float pattern = rayPattern(angle, dist);
+                float originFade = smoothstep(0.0, 0.8, dist);
+
+                if (inSky) {
+                    float falloff = exp(-dist * 0.8) * smoothstep(0.15, 0.5, dist);
+                    rgb += sun.color * pattern * falloff * sun.intersectStrength * shimmer * originFade * 2.0;
+                } else {
+                    float falloff = exp(-dist * 0.5) * smoothstep(2.5, 0.2, abs(world.x - sun.pos.x));
+                    rgb += sun.color * pattern * falloff * sun.intersectStrength * shimmer * originFade * 1.2;
+                }
+                return rgb;
+            }
+
+            vec3 applyStars(vec3 rgb, vec2 uv, vec4 baseColor) {
+                vec2 starUV = uv + STAR_SPEED * uTime;
+                vec2 cell = floor(starUV * STAR_GRID);
+                float r = random(cell);
+
+                if (r > STAR_THRESHOLD) {
+                    vec2 cellUV = fract(starUV * STAR_GRID);
+                    vec2 starPos = vec2(random(cell + 0.1), random(cell + 0.2));
+                    float star = smoothstep(0.12, 0.0, length(cellUV - starPos));
+                    float twinkle = sin(uTime * (1.5 + r * 2.0) + r * 6.28) * 0.3 + 0.7;
+                    float lum = dot(baseColor.rgb, vec3(0.299, 0.587, 0.114));
+                    rgb += vec3(uStarsIntensity * star * twinkle * smoothstep(0.5, 1.0, lum));
+                }
+                return rgb;
+            }
+
+            // ─────────────────────────────────────────────────────────────
+            // Debug visualization
+            // ─────────────────────────────────────────────────────────────
+            #ifdef DEBUG_HILLS
+            vec3 debugHills(vec3 rgb, vec2 world) {
+                float d1 = length(world - uHill1);
+                float d2 = length(world - uHill2);
+                if (d1 < uHill1R) rgb = mix(rgb, vec3(1.0, 0.0, 0.0), 0.3);
+                if (d2 < uHill2R) rgb = mix(rgb, vec3(0.0, 0.0, 1.0), 0.3);
+                return rgb;
+            }
+            #endif
+
+            #ifdef DEBUG_SUN_RADIUS
+            vec3 debugSun(vec3 rgb, vec2 world, SunData sun) {
+                float distToSun = length(world - sun.pos);
+                if (abs(distToSun - SUN_RADIUS) < 0.004) return vec3(1.0, 1.0, 0.0);
+                if (distToSun < 0.006) return vec3(1.0, 0.0, 0.0);
+                if (abs(world.x - sun.pos.x) < 0.004 && abs(world.y - sun.terrainY) < 0.006) return vec3(0.0, 1.0, 0.0);
+                if (abs(world.y - sun.bottom) < 0.002 && abs(world.x - sun.pos.x) < 0.3) return vec3(0.0, 1.0, 1.0);
+                if (abs(world.y - sun.top) < 0.002 && abs(world.x - sun.pos.x) < 0.3) return vec3(1.0, 0.0, 1.0);
+                if (sun.intersectsTerrain && abs(world.x - sun.pos.x) < 0.01 && world.y > sun.terrainY && world.y < sun.terrainY + 0.02) return vec3(1.0);
+                return rgb;
+            }
+            #endif
+
+            // ─────────────────────────────────────────────────────────────
+            // Main
+            // ─────────────────────────────────────────────────────────────
             void main() {
                 vec4 color = texture(uTexture, vTexCoord);
                 vec2 world = screenToWorld(vTexCoord);
                 float terrain = terrainHeight(world.x);
                 bool inSky = world.y > terrain;
 
-                // Sky detection by color
+                // Sky detection
                 float blueness = color.b - max(color.r, color.g);
                 float skyFactor = smoothstep(-0.08, 0.15, blueness);
 
                 // Base color with darkness and tint
-                vec3 rgb = color.rgb * (1.0 - min(uDarkness + skyFactor * 0.35, 0.85));
+                float darkness = min(uDarkness + skyFactor * SKY_EXTRA_DARKNESS, MAX_DARKNESS);
+                vec3 rgb = color.rgb * (1.0 - darkness);
                 rgb = mix(rgb, rgb * uTintColor, uTintStrength);
 
-                // Sun
+                // Sun effects
                 bool sunVisible = uSunProgress > 0.0 && uSunProgress < 1.0;
                 if (sunVisible) {
-                    vec2 sun = sunPos(uSunProgress);
-                    float sunTerrain = terrainHeight(sun.x);
-                    vec3 sColor = sunColor(sun.y);
+                    SunData sun = getSunData();
 
-                    // Golden hour tint on sky (fade in/out at sunrise/sunset)
                     if (blueness > 0.0) {
-                        float golden = 1.0 - smoothstep(0.3, 1.5, sun.y);
-                        float sunFade = smoothstep(0.0, 0.1, uSunProgress) * smoothstep(1.0, 0.9, uSunProgress);
-                        rgb *= mix(vec3(1.0), vec3(1.0, 0.75, 0.55), golden * 0.4 * sunFade);
+                        rgb = applyGoldenHour(rgb, sun.pos.y);
                     }
-
-                    // Sun disc + halo (only in sky)
                     if (inSky) {
-                        vec2 diff = (vTexCoord - worldToScreen(sun)) * vec2(uAspectRatio, 1.0);
-                        float d = length(diff);
-                        float disc = smoothstep(0.03, 0.025, d);
-                        float halo = smoothstep(0.08, 0.03, d) * 0.3;
-                        rgb += sColor * (disc + halo) * skyFactor;
+                        rgb = applySunDisc(rgb, vTexCoord, sun, skyFactor);
+                    }
+                    if (sun.intersectsTerrain) {
+                        rgb = applyRays(rgb, world, sun, terrain, inSky);
                     }
 
-                    // Rays (when sun intersects terrain)
-                    float sunTop = sun.y + SUN_RADIUS;
-                    float sunBottom = sun.y - SUN_RADIUS;
-                    bool intersects = sunBottom < sunTerrain && sunTop > sunTerrain;
-
-                    if (intersects) {
-                        float strength = min(sunTerrain - sunBottom, sunTop - sunTerrain) / SUN_RADIUS;
-                        float shimmer = sin(uTime * 0.5) * 0.15 + 0.85;
-                        vec2 rayOrigin = vec2(sun.x, sunTerrain);
-                        vec2 toPixel = world - rayOrigin;
-                        float dist = length(toPixel);
-                        float angle = atan(toPixel.y, toPixel.x);
-                        float pattern = rayPattern(angle, dist);
-
-                        // Fade in rays near origin (blinding effect)
-                        float originFade = smoothstep(0.0, 0.8, dist);
-
-                        if (inSky) {
-                            // Sky rays
-                            float falloff = exp(-dist * 0.8) * smoothstep(0.15, 0.5, dist);
-                            rgb += sColor * pattern * falloff * strength * shimmer * originFade * 2.0;
-                        } else if (terrain > -900.0) {
-                            // Ground rays
-                            float falloff = exp(-dist * 0.5) * smoothstep(2.5, 0.2, abs(world.x - sun.x));
-                            rgb += sColor * pattern * falloff * strength * shimmer * originFade * 1.2;
-                        }
-                    }
+                    #ifdef DEBUG_SUN_RADIUS
+                    rgb = debugSun(rgb, world, sun);
+                    #endif
                 }
 
-                // DEBUG: visualize hill circles
                 #ifdef DEBUG_HILLS
-                {
-                    float distToHill1 = length(world - uHill1);
-                    float distToHill2 = length(world - uHill2);
-
-                    // Hill 1 filled circle (red, 30% opacity)
-                    if (distToHill1 < uHill1R) rgb = mix(rgb, vec3(1.0, 0.0, 0.0), 0.3);
-                    // Hill 2 filled circle (blue, 30% opacity)
-                    if (distToHill2 < uHill2R) rgb = mix(rgb, vec3(0.0, 0.0, 1.0), 0.3);
-                }
+                rgb = debugHills(rgb, world);
                 #endif
 
-                // DEBUG: visualize sun radius and intersection zone
-                #ifdef DEBUG_SUN_RADIUS
-                if (sunVisible) {
-                    vec2 sun = sunPos(uSunProgress);
-                    float sunTerrain = terrainHeight(sun.x);
-                    float distToSun = length(world - sun);
-                    float sunBottom = sun.y - SUN_RADIUS;
-                    float sunTop = sun.y + SUN_RADIUS;
-
-                    // Sun disc outline (yellow)
-                    if (abs(distToSun - SUN_RADIUS) < 0.004) rgb = vec3(1.0, 1.0, 0.0);
-                    // Sun center (red dot)
-                    if (distToSun < 0.006) rgb = vec3(1.0, 0.0, 0.0);
-                    // Terrain at sun X (green)
-                    if (abs(world.x - sun.x) < 0.004 && abs(world.y - sunTerrain) < 0.006) rgb = vec3(0.0, 1.0, 0.0);
-                    // Sun bottom (cyan)
-                    if (abs(world.y - sunBottom) < 0.002 && abs(world.x - sun.x) < 0.3) rgb = vec3(0.0, 1.0, 1.0);
-                    // Sun top (magenta)
-                    if (abs(world.y - sunTop) < 0.002 && abs(world.x - sun.x) < 0.3) rgb = vec3(1.0, 0.0, 1.0);
-                    // Intersection active (white)
-                    bool intersects = sunBottom < sunTerrain && sunTop > sunTerrain;
-                    if (intersects && abs(world.x - sun.x) < 0.01 && world.y > sunTerrain && world.y < sunTerrain + 0.02) rgb = vec3(1.0);
-                }
-                #endif
-
-                // Stars (moving diagonally like celestial rotation)
+                // Stars
                 if (blueness > 0.0 && uStarsIntensity > 0.0) {
-                    vec2 starUV = vTexCoord + vec2(uTime * 0.008, uTime * 0.003);
-                    vec2 cell = floor(starUV * vec2(100.0, 60.0));
-                    float r = random(cell);
-
-                    if (r > 0.92) {
-                        vec2 cellUV = fract(starUV * vec2(100.0, 60.0));
-                        vec2 starPos = vec2(random(cell + 0.1), random(cell + 0.2));
-                        float star = smoothstep(0.12, 0.0, length(cellUV - starPos));
-                        float twinkle = sin(uTime * (1.5 + r * 2.0) + r * 6.28) * 0.3 + 0.7;
-                        float lum = dot(color.rgb, vec3(0.299, 0.587, 0.114));
-                        rgb += vec3(uStarsIntensity * star * twinkle * smoothstep(0.5, 1.0, lum));
-                    }
+                    rgb = applyStars(rgb, vTexCoord, color);
                 }
 
                 fragColor = vec4(clamp(rgb, 0.0, 1.0), color.a);
