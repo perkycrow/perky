@@ -81,7 +81,7 @@ export default class DayNightPass extends RenderPass {
 
             vec2 sunPos(float p) {
                 float a = p * PI;
-                return vec2(cos(a), sin(a)) * SUN_ARC;
+                return vec2(-cos(a), sin(a)) * SUN_ARC;
             }
 
             vec3 sunColor(float y) {
@@ -200,9 +200,9 @@ export default class DayNightPass extends RenderPass {
                 }
                 #endif
 
-                // Stars
+                // Stars (moving diagonally like celestial rotation)
                 if (blueness > 0.0 && uStarsIntensity > 0.0) {
-                    vec2 starUV = vTexCoord + vec2(uTime * 0.015, uTime * 0.008);
+                    vec2 starUV = vTexCoord + vec2(uTime * 0.008, uTime * 0.003);
                     vec2 cell = floor(starUV * vec2(100.0, 60.0));
                     float r = random(cell);
 
@@ -315,11 +315,11 @@ export default class DayNightPass extends RenderPass {
         }
 
         const angle = sunProgress * Math.PI
-        const sunX = Math.cos(angle) * 3.0
+        const sunX = -Math.cos(angle) * 3.0
         const sunY = Math.sin(angle) * 2.5
 
         return {
-            skewX: sunX * 0.25,
+            skewX: -sunX * 0.25,
             scaleY: -0.2 - sunY * 0.12,
             offsetY: 0.06,
             color: [0, 0, 0, 0.1 + sunY * 0.1]
