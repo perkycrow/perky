@@ -319,15 +319,19 @@ export default class DayNightPass extends RenderPass {
             }
 
             vec3 applyStars(vec3 rgb, vec2 uv, vec4 baseColor, float starsIntensity) {
-                vec2 starUV = uv + STAR_SPEED * uTime;
-                vec2 cell = floor(starUV * STAR_GRID);
+                vec2 aspectUV = vec2(uv.x * uAspectRatio, uv.y);
+                vec2 starUV = aspectUV + STAR_SPEED * uTime;
+                float gridSize = 60.0;
+                vec2 cell = floor(starUV * gridSize);
                 float r = random(cell);
 
                 if (r > STAR_THRESHOLD) {
-                    vec2 cellUV = fract(starUV * STAR_GRID);
+                    vec2 cellUV = fract(starUV * gridSize);
                     vec2 starPos = vec2(random(cell + 0.1), random(cell + 0.2));
                     float star = smoothstep(0.12, 0.0, length(cellUV - starPos));
-                    float twinkle = sin(uTime * (1.5 + r * 2.0) + r * 6.28) * 0.3 + 0.7;
+                    float phase = random(cell + 0.3) * 6.28;
+                    float speed = 0.3 + random(cell + 0.4) * 0.4;
+                    float twinkle = sin(uTime * speed + phase) * 0.15 + 0.85;
                     float lum = dot(baseColor.rgb, vec3(0.299, 0.587, 0.114));
                     rgb += vec3(starsIntensity * star * twinkle * smoothstep(0.5, 1.0, lum));
                 }
