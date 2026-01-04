@@ -1,4 +1,5 @@
 import Enemy from './enemy.js'
+import {CapsuleHitbox} from './collision_shapes.js'
 
 
 export default class RedEnemy extends Enemy {
@@ -10,6 +11,12 @@ export default class RedEnemy extends Enemy {
             maxSpeed: 4,
             hp: 2,
             ...params
+        })
+
+        this.hitbox = new CapsuleHitbox({
+            radius: 0.2,
+            height: 0.4,
+            offsetY: 0.35
         })
 
         this.state = 'hopping'

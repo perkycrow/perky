@@ -1,4 +1,5 @@
 import Entity from '../game/entity.js'
+import {CircleHitbox} from './collision_shapes.js'
 
 
 export default class Projectile extends Entity {
@@ -24,6 +25,10 @@ export default class Projectile extends Entity {
 
         this.rotation = 0
         this.spinSpeed = 15
+
+        this.hitbox = new CircleHitbox({
+            radius: 0.15
+        })
     }
 
 

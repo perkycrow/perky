@@ -1,4 +1,5 @@
 import Entity from '../game/entity.js'
+import {CapsuleHitbox} from './collision_shapes.js'
 
 
 export default class Player extends Entity {
@@ -17,6 +18,12 @@ export default class Player extends Entity {
 
         this.shootRecoilTimer = 0
         this.shootRecoilDuration = 0.1
+
+        this.hitbox = new CapsuleHitbox({
+            radius: 0.25,
+            height: 0.5,
+            offsetY: 0.45
+        })
     }
 
 

@@ -130,6 +130,7 @@ export default class DefendTheDen extends Game {
 
             this.dayNightPass.setUniform('uTime', this.elapsedTime)
             this.dayNightPass.setProgress(timeOfDay)
+
             this.#updateShadows(timeOfDay)
 
             if (dayNumber !== this.currentDay) {
@@ -163,6 +164,16 @@ export default class DefendTheDen extends Game {
 
     onStart () {
         this.execute('spawnPlayer', {x: -2.5})
+    }
+
+
+    toggleHitboxDebug () {
+        return this.renderer.toggleHitboxDebug()
+    }
+
+
+    setHitboxDebug (enabled) {
+        this.renderer.setHitboxDebug(enabled)
     }
 
 

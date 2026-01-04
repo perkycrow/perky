@@ -4,6 +4,7 @@ import Projectile from './projectile.js'
 import PigEnemy from './pig_enemy.js'
 import RedEnemy from './red_enemy.js'
 import GrannyEnemy from './granny_enemy.js'
+import {testHitbox} from './collision_shapes.js'
 
 
 export default class DenWorld extends World {
@@ -203,11 +204,6 @@ export default class DenWorld extends World {
 }
 
 
-function testCollision (projectile, enemy) {
-    const dx = projectile.x - enemy.x
-    const dy = projectile.y - enemy.y
-    const distance = Math.sqrt(dx * dx + dy * dy)
-    const hitRadius = 0.4
-
-    return distance < hitRadius
+function testCollision (entityA, entityB) {
+    return testHitbox(entityA.hitbox, entityA.position, entityB.hitbox, entityB.position)
 }

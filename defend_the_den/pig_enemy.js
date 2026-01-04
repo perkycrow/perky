@@ -1,5 +1,6 @@
 import Enemy from './enemy.js'
 import Easing from '../math/easing.js'
+import {CapsuleHitbox} from './collision_shapes.js'
 
 
 export default class PigEnemy extends Enemy {
@@ -8,6 +9,12 @@ export default class PigEnemy extends Enemy {
 
     constructor (params = {}) {
         super(params)
+
+        this.hitbox = new CapsuleHitbox({
+            radius: 0.2,
+            height: 0.4,
+            offsetY: 0.4
+        })
 
         this.shuffleTimer = 0
         this.shuffleDuration = 0.8 + Math.random() * 0.6

@@ -21,6 +21,8 @@ import ChromaticEffect from './effects/chromatic_effect.js'
 import OutlineEffect from '../render/shaders/builtin/effects/outline_effect.js'
 import WaveEffect from './effects/wave_effect.js'
 
+import HitboxDebug from './hitbox_debug.js'
+
 
 export default class GameRenderer extends PerkyModule {
 
@@ -45,6 +47,8 @@ export default class GameRenderer extends PerkyModule {
             maxSpeed: 6,
             lifetime: 0.35
         })
+
+        this.hitboxDebug = new HitboxDebug(this.world)
 
         this.#registerViews()
     }
@@ -121,6 +125,10 @@ export default class GameRenderer extends PerkyModule {
             {
                 $name: 'entities',
                 content: this.entitiesGroup
+            },
+            {
+                $name: 'hitboxDebug',
+                content: this.hitboxDebug.group
             }
         ])
     }
@@ -131,11 +139,22 @@ export default class GameRenderer extends PerkyModule {
 
         this.worldView.sync(deltaTime)
         this.impactParticles.update(deltaTime)
+        this.hitboxDebug.update()
 
         const gameLayer = this.game.getCanvas('game')
         gameLayer.renderer.setUniform('uTime', performance.now() / 1000)
         gameLayer.markDirty()
         gameLayer.render()
+    }
+
+
+    toggleHitboxDebug () {
+        return this.hitboxDebug.toggle()
+    }
+
+
+    setHitboxDebug (enabled) {
+        this.hitboxDebug.setEnabled(enabled)
     }
 
 }

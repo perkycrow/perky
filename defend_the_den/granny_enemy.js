@@ -1,4 +1,5 @@
 import Enemy from './enemy.js'
+import {CircleHitbox} from './collision_shapes.js'
 
 
 export default class GrannyEnemy extends Enemy {
@@ -10,6 +11,11 @@ export default class GrannyEnemy extends Enemy {
             maxSpeed: 0.3,
             hp: 4,
             ...params
+        })
+
+        this.hitbox = new CircleHitbox({
+            radius: 0.3,
+            offsetY: 0.3
         })
 
         this.state = 'walking'
