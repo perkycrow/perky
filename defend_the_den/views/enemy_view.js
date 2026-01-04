@@ -71,6 +71,7 @@ export default class EnemyView extends EntityView {
     syncPosition () {
         this.root.x = this.entity.x
         this.root.y = this.entity.y
+        this.root.setDepth(-this.entity.y)
     }
 
 
