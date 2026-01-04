@@ -1,5 +1,4 @@
 import Entity from '../game/entity.js'
-import Easing from '../math/easing.js'
 
 
 export default class Enemy extends Entity {
@@ -32,42 +31,11 @@ export default class Enemy extends Entity {
 
         this.hitFlashTimer = 0
         this.hitFlashDuration = 0.1
-
-        this.shuffleTimer = 0
-        this.shuffleDuration = 0.8 + Math.random() * 0.6
-        this.shuffleProgress = Math.random()
-        this.minSpeedRatio = 0.15
-        this.maxSpeedRatio = 1.0
-        this.speedMultiplier = 1.0
-
-        this.updateShuffleForDamage()
     }
 
 
     get damageRatio () {
         return 1 - (this.hp / this.maxHp)
-    }
-
-
-    updateShuffleForDamage () {
-        const hpLost = this.maxHp - this.hp
-
-        if (hpLost === 0) {
-            this.shuffleDuration = 0.8 + Math.random() * 0.6
-            this.minSpeedRatio = 0.2
-            this.maxSpeedRatio = 1.0
-            this.speedMultiplier = 1.0
-        } else if (hpLost === 1) {
-            this.shuffleDuration = 1.2 + Math.random() * 0.8
-            this.minSpeedRatio = 0.05
-            this.maxSpeedRatio = 1.1
-            this.speedMultiplier = 1.0
-        } else {
-            this.shuffleDuration = 0.4 + Math.random() * 0.3
-            this.minSpeedRatio = 0.3
-            this.maxSpeedRatio = 1.3
-            this.speedMultiplier = 2.0
-        }
     }
 
 
@@ -81,8 +49,6 @@ export default class Enemy extends Entity {
         this.stunTimer = this.stunDuration
 
         this.hitFlashTimer = this.hitFlashDuration
-
-        this.updateShuffleForDamage()
 
         if (this.hp <= 0) {
             this.alive = false
@@ -135,14 +101,7 @@ export default class Enemy extends Entity {
             return
         }
 
-        this.shuffleTimer += deltaTime
-        this.shuffleProgress = (this.shuffleTimer / this.shuffleDuration) % 1
-
-        const wave = Math.sin(this.shuffleProgress * Math.PI * 2)
-        const easedWave = Easing.easeInOutQuad((wave + 1) / 2)
-        const speedRatio = this.minSpeedRatio + easedWave * (this.maxSpeedRatio - this.minSpeedRatio)
-
-        this.position.add(this.velocity.clone().multiplyScalar(deltaTime * speedRatio * this.speedMultiplier))
+        this.position.add(this.velocity.clone().multiplyScalar(deltaTime))
     }
 
 

@@ -1,7 +1,8 @@
 import World from '../game/world.js'
 import Player from './player.js'
 import Projectile from './projectile.js'
-import Enemy from './enemy.js'
+import PigEnemy from './pig_enemy.js'
+import RedEnemy from './red_enemy.js'
 
 
 export default class DenWorld extends World {
@@ -47,8 +48,17 @@ export default class DenWorld extends World {
     }
 
 
-    spawnEnemy (options = {}) {
-        return this.create(Enemy, {
+    spawnPigEnemy (options = {}) {
+        return this.create(PigEnemy, {
+            x: options.x || 0,
+            y: options.y || 0,
+            maxSpeed: options.maxSpeed || 0.5
+        })
+    }
+
+
+    spawnRedEnemy (options = {}) {
+        return this.create(RedEnemy, {
             x: options.x || 0,
             y: options.y || 0,
             maxSpeed: options.maxSpeed || 0.5

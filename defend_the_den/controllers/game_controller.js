@@ -14,7 +14,9 @@ export default class GameController extends WorldController {
         speedGrowthPerDay: 0.05,
         baseSpawnInterval: {min: 1.2, max: 2.0},
         spawnIntervalDecreasePerDay: 0.1,
-        spawnY: {min: -1.5, max: 1}
+        spawnY: {min: -1.5, max: 1},
+        redSpawnChance: 0.2,
+        redSpawnChanceGrowthPerDay: 0.05
     }
 
     constructor (options = {}) {
@@ -56,11 +58,13 @@ export default class GameController extends WorldController {
         const maxInterval = Math.max(0.5, settings.baseSpawnInterval.max - intervalDecrease)
 
         const enemySpeed = settings.baseEnemySpeed + dayFactor * settings.speedGrowthPerDay
+        const redChance = Math.min(0.5, settings.redSpawnChance + dayFactor * settings.redSpawnChanceGrowthPerDay)
 
         return {
             enemySpeed,
             spawnInterval: {min: minInterval, max: maxInterval},
-            spawnY: settings.spawnY
+            spawnY: settings.spawnY,
+            redChance
         }
     }
 
@@ -85,12 +89,21 @@ export default class GameController extends WorldController {
             this.nextSpawnTime = this.getNextSpawnTime()
 
             const randomY = config.spawnY.min + Math.random() * (config.spawnY.max - config.spawnY.min)
+            const isRed = Math.random() < config.redChance
 
-            this.spawnEnemy({
-                x: 3.5,
-                y: randomY,
-                maxSpeed: config.enemySpeed
-            })
+            if (isRed) {
+                this.spawnRedEnemy({
+                    x: 3.5,
+                    y: randomY,
+                    maxSpeed: config.enemySpeed * 1.5
+                })
+            } else {
+                this.spawnPigEnemy({
+                    x: 3.5,
+                    y: randomY,
+                    maxSpeed: config.enemySpeed
+                })
+            }
         }
     }
 
@@ -117,8 +130,13 @@ export default class GameController extends WorldController {
     }
 
 
-    spawnEnemy (options = {}) {
-        return this.world.spawnEnemy(options)
+    spawnPigEnemy (options = {}) {
+        return this.world.spawnPigEnemy(options)
+    }
+
+
+    spawnRedEnemy (options = {}) {
+        return this.world.spawnRedEnemy(options)
     }
 
 }
