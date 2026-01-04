@@ -89,8 +89,8 @@ export default class DefendTheDen extends Game {
         this.waitingForClear = false
 
         this.spawnRatio = 0.66
-        this.waveDuration = 10
-        this.dayDuration = this.waveDuration * 4
+        this.waveDurations = [20, 40, 20, 40] // dawn, day, dusk, night
+        this.dayDuration = this.waveDurations.reduce((a, b) => a + b, 0)
         this.dayAnnouncementDuration = 3
         this.catchUpSpeed = 3
 
@@ -111,19 +111,15 @@ export default class DefendTheDen extends Game {
             const timeOfDay = timeInDay / this.dayDuration
             const dayNumber = Math.floor(this.elapsedTime / this.dayDuration)
 
-            const wave = Math.floor(timeOfDay * 4)
-            const waveProgress = (timeOfDay * 4) % 1
+            const {wave, waveProgress} = this.#getWaveFromTime(timeInDay)
             const isSpawning = waveProgress < this.spawnRatio
             const isInCooldown = !isSpawning
 
             const hasEnemies = this.world.childrenByTags('enemy').length > 0
 
-            let timeScale = 1
-            if (isInCooldown && !hasEnemies) {
-                timeScale = this.catchUpSpeed
-            }
-
-            if (waveProgress >= 0.99 && hasEnemies) {
+            const timeScale = this.#getTimeScale(isInCooldown, hasEnemies)
+            const shouldWait = waveProgress >= 0.99 && hasEnemies
+            if (shouldWait) {
                 this.waitingForClear = true
                 gameController.setSpawning(false)
                 this.emit('wave:tick', {wave, progress: 1, dayNumber, timeOfDay, isSpawning: false})
@@ -134,14 +130,7 @@ export default class DefendTheDen extends Game {
 
             this.dayNightPass.setUniform('uTime', this.elapsedTime)
             this.dayNightPass.setProgress(timeOfDay)
-
-            if (this.renderer.shadowTransform) {
-                const shadowParams = this.dayNightPass.getShadowParams(timeOfDay)
-                this.renderer.shadowTransform.skewX = shadowParams.skewX
-                this.renderer.shadowTransform.scaleY = shadowParams.scaleY
-                this.renderer.shadowTransform.offsetY = shadowParams.offsetY
-                this.renderer.shadowTransform.color = shadowParams.color
-            }
+            this.#updateShadows(timeOfDay)
 
             if (dayNumber !== this.currentDay) {
                 this.currentDay = dayNumber
@@ -177,6 +166,24 @@ export default class DefendTheDen extends Game {
     }
 
 
+    #getTimeScale (isInCooldown, hasEnemies) {
+        return isInCooldown && !hasEnemies ? this.catchUpSpeed : 1
+    }
+
+
+    #updateShadows (timeOfDay) {
+        if (!this.renderer.shadowTransform) {
+            return
+        }
+
+        const shadowParams = this.dayNightPass.getShadowParams(timeOfDay)
+        this.renderer.shadowTransform.skewX = shadowParams.skewX
+        this.renderer.shadowTransform.scaleY = shadowParams.scaleY
+        this.renderer.shadowTransform.offsetY = shadowParams.offsetY
+        this.renderer.shadowTransform.color = shadowParams.color
+    }
+
+
     #announceDay (dayNumber, gameController) {
         if (dayNumber > 0) {
             this.dayPaused = true
@@ -198,8 +205,43 @@ export default class DefendTheDen extends Game {
 
         if (enemies.length === 0) {
             this.waitingForClear = false
-            this.elapsedTime = Math.ceil(this.elapsedTime / this.waveDuration) * this.waveDuration
+            const timeInDay = this.elapsedTime % this.dayDuration
+            const {wave} = this.#getWaveFromTime(timeInDay)
+            this.elapsedTime = this.elapsedTime - timeInDay + this.#getWaveStartTime(wave + 1)
         }
+    }
+
+
+    #getWaveFromTime (timeInDay) {
+        let accumulated = 0
+
+        for (let i = 0; i < this.waveDurations.length; i++) {
+            const duration = this.waveDurations[i]
+
+            if (timeInDay < accumulated + duration) {
+                return {
+                    wave: i,
+                    waveProgress: (timeInDay - accumulated) / duration
+                }
+            }
+
+            accumulated += duration
+        }
+
+        return {wave: 3, waveProgress: 1}
+    }
+
+
+    #getWaveStartTime (wave) {
+        if (wave >= this.waveDurations.length) {
+            return this.dayDuration
+        }
+
+        let time = 0
+        for (let i = 0; i < wave; i++) {
+            time += this.waveDurations[i]
+        }
+        return time
     }
 
 }
