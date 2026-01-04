@@ -12,13 +12,17 @@ export default class RedEnemy extends Enemy {
             ...params
         })
 
-        this.state = 'running'
+        this.state = 'hopping'
         this.stateTimer = 0
 
-        this.runDuration = 1.5 + Math.random() * 1.0
+        this.hopDuration = 0.4
+        this.hopPauseDuration = 0.15
+        this.hopProgress = 0
+        this.hopCount = 0
+        this.hopsBeforeStop = 3 + Math.floor(Math.random() * 3)
+
         this.stopDuration = 0.8
         this.throwDelay = 0.3
-
         this.hasThrown = false
     }
 
@@ -30,13 +34,30 @@ export default class RedEnemy extends Enemy {
 
         this.stateTimer += deltaTime
 
-        if (this.state === 'running') {
-            this.position.add(this.velocity.clone().multiplyScalar(deltaTime))
+        if (this.state === 'hopping') {
+            this.hopProgress = Math.min(1, this.stateTimer / this.hopDuration)
 
-            if (this.stateTimer >= this.runDuration) {
-                this.state = 'stopping'
+            const hopCurve = Math.sin(this.hopProgress * Math.PI)
+            const speedMultiplier = 0.5 + hopCurve * 1.5
+
+            this.position.add(this.velocity.clone().multiplyScalar(deltaTime * speedMultiplier))
+
+            if (this.stateTimer >= this.hopDuration) {
+                this.hopCount++
                 this.stateTimer = 0
-                this.hasThrown = false
+
+                if (this.hopCount >= this.hopsBeforeStop) {
+                    this.state = 'stopping'
+                    this.hopCount = 0
+                    this.hasThrown = false
+                } else {
+                    this.state = 'hop_pause'
+                }
+            }
+        } else if (this.state === 'hop_pause') {
+            if (this.stateTimer >= this.hopPauseDuration) {
+                this.state = 'hopping'
+                this.stateTimer = 0
             }
         } else if (this.state === 'stopping') {
             if (!this.hasThrown && this.stateTimer >= this.throwDelay) {
@@ -45,9 +66,9 @@ export default class RedEnemy extends Enemy {
             }
 
             if (this.stateTimer >= this.stopDuration) {
-                this.state = 'running'
+                this.state = 'hopping'
                 this.stateTimer = 0
-                this.runDuration = 1.5 + Math.random() * 1.0
+                this.hopsBeforeStop = 3 + Math.floor(Math.random() * 3)
             }
         }
     }
@@ -65,8 +86,9 @@ export default class RedEnemy extends Enemy {
         const isDead = super.hit(impactDirection, knockbackForce)
 
         if (this.state === 'stopping') {
-            this.state = 'running'
+            this.state = 'hopping'
             this.stateTimer = 0
+            this.hopCount = 0
         }
 
         return isDead
