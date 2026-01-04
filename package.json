@@ -13,6 +13,7 @@
     "dev:preview": "vite preview --config vite.examples.config.js",
     "den": "vite serve defend_the_den --port 3000",
     "den:build": "vite build --config vite.den.config.js",
+    "den:deploy": "vite build --config vite.den.config.js && rm -rf ../perkycrow_com/public/den && cp -r dist/defend_the_den ../perkycrow_com/public/den",
     "den:preview": "vite preview --config vite.den.config.js",
     "test": "vitest run",
     "cleaner": "node scripts/cleaner.js",
