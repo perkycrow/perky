@@ -245,6 +245,10 @@ const MOUSE_CONTROLS = [
     'position', 'navigation'
 ]
 
+const TOUCH_CONTROLS = [
+    'swipeUp', 'swipeDown', 'tap'
+]
+
 const GAMEPAD_CONTROL_PATTERNS = [
     /^button\d+$/, /^axis\d+$/, /^dpad/, /^stick/
 ]
@@ -252,6 +256,10 @@ const GAMEPAD_CONTROL_PATTERNS = [
 function detectDeviceFromControlName (controlName) {
     if (MOUSE_CONTROLS.includes(controlName)) {
         return 'mouse'
+    }
+
+    if (TOUCH_CONTROLS.includes(controlName)) {
+        return 'touch'
     }
 
     if (GAMEPAD_CONTROL_PATTERNS.some(pattern => pattern.test(controlName))) {

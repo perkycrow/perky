@@ -283,16 +283,20 @@ describe(InputSystem, () => {
             name: 'SharedControl'
         })
 
-        expect(results).toHaveLength(2)
+        expect(results).toHaveLength(3)
         expect(results[0].device).toBe(inputSystem.keyboard)
         expect(results[0].control).toBeInstanceOf(ButtonControl)
         expect(results[0].control.name).toBe('SharedControl')
         expect(results[1].device).toBe(inputSystem.mouse)
         expect(results[1].control).toBeInstanceOf(ButtonControl)
         expect(results[1].control.name).toBe('SharedControl')
+        expect(results[2].device).toBe(inputSystem.touch)
+        expect(results[2].control).toBeInstanceOf(ButtonControl)
+        expect(results[2].control.name).toBe('SharedControl')
 
         expect(inputSystem.keyboard.getControl('SharedControl')).toBe(results[0].control)
         expect(inputSystem.mouse.getControl('SharedControl')).toBe(results[1].control)
+        expect(inputSystem.touch.getControl('SharedControl')).toBe(results[2].control)
     })
 
 
@@ -350,6 +354,29 @@ describe(InputSystem, () => {
 
         leftButtonControl.release()
         expect(inputSystem.isMousePressed('leftButton')).toBe(false)
+    })
+
+
+    test('isTouchPressed returns correct state', () => {
+        const swipeUpControl = inputSystem.touch.getControl('swipeUp')
+
+        expect(inputSystem.isTouchPressed('swipeUp')).toBe(false)
+
+        swipeUpControl.press()
+        expect(inputSystem.isTouchPressed('swipeUp')).toBe(true)
+
+        swipeUpControl.release()
+        expect(inputSystem.isTouchPressed('swipeUp')).toBe(false)
+    })
+
+
+    test('getTouchValue returns touch control value', () => {
+        const positionControl = inputSystem.touch.getControl('position')
+
+        positionControl.setValue({x: 150, y: 250})
+        const value = inputSystem.getTouchValue('position')
+        expect(value.x).toBe(150)
+        expect(value.y).toBe(250)
     })
 
 

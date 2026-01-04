@@ -4,9 +4,9 @@ import WorldController from '../../game/world_controller.js'
 export default class GameController extends WorldController {
 
     static bindings = {
-        moveUp: ['KeyW', 'ArrowUp'],
-        moveDown: ['KeyS', 'ArrowDown'],
-        shoot: 'Space'
+        moveUp: ['KeyW', 'ArrowUp', 'swipeUp'],
+        moveDown: ['KeyS', 'ArrowDown', 'swipeDown'],
+        shoot: ['Space', 'tap']
     }
 
     static waveSettings = {

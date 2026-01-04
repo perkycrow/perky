@@ -2,6 +2,7 @@ import PerkyModule from '../core/perky_module.js'
 import InputBinder from './input_binder.js'
 import KeyboardDevice from './input_devices/keyboard_device.js'
 import MouseDevice from './input_devices/mouse_device.js'
+import TouchDevice from './input_devices/touch_device.js'
 import Vec2 from '../math/vec2.js'
 
 
@@ -31,6 +32,12 @@ export default class InputSystem extends PerkyModule {
         this.registerDevice(MouseDevice, {
             $id: 'mouse',
             $bind: 'mouse',
+            container: host.element
+        })
+
+        this.registerDevice(TouchDevice, {
+            $id: 'touch',
+            $bind: 'touch',
             container: host.element
         })
 
@@ -65,8 +72,10 @@ export default class InputSystem extends PerkyModule {
         this.delegateTo(host, [
             'isKeyPressed',
             'isMousePressed',
+            'isTouchPressed',
             'getKeyValue',
             'getMouseValue',
+            'getTouchValue',
             'isActionPressed',
             'getActionControls',
             'getInputValue',
@@ -264,6 +273,16 @@ export default class InputSystem extends PerkyModule {
 
     getMouseValue (buttonName) {
         return this.getInputValue('mouse', buttonName)
+    }
+
+
+    isTouchPressed (controlName) {
+        return this.isPressed('touch', controlName)
+    }
+
+
+    getTouchValue (controlName) {
+        return this.getInputValue('touch', controlName)
     }
 
 
