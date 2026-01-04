@@ -5,6 +5,7 @@ import CanvasCircleRenderer from './canvas/canvas_circle_renderer.js'
 import CanvasRectangleRenderer from './canvas/canvas_rectangle_renderer.js'
 import CanvasImageRenderer from './canvas/canvas_image_renderer.js'
 import CanvasSpriteRenderer from './canvas/canvas_sprite_renderer.js'
+import CanvasDebugGizmoRenderer from './canvas/canvas_debug_gizmo_renderer.js'
 
 
 export default class Canvas2D extends BaseRenderer {
@@ -13,6 +14,7 @@ export default class Canvas2D extends BaseRenderer {
 
     #rendererRegistry = new Map()
     #renderers = []
+    #debugGizmoRenderer = null
 
     constructor (options = {}) {
         super(options)
@@ -24,6 +26,7 @@ export default class Canvas2D extends BaseRenderer {
 
         this.backgroundColor = options.backgroundColor ?? null
         this.enableCulling = options.enableCulling ?? false
+        this.enableDebugGizmos = options.enableDebugGizmos ?? true
 
         this.stats = {
             totalObjects: 0,
@@ -38,6 +41,9 @@ export default class Canvas2D extends BaseRenderer {
         this.registerRenderer(new CanvasRectangleRenderer())
         this.registerRenderer(new CanvasImageRenderer())
         this.registerRenderer(new CanvasSpriteRenderer())
+
+        this.#debugGizmoRenderer = new CanvasDebugGizmoRenderer()
+        this.#debugGizmoRenderer.init({ctx: this.ctx, canvas: this.canvas})
     }
 
 
@@ -80,6 +86,11 @@ export default class Canvas2D extends BaseRenderer {
         this.#renderers = []
         this.#rendererRegistry.clear()
 
+        if (this.#debugGizmoRenderer) {
+            this.#debugGizmoRenderer.dispose()
+            this.#debugGizmoRenderer = null
+        }
+
         super.onDispose()
         this.ctx = null
     }
@@ -110,14 +121,24 @@ export default class Canvas2D extends BaseRenderer {
             renderer.reset()
         }
 
+        const debugGizmoRenderer = this.enableDebugGizmos ? this.#debugGizmoRenderer : null
+        if (debugGizmoRenderer) {
+            debugGizmoRenderer.reset()
+        }
+
         traverseAndCollect(scene, this.#rendererRegistry, {
             camera: this.camera,
             enableCulling: this.enableCulling,
-            stats: this.stats
+            stats: this.stats,
+            debugGizmoRenderer
         })
 
         for (const renderer of this.#renderers) {
             renderer.flush()
+        }
+
+        if (debugGizmoRenderer) {
+            debugGizmoRenderer.flush()
         }
 
         ctx.restore()

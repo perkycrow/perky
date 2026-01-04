@@ -22,6 +22,8 @@ export default class PlayerView extends EntityView {
             height: 1
         })
 
+        this.root.showDebugGizmos()
+
         this.root.effects.add(new OutlineEffect({
             width: 0.03,
             color: [1, 1, 0, 1]

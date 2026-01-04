@@ -4,7 +4,8 @@ export function traverseAndCollect (object, rendererRegistry, options = {}) {
         rendererRegistry,
         camera: options.camera ?? null,
         enableCulling: options.enableCulling ?? false,
-        stats: options.stats ?? null
+        stats: options.stats ?? null,
+        debugGizmoRenderer: options.debugGizmoRenderer ?? null
     }
 
     traverseNode(object, ctx, 1)
@@ -39,6 +40,10 @@ function traverseNode (object, ctx, parentOpacity) { // eslint-disable-line comp
     const renderer = ctx.rendererRegistry.get(object.constructor)
     if (renderer) {
         renderer.collect(object, effectiveOpacity, object.renderHints)
+    }
+
+    if (ctx.debugGizmoRenderer && object.debugGizmos) {
+        ctx.debugGizmoRenderer.collectGizmo(object, effectiveOpacity)
     }
 
     const sortedChildren = object.getSortedChildren

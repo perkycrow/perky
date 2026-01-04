@@ -6,6 +6,7 @@ export default class Object2D extends Transform2D {
 
     #tint = null
     #effects = null
+    #debugGizmos = null
 
     constructor (options = {}) { // eslint-disable-line complexity -- clean
         super()
@@ -15,6 +16,10 @@ export default class Object2D extends Transform2D {
         this.depth = options.depth ?? 0
         this.anchorX = options.anchorX ?? 0.5
         this.anchorY = options.anchorY ?? 0.5
+
+        if (options.debugGizmos !== undefined) {
+            this.#debugGizmos = options.debugGizmos
+        }
 
         if (options.tint !== undefined) {
             this.#tint = options.tint
@@ -59,6 +64,33 @@ export default class Object2D extends Transform2D {
             this.#effects = new SpriteEffectStack()
         }
         return this.#effects
+    }
+
+
+    get debugGizmos () {
+        return this.#debugGizmos
+    }
+
+
+    set debugGizmos (value) {
+        this.#debugGizmos = value
+    }
+
+
+    showDebugGizmos (options = {}) {
+        this.#debugGizmos = {
+            bounds: options.bounds ?? true,
+            anchor: options.anchor ?? true,
+            pivot: options.pivot ?? true,
+            origin: options.origin ?? true
+        }
+        return this
+    }
+
+
+    hideDebugGizmos () {
+        this.#debugGizmos = null
+        return this
     }
 
 

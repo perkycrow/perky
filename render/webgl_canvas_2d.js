@@ -13,6 +13,7 @@ import FullscreenQuad from './postprocessing/fullscreen_quad.js'
 import WebGLSpriteRenderer from './webgl/webgl_sprite_renderer.js'
 import WebGLCircleRenderer from './webgl/webgl_circle_renderer.js'
 import WebGLRectangleRenderer from './webgl/webgl_rectangle_renderer.js'
+import WebGLDebugGizmoRenderer from './webgl/webgl_debug_gizmo_renderer.js'
 
 
 export default class WebGLCanvas2D extends BaseRenderer {
@@ -24,6 +25,7 @@ export default class WebGLCanvas2D extends BaseRenderer {
     #shaderRegistry = null
     #shaderEffectRegistry = null
     #postProcessor = null
+    #debugGizmoRenderer = null
 
     #compositeQuad = null
     #compositeProgram = null
@@ -37,6 +39,7 @@ export default class WebGLCanvas2D extends BaseRenderer {
 
         this.backgroundColor = options.backgroundColor ?? null
         this.enableCulling = options.enableCulling ?? false
+        this.enableDebugGizmos = options.enableDebugGizmos ?? true
 
         this.stats = {
             totalObjects: 0,
@@ -95,6 +98,15 @@ export default class WebGLCanvas2D extends BaseRenderer {
         this.registerRenderer(new WebGLSpriteRenderer())
         this.registerRenderer(new WebGLCircleRenderer())
         this.registerRenderer(new WebGLRectangleRenderer())
+
+        this.#debugGizmoRenderer = new WebGLDebugGizmoRenderer()
+        this.#debugGizmoRenderer.init({
+            gl: this.gl,
+            spriteProgram: this.spriteProgram,
+            primitiveProgram: this.primitiveProgram,
+            textureManager: this.textureManager,
+            shaderEffectRegistry: this.#shaderEffectRegistry
+        })
     }
 
 
@@ -275,6 +287,11 @@ export default class WebGLCanvas2D extends BaseRenderer {
         this.#renderers = []
         this.#rendererRegistry.clear()
 
+        if (this.#debugGizmoRenderer) {
+            this.#debugGizmoRenderer.dispose()
+            this.#debugGizmoRenderer = null
+        }
+
         this.clearRenderGroups()
 
         if (this.#compositeQuad) {
@@ -347,14 +364,24 @@ export default class WebGLCanvas2D extends BaseRenderer {
             renderer.reset()
         }
 
+        const debugGizmoRenderer = this.enableDebugGizmos ? this.#debugGizmoRenderer : null
+        if (debugGizmoRenderer) {
+            debugGizmoRenderer.reset()
+        }
+
         traverseAndCollect(scene, this.#rendererRegistry, {
             camera: this.camera,
             enableCulling: this.enableCulling,
-            stats: this.stats
+            stats: this.stats,
+            debugGizmoRenderer
         })
 
         for (const renderer of this.#renderers) {
             renderer.flush(matrices)
+        }
+
+        if (debugGizmoRenderer) {
+            debugGizmoRenderer.flush(matrices)
         }
 
         if (usePostProcessing) {
@@ -403,14 +430,24 @@ export default class WebGLCanvas2D extends BaseRenderer {
             renderer.reset(renderContext)
         }
 
+        const debugGizmoRenderer = this.enableDebugGizmos ? this.#debugGizmoRenderer : null
+        if (debugGizmoRenderer) {
+            debugGizmoRenderer.reset()
+        }
+
         traverseAndCollect(group.content, this.#rendererRegistry, {
             camera: this.camera,
             enableCulling: this.enableCulling,
-            stats: this.stats
+            stats: this.stats,
+            debugGizmoRenderer
         })
 
         for (const renderer of this.#renderers) {
             renderer.flush(matrices, renderContext)
+        }
+
+        if (debugGizmoRenderer) {
+            debugGizmoRenderer.flush(matrices)
         }
 
         fbManager.resolveToBuffer(group.$name)
