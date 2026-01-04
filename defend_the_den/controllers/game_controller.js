@@ -14,13 +14,15 @@ export default class GameController extends WorldController {
         speedGrowthPerDay: 0.05,
         baseSpawnInterval: {min: 1.2, max: 2.0},
         spawnIntervalDecreasePerDay: 0.1,
-        spawnY: {min: -1.5, max: 1},
-        redSpawnChance: 0.2,
-        redSpawnChanceGrowthPerDay: 0.05,
-        grannySpawnChance: 0.5,
-        grannySpawnChanceGrowthPerDay: 0.03,
-        grannyMinDay: 0
+        spawnY: {min: -1.5, max: 1}
     }
+
+    static waveSpawnRatios = [
+        {pig: 1, red: 0, granny: 0},
+        {pig: 2 / 3, red: 1 / 3, granny: 0},
+        {pig: 5 / 10, red: 3 / 10, granny: 2 / 10},
+        {pig: 5 / 10, red: 3 / 10, granny: 2 / 10}
+    ]
 
     constructor (options = {}) {
         super(options)
@@ -44,6 +46,14 @@ export default class GameController extends WorldController {
         this.currentDay = dayNumber
         this.spawnTimer = 0
         this.nextSpawnTime = this.getNextSpawnTime()
+
+        if (wave === 3) {
+            this.spawnAmalgamEnemy({
+                x: 3.5,
+                y: 0,
+                maxSpeed: 0.4
+            })
+        }
     }
 
 
@@ -54,6 +64,7 @@ export default class GameController extends WorldController {
 
     getSpawnConfig () {
         const settings = this.constructor.waveSettings
+        const ratios = this.constructor.waveSpawnRatios[this.currentWave]
         const dayFactor = Math.min(this.currentDay, 10)
 
         const intervalDecrease = dayFactor * settings.spawnIntervalDecreasePerDay
@@ -61,19 +72,12 @@ export default class GameController extends WorldController {
         const maxInterval = Math.max(0.5, settings.baseSpawnInterval.max - intervalDecrease)
 
         const enemySpeed = settings.baseEnemySpeed + dayFactor * settings.speedGrowthPerDay
-        const redChance = Math.min(0.5, settings.redSpawnChance + dayFactor * settings.redSpawnChanceGrowthPerDay)
-
-        const grannyDayFactor = Math.max(0, this.currentDay - settings.grannyMinDay)
-        const grannyChance = this.currentDay >= settings.grannyMinDay
-            ? Math.min(0.25, settings.grannySpawnChance + grannyDayFactor * settings.grannySpawnChanceGrowthPerDay)
-            : 0
 
         return {
             enemySpeed,
             spawnInterval: {min: minInterval, max: maxInterval},
             spawnY: settings.spawnY,
-            redChance,
-            grannyChance
+            ratios
         }
     }
 
@@ -100,13 +104,13 @@ export default class GameController extends WorldController {
             const randomY = config.spawnY.min + Math.random() * (config.spawnY.max - config.spawnY.min)
             const roll = Math.random()
 
-            if (roll < config.grannyChance) {
+            if (roll < config.ratios.granny) {
                 this.spawnGrannyEnemy({
                     x: 3.5,
                     y: randomY,
                     maxSpeed: config.enemySpeed * 0.6
                 })
-            } else if (roll < config.grannyChance + config.redChance) {
+            } else if (roll < config.ratios.granny + config.ratios.red) {
                 this.spawnRedEnemy({
                     x: 3.5,
                     y: randomY,
@@ -157,6 +161,11 @@ export default class GameController extends WorldController {
 
     spawnGrannyEnemy (options = {}) {
         return this.world.spawnGrannyEnemy(options)
+    }
+
+
+    spawnAmalgamEnemy (options = {}) {
+        return this.world.spawnAmalgamEnemy(options)
     }
 
 }

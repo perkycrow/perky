@@ -87,7 +87,7 @@ export default class DefendTheDen extends Game {
         this.dayPaused = false
         this.waitingForClear = false
 
-        this.waveSpawnDurations = [20, 40, 20, 40]
+        this.waveSpawnDurations = [25, 25, 25, 25]
         this.dayAnnouncementDuration = 3
 
         this.timeOfDay = 0

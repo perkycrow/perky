@@ -4,6 +4,7 @@ import Projectile from './projectile.js'
 import PigEnemy from './pig_enemy.js'
 import RedEnemy from './red_enemy.js'
 import GrannyEnemy from './granny_enemy.js'
+import AmalgamEnemy from './amalgam_enemy.js'
 import {testHitbox} from './collision_shapes.js'
 
 
@@ -14,6 +15,7 @@ export default class DenWorld extends World {
 
         this.addTagsIndex(['enemy'])
         this.addTagsIndex(['projectile'])
+        this.addTagsIndex(['amalgam'])
     }
 
 
@@ -24,8 +26,23 @@ export default class DenWorld extends World {
 
 
     postUpdate () {
+        this.updateAmalgamTracking()
         this.checkCollisions()
         this.cleanup()
+    }
+
+
+    updateAmalgamTracking () {
+        if (!this.player) {
+            return
+        }
+
+        const amalgams = this.childrenByTags('amalgam')
+        for (const amalgam of amalgams) {
+            if (amalgam.alive && amalgam.state === 'stalking') {
+                amalgam.setTargetY(this.player.y)
+            }
+        }
     }
 
 
@@ -101,6 +118,30 @@ export default class DenWorld extends World {
                 velocityX: -4 * Math.cos(angle),
                 velocityY: Math.sin(angle) * 2
             })
+        })
+
+        return enemy
+    }
+
+
+    spawnAmalgamEnemy (options = {}) {
+        const enemy = this.create(AmalgamEnemy, {
+            x: options.x || 0,
+            y: options.y || 0,
+            maxSpeed: options.maxSpeed || 0.5
+        })
+
+        enemy.on('fear:pulse', ({x, y, radius}) => {
+            if (this.player && this.player.alive) {
+                const dx = this.player.x - x
+                const dy = this.player.y - y
+                const distance = Math.sqrt(dx * dx + dy * dy)
+
+                if (distance < radius) {
+                    this.player.stun(0.8)
+                    this.emit('player:feared', {x, y, radius})
+                }
+            }
         })
 
         return enemy

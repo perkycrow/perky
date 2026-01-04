@@ -19,6 +19,9 @@ export default class Player extends Entity {
         this.shootRecoilTimer = 0
         this.shootRecoilDuration = 0.1
 
+        this.stunTimer = 0
+        this.isStunned = false
+
         this.hitbox = new CapsuleHitbox({
             radius: 0.25,
             height: 0.5,
@@ -33,7 +36,7 @@ export default class Player extends Entity {
 
 
     canShoot () {
-        return this.shootCooldown <= 0
+        return this.shootCooldown <= 0 && !this.isStunned
     }
 
 
@@ -42,7 +45,15 @@ export default class Player extends Entity {
     }
 
 
+    stun (duration) {
+        this.isStunned = true
+        this.stunTimer = duration
+        this.emit('stunned', {duration})
+    }
+
+
     update (deltaTime) {
+        updateStunTimer(this, deltaTime)
         updateShootCooldown(this, deltaTime)
         updateRecoilTimer(this, deltaTime)
         applyMovement(this, deltaTime)
@@ -69,6 +80,11 @@ function updateRecoilTimer (player, deltaTime) {
 
 
 function applyMovement (player, deltaTime) {
+    if (player.isStunned) {
+        player.velocity.multiplyScalar(Math.pow(0.1, deltaTime * 60))
+        return
+    }
+
     if (player.direction?.length() > 0) {
         const accel = player.direction.clone().multiplyScalar(player.acceleration * deltaTime)
         player.velocity.add(accel)
@@ -101,5 +117,15 @@ function clampToBoundaries (player) {
     } else if (player.position.y < player.boundaries.min) {
         player.position.y = player.boundaries.min
         player.velocity.y = 0
+    }
+}
+
+
+function updateStunTimer (player, deltaTime) {
+    if (player.stunTimer > 0) {
+        player.stunTimer -= deltaTime
+        if (player.stunTimer <= 0) {
+            player.isStunned = false
+        }
     }
 }
