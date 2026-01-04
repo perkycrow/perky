@@ -55,7 +55,7 @@ export default class GameRenderer extends PerkyModule {
             .register(Player, PlayerView)
             .register(PigEnemy, PigEnemyView, {image: 'pig', width: 1, height: 1})
             .register(RedEnemy, RedEnemyView, {image: 'red', width: 1, height: 1})
-            .register(GrannyEnemy, GrannyEnemyView, {image: 'granny', width: 1.2, height: 1.2})
+            .register(GrannyEnemy, GrannyEnemyView, {image: 'granny', width: 1, height: 1})
             .register(Projectile, ProjectileView, {radius: 0.08, color: '#3a2a1a'})
     }
 

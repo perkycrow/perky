@@ -107,47 +107,43 @@ export default class WaveProgressBar extends PerkyModule {
         style.textContent = `
             .wave-progress {
                 position: absolute;
-                top: 20px;
+                bottom: 7%;
                 left: 50%;
                 transform: translateX(-50%);
+                width: 18%;
                 text-align: center;
                 font-family: 'Segoe UI', system-ui, sans-serif;
+                container-type: inline-size;
             }
 
             .wave-progress-label {
-                color: rgba(255, 255, 255, 0.9);
-                font-size: 12px;
+                color: rgba(180, 150, 110, 0.85);
+                font-size: 3.5cqi;
                 font-weight: 500;
-                letter-spacing: 2px;
+                letter-spacing: 0.3cqi;
                 text-transform: uppercase;
-                margin-bottom: 8px;
-                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+                margin-bottom: 1.2cqi;
             }
 
             .wave-progress-label .wave-name {
-                font-weight: 700;
-                color: #fff;
+                font-weight: 600;
+                color: rgba(210, 175, 120, 0.9);
             }
 
             .wave-progress-track {
-                width: 180px;
-                height: 4px;
-                background: rgba(255, 255, 255, 0.15);
-                border-radius: 2px;
+                width: 100%;
+                height: 1.2cqi;
+                background: rgba(0, 0, 0, 0.25);
+                border-radius: 0.6cqi;
                 overflow: hidden;
-                box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
             }
 
             .wave-progress-fill {
                 height: 100%;
                 width: 0%;
-                background: linear-gradient(90deg,
-                    rgba(255, 255, 255, 0.6),
-                    rgba(255, 255, 255, 0.9)
-                );
-                border-radius: 2px;
-                transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+                background: rgba(200, 160, 90, 0.7);
+                border-radius: 0.6cqi;
+                transition: width 0.4s ease-out;
             }
 
             .day-announcement {
