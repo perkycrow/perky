@@ -204,7 +204,7 @@ export default class DenWorld extends World {
         this.emit('enemy:hit', {
             enemy,
             x: enemy.x,
-            y: enemy.y,
+            y: enemy.y + 0.4,
             direction: impactDirection
         })
 
