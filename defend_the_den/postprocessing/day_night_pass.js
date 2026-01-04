@@ -694,7 +694,7 @@ export default class DayNightPass extends RenderPass {
 
 
         if (sunProgress < 0 || sunProgress > 1) {
-            return {skewX: 0, scaleY: -0.3, offsetY: 0.06, color: [0, 0, 0, 0.1]}
+            return {skewX: 0, scaleY: -0.3, offsetY: 0, color: [0, 0, 0, 0.1]}
         }
 
 
@@ -705,7 +705,7 @@ export default class DayNightPass extends RenderPass {
         return {
             skewX: -sunX * 0.25,
             scaleY: -0.2 - sunY * 0.12,
-            offsetY: 0.06,
+            offsetY: 0,
             color: [0, 0, 0, 0.1 + sunY * 0.1]
         }
     }

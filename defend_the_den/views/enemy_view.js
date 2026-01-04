@@ -22,7 +22,7 @@ export default class EnemyView extends EntityView {
             width: this.baseScaleX,
             height: this.baseScaleY,
             anchorX: config.anchorX ?? 0.5,
-            anchorY: config.anchorY ?? 0.5
+            anchorY: config.anchorY ?? 0.05
         })
 
         this.impactSquash = new ImpactSquashEffect({

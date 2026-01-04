@@ -104,7 +104,7 @@ export default class GameRenderer extends PerkyModule {
         this.shadowTransform = new ShadowTransform({
             skewX: 0.1,
             scaleY: -0.5,
-            offsetY: 0.06,
+            offsetY: 0.0,
             color: [0, 0, 0, 0.3]
         })
 

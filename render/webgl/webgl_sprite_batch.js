@@ -130,8 +130,8 @@ export default class WebGLSpriteBatch {
     }
 
 
-    #writeVertices (corners, texCoords, effectiveOpacity, hints) {
-        const anchorY = Math.min(corners[1], corners[3])
+    #writeVertices (sprite) {
+        const {corners, texCoords, opacity, hints, anchorY} = sprite
         const t = hints?.tint || DEFAULT_TINT
         const ep = hints?.effectParams || DEFAULT_EFFECT_PARAMS
 
@@ -143,7 +143,7 @@ export default class WebGLSpriteBatch {
             this.vertexData[idx + 1] = corners[ci + 1]
             this.vertexData[idx + 2] = texCoords[ci]
             this.vertexData[idx + 3] = texCoords[ci + 1]
-            this.vertexData[idx + 4] = effectiveOpacity
+            this.vertexData[idx + 4] = opacity
             this.vertexData[idx + 5] = anchorY
             this.vertexData[idx + 6] = t[0]
             this.vertexData[idx + 7] = t[1]
@@ -178,11 +178,23 @@ export default class WebGLSpriteBatch {
 
         const corners = this.#tempCorners
         const texCoords = this.#tempTexCoords
+        const bounds = object.getBounds()
 
-        transformCorners(object.worldMatrix, object.getBounds(), corners)
+        transformCorners(object.worldMatrix, bounds, corners)
         computeTexCoords(frame, image, texCoords)
 
-        this.#writeVertices(corners, texCoords, effectiveOpacity, hints)
+        const localAnchorX = bounds.minX + object.anchorX * bounds.width
+        const localAnchorY = bounds.minY + object.anchorY * bounds.height
+        const m = object.worldMatrix
+        const worldAnchorY = m[1] * localAnchorX + m[3] * localAnchorY + m[5]
+
+        this.#writeVertices({
+            corners,
+            texCoords,
+            opacity: effectiveOpacity,
+            hints,
+            anchorY: worldAnchorY
+        })
     }
 
 

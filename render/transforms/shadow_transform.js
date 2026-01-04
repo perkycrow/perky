@@ -10,7 +10,7 @@ export default class ShadowTransform extends RenderTransform {
         super(options)
 
         this.skewX = options.skewX ?? 0.5
-        this.scaleY = options.scaleY ?? 0.5
+        this.scaleY = options.scaleY ?? -0.3
         this.offsetY = options.offsetY ?? 0
         this.color = options.color ?? [0, 0, 0, 0.4]
     }

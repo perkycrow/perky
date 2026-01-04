@@ -19,7 +19,8 @@ export default class PlayerView extends EntityView {
             x: entity.x,
             y: entity.y,
             width: 1,
-            height: 1
+            height: 1,
+            anchorY: 0.05
         })
 
         this.root.showDebugGizmos()
