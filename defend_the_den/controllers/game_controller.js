@@ -16,7 +16,10 @@ export default class GameController extends WorldController {
         spawnIntervalDecreasePerDay: 0.1,
         spawnY: {min: -1.5, max: 1},
         redSpawnChance: 0.2,
-        redSpawnChanceGrowthPerDay: 0.05
+        redSpawnChanceGrowthPerDay: 0.05,
+        grannySpawnChance: 0.5,
+        grannySpawnChanceGrowthPerDay: 0.03,
+        grannyMinDay: 0
     }
 
     constructor (options = {}) {
@@ -60,11 +63,17 @@ export default class GameController extends WorldController {
         const enemySpeed = settings.baseEnemySpeed + dayFactor * settings.speedGrowthPerDay
         const redChance = Math.min(0.5, settings.redSpawnChance + dayFactor * settings.redSpawnChanceGrowthPerDay)
 
+        const grannyDayFactor = Math.max(0, this.currentDay - settings.grannyMinDay)
+        const grannyChance = this.currentDay >= settings.grannyMinDay
+            ? Math.min(0.25, settings.grannySpawnChance + grannyDayFactor * settings.grannySpawnChanceGrowthPerDay)
+            : 0
+
         return {
             enemySpeed,
             spawnInterval: {min: minInterval, max: maxInterval},
             spawnY: settings.spawnY,
-            redChance
+            redChance,
+            grannyChance
         }
     }
 
@@ -89,9 +98,15 @@ export default class GameController extends WorldController {
             this.nextSpawnTime = this.getNextSpawnTime()
 
             const randomY = config.spawnY.min + Math.random() * (config.spawnY.max - config.spawnY.min)
-            const isRed = Math.random() < config.redChance
+            const roll = Math.random()
 
-            if (isRed) {
+            if (roll < config.grannyChance) {
+                this.spawnGrannyEnemy({
+                    x: 3.5,
+                    y: randomY,
+                    maxSpeed: config.enemySpeed * 0.6
+                })
+            } else if (roll < config.grannyChance + config.redChance) {
                 this.spawnRedEnemy({
                     x: 3.5,
                     y: randomY,
@@ -137,6 +152,11 @@ export default class GameController extends WorldController {
 
     spawnRedEnemy (options = {}) {
         return this.world.spawnRedEnemy(options)
+    }
+
+
+    spawnGrannyEnemy (options = {}) {
+        return this.world.spawnGrannyEnemy(options)
     }
 
 }

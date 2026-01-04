@@ -7,11 +7,13 @@ import {ShadowTransform} from '../render/transforms/index.js'
 import Player from './player.js'
 import PigEnemy from './pig_enemy.js'
 import RedEnemy from './red_enemy.js'
+import GrannyEnemy from './granny_enemy.js'
 import Projectile from './projectile.js'
 
 import PlayerView from './views/player_view.js'
 import PigEnemyView from './views/pig_enemy_view.js'
 import RedEnemyView from './views/red_enemy_view.js'
+import GrannyEnemyView from './views/granny_enemy_view.js'
 import ProjectileView from './views/projectile_view.js'
 import ImpactParticles from './impact_particles.js'
 
@@ -53,6 +55,7 @@ export default class GameRenderer extends PerkyModule {
             .register(Player, PlayerView)
             .register(PigEnemy, PigEnemyView, {image: 'pig', width: 1, height: 1})
             .register(RedEnemy, RedEnemyView, {image: 'red', width: 1, height: 1})
+            .register(GrannyEnemy, GrannyEnemyView, {image: 'granny', width: 1.2, height: 1.2})
             .register(Projectile, ProjectileView, {radius: 0.08, color: '#3a2a1a'})
     }
 

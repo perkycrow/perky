@@ -3,6 +3,7 @@ import Player from './player.js'
 import Projectile from './projectile.js'
 import PigEnemy from './pig_enemy.js'
 import RedEnemy from './red_enemy.js'
+import GrannyEnemy from './granny_enemy.js'
 
 
 export default class DenWorld extends World {
@@ -79,6 +80,26 @@ export default class DenWorld extends World {
 
         enemy.on('throw:pie', ({x, y}) => {
             this.spawnEnemyProjectile({x, y})
+        })
+
+        return enemy
+    }
+
+
+    spawnGrannyEnemy (options = {}) {
+        const enemy = this.create(GrannyEnemy, {
+            x: options.x || 0,
+            y: options.y || 0,
+            maxSpeed: options.maxSpeed || 0.3
+        })
+
+        enemy.on('throw:fireball', ({x, y, angle}) => {
+            this.spawnEnemyProjectile({
+                x,
+                y,
+                velocityX: -4 * Math.cos(angle),
+                velocityY: Math.sin(angle) * 2
+            })
         })
 
         return enemy

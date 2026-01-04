@@ -630,8 +630,8 @@ export default class DayNightPass extends RenderPass {
                 rgb = debugSunPath(rgb, world, sunProgress);
                 #endif
 
-                // Stars
-                if (blueness > 0.0 && ambiance.starsIntensity > 0.0) {
+                // Stars - only in sky (above terrain and blue)
+                if (blueness > 0.0 && ambiance.starsIntensity > 0.0 && inSky) {
                     rgb = applyStars(rgb, vTexCoord, color, ambiance.starsIntensity);
                 }
 

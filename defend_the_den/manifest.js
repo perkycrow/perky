@@ -9,7 +9,8 @@ const manifest = {
         wolf_up: {type: 'image', url: '/assets/images/wolf_up.png'},
         wolf_down: {type: 'image', url: '/assets/images/wolf_down.png'},
         pig: {type: 'image', url: '/assets/images/pig.png'},
-        red: {type: 'image', url: '/assets/images/red.png'}
+        red: {type: 'image', url: '/assets/images/red.png'},
+        granny: {type: 'image', url: '/assets/images/granny.png'}
     }
 }
 
