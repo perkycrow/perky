@@ -578,21 +578,31 @@ export default class DayNightPass extends RenderPass {
                 float blueness = color.b - max(color.r, color.g);
                 float skyFactor = smoothstep(-0.08, 0.15, blueness);
 
+                // Sprite protection: reduce ambiance effects on non-sky elements
+                // skyFactor ~1 for sky, ~0 for sprites/characters
+                float spriteProtection = 1.0 - skyFactor;
+                float effectStrength = 1.0 - spriteProtection * 0.6; // sprites get ~40% of the effect
+
                 // Start with original color
                 vec3 rgb = color.rgb;
 
                 // Apply night vision effects (Purkinje + selective desaturation)
+                // Reduced on sprites to preserve their colors
                 if (ambiance.nightFactor > 0.0) {
-                    rgb = applyPurkinje(rgb, ambiance.nightFactor);
-                    rgb = applyNightDesaturation(rgb, ambiance.nightFactor);
+                    float nightEffect = ambiance.nightFactor * effectStrength;
+                    rgb = applyPurkinje(rgb, nightEffect);
+                    rgb = applyNightDesaturation(rgb, nightEffect);
                 }
 
                 // Apply reduced darkness (contrast preservation)
-                float darkness = min(ambiance.darkness + skyFactor * SKY_EXTRA_DARKNESS, MAX_DARKNESS);
+                // Sprites receive less darkness to stay readable
+                float baseDarkness = ambiance.darkness * effectStrength;
+                float darkness = min(baseDarkness + skyFactor * SKY_EXTRA_DARKNESS, MAX_DARKNESS);
                 rgb *= (1.0 - darkness);
 
-                // Apply color tint
-                rgb = mix(rgb, rgb * ambiance.tintColor, ambiance.tintStrength);
+                // Apply color tint (reduced on sprites)
+                float tintStrength = ambiance.tintStrength * effectStrength;
+                rgb = mix(rgb, rgb * ambiance.tintColor, tintStrength);
 
                 // Sun effects
                 if (sunVisible) {
