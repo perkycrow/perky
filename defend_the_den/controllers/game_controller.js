@@ -14,7 +14,7 @@ export default class GameController extends WorldController {
         speedGrowthPerDay: 0.05,
         baseSpawnInterval: {min: 1.2, max: 2.0},
         spawnIntervalDecreasePerDay: 0.1,
-        spawnY: {min: -1.5, max: 1}
+        spawnY: {min: -1.9, max: 0.6}
     }
 
     static waveSpawnRatios = [

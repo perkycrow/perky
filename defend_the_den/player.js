@@ -7,7 +7,7 @@ export default class Player extends Entity {
     constructor (params = {}) {
         super(params)
 
-        const {maxSpeed = 3, acceleration = 25, boundaries = {min: -0.85, max: 1.55}} = params
+        const {maxSpeed = 3, acceleration = 25, boundaries = {min: -1.25, max: 1.15}} = params
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
