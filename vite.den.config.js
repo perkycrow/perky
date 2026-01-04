@@ -5,6 +5,7 @@ import {cpSync} from 'fs'
 
 export default defineConfig({
     root: './defend_the_den',
+    base: './',
     publicDir: false,
     build: {
         outDir: '../dist/defend_the_den',
