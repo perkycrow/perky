@@ -30,6 +30,11 @@ export default class Player extends Entity {
     }
 
 
+    hit (impactDirection) {
+        this.emit('hit', {direction: impactDirection})
+    }
+
+
     update (deltaTime) {
         updateShootCooldown(this, deltaTime)
         updateRecoilTimer(this, deltaTime)

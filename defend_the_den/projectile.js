@@ -12,13 +12,15 @@ export default class Projectile extends Entity {
             velocityX = 6,
             velocityY = 2.5,
             gravity = -8,
-            drag = 0.5
+            drag = 0.5,
+            source = 'player'
         } = params
 
         this.velocity.set(velocityX, velocityY)
         this.gravity = gravity
         this.drag = drag
         this.alive = true
+        this.source = source
 
         this.rotation = 0
         this.spinSpeed = 15
@@ -38,7 +40,7 @@ export default class Projectile extends Entity {
 
         this.rotation += this.spinSpeed * deltaTime
 
-        if (this.position.y < -3 || this.position.x > 5) {
+        if (this.position.y < -3 || this.position.x > 5 || this.position.x < -5) {
             this.alive = false
         }
     }

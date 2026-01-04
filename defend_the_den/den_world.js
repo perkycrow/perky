@@ -41,9 +41,22 @@ export default class DenWorld extends World {
         return this.create(Projectile, {
             x: options.x || 0,
             y: options.y || 0,
-            velocityX: options.velocityX || 7,
-            velocityY: options.velocityY || 0.6,
-            gravity: options.gravity || -1.8
+            velocityX: options.velocityX ?? 7,
+            velocityY: options.velocityY ?? 0.6,
+            gravity: options.gravity ?? -1.8,
+            source: options.source || 'player'
+        })
+    }
+
+
+    spawnEnemyProjectile (options = {}) {
+        return this.create(Projectile, {
+            x: options.x || 0,
+            y: options.y || 0,
+            velocityX: options.velocityX ?? -5,
+            velocityY: options.velocityY ?? 0.8,
+            gravity: options.gravity ?? -1.5,
+            source: 'enemy'
         })
     }
 
@@ -58,11 +71,17 @@ export default class DenWorld extends World {
 
 
     spawnRedEnemy (options = {}) {
-        return this.create(RedEnemy, {
+        const enemy = this.create(RedEnemy, {
             x: options.x || 0,
             y: options.y || 0,
             maxSpeed: options.maxSpeed || 0.5
         })
+
+        enemy.on('throw:pie', ({x, y}) => {
+            this.spawnEnemyProjectile({x, y})
+        })
+
+        return enemy
     }
 
 
@@ -75,26 +94,41 @@ export default class DenWorld extends World {
                 continue
             }
 
-            this.checkProjectileCollisions(projectile, enemies)
+            if (projectile.source === 'player') {
+                this.checkProjectileVsEnemies(projectile, enemies)
+            } else {
+                this.checkProjectileVsPlayer(projectile)
+            }
         }
     }
 
 
-    checkProjectileCollisions (projectile, enemies) {
+    checkProjectileVsEnemies (projectile, enemies) {
         for (const enemy of enemies) {
             if (!enemy.alive) {
                 continue
             }
 
             if (testCollision(projectile, enemy)) {
-                this.handleHit(projectile, enemy)
+                this.handleEnemyHit(projectile, enemy)
                 break
             }
         }
     }
 
 
-    handleHit (projectile, enemy) {
+    checkProjectileVsPlayer (projectile) {
+        if (!this.player || !this.player.alive) {
+            return
+        }
+
+        if (testCollision(projectile, this.player)) {
+            this.handlePlayerHit(projectile)
+        }
+    }
+
+
+    handleEnemyHit (projectile, enemy) {
         projectile.alive = false
 
         const impactDirection = {
@@ -114,6 +148,24 @@ export default class DenWorld extends World {
         if (killed) {
             this.emit('enemy:destroyed', enemy)
         }
+    }
+
+
+    handlePlayerHit (projectile) {
+        projectile.alive = false
+
+        const impactDirection = {
+            x: projectile.velocity.x > 0 ? 1 : -1,
+            y: projectile.velocity.y * 0.3
+        }
+
+        this.player.hit(impactDirection)
+
+        this.emit('player:hit', {
+            x: this.player.x,
+            y: this.player.y,
+            direction: impactDirection
+        })
     }
 
 
