@@ -652,37 +652,42 @@ export default class DayNightPass extends RenderPass {
     }
 
     setProgress (progress) {
-        // Direct pass-through: 0=dawn, 0.25=day, 0.5=dusk, 0.75=night
+
         this.setUniform('uDayNightProgress', ((progress % 1) + 1) % 1)
     }
+
 
     setDawn () {
         this.setProgress(0.0)
     }
 
+
     setDay () {
         this.setProgress(0.25)
     }
+
 
     setDusk () {
         this.setProgress(0.5)
     }
 
+
     setNight () {
         this.setProgress(0.75)
     }
 
+
     getShadowParams (progress) {
-        // Must match shader formula: sunProgress = 0.29 + (uDayNightProgress - 0.25) * 1.68
+
         const p = ((progress % 1) + 1) % 1
         const sunProgress = 0.29 + (p - 0.25) * 1.68
 
-        // Sun not visible (sunProgress outside 0-1 range)
+
         if (sunProgress < 0 || sunProgress > 1) {
             return {skewX: 0, scaleY: -0.3, offsetY: 0.06, color: [0, 0, 0, 0.1]}
         }
 
-        // Match shader: SUN_ARC = vec2(2.95, 2.325)
+
         const angle = sunProgress * Math.PI
         const sunX = -Math.cos(angle) * 2.95
         const sunY = Math.sin(angle) * 2.325

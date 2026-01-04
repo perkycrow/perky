@@ -6,7 +6,7 @@ import GameRenderer from './game_renderer.js'
 import WaveProgressBar from './ui/wave_progress_bar.js'
 
 import VignettePass from '../render/postprocessing/passes/vignette_pass.js'
-import DayNightPass from '../render/postprocessing/passes/day_night_pass.js'
+import DayNightPass from './postprocessing/day_night_pass.js'
 
 import manifest from './manifest.js'
 import debug from '../core/debug.js'
@@ -89,7 +89,7 @@ export default class DefendTheDen extends Game {
         this.waitingForClear = false
 
         this.spawnRatio = 0.66
-        this.waveDurations = [20, 40, 20, 40] // dawn, day, dusk, night
+        this.waveDurations = [20, 40, 20, 40]
         this.dayDuration = this.waveDurations.reduce((a, b) => a + b, 0)
         this.dayAnnouncementDuration = 3
         this.catchUpSpeed = 3
