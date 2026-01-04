@@ -1,4 +1,4 @@
-import RenderPass from '../render_pass.js'
+import RenderPass from '../../render/postprocessing/render_pass.js'
 
 
 export default class DayNightPass extends RenderPass {
