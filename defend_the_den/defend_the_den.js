@@ -176,7 +176,7 @@ export default class DefendTheDen extends Game {
             return
         }
 
-        const shadowParams = this.dayNightPass.getShadowParams(timeOfDay)
+        const shadowParams = DayNightPass.getShadowParams(timeOfDay)
         this.renderer.shadowTransform.skewX = shadowParams.skewX
         this.renderer.shadowTransform.scaleY = shadowParams.scaleY
         this.renderer.shadowTransform.offsetY = shadowParams.offsetY

@@ -677,7 +677,7 @@ export default class DayNightPass extends RenderPass {
     }
 
 
-    getShadowParams (progress) {
+    static getShadowParams (progress) {
 
         const p = ((progress % 1) + 1) % 1
         const sunProgress = 0.29 + (p - 0.25) * 1.68
