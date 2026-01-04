@@ -54,13 +54,13 @@ export default class RedEnemy extends Enemy {
                 this.hopCount = 0
                 this.hasThrown = false
             } else {
-                this.state = 'hop_pause'
+                this.state = 'hopPause'
             }
         }
     }
 
 
-    hop_pause () {
+    hopPause () {
         if (this.stateTimer >= this.hopPauseDuration) {
             this.state = 'hopping'
             this.stateTimer = 0
