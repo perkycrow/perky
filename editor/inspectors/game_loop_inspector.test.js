@@ -6,6 +6,7 @@ import Notifier from '../../core/notifier.js'
 class MockGameLoop extends Notifier {
 
     #currentFps
+    #screenFps
 
     constructor (options = {}) {
         super()
@@ -13,12 +14,25 @@ class MockGameLoop extends Notifier {
         this.started = options.started ?? false
         this.paused = options.paused ?? false
         this.#currentFps = options.currentFps ?? 0
+        this.#screenFps = options.screenFps ?? 0
+        this.fpsLimited = options.fpsLimited ?? false
     }
 
 
     getCurrentFps () {
         return this.#currentFps
     }
+
+
+    getScreenFps () {
+        return this.#screenFps
+    }
+
+
+    setFps () {}
+
+
+    setFpsLimited () {}
 
 
     pause () {

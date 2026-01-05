@@ -6,6 +6,7 @@ export default class GameLoop extends PerkyModule {
     static $category = 'gameLoop'
 
     #paused = false
+    #fpsLimited = false
 
     constructor (params = {}) {
         super(params)
@@ -14,9 +15,12 @@ export default class GameLoop extends PerkyModule {
         this.accumulator = 0
         this.maxFrameSkip = params.maxFrameSkip || 5
         this.frameCount = 0
+        this.screenFrameCount = 0
         this.lastFpsUpdate = 0
 
-        this.setFps(params.fps || 60)
+        this.fps = params.fps ?? 60
+        this.frameInterval = 1000 / this.fps
+        this.#fpsLimited = params.fpsLimited ?? false
     }
 
 
@@ -27,7 +31,10 @@ export default class GameLoop extends PerkyModule {
             'resume',
             'setFps',
             'getFps',
-            'getCurrentFps'
+            'getCurrentFps',
+            'getScreenFps',
+            'fpsLimited',
+            'setFpsLimited'
         ])
 
         this.delegateEventsTo(host, [
@@ -35,7 +42,8 @@ export default class GameLoop extends PerkyModule {
             'render',
             'pause',
             'resume',
-            'changed:fps'
+            'changed:fps',
+            'changed:fpsLimited'
         ])
     }
 
@@ -109,6 +117,22 @@ export default class GameLoop extends PerkyModule {
         return this.currentFps || 0
     }
 
+
+    getScreenFps () {
+        return this.screenFps || 0
+    }
+
+
+    get fpsLimited () {
+        return this.#fpsLimited
+    }
+
+
+    setFpsLimited (value) {
+        this.#fpsLimited = value
+        this.emit('changed:fpsLimited', value)
+    }
+
 }
 
 
@@ -117,27 +141,37 @@ function update (gameLoop, currentTime) {
         return false
     }
 
-    const {frameInterval, maxFrameSkip} = gameLoop
-
     const deltaTime = currentTime - gameLoop.lastTime
     gameLoop.lastTime = currentTime
 
-    gameLoop.frameCount++
+    gameLoop.screenFrameCount++
+
+    if (gameLoop.fpsLimited) {
+        const {frameInterval, maxFrameSkip} = gameLoop
+
+        gameLoop.accumulator += Math.min(deltaTime, frameInterval * maxFrameSkip)
+
+        while (gameLoop.accumulator >= frameInterval) {
+            gameLoop.emit('update', frameInterval / 1000)
+            gameLoop.accumulator -= frameInterval
+            gameLoop.frameCount++
+        }
+
+        const frameProgress = gameLoop.accumulator / frameInterval
+        gameLoop.emit('render', frameProgress, gameLoop.currentFps, gameLoop.screenFps)
+    } else {
+        gameLoop.emit('update', deltaTime / 1000)
+        gameLoop.emit('render', 1, gameLoop.currentFps, gameLoop.screenFps)
+        gameLoop.frameCount++
+    }
+
     if (currentTime - gameLoop.lastFpsUpdate >= 1000) {
         gameLoop.currentFps = gameLoop.frameCount
+        gameLoop.screenFps = gameLoop.screenFrameCount
         gameLoop.frameCount = 0
+        gameLoop.screenFrameCount = 0
         gameLoop.lastFpsUpdate = currentTime
     }
-
-    gameLoop.accumulator += Math.min(deltaTime, frameInterval * maxFrameSkip)
-
-    while (gameLoop.accumulator >= frameInterval) {
-        gameLoop.emit('update', frameInterval / 1000)
-        gameLoop.accumulator -= frameInterval
-    }
-
-    const frameProgress = gameLoop.accumulator / frameInterval
-    gameLoop.emit('render', frameProgress, gameLoop.currentFps)
 
     requestAnimationFrame(time => update(gameLoop, time))
 
