@@ -59,6 +59,16 @@
         "math",
         "vec2"
       ]
+    },
+    {
+      "id": "webgl_canvas_2d",
+      "file": "/render/webgl_canvas_2d.doc.js",
+      "category": "render",
+      "title": "WebglCanvas2d",
+      "tags": [
+        "render",
+        "webgl_canvas_2d"
+      ]
     }
   ]
 }

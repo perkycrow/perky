@@ -1544,5 +1544,187 @@
       ]
     },
     "isDefault": true
+  },
+  "/render/webgl_canvas_2d.doc.js": {
+    "type": "class",
+    "file": "/render/webgl_canvas_2d.js",
+    "name": "WebGLCanvas2D",
+    "line": 19,
+    "extends": "BaseRenderer",
+    "statics": [
+      {
+        "name": "$name",
+        "line": 21,
+        "source": "static $name = 'webGLCanvas2D'",
+        "kind": "property",
+        "value": "'webGLCanvas2D'"
+      }
+    ],
+    "methods": [
+      {
+        "name": "registerRenderer",
+        "line": 118,
+        "source": "registerRenderer (renderer) {\n        const context = {\n            gl: this.gl,\n            spriteProgram: this.spriteProgram,\n            primitiveProgram: this.primitiveProgram,\n            textureManager: this.textureManager,\n            shaderEffectRegistry: this.#shaderEffectRegistry\n        }\n\n        renderer.init(context)\n\n        for (const ObjectClass of renderer.constructor.handles) {\n            this.#rendererRegistry.set(ObjectClass, renderer)\n        }\n\n        if (!this.#renderers.includes(renderer)) {\n            this.#renderers.push(renderer)\n        }\n\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "renderer"
+        ]
+      },
+      {
+        "name": "unregisterRenderer",
+        "line": 141,
+        "source": "unregisterRenderer (renderer) {\n        for (const ObjectClass of renderer.constructor.handles) {\n            if (this.#rendererRegistry.get(ObjectClass) === renderer) {\n                this.#rendererRegistry.delete(ObjectClass)\n            }\n        }\n\n        const index = this.#renderers.indexOf(renderer)\n        if (index !== -1) {\n            this.#renderers.splice(index, 1)\n        }\n\n        renderer.dispose()\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "renderer"
+        ]
+      },
+      {
+        "name": "applyPixelRatio",
+        "line": 158,
+        "source": "applyPixelRatio () {\n        super.applyPixelRatio()\n\n        if (this.gl) {\n            this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)\n        }\n\n        if (this.#postProcessor) {\n            this.#postProcessor.resize(this.canvas.width, this.canvas.height)\n        }\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "registerShaderEffect",
+        "line": 181,
+        "source": "registerShaderEffect (EffectClass) {\n        return this.#shaderEffectRegistry.register(EffectClass)\n    }",
+        "kind": "method",
+        "params": [
+          "EffectClass"
+        ]
+      },
+      {
+        "name": "setUniform",
+        "line": 186,
+        "source": "setUniform (name, value, type = null) {\n        this.#shaderEffectRegistry.setUniform(name, value, type)\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "name",
+          "value",
+          "type = ..."
+        ]
+      },
+      {
+        "name": "getUniform",
+        "line": 192,
+        "source": "getUniform (name) {\n        return this.#shaderEffectRegistry.getUniform(name)\n    }",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "registerShader",
+        "line": 197,
+        "source": "registerShader (id, definition) {\n        return this.#shaderRegistry.register(id, definition)\n    }",
+        "kind": "method",
+        "params": [
+          "id",
+          "definition"
+        ]
+      },
+      {
+        "name": "getShader",
+        "line": 202,
+        "source": "getShader (id) {\n        return this.#shaderRegistry.get(id)\n    }",
+        "kind": "method",
+        "params": [
+          "id"
+        ]
+      },
+      {
+        "name": "addPostPass",
+        "line": 212,
+        "source": "addPostPass (pass) {\n        this.#postProcessor.addPass(pass)\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "pass"
+        ]
+      },
+      {
+        "name": "removePostPass",
+        "line": 218,
+        "source": "removePostPass (pass) {\n        this.#postProcessor.removePass(pass)\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "pass"
+        ]
+      },
+      {
+        "name": "setRenderGroups",
+        "line": 224,
+        "source": "setRenderGroups (configs) {\n        this.clearRenderGroups()\n\n        if (!this.#compositeProgram) {\n            this.#setupCompositeShader()\n        }\n        if (!this.#compositeQuad) {\n            this.#compositeQuad = new FullscreenQuad(this.gl)\n        }\n\n        for (const config of configs) {\n            this.create(RenderGroup, config)\n        }\n\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "configs"
+        ]
+      },
+      {
+        "name": "clearRenderGroups",
+        "line": 242,
+        "source": "clearRenderGroups () {\n        const groups = this.renderGroups\n        for (const group of groups) {\n            this.removeChild(group.$id)\n        }\n        return this\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onDispose",
+        "line": 288,
+        "source": "onDispose () {\n        for (const renderer of this.#renderers) {\n            renderer.dispose()\n        }\n        this.#renderers = []\n        this.#rendererRegistry.clear()\n\n        if (this.#debugGizmoRenderer) {\n            this.#debugGizmoRenderer.dispose()\n            this.#debugGizmoRenderer = null\n        }\n\n        this.clearRenderGroups()\n\n        if (this.#compositeQuad) {\n            this.#compositeQuad.dispose(this.gl)\n            this.#compositeQuad = null\n        }\n\n        if (this.#postProcessor) {\n            this.#postProcessor.dispose()\n            this.#postProcessor = null\n        }\n\n        if (this.#shaderEffectRegistry) {\n            this.#shaderEffectRegistry.dispose()\n            this.#shaderEffectRegistry = null\n        }\n\n        if (this.#shaderRegistry) {\n            this.#shaderRegistry.dispose()\n            this.#shaderRegistry = null\n        }\n\n        super.onDispose()\n        this.gl = null\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "render",
+        "line": 348,
+        "source": "render (scene) {\n        if (this.renderGroups.length > 0 && !scene) {\n            return this.#renderWithGroups()\n        }\n        return this.#renderSingleScene(scene)\n    }",
+        "kind": "method",
+        "params": [
+          "scene"
+        ]
+      }
+    ],
+    "getters": [
+      {
+        "name": "shaderRegistry",
+        "line": 171,
+        "source": "get shaderRegistry () {\n        return this.#shaderRegistry\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "shaderEffectRegistry",
+        "line": 176,
+        "source": "get shaderEffectRegistry () {\n        return this.#shaderEffectRegistry\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "postProcessor",
+        "line": 207,
+        "source": "get postProcessor () {\n        return this.#postProcessor\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "renderGroups",
+        "line": 251,
+        "source": "get renderGroups () {\n        return this.childrenByCategory('renderGroup')\n    }",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 33,
+      "source": "constructor (options = {}) {\n        const {autoFit, ...parentOptions} = options\n        super(parentOptions)\n\n        this.#setupWebGL()\n        this.#setupDefaultRenderers()\n        this.applyPixelRatio()\n\n        this.backgroundColor = options.backgroundColor ?? null\n        this.enableCulling = options.enableCulling ?? false\n        this.enableDebugGizmos = options.enableDebugGizmos ?? true\n\n        this.stats = {\n            totalObjects: 0,\n            renderedObjects: 0,\n            culledObjects: 0,\n            drawCalls: 0\n        }\n\n        if (autoFit) {\n            this.autoFitEnabled = true\n        }\n    }",
+      "kind": "constructor",
+      "params": [
+        "options = ..."
+      ]
+    },
+    "isDefault": true
   }
 }

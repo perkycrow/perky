@@ -31,7 +31,8 @@ export default class WebGLCanvas2D extends BaseRenderer {
     #compositeProgram = null
 
     constructor (options = {}) {
-        super(options)
+        const {autoFit, ...parentOptions} = options
+        super(parentOptions)
 
         this.#setupWebGL()
         this.#setupDefaultRenderers()
@@ -46,6 +47,10 @@ export default class WebGLCanvas2D extends BaseRenderer {
             renderedObjects: 0,
             culledObjects: 0,
             drawCalls: 0
+        }
+
+        if (autoFit) {
+            this.autoFitEnabled = true
         }
     }
 
