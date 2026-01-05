@@ -19,10 +19,6 @@ export default class DayNightPass extends RenderPass {
             uniform float uDayNightProgress;
             uniform float uTime;
             uniform float uAspectRatio;
-            uniform vec2 uHill1;
-            uniform float uHill1R;
-            uniform vec2 uHill2;
-            uniform float uHill2R;
             uniform float uCameraRatio;
             in vec2 vTexCoord;
             out vec4 fragColor;
@@ -34,6 +30,12 @@ export default class DayNightPass extends RenderPass {
             const vec2 WORLD_SIZE = vec2(7.0, 5.0);
             const vec2 SUN_ARC = vec2(2.95, 2.325);
             const float SUN_RADIUS = 0.15;
+            // Terrain hills (fixed geometry)
+            const vec2 HILL1 = vec2(-4.5, -20.68);
+            const float HILL1_R = 22.65;
+            const vec2 HILL2 = vec2(3.55, -14.0);
+            const float HILL2_R = 15.95;
+            const float CAMERA_RATIO = 1.4;
             // Lighting constants
             const float SKY_EXTRA_DARKNESS = 0.35;
             const float MAX_DARKNESS = 0.85;
@@ -182,14 +184,14 @@ export default class DayNightPass extends RenderPass {
             // Coordinate transforms
             // ─────────────────────────────────────────────────────────────
             void getScreenWorldParams(out vec2 margin, out vec2 scale) {
-                float ratio = uAspectRatio / uCameraRatio;
+                float ratio = uAspectRatio / CAMERA_RATIO;
                 margin = vec2(
-                    uAspectRatio > uCameraRatio ? (1.0 - 1.0/ratio) * 0.5 : 0.0,
-                    uAspectRatio < uCameraRatio ? (1.0 - ratio) * 0.5 : 0.0
+                    uAspectRatio > CAMERA_RATIO ? (1.0 - 1.0/ratio) * 0.5 : 0.0,
+                    uAspectRatio < CAMERA_RATIO ? (1.0 - ratio) * 0.5 : 0.0
                 );
                 scale = vec2(
-                    uAspectRatio > uCameraRatio ? ratio : 1.0,
-                    uAspectRatio < uCameraRatio ? 1.0/ratio : 1.0
+                    uAspectRatio > CAMERA_RATIO ? ratio : 1.0,
+                    uAspectRatio < CAMERA_RATIO ? 1.0/ratio : 1.0
                 );
             }
 
@@ -215,7 +217,7 @@ export default class DayNightPass extends RenderPass {
             }
 
             float terrainHeight(float x) {
-                return max(hillHeight(uHill1, uHill1R, x), hillHeight(uHill2, uHill2R, x));
+                return max(hillHeight(HILL1, HILL1_R, x), hillHeight(HILL2, HILL2_R, x));
             }
 
             // Smooth terrain detection with anti-aliasing
@@ -460,10 +462,10 @@ export default class DayNightPass extends RenderPass {
             // ─────────────────────────────────────────────────────────────
             #ifdef DEBUG_HILLS
             vec3 debugHills(vec3 rgb, vec2 world) {
-                float d1 = length(world - uHill1);
-                float d2 = length(world - uHill2);
-                if (d1 < uHill1R) rgb = mix(rgb, vec3(1.0, 0.0, 0.0), 0.3);
-                if (d2 < uHill2R) rgb = mix(rgb, vec3(0.0, 0.0, 1.0), 0.3);
+                float d1 = length(world - HILL1);
+                float d2 = length(world - HILL2);
+                if (d1 < HILL1_R) rgb = mix(rgb, vec3(1.0, 0.0, 0.0), 0.3);
+                if (d2 < HILL2_R) rgb = mix(rgb, vec3(0.0, 0.0, 1.0), 0.3);
                 return rgb;
             }
             #endif
@@ -638,27 +640,18 @@ export default class DayNightPass extends RenderPass {
                 fragColor = vec4(clamp(rgb, 0.0, 1.0), color.a);
             }
         `,
-        uniforms: ['uTexture', 'uDayNightProgress', 'uTime', 'uAspectRatio', 'uHill1', 'uHill1R', 'uHill2', 'uHill2R', 'uCameraRatio'],
+        uniforms: ['uTexture', 'uDayNightProgress', 'uTime', 'uAspectRatio'],
         attributes: ['aPosition', 'aTexCoord']
     }
 
     static defaultUniforms = {
         uDayNightProgress: 0.0,
-        uHill1: [-4.5, -20.68],
-        uHill1R: 22.65,
-        uHill2: [3.55, -14.0],
-        uHill2R: 15.95,
-        uCameraRatio: 1.4,
         uTime: 0.0,
         uAspectRatio: 1.0
     }
 
     static uniformConfig = {
-        uDayNightProgress: {min: 0, max: 1, step: 0.01},
-        uHill1: {type: 'vec2'},
-        uHill1R: {min: 0, max: 30, step: 0.1},
-        uHill2: {type: 'vec2'},
-        uHill2R: {min: 0, max: 30, step: 0.1}
+        uDayNightProgress: {min: 0, max: 1, step: 0.01}
     }
 
     setProgress (progress) {
