@@ -2,6 +2,7 @@ import Notifier from './notifier.js'
 import Registry from './registry.js'
 import ObservableSet from './observable_set.js'
 import {uniqueId, delegateProperties} from './utils.js'
+import {query as perkyQuery, queryAll as perkyQueryAll} from './perky_query.js'
 
 
 export default class PerkyModule extends Notifier {
@@ -490,6 +491,16 @@ export default class PerkyModule extends Notifier {
         this.#eventDelegations.length = 0
     }
 
+
+    query (selector) {
+        return perkyQuery(this, selector)
+    }
+
+
+    queryAll (selector) {
+        return perkyQueryAll(this, selector)
+    }
+
     static perkyModuleMethods = Notifier.notifierMethods.concat([
         'start',
         'stop',
@@ -513,7 +524,9 @@ export default class PerkyModule extends Notifier {
         'delegateTo',
         'cleanDelegations',
         'delegateEventsTo',
-        'cleanEventDelegations'
+        'cleanEventDelegations',
+        'query',
+        'queryAll'
     ])
 
 }

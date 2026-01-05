@@ -1758,5 +1758,92 @@ describe(PerkyModule, () => {
 
     })
 
+
+    describe('query and queryAll', () => {
+
+        test('query finds direct child by id', () => {
+            const player = child.create(PerkyModule, {$id: 'player'})
+
+            const result = child.query('#player')
+
+            expect(result).toBe(player)
+        })
+
+
+        test('query returns null when not found', () => {
+            child.create(PerkyModule, {$id: 'player'})
+
+            const result = child.query('#enemy')
+
+            expect(result).toBeNull()
+        })
+
+
+        test('query finds child by tag', () => {
+            const enemy = child.create(PerkyModule, {$id: 'e1', $tags: ['enemy']})
+
+            const result = child.query('.enemy')
+
+            expect(result).toBe(enemy)
+        })
+
+
+        test('query finds nested children', () => {
+            const world = child.create(PerkyModule, {$id: 'world'})
+            const player = world.create(PerkyModule, {$id: 'player'})
+
+            const result = child.query('#world #player')
+
+            expect(result).toBe(player)
+        })
+
+
+        test('queryAll finds all matching children', () => {
+            const enemy1 = child.create(PerkyModule, {$id: 'e1', $tags: ['enemy']})
+            const enemy2 = child.create(PerkyModule, {$id: 'e2', $tags: ['enemy']})
+            child.create(PerkyModule, {$id: 'player'})
+
+            const result = child.queryAll('.enemy')
+
+            expect(result).toHaveLength(2)
+            expect(result).toContain(enemy1)
+            expect(result).toContain(enemy2)
+        })
+
+
+        test('queryAll returns empty array when none found', () => {
+            child.create(PerkyModule, {$id: 'player'})
+
+            const result = child.queryAll('.enemy')
+
+            expect(result).toEqual([])
+        })
+
+
+        test('queryAll finds nested children from multiple parents', () => {
+            const scene1 = child.create(PerkyModule, {$id: 's1', $category: 'scene'})
+            const scene2 = child.create(PerkyModule, {$id: 's2', $category: 'scene'})
+            const enemy1 = scene1.create(PerkyModule, {$id: 'e1', $tags: ['enemy']})
+            const enemy2 = scene2.create(PerkyModule, {$id: 'e2', $tags: ['enemy']})
+
+            const result = child.queryAll('@scene .enemy')
+
+            expect(result).toHaveLength(2)
+            expect(result).toContain(enemy1)
+            expect(result).toContain(enemy2)
+        })
+
+
+        test('query with combined selectors', () => {
+            child.create(PerkyModule, {$id: 'e1', $tags: ['enemy']})
+            const boss = child.create(PerkyModule, {$id: 'e2', $tags: ['enemy', 'boss']})
+
+            const result = child.query('.enemy.boss')
+
+            expect(result).toBe(boss)
+        })
+
+    })
+
 })
 
