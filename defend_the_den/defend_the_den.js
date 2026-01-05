@@ -96,7 +96,6 @@ export default class DefendTheDen extends Game {
 
         this.on('update', (delta) => {
             this.dayNightPass.setUniform('uAspectRatio', gameLayer.canvas.width / gameLayer.canvas.height)
-            this.dayNightPass.setUniform('uCameraRatio', this.camera.unitsInView.width / this.camera.unitsInView.height)
 
             if (this.dayPaused) {
                 return
@@ -129,7 +128,6 @@ export default class DefendTheDen extends Game {
                 return
             }
 
-            this.dayNightPass.setUniform('uTime', this.waveElapsedTime)
             this.dayNightPass.setProgress(this.timeOfDay)
             this.#updateShadows(this.timeOfDay)
 
