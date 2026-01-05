@@ -204,11 +204,11 @@ export default doc('WebGLCanvas2D', () => {
                 }))
             }
 
-            renderer.camera.pixelsPerUnit = 30
+            renderer.camera.zoom = 1.5
             renderer.render(scene)
             ctx.setApp(renderer)
 
-            logger.log('zoom:', renderer.camera.pixelsPerUnit + 'x')
+            logger.log('zoom:', renderer.camera.zoom + 'x')
         })
 
         container({title: 'Camera pan', width: 400, height: 200}, ctx => {
