@@ -26,6 +26,8 @@ export default class PerkyLogger extends HTMLElement {
 
     #containerEl = null
     #contentEl = null
+    #opacityToggle = null
+    #isPinned = true
 
     #onLog = null
     #onClear = null
@@ -157,10 +159,24 @@ export default class PerkyLogger extends HTMLElement {
         this.#containerEl = document.createElement('div')
         this.#updateClasses()
 
+        this.#opacityToggle = document.createElement('button')
+        this.#opacityToggle.className = 'logger-pin-toggle pinned'
+        this.#opacityToggle.innerHTML = EYE_ICON
+        this.#opacityToggle.title = 'Toggle opacity'
+        this.#opacityToggle.addEventListener('click', () => this.#togglePin())
+        this.#containerEl.appendChild(this.#opacityToggle)
+
         this.#contentEl = createLoggerContent()
         this.#containerEl.appendChild(this.#contentEl)
 
         this.shadowRoot.appendChild(this.#containerEl)
+    }
+
+
+    #togglePin () {
+        this.#isPinned = !this.#isPinned
+        this.#opacityToggle.classList.toggle('pinned', this.#isPinned)
+        this.#containerEl.classList.toggle('logger-faded', !this.#isPinned)
     }
 
 
@@ -358,6 +374,9 @@ function formatMessage (...messages) {
 }
 
 
+const EYE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>'
+
+
 const STYLES = buildEditorStyles(
     editorScrollbarStyles,
     editorBaseStyles,
@@ -379,12 +398,49 @@ const STYLES = buildEditorStyles(
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         border: 1px solid var(--border);
         color: var(--fg-primary);
-        opacity: 0.4;
         transition: opacity 0.2s ease;
     }
 
-    .logger:hover {
+    .logger-faded {
+        opacity: 0.4;
+    }
+
+    .logger-faded:hover {
         opacity: 1;
+    }
+
+    .logger-pin-toggle {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 20px;
+        height: 20px;
+        padding: 2px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: var(--fg-muted);
+        opacity: 0.5;
+        transition: opacity 0.15s, color 0.15s;
+        z-index: 10;
+    }
+
+    .logger-pin-toggle:hover {
+        opacity: 1;
+    }
+
+    .logger-pin-toggle.pinned {
+        color: var(--accent);
+        opacity: 0.8;
+    }
+
+    .logger-pin-toggle.pinned:hover {
+        opacity: 1;
+    }
+
+    .logger-pin-toggle svg {
+        width: 100%;
+        height: 100%;
     }
 
     .logger-content {
