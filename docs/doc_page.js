@@ -6,6 +6,7 @@ export default class DocPage extends HTMLElement {
 
     #doc = null
     #contentEl = null
+    #tocEl = null
 
     constructor () {
         super()
@@ -54,6 +55,12 @@ export default class DocPage extends HTMLElement {
             return
         }
 
+        const layout = document.createElement('div')
+        layout.className = 'doc-layout'
+
+        const main = document.createElement('div')
+        main.className = 'doc-main'
+
         const header = document.createElement('header')
         header.className = 'doc-header'
 
@@ -68,11 +75,45 @@ export default class DocPage extends HTMLElement {
             header.appendChild(context)
         }
 
-        container.appendChild(header)
+        main.appendChild(header)
 
         this.#contentEl = document.createElement('div')
         this.#contentEl.className = 'doc-content'
-        container.appendChild(this.#contentEl)
+        main.appendChild(this.#contentEl)
+
+        layout.appendChild(main)
+
+        const sections = this.#doc.blocks.filter(b => b.type === 'section')
+        if (sections.length > 1) {
+            this.#tocEl = document.createElement('aside')
+            this.#tocEl.className = 'doc-toc'
+
+            const tocTitle = document.createElement('div')
+            tocTitle.className = 'doc-toc-title'
+            tocTitle.textContent = 'Sections'
+            this.#tocEl.appendChild(tocTitle)
+
+            const tocList = document.createElement('nav')
+            tocList.className = 'doc-toc-list'
+
+            for (const section of sections) {
+                const link = document.createElement('a')
+                link.className = 'doc-toc-link'
+                link.textContent = section.title
+                link.href = '#'
+                link.addEventListener('click', e => {
+                    e.preventDefault()
+                    const sectionEl = this.#contentEl.querySelector(`[data-section="${section.title}"]`)
+                    sectionEl?.scrollIntoView({behavior: 'smooth', block: 'start'})
+                })
+                tocList.appendChild(link)
+            }
+
+            this.#tocEl.appendChild(tocList)
+            layout.appendChild(this.#tocEl)
+        }
+
+        container.appendChild(layout)
 
         for (const block of this.#doc.blocks) {
             this.#contentEl.appendChild(this.#renderBlock(block))
@@ -80,17 +121,54 @@ export default class DocPage extends HTMLElement {
     }
 
 
-    #renderBlock (block) {
+    #renderBlock (block, setup = null) {
         switch (block.type) {
             case 'text':
                 return this.#renderText(block)
             case 'code':
                 return this.#renderCode(block)
             case 'action':
-                return this.#renderAction(block)
+                return this.#renderAction(block, setup)
+            case 'section':
+                return this.#renderSection(block)
             default:
                 return document.createElement('div')
         }
+    }
+
+
+    #renderSection (block) {
+        const wrapper = document.createElement('div')
+        wrapper.className = 'doc-section'
+        wrapper.setAttribute('data-section', block.title)
+
+        const header = document.createElement('h2')
+        header.className = 'doc-section-title'
+        header.textContent = block.title
+        wrapper.appendChild(header)
+
+        if (block.setup) {
+            const setupEl = document.createElement('div')
+            setupEl.className = 'doc-setup-block'
+
+            const codeEl = document.createElement('perky-code')
+            codeEl.setAttribute('title', 'Setup')
+            codeEl.code = block.setup.source
+            setupEl.appendChild(codeEl)
+
+            wrapper.appendChild(setupEl)
+        }
+
+        const content = document.createElement('div')
+        content.className = 'doc-section-content'
+
+        for (const childBlock of block.blocks) {
+            content.appendChild(this.#renderBlock(childBlock, block.setup))
+        }
+
+        wrapper.appendChild(content)
+
+        return wrapper
     }
 
 
@@ -115,7 +193,7 @@ export default class DocPage extends HTMLElement {
     }
 
 
-    #renderAction (block) {
+    #renderAction (block, setup = null) {
         const wrapper = document.createElement('div')
         wrapper.className = 'doc-action-block'
 
@@ -132,16 +210,20 @@ export default class DocPage extends HTMLElement {
             </svg>
             Run
         `
-        button.addEventListener('click', () => this.#executeAction(block))
+        button.addEventListener('click', () => this.#executeAction(block, setup))
         wrapper.appendChild(button)
 
         return wrapper
     }
 
 
-    #executeAction (block) {
+    #executeAction (block, setup = null) {
         try {
-            block.fn()
+            const ctx = {}
+            if (setup?.fn) {
+                setup.fn(ctx)
+            }
+            block.fn(ctx)
         } catch (error) {
             console.error('Action error:', error)
         }
@@ -172,11 +254,60 @@ const STYLES = buildEditorStyles(
     }
 
     .doc-page {
-        max-width: 800px;
+        width: 100%;
+        max-width: 1000px;
+    }
+
+    .doc-layout {
+        display: flex;
+        gap: 3rem;
+    }
+
+    .doc-main {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .doc-toc {
+        width: 160px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 0;
+        align-self: flex-start;
+        padding-top: 0.5rem;
+    }
+
+    .doc-toc-title {
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--fg-muted);
+        margin-bottom: 0.75rem;
+    }
+
+    .doc-toc-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .doc-toc-link {
+        font-size: 0.8rem;
+        color: var(--fg-secondary);
+        text-decoration: none;
+        padding: 0.25rem 0;
+        transition: color 0.15s;
+    }
+
+    .doc-toc-link:hover {
+        color: var(--accent);
     }
 
     .doc-header {
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
         display: flex;
         align-items: center;
         gap: 1rem;
@@ -202,7 +333,7 @@ const STYLES = buildEditorStyles(
     .doc-content {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 1.5rem;
     }
 
     .doc-text {
@@ -265,6 +396,44 @@ const STYLES = buildEditorStyles(
 
     .doc-action-btn svg {
         flex-shrink: 0;
+    }
+
+    .doc-section {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .doc-section:first-child {
+        margin-top: 0.5rem;
+        padding-top: 0;
+        border-top: none;
+    }
+
+    .doc-section-title {
+        font-family: var(--font-mono);
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin: 0 0 1.25rem 0;
+        color: var(--fg-primary);
+    }
+
+    .doc-section-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .doc-setup-block {
+        position: relative;
+        margin-bottom: 0.75rem;
+        opacity: 0.7;
+    }
+
+    @media (max-width: 900px) {
+        .doc-toc {
+            display: none;
+        }
     }
 `
 )

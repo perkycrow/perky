@@ -2,6 +2,7 @@ import logger from '../core/logger.js'
 
 
 let currentBlocks = null
+let currentSetup = null
 
 
 export function doc (title, options, fn) {
@@ -15,10 +16,51 @@ export function doc (title, options, fn) {
     }
 
     currentBlocks = docData.blocks
+    currentSetup = null
     callback()
     currentBlocks = null
+    currentSetup = null
 
     return docData
+}
+
+
+export function section (title, fn) {
+    if (!currentBlocks) {
+        throw new Error('section() must be called inside doc()')
+    }
+
+    const sectionData = {
+        type: 'section',
+        title,
+        blocks: [],
+        setup: null
+    }
+
+    const parentBlocks = currentBlocks
+    const parentSetup = currentSetup
+
+    currentBlocks = sectionData.blocks
+    currentSetup = null
+    fn()
+    sectionData.setup = currentSetup
+
+    currentBlocks = parentBlocks
+    currentSetup = parentSetup
+
+    currentBlocks.push(sectionData)
+}
+
+
+export function setup (fn) {
+    if (!currentBlocks) {
+        throw new Error('setup() must be called inside doc() or section()')
+    }
+
+    currentSetup = {
+        source: extractFunctionBody(fn),
+        fn
+    }
 }
 
 
