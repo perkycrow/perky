@@ -19,7 +19,6 @@ export default class DayNightPass extends RenderPass {
             uniform float uDayNightProgress;
             uniform float uTime;
             uniform float uAspectRatio;
-            uniform float uCameraRatio;
             in vec2 vTexCoord;
             out vec4 fragColor;
 
@@ -93,7 +92,7 @@ export default class DayNightPass extends RenderPass {
             const float HALO_STRENGTH = 0.2;          // Halo opacity
 
             // Stars
-            const vec2 STAR_GRID = vec2(100.0, 60.0);
+            const float STAR_GRID_SIZE = 60.0;
             const vec2 STAR_SPEED = vec2(0.008, 0.003);
             const float STAR_THRESHOLD = 0.92;
 
@@ -120,7 +119,6 @@ export default class DayNightPass extends RenderPass {
                 float tintStrength;
                 vec3 tintColor;
                 float starsIntensity;
-                float sunProgress;
                 float nightFactor;  // 0=day, 1=full night - for Purkinje/desat effects
             };
 
@@ -382,7 +380,7 @@ export default class DayNightPass extends RenderPass {
                 return rgb + result * edgeFade;
             }
 
-            vec3 applyRays(vec3 rgb, vec2 world, SunData sun, float terrain, bool inSky) {
+            vec3 applyRays(vec3 rgb, vec2 world, SunData sun, bool inSky) {
                 vec2 rayOrigin = vec2(sun.pos.x, sun.terrainY);
                 vec2 toPixel = world - rayOrigin;
                 float dist = length(toPixel);
@@ -440,12 +438,11 @@ export default class DayNightPass extends RenderPass {
             vec3 applyStars(vec3 rgb, vec2 uv, vec4 baseColor, float starsIntensity) {
                 vec2 aspectUV = vec2(uv.x * uAspectRatio, uv.y);
                 vec2 starUV = aspectUV + STAR_SPEED * uTime;
-                float gridSize = 60.0;
-                vec2 cell = floor(starUV * gridSize);
+                vec2 cell = floor(starUV * STAR_GRID_SIZE);
                 float r = random(cell);
 
                 if (r > STAR_THRESHOLD) {
-                    vec2 cellUV = fract(starUV * gridSize);
+                    vec2 cellUV = fract(starUV * STAR_GRID_SIZE);
                     vec2 starPos = vec2(random(cell + 0.1), random(cell + 0.2));
                     float star = smoothstep(0.12, 0.0, length(cellUV - starPos));
                     float phase = random(cell + 0.3) * 6.28;
@@ -486,7 +483,6 @@ export default class DayNightPass extends RenderPass {
             #ifdef DEBUG_SUN_PATH
             vec3 debugSunPath(vec3 rgb, vec2 world, float sunProgress) {
                 float minDist = 1000.0;
-                float closestProgress = 0.0;
 
                 // Sample trajectory to find closest point
                 for (float p = 0.0; p <= 1.0; p += 0.01) {
@@ -494,7 +490,6 @@ export default class DayNightPass extends RenderPass {
                     float d = length(world - sunPos);
                     if (d < minDist) {
                         minDist = d;
-                        closestProgress = p;
                     }
                 }
 
@@ -557,7 +552,6 @@ export default class DayNightPass extends RenderPass {
             void main() {
                 vec4 color = texture(uTexture, vTexCoord);
                 vec2 world = screenToWorld(vTexCoord);
-                float terrain = terrainHeight(world.x);
                 float skyBlend = terrainFactor(world);  // Smooth 0-1 transition at terrain edge
                 bool inSky = skyBlend > 0.5;
 
@@ -574,7 +568,6 @@ export default class DayNightPass extends RenderPass {
                 // Get ambiance based on sun position
                 // Always use sun-based ambiance - it handles below-horizon naturally
                 Ambiance ambiance = getAmbianceFromSun(sun.top, sun.bottom, sun.terrainY, sun.intersectStrength, clamp(sunProgress, 0.0, 1.0));
-                ambiance.sunProgress = sunProgress;
 
                 // Sky detection
                 float blueness = color.b - max(color.r, color.g);
@@ -616,7 +609,7 @@ export default class DayNightPass extends RenderPass {
                     rgb += sunDiscEffect * skyBlend;
 
                     if (sun.intersectsTerrain) {
-                        rgb = applyRays(rgb, world, sun, terrain, inSky);
+                        rgb = applyRays(rgb, world, sun, inSky);
                     }
 
                     #ifdef DEBUG_SUN_RADIUS
