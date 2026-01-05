@@ -168,4 +168,9 @@ export default class GameController extends WorldController {
         return this.world.spawnAmalgamEnemy(options)
     }
 
+
+    toggleHitboxDebug () {
+        return this.renderer.toggleHitboxDebug()
+    }
+
 }

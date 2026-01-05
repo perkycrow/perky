@@ -72,6 +72,7 @@ export default class DefendTheDen extends Game {
 
         const gameController = this.getController('game')
         gameController.world = this.world
+        gameController.renderer = this.renderer
 
         const gameLayer = this.getCanvas('game')
 
@@ -160,9 +161,6 @@ export default class DefendTheDen extends Game {
     }
 
 
-    toggleHitboxDebug () {
-        return this.renderer.toggleHitboxDebug()
-    }
 
 
     setHitboxDebug (enabled) {

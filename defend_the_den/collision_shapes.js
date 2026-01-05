@@ -20,9 +20,11 @@ export class CapsuleHitbox {
         this.offsetY = options.offsetY ?? 0
     }
 
+
     get topY () {
         return this.offsetY + this.height / 2
     }
+
 
     get bottomY () {
         return this.offsetY - this.height / 2
@@ -101,20 +103,19 @@ function testCapsuleCapsule (capsuleA, posA, capsuleB, posB) {
     const overlapTop = Math.min(aTopY, bTopY)
     const overlapBottom = Math.max(aBottomY, bBottomY)
 
-    let closestAY, closestBY
+    let closestAY
+    let closestBY
 
     if (overlapTop >= overlapBottom) {
         const midY = (overlapTop + overlapBottom) / 2
         closestAY = Math.max(aBottomY, Math.min(aTopY, midY))
         closestBY = Math.max(bBottomY, Math.min(bTopY, midY))
+    } else if (aTopY < bBottomY) {
+        closestAY = aTopY
+        closestBY = bBottomY
     } else {
-        if (aTopY < bBottomY) {
-            closestAY = aTopY
-            closestBY = bBottomY
-        } else {
-            closestAY = aBottomY
-            closestBY = bTopY
-        }
+        closestAY = aBottomY
+        closestBY = bTopY
     }
 
     const dx = ax - bx

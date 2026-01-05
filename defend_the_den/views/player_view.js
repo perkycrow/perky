@@ -23,7 +23,6 @@ export default class PlayerView extends EntityView {
             anchorY: 0.05
         })
 
-        // this.root.showDebugGizmos()
 
         this.root.effects.add(new OutlineEffect({
             width: 0.03,
