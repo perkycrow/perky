@@ -1,0 +1,14 @@
+{
+  "docs": [
+    {
+      "id": "vec2",
+      "file": "/math/vec2.doc.js",
+      "category": "math",
+      "title": "Vec2",
+      "tags": [
+        "math",
+        "vec2"
+      ]
+    }
+  ]
+}

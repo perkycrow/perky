@@ -17,7 +17,9 @@
     "den:preview": "vite preview --config vite.den.config.js",
     "test": "vitest run",
     "cleaner": "node scripts/cleaner.js",
-    "clean": "node scripts/cleaner.js --audit --fix"
+    "clean": "node scripts/cleaner.js --audit --fix",
+    "docs": "vite --open /docs/",
+    "docs:update": "node docs/discovery.js"
   },
   "keywords": [
     "javascript",
