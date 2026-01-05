@@ -1,4 +1,6 @@
 import GameLoop from '../game/game_loop.js'
+import logger from '../core/logger.js'
+import {ICONS} from './devtools/devtools_icons.js'
 
 
 const actionProviders = []
@@ -37,6 +39,22 @@ function addDefaultActions (actions, module, callbacks) {
         iconSvg: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>',
         label: 'Focus',
         action: () => callbacks.onFocus?.(module)
+    })
+
+    actions.push({
+        iconSvg: ICONS.inspect,
+        label: 'Inspect',
+        action: () => {
+            logger.info(module)
+            callbacks.onInspect?.()
+        }
+    })
+
+    const selector = buildSelector(module)
+    actions.push({
+        iconSvg: ICONS.clipboard,
+        label: 'Copy selector',
+        action: () => navigator.clipboard.writeText(selector)
     })
 
     actions.push({separator: true})
@@ -90,6 +108,19 @@ registerActionProvider({
         ]
     }
 })
+
+
+function buildSelector (module) {
+    const parts = []
+    let current = module
+
+    while (current && current.host) {
+        parts.unshift(`#${current.$id}`)
+        current = current.host
+    }
+
+    return parts.join(' ')
+}
 
 
 export default {

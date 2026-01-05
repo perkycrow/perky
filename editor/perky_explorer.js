@@ -276,7 +276,8 @@ export default class PerkyExplorer extends BaseEditorComponent {
         this.#ensureContextMenu()
 
         const actions = getActionsForModule(module, {
-            onFocus: (m) => this.focusModule(m)
+            onFocus: (m) => this.focusModule(m),
+            onInspect: () => this.dispatchEvent(new CustomEvent('inspect'))
         })
 
         this.#contextMenuEl.show(actions, module, {x, y})

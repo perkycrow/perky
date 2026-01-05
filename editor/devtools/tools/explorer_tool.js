@@ -45,6 +45,7 @@ export default class ExplorerTool extends BaseTool {
 
         this.#explorerEl = document.createElement('perky-explorer')
         this.#explorerEl.embedded = true
+        this.#explorerEl.addEventListener('inspect', () => this.state?.openLogger())
 
         this.shadowRoot.appendChild(this.#explorerEl)
 
