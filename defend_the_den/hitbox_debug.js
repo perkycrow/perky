@@ -138,7 +138,7 @@ export default class HitboxDebug {
     }
 
 
-    #createCircle (radius, color) { // eslint-disable-line local/class-methods-use-this -- factory
+    #createCircle (radius, color) { // eslint-disable-line local/class-methods-use-this -- clean
         return new Circle({
             radius,
             color,

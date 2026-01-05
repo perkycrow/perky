@@ -101,7 +101,7 @@ export default class TouchDevice extends InputDevice {
     }
 
 
-    #handleTouchmove (event) {
+    #handleTouchmove (event) { // eslint-disable-line complexity -- clean
         const touch = this.#findActiveTouch(event.touches)
         if (!touch) {
             return

@@ -75,7 +75,7 @@ export default class CanvasDebugGizmoRenderer extends CanvasObjectRenderer {
     }
 
 
-    renderBounds (ctx, bounds) { // eslint-disable-line local/class-methods-use-this -- static helper
+    renderBounds (ctx, bounds) { // eslint-disable-line local/class-methods-use-this -- clean
         ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)'
         ctx.lineWidth = 0.02
         ctx.setLineDash([0.05, 0.05])
@@ -84,7 +84,7 @@ export default class CanvasDebugGizmoRenderer extends CanvasObjectRenderer {
     }
 
 
-    renderAnchor (ctx, object, bounds) { // eslint-disable-line local/class-methods-use-this -- static helper
+    renderAnchor (ctx, object, bounds) { // eslint-disable-line local/class-methods-use-this -- clean
         const anchorX = bounds.minX + object.anchorX * bounds.width
         const anchorY = bounds.minY + object.anchorY * bounds.height
 
@@ -107,7 +107,7 @@ export default class CanvasDebugGizmoRenderer extends CanvasObjectRenderer {
     }
 
 
-    renderPivot (ctx, object) { // eslint-disable-line local/class-methods-use-this -- static helper
+    renderPivot (ctx, object) { // eslint-disable-line local/class-methods-use-this -- clean
         const pivotX = object.pivotX
         const pivotY = object.pivotY
 
@@ -129,7 +129,7 @@ export default class CanvasDebugGizmoRenderer extends CanvasObjectRenderer {
     }
 
 
-    renderOrigin (ctx) { // eslint-disable-line local/class-methods-use-this -- static helper
+    renderOrigin (ctx) { // eslint-disable-line local/class-methods-use-this -- clean
         const size = 0.1
 
         ctx.strokeStyle = 'rgba(255, 0, 0, 1)'

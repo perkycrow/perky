@@ -22,7 +22,7 @@ export default class AmalgamEnemy extends Enemy {
         this.state = 'stalking'
         this.stateTimer = 0
 
-        this.stalkDuration = 2.0 + Math.random() * 1.0
+        this.stalkDuration = 2.0 + Math.random()
         this.laneChangeSpeed = 1.5
         this.targetY = this.position.y
 
@@ -85,7 +85,7 @@ export default class AmalgamEnemy extends Enemy {
         if (this.stateTimer >= this.fearActiveDuration) {
             this.state = 'stalking'
             this.stateTimer = 0
-            this.stalkDuration = 1.5 + Math.random() * 1.0
+            this.stalkDuration = 1.5 + Math.random()
             this.fearProgress = 0
         }
     }
