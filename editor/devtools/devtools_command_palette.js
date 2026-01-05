@@ -386,6 +386,9 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
             Enter: () => {
                 this.#executeCurrentCommand()
             },
+            Tab: () => {
+                this.#autocompleteSelected()
+            },
             Escape: () => {
                 this.#state?.closeCommandPalette()
             }
@@ -404,6 +407,16 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
 
         if (selected) {
             this.#executeCommand(selected)
+        }
+    }
+
+
+    #autocompleteSelected () {
+        const selected = this.#filteredCommands[this.#selectedIndex]
+
+        if (selected) {
+            this.#inputEl.value = selected.title + ' '
+            this.#onInput()
         }
     }
 
