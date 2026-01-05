@@ -10,12 +10,14 @@ class DocViewer {
         this.nav = document.getElementById('docs-nav')
         this.searchInput = document.querySelector('.sidebar-search .search-input')
         this.docs = []
+        this.apiData = {}
         this.currentDoc = null
     }
 
 
     async init () {
         await this.loadDocs()
+        await this.loadApiData()
         this.buildNav()
         this.setupSearch()
         this.route()
@@ -32,6 +34,17 @@ class DocViewer {
         } catch (error) {
             console.error('Failed to load docs.json:', error)
             this.docs = []
+        }
+    }
+
+
+    async loadApiData () {
+        try {
+            const response = await fetch('./api.json')
+            this.apiData = await response.json()
+        } catch (error) {
+            console.error('Failed to load api.json:', error)
+            this.apiData = {}
         }
     }
 
@@ -80,28 +93,8 @@ class DocViewer {
             const items = this.nav.querySelectorAll('.nav-item')
             const categories = this.nav.querySelectorAll('.nav-category')
 
-            for (const item of items) {
-                const matches = !search ||
-                    item.dataset.title.includes(search) ||
-                    item.dataset.category.includes(search)
-                item.classList.toggle('hidden', !matches)
-            }
-
-            for (const category of categories) {
-                const categoryName = category.textContent.toLowerCase()
-                let nextEl = category.nextElementSibling
-                let hasVisibleItems = false
-
-                while (nextEl && !nextEl.classList.contains('nav-category')) {
-                    if (nextEl.classList.contains('nav-item') && !nextEl.classList.contains('hidden')) {
-                        hasVisibleItems = true
-                        break
-                    }
-                    nextEl = nextEl.nextElementSibling
-                }
-
-                category.classList.toggle('hidden', !hasVisibleItems && search && !categoryName.includes(search))
-            }
+            filterNavItems(items, search)
+            filterNavCategories(categories, search)
         })
     }
 
@@ -157,6 +150,12 @@ class DocViewer {
             this.container.innerHTML = ''
             const docPage = document.createElement('doc-page')
             docPage.doc = docData
+
+            const api = this.apiData[docPath]
+            if (api) {
+                docPage.api = api
+            }
+
             this.container.appendChild(docPage)
 
             this.currentDoc = docPath
@@ -171,6 +170,41 @@ class DocViewer {
         }
     }
 
+
+}
+
+
+function filterNavItems (items, search) {
+    for (const item of items) {
+        const matches = !search ||
+            item.dataset.title.includes(search) ||
+            item.dataset.category.includes(search)
+        item.classList.toggle('hidden', !matches)
+    }
+}
+
+
+function filterNavCategories (categories, search) {
+    for (const category of categories) {
+        const categoryName = category.textContent.toLowerCase()
+        const hasVisibleItems = categoryHasVisibleItems(category)
+
+        category.classList.toggle('hidden', !hasVisibleItems && search && !categoryName.includes(search))
+    }
+}
+
+
+function categoryHasVisibleItems (category) {
+    let nextEl = category.nextElementSibling
+
+    while (nextEl && !nextEl.classList.contains('nav-category')) {
+        if (nextEl.classList.contains('nav-item') && !nextEl.classList.contains('hidden')) {
+            return true
+        }
+        nextEl = nextEl.nextElementSibling
+    }
+
+    return false
 }
 
 

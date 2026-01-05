@@ -6,6 +6,8 @@ import logger from '../core/logger.js'
 export default class DocPage extends HTMLElement {
 
     #doc = null
+    #api = null
+    #activeTab = 'doc'
     #contentEl = null
     #tocEl = null
     #containerEl = null
@@ -32,6 +34,19 @@ export default class DocPage extends HTMLElement {
 
     get doc () {
         return this.#doc
+    }
+
+
+    set api (value) {
+        this.#api = value
+        if (this.isConnected) {
+            this.#render()
+        }
+    }
+
+
+    get api () {
+        return this.#api
     }
 
 
@@ -67,24 +82,42 @@ export default class DocPage extends HTMLElement {
         const header = document.createElement('header')
         header.className = 'doc-header'
 
+        const titleRow = document.createElement('div')
+        titleRow.className = 'doc-title-row'
+
         const title = document.createElement('h1')
         title.textContent = this.#doc.title
-        header.appendChild(title)
+        titleRow.appendChild(title)
 
         if (this.#doc.options?.context) {
             const context = document.createElement('span')
             context.className = 'doc-context'
             context.textContent = this.#doc.options.context
-            header.appendChild(context)
+            titleRow.appendChild(context)
+        }
+
+        header.appendChild(titleRow)
+
+        if (this.#api) {
+            const tabs = document.createElement('div')
+            tabs.className = 'doc-tabs'
+
+            const docTab = document.createElement('button')
+            docTab.className = `doc-tab ${this.#activeTab === 'doc' ? 'active' : ''}`
+            docTab.textContent = 'Doc'
+            docTab.addEventListener('click', () => this.#switchTab('doc'))
+
+            const apiTab = document.createElement('button')
+            apiTab.className = `doc-tab ${this.#activeTab === 'api' ? 'active' : ''}`
+            apiTab.textContent = 'API'
+            apiTab.addEventListener('click', () => this.#switchTab('api'))
+
+            tabs.appendChild(docTab)
+            tabs.appendChild(apiTab)
+            header.appendChild(tabs)
         }
 
         main.appendChild(header)
-
-        if (this.#doc.options?.context === 'application') {
-            this.#containerEl = document.createElement('div')
-            this.#containerEl.className = 'doc-app-container'
-            main.appendChild(this.#containerEl)
-        }
 
         this.#contentEl = document.createElement('div')
         this.#contentEl.className = 'doc-content'
@@ -92,11 +125,32 @@ export default class DocPage extends HTMLElement {
 
         layout.appendChild(main)
 
+        this.#tocEl = document.createElement('aside')
+        this.#tocEl.className = 'doc-toc'
+        layout.appendChild(this.#tocEl)
+
+        container.appendChild(layout)
+
+        if (this.#activeTab === 'doc') {
+            this.#renderDocContent()
+        } else {
+            this.#renderApiContent()
+        }
+    }
+
+
+    #switchTab (tab) {
+        this.#activeTab = tab
+        this.#render()
+    }
+
+
+    #renderDocContent () {
+        this.#contentEl.innerHTML = ''
+        this.#tocEl.innerHTML = ''
+
         const sections = this.#doc.blocks.filter(b => b.type === 'section')
         if (sections.length > 1) {
-            this.#tocEl = document.createElement('aside')
-            this.#tocEl.className = 'doc-toc'
-
             const tocTitle = document.createElement('div')
             tocTitle.className = 'doc-toc-title'
             tocTitle.textContent = 'Sections'
@@ -119,10 +173,7 @@ export default class DocPage extends HTMLElement {
             }
 
             this.#tocEl.appendChild(tocList)
-            layout.appendChild(this.#tocEl)
         }
-
-        container.appendChild(layout)
 
         for (const block of this.#doc.blocks) {
             this.#contentEl.appendChild(this.#renderBlock(block))
@@ -130,20 +181,97 @@ export default class DocPage extends HTMLElement {
     }
 
 
+    #renderApiContent () {
+        this.#contentEl.innerHTML = ''
+        this.#tocEl.innerHTML = ''
+
+        if (!this.#api) {
+            return
+        }
+
+        const api = this.#api
+
+        if (api.extends) {
+            const extendsEl = document.createElement('div')
+            extendsEl.className = 'api-extends'
+            extendsEl.innerHTML = `extends <code>${api.extends}</code>`
+            this.#contentEl.appendChild(extendsEl)
+        }
+
+        if (api.file) {
+            const fileEl = document.createElement('div')
+            fileEl.className = 'api-file'
+            fileEl.textContent = api.file
+            this.#contentEl.appendChild(fileEl)
+        }
+
+        const categories = [
+            {key: 'statics', title: 'Static'},
+            {key: 'constructor', title: 'Constructor', single: true},
+            {key: 'methods', title: 'Methods'},
+            {key: 'getters', title: 'Getters'},
+            {key: 'setters', title: 'Setters'}
+        ]
+
+        const tocTitle = document.createElement('div')
+        tocTitle.className = 'doc-toc-title'
+        tocTitle.textContent = 'API'
+        this.#tocEl.appendChild(tocTitle)
+
+        const tocList = document.createElement('nav')
+        tocList.className = 'doc-toc-list'
+
+        for (const cat of categories) {
+            const items = getApiItems(api, cat)
+
+            if (items.length === 0) {
+                continue
+            }
+
+            const sectionEl = document.createElement('div')
+            sectionEl.className = 'api-section'
+            sectionEl.setAttribute('data-section', cat.title)
+
+            const sectionTitle = document.createElement('h2')
+            sectionTitle.className = 'api-section-title'
+            sectionTitle.textContent = cat.title
+            sectionEl.appendChild(sectionTitle)
+
+            for (const item of items) {
+                sectionEl.appendChild(renderApiMember(item, api.file))
+            }
+
+            this.#contentEl.appendChild(sectionEl)
+
+            const tocLink = document.createElement('a')
+            tocLink.className = 'doc-toc-link'
+            tocLink.textContent = cat.title
+            tocLink.href = '#'
+            tocLink.addEventListener('click', e => {
+                e.preventDefault()
+                sectionEl.scrollIntoView({behavior: 'smooth', block: 'start'})
+            })
+            tocList.appendChild(tocLink)
+        }
+
+        this.#tocEl.appendChild(tocList)
+    }
+
+
     #renderBlock (block, setup = null) {
         switch (block.type) {
-            case 'text':
-                return this.#renderText(block)
-            case 'code':
-                return this.#renderCode(block)
-            case 'action':
-                return this.#renderAction(block, setup)
-            case 'section':
-                return this.#renderSection(block)
-            case 'container':
-                return this.#renderContainer(block, setup)
-            default:
-                return document.createElement('div')
+        case 'text':
+            return renderText(block)
+        case 'code':
+            return renderCode(block)
+        case 'action':
+            return renderAction(block, setup)
+        case 'section':
+            return this.#renderSection(block)
+        case 'container':
+            return renderContainer(block, setup)
+        default:
+            return document.createElement('div')
         }
     }
 
@@ -182,142 +310,213 @@ export default class DocPage extends HTMLElement {
         return wrapper
     }
 
+}
 
-    #renderText (block) {
-        const el = document.createElement('div')
-        el.className = 'doc-text'
-        el.innerHTML = this.#parseMarkdown(block.content)
-        return el
+
+function renderText (block) {
+    const el = document.createElement('div')
+    el.className = 'doc-text'
+    el.innerHTML = parseMarkdown(block.content)
+    return el
+}
+
+
+function renderAction (block, setup = null) {
+    const wrapper = document.createElement('div')
+    wrapper.className = 'doc-action-block'
+
+    const codeEl = document.createElement('perky-code')
+    codeEl.setAttribute('title', block.title)
+    codeEl.code = block.source
+    wrapper.appendChild(codeEl)
+
+    const button = document.createElement('button')
+    button.className = 'doc-action-btn'
+    button.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+        </svg>
+        Run
+    `
+    button.addEventListener('click', () => executeAction(block, setup))
+    wrapper.appendChild(button)
+
+    return wrapper
+}
+
+
+function renderContainer (block, setup = null) {
+    const wrapper = document.createElement('div')
+    wrapper.className = 'doc-container-block'
+
+    if (block.title) {
+        const titleEl = document.createElement('div')
+        titleEl.className = 'doc-container-title'
+        titleEl.textContent = block.title
+        wrapper.appendChild(titleEl)
     }
 
+    const container = document.createElement('div')
+    container.className = 'doc-container-element'
+    container.style.width = `${block.width}px`
+    container.style.height = `${block.height}px`
+    wrapper.appendChild(container)
 
-    #renderCode (block) {
-        const wrapper = document.createElement('div')
-        wrapper.className = 'doc-code-block'
+    const codeEl = document.createElement('perky-code')
+    codeEl.setAttribute('title', block.title || 'Container')
+    codeEl.code = block.source
+    wrapper.appendChild(codeEl)
 
-        const codeEl = document.createElement('perky-code')
-        codeEl.setAttribute('title', block.title)
-        codeEl.code = block.source
-        wrapper.appendChild(codeEl)
+    const button = document.createElement('button')
+    button.className = 'doc-action-btn doc-container-btn'
+    button.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+        </svg>
+        Run
+    `
+    button.addEventListener('click', () => executeContainer(block, container, setup))
+    wrapper.appendChild(button)
 
-        return wrapper
+    return wrapper
+}
+
+
+function executeAction (block, setup = null) {
+    try {
+        logger.spacer()
+        const ctx = {}
+
+        if (setup?.fn) {
+            setup.fn(ctx)
+        }
+        block.fn(ctx)
+    } catch (error) {
+        logger.error('Action error:', error.message)
     }
+}
 
 
-    #renderAction (block, setup = null) {
-        const wrapper = document.createElement('div')
-        wrapper.className = 'doc-action-block'
+function executeContainer (block, container, setup = null) {
+    try {
+        logger.spacer()
 
-        const codeEl = document.createElement('perky-code')
-        codeEl.setAttribute('title', block.title)
-        codeEl.code = block.source
-        wrapper.appendChild(codeEl)
+        const prevApp = container._currentApp
+        if (prevApp?.dispose) {
+            prevApp.dispose()
+        }
+        container.innerHTML = ''
 
-        const button = document.createElement('button')
-        button.className = 'doc-action-btn'
-        button.innerHTML = `
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8 5v14l11-7z"/>
-            </svg>
-            Run
-        `
-        button.addEventListener('click', () => this.#executeAction(block, setup))
-        wrapper.appendChild(button)
-
-        return wrapper
-    }
-
-
-    #renderContainer (block, setup = null) {
-        const wrapper = document.createElement('div')
-        wrapper.className = 'doc-container-block'
-
-        if (block.title) {
-            const titleEl = document.createElement('div')
-            titleEl.className = 'doc-container-title'
-            titleEl.textContent = block.title
-            wrapper.appendChild(titleEl)
+        const ctx = {
+            container,
+            setApp: app => {
+                container._currentApp = app
+            }
         }
 
-        const container = document.createElement('div')
-        container.className = 'doc-container-element'
-        container.style.width = `${block.width}px`
-        container.style.height = `${block.height}px`
-        wrapper.appendChild(container)
-
-        const codeEl = document.createElement('perky-code')
-        codeEl.setAttribute('title', block.title || 'Container')
-        codeEl.code = block.source
-        wrapper.appendChild(codeEl)
-
-        const button = document.createElement('button')
-        button.className = 'doc-action-btn doc-container-btn'
-        button.innerHTML = `
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8 5v14l11-7z"/>
-            </svg>
-            Run
-        `
-        button.addEventListener('click', () => this.#executeContainer(block, container, setup))
-        wrapper.appendChild(button)
-
-        return wrapper
-    }
-
-
-    #executeAction (block, setup = null) {
-        try {
-            logger.spacer()
-            const ctx = {}
-
-            if (setup?.fn) {
-                setup.fn(ctx)
-            }
-            block.fn(ctx)
-        } catch (error) {
-            logger.error('Action error:', error.message)
+        if (setup?.fn) {
+            setup.fn(ctx)
         }
+        block.fn(ctx)
+    } catch (error) {
+        logger.error('Container error:', error.message)
+    }
+}
+
+
+function getApiItems (api, cat) {
+    if (cat.single) {
+        return api[cat.key] ? [api[cat.key]] : []
     }
 
+    return api[cat.key] || []
+}
 
-    #executeContainer (block, container, setup = null) {
-        try {
-            logger.spacer()
 
-            const prevApp = container._currentApp
-            if (prevApp?.dispose) {
-                prevApp.dispose()
-            }
-            container.innerHTML = ''
+function renderApiMember (member, file) {
+    const wrapper = document.createElement('div')
+    wrapper.className = 'api-member'
 
-            const ctx = {
-                container,
-                setApp: app => {
-                    container._currentApp = app
-                }
-            }
+    const header = document.createElement('div')
+    header.className = 'api-member-header'
 
-            if (setup?.fn) {
-                setup.fn(ctx)
-            }
-            block.fn(ctx)
-        } catch (error) {
-            logger.error('Container error:', error.message)
+    const signature = document.createElement('span')
+    signature.className = 'api-member-name'
+
+    if (member.params) {
+        signature.textContent = `${member.name}(${member.params.join(', ')})`
+    } else if (member.value) {
+        signature.innerHTML = `${member.name} = <code>${member.value}</code>`
+    } else {
+        signature.textContent = member.name
+    }
+
+    header.appendChild(signature)
+
+    if (member.line && file) {
+        const lineLink = document.createElement('span')
+        lineLink.className = 'api-member-line'
+        lineLink.textContent = `:${member.line}`
+        header.appendChild(lineLink)
+    }
+
+    const toggle = document.createElement('button')
+    toggle.className = 'api-toggle'
+    toggle.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 10l5 5 5-5z"/>
+        </svg>
+    `
+    header.appendChild(toggle)
+
+    wrapper.appendChild(header)
+
+    const codeWrapper = document.createElement('div')
+    codeWrapper.className = 'api-code-wrapper'
+
+    const codeEl = document.createElement('perky-code')
+    codeEl.code = member.source
+    codeEl.setAttribute('no-header', '')
+    codeWrapper.appendChild(codeEl)
+
+    wrapper.appendChild(codeWrapper)
+
+    toggle.addEventListener('click', () => {
+        wrapper.classList.toggle('expanded')
+    })
+
+    header.addEventListener('click', e => {
+        if (e.target !== toggle && !toggle.contains(e.target)) {
+            wrapper.classList.toggle('expanded')
         }
-    }
+    })
+
+    return wrapper
+}
 
 
-    #parseMarkdown (text) {
-        return text
-            .replace(/`([^`]+)`/g, '<code>$1</code>')
-            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-            .split('\n\n')
-            .filter(p => p.trim())
-            .map(p => `<p>${p.trim()}</p>`)
-            .join('')
-    }
+function renderCode (block) {
+    const wrapper = document.createElement('div')
+    wrapper.className = 'doc-code-block'
 
+    const codeEl = document.createElement('perky-code')
+    codeEl.setAttribute('title', block.title)
+    codeEl.code = block.source
+    wrapper.appendChild(codeEl)
+
+    return wrapper
+}
+
+
+function parseMarkdown (text) {
+    return text
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+        .split('\n\n')
+        .filter(p => p.trim())
+        .map(p => `<p>${p.trim()}</p>`)
+        .join('')
 }
 
 
@@ -387,6 +586,13 @@ const STYLES = buildEditorStyles(
         border-bottom: 1px solid var(--border);
         display: flex;
         align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .doc-title-row {
+        display: flex;
+        align-items: center;
         gap: 1rem;
     }
 
@@ -405,6 +611,35 @@ const STYLES = buildEditorStyles(
         background: var(--bg-hover);
         border-radius: 4px;
         color: var(--fg-muted);
+    }
+
+    .doc-tabs {
+        display: flex;
+        gap: 0.25rem;
+        background: var(--bg-secondary);
+        padding: 0.2rem;
+        border-radius: 6px;
+    }
+
+    .doc-tab {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
+        background: transparent;
+        border: none;
+        border-radius: 4px;
+        color: var(--fg-muted);
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .doc-tab:hover {
+        color: var(--fg-primary);
+    }
+
+    .doc-tab.active {
+        background: var(--bg-primary);
+        color: var(--fg-primary);
     }
 
     .doc-content {
@@ -541,6 +776,114 @@ const STYLES = buildEditorStyles(
     .doc-container-btn {
         top: auto;
         bottom: 8px;
+    }
+
+    /* API View */
+    .api-extends {
+        font-size: 0.85rem;
+        color: var(--fg-muted);
+        margin-bottom: 0.5rem;
+    }
+
+    .api-extends code {
+        font-family: var(--font-mono);
+        color: var(--accent);
+    }
+
+    .api-file {
+        font-size: 0.75rem;
+        color: var(--fg-muted);
+        margin-bottom: 1.5rem;
+    }
+
+    .api-section {
+        margin-bottom: 2rem;
+    }
+
+    .api-section-title {
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--fg-muted);
+        margin: 0 0 1rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .api-member {
+        margin-bottom: 0.5rem;
+        border-radius: 6px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+    }
+
+    .api-member-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        background: var(--bg-secondary);
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+    .api-member-header:hover {
+        background: var(--bg-hover);
+    }
+
+    .api-member.expanded .api-member-header {
+        border-radius: 0;
+    }
+
+    .api-member-name {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        color: var(--fg-primary);
+        flex: 1;
+    }
+
+    .api-member-name code {
+        font-family: var(--font-mono);
+        color: var(--accent);
+        font-size: 0.8rem;
+    }
+
+    .api-member-line {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        color: var(--fg-muted);
+    }
+
+    .api-toggle {
+        background: transparent;
+        border: none;
+        padding: 0.25rem;
+        cursor: pointer;
+        color: var(--fg-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s;
+    }
+
+    .api-member.expanded .api-toggle {
+        transform: rotate(180deg);
+    }
+
+    .api-code-wrapper {
+        display: none;
+    }
+
+    .api-member.expanded .api-code-wrapper {
+        display: block;
+    }
+
+    .api-code-wrapper perky-code {
+        margin: 0;
+        border: none;
+        border-radius: 0;
     }
 
     @media (max-width: 900px) {

@@ -2,6 +2,7 @@ import {glob} from 'glob'
 import path from 'path'
 import fs from 'fs'
 import {fileURLToPath} from 'url'
+import {getApiForFile} from './api_parser.js'
 
 
 const __filename = fileURLToPath(import.meta.url)
@@ -49,16 +50,51 @@ async function discoverDocs () {
 }
 
 
+async function buildApiData (docs) {
+    const api = {}
+
+    for (const doc of docs) {
+        const sourcePath = doc.file.replace('.doc.js', '.js')
+        const fullPath = path.join(rootDir, sourcePath)
+
+        if (!fs.existsSync(fullPath)) {
+            continue
+        }
+
+        try {
+            const source = fs.readFileSync(fullPath, 'utf-8')
+            const apiData = getApiForFile(source, sourcePath)
+
+            if (apiData) {
+                api[doc.file] = apiData
+            }
+        } catch (error) {
+            console.warn(`  Warning: Could not parse API for ${sourcePath}: ${error.message}`)
+        }
+    }
+
+    return api
+}
+
+
 async function main () {
     const result = await discoverDocs()
-    const outputPath = path.join(__dirname, 'docs.json')
+    const docsOutputPath = path.join(__dirname, 'docs.json')
 
-    fs.writeFileSync(outputPath, JSON.stringify(result, null, 2))
+    fs.writeFileSync(docsOutputPath, JSON.stringify(result, null, 2))
 
     console.log(`Discovered ${result.docs.length} doc file(s):`)
     for (const doc of result.docs) {
         console.log(`  - ${doc.category}/${doc.title} (${doc.file})`)
     }
+
+    const apiData = await buildApiData(result.docs)
+    const apiOutputPath = path.join(__dirname, 'api.json')
+
+    fs.writeFileSync(apiOutputPath, JSON.stringify(apiData, null, 2))
+
+    const apiCount = Object.keys(apiData).length
+    console.log(`\nGenerated API data for ${apiCount} file(s)`)
 }
 
 

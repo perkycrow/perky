@@ -4,12 +4,13 @@ import logger from '../core/logger.js'
 
 export default class PerkyCode extends HTMLElement {
 
-    static observedAttributes = ['src', 'code', 'title', 'theme']
+    static observedAttributes = ['src', 'code', 'title', 'theme', 'no-header']
 
     #src = ''
     #code = ''
     #title = 'Source Code'
     #theme = ''
+    #noHeader = false
     #loading = false
     #error = null
     #formattedCode = ''
@@ -86,12 +87,29 @@ export default class PerkyCode extends HTMLElement {
     }
 
 
+    #handleNoHeader (value) {
+        this.#noHeader = value !== null
+        if (this.isConnected) {
+            this.#updateHeaderVisibility()
+        }
+    }
+
+
+    #updateHeaderVisibility () {
+        const header = this.shadowRoot?.querySelector('.editor-header')
+        if (header) {
+            header.style.display = this.#noHeader ? 'none' : ''
+        }
+    }
+
+
     #handleAttributeChange (name, value) {
         const handlers = {
             src: this.#handleSrc,
             code: this.#handleCode,
             title: this.#handleTitle,
-            theme: this.#handleTheme
+            theme: this.#handleTheme,
+            'no-header': this.#handleNoHeader
         }
 
         handlers[name]?.call(this, value)
@@ -192,6 +210,7 @@ export default class PerkyCode extends HTMLElement {
         this.#containerEl.appendChild(content)
 
         this.shadowRoot.appendChild(this.#containerEl)
+        this.#updateHeaderVisibility()
     }
 
 

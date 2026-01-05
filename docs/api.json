@@ -1,0 +1,1307 @@
+{
+  "/application/application.doc.js": {
+    "type": "class",
+    "file": "/application/application.js",
+    "name": "Application",
+    "line": 11,
+    "extends": "PerkyModule",
+    "statics": [
+      {
+        "name": "$category",
+        "line": 13,
+        "source": "static $category = 'application'",
+        "kind": "property",
+        "value": "'application'"
+      },
+      {
+        "name": "$eagerStart",
+        "line": 15,
+        "source": "static $eagerStart = false",
+        "kind": "property",
+        "value": "false"
+      }
+    ],
+    "methods": [
+      {
+        "name": "preload",
+        "line": 53,
+        "source": "async preload () {\n        return this.loadTag('preload')\n    }",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 17,
+      "source": "constructor (options = {}) {\n        super(options)\n\n        const manifestData = options.manifest || this.constructor.manifest || {}\n\n        this.create(Manifest, {\n            $bind: 'manifest',\n            data: manifestData.export ? manifestData.export() : manifestData\n        })\n\n        this.create(ActionDispatcher, {\n            $bind: 'actionDispatcher'\n        })\n\n        this.create(PerkyView, {\n            $bind: 'perkyView',\n            className: 'perky-application'\n        })\n\n        this.create(SourceManager, {\n            $bind: 'sourceManager',\n            loaders: new Registry(loaders),\n            manifest: this.manifest\n        })\n\n        this.create(InputSystem, {\n            $bind: 'inputSystem',\n            bindings: options.bindings\n        })\n\n        this.actionDispatcher.on('controller:set', this.#autoRegisterBindings.bind(this))\n\n        this.configureApplication?.(options)\n    }",
+      "kind": "constructor",
+      "params": [
+        "options = ..."
+      ]
+    },
+    "isDefault": true
+  },
+  "/core/perky_module.doc.js": {
+    "type": "class",
+    "file": "/core/perky_module.js",
+    "name": "PerkyModule",
+    "line": 8,
+    "extends": "Notifier",
+    "statics": [
+      {
+        "name": "$category",
+        "line": 29,
+        "source": "static $category = 'perkyModule'",
+        "kind": "property",
+        "value": "'perkyModule'"
+      },
+      {
+        "name": "$name",
+        "line": 30,
+        "source": "static $name = null",
+        "kind": "property",
+        "value": "null"
+      },
+      {
+        "name": "$lifecycle",
+        "line": 31,
+        "source": "static $lifecycle = true",
+        "kind": "property",
+        "value": "true"
+      },
+      {
+        "name": "$eagerStart",
+        "line": 32,
+        "source": "static $eagerStart = true",
+        "kind": "property",
+        "value": "true"
+      },
+      {
+        "name": "$tags",
+        "line": 33,
+        "source": "static $tags = []",
+        "kind": "property",
+        "value": "[]"
+      },
+      {
+        "name": "perkyModuleMethods",
+        "line": 504,
+        "source": "static perkyModuleMethods = Notifier.notifierMethods.concat([\n        'start',\n        'stop',\n        'dispose',\n        'install',\n        'uninstall',\n        'create',\n        'getChild',\n        'hasChild',\n        'removeChild',\n        'listNamesFor',\n        'lookup',\n        'childrenByCategory',\n        'hasTag',\n        'addTag',\n        'removeTag',\n        'hasTags',\n        'childrenByTags',\n        'addTagsIndex',\n        'removeTagsIndex',\n        'delegateTo',\n        'cleanDelegations',\n        'delegateEventsTo',\n        'cleanEventDelegations',\n        'query',\n        'queryAll'\n    ])",
+        "kind": "property",
+        "value": "Notifier.notifierMethods.concat([\n        'start',\n        'stop',\n        'dispose',\n        'install',\n        'uninstall',\n        'create',\n        'getChild',\n        'hasChild',\n        'removeChild',\n        'listNamesFor',\n        'lookup',\n        'childrenByCategory',\n        'hasTag',\n        'addTag',\n        'removeTag',\n        'hasTags',\n        'childrenByTags',\n        'addTagsIndex',\n        'removeTagsIndex',\n        'delegateTo',\n        'cleanDelegations',\n        'delegateEventsTo',\n        'cleanEventDelegations',\n        'query',\n        'queryAll'\n    ])"
+      }
+    ],
+    "methods": [
+      {
+        "name": "start",
+        "line": 168,
+        "source": "start () {\n        if (this.#started) {\n            return false\n        }\n\n        this.#started = true\n        this.onStart?.()\n        this.emit('start')\n\n        return true\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "stop",
+        "line": 181,
+        "source": "stop () {\n        if (!this.#started) {\n            return false\n        }\n\n        this.#started = false\n        this.onStop?.()\n        this.emit('stop')\n\n        return true\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "dispose",
+        "line": 194,
+        "source": "dispose () {\n        if (this.#disposed) {\n            return false\n        }\n\n        this.#disposed = true\n        this.stop()\n\n        this.cleanExternalListeners()\n\n        this.#childrenRegistry.forEach(child => {\n            if (child && !child.disposed) {\n                child.dispose()\n            }\n        })\n        this.#childrenRegistry.clear()\n\n        this.onDispose?.()\n        this.emit('dispose')\n        this.removeListeners()\n\n        return true\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "install",
+        "line": 219,
+        "source": "install (host, options) {\n        if (this.#installed) {\n            return this.uninstall()\n        }\n\n        this.#host = host\n        if (this.$bind) {\n            host[this.$bind] = this\n        }\n        this.#installed = true\n\n        this.onInstall?.(host, options)\n\n        return true\n    }",
+        "kind": "method",
+        "params": [
+          "host",
+          "options"
+        ]
+      },
+      {
+        "name": "uninstall",
+        "line": 236,
+        "source": "uninstall () {\n        if (!this.#installed) {\n            return false\n        }\n\n        this.cleanDelegations()\n        this.cleanEventDelegations()\n        this.onUninstall?.(this.#host)\n        this.#installed = false\n        this.#host = null\n\n        return true\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "create",
+        "line": 261,
+        "source": "create (Child, options = {}) {\n        options.$category ||= Child.$category\n        options.$name ||= Child.$name || options.$category\n        options.$id ||= uniqueId(this.#childrenRegistry, options.$name)\n        options.$lifecycle = options.$lifecycle ?? Child.$lifecycle ?? true\n        options.$eagerStart = options.$eagerStart ?? Child.$eagerStart ?? true\n\n        return this.#addChild(new Child(options), options)\n    }",
+        "kind": "method",
+        "params": [
+          "Child",
+          "options = ..."
+        ]
+      },
+      {
+        "name": "getChild",
+        "line": 288,
+        "source": "getChild (name) {\n        return this.#childrenRegistry.get(name) || null\n    }",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "hasChild",
+        "line": 293,
+        "source": "hasChild (name) {\n        return this.#childrenRegistry.has(name)\n    }",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "removeChild",
+        "line": 298,
+        "source": "removeChild (name) {\n        const child = this.#childrenRegistry.get(name)\n\n        if (!child) {\n            return false\n        }\n\n        unregisterChild(this, child)\n\n        return true\n    }",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "listNamesFor",
+        "line": 311,
+        "source": "listNamesFor (key, indexName = '$category') {\n        return this.#childrenRegistry.lookupKeys(indexName, key)\n    }",
+        "kind": "method",
+        "params": [
+          "key",
+          "indexName = ..."
+        ]
+      },
+      {
+        "name": "lookup",
+        "line": 316,
+        "source": "lookup (indexName, key) {\n        return this.#childrenRegistry.lookup(indexName, key)\n    }",
+        "kind": "method",
+        "params": [
+          "indexName",
+          "key"
+        ]
+      },
+      {
+        "name": "childrenByCategory",
+        "line": 321,
+        "source": "childrenByCategory (category) {\n        return this.lookup('$category', category)\n    }",
+        "kind": "method",
+        "params": [
+          "category"
+        ]
+      },
+      {
+        "name": "hasTag",
+        "line": 344,
+        "source": "hasTag (tag) {\n        return this.#tags.has(tag)\n    }",
+        "kind": "method",
+        "params": [
+          "tag"
+        ]
+      },
+      {
+        "name": "addTag",
+        "line": 349,
+        "source": "addTag (tag) {\n        if (this.#tags.has(tag)) {\n            return false\n        }\n        this.#tags.add(tag)\n        return true\n    }",
+        "kind": "method",
+        "params": [
+          "tag"
+        ]
+      },
+      {
+        "name": "removeTag",
+        "line": 358,
+        "source": "removeTag (tag) {\n        return this.#tags.delete(tag)\n    }",
+        "kind": "method",
+        "params": [
+          "tag"
+        ]
+      },
+      {
+        "name": "hasTags",
+        "line": 363,
+        "source": "hasTags (tags) {\n        if (typeof tags === 'string') {\n            return this.hasTag(tags)\n        }\n\n        return Array.isArray(tags) && tags.every(tag => this.#tags.has(tag))\n    }",
+        "kind": "method",
+        "params": [
+          "tags"
+        ]
+      },
+      {
+        "name": "childrenByTags",
+        "line": 372,
+        "source": "childrenByTags (tags) {\n        const tagArray = Array.isArray(tags) ? tags : [tags]\n\n        if (tagArray.length === 0) {\n            return []\n        }\n\n        const indexKey = getTagIndexKey(tagArray)\n\n        if (this.#tagIndexes.has(indexKey)) {\n            return this.#childrenRegistry.lookup(indexKey, indexKey)\n        }\n\n        return this.#childrenRegistry.all.filter(\n            child => tagArray.every(tag => child.$tags?.includes(tag))\n        )\n    }",
+        "kind": "method",
+        "params": [
+          "tags"
+        ]
+      },
+      {
+        "name": "addTagsIndex",
+        "line": 391,
+        "source": "addTagsIndex (tags) {\n        if (!Array.isArray(tags) || tags.length === 0) {\n            return false\n        }\n\n        const indexKey = getTagIndexKey(tags)\n\n        if (this.#tagIndexes.has(indexKey)) {\n            return false\n        }\n\n        this.#childrenRegistry.addIndex(indexKey, child => {\n            const hasAllTags = tags.every(tag => child.tags?.has(tag))\n            return hasAllTags ? indexKey : null\n        })\n\n        this.#tagIndexes.set(indexKey, tags)\n\n        this.#childrenRegistry.forEach(child => {\n            if (child.tags) {\n                this.#setupTagIndexListeners(child)\n            }\n        })\n\n        return true\n    }",
+        "kind": "method",
+        "params": [
+          "tags"
+        ]
+      },
+      {
+        "name": "removeTagsIndex",
+        "line": 419,
+        "source": "removeTagsIndex (tags) {\n        const indexKey = getTagIndexKey(tags)\n\n        if (!this.#tagIndexes.has(indexKey)) {\n            return false\n        }\n\n        this.#childrenRegistry.removeIndex(indexKey)\n        this.#tagIndexes.delete(indexKey)\n        return true\n    }",
+        "kind": "method",
+        "params": [
+          "tags"
+        ]
+      },
+      {
+        "name": "delegateTo",
+        "line": 449,
+        "source": "delegateTo (host, names) {\n        delegateProperties(host, this, names)\n\n        const propertyNames = Array.isArray(names)\n            ? names\n            : Object.values(names)\n\n        this.#delegations.push({host, propertyNames})\n    }",
+        "kind": "method",
+        "params": [
+          "host",
+          "names"
+        ]
+      },
+      {
+        "name": "cleanDelegations",
+        "line": 460,
+        "source": "cleanDelegations () {\n        for (const {host, propertyNames} of this.#delegations) {\n            for (const name of propertyNames) {\n                delete host[name]\n            }\n        }\n        this.#delegations.length = 0\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "delegateEventsTo",
+        "line": 470,
+        "source": "delegateEventsTo (host, events, namespace) {\n        const eventArray = Array.isArray(events) ? events : Object.keys(events)\n        const callbacks = []\n\n        for (const event of eventArray) {\n            const prefixedEvent = namespace ? `${namespace}:${event}` : event\n            const callback = (...args) => host.emit(prefixedEvent, ...args)\n            this.on(event, callback)\n            callbacks.push({event, callback})\n        }\n\n        this.#eventDelegations.push({callbacks})\n    }",
+        "kind": "method",
+        "params": [
+          "host",
+          "events",
+          "namespace"
+        ]
+      },
+      {
+        "name": "cleanEventDelegations",
+        "line": 485,
+        "source": "cleanEventDelegations () {\n        for (const {callbacks} of this.#eventDelegations) {\n            for (const {event, callback} of callbacks) {\n                this.off(event, callback)\n            }\n        }\n        this.#eventDelegations.length = 0\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "query",
+        "line": 495,
+        "source": "query (selector) {\n        return perkyQuery(this, selector)\n    }",
+        "kind": "method",
+        "params": [
+          "selector"
+        ]
+      },
+      {
+        "name": "queryAll",
+        "line": 500,
+        "source": "queryAll (selector) {\n        return perkyQueryAll(this, selector)\n    }",
+        "kind": "method",
+        "params": [
+          "selector"
+        ]
+      }
+    ],
+    "getters": [
+      {
+        "name": "$id",
+        "line": 56,
+        "source": "get $id () {\n        return this.#id\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "$name",
+        "line": 71,
+        "source": "get $name () {\n        return this.#name\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "$category",
+        "line": 86,
+        "source": "get $category () {\n        return this.#category\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "$bind",
+        "line": 101,
+        "source": "get $bind () {\n        return this.#bind\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "host",
+        "line": 116,
+        "source": "get host () {\n        return this.#host\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "started",
+        "line": 121,
+        "source": "get started () {\n        return this.#started\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "disposed",
+        "line": 126,
+        "source": "get disposed () {\n        return this.#disposed\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "installed",
+        "line": 131,
+        "source": "get installed () {\n        return this.#installed\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "$eagerStart",
+        "line": 136,
+        "source": "get $eagerStart () {\n        return this.#eagerStart\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "$lifecycle",
+        "line": 141,
+        "source": "get $lifecycle () {\n        return this.#lifecycle\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "$status",
+        "line": 146,
+        "source": "get $status () {\n        if (!this.#lifecycle) {\n            return 'static'\n        }\n\n        if (this.#disposed) {\n            return 'disposed'\n        }\n\n        if (this.#started) {\n            return 'started'\n        }\n\n        return 'stopped'\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "running",
+        "line": 163,
+        "source": "get running () {\n        return this.#started\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "children",
+        "line": 251,
+        "source": "get children () {\n        return this.#childrenRegistry.all\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "childrenRegistry",
+        "line": 256,
+        "source": "get childrenRegistry () {\n        return this.#childrenRegistry\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "$tags",
+        "line": 326,
+        "source": "get $tags () {\n        return this.#tags.toArray()\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "tags",
+        "line": 339,
+        "source": "get tags () {\n        return this.#tags\n    }",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "$id",
+        "line": 61,
+        "source": "set $id (newId) {\n        const oldId = this.#id\n\n        if (oldId !== newId) {\n            this.#id = newId\n            this.emit('$id:changed', newId, oldId)\n        }\n    }",
+        "kind": "method",
+        "params": [
+          "newId"
+        ]
+      },
+      {
+        "name": "$name",
+        "line": 76,
+        "source": "set $name (newName) {\n        const oldName = this.#name\n\n        if (oldName !== newName) {\n            this.#name = newName\n            this.emit('$name:changed', newName, oldName)\n        }\n    }",
+        "kind": "method",
+        "params": [
+          "newName"
+        ]
+      },
+      {
+        "name": "$category",
+        "line": 91,
+        "source": "set $category (newCategory) {\n        const oldCategory = this.#category\n\n        if (oldCategory !== newCategory) {\n            this.#category = newCategory\n            this.emit('$category:changed', newCategory, oldCategory)\n        }\n    }",
+        "kind": "method",
+        "params": [
+          "newCategory"
+        ]
+      },
+      {
+        "name": "$bind",
+        "line": 106,
+        "source": "set $bind (newBind) {\n        const oldBind = this.#bind\n\n        if (oldBind !== newBind) {\n            this.#bind = newBind\n            this.emit('$bind:changed', newBind, oldBind)\n        }\n    }",
+        "kind": "method",
+        "params": [
+          "newBind"
+        ]
+      },
+      {
+        "name": "$tags",
+        "line": 331,
+        "source": "set $tags (newTags) {\n        this.#tags.clear()\n        if (Array.isArray(newTags)) {\n            newTags.forEach(tag => this.#tags.add(tag))\n        }\n    }",
+        "kind": "method",
+        "params": [
+          "newTags"
+        ]
+      }
+    ],
+    "constructor": {
+      "name": "constructor",
+      "line": 35,
+      "source": "constructor (options = {}) {\n        super()\n\n        this.options = {...options}\n        this.#name = options.$name || this.constructor.$name || this.constructor.name\n        this.#id = options.$id || this.#name\n        this.#category = options.$category || this.constructor.$category\n        this.#bind = options.$bind\n        this.#eagerStart = (options.$eagerStart ?? this.constructor.$eagerStart) !== false\n        this.#lifecycle = (options.$lifecycle ?? this.constructor.$lifecycle) !== false\n\n        this.#tags = new ObservableSet([\n            ...this.constructor.$tags,\n            ...(options.$tags || [])\n        ])\n\n        this.#childrenRegistry = new Registry()\n        this.#childrenRegistry.addIndex('$category')\n    }",
+      "kind": "constructor",
+      "params": [
+        "options = ..."
+      ]
+    },
+    "isDefault": true
+  },
+  "/editor/perky_logger.doc.js": {
+    "type": "class",
+    "file": "/editor/perky_logger.js",
+    "name": "PerkyLogger",
+    "line": 17,
+    "extends": "HTMLElement",
+    "statics": [
+      {
+        "name": "observedAttributes",
+        "line": 19,
+        "source": "static observedAttributes = ['max-entries', 'position', 'timestamp', 'theme']",
+        "kind": "property",
+        "value": "['max-entries', 'position', 'timestamp', 'theme']"
+      }
+    ],
+    "methods": [
+      {
+        "name": "connectedCallback",
+        "line": 43,
+        "source": "connectedCallback () {\n        this.#buildDOM()\n        this.#bindLoggerEvents()\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "disconnectedCallback",
+        "line": 49,
+        "source": "disconnectedCallback () {\n        this.#unbindLoggerEvents()\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "attributeChangedCallback",
+        "line": 54,
+        "source": "attributeChangedCallback (name, oldValue, newValue) {\n        if (oldValue === newValue) {\n            return\n        }\n\n        this.#handleAttributeChange(name, newValue)\n    }",
+        "kind": "method",
+        "params": [
+          "name",
+          "oldValue",
+          "newValue"
+        ]
+      },
+      {
+        "name": "log",
+        "line": 264,
+        "source": "log (message, type = 'info', format = 'text', timestamp = null) {\n        const entry = document.createElement('div')\n        entry.className = `logger-entry log-${type}`\n\n        const indicator = document.createElement('span')\n        indicator.className = 'logger-indicator'\n        entry.appendChild(indicator)\n\n        const messageElement = document.createElement('span')\n        messageElement.className = 'logger-message'\n\n        processMessage(messageElement, message, format)\n\n        entry.appendChild(messageElement)\n\n        const time = timestamp ? new Date(timestamp) : new Date()\n        const timestampEl = document.createElement('span')\n        timestampEl.className = 'logger-timestamp'\n        timestampEl.textContent = time.toLocaleTimeString()\n        entry.appendChild(timestampEl)\n\n        this.#entries.push(entry)\n\n        while (this.#entries.length > this.#maxEntries) {\n            const removed = this.#entries.shift()\n            if (removed.parentNode) {\n                removed.parentNode.removeChild(removed)\n            }\n        }\n\n        if (this.#contentEl) {\n            this.#contentEl.appendChild(entry)\n            this.#contentEl.scrollTop = this.#contentEl.scrollHeight\n        }\n\n        return entry\n    }",
+        "kind": "method",
+        "params": [
+          "message",
+          "type = ...",
+          "format = ...",
+          "timestamp = ..."
+        ]
+      },
+      {
+        "name": "info",
+        "line": 303,
+        "source": "info (...messages) {\n        return this.log(formatMessage(...messages), 'info')\n    }",
+        "kind": "method",
+        "params": [
+          "...messages"
+        ]
+      },
+      {
+        "name": "notice",
+        "line": 308,
+        "source": "notice (...messages) {\n        return this.log(formatMessage(...messages), 'notice')\n    }",
+        "kind": "method",
+        "params": [
+          "...messages"
+        ]
+      },
+      {
+        "name": "warn",
+        "line": 313,
+        "source": "warn (...messages) {\n        return this.log(formatMessage(...messages), 'warn')\n    }",
+        "kind": "method",
+        "params": [
+          "...messages"
+        ]
+      },
+      {
+        "name": "error",
+        "line": 318,
+        "source": "error (...messages) {\n        return this.log(formatMessage(...messages), 'error')\n    }",
+        "kind": "method",
+        "params": [
+          "...messages"
+        ]
+      },
+      {
+        "name": "success",
+        "line": 323,
+        "source": "success (...messages) {\n        return this.log(formatMessage(...messages), 'success')\n    }",
+        "kind": "method",
+        "params": [
+          "...messages"
+        ]
+      },
+      {
+        "name": "spacer",
+        "line": 328,
+        "source": "spacer () {\n        const entry = document.createElement('div')\n        entry.className = 'logger-entry logger-spacer'\n        this.#entries.push(entry)\n\n        if (this.#contentEl) {\n            this.#contentEl.appendChild(entry)\n        }\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "title",
+        "line": 339,
+        "source": "title (title) {\n        const entry = document.createElement('div')\n        entry.className = 'logger-entry logger-title-entry'\n        entry.textContent = title\n        this.#entries.push(entry)\n\n        if (this.#contentEl) {\n            this.#contentEl.appendChild(entry)\n        }\n    }",
+        "kind": "method",
+        "params": [
+          "title"
+        ]
+      },
+      {
+        "name": "clear",
+        "line": 351,
+        "source": "clear () {\n        this.#entries = []\n        if (this.#contentEl) {\n            this.#contentEl.innerHTML = ''\n        }\n    }",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [
+      {
+        "name": "maxEntries",
+        "line": 96,
+        "source": "get maxEntries () {\n        return this.#maxEntries\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "position",
+        "line": 107,
+        "source": "get position () {\n        return this.#position\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "timestamp",
+        "line": 119,
+        "source": "get timestamp () {\n        return this.#timestamp\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "theme",
+        "line": 134,
+        "source": "get theme () {\n        return this.#theme\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "entries",
+        "line": 149,
+        "source": "get entries () {\n        return this.#entries\n    }",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "maxEntries",
+        "line": 101,
+        "source": "set maxEntries (value) {\n        this.#maxEntries = value\n        this.setAttribute('max-entries', value)\n    }",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "position",
+        "line": 112,
+        "source": "set position (value) {\n        this.#position = value\n        this.setAttribute('position', value)\n        this.#updateClasses()\n    }",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "timestamp",
+        "line": 124,
+        "source": "set timestamp (value) {\n        this.#timestamp = value\n        if (value) {\n            this.setAttribute('timestamp', '')\n        } else {\n            this.removeAttribute('timestamp')\n        }\n    }",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "theme",
+        "line": 139,
+        "source": "set theme (value) {\n        this.#theme = value\n        if (value) {\n            this.setAttribute('theme', value)\n        } else {\n            this.removeAttribute('theme')\n        }\n    }",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      }
+    ],
+    "constructor": {
+      "name": "constructor",
+      "line": 37,
+      "source": "constructor () {\n        super()\n        this.attachShadow({mode: 'open'})\n    }",
+      "kind": "constructor",
+      "params": []
+    },
+    "isDefault": true
+  },
+  "/math/random.doc.js": {
+    "type": "class",
+    "file": "/math/random.js",
+    "name": "Random",
+    "line": 5,
+    "extends": null,
+    "statics": [
+      {
+        "name": "generateSeed",
+        "line": 135,
+        "source": "static generateSeed (length = 10) {\n        let result = ''\n\n        for (let i = 0; i < length; i++) {\n            result += CHARACTERS.charAt(Math.floor(Math.random() * CHARACTERS.length))\n        }\n\n        return result\n    }",
+        "kind": "method",
+        "params": [
+          "length = ..."
+        ]
+      }
+    ],
+    "methods": [
+      {
+        "name": "setSeed",
+        "line": 48,
+        "source": "setSeed (seed) {\n        this.#seed = seed\n        this.#initSeed(seed)\n\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "seed"
+        ]
+      },
+      {
+        "name": "getSeed",
+        "line": 56,
+        "source": "getSeed () {\n        return this.#seed\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "setState",
+        "line": 61,
+        "source": "setState (state) {\n        this.#c = state.c\n        this.#s0 = state.s0\n        this.#s1 = state.s1\n        this.#s2 = state.s2\n\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "state"
+        ]
+      },
+      {
+        "name": "getState",
+        "line": 71,
+        "source": "getState () {\n        return {\n            c: this.#c,\n            s0: this.#s0,\n            s1: this.#s1,\n            s2: this.#s2\n        }\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "fork",
+        "line": 81,
+        "source": "fork () {\n        const forked = new Random(this.#seed)\n        forked.setState(this.getState())\n\n        return forked\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "between",
+        "line": 89,
+        "source": "between (min, max) {\n        return this.#next() * (max - min) + min\n    }",
+        "kind": "method",
+        "params": [
+          "min",
+          "max"
+        ]
+      },
+      {
+        "name": "intBetween",
+        "line": 94,
+        "source": "intBetween (min, max) {\n        return Math.floor(this.between(min, max))\n    }",
+        "kind": "method",
+        "params": [
+          "min",
+          "max"
+        ]
+      },
+      {
+        "name": "pick",
+        "line": 99,
+        "source": "pick (array) {\n        return array[this.intBetween(0, array.length)]\n    }",
+        "kind": "method",
+        "params": [
+          "array"
+        ]
+      },
+      {
+        "name": "oneChanceIn",
+        "line": 104,
+        "source": "oneChanceIn (chances) {\n        return this.#next() < 1 / chances\n    }",
+        "kind": "method",
+        "params": [
+          "chances"
+        ]
+      },
+      {
+        "name": "coinToss",
+        "line": 109,
+        "source": "coinToss () {\n        return this.#next() < 0.5\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "weightedChoice",
+        "line": 114,
+        "source": "weightedChoice (choices) {\n        if (!choices || choices.length === 0) {\n            return undefined\n        }\n\n        const totalWeight = choices.reduce((total, choice) => total + choice.weight, 0)\n\n        let randomValue = this.#next() * totalWeight\n\n        for (const choice of choices) {\n            randomValue -= choice.weight\n\n            if (randomValue <= 0) {\n                return choice.value\n            }\n        }\n\n        return choices[choices.length - 1].value\n    }",
+        "kind": "method",
+        "params": [
+          "choices"
+        ]
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 13,
+      "source": "constructor (seed = Random.generateSeed()) {\n        this.#seed = seed\n        this.#initSeed(seed)\n    }",
+      "kind": "constructor",
+      "params": [
+        "seed = ..."
+      ]
+    },
+    "isDefault": true
+  },
+  "/math/vec2.doc.js": {
+    "type": "class",
+    "file": "/math/vec2.js",
+    "name": "Vec2",
+    "line": 1,
+    "extends": null,
+    "statics": [],
+    "methods": [
+      {
+        "name": "set",
+        "line": 19,
+        "source": "set (x, y) {\n        this.x = x\n        this.y = y\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "x",
+          "y"
+        ]
+      },
+      {
+        "name": "setX",
+        "line": 26,
+        "source": "setX (x) {\n        this.x = x\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "x"
+        ]
+      },
+      {
+        "name": "setY",
+        "line": 32,
+        "source": "setY (y) {\n        this.y = y\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "y"
+        ]
+      },
+      {
+        "name": "setScalar",
+        "line": 38,
+        "source": "setScalar (scalar) {\n        this.x = scalar\n        this.y = scalar\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "scalar"
+        ]
+      },
+      {
+        "name": "copy",
+        "line": 45,
+        "source": "copy (v) {\n        this.x = v.x\n        this.y = v.y\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "v"
+        ]
+      },
+      {
+        "name": "clone",
+        "line": 52,
+        "source": "clone () {\n        return new Vec2(this.x, this.y)\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "add",
+        "line": 57,
+        "source": "add (v) {\n        this.x += v.x\n        this.y += v.y\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "v"
+        ]
+      },
+      {
+        "name": "addScalar",
+        "line": 64,
+        "source": "addScalar (s) {\n        this.x += s\n        this.y += s\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "s"
+        ]
+      },
+      {
+        "name": "addVectors",
+        "line": 71,
+        "source": "addVectors (a, b) {\n        this.x = a.x + b.x\n        this.y = a.y + b.y\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "a",
+          "b"
+        ]
+      },
+      {
+        "name": "addScaledVector",
+        "line": 78,
+        "source": "addScaledVector (v, s) {\n        this.x += v.x * s\n        this.y += v.y * s\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "v",
+          "s"
+        ]
+      },
+      {
+        "name": "sub",
+        "line": 85,
+        "source": "sub (v) {\n        this.x -= v.x\n        this.y -= v.y\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "v"
+        ]
+      },
+      {
+        "name": "subScalar",
+        "line": 92,
+        "source": "subScalar (s) {\n        this.x -= s\n        this.y -= s\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "s"
+        ]
+      },
+      {
+        "name": "subVectors",
+        "line": 99,
+        "source": "subVectors (a, b) {\n        this.x = a.x - b.x\n        this.y = a.y - b.y\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "a",
+          "b"
+        ]
+      },
+      {
+        "name": "multiply",
+        "line": 106,
+        "source": "multiply (v) {\n        this.x *= v.x\n        this.y *= v.y\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "v"
+        ]
+      },
+      {
+        "name": "multiplyScalar",
+        "line": 113,
+        "source": "multiplyScalar (scalar) {\n        this.x *= scalar\n        this.y *= scalar\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "scalar"
+        ]
+      },
+      {
+        "name": "divide",
+        "line": 120,
+        "source": "divide (v) {\n        this.x /= v.x\n        this.y /= v.y\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "v"
+        ]
+      },
+      {
+        "name": "divideScalar",
+        "line": 127,
+        "source": "divideScalar (scalar) {\n        return this.multiplyScalar(1 / scalar)\n    }",
+        "kind": "method",
+        "params": [
+          "scalar"
+        ]
+      },
+      {
+        "name": "dot",
+        "line": 132,
+        "source": "dot (v) {\n        return this.x * v.x + this.y * v.y\n    }",
+        "kind": "method",
+        "params": [
+          "v"
+        ]
+      },
+      {
+        "name": "cross",
+        "line": 137,
+        "source": "cross (v) {\n        return this.x * v.y - this.y * v.x\n    }",
+        "kind": "method",
+        "params": [
+          "v"
+        ]
+      },
+      {
+        "name": "lengthSq",
+        "line": 142,
+        "source": "lengthSq () {\n        return this.x * this.x + this.y * this.y\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "length",
+        "line": 147,
+        "source": "length () {\n        return Math.sqrt(this.lengthSq())\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "manhattanLength",
+        "line": 152,
+        "source": "manhattanLength () {\n        return Math.abs(this.x) + Math.abs(this.y)\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "normalize",
+        "line": 157,
+        "source": "normalize () {\n        return this.divideScalar(this.length() || 1)\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "angle",
+        "line": 162,
+        "source": "angle () {\n        return Math.atan2(-this.y, -this.x) + Math.PI\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "angleTo",
+        "line": 167,
+        "source": "angleTo (v) {\n        const denominator = Math.sqrt(this.lengthSq() * v.lengthSq())\n        if (denominator === 0) {\n            return Math.PI / 2\n        }\n        const theta = this.dot(v) / denominator\n        return Math.acos(Math.max(-1, Math.min(1, theta)))\n    }",
+        "kind": "method",
+        "params": [
+          "v"
+        ]
+      },
+      {
+        "name": "distanceTo",
+        "line": 177,
+        "source": "distanceTo (v) {\n        return Math.sqrt(this.distanceToSquared(v))\n    }",
+        "kind": "method",
+        "params": [
+          "v"
+        ]
+      },
+      {
+        "name": "distanceToSquared",
+        "line": 182,
+        "source": "distanceToSquared (v) {\n        const dx = this.x - v.x\n        const dy = this.y - v.y\n        return dx * dx + dy * dy\n    }",
+        "kind": "method",
+        "params": [
+          "v"
+        ]
+      },
+      {
+        "name": "manhattanDistanceTo",
+        "line": 189,
+        "source": "manhattanDistanceTo (v) {\n        return Math.abs(this.x - v.x) + Math.abs(this.y - v.y)\n    }",
+        "kind": "method",
+        "params": [
+          "v"
+        ]
+      },
+      {
+        "name": "setLength",
+        "line": 194,
+        "source": "setLength (length) {\n        return this.normalize().multiplyScalar(length)\n    }",
+        "kind": "method",
+        "params": [
+          "length"
+        ]
+      },
+      {
+        "name": "lerp",
+        "line": 199,
+        "source": "lerp (v, alpha) {\n        this.x += (v.x - this.x) * alpha\n        this.y += (v.y - this.y) * alpha\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "v",
+          "alpha"
+        ]
+      },
+      {
+        "name": "lerpVectors",
+        "line": 206,
+        "source": "lerpVectors (v1, v2, alpha) {\n        this.x = v1.x + (v2.x - v1.x) * alpha\n        this.y = v1.y + (v2.y - v1.y) * alpha\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "v1",
+          "v2",
+          "alpha"
+        ]
+      },
+      {
+        "name": "equals",
+        "line": 213,
+        "source": "equals (v) {\n        return v.x === this.x && v.y === this.y\n    }",
+        "kind": "method",
+        "params": [
+          "v"
+        ]
+      },
+      {
+        "name": "fromArray",
+        "line": 218,
+        "source": "fromArray (array, offset = 0) {\n        this.x = array[offset]\n        this.y = array[offset + 1]\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "array",
+          "offset = ..."
+        ]
+      },
+      {
+        "name": "toArray",
+        "line": 225,
+        "source": "toArray (array = [], offset = 0) {\n        array[offset] = this.x\n        array[offset + 1] = this.y\n        return array\n    }",
+        "kind": "method",
+        "params": [
+          "array = ...",
+          "offset = ..."
+        ]
+      },
+      {
+        "name": "negate",
+        "line": 232,
+        "source": "negate () {\n        this.x = -this.x\n        this.y = -this.y\n        return this\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "min",
+        "line": 239,
+        "source": "min (v) {\n        this.x = Math.min(this.x, v.x)\n        this.y = Math.min(this.y, v.y)\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "v"
+        ]
+      },
+      {
+        "name": "max",
+        "line": 246,
+        "source": "max (v) {\n        this.x = Math.max(this.x, v.x)\n        this.y = Math.max(this.y, v.y)\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "v"
+        ]
+      },
+      {
+        "name": "clamp",
+        "line": 253,
+        "source": "clamp (min, max) {\n        this.x = Math.max(min.x, Math.min(max.x, this.x))\n        this.y = Math.max(min.y, Math.min(max.y, this.y))\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "min",
+          "max"
+        ]
+      },
+      {
+        "name": "clampScalar",
+        "line": 260,
+        "source": "clampScalar (minVal, maxVal) {\n        this.x = Math.max(minVal, Math.min(maxVal, this.x))\n        this.y = Math.max(minVal, Math.min(maxVal, this.y))\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "minVal",
+          "maxVal"
+        ]
+      },
+      {
+        "name": "clampLength",
+        "line": 267,
+        "source": "clampLength (min, max) {\n        const length = this.length()\n        return this.divideScalar(length || 1).multiplyScalar(\n            Math.max(min, Math.min(max, length))\n        )\n    }",
+        "kind": "method",
+        "params": [
+          "min",
+          "max"
+        ]
+      },
+      {
+        "name": "floor",
+        "line": 275,
+        "source": "floor () {\n        this.x = Math.floor(this.x)\n        this.y = Math.floor(this.y)\n        return this\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "ceil",
+        "line": 282,
+        "source": "ceil () {\n        this.x = Math.ceil(this.x)\n        this.y = Math.ceil(this.y)\n        return this\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "round",
+        "line": 289,
+        "source": "round () {\n        this.x = Math.round(this.x)\n        this.y = Math.round(this.y)\n        return this\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "roundToZero",
+        "line": 296,
+        "source": "roundToZero () {\n        this.x = Math.trunc(this.x)\n        this.y = Math.trunc(this.y)\n        return this\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "rotateAround",
+        "line": 303,
+        "source": "rotateAround (center, angle) {\n        const c = Math.cos(angle)\n        const s = Math.sin(angle)\n\n        const x = this.x - center.x\n        const y = this.y - center.y\n\n        this.x = x * c - y * s + center.x\n        this.y = x * s + y * c + center.y\n\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "center",
+          "angle"
+        ]
+      },
+      {
+        "name": "random",
+        "line": 317,
+        "source": "random () {\n        this.x = Math.random()\n        this.y = Math.random()\n        return this\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "getComponent",
+        "line": 324,
+        "source": "getComponent (index) {\n        if (index === 0) {\n            return this.x\n        } else if (index === 1) {\n            return this.y\n        }\n        throw new Error(`index out of range: ${index}`)\n    }",
+        "kind": "method",
+        "params": [
+          "index"
+        ]
+      },
+      {
+        "name": "setComponent",
+        "line": 334,
+        "source": "setComponent (index, value) {\n        if (index === 0) {\n            this.x = value\n        } else if (index === 1) {\n            this.y = value\n        } else {\n            throw new Error(`index out of range: ${index}`)\n        }\n        return this\n    }",
+        "kind": "method",
+        "params": [
+          "index",
+          "value"
+        ]
+      }
+    ],
+    "getters": [
+      {
+        "name": "width",
+        "line": 346,
+        "source": "get width () {\n        return this.x\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "height",
+        "line": 356,
+        "source": "get height () {\n        return this.y\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "isVector2",
+        "line": 366,
+        "source": "get isVector2 () { // eslint-disable-line local/class-methods-use-this -- clean\n        return true\n    }",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "width",
+        "line": 351,
+        "source": "set width (value) {\n        this.x = value\n    }",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "height",
+        "line": 361,
+        "source": "set height (value) {\n        this.y = value\n    }",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      }
+    ],
+    "constructor": {
+      "name": "constructor",
+      "line": 3,
+      "source": "constructor (x = 0, y = 0) {\n        if (typeof x === 'object') {\n            if (Array.isArray(x)) {\n                this.x = x[0] ?? 0\n                this.y = x[1] ?? 0\n            } else {\n                this.x = x.x ?? 0\n                this.y = x.y ?? 0\n            }\n        } else {\n            this.x = x\n            this.y = y\n        }\n    }",
+      "kind": "constructor",
+      "params": [
+        "x = ...",
+        "y = ..."
+      ]
+    },
+    "isDefault": true
+  }
+}
