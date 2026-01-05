@@ -455,10 +455,11 @@ describe(ActionDispatcher, () => {
         gameController.addAction('shoot', vi.fn())
 
         const allActions = dispatcher.listAllActions()
+        const actionNames = allActions.get('game').map(a => a.name)
 
-        expect(allActions.get('game')).toContain('jump')
-        expect(allActions.get('game')).toContain('move')
-        expect(allActions.get('game')).toContain('shoot')
+        expect(actionNames).toContain('jump')
+        expect(actionNames).toContain('move')
+        expect(actionNames).toContain('shoot')
     })
 
 

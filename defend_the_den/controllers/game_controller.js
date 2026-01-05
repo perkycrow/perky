@@ -35,7 +35,7 @@ export default class GameController extends WorldController {
     }
 
 
-    setFps (fps) {
+    setFps (fps = 60) {
         this.game.setFpsLimited(true)
         this.game.setFps(fps)
     }

@@ -54,6 +54,19 @@ export default class ActionController extends PerkyModule {
     }
 
 
+    listActionsWithParams () {
+        const result = []
+
+        for (const actionName of this.#actionList) {
+            const action = this.getAction(actionName) || this[actionName]
+            const params = typeof action === 'function' ? extractFunctionParams(action) : []
+            result.push({name: actionName, params})
+        }
+
+        return result
+    }
+
+
     execute (actionName, ...args) {
         const action = this.getAction(actionName) || this[actionName]
 
@@ -160,4 +173,28 @@ function normalizeBindingDefinition (bindingDef) {
     }
 
     return []
+}
+
+
+function extractFunctionParams (fn) {
+    const fnStr = fn.toString()
+    const match = fnStr.match(/^[^(]*\(([^)]*)\)/)
+
+    if (!match || !match[1]) {
+        return []
+    }
+
+    return match[1]
+        .split(',')
+        .map(p => {
+            const trimmed = p.trim()
+            if (trimmed.startsWith('...')) {
+                return null
+            }
+            const parts = trimmed.split('=').map(s => s.trim())
+            const name = parts[0]
+            const defaultValue = parts[1] ?? null
+            return {name, defaultValue}
+        })
+        .filter(p => p && p.name)
 }

@@ -494,8 +494,12 @@ function collectActionsFromApp (app, actions) {
         return
     }
 
-    for (const [controllerName, actionNames] of actionsMap) {
-        for (const actionName of actionNames) {
+    for (const [controllerName, actionInfos] of actionsMap) {
+        for (const actionInfo of actionInfos) {
+            const actionName = typeof actionInfo === 'string' ? actionInfo : actionInfo.name
+            const params = typeof actionInfo === 'object' ? actionInfo.params : []
+            const placeholder = formatParamsPlaceholder(params)
+
             actions.push({
                 id: `action:${app.$id}:${controllerName}:${actionName}`,
                 title: actionName,
@@ -503,10 +507,28 @@ function collectActionsFromApp (app, actions) {
                 type: 'action',
                 icon: ICONS.action,
                 app,
-                actionName
+                actionName,
+                placeholder
             })
         }
     }
+}
+
+
+function formatParamsPlaceholder (params) {
+    if (!params || params.length === 0) {
+        return null
+    }
+
+    return params.map(p => {
+        if (typeof p === 'string') {
+            return p
+        }
+        if (p.defaultValue !== null) {
+            return `${p.name}=${p.defaultValue}`
+        }
+        return p.name
+    }).join(', ')
 }
 
 

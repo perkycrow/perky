@@ -229,8 +229,10 @@ export default class ActionDispatcher extends PerkyModule {
         const registry = this.childrenRegistry
 
         for (const [name, controller] of registry.entries) {
-            if (typeof controller.listActions === 'function') {
-                allActions.set(name, controller.listActions())
+            if (typeof controller.listActionsWithParams === 'function') {
+                allActions.set(name, controller.listActionsWithParams())
+            } else if (typeof controller.listActions === 'function') {
+                allActions.set(name, controller.listActions().map(n => ({name: n, params: []})))
             }
         }
 
