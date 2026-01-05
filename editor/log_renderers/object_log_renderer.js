@@ -58,8 +58,18 @@ function createPreview (obj) {
 
 function renderExpandedContent (obj, container) {
     const keys = Object.keys(obj)
+    const methods = []
+    const properties = []
 
     for (const key of keys) {
+        if (typeof obj[key] === 'function') {
+            methods.push(key)
+        } else {
+            properties.push(key)
+        }
+    }
+
+    for (const key of properties) {
         const row = document.createElement('div')
         row.className = 'log-object-row'
 
@@ -79,6 +89,38 @@ function renderExpandedContent (obj, container) {
             valueEl.appendChild(customRender)
         } else {
             valueEl.textContent = formatValue(obj[key])
+        }
+
+        row.appendChild(keyEl)
+        row.appendChild(separator)
+        row.appendChild(valueEl)
+        container.appendChild(row)
+    }
+
+    if (methods.length > 0) {
+        const row = document.createElement('div')
+        row.className = 'log-object-row log-object-methods-row'
+
+        const keyEl = document.createElement('span')
+        keyEl.className = 'log-object-key'
+        keyEl.textContent = 'methods'
+
+        const separator = document.createElement('span')
+        separator.className = 'log-object-separator'
+        separator.textContent = ': '
+
+        const valueEl = document.createElement('span')
+        valueEl.className = 'log-object-value log-object-methods'
+
+        for (let i = 0; i < methods.length; i++) {
+            const methodSpan = document.createElement('span')
+            methodSpan.className = 'log-object-method-name'
+            methodSpan.textContent = methods[i]
+            valueEl.appendChild(methodSpan)
+
+            if (i < methods.length - 1) {
+                valueEl.appendChild(document.createTextNode(', '))
+            }
         }
 
         row.appendChild(keyEl)

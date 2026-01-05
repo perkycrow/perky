@@ -105,12 +105,22 @@ function renderExpandedContent (module, container) {
     container.appendChild(metaSection)
 
     const propsKeys = getPropertyKeys(module)
+    const methods = []
+    const properties = []
 
-    if (propsKeys.length > 0) {
+    for (const key of propsKeys) {
+        if (typeof module[key] === 'function') {
+            methods.push(key)
+        } else {
+            properties.push(key)
+        }
+    }
+
+    if (properties.length > 0) {
         const propsSection = document.createElement('div')
         propsSection.className = 'log-module-props'
 
-        for (const key of propsKeys) {
+        for (const key of properties) {
             const row = document.createElement('div')
             row.className = 'log-module-row'
 
@@ -139,6 +149,43 @@ function renderExpandedContent (module, container) {
         }
 
         container.appendChild(propsSection)
+    }
+
+    if (methods.length > 0) {
+        const methodsSection = document.createElement('div')
+        methodsSection.className = 'log-module-methods'
+
+        const row = document.createElement('div')
+        row.className = 'log-module-row log-module-methods-row'
+
+        const keyEl = document.createElement('span')
+        keyEl.className = 'log-module-key'
+        keyEl.textContent = 'methods'
+
+        const separator = document.createElement('span')
+        separator.className = 'log-module-separator'
+        separator.textContent = ': '
+
+        const valueEl = document.createElement('span')
+        valueEl.className = 'log-module-value'
+
+        for (let i = 0; i < methods.length; i++) {
+            const methodSpan = document.createElement('span')
+            methodSpan.className = 'log-module-method-name'
+            methodSpan.textContent = methods[i]
+            valueEl.appendChild(methodSpan)
+
+            if (i < methods.length - 1) {
+                valueEl.appendChild(document.createTextNode(', '))
+            }
+        }
+
+        row.appendChild(keyEl)
+        row.appendChild(separator)
+        row.appendChild(valueEl)
+        methodsSection.appendChild(row)
+
+        container.appendChild(methodsSection)
     }
 }
 

@@ -658,6 +658,16 @@ const STYLES = buildEditorStyles(
     .log-module-meta-value {
         color: var(--fg-secondary);
     }
+
+    .log-object-methods-row,
+    .log-module-methods-row {
+        flex-wrap: wrap;
+    }
+
+    .log-object-method-name,
+    .log-module-method-name {
+        white-space: nowrap;
+    }
 `
 )
 
