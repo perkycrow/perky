@@ -3,6 +3,7 @@ import {buildCommandPaletteStyles} from './devtools_styles.js'
 import {getAllTools} from './devtools_registry.js'
 import {parseCommand} from './command_parser.js'
 import {ICONS} from './devtools_icons.js'
+import logger from '../../core/logger.js'
 
 
 export default class DevToolsCommandPalette extends BaseEditorComponent {
@@ -199,6 +200,15 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
             subtitle: 'Remove app instance',
             type: 'template',
             icon: ICONS.dispose
+        })
+
+        commands.push({
+            id: 'inspect',
+            title: '/inspect',
+            placeholder: 'appId.query(selector)',
+            subtitle: 'Inspect module',
+            type: 'template',
+            icon: ICONS.logger
         })
 
         return commands
@@ -460,7 +470,8 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
             spawn: () => appManager.spawn(arg),
             start: () => appManager.startApp(arg),
             stop: () => appManager.stopApp(arg),
-            dispose: () => appManager.disposeApp(arg)
+            dispose: () => appManager.disposeApp(arg),
+            inspect: () => this.#executeInspectCommand(arg)
         }
 
         const handler = handlers[commandId]
@@ -495,6 +506,21 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
 
         if (this.#history.length > this.#maxHistory) {
             this.#history.pop()
+        }
+    }
+
+
+    #executeInspectCommand (expression) {
+        const appManager = this.#state?.appManager
+        if (!appManager) {
+            return
+        }
+
+        const result = evaluateExpression(expression, appManager)
+
+        if (result !== undefined) {
+            logger.info(result)
+            this.#state?.openLogger()
         }
     }
 
@@ -561,6 +587,95 @@ function buildHistoryInput (actionName, args) {
     }).join(', ')
 
     return `${actionName} ${argsString}`
+}
+
+
+function evaluateExpression (expression, appManager) {
+    const parts = parseExpression(expression)
+    const appId = parts[0]
+    const app = appManager.getChild(appId)
+
+    if (!app) {
+        logger.warn(`App "${appId}" not found`)
+        return undefined
+    }
+
+    if (parts.length === 1) {
+        return app
+    }
+
+    let current = app
+    for (let i = 1; i < parts.length; i++) {
+        const part = parts[i]
+
+        if (part.type === 'method') {
+            if (typeof current[part.name] === 'function') {
+                current = current[part.name](part.arg)
+            } else {
+                logger.warn(`Method "${part.name}" not found`)
+                return undefined
+            }
+        } else {
+            current = current[part]
+        }
+
+        if (current === undefined || current === null) {
+            logger.warn(`Property "${part.name || part}" not found`)
+            return undefined
+        }
+    }
+
+    return current
+}
+
+
+function parseExpression (expression) {
+    const parts = []
+    let current = ''
+    let inParens = 0
+    let inQuotes = false
+    let quoteChar = null
+
+    for (const char of expression) {
+        if ((char === '"' || char === "'") && !inQuotes) {
+            inQuotes = true
+            quoteChar = char
+            current += char
+        } else if (char === quoteChar && inQuotes) {
+            inQuotes = false
+            quoteChar = null
+            current += char
+        } else if (char === '(' && !inQuotes) {
+            inParens++
+            current += char
+        } else if (char === ')' && !inQuotes) {
+            inParens--
+            current += char
+        } else if (char === '.' && !inQuotes && inParens === 0) {
+            if (current) {
+                parts.push(parsePart(current))
+            }
+            current = ''
+        } else {
+            current += char
+        }
+    }
+
+    if (current) {
+        parts.push(parsePart(current))
+    }
+
+    return parts
+}
+
+
+function parsePart (part) {
+    const methodMatch = part.match(/^(\w+)\((['"]?)(.*)(['"]?)\)$/)
+    if (methodMatch) {
+        const [, name, , arg] = methodMatch
+        return {type: 'method', name, arg}
+    }
+    return part
 }
 
 

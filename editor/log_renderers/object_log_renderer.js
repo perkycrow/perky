@@ -1,0 +1,148 @@
+import {registerLogRenderer, renderLogItem} from './log_renderer_registry.js'
+
+
+const MAX_PREVIEW_KEYS = 5
+const MAX_STRING_LENGTH = 50
+
+
+function formatValue (value) {
+    if (value === null) {
+        return 'null'
+    }
+
+    if (value === undefined) {
+        return 'undefined'
+    }
+
+    if (typeof value === 'string') {
+        const truncated = value.length > MAX_STRING_LENGTH
+            ? value.slice(0, MAX_STRING_LENGTH) + '...'
+            : value
+        return `"${truncated}"`
+    }
+
+    if (typeof value === 'number' || typeof value === 'boolean') {
+        return String(value)
+    }
+
+    if (typeof value === 'function') {
+        return 'f()'
+    }
+
+    if (Array.isArray(value)) {
+        return `Array(${value.length})`
+    }
+
+    if (typeof value === 'object') {
+        const name = value.constructor?.name
+        return name && name !== 'Object' ? name : '{...}'
+    }
+
+    return String(value)
+}
+
+
+function createPreview (obj) {
+    const keys = Object.keys(obj)
+    const previewKeys = keys.slice(0, MAX_PREVIEW_KEYS)
+
+    const parts = previewKeys.map(key => `${key}: ${formatValue(obj[key])}`)
+
+    if (keys.length > MAX_PREVIEW_KEYS) {
+        parts.push('...')
+    }
+
+    return `{${parts.join(', ')}}`
+}
+
+
+function renderExpandedContent (obj, container) {
+    const keys = Object.keys(obj)
+
+    for (const key of keys) {
+        const row = document.createElement('div')
+        row.className = 'log-object-row'
+
+        const keyEl = document.createElement('span')
+        keyEl.className = 'log-object-key'
+        keyEl.textContent = key
+
+        const separator = document.createElement('span')
+        separator.className = 'log-object-separator'
+        separator.textContent = ': '
+
+        const valueEl = document.createElement('span')
+        valueEl.className = 'log-object-value'
+
+        const customRender = renderLogItem(obj[key])
+        if (customRender) {
+            valueEl.appendChild(customRender)
+        } else {
+            valueEl.textContent = formatValue(obj[key])
+        }
+
+        row.appendChild(keyEl)
+        row.appendChild(separator)
+        row.appendChild(valueEl)
+        container.appendChild(row)
+    }
+}
+
+
+const objectLogRenderer = {
+    match (item) {
+        return item !== null &&
+            typeof item === 'object' &&
+            !Array.isArray(item) &&
+            item.constructor?.name === 'Object'
+    },
+
+    render (obj) {
+        const container = document.createElement('span')
+        container.className = 'log-object'
+
+        const toggle = document.createElement('span')
+        toggle.className = 'log-object-toggle'
+        toggle.textContent = '▶'
+
+        const preview = document.createElement('span')
+        preview.className = 'log-object-preview'
+        preview.textContent = createPreview(obj)
+
+        const expanded = document.createElement('div')
+        expanded.className = 'log-object-expanded'
+        expanded.style.display = 'none'
+
+        let isExpanded = false
+        let hasRenderedContent = false
+
+        const header = document.createElement('span')
+        header.className = 'log-object-header'
+        header.style.cursor = 'pointer'
+        header.appendChild(toggle)
+        header.appendChild(preview)
+
+        header.addEventListener('click', () => {
+            isExpanded = !isExpanded
+
+            if (isExpanded && !hasRenderedContent) {
+                renderExpandedContent(obj, expanded)
+                hasRenderedContent = true
+            }
+
+            toggle.textContent = isExpanded ? '▼' : '▶'
+            expanded.style.display = isExpanded ? 'block' : 'none'
+            preview.style.display = isExpanded ? 'none' : 'inline'
+        })
+
+        container.appendChild(header)
+        container.appendChild(expanded)
+
+        return container
+    }
+}
+
+
+registerLogRenderer(objectLogRenderer)
+
+export default objectLogRenderer

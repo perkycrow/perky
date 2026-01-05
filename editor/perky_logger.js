@@ -1,6 +1,9 @@
 import {buildEditorStyles, editorScrollbarStyles, editorBaseStyles} from './editor_theme.js'
 import logger from '../core/logger.js'
 import {renderLogItem} from './log_renderers/log_renderer_registry.js'
+import './log_renderers/object_log_renderer.js'
+import './log_renderers/array_log_renderer.js'
+import './log_renderers/perky_module_log_renderer.js'
 import './log_renderers/vec2_log_renderer.js'
 
 
@@ -502,6 +505,102 @@ const STYLES = buildEditorStyles(
 
     .log-vec2-value {
         color: var(--accent);
+    }
+
+
+    .log-object,
+    .log-array,
+    .log-module {
+        display: inline-block;
+        vertical-align: top;
+    }
+
+    .log-object-header,
+    .log-array-header,
+    .log-module-header {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .log-object-toggle,
+    .log-array-toggle,
+    .log-module-toggle {
+        color: var(--fg-muted);
+        font-size: 8px;
+        width: 10px;
+        user-select: none;
+    }
+
+    .log-object-preview,
+    .log-array-preview {
+        color: var(--fg-secondary);
+    }
+
+    .log-object-expanded,
+    .log-array-expanded,
+    .log-module-expanded {
+        margin-left: 14px;
+        padding: 4px 0;
+        border-left: 1px solid var(--border);
+        padding-left: 8px;
+    }
+
+    .log-object-row,
+    .log-array-row,
+    .log-module-row {
+        display: flex;
+        gap: 4px;
+        padding: 1px 0;
+    }
+
+    .log-object-key,
+    .log-module-key {
+        color: var(--accent);
+    }
+
+    .log-array-index {
+        color: var(--fg-muted);
+        min-width: 20px;
+    }
+
+    .log-object-separator,
+    .log-array-separator,
+    .log-module-separator {
+        color: var(--fg-muted);
+    }
+
+    .log-object-value,
+    .log-array-value,
+    .log-module-value {
+        color: var(--fg-secondary);
+    }
+
+    .log-array-length {
+        color: var(--fg-muted);
+        font-style: italic;
+    }
+
+
+    .log-module-label {
+        color: var(--fg-primary);
+        background: var(--bg-hover);
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+
+    .log-module-meta {
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 4px;
+        margin-bottom: 4px;
+    }
+
+    .log-module-meta-row .log-module-key {
+        color: var(--fg-muted);
+    }
+
+    .log-module-meta-value {
+        color: var(--fg-secondary);
     }
 `
 )
