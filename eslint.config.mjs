@@ -293,4 +293,10 @@ export default defineConfig([globalIgnores(['node_modules/*', 'dist/*']), {
         'max-nested-callbacks': 0,
         'class-methods-use-this': 0
     }
+}, {
+    files: ['**/*.doc.js'],
+
+    rules: {
+        'no-unused-vars': 0
+    }
 }])
