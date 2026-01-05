@@ -109,74 +109,6 @@ export default class DayNightPass extends RenderPass {
             }
 
             // ─────────────────────────────────────────────────────────────
-            // Ambiance calculations (based on sun position, not time!)
-            // ─────────────────────────────────────────────────────────────
-
-            struct Ambiance {
-                float darkness;
-                float tintStrength;
-                vec3 tintColor;
-                float starsIntensity;
-                float nightFactor;  // 0=day, 1=full night - for Purkinje/desat effects
-            };
-
-            // Calculate ambiance from sun position relative to terrain
-            // sunProgress: 0=dawn start, 0.5=zenith, 1=dusk end
-            // intersectStrength: 0-1 when sun intersects terrain
-            Ambiance getAmbianceFromSun(float sunTop, float sunBottom, float terrainY, float intersectStrength, float sunProgress) {
-                Ambiance a;
-
-                // Sun position relative to terrain
-                float aboveTerrain = sunBottom - terrainY;  // positive = fully in sky
-                float belowTerrain = terrainY - sunTop;     // positive = fully below
-
-                // Smooth blend factors
-                float nightFactor = smoothstep(0.0, HORIZON_RANGE, belowTerrain);
-                float dayFactor = smoothstep(0.0, HORIZON_RANGE, aboveTerrain);
-                float raysFactor = intersectStrength;
-
-                // Dawn vs Dusk: sunProgress < 0.5 = dawn, > 0.5 = dusk
-                float duskFactor = smoothstep(0.35, 0.65, sunProgress);
-
-                // Interpolate horizon colors between dawn and dusk
-                vec3 horizonTint = mix(TINT_DAWN, TINT_DUSK, duskFactor);
-                float horizonDark = mix(DARK_DAWN, DARK_DUSK, duskFactor);
-                float horizonTintStr = mix(TINT_STR_DAWN, TINT_STR_DUSK, duskFactor);
-
-                // Mix ambiance based on sun state
-                // Start with night/day/horizon blend
-                a.tintColor = mix(
-                    mix(horizonTint, TINT_NIGHT, nightFactor),
-                    TINT_DAY,
-                    dayFactor
-                );
-                a.darkness = mix(
-                    mix(horizonDark, DARK_NIGHT, nightFactor),
-                    DARK_DAY,
-                    dayFactor
-                );
-                a.tintStrength = mix(
-                    mix(horizonTintStr, TINT_STR_NIGHT, nightFactor),
-                    TINT_STR_DAY,
-                    dayFactor
-                );
-
-                // Override with rays ambiance when sun intersects terrain
-                vec3 raysTint = mix(TINT_RAYS_DAWN, TINT_RAYS_DUSK, duskFactor);
-                a.tintColor = mix(a.tintColor, raysTint, raysFactor);
-                a.darkness = mix(a.darkness, DARK_RAYS, raysFactor);
-                a.tintStrength = mix(a.tintStrength, TINT_STR_RAYS, raysFactor);
-
-                // Stars only at night
-                a.starsIntensity = STARS_NIGHT * nightFactor;
-
-                // Export night factor for Purkinje/desaturation effects
-                a.nightFactor = nightFactor;
-
-                return a;
-            }
-
-            // ─────────────────────────────────────────────────────────────
             // Coordinate transforms
             // ─────────────────────────────────────────────────────────────
             void getScreenWorldParams(out vec2 margin, out vec2 scale) {
@@ -236,6 +168,7 @@ export default class DayNightPass extends RenderPass {
                 float top;
                 float bottom;
                 float intersectStrength;  // 0 when not intersecting, 0-1 when intersecting
+                float duskFactor;         // 0=dawn, 1=dusk - precomputed for reuse
             };
 
             vec2 calcSunPos(float progress) {
@@ -261,7 +194,73 @@ export default class DayNightPass extends RenderPass {
                 float aboveTerrain = s.top - s.terrainY;     // How far top is above terrain
                 float isIntersecting = step(0.0, belowTerrain) * step(0.0, aboveTerrain);
                 s.intersectStrength = min(belowTerrain, aboveTerrain) / SUN_RADIUS * isIntersecting;
+                // Precompute dusk factor (0=dawn, 1=dusk) - reused in ambiance and sun disc
+                s.duskFactor = smoothstep(0.35, 0.65, progress);
                 return s;
+            }
+
+            // ─────────────────────────────────────────────────────────────
+            // Ambiance calculations (based on sun position, not time!)
+            // ─────────────────────────────────────────────────────────────
+
+            struct Ambiance {
+                float darkness;
+                float tintStrength;
+                vec3 tintColor;
+                float starsIntensity;
+                float nightFactor;  // 0=day, 1=full night - for Purkinje/desat effects
+            };
+
+            // Calculate ambiance from sun position relative to terrain
+            // Uses precomputed SunData for efficiency
+            Ambiance getAmbianceFromSun(SunData sun) {
+                Ambiance a;
+
+                // Sun position relative to terrain
+                float aboveTerrain = sun.bottom - sun.terrainY;  // positive = fully in sky
+                float belowTerrain = sun.terrainY - sun.top;     // positive = fully below
+
+                // Smooth blend factors
+                float nightFactor = smoothstep(0.0, HORIZON_RANGE, belowTerrain);
+                float dayFactor = smoothstep(0.0, HORIZON_RANGE, aboveTerrain);
+                float raysFactor = sun.intersectStrength;
+
+                // Interpolate horizon colors between dawn and dusk (use precomputed duskFactor)
+                vec3 horizonTint = mix(TINT_DAWN, TINT_DUSK, sun.duskFactor);
+                float horizonDark = mix(DARK_DAWN, DARK_DUSK, sun.duskFactor);
+                float horizonTintStr = mix(TINT_STR_DAWN, TINT_STR_DUSK, sun.duskFactor);
+
+                // Mix ambiance based on sun state
+                // Start with night/day/horizon blend
+                a.tintColor = mix(
+                    mix(horizonTint, TINT_NIGHT, nightFactor),
+                    TINT_DAY,
+                    dayFactor
+                );
+                a.darkness = mix(
+                    mix(horizonDark, DARK_NIGHT, nightFactor),
+                    DARK_DAY,
+                    dayFactor
+                );
+                a.tintStrength = mix(
+                    mix(horizonTintStr, TINT_STR_NIGHT, nightFactor),
+                    TINT_STR_DAY,
+                    dayFactor
+                );
+
+                // Override with rays ambiance when sun intersects terrain
+                vec3 raysTint = mix(TINT_RAYS_DAWN, TINT_RAYS_DUSK, sun.duskFactor);
+                a.tintColor = mix(a.tintColor, raysTint, raysFactor);
+                a.darkness = mix(a.darkness, DARK_RAYS, raysFactor);
+                a.tintStrength = mix(a.tintStrength, TINT_STR_RAYS, raysFactor);
+
+                // Stars only at night
+                a.starsIntensity = STARS_NIGHT * nightFactor;
+
+                // Export night factor for Purkinje/desaturation effects
+                a.nightFactor = nightFactor;
+
+                return a;
             }
 
             // ─────────────────────────────────────────────────────────────
@@ -338,14 +337,13 @@ export default class DayNightPass extends RenderPass {
                 // Fade halo when sun leaves intersection
                 halo *= sun.intersectStrength;
 
-                // Dawn vs Dusk color tinting
-                float duskFactor = smoothstep(0.35, 0.65, sunProgress);
+                // Dawn vs Dusk color tinting (use precomputed duskFactor)
                 vec3 dawnTint = vec3(1.0, 0.85, 0.6);   // Warm orange-yellow
                 vec3 duskTint = vec3(1.0, 0.7, 0.75);   // Soft pink-orange
 
                 // Low sun = more tinted, high sun = whiter
                 float lowSunFactor = 1.0 - smoothstep(0.0, 1.2, sun.pos.y);
-                vec3 horizonTint = mix(dawnTint, duskTint, duskFactor);
+                vec3 horizonTint = mix(dawnTint, duskTint, sun.duskFactor);
 
                 // Apply tint based on sun height
                 vec3 discColor = mix(sun.color, horizonTint, lowSunFactor * 0.5);
@@ -404,24 +402,28 @@ export default class DayNightPass extends RenderPass {
                 return rgb + glowColor * (1.0 - rgb * screenFactor);
             }
 
-            vec3 applyStars(vec3 rgb, vec2 uv, vec4 baseColor, float starsIntensity) {
+            vec3 applyStars(vec3 rgb, vec2 uv, float baseLum, float starsIntensity) {
                 vec2 aspectUV = vec2(uv.x * uAspectRatio, uv.y);
                 // Slow drift based on progress
                 vec2 starUV = aspectUV + vec2(0.008, 0.003) * uDayNightProgress * 100.0;
-                vec2 cell = floor(starUV * STAR_GRID_SIZE);
-                float r = random(cell);
+                vec2 gridUV = starUV * STAR_GRID_SIZE;
+                vec2 cell = floor(gridUV);
 
-                // Branchless: step returns 1 if r > threshold, 0 otherwise
-                float isStar = step(STAR_THRESHOLD, r);
-                vec2 cellUV = fract(starUV * STAR_GRID_SIZE);
-                vec2 starPos = vec2(random(cell + 0.1), random(cell + 0.2));
+                // Single random call, derive others with cheap ops (IQ technique)
+                float rBase = random(cell);
+                float isStar = step(STAR_THRESHOLD, rBase);
+
+                vec2 cellUV = fract(gridUV);
+                // Derive star position from base random using fract arithmetic
+                vec2 starPos = fract(vec2(rBase * 17.31, rBase * 43.17));
                 float star = smoothstep(0.12, 0.0, length(cellUV - starPos));
-                // Twinkle based on progress
-                float phase = random(cell + 0.3) * 6.28;
-                float speed = 0.3 + random(cell + 0.4) * 0.4;
+
+                // Twinkle: derive phase and speed from rBase
+                float phase = fract(rBase * 127.1) * 6.28;
+                float speed = 0.3 + fract(rBase * 311.7) * 0.4;
                 float twinkle = sin(uDayNightProgress * speed * 100.0 + phase) * 0.15 + 0.85;
-                float lum = dot(baseColor.rgb, vec3(0.299, 0.587, 0.114));
-                rgb += vec3(starsIntensity * star * twinkle * smoothstep(0.5, 1.0, lum) * isStar);
+
+                rgb += vec3(starsIntensity * star * twinkle * smoothstep(0.5, 1.0, baseLum) * isStar);
 
                 return rgb;
             }
@@ -531,13 +533,14 @@ export default class DayNightPass extends RenderPass {
                 // We want: end of dawn (0.25) = sun at intersection
                 //          start of dusk (0.5) = sun at intersection
                 float sunProgress = 0.29 + (uDayNightProgress - 0.25) * 1.68;
+                float clampedSunProgress = clamp(sunProgress, 0.0, 1.0);
 
                 // Get sun data (clamp to valid range)
-                SunData sun = getSunDataFromProgress(clamp(sunProgress, 0.0, 1.0));
+                SunData sun = getSunDataFromProgress(clampedSunProgress);
 
                 // Get ambiance based on sun position
                 // Always use sun-based ambiance - it handles below-horizon naturally
-                Ambiance ambiance = getAmbianceFromSun(sun.top, sun.bottom, sun.terrainY, sun.intersectStrength, clamp(sunProgress, 0.0, 1.0));
+                Ambiance ambiance = getAmbianceFromSun(sun);
 
                 // Sky detection
                 float blueness = color.b - max(color.r, color.g);
@@ -597,7 +600,8 @@ export default class DayNightPass extends RenderPass {
                 // Stars - starsIntensity fades to 0 during day, skyBlend handles terrain
                 // No branch needed, just multiply by all factors
                 float starsFactor = step(0.0, blueness) * ambiance.starsIntensity * skyBlend;
-                rgb = applyStars(rgb, vTexCoord, color, starsFactor);
+                float baseLum = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+                rgb = applyStars(rgb, vTexCoord, baseLum, starsFactor);
 
                 fragColor = vec4(clamp(rgb, 0.0, 1.0), color.a);
             }
