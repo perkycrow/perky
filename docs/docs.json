@@ -11,6 +11,16 @@
       ]
     },
     {
+      "id": "perky_view",
+      "file": "/application/perky_view.doc.js",
+      "category": "application",
+      "title": "PerkyView",
+      "tags": [
+        "application",
+        "perky_view"
+      ]
+    },
+    {
       "id": "perky_module",
       "file": "/core/perky_module.doc.js",
       "category": "core",

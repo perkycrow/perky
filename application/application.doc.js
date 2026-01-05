@@ -1,5 +1,4 @@
-import {doc, section, text, code, action, container, logger} from '../docs/runtime.js'
-import Application from './application.js'
+import {doc, section, text, code} from '../docs/runtime.js'
 
 
 export default doc('Application', () => {
@@ -24,16 +23,16 @@ export default doc('Application', () => {
             }
         })
 
-        container({title: 'Create and mount', width: 400, height: 200}, ctx => {
+        code('Create and mount', () => {
             const app = new Application({$id: 'demo'})
-            app.mount(ctx.container)
+            const container = document.getElementById('app')
+
+            app.mount(container)
             app.start()
 
-            ctx.setApp(app)
-
-            logger.log('mounted:', app.mounted)
-            logger.log('element:', app.element.tagName)
-            logger.log('size:', app.perkyView.width, 'x', app.perkyView.height)
+            console.log(app.mounted) // true
+            console.log(app.element.tagName) // 'DIV'
+            console.log(app.perkyView.width, app.perkyView.height)
         })
 
     })
@@ -46,22 +45,22 @@ export default doc('Application', () => {
             \`manifest\`, \`actionDispatcher\`, \`perkyView\`, \`sourceManager\`, \`inputSystem\`.
         `)
 
-        action('List children', () => {
+        code('List children', () => {
             const app = new Application({$id: 'demo'})
 
             for (const child of app.children) {
-                logger.log(`${child.$id} (${child.$category})`)
+                console.log(`${child.$id} (${child.$category})`)
             }
 
             app.dispose()
         })
 
-        action('Access systems', () => {
+        code('Access systems', () => {
             const app = new Application({$id: 'demo'})
 
-            logger.log('manifest:', app.manifest.$id)
-            logger.log('perkyView:', app.perkyView.$id)
-            logger.log('inputSystem:', app.inputSystem.$id)
+            console.log(app.manifest.$id)
+            console.log(app.perkyView.$id)
+            console.log(app.inputSystem.$id)
 
             app.dispose()
         })
@@ -73,17 +72,17 @@ export default doc('Application', () => {
 
         text('Applications inherit PerkyModule lifecycle.')
 
-        action('start / stop', () => {
+        code('start / stop', () => {
             const app = new Application({$id: 'demo'})
 
-            app.on('start', () => logger.log('app started'))
-            app.on('stop', () => logger.log('app stopped'))
+            app.on('start', () => console.log('app started'))
+            app.on('stop', () => console.log('app stopped'))
 
             app.start()
-            logger.log('running:', app.running)
+            console.log(app.running) // true
 
             app.stop()
-            logger.log('running:', app.running)
+            console.log(app.running) // false
 
             app.dispose()
         })
@@ -95,30 +94,22 @@ export default doc('Application', () => {
 
         text('The perkyView handles DOM mounting and resizing.')
 
-        container({title: 'View properties', width: 400, height: 200}, ctx => {
+        code('View properties', () => {
             const app = new Application({$id: 'demo'})
-            app.mount(ctx.container)
-            app.start()
 
-            ctx.setApp(app)
-
-            logger.log('width:', app.perkyView.width)
-            logger.log('height:', app.perkyView.height)
-            logger.log('aspectRatio:', app.perkyView.aspectRatio.toFixed(2))
+            console.log(app.perkyView.width)
+            console.log(app.perkyView.height)
+            console.log(app.perkyView.aspectRatio)
         })
 
-        container({title: 'Resize event', width: 400, height: 200}, ctx => {
+        code('Resize event', () => {
             const app = new Application({$id: 'demo'})
-            app.mount(ctx.container)
-            app.start()
-
-            ctx.setApp(app)
 
             app.on('resize', ({width, height}) => {
-                logger.log('resized to:', width, 'x', height)
+                console.log('resized to:', width, height)
             })
 
-            app.perkyView.setSize({width: 300, height: 200})
+            app.perkyView.setSize({width: 800, height: 600})
         })
 
     })

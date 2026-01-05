@@ -43,6 +43,247 @@
     },
     "isDefault": true
   },
+  "/application/perky_view.doc.js": {
+    "type": "class",
+    "file": "/application/perky_view.js",
+    "name": "PerkyView",
+    "line": 5,
+    "extends": "PerkyModule",
+    "statics": [
+      {
+        "name": "$category",
+        "line": 7,
+        "source": "static $category = 'perkyView'",
+        "kind": "property",
+        "value": "'perkyView'"
+      },
+      {
+        "name": "defaultElement",
+        "line": 158,
+        "source": "static defaultElement (params) {\n        const element = document.createElement('div')\n\n        element.id = params.id || uniqueId('perky_view', 'perky_view')\n\n        element.className = params.className || 'perky-view'\n\n        const styles = {\n            display: 'block',\n            overflow: 'hidden',\n            position: 'relative',\n            width: '100%',\n            height: '100%',\n            ...this.defaultStyles(params)\n        }\n\n        Object.assign(element.style, styles)\n\n        return element\n    }",
+        "kind": "method",
+        "params": [
+          "params"
+        ]
+      },
+      {
+        "name": "defaultStyles",
+        "line": 180,
+        "source": "static defaultStyles () {\n        return {}\n    }",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "methods": [
+      {
+        "name": "onInstall",
+        "line": 38,
+        "source": "onInstall (host) {\n        this.delegateTo(host, [\n            'element',\n            'mount',\n            'dismount',\n            'mounted',\n            'displayMode',\n            'setDisplayMode',\n            'enterFullscreenMode',\n            'exitFullscreenMode',\n            'toggleFullscreen'\n        ])\n\n        this.delegateEventsTo(host, [\n            'resize',\n            'mount',\n            'dismount',\n            'displayMode:changed'\n        ])\n    }",
+        "kind": "method",
+        "params": [
+          "host"
+        ]
+      },
+      {
+        "name": "addClass",
+        "line": 90,
+        "source": "addClass (className) {\n        this.element.classList.add(className)\n    }",
+        "kind": "method",
+        "params": [
+          "className"
+        ]
+      },
+      {
+        "name": "removeClass",
+        "line": 95,
+        "source": "removeClass (className) {\n        this.element.classList.remove(className)\n    }",
+        "kind": "method",
+        "params": [
+          "className"
+        ]
+      },
+      {
+        "name": "hasClass",
+        "line": 100,
+        "source": "hasClass (className) {\n        return this.element.classList.contains(className)\n    }",
+        "kind": "method",
+        "params": [
+          "className"
+        ]
+      },
+      {
+        "name": "setSize",
+        "line": 105,
+        "source": "setSize ({width, height, unit = 'px'}) {\n        Object.assign(this.element.style, {\n            width: `${width}${unit}`,\n            height: `${height}${unit}`\n        })\n\n        this.emit('resize', {width, height})\n    }",
+        "kind": "method",
+        "params": [
+          "{...}"
+        ]
+      },
+      {
+        "name": "fit",
+        "line": 115,
+        "source": "fit (element = this.container) {\n        const {width, height} = element.getBoundingClientRect()\n\n        this.setSize({width, height})\n    }",
+        "kind": "method",
+        "params": [
+          "element = ..."
+        ]
+      },
+      {
+        "name": "mount",
+        "line": 122,
+        "source": "mount (container) {\n        if (!container) {\n            throw new Error('Container element is required')\n        }\n\n        if (this.container && this.container !== container) {\n            this.container.removeChild(this.element)\n        }\n\n        container.appendChild(this.element)\n\n        this.emit('mount', {container})\n\n        if (this.#resizeObserver) {\n            this.#resizeObserver.observe(this.element)\n        }\n    }",
+        "kind": "method",
+        "params": [
+          "container"
+        ]
+      },
+      {
+        "name": "dismount",
+        "line": 141,
+        "source": "dismount () {\n        if (this.container) {\n            this.container.removeChild(this.element)\n            this.emit('dismount', {container: this.container})\n        }\n\n        if (this.#resizeObserver) {\n            this.#resizeObserver.disconnect()\n        }\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "isVisible",
+        "line": 185,
+        "source": "isVisible () {\n        return this.element.style.display !== 'none'\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onDispose",
+        "line": 190,
+        "source": "onDispose () {\n        this.exitFullscreenMode()\n\n        if (this.#resizeObserver) {\n            this.#resizeObserver.disconnect()\n            this.#resizeObserver = null\n        }\n\n        if (this.#onFullscreenChange) {\n            document.removeEventListener('fullscreenchange', this.#onFullscreenChange)\n        }\n\n        this.dismount()\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "hide",
+        "line": 221,
+        "source": "hide () {\n        if (this.display && this.display !== 'none') {\n            this.#previousDisplay = this.display\n        }\n\n        this.display = 'none'\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "show",
+        "line": 230,
+        "source": "show () {\n        if (this.#previousDisplay) {\n            this.display = this.#previousDisplay\n            this.#previousDisplay = null\n        } else {\n            this.display = ''\n        }\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "setDisplayMode",
+        "line": 240,
+        "source": "setDisplayMode (mode) {\n        const modes = {\n            normal: () => this.exitFullscreenMode(),\n            fullscreen: () => this.enterFullscreenMode()\n        }\n\n        if (modes[mode]) {\n            modes[mode]()\n        }\n    }",
+        "kind": "method",
+        "params": [
+          "mode"
+        ]
+      },
+      {
+        "name": "enterFullscreenMode",
+        "line": 252,
+        "source": "enterFullscreenMode () {\n        if (this.displayMode === 'fullscreen') {\n            return\n        }\n\n        this.displayMode = 'fullscreen'\n\n        document.body.classList.add('fullscreen-mode')\n\n        this.#previousStyles = {\n            position: this.element.style.position,\n            top: this.element.style.top,\n            left: this.element.style.left,\n            width: this.element.style.width,\n            height: this.element.style.height,\n            zIndex: this.element.style.zIndex\n        }\n\n        Object.assign(this.element.style, {\n            position: 'fixed',\n            top: '0',\n            left: '0',\n            width: '100vw',\n            height: '100vh',\n            zIndex: '10000'\n        })\n\n        this.#requestFullscreen()\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "exitFullscreenMode",
+        "line": 283,
+        "source": "exitFullscreenMode () {\n        if (this.displayMode === 'normal') {\n            return\n        }\n\n        if (document.fullscreenElement) {\n            document.exitFullscreen()\n        }\n\n        this.displayMode = 'normal'\n\n        document.body.style.overflow = ''\n        document.body.classList.remove('fullscreen-mode')\n\n        Object.assign(this.element.style, this.#previousStyles)\n        this.#previousStyles = {}\n\n        this.#dispatchDisplayModeChanged('normal')\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "toggleFullscreen",
+        "line": 304,
+        "source": "toggleFullscreen () {\n        const mode = this.displayMode\n\n        if (mode === 'fullscreen') {\n            this.exitFullscreenMode()\n        } else {\n            this.enterFullscreenMode()\n        }\n    }",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [
+      {
+        "name": "container",
+        "line": 60,
+        "source": "get container () {\n        return this.element.parentElement\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "width",
+        "line": 65,
+        "source": "get width () {\n        return this.element.offsetWidth\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "height",
+        "line": 70,
+        "source": "get height () {\n        return this.element.offsetHeight\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "size",
+        "line": 75,
+        "source": "get size () {\n        return {\n            width: this.width,\n            height: this.height\n        }\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "aspectRatio",
+        "line": 83,
+        "source": "get aspectRatio () {\n        const {width, height} = this.size\n\n        return height > 0 ? width / height : 0\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "mounted",
+        "line": 153,
+        "source": "get mounted () {\n        return Boolean(this.container && this.container.contains(this.element))\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "html",
+        "line": 206,
+        "source": "get html () {\n        return this.element.innerHTML\n    }",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "display",
+        "line": 211,
+        "source": "get display () {\n        return this.element.style.display\n    }",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "display",
+        "line": 216,
+        "source": "set display (display) {\n        this.element.style.display = display\n    }",
+        "kind": "method",
+        "params": [
+          "display"
+        ]
+      }
+    ],
+    "constructor": {
+      "name": "constructor",
+      "line": 15,
+      "source": "constructor (params = {}) {\n        super(params)\n\n        this.element = params.element ? params.element : this.constructor.defaultElement(params)\n\n        if (params.position) {\n            applyPositionStyle(this.element, params.position)\n        }\n\n        if (params.container) {\n            this.mount(params.container)\n        }\n\n        if (params.className) {\n            this.addClass(params.className)\n        }\n\n\n        this.#setupResizeObserver()\n        this.#setupFullscreenEvents()\n    }",
+      "kind": "constructor",
+      "params": [
+        "params = ..."
+      ]
+    },
+    "isDefault": true
+  },
   "/core/perky_module.doc.js": {
     "type": "class",
     "file": "/core/perky_module.js",
