@@ -23,7 +23,7 @@ export default class CanvasLayerInspector extends BaseInspector {
     }
 
 
-    #update () { // eslint-disable-line complexity -- clean
+    #update () {
         if (!this.module) {
             return
         }

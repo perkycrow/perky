@@ -66,7 +66,7 @@ function getLineGap (startLine, endLine) {
 }
 
 
-function getNodeType (node) { // eslint-disable-line complexity -- clean
+function getNodeType (node) {
     if (node.type === 'FunctionDeclaration') {
         return 'function'
     }

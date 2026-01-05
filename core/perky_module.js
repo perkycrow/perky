@@ -258,7 +258,7 @@ export default class PerkyModule extends Notifier {
     }
 
 
-    create (Child, options = {}) { // eslint-disable-line complexity -- clean
+    create (Child, options = {}) {
         options.$category ||= Child.$category
         options.$name ||= Child.$name || options.$category
         options.$id ||= uniqueId(this.#childrenRegistry, options.$name)

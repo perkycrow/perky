@@ -191,7 +191,7 @@ export default class Camera2D extends PerkyModule {
     }
 
 
-    update (deltaTime = 0) { // eslint-disable-line complexity -- clean
+    update (deltaTime = 0) {
         if (this.followTarget) {
             const dx = this.followTarget.x - this.x
             const dy = this.followTarget.y - this.y

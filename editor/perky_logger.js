@@ -645,6 +645,11 @@ const STYLES = buildEditorStyles(
         border-radius: 4px;
     }
 
+    .log-module-category {
+        color: var(--fg-muted);
+        font-size: 0.9em;
+    }
+
     .log-module-meta {
         border-bottom: 1px solid var(--border);
         padding-bottom: 4px;

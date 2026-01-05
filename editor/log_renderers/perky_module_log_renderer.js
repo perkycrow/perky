@@ -7,16 +7,28 @@ const IGNORED_KEYS = new Set([
 ])
 
 
-function createCompactLabel (module) {
-    const category = module.$category || ''
+function createCompactLabel (module, container) {
     const name = module.$name || module.constructor?.name || 'Module'
+    const category = module.$category || ''
     const id = module.$id || ''
 
-    if (category === name || category === id) {
-        return `${category} #${id}`
+    const nameSpan = document.createElement('span')
+    nameSpan.className = 'log-module-name'
+
+    if (name === id) {
+        nameSpan.textContent = name
+    } else {
+        nameSpan.textContent = `${name} #${id}`
     }
 
-    return `${category} ${name} #${id}`
+    container.appendChild(nameSpan)
+
+    if (category && category !== name && category !== id) {
+        const categorySpan = document.createElement('span')
+        categorySpan.className = 'log-module-category'
+        categorySpan.textContent = ` (${category})`
+        container.appendChild(categorySpan)
+    }
 }
 
 
@@ -226,7 +238,7 @@ const perkyModuleLogRenderer = {
 
         const label = document.createElement('span')
         label.className = 'log-module-label'
-        label.textContent = createCompactLabel(module)
+        createCompactLabel(module, label)
 
         const expanded = document.createElement('div')
         expanded.className = 'log-module-expanded'

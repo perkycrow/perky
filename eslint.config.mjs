@@ -164,7 +164,7 @@ export default defineConfig([globalIgnores(['node_modules/*', 'dist/*']), {
         'comma-dangle': [2, 'never'],
         'comma-spacing': 2,
         'comma-style': 2,
-        complexity: [2, 9],
+        complexity: [2, 10],
         'local/nested-complexity': [2, 4],
         'computed-property-spacing': [2, 'never'],
         'consistent-return': 2,
