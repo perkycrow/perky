@@ -1,3 +1,4 @@
+import './base_renderer_inspector.js'
 import './game_loop_inspector.js'
 import './texture_manager_inspector.js'
 import './entity_inspector.js'

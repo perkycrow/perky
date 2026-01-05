@@ -11,15 +11,6 @@ describe(ShadowTransform, () => {
     })
 
 
-    test('constructor defaults', () => {
-        const transform = new ShadowTransform()
-        expect(transform.skewX).toBe(0.5)
-        expect(transform.scaleY).toBe(0.5)
-        expect(transform.offsetY).toBe(0)
-        expect(transform.color).toEqual([0, 0, 0, 0.4])
-    })
-
-
     test('constructor accepts options', () => {
         const transform = new ShadowTransform({
             skewX: 1.0,

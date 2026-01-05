@@ -159,8 +159,6 @@ export default class DefendTheDen extends Game {
     }
 
 
-
-
     setHitboxDebug (enabled) {
         this.renderer.setHitboxDebug(enabled)
     }
