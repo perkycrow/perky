@@ -17,6 +17,7 @@ export default class TouchDevice extends InputDevice {
     #startY = 0
     #currentY = 0
     #touchStartTime = 0
+    #swipeReferenceY = 0
 
     constructor (params = {}) {
         super(params)
@@ -89,6 +90,7 @@ export default class TouchDevice extends InputDevice {
         this.#startX = touch.clientX
         this.#startY = touch.clientY
         this.#currentY = touch.clientY
+        this.#swipeReferenceY = touch.clientY
         this.#touchStartTime = Date.now()
 
         const positionControl = this.getControl('position')
@@ -101,7 +103,7 @@ export default class TouchDevice extends InputDevice {
     }
 
 
-    #handleTouchmove (event) { // eslint-disable-line complexity -- clean
+    #handleTouchmove (event) {
         const touch = this.#findActiveTouch(event.touches)
         if (!touch) {
             return
@@ -122,7 +124,7 @@ export default class TouchDevice extends InputDevice {
             y: this.#currentY - previousY
         }, event)
 
-        const deltaY = this.#startY - this.#currentY
+        const deltaY = this.#swipeReferenceY - this.#currentY
         const swipeUpControl = this.getControl('swipeUp')
         const swipeDownControl = this.getControl('swipeDown')
 
@@ -132,6 +134,7 @@ export default class TouchDevice extends InputDevice {
             }
             if (swipeDownControl.isPressed) {
                 swipeDownControl.release(event)
+                this.#swipeReferenceY = this.#currentY
             }
         } else if (deltaY < -this.swipeThreshold) {
             if (!swipeDownControl.isPressed) {
@@ -139,13 +142,7 @@ export default class TouchDevice extends InputDevice {
             }
             if (swipeUpControl.isPressed) {
                 swipeUpControl.release(event)
-            }
-        } else {
-            if (swipeUpControl.isPressed) {
-                swipeUpControl.release(event)
-            }
-            if (swipeDownControl.isPressed) {
-                swipeDownControl.release(event)
+                this.#swipeReferenceY = this.#currentY
             }
         }
 
