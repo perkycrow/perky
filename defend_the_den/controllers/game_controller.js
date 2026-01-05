@@ -35,6 +35,12 @@ export default class GameController extends WorldController {
     }
 
 
+    setFps (fps) {
+        this.game.setFpsLimited(true)
+        this.game.setFps(fps)
+    }
+
+
     update (game, deltaTime) {
         this.world.update(deltaTime, game)
         this.updateWaveSpawning(deltaTime)

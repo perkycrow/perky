@@ -73,6 +73,7 @@ export default class DefendTheDen extends Game {
         const gameController = this.getController('game')
         gameController.world = this.world
         gameController.renderer = this.renderer
+        gameController.game = this
 
         const gameLayer = this.getCanvas('game')
 
