@@ -362,13 +362,16 @@ function renderContainer (block, setup = null) {
     container.style.height = `${block.height}px`
     wrapper.appendChild(container)
 
+    const codeWrapper = document.createElement('div')
+    codeWrapper.className = 'doc-container-code'
+
     const codeEl = document.createElement('perky-code')
     codeEl.setAttribute('title', block.title || 'Container')
     codeEl.code = block.source
-    wrapper.appendChild(codeEl)
+    codeWrapper.appendChild(codeEl)
 
     const button = document.createElement('button')
-    button.className = 'doc-action-btn doc-container-btn'
+    button.className = 'doc-action-btn'
     button.innerHTML = `
         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
             <path d="M8 5v14l11-7z"/>
@@ -376,7 +379,9 @@ function renderContainer (block, setup = null) {
         Run
     `
     button.addEventListener('click', () => executeContainer(block, container, setup))
-    wrapper.appendChild(button)
+    codeWrapper.appendChild(button)
+
+    wrapper.appendChild(codeWrapper)
 
     return wrapper
 }
@@ -754,7 +759,9 @@ const STYLES = buildEditorStyles(
     }
 
     .doc-container-block {
-        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
     }
 
     .doc-container-title {
@@ -768,14 +775,11 @@ const STYLES = buildEditorStyles(
         background: var(--bg-secondary);
         border: 1px solid var(--border);
         border-radius: 6px;
-        margin-bottom: 0.75rem;
-        position: relative;
         overflow: hidden;
     }
 
-    .doc-container-btn {
-        top: auto;
-        bottom: 8px;
+    .doc-container-code {
+        position: relative;
     }
 
     /* API View */
