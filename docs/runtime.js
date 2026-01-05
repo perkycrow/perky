@@ -103,6 +103,25 @@ export function action (title, fn) {
 }
 
 
+export function container (options, fn) {
+    if (!currentBlocks) {
+        throw new Error('container() must be called inside doc()')
+    }
+
+    const opts = typeof options === 'function' ? {} : options
+    const callback = typeof options === 'function' ? options : fn
+
+    currentBlocks.push({
+        type: 'container',
+        width: opts.width || 400,
+        height: opts.height || 300,
+        title: opts.title || null,
+        source: extractFunctionBody(callback),
+        fn: callback
+    })
+}
+
+
 function extractFunctionBody (fn) {
     const source = fn.toString()
 

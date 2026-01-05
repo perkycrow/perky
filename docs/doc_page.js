@@ -8,6 +8,8 @@ export default class DocPage extends HTMLElement {
     #doc = null
     #contentEl = null
     #tocEl = null
+    #containerEl = null
+    #currentApp = null
 
     constructor () {
         super()
@@ -78,6 +80,12 @@ export default class DocPage extends HTMLElement {
 
         main.appendChild(header)
 
+        if (this.#doc.options?.context === 'application') {
+            this.#containerEl = document.createElement('div')
+            this.#containerEl.className = 'doc-app-container'
+            main.appendChild(this.#containerEl)
+        }
+
         this.#contentEl = document.createElement('div')
         this.#contentEl.className = 'doc-content'
         main.appendChild(this.#contentEl)
@@ -132,6 +140,8 @@ export default class DocPage extends HTMLElement {
                 return this.#renderAction(block, setup)
             case 'section':
                 return this.#renderSection(block)
+            case 'container':
+                return this.#renderContainer(block, setup)
             default:
                 return document.createElement('div')
         }
@@ -218,16 +228,81 @@ export default class DocPage extends HTMLElement {
     }
 
 
+    #renderContainer (block, setup = null) {
+        const wrapper = document.createElement('div')
+        wrapper.className = 'doc-container-block'
+
+        if (block.title) {
+            const titleEl = document.createElement('div')
+            titleEl.className = 'doc-container-title'
+            titleEl.textContent = block.title
+            wrapper.appendChild(titleEl)
+        }
+
+        const container = document.createElement('div')
+        container.className = 'doc-container-element'
+        container.style.width = `${block.width}px`
+        container.style.height = `${block.height}px`
+        wrapper.appendChild(container)
+
+        const codeEl = document.createElement('perky-code')
+        codeEl.setAttribute('title', block.title || 'Container')
+        codeEl.code = block.source
+        wrapper.appendChild(codeEl)
+
+        const button = document.createElement('button')
+        button.className = 'doc-action-btn doc-container-btn'
+        button.innerHTML = `
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+            Run
+        `
+        button.addEventListener('click', () => this.#executeContainer(block, container, setup))
+        wrapper.appendChild(button)
+
+        return wrapper
+    }
+
+
     #executeAction (block, setup = null) {
         try {
             logger.spacer()
             const ctx = {}
+
             if (setup?.fn) {
                 setup.fn(ctx)
             }
             block.fn(ctx)
         } catch (error) {
             logger.error('Action error:', error.message)
+        }
+    }
+
+
+    #executeContainer (block, container, setup = null) {
+        try {
+            logger.spacer()
+
+            const prevApp = container._currentApp
+            if (prevApp?.dispose) {
+                prevApp.dispose()
+            }
+            container.innerHTML = ''
+
+            const ctx = {
+                container,
+                setApp: app => {
+                    container._currentApp = app
+                }
+            }
+
+            if (setup?.fn) {
+                setup.fn(ctx)
+            }
+            block.fn(ctx)
+        } catch (error) {
+            logger.error('Container error:', error.message)
         }
     }
 
@@ -430,6 +505,42 @@ const STYLES = buildEditorStyles(
         position: relative;
         margin-bottom: 0.75rem;
         opacity: 0.7;
+    }
+
+    .doc-app-container {
+        width: 100%;
+        height: 400px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .doc-container-block {
+        position: relative;
+    }
+
+    .doc-container-title {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--fg-muted);
+        margin-bottom: 0.5rem;
+    }
+
+    .doc-container-element {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        margin-bottom: 0.75rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .doc-container-btn {
+        top: auto;
+        bottom: 8px;
     }
 
     @media (max-width: 900px) {

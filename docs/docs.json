@@ -1,6 +1,16 @@
 {
   "docs": [
     {
+      "id": "application",
+      "file": "/application/application.doc.js",
+      "category": "application",
+      "title": "Application",
+      "tags": [
+        "application",
+        "application"
+      ]
+    },
+    {
       "id": "perky_module",
       "file": "/core/perky_module.doc.js",
       "category": "core",
