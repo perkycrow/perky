@@ -1,6 +1,26 @@
 {
   "docs": [
     {
+      "id": "perky_module",
+      "file": "/core/perky_module.doc.js",
+      "category": "core",
+      "title": "PerkyModule",
+      "tags": [
+        "core",
+        "perky_module"
+      ]
+    },
+    {
+      "id": "perky_logger",
+      "file": "/editor/perky_logger.doc.js",
+      "category": "editor",
+      "title": "PerkyLogger",
+      "tags": [
+        "editor",
+        "perky_logger"
+      ]
+    },
+    {
       "id": "random",
       "file": "/math/random.doc.js",
       "category": "math",

@@ -1,5 +1,6 @@
 import {buildEditorStyles, editorButtonStyles, editorScrollbarStyles} from '../editor/editor_theme.js'
 import '../editor/perky_code.js'
+import logger from '../core/logger.js'
 
 
 export default class DocPage extends HTMLElement {
@@ -219,13 +220,14 @@ export default class DocPage extends HTMLElement {
 
     #executeAction (block, setup = null) {
         try {
+            logger.spacer()
             const ctx = {}
             if (setup?.fn) {
                 setup.fn(ctx)
             }
             block.fn(ctx)
         } catch (error) {
-            console.error('Action error:', error)
+            logger.error('Action error:', error.message)
         }
     }
 
