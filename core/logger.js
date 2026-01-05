@@ -55,7 +55,7 @@ class Logger extends Notifier {
     }
 
 
-    log (type, ...items) {
+    #emit (type, ...items) {
         const entry = {event: 'log', type, items, timestamp: Date.now()}
         this.#record(entry)
         this.emit('log', entry)
@@ -67,28 +67,33 @@ class Logger extends Notifier {
     }
 
 
+    log (...items) {
+        this.#emit('notice', ...items)
+    }
+
+
     info (...items) {
-        this.log('info', ...items)
+        this.#emit('info', ...items)
     }
 
 
     notice (...items) {
-        this.log('notice', ...items)
+        this.#emit('notice', ...items)
     }
 
 
     warn (...items) {
-        this.log('warn', ...items)
+        this.#emit('warn', ...items)
     }
 
 
     error (...items) {
-        this.log('error', ...items)
+        this.#emit('error', ...items)
     }
 
 
     success (...items) {
-        this.log('success', ...items)
+        this.#emit('success', ...items)
     }
 
 

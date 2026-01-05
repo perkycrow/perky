@@ -5,8 +5,8 @@ import Vec2 from './vec2.js'
 export default doc('Vec2', {context: 'simple'}, () => {
 
     text(`
-        Vecteur 2D mutable avec chainage de methodes.
-        Utilise pour les positions, directions, et dimensions.
+        Mutable 2D vector with method chaining.
+        Used for positions, directions, and dimensions.
     `)
 
 
@@ -26,7 +26,7 @@ export default doc('Vec2', {context: 'simple'}, () => {
     })
 
 
-    action('Soustraction', () => {
+    action('Subtraction', () => {
         const a = new Vec2(3, 4)
         const b = new Vec2(1, 2)
         logger.log('a:', a)
@@ -35,14 +35,14 @@ export default doc('Vec2', {context: 'simple'}, () => {
     })
 
 
-    action('Multiplication scalaire', () => {
+    action('Scalar multiplication', () => {
         const v = new Vec2(3, 4)
         logger.log('v:', v)
         logger.log('v * 2:', v.clone().multiplyScalar(2))
     })
 
 
-    text(`Les methodes de mesure retournent des nombres.`)
+    text('Measurement methods return numbers.')
 
 
     action('Length', () => {
@@ -69,7 +69,7 @@ export default doc('Vec2', {context: 'simple'}, () => {
     })
 
 
-    text(`Transformations geometriques.`)
+    text('Geometric transformations.')
 
 
     action('Rotation', () => {
@@ -91,10 +91,10 @@ export default doc('Vec2', {context: 'simple'}, () => {
     })
 
 
-    text(`Les methodes retournent \`this\` pour le chainage.`)
+    text('Methods return `this` for chaining.')
 
 
-    action('Chainage', () => {
+    action('Chaining', () => {
         const result = new Vec2(1, 0)
             .multiplyScalar(5)
             .add(new Vec2(0, 3))

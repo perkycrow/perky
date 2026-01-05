@@ -25,15 +25,15 @@ describe('Logger', () => {
 
 
     describe('log', () => {
-        test('emits log event with type and items', () => {
+        test('emits log event with notice type', () => {
             const listener = vi.fn()
             logger.on('log', listener)
 
-            logger.log('info', 'hello', 'world')
+            logger.log('hello', 'world')
 
             expect(listener).toHaveBeenCalledTimes(1)
             const payload = listener.mock.calls[0][0]
-            expect(payload.type).toBe('info')
+            expect(payload.type).toBe('notice')
             expect(payload.items).toEqual(['hello', 'world'])
             expect(payload.timestamp).toBeTypeOf('number')
         })
@@ -44,7 +44,7 @@ describe('Logger', () => {
             logger.on('log', listener)
 
             const obj = {foo: 'bar'}
-            logger.log('info', 'data:', obj)
+            logger.log('data:', obj)
 
             const payload = listener.mock.calls[0][0]
             expect(payload.items).toEqual(['data:', obj])

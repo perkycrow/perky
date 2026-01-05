@@ -1,6 +1,16 @@
 {
   "docs": [
     {
+      "id": "random",
+      "file": "/math/random.doc.js",
+      "category": "math",
+      "title": "Random",
+      "tags": [
+        "math",
+        "random"
+      ]
+    },
+    {
       "id": "vec2",
       "file": "/math/vec2.doc.js",
       "category": "math",
