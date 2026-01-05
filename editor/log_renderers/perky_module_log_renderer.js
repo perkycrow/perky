@@ -33,6 +33,25 @@ function getPropertyKeys (module) {
 }
 
 
+const MAX_STRING_LENGTH = 30
+
+
+function formatString (str) {
+    const truncated = str.length > MAX_STRING_LENGTH
+        ? str.slice(0, MAX_STRING_LENGTH) + '...'
+        : str
+    return `"${truncated}"`
+}
+
+
+function formatObject (obj) {
+    if (Array.isArray(obj)) {
+        return `Array(${obj.length})`
+    }
+    return obj.constructor?.name || '{...}'
+}
+
+
 function formatValue (value) {
     if (value === null) {
         return 'null'
@@ -43,7 +62,7 @@ function formatValue (value) {
     }
 
     if (typeof value === 'string') {
-        return `"${value.length > 30 ? value.slice(0, 30) + '...' : value}"`
+        return formatString(value)
     }
 
     if (typeof value === 'number' || typeof value === 'boolean') {
@@ -54,20 +73,44 @@ function formatValue (value) {
         return 'f()'
     }
 
-    if (Array.isArray(value)) {
-        return `Array(${value.length})`
-    }
-
     if (typeof value === 'object') {
-        const name = value.constructor?.name
-        return name || '{...}'
+        return formatObject(value)
     }
 
     return String(value)
 }
 
 
-function renderExpandedContent (module, container) {
+function createRow (className, keyText, valueContent) {
+    const row = document.createElement('div')
+    row.className = className
+
+    const keyEl = document.createElement('span')
+    keyEl.className = 'log-module-key'
+    keyEl.textContent = keyText
+
+    const separator = document.createElement('span')
+    separator.className = 'log-module-separator'
+    separator.textContent = ': '
+
+    const valueEl = document.createElement('span')
+    valueEl.className = 'log-module-value'
+
+    if (typeof valueContent === 'string') {
+        valueEl.textContent = valueContent
+    } else if (valueContent instanceof Node) {
+        valueEl.appendChild(valueContent)
+    }
+
+    row.appendChild(keyEl)
+    row.appendChild(separator)
+    row.appendChild(valueEl)
+
+    return {row, valueEl}
+}
+
+
+function renderMetaSection (module) {
     const metaSection = document.createElement('div')
     metaSection.className = 'log-module-meta'
 
@@ -81,29 +124,58 @@ function renderExpandedContent (module, container) {
     ]
 
     for (const {label, value} of metaItems) {
-        const row = document.createElement('div')
-        row.className = 'log-module-row log-module-meta-row'
-
-        const keyEl = document.createElement('span')
-        keyEl.className = 'log-module-key'
-        keyEl.textContent = label
-
-        const separator = document.createElement('span')
-        separator.className = 'log-module-separator'
-        separator.textContent = ': '
-
-        const valueEl = document.createElement('span')
+        const {row, valueEl} = createRow('log-module-row log-module-meta-row', label, String(value))
         valueEl.className = 'log-module-value log-module-meta-value'
-        valueEl.textContent = value
-
-        row.appendChild(keyEl)
-        row.appendChild(separator)
-        row.appendChild(valueEl)
         metaSection.appendChild(row)
     }
 
-    container.appendChild(metaSection)
+    return metaSection
+}
 
+
+function renderPropsSection (module, properties) {
+    const propsSection = document.createElement('div')
+    propsSection.className = 'log-module-props'
+
+    for (const key of properties) {
+        const customRender = renderLogItem(module[key])
+        const content = customRender || formatValue(module[key])
+        const {row, valueEl} = createRow('log-module-row', key, content)
+
+        if (!customRender) {
+            valueEl.textContent = content
+        }
+
+        propsSection.appendChild(row)
+    }
+
+    return propsSection
+}
+
+
+function renderMethodsSection (methods) {
+    const methodsSection = document.createElement('div')
+    methodsSection.className = 'log-module-methods'
+
+    const {row, valueEl} = createRow('log-module-row log-module-methods-row', 'methods', '')
+
+    for (let i = 0; i < methods.length; i++) {
+        const methodSpan = document.createElement('span')
+        methodSpan.className = 'log-module-method-name'
+        methodSpan.textContent = methods[i]
+        valueEl.appendChild(methodSpan)
+
+        if (i < methods.length - 1) {
+            valueEl.appendChild(document.createTextNode(', '))
+        }
+    }
+
+    methodsSection.appendChild(row)
+    return methodsSection
+}
+
+
+function separatePropertiesAndMethods (module) {
     const propsKeys = getPropertyKeys(module)
     const methods = []
     const properties = []
@@ -116,76 +188,21 @@ function renderExpandedContent (module, container) {
         }
     }
 
+    return {methods, properties}
+}
+
+
+function renderExpandedContent (module, container) {
+    container.appendChild(renderMetaSection(module))
+
+    const {methods, properties} = separatePropertiesAndMethods(module)
+
     if (properties.length > 0) {
-        const propsSection = document.createElement('div')
-        propsSection.className = 'log-module-props'
-
-        for (const key of properties) {
-            const row = document.createElement('div')
-            row.className = 'log-module-row'
-
-            const keyEl = document.createElement('span')
-            keyEl.className = 'log-module-key'
-            keyEl.textContent = key
-
-            const separator = document.createElement('span')
-            separator.className = 'log-module-separator'
-            separator.textContent = ': '
-
-            const valueEl = document.createElement('span')
-            valueEl.className = 'log-module-value'
-
-            const customRender = renderLogItem(module[key])
-            if (customRender) {
-                valueEl.appendChild(customRender)
-            } else {
-                valueEl.textContent = formatValue(module[key])
-            }
-
-            row.appendChild(keyEl)
-            row.appendChild(separator)
-            row.appendChild(valueEl)
-            propsSection.appendChild(row)
-        }
-
-        container.appendChild(propsSection)
+        container.appendChild(renderPropsSection(module, properties))
     }
 
     if (methods.length > 0) {
-        const methodsSection = document.createElement('div')
-        methodsSection.className = 'log-module-methods'
-
-        const row = document.createElement('div')
-        row.className = 'log-module-row log-module-methods-row'
-
-        const keyEl = document.createElement('span')
-        keyEl.className = 'log-module-key'
-        keyEl.textContent = 'methods'
-
-        const separator = document.createElement('span')
-        separator.className = 'log-module-separator'
-        separator.textContent = ': '
-
-        const valueEl = document.createElement('span')
-        valueEl.className = 'log-module-value'
-
-        for (let i = 0; i < methods.length; i++) {
-            const methodSpan = document.createElement('span')
-            methodSpan.className = 'log-module-method-name'
-            methodSpan.textContent = methods[i]
-            valueEl.appendChild(methodSpan)
-
-            if (i < methods.length - 1) {
-                valueEl.appendChild(document.createTextNode(', '))
-            }
-        }
-
-        row.appendChild(keyEl)
-        row.appendChild(separator)
-        row.appendChild(valueEl)
-        methodsSection.appendChild(row)
-
-        container.appendChild(methodsSection)
+        container.appendChild(renderMethodsSection(methods))
     }
 }
 

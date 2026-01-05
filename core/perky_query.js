@@ -46,6 +46,14 @@ export function matchesConditions (module, conditions) {
 }
 
 
+function findMatchingChildren (candidates, conditions) {
+    return candidates.flatMap(candidate => {
+        const children = candidate.children || []
+        return children.filter(child => matchesConditions(child, conditions))
+    })
+}
+
+
 export function query (root, selector) {
     const segments = parseSelector(selector)
 
@@ -56,19 +64,7 @@ export function query (root, selector) {
     let candidates = [root]
 
     for (const conditions of segments) {
-        const nextCandidates = []
-
-        for (const candidate of candidates) {
-            const children = candidate.children || []
-
-            for (const child of children) {
-                if (matchesConditions(child, conditions)) {
-                    nextCandidates.push(child)
-                }
-            }
-        }
-
-        candidates = nextCandidates
+        candidates = findMatchingChildren(candidates, conditions)
 
         if (candidates.length === 0) {
             return null
@@ -89,19 +85,7 @@ export function queryAll (root, selector) {
     let candidates = [root]
 
     for (const conditions of segments) {
-        const nextCandidates = []
-
-        for (const candidate of candidates) {
-            const children = candidate.children || []
-
-            for (const child of children) {
-                if (matchesConditions(child, conditions)) {
-                    nextCandidates.push(child)
-                }
-            }
-        }
-
-        candidates = nextCandidates
+        candidates = findMatchingChildren(candidates, conditions)
 
         if (candidates.length === 0) {
             return []

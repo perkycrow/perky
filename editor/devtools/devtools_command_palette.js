@@ -629,29 +629,48 @@ function evaluateExpression (expression, appManager) {
 }
 
 
+function handleQuoteChar (char, state) {
+    if ((char === '"' || char === "'") && !state.inQuotes) {
+        state.inQuotes = true
+        state.quoteChar = char
+        return true
+    }
+
+    if (char === state.quoteChar && state.inQuotes) {
+        state.inQuotes = false
+        state.quoteChar = null
+        return true
+    }
+
+    return false
+}
+
+
+function handleParenChar (char, state) {
+    if (char === '(' && !state.inQuotes) {
+        state.inParens++
+        return true
+    }
+
+    if (char === ')' && !state.inQuotes) {
+        state.inParens--
+        return true
+    }
+
+    return false
+}
+
+
 function parseExpression (expression) {
     const parts = []
     let current = ''
-    let inParens = 0
-    let inQuotes = false
-    let quoteChar = null
+    const state = {inParens: 0, inQuotes: false, quoteChar: null}
 
     for (const char of expression) {
-        if ((char === '"' || char === "'") && !inQuotes) {
-            inQuotes = true
-            quoteChar = char
-            current += char
-        } else if (char === quoteChar && inQuotes) {
-            inQuotes = false
-            quoteChar = null
-            current += char
-        } else if (char === '(' && !inQuotes) {
-            inParens++
-            current += char
-        } else if (char === ')' && !inQuotes) {
-            inParens--
-            current += char
-        } else if (char === '.' && !inQuotes && inParens === 0) {
+        handleQuoteChar(char, state)
+        handleParenChar(char, state)
+
+        if (char === '.' && !state.inQuotes && state.inParens === 0) {
             if (current) {
                 parts.push(parsePart(current))
             }

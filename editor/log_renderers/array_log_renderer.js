@@ -4,6 +4,20 @@ import {registerLogRenderer, renderLogItem} from './log_renderer_registry.js'
 const MAX_PREVIEW_ITEMS = 5
 
 
+function formatString (str) {
+    const truncated = str.length > 20 ? str.slice(0, 20) + '...' : str
+    return `"${truncated}"`
+}
+
+
+function formatObject (obj) {
+    if (Array.isArray(obj)) {
+        return `Array(${obj.length})`
+    }
+    return obj.constructor?.name || 'Object'
+}
+
+
 function getItemLabel (item) {
     if (item === null) {
         return 'null'
@@ -14,20 +28,15 @@ function getItemLabel (item) {
     }
 
     if (typeof item === 'string') {
-        return `"${item.length > 20 ? item.slice(0, 20) + '...' : item}"`
+        return formatString(item)
     }
 
     if (typeof item === 'number' || typeof item === 'boolean') {
         return String(item)
     }
 
-    if (Array.isArray(item)) {
-        return `Array(${item.length})`
-    }
-
     if (typeof item === 'object') {
-        const name = item.constructor?.name
-        return name || 'Object'
+        return formatObject(item)
     }
 
     return String(item)

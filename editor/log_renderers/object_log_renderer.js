@@ -5,6 +5,23 @@ const MAX_PREVIEW_KEYS = 5
 const MAX_STRING_LENGTH = 50
 
 
+function formatString (str) {
+    const truncated = str.length > MAX_STRING_LENGTH
+        ? str.slice(0, MAX_STRING_LENGTH) + '...'
+        : str
+    return `"${truncated}"`
+}
+
+
+function formatObject (obj) {
+    if (Array.isArray(obj)) {
+        return `Array(${obj.length})`
+    }
+    const name = obj.constructor?.name
+    return name && name !== 'Object' ? name : '{...}'
+}
+
+
 function formatValue (value) {
     if (value === null) {
         return 'null'
@@ -15,10 +32,7 @@ function formatValue (value) {
     }
 
     if (typeof value === 'string') {
-        const truncated = value.length > MAX_STRING_LENGTH
-            ? value.slice(0, MAX_STRING_LENGTH) + '...'
-            : value
-        return `"${truncated}"`
+        return formatString(value)
     }
 
     if (typeof value === 'number' || typeof value === 'boolean') {
@@ -29,13 +43,8 @@ function formatValue (value) {
         return 'f()'
     }
 
-    if (Array.isArray(value)) {
-        return `Array(${value.length})`
-    }
-
     if (typeof value === 'object') {
-        const name = value.constructor?.name
-        return name && name !== 'Object' ? name : '{...}'
+        return formatObject(value)
     }
 
     return String(value)
