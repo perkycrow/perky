@@ -14,7 +14,8 @@ export default class Projectile extends Entity {
             velocityY = 2.5,
             gravity = -8,
             drag = 0.5,
-            source = 'player'
+            source = 'player',
+            sprite = 'brick'
         } = params
 
         this.velocity.set(velocityX, velocityY)
@@ -22,6 +23,7 @@ export default class Projectile extends Entity {
         this.drag = drag
         this.alive = true
         this.source = source
+        this.sprite = sprite
 
         this.rotation = 0
         this.spinSpeed = -15

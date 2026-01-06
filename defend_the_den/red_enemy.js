@@ -90,9 +90,13 @@ export default class RedEnemy extends Enemy {
 
 
     throwPie () {
+        const sprites = ['pie', 'cake']
+        const sprite = sprites[Math.floor(Math.random() * sprites.length)]
+
         this.emit('throw:pie', {
             x: this.position.x,
-            y: this.position.y
+            y: this.position.y,
+            sprite
         })
     }
 

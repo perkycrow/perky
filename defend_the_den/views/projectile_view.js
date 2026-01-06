@@ -15,16 +15,17 @@ export default class ProjectileView extends EntityView {
         super(entity, context)
 
         const config = context.config || {}
+        const sprite = entity.sprite || config.image
 
-        if (config.image) {
-            const image = context.game.getSource(config.image)
+        if (sprite) {
+            const image = context.game.getSource(sprite)
 
             this.root = new Image2D({
                 x: entity.x,
                 y: entity.y,
                 image,
-                width: config.width ?? 0.3,
-                height: config.height ?? 0.3,
+                width: config.width ?? 0.25,
+                height: config.height ?? 0.25,
                 anchorX: 0.5,
                 anchorY: 0.5
             })

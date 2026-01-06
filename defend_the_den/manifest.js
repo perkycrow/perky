@@ -12,7 +12,9 @@ const manifest = {
         red: {type: 'image', url: './assets/images/red.png'},
         granny: {type: 'image', url: './assets/images/granny.png'},
         amalgam: {type: 'image', url: './assets/images/amalgam.png'},
-        brick: {type: 'image', url: './assets/images/brick.png'}
+        brick: {type: 'image', url: './assets/images/brick.png'},
+        pie: {type: 'image', url: './assets/images/pie.png'},
+        cake: {type: 'image', url: './assets/images/cake.png'}
     }
 }
 

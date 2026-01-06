@@ -75,7 +75,8 @@ export default class DenWorld extends World {
             velocityX: options.velocityX ?? -5,
             velocityY: options.velocityY ?? 0.8,
             gravity: options.gravity ?? -1.5,
-            source: 'enemy'
+            source: 'enemy',
+            sprite: options.sprite
         })
     }
 
@@ -96,8 +97,8 @@ export default class DenWorld extends World {
             maxSpeed: options.maxSpeed || 0.5
         })
 
-        enemy.on('throw:pie', ({x, y}) => {
-            this.spawnEnemyProjectile({x, y})
+        enemy.on('throw:pie', ({x, y, sprite}) => {
+            this.spawnEnemyProjectile({x, y, sprite})
         })
 
         return enemy
