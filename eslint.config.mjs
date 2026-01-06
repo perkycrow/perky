@@ -297,6 +297,7 @@ export default defineConfig([globalIgnores(['node_modules/*', 'dist/*']), {
     files: ['**/*.doc.js'],
 
     rules: {
-        'no-unused-vars': 0
+        'no-unused-vars': 0,
+        'max-nested-callbacks': [2, 6]
     }
 }])
