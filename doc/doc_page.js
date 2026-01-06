@@ -1,6 +1,7 @@
 import {buildEditorStyles, editorButtonStyles, editorScrollbarStyles} from '../editor/editor_theme.js'
 import '../editor/perky_code.js'
 import logger from '../core/logger.js'
+import {toKebabCase} from '../core/utils.js'
 
 
 const isProduction = import.meta.env.PROD
@@ -26,6 +27,26 @@ export default class DocPage extends HTMLElement {
 
     connectedCallback () {
         this.#buildDOM()
+        this.#setupAnchorNavigation()
+    }
+
+
+    #setupAnchorNavigation () {
+        this.shadowRoot.addEventListener('click', e => {
+            const link = e.target.closest('a[href^="#"]')
+            if (!link) {
+                return
+            }
+
+            e.preventDefault()
+            const targetId = link.getAttribute('href').slice(1)
+            const target = this.shadowRoot.getElementById(targetId)
+
+            if (target) {
+                target.scrollIntoView({behavior: 'smooth', block: 'start'})
+                history.pushState(null, '', link.href)
+            }
+        })
     }
 
 
@@ -169,6 +190,24 @@ export default class DocPage extends HTMLElement {
         } else {
             this.#renderApiContent()
         }
+
+        this.#scrollToHash()
+    }
+
+
+    #scrollToHash () {
+        const hash = window.location.hash
+        if (!hash) {
+            return
+        }
+
+        const targetId = hash.slice(1)
+        requestAnimationFrame(() => {
+            const target = this.shadowRoot.getElementById(targetId)
+            if (target) {
+                target.scrollIntoView({block: 'start'})
+            }
+        })
     }
 
 
@@ -224,15 +263,11 @@ export default class DocPage extends HTMLElement {
             tocList.className = 'doc-toc-list'
 
             for (const section of sections) {
+                const sectionId = toKebabCase(section.title)
                 const link = document.createElement('a')
                 link.className = 'doc-toc-link'
                 link.textContent = section.title
-                link.href = '#'
-                link.addEventListener('click', e => {
-                    e.preventDefault()
-                    const sectionEl = this.#contentEl.querySelector(`[data-section="${section.title}"]`)
-                    sectionEl?.scrollIntoView({behavior: 'smooth', block: 'start'})
-                })
+                link.href = `#${sectionId}`
                 tocList.appendChild(link)
             }
 
@@ -292,9 +327,10 @@ export default class DocPage extends HTMLElement {
                 continue
             }
 
+            const sectionId = toKebabCase(cat.title)
             const sectionEl = document.createElement('div')
             sectionEl.className = 'api-section'
-            sectionEl.setAttribute('data-section', cat.title)
+            sectionEl.id = sectionId
 
             const sectionTitle = document.createElement('h2')
             sectionTitle.className = 'api-section-title'
@@ -310,11 +346,7 @@ export default class DocPage extends HTMLElement {
             const tocLink = document.createElement('a')
             tocLink.className = 'doc-toc-link'
             tocLink.textContent = cat.title
-            tocLink.href = '#'
-            tocLink.addEventListener('click', e => {
-                e.preventDefault()
-                sectionEl.scrollIntoView({behavior: 'smooth', block: 'start'})
-            })
+            tocLink.href = `#${sectionId}`
             tocList.appendChild(tocLink)
         }
 
@@ -398,9 +430,10 @@ export default class DocPage extends HTMLElement {
 
 
     #renderSection (block) {
+        const sectionId = toKebabCase(block.title)
         const wrapper = document.createElement('div')
         wrapper.className = 'doc-section'
-        wrapper.setAttribute('data-section', block.title)
+        wrapper.id = sectionId
 
         const header = document.createElement('h2')
         header.className = 'doc-section-title'
@@ -622,6 +655,9 @@ const STYLES = buildEditorStyles(
     :host {
         display: block;
         font-family: var(--font-mono);
+        height: 100%;
+        overflow-y: auto;
+        scroll-padding-top: 80px;
     }
 
     .doc-page {
@@ -676,8 +712,12 @@ const STYLES = buildEditorStyles(
     }
 
     .doc-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--bg-primary);
         margin-bottom: 2rem;
-        padding-bottom: 1rem;
+        padding: 1rem 0;
         border-bottom: 1px solid var(--border);
         display: flex;
         align-items: center;
