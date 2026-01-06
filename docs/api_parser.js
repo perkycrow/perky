@@ -236,7 +236,40 @@ function extractParams (fnNode) {
 
 
 function extractSource (source, node) {
-    return source.slice(node.start, node.end)
+    const raw = source.slice(node.start, node.end)
+    return dedentSource(raw)
+}
+
+
+function dedentSource (code) {
+    const lines = code.split('\n')
+
+    if (lines.length <= 1) {
+        return code
+    }
+
+    const indentedLines = lines.slice(1).filter(line => line.trim().length > 0)
+
+    if (indentedLines.length === 0) {
+        return code
+    }
+
+    const minIndent = indentedLines.reduce((min, line) => {
+        const match = line.match(/^(\s*)/)
+        const indent = match ? match[1].length : 0
+        return Math.min(min, indent)
+    }, Infinity)
+
+    if (minIndent === 0 || minIndent === Infinity) {
+        return code
+    }
+
+    return lines.map((line, index) => {
+        if (index === 0) {
+            return line
+        }
+        return line.slice(minIndent)
+    }).join('\n')
 }
 
 
