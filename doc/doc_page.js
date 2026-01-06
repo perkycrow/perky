@@ -791,6 +791,27 @@ function executeContainer (block, container, setup = null) {
                 }
                 update()
                 return update
+            },
+            hint: (text) => {
+                const el = document.createElement('div')
+                el.className = 'doc-hint'
+                el.textContent = text
+                container.appendChild(el)
+            },
+            display: (fn) => {
+                const el = document.createElement('div')
+                el.className = 'doc-display'
+                container.appendChild(el)
+                const update = (...args) => {
+                    const result = fn(...args)
+                    if (Array.isArray(result)) {
+                        el.innerHTML = result.map(item => `<span class="doc-display-tag">${item}</span>`).join('')
+                    } else {
+                        el.innerHTML = result
+                    }
+                }
+                update()
+                return update
             }
         }
 
@@ -798,6 +819,10 @@ function executeContainer (block, container, setup = null) {
             setup.fn(ctx)
         }
         block.fn(ctx)
+
+        if (container.tabIndex >= 0) {
+            container.focus()
+        }
     } catch (error) {
         logger.error('Container error:', error.message)
     }
@@ -1333,6 +1358,15 @@ const STYLES = buildEditorStyles(
     .doc-container-element .doc-display-alt {
         font-size: 20px;
         color: #e94560;
+    }
+
+    .doc-container-element .doc-display-tag {
+        display: inline-block;
+        background: #e94560;
+        padding: 4px 8px;
+        margin: 2px;
+        border-radius: 4px;
+        font-size: 16px;
     }
 
     .doc-container-code {

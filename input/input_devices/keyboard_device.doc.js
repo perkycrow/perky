@@ -27,28 +27,20 @@ export default doc('KeyboardDevice', () => {
 
         container({title: 'Interactive keyboard', height: 150, preset: 'interactive'}, ctx => {
             ctx.container.style.cursor = 'pointer'
-
-            const hint = document.createElement('div')
-            hint.textContent = 'Click here, then press keys'
-            hint.className = 'doc-hint'
-            ctx.container.appendChild(hint)
-
-            const display = document.createElement('div')
-            display.className = 'doc-display'
-            ctx.container.appendChild(display)
+            ctx.hint('Click here, then press keys')
+            const updateDisplay = ctx.display(name => name ?? '')
 
             const keyboard = new KeyboardDevice({
                 container: ctx.container
             })
 
             keyboard.on('control:pressed', (control) => {
-                display.textContent = control.name
+                updateDisplay(control.name)
                 logger.log('pressed:', control.name)
             })
 
-            keyboard.on('control:released', (control) => {
-                display.textContent = ''
-                logger.log('released:', control.name)
+            keyboard.on('control:released', () => {
+                updateDisplay('')
             })
 
             keyboard.start()
@@ -66,21 +58,15 @@ export default doc('KeyboardDevice', () => {
         `)
 
         container({title: 'Key codes', height: 150, preset: 'interactive-alt'}, ctx => {
-            const hint = document.createElement('div')
-            hint.textContent = 'Press any key to see its code'
-            hint.className = 'doc-hint'
-            ctx.container.appendChild(hint)
-
-            const codeDisplay = document.createElement('div')
-            codeDisplay.className = 'doc-display-alt'
-            ctx.container.appendChild(codeDisplay)
+            ctx.hint('Press any key to see its code')
+            const updateDisplay = ctx.display(name => name ?? '')
 
             const keyboard = new KeyboardDevice({
                 container: ctx.container
             })
 
             keyboard.on('control:pressed', (control) => {
-                codeDisplay.textContent = control.name
+                updateDisplay(control.name)
             })
 
             keyboard.start()
@@ -95,33 +81,15 @@ export default doc('KeyboardDevice', () => {
         text('Check if specific keys are pressed or get all pressed keys.')
 
         container({title: 'Multiple keys', height: 180, preset: 'interactive'}, ctx => {
-            ctx.container.style.gap = '12px'
-
-            const hint = document.createElement('div')
-            hint.textContent = 'Hold multiple keys'
-            hint.className = 'doc-hint'
-            hint.style.marginBottom = '0'
-            ctx.container.appendChild(hint)
-
-            const display = document.createElement('div')
-            display.style.fontSize = '16px'
-            display.style.textAlign = 'center'
-            display.style.minHeight = '48px'
-            ctx.container.appendChild(display)
+            ctx.hint('Hold multiple keys')
 
             const keyboard = new KeyboardDevice({
                 container: ctx.container
             })
 
-            const updateDisplay = () => {
-                const pressed = keyboard.getPressedControls()
-                if (pressed.length > 0) {
-                    display.innerHTML = pressed.map(c =>
-                        `<span style="background:#e94560;padding:4px 8px;margin:2px;border-radius:4px">${c.name}</span>`).join('')
-                } else {
-                    display.textContent = ''
-                }
-            }
+            const updateDisplay = ctx.display(() => {
+                return keyboard.getPressedControls().map(c => c.name)
+            })
 
             keyboard.on('control:pressed', updateDisplay)
             keyboard.on('control:released', updateDisplay)

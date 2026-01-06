@@ -353,11 +353,6 @@ export default doc('Canvas2D', () => {
                 return `rendered: ${renderer.stats.renderedObjects} / ${renderer.stats.totalObjects}`
             })
 
-            ctx.action('Pan Left', () => {
-                renderer.camera.x -= 5
-                updateInfo()
-            })
-
             ctx.slider('pan X', {min: -15, max: 15, default: 0}, value => {
                 renderer.camera.x = value
                 updateInfo()

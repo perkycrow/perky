@@ -26,14 +26,8 @@ export default doc('MouseDevice', () => {
         })
 
         container({title: 'Mouse buttons', height: 150, preset: 'interactive'}, ctx => {
-            const hint = document.createElement('div')
-            hint.textContent = 'Click with different mouse buttons'
-            hint.className = 'doc-hint'
-            ctx.container.appendChild(hint)
-
-            const display = document.createElement('div')
-            display.className = 'doc-display'
-            ctx.container.appendChild(display)
+            ctx.hint('Click with different mouse buttons')
+            const updateDisplay = ctx.display(name => name ?? '')
 
             const mouse = new MouseDevice({
                 container: ctx.container
@@ -41,15 +35,14 @@ export default doc('MouseDevice', () => {
 
             mouse.on('control:pressed', (control) => {
                 if (control.name.includes('Button')) {
-                    display.textContent = control.name
+                    updateDisplay(control.name)
                     logger.log('pressed:', control.name)
                 }
             })
 
             mouse.on('control:released', (control) => {
                 if (control.name.includes('Button')) {
-                    display.textContent = ''
-                    logger.log('released:', control.name)
+                    updateDisplay('')
                 }
             })
 
@@ -68,14 +61,8 @@ export default doc('MouseDevice', () => {
         `)
 
         container({title: 'Cursor position', height: 200, preset: 'interactive-alt'}, ctx => {
-            const hint = document.createElement('div')
-            hint.textContent = 'Move cursor inside this area'
-            hint.className = 'doc-hint'
-            ctx.container.appendChild(hint)
-
-            const display = document.createElement('div')
-            display.className = 'doc-display'
-            ctx.container.appendChild(display)
+            ctx.hint('Move cursor inside this area')
+            const updateDisplay = ctx.display(pos => pos ?? '')
 
             const mouse = new MouseDevice({
                 container: ctx.container
@@ -86,7 +73,7 @@ export default doc('MouseDevice', () => {
                 const rect = ctx.container.getBoundingClientRect()
                 const localX = Math.round(pos.x - rect.left)
                 const localY = Math.round(pos.y - rect.top)
-                display.textContent = `${localX}, ${localY}`
+                updateDisplay(`${localX}, ${localY}`)
             })
 
             mouse.start()
