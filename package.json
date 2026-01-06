@@ -11,17 +11,20 @@
     "dev": "vite",
     "dev:build": "vite build --config vite.examples.config.js",
     "dev:preview": "vite preview --config vite.examples.config.js",
+    "dev:serve": "vite build --config vite.examples.config.js && vite preview --config vite.examples.config.js",
     "den": "vite serve defend_the_den --port 3000",
     "den:build": "vite build --config vite.den.config.js",
     "den:deploy": "vite build --config vite.den.config.js && rm -rf ../perkycrow_com/public/den && cp -r dist/defend_the_den ../perkycrow_com/public/den",
     "den:preview": "vite preview --config vite.den.config.js",
+    "den:serve": "vite build --config vite.den.config.js && vite preview --config vite.den.config.js",
     "test": "vitest run",
     "cleaner": "node scripts/cleaner.js",
     "clean": "node scripts/cleaner.js --audit --fix",
     "doc": "vite --open /doc/",
     "doc:update": "node doc/discovery.js",
     "doc:build": "vite build --config vite.doc.config.js",
-    "doc:preview": "vite preview --config vite.doc.config.js"
+    "doc:preview": "vite preview --config vite.doc.config.js",
+    "doc:serve": "vite build --config vite.doc.config.js && vite preview --config vite.doc.config.js"
   },
   "keywords": [
     "javascript",
