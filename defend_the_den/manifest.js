@@ -11,7 +11,8 @@ const manifest = {
         pig: {type: 'image', url: './assets/images/pig.png'},
         red: {type: 'image', url: './assets/images/red.png'},
         granny: {type: 'image', url: './assets/images/granny.png'},
-        amalgam: {type: 'image', url: './assets/images/amalgam.png'}
+        amalgam: {type: 'image', url: './assets/images/amalgam.png'},
+        brick: {type: 'image', url: './assets/images/brick.png'}
     }
 }
 

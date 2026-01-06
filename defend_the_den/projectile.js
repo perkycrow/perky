@@ -24,7 +24,7 @@ export default class Projectile extends Entity {
         this.source = source
 
         this.rotation = 0
-        this.spinSpeed = 15
+        this.spinSpeed = -15
 
         this.hitbox = new CircleHitbox({
             radius: 0.15
