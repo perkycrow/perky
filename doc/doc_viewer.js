@@ -4,6 +4,7 @@ import logger from '../core/logger.js'
 
 
 const docModules = import.meta.glob('../**/*.doc.js')
+const isProduction = import.meta.env.PROD
 
 
 class DocViewer {
@@ -86,8 +87,7 @@ class DocViewer {
                 item.dataset.file = doc.file
                 item.dataset.title = doc.title.toLowerCase()
                 item.dataset.category = doc.category
-                item.href = `?doc=${encodeURIComponent(doc.file)}`
-
+                item.href = this.getDocUrl(doc.file)
 
                 this.nav.appendChild(item)
             }
@@ -109,8 +109,16 @@ class DocViewer {
 
     route () {
         const params = new URLSearchParams(window.location.search)
-        const docPath = params.get('doc')
-        const tab = params.get('tab') || 'doc'
+        let docPath = params.get('doc')
+        let tab = params.get('tab') || 'doc'
+
+        if (!docPath) {
+            const fromFilename = this.getDocPathFromFilename()
+            docPath = fromFilename.docPath
+            if (fromFilename.isApiPage) {
+                tab = 'api'
+            }
+        }
 
         if (docPath) {
             this.showDoc(docPath, tab)
@@ -119,6 +127,35 @@ class DocViewer {
         }
 
         this.updateActiveNav(docPath)
+    }
+
+
+    getDocPathFromFilename () {
+        const pathname = window.location.pathname
+        const filename = pathname.split('/').pop()
+
+        if (!filename || filename === 'index.html' || !filename.endsWith('.html')) {
+            return {docPath: null, isApiPage: false}
+        }
+
+        const isApiPage = filename.endsWith('_api.html')
+        const baseName = filename.replace('_api.html', '').replace('.html', '')
+
+        const doc = this.docs.find(d => {
+            const docBaseName = d.file.slice(1).replace(/\//g, '_').replace('.doc.js', '')
+            return docBaseName === baseName
+        })
+
+        return {docPath: doc ? doc.file : null, isApiPage}
+    }
+
+
+    getDocUrl (docFile) {
+        if (isProduction) {
+            const htmlFile = docFile.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
+            return htmlFile
+        }
+        return `?doc=${encodeURIComponent(docFile)}`
     }
 
 

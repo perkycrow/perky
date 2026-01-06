@@ -22,9 +22,9 @@
     "clean": "node scripts/cleaner.js --audit --fix",
     "doc": "vite --open /doc/",
     "doc:update": "node doc/discovery.js",
-    "doc:build": "vite build --config vite.doc.config.js",
+    "doc:build": "vite build --config vite.doc.config.js && node doc/generate_pages.js",
     "doc:preview": "vite preview --config vite.doc.config.js",
-    "doc:serve": "vite build --config vite.doc.config.js && vite preview --config vite.doc.config.js"
+    "doc:serve": "yarn doc:build && vite preview --config vite.doc.config.js"
   },
   "keywords": [
     "javascript",

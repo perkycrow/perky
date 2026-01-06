@@ -3,6 +3,9 @@ import '../editor/perky_code.js'
 import logger from '../core/logger.js'
 
 
+const isProduction = import.meta.env.PROD
+
+
 export default class DocPage extends HTMLElement {
 
     #doc = null
@@ -139,15 +142,8 @@ export default class DocPage extends HTMLElement {
             const tabs = document.createElement('div')
             tabs.className = 'doc-tabs'
 
-            const docTab = document.createElement('button')
-            docTab.className = `doc-tab ${this.#activeTab === 'doc' ? 'active' : ''}`
-            docTab.textContent = 'Doc'
-            docTab.addEventListener('click', () => this.#switchTab('doc'))
-
-            const apiTab = document.createElement('button')
-            apiTab.className = `doc-tab ${this.#activeTab === 'api' ? 'active' : ''}`
-            apiTab.textContent = 'API'
-            apiTab.addEventListener('click', () => this.#switchTab('api'))
+            const docTab = this.#createTab('Doc', 'doc')
+            const apiTab = this.#createTab('API', 'api')
 
             tabs.appendChild(docTab)
             tabs.appendChild(apiTab)
@@ -176,21 +172,40 @@ export default class DocPage extends HTMLElement {
     }
 
 
-    #switchTab (tab) {
-        this.#activeTab = tab
-        this.#updateUrl(tab)
-        this.#render()
+    #createTab (label, tab) {
+        const isActive = this.#activeTab === tab
+
+        if (isProduction) {
+            const link = document.createElement('a')
+            link.className = `doc-tab ${isActive ? 'active' : ''}`
+            link.textContent = label
+            link.href = this.#getTabUrl(tab)
+            return link
+        }
+
+        const button = document.createElement('button')
+        button.className = `doc-tab ${isActive ? 'active' : ''}`
+        button.textContent = label
+        button.addEventListener('click', () => this.#switchTab(tab))
+        return button
     }
 
 
-    #updateUrl (tab) {
-        const url = new URL(window.location)
-        if (tab === 'doc') {
-            url.searchParams.delete('tab')
-        } else {
-            url.searchParams.set('tab', tab)
+    #getTabUrl (tab) {
+        const pathname = window.location.pathname
+        const filename = pathname.split('/').pop()
+        const baseName = filename.replace('_api.html', '').replace('.html', '')
+
+        if (tab === 'api') {
+            return `${baseName}_api.html`
         }
-        window.history.replaceState({}, '', url)
+        return `${baseName}.html`
+    }
+
+
+    #switchTab (tab) {
+        this.#activeTab = tab
+        this.#render()
     }
 
 
