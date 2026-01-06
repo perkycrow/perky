@@ -699,10 +699,70 @@ function executeContainer (block, container, setup = null) {
             applyContainerPreset(container, block.preset)
         }
 
+        let actionsBar = null
+
         const ctx = {
             container,
             setApp: app => {
                 container._currentApp = app
+            },
+            action: (label, fn) => {
+                if (!actionsBar) {
+                    actionsBar = document.createElement('div')
+                    actionsBar.className = 'doc-actions-bar'
+                    container.appendChild(actionsBar)
+                }
+
+                const isFirst = actionsBar.children.length === 0
+                const btn = document.createElement('button')
+                btn.className = 'doc-actions-btn'
+                if (isFirst) {
+                    btn.classList.add('doc-actions-btn--active')
+                }
+                btn.textContent = label
+                btn.addEventListener('click', () => {
+                    actionsBar.querySelectorAll('.doc-actions-btn').forEach(b => b.classList.remove('doc-actions-btn--active'))
+                    btn.classList.add('doc-actions-btn--active')
+                    fn()
+                })
+                actionsBar.appendChild(btn)
+
+                if (isFirst) {
+                    fn()
+                }
+            },
+            slider: (label, opts, onChange) => {
+                const wrapper = document.createElement('div')
+                wrapper.className = 'doc-slider-wrapper'
+
+                const labelEl = document.createElement('span')
+                labelEl.className = 'doc-slider-label'
+                labelEl.textContent = label
+
+                const valueEl = document.createElement('span')
+                valueEl.className = 'doc-slider-value'
+                valueEl.textContent = opts.default ?? opts.min
+
+                const input = document.createElement('input')
+                input.type = 'range'
+                input.className = 'doc-slider'
+                input.min = opts.min
+                input.max = opts.max
+                input.step = opts.step ?? (opts.max - opts.min) / 100
+                input.value = opts.default ?? opts.min
+
+                input.addEventListener('input', () => {
+                    const value = parseFloat(input.value)
+                    valueEl.textContent = Number.isInteger(value) ? value : value.toFixed(2)
+                    onChange(value)
+                })
+
+                wrapper.appendChild(labelEl)
+                wrapper.appendChild(input)
+                wrapper.appendChild(valueEl)
+                container.appendChild(wrapper)
+
+                onChange(parseFloat(input.value))
             }
         }
 
@@ -1075,6 +1135,103 @@ const STYLES = buildEditorStyles(
         border-radius: 6px;
         overflow: hidden;
         position: relative;
+    }
+
+    .doc-actions-bar {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        display: flex;
+        gap: 4px;
+        z-index: 10;
+    }
+
+    .doc-actions-btn {
+        padding: 4px 10px;
+        background: rgba(0, 0, 0, 0.4);
+        color: var(--fg-muted);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .doc-actions-btn:hover {
+        background: rgba(0, 0, 0, 0.6);
+        color: var(--fg-primary);
+    }
+
+    .doc-actions-btn--active {
+        background: var(--accent);
+        color: var(--bg-primary);
+        border-color: var(--accent);
+    }
+
+    .doc-actions-btn--active:hover {
+        background: var(--accent);
+        color: var(--bg-primary);
+    }
+
+    .doc-slider-wrapper {
+        position: absolute;
+        bottom: 8px;
+        left: 8px;
+        right: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 10;
+    }
+
+    .doc-slider-label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.7);
+        white-space: nowrap;
+    }
+
+    .doc-slider-value {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--accent);
+        min-width: 40px;
+        text-align: right;
+    }
+
+    .doc-slider {
+        flex: 1;
+        height: 4px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+        cursor: pointer;
+    }
+
+    .doc-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        background: var(--accent);
+        border-radius: 50%;
+        cursor: pointer;
+        transition: transform 0.1s;
+    }
+
+    .doc-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+    }
+
+    .doc-slider::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        background: var(--accent);
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
     }
 
     .doc-container-run-overlay {

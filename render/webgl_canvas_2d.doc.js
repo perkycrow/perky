@@ -204,11 +204,13 @@ export default doc('WebGLCanvas2D', () => {
                 }))
             }
 
-            renderer.camera.zoom = 1.5
-            renderer.render(scene)
-            ctx.setApp(renderer)
+            ctx.slider('zoom', {min: 0.5, max: 3, default: 1}, value => {
+                renderer.camera.zoom = value
+                renderer.render(scene)
+                logger.log('zoom:', value.toFixed(2) + 'x')
+            })
 
-            logger.log('zoom:', renderer.camera.zoom + 'x')
+            ctx.setApp(renderer)
         })
 
         container({title: 'Camera pan', height: 200}, ctx => {
@@ -235,12 +237,21 @@ export default doc('WebGLCanvas2D', () => {
                 y: 0
             }))
 
-            renderer.camera.x = 3
-            renderer.camera.y = 2
-            renderer.render(scene)
-            ctx.setApp(renderer)
+            ctx.action('Center', () => {
+                renderer.camera.x = 0
+                renderer.camera.y = 0
+                renderer.render(scene)
+                logger.log('camera pos:', renderer.camera.x, renderer.camera.y)
+            })
 
-            logger.log('camera pos:', renderer.camera.x, renderer.camera.y)
+            ctx.action('Offset (3, 2)', () => {
+                renderer.camera.x = 3
+                renderer.camera.y = 2
+                renderer.render(scene)
+                logger.log('camera pos:', renderer.camera.x, renderer.camera.y)
+            })
+
+            ctx.setApp(renderer)
         })
 
     })
