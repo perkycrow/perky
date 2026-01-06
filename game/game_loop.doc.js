@@ -185,12 +185,12 @@ export default doc('GameLoop', {context: 'game'}, () => {
         code('Listen to all events', () => {
             const gameLoop = new GameLoop()
 
-            gameLoop.on('update', (dt) => {/* game logic */})
-            gameLoop.on('render', (progress) => {/* rendering */})
-            gameLoop.on('pause', () => {/* handle pause */})
-            gameLoop.on('resume', () => {/* handle resume */})
-            gameLoop.on('changed:fps', (fps) => {/* fps changed */})
-            gameLoop.on('changed:fpsLimited', (limited) => {/* mode changed */})
+            gameLoop.on('update', (dt) => {}) // game logic
+            gameLoop.on('render', (progress) => {}) // rendering
+            gameLoop.on('pause', () => {}) // handle pause
+            gameLoop.on('resume', () => {}) // handle resume
+            gameLoop.on('changed:fps', (fps) => {}) // fps changed
+            gameLoop.on('changed:fpsLimited', (limited) => {}) // mode changed
         })
 
     })
@@ -204,7 +204,7 @@ export default doc('GameLoop', {context: 'game'}, () => {
 
         code('Using with Application', () => {
             // const app = new Application()
-            // app.install(new GameLoop())
+            // app.create(GameLoop)
 
             // Methods are delegated to app:
             // app.pause()
@@ -216,8 +216,8 @@ export default doc('GameLoop', {context: 'game'}, () => {
             // app.setFpsLimited(true)
 
             // Events are also delegated:
-            // app.on('update', (dt) => { ... })
-            // app.on('render', (progress) => { ... })
+            // app.on('update', (dt) => {})
+            // app.on('render', (progress) => {})
         })
 
     })

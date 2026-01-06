@@ -410,18 +410,24 @@ const STYLES = buildEditorStyles(
         display: block;
         font-family: var(--font-mono);
         font-size: 12px;
+        --logger-width: calc(100% - 20px);
+        --logger-margin: 0 10px 10px;
+        --logger-padding: 0;
+        --logger-border: 1px solid var(--border);
+        --logger-border-radius: 6px;
     }
 
     .logger {
-        width: calc(100% - 20px);
-        margin: 0 10px 10px;
-        border-radius: 6px;
+        width: var(--logger-width);
+        margin: var(--logger-margin);
+        padding: var(--logger-padding);
+        border-radius: var(--logger-border-radius);
         overflow: hidden;
         z-index: 100;
         position: relative;
         background: var(--bg-primary);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-        border: 1px solid var(--border);
+        border: var(--logger-border);
         color: var(--fg-primary);
         transition: opacity 0.2s ease;
     }

@@ -180,8 +180,15 @@ body {
 .docs-logger {
     flex-shrink: 0;
     border-top: 2px solid var(--accent);
-    padding-top: 0.5rem;
     background: var(--bg-hover);
+}
+
+.docs-logger perky-logger {
+    --logger-width: 100%;
+    --logger-margin: 0;
+    --logger-padding: 6px 0;
+    --logger-border: none;
+    --logger-border-radius: 0;
 }
 
 .welcome-message {
