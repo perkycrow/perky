@@ -151,8 +151,7 @@ export default doc('KeyboardDevice', () => {
                 const pressed = keyboard.getPressedControls()
                 if (pressed.length > 0) {
                     display.innerHTML = pressed.map(c =>
-                        `<span style="background:#e94560;padding:4px 8px;margin:2px;border-radius:4px">${c.name}</span>`
-                    ).join('')
+                        `<span style="background:#e94560;padding:4px 8px;margin:2px;border-radius:4px">${c.name}</span>`).join('')
                 } else {
                     display.textContent = ''
                 }

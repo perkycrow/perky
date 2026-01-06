@@ -185,12 +185,12 @@ export default doc('GameLoop', {context: 'game'}, () => {
         code('Listen to all events', () => {
             const gameLoop = new GameLoop()
 
-            gameLoop.on('update', (dt) => { /* game logic */ })
-            gameLoop.on('render', (progress) => { /* rendering */ })
-            gameLoop.on('pause', () => { /* handle pause */ })
-            gameLoop.on('resume', () => { /* handle resume */ })
-            gameLoop.on('changed:fps', (fps) => { /* fps changed */ })
-            gameLoop.on('changed:fpsLimited', (limited) => { /* mode changed */ })
+            gameLoop.on('update', (dt) => {/* game logic */})
+            gameLoop.on('render', (progress) => {/* rendering */})
+            gameLoop.on('pause', () => {/* handle pause */})
+            gameLoop.on('resume', () => {/* handle resume */})
+            gameLoop.on('changed:fps', (fps) => {/* fps changed */})
+            gameLoop.on('changed:fpsLimited', (limited) => {/* mode changed */})
         })
 
     })

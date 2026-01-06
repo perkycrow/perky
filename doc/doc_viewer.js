@@ -159,8 +159,12 @@ class DocViewer {
         })
 
         let tab = 'doc'
-        if (isApiPage) tab = 'api'
-        if (isTestPage) tab = 'test'
+        if (isApiPage) {
+            tab = 'api'
+        }
+        if (isTestPage) {
+            tab = 'test'
+        }
 
         return {docPath: doc ? doc.file : null, tab}
     }
@@ -241,7 +245,6 @@ class DocViewer {
             `
         }
     }
-
 
 }
 

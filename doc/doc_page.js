@@ -1037,7 +1037,7 @@ const STYLES = buildEditorStyles(
         position: relative;
     }
 
-    /* API View */
+
     .api-extends {
         font-size: 0.85rem;
         color: var(--fg-muted);
@@ -1145,7 +1145,7 @@ const STYLES = buildEditorStyles(
         border-radius: 0;
     }
 
-    /* Test styles */
+
     .test-describe {
         margin-bottom: 2rem;
     }

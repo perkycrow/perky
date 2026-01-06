@@ -161,6 +161,7 @@ export default doc('Utils', {context: 'simple'}, () => {
             const target = {items: ['sword']}
             const source = {items: ['shield']}
             const result = deepMerge(target, source)
+
             // Arrays are concatenated: ['sword', 'shield']
         })
 
@@ -187,6 +188,7 @@ export default doc('Utils', {context: 'simple'}, () => {
                     return {result: this.data}
                 }
             }
+
             // exportValue(obj) returns {result: 'internal'}
         })
 
