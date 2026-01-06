@@ -25,7 +25,7 @@ export default doc('MouseDevice', () => {
             mouse.start()
         })
 
-        container({title: 'Mouse buttons', width: 400, height: 150, preset: 'interactive'}, ctx => {
+        container({title: 'Mouse buttons', height: 150, preset: 'interactive'}, ctx => {
             const hint = document.createElement('div')
             hint.textContent = 'Click with different mouse buttons'
             hint.className = 'doc-hint'
@@ -67,7 +67,7 @@ export default doc('MouseDevice', () => {
             Values are relative to the viewport (clientX/clientY).
         `)
 
-        container({title: 'Cursor position', width: 400, height: 200, preset: 'interactive-alt'}, ctx => {
+        container({title: 'Cursor position', height: 200, preset: 'interactive-alt'}, ctx => {
             const hint = document.createElement('div')
             hint.textContent = 'Move cursor inside this area'
             hint.className = 'doc-hint'
@@ -103,7 +103,7 @@ export default doc('MouseDevice', () => {
             It can distinguish between mouse wheel and trackpad gestures.
         `)
 
-        container({title: 'Wheel events', width: 400, height: 180, preset: 'interactive'}, ctx => {
+        container({title: 'Wheel events', height: 180, preset: 'interactive'}, ctx => {
             ctx.container.style.gap = '8px'
 
             const hint = document.createElement('div')

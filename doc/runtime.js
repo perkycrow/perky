@@ -145,7 +145,7 @@ export function container (options, fn) {
 
     currentBlocks.push({
         type: 'container',
-        width: opts.width || 400,
+        width: opts.width || null,
         height: opts.height || 300,
         title: opts.title || null,
         preset: opts.preset || null,

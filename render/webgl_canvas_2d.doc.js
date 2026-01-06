@@ -20,7 +20,7 @@ export default doc('WebGLCanvas2D', () => {
             The renderer automatically creates a canvas element.
         `)
 
-        container({title: 'Simple rectangle', width: 400, height: 200}, ctx => {
+        container({title: 'Simple rectangle', height: 200}, ctx => {
             const renderer = new WebGLCanvas2D({
                 container: ctx.container,
                 autoFit: true,
@@ -52,7 +52,7 @@ export default doc('WebGLCanvas2D', () => {
 
         text('Render multiple shapes with different colors and positions.')
 
-        container({title: 'Circles and rectangles', width: 400, height: 200}, ctx => {
+        container({title: 'Circles and rectangles', height: 200}, ctx => {
             const renderer = new WebGLCanvas2D({
                 container: ctx.container,
                 autoFit: true,
@@ -95,7 +95,7 @@ export default doc('WebGLCanvas2D', () => {
 
         text('Objects support position, rotation, scale, and anchor point.')
 
-        container({title: 'Rotated shapes', width: 400, height: 200}, ctx => {
+        container({title: 'Rotated shapes', height: 200}, ctx => {
             const renderer = new WebGLCanvas2D({
                 container: ctx.container,
                 autoFit: true,
@@ -145,7 +145,7 @@ export default doc('WebGLCanvas2D', () => {
 
         text('Group objects together to apply transformations to all children.')
 
-        container({title: 'Nested groups', width: 400, height: 200}, ctx => {
+        container({title: 'Nested groups', height: 200}, ctx => {
             const renderer = new WebGLCanvas2D({
                 container: ctx.container,
                 autoFit: true,
@@ -186,7 +186,7 @@ export default doc('WebGLCanvas2D', () => {
 
         text('The camera controls the view position and zoom level.')
 
-        container({title: 'Camera zoom', width: 400, height: 200}, ctx => {
+        container({title: 'Camera zoom', height: 200}, ctx => {
             const renderer = new WebGLCanvas2D({
                 container: ctx.container,
                 autoFit: true,
@@ -211,7 +211,7 @@ export default doc('WebGLCanvas2D', () => {
             logger.log('zoom:', renderer.camera.zoom + 'x')
         })
 
-        container({title: 'Camera pan', width: 400, height: 200}, ctx => {
+        container({title: 'Camera pan', height: 200}, ctx => {
             const renderer = new WebGLCanvas2D({
                 container: ctx.container,
                 autoFit: true,

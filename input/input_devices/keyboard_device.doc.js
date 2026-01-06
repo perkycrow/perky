@@ -25,7 +25,7 @@ export default doc('KeyboardDevice', () => {
             keyboard.start()
         })
 
-        container({title: 'Interactive keyboard', width: 400, height: 150, preset: 'interactive'}, ctx => {
+        container({title: 'Interactive keyboard', height: 150, preset: 'interactive'}, ctx => {
             ctx.container.style.cursor = 'pointer'
 
             const hint = document.createElement('div')
@@ -65,7 +65,7 @@ export default doc('KeyboardDevice', () => {
             Examples: \`KeyA\`, \`Space\`, \`ArrowUp\`, \`ShiftLeft\`.
         `)
 
-        container({title: 'Key codes', width: 400, height: 150, preset: 'interactive-alt'}, ctx => {
+        container({title: 'Key codes', height: 150, preset: 'interactive-alt'}, ctx => {
             const hint = document.createElement('div')
             hint.textContent = 'Press any key to see its code'
             hint.className = 'doc-hint'
@@ -94,7 +94,7 @@ export default doc('KeyboardDevice', () => {
 
         text('Check if specific keys are pressed or get all pressed keys.')
 
-        container({title: 'Multiple keys', width: 400, height: 180, preset: 'interactive'}, ctx => {
+        container({title: 'Multiple keys', height: 180, preset: 'interactive'}, ctx => {
             ctx.container.style.gap = '12px'
 
             const hint = document.createElement('div')

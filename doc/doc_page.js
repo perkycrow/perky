@@ -524,7 +524,9 @@ export default class DocPage extends HTMLElement {
 
         const container = document.createElement('div')
         container.className = 'doc-container-element'
-        container.style.width = `${block.width}px`
+        if (block.width) {
+            container.style.width = `${block.width}px`
+        }
         container.style.height = `${block.height}px`
         wrapper.appendChild(container)
 
