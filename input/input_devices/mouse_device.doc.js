@@ -1,4 +1,4 @@
-import {doc, section, text, code, container, logger} from '../../doc/runtime.js'
+import {doc, section, text, code, container} from '../../doc/runtime.js'
 import MouseDevice from './mouse_device.js'
 
 
@@ -36,7 +36,6 @@ export default doc('MouseDevice', () => {
             mouse.on('control:pressed', (control) => {
                 if (control.name.includes('Button')) {
                     updateDisplay(control.name)
-                    logger.log('pressed:', control.name)
                 }
             })
 

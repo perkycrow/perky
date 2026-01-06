@@ -1,4 +1,4 @@
-import {doc, section, text, code, container, logger} from '../../doc/runtime.js'
+import {doc, section, text, code, container} from '../../doc/runtime.js'
 import KeyboardDevice from './keyboard_device.js'
 
 
@@ -36,7 +36,6 @@ export default doc('KeyboardDevice', () => {
 
             keyboard.on('control:pressed', (control) => {
                 updateDisplay(control.name)
-                logger.log('pressed:', control.name)
             })
 
             keyboard.on('control:released', () => {
