@@ -1,4 +1,4 @@
-import {doc, section, text, code, container, logger} from '../doc/runtime.js'
+import {doc, section, text, code, container} from '../doc/runtime.js'
 import WebGLCanvas2D from './webgl_canvas_2d.js'
 import Rectangle from './rectangle.js'
 import Circle from './circle.js'
@@ -41,8 +41,6 @@ export default doc('WebGLCanvas2D', () => {
             renderer.render(scene)
 
             ctx.setApp(renderer)
-
-            logger.log('canvas:', renderer.canvas.width, 'x', renderer.canvas.height)
         })
 
     })
@@ -109,8 +107,7 @@ export default doc('WebGLCanvas2D', () => {
                 height: 1.5,
                 color: '#e94560',
                 x: -5,
-                y: 0,
-                rotation: Math.PI / 6
+                y: 0
             })
 
             const rect2 = new Rectangle({
@@ -118,8 +115,7 @@ export default doc('WebGLCanvas2D', () => {
                 height: 1.5,
                 color: '#0f3460',
                 x: 0,
-                y: 0,
-                rotation: Math.PI / 4
+                y: 0
             })
 
             const rect3 = new Rectangle({
@@ -127,14 +123,19 @@ export default doc('WebGLCanvas2D', () => {
                 height: 1.5,
                 color: '#533483',
                 x: 5,
-                y: 0,
-                rotation: -Math.PI / 6,
-                scaleX: 1.2,
-                scaleY: 0.8
+                y: 0
             })
 
             scene.add(rect1, rect2, rect3)
-            renderer.render(scene)
+
+            ctx.slider('rotation', {min: -180, max: 180, default: 0}, value => {
+                const rad = value * Math.PI / 180
+                rect1.rotation = rad
+                rect2.rotation = rad
+                rect3.rotation = rad
+                renderer.render(scene)
+            })
+
             ctx.setApp(renderer)
         })
 
@@ -154,7 +155,7 @@ export default doc('WebGLCanvas2D', () => {
 
             const scene = new Group2D()
 
-            const group = new Group2D({x: 0, y: 0, rotation: Math.PI / 8})
+            const group = new Group2D({x: 0, y: 0})
 
             group.add(new Rectangle({
                 width: 2.5,
@@ -173,10 +174,13 @@ export default doc('WebGLCanvas2D', () => {
             }))
 
             scene.add(group)
-            renderer.render(scene)
-            ctx.setApp(renderer)
 
-            logger.log('group rotation:', (group.rotation * 180 / Math.PI).toFixed(0) + '°')
+            ctx.slider('group rotation', {min: -180, max: 180, default: 0}, value => {
+                group.rotation = value * Math.PI / 180
+                renderer.render(scene)
+            })
+
+            ctx.setApp(renderer)
         })
 
     })
@@ -207,7 +211,6 @@ export default doc('WebGLCanvas2D', () => {
             ctx.slider('zoom', {min: 0.5, max: 3, default: 1}, value => {
                 renderer.camera.zoom = value
                 renderer.render(scene)
-                logger.log('zoom:', value.toFixed(2) + 'x')
             })
 
             ctx.setApp(renderer)
@@ -241,14 +244,12 @@ export default doc('WebGLCanvas2D', () => {
                 renderer.camera.x = 0
                 renderer.camera.y = 0
                 renderer.render(scene)
-                logger.log('camera pos:', renderer.camera.x, renderer.camera.y)
             })
 
             ctx.action('Offset (3, 2)', () => {
                 renderer.camera.x = 3
                 renderer.camera.y = 2
                 renderer.render(scene)
-                logger.log('camera pos:', renderer.camera.x, renderer.camera.y)
             })
 
             ctx.setApp(renderer)
