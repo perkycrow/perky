@@ -85,6 +85,11 @@ describe('isInsideString', () => {
         expect(isInsideString('')).toBe(false)
     })
 
+
+    test('detects inside regex with escaped slash', () => {
+        expect(isInsideString("file.replace('.doc.js', '').replace(/\\")).toBe(true)
+    })
+
 })
 
 

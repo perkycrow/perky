@@ -20,7 +20,26 @@ export function isInsideString (textBefore) {
     const doubleQuotes = (textBefore.match(/"/g) || []).length
     const singleQuotes = (textBefore.match(/'/g) || []).length
     const backticks = (textBefore.match(/`/g) || []).length
-    return (doubleQuotes + singleQuotes + backticks) % 2 !== 0
+    if ((doubleQuotes + singleQuotes + backticks) % 2 !== 0) {
+        return true
+    }
+    return isInsideRegex(textBefore)
+}
+
+
+export function isInsideRegex (textBefore) {
+    const lastSlash = textBefore.lastIndexOf('/')
+    if (lastSlash === -1) {
+        return false
+    }
+    const afterSlash = textBefore.substring(lastSlash + 1)
+    if (/[a-zA-Z0-9_$)\]}"'`]/.test(textBefore[lastSlash - 1])) {
+        return false
+    }
+    if (/^[^/]*$/.test(afterSlash)) {
+        return true
+    }
+    return false
 }
 
 
