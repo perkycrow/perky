@@ -24,7 +24,8 @@
     "doc:update": "node doc/discovery.js",
     "doc:build": "vite build --config vite.doc.config.js && node doc/generate_pages.js",
     "doc:preview": "vite preview --config vite.doc.config.js",
-    "doc:serve": "yarn doc:build && vite preview --config vite.doc.config.js"
+    "doc:serve": "yarn doc:build && vite preview --config vite.doc.config.js",
+    "doc:deploy": "yarn doc:build && rm -rf ../perkycrow_com/public/doc && cp -r dist/doc ../perkycrow_com/public/doc"
   },
   "keywords": [
     "javascript",
