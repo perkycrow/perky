@@ -26,6 +26,7 @@ export default class PerkyLogger extends HTMLElement {
 
     #containerEl = null
     #contentEl = null
+    #controlsEl = null
     #opacityToggle = null
     #isPinned = true
 
@@ -159,12 +160,24 @@ export default class PerkyLogger extends HTMLElement {
         this.#containerEl = document.createElement('div')
         this.#updateClasses()
 
+        this.#controlsEl = document.createElement('div')
+        this.#controlsEl.className = 'logger-controls'
+
+        const clearBtn = document.createElement('button')
+        clearBtn.className = 'logger-btn'
+        clearBtn.innerHTML = CLEAR_ICON
+        clearBtn.title = 'Clear logs'
+        clearBtn.addEventListener('click', () => this.clear())
+        this.#controlsEl.appendChild(clearBtn)
+
         this.#opacityToggle = document.createElement('button')
-        this.#opacityToggle.className = 'logger-pin-toggle pinned'
+        this.#opacityToggle.className = 'logger-btn pinned'
         this.#opacityToggle.innerHTML = EYE_ICON
         this.#opacityToggle.title = 'Toggle opacity'
         this.#opacityToggle.addEventListener('click', () => this.#togglePin())
-        this.#containerEl.appendChild(this.#opacityToggle)
+        this.#controlsEl.appendChild(this.#opacityToggle)
+
+        this.#containerEl.appendChild(this.#controlsEl)
 
         this.#contentEl = createLoggerContent()
         this.#containerEl.appendChild(this.#contentEl)
@@ -177,6 +190,13 @@ export default class PerkyLogger extends HTMLElement {
         this.#isPinned = !this.#isPinned
         this.#opacityToggle.classList.toggle('pinned', this.#isPinned)
         this.#containerEl.classList.toggle('logger-faded', !this.#isPinned)
+    }
+
+
+    #updateControlsVisibility () {
+        if (this.#controlsEl) {
+            this.#controlsEl.classList.toggle('visible', this.#entries.length >= 2)
+        }
     }
 
 
@@ -296,6 +316,8 @@ export default class PerkyLogger extends HTMLElement {
             this.#contentEl.scrollTop = this.#contentEl.scrollHeight
         }
 
+        this.#updateControlsVisibility()
+
         return entry
     }
 
@@ -353,6 +375,7 @@ export default class PerkyLogger extends HTMLElement {
         if (this.#contentEl) {
             this.#contentEl.innerHTML = ''
         }
+        this.#updateControlsVisibility()
     }
 
 }
@@ -375,6 +398,8 @@ function formatMessage (...messages) {
 
 
 const EYE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>'
+
+const CLEAR_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>'
 
 
 const STYLES = buildEditorStyles(
@@ -409,36 +434,48 @@ const STYLES = buildEditorStyles(
         opacity: 1;
     }
 
-    .logger-pin-toggle {
+    .logger-controls {
         position: absolute;
         top: 4px;
         right: 4px;
+        display: none;
+        gap: 2px;
+        z-index: 10;
+        background: var(--bg-primary);
+        padding: 2px;
+        border-radius: 4px;
+    }
+
+    .logger-controls.visible {
+        display: flex;
+    }
+
+    .logger-btn {
         width: 20px;
         height: 20px;
-        padding: 2px;
+        padding: 3px;
         background: transparent;
         border: none;
         cursor: pointer;
         color: var(--fg-muted);
         opacity: 0.5;
         transition: opacity 0.15s, color 0.15s;
-        z-index: 10;
     }
 
-    .logger-pin-toggle:hover {
+    .logger-btn:hover {
         opacity: 1;
     }
 
-    .logger-pin-toggle.pinned {
+    .logger-btn.pinned {
         color: var(--accent);
         opacity: 0.8;
     }
 
-    .logger-pin-toggle.pinned:hover {
+    .logger-btn.pinned:hover {
         opacity: 1;
     }
 
-    .logger-pin-toggle svg {
+    .logger-btn svg {
         width: 100%;
         height: 100%;
     }
