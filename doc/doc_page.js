@@ -2,6 +2,7 @@ import {buildEditorStyles, editorButtonStyles, editorScrollbarStyles} from '../e
 import '../editor/perky_code.js'
 import logger from '../core/logger.js'
 import {toKebabCase} from '../core/utils.js'
+import {applyContainerPreset} from './runtime.js'
 
 
 const isProduction = import.meta.env.PROD
@@ -660,6 +661,10 @@ function executeContainer (block, container, setup = null) {
         }
         container.innerHTML = ''
 
+        if (block.preset) {
+            applyContainerPreset(container, block.preset)
+        }
+
         const ctx = {
             container,
             setApp: app => {
@@ -1031,6 +1036,22 @@ const STYLES = buildEditorStyles(
         border: 1px solid var(--border);
         border-radius: 6px;
         overflow: hidden;
+    }
+
+    .doc-container-element .doc-hint {
+        font-size: 12px;
+        opacity: 0.6;
+        margin-bottom: 16px;
+    }
+
+    .doc-container-element .doc-display {
+        font-size: 24px;
+        min-height: 32px;
+    }
+
+    .doc-container-element .doc-display-alt {
+        font-size: 20px;
+        color: #e94560;
     }
 
     .doc-container-code {

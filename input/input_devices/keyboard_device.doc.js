@@ -25,28 +25,16 @@ export default doc('KeyboardDevice', () => {
             keyboard.start()
         })
 
-        container({title: 'Interactive keyboard', width: 400, height: 150}, ctx => {
-            ctx.container.tabIndex = 0
-            ctx.container.style.outline = 'none'
-            ctx.container.style.display = 'flex'
-            ctx.container.style.flexDirection = 'column'
-            ctx.container.style.alignItems = 'center'
-            ctx.container.style.justifyContent = 'center'
-            ctx.container.style.background = '#1a1a2e'
-            ctx.container.style.color = '#fff'
-            ctx.container.style.fontFamily = 'monospace'
+        container({title: 'Interactive keyboard', width: 400, height: 150, preset: 'interactive'}, ctx => {
             ctx.container.style.cursor = 'pointer'
 
             const hint = document.createElement('div')
             hint.textContent = 'Click here, then press keys'
-            hint.style.fontSize = '12px'
-            hint.style.opacity = '0.6'
-            hint.style.marginBottom = '16px'
+            hint.className = 'doc-hint'
             ctx.container.appendChild(hint)
 
             const display = document.createElement('div')
-            display.style.fontSize = '24px'
-            display.style.minHeight = '32px'
+            display.className = 'doc-display'
             ctx.container.appendChild(display)
 
             const keyboard = new KeyboardDevice({
@@ -77,27 +65,14 @@ export default doc('KeyboardDevice', () => {
             Examples: \`KeyA\`, \`Space\`, \`ArrowUp\`, \`ShiftLeft\`.
         `)
 
-        container({title: 'Key codes', width: 400, height: 150}, ctx => {
-            ctx.container.tabIndex = 0
-            ctx.container.style.outline = 'none'
-            ctx.container.style.display = 'flex'
-            ctx.container.style.flexDirection = 'column'
-            ctx.container.style.alignItems = 'center'
-            ctx.container.style.justifyContent = 'center'
-            ctx.container.style.background = '#16213e'
-            ctx.container.style.color = '#fff'
-            ctx.container.style.fontFamily = 'monospace'
-
+        container({title: 'Key codes', width: 400, height: 150, preset: 'interactive-alt'}, ctx => {
             const hint = document.createElement('div')
             hint.textContent = 'Press any key to see its code'
-            hint.style.fontSize = '12px'
-            hint.style.opacity = '0.6'
-            hint.style.marginBottom = '16px'
+            hint.className = 'doc-hint'
             ctx.container.appendChild(hint)
 
             const codeDisplay = document.createElement('div')
-            codeDisplay.style.fontSize = '20px'
-            codeDisplay.style.color = '#e94560'
+            codeDisplay.className = 'doc-display-alt'
             ctx.container.appendChild(codeDisplay)
 
             const keyboard = new KeyboardDevice({
@@ -119,22 +94,13 @@ export default doc('KeyboardDevice', () => {
 
         text('Check if specific keys are pressed or get all pressed keys.')
 
-        container({title: 'Multiple keys', width: 400, height: 180}, ctx => {
-            ctx.container.tabIndex = 0
-            ctx.container.style.outline = 'none'
-            ctx.container.style.display = 'flex'
-            ctx.container.style.flexDirection = 'column'
-            ctx.container.style.alignItems = 'center'
-            ctx.container.style.justifyContent = 'center'
-            ctx.container.style.background = '#1a1a2e'
-            ctx.container.style.color = '#fff'
-            ctx.container.style.fontFamily = 'monospace'
+        container({title: 'Multiple keys', width: 400, height: 180, preset: 'interactive'}, ctx => {
             ctx.container.style.gap = '12px'
 
             const hint = document.createElement('div')
             hint.textContent = 'Hold multiple keys'
-            hint.style.fontSize = '12px'
-            hint.style.opacity = '0.6'
+            hint.className = 'doc-hint'
+            hint.style.marginBottom = '0'
             ctx.container.appendChild(hint)
 
             const display = document.createElement('div')

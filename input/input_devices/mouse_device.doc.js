@@ -25,26 +25,14 @@ export default doc('MouseDevice', () => {
             mouse.start()
         })
 
-        container({title: 'Mouse buttons', width: 400, height: 150}, ctx => {
-            ctx.container.style.display = 'flex'
-            ctx.container.style.flexDirection = 'column'
-            ctx.container.style.alignItems = 'center'
-            ctx.container.style.justifyContent = 'center'
-            ctx.container.style.background = '#1a1a2e'
-            ctx.container.style.color = '#fff'
-            ctx.container.style.fontFamily = 'monospace'
-            ctx.container.style.userSelect = 'none'
-
+        container({title: 'Mouse buttons', width: 400, height: 150, preset: 'interactive'}, ctx => {
             const hint = document.createElement('div')
             hint.textContent = 'Click with different mouse buttons'
-            hint.style.fontSize = '12px'
-            hint.style.opacity = '0.6'
-            hint.style.marginBottom = '16px'
+            hint.className = 'doc-hint'
             ctx.container.appendChild(hint)
 
             const display = document.createElement('div')
-            display.style.fontSize = '20px'
-            display.style.minHeight = '28px'
+            display.className = 'doc-display'
             ctx.container.appendChild(display)
 
             const mouse = new MouseDevice({
@@ -79,24 +67,14 @@ export default doc('MouseDevice', () => {
             Values are relative to the viewport (clientX/clientY).
         `)
 
-        container({title: 'Cursor position', width: 400, height: 200}, ctx => {
-            ctx.container.style.display = 'flex'
-            ctx.container.style.flexDirection = 'column'
-            ctx.container.style.alignItems = 'center'
-            ctx.container.style.justifyContent = 'center'
-            ctx.container.style.background = '#16213e'
-            ctx.container.style.color = '#fff'
-            ctx.container.style.fontFamily = 'monospace'
-
+        container({title: 'Cursor position', width: 400, height: 200, preset: 'interactive-alt'}, ctx => {
             const hint = document.createElement('div')
             hint.textContent = 'Move cursor inside this area'
-            hint.style.fontSize = '12px'
-            hint.style.opacity = '0.6'
-            hint.style.marginBottom = '16px'
+            hint.className = 'doc-hint'
             ctx.container.appendChild(hint)
 
             const display = document.createElement('div')
-            display.style.fontSize = '24px'
+            display.className = 'doc-display'
             ctx.container.appendChild(display)
 
             const mouse = new MouseDevice({
@@ -125,20 +103,13 @@ export default doc('MouseDevice', () => {
             It can distinguish between mouse wheel and trackpad gestures.
         `)
 
-        container({title: 'Wheel events', width: 400, height: 180}, ctx => {
-            ctx.container.style.display = 'flex'
-            ctx.container.style.flexDirection = 'column'
-            ctx.container.style.alignItems = 'center'
-            ctx.container.style.justifyContent = 'center'
-            ctx.container.style.background = '#1a1a2e'
-            ctx.container.style.color = '#fff'
-            ctx.container.style.fontFamily = 'monospace'
+        container({title: 'Wheel events', width: 400, height: 180, preset: 'interactive'}, ctx => {
             ctx.container.style.gap = '8px'
 
             const hint = document.createElement('div')
             hint.textContent = 'Scroll or use trackpad'
-            hint.style.fontSize = '12px'
-            hint.style.opacity = '0.6'
+            hint.className = 'doc-hint'
+            hint.style.marginBottom = '0'
             ctx.container.appendChild(hint)
 
             const deltaDisplay = document.createElement('div')

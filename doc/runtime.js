@@ -103,6 +103,38 @@ export function action (title, fn) {
 }
 
 
+const CONTAINER_PRESETS = {
+    interactive: {
+        tabIndex: 0,
+        style: {
+            outline: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#1a1a2e',
+            color: '#fff',
+            fontFamily: 'monospace',
+            userSelect: 'none'
+        }
+    },
+    'interactive-alt': {
+        tabIndex: 0,
+        style: {
+            outline: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#16213e',
+            color: '#fff',
+            fontFamily: 'monospace',
+            userSelect: 'none'
+        }
+    }
+}
+
+
 export function container (options, fn) {
     if (!currentBlocks) {
         throw new Error('container() must be called inside doc()')
@@ -116,9 +148,26 @@ export function container (options, fn) {
         width: opts.width || 400,
         height: opts.height || 300,
         title: opts.title || null,
+        preset: opts.preset || null,
         source: extractFunctionBody(callback),
         fn: callback
     })
+}
+
+
+export function applyContainerPreset (container, presetName) {
+    const preset = CONTAINER_PRESETS[presetName]
+    if (!preset) {
+        return
+    }
+
+    if (preset.tabIndex !== undefined) {
+        container.tabIndex = preset.tabIndex
+    }
+
+    if (preset.style) {
+        Object.assign(container.style, preset.style)
+    }
 }
 
 
