@@ -51,6 +51,16 @@
       ]
     },
     {
+      "id": "mouse_device",
+      "file": "/input/input_devices/mouse_device.doc.js",
+      "category": "input",
+      "title": "MouseDevice",
+      "tags": [
+        "input",
+        "mouse_device"
+      ]
+    },
+    {
       "id": "random",
       "file": "/math/random.doc.js",
       "category": "math",

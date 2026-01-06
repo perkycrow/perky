@@ -978,6 +978,50 @@
     },
     "isDefault": true
   },
+  "/input/input_devices/mouse_device.doc.js": {
+    "type": "class",
+    "file": "/input/input_devices/mouse_device.js",
+    "name": "MouseDevice",
+    "line": 7,
+    "extends": "InputDevice",
+    "statics": [
+      {
+        "name": "$name",
+        "line": 9,
+        "source": "static $name = 'mouse'",
+        "kind": "property",
+        "value": "'mouse'"
+      }
+    ],
+    "methods": [
+      {
+        "name": "onStart",
+        "line": 32,
+        "source": "onStart () {\n    this.container.addEventListener('mousedown', this.#mousedownListener)\n    this.container.addEventListener('mouseup', this.#mouseupListener)\n    this.container.addEventListener('mousemove', this.#mousemoveListener)\n    this.container.addEventListener('contextmenu', this.#contextmenuListener)\n    this.container.addEventListener('wheel', this.#wheelListener, {passive: false})\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onStop",
+        "line": 41,
+        "source": "onStop () {\n    this.container.removeEventListener('mousedown', this.#mousedownListener)\n    this.container.removeEventListener('mouseup', this.#mouseupListener)\n    this.container.removeEventListener('mousemove', this.#mousemoveListener)\n    this.container.removeEventListener('contextmenu', this.#contextmenuListener)\n    this.container.removeEventListener('wheel', this.#wheelListener, {passive: false})\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 17,
+      "source": "constructor (params = {}) {\n    super(params)\n\n    this.shouldPreventDefault = params.shouldPreventDefault\n\n    this.#createControls()\n\n    this.#mousedownListener = this.#handleMousedown.bind(this)\n    this.#mouseupListener = this.#handleMouseup.bind(this)\n    this.#mousemoveListener = this.#handleMousemove.bind(this)\n    this.#contextmenuListener = this.#handleContextmenu.bind(this)\n    this.#wheelListener = this.#handleWheel.bind(this)\n}",
+      "kind": "constructor",
+      "params": [
+        "params = ..."
+      ]
+    },
+    "isDefault": true
+  },
   "/math/random.doc.js": {
     "type": "class",
     "file": "/math/random.js",
