@@ -12,6 +12,7 @@ export default class DocPage extends HTMLElement {
     #tocEl = null
     #containerEl = null
     #currentApp = null
+    #containers = []
 
     constructor () {
         super()
@@ -21,6 +22,22 @@ export default class DocPage extends HTMLElement {
 
     connectedCallback () {
         this.#buildDOM()
+    }
+
+
+    disconnectedCallback () {
+        this.#disposeAll()
+    }
+
+
+    #disposeAll () {
+        for (const container of this.#containers) {
+            const app = container._currentApp
+            if (app?.dispose) {
+                app.dispose()
+            }
+        }
+        this.#containers = []
     }
 
 
@@ -66,6 +83,8 @@ export default class DocPage extends HTMLElement {
 
 
     #render () {
+        this.#disposeAll()
+
         const container = this.shadowRoot.querySelector('.doc-page')
         container.innerHTML = ''
 
@@ -269,10 +288,54 @@ export default class DocPage extends HTMLElement {
         case 'section':
             return this.#renderSection(block)
         case 'container':
-            return renderContainer(block, setup)
+            return this.#renderContainer(block, setup)
         default:
             return document.createElement('div')
         }
+    }
+
+
+    #renderContainer (block, setup = null) {
+        const wrapper = document.createElement('div')
+        wrapper.className = 'doc-container-block'
+
+        if (block.title) {
+            const titleEl = document.createElement('div')
+            titleEl.className = 'doc-container-title'
+            titleEl.textContent = block.title
+            wrapper.appendChild(titleEl)
+        }
+
+        const container = document.createElement('div')
+        container.className = 'doc-container-element'
+        container.style.width = `${block.width}px`
+        container.style.height = `${block.height}px`
+        wrapper.appendChild(container)
+
+        this.#containers.push(container)
+
+        const codeWrapper = document.createElement('div')
+        codeWrapper.className = 'doc-container-code'
+
+        const codeEl = document.createElement('perky-code')
+        codeEl.setAttribute('title', block.title || 'Container')
+        codeEl.code = block.source
+        codeWrapper.appendChild(codeEl)
+
+        const button = document.createElement('button')
+        button.className = 'doc-action-btn'
+        button.innerHTML = `
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+            Run
+        `
+        button.addEventListener('click', () => executeContainer(block, container, setup))
+        codeWrapper.appendChild(button)
+
+        wrapper.appendChild(codeWrapper)
+
+        return wrapper
     }
 
 
@@ -340,48 +403,6 @@ function renderAction (block, setup = null) {
     `
     button.addEventListener('click', () => executeAction(block, setup))
     wrapper.appendChild(button)
-
-    return wrapper
-}
-
-
-function renderContainer (block, setup = null) {
-    const wrapper = document.createElement('div')
-    wrapper.className = 'doc-container-block'
-
-    if (block.title) {
-        const titleEl = document.createElement('div')
-        titleEl.className = 'doc-container-title'
-        titleEl.textContent = block.title
-        wrapper.appendChild(titleEl)
-    }
-
-    const container = document.createElement('div')
-    container.className = 'doc-container-element'
-    container.style.width = `${block.width}px`
-    container.style.height = `${block.height}px`
-    wrapper.appendChild(container)
-
-    const codeWrapper = document.createElement('div')
-    codeWrapper.className = 'doc-container-code'
-
-    const codeEl = document.createElement('perky-code')
-    codeEl.setAttribute('title', block.title || 'Container')
-    codeEl.code = block.source
-    codeWrapper.appendChild(codeEl)
-
-    const button = document.createElement('button')
-    button.className = 'doc-action-btn'
-    button.innerHTML = `
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M8 5v14l11-7z"/>
-        </svg>
-        Run
-    `
-    button.addEventListener('click', () => executeContainer(block, container, setup))
-    codeWrapper.appendChild(button)
-
-    wrapper.appendChild(codeWrapper)
 
     return wrapper
 }

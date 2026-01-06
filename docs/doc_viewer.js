@@ -21,8 +21,6 @@ class DocViewer {
         this.buildNav()
         this.setupSearch()
         this.route()
-
-        window.addEventListener('popstate', () => this.route())
     }
 
 
@@ -76,10 +74,6 @@ class DocViewer {
                 item.dataset.category = doc.category
                 item.href = `?doc=${encodeURIComponent(doc.file)}`
 
-                item.addEventListener('click', (e) => {
-                    e.preventDefault()
-                    this.navigateToDoc(doc)
-                })
 
                 this.nav.appendChild(item)
             }
@@ -118,14 +112,6 @@ class DocViewer {
         for (const item of items) {
             item.classList.toggle('active', item.dataset.file === docPath)
         }
-    }
-
-
-    navigateToDoc (doc) {
-        const url = new URL(window.location)
-        url.searchParams.set('doc', doc.file)
-        window.history.pushState({}, '', url)
-        this.route()
     }
 
 
