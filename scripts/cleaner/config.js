@@ -40,6 +40,7 @@ export const EXCLUSIONS = {
 
     comments: [
         /\.test\.js$/,
+        /\.doc\.js$/,
         'scripts/cleaner/auditors/comments.js',
         'scripts/cleaner/config.js'
     ],
