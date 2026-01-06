@@ -1,6 +1,7 @@
 import EntityView from '../../game/entity_view.js'
 import Circle from '../../render/circle.js'
 import Image2D from '../../render/image_2d.js'
+import WaveEffect from '../effects/wave_effect.js'
 
 
 const SOURCE_COLORS = {
@@ -24,11 +25,16 @@ export default class ProjectileView extends EntityView {
                 x: entity.x,
                 y: entity.y,
                 image,
-                width: config.width ?? 0.25,
-                height: config.height ?? 0.25,
+                width: entity.size,
+                height: entity.size,
                 anchorX: 0.5,
                 anchorY: 0.5
             })
+
+            if (!entity.spin) {
+                this.waveEffect = new WaveEffect({amplitude: 0.3})
+                this.root.effects.add(this.waveEffect)
+            }
         } else {
             const color = SOURCE_COLORS[entity.source] || config.color || '#3a2a1a'
 
@@ -46,7 +52,12 @@ export default class ProjectileView extends EntityView {
         if (this.root) {
             this.root.x = this.entity.x
             this.root.y = this.entity.y
-            this.root.rotation = this.entity.rotation
+
+            if (this.entity.spin) {
+                this.root.rotation = this.entity.rotation
+            } else if (this.waveEffect) {
+                this.waveEffect.phase = this.entity.time * 15
+            }
         }
     }
 

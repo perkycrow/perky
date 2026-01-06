@@ -76,7 +76,9 @@ export default class DenWorld extends World {
             velocityY: options.velocityY ?? 0.8,
             gravity: options.gravity ?? -1.5,
             source: 'enemy',
-            sprite: options.sprite
+            sprite: options.sprite,
+            spin: options.spin,
+            size: options.size
         })
     }
 
@@ -117,7 +119,10 @@ export default class DenWorld extends World {
                 x,
                 y,
                 velocityX: -4 * Math.cos(angle),
-                velocityY: Math.sin(angle) * 2
+                velocityY: Math.sin(angle) * 2,
+                sprite: 'fireball',
+                spin: false,
+                size: 0.4
             })
         })
 

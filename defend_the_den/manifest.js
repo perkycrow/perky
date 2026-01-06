@@ -14,7 +14,8 @@ const manifest = {
         amalgam: {type: 'image', url: './assets/images/amalgam.png'},
         brick: {type: 'image', url: './assets/images/brick.png'},
         pie: {type: 'image', url: './assets/images/pie.png'},
-        cake: {type: 'image', url: './assets/images/cake.png'}
+        cake: {type: 'image', url: './assets/images/cake.png'},
+        fireball: {type: 'image', url: './assets/images/fireball.png'}
     }
 }
 

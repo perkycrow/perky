@@ -123,11 +123,7 @@ export default class GameController extends WorldController {
                     maxSpeed: config.enemySpeed * 1.5
                 })
             } else {
-                this.spawnRedEnemy({
-                    x: 3.5,
-                    y: randomY,
-                    maxSpeed: config.enemySpeed * 1.5
-                })
+
                 this.spawnPigEnemy({
                     x: 3.5,
                     y: randomY,
