@@ -1,4 +1,4 @@
-import {doc, section, text, code, container, logger} from '../../docs/runtime.js'
+import {doc, section, text, code, container, logger} from '../../doc/runtime.js'
 import KeyboardDevice from './keyboard_device.js'
 
 

@@ -18,8 +18,8 @@
     "test": "vitest run",
     "cleaner": "node scripts/cleaner.js",
     "clean": "node scripts/cleaner.js --audit --fix",
-    "docs": "vite --open /docs/",
-    "docs:update": "node docs/discovery.js"
+    "doc": "vite --open /doc/",
+    "doc:update": "node doc/discovery.js"
   },
   "keywords": [
     "javascript",

@@ -1,4 +1,4 @@
-import {doc, text, code, action, logger} from '../docs/runtime.js'
+import {doc, text, code, action, logger} from '../doc/runtime.js'
 import Random from './random.js'
 
 

@@ -1,4 +1,4 @@
-import {doc, section, setup, text, code, action, logger} from '../docs/runtime.js'
+import {doc, section, setup, text, code, action, logger} from '../doc/runtime.js'
 import Vec2 from './vec2.js'
 
 

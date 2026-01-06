@@ -1,4 +1,4 @@
-import {doc, section, text, code, container, logger} from '../docs/runtime.js'
+import {doc, section, text, code, container, logger} from '../doc/runtime.js'
 import WebGLCanvas2D from './webgl_canvas_2d.js'
 import Rectangle from './rectangle.js'
 import Circle from './circle.js'

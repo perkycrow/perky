@@ -21,7 +21,7 @@ function toPascalCase (str) {
 async function discoverDocs () {
     const files = await glob('**/*.doc.js', {
         cwd: rootDir,
-        ignore: ['node_modules/**', 'dist/**', 'docs/**']
+        ignore: ['node_modules/**', 'dist/**', 'doc/**']
     })
 
     const docs = files.map(file => {
