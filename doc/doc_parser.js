@@ -24,45 +24,69 @@ function extractBlocks (source) {
     }
 
     walkNode(ast, (node) => {
-        if (node.type !== 'CallExpression') {
-            return
+        const block = extractBlock(node, source, blockTypes)
+        if (block) {
+            blocks.push(block)
         }
-
-        const callee = node.callee
-        if (callee.type !== 'Identifier' || !blockTypes.includes(callee.name)) {
-            return
-        }
-
-        const args = node.arguments
-        if (args.length < 2) {
-            return
-        }
-
-        const titleArg = args[0]
-        if (titleArg.type !== 'Literal' || typeof titleArg.value !== 'string') {
-            return
-        }
-
-        const callbackArg = args[1]
-        if (callbackArg.type !== 'ArrowFunctionExpression' && callbackArg.type !== 'FunctionExpression') {
-            return
-        }
-
-        const body = callbackArg.body
-        if (body.type !== 'BlockStatement') {
-            return
-        }
-
-        const bodySource = extractBlockBody(source, body.start, body.end)
-
-        blocks.push({
-            type: callee.name,
-            title: titleArg.value,
-            source: bodySource
-        })
     })
 
     return blocks
+}
+
+
+function extractBlock (node, source, blockTypes) {
+    if (node.type !== 'CallExpression') {
+        return null
+    }
+
+    const callee = node.callee
+    if (callee.type !== 'Identifier' || !blockTypes.includes(callee.name)) {
+        return null
+    }
+
+    const args = node.arguments
+    if (args.length < 2) {
+        return null
+    }
+
+    const title = extractTitle(args[0])
+    if (!title) {
+        return null
+    }
+
+    const callbackArg = args[1]
+    if (callbackArg.type !== 'ArrowFunctionExpression' && callbackArg.type !== 'FunctionExpression') {
+        return null
+    }
+
+    const body = callbackArg.body
+    if (body.type !== 'BlockStatement') {
+        return null
+    }
+
+    return {
+        type: callee.name,
+        title,
+        source: extractBlockBody(source, body.start, body.end)
+    }
+}
+
+
+function extractTitle (titleArg) {
+    if (titleArg.type === 'Literal' && typeof titleArg.value === 'string') {
+        return titleArg.value
+    }
+
+    if (titleArg.type === 'ObjectExpression') {
+        const titleProp = titleArg.properties.find(
+            p => p.key?.name === 'title' || p.key?.value === 'title'
+        )
+        if (titleProp?.value?.type === 'Literal') {
+            return titleProp.value.value
+        }
+    }
+
+    return null
 }
 
 
