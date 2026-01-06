@@ -14,7 +14,6 @@ class DocViewer {
         this.searchInput = document.querySelector('.sidebar-search .search-input')
         this.docs = []
         this.apiData = {}
-        this.sourcesData = {}
         this.currentDoc = null
     }
 
@@ -22,7 +21,6 @@ class DocViewer {
     async init () {
         await this.loadDocs()
         await this.loadApiData()
-        await this.loadSourcesData()
         this.buildNav()
         this.setupSearch()
         this.route()
@@ -52,13 +50,13 @@ class DocViewer {
     }
 
 
-    async loadSourcesData () {
+    async loadSourcesFor (docPath) {
         try {
-            const response = await fetch('./sources.json')
-            this.sourcesData = await response.json()
-        } catch (error) {
-            console.error('Failed to load sources.json:', error)
-            this.sourcesData = {}
+            const fileName = docPath.slice(1).replace(/\//g, '_').replace('.js', '.json')
+            const response = await fetch(`./sources/${fileName}`)
+            return await response.json()
+        } catch {
+            return null
         }
     }
 
@@ -112,9 +110,10 @@ class DocViewer {
     route () {
         const params = new URLSearchParams(window.location.search)
         const docPath = params.get('doc')
+        const tab = params.get('tab') || 'doc'
 
         if (docPath) {
-            this.showDoc(docPath)
+            this.showDoc(docPath, tab)
         } else {
             this.showWelcome()
         }
@@ -142,7 +141,7 @@ class DocViewer {
     }
 
 
-    async showDoc (docPath) {
+    async showDoc (docPath, tab = 'doc') {
         logger.clear()
 
         try {
@@ -159,13 +158,14 @@ class DocViewer {
             this.container.innerHTML = ''
             const docPage = document.createElement('doc-page')
             docPage.doc = docData
+            docPage.initialTab = tab
 
             const api = this.apiData[docPath]
             if (api) {
                 docPage.api = api
             }
 
-            const sources = this.sourcesData[docPath]
+            const sources = await this.loadSourcesFor(docPath)
             if (sources) {
                 docPage.sources = sources
             }

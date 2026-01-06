@@ -2,3 +2,6 @@ node_modules/*
 .DS_Store
 install-state.gz
 dist/
+doc/sources/
+doc/docs.json
+doc/api.json

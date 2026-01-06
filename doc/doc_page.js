@@ -78,6 +78,13 @@ export default class DocPage extends HTMLElement {
     }
 
 
+    set initialTab (value) {
+        if (value === 'api' || value === 'doc') {
+            this.#activeTab = value
+        }
+    }
+
+
     #buildDOM () {
         const style = document.createElement('style')
         style.textContent = STYLES
@@ -171,7 +178,19 @@ export default class DocPage extends HTMLElement {
 
     #switchTab (tab) {
         this.#activeTab = tab
+        this.#updateUrl(tab)
         this.#render()
+    }
+
+
+    #updateUrl (tab) {
+        const url = new URL(window.location)
+        if (tab === 'doc') {
+            url.searchParams.delete('tab')
+        } else {
+            url.searchParams.set('tab', tab)
+        }
+        window.history.replaceState({}, '', url)
     }
 
 

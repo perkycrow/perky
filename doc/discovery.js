@@ -79,7 +79,13 @@ async function buildApiData (docs) {
 
 
 function buildSourcesData (docs) {
-    const sources = {}
+    const sourcesDir = path.join(__dirname, 'sources')
+
+    if (!fs.existsSync(sourcesDir)) {
+        fs.mkdirSync(sourcesDir, {recursive: true})
+    }
+
+    let count = 0
 
     for (const doc of docs) {
         const fullPath = path.join(rootDir, doc.file)
@@ -87,14 +93,17 @@ function buildSourcesData (docs) {
         try {
             const blocks = parseDocFile(fullPath)
             if (blocks.length > 0) {
-                sources[doc.file] = blocks
+                const outputName = doc.file.slice(1).replace(/\//g, '_')
+                const outputPath = path.join(sourcesDir, outputName.replace('.js', '.json'))
+                fs.writeFileSync(outputPath, JSON.stringify(blocks, null, 2))
+                count++
             }
         } catch (error) {
             console.warn(`  Warning: Could not parse sources for ${doc.file}: ${error.message}`)
         }
     }
 
-    return sources
+    return count
 }
 
 
@@ -117,12 +126,7 @@ async function main () {
     const apiCount = Object.keys(apiData).length
     console.log(`\nGenerated API data for ${apiCount} file(s)`)
 
-    const sourcesData = buildSourcesData(result.docs)
-    const sourcesOutputPath = path.join(__dirname, 'sources.json')
-
-    fs.writeFileSync(sourcesOutputPath, JSON.stringify(sourcesData, null, 2))
-
-    const sourcesCount = Object.keys(sourcesData).length
+    const sourcesCount = buildSourcesData(result.docs)
     console.log(`\nExtracted sources for ${sourcesCount} file(s)`)
 }
 
