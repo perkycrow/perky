@@ -331,13 +331,15 @@ export default class DocPage extends HTMLElement {
             this.#contentEl.appendChild(fileEl)
         }
 
-        const categories = [
-            {key: 'statics', title: 'Static'},
-            {key: 'constructor', title: 'Constructor', single: true},
-            {key: 'methods', title: 'Methods'},
-            {key: 'getters', title: 'Getters'},
-            {key: 'setters', title: 'Setters'}
-        ]
+        const categories = api.type === 'module'
+            ? [{key: 'functions', title: 'Functions'}]
+            : [
+                {key: 'statics', title: 'Static'},
+                {key: 'constructor', title: 'Constructor', single: true},
+                {key: 'methods', title: 'Methods'},
+                {key: 'getters', title: 'Getters'},
+                {key: 'setters', title: 'Setters'}
+            ]
 
         const tocTitle = document.createElement('div')
         tocTitle.className = 'doc-toc-title'

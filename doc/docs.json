@@ -31,6 +31,16 @@
       ]
     },
     {
+      "id": "utils",
+      "file": "/core/utils.doc.js",
+      "category": "core",
+      "title": "Utils",
+      "tags": [
+        "core",
+        "utils"
+      ]
+    },
+    {
       "id": "perky_logger",
       "file": "/editor/perky_logger.doc.js",
       "category": "editor",

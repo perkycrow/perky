@@ -728,6 +728,266 @@
     },
     "isDefault": true
   },
+  "/core/utils.doc.js": {
+    "type": "module",
+    "file": "/core/utils.js",
+    "functions": [
+      {
+        "name": "toCamelCase",
+        "line": 7,
+        "params": [
+          "string"
+        ],
+        "source": "function toCamelCase (string) {\n    return inflector.toCamelCase(string)\n}"
+      },
+      {
+        "name": "toPascalCase",
+        "line": 12,
+        "params": [
+          "string"
+        ],
+        "source": "function toPascalCase (string) {\n    return inflector.toPascalCase(string)\n}"
+      },
+      {
+        "name": "toSnakeCase",
+        "line": 17,
+        "params": [
+          "string"
+        ],
+        "source": "function toSnakeCase (string) {\n    return inflector.toSnakeCase(string)\n}"
+      },
+      {
+        "name": "toKebabCase",
+        "line": 22,
+        "params": [
+          "string"
+        ],
+        "source": "function toKebabCase (string) {\n    return inflector.toKebabCase(string)\n}"
+      },
+      {
+        "name": "uniqueId",
+        "line": 29,
+        "params": [
+          "collection",
+          "prefix"
+        ],
+        "source": "function uniqueId (collection, prefix) {\n    if (!prefix) {\n        prefix = collection\n        collection = 'default'\n    }\n\n    if (!idCounter[collection]) {\n        idCounter[collection] = {}\n    }\n\n    if (!idCounter[collection][prefix]) {\n        idCounter[collection][prefix] = 0\n    }\n\n    const current = idCounter[collection][prefix]\n    idCounter[collection][prefix]++\n\n    return current === 0 ? prefix : `${prefix}_${current}`\n}"
+      },
+      {
+        "name": "resetUniqueId",
+        "line": 50,
+        "params": [
+          "collection",
+          "prefix"
+        ],
+        "source": "function resetUniqueId (collection, prefix) {\n    if (prefix) {\n        if (idCounter[collection]) {\n            idCounter[collection][prefix] = 0\n        }\n    } else {\n        idCounter[collection] = {}\n    }\n}"
+      },
+      {
+        "name": "singularize",
+        "line": 61,
+        "params": [
+          "word"
+        ],
+        "source": "function singularize (word) {\n    return inflector.singular(word)\n}"
+      },
+      {
+        "name": "pluralize",
+        "line": 66,
+        "params": [
+          "word",
+          "count",
+          "inclusive"
+        ],
+        "source": "function pluralize (word, count, inclusive) {\n    return inflector.pluralize(word, count, inclusive)\n}"
+      },
+      {
+        "name": "plural",
+        "line": 71,
+        "params": [
+          "word"
+        ],
+        "source": "function plural (word) {\n    return inflector.plural(word)\n}"
+      },
+      {
+        "name": "isPlural",
+        "line": 76,
+        "params": [
+          "word"
+        ],
+        "source": "function isPlural (word) {\n    return inflector.isPlural(word)\n}"
+      },
+      {
+        "name": "isSingular",
+        "line": 81,
+        "params": [
+          "word"
+        ],
+        "source": "function isSingular (word) {\n    return inflector.isSingular(word)\n}"
+      },
+      {
+        "name": "setDefaults",
+        "line": 86,
+        "params": [
+          "data",
+          "defaults"
+        ],
+        "source": "function setDefaults (data, defaults) {\n    return deepMerge(defaults, data)\n}"
+      },
+      {
+        "name": "getNestedValue",
+        "line": 91,
+        "params": [
+          "obj",
+          "path"
+        ],
+        "source": "function getNestedValue (obj, path) {\n    if (!path) {\n        return obj\n    }\n\n    const parts = path.split('.')\n    let current = obj\n\n    for (const part of parts) {\n        if (current === undefined || current === null) {\n            return undefined\n        }\n        current = current[part]\n    }\n\n    return current\n}"
+      },
+      {
+        "name": "setNestedValue",
+        "line": 110,
+        "params": [
+          "obj",
+          "path",
+          "value"
+        ],
+        "source": "function setNestedValue (obj, path, value) {\n    const parts = path.split('.')\n    let current = obj\n\n    for (let i = 0; i < parts.length - 1; i++) {\n        const part = parts[i]\n        if (!current[part]) {\n            current[part] = {}\n        }\n        current = current[part]\n    }\n\n    current[parts[parts.length - 1]] = value\n    return obj\n}"
+      },
+      {
+        "name": "deepMerge",
+        "line": 127,
+        "params": [
+          "target",
+          "source"
+        ],
+        "source": "function deepMerge (target, source) {\n    return deepMergeInternal(target, source, new WeakSet())\n}"
+      },
+      {
+        "name": "deepMergeInternal",
+        "line": 132,
+        "params": [
+          "target",
+          "source",
+          "seen"
+        ],
+        "source": "function deepMergeInternal (target, source, seen) {\n    if (!source) {\n        return target\n    }\n\n    if (typeof source === 'object' && source !== null) {\n        if (seen.has(source)) {\n            return source\n        }\n        seen.add(source)\n    }\n\n    const sourceIsArray = Array.isArray(source)\n    const targetIsArray = Array.isArray(target)\n\n    if (sourceIsArray !== targetIsArray) {\n        return cloneIfNeeded(source, seen)\n    }\n\n    if (sourceIsArray) {\n        return mergeArrays(target, source, seen)\n    }\n\n    return mergeObject(target, source, seen)\n}"
+      },
+      {
+        "name": "exportValue",
+        "line": 159,
+        "params": [
+          "value"
+        ],
+        "source": "function exportValue (value) {\n\n    if (value && typeof value === 'object') {\n        if (typeof value.export === 'function') {\n            return value.export()\n        }\n\n        if (Array.isArray(value)) {\n            return value.map(item => exportValue(item))\n        }\n\n        const result = {}\n        for (const key in value) {\n            if (Object.hasOwn(value, key)) {\n                result[key] = exportValue(value[key])\n            }\n        }\n        return result\n    }\n\n    return value\n}"
+      },
+      {
+        "name": "isNonNullObject",
+        "line": 183,
+        "params": [
+          "value"
+        ],
+        "source": "function isNonNullObject (value) {\n    return Boolean(value) && typeof value === 'object'\n}"
+      },
+      {
+        "name": "isSpecial",
+        "line": 188,
+        "params": [
+          "value"
+        ],
+        "source": "function isSpecial (value) {\n    const stringValue = Object.prototype.toString.call(value)\n    return stringValue === '[object RegExp]' || stringValue === '[object Date]'\n}"
+      },
+      {
+        "name": "isMergeableObject",
+        "line": 194,
+        "params": [
+          "value"
+        ],
+        "source": "function isMergeableObject (value) {\n    return isNonNullObject(value) && !isSpecial(value)\n}"
+      },
+      {
+        "name": "emptyTarget",
+        "line": 199,
+        "params": [
+          "value"
+        ],
+        "source": "function emptyTarget (value) {\n    return Array.isArray(value) ? [] : {}\n}"
+      },
+      {
+        "name": "cloneIfNeeded",
+        "line": 204,
+        "params": [
+          "value",
+          "seen"
+        ],
+        "source": "function cloneIfNeeded (value, seen) {\n    return isMergeableObject(value) ? deepMergeInternal(emptyTarget(value), value, seen) : value\n}"
+      },
+      {
+        "name": "mergeArrays",
+        "line": 209,
+        "params": [
+          "target",
+          "source",
+          "seen"
+        ],
+        "source": "function mergeArrays (target, source, seen) {\n    return target.concat(source).map(element => cloneIfNeeded(element, seen))\n}"
+      },
+      {
+        "name": "getKeys",
+        "line": 214,
+        "params": [
+          "target"
+        ],
+        "source": "function getKeys (target) {\n    const symbols = Object.getOwnPropertySymbols\n        ? Object.getOwnPropertySymbols(target).filter(symbol =>\n            Object.propertyIsEnumerable.call(target, symbol))\n        : []\n    return Object.keys(target).concat(symbols)\n}"
+      },
+      {
+        "name": "mergeObject",
+        "line": 223,
+        "params": [
+          "target",
+          "source",
+          "seen"
+        ],
+        "source": "function mergeObject (target, source, seen) {\n    const destination = {}\n\n    if (isMergeableObject(target)) {\n        getKeys(target).forEach(key => {\n            destination[key] = cloneIfNeeded(target[key], seen)\n        })\n    }\n\n    getKeys(source).forEach(key => {\n        if ((key in target) && isMergeableObject(source[key])) {\n            destination[key] = deepMergeInternal(target[key], source[key], seen)\n        } else {\n            destination[key] = cloneIfNeeded(source[key], seen)\n        }\n    })\n\n    return destination\n}"
+      },
+      {
+        "name": "formatNumber",
+        "line": 244,
+        "params": [
+          "n"
+        ],
+        "source": "function formatNumber (n) {\n    if (typeof n !== 'number') {\n        return String(n)\n    }\n    return Number.isInteger(n) ? String(n) : n.toFixed(2)\n}"
+      },
+      {
+        "name": "formatBytes",
+        "line": 252,
+        "params": [
+          "bytes"
+        ],
+        "source": "function formatBytes (bytes) {\n    if (bytes === 0) {\n        return '0 B'\n    }\n\n    const units = ['B', 'KB', 'MB', 'GB']\n    const i = Math.floor(Math.log(bytes) / Math.log(1024))\n    const value = bytes / Math.pow(1024, i)\n\n    return `${value.toFixed(i > 1 ? 2 : 0)} ${units[i]}`\n}"
+      },
+      {
+        "name": "delegateProperties",
+        "line": 265,
+        "params": [
+          "receiver",
+          "source",
+          "names"
+        ],
+        "source": "function delegateProperties (receiver, source, names) {\n    if (Array.isArray(names)) {\n        names.forEach(name => delegateProperty(receiver, source, name, name))\n    } else if (typeof names === 'object') {\n        Object.entries(names).forEach(([sourceName, receiverName]) => {\n            delegateProperty(receiver, source, sourceName, receiverName)\n        })\n    }\n}"
+      },
+      {
+        "name": "delegateProperty",
+        "line": 276,
+        "params": [
+          "receiver",
+          "source",
+          "sourceName",
+          "receiverName"
+        ],
+        "source": "function delegateProperty (receiver, source, sourceName, receiverName) {\n    const descriptor = Object.getOwnPropertyDescriptor(source, sourceName)\n\n    if (descriptor && (descriptor.get || descriptor.set)) {\n        Object.defineProperty(receiver, receiverName, {\n            get: descriptor.get ? descriptor.get.bind(source) : undefined,\n            set: descriptor.set ? descriptor.set.bind(source) : undefined,\n            enumerable: true,\n            configurable: true\n        })\n    } else if (typeof source[sourceName] === 'function') {\n        receiver[receiverName] = source[sourceName].bind(source)\n    } else {\n        Object.defineProperty(receiver, receiverName, {\n            get: () => source[sourceName],\n            set: (value) => {\n                source[sourceName] = value\n            },\n            enumerable: true,\n            configurable: true\n        })\n    }\n}"
+      }
+    ],
+    "exports": []
+  },
   "/editor/perky_logger.doc.js": {
     "type": "class",
     "file": "/editor/perky_logger.js",
