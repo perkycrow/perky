@@ -176,8 +176,14 @@ export default doc('Canvas2D', () => {
 
             scene.add(group)
 
-            ctx.slider('group rotation', {min: -180, max: 180, default: 0}, value => {
+            ctx.slider('rotation', {min: -180, max: 180, default: 0}, value => {
                 group.rotation = value * Math.PI / 180
+                renderer.render(scene)
+            })
+
+            ctx.slider('scale', {min: 0.5, max: 2, default: 1}, value => {
+                group.scaleX = value
+                group.scaleY = value
                 renderer.render(scene)
             })
 
@@ -211,6 +217,11 @@ export default doc('Canvas2D', () => {
 
             ctx.slider('zoom', {min: 0.5, max: 3, default: 1}, value => {
                 renderer.camera.zoom = value
+                renderer.render(scene)
+            })
+
+            ctx.slider('pan X', {min: -10, max: 10, default: 0}, value => {
+                renderer.camera.x = value
                 renderer.render(scene)
             })
 
@@ -337,19 +348,19 @@ export default doc('Canvas2D', () => {
                 }))
             }
 
-            const statsDisplay = document.createElement('div')
-            statsDisplay.style.cssText = 'position:absolute;top:8px;left:8px;font:12px monospace;color:#fff;background:rgba(0,0,0,0.5);padding:4px 8px;border-radius:4px'
-            ctx.container.style.position = 'relative'
-            ctx.container.appendChild(statsDisplay)
-
-            const updateStats = () => {
+            const updateInfo = ctx.info(() => {
                 renderer.render(scene)
-                statsDisplay.textContent = `rendered: ${renderer.stats.renderedObjects} / ${renderer.stats.totalObjects}`
-            }
+                return `rendered: ${renderer.stats.renderedObjects} / ${renderer.stats.totalObjects}`
+            })
+
+            ctx.action('Pan Left', () => {
+                renderer.camera.x -= 5
+                updateInfo()
+            })
 
             ctx.slider('pan X', {min: -15, max: 15, default: 0}, value => {
                 renderer.camera.x = value
-                updateStats()
+                updateInfo()
             })
 
             ctx.setApp(renderer, scene)

@@ -176,8 +176,14 @@ export default doc('WebGLCanvas2D', () => {
 
             scene.add(group)
 
-            ctx.slider('group rotation', {min: -180, max: 180, default: 0}, value => {
+            ctx.slider('rotation', {min: -180, max: 180, default: 0}, value => {
                 group.rotation = value * Math.PI / 180
+                renderer.render(scene)
+            })
+
+            ctx.slider('scale', {min: 0.5, max: 2, default: 1}, value => {
+                group.scaleX = value
+                group.scaleY = value
                 renderer.render(scene)
             })
 

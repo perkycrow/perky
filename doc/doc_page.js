@@ -701,6 +701,7 @@ function executeContainer (block, container, setup = null) {
     try {
         let actionsBar = null
         let slidersBar = null
+        let infoBar = null
 
         const ctx = {
             container,
@@ -774,6 +775,22 @@ function executeContainer (block, container, setup = null) {
                 slidersBar.appendChild(wrapper)
 
                 onChange(parseFloat(input.value))
+            },
+            info: (fn) => {
+                if (!infoBar) {
+                    infoBar = document.createElement('div')
+                    infoBar.className = 'doc-info-bar'
+                    container.appendChild(infoBar)
+                }
+
+                const el = document.createElement('div')
+                el.className = 'doc-info'
+                infoBar.appendChild(el)
+                const update = (...args) => {
+                    el.textContent = fn(...args)
+                }
+                update()
+                return update
             }
         }
 
@@ -1183,6 +1200,25 @@ const STYLES = buildEditorStyles(
     .doc-actions-btn--active:hover {
         background: var(--accent);
         color: var(--bg-primary);
+    }
+
+    .doc-info-bar {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        z-index: 10;
+    }
+
+    .doc-info {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: #fff;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 4px 8px;
+        border-radius: 4px;
     }
 
     .doc-sliders-bar {
