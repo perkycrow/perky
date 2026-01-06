@@ -686,25 +686,29 @@ function executeAction (block, setup = null) {
 
 
 function executeContainer (block, container, setup = null) {
+    addSpacerIfNeeded()
+
+    const prevApp = container._currentApp
+    if (prevApp?.dispose) {
+        prevApp.dispose()
+    }
+    container.innerHTML = ''
+
+    if (block.preset) {
+        applyContainerPreset(container, block.preset)
+    }
+
     try {
-        addSpacerIfNeeded()
-
-        const prevApp = container._currentApp
-        if (prevApp?.dispose) {
-            prevApp.dispose()
-        }
-        container.innerHTML = ''
-
-        if (block.preset) {
-            applyContainerPreset(container, block.preset)
-        }
-
         let actionsBar = null
 
         const ctx = {
             container,
-            setApp: app => {
+            setApp: (app, ...args) => {
                 container._currentApp = app
+                const [scene] = args
+                if (scene && app.autoFitEnabled && app.render) {
+                    app.on('resize', () => app.render(scene))
+                }
             },
             action: (label, fn) => {
                 if (!actionsBar) {

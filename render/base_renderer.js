@@ -120,6 +120,7 @@ export default class BaseRenderer extends PerkyModule {
         this.displayWidth = width
         this.displayHeight = height
         this.applyPixelRatio()
+        this.emit('resize', width, height)
         return this
     }
 

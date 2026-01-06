@@ -113,7 +113,10 @@ function walkNode (node, callback) {
 
 function extractBlockBody (source, start, end) {
     const inner = source.slice(start + 1, end - 1)
-    return dedent(inner)
+    const filtered = inner.split('\n')
+        .filter(line => !line.trim().startsWith('ctx.setApp('))
+        .join('\n')
+    return dedent(filtered)
 }
 
 

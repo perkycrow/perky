@@ -2164,6 +2164,70 @@
     },
     "isDefault": true
   },
+  "/render/canvas_2d.doc.js": {
+    "type": "class",
+    "file": "/render/canvas_2d.js",
+    "name": "Canvas2D",
+    "line": 11,
+    "extends": "BaseRenderer",
+    "statics": [
+      {
+        "name": "$name",
+        "line": 13,
+        "source": "static $name = 'canvas2D'",
+        "kind": "property",
+        "value": "'canvas2D'"
+      }
+    ],
+    "methods": [
+      {
+        "name": "registerRenderer",
+        "line": 50,
+        "source": "registerRenderer (renderer) {\n    renderer.init({ctx: this.ctx, canvas: this.canvas})\n\n    for (const ObjectClass of renderer.constructor.handles) {\n        this.#rendererRegistry.set(ObjectClass, renderer)\n    }\n\n    if (!this.#renderers.includes(renderer)) {\n        this.#renderers.push(renderer)\n    }\n\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "renderer"
+        ]
+      },
+      {
+        "name": "unregisterRenderer",
+        "line": 65,
+        "source": "unregisterRenderer (renderer) {\n    for (const ObjectClass of renderer.constructor.handles) {\n        if (this.#rendererRegistry.get(ObjectClass) === renderer) {\n            this.#rendererRegistry.delete(ObjectClass)\n        }\n    }\n\n    const index = this.#renderers.indexOf(renderer)\n    if (index !== -1) {\n        this.#renderers.splice(index, 1)\n    }\n\n    renderer.dispose()\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "renderer"
+        ]
+      },
+      {
+        "name": "onDispose",
+        "line": 82,
+        "source": "onDispose () {\n    for (const renderer of this.#renderers) {\n        renderer.dispose()\n    }\n    this.#renderers = []\n    this.#rendererRegistry.clear()\n\n    if (this.#debugGizmoRenderer) {\n        this.#debugGizmoRenderer.dispose()\n        this.#debugGizmoRenderer = null\n    }\n\n    super.onDispose()\n    this.ctx = null\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "render",
+        "line": 99,
+        "source": "render (scene) {\n    const ctx = this.ctx\n\n    this.stats.totalObjects = 0\n    this.stats.renderedObjects = 0\n    this.stats.culledObjects = 0\n\n    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)\n\n    if (this.backgroundColor && this.backgroundColor !== 'transparent') {\n        ctx.fillStyle = this.backgroundColor\n        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)\n    }\n\n    this.camera.update()\n\n    ctx.save()\n    this.camera.applyToContext(ctx, this.pixelRatio)\n\n    scene.updateWorldMatrix(false)\n\n    for (const renderer of this.#renderers) {\n        renderer.reset()\n    }\n\n    const debugGizmoRenderer = this.enableDebugGizmos ? this.#debugGizmoRenderer : null\n    if (debugGizmoRenderer) {\n        debugGizmoRenderer.reset()\n    }\n\n    traverseAndCollect(scene, this.#rendererRegistry, {\n        camera: this.camera,\n        enableCulling: this.enableCulling,\n        stats: this.stats,\n        debugGizmoRenderer\n    })\n\n    for (const renderer of this.#renderers) {\n        renderer.flush()\n    }\n\n    if (debugGizmoRenderer) {\n        debugGizmoRenderer.flush()\n    }\n\n    ctx.restore()\n}",
+        "kind": "method",
+        "params": [
+          "scene"
+        ]
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 19,
+      "source": "constructor (options = {}) {\n    super(options)\n\n    this.ctx = this.canvas.getContext('2d')\n\n    this.#setupDefaultRenderers()\n    this.applyPixelRatio()\n\n    this.backgroundColor = options.backgroundColor ?? null\n    this.enableCulling = options.enableCulling ?? false\n    this.enableDebugGizmos = options.enableDebugGizmos ?? true\n\n    this.stats = {\n        totalObjects: 0,\n        renderedObjects: 0,\n        culledObjects: 0\n    }\n}",
+      "kind": "constructor",
+      "params": [
+        "options = ..."
+      ]
+    },
+    "isDefault": true
+  },
   "/render/webgl_canvas_2d.doc.js": {
     "type": "class",
     "file": "/render/webgl_canvas_2d.js",

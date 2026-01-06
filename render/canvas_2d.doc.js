@@ -1,15 +1,15 @@
 import {doc, section, text, code, container} from '../doc/runtime.js'
-import WebGLCanvas2D from './webgl_canvas_2d.js'
+import Canvas2D from './canvas_2d.js'
 import Rectangle from './rectangle.js'
 import Circle from './circle.js'
 import Group2D from './group_2d.js'
 
 
-export default doc('WebGLCanvas2D', () => {
+export default doc('Canvas2D', () => {
 
     text(`
-        WebGL2-based 2D renderer. Renders scenes with rectangles, circles, sprites,
-        and supports post-processing effects, render groups, and shader customization.
+        Canvas 2D renderer using the native Canvas API. Renders scenes with rectangles,
+        circles, images, sprites, and supports debug gizmos and frustum culling.
     `)
 
 
@@ -21,7 +21,7 @@ export default doc('WebGLCanvas2D', () => {
         `)
 
         container({title: 'Simple rectangle', height: 200}, ctx => {
-            const renderer = new WebGLCanvas2D({
+            const renderer = new Canvas2D({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#1a1a2e'
@@ -51,7 +51,7 @@ export default doc('WebGLCanvas2D', () => {
         text('Render multiple shapes with different colors and positions.')
 
         container({title: 'Circles and rectangles', height: 200}, ctx => {
-            const renderer = new WebGLCanvas2D({
+            const renderer = new Canvas2D({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#16213e'
@@ -95,7 +95,7 @@ export default doc('WebGLCanvas2D', () => {
         text('Objects support position, rotation, scale, and anchor point.')
 
         container({title: 'Rotated shapes', height: 200}, ctx => {
-            const renderer = new WebGLCanvas2D({
+            const renderer = new Canvas2D({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#1a1a2e'
@@ -148,7 +148,7 @@ export default doc('WebGLCanvas2D', () => {
         text('Group objects together to apply transformations to all children.')
 
         container({title: 'Nested groups', height: 200}, ctx => {
-            const renderer = new WebGLCanvas2D({
+            const renderer = new Canvas2D({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#1a1a2e'
@@ -192,7 +192,7 @@ export default doc('WebGLCanvas2D', () => {
         text('The camera controls the view position and zoom level.')
 
         container({title: 'Camera zoom', height: 200}, ctx => {
-            const renderer = new WebGLCanvas2D({
+            const renderer = new Canvas2D({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#16213e'
@@ -218,7 +218,7 @@ export default doc('WebGLCanvas2D', () => {
         })
 
         container({title: 'Camera pan', height: 200}, ctx => {
-            const renderer = new WebGLCanvas2D({
+            const renderer = new Canvas2D({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#16213e'
@@ -259,19 +259,130 @@ export default doc('WebGLCanvas2D', () => {
     })
 
 
+    section('Debug Gizmos', () => {
+
+        text('Enable debug gizmos to visualize bounding boxes and object origins.')
+
+        container({title: 'Debug visualization', height: 200}, ctx => {
+            const renderer = new Canvas2D({
+                container: ctx.container,
+                autoFit: true,
+                backgroundColor: '#1a1a2e',
+                enableDebugGizmos: true
+            })
+
+            const scene = new Group2D()
+
+            const rect = new Rectangle({
+                width: 4,
+                height: 2,
+                color: '#e94560',
+                x: -3,
+                y: 0,
+                debugGizmo: true
+            })
+
+            const circle = new Circle({
+                radius: 1.5,
+                color: '#0f3460',
+                x: 3,
+                y: 0,
+                debugGizmo: true
+            })
+
+            scene.add(rect, circle)
+            renderer.render(scene)
+
+            ctx.action('Gizmos On', () => {
+                rect.debugGizmo = true
+                circle.debugGizmo = true
+                renderer.render(scene)
+            })
+
+            ctx.action('Gizmos Off', () => {
+                rect.debugGizmo = false
+                circle.debugGizmo = false
+                renderer.render(scene)
+            })
+
+            ctx.setApp(renderer, scene)
+        })
+
+    })
+
+
+    section('Culling', () => {
+
+        text(`
+            Enable frustum culling to skip rendering objects outside the view.
+            Useful for large scenes with many objects.
+        `)
+
+        container({title: 'Culling stats', height: 200}, ctx => {
+            const renderer = new Canvas2D({
+                container: ctx.container,
+                autoFit: true,
+                backgroundColor: '#16213e',
+                enableCulling: true
+            })
+
+            const scene = new Group2D()
+
+            for (let i = 0; i < 20; i++) {
+                scene.add(new Circle({
+                    radius: 0.8,
+                    color: `hsl(${i * 18}, 70%, 50%)`,
+                    x: (i - 10) * 2.5,
+                    y: 0
+                }))
+            }
+
+            const statsDisplay = document.createElement('div')
+            statsDisplay.style.cssText = 'position:absolute;top:8px;left:8px;font:12px monospace;color:#fff;background:rgba(0,0,0,0.5);padding:4px 8px;border-radius:4px'
+            ctx.container.style.position = 'relative'
+            ctx.container.appendChild(statsDisplay)
+
+            const updateStats = () => {
+                renderer.render(scene)
+                statsDisplay.textContent = `rendered: ${renderer.stats.renderedObjects} / ${renderer.stats.totalObjects}`
+            }
+
+            ctx.slider('pan X', {min: -15, max: 15, default: 0}, value => {
+                renderer.camera.x = value
+                updateStats()
+            })
+
+            ctx.setApp(renderer, scene)
+        })
+
+        code('Culling options', () => {
+            const renderer = new Canvas2D({
+                enableCulling: true
+            })
+
+            // After render, check stats
+            renderer.render(scene)
+            console.log(renderer.stats.totalObjects)
+            console.log(renderer.stats.renderedObjects)
+            console.log(renderer.stats.culledObjects)
+        })
+
+    })
+
+
     section('Background', () => {
 
         text('Set a background color or use transparent.')
 
         code('Background options', () => {
             // Solid color
-            const renderer1 = new WebGLCanvas2D({
+            const renderer1 = new Canvas2D({
                 backgroundColor: '#1a1a2e'
             })
 
             // Transparent (default)
-            const renderer2 = new WebGLCanvas2D({
-                backgroundColor: 'transparent'
+            const renderer2 = new Canvas2D({
+                backgroundColor: null
             })
 
             // Or set later

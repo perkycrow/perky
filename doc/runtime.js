@@ -174,22 +174,36 @@ export function applyContainerPreset (container, presetName) {
 function extractFunctionBody (fn) {
     const source = fn.toString()
 
+    let body = null
+
     const arrowMatch = source.match(/^\s*\(?[^)]*\)?\s*=>\s*\{([\s\S]*)\}\s*$/)
     if (arrowMatch) {
-        return dedent(arrowMatch[1])
+        body = arrowMatch[1]
     }
 
-    const functionMatch = source.match(/^function\s*\w*\s*\([^)]*\)\s*\{([\s\S]*)\}\s*$/)
-    if (functionMatch) {
-        return dedent(functionMatch[1])
+    if (!body) {
+        const functionMatch = source.match(/^function\s*\w*\s*\([^)]*\)\s*\{([\s\S]*)\}\s*$/)
+        if (functionMatch) {
+            body = functionMatch[1]
+        }
     }
 
-    const arrowExpressionMatch = source.match(/^\s*\(?[^)]*\)?\s*=>\s*(.+)$/)
-    if (arrowExpressionMatch) {
-        return arrowExpressionMatch[1].trim()
+    if (!body) {
+        const arrowExpressionMatch = source.match(/^\s*\(?[^)]*\)?\s*=>\s*(.+)$/)
+        if (arrowExpressionMatch) {
+            return arrowExpressionMatch[1].trim()
+        }
     }
 
-    return source
+    if (!body) {
+        return source
+    }
+
+    body = body.split('\n')
+        .filter(line => !line.trim().startsWith('ctx.setApp('))
+        .join('\n')
+
+    return dedent(body)
 }
 
 
