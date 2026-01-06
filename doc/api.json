@@ -284,6 +284,142 @@
     },
     "isDefault": true
   },
+  "/core/notifier.doc.js": {
+    "type": "class",
+    "file": "/core/notifier.js",
+    "name": "Notifier",
+    "line": 2,
+    "extends": null,
+    "statics": [
+      {
+        "name": "notifierMethods",
+        "line": 143,
+        "source": "static notifierMethods = [\n    'getListenersFor',\n    'on',\n    'once',\n    'off',\n    'emit',\n    'emitter',\n    'listenTo',\n    'listenToOnce',\n    'cleanExternalListeners',\n    'removeListeners',\n    'removeListenersFor',\n    'delegateEvents'\n]",
+        "kind": "property",
+        "value": "[\n    'getListenersFor',\n    'on',\n    'once',\n    'off',\n    'emit',\n    'emitter',\n    'listenTo',\n    'listenToOnce',\n    'cleanExternalListeners',\n    'removeListeners',\n    'removeListenersFor',\n    'delegateEvents'\n]"
+      }
+    ],
+    "methods": [
+      {
+        "name": "getListenersFor",
+        "line": 7,
+        "source": "getListenersFor (name) {\n    return this.#listenersFor[name]\n}",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "on",
+        "line": 12,
+        "source": "on (name, listener) {\n    if (typeof listener !== 'function') {\n        throw new TypeError('Listener must be a function')\n    }\n\n    if (!this.#listenersFor[name]) {\n        this.#listenersFor[name] = []\n    }\n\n    this.#listenersFor[name].push(listener)\n\n    return listener\n}",
+        "kind": "method",
+        "params": [
+          "name",
+          "listener"
+        ]
+      },
+      {
+        "name": "once",
+        "line": 27,
+        "source": "once (name, listener) {\n    if (typeof listener !== 'function') {\n        throw new TypeError('Listener must be a function')\n    }\n\n    const onceWrapper = (...args) => {\n        listener(...args)\n        this.off(name, onceWrapper)\n    }\n\n    return this.on(name, onceWrapper)\n}",
+        "kind": "method",
+        "params": [
+          "name",
+          "listener"
+        ]
+      },
+      {
+        "name": "off",
+        "line": 41,
+        "source": "off (name, listener) {\n    const listeners = this.getListenersFor(name)\n\n    if (typeof listener === 'undefined') {\n        return this.removeListenersFor(name)\n    } else if (Array.isArray(listeners)) {\n        const index = listeners.indexOf(listener)\n\n        if (index !== -1) {\n            listeners.splice(index, 1)\n            return true\n        }\n    }\n\n    return false\n}",
+        "kind": "method",
+        "params": [
+          "name",
+          "listener"
+        ]
+      },
+      {
+        "name": "emit",
+        "line": 59,
+        "source": "emit (name, ...args) {\n    const listeners = this.getListenersFor(name)\n    if (!listeners) {\n        return\n    }\n\n    const listenersCopy = [...listeners]\n\n    for (const listener of listenersCopy) {\n        listener.call(this, ...args)\n    }\n}",
+        "kind": "method",
+        "params": [
+          "name",
+          "...args"
+        ]
+      },
+      {
+        "name": "emitter",
+        "line": 73,
+        "source": "emitter (name) {\n    return (...args) => this.emit(name, ...args)\n}",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "listenTo",
+        "line": 78,
+        "source": "listenTo (target, eventName, callback) {\n    target.on(eventName, callback)\n    this.#externalListeners.push({target, eventName, callback})\n}",
+        "kind": "method",
+        "params": [
+          "target",
+          "eventName",
+          "callback"
+        ]
+      },
+      {
+        "name": "listenToOnce",
+        "line": 84,
+        "source": "listenToOnce (target, eventName, callback) {\n    const onceWrapper = (...args) => {\n        callback(...args)\n\n        target.off(eventName, onceWrapper)\n\n        const index = this.#externalListeners.findIndex(\n            l => l.target === target && l.eventName === eventName && l.callback === onceWrapper\n        )\n        if (index !== -1) {\n            this.#externalListeners.splice(index, 1)\n        }\n    }\n\n    target.on(eventName, onceWrapper)\n    this.#externalListeners.push({target, eventName, callback: onceWrapper})\n}",
+        "kind": "method",
+        "params": [
+          "target",
+          "eventName",
+          "callback"
+        ]
+      },
+      {
+        "name": "cleanExternalListeners",
+        "line": 103,
+        "source": "cleanExternalListeners () {\n    this.#externalListeners.forEach(({target, eventName, callback}) => {\n        target.off(eventName, callback)\n    })\n    this.#externalListeners = []\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "removeListeners",
+        "line": 111,
+        "source": "removeListeners () {\n    Object.keys(this.#listenersFor).forEach(name => this.removeListenersFor(name))\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "removeListenersFor",
+        "line": 116,
+        "source": "removeListenersFor (name) {\n    const listeners = this.getListenersFor(name)\n\n    if (listeners) {\n        listeners.length = 0\n        delete this.#listenersFor[name]\n        return true\n    }\n\n    return false\n}",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "delegateEvents",
+        "line": 129,
+        "source": "delegateEvents (target, events, namespace) {\n    if (!target || (!Array.isArray(events) && typeof events !== 'object')) {\n        return\n    }\n\n    const eventArray = Array.isArray(events) ? events : Object.keys(events)\n    eventArray.forEach((event) => {\n        this.listenTo(target, event, (...args) => {\n            const prefixedEvent = namespace ? `${namespace}:${event}` : event\n            this.emit(prefixedEvent, ...args)\n        })\n    })\n}",
+        "kind": "method",
+        "params": [
+          "target",
+          "events",
+          "namespace"
+        ]
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": null,
+    "isDefault": true
+  },
   "/core/perky_module.doc.js": {
     "type": "class",
     "file": "/core/perky_module.js",
