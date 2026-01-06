@@ -387,9 +387,20 @@ function renderContainer (block, setup = null) {
 }
 
 
+function addSpacerIfNeeded () {
+    const hasVisibleLogs = logger.history.some(e => e.event === 'log')
+    const lastEntry = logger.history[logger.history.length - 1]
+    const lastIsSpacer = lastEntry?.event === 'spacer'
+
+    if (hasVisibleLogs && !lastIsSpacer) {
+        logger.spacer()
+    }
+}
+
+
 function executeAction (block, setup = null) {
     try {
-        logger.spacer()
+        addSpacerIfNeeded()
         const ctx = {}
 
         if (setup?.fn) {
@@ -404,7 +415,7 @@ function executeAction (block, setup = null) {
 
 function executeContainer (block, container, setup = null) {
     try {
-        logger.spacer()
+        addSpacerIfNeeded()
 
         const prevApp = container._currentApp
         if (prevApp?.dispose) {
