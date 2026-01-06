@@ -3,6 +3,9 @@ import '../editor/perky_logger.js'
 import logger from '../core/logger.js'
 
 
+const docModules = import.meta.glob('../**/*.doc.js')
+
+
 class DocViewer {
 
     constructor () {
@@ -130,7 +133,14 @@ class DocViewer {
         logger.clear()
 
         try {
-            const module = await import(/* @vite-ignore */ '..' + docPath)
+            const modulePath = '..' + docPath
+            const loader = docModules[modulePath]
+
+            if (!loader) {
+                throw new Error(`Doc module not found: ${docPath}`)
+            }
+
+            const module = await loader()
             const docData = module.default
 
             this.container.innerHTML = ''
