@@ -700,6 +700,7 @@ function executeContainer (block, container, setup = null) {
 
     try {
         let actionsBar = null
+        let slidersBar = null
 
         const ctx = {
             container,
@@ -736,6 +737,12 @@ function executeContainer (block, container, setup = null) {
                 }
             },
             slider: (label, opts, onChange) => {
+                if (!slidersBar) {
+                    slidersBar = document.createElement('div')
+                    slidersBar.className = 'doc-sliders-bar'
+                    container.appendChild(slidersBar)
+                }
+
                 const wrapper = document.createElement('div')
                 wrapper.className = 'doc-slider-wrapper'
 
@@ -764,7 +771,7 @@ function executeContainer (block, container, setup = null) {
                 wrapper.appendChild(labelEl)
                 wrapper.appendChild(input)
                 wrapper.appendChild(valueEl)
-                container.appendChild(wrapper)
+                slidersBar.appendChild(wrapper)
 
                 onChange(parseFloat(input.value))
             }
@@ -1178,15 +1185,23 @@ const STYLES = buildEditorStyles(
         color: var(--bg-primary);
     }
 
-    .doc-slider-wrapper {
+    .doc-sliders-bar {
         position: absolute;
         bottom: 8px;
         left: 8px;
         right: 8px;
         display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        z-index: 10;
+    }
+
+    .doc-slider-wrapper {
+        display: flex;
         align-items: center;
         gap: 8px;
-        z-index: 10;
+        flex: 1 1 200px;
+        max-width: 100%;
     }
 
     .doc-slider-label {
@@ -1194,14 +1209,16 @@ const STYLES = buildEditorStyles(
         font-size: 11px;
         color: rgba(255, 255, 255, 0.7);
         white-space: nowrap;
+        flex-shrink: 0;
     }
 
     .doc-slider-value {
         font-family: var(--font-mono);
         font-size: 11px;
         color: var(--accent);
-        min-width: 40px;
-        text-align: right;
+        min-width: 32px;
+        text-align: left;
+        flex-shrink: 0;
     }
 
     .doc-slider {

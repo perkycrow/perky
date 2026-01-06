@@ -214,6 +214,11 @@ export default doc('WebGLCanvas2D', () => {
                 renderer.render(scene)
             })
 
+            ctx.slider('pan X', {min: -10, max: 10, default: 0}, value => {
+                renderer.camera.x = value
+                renderer.render(scene)
+            })
+
             ctx.setApp(renderer, scene)
         })
 
