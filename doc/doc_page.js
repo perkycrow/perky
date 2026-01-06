@@ -528,6 +528,40 @@ export default class DocPage extends HTMLElement {
             container.style.width = `${block.width}px`
         }
         container.style.height = `${block.height}px`
+
+        const button = document.createElement('button')
+        button.className = 'doc-action-btn'
+        button.innerHTML = `
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+            Run
+        `
+
+        const setResetState = () => {
+            button.classList.add('doc-action-btn--reset')
+            button.innerHTML = `
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                </svg>
+                Reset
+            `
+        }
+
+        const overlayBtn = document.createElement('button')
+        overlayBtn.className = 'doc-container-run-overlay'
+        overlayBtn.innerHTML = `
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+        `
+        overlayBtn.addEventListener('click', () => {
+            overlayBtn.remove()
+            executeContainer(block, container, setup)
+            setResetState()
+        })
+        container.appendChild(overlayBtn)
+
         wrapper.appendChild(container)
 
         this.#containers.push(container)
@@ -540,15 +574,13 @@ export default class DocPage extends HTMLElement {
         codeEl.code = this.#getSourceFor(block) || block.source
         codeWrapper.appendChild(codeEl)
 
-        const button = document.createElement('button')
-        button.className = 'doc-action-btn'
-        button.innerHTML = `
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8 5v14l11-7z"/>
-            </svg>
-            Run
-        `
-        button.addEventListener('click', () => executeContainer(block, container, setup))
+        button.addEventListener('click', () => {
+            if (overlayBtn.parentNode) {
+                overlayBtn.remove()
+            }
+            executeContainer(block, container, setup)
+            setResetState()
+        })
         codeWrapper.appendChild(button)
 
         wrapper.appendChild(codeWrapper)
@@ -973,6 +1005,10 @@ const STYLES = buildEditorStyles(
         transform: scale(0.97);
     }
 
+    .doc-action-btn--reset {
+        background: var(--fg-muted);
+    }
+
     .doc-action-btn svg {
         flex-shrink: 0;
     }
@@ -1038,6 +1074,35 @@ const STYLES = buildEditorStyles(
         border: 1px solid var(--border);
         border-radius: 6px;
         overflow: hidden;
+        position: relative;
+    }
+
+    .doc-container-run-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: var(--fg-muted);
+        transition: color 0.15s, background 0.15s;
+    }
+
+    .doc-container-run-overlay:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--accent);
+    }
+
+    .doc-container-run-overlay svg {
+        opacity: 0.6;
+        transition: opacity 0.15s, transform 0.15s;
+    }
+
+    .doc-container-run-overlay:hover svg {
+        opacity: 1;
+        transform: scale(1.1);
     }
 
     .doc-container-element .doc-hint {
