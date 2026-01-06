@@ -41,6 +41,16 @@
       ]
     },
     {
+      "id": "game_loop",
+      "file": "/game/game_loop.doc.js",
+      "category": "game",
+      "title": "GameLoop",
+      "tags": [
+        "game",
+        "game_loop"
+      ]
+    },
+    {
       "id": "keyboard_device",
       "file": "/input/input_devices/keyboard_device.doc.js",
       "category": "input",

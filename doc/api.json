@@ -934,6 +934,141 @@
     },
     "isDefault": true
   },
+  "/game/game_loop.doc.js": {
+    "type": "class",
+    "file": "/game/game_loop.js",
+    "name": "GameLoop",
+    "line": 4,
+    "extends": "PerkyModule",
+    "statics": [
+      {
+        "name": "$category",
+        "line": 6,
+        "source": "static $category = 'gameLoop'",
+        "kind": "property",
+        "value": "'gameLoop'"
+      }
+    ],
+    "methods": [
+      {
+        "name": "onInstall",
+        "line": 27,
+        "source": "onInstall (host) {\n    this.delegateTo(host, [\n        'paused',\n        'pause',\n        'resume',\n        'setFps',\n        'getFps',\n        'getCurrentFps',\n        'getScreenFps',\n        'fpsLimited',\n        'setFpsLimited'\n    ])\n\n    this.delegateEventsTo(host, [\n        'update',\n        'render',\n        'pause',\n        'resume',\n        'changed:fps',\n        'changed:fpsLimited'\n    ])\n}",
+        "kind": "method",
+        "params": [
+          "host"
+        ]
+      },
+      {
+        "name": "onStart",
+        "line": 66,
+        "source": "onStart () {\n    this.#paused = false\n    this.lastTime = performance.now()\n    this.accumulator = 0\n    this.frameCount = 0\n    this.lastFpsUpdate = this.lastTime\n\n    requestAnimationFrame(time => update(this, time))\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "pause",
+        "line": 77,
+        "source": "pause (...args) {\n    if (!this.started || this.#paused) {\n        return false\n    }\n\n    this.#paused = true\n    this.emit('pause', ...args)\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "...args"
+        ]
+      },
+      {
+        "name": "resume",
+        "line": 89,
+        "source": "resume (...args) {\n    if (!this.started || !this.#paused) {\n        return false\n    }\n\n    this.#paused = false\n    this.lastTime = performance.now()\n    this.emit('resume', ...args)\n\n    requestAnimationFrame(time => update(this, time))\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "...args"
+        ]
+      },
+      {
+        "name": "getFps",
+        "line": 104,
+        "source": "getFps () {\n    return this.fps\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "setFps",
+        "line": 109,
+        "source": "setFps (fps) {\n    this.fps = fps\n    this.frameInterval = 1000 / fps\n    this.emit('changed:fps', fps)\n}",
+        "kind": "method",
+        "params": [
+          "fps"
+        ]
+      },
+      {
+        "name": "getCurrentFps",
+        "line": 116,
+        "source": "getCurrentFps () {\n    return this.currentFps || 0\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "getScreenFps",
+        "line": 121,
+        "source": "getScreenFps () {\n    return this.screenFps || 0\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "setFpsLimited",
+        "line": 131,
+        "source": "setFpsLimited (value) {\n    this.#fpsLimited = value\n    this.emit('changed:fpsLimited', value)\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      }
+    ],
+    "getters": [
+      {
+        "name": "paused",
+        "line": 51,
+        "source": "get paused () {\n    return this.#paused\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "running",
+        "line": 61,
+        "source": "get running () {\n    return super.running && !this.#paused\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "fpsLimited",
+        "line": 126,
+        "source": "get fpsLimited () {\n    return this.#fpsLimited\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "paused",
+        "line": 56,
+        "source": "set paused (value) {\n    this.#paused = value\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      }
+    ],
+    "constructor": {
+      "name": "constructor",
+      "line": 11,
+      "source": "constructor (params = {}) {\n    super(params)\n\n    this.lastTime = 0\n    this.accumulator = 0\n    this.maxFrameSkip = params.maxFrameSkip || 5\n    this.frameCount = 0\n    this.screenFrameCount = 0\n    this.lastFpsUpdate = 0\n\n    this.fps = params.fps ?? 60\n    this.frameInterval = 1000 / this.fps\n    this.#fpsLimited = params.fpsLimited ?? false\n}",
+      "kind": "constructor",
+      "params": [
+        "params = ..."
+      ]
+    },
+    "isDefault": true
+  },
   "/input/input_devices/keyboard_device.doc.js": {
     "type": "class",
     "file": "/input/input_devices/keyboard_device.js",
