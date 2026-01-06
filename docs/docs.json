@@ -41,6 +41,16 @@
       ]
     },
     {
+      "id": "keyboard_device",
+      "file": "/input/input_devices/keyboard_device.doc.js",
+      "category": "input",
+      "title": "KeyboardDevice",
+      "tags": [
+        "input",
+        "keyboard_device"
+      ]
+    },
+    {
       "id": "random",
       "file": "/math/random.doc.js",
       "category": "math",

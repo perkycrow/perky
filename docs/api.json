@@ -934,6 +934,50 @@
     },
     "isDefault": true
   },
+  "/input/input_devices/keyboard_device.doc.js": {
+    "type": "class",
+    "file": "/input/input_devices/keyboard_device.js",
+    "name": "KeyboardDevice",
+    "line": 5,
+    "extends": "InputDevice",
+    "statics": [
+      {
+        "name": "$name",
+        "line": 7,
+        "source": "static $name = 'keyboard'",
+        "kind": "property",
+        "value": "'keyboard'"
+      }
+    ],
+    "methods": [
+      {
+        "name": "onStart",
+        "line": 24,
+        "source": "onStart () {\n    this.container.addEventListener('keydown', this.#keydownListener, true)\n    this.container.addEventListener('keyup', this.#keyupListener, true)\n    this.container.addEventListener('blur', this.#blurListener)\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onStop",
+        "line": 31,
+        "source": "onStop () {\n    this.container.removeEventListener('keydown', this.#keydownListener, true)\n    this.container.removeEventListener('keyup', this.#keyupListener, true)\n    this.container.removeEventListener('blur', this.#blurListener)\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 13,
+      "source": "constructor (params = {}) {\n    super(params)\n\n    this.shouldPreventDefault = params.shouldPreventDefault\n\n    this.#keydownListener = this.#handleKeydown.bind(this)\n    this.#keyupListener = this.#handleKeyup.bind(this)\n    this.#blurListener = this.#handleBlur.bind(this)\n}",
+      "kind": "constructor",
+      "params": [
+        "params = ..."
+      ]
+    },
+    "isDefault": true
+  },
   "/math/random.doc.js": {
     "type": "class",
     "file": "/math/random.js",
