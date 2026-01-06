@@ -14,6 +14,7 @@ class DocViewer {
         this.searchInput = document.querySelector('.sidebar-search .search-input')
         this.docs = []
         this.apiData = {}
+        this.sourcesData = {}
         this.currentDoc = null
     }
 
@@ -21,6 +22,7 @@ class DocViewer {
     async init () {
         await this.loadDocs()
         await this.loadApiData()
+        await this.loadSourcesData()
         this.buildNav()
         this.setupSearch()
         this.route()
@@ -46,6 +48,17 @@ class DocViewer {
         } catch (error) {
             console.error('Failed to load api.json:', error)
             this.apiData = {}
+        }
+    }
+
+
+    async loadSourcesData () {
+        try {
+            const response = await fetch('./sources.json')
+            this.sourcesData = await response.json()
+        } catch (error) {
+            console.error('Failed to load sources.json:', error)
+            this.sourcesData = {}
         }
     }
 
@@ -150,6 +163,11 @@ class DocViewer {
             const api = this.apiData[docPath]
             if (api) {
                 docPage.api = api
+            }
+
+            const sources = this.sourcesData[docPath]
+            if (sources) {
+                docPage.sources = sources
             }
 
             this.container.appendChild(docPage)

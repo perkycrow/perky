@@ -19,6 +19,10 @@ function copyJsonPlugin () {
                 path.join(docDir, 'api.json'),
                 path.join(outDir, 'api.json')
             )
+            fs.copyFileSync(
+                path.join(docDir, 'sources.json'),
+                path.join(outDir, 'sources.json')
+            )
         }
     }
 }
@@ -32,6 +36,7 @@ export default defineConfig({
     build: {
         outDir: '../dist/doc',
         emptyOutDir: true,
+        minify: false,
         rollupOptions: {
             input: {
                 main: './doc/index.html',

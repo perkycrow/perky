@@ -7,6 +7,7 @@ export default class DocPage extends HTMLElement {
 
     #doc = null
     #api = null
+    #sources = null
     #activeTab = 'doc'
     #contentEl = null
     #tocEl = null
@@ -64,6 +65,16 @@ export default class DocPage extends HTMLElement {
 
     get api () {
         return this.#api
+    }
+
+
+    set sources (value) {
+        this.#sources = value
+    }
+
+
+    get sources () {
+        return this.#sources
     }
 
 
@@ -282,9 +293,9 @@ export default class DocPage extends HTMLElement {
         case 'text':
             return renderText(block)
         case 'code':
-            return renderCode(block)
+            return renderCode(block, this.#getSourceFor(block))
         case 'action':
-            return renderAction(block, setup)
+            return renderAction(block, setup, this.#getSourceFor(block))
         case 'section':
             return this.#renderSection(block)
         case 'container':
@@ -292,6 +303,19 @@ export default class DocPage extends HTMLElement {
         default:
             return document.createElement('div')
         }
+    }
+
+
+    #getSourceFor (block) {
+        if (!this.#sources) {
+            return null
+        }
+
+        const match = this.#sources.find(
+            s => s.type === block.type && s.title === block.title
+        )
+
+        return match?.source || null
     }
 
 
@@ -319,7 +343,7 @@ export default class DocPage extends HTMLElement {
 
         const codeEl = document.createElement('perky-code')
         codeEl.setAttribute('title', block.title || 'Container')
-        codeEl.code = block.source
+        codeEl.code = this.#getSourceFor(block) || block.source
         codeWrapper.appendChild(codeEl)
 
         const button = document.createElement('button')
@@ -384,13 +408,13 @@ function renderText (block) {
 }
 
 
-function renderAction (block, setup = null) {
+function renderAction (block, setup = null, extractedSource = null) {
     const wrapper = document.createElement('div')
     wrapper.className = 'doc-action-block'
 
     const codeEl = document.createElement('perky-code')
     codeEl.setAttribute('title', block.title)
-    codeEl.code = block.source
+    codeEl.code = extractedSource || block.source
     wrapper.appendChild(codeEl)
 
     const button = document.createElement('button')
@@ -532,13 +556,13 @@ function renderApiMember (member, file) {
 }
 
 
-function renderCode (block) {
+function renderCode (block, extractedSource = null) {
     const wrapper = document.createElement('div')
     wrapper.className = 'doc-code-block'
 
     const codeEl = document.createElement('perky-code')
     codeEl.setAttribute('title', block.title)
-    codeEl.code = block.source
+    codeEl.code = extractedSource || block.source
     wrapper.appendChild(codeEl)
 
     return wrapper

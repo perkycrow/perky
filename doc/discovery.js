@@ -3,6 +3,7 @@ import path from 'path'
 import fs from 'fs'
 import {fileURLToPath} from 'url'
 import {getApiForFile} from './api_parser.js'
+import {parseDocFile} from './doc_parser.js'
 
 
 const __filename = fileURLToPath(import.meta.url)
@@ -77,6 +78,26 @@ async function buildApiData (docs) {
 }
 
 
+function buildSourcesData (docs) {
+    const sources = {}
+
+    for (const doc of docs) {
+        const fullPath = path.join(rootDir, doc.file)
+
+        try {
+            const blocks = parseDocFile(fullPath)
+            if (blocks.length > 0) {
+                sources[doc.file] = blocks
+            }
+        } catch (error) {
+            console.warn(`  Warning: Could not parse sources for ${doc.file}: ${error.message}`)
+        }
+    }
+
+    return sources
+}
+
+
 async function main () {
     const result = await discoverDocs()
     const docsOutputPath = path.join(__dirname, 'docs.json')
@@ -95,6 +116,14 @@ async function main () {
 
     const apiCount = Object.keys(apiData).length
     console.log(`\nGenerated API data for ${apiCount} file(s)`)
+
+    const sourcesData = buildSourcesData(result.docs)
+    const sourcesOutputPath = path.join(__dirname, 'sources.json')
+
+    fs.writeFileSync(sourcesOutputPath, JSON.stringify(sourcesData, null, 2))
+
+    const sourcesCount = Object.keys(sourcesData).length
+    console.log(`\nExtracted sources for ${sourcesCount} file(s)`)
 }
 
 
