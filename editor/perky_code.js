@@ -341,10 +341,12 @@ export default class PerkyCode extends HTMLElement {
         }
 
         let result = code
-            .replace(/(["'`])(?:(?=(\\?))\2.)*?\1/g,
-                match => replaceWithPlaceholder(match, 'hl-string'))
+            .replace(/\/\/.*$/gm,
+                match => replaceWithPlaceholder(match, 'hl-comment'))
 
         result = result
+            .replace(/(["'`])(?:(?=(\\?))\2.)*?\1/g,
+                match => replaceWithPlaceholder(match, 'hl-string'))
             .replace(/\b(import|from|const|let|var|function|class|extends|return|async|await|new)\b/g,
                 match => replaceWithPlaceholder(match, 'hl-keyword'))
             .replace(/\b(if|else|try|catch)\b/g,
@@ -353,8 +355,6 @@ export default class PerkyCode extends HTMLElement {
                 match => replaceWithPlaceholder(match, 'hl-constant'))
             .replace(/\b(\d+(\.\d+)?([eE][+-]?\d+)?)\b/g,
                 match => replaceWithPlaceholder(match, 'hl-constant'))
-            .replace(/\/\/.*$/gm,
-                match => replaceWithPlaceholder(match, 'hl-comment'))
             .replace(/\b(document|window|console)\b(?=\.)/g,
                 match => replaceWithPlaceholder(match, 'hl-keyword'))
             .replace(/\.(\w+)(?=\()/g,
@@ -369,10 +369,6 @@ export default class PerkyCode extends HTMLElement {
                 })
 
         placeholders.forEach(item => {
-            if (item.replacement.includes('hl-string')) {
-                item.replacement = item.replacement.replace(/__PLACEHOLDER_(\d+)__/g,
-                    match => `<span class="hl-string">${match}</span>`)
-            }
             result = result.replace(item.placeholder, item.replacement)
         })
 

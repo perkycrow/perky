@@ -285,4 +285,16 @@ describe('PerkyCode', () => {
         consoleSpy.mockRestore()
     })
 
+
+    test('string in comment should not leave placeholder', () => {
+        element.code = `const view = new PerkyView({$id: 'myView'})
+
+// Uses a default div element
+console.log(view.element.tagName) // 'DIV'`
+        element.formatCode()
+
+        expect(element.formattedCode).not.toContain('__PLACEHOLDER_')
+        expect(element.formattedCode).toContain("'DIV'")
+    })
+
 })
