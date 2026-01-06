@@ -746,21 +746,21 @@
     "methods": [
       {
         "name": "connectedCallback",
-        "line": 43,
+        "line": 44,
         "source": "connectedCallback () {\n    this.#buildDOM()\n    this.#bindLoggerEvents()\n}",
         "kind": "method",
         "params": []
       },
       {
         "name": "disconnectedCallback",
-        "line": 49,
+        "line": 50,
         "source": "disconnectedCallback () {\n    this.#unbindLoggerEvents()\n}",
         "kind": "method",
         "params": []
       },
       {
         "name": "attributeChangedCallback",
-        "line": 54,
+        "line": 55,
         "source": "attributeChangedCallback (name, oldValue, newValue) {\n    if (oldValue === newValue) {\n        return\n    }\n\n    this.#handleAttributeChange(name, newValue)\n}",
         "kind": "method",
         "params": [
@@ -771,8 +771,8 @@
       },
       {
         "name": "log",
-        "line": 264,
-        "source": "log (message, type = 'info', format = 'text', timestamp = null) {\n    const entry = document.createElement('div')\n    entry.className = `logger-entry log-${type}`\n\n    const indicator = document.createElement('span')\n    indicator.className = 'logger-indicator'\n    entry.appendChild(indicator)\n\n    const messageElement = document.createElement('span')\n    messageElement.className = 'logger-message'\n\n    processMessage(messageElement, message, format)\n\n    entry.appendChild(messageElement)\n\n    const time = timestamp ? new Date(timestamp) : new Date()\n    const timestampEl = document.createElement('span')\n    timestampEl.className = 'logger-timestamp'\n    timestampEl.textContent = time.toLocaleTimeString()\n    entry.appendChild(timestampEl)\n\n    this.#entries.push(entry)\n\n    while (this.#entries.length > this.#maxEntries) {\n        const removed = this.#entries.shift()\n        if (removed.parentNode) {\n            removed.parentNode.removeChild(removed)\n        }\n    }\n\n    if (this.#contentEl) {\n        this.#contentEl.appendChild(entry)\n        this.#contentEl.scrollTop = this.#contentEl.scrollHeight\n    }\n\n    return entry\n}",
+        "line": 284,
+        "source": "log (message, type = 'info', format = 'text', timestamp = null) {\n    const entry = document.createElement('div')\n    entry.className = `logger-entry log-${type}`\n\n    const indicator = document.createElement('span')\n    indicator.className = 'logger-indicator'\n    entry.appendChild(indicator)\n\n    const messageElement = document.createElement('span')\n    messageElement.className = 'logger-message'\n\n    processMessage(messageElement, message, format)\n\n    entry.appendChild(messageElement)\n\n    const time = timestamp ? new Date(timestamp) : new Date()\n    const timestampEl = document.createElement('span')\n    timestampEl.className = 'logger-timestamp'\n    timestampEl.textContent = time.toLocaleTimeString()\n    entry.appendChild(timestampEl)\n\n    this.#entries.push(entry)\n\n    while (this.#entries.length > this.#maxEntries) {\n        const removed = this.#entries.shift()\n        if (removed.parentNode) {\n            removed.parentNode.removeChild(removed)\n        }\n    }\n\n    if (this.#contentEl) {\n        this.#contentEl.appendChild(entry)\n        this.#contentEl.scrollTop = this.#contentEl.scrollHeight\n    }\n\n    this.#updateControlsVisibility()\n\n    return entry\n}",
         "kind": "method",
         "params": [
           "message",
@@ -783,7 +783,7 @@
       },
       {
         "name": "info",
-        "line": 303,
+        "line": 325,
         "source": "info (...messages) {\n    return this.log(formatMessage(...messages), 'info')\n}",
         "kind": "method",
         "params": [
@@ -792,7 +792,7 @@
       },
       {
         "name": "notice",
-        "line": 308,
+        "line": 330,
         "source": "notice (...messages) {\n    return this.log(formatMessage(...messages), 'notice')\n}",
         "kind": "method",
         "params": [
@@ -801,7 +801,7 @@
       },
       {
         "name": "warn",
-        "line": 313,
+        "line": 335,
         "source": "warn (...messages) {\n    return this.log(formatMessage(...messages), 'warn')\n}",
         "kind": "method",
         "params": [
@@ -810,7 +810,7 @@
       },
       {
         "name": "error",
-        "line": 318,
+        "line": 340,
         "source": "error (...messages) {\n    return this.log(formatMessage(...messages), 'error')\n}",
         "kind": "method",
         "params": [
@@ -819,7 +819,7 @@
       },
       {
         "name": "success",
-        "line": 323,
+        "line": 345,
         "source": "success (...messages) {\n    return this.log(formatMessage(...messages), 'success')\n}",
         "kind": "method",
         "params": [
@@ -828,14 +828,14 @@
       },
       {
         "name": "spacer",
-        "line": 328,
+        "line": 350,
         "source": "spacer () {\n    const entry = document.createElement('div')\n    entry.className = 'logger-entry logger-spacer'\n    this.#entries.push(entry)\n\n    if (this.#contentEl) {\n        this.#contentEl.appendChild(entry)\n    }\n}",
         "kind": "method",
         "params": []
       },
       {
         "name": "title",
-        "line": 339,
+        "line": 361,
         "source": "title (title) {\n    const entry = document.createElement('div')\n    entry.className = 'logger-entry logger-title-entry'\n    entry.textContent = title\n    this.#entries.push(entry)\n\n    if (this.#contentEl) {\n        this.#contentEl.appendChild(entry)\n    }\n}",
         "kind": "method",
         "params": [
@@ -844,8 +844,8 @@
       },
       {
         "name": "clear",
-        "line": 351,
-        "source": "clear () {\n    this.#entries = []\n    if (this.#contentEl) {\n        this.#contentEl.innerHTML = ''\n    }\n}",
+        "line": 373,
+        "source": "clear () {\n    this.#entries = []\n    if (this.#contentEl) {\n        this.#contentEl.innerHTML = ''\n    }\n    this.#updateControlsVisibility()\n}",
         "kind": "method",
         "params": []
       }
@@ -853,35 +853,35 @@
     "getters": [
       {
         "name": "maxEntries",
-        "line": 96,
+        "line": 97,
         "source": "get maxEntries () {\n    return this.#maxEntries\n}",
         "kind": "method",
         "params": []
       },
       {
         "name": "position",
-        "line": 107,
+        "line": 108,
         "source": "get position () {\n    return this.#position\n}",
         "kind": "method",
         "params": []
       },
       {
         "name": "timestamp",
-        "line": 119,
+        "line": 120,
         "source": "get timestamp () {\n    return this.#timestamp\n}",
         "kind": "method",
         "params": []
       },
       {
         "name": "theme",
-        "line": 134,
+        "line": 135,
         "source": "get theme () {\n    return this.#theme\n}",
         "kind": "method",
         "params": []
       },
       {
         "name": "entries",
-        "line": 149,
+        "line": 150,
         "source": "get entries () {\n    return this.#entries\n}",
         "kind": "method",
         "params": []
@@ -890,7 +890,7 @@
     "setters": [
       {
         "name": "maxEntries",
-        "line": 101,
+        "line": 102,
         "source": "set maxEntries (value) {\n    this.#maxEntries = value\n    this.setAttribute('max-entries', value)\n}",
         "kind": "method",
         "params": [
@@ -899,7 +899,7 @@
       },
       {
         "name": "position",
-        "line": 112,
+        "line": 113,
         "source": "set position (value) {\n    this.#position = value\n    this.setAttribute('position', value)\n    this.#updateClasses()\n}",
         "kind": "method",
         "params": [
@@ -908,7 +908,7 @@
       },
       {
         "name": "timestamp",
-        "line": 124,
+        "line": 125,
         "source": "set timestamp (value) {\n    this.#timestamp = value\n    if (value) {\n        this.setAttribute('timestamp', '')\n    } else {\n        this.removeAttribute('timestamp')\n    }\n}",
         "kind": "method",
         "params": [
@@ -917,7 +917,7 @@
       },
       {
         "name": "theme",
-        "line": 139,
+        "line": 140,
         "source": "set theme (value) {\n    this.#theme = value\n    if (value) {\n        this.setAttribute('theme', value)\n    } else {\n        this.removeAttribute('theme')\n    }\n}",
         "kind": "method",
         "params": [
@@ -927,7 +927,7 @@
     ],
     "constructor": {
       "name": "constructor",
-      "line": 37,
+      "line": 38,
       "source": "constructor () {\n    super()\n    this.attachShadow({mode: 'open'})\n}",
       "kind": "constructor",
       "params": []

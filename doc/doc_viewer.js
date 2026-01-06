@@ -15,6 +15,7 @@ class DocViewer {
         this.searchInput = document.querySelector('.sidebar-search .search-input')
         this.docs = []
         this.apiData = {}
+        this.testsData = {}
         this.currentDoc = null
     }
 
@@ -22,6 +23,7 @@ class DocViewer {
     async init () {
         await this.loadDocs()
         await this.loadApiData()
+        await this.loadTestsData()
         this.buildNav()
         this.setupSearch()
         this.route()
@@ -47,6 +49,17 @@ class DocViewer {
         } catch (error) {
             console.error('Failed to load api.json:', error)
             this.apiData = {}
+        }
+    }
+
+
+    async loadTestsData () {
+        try {
+            const response = await fetch('./tests.json')
+            this.testsData = await response.json()
+        } catch (error) {
+            console.error('Failed to load tests.json:', error)
+            this.testsData = {}
         }
     }
 
@@ -115,9 +128,7 @@ class DocViewer {
         if (!docPath) {
             const fromFilename = this.getDocPathFromFilename()
             docPath = fromFilename.docPath
-            if (fromFilename.isApiPage) {
-                tab = 'api'
-            }
+            tab = fromFilename.tab
         }
 
         if (docPath) {
@@ -135,18 +146,23 @@ class DocViewer {
         const filename = pathname.split('/').pop()
 
         if (!filename || filename === 'index.html' || !filename.endsWith('.html')) {
-            return {docPath: null, isApiPage: false}
+            return {docPath: null, tab: 'doc'}
         }
 
         const isApiPage = filename.endsWith('_api.html')
-        const baseName = filename.replace('_api.html', '').replace('.html', '')
+        const isTestPage = filename.endsWith('_test.html')
+        const baseName = filename.replace('_api.html', '').replace('_test.html', '').replace('.html', '')
 
         const doc = this.docs.find(d => {
             const docBaseName = d.file.slice(1).replace(/\//g, '_').replace('.doc.js', '')
             return docBaseName === baseName
         })
 
-        return {docPath: doc ? doc.file : null, isApiPage}
+        let tab = 'doc'
+        if (isApiPage) tab = 'api'
+        if (isTestPage) tab = 'test'
+
+        return {docPath: doc ? doc.file : null, tab}
     }
 
 
@@ -205,6 +221,11 @@ class DocViewer {
             const sources = await this.loadSourcesFor(docPath)
             if (sources) {
                 docPage.sources = sources
+            }
+
+            const tests = this.testsData[docPath]
+            if (tests) {
+                docPage.tests = tests
             }
 
             this.container.appendChild(docPage)

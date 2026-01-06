@@ -19,6 +19,10 @@ function copyJsonPlugin () {
                 path.join(docDir, 'api.json'),
                 path.join(outDir, 'api.json')
             )
+            fs.copyFileSync(
+                path.join(docDir, 'tests.json'),
+                path.join(outDir, 'tests.json')
+            )
 
             const sourcesDir = path.join(docDir, 'sources')
             const outSourcesDir = path.join(outDir, 'sources')

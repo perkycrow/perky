@@ -4,6 +4,7 @@ import fs from 'fs'
 import {fileURLToPath} from 'url'
 import {getApiForFile} from './api_parser.js'
 import {parseDocFile} from './doc_parser.js'
+import {getTestsForFile} from './test_parser.js'
 
 
 const __filename = fileURLToPath(import.meta.url)
@@ -107,6 +108,33 @@ function buildSourcesData (docs) {
 }
 
 
+function buildTestsData (docs) {
+    const tests = {}
+
+    for (const doc of docs) {
+        const testPath = doc.file.replace('.doc.js', '.test.js')
+        const fullPath = path.join(rootDir, testPath)
+
+        if (!fs.existsSync(fullPath)) {
+            continue
+        }
+
+        try {
+            const source = fs.readFileSync(fullPath, 'utf-8')
+            const testData = getTestsForFile(source, testPath)
+
+            if (testData) {
+                tests[doc.file] = testData
+            }
+        } catch (error) {
+            console.warn(`  Warning: Could not parse tests for ${testPath}: ${error.message}`)
+        }
+    }
+
+    return tests
+}
+
+
 async function main () {
     const result = await discoverDocs()
     const docsOutputPath = path.join(__dirname, 'docs.json')
@@ -125,6 +153,14 @@ async function main () {
 
     const apiCount = Object.keys(apiData).length
     console.log(`\nGenerated API data for ${apiCount} file(s)`)
+
+    const testsData = buildTestsData(result.docs)
+    const testsOutputPath = path.join(__dirname, 'tests.json')
+
+    fs.writeFileSync(testsOutputPath, JSON.stringify(testsData, null, 2))
+
+    const testsCount = Object.keys(testsData).length
+    console.log(`\nGenerated tests data for ${testsCount} file(s)`)
 
     const sourcesCount = buildSourcesData(result.docs)
     console.log(`\nExtracted sources for ${sourcesCount} file(s)`)

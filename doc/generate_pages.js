@@ -146,6 +146,64 @@ function renderApiToHtml (api) {
 }
 
 
+function renderTestsToHtml (tests) {
+    if (!tests || !tests.describes || tests.describes.length === 0) {
+        return '<p>No test documentation available.</p>'
+    }
+
+    let html = ''
+
+    for (const describe of tests.describes) {
+        html += renderDescribeToHtml(describe, 0)
+    }
+
+    return html
+}
+
+
+function renderDescribeToHtml (describe, depth) {
+    const sectionClass = depth === 0 ? 'test-section' : 'test-section-nested'
+    const headingTag = depth === 0 ? 'h2' : 'h3'
+
+    let html = `<section class="${sectionClass}">`
+    html += `<${headingTag}>${escapeHtml(describe.title)}</${headingTag}>`
+
+    if (describe.beforeEach) {
+        html += `
+            <div class="test-hook">
+                <h4>beforeEach</h4>
+                <pre><code>${escapeHtml(describe.beforeEach.source || '')}</code></pre>
+            </div>
+        `
+    }
+
+    if (describe.afterEach) {
+        html += `
+            <div class="test-hook">
+                <h4>afterEach</h4>
+                <pre><code>${escapeHtml(describe.afterEach.source || '')}</code></pre>
+            </div>
+        `
+    }
+
+    for (const test of describe.tests || []) {
+        html += `
+            <div class="test-case">
+                <h4>${escapeHtml(test.title)}</h4>
+                <pre><code>${escapeHtml(test.source || '')}</code></pre>
+            </div>
+        `
+    }
+
+    for (const nested of describe.describes || []) {
+        html += renderDescribeToHtml(nested, depth + 1)
+    }
+
+    html += '</section>'
+    return html
+}
+
+
 function findMainJs () {
     const assetsDir = path.join(distDir, 'assets')
 
@@ -159,18 +217,18 @@ function findMainJs () {
 }
 
 
-function generatePageHtml (doc, sources, api, docs, tab = 'doc', cssFile) {
-    const isApiTab = tab === 'api'
+function generatePageHtml (doc, sources, api, tests, docs, tab = 'doc', cssFile) {
     const title = `${doc.title} - Perky Docs`
     const description = `Documentation for ${doc.title} in the Perky game framework`
 
-    const baseFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '')
-    const docUrl = `${baseFileName}.html`
-    const apiUrl = `${baseFileName}_api.html`
-
-    const content = isApiTab
-        ? renderApiToHtml(api)
-        : renderBlocksToHtml(sources || [], sources)
+    let content
+    if (tab === 'api') {
+        content = renderApiToHtml(api)
+    } else if (tab === 'test') {
+        content = renderTestsToHtml(tests)
+    } else {
+        content = renderBlocksToHtml(sources || [], sources)
+    }
 
     const navHtml = generateNavHtml(docs, doc.file)
     const mainJs = findMainJs()
@@ -272,7 +330,7 @@ function loadSources (docFile) {
 }
 
 
-function generateSitemap (docs, apiData, baseUrl) {
+function generateSitemap (docs, apiData, testsData, baseUrl) {
     const today = new Date().toISOString().split('T')[0]
 
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -288,6 +346,11 @@ function generateSitemap (docs, apiData, baseUrl) {
             const apiFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '_api.html')
             xml += `  <url>\n    <loc>${baseUrl}/${apiFileName}</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.6</priority>\n  </url>\n`
         }
+
+        if (testsData[doc.file]) {
+            const testFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '_test.html')
+            xml += `  <url>\n    <loc>${baseUrl}/${testFileName}</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.5</priority>\n  </url>\n`
+        }
     }
 
     xml += '</urlset>'
@@ -298,9 +361,11 @@ function generateSitemap (docs, apiData, baseUrl) {
 async function main () {
     const docsPath = path.join(distDir, 'docs.json')
     const apiPath = path.join(distDir, 'api.json')
+    const testsPath = path.join(distDir, 'tests.json')
 
     const docsData = JSON.parse(fs.readFileSync(docsPath, 'utf-8'))
     const apiData = JSON.parse(fs.readFileSync(apiPath, 'utf-8'))
+    const testsData = JSON.parse(fs.readFileSync(testsPath, 'utf-8'))
 
     const docs = docsData.docs
     const cssFile = findCssFile()
@@ -311,22 +376,29 @@ async function main () {
     for (const doc of docs) {
         const sources = loadSources(doc.file)
         const api = apiData[doc.file]
+        const tests = testsData[doc.file]
 
-        const docHtml = generatePageHtml(doc, sources, api, docs, 'doc', cssFile)
+        const docHtml = generatePageHtml(doc, sources, api, tests, docs, 'doc', cssFile)
         const docFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
         fs.writeFileSync(path.join(distDir, docFileName), docHtml)
 
         if (api) {
-            const apiHtml = generatePageHtml(doc, sources, api, docs, 'api', cssFile)
+            const apiHtml = generatePageHtml(doc, sources, api, tests, docs, 'api', cssFile)
             const apiFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '_api.html')
             fs.writeFileSync(path.join(distDir, apiFileName), apiHtml)
+        }
+
+        if (tests) {
+            const testHtml = generatePageHtml(doc, sources, api, tests, docs, 'test', cssFile)
+            const testFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '_test.html')
+            fs.writeFileSync(path.join(distDir, testFileName), testHtml)
         }
 
         console.log(`  - ${doc.title}`)
     }
 
     const baseUrl = 'https://perkycrow.com/doc'
-    const sitemap = generateSitemap(docs, apiData, baseUrl)
+    const sitemap = generateSitemap(docs, apiData, testsData, baseUrl)
     fs.writeFileSync(path.join(distDir, 'sitemap.xml'), sitemap)
     console.log('\nGenerated sitemap.xml')
 

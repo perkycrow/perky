@@ -5,3 +5,4 @@ dist/
 doc/sources/
 doc/docs.json
 doc/api.json
+doc/tests.json

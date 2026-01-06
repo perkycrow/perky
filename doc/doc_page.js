@@ -11,6 +11,7 @@ export default class DocPage extends HTMLElement {
 
     #doc = null
     #api = null
+    #tests = null
     #sources = null
     #activeTab = 'doc'
     #contentEl = null
@@ -102,8 +103,18 @@ export default class DocPage extends HTMLElement {
     }
 
 
+    set tests (value) {
+        this.#tests = value
+    }
+
+
+    get tests () {
+        return this.#tests
+    }
+
+
     set initialTab (value) {
-        if (value === 'api' || value === 'doc') {
+        if (value === 'api' || value === 'doc' || value === 'test') {
             this.#activeTab = value
         }
     }
@@ -159,15 +170,23 @@ export default class DocPage extends HTMLElement {
 
         header.appendChild(titleRow)
 
-        if (this.#api) {
+        if (this.#api || this.#tests) {
             const tabs = document.createElement('div')
             tabs.className = 'doc-tabs'
 
             const docTab = this.#createTab('Doc', 'doc')
-            const apiTab = this.#createTab('API', 'api')
-
             tabs.appendChild(docTab)
-            tabs.appendChild(apiTab)
+
+            if (this.#api) {
+                const apiTab = this.#createTab('API', 'api')
+                tabs.appendChild(apiTab)
+            }
+
+            if (this.#tests) {
+                const testTab = this.#createTab('Test', 'test')
+                tabs.appendChild(testTab)
+            }
+
             header.appendChild(tabs)
         }
 
@@ -187,8 +206,10 @@ export default class DocPage extends HTMLElement {
 
         if (this.#activeTab === 'doc') {
             this.#renderDocContent()
-        } else {
+        } else if (this.#activeTab === 'api') {
             this.#renderApiContent()
+        } else if (this.#activeTab === 'test') {
+            this.#renderTestContent()
         }
 
         this.#scrollToHash()
@@ -233,10 +254,16 @@ export default class DocPage extends HTMLElement {
     #getTabUrl (tab) {
         const pathname = window.location.pathname
         const filename = pathname.split('/').pop()
-        const baseName = filename.replace('_api.html', '').replace('.html', '')
+        const baseName = filename
+            .replace('_api.html', '')
+            .replace('_test.html', '')
+            .replace('.html', '')
 
         if (tab === 'api') {
             return `${baseName}_api.html`
+        }
+        if (tab === 'test') {
+            return `${baseName}_test.html`
         }
         return `${baseName}.html`
     }
@@ -351,6 +378,102 @@ export default class DocPage extends HTMLElement {
         }
 
         this.#tocEl.appendChild(tocList)
+    }
+
+
+    #renderTestContent () {
+        this.#contentEl.innerHTML = ''
+        this.#tocEl.innerHTML = ''
+
+        if (!this.#tests) {
+            return
+        }
+
+        const tocTitle = document.createElement('div')
+        tocTitle.className = 'doc-toc-title'
+        tocTitle.textContent = 'Tests'
+        this.#tocEl.appendChild(tocTitle)
+
+        const tocList = document.createElement('nav')
+        tocList.className = 'doc-toc-list'
+
+        for (const describe of this.#tests.describes) {
+            this.#contentEl.appendChild(this.#renderDescribe(describe, tocList))
+        }
+
+        this.#tocEl.appendChild(tocList)
+    }
+
+
+    #renderDescribe (describe, tocList = null, depth = 0) {
+        const sectionId = toKebabCase(describe.title)
+        const wrapper = document.createElement('div')
+        wrapper.className = depth === 0 ? 'test-describe' : 'test-describe-nested'
+        wrapper.id = depth <= 1 ? sectionId : ''
+
+        const header = document.createElement('h2')
+        header.className = depth === 0 ? 'test-describe-title' : 'test-describe-subtitle'
+        header.textContent = describe.title
+        wrapper.appendChild(header)
+
+        if (tocList && depth <= 1) {
+            const tocLink = document.createElement('a')
+            tocLink.className = depth === 0 ? 'doc-toc-link doc-toc-root' : 'doc-toc-link'
+            tocLink.textContent = describe.title
+            tocLink.href = `#${sectionId}`
+            tocList.appendChild(tocLink)
+        }
+
+        if (describe.beforeEach) {
+            wrapper.appendChild(this.#renderTestHook('beforeEach', describe.beforeEach))
+        }
+
+        if (describe.afterEach) {
+            wrapper.appendChild(this.#renderTestHook('afterEach', describe.afterEach))
+        }
+
+        for (const test of describe.tests) {
+            wrapper.appendChild(this.#renderTest(test))
+        }
+
+        for (const nested of describe.describes) {
+            wrapper.appendChild(this.#renderDescribe(nested, tocList, depth + 1))
+        }
+
+        return wrapper
+    }
+
+
+    #renderTestHook (name, hook) {
+        const wrapper = document.createElement('div')
+        wrapper.className = 'test-hook'
+
+        const label = document.createElement('div')
+        label.className = 'test-hook-label'
+        label.textContent = name
+        wrapper.appendChild(label)
+
+        if (hook.source) {
+            const codeEl = document.createElement('perky-code')
+            codeEl.setAttribute('title', name)
+            codeEl.code = hook.source
+            wrapper.appendChild(codeEl)
+        }
+
+        return wrapper
+    }
+
+
+    #renderTest (test) {
+        const wrapper = document.createElement('div')
+        wrapper.className = 'test-case'
+
+        const codeEl = document.createElement('perky-code')
+        codeEl.setAttribute('title', test.title)
+        codeEl.code = test.source || ''
+        wrapper.appendChild(codeEl)
+
+        return wrapper
     }
 
 
@@ -1018,6 +1141,58 @@ const STYLES = buildEditorStyles(
         margin: 0;
         border: none;
         border-radius: 0;
+    }
+
+    /* Test styles */
+    .test-describe {
+        margin-bottom: 2rem;
+    }
+
+    .test-describe-title {
+        font-family: var(--font-mono);
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--fg-primary);
+        margin: 0 0 1rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .test-describe-nested {
+        margin: 1.5rem 0;
+        padding-left: 1rem;
+        border-left: 2px solid var(--border);
+    }
+
+    .test-describe-subtitle {
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--fg-secondary);
+        margin: 0 0 0.75rem 0;
+    }
+
+    .test-hook {
+        margin-bottom: 1rem;
+        opacity: 0.7;
+    }
+
+    .test-hook-label {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--fg-muted);
+        margin-bottom: 0.25rem;
+    }
+
+    .test-case {
+        margin-bottom: 0.75rem;
+    }
+
+    .test-case perky-code {
+        margin: 0;
     }
 
     @media (max-width: 900px) {
