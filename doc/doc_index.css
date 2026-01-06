@@ -179,7 +179,9 @@ body {
 
 .docs-logger {
     flex-shrink: 0;
-    background: var(--bg-primary);
+    border-top: 2px solid var(--accent);
+    padding-top: 0.5rem;
+    background: var(--bg-hover);
 }
 
 .welcome-message {
