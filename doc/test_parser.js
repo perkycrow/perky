@@ -133,11 +133,20 @@ function parseDescribeBody (body, source, describe) {
     for (const statement of body.body) {
         if (isDescribeCall(statement)) {
             describe.describes.push(parseDescribe(statement, source))
-        } else if (isTestCall(statement)) {
+            continue
+        }
+
+        if (isTestCall(statement)) {
             describe.tests.push(parseTest(statement, source))
-        } else if (isBeforeEachCall(statement)) {
+            continue
+        }
+
+        if (isBeforeEachCall(statement)) {
             describe.beforeEach = parseHook(statement, source)
-        } else if (isAfterEachCall(statement)) {
+            continue
+        }
+
+        if (isAfterEachCall(statement)) {
             describe.afterEach = parseHook(statement, source)
         }
     }
