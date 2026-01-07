@@ -1820,6 +1820,88 @@
     },
     "isDefault": true
   },
+  "/editor/toggle_input.doc.js": {
+    "type": "class",
+    "file": "/editor/toggle_input.js",
+    "name": "ToggleInput",
+    "line": 67,
+    "extends": "HTMLElement",
+    "statics": [
+      {
+        "name": "observedAttributes",
+        "line": 75,
+        "source": "static get observedAttributes () {\n    return ['checked', 'label']\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "methods": [
+      {
+        "name": "connectedCallback",
+        "line": 87,
+        "source": "connectedCallback () {\n    this.#updateDisplay()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "attributeChangedCallback",
+        "line": 92,
+        "source": "attributeChangedCallback (name, oldValue, newValue) {\n    handleAttributeChange(this, name, oldValue, newValue)\n}",
+        "kind": "method",
+        "params": [
+          "name",
+          "oldValue",
+          "newValue"
+        ]
+      },
+      {
+        "name": "setChecked",
+        "line": 111,
+        "source": "setChecked (val) {\n    this.#checked = val\n    this.#updateDisplay()\n}",
+        "kind": "method",
+        "params": [
+          "val"
+        ]
+      },
+      {
+        "name": "setLabel",
+        "line": 117,
+        "source": "setLabel (val) {\n    this.#label = val\n    if (this.#labelEl) {\n        this.#labelEl.textContent = this.#label\n    }\n}",
+        "kind": "method",
+        "params": [
+          "val"
+        ]
+      }
+    ],
+    "getters": [
+      {
+        "name": "checked",
+        "line": 97,
+        "source": "get checked () {\n    return this.#checked\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "checked",
+        "line": 102,
+        "source": "set checked (val) {\n    const newChecked = Boolean(val)\n    if (this.#checked !== newChecked) {\n        this.#checked = newChecked\n        this.#updateDisplay()\n    }\n}",
+        "kind": "method",
+        "params": [
+          "val"
+        ]
+      }
+    ],
+    "constructor": {
+      "name": "constructor",
+      "line": 80,
+      "source": "constructor () {\n    super()\n    this.attachShadow({mode: 'open'})\n    this.#buildDOM()\n}",
+      "kind": "constructor",
+      "params": []
+    },
+    "isDefault": true
+  },
   "/editor/log_renderers/vec2_log_renderer.doc.js": {
     "type": "module",
     "file": "/editor/log_renderers/vec2_log_renderer.js",

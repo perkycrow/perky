@@ -111,6 +111,16 @@
       ]
     },
     {
+      "id": "toggle_input",
+      "file": "/editor/toggle_input.doc.js",
+      "category": "editor",
+      "title": "ToggleInput",
+      "tags": [
+        "editor",
+        "toggle_input"
+      ]
+    },
+    {
       "id": "vec2_log_renderer",
       "file": "/editor/log_renderers/vec2_log_renderer.doc.js",
       "category": "editor",

@@ -138,6 +138,14 @@ const CONTAINER_PRESETS = {
             background: '#1a1a1e',
             overflow: 'auto'
         }
+    },
+    centered: {
+        style: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#1a1a1e'
+        }
     }
 }
 
