@@ -1124,6 +1124,96 @@
     ],
     "exports": []
   },
+  "/editor/perky_explorer.doc.js": {
+    "type": "class",
+    "file": "/editor/perky_explorer.js",
+    "name": "PerkyExplorer",
+    "line": 10,
+    "extends": "BaseEditorComponent",
+    "statics": [
+      {
+        "name": "observedAttributes",
+        "line": 12,
+        "source": "static observedAttributes = ['embedded']",
+        "kind": "property",
+        "value": "['embedded']"
+      }
+    ],
+    "methods": [
+      {
+        "name": "connectedCallback",
+        "line": 36,
+        "source": "connectedCallback () {\n    this.#buildDOM()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "disconnectedCallback",
+        "line": 41,
+        "source": "disconnectedCallback () {\n    if (this.#contextMenuEl && this.#contextMenuEl.parentNode) {\n        this.#contextMenuEl.parentNode.removeChild(this.#contextMenuEl)\n    }\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "attributeChangedCallback",
+        "line": 48,
+        "source": "attributeChangedCallback (name, oldValue, newValue) {\n    if (oldValue === newValue) {\n        return\n    }\n\n    if (name === 'embedded') {\n        this.#embedded = newValue !== null\n        this.#updateEmbeddedMode()\n    }\n}",
+        "kind": "method",
+        "params": [
+          "name",
+          "oldValue",
+          "newValue"
+        ]
+      },
+      {
+        "name": "setModule",
+        "line": 76,
+        "source": "setModule (module) {\n    this.#module = module\n    this.#rootModule = module\n    this.#selectedModule = null\n\n    if (this.#rootNode) {\n        this.#rootNode.setModule(module, 0)\n        if (module) {\n            this.#rootNode.setExpanded(true)\n        }\n    }\n\n    this.#updateTreeVisibility()\n    this.#updateDetails()\n    this.#updateHeaderControls()\n    this.#closeSceneTree()\n}",
+        "kind": "method",
+        "params": [
+          "module"
+        ]
+      },
+      {
+        "name": "getModule",
+        "line": 95,
+        "source": "getModule () {\n    return this.#module\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "focusModule",
+        "line": 466,
+        "source": "focusModule (module) {\n    if (!module) {\n        return\n    }\n\n    this.#rootModule = module\n    this.#rootNode.setModule(module, 0)\n    this.#rootNode.setExpanded(true)\n    this.#updateHeaderControls()\n\n\n    if (this.#selectedModule) {\n        const node = this.#rootNode.findNode(n => n.getModule() === this.#selectedModule)\n        if (node) {\n            node.setSelected(true)\n        } else {\n\n\n            this.#handleNodeSelect(module)\n        }\n    }\n}",
+        "kind": "method",
+        "params": [
+          "module"
+        ]
+      }
+    ],
+    "getters": [
+      {
+        "name": "embedded",
+        "line": 60,
+        "source": "get embedded () {\n    return this.#embedded\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "embedded",
+        "line": 65,
+        "source": "set embedded (value) {\n    this.#embedded = value\n    if (value) {\n        this.setAttribute('embedded', '')\n    } else {\n        this.removeAttribute('embedded')\n    }\n    this.#updateEmbeddedMode()\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      }
+    ],
+    "constructor": null,
+    "isDefault": true
+  },
   "/editor/perky_logger.doc.js": {
     "type": "class",
     "file": "/editor/perky_logger.js",

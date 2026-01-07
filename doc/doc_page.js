@@ -698,6 +698,10 @@ function executeContainer (block, container, setup = null) {
         applyContainerPreset(container, block.preset)
     }
 
+    if (block.scrollable) {
+        container.style.overflow = 'auto'
+    }
+
     try {
         let actionsBar = null
         let slidersBar = null

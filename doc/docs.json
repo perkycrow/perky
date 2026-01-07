@@ -51,6 +51,16 @@
       ]
     },
     {
+      "id": "perky_explorer",
+      "file": "/editor/perky_explorer.doc.js",
+      "category": "editor",
+      "title": "PerkyExplorer",
+      "tags": [
+        "editor",
+        "perky_explorer"
+      ]
+    },
+    {
       "id": "perky_logger",
       "file": "/editor/perky_logger.doc.js",
       "category": "editor",

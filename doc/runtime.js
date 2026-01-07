@@ -149,6 +149,7 @@ export function container (options, fn) {
         height: opts.height || 300,
         title: opts.title || null,
         preset: opts.preset || null,
+        scrollable: opts.scrollable || false,
         source: extractFunctionBody(callback),
         fn: callback
     })
