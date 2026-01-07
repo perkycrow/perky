@@ -1,0 +1,23 @@
+{
+    "guides": {
+        "categories": ["general"],
+        "items": {
+            "general": ["philosophy", "getting_started", "conventions"]
+        }
+    },
+    "docs": {
+        "categories": [
+            "core",
+            "application",
+            "game",
+            "editor",
+            "editor/inspectors",
+            "editor/log_renderers",
+            "input",
+            "input/input_devices",
+            "math",
+            "render"
+        ],
+        "items": {}
+    }
+}

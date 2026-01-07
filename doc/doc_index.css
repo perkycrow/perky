@@ -50,26 +50,31 @@ body {
 }
 
 .sidebar-header {
-    padding: 1.25rem 1rem;
+    padding: 1rem;
     border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--bg-secondary) 0%, rgba(36, 36, 42, 0.95) 100%);
+    flex-shrink: 0;
 }
 
 .sidebar-header h1 {
     font-size: 1.1rem;
-    font-weight: 500;
-    margin: 0;
+    font-weight: 600;
+    margin: 0 0 0.75rem 0;
     color: var(--fg-primary);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .sidebar-search {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border);
     position: relative;
+    margin-bottom: 0.75rem;
 }
 
 .sidebar-search .search-icon {
     position: absolute;
-    left: 1.5rem;
+    left: 0.5rem;
     top: 50%;
     transform: translateY(-50%);
     color: var(--fg-muted);
@@ -78,7 +83,7 @@ body {
 
 .sidebar-search .search-input {
     width: 100%;
-    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+    padding: 0.5rem 0.75rem 0.5rem 2rem;
     font-family: var(--font-mono);
     font-size: 0.8rem;
     border: 1px solid var(--border);
@@ -105,9 +110,7 @@ body {
 
 .nav-switcher {
     display: flex;
-    padding: 0.75rem 1rem;
     gap: 0.5rem;
-    border-bottom: 1px solid var(--border);
 }
 
 .nav-switch {

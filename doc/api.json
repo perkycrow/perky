@@ -1,289 +1,4 @@
 {
-  "/application/application.doc.js": {
-    "type": "class",
-    "file": "/application/application.js",
-    "name": "Application",
-    "line": 11,
-    "extends": "PerkyModule",
-    "statics": [
-      {
-        "name": "$category",
-        "line": 13,
-        "source": "static $category = 'application'",
-        "kind": "property",
-        "value": "'application'"
-      },
-      {
-        "name": "$eagerStart",
-        "line": 15,
-        "source": "static $eagerStart = false",
-        "kind": "property",
-        "value": "false"
-      }
-    ],
-    "methods": [
-      {
-        "name": "preload",
-        "line": 53,
-        "source": "async preload () {\n    return this.loadTag('preload')\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "getters": [],
-    "setters": [],
-    "constructor": {
-      "name": "constructor",
-      "line": 17,
-      "source": "constructor (options = {}) {\n    super(options)\n\n    const manifestData = options.manifest || this.constructor.manifest || {}\n\n    this.create(Manifest, {\n        $bind: 'manifest',\n        data: manifestData.export ? manifestData.export() : manifestData\n    })\n\n    this.create(ActionDispatcher, {\n        $bind: 'actionDispatcher'\n    })\n\n    this.create(PerkyView, {\n        $bind: 'perkyView',\n        className: 'perky-application'\n    })\n\n    this.create(SourceManager, {\n        $bind: 'sourceManager',\n        loaders: new Registry(loaders),\n        manifest: this.manifest\n    })\n\n    this.create(InputSystem, {\n        $bind: 'inputSystem',\n        bindings: options.bindings\n    })\n\n    this.actionDispatcher.on('controller:set', this.#autoRegisterBindings.bind(this))\n\n    this.configureApplication?.(options)\n}",
-      "kind": "constructor",
-      "params": [
-        "options = ..."
-      ]
-    },
-    "isDefault": true
-  },
-  "/application/perky_view.doc.js": {
-    "type": "class",
-    "file": "/application/perky_view.js",
-    "name": "PerkyView",
-    "line": 5,
-    "extends": "PerkyModule",
-    "statics": [
-      {
-        "name": "$category",
-        "line": 7,
-        "source": "static $category = 'perkyView'",
-        "kind": "property",
-        "value": "'perkyView'"
-      },
-      {
-        "name": "defaultElement",
-        "line": 158,
-        "source": "static defaultElement (params) {\n    const element = document.createElement('div')\n\n    element.id = params.id || uniqueId('perky_view', 'perky_view')\n\n    element.className = params.className || 'perky-view'\n\n    const styles = {\n        display: 'block',\n        overflow: 'hidden',\n        position: 'relative',\n        width: '100%',\n        height: '100%',\n        ...this.defaultStyles(params)\n    }\n\n    Object.assign(element.style, styles)\n\n    return element\n}",
-        "kind": "method",
-        "params": [
-          "params"
-        ]
-      },
-      {
-        "name": "defaultStyles",
-        "line": 180,
-        "source": "static defaultStyles () {\n    return {}\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "methods": [
-      {
-        "name": "onInstall",
-        "line": 38,
-        "source": "onInstall (host) {\n    this.delegateTo(host, [\n        'element',\n        'mount',\n        'dismount',\n        'mounted',\n        'displayMode',\n        'setDisplayMode',\n        'enterFullscreenMode',\n        'exitFullscreenMode',\n        'toggleFullscreen'\n    ])\n\n    this.delegateEventsTo(host, [\n        'resize',\n        'mount',\n        'dismount',\n        'displayMode:changed'\n    ])\n}",
-        "kind": "method",
-        "params": [
-          "host"
-        ]
-      },
-      {
-        "name": "addClass",
-        "line": 90,
-        "source": "addClass (className) {\n    this.element.classList.add(className)\n}",
-        "kind": "method",
-        "params": [
-          "className"
-        ]
-      },
-      {
-        "name": "removeClass",
-        "line": 95,
-        "source": "removeClass (className) {\n    this.element.classList.remove(className)\n}",
-        "kind": "method",
-        "params": [
-          "className"
-        ]
-      },
-      {
-        "name": "hasClass",
-        "line": 100,
-        "source": "hasClass (className) {\n    return this.element.classList.contains(className)\n}",
-        "kind": "method",
-        "params": [
-          "className"
-        ]
-      },
-      {
-        "name": "setSize",
-        "line": 105,
-        "source": "setSize ({width, height, unit = 'px'}) {\n    Object.assign(this.element.style, {\n        width: `${width}${unit}`,\n        height: `${height}${unit}`\n    })\n\n    this.emit('resize', {width, height})\n}",
-        "kind": "method",
-        "params": [
-          "{...}"
-        ]
-      },
-      {
-        "name": "fit",
-        "line": 115,
-        "source": "fit (element = this.container) {\n    const {width, height} = element.getBoundingClientRect()\n\n    this.setSize({width, height})\n}",
-        "kind": "method",
-        "params": [
-          "element = ..."
-        ]
-      },
-      {
-        "name": "mount",
-        "line": 122,
-        "source": "mount (container) {\n    if (!container) {\n        throw new Error('Container element is required')\n    }\n\n    if (this.container && this.container !== container) {\n        this.container.removeChild(this.element)\n    }\n\n    container.appendChild(this.element)\n\n    this.emit('mount', {container})\n\n    if (this.#resizeObserver) {\n        this.#resizeObserver.observe(this.element)\n    }\n}",
-        "kind": "method",
-        "params": [
-          "container"
-        ]
-      },
-      {
-        "name": "dismount",
-        "line": 141,
-        "source": "dismount () {\n    if (this.container) {\n        this.container.removeChild(this.element)\n        this.emit('dismount', {container: this.container})\n    }\n\n    if (this.#resizeObserver) {\n        this.#resizeObserver.disconnect()\n    }\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "isVisible",
-        "line": 185,
-        "source": "isVisible () {\n    return this.element.style.display !== 'none'\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "onDispose",
-        "line": 190,
-        "source": "onDispose () {\n    this.exitFullscreenMode()\n\n    if (this.#resizeObserver) {\n        this.#resizeObserver.disconnect()\n        this.#resizeObserver = null\n    }\n\n    if (this.#onFullscreenChange) {\n        document.removeEventListener('fullscreenchange', this.#onFullscreenChange)\n    }\n\n    this.dismount()\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "hide",
-        "line": 221,
-        "source": "hide () {\n    if (this.display && this.display !== 'none') {\n        this.#previousDisplay = this.display\n    }\n\n    this.display = 'none'\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "show",
-        "line": 230,
-        "source": "show () {\n    if (this.#previousDisplay) {\n        this.display = this.#previousDisplay\n        this.#previousDisplay = null\n    } else {\n        this.display = ''\n    }\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "setDisplayMode",
-        "line": 240,
-        "source": "setDisplayMode (mode) {\n    const modes = {\n        normal: () => this.exitFullscreenMode(),\n        fullscreen: () => this.enterFullscreenMode()\n    }\n\n    if (modes[mode]) {\n        modes[mode]()\n    }\n}",
-        "kind": "method",
-        "params": [
-          "mode"
-        ]
-      },
-      {
-        "name": "enterFullscreenMode",
-        "line": 252,
-        "source": "enterFullscreenMode () {\n    if (this.displayMode === 'fullscreen') {\n        return\n    }\n\n    this.displayMode = 'fullscreen'\n\n    document.body.classList.add('fullscreen-mode')\n\n    this.#previousStyles = {\n        position: this.element.style.position,\n        top: this.element.style.top,\n        left: this.element.style.left,\n        width: this.element.style.width,\n        height: this.element.style.height,\n        zIndex: this.element.style.zIndex\n    }\n\n    Object.assign(this.element.style, {\n        position: 'fixed',\n        top: '0',\n        left: '0',\n        width: '100vw',\n        height: '100vh',\n        zIndex: '10000'\n    })\n\n    this.#requestFullscreen()\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "exitFullscreenMode",
-        "line": 283,
-        "source": "exitFullscreenMode () {\n    if (this.displayMode === 'normal') {\n        return\n    }\n\n    if (document.fullscreenElement) {\n        document.exitFullscreen()\n    }\n\n    this.displayMode = 'normal'\n\n    document.body.style.overflow = ''\n    document.body.classList.remove('fullscreen-mode')\n\n    Object.assign(this.element.style, this.#previousStyles)\n    this.#previousStyles = {}\n\n    this.#dispatchDisplayModeChanged('normal')\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "toggleFullscreen",
-        "line": 304,
-        "source": "toggleFullscreen () {\n    const mode = this.displayMode\n\n    if (mode === 'fullscreen') {\n        this.exitFullscreenMode()\n    } else {\n        this.enterFullscreenMode()\n    }\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "getters": [
-      {
-        "name": "container",
-        "line": 60,
-        "source": "get container () {\n    return this.element.parentElement\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "width",
-        "line": 65,
-        "source": "get width () {\n    return this.element.offsetWidth\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "height",
-        "line": 70,
-        "source": "get height () {\n    return this.element.offsetHeight\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "size",
-        "line": 75,
-        "source": "get size () {\n    return {\n        width: this.width,\n        height: this.height\n    }\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "aspectRatio",
-        "line": 83,
-        "source": "get aspectRatio () {\n    const {width, height} = this.size\n\n    return height > 0 ? width / height : 0\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "mounted",
-        "line": 153,
-        "source": "get mounted () {\n    return Boolean(this.container && this.container.contains(this.element))\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "html",
-        "line": 206,
-        "source": "get html () {\n    return this.element.innerHTML\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "display",
-        "line": 211,
-        "source": "get display () {\n    return this.element.style.display\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "setters": [
-      {
-        "name": "display",
-        "line": 216,
-        "source": "set display (display) {\n    this.element.style.display = display\n}",
-        "kind": "method",
-        "params": [
-          "display"
-        ]
-      }
-    ],
-    "constructor": {
-      "name": "constructor",
-      "line": 15,
-      "source": "constructor (params = {}) {\n    super(params)\n\n    this.element = params.element ? params.element : this.constructor.defaultElement(params)\n\n    if (params.position) {\n        applyPositionStyle(this.element, params.position)\n    }\n\n    if (params.container) {\n        this.mount(params.container)\n    }\n\n    if (params.className) {\n        this.addClass(params.className)\n    }\n\n\n    this.#setupResizeObserver()\n    this.#setupFullscreenEvents()\n}",
-      "kind": "constructor",
-      "params": [
-        "params = ..."
-      ]
-    },
-    "isDefault": true
-  },
   "/core/action_controller.doc.js": {
     "type": "class",
     "file": "/core/action_controller.js",
@@ -1440,95 +1155,423 @@
     ],
     "exports": []
   },
-  "/editor/inspectors/action_controller_inspector.doc.js": {
+  "/application/application.doc.js": {
     "type": "class",
-    "file": "/editor/inspectors/action_controller_inspector.js",
-    "name": "ActionControllerInspector",
-    "line": 87,
-    "extends": "BaseInspector",
+    "file": "/application/application.js",
+    "name": "Application",
+    "line": 11,
+    "extends": "PerkyModule",
     "statics": [
       {
-        "name": "matches",
-        "line": 89,
-        "source": "static matches (module) {\n    return module instanceof ActionController\n}",
-        "kind": "method",
-        "params": [
-          "module"
-        ]
+        "name": "$category",
+        "line": 13,
+        "source": "static $category = 'application'",
+        "kind": "property",
+        "value": "'application'"
+      },
+      {
+        "name": "$eagerStart",
+        "line": 15,
+        "source": "static $eagerStart = false",
+        "kind": "property",
+        "value": "false"
       }
     ],
     "methods": [
       {
-        "name": "buildDOM",
-        "line": 101,
-        "source": "buildDOM () {\n    super.buildDOM()\n\n    this.#containerEl = document.createElement('div')\n    this.shadowRoot.insertBefore(this.#containerEl, this.gridEl)\n    this.gridEl.style.display = 'none'\n}",
+        "name": "preload",
+        "line": 53,
+        "source": "async preload () {\n    return this.loadTag('preload')\n}",
         "kind": "method",
         "params": []
-      },
-      {
-        "name": "onModuleSet",
-        "line": 110,
-        "source": "onModuleSet (module) {\n    if (module) {\n        this.#update()\n    }\n}",
-        "kind": "method",
-        "params": [
-          "module"
-        ]
       }
     ],
     "getters": [],
     "setters": [],
     "constructor": {
       "name": "constructor",
-      "line": 95,
-      "source": "constructor () {\n    super(customStyles)\n    this.buildDOM()\n}",
+      "line": 17,
+      "source": "constructor (options = {}) {\n    super(options)\n\n    const manifestData = options.manifest || this.constructor.manifest || {}\n\n    this.create(Manifest, {\n        $bind: 'manifest',\n        data: manifestData.export ? manifestData.export() : manifestData\n    })\n\n    this.create(ActionDispatcher, {\n        $bind: 'actionDispatcher'\n    })\n\n    this.create(PerkyView, {\n        $bind: 'perkyView',\n        className: 'perky-application'\n    })\n\n    this.create(SourceManager, {\n        $bind: 'sourceManager',\n        loaders: new Registry(loaders),\n        manifest: this.manifest\n    })\n\n    this.create(InputSystem, {\n        $bind: 'inputSystem',\n        bindings: options.bindings\n    })\n\n    this.actionDispatcher.on('controller:set', this.#autoRegisterBindings.bind(this))\n\n    this.configureApplication?.(options)\n}",
       "kind": "constructor",
-      "params": []
+      "params": [
+        "options = ..."
+      ]
     },
     "isDefault": true
   },
-  "/editor/inspectors/action_dispatcher_inspector.doc.js": {
+  "/application/perky_view.doc.js": {
     "type": "class",
-    "file": "/editor/inspectors/action_dispatcher_inspector.js",
-    "name": "ActionDispatcherInspector",
-    "line": 105,
-    "extends": "BaseInspector",
+    "file": "/application/perky_view.js",
+    "name": "PerkyView",
+    "line": 5,
+    "extends": "PerkyModule",
     "statics": [
       {
-        "name": "matches",
-        "line": 107,
-        "source": "static matches (module) {\n    return module instanceof ActionDispatcher\n}",
+        "name": "$category",
+        "line": 7,
+        "source": "static $category = 'perkyView'",
+        "kind": "property",
+        "value": "'perkyView'"
+      },
+      {
+        "name": "defaultElement",
+        "line": 158,
+        "source": "static defaultElement (params) {\n    const element = document.createElement('div')\n\n    element.id = params.id || uniqueId('perky_view', 'perky_view')\n\n    element.className = params.className || 'perky-view'\n\n    const styles = {\n        display: 'block',\n        overflow: 'hidden',\n        position: 'relative',\n        width: '100%',\n        height: '100%',\n        ...this.defaultStyles(params)\n    }\n\n    Object.assign(element.style, styles)\n\n    return element\n}",
         "kind": "method",
         "params": [
-          "module"
+          "params"
         ]
+      },
+      {
+        "name": "defaultStyles",
+        "line": 180,
+        "source": "static defaultStyles () {\n    return {}\n}",
+        "kind": "method",
+        "params": []
       }
     ],
     "methods": [
       {
-        "name": "buildDOM",
-        "line": 119,
-        "source": "buildDOM () {\n    super.buildDOM()\n\n    this.#containerEl = document.createElement('div')\n    this.shadowRoot.insertBefore(this.#containerEl, this.gridEl)\n    this.gridEl.style.display = 'none'\n}",
+        "name": "onInstall",
+        "line": 38,
+        "source": "onInstall (host) {\n    this.delegateTo(host, [\n        'element',\n        'mount',\n        'dismount',\n        'mounted',\n        'displayMode',\n        'setDisplayMode',\n        'enterFullscreenMode',\n        'exitFullscreenMode',\n        'toggleFullscreen'\n    ])\n\n    this.delegateEventsTo(host, [\n        'resize',\n        'mount',\n        'dismount',\n        'displayMode:changed'\n    ])\n}",
+        "kind": "method",
+        "params": [
+          "host"
+        ]
+      },
+      {
+        "name": "addClass",
+        "line": 90,
+        "source": "addClass (className) {\n    this.element.classList.add(className)\n}",
+        "kind": "method",
+        "params": [
+          "className"
+        ]
+      },
+      {
+        "name": "removeClass",
+        "line": 95,
+        "source": "removeClass (className) {\n    this.element.classList.remove(className)\n}",
+        "kind": "method",
+        "params": [
+          "className"
+        ]
+      },
+      {
+        "name": "hasClass",
+        "line": 100,
+        "source": "hasClass (className) {\n    return this.element.classList.contains(className)\n}",
+        "kind": "method",
+        "params": [
+          "className"
+        ]
+      },
+      {
+        "name": "setSize",
+        "line": 105,
+        "source": "setSize ({width, height, unit = 'px'}) {\n    Object.assign(this.element.style, {\n        width: `${width}${unit}`,\n        height: `${height}${unit}`\n    })\n\n    this.emit('resize', {width, height})\n}",
+        "kind": "method",
+        "params": [
+          "{...}"
+        ]
+      },
+      {
+        "name": "fit",
+        "line": 115,
+        "source": "fit (element = this.container) {\n    const {width, height} = element.getBoundingClientRect()\n\n    this.setSize({width, height})\n}",
+        "kind": "method",
+        "params": [
+          "element = ..."
+        ]
+      },
+      {
+        "name": "mount",
+        "line": 122,
+        "source": "mount (container) {\n    if (!container) {\n        throw new Error('Container element is required')\n    }\n\n    if (this.container && this.container !== container) {\n        this.container.removeChild(this.element)\n    }\n\n    container.appendChild(this.element)\n\n    this.emit('mount', {container})\n\n    if (this.#resizeObserver) {\n        this.#resizeObserver.observe(this.element)\n    }\n}",
+        "kind": "method",
+        "params": [
+          "container"
+        ]
+      },
+      {
+        "name": "dismount",
+        "line": 141,
+        "source": "dismount () {\n    if (this.container) {\n        this.container.removeChild(this.element)\n        this.emit('dismount', {container: this.container})\n    }\n\n    if (this.#resizeObserver) {\n        this.#resizeObserver.disconnect()\n    }\n}",
         "kind": "method",
         "params": []
       },
       {
-        "name": "onModuleSet",
-        "line": 128,
-        "source": "onModuleSet (module) {\n    if (module) {\n        this.#update()\n    }\n}",
+        "name": "isVisible",
+        "line": 185,
+        "source": "isVisible () {\n    return this.element.style.display !== 'none'\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onDispose",
+        "line": 190,
+        "source": "onDispose () {\n    this.exitFullscreenMode()\n\n    if (this.#resizeObserver) {\n        this.#resizeObserver.disconnect()\n        this.#resizeObserver = null\n    }\n\n    if (this.#onFullscreenChange) {\n        document.removeEventListener('fullscreenchange', this.#onFullscreenChange)\n    }\n\n    this.dismount()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "hide",
+        "line": 221,
+        "source": "hide () {\n    if (this.display && this.display !== 'none') {\n        this.#previousDisplay = this.display\n    }\n\n    this.display = 'none'\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "show",
+        "line": 230,
+        "source": "show () {\n    if (this.#previousDisplay) {\n        this.display = this.#previousDisplay\n        this.#previousDisplay = null\n    } else {\n        this.display = ''\n    }\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "setDisplayMode",
+        "line": 240,
+        "source": "setDisplayMode (mode) {\n    const modes = {\n        normal: () => this.exitFullscreenMode(),\n        fullscreen: () => this.enterFullscreenMode()\n    }\n\n    if (modes[mode]) {\n        modes[mode]()\n    }\n}",
         "kind": "method",
         "params": [
-          "module"
+          "mode"
+        ]
+      },
+      {
+        "name": "enterFullscreenMode",
+        "line": 252,
+        "source": "enterFullscreenMode () {\n    if (this.displayMode === 'fullscreen') {\n        return\n    }\n\n    this.displayMode = 'fullscreen'\n\n    document.body.classList.add('fullscreen-mode')\n\n    this.#previousStyles = {\n        position: this.element.style.position,\n        top: this.element.style.top,\n        left: this.element.style.left,\n        width: this.element.style.width,\n        height: this.element.style.height,\n        zIndex: this.element.style.zIndex\n    }\n\n    Object.assign(this.element.style, {\n        position: 'fixed',\n        top: '0',\n        left: '0',\n        width: '100vw',\n        height: '100vh',\n        zIndex: '10000'\n    })\n\n    this.#requestFullscreen()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "exitFullscreenMode",
+        "line": 283,
+        "source": "exitFullscreenMode () {\n    if (this.displayMode === 'normal') {\n        return\n    }\n\n    if (document.fullscreenElement) {\n        document.exitFullscreen()\n    }\n\n    this.displayMode = 'normal'\n\n    document.body.style.overflow = ''\n    document.body.classList.remove('fullscreen-mode')\n\n    Object.assign(this.element.style, this.#previousStyles)\n    this.#previousStyles = {}\n\n    this.#dispatchDisplayModeChanged('normal')\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "toggleFullscreen",
+        "line": 304,
+        "source": "toggleFullscreen () {\n    const mode = this.displayMode\n\n    if (mode === 'fullscreen') {\n        this.exitFullscreenMode()\n    } else {\n        this.enterFullscreenMode()\n    }\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [
+      {
+        "name": "container",
+        "line": 60,
+        "source": "get container () {\n    return this.element.parentElement\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "width",
+        "line": 65,
+        "source": "get width () {\n    return this.element.offsetWidth\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "height",
+        "line": 70,
+        "source": "get height () {\n    return this.element.offsetHeight\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "size",
+        "line": 75,
+        "source": "get size () {\n    return {\n        width: this.width,\n        height: this.height\n    }\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "aspectRatio",
+        "line": 83,
+        "source": "get aspectRatio () {\n    const {width, height} = this.size\n\n    return height > 0 ? width / height : 0\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "mounted",
+        "line": 153,
+        "source": "get mounted () {\n    return Boolean(this.container && this.container.contains(this.element))\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "html",
+        "line": 206,
+        "source": "get html () {\n    return this.element.innerHTML\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "display",
+        "line": 211,
+        "source": "get display () {\n    return this.element.style.display\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "display",
+        "line": 216,
+        "source": "set display (display) {\n    this.element.style.display = display\n}",
+        "kind": "method",
+        "params": [
+          "display"
         ]
       }
     ],
-    "getters": [],
-    "setters": [],
     "constructor": {
       "name": "constructor",
-      "line": 113,
-      "source": "constructor () {\n    super(customStyles)\n    this.buildDOM()\n}",
+      "line": 15,
+      "source": "constructor (params = {}) {\n    super(params)\n\n    this.element = params.element ? params.element : this.constructor.defaultElement(params)\n\n    if (params.position) {\n        applyPositionStyle(this.element, params.position)\n    }\n\n    if (params.container) {\n        this.mount(params.container)\n    }\n\n    if (params.className) {\n        this.addClass(params.className)\n    }\n\n\n    this.#setupResizeObserver()\n    this.#setupFullscreenEvents()\n}",
       "kind": "constructor",
-      "params": []
+      "params": [
+        "params = ..."
+      ]
+    },
+    "isDefault": true
+  },
+  "/game/game_loop.doc.js": {
+    "type": "class",
+    "file": "/game/game_loop.js",
+    "name": "GameLoop",
+    "line": 4,
+    "extends": "PerkyModule",
+    "statics": [
+      {
+        "name": "$category",
+        "line": 6,
+        "source": "static $category = 'gameLoop'",
+        "kind": "property",
+        "value": "'gameLoop'"
+      }
+    ],
+    "methods": [
+      {
+        "name": "onInstall",
+        "line": 27,
+        "source": "onInstall (host) {\n    this.delegateTo(host, [\n        'paused',\n        'pause',\n        'resume',\n        'setFps',\n        'getFps',\n        'getCurrentFps',\n        'getScreenFps',\n        'fpsLimited',\n        'setFpsLimited'\n    ])\n\n    this.delegateEventsTo(host, [\n        'update',\n        'render',\n        'pause',\n        'resume',\n        'changed:fps',\n        'changed:fpsLimited'\n    ])\n}",
+        "kind": "method",
+        "params": [
+          "host"
+        ]
+      },
+      {
+        "name": "onStart",
+        "line": 66,
+        "source": "onStart () {\n    this.#paused = false\n    this.lastTime = performance.now()\n    this.accumulator = 0\n    this.frameCount = 0\n    this.lastFpsUpdate = this.lastTime\n\n    requestAnimationFrame(time => update(this, time))\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "pause",
+        "line": 77,
+        "source": "pause (...args) {\n    if (!this.started || this.#paused) {\n        return false\n    }\n\n    this.#paused = true\n    this.emit('pause', ...args)\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "...args"
+        ]
+      },
+      {
+        "name": "resume",
+        "line": 89,
+        "source": "resume (...args) {\n    if (!this.started || !this.#paused) {\n        return false\n    }\n\n    this.#paused = false\n    this.lastTime = performance.now()\n    this.emit('resume', ...args)\n\n    requestAnimationFrame(time => update(this, time))\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "...args"
+        ]
+      },
+      {
+        "name": "getFps",
+        "line": 104,
+        "source": "getFps () {\n    return this.fps\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "setFps",
+        "line": 109,
+        "source": "setFps (fps) {\n    this.fps = fps\n    this.frameInterval = 1000 / fps\n    this.emit('changed:fps', fps)\n}",
+        "kind": "method",
+        "params": [
+          "fps"
+        ]
+      },
+      {
+        "name": "getCurrentFps",
+        "line": 116,
+        "source": "getCurrentFps () {\n    return this.currentFps || 0\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "getScreenFps",
+        "line": 121,
+        "source": "getScreenFps () {\n    return this.screenFps || 0\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "setFpsLimited",
+        "line": 131,
+        "source": "setFpsLimited (value) {\n    this.#fpsLimited = value\n    this.emit('changed:fpsLimited', value)\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      }
+    ],
+    "getters": [
+      {
+        "name": "paused",
+        "line": 51,
+        "source": "get paused () {\n    return this.#paused\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "running",
+        "line": 61,
+        "source": "get running () {\n    return super.running && !this.#paused\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "fpsLimited",
+        "line": 126,
+        "source": "get fpsLimited () {\n    return this.#fpsLimited\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "paused",
+        "line": 56,
+        "source": "set paused (value) {\n    this.#paused = value\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      }
+    ],
+    "constructor": {
+      "name": "constructor",
+      "line": 11,
+      "source": "constructor (params = {}) {\n    super(params)\n\n    this.lastTime = 0\n    this.accumulator = 0\n    this.maxFrameSkip = params.maxFrameSkip || 5\n    this.frameCount = 0\n    this.screenFrameCount = 0\n    this.lastFpsUpdate = 0\n\n    this.fps = params.fps ?? 60\n    this.frameInterval = 1000 / this.fps\n    this.#fpsLimited = params.fpsLimited ?? false\n}",
+      "kind": "constructor",
+      "params": [
+        "params = ..."
+      ]
     },
     "isDefault": true
   },
@@ -1983,6 +2026,98 @@
     },
     "isDefault": true
   },
+  "/editor/inspectors/action_controller_inspector.doc.js": {
+    "type": "class",
+    "file": "/editor/inspectors/action_controller_inspector.js",
+    "name": "ActionControllerInspector",
+    "line": 87,
+    "extends": "BaseInspector",
+    "statics": [
+      {
+        "name": "matches",
+        "line": 89,
+        "source": "static matches (module) {\n    return module instanceof ActionController\n}",
+        "kind": "method",
+        "params": [
+          "module"
+        ]
+      }
+    ],
+    "methods": [
+      {
+        "name": "buildDOM",
+        "line": 101,
+        "source": "buildDOM () {\n    super.buildDOM()\n\n    this.#containerEl = document.createElement('div')\n    this.shadowRoot.insertBefore(this.#containerEl, this.gridEl)\n    this.gridEl.style.display = 'none'\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onModuleSet",
+        "line": 110,
+        "source": "onModuleSet (module) {\n    if (module) {\n        this.#update()\n    }\n}",
+        "kind": "method",
+        "params": [
+          "module"
+        ]
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 95,
+      "source": "constructor () {\n    super(customStyles)\n    this.buildDOM()\n}",
+      "kind": "constructor",
+      "params": []
+    },
+    "isDefault": true
+  },
+  "/editor/inspectors/action_dispatcher_inspector.doc.js": {
+    "type": "class",
+    "file": "/editor/inspectors/action_dispatcher_inspector.js",
+    "name": "ActionDispatcherInspector",
+    "line": 105,
+    "extends": "BaseInspector",
+    "statics": [
+      {
+        "name": "matches",
+        "line": 107,
+        "source": "static matches (module) {\n    return module instanceof ActionDispatcher\n}",
+        "kind": "method",
+        "params": [
+          "module"
+        ]
+      }
+    ],
+    "methods": [
+      {
+        "name": "buildDOM",
+        "line": 119,
+        "source": "buildDOM () {\n    super.buildDOM()\n\n    this.#containerEl = document.createElement('div')\n    this.shadowRoot.insertBefore(this.#containerEl, this.gridEl)\n    this.gridEl.style.display = 'none'\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onModuleSet",
+        "line": 128,
+        "source": "onModuleSet (module) {\n    if (module) {\n        this.#update()\n    }\n}",
+        "kind": "method",
+        "params": [
+          "module"
+        ]
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 113,
+      "source": "constructor () {\n    super(customStyles)\n    this.buildDOM()\n}",
+      "kind": "constructor",
+      "params": []
+    },
+    "isDefault": true
+  },
   "/editor/log_renderers/vec2_log_renderer.doc.js": {
     "type": "module",
     "file": "/editor/log_renderers/vec2_log_renderer.js",
@@ -1997,141 +2132,6 @@
       }
     ],
     "exports": []
-  },
-  "/game/game_loop.doc.js": {
-    "type": "class",
-    "file": "/game/game_loop.js",
-    "name": "GameLoop",
-    "line": 4,
-    "extends": "PerkyModule",
-    "statics": [
-      {
-        "name": "$category",
-        "line": 6,
-        "source": "static $category = 'gameLoop'",
-        "kind": "property",
-        "value": "'gameLoop'"
-      }
-    ],
-    "methods": [
-      {
-        "name": "onInstall",
-        "line": 27,
-        "source": "onInstall (host) {\n    this.delegateTo(host, [\n        'paused',\n        'pause',\n        'resume',\n        'setFps',\n        'getFps',\n        'getCurrentFps',\n        'getScreenFps',\n        'fpsLimited',\n        'setFpsLimited'\n    ])\n\n    this.delegateEventsTo(host, [\n        'update',\n        'render',\n        'pause',\n        'resume',\n        'changed:fps',\n        'changed:fpsLimited'\n    ])\n}",
-        "kind": "method",
-        "params": [
-          "host"
-        ]
-      },
-      {
-        "name": "onStart",
-        "line": 66,
-        "source": "onStart () {\n    this.#paused = false\n    this.lastTime = performance.now()\n    this.accumulator = 0\n    this.frameCount = 0\n    this.lastFpsUpdate = this.lastTime\n\n    requestAnimationFrame(time => update(this, time))\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "pause",
-        "line": 77,
-        "source": "pause (...args) {\n    if (!this.started || this.#paused) {\n        return false\n    }\n\n    this.#paused = true\n    this.emit('pause', ...args)\n\n    return true\n}",
-        "kind": "method",
-        "params": [
-          "...args"
-        ]
-      },
-      {
-        "name": "resume",
-        "line": 89,
-        "source": "resume (...args) {\n    if (!this.started || !this.#paused) {\n        return false\n    }\n\n    this.#paused = false\n    this.lastTime = performance.now()\n    this.emit('resume', ...args)\n\n    requestAnimationFrame(time => update(this, time))\n\n    return true\n}",
-        "kind": "method",
-        "params": [
-          "...args"
-        ]
-      },
-      {
-        "name": "getFps",
-        "line": 104,
-        "source": "getFps () {\n    return this.fps\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "setFps",
-        "line": 109,
-        "source": "setFps (fps) {\n    this.fps = fps\n    this.frameInterval = 1000 / fps\n    this.emit('changed:fps', fps)\n}",
-        "kind": "method",
-        "params": [
-          "fps"
-        ]
-      },
-      {
-        "name": "getCurrentFps",
-        "line": 116,
-        "source": "getCurrentFps () {\n    return this.currentFps || 0\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "getScreenFps",
-        "line": 121,
-        "source": "getScreenFps () {\n    return this.screenFps || 0\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "setFpsLimited",
-        "line": 131,
-        "source": "setFpsLimited (value) {\n    this.#fpsLimited = value\n    this.emit('changed:fpsLimited', value)\n}",
-        "kind": "method",
-        "params": [
-          "value"
-        ]
-      }
-    ],
-    "getters": [
-      {
-        "name": "paused",
-        "line": 51,
-        "source": "get paused () {\n    return this.#paused\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "running",
-        "line": 61,
-        "source": "get running () {\n    return super.running && !this.#paused\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "fpsLimited",
-        "line": 126,
-        "source": "get fpsLimited () {\n    return this.#fpsLimited\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "setters": [
-      {
-        "name": "paused",
-        "line": 56,
-        "source": "set paused (value) {\n    this.#paused = value\n}",
-        "kind": "method",
-        "params": [
-          "value"
-        ]
-      }
-    ],
-    "constructor": {
-      "name": "constructor",
-      "line": 11,
-      "source": "constructor (params = {}) {\n    super(params)\n\n    this.lastTime = 0\n    this.accumulator = 0\n    this.maxFrameSkip = params.maxFrameSkip || 5\n    this.frameCount = 0\n    this.screenFrameCount = 0\n    this.lastFpsUpdate = 0\n\n    this.fps = params.fps ?? 60\n    this.frameInterval = 1000 / this.fps\n    this.#fpsLimited = params.fpsLimited ?? false\n}",
-      "kind": "constructor",
-      "params": [
-        "params = ..."
-      ]
-    },
-    "isDefault": true
   },
   "/input/input_devices/keyboard_device.doc.js": {
     "type": "class",

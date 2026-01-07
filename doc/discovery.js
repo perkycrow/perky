@@ -13,6 +13,50 @@ const __dirname = path.dirname(__filename)
 const rootDir = path.resolve(__dirname, '..')
 
 
+function loadOrderConfig () {
+    const orderPath = path.join(__dirname, 'order.json')
+
+    try {
+        return JSON.parse(fs.readFileSync(orderPath, 'utf-8'))
+    } catch {
+        return {guides: {categories: [], items: {}}, docs: {categories: [], items: {}}}
+    }
+}
+
+
+function sortWithOrder (items, orderConfig) {
+    const categoryOrder = orderConfig.categories || []
+    const itemOrder = orderConfig.items || {}
+
+    return items.sort((a, b) => {
+        const catIndexA = categoryOrder.indexOf(a.category)
+        const catIndexB = categoryOrder.indexOf(b.category)
+        const catPosA = catIndexA === -1 ? 999 : catIndexA
+        const catPosB = catIndexB === -1 ? 999 : catIndexB
+
+        if (catPosA !== catPosB) {
+            return catPosA - catPosB
+        }
+
+        if (a.category !== b.category) {
+            return a.category.localeCompare(b.category)
+        }
+
+        const categoryItems = itemOrder[a.category] || []
+        const itemIndexA = categoryItems.indexOf(a.id)
+        const itemIndexB = categoryItems.indexOf(b.id)
+        const itemPosA = itemIndexA === -1 ? 999 : itemIndexA
+        const itemPosB = itemIndexB === -1 ? 999 : itemIndexB
+
+        if (itemPosA !== itemPosB) {
+            return itemPosA - itemPosB
+        }
+
+        return a.title.localeCompare(b.title)
+    })
+}
+
+
 function toPascalCase (str) {
     return str
         .split(/[-_]/)
@@ -31,7 +75,7 @@ async function discoverDocs () {
         const relativePath = '/' + file
         const basename = path.basename(file, '.doc.js')
         const directory = path.dirname(file)
-        const category = directory.split('/')[0] || 'core'
+        const category = directory || 'core'
 
         return {
             id: basename,
@@ -42,12 +86,8 @@ async function discoverDocs () {
         }
     })
 
-    docs.sort((a, b) => {
-        if (a.category !== b.category) {
-            return a.category.localeCompare(b.category)
-        }
-        return a.title.localeCompare(b.title)
-    })
+    const orderConfig = loadOrderConfig()
+    sortWithOrder(docs, orderConfig.docs || {})
 
     return {docs}
 }
@@ -74,12 +114,8 @@ async function discoverGuides () {
         }
     })
 
-    guides.sort((a, b) => {
-        if (a.category !== b.category) {
-            return a.category.localeCompare(b.category)
-        }
-        return a.title.localeCompare(b.title)
-    })
+    const orderConfig = loadOrderConfig()
+    sortWithOrder(guides, orderConfig.guides || {})
 
     return guides
 }

@@ -283,6 +283,7 @@ function generatePageHtml (pageData) {
 
     const content = getTabContent(tab, api, tests, sources)
     const navHtml = generateNavHtml(docs, guides, doc.file, section)
+    const switcherHtml = generateSwitcherHtml(section)
     const mainJs = findMainJs()
 
     return `<!DOCTYPE html>
@@ -319,13 +320,14 @@ function generatePageHtml (pageData) {
         <aside class="docs-sidebar">
             <div class="sidebar-header">
                 <h1>perky docs</h1>
-            </div>
-            <div class="sidebar-search">
-                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="m21 21-4.35-4.35"></path>
-                </svg>
-                <input type="text" class="search-input" placeholder="Search...">
+                <div class="sidebar-search">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input type="text" class="search-input" placeholder="Search...">
+                </div>
+                <div class="nav-switcher" id="nav-switcher">${switcherHtml}</div>
             </div>
             <nav class="sidebar-nav" id="docs-nav">${navHtml}</nav>
         </aside>
@@ -347,11 +349,6 @@ function generatePageHtml (pageData) {
 function generateNavHtml (docs, guides, activeFile, activeSection = 'docs') {
     let html = ''
 
-    html += '<div class="nav-switcher">'
-    html += `<button class="nav-switch${activeSection === 'docs' ? ' active' : ''}" data-section="docs">Docs</button>`
-    html += `<button class="nav-switch${activeSection === 'guides' ? ' active' : ''}" data-section="guides">Guides</button>`
-    html += '</div>'
-
     const docsHidden = activeSection === 'docs' ? '' : ' style="display:none"'
     const guidesHidden = activeSection === 'guides' ? '' : ' style="display:none"'
 
@@ -363,6 +360,14 @@ function generateNavHtml (docs, guides, activeFile, activeSection = 'docs') {
     html += generateItemsHtml(guides, activeFile, 'guide')
     html += '</div>'
 
+    return html
+}
+
+
+function generateSwitcherHtml (activeSection = 'docs') {
+    let html = ''
+    html += `<button class="nav-switch${activeSection === 'docs' ? ' active' : ''}" data-section="docs">Docs</button>`
+    html += `<button class="nav-switch${activeSection === 'guides' ? ' active' : ''}" data-section="guides">Guides</button>`
     return html
 }
 

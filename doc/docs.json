@@ -1,26 +1,6 @@
 {
   "docs": [
     {
-      "id": "application",
-      "file": "/application/application.doc.js",
-      "category": "application",
-      "title": "Application",
-      "tags": [
-        "application",
-        "application"
-      ]
-    },
-    {
-      "id": "perky_view",
-      "file": "/application/perky_view.doc.js",
-      "category": "application",
-      "title": "PerkyView",
-      "tags": [
-        "application",
-        "perky_view"
-      ]
-    },
-    {
       "id": "action_controller",
       "file": "/core/action_controller.doc.js",
       "category": "core",
@@ -71,23 +51,33 @@
       ]
     },
     {
-      "id": "action_controller_inspector",
-      "file": "/editor/inspectors/action_controller_inspector.doc.js",
-      "category": "editor",
-      "title": "ActionControllerInspector",
+      "id": "application",
+      "file": "/application/application.doc.js",
+      "category": "application",
+      "title": "Application",
       "tags": [
-        "editor",
-        "action_controller_inspector"
+        "application",
+        "application"
       ]
     },
     {
-      "id": "action_dispatcher_inspector",
-      "file": "/editor/inspectors/action_dispatcher_inspector.doc.js",
-      "category": "editor",
-      "title": "ActionDispatcherInspector",
+      "id": "perky_view",
+      "file": "/application/perky_view.doc.js",
+      "category": "application",
+      "title": "PerkyView",
       "tags": [
-        "editor",
-        "action_dispatcher_inspector"
+        "application",
+        "perky_view"
+      ]
+    },
+    {
+      "id": "game_loop",
+      "file": "/game/game_loop.doc.js",
+      "category": "game",
+      "title": "GameLoop",
+      "tags": [
+        "game",
+        "game_loop"
       ]
     },
     {
@@ -131,42 +121,52 @@
       ]
     },
     {
-      "id": "vec2_log_renderer",
-      "file": "/editor/log_renderers/vec2_log_renderer.doc.js",
-      "category": "editor",
-      "title": "Vec2LogRenderer",
+      "id": "action_controller_inspector",
+      "file": "/editor/inspectors/action_controller_inspector.doc.js",
+      "category": "editor/inspectors",
+      "title": "ActionControllerInspector",
       "tags": [
-        "editor",
-        "vec2_log_renderer"
+        "editor/inspectors",
+        "action_controller_inspector"
       ]
     },
     {
-      "id": "game_loop",
-      "file": "/game/game_loop.doc.js",
-      "category": "game",
-      "title": "GameLoop",
+      "id": "action_dispatcher_inspector",
+      "file": "/editor/inspectors/action_dispatcher_inspector.doc.js",
+      "category": "editor/inspectors",
+      "title": "ActionDispatcherInspector",
       "tags": [
-        "game",
-        "game_loop"
+        "editor/inspectors",
+        "action_dispatcher_inspector"
+      ]
+    },
+    {
+      "id": "vec2_log_renderer",
+      "file": "/editor/log_renderers/vec2_log_renderer.doc.js",
+      "category": "editor/log_renderers",
+      "title": "Vec2LogRenderer",
+      "tags": [
+        "editor/log_renderers",
+        "vec2_log_renderer"
       ]
     },
     {
       "id": "keyboard_device",
       "file": "/input/input_devices/keyboard_device.doc.js",
-      "category": "input",
+      "category": "input/input_devices",
       "title": "KeyboardDevice",
       "tags": [
-        "input",
+        "input/input_devices",
         "keyboard_device"
       ]
     },
     {
       "id": "mouse_device",
       "file": "/input/input_devices/mouse_device.doc.js",
-      "category": "input",
+      "category": "input/input_devices",
       "title": "MouseDevice",
       "tags": [
-        "input",
+        "input/input_devices",
         "mouse_device"
       ]
     },
@@ -213,13 +213,13 @@
   ],
   "guides": [
     {
-      "id": "conventions",
-      "file": "/doc/guides/conventions.guide.js",
+      "id": "philosophy",
+      "file": "/doc/guides/philosophy.guide.js",
       "category": "general",
-      "title": "Conventions",
+      "title": "Philosophy",
       "tags": [
         "general",
-        "conventions"
+        "philosophy"
       ]
     },
     {
@@ -233,13 +233,13 @@
       ]
     },
     {
-      "id": "philosophy",
-      "file": "/doc/guides/philosophy.guide.js",
+      "id": "conventions",
+      "file": "/doc/guides/conventions.guide.js",
       "category": "general",
-      "title": "Philosophy",
+      "title": "Conventions",
       "tags": [
         "general",
-        "philosophy"
+        "conventions"
       ]
     }
   ]

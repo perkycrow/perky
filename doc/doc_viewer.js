@@ -73,22 +73,23 @@ class DocViewer {
     buildNav () {
         this.nav.innerHTML = ''
 
-        const switcher = document.createElement('div')
-        switcher.className = 'nav-switcher'
+        const switcherContainer = document.getElementById('nav-switcher')
+        if (switcherContainer) {
+            switcherContainer.innerHTML = ''
 
-        const docsBtn = document.createElement('button')
-        docsBtn.className = 'nav-switch active'
-        docsBtn.dataset.section = 'docs'
-        docsBtn.textContent = 'Docs'
+            const docsBtn = document.createElement('button')
+            docsBtn.className = 'nav-switch active'
+            docsBtn.dataset.section = 'docs'
+            docsBtn.textContent = 'Docs'
 
-        const guidesBtn = document.createElement('button')
-        guidesBtn.className = 'nav-switch'
-        guidesBtn.dataset.section = 'guides'
-        guidesBtn.textContent = 'Guides'
+            const guidesBtn = document.createElement('button')
+            guidesBtn.className = 'nav-switch'
+            guidesBtn.dataset.section = 'guides'
+            guidesBtn.textContent = 'Guides'
 
-        switcher.appendChild(docsBtn)
-        switcher.appendChild(guidesBtn)
-        this.nav.appendChild(switcher)
+            switcherContainer.appendChild(docsBtn)
+            switcherContainer.appendChild(guidesBtn)
+        }
 
         const docsSection = buildNavSectionElement(this.docs, 'docs', 'doc')
         const guidesSection = buildNavSectionElement(this.guides, 'guides', 'guide')
@@ -102,7 +103,11 @@ class DocViewer {
 
 
     setupSwitcher () {
-        const buttons = this.nav.querySelectorAll('.nav-switch')
+        const switcherContainer = document.getElementById('nav-switcher')
+        if (!switcherContainer) {
+            return
+        }
+        const buttons = switcherContainer.querySelectorAll('.nav-switch')
 
         for (const btn of buttons) {
             btn.addEventListener('click', () => {
@@ -116,9 +121,12 @@ class DocViewer {
     switchSection (section) {
         this.currentSection = section
 
-        const buttons = this.nav.querySelectorAll('.nav-switch')
-        for (const btn of buttons) {
-            btn.classList.toggle('active', btn.dataset.section === section)
+        const switcherContainer = document.getElementById('nav-switcher')
+        if (switcherContainer) {
+            const buttons = switcherContainer.querySelectorAll('.nav-switch')
+            for (const btn of buttons) {
+                btn.classList.toggle('active', btn.dataset.section === section)
+            }
         }
 
         const sections = this.nav.querySelectorAll('.nav-section')
@@ -204,8 +212,18 @@ class DocViewer {
 
     updateActiveNav (docPath) {
         const items = this.nav.querySelectorAll('.nav-item')
+        let activeItem = null
+
         for (const item of items) {
-            item.classList.toggle('active', item.dataset.file === docPath)
+            const isActive = item.dataset.file === docPath
+            item.classList.toggle('active', isActive)
+            if (isActive) {
+                activeItem = item
+            }
+        }
+
+        if (activeItem) {
+            activeItem.scrollIntoView({block: 'center', behavior: 'instant'})
         }
     }
 
