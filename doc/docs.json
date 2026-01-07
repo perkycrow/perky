@@ -71,6 +71,16 @@
       ]
     },
     {
+      "id": "action_controller_inspector",
+      "file": "/editor/inspectors/action_controller_inspector.doc.js",
+      "category": "editor",
+      "title": "ActionControllerInspector",
+      "tags": [
+        "editor",
+        "action_controller_inspector"
+      ]
+    },
+    {
       "id": "perky_explorer",
       "file": "/editor/perky_explorer.doc.js",
       "category": "editor",

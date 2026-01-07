@@ -324,9 +324,9 @@
       {
         "name": "actionControllerMethods",
         "line": 103,
-        "source": "static actionControllerMethods = this.perkyModuleMethods.concat([\n    'addAction',\n    'getAction',\n    'removeAction',\n    'hasAction',\n    'shouldPropagate',\n    'listActions',\n    'execute',\n    'context'\n])",
+        "source": "static actionControllerMethods = this.perkyModuleMethods.concat([\n    'addAction',\n    'getAction',\n    'removeAction',\n    'hasAction',\n    'shouldPropagate',\n    'listActions',\n    'listActionsWithParams',\n    'execute',\n    'context'\n])",
         "kind": "property",
-        "value": "this.perkyModuleMethods.concat([\n    'addAction',\n    'getAction',\n    'removeAction',\n    'hasAction',\n    'shouldPropagate',\n    'listActions',\n    'execute',\n    'context'\n])"
+        "value": "this.perkyModuleMethods.concat([\n    'addAction',\n    'getAction',\n    'removeAction',\n    'hasAction',\n    'shouldPropagate',\n    'listActions',\n    'listActionsWithParams',\n    'execute',\n    'context'\n])"
       }
     ],
     "methods": [
@@ -1431,6 +1431,52 @@
       }
     ],
     "exports": []
+  },
+  "/editor/inspectors/action_controller_inspector.doc.js": {
+    "type": "class",
+    "file": "/editor/inspectors/action_controller_inspector.js",
+    "name": "ActionControllerInspector",
+    "line": 87,
+    "extends": "BaseInspector",
+    "statics": [
+      {
+        "name": "matches",
+        "line": 89,
+        "source": "static matches (module) {\n    return module instanceof ActionController\n}",
+        "kind": "method",
+        "params": [
+          "module"
+        ]
+      }
+    ],
+    "methods": [
+      {
+        "name": "buildDOM",
+        "line": 101,
+        "source": "buildDOM () {\n    super.buildDOM()\n\n    this.#containerEl = document.createElement('div')\n    this.shadowRoot.insertBefore(this.#containerEl, this.gridEl)\n    this.gridEl.style.display = 'none'\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onModuleSet",
+        "line": 110,
+        "source": "onModuleSet (module) {\n    if (module) {\n        this.#update()\n    }\n}",
+        "kind": "method",
+        "params": [
+          "module"
+        ]
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 95,
+      "source": "constructor () {\n    super(customStyles)\n    this.buildDOM()\n}",
+      "kind": "constructor",
+      "params": []
+    },
+    "isDefault": true
   },
   "/editor/perky_explorer.doc.js": {
     "type": "class",

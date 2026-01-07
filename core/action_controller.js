@@ -107,6 +107,7 @@ export default class ActionController extends PerkyModule {
         'hasAction',
         'shouldPropagate',
         'listActions',
+        'listActionsWithParams',
         'execute',
         'context'
     ])

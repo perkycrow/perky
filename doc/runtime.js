@@ -131,6 +131,13 @@ const CONTAINER_PRESETS = {
             fontFamily: 'monospace',
             userSelect: 'none'
         }
+    },
+    inspector: {
+        style: {
+            padding: '12px',
+            background: '#1a1a1e',
+            overflow: 'auto'
+        }
     }
 }
 
