@@ -146,15 +146,52 @@ export default class DocPage extends HTMLElement {
             return
         }
 
+        const layout = this.#createLayout()
+        container.appendChild(layout)
+
+        this.#renderActiveTab()
+        this.#scrollToHash()
+    }
+
+
+    #createLayout () {
         const layout = document.createElement('div')
         layout.className = 'doc-layout'
 
         const main = document.createElement('div')
         main.className = 'doc-main'
 
+        main.appendChild(this.#createHeader())
+
+        this.#contentEl = document.createElement('div')
+        this.#contentEl.className = 'doc-content'
+        main.appendChild(this.#contentEl)
+
+        layout.appendChild(main)
+
+        this.#tocEl = document.createElement('aside')
+        this.#tocEl.className = 'doc-toc'
+        layout.appendChild(this.#tocEl)
+
+        return layout
+    }
+
+
+    #createHeader () {
         const header = document.createElement('header')
         header.className = 'doc-header'
 
+        header.appendChild(this.#createTitleRow())
+
+        if (this.#api || this.#tests) {
+            header.appendChild(this.#createTabs())
+        }
+
+        return header
+    }
+
+
+    #createTitleRow () {
         const titleRow = document.createElement('div')
         titleRow.className = 'doc-title-row'
 
@@ -169,42 +206,29 @@ export default class DocPage extends HTMLElement {
             titleRow.appendChild(context)
         }
 
-        header.appendChild(titleRow)
+        return titleRow
+    }
 
-        if (this.#api || this.#tests) {
-            const tabs = document.createElement('div')
-            tabs.className = 'doc-tabs'
 
-            const docTab = this.#createTab('Doc', 'doc')
-            tabs.appendChild(docTab)
+    #createTabs () {
+        const tabs = document.createElement('div')
+        tabs.className = 'doc-tabs'
 
-            if (this.#api) {
-                const apiTab = this.#createTab('API', 'api')
-                tabs.appendChild(apiTab)
-            }
+        tabs.appendChild(this.#createTab('Doc', 'doc'))
 
-            if (this.#tests) {
-                const testTab = this.#createTab('Test', 'test')
-                tabs.appendChild(testTab)
-            }
-
-            header.appendChild(tabs)
+        if (this.#api) {
+            tabs.appendChild(this.#createTab('API', 'api'))
         }
 
-        main.appendChild(header)
+        if (this.#tests) {
+            tabs.appendChild(this.#createTab('Test', 'test'))
+        }
 
-        this.#contentEl = document.createElement('div')
-        this.#contentEl.className = 'doc-content'
-        main.appendChild(this.#contentEl)
+        return tabs
+    }
 
-        layout.appendChild(main)
 
-        this.#tocEl = document.createElement('aside')
-        this.#tocEl.className = 'doc-toc'
-        layout.appendChild(this.#tocEl)
-
-        container.appendChild(layout)
-
+    #renderActiveTab () {
         if (this.#activeTab === 'doc') {
             this.#renderDocContent()
         } else if (this.#activeTab === 'api') {
@@ -212,8 +236,6 @@ export default class DocPage extends HTMLElement {
         } else if (this.#activeTab === 'test') {
             this.#renderTestContent()
         }
-
-        this.#scrollToHash()
     }
 
 
@@ -392,23 +414,16 @@ export default class DocPage extends HTMLElement {
 
     #renderDescribe (describe, tocList = null, depth = 0) {
         const sectionId = toKebabCase(describe.title)
-        const wrapper = document.createElement('div')
-        wrapper.className = depth === 0 ? 'test-describe' : 'test-describe-nested'
-        wrapper.id = depth <= 1 ? sectionId : ''
+        const wrapper = createDescribeWrapper(describe, sectionId, depth)
 
-        const header = document.createElement('h2')
-        header.className = depth === 0 ? 'test-describe-title' : 'test-describe-subtitle'
-        header.textContent = describe.title
-        wrapper.appendChild(header)
+        addDescribeTocLink(tocList, describe.title, sectionId, depth)
+        this.#appendDescribeContent(wrapper, describe, tocList, depth)
 
-        if (tocList && depth <= 1) {
-            const tocLink = document.createElement('a')
-            tocLink.className = depth === 0 ? 'doc-toc-link doc-toc-root' : 'doc-toc-link'
-            tocLink.textContent = describe.title
-            tocLink.href = `#${sectionId}`
-            tocList.appendChild(tocLink)
-        }
+        return wrapper
+    }
 
+
+    #appendDescribeContent (wrapper, describe, tocList, depth) {
         if (describe.beforeEach) {
             wrapper.appendChild(renderTestHook('beforeEach', describe.beforeEach))
         }
@@ -424,8 +439,6 @@ export default class DocPage extends HTMLElement {
         for (const nested of describe.describes) {
             wrapper.appendChild(this.#renderDescribe(nested, tocList, depth + 1))
         }
-
-        return wrapper
     }
 
 
@@ -595,6 +608,33 @@ function renderText (block) {
     el.className = 'doc-text'
     el.innerHTML = parseMarkdown(block.content)
     return el
+}
+
+
+function createDescribeWrapper (describe, sectionId, depth) {
+    const wrapper = document.createElement('div')
+    wrapper.className = depth === 0 ? 'test-describe' : 'test-describe-nested'
+    wrapper.id = depth <= 1 ? sectionId : ''
+
+    const header = document.createElement('h2')
+    header.className = depth === 0 ? 'test-describe-title' : 'test-describe-subtitle'
+    header.textContent = describe.title
+    wrapper.appendChild(header)
+
+    return wrapper
+}
+
+
+function addDescribeTocLink (tocList, title, sectionId, depth) {
+    if (!tocList || depth > 1) {
+        return
+    }
+
+    const tocLink = document.createElement('a')
+    tocLink.className = depth === 0 ? 'doc-toc-link doc-toc-root' : 'doc-toc-link'
+    tocLink.textContent = title
+    tocLink.href = `#${sectionId}`
+    tocList.appendChild(tocLink)
 }
 
 

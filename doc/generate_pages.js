@@ -118,31 +118,50 @@ function renderApiToHtml (api) {
     ]
 
     for (const cat of categories) {
-        const items = cat.single ? (api[cat.key] ? [api[cat.key]] : []) : (api[cat.key] || [])
-
-        if (items.length === 0) {
-            continue
-        }
-
-        html += `<section class="api-section"><h2>${cat.title}</h2>`
-
-        for (const item of items) {
-            const signature = item.params
-                ? `${item.name}(${item.params.join(', ')})`
-                : item.name
-
-            html += `
-                <div class="api-member">
-                    <h3><code>${escapeHtml(signature)}</code></h3>
-                    <pre><code>${escapeHtml(item.source || '')}</code></pre>
-                </div>
-            `
-        }
-
-        html += '</section>'
+        html += renderApiCategory(api, cat)
     }
 
     return html
+}
+
+
+function getApiCategoryItems (api, cat) {
+    if (cat.single) {
+        return api[cat.key] ? [api[cat.key]] : []
+    }
+    return api[cat.key] || []
+}
+
+
+function renderApiCategory (api, cat) {
+    const items = getApiCategoryItems(api, cat)
+
+    if (items.length === 0) {
+        return ''
+    }
+
+    let html = `<section class="api-section"><h2>${cat.title}</h2>`
+
+    for (const item of items) {
+        html += renderApiMember(item)
+    }
+
+    html += '</section>'
+    return html
+}
+
+
+function renderApiMember (item) {
+    const signature = item.params
+        ? `${item.name}(${item.params.join(', ')})`
+        : item.name
+
+    return `
+        <div class="api-member">
+            <h3><code>${escapeHtml(signature)}</code></h3>
+            <pre><code>${escapeHtml(item.source || '')}</code></pre>
+        </div>
+    `
 }
 
 
@@ -168,25 +187,44 @@ function renderDescribeToHtml (describe, depth) {
     let html = `<section class="${sectionClass}">`
     html += `<${headingTag}>${escapeHtml(describe.title)}</${headingTag}>`
 
+    html += renderTestHooks(describe)
+    html += renderTestCases(describe.tests)
+    html += renderNestedDescribes(describe.describes, depth)
+
+    html += '</section>'
+    return html
+}
+
+
+function renderTestHooks (describe) {
+    let html = ''
+
     if (describe.beforeEach) {
-        html += `
-            <div class="test-hook">
-                <h4>beforeEach</h4>
-                <pre><code>${escapeHtml(describe.beforeEach.source || '')}</code></pre>
-            </div>
-        `
+        html += renderTestHookHtml('beforeEach', describe.beforeEach)
     }
 
     if (describe.afterEach) {
-        html += `
-            <div class="test-hook">
-                <h4>afterEach</h4>
-                <pre><code>${escapeHtml(describe.afterEach.source || '')}</code></pre>
-            </div>
-        `
+        html += renderTestHookHtml('afterEach', describe.afterEach)
     }
 
-    for (const test of describe.tests || []) {
+    return html
+}
+
+
+function renderTestHookHtml (name, hook) {
+    return `
+        <div class="test-hook">
+            <h4>${name}</h4>
+            <pre><code>${escapeHtml(hook.source || '')}</code></pre>
+        </div>
+    `
+}
+
+
+function renderTestCases (tests) {
+    let html = ''
+
+    for (const test of tests || []) {
         html += `
             <div class="test-case">
                 <h4>${escapeHtml(test.title)}</h4>
@@ -195,11 +233,17 @@ function renderDescribeToHtml (describe, depth) {
         `
     }
 
-    for (const nested of describe.describes || []) {
+    return html
+}
+
+
+function renderNestedDescribes (describes, depth) {
+    let html = ''
+
+    for (const nested of describes || []) {
         html += renderDescribeToHtml(nested, depth + 1)
     }
 
-    html += '</section>'
     return html
 }
 
@@ -217,19 +261,23 @@ function findMainJs () {
 }
 
 
-function generatePageHtml (doc, sources, api, tests, docs, tab = 'doc', cssFile) {
+function getTabContent (tab, api, tests, sources) {
+    if (tab === 'api') {
+        return renderApiToHtml(api)
+    }
+    if (tab === 'test') {
+        return renderTestsToHtml(tests)
+    }
+    return renderBlocksToHtml(sources || [], sources)
+}
+
+
+function generatePageHtml (pageData) {
+    const {doc, sources, api, tests, docs, tab = 'doc', cssFile} = pageData
     const title = `${doc.title} - Perky Docs`
     const description = `Documentation for ${doc.title} in the Perky game framework`
 
-    let content
-    if (tab === 'api') {
-        content = renderApiToHtml(api)
-    } else if (tab === 'test') {
-        content = renderTestsToHtml(tests)
-    } else {
-        content = renderBlocksToHtml(sources || [], sources)
-    }
-
+    const content = getTabContent(tab, api, tests, sources)
     const navHtml = generateNavHtml(docs, doc.file)
     const mainJs = findMainJs()
 
@@ -377,19 +425,20 @@ async function main () {
         const sources = loadSources(doc.file)
         const api = apiData[doc.file]
         const tests = testsData[doc.file]
+        const pageData = {doc, sources, api, tests, docs, cssFile}
 
-        const docHtml = generatePageHtml(doc, sources, api, tests, docs, 'doc', cssFile)
+        const docHtml = generatePageHtml({...pageData, tab: 'doc'})
         const docFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
         fs.writeFileSync(path.join(distDir, docFileName), docHtml)
 
         if (api) {
-            const apiHtml = generatePageHtml(doc, sources, api, tests, docs, 'api', cssFile)
+            const apiHtml = generatePageHtml({...pageData, tab: 'api'})
             const apiFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '_api.html')
             fs.writeFileSync(path.join(distDir, apiFileName), apiHtml)
         }
 
         if (tests) {
-            const testHtml = generatePageHtml(doc, sources, api, tests, docs, 'test', cssFile)
+            const testHtml = generatePageHtml({...pageData, tab: 'test'})
             const testFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '_test.html')
             fs.writeFileSync(path.join(distDir, testFileName), testHtml)
         }
