@@ -17,7 +17,7 @@ export default doc('ToggleInput', () => {
         code('Setup', () => {
             const toggle = document.createElement('toggle-input')
             toggle.addEventListener('change', (e) => {
-                console.log('Checked:', e.detail.checked)
+                logger.log('Checked:', e.detail.checked)
             })
             document.body.appendChild(toggle)
         })

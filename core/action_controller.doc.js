@@ -20,11 +20,11 @@ export default doc('ActionController', () => {
         code('Creating a controller', () => {
             class PlayerController extends ActionController {
                 jump () {
-                    console.log('Player jumps!')
+                    logger.log('Player jumps!')
                 }
 
                 shoot () {
-                    console.log('Player shoots!')
+                    logger.log('Player shoots!')
                 }
             }
 
@@ -64,11 +64,11 @@ export default doc('ActionController', () => {
             const controller = new ActionController({$id: 'main'})
 
             controller.addAction('save', () => {
-                console.log('Saving...')
+                logger.log('Saving...')
             })
 
             controller.addAction('load', () => {
-                console.log('Loading...')
+                logger.log('Loading...')
             })
 
             controller.execute('save')
@@ -95,11 +95,11 @@ export default doc('ActionController', () => {
         code('With parameters', () => {
             class PlayerController extends ActionController {
                 move (x, y) {
-                    console.log(`Moving to ${x}, ${y}`)
+                    logger.log(`Moving to ${x}, ${y}`)
                 }
 
                 heal (amount = 10) {
-                    console.log(`Healing ${amount} HP`)
+                    logger.log(`Healing ${amount} HP`)
                 }
             }
 
@@ -183,7 +183,7 @@ export default doc('ActionController', () => {
             }
 
             const controller = new GameController({$id: 'game'})
-            console.log(controller.listActions()) // ['shoot', 'jump']
+            logger.log(controller.listActions()) // ['shoot', 'jump']
         })
 
         action('Check exposed actions', () => {
@@ -214,11 +214,11 @@ export default doc('ActionController', () => {
                 static propagable = ['move']
 
                 move () {
-                    console.log('Game: move')
+                    logger.log('Game: move')
                 }
 
                 shoot () {
-                    console.log('Game: shoot')
+                    logger.log('Game: shoot')
                 }
             }
 

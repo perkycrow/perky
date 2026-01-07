@@ -22,7 +22,7 @@ export default doc('ActionControllerInspector', () => {
             const inspector = document.createElement('action-controller-inspector')
 
             const controller = new ActionController({$id: 'main'})
-            controller.addAction('save', () => console.log('Saving...'))
+            controller.addAction('save', () => logger.log('Saving...'))
 
             inspector.setModule(controller)
             document.body.appendChild(inspector)

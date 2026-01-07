@@ -36,7 +36,7 @@ class DocViewer {
             const data = await response.json()
             this.docs = data.docs
         } catch (error) {
-            console.error('Failed to load docs.json:', error)
+            logger.error('Failed to load docs.json:', error)
             this.docs = []
         }
     }
@@ -47,7 +47,7 @@ class DocViewer {
             const response = await fetch('./api.json')
             this.apiData = await response.json()
         } catch (error) {
-            console.error('Failed to load api.json:', error)
+            logger.error('Failed to load api.json:', error)
             this.apiData = {}
         }
     }
@@ -58,7 +58,7 @@ class DocViewer {
             const response = await fetch('./tests.json')
             this.testsData = await response.json()
         } catch (error) {
-            console.error('Failed to load tests.json:', error)
+            logger.error('Failed to load tests.json:', error)
             this.testsData = {}
         }
     }
@@ -216,7 +216,7 @@ class DocViewer {
 
             this.currentDoc = docPath
         } catch (error) {
-            console.error('Failed to load doc:', error)
+            logger.error('Failed to load doc:', error)
             this.container.innerHTML = `
                 <div class="error-message">
                     <h2>Failed to load documentation</h2>

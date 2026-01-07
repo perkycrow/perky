@@ -1,4 +1,4 @@
-import {doc, section, text, code} from '../doc/runtime.js'
+import {doc, section, text, code, logger} from '../doc/runtime.js'
 
 
 export default doc('Application', () => {
@@ -30,9 +30,9 @@ export default doc('Application', () => {
             app.mount(container)
             app.start()
 
-            console.log(app.mounted) // true
-            console.log(app.element.tagName) // 'DIV'
-            console.log(app.perkyView.width, app.perkyView.height)
+            logger.log(app.mounted) // true
+            logger.log(app.element.tagName) // 'DIV'
+            logger.log(app.perkyView.width, app.perkyView.height)
         })
 
     })
@@ -49,7 +49,7 @@ export default doc('Application', () => {
             const app = new Application({$id: 'demo'})
 
             for (const child of app.children) {
-                console.log(`${child.$id} (${child.$category})`)
+                logger.log(`${child.$id} (${child.$category})`)
             }
 
             app.dispose()
@@ -58,9 +58,9 @@ export default doc('Application', () => {
         code('Access systems', () => {
             const app = new Application({$id: 'demo'})
 
-            console.log(app.manifest.$id)
-            console.log(app.perkyView.$id)
-            console.log(app.inputSystem.$id)
+            logger.log(app.manifest.$id)
+            logger.log(app.perkyView.$id)
+            logger.log(app.inputSystem.$id)
 
             app.dispose()
         })
@@ -75,14 +75,14 @@ export default doc('Application', () => {
         code('start / stop', () => {
             const app = new Application({$id: 'demo'})
 
-            app.on('start', () => console.log('app started'))
-            app.on('stop', () => console.log('app stopped'))
+            app.on('start', () => logger.log('app started'))
+            app.on('stop', () => logger.log('app stopped'))
 
             app.start()
-            console.log(app.running) // true
+            logger.log(app.running) // true
 
             app.stop()
-            console.log(app.running) // false
+            logger.log(app.running) // false
 
             app.dispose()
         })
@@ -97,16 +97,16 @@ export default doc('Application', () => {
         code('View properties', () => {
             const app = new Application({$id: 'demo'})
 
-            console.log(app.perkyView.width)
-            console.log(app.perkyView.height)
-            console.log(app.perkyView.aspectRatio)
+            logger.log(app.perkyView.width)
+            logger.log(app.perkyView.height)
+            logger.log(app.perkyView.aspectRatio)
         })
 
         code('Resize event', () => {
             const app = new Application({$id: 'demo'})
 
             app.on('resize', ({width, height}) => {
-                console.log('resized to:', width, height)
+                logger.log('resized to:', width, height)
             })
 
             app.perkyView.setSize({width: 800, height: 600})

@@ -171,18 +171,18 @@ export function container (options, fn) {
 }
 
 
-export function applyContainerPreset (container, presetName) {
+export function applyContainerPreset (element, presetName) {
     const preset = CONTAINER_PRESETS[presetName]
     if (!preset) {
         return
     }
 
     if (preset.tabIndex !== undefined) {
-        container.tabIndex = preset.tabIndex
+        element.tabIndex = preset.tabIndex
     }
 
     if (preset.style) {
-        Object.assign(container.style, preset.style)
+        Object.assign(element.style, preset.style)
     }
 }
 

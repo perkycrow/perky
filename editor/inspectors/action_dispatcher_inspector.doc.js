@@ -24,7 +24,7 @@ export default doc('ActionDispatcherInspector', () => {
 
             const dispatcher = new ActionDispatcher({$id: 'dispatcher'})
             const main = dispatcher.register('main')
-            main.addAction('save', () => console.log('Saving...'))
+            main.addAction('save', () => logger.log('Saving...'))
 
             inspector.setModule(dispatcher)
             document.body.appendChild(inspector)

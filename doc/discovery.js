@@ -5,6 +5,7 @@ import {fileURLToPath} from 'url'
 import {getApiForFile} from './api_parser.js'
 import {parseDocFile} from './doc_parser.js'
 import {getTestsForFile} from './test_parser.js'
+import logger from '../core/logger.js'
 
 
 const __filename = fileURLToPath(import.meta.url)
@@ -71,7 +72,7 @@ async function buildApiData (docs) {
                 api[doc.file] = apiData
             }
         } catch (error) {
-            console.warn(`  Warning: Could not parse API for ${sourcePath}: ${error.message}`)
+            logger.warn(`  Warning: Could not parse API for ${sourcePath}: ${error.message}`)
         }
     }
 
@@ -100,7 +101,7 @@ function buildSourcesData (docs) {
                 count++
             }
         } catch (error) {
-            console.warn(`  Warning: Could not parse sources for ${doc.file}: ${error.message}`)
+            logger.warn(`  Warning: Could not parse sources for ${doc.file}: ${error.message}`)
         }
     }
 
@@ -127,7 +128,7 @@ function buildTestsData (docs) {
                 tests[doc.file] = testData
             }
         } catch (error) {
-            console.warn(`  Warning: Could not parse tests for ${testPath}: ${error.message}`)
+            logger.warn(`  Warning: Could not parse tests for ${testPath}: ${error.message}`)
         }
     }
 
@@ -141,9 +142,9 @@ async function main () {
 
     fs.writeFileSync(docsOutputPath, JSON.stringify(result, null, 2))
 
-    console.log(`Discovered ${result.docs.length} doc file(s):`)
+    logger.log(`Discovered ${result.docs.length} doc file(s):`)
     for (const doc of result.docs) {
-        console.log(`  - ${doc.category}/${doc.title} (${doc.file})`)
+        logger.log(`  - ${doc.category}/${doc.title} (${doc.file})`)
     }
 
     const apiData = await buildApiData(result.docs)
@@ -152,7 +153,7 @@ async function main () {
     fs.writeFileSync(apiOutputPath, JSON.stringify(apiData, null, 2))
 
     const apiCount = Object.keys(apiData).length
-    console.log(`\nGenerated API data for ${apiCount} file(s)`)
+    logger.log(`\nGenerated API data for ${apiCount} file(s)`)
 
     const testsData = buildTestsData(result.docs)
     const testsOutputPath = path.join(__dirname, 'tests.json')
@@ -160,11 +161,11 @@ async function main () {
     fs.writeFileSync(testsOutputPath, JSON.stringify(testsData, null, 2))
 
     const testsCount = Object.keys(testsData).length
-    console.log(`\nGenerated tests data for ${testsCount} file(s)`)
+    logger.log(`\nGenerated tests data for ${testsCount} file(s)`)
 
     const sourcesCount = buildSourcesData(result.docs)
-    console.log(`\nExtracted sources for ${sourcesCount} file(s)`)
+    logger.log(`\nExtracted sources for ${sourcesCount} file(s)`)
 }
 
 
-main().catch(console.error)
+main().catch(logger.error)

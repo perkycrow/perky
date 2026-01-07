@@ -1,4 +1,4 @@
-import {doc, section, text, code} from '../doc/runtime.js'
+import {doc, section, text, code, logger} from '../doc/runtime.js'
 
 
 export default doc('PerkyView', () => {
@@ -17,7 +17,7 @@ export default doc('PerkyView', () => {
             const view = new PerkyView({$id: 'myView'})
 
             // Uses a default div element
-            console.log(view.element.tagName) // 'DIV'
+            logger.log(view.element.tagName) // 'DIV'
         })
 
         code('With custom element', () => {
@@ -34,8 +34,8 @@ export default doc('PerkyView', () => {
 
             view.mount(container)
 
-            console.log(view.mounted) // true
-            console.log(view.width, view.height)
+            logger.log(view.mounted) // true
+            logger.log(view.width, view.height)
         })
 
     })
@@ -48,10 +48,10 @@ export default doc('PerkyView', () => {
         code('Size properties', () => {
             const view = new PerkyView({$id: 'demo'})
 
-            console.log(view.width)
-            console.log(view.height)
-            console.log(view.size) // {width, height}
-            console.log(view.aspectRatio)
+            logger.log(view.width)
+            logger.log(view.height)
+            logger.log(view.size) // {width, height}
+            logger.log(view.aspectRatio)
         })
 
         code('setSize', () => {
@@ -78,20 +78,20 @@ export default doc('PerkyView', () => {
         code('hide / show', () => {
             const view = new PerkyView({$id: 'demo'})
 
-            console.log(view.isVisible()) // true
+            logger.log(view.isVisible()) // true
 
             view.hide()
-            console.log(view.isVisible()) // false
+            logger.log(view.isVisible()) // false
 
             view.show()
-            console.log(view.isVisible()) // true
+            logger.log(view.isVisible()) // true
         })
 
         code('display property', () => {
             const view = new PerkyView({$id: 'demo'})
 
             view.display = 'flex'
-            console.log(view.display) // 'flex'
+            logger.log(view.display) // 'flex'
         })
 
     })
@@ -105,10 +105,10 @@ export default doc('PerkyView', () => {
             const view = new PerkyView({$id: 'demo'})
 
             view.addClass('active')
-            console.log(view.hasClass('active')) // true
+            logger.log(view.hasClass('active')) // true
 
             view.removeClass('active')
-            console.log(view.hasClass('active')) // false
+            logger.log(view.hasClass('active')) // false
         })
 
     })
@@ -137,10 +137,10 @@ export default doc('PerkyView', () => {
             const view = new PerkyView({$id: 'demo'})
 
             view.on('displayMode:changed', ({mode}) => {
-                console.log('mode changed:', mode)
+                logger.log('mode changed:', mode)
             })
 
-            console.log(view.displayMode) // 'normal' or 'fullscreen'
+            logger.log(view.displayMode) // 'normal' or 'fullscreen'
         })
 
     })
@@ -154,15 +154,15 @@ export default doc('PerkyView', () => {
             const view = new PerkyView({$id: 'demo'})
             const container = document.getElementById('app')
 
-            view.on('mount', () => console.log('mounted'))
-            view.on('dismount', () => console.log('dismounted'))
+            view.on('mount', () => logger.log('mounted'))
+            view.on('dismount', () => logger.log('dismounted'))
 
             view.mount(container)
-            console.log(view.container === container) // true
-            console.log(view.mounted) // true
+            logger.log(view.container === container) // true
+            logger.log(view.mounted) // true
 
             view.dismount()
-            console.log(view.mounted) // false
+            logger.log(view.mounted) // false
         })
 
     })
@@ -176,7 +176,7 @@ export default doc('PerkyView', () => {
             const view = new PerkyView({$id: 'demo'})
 
             view.on('resize', ({width, height}) => {
-                console.log('resized:', width, height)
+                logger.log('resized:', width, height)
             })
 
             view.setSize({width: 300, height: 100})

@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import {fileURLToPath} from 'url'
+import logger from '../core/logger.js'
 
 
 const __filename = fileURLToPath(import.meta.url)
@@ -418,8 +419,8 @@ async function main () {
     const docs = docsData.docs
     const cssFile = findCssFile()
 
-    console.log(`Generating static pages for ${docs.length} doc(s)...`)
-    console.log(`Using CSS: ${cssFile}`)
+    logger.log(`Generating static pages for ${docs.length} doc(s)...`)
+    logger.log(`Using CSS: ${cssFile}`)
 
     for (const doc of docs) {
         const sources = loadSources(doc.file)
@@ -443,16 +444,16 @@ async function main () {
             fs.writeFileSync(path.join(distDir, testFileName), testHtml)
         }
 
-        console.log(`  - ${doc.title}`)
+        logger.log(`  - ${doc.title}`)
     }
 
     const baseUrl = 'https://perkycrow.com/doc'
     const sitemap = generateSitemap(docs, apiData, testsData, baseUrl)
     fs.writeFileSync(path.join(distDir, 'sitemap.xml'), sitemap)
-    console.log('\nGenerated sitemap.xml')
+    logger.log('\nGenerated sitemap.xml')
 
-    console.log('\nDone!')
+    logger.log('\nDone!')
 }
 
 
-main().catch(console.error)
+main().catch(logger.error)

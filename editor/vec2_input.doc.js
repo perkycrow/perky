@@ -19,7 +19,7 @@ export default doc('Vec2Input', () => {
             const input = document.createElement('vec2-input')
             input.value = new Vec2(10, 20)
             input.addEventListener('change', (e) => {
-                console.log('Value:', e.detail.value)
+                logger.log('Value:', e.detail.value)
             })
             document.body.appendChild(input)
         })

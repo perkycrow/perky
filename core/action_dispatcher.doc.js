@@ -24,7 +24,7 @@ export default doc('ActionDispatcher', () => {
             // Register a controller and add an action
             const main = dispatcher.register('main')
             main.addAction('jump', () => {
-                console.log('Jump!')
+                logger.log('Jump!')
             })
 
             // Set it active and execute
@@ -60,11 +60,11 @@ export default doc('ActionDispatcher', () => {
 
             // Register a game controller
             const gameCtrl = dispatcher.register('game')
-            gameCtrl.addAction('pause', () => console.log('Paused'))
+            gameCtrl.addAction('pause', () => logger.log('Paused'))
 
             // Register a menu controller
             const menuCtrl = dispatcher.register('menu')
-            menuCtrl.addAction('select', () => console.log('Selected'))
+            menuCtrl.addAction('select', () => logger.log('Selected'))
 
             // Set active controllers
             dispatcher.setActive(['game', 'menu'])
@@ -127,11 +127,11 @@ export default doc('ActionDispatcher', () => {
         code('Custom controller class', () => {
             class GameController extends ActionController {
                 shoot () {
-                    console.log('Shooting!')
+                    logger.log('Shooting!')
                 }
 
                 jump (height = 1) {
-                    console.log(`Jumping ${height} units`)
+                    logger.log(`Jumping ${height} units`)
                 }
 
                 setSpeed (speed) {

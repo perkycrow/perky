@@ -1,4 +1,4 @@
-import {doc, section, text, code, container} from '../doc/runtime.js'
+import {doc, section, text, code, container, logger} from '../doc/runtime.js'
 import Canvas2D from './canvas_2d.js'
 import Rectangle from './rectangle.js'
 import Circle from './circle.js'
@@ -368,9 +368,9 @@ export default doc('Canvas2D', () => {
 
             // After render, check stats
             renderer.render(scene)
-            console.log(renderer.stats.totalObjects)
-            console.log(renderer.stats.renderedObjects)
-            console.log(renderer.stats.culledObjects)
+            logger.log(renderer.stats.totalObjects)
+            logger.log(renderer.stats.renderedObjects)
+            logger.log(renderer.stats.culledObjects)
         })
 
     })
