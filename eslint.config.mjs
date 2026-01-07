@@ -295,7 +295,7 @@ export default defineConfig([globalIgnores(['node_modules/*', 'dist/*']), {
         'local/class-methods-use-this': 0
     }
 }, {
-    files: ['**/*.doc.js'],
+    files: ['**/*.doc.js', '**/*.guide.js'],
 
     rules: {
         'no-unused-vars': 0,

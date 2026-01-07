@@ -223,6 +223,16 @@
       ]
     },
     {
+      "id": "getting_started",
+      "file": "/doc/guides/getting_started.guide.js",
+      "category": "general",
+      "title": "GettingStarted",
+      "tags": [
+        "general",
+        "getting_started"
+      ]
+    },
+    {
       "id": "philosophy",
       "file": "/doc/guides/philosophy.guide.js",
       "category": "general",
