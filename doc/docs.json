@@ -213,6 +213,16 @@
   ],
   "guides": [
     {
+      "id": "conventions",
+      "file": "/doc/guides/conventions.guide.js",
+      "category": "general",
+      "title": "Conventions",
+      "tags": [
+        "general",
+        "conventions"
+      ]
+    },
+    {
       "id": "philosophy",
       "file": "/doc/guides/philosophy.guide.js",
       "category": "general",
