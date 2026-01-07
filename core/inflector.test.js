@@ -371,4 +371,54 @@ describe('Inflector', () => {
 
     })
 
+
+    describe('addPluralRule', () => {
+
+        test('adds a custom plural rule', () => {
+            const customInflector = new Inflector()
+            customInflector.addPluralRule(/zyx$/i, 'zyxes')
+
+            expect(customInflector.plural('zyx')).toBe('zyxes')
+        })
+
+    })
+
+
+    describe('addSingularRule', () => {
+
+        test('adds a custom singular rule', () => {
+            const customInflector = new Inflector()
+            customInflector.addSingularRule(/zyxes$/i, 'zyx')
+
+            expect(customInflector.singular('zyxes')).toBe('zyx')
+        })
+
+    })
+
+
+    describe('addUncountableRule', () => {
+
+        test('adds an uncountable word', () => {
+            const customInflector = new Inflector()
+            customInflector.addUncountableRule('customword')
+
+            expect(customInflector.plural('customword')).toBe('customword')
+            expect(customInflector.singular('customword')).toBe('customword')
+        })
+
+    })
+
+
+    describe('addIrregularRule', () => {
+
+        test('adds an irregular plural/singular pair', () => {
+            const customInflector = new Inflector()
+            customInflector.addIrregularRule('customsingle', 'customplural')
+
+            expect(customInflector.plural('customsingle')).toBe('customplural')
+            expect(customInflector.singular('customplural')).toBe('customsingle')
+        })
+
+    })
+
 })

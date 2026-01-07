@@ -182,11 +182,93 @@ describe('SimpleCollisionDetector', () => {
         const object = createMockObject(0, 0, 1)
         detector.addBody(object)
         detector.onCollision('type1', 'type2', vi.fn())
-        
+
         detector.clear()
-        
+
         expect(detector.bodies).toHaveLength(0)
         expect(detector.callbacks.size).toBe(0)
+    })
+
+
+    test('checkBodyCollisions checks body at index against subsequent bodies', () => {
+        const callback = vi.fn()
+
+        const player = createMockObject(0, 0, 5)
+        const spore1 = createMockObject(3, 0, 5)
+        const spore2 = createMockObject(100, 0, 5)
+
+        detector.addBody(player, {type: 'player'})
+        detector.addBody(spore1, {type: 'spore'})
+        detector.addBody(spore2, {type: 'spore'})
+        detector.onCollision('player', 'spore', callback)
+
+        detector.checkBodyCollisions(0)
+
+        expect(callback).toHaveBeenCalledTimes(1)
+        expect(callback).toHaveBeenCalledWith(player, spore1, expect.any(Object))
+    })
+
+
+    test('checkBodyCollisions skips disabled bodies', () => {
+        const callback = vi.fn()
+
+        const player = createMockObject(0, 0, 5)
+        const spore = createMockObject(3, 0, 5)
+
+        detector.addBody(player, {type: 'player'})
+        detector.addBody(spore, {type: 'spore', enabled: false})
+        detector.onCollision('player', 'spore', callback)
+
+        detector.checkBodyCollisions(0)
+
+        expect(callback).not.toHaveBeenCalled()
+    })
+
+
+    test('handleCollision calls callback with collision info', () => {
+        const callback = vi.fn()
+
+        const player = createMockObject(0, 0, 5)
+        const spore = createMockObject(3, 0, 5)
+
+        const bodyA = detector.addBody(player, {type: 'player'})
+        const bodyB = detector.addBody(spore, {type: 'spore'})
+        detector.onCollision('player', 'spore', callback)
+
+        detector.handleCollision(bodyA, bodyB)
+
+        expect(callback).toHaveBeenCalledWith(player, spore, expect.objectContaining({
+            distance: 3,
+            bodyA,
+            bodyB
+        }))
+    })
+
+
+    test('handleCollision finds callback with reversed key', () => {
+        const callback = vi.fn()
+
+        const player = createMockObject(0, 0, 5)
+        const spore = createMockObject(3, 0, 5)
+
+        const bodyA = detector.addBody(player, {type: 'player'})
+        const bodyB = detector.addBody(spore, {type: 'spore'})
+        detector.onCollision('spore', 'player', callback)
+
+        detector.handleCollision(bodyA, bodyB)
+
+        expect(callback).toHaveBeenCalled()
+    })
+
+
+    test('handleCollision does nothing without matching callback', () => {
+        const player = createMockObject(0, 0, 5)
+        const spore = createMockObject(3, 0, 5)
+
+        const bodyA = detector.addBody(player, {type: 'player'})
+        const bodyB = detector.addBody(spore, {type: 'spore'})
+
+        expect(() => detector.handleCollision(bodyA, bodyB)).not.toThrow()
     })
 
 })

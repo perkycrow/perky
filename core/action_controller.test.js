@@ -111,6 +111,62 @@ describe(ActionController, () => {
     })
 
 
+    test('listActionsWithParams - returns actions with parameters', () => {
+        const testController = new ActionController()
+        testController.addAction('jump', (height, force = 10) => [height, force])
+        testController.addAction('move', (x, y) => [x, y])
+
+        const actionsWithParams = testController.listActionsWithParams()
+
+        const jumpAction = actionsWithParams.find(a => a.name === 'jump')
+        expect(jumpAction).toBeDefined()
+        expect(jumpAction.params).toEqual([
+            {name: 'height', defaultValue: null},
+            {name: 'force', defaultValue: '10'}
+        ])
+
+        const moveAction = actionsWithParams.find(a => a.name === 'move')
+        expect(moveAction).toBeDefined()
+        expect(moveAction.params).toEqual([
+            {name: 'x', defaultValue: null},
+            {name: 'y', defaultValue: null}
+        ])
+    })
+
+
+    test('listActionsWithParams - includes registered actions', () => {
+        controller.addAction('customAction', (value) => value * 2)
+
+        const actionsWithParams = controller.listActionsWithParams()
+
+        const customAction = actionsWithParams.find(a => a.name === 'customAction')
+        expect(customAction).toBeDefined()
+        expect(customAction.params).toEqual([{name: 'value', defaultValue: null}])
+    })
+
+
+    test('listActionsWithParams - handles functions with no params', () => {
+        controller.addAction('noParams', () => {})
+
+        const actionsWithParams = controller.listActionsWithParams()
+
+        const noParamsAction = actionsWithParams.find(a => a.name === 'noParams')
+        expect(noParamsAction).toBeDefined()
+        expect(noParamsAction.params).toEqual([])
+    })
+
+
+    test('listActionsWithParams - handles rest parameters', () => {
+        controller.addAction('withRest', (first, ...rest) => [first, rest])
+
+        const actionsWithParams = controller.listActionsWithParams()
+
+        const action = actionsWithParams.find(a => a.name === 'withRest')
+        expect(action).toBeDefined()
+        expect(action.params).toEqual([{name: 'first', defaultValue: null}])
+    })
+
+
     test('execute with existing registered action', () => {
         const action = vi.fn()
         const actionListener = vi.fn()

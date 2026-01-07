@@ -3,14 +3,22 @@ import {
     toCamelCase,
     toPascalCase,
     toSnakeCase,
+    toKebabCase,
     singularize,
+    pluralize,
+    plural,
+    isPlural,
+    isSingular,
     uniqueId,
     resetUniqueId,
     deepMerge,
     setDefaults,
     getNestedValue,
     setNestedValue,
-    delegateProperties
+    delegateProperties,
+    exportValue,
+    formatNumber,
+    formatBytes
 } from './utils'
 
 
@@ -43,6 +51,15 @@ describe('String Utils', () => {
     })
 
 
+    test('toKebabCase', () => {
+        expect(toKebabCase('helloWorld')).toEqual('hello-world')
+        expect(toKebabCase('HelloWorld')).toEqual('hello-world')
+        expect(toKebabCase('hello_world')).toEqual('hello-world')
+        expect(toKebabCase('hello world')).toEqual('hello-world')
+        expect(toKebabCase('Hello')).toEqual('hello')
+    })
+
+
     test('singularize', () => {
         expect(singularize('books')).toEqual('book')
         expect(singularize('cars')).toEqual('car')
@@ -72,6 +89,41 @@ describe('String Utils', () => {
 
         expect(singularize('fish')).toEqual('fish')
         expect(singularize('deer')).toEqual('deer')
+    })
+
+
+    test('pluralize', () => {
+        expect(pluralize('cat', 1)).toEqual('cat')
+        expect(pluralize('cat', 2)).toEqual('cats')
+        expect(pluralize('cat', 0)).toEqual('cats')
+        expect(pluralize('child', 1)).toEqual('child')
+        expect(pluralize('child', 5)).toEqual('children')
+        expect(pluralize('cat', 1, true)).toEqual('1 cat')
+        expect(pluralize('cat', 3, true)).toEqual('3 cats')
+    })
+
+
+    test('plural', () => {
+        expect(plural('cat')).toEqual('cats')
+        expect(plural('child')).toEqual('children')
+        expect(plural('person')).toEqual('people')
+        expect(plural('fish')).toEqual('fish')
+    })
+
+
+    test('isPlural', () => {
+        expect(isPlural('cats')).toBe(true)
+        expect(isPlural('children')).toBe(true)
+        expect(isPlural('cat')).toBe(false)
+        expect(isPlural('child')).toBe(false)
+    })
+
+
+    test('isSingular', () => {
+        expect(isSingular('cat')).toBe(true)
+        expect(isSingular('child')).toBe(true)
+        expect(isSingular('cats')).toBe(false)
+        expect(isSingular('children')).toBe(false)
     })
 
 
@@ -332,6 +384,108 @@ describe('delegateProperties', () => {
         delegateProperties(receiver, source, ['getName'])
 
         expect(receiver.getName()).toBe('source')
+    })
+
+})
+
+
+describe('exportValue', () => {
+
+    test('returns primitive values as-is', () => {
+        expect(exportValue(42)).toBe(42)
+        expect(exportValue('hello')).toBe('hello')
+        expect(exportValue(true)).toBe(true)
+        expect(exportValue(null)).toBe(null)
+        expect(exportValue(undefined)).toBe(undefined)
+    })
+
+
+    test('calls export method if available', () => {
+        const obj = {
+            value: 42,
+            export () {
+                return {exported: this.value}
+            }
+        }
+
+        expect(exportValue(obj)).toEqual({exported: 42})
+    })
+
+
+    test('recursively exports arrays', () => {
+        const arr = [1, 2, {value: 3, export: () => 'exported'}]
+
+        expect(exportValue(arr)).toEqual([1, 2, 'exported'])
+    })
+
+
+    test('recursively exports object properties', () => {
+        const obj = {
+            a: 1,
+            b: {
+                c: 2,
+                export: () => 'nested'
+            }
+        }
+
+        expect(exportValue(obj)).toEqual({a: 1, b: 'nested'})
+    })
+
+})
+
+
+describe('formatNumber', () => {
+
+    test('formats integers without decimals', () => {
+        expect(formatNumber(42)).toBe('42')
+        expect(formatNumber(1000)).toBe('1000')
+        expect(formatNumber(0)).toBe('0')
+    })
+
+
+    test('formats floats with 2 decimal places', () => {
+        expect(formatNumber(3.14159)).toBe('3.14')
+        expect(formatNumber(42.5)).toBe('42.50')
+        expect(formatNumber(0.123)).toBe('0.12')
+    })
+
+
+    test('handles non-numbers', () => {
+        expect(formatNumber('hello')).toBe('hello')
+        expect(formatNumber(null)).toBe('null')
+    })
+
+})
+
+
+describe('formatBytes', () => {
+
+    test('formats 0 bytes', () => {
+        expect(formatBytes(0)).toBe('0 B')
+    })
+
+
+    test('formats bytes', () => {
+        expect(formatBytes(500)).toBe('500 B')
+        expect(formatBytes(1023)).toBe('1023 B')
+    })
+
+
+    test('formats kilobytes', () => {
+        expect(formatBytes(1024)).toBe('1 KB')
+        expect(formatBytes(2048)).toBe('2 KB')
+    })
+
+
+    test('formats megabytes', () => {
+        expect(formatBytes(1024 * 1024)).toBe('1.00 MB')
+        expect(formatBytes(1.5 * 1024 * 1024)).toBe('1.50 MB')
+    })
+
+
+    test('formats gigabytes', () => {
+        expect(formatBytes(1024 * 1024 * 1024)).toBe('1.00 GB')
+        expect(formatBytes(2.5 * 1024 * 1024 * 1024)).toBe('2.50 GB')
     })
 
 })

@@ -1845,5 +1845,71 @@ describe(PerkyModule, () => {
 
     })
 
+
+    describe('childrenByCategory', () => {
+
+        test('returns children matching category', () => {
+            const controller1 = child.create(PerkyModule, {$id: 'c1', $category: 'controller'})
+            const controller2 = child.create(PerkyModule, {$id: 'c2', $category: 'controller'})
+            child.create(PerkyModule, {$id: 's1', $category: 'service'})
+
+            const controllers = child.childrenByCategory('controller')
+
+            expect(controllers).toHaveLength(2)
+            expect(controllers).toContain(controller1)
+            expect(controllers).toContain(controller2)
+        })
+
+
+        test('returns empty array for non-existent category', () => {
+            child.create(PerkyModule, {$id: 'c1', $category: 'controller'})
+
+            const result = child.childrenByCategory('nonexistent')
+
+            expect(result).toEqual([])
+        })
+
+    })
+
+
+    describe('cleanEventDelegations', () => {
+
+        test('removes all event delegations', () => {
+            const hostModule = new PerkyModule({$id: 'host'})
+            const childModule = hostModule.create(PerkyModule, {$id: 'child'})
+
+            const spy = vi.fn()
+            hostModule.on('update', spy)
+
+            childModule.delegateEventsTo(hostModule, ['update'])
+
+            childModule.emit('update', 1)
+            expect(spy).toHaveBeenCalledTimes(1)
+
+            childModule.cleanEventDelegations()
+
+            childModule.emit('update', 2)
+            expect(spy).toHaveBeenCalledTimes(1)
+        })
+
+
+        test('cleanEventDelegations clears delegation list', () => {
+            const hostModule = new PerkyModule({$id: 'host'})
+            const childModule = new PerkyModule({$id: 'child'})
+
+            childModule.delegateEventsTo(hostModule, ['update', 'render'])
+
+            childModule.cleanEventDelegations()
+
+            childModule.delegateEventsTo(hostModule, ['update'])
+
+            const spy = vi.fn()
+            hostModule.on('update', spy)
+            childModule.emit('update')
+            expect(spy).toHaveBeenCalledTimes(1)
+        })
+
+    })
+
 })
 

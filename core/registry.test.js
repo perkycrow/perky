@@ -551,6 +551,37 @@ describe(Registry, () => {
 
             expect(registry.refreshIndexFor(item, 'nonExistent')).toBe(false)
         })
+
+
+        test('lookupKeys returns keys for indexed value', () => {
+            registry.addIndex('byCategory', (item) => item.category)
+
+            registry.set('item1', {name: 'Item1', category: 'electronics'})
+            registry.set('item2', {name: 'Item2', category: 'electronics'})
+            registry.set('item3', {name: 'Item3', category: 'clothing'})
+
+            const electronicKeys = registry.lookupKeys('byCategory', 'electronics')
+
+            expect(electronicKeys).toHaveLength(2)
+            expect(electronicKeys).toContain('item1')
+            expect(electronicKeys).toContain('item2')
+        })
+
+
+        test('lookupKeys returns empty array for non-existent value', () => {
+            registry.addIndex('byCategory', (item) => item.category)
+
+            registry.set('item1', {name: 'Item1', category: 'electronics'})
+
+            const result = registry.lookupKeys('byCategory', 'nonexistent')
+
+            expect(result).toEqual([])
+        })
+
+
+        test('lookupKeys throws for non-existent index', () => {
+            expect(() => registry.lookupKeys('nonExistent', 'value')).toThrow()
+        })
     })
 
 })

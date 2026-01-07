@@ -463,4 +463,52 @@ describe(ActionDispatcher, () => {
     })
 
 
+    test('addAction delegates to main controller', () => {
+        const host = new PerkyModule()
+        const newDispatcher = new ActionDispatcher()
+        newDispatcher.install(host, {main: true})
+
+        const action = vi.fn()
+        newDispatcher.addAction('customAction', action)
+
+        expect(newDispatcher.mainController.getAction('customAction')).toBe(action)
+    })
+
+
+    test('addAction returns false without main controller', () => {
+        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+        const result = dispatcher.addAction('customAction', vi.fn())
+
+        expect(result).toBe(false)
+        expect(consoleSpy).toHaveBeenCalled()
+
+        consoleSpy.mockRestore()
+    })
+
+
+    test('removeAction delegates to main controller', () => {
+        const host = new PerkyModule()
+        const newDispatcher = new ActionDispatcher()
+        newDispatcher.install(host, {main: true})
+
+        const action = vi.fn()
+        newDispatcher.addAction('customAction', action)
+        newDispatcher.removeAction('customAction')
+
+        expect(newDispatcher.mainController.getAction('customAction')).toBeUndefined()
+    })
+
+
+    test('removeAction returns false without main controller', () => {
+        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+        const result = dispatcher.removeAction('customAction')
+
+        expect(result).toBe(false)
+        expect(consoleSpy).toHaveBeenCalled()
+
+        consoleSpy.mockRestore()
+    })
+
 })

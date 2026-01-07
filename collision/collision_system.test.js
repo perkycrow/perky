@@ -395,12 +395,202 @@ describe('CollisionSystem', () => {
 
     test('enableDebugDraw sets debug properties', () => {
         const mockScene = {}
-        
+
         const result = collisionSystem.enableDebugDraw(mockScene)
 
         expect(collisionSystem.debugScene).toBe(mockScene)
         expect(collisionSystem.debugEnabled).toBe(true)
         expect(result).toBe(collisionSystem)
+    })
+
+
+    describe('Spatial Grid', () => {
+
+        test('setupSpatialGrid without bounds logs warning', () => {
+            const system = new CollisionSystem({spatialGrid: false})
+
+            system.setupSpatialGrid()
+
+            expect(system.grid).toBeUndefined()
+        })
+
+
+        test('setupSpatialGrid creates grid based on bounds and gridSize', () => {
+            const system = new CollisionSystem({
+                bounds: {x: 0, y: 0, width: 200, height: 100},
+                gridSize: 50
+            })
+
+            system.setupSpatialGrid()
+
+            expect(system.gridCols).toBe(4)
+            expect(system.gridRows).toBe(2)
+            expect(system.grid.length).toBe(2)
+            expect(system.grid[0].length).toBe(4)
+        })
+
+
+        test('clearGrid empties all cells', () => {
+            const system = new CollisionSystem({
+                bounds: {x: 0, y: 0, width: 128, height: 64},
+                spatialGrid: true,
+                gridSize: 64
+            })
+
+            system.grid[0][0].push({id: 1})
+            system.grid[0][1].push({id: 2})
+
+            system.clearGrid()
+
+            expect(system.grid[0][0].length).toBe(0)
+            expect(system.grid[0][1].length).toBe(0)
+        })
+
+
+        test('addBodyToGrid places body in correct cells', () => {
+            const system = new CollisionSystem({
+                bounds: {x: 0, y: 0, width: 128, height: 128},
+                spatialGrid: true,
+                gridSize: 64
+            })
+
+            const body = createTestBody({x: 32, y: 32})
+            system.addBody(body)
+            system.updateShapes()
+
+            system.addBodyToGrid(body)
+
+            expect(system.grid[0][0]).toContain(body)
+        })
+
+
+        test('addBodyToGrid handles body spanning multiple cells', () => {
+            const system = new CollisionSystem({
+                bounds: {x: 0, y: 0, width: 128, height: 128},
+                spatialGrid: true,
+                gridSize: 32
+            })
+
+            const body = {
+                constructor: {name: 'Rectangle'},
+                userData: {width: 50, height: 50},
+                position: {x: 32, y: 32}
+            }
+            system.addBody(body)
+            system.updateShapes()
+
+            system.addBodyToGrid(body)
+
+            expect(system.grid[0][0]).toContain(body)
+            expect(system.grid[0][1]).toContain(body)
+            expect(system.grid[1][0]).toContain(body)
+            expect(system.grid[1][1]).toContain(body)
+        })
+
+
+        test('populateGrid adds all bodies to grid', () => {
+            const system = new CollisionSystem({
+                bounds: {x: 0, y: 0, width: 128, height: 128},
+                spatialGrid: true,
+                gridSize: 64
+            })
+
+            const bodyA = createTestBody({x: 16, y: 16})
+            const bodyB = createTestBody({x: 80, y: 80})
+            system.addBody(bodyA)
+            system.addBody(bodyB)
+            system.updateShapes()
+
+            system.populateGrid([bodyA, bodyB])
+
+            expect(system.grid[0][0]).toContain(bodyA)
+            expect(system.grid[1][1]).toContain(bodyB)
+        })
+
+
+        test('checkCellCollisions checks pairs within cell', () => {
+            const system = new CollisionSystem({
+                bounds: {x: 0, y: 0, width: 128, height: 128},
+                spatialGrid: true,
+                gridSize: 64
+            })
+
+            const callback = vi.fn()
+            system.setCollisionCallback(callback)
+
+            const bodyA = createTestBody({x: 16, y: 16})
+            const bodyB = createTestBody({x: 20, y: 16})
+            system.addBody(bodyA)
+            system.addBody(bodyB)
+            system.updateShapes()
+
+            system.checkCellCollisions([bodyA, bodyB])
+
+            expect(callback).toHaveBeenCalled()
+        })
+
+
+        test('checkGridCollisions iterates all cells', () => {
+            const system = new CollisionSystem({
+                bounds: {x: 0, y: 0, width: 64, height: 64},
+                spatialGrid: true,
+                gridSize: 32
+            })
+
+            const callback = vi.fn()
+            system.setCollisionCallback(callback)
+
+            const bodyA = createTestBody({x: 16, y: 16})
+            const bodyB = createTestBody({x: 20, y: 16})
+            system.addBody(bodyA)
+            system.addBody(bodyB)
+            system.updateShapes()
+
+            system.grid[0][0] = [bodyA, bodyB]
+
+            system.checkGridCollisions()
+
+            expect(callback).toHaveBeenCalled()
+        })
+
+
+        test('detectCollisionsWithGrid uses grid-based detection', () => {
+            const system = new CollisionSystem({
+                bounds: {x: 0, y: 0, width: 128, height: 128},
+                spatialGrid: true,
+                gridSize: 64
+            })
+
+            const callback = vi.fn()
+            system.setCollisionCallback(callback)
+
+            const bodyA = createTestBody({x: 16, y: 16})
+            const bodyB = createTestBody({x: 20, y: 16})
+            system.addBody(bodyA)
+            system.addBody(bodyB)
+            system.updateShapes()
+
+            system.detectCollisionsWithGrid([bodyA, bodyB])
+
+            expect(callback).toHaveBeenCalled()
+        })
+
+
+        test('detectCollisionsBruteForce checks all pairs', () => {
+            const callback = vi.fn()
+            collisionSystem.setCollisionCallback(callback)
+
+            const bodyA = createTestBody({x: 0, y: 0})
+            const bodyB = createTestBody({x: 10, y: 0})
+            collisionSystem.addBody(bodyA)
+            collisionSystem.addBody(bodyB)
+            collisionSystem.updateShapes()
+
+            collisionSystem.detectCollisionsBruteForce([bodyA, bodyB])
+
+            expect(callback).toHaveBeenCalled()
+        })
+
     })
 
 })
