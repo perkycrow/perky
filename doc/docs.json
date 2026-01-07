@@ -121,6 +121,16 @@
       ]
     },
     {
+      "id": "vec2_input",
+      "file": "/editor/vec2_input.doc.js",
+      "category": "editor",
+      "title": "Vec2Input",
+      "tags": [
+        "editor",
+        "vec2_input"
+      ]
+    },
+    {
       "id": "vec2_log_renderer",
       "file": "/editor/log_renderers/vec2_log_renderer.doc.js",
       "category": "editor",

@@ -1902,6 +1902,79 @@
     },
     "isDefault": true
   },
+  "/editor/vec2_input.doc.js": {
+    "type": "class",
+    "file": "/editor/vec2_input.js",
+    "name": "Vec2Input",
+    "line": 43,
+    "extends": "HTMLElement",
+    "statics": [
+      {
+        "name": "observedAttributes",
+        "line": 51,
+        "source": "static get observedAttributes () {\n    return ['label']\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "methods": [
+      {
+        "name": "connectedCallback",
+        "line": 63,
+        "source": "connectedCallback () {\n    this.#updateDisplay()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "attributeChangedCallback",
+        "line": 68,
+        "source": "attributeChangedCallback (name, oldValue, newValue) {\n    handleAttributeChange(this, name, oldValue, newValue)\n}",
+        "kind": "method",
+        "params": [
+          "name",
+          "oldValue",
+          "newValue"
+        ]
+      },
+      {
+        "name": "setLabel",
+        "line": 84,
+        "source": "setLabel (val) {\n    this.#label = val\n    if (this.#labelEl) {\n        this.#labelEl.textContent = this.#label\n    }\n}",
+        "kind": "method",
+        "params": [
+          "val"
+        ]
+      }
+    ],
+    "getters": [
+      {
+        "name": "value",
+        "line": 73,
+        "source": "get value () {\n    return this.#vec2\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "value",
+        "line": 78,
+        "source": "set value (vec2) {\n    this.#vec2 = vec2\n    this.#updateDisplay()\n}",
+        "kind": "method",
+        "params": [
+          "vec2"
+        ]
+      }
+    ],
+    "constructor": {
+      "name": "constructor",
+      "line": 56,
+      "source": "constructor () {\n    super()\n    this.attachShadow({mode: 'open'})\n    this.#buildDOM()\n}",
+      "kind": "constructor",
+      "params": []
+    },
+    "isDefault": true
+  },
   "/editor/log_renderers/vec2_log_renderer.doc.js": {
     "type": "module",
     "file": "/editor/log_renderers/vec2_log_renderer.js",
