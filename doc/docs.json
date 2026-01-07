@@ -111,6 +111,16 @@
       ]
     },
     {
+      "id": "vec2_log_renderer",
+      "file": "/editor/log_renderers/vec2_log_renderer.doc.js",
+      "category": "editor",
+      "title": "Vec2LogRenderer",
+      "tags": [
+        "editor",
+        "vec2_log_renderer"
+      ]
+    },
+    {
       "id": "game_loop",
       "file": "/game/game_loop.doc.js",
       "category": "game",

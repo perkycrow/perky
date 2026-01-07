@@ -1820,6 +1820,21 @@
     },
     "isDefault": true
   },
+  "/editor/log_renderers/vec2_log_renderer.doc.js": {
+    "type": "module",
+    "file": "/editor/log_renderers/vec2_log_renderer.js",
+    "functions": [
+      {
+        "name": "formatNumber",
+        "line": 5,
+        "params": [
+          "n"
+        ],
+        "source": "function formatNumber (n) {\n    if (Number.isInteger(n)) {\n        return String(n)\n    }\n    return n.toFixed(2)\n}"
+      }
+    ],
+    "exports": []
+  },
   "/game/game_loop.doc.js": {
     "type": "class",
     "file": "/game/game_loop.js",
