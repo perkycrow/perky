@@ -3,56 +3,50 @@ import {doc, section, text} from '../runtime.js'
 
 export default doc('Philosophy', () => {
     text(`
-        You want to make games. Not fight your framework.
+        You want to make games. Not fight your tools.
 
-        Perky gets out of your way. **Everything works together. Nothing is required.** Use what you need, ignore the rest, swap anything for your own code.
+        Perky stays out of your way. Use what you need, ignore the rest, replace anything with your own code. No drama.
     `)
 
-    section('One Pattern to Rule Them All', () => {
+    section('One Pattern, Zero Surprises', () => {
         text(`
-            Every piece of Perky is a \`PerkyModule\`. Your game? A module. Your player? A module. That particle system? Also a module.
+            Everything is a \`PerkyModule\`. Your game, your player, that janky particle system you'll fix later. All modules.
 
-            Modules have children. Children have children. Events bubble up, actions delegate down. Once you get it, you *get it*.
+            Modules have children. Events bubble up. Actions go down. Learn it once, use it everywhere.
 
-            Learn one pattern. Use it everywhere.
+            No magic. No special cases. Just trees all the way down.
         `)
     })
 
     section('Zero Dependencies', () => {
         text(`
-            Check the \`package.json\`. Zero runtime dependencies.
+            Open the \`package.json\`. Look at the runtime dependencies. There aren't any.
 
-            No lodash. No moment. No left-pad. Just code you can read, debug, and trust.
-
-            When something breaks, you know exactly where to look.
+            No lodash. No moment. No mystery package that pulls in half of npm. When something breaks, you know exactly where to look.
         `)
     })
 
-    section('Take What You Need', () => {
+    section('Take Only What You Need', () => {
         text(`
-            Building a puzzle game? You probably don't need physics. Making a visual novel? Skip the collision system.
+            Making a visual novel? Skip the physics. Building a clicker? You don't need collision detection.
 
-            Each module is *self-contained*. Import only what you use. No hidden dependencies pulling in half the framework.
-
-            Your bundle stays lean. Your code stays yours.
+            Every module is self-contained. Import what you use. Leave the rest. Your bundle stays small because *you* decide what goes in.
         `)
     })
 
-    section('Built-in Dev Tools', () => {
+    section('Dev Tools Included', () => {
         text(`
-            Ever tried debugging a game loop with \`console.log\`? It's not fun.
+            Debugging a game loop with \`console.log\` is pain. We've been there.
 
-            Perky ships with visual tools: inspect your module tree live, watch events flow, filter logs by level. All as Web Components you can style, extend, or throw away.
-
-            Drop them in during development. Remove them for production.
+            Perky ships with inspectors, loggers, and explorers. Drop them in during development, rip them out for production.
         `)
     })
 
-    section('Now Go Build Something', () => {
+    section('Go Build Something', () => {
         text(`
-            Perky is still evolving. The API will change. Things will break.
+            The API will change. Things will break. That's fine.
 
-            But the philosophy won't: **powerful tools, zero bullshit**.
+            The philosophy won't: **simple tools, no bullshit**.
 
             *Stay perky.*
         `)
