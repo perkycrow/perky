@@ -519,4 +519,6 @@ async function main () {
 }
 
 
-main().catch(logger.error)
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+    main().catch(logger.error)
+}
