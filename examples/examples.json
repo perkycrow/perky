@@ -115,6 +115,19 @@
       ],
       "title": "Spatial Audio Demo",
       "description": "2D positional audio with distance attenuation and stereo panning."
+    },
+    {
+      "id": "audio_pattern_demo",
+      "file": "audio_pattern_demo.html",
+      "category": "audio",
+      "tags": [
+        "audio",
+        "pattern",
+        "sequencer",
+        "strudel"
+      ],
+      "title": "Audio Pattern Demo",
+      "description": "Strudel-inspired pattern sequencing with mini-notation."
     }
   ]
 }
