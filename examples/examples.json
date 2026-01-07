@@ -89,6 +89,19 @@
       ],
       "title": "Audio System Demo",
       "description": "Procedural audio generation with oscillators, channels, and volume control."
+    },
+    {
+      "id": "audio_assets_demo",
+      "file": "audio_assets_demo.html",
+      "category": "audio",
+      "tags": [
+        "audio",
+        "assets",
+        "manifest",
+        "loading"
+      ],
+      "title": "Audio Assets Demo",
+      "description": "Loading and playing audio files through the manifest and SourceManager."
     }
   ]
 }
