@@ -410,53 +410,20 @@ export default class DocPage extends HTMLElement {
         }
 
         if (describe.beforeEach) {
-            wrapper.appendChild(this.#renderTestHook('beforeEach', describe.beforeEach))
+            wrapper.appendChild(renderTestHook('beforeEach', describe.beforeEach))
         }
 
         if (describe.afterEach) {
-            wrapper.appendChild(this.#renderTestHook('afterEach', describe.afterEach))
+            wrapper.appendChild(renderTestHook('afterEach', describe.afterEach))
         }
 
         for (const test of describe.tests) {
-            wrapper.appendChild(this.#renderTest(test))
+            wrapper.appendChild(renderTest(test))
         }
 
         for (const nested of describe.describes) {
             wrapper.appendChild(this.#renderDescribe(nested, tocList, depth + 1))
         }
-
-        return wrapper
-    }
-
-
-    #renderTestHook (name, hook) {
-        const wrapper = document.createElement('div')
-        wrapper.className = 'test-hook'
-
-        const label = document.createElement('div')
-        label.className = 'test-hook-label'
-        label.textContent = name
-        wrapper.appendChild(label)
-
-        if (hook.source) {
-            const codeEl = document.createElement('perky-code')
-            codeEl.setAttribute('title', name)
-            codeEl.code = hook.source
-            wrapper.appendChild(codeEl)
-        }
-
-        return wrapper
-    }
-
-
-    #renderTest (test) {
-        const wrapper = document.createElement('div')
-        wrapper.className = 'test-case'
-
-        const codeEl = document.createElement('perky-code')
-        codeEl.setAttribute('title', test.title)
-        codeEl.code = test.source || ''
-        wrapper.appendChild(codeEl)
 
         return wrapper
     }
@@ -628,6 +595,39 @@ function renderText (block) {
     el.className = 'doc-text'
     el.innerHTML = parseMarkdown(block.content)
     return el
+}
+
+
+function renderTestHook (name, hook) {
+    const wrapper = document.createElement('div')
+    wrapper.className = 'test-hook'
+
+    const label = document.createElement('div')
+    label.className = 'test-hook-label'
+    label.textContent = name
+    wrapper.appendChild(label)
+
+    if (hook.source) {
+        const codeEl = document.createElement('perky-code')
+        codeEl.setAttribute('title', name)
+        codeEl.code = hook.source
+        wrapper.appendChild(codeEl)
+    }
+
+    return wrapper
+}
+
+
+function renderTest (test) {
+    const wrapper = document.createElement('div')
+    wrapper.className = 'test-case'
+
+    const codeEl = document.createElement('perky-code')
+    codeEl.setAttribute('title', test.title)
+    codeEl.code = test.source || ''
+    wrapper.appendChild(codeEl)
+
+    return wrapper
 }
 
 

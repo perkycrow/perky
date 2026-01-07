@@ -64,17 +64,6 @@ class DocViewer {
     }
 
 
-    async loadSourcesFor (docPath) {
-        try {
-            const fileName = docPath.slice(1).replace(/\//g, '_').replace('.js', '.json')
-            const response = await fetch(`./sources/${fileName}`)
-            return await response.json()
-        } catch {
-            return null
-        }
-    }
-
-
     buildNav () {
         const byCategory = {}
 
@@ -100,7 +89,7 @@ class DocViewer {
                 item.dataset.file = doc.file
                 item.dataset.title = doc.title.toLowerCase()
                 item.dataset.category = doc.category
-                item.href = this.getDocUrl(doc.file)
+                item.href = getDocUrl(doc.file)
 
                 this.nav.appendChild(item)
             }
@@ -170,15 +159,6 @@ class DocViewer {
     }
 
 
-    getDocUrl (docFile) {
-        if (isProduction) {
-            const htmlFile = docFile.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
-            return htmlFile
-        }
-        return `?doc=${encodeURIComponent(docFile)}`
-    }
-
-
     updateActiveNav (docPath) {
         const items = this.nav.querySelectorAll('.nav-item')
         for (const item of items) {
@@ -222,7 +202,7 @@ class DocViewer {
                 docPage.api = api
             }
 
-            const sources = await this.loadSourcesFor(docPath)
+            const sources = await loadSourcesFor(docPath)
             if (sources) {
                 docPage.sources = sources
             }
@@ -246,6 +226,26 @@ class DocViewer {
         }
     }
 
+}
+
+
+async function loadSourcesFor (docPath) {
+    try {
+        const fileName = docPath.slice(1).replace(/\//g, '_').replace('.js', '.json')
+        const response = await fetch(`./sources/${fileName}`)
+        return await response.json()
+    } catch {
+        return null
+    }
+}
+
+
+function getDocUrl (docFile) {
+    if (isProduction) {
+        const htmlFile = docFile.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
+        return htmlFile
+    }
+    return `?doc=${encodeURIComponent(docFile)}`
 }
 
 
