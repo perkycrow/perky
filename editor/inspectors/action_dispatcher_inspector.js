@@ -2,6 +2,7 @@ import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
 import ActionDispatcher from '../../core/action_dispatcher.js'
 import {pluralize} from '../../core/utils.js'
+import '../toggle_input.js'
 
 
 const customStyles = `
@@ -42,12 +43,13 @@ const customStyles = `
         flex: 1;
     }
 
-    .group-count {
-        font-size: 9px;
-        background: var(--bg-hover);
-        padding: 2px 6px;
-        border-radius: 8px;
-        color: var(--fg-secondary);
+    .group-inactive .group-name {
+        opacity: 0.4;
+    }
+
+    .group-inactive .actions-list {
+        opacity: 0.3;
+        pointer-events: none;
     }
 
     .actions-list {
@@ -163,8 +165,10 @@ export default class ActionDispatcherInspector extends BaseInspector {
 
 
     #createControllerGroup (controllerName, actions) {
+        const isActive = this.module.getActive().includes(controllerName)
+
         const group = document.createElement('div')
-        group.className = 'controller-group'
+        group.className = isActive ? 'controller-group' : 'controller-group group-inactive'
 
         const header = document.createElement('div')
         header.className = 'group-header'
@@ -173,12 +177,14 @@ export default class ActionDispatcherInspector extends BaseInspector {
         nameEl.className = 'group-name'
         nameEl.textContent = controllerName
 
-        const count = document.createElement('span')
-        count.className = 'group-count'
-        count.textContent = actions.length
+        const toggle = document.createElement('toggle-input')
+        toggle.setChecked(isActive)
+        toggle.addEventListener('change', (e) => {
+            this.#toggleController(controllerName, e.detail.checked)
+        })
 
         header.appendChild(nameEl)
-        header.appendChild(count)
+        header.appendChild(toggle)
         group.appendChild(header)
 
         if (actions.length === 0) {
@@ -190,8 +196,8 @@ export default class ActionDispatcherInspector extends BaseInspector {
             const list = document.createElement('div')
             list.className = 'actions-list'
 
-            for (const actionName of actions) {
-                const card = createActionCard(actionName, controllerName, this.module)
+            for (const action of actions) {
+                const card = createActionCard(action.name, controllerName, this.module)
                 list.appendChild(card)
             }
 
@@ -199,6 +205,21 @@ export default class ActionDispatcherInspector extends BaseInspector {
         }
 
         return group
+    }
+
+
+    #toggleController (controllerName, active) {
+        const currentActive = this.module.getActive()
+
+        if (active) {
+            if (!currentActive.includes(controllerName)) {
+                this.module.setActive([...currentActive, controllerName])
+            }
+        } else {
+            this.module.setActive(currentActive.filter(name => name !== controllerName))
+        }
+
+        this.#update()
     }
 
 }

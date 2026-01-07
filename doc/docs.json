@@ -81,6 +81,16 @@
       ]
     },
     {
+      "id": "action_dispatcher_inspector",
+      "file": "/editor/inspectors/action_dispatcher_inspector.doc.js",
+      "category": "editor",
+      "title": "ActionDispatcherInspector",
+      "tags": [
+        "editor",
+        "action_dispatcher_inspector"
+      ]
+    },
+    {
       "id": "perky_explorer",
       "file": "/editor/perky_explorer.doc.js",
       "category": "editor",

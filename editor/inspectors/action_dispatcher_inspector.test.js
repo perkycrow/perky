@@ -5,15 +5,27 @@ import ActionDispatcherInspector from './action_dispatcher_inspector.js'
 class MockActionDispatcher {
 
     #actionsMap = new Map()
+    #activeControllers = []
 
 
-    constructor (actionsMap = new Map()) {
+    constructor (actionsMap = new Map(), activeControllers = []) {
         this.#actionsMap = actionsMap
+        this.#activeControllers = activeControllers
     }
 
 
     listAllActions () {
         return this.#actionsMap
+    }
+
+
+    getActive () {
+        return [...this.#activeControllers]
+    }
+
+
+    setActive (names) {
+        this.#activeControllers = [...names]
     }
 
 
@@ -79,8 +91,8 @@ describe('ActionDispatcherInspector', () => {
 
         test('renders controller groups when module is set', () => {
             const actionsMap = new Map([
-                ['player', ['jump', 'run']],
-                ['enemy', ['attack']]
+                ['player', [{name: 'jump'}, {name: 'run'}]],
+                ['enemy', [{name: 'attack'}]]
             ])
             const module = new MockActionDispatcher(actionsMap)
             inspector.setModule(module)
@@ -96,8 +108,8 @@ describe('ActionDispatcherInspector', () => {
 
         test('shows header with total action and controller count', () => {
             const actionsMap = new Map([
-                ['player', ['jump', 'run']],
-                ['enemy', ['attack']]
+                ['player', [{name: 'jump'}, {name: 'run'}]],
+                ['enemy', [{name: 'attack'}]]
             ])
             const module = new MockActionDispatcher(actionsMap)
             inspector.setModule(module)
@@ -121,7 +133,7 @@ describe('ActionDispatcherInspector', () => {
 
         test('renders controller group headers', () => {
             const actionsMap = new Map([
-                ['player', ['jump']]
+                ['player', [{name: 'jump'}]]
             ])
             const module = new MockActionDispatcher(actionsMap)
             inspector.setModule(module)
@@ -132,22 +144,9 @@ describe('ActionDispatcherInspector', () => {
         })
 
 
-        test('shows group count badge', () => {
-            const actionsMap = new Map([
-                ['player', ['jump', 'run', 'attack']]
-            ])
-            const module = new MockActionDispatcher(actionsMap)
-            inspector.setModule(module)
-
-            const count = inspector.shadowRoot.querySelector('.group-count')
-            expect(count).not.toBeNull()
-            expect(count.textContent).toBe('3')
-        })
-
-
         test('renders action cards with names', () => {
             const actionsMap = new Map([
-                ['player', ['jump', 'attack']]
+                ['player', [{name: 'jump'}, {name: 'attack'}]]
             ])
             const module = new MockActionDispatcher(actionsMap)
             inspector.setModule(module)
@@ -176,9 +175,9 @@ describe('ActionDispatcherInspector', () => {
 
     test('execute button calls module.executeTo when clicked', () => {
         const actionsMap = new Map([
-            ['player', ['jump']]
+            ['player', [{name: 'jump'}]]
         ])
-        const module = new MockActionDispatcher(actionsMap)
+        const module = new MockActionDispatcher(actionsMap, ['player'])
         module.executeTo = vi.fn()
         inspector.setModule(module)
 
@@ -186,6 +185,102 @@ describe('ActionDispatcherInspector', () => {
         btn.click()
 
         expect(module.executeTo).toHaveBeenCalledWith('player', 'jump')
+    })
+
+
+    describe('active controller toggle', () => {
+
+        test('renders toggle for each controller group', () => {
+            const actionsMap = new Map([
+                ['player', [{name: 'jump'}]],
+                ['enemy', [{name: 'attack'}]]
+            ])
+            const module = new MockActionDispatcher(actionsMap, ['player'])
+            inspector.setModule(module)
+
+            const toggles = inspector.shadowRoot.querySelectorAll('toggle-input')
+            expect(toggles.length).toBe(2)
+        })
+
+
+        test('toggle is checked when controller is active', () => {
+            const actionsMap = new Map([
+                ['player', [{name: 'jump'}]]
+            ])
+            const module = new MockActionDispatcher(actionsMap, ['player'])
+            inspector.setModule(module)
+
+            const toggle = inspector.shadowRoot.querySelector('toggle-input')
+            expect(toggle.checked).toBe(true)
+        })
+
+
+        test('toggle is unchecked when controller is inactive', () => {
+            const actionsMap = new Map([
+                ['player', [{name: 'jump'}]]
+            ])
+            const module = new MockActionDispatcher(actionsMap, [])
+            inspector.setModule(module)
+
+            const toggle = inspector.shadowRoot.querySelector('toggle-input')
+            expect(toggle.checked).toBe(false)
+        })
+
+
+        test('inactive controller group has group-inactive class', () => {
+            const actionsMap = new Map([
+                ['player', [{name: 'jump'}]]
+            ])
+            const module = new MockActionDispatcher(actionsMap, [])
+            inspector.setModule(module)
+
+            const group = inspector.shadowRoot.querySelector('.controller-group')
+            expect(group.classList.contains('group-inactive')).toBe(true)
+        })
+
+
+        test('active controller group does not have group-inactive class', () => {
+            const actionsMap = new Map([
+                ['player', [{name: 'jump'}]]
+            ])
+            const module = new MockActionDispatcher(actionsMap, ['player'])
+            inspector.setModule(module)
+
+            const group = inspector.shadowRoot.querySelector('.controller-group')
+            expect(group.classList.contains('group-inactive')).toBe(false)
+        })
+
+
+        test('clicking toggle activates inactive controller', () => {
+            const actionsMap = new Map([
+                ['player', [{name: 'jump'}]]
+            ])
+            const module = new MockActionDispatcher(actionsMap, [])
+            module.setActive = vi.fn()
+            inspector.setModule(module)
+
+            const toggle = inspector.shadowRoot.querySelector('toggle-input')
+            toggle.dispatchEvent(new CustomEvent('change', {detail: {checked: true}}))
+
+            expect(module.setActive).toHaveBeenCalledWith(['player'])
+        })
+
+
+        test('clicking toggle deactivates active controller', () => {
+            const actionsMap = new Map([
+                ['player', [{name: 'jump'}]],
+                ['enemy', [{name: 'attack'}]]
+            ])
+            const module = new MockActionDispatcher(actionsMap, ['player', 'enemy'])
+            module.setActive = vi.fn()
+            inspector.setModule(module)
+
+            const toggle = inspector.shadowRoot.querySelector('toggle-input')
+            toggle.dispatchEvent(new CustomEvent('change', {detail: {checked: false}}))
+
+            expect(module.setActive).toHaveBeenCalledWith(['enemy'])
+        })
+
     })
 
 })

@@ -1478,6 +1478,52 @@
     },
     "isDefault": true
   },
+  "/editor/inspectors/action_dispatcher_inspector.doc.js": {
+    "type": "class",
+    "file": "/editor/inspectors/action_dispatcher_inspector.js",
+    "name": "ActionDispatcherInspector",
+    "line": 105,
+    "extends": "BaseInspector",
+    "statics": [
+      {
+        "name": "matches",
+        "line": 107,
+        "source": "static matches (module) {\n    return module instanceof ActionDispatcher\n}",
+        "kind": "method",
+        "params": [
+          "module"
+        ]
+      }
+    ],
+    "methods": [
+      {
+        "name": "buildDOM",
+        "line": 119,
+        "source": "buildDOM () {\n    super.buildDOM()\n\n    this.#containerEl = document.createElement('div')\n    this.shadowRoot.insertBefore(this.#containerEl, this.gridEl)\n    this.gridEl.style.display = 'none'\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onModuleSet",
+        "line": 128,
+        "source": "onModuleSet (module) {\n    if (module) {\n        this.#update()\n    }\n}",
+        "kind": "method",
+        "params": [
+          "module"
+        ]
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 113,
+      "source": "constructor () {\n    super(customStyles)\n    this.buildDOM()\n}",
+      "kind": "constructor",
+      "params": []
+    },
+    "isDefault": true
+  },
   "/editor/perky_explorer.doc.js": {
     "type": "class",
     "file": "/editor/perky_explorer.js",
