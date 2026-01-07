@@ -150,9 +150,9 @@ export default doc('ActionController', () => {
             logger.log('Actions:', controller.listActions())
 
             const detailed = controller.listActionsWithParams()
-            for (const action of detailed) {
-                const params = action.params.map(p => p.name).join(', ')
-                logger.log(`${action.name}(${params})`)
+            for (const actionInfo of detailed) {
+                const params = actionInfo.params.map(p => p.name).join(', ')
+                logger.log(`${actionInfo.name}(${params})`)
             }
 
             controller.dispose()
@@ -190,7 +190,6 @@ export default doc('ActionController', () => {
             class TestController extends ActionController {
                 publicAction () {}
                 anotherAction () {}
-                _internal () {}
                 onInit () {}
                 getState () {}
             }
