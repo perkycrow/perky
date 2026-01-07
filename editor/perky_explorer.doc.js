@@ -69,6 +69,7 @@ export default doc('PerkyExplorer', () => {
 
         code('Focus on a module', () => {
             const explorer = document.createElement('perky-explorer')
+
             // const app = new Application()
             // explorer.setModule(app)
 
