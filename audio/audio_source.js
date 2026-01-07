@@ -129,8 +129,8 @@ export default class AudioSource extends PerkyModule {
         if (this.#sourceNode) {
             try {
                 this.#sourceNode.disconnect()
-            } catch (e) {
-                // Already disconnected
+            } catch {
+
             }
             this.#sourceNode = null
         }
@@ -223,8 +223,8 @@ export default class AudioSource extends PerkyModule {
         if (this.#sourceNode) {
             try {
                 this.#sourceNode.stop()
-            } catch (e) {
-                // Already stopped
+            } catch {
+
             }
         }
 

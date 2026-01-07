@@ -56,7 +56,7 @@ export default class AudioChannel extends PerkyModule {
     }
 
 
-    onInstall (host) {
+    onInstall () {
         const ctx = this.#audioContext
 
         if (ctx) {

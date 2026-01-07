@@ -104,7 +104,7 @@ export default class AudioSystem extends PerkyModule {
             this.#unlocked = true
             this.emit('audio:unlocked')
             return true
-        } catch (e) {
+        } catch {
             return false
         }
     }
