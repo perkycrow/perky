@@ -302,15 +302,20 @@ describe('RenderSystem', () => {
     })
 
 
-    test('sortLayers reorders layers by zIndex', () => {
+    test('sortLayers reorders layers by zIndex in DOM', () => {
         renderSystem.createLayer('low', 'canvas', {zIndex: 1})
         renderSystem.createLayer('high', 'canvas', {zIndex: 10})
         renderSystem.createLayer('mid', 'canvas', {zIndex: 5})
 
-        renderSystem.sortLayers()
+        const result = renderSystem.sortLayers()
 
-        const layers = renderSystem.childrenByCategory('layer')
-        const zIndexes = layers.map(l => l.zIndex)
+        expect(result).toBe(renderSystem)
+
+        const elements = Array.from(renderSystem.element.children)
+        const zIndexes = elements.map(el => {
+            const layer = renderSystem.childrenByCategory('layer').find(l => l.element === el)
+            return layer?.zIndex
+        }).filter(z => z !== undefined)
 
         expect(zIndexes).toEqual([1, 5, 10])
     })

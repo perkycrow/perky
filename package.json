@@ -21,6 +21,7 @@
     "cleaner": "node scripts/cleaner.js",
     "clean": "node scripts/cleaner.js --audit --fix",
     "coverage": "node scripts/cleaner.js --coverage",
+    "ci": "vitest run && node scripts/cleaner.js --audit --fix && node scripts/cleaner.js --coverage",
     "doc": "vite --open /doc/",
     "doc:update": "node doc/discovery.js",
     "doc:build": "yarn doc:update && vite build --config vite.doc.config.js && node doc/generate_pages.js",

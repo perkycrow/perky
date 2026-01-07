@@ -308,8 +308,8 @@ describe(CanvasLayer, () => {
         })
 
         expect(l.canvas.style.position).toBe('absolute')
-        expect(l.canvas.style.top).toBe('0')
-        expect(l.canvas.style.left).toBe('0')
+        expect(l.canvas.style.top).toBe('0px')
+        expect(l.canvas.style.left).toBe('0px')
         expect(l.canvas.style.zIndex).toBe('5')
         expect(l.canvas.style.opacity).toBe('0.8')
         expect(l.canvas.style.pointerEvents).toBe('none')
