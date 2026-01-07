@@ -21,7 +21,7 @@ class MockEffect extends SpriteEffect {
 class AnotherEffect extends SpriteEffect {
     static type = 'another'
 
-    getHints () { // eslint-disable-line local/class-methods-use-this -- clean
+    getHints () {  
         return {other: true}
     }
 }

@@ -1,0 +1,122 @@
+import {describe, test, expect, beforeEach, vi} from 'vitest'
+
+
+vi.mock('../editor/editor_theme.js', () => ({
+    buildEditorStyles: vi.fn((...args) => args.join('')),
+    editorButtonStyles: '',
+    editorScrollbarStyles: ''
+}))
+
+vi.mock('../editor/perky_code.js', () => ({}))
+
+vi.mock('../core/logger.js', () => ({
+    default: {
+        log: vi.fn(),
+        error: vi.fn(),
+        spacer: vi.fn(),
+        history: []
+    }
+}))
+
+vi.mock('../core/utils.js', () => ({
+    toKebabCase: vi.fn(str => str.toLowerCase().replace(/\s+/g, '-'))
+}))
+
+vi.mock('./runtime.js', () => ({
+    applyContainerPreset: vi.fn()
+}))
+
+
+describe('doc_page', () => {
+
+    let DocPage
+
+    beforeEach(async () => {
+        if (!globalThis.customElements) {
+            globalThis.customElements = {
+                define: vi.fn(),
+                get: vi.fn()
+            }
+        }
+
+        if (!globalThis.HTMLElement) {
+            globalThis.HTMLElement = class {
+                attachShadow () {
+                    return {
+                        appendChild: vi.fn(),
+                        querySelector: vi.fn(() => ({innerHTML: '', appendChild: vi.fn()})),
+                        querySelectorAll: vi.fn(() => []),
+                        getElementById: vi.fn(),
+                        addEventListener: vi.fn()
+                    }
+                }
+            }
+        }
+
+        const module = await import('./doc_page.js')
+        DocPage = module.default
+    })
+
+
+    test('exports DocPage class', () => {
+        expect(DocPage).toBeDefined()
+        expect(typeof DocPage).toBe('function')
+    })
+
+
+    test('DocPage extends HTMLElement', () => {
+        expect(DocPage.prototype).toBeInstanceOf(HTMLElement)
+    })
+
+
+    describe('properties', () => {
+
+        test('doc getter and setter', () => {
+            const page = new DocPage()
+            expect(page.doc).toBeNull()
+
+            const docData = {title: 'Test', blocks: []}
+            page.doc = docData
+            expect(page.doc).toBe(docData)
+        })
+
+
+        test('api getter and setter', () => {
+            const page = new DocPage()
+            expect(page.api).toBeNull()
+
+            const apiData = {type: 'class', name: 'Test'}
+            page.api = apiData
+            expect(page.api).toBe(apiData)
+        })
+
+
+        test('sources getter and setter', () => {
+            const page = new DocPage()
+            expect(page.sources).toBeNull()
+
+            const sources = [{type: 'code', title: 'Example', source: 'code'}]
+            page.sources = sources
+            expect(page.sources).toBe(sources)
+        })
+
+
+        test('tests getter and setter', () => {
+            const page = new DocPage()
+            expect(page.tests).toBeNull()
+
+            const tests = {describes: []}
+            page.tests = tests
+            expect(page.tests).toBe(tests)
+        })
+
+
+        test('initialTab setter validates values', () => {
+            const page = new DocPage()
+            page.initialTab = 'api'
+            page.initialTab = 'invalid'
+        })
+
+    })
+
+})

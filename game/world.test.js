@@ -140,7 +140,7 @@ describe('World', () => {
         test('calls update on started entities', () => {
             let updateCalled = false
             class TestEntity extends Entity {
-                update () { // eslint-disable-line local/class-methods-use-this -- clean
+                update () {  
                     updateCalled = true
                 }
             }
@@ -158,7 +158,7 @@ describe('World', () => {
         test('does not call update on non-started entities', () => {
             let updateCalled = false
             class TestEntity extends Entity {
-                update () { // eslint-disable-line local/class-methods-use-this -- clean
+                update () {  
                     updateCalled = true
                 }
             }
@@ -175,7 +175,7 @@ describe('World', () => {
         test('passes deltaTime to entity update', () => {
             let receivedDeltaTime
             class TestEntity extends Entity {
-                update (deltaTime) { // eslint-disable-line local/class-methods-use-this -- clean
+                update (deltaTime) {  
                     receivedDeltaTime = deltaTime
                 }
             }

@@ -383,7 +383,7 @@ describe(ServiceClient, () => {
         class TestService extends ServiceHost {
             static serviceMethods = ['test']
 
-            test (req, res) { // eslint-disable-line local/class-methods-use-this -- clean
+            test (req, res) {
                 res.send({message: 'direct service'})
             }
         }
@@ -402,7 +402,7 @@ describe(ServiceClient, () => {
         class MockService extends ServiceHost {
             static serviceMethods = ['mock']
 
-            mock (req, res) { // eslint-disable-line local/class-methods-use-this -- clean
+            mock (req, res) {  
                 res.send({type: 'mocked'})
             }
         }
@@ -427,7 +427,7 @@ describe(ServiceClient, () => {
         class TestService extends ServiceHost {
             static serviceMethods = ['test']
 
-            test (req, res) { // eslint-disable-line local/class-methods-use-this -- clean
+            test (req, res) {  
                 res.send({exported: 'named'})
             }
         }
@@ -476,7 +476,7 @@ describe(ServiceClient, () => {
     test('from() with service option', async () => {
         class TestService extends ServiceHost {
             static serviceMethods = ['test']
-            test (req, res) { // eslint-disable-line local/class-methods-use-this -- clean
+            test (req, res) {  
                 res.send({type: 'unified'})
             }
         }
@@ -497,7 +497,7 @@ describe(ServiceClient, () => {
     test('from() with path option', async () => {
         class PathService extends ServiceHost {
             static serviceMethods = ['pathTest']
-            pathTest (req, res) { // eslint-disable-line local/class-methods-use-this -- clean
+            pathTest (req, res) {  
                 res.send({loaded: 'dynamically'})
             }
         }

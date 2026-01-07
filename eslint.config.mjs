@@ -291,7 +291,8 @@ export default defineConfig([globalIgnores(['node_modules/*', 'dist/*']), {
 
     rules: {
         'max-nested-callbacks': 0,
-        'class-methods-use-this': 0
+        'class-methods-use-this': 0,
+        'local/class-methods-use-this': 0
     }
 }, {
     files: ['**/*.doc.js'],
