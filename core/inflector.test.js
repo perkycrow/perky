@@ -372,6 +372,40 @@ describe('Inflector', () => {
     })
 
 
+    describe('toHumanCase', () => {
+
+        test('converts PascalCase', () => {
+            expect(inflector.toHumanCase('GettingStarted')).toBe('Getting Started')
+        })
+
+
+        test('converts camelCase', () => {
+            expect(inflector.toHumanCase('helloWorld')).toBe('hello World')
+        })
+
+
+        test('converts snake_case', () => {
+            expect(inflector.toHumanCase('hello_world')).toBe('hello world')
+        })
+
+
+        test('converts kebab-case', () => {
+            expect(inflector.toHumanCase('hello-world')).toBe('hello world')
+        })
+
+
+        test('handles consecutive uppercase', () => {
+            expect(inflector.toHumanCase('HTMLParser')).toBe('HTML Parser')
+        })
+
+
+        test('handles single word', () => {
+            expect(inflector.toHumanCase('Hello')).toBe('Hello')
+        })
+
+    })
+
+
     test('addPluralRule adds a custom plural rule', () => {
         const customInflector = new Inflector()
         customInflector.addPluralRule(/zyx$/i, 'zyxes')

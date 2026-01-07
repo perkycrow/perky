@@ -1209,8 +1209,16 @@
         "source": "function toKebabCase (string) {\n    return inflector.toKebabCase(string)\n}"
       },
       {
+        "name": "toHumanCase",
+        "line": 27,
+        "params": [
+          "string"
+        ],
+        "source": "function toHumanCase (string) {\n    return inflector.toHumanCase(string)\n}"
+      },
+      {
         "name": "uniqueId",
-        "line": 29,
+        "line": 34,
         "params": [
           "collection",
           "prefix"
@@ -1219,7 +1227,7 @@
       },
       {
         "name": "resetUniqueId",
-        "line": 50,
+        "line": 55,
         "params": [
           "collection",
           "prefix"
@@ -1228,7 +1236,7 @@
       },
       {
         "name": "singularize",
-        "line": 61,
+        "line": 66,
         "params": [
           "word"
         ],
@@ -1236,7 +1244,7 @@
       },
       {
         "name": "pluralize",
-        "line": 66,
+        "line": 71,
         "params": [
           "word",
           "count",
@@ -1246,7 +1254,7 @@
       },
       {
         "name": "plural",
-        "line": 71,
+        "line": 76,
         "params": [
           "word"
         ],
@@ -1254,7 +1262,7 @@
       },
       {
         "name": "isPlural",
-        "line": 76,
+        "line": 81,
         "params": [
           "word"
         ],
@@ -1262,7 +1270,7 @@
       },
       {
         "name": "isSingular",
-        "line": 81,
+        "line": 86,
         "params": [
           "word"
         ],
@@ -1270,7 +1278,7 @@
       },
       {
         "name": "setDefaults",
-        "line": 86,
+        "line": 91,
         "params": [
           "data",
           "defaults"
@@ -1279,7 +1287,7 @@
       },
       {
         "name": "getNestedValue",
-        "line": 91,
+        "line": 96,
         "params": [
           "obj",
           "path"
@@ -1288,7 +1296,7 @@
       },
       {
         "name": "setNestedValue",
-        "line": 110,
+        "line": 115,
         "params": [
           "obj",
           "path",
@@ -1298,7 +1306,7 @@
       },
       {
         "name": "deepMerge",
-        "line": 127,
+        "line": 132,
         "params": [
           "target",
           "source"
@@ -1307,7 +1315,7 @@
       },
       {
         "name": "deepMergeInternal",
-        "line": 132,
+        "line": 137,
         "params": [
           "target",
           "source",
@@ -1317,7 +1325,7 @@
       },
       {
         "name": "exportValue",
-        "line": 159,
+        "line": 164,
         "params": [
           "value"
         ],
@@ -1325,7 +1333,7 @@
       },
       {
         "name": "isNonNullObject",
-        "line": 183,
+        "line": 188,
         "params": [
           "value"
         ],
@@ -1333,7 +1341,7 @@
       },
       {
         "name": "isSpecial",
-        "line": 188,
+        "line": 193,
         "params": [
           "value"
         ],
@@ -1341,7 +1349,7 @@
       },
       {
         "name": "isMergeableObject",
-        "line": 194,
+        "line": 199,
         "params": [
           "value"
         ],
@@ -1349,7 +1357,7 @@
       },
       {
         "name": "emptyTarget",
-        "line": 199,
+        "line": 204,
         "params": [
           "value"
         ],
@@ -1357,7 +1365,7 @@
       },
       {
         "name": "cloneIfNeeded",
-        "line": 204,
+        "line": 209,
         "params": [
           "value",
           "seen"
@@ -1366,7 +1374,7 @@
       },
       {
         "name": "mergeArrays",
-        "line": 209,
+        "line": 214,
         "params": [
           "target",
           "source",
@@ -1376,7 +1384,7 @@
       },
       {
         "name": "getKeys",
-        "line": 214,
+        "line": 219,
         "params": [
           "target"
         ],
@@ -1384,7 +1392,7 @@
       },
       {
         "name": "mergeObject",
-        "line": 223,
+        "line": 228,
         "params": [
           "target",
           "source",
@@ -1394,7 +1402,7 @@
       },
       {
         "name": "formatNumber",
-        "line": 244,
+        "line": 249,
         "params": [
           "n"
         ],
@@ -1402,7 +1410,7 @@
       },
       {
         "name": "formatBytes",
-        "line": 252,
+        "line": 257,
         "params": [
           "bytes"
         ],
@@ -1410,7 +1418,7 @@
       },
       {
         "name": "delegateProperties",
-        "line": 265,
+        "line": 270,
         "params": [
           "receiver",
           "source",
@@ -1420,7 +1428,7 @@
       },
       {
         "name": "delegateProperty",
-        "line": 276,
+        "line": 281,
         "params": [
           "receiver",
           "source",

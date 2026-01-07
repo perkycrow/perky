@@ -61,7 +61,7 @@ export default class StaleTestsAuditor extends Auditor {
                 continue
             }
 
-            if (relativePath.endsWith('.doc.js')) {
+            if (relativePath.endsWith('.doc.js') || relativePath.endsWith('.guide.js')) {
                 continue
             }
 

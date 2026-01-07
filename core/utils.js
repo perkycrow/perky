@@ -24,6 +24,11 @@ export function toKebabCase (string) {
 }
 
 
+export function toHumanCase (string) {
+    return inflector.toHumanCase(string)
+}
+
+
 const idCounter = {}
 
 export function uniqueId (collection, prefix) {

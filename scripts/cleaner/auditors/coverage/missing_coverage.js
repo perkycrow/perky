@@ -63,7 +63,7 @@ export default class MissingCoverageAuditor extends Auditor {
                 continue
             }
 
-            if (relativePath.endsWith('.test.js') || relativePath.endsWith('.doc.js')) {
+            if (relativePath.endsWith('.test.js') || relativePath.endsWith('.doc.js') || relativePath.endsWith('.guide.js')) {
                 continue
             }
 

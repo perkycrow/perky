@@ -4,6 +4,7 @@ import {
     toPascalCase,
     toSnakeCase,
     toKebabCase,
+    toHumanCase,
     singularize,
     pluralize,
     plural,
@@ -57,6 +58,16 @@ describe('String Utils', () => {
         expect(toKebabCase('hello_world')).toEqual('hello-world')
         expect(toKebabCase('hello world')).toEqual('hello-world')
         expect(toKebabCase('Hello')).toEqual('hello')
+    })
+
+
+    test('toHumanCase', () => {
+        expect(toHumanCase('GettingStarted')).toEqual('Getting Started')
+        expect(toHumanCase('helloWorld')).toEqual('hello World')
+        expect(toHumanCase('hello_world')).toEqual('hello world')
+        expect(toHumanCase('hello-world')).toEqual('hello world')
+        expect(toHumanCase('HTMLParser')).toEqual('HTML Parser')
+        expect(toHumanCase('Hello')).toEqual('Hello')
     })
 
 

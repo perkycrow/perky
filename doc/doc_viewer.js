@@ -1,6 +1,7 @@
 import './doc_page.js'
 import '../editor/perky_logger.js'
 import logger from '../core/logger.js'
+import {toHumanCase} from '../core/utils.js'
 
 
 const docModules = import.meta.glob('../**/*.doc.js')
@@ -373,7 +374,7 @@ function buildNavSectionElement (items, sectionName, type) {
         for (const item of categoryItems) {
             const link = document.createElement('a')
             link.className = 'nav-item'
-            link.textContent = item.title
+            link.textContent = type === 'guide' ? toHumanCase(item.title) : item.title
             link.dataset.file = item.file
             link.dataset.title = item.title.toLowerCase()
             link.dataset.category = item.category

@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import {fileURLToPath} from 'url'
 import logger from '../core/logger.js'
+import {toHumanCase} from '../core/utils.js'
 
 
 const __filename = fileURLToPath(import.meta.url)
@@ -386,7 +387,8 @@ function generateItemsHtml (items, activeFile, type) {
             const href = type === 'guide'
                 ? `guide_${item.id}.html`
                 : item.file.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
-            html += `<a class="nav-item${isActive}" href="${href}" data-file="${escapeHtml(item.file)}" data-title="${escapeHtml(item.title.toLowerCase())}" data-category="${escapeHtml(item.category)}">${escapeHtml(item.title)}</a>`
+            const displayTitle = type === 'guide' ? toHumanCase(item.title) : item.title
+            html += `<a class="nav-item${isActive}" href="${href}" data-file="${escapeHtml(item.file)}" data-title="${escapeHtml(item.title.toLowerCase())}" data-category="${escapeHtml(item.category)}">${escapeHtml(displayTitle)}</a>`
         }
     }
 

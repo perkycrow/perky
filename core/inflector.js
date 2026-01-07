@@ -135,6 +135,16 @@ export default class Inflector {
     }
 
 
+    toHumanCase (string) { // eslint-disable-line local/class-methods-use-this -- clean
+        return string
+            .replace(/[-_]/g, ' ')
+            .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
+            .replace(/([a-z])([A-Z])/g, '$1 $2')
+            .replace(/^\s+/, '')
+            .replace(/\s+/g, ' ')
+    }
+
+
     addPluralRule (rule, replacement) {
         this.#pluralRules.push([sanitizeRule(rule), replacement])
     }

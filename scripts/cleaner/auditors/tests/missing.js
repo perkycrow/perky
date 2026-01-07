@@ -64,7 +64,7 @@ export default class MissingTestsAuditor extends Auditor {
                 continue
             }
 
-            if (relativePath.endsWith('.doc.js')) {
+            if (relativePath.endsWith('.doc.js') || relativePath.endsWith('.guide.js')) {
                 continue
             }
 
