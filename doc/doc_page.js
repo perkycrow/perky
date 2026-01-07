@@ -481,20 +481,16 @@ export default class DocPage extends HTMLElement {
 
 
     #renderBlock (block, setup = null) {
-        switch (block.type) {
-        case 'text':
-            return renderText(block)
-        case 'code':
-            return renderCode(block, this.#getSourceFor(block))
-        case 'action':
-            return renderAction(block, setup, this.#getSourceFor(block))
-        case 'section':
-            return this.#renderSection(block)
-        case 'container':
-            return this.#renderContainer(block, setup)
-        default:
-            return document.createElement('div')
+        const renderers = {
+            text: () => renderText(block),
+            code: () => renderCode(block, this.#getSourceFor(block)),
+            action: () => renderAction(block, setup, this.#getSourceFor(block)),
+            section: () => this.#renderSection(block),
+            container: () => this.#renderContainer(block, setup)
         }
+
+        const renderer = renderers[block.type]
+        return renderer ? renderer() : document.createElement('div')
     }
 
 

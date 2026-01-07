@@ -176,7 +176,6 @@ export default doc('ActionController', () => {
                 jump () {}
 
                 // NOT exposed (internal)
-                _privateMethod () {}
                 onStart () {}
                 updateState () {}
                 getPlayer () {}
