@@ -21,6 +21,26 @@
       ]
     },
     {
+      "id": "action_controller",
+      "file": "/core/action_controller.doc.js",
+      "category": "core",
+      "title": "ActionController",
+      "tags": [
+        "core",
+        "action_controller"
+      ]
+    },
+    {
+      "id": "action_dispatcher",
+      "file": "/core/action_dispatcher.doc.js",
+      "category": "core",
+      "title": "ActionDispatcher",
+      "tags": [
+        "core",
+        "action_dispatcher"
+      ]
+    },
+    {
       "id": "notifier",
       "file": "/core/notifier.doc.js",
       "category": "core",

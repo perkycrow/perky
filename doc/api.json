@@ -284,6 +284,314 @@
     },
     "isDefault": true
   },
+  "/core/action_controller.doc.js": {
+    "type": "class",
+    "file": "/core/action_controller.js",
+    "name": "ActionController",
+    "line": 5,
+    "extends": "PerkyModule",
+    "statics": [
+      {
+        "name": "propagable",
+        "line": 7,
+        "source": "static propagable = []",
+        "kind": "property",
+        "value": "[]"
+      },
+      {
+        "name": "bindings",
+        "line": 8,
+        "source": "static bindings = {}",
+        "kind": "property",
+        "value": "{}"
+      },
+      {
+        "name": "$category",
+        "line": 9,
+        "source": "static $category = 'actionController'",
+        "kind": "property",
+        "value": "'actionController'"
+      },
+      {
+        "name": "normalizeBindings",
+        "line": 82,
+        "source": "static normalizeBindings (controllerName) {\n    const bindings = this.bindings\n    const normalized = []\n\n    for (const [actionName, bindingDef] of Object.entries(bindings)) {\n        const bindingConfigs = normalizeBindingDefinition(bindingDef)\n\n        for (const config of bindingConfigs) {\n            normalized.push({\n                action: actionName,\n                key: config.key,\n                scoped: config.scoped ?? false,\n                eventType: config.eventType ?? 'pressed',\n                controllerName: config.scoped ? controllerName : null\n            })\n        }\n    }\n\n    return normalized\n}",
+        "kind": "method",
+        "params": [
+          "controllerName"
+        ]
+      },
+      {
+        "name": "actionControllerMethods",
+        "line": 103,
+        "source": "static actionControllerMethods = this.perkyModuleMethods.concat([\n    'addAction',\n    'getAction',\n    'removeAction',\n    'hasAction',\n    'shouldPropagate',\n    'listActions',\n    'execute',\n    'context'\n])",
+        "kind": "property",
+        "value": "this.perkyModuleMethods.concat([\n    'addAction',\n    'getAction',\n    'removeAction',\n    'hasAction',\n    'shouldPropagate',\n    'listActions',\n    'execute',\n    'context'\n])"
+      }
+    ],
+    "methods": [
+      {
+        "name": "addAction",
+        "line": 21,
+        "source": "addAction (actionName, action) {\n    if (!this.#actionList.includes(actionName)) {\n        this.#actionList.push(actionName)\n    }\n    return this.#actions.set(actionName, action)\n}",
+        "kind": "method",
+        "params": [
+          "actionName",
+          "action"
+        ]
+      },
+      {
+        "name": "getAction",
+        "line": 29,
+        "source": "getAction (actionName) {\n    return this.#actions.get(actionName)\n}",
+        "kind": "method",
+        "params": [
+          "actionName"
+        ]
+      },
+      {
+        "name": "removeAction",
+        "line": 34,
+        "source": "removeAction (actionName) {\n    return this.#actions.delete(actionName)\n}",
+        "kind": "method",
+        "params": [
+          "actionName"
+        ]
+      },
+      {
+        "name": "hasAction",
+        "line": 39,
+        "source": "hasAction (actionName) {\n    return this.getAction(actionName) !== undefined || typeof this[actionName] === 'function'\n}",
+        "kind": "method",
+        "params": [
+          "actionName"
+        ]
+      },
+      {
+        "name": "shouldPropagate",
+        "line": 44,
+        "source": "shouldPropagate (actionName) {\n    const ControllerClass = this.constructor\n    return ControllerClass.propagable && Array.isArray(ControllerClass.propagable)\n        ? ControllerClass.propagable.includes(actionName)\n        : false\n}",
+        "kind": "method",
+        "params": [
+          "actionName"
+        ]
+      },
+      {
+        "name": "listActions",
+        "line": 52,
+        "source": "listActions () {\n    return [...this.#actionList]\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "listActionsWithParams",
+        "line": 57,
+        "source": "listActionsWithParams () {\n    const result = []\n\n    for (const actionName of this.#actionList) {\n        const action = this.getAction(actionName) || this[actionName]\n        const params = typeof action === 'function' ? extractFunctionParams(action) : []\n        result.push({name: actionName, params})\n    }\n\n    return result\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "execute",
+        "line": 70,
+        "source": "execute (actionName, ...args) {\n    const action = this.getAction(actionName) || this[actionName]\n\n    if (typeof action === 'function') {\n        action.call(this, ...args)\n    }\n\n    this.emit(actionName, ...args)\n    this.emit('action', actionName, ...args)\n}",
+        "kind": "method",
+        "params": [
+          "actionName",
+          "...args"
+        ]
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 14,
+      "source": "constructor (options = {}) {\n    super(options)\n    this.context = {}\n    this.#actionList = extractPrototypeMethods(this)\n}",
+      "kind": "constructor",
+      "params": [
+        "options = ..."
+      ]
+    },
+    "isDefault": true
+  },
+  "/core/action_dispatcher.doc.js": {
+    "type": "class",
+    "file": "/core/action_dispatcher.js",
+    "name": "ActionDispatcher",
+    "line": 6,
+    "extends": "PerkyModule",
+    "statics": [
+      {
+        "name": "$category",
+        "line": 8,
+        "source": "static $category = 'actionDispatcher'",
+        "kind": "property",
+        "value": "'actionDispatcher'"
+      }
+    ],
+    "methods": [
+      {
+        "name": "onInstall",
+        "line": 13,
+        "source": "onInstall (host, options) {\n    this.#setupMainController(options)\n\n    this.listenTo(host, 'input:triggered', this.dispatchAction.bind(this))\n\n    this.delegateTo(host, {\n        register: 'registerController',\n        unregister: 'unregisterController',\n        getController: 'getController',\n        list: 'listControllers',\n        setActive: 'setActiveControllers',\n        getActive: 'getActiveControllers',\n        pushActive: 'pushActiveController',\n        popActive: 'popActiveController',\n        clearActive: 'clearActiveControllers',\n        execute: 'execute',\n        executeTo: 'executeTo',\n        dispatchAction: 'dispatchAction',\n        listActions: 'listAllActions',\n        mainController: 'mainController',\n        addAction: 'addAction',\n        removeAction: 'removeAction'\n    })\n}",
+        "kind": "method",
+        "params": [
+          "host",
+          "options"
+        ]
+      },
+      {
+        "name": "addAction",
+        "line": 62,
+        "source": "addAction (actionName, action) {\n    if (!this.mainController) {\n        logger.warn('No main controller available. Cannot add action.')\n        return false\n    }\n    return this.mainController.addAction(actionName, action)\n}",
+        "kind": "method",
+        "params": [
+          "actionName",
+          "action"
+        ]
+      },
+      {
+        "name": "removeAction",
+        "line": 71,
+        "source": "removeAction (actionName) {\n    if (!this.mainController) {\n        logger.warn('No main controller available. Cannot remove action.')\n        return false\n    }\n    return this.mainController.removeAction(actionName)\n}",
+        "kind": "method",
+        "params": [
+          "actionName"
+        ]
+      },
+      {
+        "name": "register",
+        "line": 80,
+        "source": "register (name, Controller = ActionController) {\n    return this.create(Controller, {\n        $id: name,\n        $category: 'controller'\n    })\n}",
+        "kind": "method",
+        "params": [
+          "name",
+          "Controller = ..."
+        ]
+      },
+      {
+        "name": "unregister",
+        "line": 88,
+        "source": "unregister (name) {\n    const controller = this.getChild(name)\n\n    if (!controller) {\n        return false\n    }\n\n    const stackIndex = this.#activeControllers.indexOf(name)\n    if (stackIndex !== -1) {\n        this.#activeControllers.splice(stackIndex, 1)\n    }\n\n    return this.removeChild(name)\n}",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "getController",
+        "line": 104,
+        "source": "getController (name) {\n    return this.getChild(name)\n}",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "setActive",
+        "line": 109,
+        "source": "setActive (names) {\n    const nameArray = Array.isArray(names) ? names : [names]\n\n    for (const name of nameArray) {\n        if (!this.hasChild(name)) {\n            logger.warn(`Controller \"${name}\" not found. Cannot set as active controller.`)\n            return false\n        }\n    }\n\n    this.#activeControllers = [...nameArray]\n    this.emit('controllers:activated', nameArray)\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "names"
+        ]
+      },
+      {
+        "name": "getActive",
+        "line": 126,
+        "source": "getActive () {\n    return [...this.#activeControllers]\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "pushActive",
+        "line": 131,
+        "source": "pushActive (name) {\n    if (!this.hasChild(name)) {\n        logger.warn(`Controller \"${name}\" not found`)\n        return false\n    }\n\n    if (this.#activeControllers.includes(name)) {\n        return false\n    }\n\n    this.#activeControllers.push(name)\n    this.emit('controller:pushed', name, this.#activeControllers.length)\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "popActive",
+        "line": 148,
+        "source": "popActive () {\n    if (this.#activeControllers.length === 0) {\n        logger.warn('Active controllers stack is empty')\n        return null\n    }\n\n    const popped = this.#activeControllers.pop()\n    this.emit('controller:popped', popped, this.#activeControllers.length)\n\n    return popped\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "clearActive",
+        "line": 161,
+        "source": "clearActive () {\n    this.#activeControllers = []\n    this.emit('controllers:cleared')\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "execute",
+        "line": 167,
+        "source": "execute (actionName, ...args) {\n    if (this.#activeControllers.length === 0) {\n        logger.warn('No active controllers')\n        return\n    }\n\n    const registry = this.childrenRegistry\n\n    for (let i = this.#activeControllers.length - 1; i >= 0; i--) {\n        const controllerName = this.#activeControllers[i]\n        const controller = registry.get(controllerName)\n\n        if (!controller) {\n            logger.warn(`Controller \"${controllerName}\" not found in registry but present in active stack`)\n            continue\n        }\n\n        const hasAction = controller.hasAction(actionName)\n\n        controller.execute(actionName, ...args)\n\n        if (hasAction && !controller.shouldPropagate(actionName)) {\n            return\n        }\n    }\n}",
+        "kind": "method",
+        "params": [
+          "actionName",
+          "...args"
+        ]
+      },
+      {
+        "name": "executeTo",
+        "line": 195,
+        "source": "executeTo (name, actionName, ...args) {\n    const controller = this.getController(name)\n\n    if (controller && this.#isControllerActive(name)) {\n        if (typeof controller.execute === 'function') {\n            controller.execute(actionName, ...args)\n        } else if (typeof controller[actionName] === 'function') {\n            controller[actionName](...args)\n        }\n    }\n}",
+        "kind": "method",
+        "params": [
+          "name",
+          "actionName",
+          "...args"
+        ]
+      },
+      {
+        "name": "dispatchAction",
+        "line": 208,
+        "source": "dispatchAction (binding, ...args) {\n    if (binding.controllerName) {\n        this.executeTo(binding.controllerName, binding.actionName, ...args)\n    } else {\n        this.execute(binding.actionName, ...args)\n    }\n}",
+        "kind": "method",
+        "params": [
+          "binding",
+          "...args"
+        ]
+      },
+      {
+        "name": "listControllers",
+        "line": 222,
+        "source": "listControllers () {\n    return this.listNamesFor('controller')\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "listAllActions",
+        "line": 227,
+        "source": "listAllActions () {\n    const allActions = new Map()\n    const registry = this.childrenRegistry\n\n    for (const [name, controller] of registry.entries) {\n        if (typeof controller.listActionsWithParams === 'function') {\n            allActions.set(name, controller.listActionsWithParams())\n        } else if (typeof controller.listActions === 'function') {\n            allActions.set(name, controller.listActions().map(n => ({name: n, params: []})))\n        }\n    }\n\n    return allActions\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [
+      {
+        "name": "engine",
+        "line": 39,
+        "source": "get engine () {\n    return this.host\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "mainController",
+        "line": 57,
+        "source": "get mainController () {\n    return this.getController(this.mainControllerName)\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [],
+    "constructor": null,
+    "isDefault": true
+  },
   "/core/notifier.doc.js": {
     "type": "class",
     "file": "/core/notifier.js",
