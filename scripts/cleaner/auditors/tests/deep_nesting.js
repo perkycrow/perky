@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import Auditor from '../../auditor.js'
 import {findJsFiles} from '../../utils.js'
-import {header, hint, listItem, divider} from '../../format.js'
+import {hint, listItem, divider} from '../../format.js'
 
 
 export default class DeepNestingAuditor extends Auditor {
@@ -16,19 +16,26 @@ export default class DeepNestingAuditor extends Auditor {
 
         if (issues.length === 0) {
             this.printClean('No deeply nested tests found')
-            return {filesWithDeepNesting: 0}
+            return {filesWithDeepNesting: 0, files: []}
         }
 
-        header(this.constructor.$name)
-        hint('Flatten structure - each describe should group related tests')
-        hint('Too many nested describes - try to flatten by removing unnecessary wrappers')
-        divider()
+        this.printHeader()
+        if (!this.silent) {
+            hint('Flatten structure - each describe should group related tests')
+            hint('Too many nested describes - try to flatten by removing unnecessary wrappers')
+            divider()
 
-        for (const {file} of issues) {
-            listItem(file)
+            for (const {file} of issues) {
+                listItem(file)
+            }
         }
 
-        return {filesWithDeepNesting: issues.length}
+        return {filesWithDeepNesting: issues.length, files: issues.map(i => i.file)}
+    }
+
+
+    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
+        return 'Flatten structure - remove unnecessary describe wrappers'
     }
 
 

@@ -3,7 +3,7 @@ import path from 'path'
 import {pathToFileURL} from 'url'
 import Auditor from '../../auditor.js'
 import {findJsFiles, isExcludedFile} from '../../utils.js'
-import {header, hint, listItem, divider} from '../../format.js'
+import {hint, listItem, divider} from '../../format.js'
 
 
 export default class MissingTestsAuditor extends Auditor {
@@ -17,21 +17,28 @@ export default class MissingTestsAuditor extends Auditor {
 
         if (missing.length === 0) {
             this.printClean('All files have corresponding test files')
-            return {filesWithoutTests: 0}
+            return {filesWithoutTests: 0, files: []}
         }
 
-        header(this.constructor.$name)
-        hint('Create test files that import and test exported functions')
-        hint('Use test() not it() - these are unit tests, not BDD specs')
-        hint('Keep it flat: use describe() only when grouping related tests')
-        hint('Sentences are for edge cases, simple methods can use test("methodName")')
-        divider()
+        this.printHeader()
+        if (!this.silent) {
+            hint('Create test files that import and test exported functions')
+            hint('Use test() not it() - these are unit tests, not BDD specs')
+            hint('Keep it flat: use describe() only when grouping related tests')
+            hint('Sentences are for edge cases, simple methods can use test("methodName")')
+            divider()
 
-        for (const {expectedTest} of missing) {
-            listItem(expectedTest)
+            for (const {expectedTest} of missing) {
+                listItem(expectedTest)
+            }
         }
 
-        return {filesWithoutTests: missing.length}
+        return {filesWithoutTests: missing.length, files: missing.map(m => m.expectedTest)}
+    }
+
+
+    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
+        return 'Create test files for these files'
     }
 
 

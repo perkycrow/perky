@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import EslintAuditor from './base.js'
 import {findJsFiles, groupBy, isInsideString} from '../../utils.js'
-import {header, success, hint, subHeader, listItem, divider} from '../../format.js'
+import {success, hint, subHeader, listItem, divider} from '../../format.js'
 
 
 const RULE_HINTS = {
@@ -23,7 +23,7 @@ export default class DisablesAuditor extends EslintAuditor {
 
         if (disables.length === 0) {
             this.printClean('No eslint-disable directives found')
-            return {uncleanCount: 0}
+            return {uncleanCount: 0, details: []}
         }
 
         const unclean = disables.filter(d => !d.isClean)
@@ -31,32 +31,46 @@ export default class DisablesAuditor extends EslintAuditor {
 
         if (unclean.length === 0) {
             this.printClean(`All ${clean.length} directive(s) are marked clean`)
-            return {uncleanCount: 0}
+            return {uncleanCount: 0, details: []}
         }
-
-        header(this.constructor.$name)
-        hint('Fix the issue OR if REALLY legit, add "-- clean" at end of eslint comment')
-        divider()
 
         const byRule = groupBy(unclean, d => d.rule)
         const sortedRules = Object.entries(byRule).sort((a, b) => b[1].length - a[1].length)
 
-        for (const [rule, occurrences] of sortedRules) {
-            subHeader(`${rule} (${occurrences.length})`)
-            if (RULE_HINTS[rule]) {
-                hint(RULE_HINTS[rule])
-            }
-            for (const occ of occurrences) {
-                listItem(`${occ.file}:${occ.line}`)
-            }
-        }
-
-        if (clean.length > 0) {
+        this.printHeader()
+        if (!this.silent) {
+            hint('Fix the issue OR if REALLY legit, add "-- clean" at end of eslint comment')
             divider()
-            success(`${clean.length} directive(s) marked clean`)
+
+            for (const [rule, occurrences] of sortedRules) {
+                subHeader(`${rule} (${occurrences.length})`)
+                if (RULE_HINTS[rule]) {
+                    hint(RULE_HINTS[rule])
+                }
+                for (const occ of occurrences) {
+                    listItem(`${occ.file}:${occ.line}`)
+                }
+            }
+
+            if (clean.length > 0) {
+                divider()
+                success(`${clean.length} directive(s) marked clean`)
+            }
         }
 
-        return {uncleanCount: unclean.length}
+        return {
+            uncleanCount: unclean.length,
+            details: sortedRules.map(([rule, occurrences]) => ({
+                rule,
+                hint: RULE_HINTS[rule] || null,
+                locations: occurrences.map(o => `${o.file}:${o.line}`)
+            }))
+        }
+    }
+
+
+    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
+        return 'Add "-- clean" at end of eslint comment if legit'
     }
 
 

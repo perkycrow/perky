@@ -1,7 +1,7 @@
 import path from 'path'
 import EslintAuditor from './base.js'
 import {groupBy} from '../../utils.js'
-import {header, hint, subHeader, listItem, divider} from '../../format.js'
+import {hint, subHeader, listItem, divider} from '../../format.js'
 
 
 const RULE_HINTS = {
@@ -27,33 +27,36 @@ export default class EslintErrorsAuditor extends EslintAuditor {
         const data = this.parseEslintJson(output)
 
         if (!data) {
-            header(this.constructor.$name)
-            hint('Failed to parse ESLint output')
-            return {errorCount: 0, warningCount: 0, filesWithIssues: 0}
+            this.printHeader()
+            if (!this.silent) {
+                hint('Failed to parse ESLint output')
+            }
+            return {errorCount: 0, warningCount: 0, filesWithIssues: 0, details: []}
         }
 
         const allMessages = extractAllMessages(data, this.rootDir)
 
         if (allMessages.length === 0) {
             this.printClean('No ESLint errors or warnings')
-            return {errorCount: 0, warningCount: 0, filesWithIssues: 0}
+            return {errorCount: 0, warningCount: 0, filesWithIssues: 0, details: []}
         }
-
-        header(this.constructor.$name)
 
         const byRule = groupBy(allMessages, m => m.rule)
         const sortedRules = Object.entries(byRule).sort((a, b) => b[1].length - a[1].length)
 
-        hint('Run npx eslint . for detailed error messages')
-        divider()
+        this.printHeader()
+        if (!this.silent) {
+            hint('Run npx eslint . for detailed error messages')
+            divider()
 
-        for (const [rule, occurrences] of sortedRules) {
-            subHeader(`${rule} (${occurrences.length})`)
-            if (RULE_HINTS[rule]) {
-                hint(RULE_HINTS[rule])
-            }
-            for (const occ of occurrences) {
-                listItem(`${occ.file}:${occ.line}`)
+            for (const [rule, occurrences] of sortedRules) {
+                subHeader(`${rule} (${occurrences.length})`)
+                if (RULE_HINTS[rule]) {
+                    hint(RULE_HINTS[rule])
+                }
+                for (const occ of occurrences) {
+                    listItem(`${occ.file}:${occ.line}`)
+                }
             }
         }
 
@@ -61,7 +64,21 @@ export default class EslintErrorsAuditor extends EslintAuditor {
         const totalWarnings = allMessages.filter(m => m.severity === 1).length
         const filesWithIssues = new Set(allMessages.map(m => m.file)).size
 
-        return {errorCount: totalErrors, warningCount: totalWarnings, filesWithIssues}
+        return {
+            errorCount: totalErrors,
+            warningCount: totalWarnings,
+            filesWithIssues,
+            details: sortedRules.map(([rule, occurrences]) => ({
+                rule,
+                hint: RULE_HINTS[rule] || null,
+                locations: occurrences.map(o => `${o.file}:${o.line}`)
+            }))
+        }
+    }
+
+
+    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
+        return 'Run: npx eslint . --fix'
     }
 
 
@@ -69,7 +86,7 @@ export default class EslintErrorsAuditor extends EslintAuditor {
         this.runEslintCommand('--fix .')
         this.printClean('ESLint auto-fix completed')
 
-        return this.audit()
+        return {filesFixed: 0, issuesFixed: 0}
     }
 
 

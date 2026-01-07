@@ -14,22 +14,28 @@ export default class DirectivesAuditor extends EslintAuditor {
 
         if (unused.length === 0) {
             this.printClean('No unused eslint-disable directives')
-            return {filesWithIssues: 0, directivesFound: 0}
+            return {filesWithIssues: 0, directivesFound: 0, files: []}
         }
-
-        header(this.constructor.$name)
 
         const filesWithIssues = unused.map(f => f.relativePath)
         const totalDirectives = unused.reduce((sum, f) => sum + f.directives.length, 0)
 
-        hint('Remove directives that no longer suppress any rules')
-        divider()
+        this.printHeader()
+        if (!this.silent) {
+            hint('Remove directives that no longer suppress any rules')
+            divider()
 
-        for (const file of filesWithIssues) {
-            listItem(file)
+            for (const file of filesWithIssues) {
+                listItem(file)
+            }
         }
 
-        return {filesWithIssues: unused.length, directivesFound: totalDirectives}
+        return {filesWithIssues: unused.length, directivesFound: totalDirectives, files: filesWithIssues}
+    }
+
+
+    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
+        return 'Remove directives that no longer suppress any rules'
     }
 
 

@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import Auditor from '../../auditor.js'
 import {findJsFiles} from '../../utils.js'
-import {header, hint, listItem, divider} from '../../format.js'
+import {hint, listItem, divider} from '../../format.js'
 
 
 export default class SingleDescribesAuditor extends Auditor {
@@ -16,19 +16,29 @@ export default class SingleDescribesAuditor extends Auditor {
 
         if (issues.length === 0) {
             this.printClean('No unnecessary describe blocks found')
-            return {filesWithSingleTestDescribes: 0}
+            return {filesWithSingleTestDescribes: 0, files: []}
         }
 
-        header(this.constructor.$name)
-        hint('Remove describe wrapper or add more related tests')
-        hint('Use describe() only when testing multiple scenarios of the same feature')
-        divider()
+        this.printHeader()
+        if (!this.silent) {
+            hint('Remove describe wrapper or add more related tests')
+            hint('Use describe() only when testing multiple scenarios of the same feature')
+            divider()
 
-        for (const {file} of issues) {
-            listItem(file)
+            for (const {file} of issues) {
+                listItem(file)
+            }
         }
 
-        return {filesWithSingleTestDescribes: issues.length}
+        return {
+            filesWithSingleTestDescribes: issues.length,
+            files: issues.map(i => i.file)
+        }
+    }
+
+
+    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
+        return 'Remove describe() wrapper when testing only one scenario'
     }
 
 

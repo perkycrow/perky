@@ -19,6 +19,7 @@ export default class Auditor {
         this.#options = {
             dryRun: false,
             compact: false,
+            silent: false,
             ...options
         }
     }
@@ -41,6 +42,11 @@ export default class Auditor {
 
     get compact () {
         return this.#options.compact
+    }
+
+
+    get silent () {
+        return this.#options.silent
     }
 
 
@@ -142,11 +148,21 @@ export default class Auditor {
 
 
     printClean (message) {
+        if (this.silent) {
+            return
+        }
         if (this.compact) {
             successCompact(message)
         } else {
             header(this.constructor.$name)
             success(message)
+        }
+    }
+
+
+    printHeader () {
+        if (!this.silent) {
+            header(this.constructor.$name)
         }
     }
 
@@ -170,6 +186,10 @@ export default class Auditor {
 
 
     #printResults (issues) {
+        if (this.silent) {
+            return
+        }
+
         const message = `No ${this.constructor.$name.toLowerCase()} issues found`
 
         if (issues.length === 0) {

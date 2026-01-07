@@ -2,7 +2,7 @@
 
 import path from 'path'
 import {fileURLToPath} from 'url'
-import {runAudit, runFix, runAll} from './cleaner/index.js'
+import {runAudit, runFix, runAll, runCoverage} from './cleaner/index.js'
 
 
 const __filename = fileURLToPath(import.meta.url)
@@ -16,6 +16,7 @@ const hasFlag = (flag) => args.includes(flag)
 const dryRun = hasFlag('--dry-run')
 const auditMode = hasFlag('--audit')
 const fixMode = hasFlag('--fix')
+const coverageMode = hasFlag('--coverage')
 
 
 function printHelp () {
@@ -23,13 +24,16 @@ function printHelp () {
     console.log('Options:')
     console.log('  --audit     Audit only (no changes)')
     console.log('  --fix       Fix issues')
+    console.log('  --coverage  Check test coverage (stale tests, missing exports)')
     console.log('  --dry-run   Preview fixes without applying\n')
     console.log('Shortcuts:')
     console.log('  yarn clean  = yarn cleaner --audit --fix')
 }
 
 
-if (auditMode && fixMode) {
+if (coverageMode) {
+    await runCoverage(rootDir)
+} else if (auditMode && fixMode) {
     await runAll(rootDir)
 } else if (auditMode) {
     await runAudit(rootDir)

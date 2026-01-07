@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import EslintAuditor from './base.js'
 import {findJsFiles, groupBy} from '../../utils.js'
-import {header, hint, listItem, divider} from '../../format.js'
+import {hint, listItem, divider} from '../../format.js'
 
 
 export default class SwitchesAuditor extends EslintAuditor {
@@ -15,22 +15,28 @@ export default class SwitchesAuditor extends EslintAuditor {
 
         if (switches.length === 0) {
             this.printClean('No switch statements found')
-            return {switchesFound: 0, filesWithSwitches: 0}
+            return {switchesFound: 0, filesWithSwitches: 0, files: []}
         }
-
-        header(this.constructor.$name)
 
         const byFile = groupBy(switches, s => s.file)
         const files = Object.keys(byFile)
 
-        hint('Consider refactoring to object lookups or polymorphism')
-        divider()
+        this.printHeader()
+        if (!this.silent) {
+            hint('Consider refactoring to object lookups or polymorphism')
+            divider()
 
-        for (const file of files) {
-            listItem(file)
+            for (const file of files) {
+                listItem(file)
+            }
         }
 
-        return {switchesFound: switches.length, filesWithSwitches: files.length}
+        return {switchesFound: switches.length, filesWithSwitches: files.length, files}
+    }
+
+
+    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
+        return 'Consider refactoring to object lookups or polymorphism'
     }
 
 
