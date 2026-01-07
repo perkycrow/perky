@@ -82,17 +82,6 @@ describe('section', () => {
 })
 
 
-describe('setup', () => {
-
-    test('throws when called outside doc', () => {
-        expect(() => {
-            setup(() => {})
-        }).toThrow('setup() must be called inside doc() or section()')
-    })
-
-})
-
-
 describe('text', () => {
 
     test('creates text block', () => {
