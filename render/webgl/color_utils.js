@@ -10,9 +10,9 @@ export function parseColor (colorString) {
     if (colorString.startsWith('hsl')) {
         const match = colorString.match(/hsl\(\s*(\d+)\s*,\s*(\d+)%?\s*,\s*(\d+)%?\s*\)/)
         if (match) {
-            const h = parseInt(match[1]) / 360
-            const s = parseInt(match[2]) / 100
-            const l = parseInt(match[3]) / 100
+            const h = parseInt(match[1], 10) / 360
+            const s = parseInt(match[2], 10) / 100
+            const l = parseInt(match[3], 10) / 100
             const {r, g, b} = hslToRgb(h, s, l)
             return {r, g, b, a: 1}
         }

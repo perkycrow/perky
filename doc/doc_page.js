@@ -240,7 +240,7 @@ export default class DocPage extends HTMLElement {
             const link = document.createElement('a')
             link.className = `doc-tab ${isActive ? 'active' : ''}`
             link.textContent = label
-            link.href = this.#getTabUrl(tab)
+            link.href = getTabUrl(tab)
             return link
         }
 
@@ -249,24 +249,6 @@ export default class DocPage extends HTMLElement {
         button.textContent = label
         button.addEventListener('click', () => this.#switchTab(tab))
         return button
-    }
-
-
-    #getTabUrl (tab) {
-        const pathname = window.location.pathname
-        const filename = pathname.split('/').pop()
-        const baseName = filename
-            .replace('_api.html', '')
-            .replace('_test.html', '')
-            .replace('.html', '')
-
-        if (tab === 'api') {
-            return `${baseName}_api.html`
-        }
-        if (tab === 'test') {
-            return `${baseName}_test.html`
-        }
-        return `${baseName}.html`
     }
 
 
@@ -620,6 +602,24 @@ export default class DocPage extends HTMLElement {
         return wrapper
     }
 
+}
+
+
+function getTabUrl (tab) {
+    const pathname = window.location.pathname
+    const filename = pathname.split('/').pop()
+    const baseName = filename
+        .replace('_api.html', '')
+        .replace('_test.html', '')
+        .replace('.html', '')
+
+    if (tab === 'api') {
+        return `${baseName}_api.html`
+    }
+    if (tab === 'test') {
+        return `${baseName}_test.html`
+    }
+    return `${baseName}.html`
 }
 
 

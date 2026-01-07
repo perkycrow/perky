@@ -7,10 +7,12 @@ import {header, hint, subHeader, listItem, divider} from '../../format.js'
 const RULE_HINTS = {
     complexity: 'Split into smaller functions or methods',
     'local/nested-complexity': 'Reduce nesting depth by using early returns',
-    'local/class-methods-use-this': '#private without this? Extract to function below class',
-    'class-methods-use-this': '#private without this? Extract to function below class',
+    'local/class-methods-use-this': '#private without this? Extract to function below class. Public method? Check if it needs to be exposed, otherwise extract too',
+    'class-methods-use-this': '#private without this? Extract to function below class. Public method? Check if it needs to be exposed, otherwise extract too',
     'no-unused-vars': 'Remove the unused variable',
     'no-empty': 'Remove empty block or add a comment explaining why',
+    'no-nested-ternary': 'Refactor to clean if/else statements',
+    'max-params': 'If all params are necessary, transform them into a params object',
     unknown: 'Check file for syntax errors'
 }
 
