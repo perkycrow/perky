@@ -298,6 +298,7 @@ export default defineConfig([globalIgnores(['node_modules/*', 'dist/*']), {
 
     rules: {
         'no-unused-vars': 0,
-        'max-nested-callbacks': [2, 6]
+        'max-nested-callbacks': [2, 6],
+        'local/class-methods-use-this': 0
     }
 }])
