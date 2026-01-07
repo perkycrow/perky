@@ -103,9 +103,20 @@ function processClosingBrace (trimmed, indent, stack, issues) {
 }
 
 
+function countTotalTests (content) {
+    const testMatches = content.match(/^\s*(test|it)\(/gm)
+    return testMatches ? testMatches.length : 0
+}
+
+
 function findSingleTestDescribes (filePath, rootDir) {
     const relativePath = path.relative(rootDir, filePath)
     const content = fs.readFileSync(filePath, 'utf-8')
+
+    if (countTotalTests(content) <= 1) {
+        return null
+    }
+
     const lines = content.split('\n')
     const issues = []
     const stack = []
