@@ -413,5 +413,123 @@ describe(Camera2D, () => {
 
     })
 
+
+    test('stopFollow clears followTarget', () => {
+        const target = {x: 100, y: 200}
+        camera.follow(target)
+
+        expect(camera.followTarget).toBe(target)
+
+        const result = camera.stopFollow()
+
+        expect(camera.followTarget).toBeNull()
+        expect(result).toBe(camera)
+    })
+
+
+    test('animateTo sets up transition', () => {
+        camera.x = 0
+        camera.y = 0
+        camera.zoom = 1
+        camera.rotation = 0
+
+        const result = camera.animateTo({
+            x: 10,
+            y: 20,
+            zoom: 2,
+            rotation: Math.PI
+        }, {duration: 2, easing: 'linear'})
+
+        expect(camera.transition).not.toBeNull()
+        expect(camera.transition.startX).toBe(0)
+        expect(camera.transition.startY).toBe(0)
+        expect(camera.transition.targetX).toBe(10)
+        expect(camera.transition.targetY).toBe(20)
+        expect(camera.transition.targetZoom).toBe(2)
+        expect(camera.transition.duration).toBe(2)
+        expect(result).toBe(camera)
+    })
+
+
+    test('transitionTo animates to another camera state', () => {
+        const otherCamera = new Camera2D({x: 50, y: 100, zoom: 3, rotation: Math.PI / 2})
+
+        camera.transitionTo(otherCamera, {duration: 1})
+
+        expect(camera.transition.targetX).toBe(50)
+        expect(camera.transition.targetY).toBe(100)
+        expect(camera.transition.targetZoom).toBe(3)
+        expect(camera.transition.targetRotation).toBe(Math.PI / 2)
+    })
+
+
+    test('cancelTransition clears transition', () => {
+        camera.animateTo({x: 10, y: 20}, {duration: 1})
+
+        expect(camera.transition).not.toBeNull()
+
+        const result = camera.cancelTransition()
+
+        expect(camera.transition).toBeNull()
+        expect(result).toBe(camera)
+    })
+
+
+    test('animate adds effect to effects array', () => {
+        const handler = vi.fn()
+
+        const result = camera.animate(handler, {duration: 2})
+
+        expect(camera.effects).toHaveLength(1)
+        expect(camera.effects[0].handler).toBe(handler)
+        expect(camera.effects[0].duration).toBe(2)
+        expect(result).toBe(camera)
+    })
+
+
+    test('shake adds shake effect', () => {
+        const result = camera.shake({intensity: 0.5, duration: 0.3})
+
+        expect(camera.effects).toHaveLength(1)
+        expect(camera.effects[0].duration).toBe(0.3)
+        expect(result).toBe(camera)
+    })
+
+
+    test('clearEffects removes all effects and resets offsets', () => {
+        camera.animate(() => {})
+        camera.offsetX = 5
+        camera.offsetY = 3
+        camera.offsetZoom = 0.5
+        camera.offsetRotation = 0.1
+
+        const result = camera.clearEffects()
+
+        expect(camera.effects).toHaveLength(0)
+        expect(camera.offsetX).toBe(0)
+        expect(camera.offsetY).toBe(0)
+        expect(camera.offsetZoom).toBe(0)
+        expect(camera.offsetRotation).toBe(0)
+        expect(result).toBe(camera)
+    })
+
+
+    test('worldToScreenCSS returns same as worldToScreen', () => {
+        camera.x = 5
+        camera.y = 10
+        camera.viewportWidth = 800
+        camera.viewportHeight = 600
+        camera.unitsInView = {height: 10}
+
+        const worldX = 7
+        const worldY = 12
+
+        const screenResult = camera.worldToScreen(worldX, worldY)
+        const cssResult = camera.worldToScreenCSS(worldX, worldY)
+
+        expect(cssResult.x).toBe(screenResult.x)
+        expect(cssResult.y).toBe(screenResult.y)
+    })
+
 })
 

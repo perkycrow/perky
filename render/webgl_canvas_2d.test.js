@@ -285,4 +285,134 @@ describe('WebGLCanvas2D', () => {
         expect(renderer.canvas).toBe(null)
     })
 
+
+    describe('registerRenderer and unregisterRenderer', () => {
+
+        test('registerRenderer adds custom renderer', () => {
+            class CustomObject {}
+            class CustomRenderer {
+                static get handles () {
+                    return [CustomObject]
+                }
+
+                init = vi.fn()
+                reset = vi.fn()
+                flush = vi.fn()
+                dispose = vi.fn()
+            }
+
+            const customRenderer = new CustomRenderer()
+            const result = renderer.registerRenderer(customRenderer)
+
+            expect(result).toBe(renderer)
+            expect(customRenderer.init).toHaveBeenCalled()
+        })
+
+
+        test('unregisterRenderer removes renderer', () => {
+            class CustomObject {}
+            class CustomRenderer {
+                static get handles () {
+                    return [CustomObject]
+                }
+
+                init = vi.fn()
+                reset = vi.fn()
+                flush = vi.fn()
+                dispose = vi.fn()
+            }
+
+            const customRenderer = new CustomRenderer()
+            renderer.registerRenderer(customRenderer)
+
+            const result = renderer.unregisterRenderer(customRenderer)
+
+            expect(result).toBe(renderer)
+            expect(customRenderer.dispose).toHaveBeenCalled()
+        })
+
+    })
+
+
+    describe('applyPixelRatio', () => {
+
+        test('applyPixelRatio updates viewport', () => {
+            renderer.pixelRatio = 2
+            expect(() => renderer.applyPixelRatio()).not.toThrow()
+        })
+
+
+        test('applyPixelRatio resizes post processor', () => {
+            const originalWidth = canvas.width
+            const originalHeight = canvas.height
+
+            renderer.applyPixelRatio()
+
+            expect(renderer.gl).toBeDefined()
+            expect(canvas.width).toBe(originalWidth)
+            expect(canvas.height).toBe(originalHeight)
+        })
+
+    })
+
+
+    describe('setRenderGroups and clearRenderGroups', () => {
+
+        test('setRenderGroups creates render groups', () => {
+            const scene = new Group2D()
+
+            renderer.setRenderGroups([
+                {$id: 'background', content: scene},
+                {$id: 'foreground', content: scene}
+            ])
+
+            expect(renderer.renderGroups.length).toBe(2)
+        })
+
+
+        test('setRenderGroups returns this for chaining', () => {
+            const scene = new Group2D()
+
+            const result = renderer.setRenderGroups([
+                {$id: 'test', content: scene}
+            ])
+
+            expect(result).toBe(renderer)
+        })
+
+
+        test('clearRenderGroups removes all render groups', () => {
+            const scene = new Group2D()
+
+            renderer.setRenderGroups([
+                {$id: 'group1', content: scene},
+                {$id: 'group2', content: scene}
+            ])
+
+            expect(renderer.renderGroups.length).toBe(2)
+
+            const result = renderer.clearRenderGroups()
+
+            expect(result).toBe(renderer)
+            expect(renderer.renderGroups.length).toBe(0)
+        })
+
+
+        test('setRenderGroups clears previous groups', () => {
+            const scene = new Group2D()
+
+            renderer.setRenderGroups([
+                {$id: 'oldGroup', content: scene}
+            ])
+
+            renderer.setRenderGroups([
+                {$id: 'newGroup', content: scene}
+            ])
+
+            expect(renderer.renderGroups.length).toBe(1)
+            expect(renderer.renderGroups[0].$id).toBe('newGroup')
+        })
+
+    })
+
 })

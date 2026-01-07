@@ -309,4 +309,39 @@ describe(Canvas2D, () => {
         expect(() => renderer.render(scene)).not.toThrow()
     })
 
+
+    test('registerRenderer adds renderer for object types', () => {
+        class CustomObject {}
+        const customRenderer = {
+            constructor: {handles: [CustomObject]},
+            init: vi.fn(),
+            reset: vi.fn(),
+            flush: vi.fn(),
+            dispose: vi.fn()
+        }
+
+        const result = renderer.registerRenderer(customRenderer)
+
+        expect(result).toBe(renderer)
+        expect(customRenderer.init).toHaveBeenCalled()
+    })
+
+
+    test('unregisterRenderer removes renderer', () => {
+        class CustomObject {}
+        const customRenderer = {
+            constructor: {handles: [CustomObject]},
+            init: vi.fn(),
+            reset: vi.fn(),
+            flush: vi.fn(),
+            dispose: vi.fn()
+        }
+
+        renderer.registerRenderer(customRenderer)
+        const result = renderer.unregisterRenderer(customRenderer)
+
+        expect(result).toBe(renderer)
+        expect(customRenderer.dispose).toHaveBeenCalled()
+    })
+
 })

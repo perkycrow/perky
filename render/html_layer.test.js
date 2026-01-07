@@ -313,5 +313,26 @@ describe(HTMLLayer, () => {
         expect(layer.div.style.height).toBe('400px')
     })
 
+
+    test('applyStyles sets div styles correctly', () => {
+        const l = new HTMLLayer({
+            $id: 'styled-html',
+            zIndex: 10,
+            opacity: 0.7,
+            pointerEvents: 'none',
+            visible: false
+        })
+
+        expect(l.div.style.position).toBe('absolute')
+        expect(l.div.style.top).toBe('0')
+        expect(l.div.style.left).toBe('0')
+        expect(l.div.style.width).toBe('100%')
+        expect(l.div.style.height).toBe('100%')
+        expect(l.div.style.zIndex).toBe('10')
+        expect(l.div.style.opacity).toBe('0.7')
+        expect(l.div.style.pointerEvents).toBe('none')
+        expect(l.div.style.display).toBe('none')
+    })
+
 })
 

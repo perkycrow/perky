@@ -221,4 +221,162 @@ describe('RenderSystem', () => {
         expect(layers.every(l => l.$category === 'layer')).toBe(true)
     })
 
+
+    test('mount mounts view to container', () => {
+        const newContainer = document.createElement('div')
+
+        renderSystem.mount(newContainer)
+
+        expect(renderSystem.mounted).toBe(true)
+        expect(renderSystem.container).toBe(newContainer)
+    })
+
+
+    test('dismount unmounts view from container', () => {
+        renderSystem.dismount()
+
+        expect(renderSystem.mounted).toBe(false)
+    })
+
+
+    test('setupCameras creates main camera by default', () => {
+        const rs = new RenderSystem()
+
+        const camera = rs.getCamera('main')
+
+        expect(camera).toBeDefined()
+        expect(camera.$category).toBe('camera')
+    })
+
+
+    test('setupCameras with config creates additional cameras', () => {
+        const rs = new RenderSystem({
+            cameras: {
+                main: {unitsInView: 5},
+                secondary: {unitsInView: 10}
+            }
+        })
+
+        expect(rs.getCamera('main').unitsInView).toEqual({height: 5})
+        expect(rs.getCamera('secondary').unitsInView).toEqual({height: 10})
+    })
+
+
+    test('resolveCamera with string returns camera', () => {
+        const camera = renderSystem.resolveCamera('main')
+
+        expect(camera).toBe(renderSystem.getCamera('main'))
+    })
+
+
+    test('resolveCamera with Camera2D returns same camera', () => {
+        const existing = renderSystem.getCamera('main')
+
+        const resolved = renderSystem.resolveCamera(existing)
+
+        expect(resolved).toBe(existing)
+    })
+
+
+    test('resolveCamera with null returns null', () => {
+        const resolved = renderSystem.resolveCamera(null)
+
+        expect(resolved).toBeNull()
+    })
+
+
+    test('getHTML throws for canvas layer', () => {
+        renderSystem.createLayer('canvasLayer', 'canvas')
+
+        expect(() => renderSystem.getHTML('canvasLayer')).toThrow('not an HTML layer')
+    })
+
+
+    test('getHTML returns html layer', () => {
+        renderSystem.createLayer('htmlLayer', 'html')
+
+        const layer = renderSystem.getHTML('htmlLayer')
+
+        expect(layer).toBeDefined()
+        expect(layer.$id).toBe('htmlLayer')
+    })
+
+
+    test('sortLayers reorders layers by zIndex', () => {
+        renderSystem.createLayer('low', 'canvas', {zIndex: 1})
+        renderSystem.createLayer('high', 'canvas', {zIndex: 10})
+        renderSystem.createLayer('mid', 'canvas', {zIndex: 5})
+
+        renderSystem.sortLayers()
+
+        const layers = renderSystem.childrenByCategory('layer')
+        const zIndexes = layers.map(l => l.zIndex)
+
+        expect(zIndexes).toEqual([1, 5, 10])
+    })
+
+
+    test('resize updates layer dimensions and cameras', () => {
+        renderSystem.createLayer('game', 'canvas')
+        const camera = renderSystem.getCamera('main')
+
+        renderSystem.resize(1920, 1080)
+
+        expect(renderSystem.layerWidth).toBe(1920)
+        expect(renderSystem.layerHeight).toBe(1080)
+        expect(camera.viewportWidth).toBe(1920)
+        expect(camera.viewportHeight).toBe(1080)
+    })
+
+
+    test('resizeToContainer uses element dimensions', () => {
+        Object.defineProperty(renderSystem.element, 'clientWidth', {value: 1024, writable: true})
+        Object.defineProperty(renderSystem.element, 'clientHeight', {value: 768, writable: true})
+
+        renderSystem.resizeToContainer()
+
+        expect(renderSystem.layerWidth).toBe(1024)
+        expect(renderSystem.layerHeight).toBe(768)
+    })
+
+
+    test('enableAutoResize enables auto resize', () => {
+        renderSystem.autoResizeEnabled = false
+
+        const result = renderSystem.enableAutoResize()
+
+        expect(renderSystem.autoResizeEnabled).toBe(true)
+        expect(result).toBe(renderSystem)
+    })
+
+
+    test('disableAutoResize disables auto resize', () => {
+        renderSystem.autoResizeEnabled = true
+
+        const result = renderSystem.disableAutoResize()
+
+        expect(renderSystem.autoResizeEnabled).toBe(false)
+        expect(result).toBe(renderSystem)
+    })
+
+
+    test('markAllDirty marks all layers dirty', () => {
+        renderSystem.createLayer('layer1', 'canvas')
+        renderSystem.createLayer('layer2', 'canvas')
+
+        const layer1 = renderSystem.getLayer('layer1')
+        const layer2 = renderSystem.getLayer('layer2')
+
+        layer1.markClean()
+        layer2.markClean()
+
+        expect(layer1.dirty).toBe(false)
+        expect(layer2.dirty).toBe(false)
+
+        renderSystem.markAllDirty()
+
+        expect(layer1.dirty).toBe(true)
+        expect(layer2.dirty).toBe(true)
+    })
+
 })

@@ -253,5 +253,50 @@ describe(Transform2D, () => {
         expect(sorted2[0]).toBe(child2)
     })
 
+
+    test('transformPoint with identity matrix', () => {
+        transform.updateWorldMatrix()
+
+        const result = transform.transformPoint({x: 10, y: 20})
+
+        expect(result.x).toBeCloseTo(10)
+        expect(result.y).toBeCloseTo(20)
+    })
+
+
+    test('transformPoint with translation', () => {
+        transform.x = 5
+        transform.y = 10
+        transform.updateWorldMatrix()
+
+        const result = transform.transformPoint({x: 10, y: 20})
+
+        expect(result.x).toBeCloseTo(15)
+        expect(result.y).toBeCloseTo(30)
+    })
+
+
+    test('transformPoint with scale', () => {
+        transform.scaleX = 2
+        transform.scaleY = 3
+        transform.updateWorldMatrix()
+
+        const result = transform.transformPoint({x: 10, y: 20})
+
+        expect(result.x).toBeCloseTo(20)
+        expect(result.y).toBeCloseTo(60)
+    })
+
+
+    test('transformPoint with rotation', () => {
+        transform.rotation = Math.PI / 2
+        transform.updateWorldMatrix()
+
+        const result = transform.transformPoint({x: 10, y: 0})
+
+        expect(result.x).toBeCloseTo(0)
+        expect(result.y).toBeCloseTo(10)
+    })
+
 })
 

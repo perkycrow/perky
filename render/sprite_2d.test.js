@@ -87,6 +87,19 @@ describe('Sprite2D', () => {
         expect(sprite.currentAnimation).toBeNull()
         expect(mockAnim.stop).toHaveBeenCalled()
     })
+
+
+    test('setFrame updates currentFrame', () => {
+        const newFrame = {
+            filename: 'frame2',
+            frame: {x: 10, y: 0, w: 20, h: 20},
+            image: mockImage
+        }
+
+        sprite.setFrame(newFrame)
+
+        expect(sprite.currentFrame).toBe(newFrame)
+    })
 })
 
 

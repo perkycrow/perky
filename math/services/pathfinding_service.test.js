@@ -270,10 +270,29 @@ describe('PathfindingService', () => {
             }
         }
         const setCellRes3 = {send: vi.fn(), error: vi.fn()}
-        
+
         service.setCell(setCellReq3, setCellRes3)
-        
+
         expect(setCellRes3.error).toHaveBeenCalledWith('Missing or invalid coords parameter')
+    })
+
+
+    test('cacheResult evicts oldest entry when cache is full', () => {
+        const service = new PathfindingService({maxCacheSize: 2})
+
+        service.cacheResult('key1', {path: [], found: false, length: 0, calculationTime: 1})
+        service.cacheResult('key2', {path: [], found: false, length: 0, calculationTime: 2})
+
+        expect(service.pathCache.size).toBe(2)
+        expect(service.pathCache.has('key1')).toBe(true)
+        expect(service.pathCache.has('key2')).toBe(true)
+
+        service.cacheResult('key3', {path: [], found: true, length: 5, calculationTime: 3})
+
+        expect(service.pathCache.size).toBe(2)
+        expect(service.pathCache.has('key1')).toBe(false)
+        expect(service.pathCache.has('key2')).toBe(true)
+        expect(service.pathCache.has('key3')).toBe(true)
     })
 
 })

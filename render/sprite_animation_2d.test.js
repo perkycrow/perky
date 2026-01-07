@@ -124,4 +124,97 @@ describe('SpriteAnimation2D', () => {
         expect(animation.currentIndex).toBe(1)
         expect(spritesheet.setFrame).toHaveBeenCalledWith('frame2')
     })
+
+
+    test('pause stops playing', () => {
+        vi.stubGlobal('requestAnimationFrame', vi.fn())
+        const pauseSpy = vi.fn()
+        animation.on('pause', pauseSpy)
+
+        animation.play()
+        expect(animation.playing).toBe(true)
+
+        animation.pause()
+
+        expect(animation.playing).toBe(false)
+        expect(pauseSpy).toHaveBeenCalled()
+
+        vi.unstubAllGlobals()
+    })
+
+
+    test('stop resets animation to start', () => {
+        vi.stubGlobal('performance', {now: () => 1000})
+        const stopSpy = vi.fn()
+        animation.on('stop', stopSpy)
+
+        animation.play()
+        animation.update(1100)
+        expect(animation.currentIndex).toBe(1)
+
+        animation.stop()
+
+        expect(animation.currentIndex).toBe(0)
+        expect(animation.playing).toBe(false)
+        expect(animation.completed).toBe(false)
+        expect(stopSpy).toHaveBeenCalled()
+
+        vi.unstubAllGlobals()
+    })
+
+
+    test('restart stops and plays animation', () => {
+        vi.stubGlobal('requestAnimationFrame', vi.fn())
+        vi.stubGlobal('performance', {now: () => 1000})
+
+        animation.play()
+        animation.update(1100)
+        expect(animation.currentIndex).toBe(1)
+
+        animation.restart()
+
+        expect(animation.currentIndex).toBe(0)
+        expect(animation.playing).toBe(true)
+
+        vi.unstubAllGlobals()
+    })
+
+
+    test('nextFrame advances to next frame', () => {
+        animation.setFrame(0)
+
+        animation.nextFrame()
+        expect(animation.currentIndex).toBe(1)
+
+        animation.nextFrame()
+        expect(animation.currentIndex).toBe(2)
+
+        animation.nextFrame()
+        expect(animation.currentIndex).toBe(0)
+    })
+
+
+    test('previousFrame goes to previous frame', () => {
+        animation.setFrame(2)
+
+        animation.previousFrame()
+        expect(animation.currentIndex).toBe(1)
+
+        animation.previousFrame()
+        expect(animation.currentIndex).toBe(0)
+
+        animation.previousFrame()
+        expect(animation.currentIndex).toBe(2)
+    })
+
+
+    test('setFps updates fps', () => {
+        const fpsSpy = vi.fn()
+        animation.on('fpsChanged', fpsSpy)
+
+        animation.setFps(30)
+
+        expect(animation.fps).toBe(30)
+        expect(fpsSpy).toHaveBeenCalledWith(30)
+    })
 })

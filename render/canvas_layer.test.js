@@ -297,4 +297,23 @@ describe(CanvasLayer, () => {
 
     })
 
+
+    test('applyStyles sets canvas styles correctly', () => {
+        const l = new CanvasLayer({
+            $id: 'styled',
+            zIndex: 5,
+            opacity: 0.8,
+            pointerEvents: 'none',
+            visible: false
+        })
+
+        expect(l.canvas.style.position).toBe('absolute')
+        expect(l.canvas.style.top).toBe('0')
+        expect(l.canvas.style.left).toBe('0')
+        expect(l.canvas.style.zIndex).toBe('5')
+        expect(l.canvas.style.opacity).toBe('0.8')
+        expect(l.canvas.style.pointerEvents).toBe('none')
+        expect(l.canvas.style.display).toBe('none')
+    })
+
 })

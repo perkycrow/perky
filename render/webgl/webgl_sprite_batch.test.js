@@ -1,5 +1,6 @@
 import {describe, test, expect, vi} from 'vitest'
 import WebGLSpriteBatch from './webgl_sprite_batch.js'
+import Image2D from '../image_2d.js'
 
 
 function createMockGl () {
@@ -96,6 +97,43 @@ describe(WebGLSpriteBatch, () => {
         const batch = new WebGLSpriteBatch(gl, {}, {})
         batch.dispose()
         expect(gl.deleteBuffer).toHaveBeenCalledTimes(2)
+    })
+
+
+    test('addSprite does nothing when image is not ready', () => {
+        const gl = createMockGl()
+        const textureManager = {getTexture: vi.fn(() => null)}
+        const batch = new WebGLSpriteBatch(gl, {}, textureManager)
+
+        const sprite = {
+            image: {complete: false, naturalWidth: 0},
+            getBounds: () => ({minX: 0, minY: 0, maxX: 10, maxY: 10, width: 10, height: 10}),
+            worldMatrix: [1, 0, 0, 1, 0, 0],
+            anchorX: 0.5,
+            anchorY: 0.5
+        }
+
+        batch.begin()
+        batch.addSprite(sprite, 1.0)
+
+        expect(batch.spriteCount).toBe(0)
+    })
+
+
+    test('addSprite increments spriteCount for valid sprites', () => {
+        const gl = createMockGl()
+        const mockTexture = {}
+        const textureManager = {getTexture: vi.fn(() => mockTexture)}
+        const batch = new WebGLSpriteBatch(gl, {}, textureManager)
+
+        const mockImage = {complete: true, naturalWidth: 100, width: 100, height: 100}
+        const sprite = new Image2D({image: mockImage})
+        sprite.updateWorldMatrix()
+
+        batch.begin()
+        batch.addSprite(sprite, 1.0)
+
+        expect(batch.spriteCount).toBe(1)
     })
 
 })

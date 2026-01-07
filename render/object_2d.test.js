@@ -203,4 +203,60 @@ describe(Object2D, () => {
         expect(bounds.height).toBeCloseTo(20)
     })
 
+
+    test('showDebugGizmos enables debug gizmos with defaults', () => {
+        const result = object.showDebugGizmos()
+
+        expect(object.debugGizmos).toEqual({
+            bounds: true,
+            anchor: true,
+            pivot: true,
+            origin: true
+        })
+        expect(result).toBe(object)
+    })
+
+
+    test('showDebugGizmos with custom options', () => {
+        object.showDebugGizmos({
+            bounds: true,
+            anchor: false,
+            pivot: false,
+            origin: true
+        })
+
+        expect(object.debugGizmos).toEqual({
+            bounds: true,
+            anchor: false,
+            pivot: false,
+            origin: true
+        })
+    })
+
+
+    test('hideDebugGizmos disables debug gizmos', () => {
+        object.showDebugGizmos()
+
+        expect(object.debugGizmos).not.toBeNull()
+
+        const result = object.hideDebugGizmos()
+
+        expect(object.debugGizmos).toBeNull()
+        expect(result).toBe(object)
+    })
+
+
+    test('setVisible changes visible property', () => {
+        expect(object.visible).toBe(true)
+
+        const result = object.setVisible(false)
+
+        expect(object.visible).toBe(false)
+        expect(result).toBe(object)
+
+        object.setVisible(true)
+
+        expect(object.visible).toBe(true)
+    })
+
 })

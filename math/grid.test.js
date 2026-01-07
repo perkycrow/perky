@@ -278,4 +278,31 @@ describe('Grid', () => {
         expect(eightDirections.upLeft).toEqual({x: -1, y: 1})
     })
 
+
+    test('export returns grid data', () => {
+        const grid = new Grid({width: 3, height: 2})
+        grid.setCell({x: 0, y: 0}, 'a')
+        grid.setCell({x: 2, y: 1}, {value: 42})
+
+        const exported = grid.export()
+
+        expect(exported.width).toBe(3)
+        expect(exported.height).toBe(2)
+        expect(exported.cells['0,0']).toBe('a')
+        expect(exported.cells['2,1']).toEqual({value: 42})
+    })
+
+
+    test('export with objects that have export method', () => {
+        const grid = new Grid({width: 2, height: 2})
+        grid.setCell({x: 0, y: 0}, {
+            value: 10,
+            export: () => ({exported: true, value: 10})
+        })
+
+        const exported = grid.export()
+
+        expect(exported.cells['0,0']).toEqual({exported: true, value: 10})
+    })
+
 })

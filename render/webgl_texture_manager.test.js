@@ -373,5 +373,45 @@ describe(WebGLTextureManager, () => {
         expect(gl.deleteTexture).toHaveBeenCalledTimes(2)
     })
 
+
+    describe('hasTexture', () => {
+
+        test('returns true for active texture', () => {
+            const image = createMockImage()
+            manager.acquire(image)
+
+            expect(manager.hasTexture(image)).toBe(true)
+        })
+
+
+        test('returns true for zombie texture', () => {
+            const image = createMockImage()
+            manager.acquire(image)
+            manager.release(image)
+
+            expect(manager.hasTexture(image)).toBe(true)
+        })
+
+
+        test('returns false for unknown image', () => {
+            const image = createMockImage()
+
+            expect(manager.hasTexture(image)).toBe(false)
+        })
+
+
+        test('returns false after dispose', () => {
+            const image = createMockImage()
+            manager.acquire(image)
+            manager.dispose()
+
+            const newGl = createMockGL()
+            const newManager = new WebGLTextureManager({gl: newGl, autoFlush: false})
+
+            expect(newManager.hasTexture(image)).toBe(false)
+        })
+
+    })
+
 })
 
