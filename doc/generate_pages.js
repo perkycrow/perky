@@ -274,12 +274,14 @@ function getTabContent (tab, api, tests, sources) {
 
 
 function generatePageHtml (pageData) {
-    const {doc, sources, api, tests, docs, tab = 'doc', cssFile} = pageData
+    const {doc, sources, api, tests, docs, guides = [], tab = 'doc', cssFile, section = 'docs'} = pageData
     const title = `${doc.title} - Perky Docs`
-    const description = `Documentation for ${doc.title} in the Perky game framework`
+    const description = section === 'guides'
+        ? `${doc.title} guide for the Perky game framework`
+        : `Documentation for ${doc.title} in the Perky game framework`
 
     const content = getTabContent(tab, api, tests, sources)
-    const navHtml = generateNavHtml(docs, doc.file)
+    const navHtml = generateNavHtml(docs, guides, doc.file, section)
     const mainJs = findMainJs()
 
     return `<!DOCTYPE html>
@@ -341,25 +343,50 @@ function generatePageHtml (pageData) {
 }
 
 
-function generateNavHtml (docs, activeFile) {
+function generateNavHtml (docs, guides, activeFile, activeSection = 'docs') {
+    let html = ''
+
+    html += '<div class="nav-switcher">'
+    html += `<button class="nav-switch${activeSection === 'docs' ? ' active' : ''}" data-section="docs">Docs</button>`
+    html += `<button class="nav-switch${activeSection === 'guides' ? ' active' : ''}" data-section="guides">Guides</button>`
+    html += '</div>'
+
+    const docsHidden = activeSection === 'docs' ? '' : ' style="display:none"'
+    const guidesHidden = activeSection === 'guides' ? '' : ' style="display:none"'
+
+    html += `<div class="nav-section" data-section="docs"${docsHidden}>`
+    html += generateItemsHtml(docs, activeFile, 'doc')
+    html += '</div>'
+
+    html += `<div class="nav-section" data-section="guides"${guidesHidden}>`
+    html += generateItemsHtml(guides, activeFile, 'guide')
+    html += '</div>'
+
+    return html
+}
+
+
+function generateItemsHtml (items, activeFile, type) {
     const byCategory = {}
 
-    for (const doc of docs) {
-        if (!byCategory[doc.category]) {
-            byCategory[doc.category] = []
+    for (const item of items) {
+        if (!byCategory[item.category]) {
+            byCategory[item.category] = []
         }
-        byCategory[doc.category].push(doc)
+        byCategory[item.category].push(item)
     }
 
     let html = ''
 
-    for (const [category, categoryDocs] of Object.entries(byCategory)) {
+    for (const [category, categoryItems] of Object.entries(byCategory)) {
         html += `<div class="nav-category">${escapeHtml(category)}</div>`
 
-        for (const doc of categoryDocs) {
-            const isActive = doc.file === activeFile ? ' active' : ''
-            const href = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
-            html += `<a class="nav-item${isActive}" href="${href}" data-file="${escapeHtml(doc.file)}" data-title="${escapeHtml(doc.title.toLowerCase())}" data-category="${escapeHtml(doc.category)}">${escapeHtml(doc.title)}</a>`
+        for (const item of categoryItems) {
+            const isActive = item.file === activeFile ? ' active' : ''
+            const href = type === 'guide'
+                ? `guide_${item.id}.html`
+                : item.file.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
+            html += `<a class="nav-item${isActive}" href="${href}" data-file="${escapeHtml(item.file)}" data-title="${escapeHtml(item.title.toLowerCase())}" data-category="${escapeHtml(item.category)}">${escapeHtml(item.title)}</a>`
         }
     }
 
@@ -407,6 +434,17 @@ function generateSitemap (docs, apiData, testsData, baseUrl) {
 }
 
 
+function loadGuideSources (guideId) {
+    const sourcePath = path.join(distDir, 'sources', `guide_${guideId}.json`)
+
+    try {
+        return JSON.parse(fs.readFileSync(sourcePath, 'utf-8'))
+    } catch {
+        return null
+    }
+}
+
+
 async function main () {
     const docsPath = path.join(distDir, 'docs.json')
     const apiPath = path.join(distDir, 'api.json')
@@ -417,6 +455,7 @@ async function main () {
     const testsData = JSON.parse(fs.readFileSync(testsPath, 'utf-8'))
 
     const docs = docsData.docs
+    const guides = docsData.guides || []
     const cssFile = findCssFile()
 
     logger.log(`Generating static pages for ${docs.length} doc(s)...`)
@@ -426,7 +465,7 @@ async function main () {
         const sources = loadSources(doc.file)
         const api = apiData[doc.file]
         const tests = testsData[doc.file]
-        const pageData = {doc, sources, api, tests, docs, cssFile}
+        const pageData = {doc, sources, api, tests, docs, guides, cssFile, section: 'docs'}
 
         const docHtml = generatePageHtml({...pageData, tab: 'doc'})
         const docFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
@@ -445,6 +484,28 @@ async function main () {
         }
 
         logger.log(`  - ${doc.title}`)
+    }
+
+    logger.log(`\nGenerating static pages for ${guides.length} guide(s)...`)
+
+    for (const guide of guides) {
+        const sources = loadGuideSources(guide.id)
+        const pageData = {
+            doc: guide,
+            sources,
+            api: null,
+            tests: null,
+            docs,
+            guides,
+            cssFile,
+            section: 'guides'
+        }
+
+        const guideHtml = generatePageHtml({...pageData, tab: 'doc'})
+        const guideFileName = `guide_${guide.id}.html`
+        fs.writeFileSync(path.join(distDir, guideFileName), guideHtml)
+
+        logger.log(`  - ${guide.title}`)
     }
 
     const baseUrl = 'https://perkycrow.com/doc'

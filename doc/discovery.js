@@ -53,6 +53,38 @@ async function discoverDocs () {
 }
 
 
+async function discoverGuides () {
+    const files = await glob('doc/guides/**/*.guide.js', {
+        cwd: rootDir,
+        ignore: ['node_modules/**', 'dist/**']
+    })
+
+    const guides = files.map(file => {
+        const relativePath = '/' + file
+        const basename = path.basename(file, '.guide.js')
+        const directory = path.dirname(file).replace('doc/guides/', '').replace('doc/guides', '')
+        const category = directory.split('/')[0] || 'general'
+
+        return {
+            id: basename,
+            file: relativePath,
+            category,
+            title: toPascalCase(basename),
+            tags: [category, basename]
+        }
+    })
+
+    guides.sort((a, b) => {
+        if (a.category !== b.category) {
+            return a.category.localeCompare(b.category)
+        }
+        return a.title.localeCompare(b.title)
+    })
+
+    return guides
+}
+
+
 async function buildApiData (docs) {
     const api = {}
 
@@ -109,6 +141,35 @@ function buildSourcesData (docs) {
 }
 
 
+function buildGuideSources (guides) {
+    const sourcesDir = path.join(__dirname, 'sources')
+
+    if (!fs.existsSync(sourcesDir)) {
+        fs.mkdirSync(sourcesDir, {recursive: true})
+    }
+
+    let count = 0
+
+    for (const guide of guides) {
+        const fullPath = path.join(rootDir, guide.file)
+
+        try {
+            const blocks = parseDocFile(fullPath)
+            if (blocks.length > 0) {
+                const outputName = 'guide_' + guide.id + '.json'
+                const outputPath = path.join(sourcesDir, outputName)
+                fs.writeFileSync(outputPath, JSON.stringify(blocks, null, 2))
+                count++
+            }
+        } catch (error) {
+            logger.warn(`  Warning: Could not parse sources for ${guide.file}: ${error.message}`)
+        }
+    }
+
+    return count
+}
+
+
 function buildTestsData (docs) {
     const tests = {}
 
@@ -138,13 +199,24 @@ function buildTestsData (docs) {
 
 async function main () {
     const result = await discoverDocs()
-    const docsOutputPath = path.join(__dirname, 'docs.json')
+    const guides = await discoverGuides()
 
-    fs.writeFileSync(docsOutputPath, JSON.stringify(result, null, 2))
+    const outputData = {
+        docs: result.docs,
+        guides
+    }
+
+    const docsOutputPath = path.join(__dirname, 'docs.json')
+    fs.writeFileSync(docsOutputPath, JSON.stringify(outputData, null, 2))
 
     logger.log(`Discovered ${result.docs.length} doc file(s):`)
     for (const doc of result.docs) {
         logger.log(`  - ${doc.category}/${doc.title} (${doc.file})`)
+    }
+
+    logger.log(`\nDiscovered ${guides.length} guide file(s):`)
+    for (const guide of guides) {
+        logger.log(`  - ${guide.category}/${guide.title} (${guide.file})`)
     }
 
     const apiData = await buildApiData(result.docs)
@@ -164,7 +236,10 @@ async function main () {
     logger.log(`\nGenerated tests data for ${testsCount} file(s)`)
 
     const sourcesCount = buildSourcesData(result.docs)
-    logger.log(`\nExtracted sources for ${sourcesCount} file(s)`)
+    logger.log(`\nExtracted sources for ${sourcesCount} doc file(s)`)
+
+    const guideSourcesCount = buildGuideSources(guides)
+    logger.log(`Extracted sources for ${guideSourcesCount} guide file(s)`)
 }
 
 

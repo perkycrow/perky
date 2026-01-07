@@ -210,5 +210,17 @@
         "webgl_canvas_2d"
       ]
     }
+  ],
+  "guides": [
+    {
+      "id": "philosophy",
+      "file": "/doc/guides/philosophy.guide.js",
+      "category": "general",
+      "title": "Philosophy",
+      "tags": [
+        "general",
+        "philosophy"
+      ]
+    }
   ]
 }
