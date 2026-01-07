@@ -30,6 +30,11 @@ export default class AudioContext {
     }
 
 
+    get listener () {
+        return this.#context?.listener ?? null
+    }
+
+
     init () {
         if (this.#context) {
             return this.#context
@@ -124,6 +129,41 @@ export default class AudioContext {
     async decodeAudioData (arrayBuffer) {
         this.init()
         return this.#context.decodeAudioData(arrayBuffer)
+    }
+
+
+    setListenerPosition (x, y, z = 0) {
+        this.init()
+        const listener = this.#context.listener
+
+        if (listener.positionX) {
+            listener.positionX.setValueAtTime(x, this.#context.currentTime)
+            listener.positionY.setValueAtTime(y, this.#context.currentTime)
+            listener.positionZ.setValueAtTime(z, this.#context.currentTime)
+        } else if (listener.setPosition) {
+            listener.setPosition(x, y, z)
+        }
+
+        return this
+    }
+
+
+    getListenerPosition () {
+        if (!this.#context?.listener) {
+            return {x: 0, y: 0, z: 0}
+        }
+
+        const listener = this.#context.listener
+
+        if (listener.positionX) {
+            return {
+                x: listener.positionX.value,
+                y: listener.positionY.value,
+                z: listener.positionZ.value
+            }
+        }
+
+        return {x: 0, y: 0, z: 0}
     }
 
 

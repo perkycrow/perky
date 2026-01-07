@@ -9,6 +9,7 @@ export default class AudioSource extends PerkyModule {
     #audioContext = null
     #channel = null
     #gainNode = null
+    #pannerNode = null
     #sourceNode = null
     #playing = false
     #loop = false
@@ -16,6 +17,12 @@ export default class AudioSource extends PerkyModule {
     #playbackRate = 1
     #startTime = 0
     #pauseTime = 0
+    #x = 0
+    #y = 0
+    #spatial = false
+    #refDistance = 1
+    #maxDistance = 10
+    #rolloffFactor = 1
 
     constructor (options = {}) {
         super(options)
@@ -25,6 +32,18 @@ export default class AudioSource extends PerkyModule {
         this.#loop = options.loop ?? false
         this.#volume = options.volume ?? 1
         this.#playbackRate = options.playbackRate ?? 1
+        this.#spatial = options.spatial ?? false
+
+        this.#initSpatialOptions(options)
+    }
+
+
+    #initSpatialOptions (options) {
+        this.#x = options.x ?? 0
+        this.#y = options.y ?? 0
+        this.#refDistance = options.refDistance ?? 1
+        this.#maxDistance = options.maxDistance ?? 10
+        this.#rolloffFactor = options.rolloffFactor ?? 1
     }
 
 
@@ -97,6 +116,57 @@ export default class AudioSource extends PerkyModule {
     }
 
 
+    get x () {
+        return this.#x
+    }
+
+
+    set x (value) {
+        this.#x = value
+        this.#updatePannerPosition()
+    }
+
+
+    get y () {
+        return this.#y
+    }
+
+
+    set y (value) {
+        this.#y = value
+        this.#updatePannerPosition()
+    }
+
+
+    get spatial () {
+        return this.#spatial
+    }
+
+
+    get refDistance () {
+        return this.#refDistance
+    }
+
+
+    get maxDistance () {
+        return this.#maxDistance
+    }
+
+
+    get rolloffFactor () {
+        return this.#rolloffFactor
+    }
+
+
+    #updatePannerPosition () {
+        if (this.#pannerNode && this.#audioContext?.context) {
+            const ctx = this.#audioContext.context
+            this.#pannerNode.positionX.setValueAtTime(this.#x, ctx.currentTime)
+            this.#pannerNode.positionY.setValueAtTime(this.#y, ctx.currentTime)
+        }
+    }
+
+
     #updateGain () {
         if (this.#gainNode && this.#audioContext?.context) {
             this.#gainNode.gain.setValueAtTime(
@@ -115,13 +185,37 @@ export default class AudioSource extends PerkyModule {
         this.#gainNode = this.#audioContext.createGain()
         this.#updateGain()
 
+        let outputNode = this.#gainNode
+
+        if (this.#spatial) {
+            this.#pannerNode = this.#audioContext.createPanner()
+            this.#configurePanner()
+            this.#gainNode.connect(this.#pannerNode)
+            outputNode = this.#pannerNode
+        }
+
         if (this.#channel?.gainNode) {
-            this.#gainNode.connect(this.#channel.gainNode)
+            outputNode.connect(this.#channel.gainNode)
         } else {
-            this.#gainNode.connect(this.#audioContext.masterGain)
+            outputNode.connect(this.#audioContext.masterGain)
         }
 
         return true
+    }
+
+
+    #configurePanner () {
+        if (!this.#pannerNode) {
+            return
+        }
+
+        this.#pannerNode.panningModel = 'HRTF'
+        this.#pannerNode.distanceModel = 'linear'
+        this.#pannerNode.refDistance = this.#refDistance
+        this.#pannerNode.maxDistance = this.#maxDistance
+        this.#pannerNode.rolloffFactor = this.#rolloffFactor
+
+        this.#updatePannerPosition()
     }
 
 
@@ -230,6 +324,11 @@ export default class AudioSource extends PerkyModule {
 
         this.#cleanupSourceNode()
 
+        if (this.#pannerNode) {
+            this.#pannerNode.disconnect()
+            this.#pannerNode = null
+        }
+
         if (this.#gainNode) {
             this.#gainNode.disconnect()
             this.#gainNode = null
@@ -239,6 +338,19 @@ export default class AudioSource extends PerkyModule {
         this.emit('stop')
 
         return true
+    }
+
+
+    setPosition (x, y) {
+        this.#x = x
+        this.#y = y
+        this.#updatePannerPosition()
+        return this
+    }
+
+
+    getPosition () {
+        return {x: this.#x, y: this.#y}
     }
 
 

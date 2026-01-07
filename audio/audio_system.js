@@ -54,7 +54,9 @@ export default class AudioSystem extends PerkyModule {
     onInstall (host) {
         this.delegateTo(host, [
             'play',
+            'playAt',
             'playOscillator',
+            'playOscillatorAt',
             'stop',
             'stopChannel',
             'stopAll',
@@ -66,7 +68,9 @@ export default class AudioSystem extends PerkyModule {
             'unmuteChannel',
             'getChannel',
             'hasChannel',
-            'unlock'
+            'unlock',
+            'setListenerPosition',
+            'getListenerPosition'
         ])
 
         this.delegateEventsTo(host, [
@@ -202,28 +206,41 @@ export default class AudioSystem extends PerkyModule {
     }
 
 
-    playOscillator (options = {}) {
-        const channelName = options.channel ?? 'sfx'
-        const channel = this.getChannel(channelName)
+    playAt (bufferId, x, y, options = {}) {
+        return this.play(bufferId, {
+            ...options,
+            spatial: true,
+            x,
+            y
+        })
+    }
 
+
+    playOscillator (options = {}) {
+        const channel = this.getChannel(options.channel ?? 'sfx')
         const sourceId = options.$id ?? uniqueId(this.childrenRegistry, 'oscillator')
 
         const source = new AudioSource({
+            ...options,
             $id: sourceId,
             audioContext: this.#audioContext,
-            channel,
-            volume: options.volume ?? 1
+            channel
         })
 
-        source.playOscillator(
-            options.type ?? 'sine',
-            options.frequency ?? 440,
-            options.duration ?? null
-        )
-
+        source.playOscillator(options.type, options.frequency, options.duration)
         this.emit('audio:play', sourceId, 'oscillator', options)
 
         return source
+    }
+
+
+    playOscillatorAt (x, y, options = {}) {
+        return this.playOscillator({
+            ...options,
+            spatial: true,
+            x,
+            y
+        })
     }
 
 
@@ -300,6 +317,18 @@ export default class AudioSystem extends PerkyModule {
             channel.unmute()
         }
         return this
+    }
+
+
+    setListenerPosition (x, y) {
+        this.#audioContext.setListenerPosition(x, y, 0)
+        return this
+    }
+
+
+    getListenerPosition () {
+        const pos = this.#audioContext.getListenerPosition()
+        return {x: pos.x, y: pos.y}
     }
 
 }

@@ -102,6 +102,19 @@
       ],
       "title": "Audio Assets Demo",
       "description": "Loading and playing audio files through the manifest and SourceManager."
+    },
+    {
+      "id": "audio_spatial_demo",
+      "file": "audio_spatial_demo.html",
+      "category": "audio",
+      "tags": [
+        "audio",
+        "spatial",
+        "3d",
+        "panning"
+      ],
+      "title": "Spatial Audio Demo",
+      "description": "2D positional audio with distance attenuation and stereo panning."
     }
   ]
 }
