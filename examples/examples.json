@@ -76,6 +76,19 @@
       ],
       "title": "Shader Effects Stress Test",
       "description": "Performance test combining multiple custom shader effects (Outline, Chromatic, Wave, Pulse) with batching optimization."
+    },
+    {
+      "id": "audio_demo",
+      "file": "audio_demo.html",
+      "category": "audio",
+      "tags": [
+        "audio",
+        "oscillator",
+        "synthesis",
+        "channels"
+      ],
+      "title": "Audio System Demo",
+      "description": "Procedural audio generation with oscillators, channels, and volume control."
     }
   ]
 }
