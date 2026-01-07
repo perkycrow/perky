@@ -192,7 +192,7 @@ export async function runAudit (rootDir, options = {}) {
         printBanner()
     }
 
-    const auditorOptions = {compact: true, silent: true, ...options}
+    const auditorOptions = {compact: true, ...options}
     const results = {}
     const hints = {}
 

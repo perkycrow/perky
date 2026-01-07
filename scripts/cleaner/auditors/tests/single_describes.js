@@ -61,7 +61,9 @@ export default class SingleDescribesAuditor extends Auditor {
 function findTestFiles (rootDir) {
     return findJsFiles(rootDir).filter((filePath) => {
         const relativePath = path.relative(rootDir, filePath)
-        return relativePath.endsWith('.test.js') && !relativePath.startsWith('scripts/cleaner/')
+        return relativePath.endsWith('.test.js') &&
+            !relativePath.startsWith('scripts/cleaner/') &&
+            relativePath !== 'doc/test_parser.test.js'
     })
 }
 

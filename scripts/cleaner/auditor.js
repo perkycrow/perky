@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import {findJsFiles} from './utils.js'
-import {header, success, successCompact, hint, listItem, divider} from './format.js'
+import {header, success, successCompact, failureCompact, hint, listItem, divider} from './format.js'
 import {EXCLUSIONS} from './config.js'
 
 
@@ -190,15 +190,21 @@ export default class Auditor {
             return
         }
 
-        const message = `No ${this.constructor.$name.toLowerCase()} issues found`
+        const cleanMessage = `No ${this.constructor.$name.toLowerCase()} issues found`
+        const issuesMessage = `${this.constructor.$name} issues found`
 
         if (issues.length === 0) {
             if (this.compact) {
-                successCompact(message)
+                successCompact(cleanMessage)
             } else {
                 header(this.constructor.$name)
-                success(message)
+                success(cleanMessage)
             }
+            return
+        }
+
+        if (this.compact) {
+            failureCompact(issuesMessage)
             return
         }
 

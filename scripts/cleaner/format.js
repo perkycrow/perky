@@ -67,6 +67,11 @@ export function successCompact (message) {
 }
 
 
+export function failureCompact (message) {
+    console.log(`${colors.yellow}✗${colors.reset} ${message}`)
+}
+
+
 export function warning (message) {
     console.log(`${colors.yellow}!${colors.reset} ${message}`)
 }
