@@ -387,4 +387,25 @@ describe(InputDevice, () => {
         expect(device.pressedNames.size).toBe(0)
     })
 
+
+    test('getPressedControls returns array of pressed control objects', () => {
+        const button1 = device.findOrCreateControl(ButtonControl, {name: 'button1'})
+        const button2 = device.findOrCreateControl(ButtonControl, {name: 'button2'})
+        device.findOrCreateControl(ButtonControl, {name: 'button3'})
+
+        expect(device.getPressedControls()).toEqual([])
+
+        button1.press()
+        expect(device.getPressedControls()).toEqual([button1])
+
+        button2.press()
+        const pressed = device.getPressedControls()
+        expect(pressed).toHaveLength(2)
+        expect(pressed).toContain(button1)
+        expect(pressed).toContain(button2)
+
+        button1.release()
+        expect(device.getPressedControls()).toEqual([button2])
+    })
+
 })

@@ -400,4 +400,55 @@ describe('PerkyExplorer', () => {
 
     })
 
+
+    describe('focusModule', () => {
+
+        test('should change root to focused module', () => {
+            const parent = new PerkyModule({$id: 'parent'})
+            const child = parent.create(PerkyModule, {$id: 'child', $category: 'test'})
+
+            explorer.setModule(parent)
+
+            const rootNode = getRootNode(explorer)
+            let nodeIds = collectAllNodeIds(rootNode)
+            expect(nodeIds).toContain('parent')
+            expect(nodeIds).toContain('child')
+
+            explorer.focusModule(child)
+
+            const focusedRootNode = getRootNode(explorer)
+            const focusedId = getNodeId(focusedRootNode)
+            expect(focusedId.textContent).toBe('child')
+        })
+
+
+        test('should do nothing if module is null', () => {
+            const module = new PerkyModule({$id: 'test'})
+            explorer.setModule(module)
+
+            const rootNode = getRootNode(explorer)
+            const idBefore = getNodeId(rootNode).textContent
+
+            explorer.focusModule(null)
+
+            const idAfter = getNodeId(getRootNode(explorer)).textContent
+            expect(idAfter).toBe(idBefore)
+        })
+
+
+        test('should expand focused module', () => {
+            const parent = new PerkyModule({$id: 'parent'})
+            const child = parent.create(PerkyModule, {$id: 'child', $category: 'test'})
+            child.create(PerkyModule, {$id: 'grandchild', $category: 'test'})
+
+            explorer.setModule(parent)
+            explorer.focusModule(child)
+
+            const rootNode = getRootNode(explorer)
+            const childrenContainer = getNodeChildren(rootNode)
+            expect(childrenContainer.classList.contains('expanded')).toBe(true)
+        })
+
+    })
+
 })

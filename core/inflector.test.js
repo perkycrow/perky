@@ -372,53 +372,37 @@ describe('Inflector', () => {
     })
 
 
-    describe('addPluralRule', () => {
+    test('addPluralRule adds a custom plural rule', () => {
+        const customInflector = new Inflector()
+        customInflector.addPluralRule(/zyx$/i, 'zyxes')
 
-        test('adds a custom plural rule', () => {
-            const customInflector = new Inflector()
-            customInflector.addPluralRule(/zyx$/i, 'zyxes')
-
-            expect(customInflector.plural('zyx')).toBe('zyxes')
-        })
-
+        expect(customInflector.plural('zyx')).toBe('zyxes')
     })
 
 
-    describe('addSingularRule', () => {
+    test('addSingularRule adds a custom singular rule', () => {
+        const customInflector = new Inflector()
+        customInflector.addSingularRule(/zyxes$/i, 'zyx')
 
-        test('adds a custom singular rule', () => {
-            const customInflector = new Inflector()
-            customInflector.addSingularRule(/zyxes$/i, 'zyx')
-
-            expect(customInflector.singular('zyxes')).toBe('zyx')
-        })
-
+        expect(customInflector.singular('zyxes')).toBe('zyx')
     })
 
 
-    describe('addUncountableRule', () => {
+    test('addUncountableRule adds an uncountable word', () => {
+        const customInflector = new Inflector()
+        customInflector.addUncountableRule('customword')
 
-        test('adds an uncountable word', () => {
-            const customInflector = new Inflector()
-            customInflector.addUncountableRule('customword')
-
-            expect(customInflector.plural('customword')).toBe('customword')
-            expect(customInflector.singular('customword')).toBe('customword')
-        })
-
+        expect(customInflector.plural('customword')).toBe('customword')
+        expect(customInflector.singular('customword')).toBe('customword')
     })
 
 
-    describe('addIrregularRule', () => {
+    test('addIrregularRule adds an irregular plural/singular pair', () => {
+        const customInflector = new Inflector()
+        customInflector.addIrregularRule('customsingle', 'customplural')
 
-        test('adds an irregular plural/singular pair', () => {
-            const customInflector = new Inflector()
-            customInflector.addIrregularRule('customsingle', 'customplural')
-
-            expect(customInflector.plural('customsingle')).toBe('customplural')
-            expect(customInflector.singular('customplural')).toBe('customsingle')
-        })
-
+        expect(customInflector.plural('customsingle')).toBe('customplural')
+        expect(customInflector.singular('customplural')).toBe('customsingle')
     })
 
 })

@@ -627,4 +627,44 @@ describe(InputSystem, () => {
 
     })
 
+
+    test('listDeviceNames returns array of device names', () => {
+        const names = inputSystem.listDeviceNames()
+
+        expect(names).toContain('keyboard')
+        expect(names).toContain('mouse')
+        expect(names).toContain('touch')
+    })
+
+
+    test('getPressedControls returns pressed controls for device', () => {
+        const button1 = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: 'KeyA'})
+        const button2 = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: 'KeyB'})
+
+        expect(inputSystem.getPressedControls('keyboard')).toEqual([])
+
+        button1.press()
+        expect(inputSystem.getPressedControls('keyboard')).toEqual([button1])
+
+        button2.press()
+        const pressed = inputSystem.getPressedControls('keyboard')
+        expect(pressed).toHaveLength(2)
+        expect(pressed).toContain(button1)
+        expect(pressed).toContain(button2)
+    })
+
+
+    test('getPressedControls returns empty array for nonexistent device', () => {
+        expect(inputSystem.getPressedControls('nonexistent')).toEqual([])
+    })
+
+
+    test('getInputValueAny returns value from any device', () => {
+        const keyControl = inputSystem.keyboard.findOrCreateControl(ButtonControl, {name: 'TestKey'})
+        keyControl.setValue(0.75)
+
+        expect(inputSystem.getInputValueAny('TestKey')).toBe(0.75)
+        expect(inputSystem.getInputValueAny('NonExistent')).toBeUndefined()
+    })
+
 })

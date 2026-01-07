@@ -821,4 +821,20 @@ describe(InputBinder, () => {
         expect(binder.getBindingsForAction('jump', null)).toHaveLength(2)
     })
 
+
+    test('importBindings adds multiple bindings from array', () => {
+        const bindings = [
+            {deviceName: 'keyboard', controlName: 'Space', actionName: 'jump'},
+            {deviceName: 'keyboard', controlName: 'KeyW', actionName: 'moveUp'},
+            {deviceName: 'mouse', controlName: 'leftButton', actionName: 'fire'}
+        ]
+
+        binder.importBindings(bindings)
+
+        expect(binder.getAllBindings()).toHaveLength(3)
+        expect(binder.hasBinding({actionName: 'jump'})).toBe(true)
+        expect(binder.hasBinding({actionName: 'moveUp'})).toBe(true)
+        expect(binder.hasBinding({actionName: 'fire'})).toBe(true)
+    })
+
 })

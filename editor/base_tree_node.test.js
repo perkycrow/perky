@@ -282,4 +282,106 @@ describe('BaseTreeNode', () => {
         expect(childNode.selected).toBe(false)
     })
 
+
+    test('clearChildNodes removes all children from childrenEl', () => {
+        const item = {
+            name: 'Root',
+            children: [
+                {name: 'Child1', children: []},
+                {name: 'Child2', children: []}
+            ]
+        }
+
+        node.setItem(item)
+        node.setExpanded(true)
+
+        expect(node.childrenEl.innerHTML).not.toBe('')
+
+        node.clearChildNodes()
+
+        expect(node.childrenEl.innerHTML).toBe('')
+    })
+
+
+    test('refreshToggle updates toggle state', () => {
+        const item = {name: 'Root', children: []}
+        node.setItem(item)
+
+        expect(node.toggleEl.classList.contains('has-children')).toBe(false)
+        expect(node.toggleEl.textContent).toBe('')
+
+        node.setItem({name: 'Parent', children: [{name: 'Child'}]})
+        node.refreshToggle()
+
+        expect(node.toggleEl.classList.contains('has-children')).toBe(true)
+    })
+
+
+    test('emitSelect dispatches node:select event', () => {
+        const handler = vi.fn()
+        node.addEventListener('node:select', handler)
+
+        node.setItem({name: 'Test'})
+        node.emitSelect()
+
+        expect(handler).toHaveBeenCalled()
+        expect(handler).toHaveBeenCalledWith(expect.objectContaining({
+            type: 'node:select',
+            bubbles: true,
+            composed: true
+        }))
+    })
+
+
+    test('emitToggle dispatches node:toggle event with expanded state', () => {
+        const handler = vi.fn()
+        node.addEventListener('node:toggle', handler)
+
+        node.setItem({name: 'Test', children: [{name: 'Child'}]})
+        node.setExpanded(true)
+        node.emitToggle()
+
+        expect(handler).toHaveBeenCalled()
+        expect(handler).toHaveBeenCalledWith(expect.objectContaining({
+            detail: expect.objectContaining({expanded: true})
+        }))
+    })
+
+
+    test('getSelectDetail returns empty object by default', () => {
+        node.setItem({name: 'Test'})
+
+        expect(node.getSelectDetail()).toEqual({})
+    })
+
+
+    test('getToggleDetail returns expanded state', () => {
+        node.setItem({name: 'Test'})
+
+        expect(node.getToggleDetail()).toEqual({expanded: false})
+
+        node.setExpanded(true)
+
+        expect(node.getToggleDetail()).toEqual({expanded: true})
+    })
+
+
+    test('emitContextMenu dispatches node:contextmenu event', () => {
+        const handler = vi.fn()
+        node.addEventListener('node:contextmenu', handler)
+
+        node.setItem({name: 'Test'})
+
+        const mockEvent = {clientX: 100, clientY: 200}
+        node.emitContextMenu(mockEvent)
+
+        expect(handler).toHaveBeenCalled()
+        expect(handler).toHaveBeenCalledWith(expect.objectContaining({
+            detail: expect.objectContaining({
+                x: 100,
+                y: 200
+            })
+        }))
+    })
+
 })

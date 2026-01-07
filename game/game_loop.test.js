@@ -197,4 +197,29 @@ describe('GameLoop', () => {
         expect(render).not.toHaveBeenCalled()
     })
 
+
+    test('getScreenFps', () => {
+        expect(gameLoop.getScreenFps()).toBe(0)
+
+        gameLoop.screenFps = 120
+        expect(gameLoop.getScreenFps()).toBe(120)
+    })
+
+
+    test('setFpsLimited', () => {
+        expect(gameLoop.fpsLimited).toBe(false)
+
+        gameLoop.setFpsLimited(true)
+
+        expect(gameLoop.fpsLimited).toBe(true)
+        expect(gameLoop.emit).toHaveBeenCalledWith('changed:fpsLimited', true)
+    })
+
+
+    test('constructor with fpsLimited param', () => {
+        const limitedLoop = new GameLoop({fpsLimited: true})
+
+        expect(limitedLoop.fpsLimited).toBe(true)
+    })
+
 })

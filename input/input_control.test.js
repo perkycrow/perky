@@ -123,4 +123,32 @@ describe(InputControl, () => {
         expect(control2[VALUE]).toBe(456)
     })
 
+
+    test('setValue updates value and returns true', () => {
+        const result = control.setValue(100)
+
+        expect(result).toBe(true)
+        expect(control.value).toBe(100)
+    })
+
+
+    test('setValue returns false when value unchanged', () => {
+        control.setValue(50)
+
+        const result = control.setValue(50)
+
+        expect(result).toBe(false)
+    })
+
+
+    test('setValue passes event to updated notification', () => {
+        const listener = vi.fn()
+        control.on('updated', listener)
+
+        const mockEvent = {type: 'keydown'}
+        control.setValue(200, mockEvent)
+
+        expect(listener).toHaveBeenCalledWith(200, 0, mockEvent)
+    })
+
 })

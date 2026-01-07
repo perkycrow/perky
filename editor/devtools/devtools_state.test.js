@@ -306,4 +306,40 @@ describe('DevToolsState', () => {
 
     })
 
+
+    describe('toggleSidebar', () => {
+
+        test('closes sidebar when open', () => {
+            state.openTool('explorer')
+            expect(state.sidebarOpen).toBe(true)
+
+            state.toggleSidebar()
+
+            expect(state.sidebarOpen).toBe(false)
+        })
+
+
+        test('opens sidebar with active tool when closed', () => {
+            state.openTool('explorer')
+            state.closeSidebar()
+            expect(state.sidebarOpen).toBe(false)
+
+            state.toggleSidebar()
+
+            expect(state.sidebarOpen).toBe(true)
+            expect(state.activeTool).toBe('explorer')
+        })
+
+
+        test('does nothing when closed and no active tool', () => {
+            expect(state.sidebarOpen).toBe(false)
+            expect(state.activeTool).toBeNull()
+
+            state.toggleSidebar()
+
+            expect(state.sidebarOpen).toBe(false)
+        })
+
+    })
+
 })
