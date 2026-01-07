@@ -57,6 +57,10 @@ export default class MissingTestsAuditor extends Auditor {
                 continue
             }
 
+            if (relativePath.endsWith('.doc.js')) {
+                continue
+            }
+
             if (shouldExcludeFromTestAudit(relativePath, excludeDirs)) {
                 continue
             }
