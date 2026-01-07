@@ -10,6 +10,7 @@ describe('Loaders', () => {
     let triggerError
     let lastCreatedImage
     let loaders
+    let mockFontFace
 
     beforeEach(async () => {
         vi.resetModules()
@@ -66,6 +67,14 @@ describe('Loaders', () => {
         }
         global.AudioContext = vi.fn().mockImplementation(() => mockAudioContext)
         global.webkitAudioContext = vi.fn().mockImplementation(() => mockAudioContext)
+
+        mockFontFace = {
+            load: vi.fn()
+        }
+        global.FontFace = vi.fn().mockImplementation(() => mockFontFace)
+        document.fonts = {
+            add: vi.fn()
+        }
 
         loaders = await import('./loaders.js')
     })
@@ -224,6 +233,67 @@ describe('Loaders', () => {
     })
 
 
+    test('loadFont success', async () => {
+        mockFontFace.load.mockResolvedValue(mockFontFace)
+
+        const result = await loaders.loadFont({
+            url: 'http://example.com/font.woff2',
+            config: {name: 'TestFont'}
+        })
+
+        expect(global.FontFace).toHaveBeenCalledWith('TestFont', 'url(http://example.com/font.woff2)', {style: 'normal', weight: 'normal'})
+        expect(mockFontFace.load).toHaveBeenCalled()
+        expect(document.fonts.add).toHaveBeenCalledWith(mockFontFace)
+        expect(result).toBe(mockFontFace)
+    })
+
+
+    test('loadFont with family config', async () => {
+        mockFontFace.load.mockResolvedValue(mockFontFace)
+
+        await loaders.loadFont({
+            url: 'http://example.com/font.woff2',
+            config: {family: 'CustomFamily', style: 'italic', weight: 'bold'}
+        })
+
+        expect(global.FontFace).toHaveBeenCalledWith('CustomFamily', 'url(http://example.com/font.woff2)', {style: 'italic', weight: 'bold'})
+    })
+
+
+    test('loadFont error', async () => {
+        mockFontFace.load.mockRejectedValue(new Error('Load failed'))
+
+        await expect(loaders.loadFont({
+            url: 'http://example.com/font.woff2',
+            config: {name: 'TestFont'}
+        })).rejects.toThrow('Failed to load font "TestFont": Load failed')
+    })
+
+
+    describe('normalizeParams', () => {
+        test('normalizeParams with string', () => {
+            const result = loaders.normalizeParams('http://example.com')
+
+            expect(result).toEqual({url: 'http://example.com', config: {}})
+        })
+
+
+        test('normalizeParams with object', () => {
+            const result = loaders.normalizeParams({
+                url: 'http://example.com',
+                config: {method: 'POST'}
+            })
+
+            expect(result).toEqual({url: 'http://example.com', config: {method: 'POST'}})
+        })
+
+
+        test('normalizeParams with object without config', () => {
+            const result = loaders.normalizeParams({url: 'http://example.com'})
+
+            expect(result).toEqual({url: 'http://example.com', config: {}})
+        })
+    })
 
 
     describe('Utility Functions', () => {

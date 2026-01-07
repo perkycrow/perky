@@ -10,12 +10,12 @@ describe('PathfindingService', () => {
         const service = new PathfindingService({
             allowDiagonal: false,
             heuristic: 'euclidean',
-            maxCacheSize: 500
+            maxCacheSize: 400
         })
         
         expect(service.pathfinder.allowDiagonal).toBe(false)
         expect(service.pathfinder.heuristic).toBe(heuristics.euclidean)
-        expect(service.maxCacheSize).toBe(500)
+        expect(service.maxCacheSize).toBe(400)
     })
 
 

@@ -212,4 +212,123 @@ describe(PerkyView, () => {
         expect(element.style.display).toBe('')
     })
 
+
+    test('dismount removes element from container', () => {
+        view.mount(container)
+        expect(container.contains(element)).toBe(true)
+
+        view.dismount()
+
+        expect(container.contains(element)).toBe(false)
+        expect(view.emit).toHaveBeenCalledWith('dismount', {container: null})
+    })
+
+
+    test('dismount when not mounted does nothing', () => {
+        view.dismount()
+
+        expect(view.emit).not.toHaveBeenCalledWith('dismount', expect.anything())
+    })
+
+
+    test('setDisplayMode normal calls exitFullscreenMode', () => {
+        vi.spyOn(view, 'exitFullscreenMode')
+
+        view.setDisplayMode('normal')
+
+        expect(view.exitFullscreenMode).toHaveBeenCalled()
+    })
+
+
+    test('setDisplayMode fullscreen calls enterFullscreenMode', () => {
+        vi.spyOn(view, 'enterFullscreenMode')
+
+        view.setDisplayMode('fullscreen')
+
+        expect(view.enterFullscreenMode).toHaveBeenCalled()
+    })
+
+
+    test('setDisplayMode with invalid mode does nothing', () => {
+        vi.spyOn(view, 'enterFullscreenMode')
+        vi.spyOn(view, 'exitFullscreenMode')
+
+        view.setDisplayMode('invalid')
+
+        expect(view.enterFullscreenMode).not.toHaveBeenCalled()
+        expect(view.exitFullscreenMode).not.toHaveBeenCalled()
+    })
+
+
+    test('enterFullscreenMode sets fullscreen styles', () => {
+        element.requestFullscreen = vi.fn()
+
+        view.enterFullscreenMode()
+
+        expect(view.displayMode).toBe('fullscreen')
+        expect(element.style.position).toBe('fixed')
+        expect(element.style.top).toBe('0px')
+        expect(element.style.left).toBe('0px')
+        expect(element.style.width).toBe('100vw')
+        expect(element.style.height).toBe('100vh')
+        expect(element.style.zIndex).toBe('10000')
+        expect(document.body.classList.contains('fullscreen-mode')).toBe(true)
+        expect(element.requestFullscreen).toHaveBeenCalled()
+    })
+
+
+    test('enterFullscreenMode does nothing if already fullscreen', () => {
+        element.requestFullscreen = vi.fn()
+        view.displayMode = 'fullscreen'
+
+        view.enterFullscreenMode()
+
+        expect(element.requestFullscreen).not.toHaveBeenCalled()
+    })
+
+
+    test('exitFullscreenMode restores previous styles', () => {
+        element.requestFullscreen = vi.fn()
+        element.style.position = 'relative'
+        element.style.width = '200px'
+        element.style.height = '300px'
+
+        view.enterFullscreenMode()
+        view.exitFullscreenMode()
+
+        expect(view.displayMode).toBe('normal')
+        expect(element.style.position).toBe('relative')
+        expect(element.style.width).toBe('200px')
+        expect(element.style.height).toBe('300px')
+        expect(document.body.classList.contains('fullscreen-mode')).toBe(false)
+    })
+
+
+    test('exitFullscreenMode does nothing if already normal', () => {
+        view.displayMode = 'normal'
+
+        view.exitFullscreenMode()
+
+        expect(view.displayMode).toBe('normal')
+    })
+
+
+    test('toggleFullscreen enters fullscreen from normal', () => {
+        vi.spyOn(view, 'enterFullscreenMode')
+
+        view.toggleFullscreen()
+
+        expect(view.enterFullscreenMode).toHaveBeenCalled()
+    })
+
+
+    test('toggleFullscreen exits fullscreen from fullscreen', () => {
+        vi.spyOn(view, 'exitFullscreenMode')
+        view.displayMode = 'fullscreen'
+
+        view.toggleFullscreen()
+
+        expect(view.exitFullscreenMode).toHaveBeenCalled()
+    })
+
 })
