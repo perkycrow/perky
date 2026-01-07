@@ -1,4 +1,4 @@
-import {describe, it, expect} from 'vitest'
+import {describe, test, expect} from 'vitest'
 import {parseSourceFile, getApiForFile} from './api_parser.js'
 
 
@@ -6,7 +6,7 @@ describe('api_parser', () => {
 
     describe('parseSourceFile', () => {
 
-        it('should parse a simple class', () => {
+        test('simple class', () => {
             const source = `
                 export default class Foo {
                     static $category = 'foo'
@@ -50,7 +50,7 @@ describe('api_parser', () => {
         })
 
 
-        it('should skip private members', () => {
+        test('skips private members', () => {
             const source = `
                 class Bar {
                     #privateField = 1
@@ -75,7 +75,7 @@ describe('api_parser', () => {
         })
 
 
-        it('should parse class inheritance', () => {
+        test('class inheritance', () => {
             const source = `
                 class Child extends Parent {
                     foo () {}
@@ -87,7 +87,7 @@ describe('api_parser', () => {
         })
 
 
-        it('should parse exported functions', () => {
+        test('exported functions', () => {
             const source = `
                 export function doSomething (a, b = 10, ...rest) {
                     return a + b
@@ -102,7 +102,7 @@ describe('api_parser', () => {
         })
 
 
-        it('should parse named exports', () => {
+        test('named exports', () => {
             const source = `
                 export const FOO = 'bar'
             `
@@ -115,7 +115,7 @@ describe('api_parser', () => {
         })
 
 
-        it('should include line numbers', () => {
+        test('line numbers', () => {
             const source = `class Test {
     foo () {}
 }`
@@ -126,7 +126,7 @@ describe('api_parser', () => {
         })
 
 
-        it('should extract source code', () => {
+        test('source code extraction', () => {
             const source = `class Test {
     get value () {
         return 42
@@ -144,7 +144,7 @@ describe('api_parser', () => {
 
     describe('getApiForFile', () => {
 
-        it('should return class type for single class', () => {
+        test('class type for single class', () => {
             const source = `
                 export default class Foo {
                     bar () {}
@@ -159,7 +159,7 @@ describe('api_parser', () => {
         })
 
 
-        it('should return module type for multiple classes', () => {
+        test('module type for multiple classes', () => {
             const source = `
                 export class Foo {}
                 export class Bar {}
@@ -172,7 +172,7 @@ describe('api_parser', () => {
         })
 
 
-        it('should return module type for functions only', () => {
+        test('module type for functions only', () => {
             const source = `
                 export function foo () {}
                 export function bar () {}
@@ -185,7 +185,7 @@ describe('api_parser', () => {
         })
 
 
-        it('should return null for empty file', () => {
+        test('null for empty file', () => {
             const api = getApiForFile('')
 
             expect(api).toBeNull()
