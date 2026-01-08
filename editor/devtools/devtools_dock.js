@@ -150,6 +150,16 @@ export default class DevToolsDock extends BaseEditorComponent {
         this.#dockEl.appendChild(this.#commandPaletteButton)
 
 
+        const docsButton = createDockButton(
+            ICONS.book,
+            'Open Documentation',
+            () => {
+                window.open('https://perkycrow.com/doc', '_blank')
+            }
+        )
+        this.#dockEl.appendChild(docsButton)
+
+
         const separator2 = document.createElement('div')
         separator2.className = 'dock-separator'
         this.#dockEl.appendChild(separator2)
