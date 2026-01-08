@@ -1,6 +1,6 @@
 import AudioSource from './audio_source.js'
 import {vi} from 'vitest'
-import {createMockPerkyAudioContext, createMockChannel, createMockGainNodeWithSpies, createMockBufferSourceNode, createMockOscillatorNode} from './test_helpers.js'
+import {createMockPerkyAudioContext, createMockChannel, createMockGainNodeWithSpies, createMockBufferSourceNode, createMockOscillatorNode, createMockPannerNode} from './test_helpers.js'
 
 
 describe(AudioSource, () => {
@@ -530,6 +530,47 @@ describe(AudioSource, () => {
         test('returns self for chaining', () => {
             source.playBuffer({})
             expect(source.fadeOut()).toBe(source)
+        })
+    })
+
+
+    describe('setPosition', () => {
+        test('sets x and y coordinates', () => {
+            source.setPosition(100, 200)
+            expect(source.x).toBe(100)
+            expect(source.y).toBe(200)
+        })
+
+        test('updates panner position when playing with spatial audio', () => {
+            const spatialSource = new AudioSource({
+                audioContext: mockAudioContext,
+                channel: mockChannel,
+                spatial: true
+            })
+            const mockPanner = createMockPannerNode()
+            mockPanner.positionX = {value: 0, setValueAtTime: vi.fn()}
+            mockPanner.positionY = {value: 0, setValueAtTime: vi.fn()}
+            mockAudioContext.createPanner = vi.fn(() => mockPanner)
+            spatialSource.playBuffer({})
+            spatialSource.setPosition(50, 75)
+            expect(mockPanner.positionX.setValueAtTime).toHaveBeenCalledWith(50, 0)
+            expect(mockPanner.positionY.setValueAtTime).toHaveBeenCalledWith(75, 0)
+        })
+
+        test('returns self for chaining', () => {
+            expect(source.setPosition(10, 20)).toBe(source)
+        })
+    })
+
+
+    describe('getPosition', () => {
+        test('returns current position', () => {
+            source.setPosition(30, 40)
+            expect(source.getPosition()).toEqual({x: 30, y: 40})
+        })
+
+        test('returns default position when not set', () => {
+            expect(source.getPosition()).toEqual({x: 0, y: 0})
         })
     })
 

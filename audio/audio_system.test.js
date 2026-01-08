@@ -522,4 +522,107 @@ describe(AudioSystem, () => {
         })
     })
 
+
+    describe('playAt', () => {
+        beforeEach(async () => {
+            // Unlock the system so playAt() works
+            await system.unlock()
+        })
+
+        test('returns null for unknown buffer', () => {
+            expect(system.playAt('unknown', 10, 20)).toBeNull()
+        })
+
+        test('creates audio source', () => {
+            system.registerBuffer('test', {})
+            const source = system.playAt('test', 100, 200)
+            expect(source).not.toBeNull()
+        })
+
+        test('calls play with spatial options', () => {
+            system.registerBuffer('test', {})
+            const playSpy = vi.spyOn(system, 'play')
+            system.playAt('test', 150, 250, {volume: 0.5})
+            expect(playSpy).toHaveBeenCalledWith('test', expect.objectContaining({
+                spatial: true,
+                x: 150,
+                y: 250,
+                volume: 0.5
+            }))
+        })
+
+        test('emits audio:play event', () => {
+            const listener = vi.fn()
+            system.on('audio:play', listener)
+            system.registerBuffer('test', {})
+            system.playAt('test', 10, 20)
+            expect(listener).toHaveBeenCalled()
+        })
+    })
+
+
+    describe('playOscillatorAt', () => {
+        beforeEach(async () => {
+            // Unlock the system so playOscillatorAt() works
+            await system.unlock()
+        })
+
+        test('creates oscillator source with spatial audio enabled', () => {
+            const source = system.playOscillatorAt(100, 200)
+            expect(source).not.toBeNull()
+            // Verify spatial audio is enabled by checking position properties
+            const pos = source.getPosition()
+            expect(pos.x).toBe(100)
+            expect(pos.y).toBe(200)
+        })
+
+        test('sets position coordinates', () => {
+            const source = system.playOscillatorAt(150, 250)
+            const pos = source.getPosition()
+            expect(pos.x).toBe(150)
+            expect(pos.y).toBe(250)
+        })
+
+        test('accepts options', () => {
+            const source = system.playOscillatorAt(10, 20, {type: 'square', frequency: 880, volume: 0.3})
+            expect(source.volume).toBe(0.3)
+        })
+
+        test('emits audio:play event', () => {
+            const listener = vi.fn()
+            system.on('audio:play', listener)
+            system.playOscillatorAt(10, 20)
+            expect(listener).toHaveBeenCalled()
+        })
+    })
+
+
+    describe('setListenerPosition', () => {
+        test('sets listener position on audio context', () => {
+            const spy = vi.spyOn(system.audioContext, 'setListenerPosition')
+            system.setListenerPosition(50, 75)
+            expect(spy).toHaveBeenCalledWith(50, 75, 0)
+        })
+
+        test('returns self for chaining', () => {
+            expect(system.setListenerPosition(10, 20)).toBe(system)
+        })
+    })
+
+
+    describe('getListenerPosition', () => {
+        test('calls getListenerPosition on audio context', () => {
+            const spy = vi.spyOn(system.audioContext, 'getListenerPosition')
+            system.getListenerPosition()
+            expect(spy).toHaveBeenCalled()
+        })
+
+        test('returns object with x and y properties', () => {
+            const pos = system.getListenerPosition()
+            expect(pos).toHaveProperty('x')
+            expect(pos).toHaveProperty('y')
+            expect(pos.z).toBeUndefined()
+        })
+    })
+
 })

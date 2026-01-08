@@ -294,4 +294,65 @@ describe(AudioContext, () => {
         })
     })
 
+
+    describe('setListenerPosition', () => {
+        test('initializes context if needed', () => {
+            audioContext.setListenerPosition(10, 20, 30)
+            expect(audioContext.context).not.toBeNull()
+        })
+
+        test('sets position using positionX/Y/Z when available', () => {
+            audioContext.init()
+            const listener = mockNativeContext.listener
+            audioContext.setListenerPosition(10, 20, 30)
+            expect(listener.positionX.setValueAtTime).toHaveBeenCalledWith(10, 0)
+            expect(listener.positionY.setValueAtTime).toHaveBeenCalledWith(20, 0)
+            expect(listener.positionZ.setValueAtTime).toHaveBeenCalledWith(30, 0)
+        })
+
+        test('uses z=0 by default', () => {
+            audioContext.init()
+            const listener = mockNativeContext.listener
+            audioContext.setListenerPosition(10, 20)
+            expect(listener.positionZ.setValueAtTime).toHaveBeenCalledWith(0, 0)
+        })
+
+        test('falls back to setPosition method if positionX not available', () => {
+            audioContext.init()
+            const listener = mockNativeContext.listener
+            delete listener.positionX
+            listener.setPosition = vi.fn()
+            audioContext.setListenerPosition(10, 20, 30)
+            expect(listener.setPosition).toHaveBeenCalledWith(10, 20, 30)
+        })
+
+        test('returns self for chaining', () => {
+            const result = audioContext.setListenerPosition(10, 20)
+            expect(result).toBe(audioContext)
+        })
+    })
+
+
+    describe('getListenerPosition', () => {
+        test('returns default position when no context', () => {
+            expect(audioContext.getListenerPosition()).toEqual({x: 0, y: 0, z: 0})
+        })
+
+        test('returns position from positionX/Y/Z when available', () => {
+            audioContext.init()
+            const listener = mockNativeContext.listener
+            listener.positionX.value = 15
+            listener.positionY.value = 25
+            listener.positionZ.value = 35
+            expect(audioContext.getListenerPosition()).toEqual({x: 15, y: 25, z: 35})
+        })
+
+        test('returns default position when positionX not available', () => {
+            audioContext.init()
+            const listener = mockNativeContext.listener
+            delete listener.positionX
+            expect(audioContext.getListenerPosition()).toEqual({x: 0, y: 0, z: 0})
+        })
+    })
+
 })

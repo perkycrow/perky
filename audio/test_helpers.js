@@ -63,7 +63,24 @@ export function createMockBufferSourceNode () {
 export function createMockPannerNode () {
     return {
         connect: vi.fn(),
-        disconnect: vi.fn()
+        disconnect: vi.fn(),
+        positionX: {
+            value: 0,
+            setValueAtTime: vi.fn()
+        },
+        positionY: {
+            value: 0,
+            setValueAtTime: vi.fn()
+        },
+        positionZ: {
+            value: 0,
+            setValueAtTime: vi.fn()
+        },
+        panningModel: 'HRTF',
+        distanceModel: 'linear',
+        refDistance: 1,
+        maxDistance: 10,
+        rolloffFactor: 1
     }
 }
 
@@ -105,6 +122,20 @@ export function createMockAudioContextWithSpies () {
         currentTime: 0,
         sampleRate: 48000,
         destination: {},
+        listener: {
+            positionX: {
+                value: 0,
+                setValueAtTime: vi.fn()
+            },
+            positionY: {
+                value: 0,
+                setValueAtTime: vi.fn()
+            },
+            positionZ: {
+                value: 0,
+                setValueAtTime: vi.fn()
+            }
+        },
         createGain: vi.fn(() => createMockGainNodeWithSpies()),
         createOscillator: vi.fn(() => createMockOscillatorNode()),
         createBufferSource: vi.fn(() => createMockBufferSourceNode()),
@@ -120,7 +151,9 @@ export function createMockAudioContextWithSpies () {
 
 export function createMockPerkyAudioContext (nativeContext = null) {
     const ctx = nativeContext || createMockAudioContextWithSpies()
-    return {
+    const listenerPosition = {x: 0, y: 0, z: 0}
+
+    const mockContext = {
         context: ctx,
         currentTime: ctx.currentTime,
         sampleRate: ctx.sampleRate,
@@ -135,8 +168,25 @@ export function createMockPerkyAudioContext (nativeContext = null) {
         suspend: vi.fn(() => Promise.resolve()),
         close: vi.fn(),
         setMasterVolume: vi.fn(),
-        getMasterVolume: vi.fn(() => 1)
+        getMasterVolume: vi.fn(() => 1),
+        setListenerPosition: vi.fn(function (x, y, z = 0) {
+            listenerPosition.x = x
+            listenerPosition.y = y
+            listenerPosition.z = z
+            // Update the native context listener if it exists
+            if (this.context?.listener) {
+                this.context.listener.positionX.value = x
+                this.context.listener.positionY.value = y
+                this.context.listener.positionZ.value = z
+            }
+            return this
+        }),
+        getListenerPosition: vi.fn(function () {
+            return {x: listenerPosition.x, y: listenerPosition.y, z: listenerPosition.z}
+        })
     }
+
+    return mockContext
 }
 
 
