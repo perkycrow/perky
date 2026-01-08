@@ -76,7 +76,7 @@ describe('AudioSystemInspector', () => {
 
 
         test('has volume input', () => {
-            const volumeInput = inspector.shadowRoot.querySelector('volume-input')
+            const volumeInput = inspector.shadowRoot.querySelector('slider-input')
             expect(volumeInput).not.toBeNull()
         })
 
@@ -192,7 +192,7 @@ describe('AudioSystemInspector', () => {
             const module = new MockAudioSystem({masterVolume: 0.5})
             inspector.setModule(module)
 
-            const volumeInput = inspector.shadowRoot.querySelector('volume-input')
+            const volumeInput = inspector.shadowRoot.querySelector('slider-input')
             expect(volumeInput.value).toBe(0.5)
         })
 
@@ -202,7 +202,7 @@ describe('AudioSystemInspector', () => {
             module.setVolume = vi.fn()
             inspector.setModule(module)
 
-            const volumeInput = inspector.shadowRoot.querySelector('volume-input')
+            const volumeInput = inspector.shadowRoot.querySelector('slider-input')
             volumeInput.dispatchEvent(new CustomEvent('change', {detail: {value: 0.7}}))
 
             expect(module.setVolume).toHaveBeenCalledWith(0.7)
@@ -233,7 +233,7 @@ describe('AudioSystemInspector', () => {
             module.masterVolume = 0.3
             module.emit('volume:changed', 0.3)
 
-            const volumeInput = inspector.shadowRoot.querySelector('volume-input')
+            const volumeInput = inspector.shadowRoot.querySelector('slider-input')
             expect(volumeInput.value).toBe(0.3)
         })
 

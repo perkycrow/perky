@@ -86,7 +86,7 @@ describe('AudioChannelInspector', () => {
 
 
         test('has volume input', () => {
-            const volumeInput = inspector.shadowRoot.querySelector('volume-input')
+            const volumeInput = inspector.shadowRoot.querySelector('slider-input')
             expect(volumeInput).not.toBeNull()
         })
 
@@ -243,7 +243,7 @@ describe('AudioChannelInspector', () => {
             const module = new MockAudioChannel({volume: 0.8})
             inspector.setModule(module)
 
-            const volumeInput = inspector.shadowRoot.querySelector('volume-input')
+            const volumeInput = inspector.shadowRoot.querySelector('slider-input')
             expect(volumeInput.value).toBe(0.8)
         })
 
@@ -253,7 +253,7 @@ describe('AudioChannelInspector', () => {
             module.setVolume = vi.fn()
             inspector.setModule(module)
 
-            const volumeInput = inspector.shadowRoot.querySelector('volume-input')
+            const volumeInput = inspector.shadowRoot.querySelector('slider-input')
             volumeInput.dispatchEvent(new CustomEvent('change', {detail: {value: 0.4}}))
 
             expect(module.setVolume).toHaveBeenCalledWith(0.4)
@@ -297,7 +297,7 @@ describe('AudioChannelInspector', () => {
             module.volume = 0.6
             module.emit('volume:changed', 0.6)
 
-            const volumeInput = inspector.shadowRoot.querySelector('volume-input')
+            const volumeInput = inspector.shadowRoot.querySelector('slider-input')
             expect(volumeInput.value).toBe(0.6)
         })
 
