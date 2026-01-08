@@ -29,6 +29,12 @@ function copyJsonPlugin () {
             if (fs.existsSync(sourcesDir)) {
                 fs.cpSync(sourcesDir, outSourcesDir, {recursive: true})
             }
+
+            const assetsDir = path.join(docDir, 'assets')
+            const outAssetsDir = path.join(outDir, 'assets')
+            if (fs.existsSync(assetsDir)) {
+                fs.cpSync(assetsDir, outAssetsDir, {recursive: true})
+            }
         }
     }
 }
