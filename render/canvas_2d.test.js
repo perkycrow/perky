@@ -6,24 +6,6 @@ import Circle from './circle.js'
 import Rectangle from './rectangle.js'
 
 
-global.ResizeObserver = class ResizeObserver {
-    constructor (callback) {
-        this.callback = callback
-    }
-    observe (target) {
-        this.callback([{
-            target,
-            contentRect: {
-                width: target.clientWidth || 0,
-                height: target.clientHeight || 0
-            }
-        }])
-    }
-    disconnect () { }
-    unobserve () { }
-}
-
-
 describe(Canvas2D, () => {
 
     let canvas

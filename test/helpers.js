@@ -221,3 +221,11 @@ export function createMockImage (width = 100, height = 100, {complete = true} = 
         naturalHeight: complete ? height : 0
     }
 }
+
+
+export function createMockCanvas (width = 800, height = 600) {
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    return canvas
+}

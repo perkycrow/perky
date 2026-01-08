@@ -6,7 +6,16 @@ global.ResizeObserver = class ResizeObserver {
         this.callback = callback
     }
 
-    observe () { }
+    observe (target) {
+
+        this.callback([{
+            target,
+            contentRect: {
+                width: target.clientWidth || 0,
+                height: target.clientHeight || 0
+            }
+        }])
+    }
 
     unobserve () { }
 
