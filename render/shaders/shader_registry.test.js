@@ -1,4 +1,4 @@
-import {describe, test, expect, beforeEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach} from 'vitest'
 import ShaderRegistry from './shader_registry.js'
 import {createMockGLWithSpies} from '../test_helpers.js'
 
