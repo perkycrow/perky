@@ -3,7 +3,125 @@ import PerkyExplorerDetails from '../perky_explorer_details.js'
 import Manifest from '../../application/manifest.js'
 
 
+function matchesSearch (asset, query) {
+    const lowerQuery = query.toLowerCase()
+
+
+    if ((asset.id || '').toLowerCase().includes(lowerQuery)) {
+        return true
+    }
+
+
+    if ((asset.name || '').toLowerCase().includes(lowerQuery)) {
+        return true
+    }
+
+    if ((asset.type || '').toLowerCase().includes(lowerQuery)) {
+        return true
+    }
+
+    if (asset.tags && asset.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))) {
+        return true
+    }
+
+    return false
+}
+
+
 const customStyles = `
+    .filters-container {
+        margin-bottom: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .search-container {
+        position: relative;
+        width: 100%;
+    }
+
+    .search-bar {
+        width: 100%;
+        padding: 6px 28px 6px 8px;
+        background: var(--bg-hover);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        color: var(--fg-primary);
+        font-size: 11px;
+        outline: none;
+        box-sizing: border-box;
+    }
+
+    .search-clear {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 16px;
+        height: 16px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--fg-muted);
+        font-size: 14px;
+        line-height: 1;
+        user-select: none;
+        border-radius: 2px;
+    }
+
+    .search-clear:hover {
+        color: var(--fg-primary);
+        background: var(--bg-primary);
+    }
+
+    .search-container.has-value .search-clear {
+        display: flex;
+    }
+
+    .search-bar:focus {
+        border-color: var(--accent);
+    }
+
+    .search-bar::placeholder {
+        color: var(--fg-muted);
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .filter-button {
+        padding: 4px 8px;
+        background: var(--bg-hover);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 10px;
+        color: var(--fg-secondary);
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.2s;
+    }
+
+    .filter-button:hover {
+        background: var(--bg-primary);
+        color: var(--fg-primary);
+    }
+
+    .filter-button.active {
+        background: var(--accent);
+        color: var(--bg-primary);
+        border-color: var(--accent);
+    }
+
+    .filter-button .count {
+        opacity: 0.7;
+        margin-left: 4px;
+    }
+
     .section {
         margin-bottom: 12px;
     }
@@ -105,15 +223,46 @@ const customStyles = `
         margin-bottom: 6px;
     }
 
+    .asset-card.collapsed {
+        padding-bottom: 8px;
+    }
+
     .asset-header {
         display: flex;
         align-items: center;
         gap: 8px;
+        position: relative;
+    }
+
+    .asset-header:not(.collapsed) {
         margin-bottom: 6px;
     }
 
+    .asset-header::before {
+        content: '▼';
+        font-size: 8px;
+        color: var(--fg-muted);
+        transition: transform 0.2s;
+        margin-right: 2px;
+    }
+
+    .asset-header.collapsed::before {
+        transform: rotate(-90deg);
+    }
+
     .asset-icon {
-        font-size: 14px;
+        width: 14px;
+        height: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .asset-icon svg {
+        width: 100%;
+        height: 100%;
+        color: var(--fg-muted);
     }
 
     .asset-name {
@@ -222,6 +371,14 @@ export default class ManifestInspector extends BaseInspector {
         assets: true
     }
 
+    #filterState = {
+        searchQuery: ''
+    }
+
+    #typeGroupsState = {}
+    #mainContainer = null
+    #assetsListContainer = null
+
     constructor () {
         super(customStyles)
         this.buildDOM()
@@ -230,25 +387,72 @@ export default class ManifestInspector extends BaseInspector {
 
     onModuleSet (module) {
         if (module) {
-            this.#update()
+            this.#update(false)
         }
     }
 
 
-    #update () {
+    #update (onlyAssetsList = false) {
         if (!this.module) {
             return
+        }
+
+
+        if (onlyAssetsList && this.#assetsListContainer) {
+            this.#updateAssetsList()
+            return
+        }
+
+
+        if (this.#mainContainer && this.#mainContainer.parentNode) {
+            this.#mainContainer.remove()
         }
 
         this.clearContent()
 
         const container = document.createElement('div')
+        this.#mainContainer = container
 
         container.appendChild(this.#createConfigSection())
         container.appendChild(this.#createAssetsSection())
 
         this.gridEl.style.display = 'none'
         this.shadowRoot.insertBefore(container, this.gridEl)
+    }
+
+
+    #updateAssetsList () {
+        if (!this.#assetsListContainer) {
+            return
+        }
+
+
+        this.#assetsListContainer.innerHTML = ''
+
+        const allAssets = this.module.getAllAssets()
+        const filteredAssets = this.#applyFilters(allAssets)
+        const hasActiveSearch = this.#filterState.searchQuery.length > 0
+
+        if (filteredAssets.length === 0) {
+            this.#assetsListContainer.innerHTML = '<div class="empty-message">No assets match the current filters</div>'
+            return
+        }
+
+        const assetsByType = groupAssetsByType(filteredAssets)
+
+        for (const [type, assets] of Object.entries(assetsByType)) {
+            const group = this.#createTypeGroup(type, assets, hasActiveSearch)
+            this.#assetsListContainer.appendChild(group)
+        }
+    }
+
+
+    #applyFilters (assets) {
+        if (!this.#filterState.searchQuery) {
+            return assets
+        }
+
+        return assets.filter((asset) => matchesSearch(asset, this.#filterState.searchQuery))
     }
 
 
@@ -342,8 +546,93 @@ export default class ManifestInspector extends BaseInspector {
     }
 
 
+    #createFiltersBar (allAssets) {
+        const container = document.createElement('div')
+        container.className = 'filters-container'
+
+        // Search container with clear button
+        const searchContainer = document.createElement('div')
+        searchContainer.className = 'search-container'
+        if (this.#filterState.searchQuery) {
+            searchContainer.classList.add('has-value')
+        }
+
+        // Search bar
+        const searchBar = document.createElement('input')
+        searchBar.type = 'text'
+        searchBar.className = 'search-bar'
+        searchBar.placeholder = 'Search by name, id, type or tag...'
+        searchBar.value = this.#filterState.searchQuery
+
+        // Clear button
+        const clearButton = document.createElement('div')
+        clearButton.className = 'search-clear'
+        clearButton.textContent = '×'
+        clearButton.title = 'Clear search'
+
+        const updateSearch = (value) => {
+            searchBar.value = value
+            this.#filterState.searchQuery = value
+            if (value) {
+                searchContainer.classList.add('has-value')
+            } else {
+                searchContainer.classList.remove('has-value')
+            }
+            this.#update()
+        }
+
+        searchBar.addEventListener('input', (e) => {
+            this.#filterState.searchQuery = e.target.value
+            if (e.target.value) {
+                searchContainer.classList.add('has-value')
+            } else {
+                searchContainer.classList.remove('has-value')
+            }
+            this.#update(true)
+        })
+
+        clearButton.addEventListener('click', () => {
+            updateSearch('')
+            searchBar.focus()
+        })
+
+        searchContainer.appendChild(searchBar)
+        searchContainer.appendChild(clearButton)
+        container.appendChild(searchContainer)
+
+        // Quick filters (types and tags as clickable chips)
+        const quickFilters = document.createElement('div')
+        quickFilters.className = 'filter-buttons'
+
+        const typeStats = getTypeStats(allAssets)
+        for (const [type, count] of Object.entries(typeStats)) {
+            const chip = createFilterChip(type, count, () => {
+                updateSearch(type)
+                searchBar.focus()
+            })
+            quickFilters.appendChild(chip)
+        }
+
+        const tagStats = getTagStats(allAssets)
+        if (Object.keys(tagStats).length > 0) {
+            for (const [tag, count] of Object.entries(tagStats)) {
+                const chip = createFilterChip(`#${tag}`, count, () => {
+                    updateSearch(tag)
+                    searchBar.focus()
+                })
+                quickFilters.appendChild(chip)
+            }
+        }
+
+        container.appendChild(quickFilters)
+
+        return container
+    }
+
+
     #createAssetsSection () {
         const allAssets = this.module.getAllAssets()
+        const hasActiveSearch = this.#filterState.searchQuery.length > 0
 
         const {section, content} = this.#createSection('Assets', 'assets', allAssets.length)
 
@@ -352,25 +641,60 @@ export default class ManifestInspector extends BaseInspector {
             return section
         }
 
-        const assetsByType = groupAssetsByType(allAssets)
+        // Add filters bar
+        content.appendChild(this.#createFiltersBar(allAssets))
+
+        // Create container for the assets list
+        const assetsListContainer = document.createElement('div')
+        this.#assetsListContainer = assetsListContainer
+        content.appendChild(assetsListContainer)
+
+        // Apply filters
+        const filteredAssets = this.#applyFilters(allAssets)
+
+        if (filteredAssets.length === 0) {
+            assetsListContainer.innerHTML = '<div class="empty-message">No assets match the current filters</div>'
+            return section
+        }
+
+        const assetsByType = groupAssetsByType(filteredAssets)
 
         for (const [type, assets] of Object.entries(assetsByType)) {
-            const group = document.createElement('div')
-            group.className = 'asset-type-group'
-
-            const typeHeader = document.createElement('div')
-            typeHeader.className = 'asset-type-header'
-            typeHeader.textContent = `${type} (${assets.length})`
-            group.appendChild(typeHeader)
-
-            for (const asset of assets) {
-                group.appendChild(createAssetCard(asset, (data) => this.#createDataGrid(data)))
-            }
-
-            content.appendChild(group)
+            const group = this.#createTypeGroup(type, assets, hasActiveSearch)
+            assetsListContainer.appendChild(group)
         }
 
         return section
+    }
+
+
+    #createTypeGroup (type, assets, hasActiveSearch) {
+        const group = document.createElement('div')
+        group.className = 'asset-type-group'
+
+        const typeHeader = document.createElement('div')
+        typeHeader.className = 'asset-type-header'
+        typeHeader.style.cursor = 'pointer'
+        typeHeader.textContent = `${type} (${assets.length})`
+
+        const isCollapsed = this.#typeGroupsState[type] === false
+
+        const typeContent = document.createElement('div')
+        typeContent.style.display = isCollapsed ? 'none' : 'block'
+
+        typeHeader.addEventListener('click', () => {
+            this.#typeGroupsState[type] = typeContent.style.display === 'none'
+            typeContent.style.display = typeContent.style.display === 'none' ? 'block' : 'none'
+        })
+
+        for (const asset of assets) {
+            typeContent.appendChild(createAssetCard(asset, (data) => this.#createDataGrid(data), hasActiveSearch))
+        }
+
+        group.appendChild(typeHeader)
+        group.appendChild(typeContent)
+
+        return group
     }
 
 }
@@ -391,13 +715,45 @@ function groupAssetsByType (assets) {
 }
 
 
+function getTypeStats (assets) {
+    const stats = {}
+    for (const asset of assets) {
+        const type = asset.type || 'unknown'
+        stats[type] = (stats[type] || 0) + 1
+    }
+    return stats
+}
+
+
+function getTagStats (assets) {
+    const stats = {}
+    for (const asset of assets) {
+        if (asset.tags) {
+            for (const tag of asset.tags) {
+                stats[tag] = (stats[tag] || 0) + 1
+            }
+        }
+    }
+    return stats
+}
+
+
+function createFilterChip (label, count, onClick) {
+    const chip = document.createElement('div')
+    chip.className = 'filter-button'
+    chip.innerHTML = `${label}<span class="count">${count}</span>`
+    chip.addEventListener('click', onClick)
+    return chip
+}
+
+
 function createAssetHeader (asset) {
     const header = document.createElement('div')
     header.className = 'asset-header'
 
     const icon = document.createElement('span')
     icon.className = 'asset-icon'
-    icon.textContent = getAssetIcon(asset)
+    icon.innerHTML = getAssetIcon(asset)
 
     const name = document.createElement('span')
     name.className = 'asset-name'
@@ -476,27 +832,49 @@ function createAssetConfig (asset, createDataGrid) {
 }
 
 
-function createAssetCard (asset, createDataGrid) {
+function createAssetCard (asset, createDataGrid, hasActiveSearch = false) {
     const card = document.createElement('div')
     card.className = 'asset-card'
 
-    card.appendChild(createAssetHeader(asset))
-    card.appendChild(createAssetDetails(asset))
+    const header = createAssetHeader(asset)
+    card.appendChild(header)
+
+    const detailsContainer = document.createElement('div')
+    const isCollapsed = !hasActiveSearch
+    detailsContainer.style.display = hasActiveSearch ? 'block' : 'none'
+
+    if (isCollapsed) {
+        header.classList.add('collapsed')
+        card.classList.add('collapsed')
+    }
+
+    detailsContainer.appendChild(createAssetDetails(asset))
 
     const tags = createAssetTags(asset)
     if (tags) {
-        card.appendChild(tags)
+        detailsContainer.appendChild(tags)
     }
 
     const config = createAssetConfig(asset, createDataGrid)
     if (config) {
-        card.appendChild(config)
+        detailsContainer.appendChild(config)
     }
 
     const preview = createSourcePreview(asset)
     if (preview) {
-        card.appendChild(preview)
+        detailsContainer.appendChild(preview)
     }
+
+    card.appendChild(detailsContainer)
+
+    // Make header clickable to toggle details
+    header.style.cursor = 'pointer'
+    header.addEventListener('click', () => {
+        const isHidden = detailsContainer.style.display === 'none'
+        detailsContainer.style.display = isHidden ? 'block' : 'none'
+        header.classList.toggle('collapsed')
+        card.classList.toggle('collapsed')
+    })
 
     return card
 }
@@ -530,27 +908,38 @@ function addAssetRowElement (container, label, element) {
 }
 
 
+const ASSET_ICONS = {
+    image: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>',
+    audio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>',
+    font: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>',
+    shader: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>',
+    scene: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22.7 19-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"></path></svg>',
+    script: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>',
+    data: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>',
+    default: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>'
+}
+
 const ASSET_ICON_PATTERNS = [
-    {keywords: ['texture', 'image', 'sprite'], icon: '🖼'},
-    {keywords: ['audio', 'sound', 'music'], icon: '🔊'},
-    {keywords: ['font'], icon: '🔤'},
-    {keywords: ['shader'], icon: '✨'},
-    {keywords: ['scene'], icon: '🎬'},
-    {keywords: ['script'], icon: '📜'},
-    {keywords: ['data', 'json'], icon: '📄'}
+    {keywords: ['texture', 'image', 'sprite'], key: 'image'},
+    {keywords: ['audio', 'sound', 'music'], key: 'audio'},
+    {keywords: ['font'], key: 'font'},
+    {keywords: ['shader'], key: 'shader'},
+    {keywords: ['scene'], key: 'scene'},
+    {keywords: ['script'], key: 'script'},
+    {keywords: ['data', 'json'], key: 'data'}
 ]
 
 
 function getAssetIcon (asset) {
     const type = asset.type?.toLowerCase() || ''
 
-    for (const {keywords, icon} of ASSET_ICON_PATTERNS) {
+    for (const {keywords, key} of ASSET_ICON_PATTERNS) {
         if (keywords.some((keyword) => type.includes(keyword))) {
-            return icon
+            return ASSET_ICONS[key]
         }
     }
 
-    return '📦'
+    return ASSET_ICONS.default
 }
 
 
