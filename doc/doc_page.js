@@ -706,22 +706,22 @@ function addSpacerIfNeeded () {
 }
 
 
-function executeAction (block, setup = null) {
+async function executeAction (block, setup = null) {
     try {
         addSpacerIfNeeded()
         const ctx = {}
 
         if (setup?.fn) {
-            setup.fn(ctx)
+            await setup.fn(ctx)
         }
-        block.fn(ctx)
+        await block.fn(ctx)
     } catch (error) {
         logger.error('Action error:', error.message)
     }
 }
 
 
-function executeContainer (block, container, setup = null) {
+async function executeContainer (block, container, setup = null) {
     addSpacerIfNeeded()
 
     const prevApp = container._currentApp
@@ -856,9 +856,9 @@ function executeContainer (block, container, setup = null) {
         }
 
         if (setup?.fn) {
-            setup.fn(ctx)
+            await setup.fn(ctx)
         }
-        block.fn(ctx)
+        await block.fn(ctx)
 
         if (container.tabIndex >= 0) {
             container.focus()

@@ -209,6 +209,16 @@
         "render",
         "webgl_canvas_2d"
       ]
+    },
+    {
+      "id": "audio_system",
+      "file": "/audio/audio_system.doc.js",
+      "category": "audio",
+      "title": "AudioSystem",
+      "tags": [
+        "audio",
+        "audio_system"
+      ]
     }
   ],
   "guides": [

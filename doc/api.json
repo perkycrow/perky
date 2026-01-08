@@ -3077,5 +3077,331 @@
       ]
     },
     "isDefault": true
+  },
+  "/audio/audio_system.doc.js": {
+    "type": "class",
+    "file": "/audio/audio_system.js",
+    "name": "AudioSystem",
+    "line": 9,
+    "extends": "PerkyModule",
+    "statics": [
+      {
+        "name": "$category",
+        "line": 11,
+        "source": "static $category = 'audioSystem'",
+        "kind": "property",
+        "value": "'audioSystem'"
+      }
+    ],
+    "methods": [
+      {
+        "name": "onInstall",
+        "line": 56,
+        "source": "onInstall (host) {\n    this.delegateTo(host, [\n        'play',\n        'playAt',\n        'playOscillator',\n        'playOscillatorAt',\n        'stop',\n        'stopChannel',\n        'stopAll',\n        'setVolume',\n        'getVolume',\n        'setChannelVolume',\n        'getChannelVolume',\n        'muteChannel',\n        'unmuteChannel',\n        'getChannel',\n        'hasChannel',\n        'unlock',\n        'setListenerPosition',\n        'getListenerPosition'\n    ])\n\n    this.delegateEventsTo(host, [\n        'audio:play',\n        'audio:stop',\n        'audio:unlocked'\n    ], 'audio')\n\n    if (host.sourceManager) {\n        this.listenTo(host.sourceManager, 'loader:progress', (_progress, {asset, source}) => {\n            if (asset.type === 'audio' && source?.type === 'deferred_audio') {\n                this.#pendingAudio.set(asset.id, source.url)\n            }\n        })\n    }\n\n    this.#applyConfig()\n}",
+        "kind": "method",
+        "params": [
+          "host"
+        ]
+      },
+      {
+        "name": "onStart",
+        "line": 96,
+        "source": "onStart () {\n    onAudioUnlock(() => this.unlock())\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onStop",
+        "line": 101,
+        "source": "onStop () {\n    if (this.#unlocked) {\n        this.#audioContext.suspend()\n    }\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onDispose",
+        "line": 108,
+        "source": "onDispose () {\n    this.stopAll()\n    this.#buffers.clear()\n    this.#audioContext.dispose()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "unlock",
+        "line": 115,
+        "source": "async unlock () {\n    if (this.#unlocked) {\n        return true\n    }\n\n    try {\n        await this.#audioContext.resume()\n        this.#unlocked = true\n        await this.#loadPendingAudio()\n        this.emit('audio:unlocked')\n        return true\n    } catch {\n        return false\n    }\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "createChannel",
+        "line": 144,
+        "source": "createChannel (name, options = {}) {\n    return this.create(AudioChannel, {\n        $id: name,\n        $bind: name,\n        audioContext: this.#audioContext,\n        ...options\n    })\n}",
+        "kind": "method",
+        "params": [
+          "name",
+          "options = ..."
+        ]
+      },
+      {
+        "name": "getChannel",
+        "line": 154,
+        "source": "getChannel (name) {\n    return this.getChild(name)\n}",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "hasChannel",
+        "line": 159,
+        "source": "hasChannel (name) {\n    return this.hasChild(name)\n}",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "listChannels",
+        "line": 164,
+        "source": "listChannels () {\n    return this.listNamesFor('audioChannel')\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "registerBuffer",
+        "line": 169,
+        "source": "registerBuffer (id, buffer) {\n    this.#buffers.set(id, buffer)\n    this.emit('buffer:registered', id, buffer)\n}",
+        "kind": "method",
+        "params": [
+          "id",
+          "buffer"
+        ]
+      },
+      {
+        "name": "registerArrayBuffer",
+        "line": 175,
+        "source": "async registerArrayBuffer (id, arrayBuffer) {\n    try {\n        const audioBuffer = await this.#audioContext.decodeAudioData(arrayBuffer)\n        this.registerBuffer(id, audioBuffer)\n        return audioBuffer\n    } catch (e) {\n        this.emit('buffer:error', id, e)\n        return null\n    }\n}",
+        "kind": "method",
+        "params": [
+          "id",
+          "arrayBuffer"
+        ]
+      },
+      {
+        "name": "getBuffer",
+        "line": 187,
+        "source": "getBuffer (id) {\n    return this.#buffers.get(id) || null\n}",
+        "kind": "method",
+        "params": [
+          "id"
+        ]
+      },
+      {
+        "name": "hasBuffer",
+        "line": 192,
+        "source": "hasBuffer (id) {\n    return this.#buffers.has(id)\n}",
+        "kind": "method",
+        "params": [
+          "id"
+        ]
+      },
+      {
+        "name": "loadBuffer",
+        "line": 197,
+        "source": "async loadBuffer (id, url) {\n    try {\n        const response = await fetch(url)\n        const arrayBuffer = await response.arrayBuffer()\n        return this.registerArrayBuffer(id, arrayBuffer)\n    } catch (e) {\n        this.emit('buffer:error', id, e)\n        return null\n    }\n}",
+        "kind": "method",
+        "params": [
+          "id",
+          "url"
+        ]
+      },
+      {
+        "name": "play",
+        "line": 209,
+        "source": "play (bufferId, options = {}) {\n    if (!this.#unlocked) {\n        return null\n    }\n\n    const buffer = this.#buffers.get(bufferId)\n\n    if (!buffer) {\n        return null\n    }\n\n    const channelName = options.channel ?? 'sfx'\n    const channel = this.getChannel(channelName)\n\n    const sourceId = options.$id ?? uniqueId(this.childrenRegistry, bufferId)\n\n    const source = new AudioSource({\n        $id: sourceId,\n        audioContext: this.#audioContext,\n        channel,\n        loop: options.loop ?? false,\n        volume: options.volume ?? 1,\n        playbackRate: options.playbackRate ?? 1\n    })\n\n    source.playBuffer(buffer, options.offset ?? 0)\n\n    this.emit('audio:play', sourceId, bufferId, options)\n\n    return source\n}",
+        "kind": "method",
+        "params": [
+          "bufferId",
+          "options = ..."
+        ]
+      },
+      {
+        "name": "playAt",
+        "line": 242,
+        "source": "playAt (bufferId, x, y, options = {}) {\n    return this.play(bufferId, {\n        ...options,\n        spatial: true,\n        x,\n        y\n    })\n}",
+        "kind": "method",
+        "params": [
+          "bufferId",
+          "x",
+          "y",
+          "options = ..."
+        ]
+      },
+      {
+        "name": "playOscillator",
+        "line": 252,
+        "source": "playOscillator (options = {}) {\n    if (!this.#unlocked) {\n        return null\n    }\n\n    const channel = this.getChannel(options.channel ?? 'sfx')\n    const sourceId = options.$id ?? uniqueId(this.childrenRegistry, 'oscillator')\n\n    const source = new AudioSource({\n        ...options,\n        $id: sourceId,\n        audioContext: this.#audioContext,\n        channel\n    })\n\n    source.playOscillator(options.type, options.frequency, options.duration)\n    this.emit('audio:play', sourceId, 'oscillator', options)\n\n    return source\n}",
+        "kind": "method",
+        "params": [
+          "options = ..."
+        ]
+      },
+      {
+        "name": "playOscillatorAt",
+        "line": 274,
+        "source": "playOscillatorAt (x, y, options = {}) {\n    return this.playOscillator({\n        ...options,\n        spatial: true,\n        x,\n        y\n    })\n}",
+        "kind": "method",
+        "params": [
+          "x",
+          "y",
+          "options = ..."
+        ]
+      },
+      {
+        "name": "stop",
+        "line": 284,
+        "source": "stop (sourceId) {\n    for (const channelName of this.listChannels()) {\n        const channel = this.getChannel(channelName)\n        const source = channel?.getSource(sourceId)\n        if (source) {\n            source.stop()\n            this.emit('audio:stop', sourceId)\n            return true\n        }\n    }\n    return false\n}",
+        "kind": "method",
+        "params": [
+          "sourceId"
+        ]
+      },
+      {
+        "name": "stopChannel",
+        "line": 298,
+        "source": "stopChannel (channelName) {\n    const channel = this.getChannel(channelName)\n    if (channel) {\n        channel.stopAll()\n        return true\n    }\n    return false\n}",
+        "kind": "method",
+        "params": [
+          "channelName"
+        ]
+      },
+      {
+        "name": "stopAll",
+        "line": 308,
+        "source": "stopAll () {\n    for (const channelName of this.listChannels()) {\n        this.stopChannel(channelName)\n    }\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "setVolume",
+        "line": 315,
+        "source": "setVolume (value) {\n    this.masterVolume = value\n    this.emit('volume:changed', value)\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "getVolume",
+        "line": 322,
+        "source": "getVolume () {\n    return this.masterVolume\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "setChannelVolume",
+        "line": 327,
+        "source": "setChannelVolume (channelName, value) {\n    const channel = this.getChannel(channelName)\n    if (channel) {\n        channel.setVolume(value)\n    }\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "channelName",
+          "value"
+        ]
+      },
+      {
+        "name": "getChannelVolume",
+        "line": 336,
+        "source": "getChannelVolume (channelName) {\n    const channel = this.getChannel(channelName)\n    return channel ? channel.getVolume() : 0\n}",
+        "kind": "method",
+        "params": [
+          "channelName"
+        ]
+      },
+      {
+        "name": "muteChannel",
+        "line": 342,
+        "source": "muteChannel (channelName) {\n    const channel = this.getChannel(channelName)\n    if (channel) {\n        channel.mute()\n    }\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "channelName"
+        ]
+      },
+      {
+        "name": "unmuteChannel",
+        "line": 351,
+        "source": "unmuteChannel (channelName) {\n    const channel = this.getChannel(channelName)\n    if (channel) {\n        channel.unmute()\n    }\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "channelName"
+        ]
+      },
+      {
+        "name": "setListenerPosition",
+        "line": 360,
+        "source": "setListenerPosition (x, y) {\n    this.#audioContext.setListenerPosition(x, y, 0)\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "x",
+          "y"
+        ]
+      },
+      {
+        "name": "getListenerPosition",
+        "line": 366,
+        "source": "getListenerPosition () {\n    const pos = this.#audioContext.getListenerPosition()\n    return {x: pos.x, y: pos.y}\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [
+      {
+        "name": "audioContext",
+        "line": 31,
+        "source": "get audioContext () {\n    return this.#audioContext\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "unlocked",
+        "line": 36,
+        "source": "get unlocked () {\n    return this.#unlocked\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "currentTime",
+        "line": 41,
+        "source": "get currentTime () {\n    return this.#audioContext.currentTime\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "masterVolume",
+        "line": 46,
+        "source": "get masterVolume () {\n    return this.#audioContext.getMasterVolume()\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "masterVolume",
+        "line": 51,
+        "source": "set masterVolume (value) {\n    this.#audioContext.setMasterVolume(value)\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      }
+    ],
+    "constructor": {
+      "name": "constructor",
+      "line": 18,
+      "source": "constructor (options = {}) {\n    super(options)\n\n    this.#audioContext = new AudioContext()\n\n    const defaultChannels = options.channels ?? ['music', 'sfx', 'ambiance']\n\n    for (const channelName of defaultChannels) {\n        this.createChannel(channelName)\n    }\n}",
+      "kind": "constructor",
+      "params": [
+        "options = ..."
+      ]
+    },
+    "isDefault": true
   }
 }
