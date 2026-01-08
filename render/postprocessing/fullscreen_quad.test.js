@@ -1,16 +1,6 @@
-import {describe, test, expect, beforeEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach} from 'vitest'
 import FullscreenQuad from './fullscreen_quad.js'
-import {createMockGLWithSpies} from '../../test/helpers.js'
-
-
-function createMockProgram (hasTexCoord = true) {
-    return {
-        attributes: {
-            aPosition: 0,
-            aTexCoord: hasTexCoord ? 1 : undefined
-        }
-    }
-}
+import {createMockGLWithSpies, createMockProgram} from '../../test/helpers.js'
 
 
 describe(FullscreenQuad, () => {
@@ -44,7 +34,7 @@ describe(FullscreenQuad, () => {
 
 
     test('draw without aTexCoord attribute', () => {
-        const program = createMockProgram(false)
+        const program = createMockProgram({hasTexCoord: false})
         quad.draw(gl, program)
 
         expect(gl.enableVertexAttribArray).toHaveBeenCalledWith(0)

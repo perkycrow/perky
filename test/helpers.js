@@ -229,3 +229,34 @@ export function createMockCanvas (width = 800, height = 600) {
     canvas.height = height
     return canvas
 }
+
+
+export function createMockProgram ({hasTexCoord = true} = {}) {
+    return {
+        use: vi.fn(),
+        setUniform1i: vi.fn(),
+        setUniform1f: vi.fn(),
+        setUniform2f: vi.fn(),
+        setUniform3f: vi.fn(),
+        setUniform4f: vi.fn(),
+        attributes: {
+            aPosition: 0,
+            aTexCoord: hasTexCoord ? 1 : undefined
+        }
+    }
+}
+
+
+export function createMockShaderRegistry (program = null) {
+    const defaultProgram = program || createMockProgram()
+    return {
+        register: vi.fn(() => defaultProgram)
+    }
+}
+
+
+export function createMockQuad () {
+    return {
+        draw: vi.fn()
+    }
+}
