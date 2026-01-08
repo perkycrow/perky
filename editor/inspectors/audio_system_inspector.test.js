@@ -5,16 +5,18 @@ import Notifier from '../../core/notifier.js'
 
 class MockAudioSystem extends Notifier {
 
+    #channels
+
     constructor (options = {}) {
         super()
         this.unlocked = options.unlocked ?? false
         this.masterVolume = options.masterVolume ?? 1
-        this._channels = options.channels ?? ['music', 'sfx']
+        this.#channels = options.channels ?? ['music', 'sfx']
     }
 
 
     listChannels () {
-        return this._channels
+        return this.#channels
     }
 
 
@@ -242,7 +244,8 @@ describe('AudioSystemInspector', () => {
             const module = new MockAudioSystem({channels: ['music']})
             inspector.setModule(module)
 
-            module._channels = ['music', 'sfx']
+            // Simulate adding a channel by creating a new mock with updated channels
+            module.listChannels = () => ['music', 'sfx']
             module.emit('child:added')
 
             const values = inspector.gridEl.querySelectorAll('.inspector-value')
