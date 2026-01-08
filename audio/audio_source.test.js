@@ -1,5 +1,6 @@
 import AudioSource from './audio_source.js'
 import {vi} from 'vitest'
+import {createMockPerkyAudioContext, createMockChannel, createMockGainNodeWithSpies, createMockBufferSourceNode, createMockOscillatorNode} from './test_helpers.js'
 
 
 describe(AudioSource, () => {
@@ -11,39 +12,15 @@ describe(AudioSource, () => {
     let mockSourceNode
 
     beforeEach(() => {
-        mockGainNode = {
-            connect: vi.fn(),
-            disconnect: vi.fn(),
-            gain: {value: 1, setValueAtTime: vi.fn(), linearRampToValueAtTime: vi.fn()}
-        }
+        mockGainNode = createMockGainNodeWithSpies()
+        mockSourceNode = createMockBufferSourceNode()
 
-        mockSourceNode = {
-            connect: vi.fn(),
-            disconnect: vi.fn(),
-            start: vi.fn(),
-            stop: vi.fn(),
-            buffer: null,
-            loop: false,
-            type: 'sine',
-            playbackRate: {value: 1, setValueAtTime: vi.fn()},
-            frequency: {value: 440, setValueAtTime: vi.fn()},
-            onended: null
-        }
+        mockAudioContext = createMockPerkyAudioContext()
+        mockAudioContext.createGain = vi.fn(() => mockGainNode)
+        mockAudioContext.createBufferSource = vi.fn(() => mockSourceNode)
+        mockAudioContext.createOscillator = vi.fn(() => createMockOscillatorNode())
 
-        mockAudioContext = {
-            context: {currentTime: 0},
-            currentTime: 0,
-            masterGain: {},
-            createGain: vi.fn(() => mockGainNode),
-            createBufferSource: vi.fn(() => mockSourceNode),
-            createOscillator: vi.fn(() => mockSourceNode)
-        }
-
-        mockChannel = {
-            gainNode: {},
-            registerSource: vi.fn(),
-            unregisterSource: vi.fn()
-        }
+        mockChannel = createMockChannel({audioContext: mockAudioContext})
 
         source = new AudioSource({
             audioContext: mockAudioContext,
@@ -328,27 +305,32 @@ describe(AudioSource, () => {
 
         test('sets oscillator type', () => {
             source.playOscillator('square')
-            expect(mockSourceNode.type).toBe('square')
+            const oscillator = mockAudioContext.createOscillator.mock.results[0].value
+            expect(oscillator.type).toBe('square')
         })
 
         test('sets oscillator frequency', () => {
             source.playOscillator('sine', 880)
-            expect(mockSourceNode.frequency.setValueAtTime).toHaveBeenCalledWith(880, 0)
+            const oscillator = mockAudioContext.createOscillator.mock.results[0].value
+            expect(oscillator.frequency.setValueAtTime).toHaveBeenCalledWith(880, 0)
         })
 
         test('starts oscillator', () => {
             source.playOscillator()
-            expect(mockSourceNode.start).toHaveBeenCalled()
+            const oscillator = mockAudioContext.createOscillator.mock.results[0].value
+            expect(oscillator.start).toHaveBeenCalled()
         })
 
         test('schedules stop with duration', () => {
             source.playOscillator('sine', 440, 2)
-            expect(mockSourceNode.stop).toHaveBeenCalledWith(2)
+            const oscillator = mockAudioContext.createOscillator.mock.results[0].value
+            expect(oscillator.stop).toHaveBeenCalledWith(2)
         })
 
         test('does not schedule stop without duration', () => {
             source.playOscillator('sine', 440, null)
-            expect(mockSourceNode.stop).not.toHaveBeenCalled()
+            const oscillator = mockAudioContext.createOscillator.mock.results[0].value
+            expect(oscillator.stop).not.toHaveBeenCalled()
         })
 
         test('registers with channel', () => {
@@ -374,8 +356,9 @@ describe(AudioSource, () => {
 
         test('uses default values', () => {
             source.playOscillator()
-            expect(mockSourceNode.type).toBe('sine')
-            expect(mockSourceNode.frequency.setValueAtTime).toHaveBeenCalledWith(440, 0)
+            const oscillator = mockAudioContext.createOscillator.mock.results[0].value
+            expect(oscillator.type).toBe('sine')
+            expect(oscillator.frequency.setValueAtTime).toHaveBeenCalledWith(440, 0)
         })
     })
 

@@ -1,6 +1,7 @@
 import AudioSystem from './audio_system.js'
 import AudioChannel from './audio_channel.js'
 import {vi, beforeEach, afterEach} from 'vitest'
+import {createMockAudioContextWithSpies, setupGlobalAudioContext, setupGlobalFetch} from './test_helpers.js'
 
 // Mock audio_unlock module
 vi.mock('./audio_unlock.js', () => ({
@@ -14,62 +15,26 @@ describe(AudioSystem, () => {
     let system
     let mockContext
     let mockOnAudioUnlock
+    let cleanupAudioContext
+    let cleanupFetch
 
     beforeEach(async () => {
         // Get the mocked onAudioUnlock
         const audioUnlockModule = await import('./audio_unlock.js')
         mockOnAudioUnlock = audioUnlockModule.onAudioUnlock
         mockOnAudioUnlock.mockClear()
-        mockContext = {
-            state: 'suspended',
-            currentTime: 0,
-            sampleRate: 48000,
-            destination: {},
-            createGain: vi.fn(() => ({
-                connect: vi.fn(),
-                disconnect: vi.fn(),
-                gain: {value: 1, setValueAtTime: vi.fn()}
-            })),
-            createOscillator: vi.fn(() => ({
-                connect: vi.fn(),
-                disconnect: vi.fn(),
-                start: vi.fn(),
-                stop: vi.fn(),
-                type: 'sine',
-                frequency: {setValueAtTime: vi.fn()},
-                onended: null
-            })),
-            createBufferSource: vi.fn(() => ({
-                connect: vi.fn(),
-                disconnect: vi.fn(),
-                start: vi.fn(),
-                stop: vi.fn(),
-                buffer: null,
-                loop: false,
-                playbackRate: {setValueAtTime: vi.fn()},
-                onended: null
-            })),
-            decodeAudioData: vi.fn(b => Promise.resolve(b)),
-            resume: vi.fn(() => Promise.resolve()),
-            suspend: vi.fn(() => Promise.resolve()),
-            close: vi.fn()
-        }
 
-        global.window = {
-            AudioContext: vi.fn(() => mockContext)
-        }
-
-        global.fetch = vi.fn(() => Promise.resolve({
-            arrayBuffer: () => Promise.resolve(new ArrayBuffer(100))
-        }))
+        mockContext = createMockAudioContextWithSpies()
+        cleanupAudioContext = setupGlobalAudioContext(mockContext)
+        cleanupFetch = setupGlobalFetch()
 
         system = new AudioSystem()
     })
 
 
     afterEach(() => {
-        delete global.window
-        delete global.fetch
+        cleanupAudioContext()
+        cleanupFetch()
     })
 
 

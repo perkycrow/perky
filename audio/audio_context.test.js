@@ -1,42 +1,23 @@
 import AudioContext from './audio_context.js'
 import {vi} from 'vitest'
+import {createMockAudioContextWithSpies, setupGlobalAudioContext} from './test_helpers.js'
 
 
 describe(AudioContext, () => {
 
     let audioContext
     let mockNativeContext
+    let cleanup
 
     beforeEach(() => {
-        mockNativeContext = {
-            state: 'suspended',
-            currentTime: 0,
-            sampleRate: 48000,
-            destination: {},
-            createGain: vi.fn(() => ({
-                connect: vi.fn(),
-                gain: {value: 1, setValueAtTime: vi.fn()}
-            })),
-            createOscillator: vi.fn(() => ({})),
-            createBufferSource: vi.fn(() => ({})),
-            createPanner: vi.fn(() => ({})),
-            createStereoPanner: vi.fn(() => ({})),
-            decodeAudioData: vi.fn(buffer => Promise.resolve(buffer)),
-            resume: vi.fn(() => Promise.resolve()),
-            suspend: vi.fn(() => Promise.resolve()),
-            close: vi.fn()
-        }
-
-        global.window = {
-            AudioContext: vi.fn(() => mockNativeContext)
-        }
-
+        mockNativeContext = createMockAudioContextWithSpies()
+        cleanup = setupGlobalAudioContext(mockNativeContext)
         audioContext = new AudioContext()
     })
 
 
     afterEach(() => {
-        delete global.window
+        cleanup()
     })
 
 
@@ -110,8 +91,14 @@ describe(AudioContext, () => {
         })
 
         test('throws error if no AudioContext available', () => {
-            delete global.window.AudioContext
-            expect(() => audioContext.init()).toThrow('Web Audio API is not supported')
+            // Create a fresh AudioContext without the global mock
+            cleanup()
+            global.window = {}
+            const freshContext = new AudioContext()
+            expect(() => freshContext.init()).toThrow('Web Audio API is not supported')
+
+            // Restore for other tests
+            cleanup = setupGlobalAudioContext(mockNativeContext)
         })
 
         test('sets suspended based on context state', () => {

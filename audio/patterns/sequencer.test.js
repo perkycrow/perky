@@ -1,6 +1,7 @@
 import Sequencer from './sequencer.js'
 import Pattern from './pattern.js'
 import {vi} from 'vitest'
+import {createMockAudioSystem} from '../test_helpers.js'
 
 
 describe(Sequencer, () => {
@@ -9,11 +10,7 @@ describe(Sequencer, () => {
     let mockAudioSystem
 
     beforeEach(() => {
-        mockAudioSystem = {
-            hasBuffer: vi.fn(() => false),
-            play: vi.fn(),
-            playOscillator: vi.fn()
-        }
+        mockAudioSystem = createMockAudioSystem()
 
         sequencer = new Sequencer({
             audioSystem: mockAudioSystem,

@@ -1,5 +1,6 @@
 import AudioChannel from './audio_channel.js'
 import {vi} from 'vitest'
+import {createMockPerkyAudioContext} from './test_helpers.js'
 
 
 describe(AudioChannel, () => {
@@ -8,15 +9,7 @@ describe(AudioChannel, () => {
     let mockAudioContext
 
     beforeEach(() => {
-        mockAudioContext = {
-            context: {currentTime: 0},
-            masterGain: {},
-            createGain: vi.fn(() => ({
-                connect: vi.fn(),
-                disconnect: vi.fn(),
-                gain: {value: 1, setValueAtTime: vi.fn()}
-            }))
-        }
+        mockAudioContext = createMockPerkyAudioContext()
 
         channel = new AudioChannel({
             audioContext: mockAudioContext,
