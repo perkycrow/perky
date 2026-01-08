@@ -233,6 +233,47 @@ function buildTestsData (docs) {
 }
 
 
+function generateIndexHtml () {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perky Docs</title>
+    <link rel="stylesheet" href="doc_index.css">
+</head>
+<body>
+    <div class="docs-layout">
+        <aside class="docs-sidebar">
+            <div class="sidebar-header">
+                <h1>perky docs</h1>
+                <div class="sidebar-search">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input type="text" class="search-input" placeholder="Search...">
+                </div>
+                <div class="nav-switcher" id="nav-switcher"></div>
+            </div>
+            <nav class="sidebar-nav" id="docs-nav"></nav>
+        </aside>
+
+        <main class="docs-main">
+            <div class="docs-content" id="doc-container"></div>
+            <div class="docs-logger">
+                <perky-logger id="main-logger" max-entries="30"></perky-logger>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="doc_viewer.js"></script>
+</body>
+</html>
+`
+}
+
+
 async function main () {
     const result = await discoverDocs()
     const guides = await discoverGuides()
@@ -276,6 +317,11 @@ async function main () {
 
     const guideSourcesCount = buildGuideSources(guides)
     logger.log(`Extracted sources for ${guideSourcesCount} guide file(s)`)
+
+    const indexHtml = generateIndexHtml()
+    const indexPath = path.join(__dirname, 'index.html')
+    fs.writeFileSync(indexPath, indexHtml)
+    logger.log(`\nGenerated index.html`)
 }
 
 
