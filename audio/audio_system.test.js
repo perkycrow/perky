@@ -1,14 +1,25 @@
 import AudioSystem from './audio_system.js'
 import AudioChannel from './audio_channel.js'
-import {vi} from 'vitest'
+import {vi, beforeEach, afterEach} from 'vitest'
+
+// Mock audio_unlock module
+vi.mock('./audio_unlock.js', () => ({
+    onAudioUnlock: vi.fn(),
+    isAudioUnlocked: vi.fn(() => false)
+}))
 
 
 describe(AudioSystem, () => {
 
     let system
     let mockContext
+    let mockOnAudioUnlock
 
-    beforeEach(() => {
+    beforeEach(async () => {
+        // Get the mocked onAudioUnlock
+        const audioUnlockModule = await import('./audio_unlock.js')
+        mockOnAudioUnlock = audioUnlockModule.onAudioUnlock
+        mockOnAudioUnlock.mockClear()
         mockContext = {
             state: 'suspended',
             currentTime: 0,
@@ -128,17 +139,24 @@ describe(AudioSystem, () => {
     })
 
 
-    test('onStart calls unlock', async () => {
-        const unlockSpy = vi.spyOn(system, 'unlock')
+    test('onStart registers audio unlock callback', () => {
         system.onStart()
-        expect(unlockSpy).toHaveBeenCalled()
+        expect(mockOnAudioUnlock).toHaveBeenCalledWith(expect.any(Function))
     })
 
 
-    test('onStop suspends audio context', () => {
+    test('onStop suspends audio context when unlocked', async () => {
+        // Mark system as unlocked first
+        await system.unlock()
         const suspendSpy = vi.spyOn(system.audioContext, 'suspend')
         system.onStop()
         expect(suspendSpy).toHaveBeenCalled()
+    })
+
+    test('onStop does nothing when not unlocked', () => {
+        const suspendSpy = vi.spyOn(system.audioContext, 'suspend')
+        system.onStop()
+        expect(suspendSpy).not.toHaveBeenCalled()
     })
 
 
@@ -279,12 +297,16 @@ describe(AudioSystem, () => {
 
     describe('loadBuffer', () => {
         test('fetches and decodes audio', async () => {
+            // Set context to running so decodeAudioData doesn't queue
+            mockContext.state = 'running'
             const buffer = await system.loadBuffer('test', 'http://example.com/audio.mp3')
             expect(global.fetch).toHaveBeenCalledWith('http://example.com/audio.mp3')
             expect(buffer).toBeDefined()
         })
 
         test('registers loaded buffer', async () => {
+            // Set context to running so decodeAudioData doesn't queue
+            mockContext.state = 'running'
             await system.loadBuffer('test', 'http://example.com/audio.mp3')
             expect(system.hasBuffer('test')).toBe(true)
         })
@@ -306,6 +328,11 @@ describe(AudioSystem, () => {
 
 
     describe('play', () => {
+        beforeEach(async () => {
+            // Unlock the system so play() works
+            await system.unlock()
+        })
+
         test('returns null for unknown buffer', () => {
             expect(system.play('unknown')).toBeNull()
         })
@@ -357,6 +384,11 @@ describe(AudioSystem, () => {
 
 
     describe('playOscillator', () => {
+        beforeEach(async () => {
+            // Unlock the system so playOscillator() works
+            await system.unlock()
+        })
+
         test('creates oscillator source', () => {
             const source = system.playOscillator()
             expect(source).not.toBeNull()
@@ -382,6 +414,11 @@ describe(AudioSystem, () => {
 
 
     describe('stop', () => {
+        beforeEach(async () => {
+            // Unlock the system so play() works
+            await system.unlock()
+        })
+
         test('returns false for unknown source', () => {
             expect(system.stop('unknown')).toBe(false)
         })

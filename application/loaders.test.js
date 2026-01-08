@@ -208,28 +208,25 @@ describe('Loaders', () => {
 
 
     test('loadAudio success', async () => {
-        const buffer = new ArrayBuffer(8)
-        mockResponse.arrayBuffer.mockResolvedValue(buffer)
-        const audioBuffer = {duration: 10}
-        mockAudioContext.decodeAudioData.mockImplementation((_, success) => {
-            success(audioBuffer)
+        const result = await loaders.loadAudio('http://example.com/audio.mp3')
+
+        expect(result).toEqual({
+            type: 'deferred_audio',
+            url: 'http://example.com/audio.mp3'
         })
-
-        const result = await loaders.loadAudio('http://example.com')
-
-        expect(mockAudioContext.decodeAudioData).toHaveBeenCalledWith(buffer, expect.any(Function), expect.any(Function))
-        expect(result).toBe(audioBuffer)
     })
 
 
-    test('loadAudio error', async () => {
-        const buffer = new ArrayBuffer(8)
-        mockResponse.arrayBuffer.mockResolvedValue(buffer)
-        mockAudioContext.decodeAudioData.mockImplementation((_, __, error) => {
-            error(new Error('Decode error'))
+    test('loadAudio with object params', async () => {
+        const result = await loaders.loadAudio({
+            url: 'http://example.com/audio.mp3',
+            config: {some: 'config'}
         })
 
-        await expect(loaders.loadAudio('http://example.com')).rejects.toThrow('Failed to decode audio data: Decode error')
+        expect(result).toEqual({
+            type: 'deferred_audio',
+            url: 'http://example.com/audio.mp3'
+        })
     })
 
 

@@ -83,13 +83,14 @@ describe(AudioChannel, () => {
 
 
     describe('gainNode', () => {
-        test('returns null before install', () => {
-            expect(channel.gainNode).toBeNull()
+        test('returns null without audio context', () => {
+            const noCtxChannel = new AudioChannel({})
+            expect(noCtxChannel.gainNode).toBeNull()
         })
 
-        test('returns gain node after install', () => {
-            channel.onInstall()
+        test('creates gain node lazily when accessed with audio context', () => {
             expect(channel.gainNode).not.toBeNull()
+            expect(mockAudioContext.createGain).toHaveBeenCalled()
         })
     })
 
@@ -106,14 +107,14 @@ describe(AudioChannel, () => {
 
 
     describe('onInstall', () => {
-        test('creates gain node', () => {
-            channel.onInstall()
-            expect(mockAudioContext.createGain).toHaveBeenCalled()
+        test('is a no-op as gain node is created lazily', () => {
+            // onInstall is empty, gain node is created lazily on first access
+            expect(() => channel.onInstall()).not.toThrow()
         })
 
-        test('connects gain node to master gain', () => {
-            channel.onInstall()
-            expect(channel.gainNode.connect).toHaveBeenCalledWith(mockAudioContext.masterGain)
+        test('gain node connects to master gain when accessed', () => {
+            const gainNode = channel.gainNode
+            expect(gainNode.connect).toHaveBeenCalledWith(mockAudioContext.masterGain)
         })
 
         test('does nothing without audio context', () => {
@@ -126,24 +127,28 @@ describe(AudioChannel, () => {
 
     describe('onDispose', () => {
         test('stops all sources', () => {
-            channel.onInstall()
             const mockSource = {$id: 'test', stop: vi.fn()}
             channel.registerSource(mockSource)
             channel.onDispose()
             expect(mockSource.stop).toHaveBeenCalled()
         })
 
-        test('disconnects gain node', () => {
-            channel.onInstall()
-            const gainNode = channel.gainNode
+        test('disconnects gain node if it exists', () => {
+            const gainNode = channel.gainNode // Force creation
             channel.onDispose()
             expect(gainNode.disconnect).toHaveBeenCalled()
         })
 
-        test('sets gain node to null', () => {
-            channel.onInstall()
+        test('clears internal gain node reference', () => {
+            // Access gainNode to create it
+            const gainNode = channel.gainNode
+            expect(gainNode).not.toBeNull()
             channel.onDispose()
-            expect(channel.gainNode).toBeNull()
+
+            // After dispose, the internal #gainNode is set to null
+            // Accessing gainNode again would create a new one (lazy)
+            // We verify dispose worked by checking disconnect was called
+            expect(gainNode.disconnect).toHaveBeenCalled()
         })
     })
 

@@ -253,14 +253,30 @@ describe(AudioContext, () => {
 
 
     describe('decodeAudioData', () => {
-        test('decodes array buffer', async () => {
+        test('decodes array buffer when context is running', async () => {
+            audioContext.init()
+            mockNativeContext.state = 'running'
             const buffer = new ArrayBuffer(100)
             const result = await audioContext.decodeAudioData(buffer)
             expect(mockNativeContext.decodeAudioData).toHaveBeenCalledWith(buffer)
             expect(result).toBe(buffer)
         })
 
+        test('queues decoding when context is suspended', () => {
+            const buffer = new ArrayBuffer(100)
+
+            // Decode is queued when suspended, returns a pending promise
+            const decodePromise = audioContext.decodeAudioData(buffer)
+
+            // Decode should not be called yet (still suspended)
+            expect(mockNativeContext.decodeAudioData).not.toHaveBeenCalled()
+
+            // The promise exists but won't resolve until context is resumed
+            expect(decodePromise).toBeInstanceOf(Promise)
+        })
+
         test('initializes context before decoding', async () => {
+            mockNativeContext.state = 'running'
             await audioContext.decodeAudioData(new ArrayBuffer(100))
             expect(audioContext.context).not.toBeNull()
         })
