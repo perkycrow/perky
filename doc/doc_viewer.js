@@ -133,14 +133,37 @@ class DocViewer {
         for (const sec of sections) {
             sec.style.display = sec.dataset.section === section ? '' : 'none'
         }
+
+        this.#reapplySearch()
+    }
+
+
+    #reapplySearch () {
+        const search = this.searchInput.value.toLowerCase().trim()
+        const activeSection = this.nav.querySelector(`.nav-section[data-section="${this.currentSection}"]`)
+        if (!activeSection) {
+            return
+        }
+
+        const items = activeSection.querySelectorAll('.nav-item')
+        const categories = activeSection.querySelectorAll('.nav-category')
+
+        filterNavItems(items, search)
+        filterNavCategories(categories, search)
     }
 
 
     setupSearch () {
         this.searchInput.addEventListener('input', (e) => {
             const search = e.target.value.toLowerCase().trim()
-            const items = this.nav.querySelectorAll('.nav-item')
-            const categories = this.nav.querySelectorAll('.nav-category')
+
+            const activeSection = this.nav.querySelector(`.nav-section[data-section="${this.currentSection}"]`)
+            if (!activeSection) {
+                return
+            }
+
+            const items = activeSection.querySelectorAll('.nav-item')
+            const categories = activeSection.querySelectorAll('.nav-category')
 
             filterNavItems(items, search)
             filterNavCategories(categories, search)
@@ -419,22 +442,28 @@ function filterNavItems (items, search) {
 
 function filterNavCategories (categories, search) {
     for (const category of categories) {
-        const categoryName = category.textContent.toLowerCase()
         const hasVisibleItems = categoryHasVisibleItems(category)
+        const shouldHide = search ? !hasVisibleItems : false
 
-        category.classList.toggle('hidden', !hasVisibleItems && search && !categoryName.includes(search))
+        category.classList.toggle('hidden', shouldHide)
     }
 }
 
 
 function categoryHasVisibleItems (category) {
-    let nextEl = category.nextElementSibling
+    const parent = category.parentElement
+    const categoryIndex = Array.from(parent.children).indexOf(category)
 
-    while (nextEl && !nextEl.classList.contains('nav-category')) {
-        if (nextEl.classList.contains('nav-item') && !nextEl.classList.contains('hidden')) {
+    for (let i = categoryIndex + 1; i < parent.children.length; i++) {
+        const child = parent.children[i]
+
+        if (child.classList.contains('nav-category')) {
+            break
+        }
+
+        if (child.classList.contains('nav-item') && !child.classList.contains('hidden')) {
             return true
         }
-        nextEl = nextEl.nextElementSibling
     }
 
     return false

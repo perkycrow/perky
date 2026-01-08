@@ -65,6 +65,17 @@ function toPascalCase (str) {
 }
 
 
+function extractTitleFromDoc (filePath) {
+    try {
+        const source = fs.readFileSync(filePath, 'utf-8')
+        const match = source.match(/export\s+default\s+doc\s*\(\s*['"`]([^'"`]+)['"`]/)
+        return match ? match[1] : null
+    } catch {
+        return null
+    }
+}
+
+
 async function discoverDocs () {
     const files = await glob('**/*.doc.js', {
         cwd: rootDir,
@@ -76,12 +87,14 @@ async function discoverDocs () {
         const basename = path.basename(file, '.doc.js')
         const directory = path.dirname(file)
         const category = directory || 'core'
+        const absolutePath = path.join(rootDir, file)
+        const extractedTitle = extractTitleFromDoc(absolutePath)
 
         return {
             id: basename,
             file: relativePath,
             category,
-            title: toPascalCase(basename),
+            title: extractedTitle || toPascalCase(basename),
             tags: [category, basename]
         }
     })
@@ -321,7 +334,7 @@ async function main () {
     const indexHtml = generateIndexHtml()
     const indexPath = path.join(__dirname, 'index.html')
     fs.writeFileSync(indexPath, indexHtml)
-    logger.log(`\nGenerated index.html`)
+    logger.log('\nGenerated index.html')
 }
 
 

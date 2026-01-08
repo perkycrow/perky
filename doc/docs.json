@@ -194,7 +194,7 @@
       "id": "canvas_2d",
       "file": "/render/canvas_2d.doc.js",
       "category": "render",
-      "title": "Canvas2d",
+      "title": "Canvas2D",
       "tags": [
         "render",
         "canvas_2d"
@@ -204,7 +204,7 @@
       "id": "webgl_canvas_2d",
       "file": "/render/webgl_canvas_2d.doc.js",
       "category": "render",
-      "title": "WebglCanvas2d",
+      "title": "WebGLCanvas2D",
       "tags": [
         "render",
         "webgl_canvas_2d"

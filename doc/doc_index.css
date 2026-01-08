@@ -186,7 +186,8 @@ body {
     padding-left: calc(1.5rem - 2px);
 }
 
-.nav-item.hidden {
+.nav-item.hidden,
+.nav-category.hidden {
     display: none;
 }
 
