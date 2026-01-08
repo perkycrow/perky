@@ -2,7 +2,7 @@ import {execSync} from 'child_process'
 import fs from 'fs'
 import path from 'path'
 import Auditor from '../../auditor.js'
-import {findJsFiles, isExcludedFile} from '../../utils.js'
+import {isExcludedFile} from '../../utils.js'
 import {hint, listItem, divider} from '../../format.js'
 
 
@@ -47,7 +47,7 @@ export default class StaleTestsAuditor extends Auditor {
 
 
     #findStaleTests () {
-        const files = findJsFiles(this.rootDir)
+        const files = this.scanFiles()
         const stale = []
 
         for (const filePath of files) {

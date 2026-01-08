@@ -23,7 +23,8 @@ export default class EslintErrorsAuditor extends EslintAuditor {
     static $canFix = true
 
     audit () {
-        const {output} = this.runEslintCommand('--format json .')
+        const target = this.getEslintTarget()
+        const {output} = this.runEslintCommand(`--format json ${target}`)
         const data = this.parseEslintJson(output)
 
         if (!data) {
@@ -83,7 +84,8 @@ export default class EslintErrorsAuditor extends EslintAuditor {
 
 
     fix () {
-        this.runEslintCommand('--fix .')
+        const target = this.getEslintTarget()
+        this.runEslintCommand(`--fix ${target}`)
         this.printClean('ESLint auto-fix completed')
 
         return {filesFixed: 0, issuesFixed: 0}

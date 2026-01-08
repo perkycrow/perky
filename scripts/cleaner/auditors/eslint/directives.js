@@ -71,7 +71,8 @@ export default class DirectivesAuditor extends EslintAuditor {
 
 
     #findUnusedDirectives () {
-        const {output} = this.runEslintCommand('--report-unused-disable-directives --format json .')
+        const target = this.getEslintTarget()
+        const {output} = this.runEslintCommand(`--report-unused-disable-directives --format json ${target}`)
         const data = this.parseEslintJson(output)
 
         if (!data) {

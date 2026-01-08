@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import EslintAuditor from './base.js'
-import {findJsFiles, groupBy, isInsideString} from '../../utils.js'
+import {groupBy, isInsideString} from '../../utils.js'
 import {success, hint, subHeader, listItem, divider} from '../../format.js'
 
 
@@ -80,7 +80,7 @@ export default class DisablesAuditor extends EslintAuditor {
 
 
     #findEslintDisables () {
-        const files = findJsFiles(this.rootDir)
+        const files = this.scanFiles()
         const disables = []
 
         const patterns = [

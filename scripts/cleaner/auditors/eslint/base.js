@@ -1,3 +1,4 @@
+import path from 'path'
 import {execSync} from 'child_process'
 import Auditor from '../../auditor.js'
 
@@ -5,6 +6,14 @@ import Auditor from '../../auditor.js'
 export default class EslintAuditor extends Auditor {
 
     static $category = 'eslint'
+
+    getEslintTarget () {
+        if (this.targetPath) {
+            return path.relative(this.rootDir, this.targetPath)
+        }
+        return '.'
+    }
+
 
     runEslintCommand (args) {
         try {

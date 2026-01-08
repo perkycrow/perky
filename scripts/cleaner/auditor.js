@@ -20,6 +20,7 @@ export default class Auditor {
             dryRun: false,
             compact: false,
             silent: false,
+            targetPath: null,
             ...options
         }
     }
@@ -47,6 +48,11 @@ export default class Auditor {
 
     get silent () {
         return this.#options.silent
+    }
+
+
+    get targetPath () {
+        return this.#options.targetPath
     }
 
 
@@ -147,6 +153,11 @@ export default class Auditor {
     }
 
 
+    scanFiles () {
+        return this.#scanFiles()
+    }
+
+
     printClean (message) {
         if (this.silent) {
             return
@@ -168,7 +179,7 @@ export default class Auditor {
 
 
     #scanFiles () {
-        return findJsFiles(this.#rootDir)
+        return findJsFiles(this.#rootDir, [], this.targetPath)
     }
 
 

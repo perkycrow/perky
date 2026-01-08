@@ -60,14 +60,29 @@ export function shouldSkipDirectory (name) {
 }
 
 
-export function findJsFiles (dir, files = []) {
+export function findJsFiles (dir, files = [], targetPath = null) {
+    if (targetPath) {
+        const stats = fs.statSync(targetPath)
+
+        if (stats.isFile()) {
+            return [targetPath]
+        }
+
+        return findJsFilesInDirectory(targetPath, [])
+    }
+
+    return findJsFilesInDirectory(dir, files)
+}
+
+
+function findJsFilesInDirectory (dir, files = []) {
     const entries = fs.readdirSync(dir, {withFileTypes: true})
 
     for (const entry of entries) {
         const fullPath = path.join(dir, entry.name)
 
         if (entry.isDirectory() && !shouldSkipDirectory(entry.name)) {
-            findJsFiles(fullPath, files)
+            findJsFilesInDirectory(fullPath, files)
         } else if (entry.isFile() && entry.name.endsWith('.js')) {
             files.push(fullPath)
         }

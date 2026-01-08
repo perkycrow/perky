@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 import Auditor from '../../auditor.js'
-import {findJsFiles} from '../../utils.js'
 import {hint, listItem, divider} from '../../format.js'
 
 
@@ -48,23 +47,18 @@ export default class SingleDescribesAuditor extends Auditor {
 
 
     #findSingleTestDescribes () {
-        const files = findTestFiles(this.rootDir)
+        const files = this.scanFiles().filter((filePath) => {
+            const relativePath = path.relative(this.rootDir, filePath)
+            return relativePath.endsWith('.test.js') &&
+                !relativePath.startsWith('scripts/cleaner/') &&
+                relativePath !== 'doc/test_parser.test.js'
+        })
 
         return files
             .map((filePath) => findSingleTestDescribes(filePath, this.rootDir))
             .filter(Boolean)
     }
 
-}
-
-
-function findTestFiles (rootDir) {
-    return findJsFiles(rootDir).filter((filePath) => {
-        const relativePath = path.relative(rootDir, filePath)
-        return relativePath.endsWith('.test.js') &&
-            !relativePath.startsWith('scripts/cleaner/') &&
-            relativePath !== 'doc/test_parser.test.js'
-    })
 }
 
 

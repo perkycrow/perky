@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import {pathToFileURL} from 'url'
 import Auditor from '../../auditor.js'
-import {findJsFiles, isExcludedFile} from '../../utils.js'
+import {isExcludedFile} from '../../utils.js'
 import {hint, listItem, divider} from '../../format.js'
 
 
@@ -50,7 +50,7 @@ export default class MissingTestsAuditor extends Auditor {
     async #findFilesWithoutTests () {
         const config = await this.#loadConfig()
         const excludeDirs = config.missingTests?.excludeDirs || []
-        const files = findJsFiles(this.rootDir)
+        const files = this.scanFiles()
         const missing = []
 
         for (const filePath of files) {

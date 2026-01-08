@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import EslintAuditor from './base.js'
-import {findJsFiles, groupBy} from '../../utils.js'
+import {groupBy} from '../../utils.js'
 import {hint, listItem, divider} from '../../format.js'
 
 
@@ -46,7 +46,7 @@ export default class SwitchesAuditor extends EslintAuditor {
 
 
     #findSwitchStatements () {
-        const files = findJsFiles(this.rootDir)
+        const files = this.scanFiles()
         const switches = []
 
         for (const filePath of files) {

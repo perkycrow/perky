@@ -233,10 +233,10 @@ export function runFix (rootDir, options = {}) {
 }
 
 
-export async function runAll (rootDir) {
+export async function runAll (rootDir, options = {}) {
     printBanner()
-    runFix(rootDir)
-    await runAudit(rootDir, {showBanner: false})
+    runFix(rootDir, options)
+    await runAudit(rootDir, {showBanner: false, ...options})
 }
 
 

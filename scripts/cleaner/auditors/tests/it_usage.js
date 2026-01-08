@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 import Auditor from '../../auditor.js'
-import {findJsFiles} from '../../utils.js'
 import {hint, listItem, divider} from '../../format.js'
 
 
@@ -49,21 +48,16 @@ export default class ItUsageAuditor extends Auditor {
 
 
     #findItUsage () {
-        const files = findTestFiles(this.rootDir)
+        const files = this.scanFiles().filter((filePath) => {
+            const relativePath = path.relative(this.rootDir, filePath)
+            return relativePath.endsWith('.test.js') && !relativePath.startsWith('scripts/cleaner/')
+        })
 
         return files
             .map((filePath) => analyzeFileItUsage(filePath, this.rootDir))
             .filter(Boolean)
     }
 
-}
-
-
-function findTestFiles (rootDir) {
-    return findJsFiles(rootDir).filter((filePath) => {
-        const relativePath = path.relative(rootDir, filePath)
-        return relativePath.endsWith('.test.js') && !relativePath.startsWith('scripts/cleaner/')
-    })
 }
 
 
