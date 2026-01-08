@@ -1,7 +1,7 @@
 export default {
     missingTests: {
         excludeDirs: [
-            'defend_the_den/'
+            'den/'
         ],
         excludeFiles: [
             '**/test_helpers.js',

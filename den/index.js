@@ -1,5 +1,5 @@
 import ApplicationManager from '../application/application_manager.js'
-import DefendTheDen from './defend_the_den.js'
+import DefendTheDen from './den.js'
 import {PerkyDevTools} from '../editor/devtools/index.js'
 
 
@@ -8,7 +8,7 @@ async function init () {
     appManager.register('defendTheDen', DefendTheDen)
     appManager.start()
 
-    const container = document.getElementById('defend_the_den')
+    const container = document.getElementById('den')
     const app = await appManager.spawn('defendTheDen', {
         container,
         preload: 'all'

@@ -4,11 +4,11 @@ import {cpSync} from 'fs'
 
 
 export default defineConfig({
-    root: './defend_the_den',
+    root: './den',
     base: './',
     publicDir: false,
     build: {
-        outDir: '../dist/defend_the_den',
+        outDir: '../dist/den',
         emptyOutDir: true,
         assetsDir: 'js',
         minify: false
@@ -22,8 +22,8 @@ export default defineConfig({
         name: 'copy-assets',
         closeBundle () {
             cpSync(
-                path.resolve(__dirname, 'defend_the_den/assets'),
-                path.resolve(__dirname, 'dist/defend_the_den/assets'),
+                path.resolve(__dirname, 'den/assets'),
+                path.resolve(__dirname, 'dist/den/assets'),
                 {recursive: true}
             )
         }
