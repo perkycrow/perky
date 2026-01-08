@@ -1,6 +1,6 @@
 import {describe, test, expect, beforeEach} from 'vitest'
 import RenderPass from './render_pass.js'
-import {createMockGLWithSpies, createMockProgram, createMockShaderRegistry, createMockQuad} from '../../test/helpers.js'
+import {createMockGLWithSpies, createMockProgram, createMockShaderRegistry, createMockQuad} from '../test_helpers.js'
 
 
 class TestPass extends RenderPass {

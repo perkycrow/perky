@@ -1,6 +1,6 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
 import ShaderRegistry from './shader_registry.js'
-import {createMockGLWithSpies} from '../../test/helpers.js'
+import {createMockGLWithSpies} from '../test_helpers.js'
 
 
 const VERTEX_SOURCE = `#version 300 es

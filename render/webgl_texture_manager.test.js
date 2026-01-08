@@ -1,7 +1,7 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
 import WebGLTextureManager from './webgl_texture_manager.js'
 import PerkyModule from '../core/perky_module.js'
-import {createMockGLWithSpies, createMockImage} from '../test/helpers.js'
+import {createMockGLWithSpies, createMockImage} from './test_helpers.js'
 
 
 describe(WebGLTextureManager, () => {

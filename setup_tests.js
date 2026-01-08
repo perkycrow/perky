@@ -1,4 +1,4 @@
-import {createMockGL} from './helpers.js'
+import {createMockGL} from './render/test_helpers.js'
 
 
 global.ResizeObserver = class ResizeObserver {

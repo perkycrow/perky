@@ -1,6 +1,6 @@
 import {describe, test, expect, beforeEach} from 'vitest'
 import Atlas from './atlas.js'
-import {createMockImage} from '../test/helpers.js'
+import {createMockImage} from './test_helpers.js'
 
 
 describe('Atlas', () => {

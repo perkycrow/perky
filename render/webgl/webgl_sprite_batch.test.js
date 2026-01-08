@@ -1,7 +1,7 @@
 import {describe, test, expect, vi} from 'vitest'
 import WebGLSpriteBatch from './webgl_sprite_batch.js'
 import Image2D from '../image_2d.js'
-import {createMockGLWithSpies} from '../../test/helpers.js'
+import {createMockGLWithSpies} from '../test_helpers.js'
 
 
 describe(WebGLSpriteBatch, () => {

@@ -1,6 +1,6 @@
 import {describe, test, expect, beforeEach} from 'vitest'
 import FullscreenQuad from './fullscreen_quad.js'
-import {createMockGLWithSpies, createMockProgram} from '../../test/helpers.js'
+import {createMockGLWithSpies, createMockProgram} from '../test_helpers.js'
 
 
 describe(FullscreenQuad, () => {

@@ -1,7 +1,7 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
 import ShaderEffectRegistry from './shader_effect_registry.js'
 import ShaderEffect from './shader_effect.js'
-import {createMockGLWithSpies} from '../../test/helpers.js'
+import {createMockGLWithSpies} from '../test_helpers.js'
 
 
 function createMockShaderRegistry () {

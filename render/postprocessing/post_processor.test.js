@@ -1,7 +1,7 @@
 import {describe, test, expect, beforeEach} from 'vitest'
 import PostProcessor from './post_processor.js'
 import RenderPass from './render_pass.js'
-import {createMockGLWithSpies, createMockShaderRegistry} from '../../test/helpers.js'
+import {createMockGLWithSpies, createMockShaderRegistry} from '../test_helpers.js'
 
 
 class MockPass extends RenderPass {
