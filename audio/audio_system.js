@@ -88,6 +88,8 @@ export default class AudioSystem extends PerkyModule {
                 }
             })
         }
+
+        this.#applyConfig()
     }
 
 
@@ -364,6 +366,31 @@ export default class AudioSystem extends PerkyModule {
     getListenerPosition () {
         const pos = this.#audioContext.getListenerPosition()
         return {x: pos.x, y: pos.y}
+    }
+
+
+    #applyConfig () {
+        const audioConfig = this.host?.getConfig?.('audio')
+
+        if (!audioConfig) {
+            return
+        }
+
+        if (audioConfig.masterVolume !== undefined) {
+            this.setVolume(audioConfig.masterVolume)
+        }
+
+        if (audioConfig.channels) {
+            Object.entries(audioConfig.channels).forEach(([channelName, channelConfig]) => {
+                if (channelConfig.volume !== undefined) {
+                    this.setChannelVolume(channelName, channelConfig.volume)
+                }
+
+                if (channelConfig.muted) {
+                    this.muteChannel(channelName)
+                }
+            })
+        }
     }
 
 }

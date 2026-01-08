@@ -5,6 +5,7 @@ export default class AudioContext {
     #masterGain = null
     #suspended = true
     #pendingDecodes = []
+    #masterVolume = 1
 
     get context () {
         return this.#context
@@ -49,6 +50,7 @@ export default class AudioContext {
 
         this.#context = new AudioContextClass()
         this.#masterGain = this.#context.createGain()
+        this.#masterGain.gain.setValueAtTime(this.#masterVolume, this.#context.currentTime)
         this.#masterGain.connect(this.#context.destination)
         this.#suspended = this.#context.state === 'suspended'
 
@@ -95,9 +97,11 @@ export default class AudioContext {
 
 
     setMasterVolume (value) {
+        this.#masterVolume = Math.max(0, Math.min(1, value))
+
         if (this.#masterGain) {
             this.#masterGain.gain.setValueAtTime(
-                Math.max(0, Math.min(1, value)),
+                this.#masterVolume,
                 this.#context.currentTime
             )
         }
@@ -107,7 +111,7 @@ export default class AudioContext {
 
 
     getMasterVolume () {
-        return this.#masterGain?.gain.value ?? 1
+        return this.#masterVolume
     }
 
 

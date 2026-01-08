@@ -1,6 +1,14 @@
 const manifest = {
     config: {
-        name: 'Mistbrewer'
+        name: 'Mistbrewer',
+        audio: {
+            masterVolume: 0.5,
+            channels: {
+                sfx: {muted: true, volume: 0.5},
+                ambiance: {muted: true},
+                music: {muted: false}
+            }
+        }
     },
     assets: {
         background: {type: 'image', url: './assets/images/background.png'},
