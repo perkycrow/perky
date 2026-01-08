@@ -62,7 +62,7 @@ export default class AudioChannel extends PerkyModule {
 
 
     onInstall () {
-        // gainNode is created lazily in getter
+
     }
 
 

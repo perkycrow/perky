@@ -32,10 +32,22 @@ export function isInsideRegex (textBefore) {
     if (lastSlash === -1) {
         return false
     }
-    const afterSlash = textBefore.substring(lastSlash + 1)
-    if (/[a-zA-Z0-9_$)\]}"'`]/.test(textBefore[lastSlash - 1])) {
+
+    const charBefore = textBefore[lastSlash - 1]
+    if (/[a-zA-Z0-9_$)\]}"'`]/.test(charBefore)) {
         return false
     }
+
+    const textBeforeSlash = textBefore.substring(0, lastSlash)
+    const doubleQuotes = (textBeforeSlash.match(/"/g) || []).length
+    const singleQuotes = (textBeforeSlash.match(/'/g) || []).length
+    const backticks = (textBeforeSlash.match(/`/g) || []).length
+
+    if ((doubleQuotes + singleQuotes + backticks) % 2 !== 0) {
+        return false
+    }
+
+    const afterSlash = textBefore.substring(lastSlash + 1)
     if (/^[^/]*$/.test(afterSlash)) {
         return true
     }

@@ -116,4 +116,52 @@ describe('cleanFileContent', () => {
         expect(modified).toBe(true)
     })
 
+
+    test('removes multiple comments in single pass', () => {
+        const content = `function example () {
+    const x = 1
+    // First comment
+    const y = 2
+
+    // Second comment
+    const z = 3
+
+    // Third comment
+    return x + y + z
+}`
+        const {result, comments} = cleanFileContent(content)
+
+        expect(comments).toHaveLength(3)
+        expect(comments[0].text).toBe('//First comment')
+        expect(comments[1].text).toBe('//Second comment')
+        expect(comments[2].text).toBe('//Third comment')
+        expect(result).not.toContain('// First comment')
+        expect(result).not.toContain('// Second comment')
+        expect(result).not.toContain('// Third comment')
+    })
+
+
+    test('removes all comments after first comment with slash', () => {
+        const content = `const container = document.createElement('div')
+container.className = 'filters-container'
+
+// First comment to remove
+const searchContainer = document.createElement('div')
+searchContainer.className = 'search-container'
+
+// Second comment to remove
+const searchBar = document.createElement('input')
+searchBar.type = 'text'
+
+// Third comment to remove
+const clearButton = document.createElement('button')`
+
+        const {result, comments} = cleanFileContent(content)
+
+        expect(comments).toHaveLength(3)
+        expect(result).not.toContain('// First comment')
+        expect(result).not.toContain('// Second comment')
+        expect(result).not.toContain('// Third comment')
+    })
+
 })

@@ -550,21 +550,21 @@ export default class ManifestInspector extends BaseInspector {
         const container = document.createElement('div')
         container.className = 'filters-container'
 
-        // Search container with clear button
+
         const searchContainer = document.createElement('div')
         searchContainer.className = 'search-container'
         if (this.#filterState.searchQuery) {
             searchContainer.classList.add('has-value')
         }
 
-        // Search bar
+
         const searchBar = document.createElement('input')
         searchBar.type = 'text'
         searchBar.className = 'search-bar'
         searchBar.placeholder = 'Search by name, id, type or tag...'
         searchBar.value = this.#filterState.searchQuery
 
-        // Clear button
+
         const clearButton = document.createElement('div')
         clearButton.className = 'search-clear'
         clearButton.textContent = '×'
@@ -600,7 +600,7 @@ export default class ManifestInspector extends BaseInspector {
         searchContainer.appendChild(clearButton)
         container.appendChild(searchContainer)
 
-        // Quick filters (types and tags as clickable chips)
+
         const quickFilters = document.createElement('div')
         quickFilters.className = 'filter-buttons'
 
@@ -641,15 +641,15 @@ export default class ManifestInspector extends BaseInspector {
             return section
         }
 
-        // Add filters bar
+
         content.appendChild(this.#createFiltersBar(allAssets))
 
-        // Create container for the assets list
+
         const assetsListContainer = document.createElement('div')
         this.#assetsListContainer = assetsListContainer
         content.appendChild(assetsListContainer)
 
-        // Apply filters
+
         const filteredAssets = this.#applyFilters(allAssets)
 
         if (filteredAssets.length === 0) {
@@ -867,7 +867,7 @@ function createAssetCard (asset, createDataGrid, hasActiveSearch = false) {
 
     card.appendChild(detailsContainer)
 
-    // Make header clickable to toggle details
+
     header.style.cursor = 'pointer'
     header.addEventListener('click', () => {
         const isHidden = detailsContainer.style.display === 'none'
