@@ -42,6 +42,11 @@ export default class AudioChannel extends PerkyModule {
 
 
     get gainNode () {
+        if (!this.#gainNode && this.#audioContext) {
+            this.#gainNode = this.#audioContext.createGain()
+            this.#gainNode.connect(this.#audioContext.masterGain)
+            this.#updateGain()
+        }
         return this.#gainNode
     }
 
@@ -57,13 +62,7 @@ export default class AudioChannel extends PerkyModule {
 
 
     onInstall () {
-        const ctx = this.#audioContext
-
-        if (ctx) {
-            this.#gainNode = ctx.createGain()
-            this.#gainNode.connect(ctx.masterGain)
-            this.#updateGain()
-        }
+        // gainNode is created lazily in getter
     }
 
 

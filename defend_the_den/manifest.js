@@ -15,7 +15,13 @@ const manifest = {
         brick: {type: 'image', url: './assets/images/brick.png'},
         pie: {type: 'image', url: './assets/images/pie.png'},
         cake: {type: 'image', url: './assets/images/cake.png'},
-        fireball: {type: 'image', url: './assets/images/fireball.png'}
+        fireball: {type: 'image', url: './assets/images/fireball.png'},
+
+        click: {type: 'audio', url: './assets/audio/click.ogg', tags: ['sfx']},
+        howl: {type: 'audio', url: './assets/audio/howl.ogg', tags: ['sfx']},
+        throw: {type: 'audio', url: './assets/audio/throw.ogg', tags: ['sfx']},
+        wound: {type: 'audio', url: './assets/audio/wound.ogg', tags: ['sfx']},
+        music: {type: 'audio', url: './assets/audio/music.ogg', tags: ['music']}
     }
 }
 

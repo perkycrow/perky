@@ -86,32 +86,12 @@ export async function loadArrayBuffer (params) {
 }
 
 
-let sharedAudioContext = null
-
-
-function getAudioContext () {
-    if (!sharedAudioContext) {
-        sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)()
-    }
-    return sharedAudioContext
-}
-
-
 export async function loadAudio (params) {
-    const arrayBuffer = await loadArrayBuffer(params)
-    const audioContext = getAudioContext()
-
-    return new Promise((resolve, reject) => {
-        audioContext.decodeAudioData(
-            arrayBuffer,
-            function (decodedData) {
-                resolve(decodedData)
-            },
-            function (error) {
-                reject(new Error('Failed to decode audio data: ' + (error ? error.message : 'Unknown error')))
-            }
-        )
-    })
+    const {url} = normalizeParams(params)
+    return {
+        type: 'deferred_audio',
+        url
+    }
 }
 
 

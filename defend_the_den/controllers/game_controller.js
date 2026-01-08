@@ -148,6 +148,8 @@ export default class GameController extends WorldController {
             x: player.x + 0.3,
             y: player.y + 0.4
         })
+
+        this.game.denAudio?.playShoot()
     }
 
 

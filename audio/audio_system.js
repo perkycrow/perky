@@ -3,6 +3,7 @@ import AudioContext from './audio_context.js'
 import AudioChannel from './audio_channel.js'
 import AudioSource from './audio_source.js'
 import {uniqueId} from '../core/utils.js'
+import {onAudioUnlock} from './audio_unlock.js'
 
 
 export default class AudioSystem extends PerkyModule {
@@ -11,6 +12,7 @@ export default class AudioSystem extends PerkyModule {
 
     #audioContext = null
     #buffers = new Map()
+    #pendingAudio = new Map()
     #unlocked = false
 
     constructor (options = {}) {
@@ -81,8 +83,8 @@ export default class AudioSystem extends PerkyModule {
 
         if (host.sourceManager) {
             this.listenTo(host.sourceManager, 'loader:progress', (_progress, {asset, source}) => {
-                if (asset.type === 'audio' && source) {
-                    this.registerBuffer(asset.id, source)
+                if (asset.type === 'audio' && source?.type === 'deferred_audio') {
+                    this.#pendingAudio.set(asset.id, source.url)
                 }
             })
         }
@@ -90,12 +92,14 @@ export default class AudioSystem extends PerkyModule {
 
 
     onStart () {
-        this.unlock()
+        onAudioUnlock(() => this.unlock())
     }
 
 
     onStop () {
-        this.#audioContext.suspend()
+        if (this.#unlocked) {
+            this.#audioContext.suspend()
+        }
     }
 
 
@@ -114,11 +118,24 @@ export default class AudioSystem extends PerkyModule {
         try {
             await this.#audioContext.resume()
             this.#unlocked = true
+            await this.#loadPendingAudio()
             this.emit('audio:unlocked')
             return true
         } catch {
             return false
         }
+    }
+
+
+    async #loadPendingAudio () {
+        const promises = []
+
+        for (const [id, url] of this.#pendingAudio) {
+            promises.push(this.loadBuffer(id, url))
+        }
+
+        this.#pendingAudio.clear()
+        await Promise.all(promises)
     }
 
 
@@ -153,6 +170,18 @@ export default class AudioSystem extends PerkyModule {
     }
 
 
+    async registerArrayBuffer (id, arrayBuffer) {
+        try {
+            const audioBuffer = await this.#audioContext.decodeAudioData(arrayBuffer)
+            this.registerBuffer(id, audioBuffer)
+            return audioBuffer
+        } catch (e) {
+            this.emit('buffer:error', id, e)
+            return null
+        }
+    }
+
+
     getBuffer (id) {
         return this.#buffers.get(id) || null
     }
@@ -167,9 +196,7 @@ export default class AudioSystem extends PerkyModule {
         try {
             const response = await fetch(url)
             const arrayBuffer = await response.arrayBuffer()
-            const audioBuffer = await this.#audioContext.decodeAudioData(arrayBuffer)
-            this.registerBuffer(id, audioBuffer)
-            return audioBuffer
+            return this.registerArrayBuffer(id, arrayBuffer)
         } catch (e) {
             this.emit('buffer:error', id, e)
             return null
@@ -178,6 +205,10 @@ export default class AudioSystem extends PerkyModule {
 
 
     play (bufferId, options = {}) {
+        if (!this.#unlocked) {
+            return null
+        }
+
         const buffer = this.#buffers.get(bufferId)
 
         if (!buffer) {
@@ -217,6 +248,10 @@ export default class AudioSystem extends PerkyModule {
 
 
     playOscillator (options = {}) {
+        if (!this.#unlocked) {
+            return null
+        }
+
         const channel = this.getChannel(options.channel ?? 'sfx')
         const sourceId = options.$id ?? uniqueId(this.childrenRegistry, 'oscillator')
 

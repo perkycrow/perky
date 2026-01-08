@@ -4,6 +4,7 @@ export default class AudioContext {
     #context = null
     #masterGain = null
     #suspended = true
+    #pendingDecodes = []
 
     get context () {
         return this.#context
@@ -51,7 +52,21 @@ export default class AudioContext {
         this.#masterGain.connect(this.#context.destination)
         this.#suspended = this.#context.state === 'suspended'
 
+        if (this.#context.state === 'running') {
+            this.#processPendingDecodes()
+        }
+
         return this.#context
+    }
+
+
+    #processPendingDecodes () {
+        for (const pending of this.#pendingDecodes) {
+            this.#context.decodeAudioData(pending.buffer)
+                .then(pending.resolve)
+                .catch(pending.reject)
+        }
+        this.#pendingDecodes = []
     }
 
 
@@ -128,6 +143,13 @@ export default class AudioContext {
 
     async decodeAudioData (arrayBuffer) {
         this.init()
+
+        if (this.#context.state === 'suspended') {
+            return new Promise((resolve, reject) => {
+                this.#pendingDecodes.push({buffer: arrayBuffer, resolve, reject})
+            })
+        }
+
         return this.#context.decodeAudioData(arrayBuffer)
     }
 

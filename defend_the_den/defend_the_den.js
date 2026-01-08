@@ -4,6 +4,7 @@ import DenWorld from './den_world.js'
 import GameController from './controllers/game_controller.js'
 import GameRenderer from './game_renderer.js'
 import WaveProgressBar from './ui/wave_progress_bar.js'
+import DenAudioManager from './den_audio_manager.js'
 
 import VignettePass from '../render/postprocessing/passes/vignette_pass.js'
 import DayNightPass from './postprocessing/day_night_pass.js'
@@ -143,6 +144,11 @@ export default class DefendTheDen extends Game {
             game: this
         })
         waveProgressBar.mount(uiLayer)
+
+        this.denAudio = this.create(DenAudioManager, {
+            $id: 'denAudio',
+            game: this
+        })
 
         this.on('render', () => {
             this.renderer.render()
