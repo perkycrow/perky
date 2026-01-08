@@ -186,6 +186,16 @@ const customStyles = `
         background: var(--bg-primary);
     }
 
+    .asset-preview audio {
+        width: 100%;
+        height: 32px;
+        outline: none;
+    }
+
+    .asset-preview audio::-webkit-media-controls-panel {
+        background-color: var(--bg-primary);
+    }
+
     .asset-config {
         margin-top: 6px;
         padding-top: 6px;
@@ -556,6 +566,10 @@ function getImageSrc (source) {
 
 
 function createSourcePreview (asset) {
+    if (asset.type === 'audio') {
+        return createAudioPreview(asset)
+    }
+
     const source = asset.source
     const src = getImageSrc(source)
 
@@ -570,6 +584,37 @@ function createSourcePreview (asset) {
     img.src = src
     img.alt = asset.name || asset.id
     preview.appendChild(img)
+
+    return preview
+}
+
+
+function createAudioPreview (asset) {
+    const source = asset.source
+
+    let audioSrc = null
+
+    if (source instanceof HTMLAudioElement) {
+        audioSrc = source.src
+    } else if (asset.url) {
+        audioSrc = asset.url
+    }
+
+    if (!audioSrc) {
+        return null
+    }
+
+    const preview = document.createElement('div')
+    preview.className = 'asset-preview'
+
+    const audio = document.createElement('audio')
+    audio.controls = true
+    audio.preload = 'metadata'
+    audio.src = audioSrc
+
+    audio.setAttribute('controlsList', 'nodownload')
+
+    preview.appendChild(audio)
 
     return preview
 }
