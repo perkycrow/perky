@@ -173,7 +173,7 @@ export function createMockPerkyAudioContext (nativeContext = null) {
             listenerPosition.x = x
             listenerPosition.y = y
             listenerPosition.z = z
-            // Update the native context listener if it exists
+
             if (this.context?.listener) {
                 this.context.listener.positionX.value = x
                 this.context.listener.positionY.value = y

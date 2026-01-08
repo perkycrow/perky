@@ -570,6 +570,7 @@ describe(AudioSystem, () => {
         test('creates oscillator source with spatial audio enabled', () => {
             const source = system.playOscillatorAt(100, 200)
             expect(source).not.toBeNull()
+
             // Verify spatial audio is enabled by checking position properties
             const pos = source.getPosition()
             expect(pos.x).toBe(100)
