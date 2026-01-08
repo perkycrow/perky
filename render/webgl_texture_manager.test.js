@@ -1,31 +1,7 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
 import WebGLTextureManager from './webgl_texture_manager.js'
 import PerkyModule from '../core/perky_module.js'
-
-
-function createMockGL () {
-    return {
-        createTexture: vi.fn(() => ({})),
-        deleteTexture: vi.fn(),
-        bindTexture: vi.fn(),
-        texImage2D: vi.fn(),
-        texParameteri: vi.fn(),
-        TEXTURE_2D: 'TEXTURE_2D',
-        RGBA: 'RGBA',
-        UNSIGNED_BYTE: 'UNSIGNED_BYTE',
-        TEXTURE_MIN_FILTER: 'MIN_FILTER',
-        TEXTURE_MAG_FILTER: 'MAG_FILTER',
-        TEXTURE_WRAP_S: 'WRAP_S',
-        TEXTURE_WRAP_T: 'WRAP_T',
-        LINEAR: 'LINEAR',
-        CLAMP_TO_EDGE: 'CLAMP_TO_EDGE'
-    }
-}
-
-
-function createMockImage (width = 100, height = 100) {
-    return {width, height, complete: true}
-}
+import {createMockGLWithSpies, createMockImage} from '../test/helpers.js'
 
 
 describe(WebGLTextureManager, () => {
@@ -34,7 +10,7 @@ describe(WebGLTextureManager, () => {
     let manager
 
     beforeEach(() => {
-        gl = createMockGL()
+        gl = createMockGLWithSpies()
         manager = new WebGLTextureManager({gl, autoFlush: false})
     })
 
@@ -405,7 +381,7 @@ describe(WebGLTextureManager, () => {
             manager.acquire(image)
             manager.dispose()
 
-            const newGl = createMockGL()
+            const newGl = createMockGLWithSpies()
             const newManager = new WebGLTextureManager({gl: newGl, autoFlush: false})
 
             expect(newManager.hasTexture(image)).toBe(false)

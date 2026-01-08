@@ -1,23 +1,6 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
 import FullscreenQuad from './fullscreen_quad.js'
-
-
-function createMockGL () {
-    return {
-        ARRAY_BUFFER: 0x8892,
-        STATIC_DRAW: 0x88E4,
-        FLOAT: 0x1406,
-        TRIANGLE_STRIP: 0x0005,
-
-        createBuffer: vi.fn(() => ({id: Math.random()})),
-        deleteBuffer: vi.fn(),
-        bindBuffer: vi.fn(),
-        bufferData: vi.fn(),
-        enableVertexAttribArray: vi.fn(),
-        vertexAttribPointer: vi.fn(),
-        drawArrays: vi.fn()
-    }
-}
+import {createMockGLWithSpies} from '../../test/helpers.js'
 
 
 function createMockProgram (hasTexCoord = true) {
@@ -36,7 +19,7 @@ describe(FullscreenQuad, () => {
     let quad
 
     beforeEach(() => {
-        gl = createMockGL()
+        gl = createMockGLWithSpies()
         quad = new FullscreenQuad(gl)
     })
 

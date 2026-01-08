@@ -1,25 +1,13 @@
 import {describe, test, expect, vi} from 'vitest'
 import WebGLSpriteBatch from './webgl_sprite_batch.js'
 import Image2D from '../image_2d.js'
-
-
-function createMockGl () {
-    return {
-        createBuffer: vi.fn(() => ({})),
-        bindBuffer: vi.fn(),
-        bufferData: vi.fn(),
-        ARRAY_BUFFER: 'ARRAY_BUFFER',
-        ELEMENT_ARRAY_BUFFER: 'ELEMENT_ARRAY_BUFFER',
-        STATIC_DRAW: 'STATIC_DRAW',
-        DYNAMIC_DRAW: 'DYNAMIC_DRAW'
-    }
-}
+import {createMockGLWithSpies} from '../../test/helpers.js'
 
 
 describe(WebGLSpriteBatch, () => {
 
     test('constructor creates buffers', () => {
-        const gl = createMockGl()
+        const gl = createMockGLWithSpies()
         const batch = new WebGLSpriteBatch(gl, {}, {})
         expect(gl.createBuffer).toHaveBeenCalledTimes(2)
         expect(batch.vertexBuffer).toBeDefined()
@@ -28,21 +16,21 @@ describe(WebGLSpriteBatch, () => {
 
 
     test('constructor uses default maxSprites', () => {
-        const gl = createMockGl()
+        const gl = createMockGLWithSpies()
         const batch = new WebGLSpriteBatch(gl, {}, {})
         expect(batch.maxSprites).toBe(1000)
     })
 
 
     test('constructor accepts custom maxSprites', () => {
-        const gl = createMockGl()
+        const gl = createMockGLWithSpies()
         const batch = new WebGLSpriteBatch(gl, {}, {}, {maxSprites: 500})
         expect(batch.maxSprites).toBe(500)
     })
 
 
     test('begin resets state', () => {
-        const gl = createMockGl()
+        const gl = createMockGLWithSpies()
         const batch = new WebGLSpriteBatch(gl, {}, {})
         batch.spriteCount = 10
         batch.vertexIndex = 100
@@ -55,7 +43,7 @@ describe(WebGLSpriteBatch, () => {
 
 
     test('begin sets active program', () => {
-        const gl = createMockGl()
+        const gl = createMockGLWithSpies()
         const batch = new WebGLSpriteBatch(gl, {}, {})
         const program = {}
         batch.begin(program)
@@ -64,7 +52,7 @@ describe(WebGLSpriteBatch, () => {
 
 
     test('flush does nothing when spriteCount is 0', () => {
-        const gl = createMockGl()
+        const gl = createMockGLWithSpies()
         gl.useProgram = vi.fn()
         const batch = new WebGLSpriteBatch(gl, {}, {})
         batch.flush()
@@ -73,7 +61,7 @@ describe(WebGLSpriteBatch, () => {
 
 
     test('end calls flush', () => {
-        const gl = createMockGl()
+        const gl = createMockGLWithSpies()
         const batch = new WebGLSpriteBatch(gl, {}, {})
         batch.flush = vi.fn()
         batch.end()
@@ -82,7 +70,7 @@ describe(WebGLSpriteBatch, () => {
 
 
     test('end passes alternate program to flush', () => {
-        const gl = createMockGl()
+        const gl = createMockGLWithSpies()
         const batch = new WebGLSpriteBatch(gl, {}, {})
         batch.flush = vi.fn()
         const program = {}
@@ -92,7 +80,7 @@ describe(WebGLSpriteBatch, () => {
 
 
     test('dispose deletes buffers', () => {
-        const gl = createMockGl()
+        const gl = createMockGLWithSpies()
         gl.deleteBuffer = vi.fn()
         const batch = new WebGLSpriteBatch(gl, {}, {})
         batch.dispose()
@@ -101,7 +89,7 @@ describe(WebGLSpriteBatch, () => {
 
 
     test('addSprite does nothing when image is not ready', () => {
-        const gl = createMockGl()
+        const gl = createMockGLWithSpies()
         const textureManager = {getTexture: vi.fn(() => null)}
         const batch = new WebGLSpriteBatch(gl, {}, textureManager)
 
@@ -121,7 +109,7 @@ describe(WebGLSpriteBatch, () => {
 
 
     test('addSprite increments spriteCount for valid sprites', () => {
-        const gl = createMockGl()
+        const gl = createMockGLWithSpies()
         const mockTexture = {}
         const textureManager = {getTexture: vi.fn(() => mockTexture)}
         const batch = new WebGLSpriteBatch(gl, {}, textureManager)
