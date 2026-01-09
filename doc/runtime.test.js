@@ -1,5 +1,5 @@
 import {describe, test, expect, vi} from 'vitest'
-import {doc, section, setup, text, code, action, see, container, applyContainerPreset} from './runtime.js'
+import {doc, section, setup, text, code, action, see, disclaimer, container, applyContainerPreset} from './runtime.js'
 
 
 vi.mock('../core/logger.js', () => ({
@@ -262,6 +262,69 @@ describe('see', () => {
         expect(() => {
             see('ActionController')
         }).toThrow('see() must be called inside doc()')
+    })
+
+
+    test('creates see block with category', () => {
+        const result = doc('Test', () => {
+            see('Application', {category: 'application'})
+        })
+
+        expect(result.blocks[0].name).toBe('Application')
+        expect(result.blocks[0].category).toBe('application')
+    })
+
+
+    test('creates see block with category and type', () => {
+        const result = doc('Test', () => {
+            see('GameLoop', {category: 'game', type: 'api'})
+        })
+
+        expect(result.blocks[0].name).toBe('GameLoop')
+        expect(result.blocks[0].category).toBe('game')
+        expect(result.blocks[0].pageType).toBe('api')
+    })
+
+
+    test('category defaults to null', () => {
+        const result = doc('Test', () => {
+            see('PerkyModule')
+        })
+
+        expect(result.blocks[0].category).toBeNull()
+    })
+
+})
+
+
+describe('disclaimer', () => {
+
+    test('creates disclaimer block', () => {
+        const result = doc('Test', () => {
+            disclaimer('This is a disclaimer')
+        })
+
+        expect(result.blocks[0].type).toBe('disclaimer')
+        expect(result.blocks[0].content).toBe('This is a disclaimer')
+    })
+
+
+    test('dedents content', () => {
+        const result = doc('Test', () => {
+            disclaimer(`
+                First line
+                Second line
+            `)
+        })
+
+        expect(result.blocks[0].content).toBe('First line\nSecond line')
+    })
+
+
+    test('throws when called outside doc', () => {
+        expect(() => {
+            disclaimer('Test')
+        }).toThrow('disclaimer() must be called inside doc()')
     })
 
 })
