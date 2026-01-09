@@ -243,18 +243,18 @@ export default doc('InputSystem', {context: 'simple'}, () => {
         code('Device events', () => {
             // Low-level: any control pressed/released
             inputSystem.on('control:pressed', (control, event, device) => {
-                console.log(`${control.name} pressed on ${device.$id}`)
+                logger.log(`${control.name} pressed on ${device.$id}`)
             })
 
             inputSystem.on('control:released', (control, event, device) => {
-                console.log(`${control.name} released`)
+                logger.log(`${control.name} released`)
             })
         })
 
         code('Action events', () => {
             // High-level: bound action triggered
             app.on('input:triggered', (binding, event, device) => {
-                console.log(`Action: ${binding.actionName}`)
+                logger.log(`Action: ${binding.actionName}`)
 
                 if (binding.actionName === 'jump') {
                     player.jump()

@@ -113,15 +113,15 @@ export default doc('Application', {context: 'simple'}, () => {
             const app = new Application({$id: 'demo'})
 
             app.on('loader:progress', ({loaded, total}) => {
-                console.log(`Loading: ${loaded}/${total}`)
+                logger.log(`Loading: ${loaded}/${total}`)
             })
 
             app.on('loader:complete', () => {
-                console.log('All assets loaded')
+                logger.log('All assets loaded')
             })
 
             app.on('loader:error', ({asset, error}) => {
-                console.error(`Failed to load ${asset.id}:`, error)
+                logger.error(`Failed to load ${asset.id}:`, error)
             })
         })
 
@@ -153,8 +153,8 @@ export default doc('Application', {context: 'simple'}, () => {
             const el = document.getElementById('app')
 
             app.mount(el)
-            console.log(app.mounted) // true
-            console.log(app.element) // DOM element
+            logger.log(app.mounted) // true
+            logger.log(app.element) // DOM element
 
             app.dismount()
         })
@@ -244,7 +244,7 @@ export default doc('Application', {context: 'simple'}, () => {
 
             // Listen for action triggers
             app.on('input:triggered', (binding) => {
-                console.log('Action triggered:', binding.actionName)
+                logger.log('Action triggered:', binding.actionName)
             })
         })
 
@@ -304,15 +304,15 @@ export default doc('Application', {context: 'simple'}, () => {
                 }
 
                 moveUp () {
-                    console.log('up')
+                    logger.log('up')
                 }
 
                 moveDown () {
-                    console.log('down')
+                    logger.log('down')
                 }
 
                 shoot () {
-                    console.log('shoot')
+                    logger.log('shoot')
                 }
             }
 

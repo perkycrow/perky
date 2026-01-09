@@ -476,7 +476,7 @@ export const DOC_PAGE_STYLES = buildEditorStyles(
     .doc-container-element .doc-hint {
         font-size: 12px;
         opacity: 0.6;
-        margin-bottom: 16px;
+        margin-top: 16px;
     }
 
     .doc-container-element .doc-display {
