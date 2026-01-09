@@ -1,8 +1,8 @@
-import {toKebabCase} from '../core/utils.js'
+import {buildDocUrl} from './utils/paths.js'
 
 
 export function parseMarkdown (text, options = {}) {
-    const {buildSeeUrl = defaultBuildSeeUrl} = options
+    const {buildSeeUrl = buildDocUrl} = options
 
     return text
         .replace(/`([^`]+)`/g, '<code>$1</code>')
@@ -82,27 +82,4 @@ function parseSeeLink (ref, buildSeeUrl) {
     const label = section ? `${name} > ${section}` : name
 
     return `<a href="${url}" class="doc-see-inline">${label}</a>`
-}
-
-
-function defaultBuildSeeUrl (name, pageType, section, category = null) {
-    const baseName = toKebabCase(name).replace(/-/g, '_')
-    const cat = category || 'core'
-    let url = ''
-
-    if (pageType === 'guide') {
-        url = `guide_${baseName}.html`
-    } else if (pageType === 'api') {
-        url = `${cat}_${baseName}_api.html`
-    } else if (pageType === 'test') {
-        url = `${cat}_${baseName}_test.html`
-    } else {
-        url = `${cat}_${baseName}.html`
-    }
-
-    if (section) {
-        url += `#${toKebabCase(section)}`
-    }
-
-    return url
 }

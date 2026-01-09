@@ -4,6 +4,7 @@ import logger from '../core/logger.js'
 import {toKebabCase} from '../core/utils.js'
 import {applyContainerPreset} from './runtime.js'
 import {parseMarkdown} from './parse_markdown.js'
+import {getTabUrl, buildDocUrl as buildSeeUrl} from './utils/paths.js'
 
 
 export default class DocPage extends HTMLElement {
@@ -603,24 +604,6 @@ export default class DocPage extends HTMLElement {
 }
 
 
-function getTabUrl (tab) {
-    const pathname = window.location.pathname
-    const filename = pathname.split('/').pop()
-    const baseName = filename
-        .replace('_api.html', '')
-        .replace('_test.html', '')
-        .replace('.html', '')
-
-    if (tab === 'api') {
-        return `${baseName}_api.html`
-    }
-    if (tab === 'test') {
-        return `${baseName}_test.html`
-    }
-    return `${baseName}.html`
-}
-
-
 function renderText (block) {
     const el = document.createElement('div')
     el.className = 'doc-text'
@@ -999,29 +982,6 @@ function renderSee (block) {
 
     wrapper.appendChild(link)
     return wrapper
-}
-
-
-function buildSeeUrl (name, pageType, section, category = null) {
-    const baseName = toKebabCase(name).replace(/-/g, '_')
-    const cat = category || 'core'
-    let url = ''
-
-    if (pageType === 'guide') {
-        url = `guide_${baseName}.html`
-    } else if (pageType === 'api') {
-        url = `${cat}_${baseName}_api.html`
-    } else if (pageType === 'test') {
-        url = `${cat}_${baseName}_test.html`
-    } else {
-        url = `${cat}_${baseName}.html`
-    }
-
-    if (section) {
-        url += `#${toKebabCase(section)}`
-    }
-
-    return url
 }
 
 

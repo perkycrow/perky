@@ -1,6 +1,7 @@
 import './doc_page.js'
 import '../editor/perky_logger.js'
 import logger from '../core/logger.js'
+import {getTabUrl, extractBaseName} from './utils/paths.js'
 
 
 const docModules = import.meta.glob('../**/*.doc.js')
@@ -150,7 +151,7 @@ class DocViewer {
 
         const isApiPage = filename.endsWith('_api.html')
         const isTestPage = filename.endsWith('_test.html')
-        const baseName = filename.replace('_api.html', '').replace('_test.html', '').replace('.html', '')
+        const baseName = extractBaseName(filename)
 
         const doc = this.docs.find(d => {
             const docBaseName = d.file.slice(1).replace(/\//g, '_').replace('.doc.js', '')
@@ -425,24 +426,6 @@ function updateMobileTabs (docPage) {
         link.href = getTabUrl(tab)
         container.appendChild(link)
     }
-}
-
-
-function getTabUrl (tab) {
-    const pathname = window.location.pathname
-    const filename = pathname.split('/').pop()
-    const baseName = filename
-        .replace('_api.html', '')
-        .replace('_test.html', '')
-        .replace('.html', '')
-
-    if (tab === 'api') {
-        return `${baseName}_api.html`
-    }
-    if (tab === 'test') {
-        return `${baseName}_test.html`
-    }
-    return `${baseName}.html`
 }
 
 

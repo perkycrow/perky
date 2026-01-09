@@ -1,7 +1,7 @@
 import {describe, test, expect, vi} from 'vitest'
 
 
-vi.mock('../core/utils.js', () => ({
+vi.mock('../../core/utils.js', () => ({
     toKebabCase: vi.fn(str => str.toLowerCase().replace(/\s+/g, '-'))
 }))
 
@@ -132,7 +132,7 @@ describe('parse_markdown', () => {
 
         test('api link [[Name:api]]', () => {
             const result = parseMarkdown('Check [[PerkyModule:api]]')
-            expect(result).toContain('core_perkymodule_api.html')
+            expect(result).toContain('core_perky_module_api.html')
         })
 
 

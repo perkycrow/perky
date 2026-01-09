@@ -1,4 +1,5 @@
 import * as acorn from 'acorn'
+import {dedentSource} from './utils/dedent.js'
 
 
 export function parseTestFile (source, filePath = null) {
@@ -191,33 +192,6 @@ function extractFunctionBody (fn, source) {
     }
 
     return null
-}
-
-
-function dedentSource (code) {
-    const lines = code.split('\n')
-
-    if (lines.length <= 1) {
-        return code
-    }
-
-    const restLines = lines.slice(1).filter(line => line.trim().length > 0)
-
-    if (restLines.length === 0) {
-        return code
-    }
-
-    const minIndent = restLines.reduce((min, line) => {
-        const match = line.match(/^(\s*)/)
-        const indent = match ? match[1].length : 0
-        return Math.min(min, indent)
-    }, Infinity)
-
-    if (minIndent === 0 || minIndent === Infinity) {
-        return code
-    }
-
-    return [lines[0], ...lines.slice(1).map(line => line.slice(minIndent))].join('\n')
 }
 
 

@@ -1,4 +1,5 @@
 import logger from '../core/logger.js'
+import {dedent} from './utils/dedent.js'
 
 
 let currentBlocks = null
@@ -247,40 +248,6 @@ function extractFunctionBody (fn) {
         .join('\n')
 
     return dedent(body)
-}
-
-
-function dedent (str) {
-    let lines = str.split('\n')
-
-    while (lines.length > 0 && lines[0].trim() === '') {
-        lines.shift()
-    }
-    while (lines.length > 0 && lines[lines.length - 1].trim() === '') {
-        lines.pop()
-    }
-
-    if (lines.length === 0) {
-        return ''
-    }
-
-    const nonEmptyLines = lines.filter(line => line.trim())
-    if (nonEmptyLines.length === 0) {
-        return lines.join('\n')
-    }
-
-    const minIndent = Math.min(
-        ...nonEmptyLines.map(line => {
-            const match = line.match(/^(\s*)/)
-            return match ? match[1].length : 0
-        })
-    )
-
-    if (minIndent === 0) {
-        return lines.join('\n')
-    }
-
-    return lines.map(line => line.slice(minIndent)).join('\n')
 }
 
 

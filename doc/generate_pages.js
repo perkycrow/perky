@@ -3,6 +3,7 @@ import path from 'path'
 import {fileURLToPath} from 'url'
 import logger from '../core/logger.js'
 import {toHumanCase} from '../core/utils.js'
+import {docFileToHtml, guideIdToHtml} from './utils/paths.js'
 
 
 const __filename = fileURLToPath(import.meta.url)
@@ -396,8 +397,8 @@ function generateItemsHtml (items, activeFile, type) {
         for (const item of categoryItems) {
             const isActive = item.file === activeFile ? ' active' : ''
             const href = type === 'guide'
-                ? `guide_${item.id}.html`
-                : item.file.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
+                ? guideIdToHtml(item.id)
+                : docFileToHtml(item.file)
             const displayTitle = type === 'guide' ? toHumanCase(item.title) : item.title
             html += `<a class="nav-item${isActive}" href="${href}" data-file="${escapeHtml(item.file)}" data-title="${escapeHtml(item.title.toLowerCase())}" data-category="${escapeHtml(item.category)}">${escapeHtml(displayTitle)}</a>`
         }
@@ -428,17 +429,14 @@ function generateSitemap (docs, apiData, testsData, baseUrl) {
     xml += `  <url>\n    <loc>${baseUrl}/</loc>\n    <lastmod>${today}</lastmod>\n    <priority>1.0</priority>\n  </url>\n`
 
     for (const doc of docs) {
-        const docFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
-        xml += `  <url>\n    <loc>${baseUrl}/${docFileName}</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.8</priority>\n  </url>\n`
+        xml += `  <url>\n    <loc>${baseUrl}/${docFileToHtml(doc.file)}</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.8</priority>\n  </url>\n`
 
         if (apiData[doc.file]) {
-            const apiFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '_api.html')
-            xml += `  <url>\n    <loc>${baseUrl}/${apiFileName}</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.6</priority>\n  </url>\n`
+            xml += `  <url>\n    <loc>${baseUrl}/${docFileToHtml(doc.file, 'api')}</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.6</priority>\n  </url>\n`
         }
 
         if (testsData[doc.file]) {
-            const testFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '_test.html')
-            xml += `  <url>\n    <loc>${baseUrl}/${testFileName}</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.5</priority>\n  </url>\n`
+            xml += `  <url>\n    <loc>${baseUrl}/${docFileToHtml(doc.file, 'test')}</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.5</priority>\n  </url>\n`
         }
     }
 
@@ -481,19 +479,16 @@ async function main () {
         const pageData = {doc, sources, api, tests, docs, guides, cssFile, section: 'docs'}
 
         const docHtml = generatePageHtml({...pageData, tab: 'doc'})
-        const docFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
-        fs.writeFileSync(path.join(distDir, docFileName), docHtml)
+        fs.writeFileSync(path.join(distDir, docFileToHtml(doc.file)), docHtml)
 
         if (api) {
             const apiHtml = generatePageHtml({...pageData, tab: 'api'})
-            const apiFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '_api.html')
-            fs.writeFileSync(path.join(distDir, apiFileName), apiHtml)
+            fs.writeFileSync(path.join(distDir, docFileToHtml(doc.file, 'api')), apiHtml)
         }
 
         if (tests) {
             const testHtml = generatePageHtml({...pageData, tab: 'test'})
-            const testFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '_test.html')
-            fs.writeFileSync(path.join(distDir, testFileName), testHtml)
+            fs.writeFileSync(path.join(distDir, docFileToHtml(doc.file, 'test')), testHtml)
         }
 
         logger.log(`  - ${doc.title}`)
@@ -515,8 +510,7 @@ async function main () {
         }
 
         const guideHtml = generatePageHtml({...pageData, tab: 'doc'})
-        const guideFileName = `guide_${guide.id}.html`
-        fs.writeFileSync(path.join(distDir, guideFileName), guideHtml)
+        fs.writeFileSync(path.join(distDir, guideIdToHtml(guide.id)), guideHtml)
 
         logger.log(`  - ${guide.title}`)
     }
