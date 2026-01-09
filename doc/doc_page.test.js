@@ -120,23 +120,19 @@ describe('doc_page', () => {
     })
 
 
-    describe('see block rendering', () => {
+    test('renderBlock handles see block type', () => {
+        const page = new DocPage()
+        const seeBlock = {
+            type: 'see',
+            name: 'ActionController',
+            pageType: 'doc',
+            section: null
+        }
 
-        test('renderBlock handles see block type', () => {
-            const page = new DocPage()
-            const seeBlock = {
-                type: 'see',
-                name: 'ActionController',
-                pageType: 'doc',
-                section: null
-            }
-
-            page.doc = {
-                title: 'Test',
-                blocks: [seeBlock]
-            }
-        })
-
+        page.doc = {
+            title: 'Test',
+            blocks: [seeBlock]
+        }
     })
 
 

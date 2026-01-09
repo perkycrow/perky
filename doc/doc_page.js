@@ -1045,11 +1045,11 @@ function parseSeeLink (ref) {
     }
 
     const colonIndex = ref.indexOf(':')
-    if (colonIndex !== -1) {
+    if (colonIndex === -1) {
+        name = ref
+    } else {
         name = ref.slice(0, colonIndex)
         pageType = ref.slice(colonIndex + 1)
-    } else {
-        name = ref
     }
 
     const url = buildSeeUrl(name, pageType, section)
