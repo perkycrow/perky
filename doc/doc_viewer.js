@@ -475,7 +475,47 @@ function categoryHasVisibleItems (category) {
 }
 
 
+function setupMobileMenu () {
+    const toggle = document.getElementById('mobile-toggle')
+    const sidebar = document.getElementById('docs-sidebar')
+    const overlay = document.getElementById('mobile-overlay')
+
+    if (!toggle || !sidebar || !overlay) {
+        return
+    }
+
+    const openMenu = () => {
+        sidebar.classList.add('open')
+        overlay.classList.add('open')
+        toggle.classList.add('hidden')
+    }
+
+    const closeMenu = () => {
+        sidebar.classList.remove('open')
+        overlay.classList.remove('open')
+        toggle.classList.remove('hidden')
+    }
+
+    toggle.addEventListener('click', () => {
+        if (sidebar.classList.contains('open')) {
+            closeMenu()
+        } else {
+            openMenu()
+        }
+    })
+
+    overlay.addEventListener('click', closeMenu)
+
+    sidebar.addEventListener('click', (e) => {
+        if (e.target.classList.contains('nav-item')) {
+            closeMenu()
+        }
+    })
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const viewer = new DocViewer()
     viewer.init()
+    setupMobileMenu()
 })

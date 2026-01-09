@@ -316,8 +316,14 @@ function generatePageHtml (pageData) {
             ${content}
         </div>
     </noscript>
+    <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12h18M3 6h18M3 18h18"></path>
+        </svg>
+    </button>
+    <div class="mobile-overlay" id="mobile-overlay"></div>
     <div class="docs-layout">
-        <aside class="docs-sidebar">
+        <aside class="docs-sidebar" id="docs-sidebar">
             <div class="sidebar-header">
                 <h1>perky docs</h1>
                 <div class="sidebar-search">

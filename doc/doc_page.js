@@ -1746,9 +1746,39 @@ const STYLES = buildEditorStyles(
         margin: 0;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 1024px) {
         .doc-toc {
             display: none;
+        }
+
+        .doc-header {
+            flex-direction: column;
+            align-items: flex-start;
+            padding-top: 0;
+            border-bottom: none;
+            margin-bottom: 1rem;
+        }
+
+        .doc-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .doc-tabs {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            border: 1px solid var(--border);
+            height: 44px;
+            padding: 0.25rem;
+            box-sizing: border-box;
+        }
+
+        .doc-tab {
+            padding: 0 0.6rem;
+            height: 100%;
+            display: flex;
+            align-items: center;
         }
     }
 `
