@@ -32,7 +32,10 @@ export default doc('Utils', {context: 'simple'}, () => {
 
     section('String Case Conversion', () => {
 
-        text('Convert strings between different naming conventions.')
+        text(`
+            Convert strings between different naming conventions.
+            See [[Inflector]] for the full API.
+        `)
 
         action('toCamelCase', () => {
             logger.log('snake_case:', toCamelCase('snake_case'))
@@ -86,7 +89,11 @@ export default doc('Utils', {context: 'simple'}, () => {
 
     section('Pluralization', () => {
 
-        text('Singular and plural word transformations.')
+        text(`
+            Singular and plural word transformations.
+            These use a shared [[Inflector]] instance.
+            Use Inflector directly if you need custom rules.
+        `)
 
         action('singularize / plural', () => {
             logger.log('players:', singularize('players'))

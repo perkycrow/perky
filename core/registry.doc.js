@@ -5,8 +5,8 @@ import Registry from './registry.js'
 export default doc('Registry', {context: 'simple'}, () => {
 
     text(`
-        Extended ObservableMap with indexing capabilities.
-        Allows fast lookups by custom keys through secondary indexes.
+        Extends [[ObservableMap]] with indexing capabilities.
+        Allows fast O(1) lookups by custom keys through secondary indexes.
     `)
 
 

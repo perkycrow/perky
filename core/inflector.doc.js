@@ -7,6 +7,9 @@ export default doc('Inflector', {context: 'simple'}, () => {
     text(`
         English language inflection and string transformation utilities.
         Handles pluralization, singularization, and case conversion.
+
+        For convenience, [[Utils]] exposes standalone functions using a shared instance.
+        Use Inflector directly when you need custom rules.
     `)
 
 

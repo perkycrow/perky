@@ -239,8 +239,11 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
     section('Query', () => {
 
         text(`
-            CSS-like selectors for finding modules in the hierarchy.
-            \`#id\` matches by $id, \`.tag\` by tag, \`@category\` or bare \`category\` by $category.
+            Path-based selectors for finding modules in the hierarchy.
+            \`#id\` matches by $id, \`.tag\` by tag, \`@category\` by $category.
+
+            Each space-separated segment matches **direct children only** (not deep descendants).
+            This is intentional for O(1) performance in gameloops.
             See [[PerkyQuery]] for full syntax.
         `)
 
@@ -250,9 +253,10 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
             game.create(PerkyModule, {$id: 'player', $category: 'entity', $tags: ['controllable']})
             game.create(PerkyModule, {$id: 'enemy', $category: 'entity', $tags: ['hostile']})
 
-            logger.log('#player:', app.query('#player')?.$id)
-            logger.log('@entity:', app.queryAll('@entity').map(e => e.$id))
-            logger.log('.hostile:', app.queryAll('.hostile').map(e => e.$id))
+            // Direct child queries
+            logger.log('#game:', app.query('#game')?.$id)
+            logger.log('#game @entity:', app.queryAll('#game @entity').map(e => e.$id))
+            logger.log('#game .hostile:', app.query('#game .hostile')?.$id)
         })
 
     })
