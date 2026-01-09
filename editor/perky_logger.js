@@ -604,7 +604,7 @@ const STYLES = buildEditorStyles(
         flex-shrink: 0;
         background: var(--fg-muted);
         opacity: 0.5;
-        margin-top: 6px;
+        margin-top: 3px;
     }
 
     .log-info .logger-indicator {
@@ -639,7 +639,7 @@ const STYLES = buildEditorStyles(
         flex-shrink: 0;
         opacity: 0;
         transition: opacity 0.15s;
-        margin-top: 2px;
+        margin-top: 1px;
     }
 
     .logger-entry:hover .logger-timestamp {
@@ -660,7 +660,6 @@ const STYLES = buildEditorStyles(
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-top: 1px;
     }
 
     .logger-copy-btn svg {
