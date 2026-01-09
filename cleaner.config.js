@@ -7,5 +7,10 @@ export default {
             '**/test_helpers.js',
             '**/setup_tests.js'
         ]
+    },
+    missingDocs: {
+        excludeDirs: [
+            'den/'
+        ]
     }
 }

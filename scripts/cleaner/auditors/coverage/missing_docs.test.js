@@ -160,8 +160,8 @@ describe('shouldExcludeFromDocAudit', () => {
     })
 
 
-    test('excludes doc directory', () => {
-        expect(shouldExcludeFromDocAudit('doc/api.js')).toBe(true)
+    test('excludes doc directory when passed via excludeDirs', () => {
+        expect(shouldExcludeFromDocAudit('doc/api.js', ['doc/'])).toBe(true)
     })
 
 
@@ -180,8 +180,8 @@ describe('shouldExcludeFromDocAudit', () => {
     })
 
 
-    test('excludes den directory', () => {
-        expect(shouldExcludeFromDocAudit('den/module.js')).toBe(true)
+    test('excludes den directory when passed via excludeDirs', () => {
+        expect(shouldExcludeFromDocAudit('den/module.js', ['den/'])).toBe(true)
     })
 
 

@@ -88,7 +88,7 @@ function shouldSkipFile (relativePath) {
 }
 
 
-const EXCLUDED_DIRS = ['scripts/', 'doc/', 'editor/', 'examples/', 'eslint/', 'den/']
+const EXCLUDED_DIRS = ['scripts/', 'editor/', 'examples/', 'eslint/']
 
 
 export function shouldExcludeFromDocAudit (relativePath, excludeDirs = []) {
