@@ -1917,6 +1917,164 @@
     },
     "isDefault": true
   },
+  "/application/manifest.doc.js": {
+    "type": "class",
+    "file": "/application/manifest.js",
+    "name": "Manifest",
+    "line": 7,
+    "extends": "PerkyModule",
+    "statics": [
+      {
+        "name": "$category",
+        "line": 9,
+        "source": "static $category = 'manifest'",
+        "kind": "property",
+        "value": "'manifest'"
+      },
+      {
+        "name": "$lifecycle",
+        "line": 10,
+        "source": "static $lifecycle = false",
+        "kind": "property",
+        "value": "false"
+      }
+    ],
+    "methods": [
+      {
+        "name": "onInstall",
+        "line": 32,
+        "source": "onInstall (host) {\n    this.delegateTo(host, [\n        'getConfig',\n        'setConfig',\n        'addAsset',\n        'getAsset',\n        'getAssets',\n        'getAssetsByType',\n        'getAssetsByTag',\n        'getSource',\n        'getAllAssets'\n    ])\n\n    this.delegateTo(host, {\n        export: 'exportManifest',\n        import: 'importManifest'\n    })\n}",
+        "kind": "method",
+        "params": [
+          "host"
+        ]
+      },
+      {
+        "name": "import",
+        "line": 52,
+        "source": "import (jsonData) {\n    if (typeof jsonData === 'string') {\n        try {\n            this.#data = JSON.parse(jsonData)\n        } catch (error) {\n            throw new Error(`Failed to parse manifest JSON: ${error.message}`)\n        }\n    } else if (jsonData && typeof jsonData === 'object') {\n        this.#data = jsonData\n    } else {\n        throw new Error('Invalid manifest data: must be a JSON string or object')\n    }\n\n    this.assets.clear()\n    this.#initAssets()\n\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "jsonData"
+        ]
+      },
+      {
+        "name": "export",
+        "line": 72,
+        "source": "export () {\n    return deepMerge({}, {\n        config: this.#data.config,\n        assets: this.#exportAssets()\n    })\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "getConfig",
+        "line": 80,
+        "source": "getConfig (path) {\n    if (path === undefined) {\n        return this.#data.config\n    }\n\n    return getNestedValue(this.#data.config, path)\n}",
+        "kind": "method",
+        "params": [
+          "path"
+        ]
+      },
+      {
+        "name": "setConfig",
+        "line": 89,
+        "source": "setConfig (path, value) {\n    setNestedValue(this.#data.config, path, value)\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "path",
+          "value"
+        ]
+      },
+      {
+        "name": "addAsset",
+        "line": 95,
+        "source": "addAsset (assetData) {\n    validateAssetInput(assetData)\n\n    const asset = prepareAsset(assetData)\n\n    this.assets.set(asset.id, asset)\n\n    return asset\n}",
+        "kind": "method",
+        "params": [
+          "assetData"
+        ]
+      },
+      {
+        "name": "getAsset",
+        "line": 106,
+        "source": "getAsset (id) {\n    return this.assets.get(id) || null\n}",
+        "kind": "method",
+        "params": [
+          "id"
+        ]
+      },
+      {
+        "name": "getSource",
+        "line": 111,
+        "source": "getSource (id) {\n    const asset = this.getAsset(id)\n\n    if (!asset) {\n        return null\n    }\n\n    return asset.source\n}",
+        "kind": "method",
+        "params": [
+          "id"
+        ]
+      },
+      {
+        "name": "getAssetsByType",
+        "line": 122,
+        "source": "getAssetsByType (type) {\n    return this.assets.lookup('type', type)\n}",
+        "kind": "method",
+        "params": [
+          "type"
+        ]
+      },
+      {
+        "name": "getAssetsByTag",
+        "line": 127,
+        "source": "getAssetsByTag (tag) {\n    if (!tag || typeof tag !== 'string') {\n        return []\n    }\n\n    return this.assets.lookup('tags', tag)\n}",
+        "kind": "method",
+        "params": [
+          "tag"
+        ]
+      },
+      {
+        "name": "getAssets",
+        "line": 136,
+        "source": "getAssets () {\n    return this.assets.all\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "getAllAssets",
+        "line": 141,
+        "source": "getAllAssets () {\n    return this.assets.all\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "hasAsset",
+        "line": 146,
+        "source": "hasAsset (id) {\n    return this.assets.has(id)\n}",
+        "kind": "method",
+        "params": [
+          "id"
+        ]
+      },
+      {
+        "name": "removeAsset",
+        "line": 151,
+        "source": "removeAsset (id) {\n    return this.assets.delete(id)\n}",
+        "kind": "method",
+        "params": [
+          "id"
+        ]
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 14,
+      "source": "constructor (params = {}) {\n    const {data = {}, ...moduleParams} = params\n\n    super(moduleParams)\n\n    this.#data = setDefaults(data, {\n        config: {},\n        assets: {}\n    })\n\n    this.assets = new Registry()\n    this.assets.addIndex('type', asset => asset.type)\n    this.assets.addIndex('tags', asset => asset.tags)\n\n    this.#initAssets()\n}",
+      "kind": "constructor",
+      "params": [
+        "params = ..."
+      ]
+    },
+    "isDefault": true
+  },
   "/application/perky_view.doc.js": {
     "type": "class",
     "file": "/application/perky_view.js",

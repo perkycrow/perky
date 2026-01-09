@@ -28,8 +28,7 @@
             "game",
             "input_system",
             "render_system",
-            "audio_system",
-            "manifest"
+            "audio_system"
         ]
     }
 }

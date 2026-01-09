@@ -133,6 +133,17 @@
       "featured": true
     },
     {
+      "id": "manifest",
+      "file": "/application/manifest.doc.js",
+      "category": "application",
+      "title": "Manifest",
+      "tags": [
+        "application",
+        "manifest"
+      ],
+      "featured": false
+    },
+    {
       "id": "perky_view",
       "file": "/application/perky_view.doc.js",
       "category": "application",
