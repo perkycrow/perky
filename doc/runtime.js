@@ -419,6 +419,14 @@ export async function executeContainer (block, containerEl, sectionSetup = null)
                 el.style.cssText = `width:${size}px;height:${size}px;background:${color};position:absolute;border-radius:4px;left:50%;top:50%;transform:translate(-50%,-50%)`
                 containerEl.appendChild(el)
                 return el
+            },
+            marker: (x = 0, y = 0, opts = {}) => {
+                const size = opts.size || 20
+                const color = opts.color || '#4a9eff'
+                const el = document.createElement('div')
+                el.style.cssText = `width:${size}px;height:${size}px;background:${color};position:absolute;border-radius:50%;transform:translate(-50%,-50%);left:${x}px;top:${y}px`
+                containerEl.appendChild(el)
+                return el
             }
         }
 
