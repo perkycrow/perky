@@ -144,6 +144,17 @@
       "featured": false
     },
     {
+      "id": "game",
+      "file": "/game/game.doc.js",
+      "category": "game",
+      "title": "Game",
+      "tags": [
+        "game",
+        "game"
+      ],
+      "featured": true
+    },
+    {
       "id": "game_loop",
       "file": "/game/game_loop.doc.js",
       "category": "game",

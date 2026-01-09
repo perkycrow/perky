@@ -2158,6 +2158,27 @@
     },
     "isDefault": true
   },
+  "/game/game.doc.js": {
+    "type": "class",
+    "file": "/game/game.js",
+    "name": "Game",
+    "line": 6,
+    "extends": "Application",
+    "statics": [],
+    "methods": [],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 8,
+      "source": "constructor (params = {}) {\n    super(params)\n\n    this.create(GameLoop, {$bind: 'gameLoop'})\n    this.create(RenderSystem, {\n        $bind: 'renderSystem',\n        ...params.renderSystem\n    })\n\n    this.on('update', this.#updateActiveControllers)\n\n    this.configureGame?.(params)\n}",
+      "kind": "constructor",
+      "params": [
+        "params = ..."
+      ]
+    },
+    "isDefault": true
+  },
   "/game/game_loop.doc.js": {
     "type": "class",
     "file": "/game/game_loop.js",
