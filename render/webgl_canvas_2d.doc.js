@@ -9,7 +9,7 @@ import Image2D from './image_2d.js'
 export default doc('WebGLCanvas2D', () => {
 
     text(`
-        WebGL2-based 2D renderer. Renders scenes with [[Rectangle@render]], [[Circle@render]], [[Sprite@render]],
+        WebGL2-based 2D renderer. Renders scenes with [[Rectangle@render]], [[Circle@render]], [[Sprite2D@render]],
         and supports post-processing effects, render groups, and shader customization.
     `)
 

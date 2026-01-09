@@ -9,7 +9,7 @@ export default doc('Canvas2D', () => {
 
     text(`
         Canvas 2D renderer using the native Canvas API. Renders scenes with [[Rectangle@render]],
-        [[Circle@render]], images, [[Sprite@render]], and supports debug gizmos and frustum culling.
+        [[Circle@render]], images, [[Sprite2D@render]], and supports debug gizmos and frustum culling.
     `)
 
 
