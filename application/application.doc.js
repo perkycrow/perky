@@ -122,6 +122,8 @@ export default doc('Application', {context: 'simple'}, () => {
         text('Loading methods are delegated from [[SourceManager]].')
 
         container({title: 'Load and display image', height: 200, preset: 'centered'}, ctx => {
+            const updateDisplay = ctx.display(content => content || 'Loading...')
+
             const app = new Application({
                 $id: 'demo',
                 manifest: {
@@ -135,13 +137,12 @@ export default doc('Application', {context: 'simple'}, () => {
                 }
             })
 
-            app.mount(ctx.container)
             app.start()
 
             app.on('loader:complete', () => {
                 const img = app.getSource('shroom')
                 img.style.width = '100px'
-                app.element.appendChild(img)
+                updateDisplay(img)
             })
 
             app.preload()
@@ -210,52 +211,62 @@ export default doc('Application', {context: 'simple'}, () => {
 
         text('Input methods are delegated from [[InputSystem]].')
 
-        container({title: 'Keyboard input', height: 150, preset: 'interactive'}, ctx => {
-            ctx.hint('Click here, then press keys')
-            const updateDisplay = ctx.display(keys => (keys.length ? keys : 'No keys pressed'))
-
-            const app = new Application({$id: 'demo'})
-            app.mount(ctx.container)
-            app.start()
-
-            const update = () => {
-                const pressed = app.inputSystem.keyboard.getPressedControls()
-                updateDisplay(pressed.map(c => c.name))
-            }
-
-            app.inputSystem.on('control:pressed', update)
-            app.inputSystem.on('control:released', update)
-
-            ctx.setApp(app)
-        })
-
-        container({title: 'WASD direction', height: 180, preset: 'interactive-alt'}, ctx => {
+        container({title: 'Move the box', height: 200, preset: 'interactive'}, ctx => {
             ctx.hint('Use WASD or arrow keys')
-            const updateDisplay = ctx.display(dir => dir || 'Direction: (0, 0)')
 
             const app = new Application({$id: 'demo'})
             app.mount(ctx.container)
             app.start()
 
-            // Bind WASD
+            const box = ctx.box({size: 40})
+            const w = ctx.container.offsetWidth
+            const h = ctx.container.offsetHeight
+            let x = w / 2, y = h / 2
+
+            // Bind movement keys
             app.bindInput({controlName: 'KeyW', actionName: 'moveUp'})
             app.bindInput({controlName: 'KeyS', actionName: 'moveDown'})
             app.bindInput({controlName: 'KeyA', actionName: 'moveLeft'})
             app.bindInput({controlName: 'KeyD', actionName: 'moveRight'})
-
-            // Bind arrows too
             app.bindInput({controlName: 'ArrowUp', actionName: 'moveUp'})
             app.bindInput({controlName: 'ArrowDown', actionName: 'moveDown'})
             app.bindInput({controlName: 'ArrowLeft', actionName: 'moveLeft'})
             app.bindInput({controlName: 'ArrowRight', actionName: 'moveRight'})
 
-            const update = () => {
+            // Game loop
+            const speed = 3
+            const loop = () => {
                 const dir = app.getDirection('move')
-                updateDisplay(`Direction: (${dir.x.toFixed(1)}, ${dir.y.toFixed(1)})`)
+                x = Math.max(20, Math.min(w - 20, x + dir.x * speed))
+                y = Math.max(20, Math.min(h - 20, y - dir.y * speed))
+                box.style.left = x + 'px'
+                box.style.top = y + 'px'
+                requestAnimationFrame(loop)
             }
+            loop()
 
-            app.inputSystem.on('control:pressed', update)
-            app.inputSystem.on('control:released', update)
+            ctx.setApp(app)
+        })
+
+        container({title: 'Action events', height: 150, preset: 'interactive-alt'}, ctx => {
+            ctx.hint('Press C to change color')
+
+            const app = new Application({$id: 'demo'})
+            app.mount(ctx.container)
+            app.start()
+
+            const box = ctx.box({size: 60})
+            const colors = ['#4a9eff', '#ff4a4a', '#4aff4a', '#ffff4a', '#ff4aff']
+            let colorIndex = 0
+
+            // Bind action key
+            app.bindInput({controlName: 'KeyC', actionName: 'color', eventType: 'pressed'})
+
+            // React to action
+            app.on('input:triggered', () => {
+                colorIndex = (colorIndex + 1) % colors.length
+                box.style.background = colors[colorIndex]
+            })
 
             ctx.setApp(app)
         })
@@ -265,7 +276,7 @@ export default doc('Application', {context: 'simple'}, () => {
 
             // Bind keyboard to action
             app.bindInput({
-                controlName: 'Space',
+                controlName: 'KeyJ',
                 actionName: 'jump',
                 eventType: 'pressed'
             })
@@ -276,7 +287,7 @@ export default doc('Application', {context: 'simple'}, () => {
             }
 
             // Listen for action triggers
-            app.on('input:triggered', (binding, event) => {
+            app.on('input:triggered', (binding) => {
                 console.log('Action triggered:', binding.actionName)
             })
         })

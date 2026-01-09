@@ -400,7 +400,10 @@ export async function executeContainer (block, containerEl, sectionSetup = null)
                 containerEl.appendChild(el)
                 const update = (...args) => {
                     const result = formatter(...args)
-                    if (Array.isArray(result)) {
+                    if (result instanceof HTMLElement) {
+                        el.innerHTML = ''
+                        el.appendChild(result)
+                    } else if (Array.isArray(result)) {
                         el.innerHTML = result.map(item => `<span class="doc-display-tag">${item}</span>`).join('')
                     } else {
                         el.innerHTML = result
@@ -408,6 +411,14 @@ export async function executeContainer (block, containerEl, sectionSetup = null)
                 }
                 update()
                 return update
+            },
+            box: (opts = {}) => {
+                const size = opts.size || 40
+                const color = opts.color || '#4a9eff'
+                const el = document.createElement('div')
+                el.style.cssText = `width:${size}px;height:${size}px;background:${color};position:absolute;border-radius:4px;left:50%;top:50%;transform:translate(-50%,-50%)`
+                containerEl.appendChild(el)
+                return el
             }
         }
 
