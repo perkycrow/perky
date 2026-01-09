@@ -5,10 +5,10 @@ import PerkyModule from '../../core/perky_module.js'
 export default doc('PerkyModule', () => {
 
     text(`
-        This is the foundation. Most things in Perky are modules.
+        If there's one thing to learn in Perky, it's this: everything is a module.
 
-        Your game? Module. Player? Module. Systems, levels, entities - modules.
-        Once you understand how modules work, you understand most of the framework.
+        Your game, your player, that enemy AI you're slightly proud of - all modules.
+        Get comfortable with how they work and the rest will follow.
 
         See [[PerkyModule]] for the full API reference.
     `)
@@ -17,12 +17,10 @@ export default doc('PerkyModule', () => {
     section('Modules Are Trees', () => {
 
         text(`
-            A module can have children. Children can have children.
-            It's trees all the way down.
+            A module can have children. Children can have children. You get the idea.
 
-            This structure is intentional. Games are hierarchies:
-            Game → Levels → Entities → Components.
-            Perky just makes it explicit.
+            This maps well to how games are often structured:
+            Game → Levels → Entities.
         `)
 
         action('Parent and children', () => {
@@ -37,12 +35,12 @@ export default doc('PerkyModule', () => {
         })
 
         text(`
-            Use \`create()\` to add children. Never \`new\` directly.
+            One thing to know: always use \`create()\` to add children, not \`new\`.
 
-            \`create()\` sets up the parent-child relationship, calls \`onInstall\`,
-            and binds lifecycles. \`new\` alone gives you an orphan module.
+            \`create()\` wires everything up - parent-child relationship, lifecycle binding,
+            the \`onInstall\` hook. \`new\` alone just gives you an orphan floating in the void.
 
-            Children are stored in a [[Registry]] - fast O(1) lookups by $id or $category.
+            Under the hood, children live in a [[Registry]] with O(1) lookups by $id or $category.
         `)
 
     })
@@ -51,10 +49,10 @@ export default doc('PerkyModule', () => {
     section('The $ Convention', () => {
 
         text(`
-            Notice the \`$id\`, \`$category\`, \`$tags\`? The dollar sign is intentional.
+            You've probably noticed the \`$id\`, \`$category\`, \`$tags\`. The dollar sign isn't random.
 
-            All Perky configuration uses \`$\` prefixes. Your own properties don't.
-            This means you can name your stuff whatever you want - no collisions.
+            All Perky config uses \`$\` prefixes. Your own properties don't. So go ahead, use \`id\`,
+            \`name\`, \`category\` for your game logic - they won't collide with Perky's internals.
         `)
 
         action('Your properties are safe', () => {
@@ -75,45 +73,49 @@ export default doc('PerkyModule', () => {
         })
 
         text(`
-            The reserved \`$\` properties:
-            - \`$id\` - unique identifier in parent's registry
-            - \`$name\` - human-readable name
-            - \`$category\` - for grouping and queries
-            - \`$tags\` - flexible labels for filtering
-            - \`$bind\` - auto-assign to parent property
-            - \`$lifecycle\` - participate in start/stop
-            - \`$eagerStart\` - auto-start when parent is running
+            Here's the full list of reserved \`$\` properties:
 
-            All of these are optional. When you use \`create()\`, missing values are
-            derived automatically: \`$category\` from the class, \`$name\` from category,
-            \`$id\` from name. IDs auto-increment to stay unique: \`enemy\`, \`enemy_1\`, \`enemy_2\`.
+            **\`$id\`** - unique identifier. Use when you need a specific module (the player, the boss).
+
+            **\`$name\`** - human-readable name. Defaults to category if not set.
+
+            **\`$category\`** - for type-based lookups. All entities, all UI panels, all audio sources.
+
+            **\`$tags\`** - for dynamic filtering. Hostile enemies, visible objects, selected items.
+            Tags live in an [[ObservableSet]], so you can add and remove them at runtime.
+
+            **\`$bind\`** - convenience shortcut. \`$bind: 'player'\` makes \`parent.player\` point to this module.
+
+            **\`$lifecycle\`** - whether the module participates in start/stop.
+
+            **\`$eagerStart\`** - auto-start when created on a running parent (default: true).
+
+            All optional. When you use \`create()\` without specifying them, Perky figures it out:
+            \`$category\` from the class name, \`$name\` from category, \`$id\` from name.
+            Multiple modules with the same name? IDs auto-increment: \`enemy\`, \`enemy_1\`, \`enemy_2\`.
         `)
 
-        action('Auto-generated IDs', () => {
+        action('$bind in action', () => {
             const game = new PerkyModule({$id: 'game'})
 
-            const m1 = game.create(PerkyModule)
-            const m2 = game.create(PerkyModule)
-            const e1 = game.create(PerkyModule, {$name: 'enemy'})
-            const e2 = game.create(PerkyModule, {$name: 'enemy'})
+            game.create(PerkyModule, {
+                $id: 'playerModule',
+                $bind: 'player'
+            })
 
-            logger.log('m1.$id:', m1.$id)
-            logger.log('m2.$id:', m2.$id)
-            logger.log('e1.$id:', e1.$id)
-            logger.log('e2.$id:', e2.$id)
+            logger.log('game.player:', game.player.$id)
         })
 
     })
 
 
-    section('Lifecycle Is Automatic', () => {
+    section('Lifecycle', () => {
 
         text(`
             Modules have three states: **stopped**, **started**, **disposed**.
 
-            Here's the beautiful part: children follow their parent.
-            Start the parent → children start. Stop the parent → children stop.
-            No manual wiring needed.
+            Children follow their parent automatically.
+            Start the game, all entities start. Stop the game, everything stops.
         `)
 
         action('Lifecycle flows down', () => {
@@ -131,39 +133,12 @@ export default doc('PerkyModule', () => {
         })
 
         text(`
-            Disposed means dead. Resources cleaned up, listeners removed, children disposed.
-            There's no coming back. Create a new module instead.
+            If you spawn a child while the parent is already running, the child starts immediately.
+            That's \`$eagerStart: true\` (the default). Set it to \`false\` if you need manual control.
+
+            Once disposed, a module is gone for good - listeners removed, children disposed,
+            resources cleaned up. There's no resurrection. Just create a new one.
         `)
-
-    })
-
-
-    section('Eager Start', () => {
-
-        text(`
-            What happens when you create a child on an already-running parent?
-
-            By default, the child starts immediately. This is \`$eagerStart: true\`.
-            It's what you want 99% of the time - spawn an enemy mid-game, it's ready to go.
-        `)
-
-        action('Eager vs lazy', () => {
-            const game = new PerkyModule({$id: 'game'})
-            game.start()
-            logger.log('game started:', game.started)
-
-            const eager = game.create(PerkyModule, {$id: 'eager'})
-            logger.log('eager.started:', eager.started)
-
-            const lazy = game.create(PerkyModule, {
-                $id: 'lazy',
-                $eagerStart: false
-            })
-            logger.log('lazy.started:', lazy.started)
-
-            lazy.start()
-            logger.log('lazy after manual start:', lazy.started)
-        })
 
     })
 
@@ -171,10 +146,10 @@ export default doc('PerkyModule', () => {
     section('Finding Things', () => {
 
         text(`
-            Queries let you find modules without keeping references everywhere.
+            Need to find a module without passing references everywhere? Queries.
 
             The syntax: \`#id\` for $id, \`@category\` for $category, \`.tag\` for tags.
-            Combine them: \`@entity.hostile\` finds entities with the hostile tag.
+            Mix them: \`@entity.hostile\` finds entities tagged as hostile.
         `)
 
         action('Query examples', () => {
@@ -190,14 +165,13 @@ export default doc('PerkyModule', () => {
         })
 
         text(`
-            **Important**: queries match **direct children only**.
+            One thing to know: queries only match **direct children**.
 
-            This isn't CSS descendant matching. Each space-separated segment
-            goes one level deeper. \`#game #level #player\` means:
-            game's child level's child player.
+            This isn't CSS. \`#game #level #player\` means: game's child "level", then level's child "player".
+            Each space goes one level deeper.
 
-            Why? O(1) lookups. In a gameloop, you need predictable performance.
-            See [[PerkyQuery]] for the full selector syntax.
+            Why this constraint? O(1) lookups. In a game loop, predictable performance matters.
+            See [[PerkyQuery]] for the full syntax.
         `)
 
         action('Multi-level paths', () => {
@@ -216,11 +190,10 @@ export default doc('PerkyModule', () => {
     section('Events', () => {
 
         text(`
-            Modules are event emitters. Use \`on()\` to listen, \`emit()\` to broadcast.
+            Modules are event emitters. \`on()\` to listen, \`emit()\` to broadcast.
             This comes from [[Notifier]], the event system underneath.
 
-            The pattern is simple: things happen, other things react.
-            Damage dealt, score updated, level completed - all events.
+            The idea: things happen, other things react. Damage taken, score updated, level cleared.
         `)
 
         action('Emit and listen', () => {
@@ -237,13 +210,15 @@ export default doc('PerkyModule', () => {
         text(`
             When listening to **other** modules, use \`listenTo()\` instead of \`on()\`.
 
-            Why? Memory leaks. Say an enemy follows the player with
-            \`player.on('move', () => enemy.follow())\`. The player keeps a reference
-            to enemy in that callback. When the enemy dies and you call \`enemy.dispose()\`,
-            the garbage collector can't clean it up - player still holds that callback.
+            Here's why. Say an enemy follows the player:
+            \`player.on('move', () => enemy.follow())\`
 
-            \`listenTo()\` tracks these external listeners. When the enemy is disposed,
-            its listeners on other modules are automatically removed. No leaks.
+            The player now holds a reference to enemy in that callback. When the enemy dies
+            and you call \`dispose()\`, the garbage collector can't clean it up - player still
+            has that callback.
+
+            \`listenTo()\` solves this. It tracks which modules you're listening to, and when
+            you're disposed, those listeners are automatically removed.
         `)
 
         action('Listen to others', () => {
@@ -263,10 +238,10 @@ export default doc('PerkyModule', () => {
     section('Extending Modules', () => {
 
         text(`
-            The real power comes from subclassing.
+            Most of the time, you'll subclass PerkyModule to make your own.
 
-            Define static \`$category\` and \`$tags\` on your class.
-            Override \`onStart\`, \`onStop\`, \`onInstall\` for lifecycle hooks.
+            Add static \`$category\` and \`$tags\` on the class itself.
+            Override lifecycle hooks like \`onStart\`, \`onStop\`, \`onInstall\`.
         `)
 
         code('Custom module class', () => {
@@ -292,44 +267,13 @@ export default doc('PerkyModule', () => {
         })
 
         text(`
-            Lifecycle hooks:
-            - \`onInstall(host, options)\` - called when added to parent
-            - \`onUninstall(host)\` - called when removed from parent
-            - \`onStart()\` - called when started
-            - \`onStop()\` - called when stopped
-            - \`onDispose()\` - called when disposed (cleanup time)
+            Available lifecycle hooks:
+            - \`onInstall(host, options)\` - added to a parent
+            - \`onUninstall(host)\` - removed from parent
+            - \`onStart()\` - module started
+            - \`onStop()\` - module stopped
+            - \`onDispose()\` - cleanup time
         `)
-
-    })
-
-
-    section('When To Use What', () => {
-
-        text(`
-            **Use \`$id\`** when you need to reference a specific module.
-            The player, the main menu, the boss.
-
-            **Use \`$category\`** for type-based lookups.
-            All entities, all UI elements, all audio sources.
-
-            **Use \`$tags\`** for dynamic filtering.
-            Hostile enemies, visible objects, selected items.
-            Tags are stored as an [[ObservableSet]] - add and remove at runtime.
-
-            **Use \`$bind\`** for quick access.
-            \`$bind: 'player'\` makes \`parent.player\` point to this module.
-        `)
-
-        action('$bind in action', () => {
-            const game = new PerkyModule({$id: 'game'})
-
-            game.create(PerkyModule, {
-                $id: 'playerModule',
-                $bind: 'player'
-            })
-
-            logger.log('game.player:', game.player.$id)
-        })
 
     })
 
@@ -337,22 +281,18 @@ export default doc('PerkyModule', () => {
     section('The Mental Model', () => {
 
         text(`
-            Think of your game as a living tree.
+            Picture your game as a tree.
 
-            - **Root** - your Game module
-            - **Branches** - systems and levels
-            - **Leaves** - entities, particles, UI elements
+            The root is your Game. Branches are systems and levels. Leaves are entities,
+            particles, UI bits. Lifecycle flows from root to leaves. Queries let you reach
+            into any branch.
 
-            Events flow through the tree. Lifecycle cascades from root to leaves.
-            Queries let you reach into any branch.
-
-            Keep it shallow when you can. Deep hierarchies are harder to debug.
+            Keep it shallow when you can - deep hierarchies get tricky to debug.
 
             ---
 
-            That said, PerkyModule is entirely optional. It's the backbone of Perky,
-            but not a requirement. Structure your game or app however you want.
-            Use only what you need.
+            That said, PerkyModule is just one way to structure things. It's the backbone
+            of Perky, but not mandatory. Use what helps, skip what doesn't.
         `)
 
     })
