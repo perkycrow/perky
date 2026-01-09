@@ -139,4 +139,80 @@ describe('doc_page', () => {
 
     })
 
+
+    describe('inline see links in text', () => {
+
+        test('parses [[Name]] as doc link', () => {
+            const page = new DocPage()
+            page.doc = {
+                title: 'Test',
+                blocks: [{
+                    type: 'text',
+                    content: 'See [[ActionController]] for more.'
+                }]
+            }
+        })
+
+
+        test('parses [[Name#Section]] as doc link with section', () => {
+            const page = new DocPage()
+            page.doc = {
+                title: 'Test',
+                blocks: [{
+                    type: 'text',
+                    content: 'See [[ActionController#Propagation]] for details.'
+                }]
+            }
+        })
+
+
+        test('parses [[Name:api]] as API link', () => {
+            const page = new DocPage()
+            page.doc = {
+                title: 'Test',
+                blocks: [{
+                    type: 'text',
+                    content: 'Check [[ActionController:api]] for methods.'
+                }]
+            }
+        })
+
+
+        test('parses [[Name:api#Section]] as API link with section', () => {
+            const page = new DocPage()
+            page.doc = {
+                title: 'Test',
+                blocks: [{
+                    type: 'text',
+                    content: 'See [[ActionController:api#methods]] for the full list.'
+                }]
+            }
+        })
+
+
+        test('parses [[Name:guide]] as guide link', () => {
+            const page = new DocPage()
+            page.doc = {
+                title: 'Test',
+                blocks: [{
+                    type: 'text',
+                    content: 'Read [[philosophy:guide]] for the overview.'
+                }]
+            }
+        })
+
+
+        test('parses multiple inline links in same text', () => {
+            const page = new DocPage()
+            page.doc = {
+                title: 'Test',
+                blocks: [{
+                    type: 'text',
+                    content: 'See [[ActionController]] and [[ActionDispatcher#Stack]].'
+                }]
+            }
+        })
+
+    })
+
 })
