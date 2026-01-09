@@ -65,6 +65,11 @@ describe('parse_markdown', () => {
             expect(result).toBe('<p>Hello world</p>')
         })
 
+        test('renders --- as hr', () => {
+            const result = parseMarkdown('Before\n\n---\n\nAfter')
+            expect(result).toBe('<p>Before</p><hr><p>After</p>')
+        })
+
     })
 
 
@@ -98,16 +103,6 @@ describe('parse_markdown', () => {
         test('text and list in same block (no blank line)', () => {
             const result = parseMarkdown('Properties:\n- Item 1\n- Item 2')
             expect(result).toBe('<p>Properties:</p><ul><li>Item 1</li><li>Item 2</li></ul>')
-        })
-
-    })
-
-
-    describe('horizontal rule', () => {
-
-        test('renders --- as hr', () => {
-            const result = parseMarkdown('Before\n\n---\n\nAfter')
-            expect(result).toBe('<p>Before</p><hr><p>After</p>')
         })
 
     })

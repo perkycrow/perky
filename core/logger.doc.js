@@ -1,11 +1,11 @@
-import {doc, section, setup, text, code, action, logger} from '../doc/runtime.js'
+import {doc, section, text, code, action, logger} from '../doc/runtime.js'
 
 
 export default doc('Logger', {context: 'simple'}, () => {
 
     text(`
         Centralized logging system with history and event emission.
-        Singleton instance with multiple log levels and console output control.
+        Singleton instance with multiple log levels and logger output control.
     `)
 
 
@@ -96,7 +96,7 @@ export default doc('Logger', {context: 'simple'}, () => {
 
         action('log event', () => {
             const handler = entry => {
-                console.log('Log event:', entry.type, '-', entry.items)
+                logger.log('Log event:', entry.type, '-', entry.items)
             }
 
             logger.on('log', handler)
@@ -107,7 +107,7 @@ export default doc('Logger', {context: 'simple'}, () => {
 
         action('clear event', () => {
             const handler = entry => {
-                console.log('Clear event at:', new Date(entry.timestamp))
+                logger.log('Clear event at:', new Date(entry.timestamp))
             }
 
             logger.on('clear', handler)
@@ -117,7 +117,7 @@ export default doc('Logger', {context: 'simple'}, () => {
 
         action('title event', () => {
             const handler = entry => {
-                console.log('Title event:', entry.title)
+                logger.log('Title event:', entry.title)
             }
 
             logger.on('title', handler)
@@ -127,7 +127,7 @@ export default doc('Logger', {context: 'simple'}, () => {
 
         action('spacer event', () => {
             const handler = entry => {
-                console.log('Spacer event at:', entry.timestamp)
+                logger.log('Spacer event at:', entry.timestamp)
             }
 
             logger.on('spacer', handler)
@@ -161,7 +161,7 @@ export default doc('Logger', {context: 'simple'}, () => {
             logger.spacer()
 
             logger.history.forEach((entry, i) => {
-                console.log(`Entry ${i}:`, entry.event)
+                logger.log(`Entry ${i}:`, entry.event)
             })
         })
 
@@ -179,14 +179,14 @@ export default doc('Logger', {context: 'simple'}, () => {
             // History automatically trims when limit is reached
         })
 
-        code('consoleOutput', () => {
-            // Disable console output (logs still recorded in history)
-            logger.consoleOutput = false
+        code('loggerOutput', () => {
+            // Disable logger output (logs still recorded in history)
+            logger.loggerOutput = false
 
             logger.log('This is silent but recorded')
 
             // Re-enable
-            logger.consoleOutput = true
+            logger.loggerOutput = true
         })
 
     })
@@ -194,14 +194,14 @@ export default doc('Logger', {context: 'simple'}, () => {
 
     section('Log Levels', () => {
 
-        text('Different log levels map to console methods.')
+        text('Different log levels map to logger methods.')
 
-        code('Console method mapping', () => {
-            logger.info('Uses console.info')
-            logger.warn('Uses console.warn')
-            logger.error('Uses console.error')
-            logger.notice('Uses console.log')
-            logger.success('Uses console.log')
+        code('Logger method mapping', () => {
+            logger.info('Uses logger.info')
+            logger.warn('Uses logger.warn')
+            logger.error('Uses logger.error')
+            logger.notice('Uses logger.log')
+            logger.success('Uses logger.log')
         })
 
     })
