@@ -12,37 +12,23 @@ export default doc('Application', {context: 'simple'}, () => {
 
     section('Creation', () => {
 
-        text('Create an application with optional manifest data and input bindings.')
-
-        code('Basic setup', () => {
-            const app = new Application({$id: 'game'})
-
-            // Mount to DOM and start
-            app.mount(document.getElementById('app'))
-            app.start()
-        })
-
-        code('Subclassing', () => {
+        code('Subclass with manifest', () => {
             class MyGame extends Application {
-                static $category = 'game'
-
-                configureApplication () {
-                    // Called after all systems are created
-                    this.setConfig('debug', true)
-                }
-            }
-        })
-
-        code('With manifest', () => {
-            const app = new Application({
-                $id: 'game',
-                manifest: {
+                static manifest = {
                     config: {title: 'My Game'},
                     assets: {
                         hero: {type: 'sprite', url: '/hero.png', tags: ['preload']}
                     }
                 }
-            })
+
+                configureApplication () {
+                    this.setConfig('debug', true)
+                }
+            }
+
+            const game = new MyGame({$id: 'game'})
+            game.mount(document.getElementById('app'))
+            game.start()
         })
 
     })
@@ -60,17 +46,6 @@ export default doc('Application', {context: 'simple'}, () => {
             - \`inputSystem\` - [[InputSystem]] for keyboard, mouse, touch
         `)
 
-        code('Access systems', () => {
-            const app = new Application({$id: 'demo'})
-
-            // Direct access via $bind
-            app.manifest         // Manifest instance
-            app.perkyView        // PerkyView instance
-            app.inputSystem      // InputSystem instance
-            app.sourceManager    // SourceManager instance
-            app.actionDispatcher // ActionDispatcher instance
-        })
-
     })
 
 
@@ -78,16 +53,16 @@ export default doc('Application', {context: 'simple'}, () => {
 
         text('Config methods are delegated from [[Manifest]].')
 
-        action('getConfig / setConfig', () => {
+        action('setConfig / getConfig', () => {
             const app = new Application({$id: 'demo'})
 
+            // Nested path
             app.setConfig('game.title', 'My Game')
-            app.setConfig('game.debug', true)
-
             logger.log('title:', app.getConfig('game.title'))
-            logger.log('all:', app.getConfig())
 
-            app.dispose()
+            // Direct key
+            app.setConfig('debug', true)
+            logger.log('debug:', app.getConfig('debug'))
         })
 
     })
@@ -95,54 +70,37 @@ export default doc('Application', {context: 'simple'}, () => {
 
     section('Assets', () => {
 
-        text('Asset methods are delegated from [[Manifest]].')
+        text('Asset methods are delegated from [[Manifest]] and [[SourceManager]].')
 
-        action('addAsset / getAsset', () => {
-            const app = new Application({$id: 'demo'})
-
-            app.addAsset({
-                id: 'player',
-                type: 'sprite',
-                url: '/sprites/player.png',
-                tags: ['preload', 'character']
-            })
-
-            logger.log('asset:', app.getAsset('player').url)
-            logger.log('by type:', app.getAssetsByType('sprite').length)
-            logger.log('by tag:', app.getAssetsByTag('character').length)
-
-            app.dispose()
-        })
-
-    })
-
-
-    section('Asset Loading', () => {
-
-        text('Loading methods are delegated from [[SourceManager]].')
-
-        container({title: 'Load and display image', height: 200, preset: 'centered'}, ctx => {
+        container({title: 'Load and display assets', height: 200, preset: 'centered'}, ctx => {
             const updateDisplay = ctx.display(content => content || 'Loading...')
 
             const app = new Application({
                 $id: 'demo',
                 manifest: {
                     assets: {
-                        shroom: {
-                            type: 'image',
-                            url: './assets/images/shroom.png',
-                            tags: ['preload']
-                        }
+                        shroom: {type: 'image', url: './assets/images/shroom.png', tags: ['preload']}
                     }
                 }
             })
 
+            // Add asset dynamically
+            app.addAsset({id: 'spore', type: 'image', url: './assets/images/spore.png', tags: ['preload']})
+
             app.start()
 
             app.on('loader:complete', () => {
-                const img = app.getSource('shroom')
-                img.style.width = '100px'
-                updateDisplay(img)
+                const wrapper = document.createElement('div')
+                wrapper.style.cssText = 'display:flex;gap:20px;align-items:center'
+
+                const img1 = app.getSource('shroom')
+                const img2 = app.getSource('spore')
+                img1.style.width = '80px'
+                img2.style.width = '80px'
+
+                wrapper.appendChild(img1)
+                wrapper.appendChild(img2)
+                updateDisplay(wrapper)
             })
 
             app.preload()
@@ -173,6 +131,22 @@ export default doc('Application', {context: 'simple'}, () => {
 
         text('View methods are delegated from [[PerkyView]].')
 
+        container({title: 'Resize events', height: 200, preset: 'centered'}, ctx => {
+            const app = new Application({$id: 'demo'})
+            app.mount(ctx.container)
+            app.start()
+
+            app.on('resize', ({width, height}) => {
+                logger.log('resize:', width, '×', height)
+            })
+
+            ctx.slider('Height', {min: 100, max: 400, default: 200, step: 10}, h => {
+                ctx.container.style.height = h + 'px'
+            })
+
+            ctx.setApp(app)
+        })
+
         code('mount / dismount', () => {
             const app = new Application({$id: 'demo'})
             const el = document.getElementById('app')
@@ -182,26 +156,6 @@ export default doc('Application', {context: 'simple'}, () => {
             console.log(app.element) // DOM element
 
             app.dismount()
-        })
-
-        code('Fullscreen', () => {
-            const app = new Application({$id: 'demo'})
-
-            app.enterFullscreenMode()
-            app.exitFullscreenMode()
-            app.toggleFullscreen()
-
-            app.on('displayMode:changed', ({mode}) => {
-                console.log('Display mode:', mode) // 'normal' or 'fullscreen'
-            })
-        })
-
-        code('Resize', () => {
-            const app = new Application({$id: 'demo'})
-
-            app.on('resize', ({width, height}) => {
-                console.log('Resized to:', width, height)
-            })
         })
 
     })
@@ -221,7 +175,8 @@ export default doc('Application', {context: 'simple'}, () => {
             const box = ctx.box({size: 40})
             const w = ctx.container.offsetWidth
             const h = ctx.container.offsetHeight
-            let x = w / 2, y = h / 2
+            let x = w / 2
+            let y = h / 2
 
             // Bind movement keys
             app.bindInput({controlName: 'KeyW', actionName: 'moveUp'})
@@ -290,6 +245,61 @@ export default doc('Application', {context: 'simple'}, () => {
             app.on('input:triggered', (binding) => {
                 console.log('Action triggered:', binding.actionName)
             })
+        })
+
+    })
+
+
+    section('Actions', () => {
+
+        text('Action methods are delegated from [[ActionDispatcher]].')
+
+        action('addAction / execute', () => {
+            const app = new Application({$id: 'demo'})
+
+            // Add action to main controller
+            app.addAction('greet', () => {
+                logger.log('Hello!')
+            })
+
+            // Execute action
+            app.execute('greet')
+        })
+
+        container({title: 'Input → Action', height: 150, preset: 'interactive-alt'}, ctx => {
+            ctx.hint('Press G to greet')
+
+            const app = new Application({$id: 'demo'})
+            app.mount(ctx.container)
+            app.start()
+
+            const updateDisplay = ctx.display(msg => msg || 'Waiting...')
+
+            // Register action
+            app.addAction('greet', () => {
+                updateDisplay('Hello!')
+                setTimeout(() => updateDisplay('Waiting...'), 500)
+            })
+
+            // Bind key to action - ActionDispatcher listens to input:triggered
+            app.bindInput({controlName: 'KeyG', actionName: 'greet', eventType: 'pressed'})
+
+            ctx.setApp(app)
+        })
+
+        code('ActionDispatcher flow', () => {
+            const app = new Application({$id: 'demo'})
+
+            // 1. Add action to main controller
+            app.addAction('jump', () => console.log('Jump!'))
+
+            // 2. Bind input to action name
+            app.bindInput({controlName: 'Space', actionName: 'jump', eventType: 'pressed'})
+
+            // 3. When Space is pressed:
+            //    InputSystem emits 'input:triggered' with {actionName: 'jump'}
+            //    ActionDispatcher.dispatchAction() receives it
+            //    ActionDispatcher.execute('jump') calls the action
         })
 
     })
