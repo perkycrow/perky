@@ -132,7 +132,7 @@ describe('parse_markdown', () => {
 
         test('api link [[Name:api]]', () => {
             const result = parseMarkdown('Check [[PerkyModule:api]]')
-            expect(result).toContain('tab=api')
+            expect(result).toContain('core_perkymodule_api.html')
         })
 
 
@@ -145,14 +145,14 @@ describe('parse_markdown', () => {
 
         test('doc link with category [[Name@category]]', () => {
             const result = parseMarkdown('See [[Application@application]]')
-            expect(result).toContain('/application/application.doc.js')
+            expect(result).toContain('application_application.html')
             expect(result).toContain('Application</a>')
         })
 
 
         test('doc link with category and section [[Name@category#Section]]', () => {
             const result = parseMarkdown('See [[Game@game#Lifecycle]]')
-            expect(result).toContain('/game/game.doc.js')
+            expect(result).toContain('game_game.html#lifecycle')
             expect(result).toContain('Game > Lifecycle</a>')
         })
 

@@ -88,12 +88,16 @@ function parseSeeLink (ref, buildSeeUrl) {
 function defaultBuildSeeUrl (name, pageType, section, category = null) {
     const baseName = toKebabCase(name).replace(/-/g, '_')
     const cat = category || 'core'
-    let url = `?doc=/${cat}/${baseName}.doc.js`
+    let url = ''
 
     if (pageType === 'guide') {
-        url = `?guide=/doc/guides/${baseName}.guide.js`
-    } else if (pageType !== 'doc') {
-        url = `?doc=/${cat}/${baseName}.doc.js&tab=${pageType}`
+        url = `guide_${baseName}.html`
+    } else if (pageType === 'api') {
+        url = `${cat}_${baseName}_api.html`
+    } else if (pageType === 'test') {
+        url = `${cat}_${baseName}_test.html`
+    } else {
+        url = `${cat}_${baseName}.html`
     }
 
     if (section) {

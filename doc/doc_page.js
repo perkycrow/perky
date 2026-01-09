@@ -6,9 +6,6 @@ import {applyContainerPreset} from './runtime.js'
 import {parseMarkdown} from './parse_markdown.js'
 
 
-const isProduction = import.meta.env.PROD
-
-
 export default class DocPage extends HTMLElement {
 
     #doc = null
@@ -137,11 +134,6 @@ export default class DocPage extends HTMLElement {
             tabs.push('test')
         }
         return tabs
-    }
-
-
-    switchTab (tab) {
-        this.#switchTab(tab)
     }
 
 
@@ -281,26 +273,11 @@ export default class DocPage extends HTMLElement {
 
     #createTab (label, tab) {
         const isActive = this.#activeTab === tab
-
-        if (isProduction) {
-            const link = document.createElement('a')
-            link.className = `doc-tab ${isActive ? 'active' : ''}`
-            link.textContent = label
-            link.href = getTabUrl(tab)
-            return link
-        }
-
-        const button = document.createElement('button')
-        button.className = `doc-tab ${isActive ? 'active' : ''}`
-        button.textContent = label
-        button.addEventListener('click', () => this.#switchTab(tab))
-        return button
-    }
-
-
-    #switchTab (tab) {
-        this.#activeTab = tab
-        this.#render()
+        const link = document.createElement('a')
+        link.className = `doc-tab ${isActive ? 'active' : ''}`
+        link.textContent = label
+        link.href = getTabUrl(tab)
+        return link
     }
 
 
@@ -1030,20 +1007,14 @@ function buildSeeUrl (name, pageType, section, category = null) {
     const cat = category || 'core'
     let url = ''
 
-    if (isProduction) {
-        if (pageType === 'guide') {
-            url = `guide_${baseName}.html`
-        } else if (pageType === 'api') {
-            url = `${cat}_${baseName}_api.html`
-        } else if (pageType === 'test') {
-            url = `${cat}_${baseName}_test.html`
-        } else {
-            url = `${cat}_${baseName}.html`
-        }
-    } else if (pageType === 'guide') {
-        url = `?guide=/doc/guides/${baseName}.guide.js`
+    if (pageType === 'guide') {
+        url = `guide_${baseName}.html`
+    } else if (pageType === 'api') {
+        url = `${cat}_${baseName}_api.html`
+    } else if (pageType === 'test') {
+        url = `${cat}_${baseName}_test.html`
     } else {
-        url = `?doc=/${cat}/${baseName}.doc.js&tab=${pageType}`
+        url = `${cat}_${baseName}.html`
     }
 
     if (section) {

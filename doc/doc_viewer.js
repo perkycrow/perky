@@ -1,14 +1,10 @@
 import './doc_page.js'
 import '../editor/perky_logger.js'
 import logger from '../core/logger.js'
-import {toHumanCase} from '../core/utils.js'
 
 
 const docModules = import.meta.glob('../**/*.doc.js')
 const guideModules = import.meta.glob('./guides/**/*.guide.js')
-const isProduction = import.meta.env.PROD
-
-const HAMBURGER_ICON = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"></path></svg>'
 
 
 class DocViewer {
@@ -27,80 +23,34 @@ class DocViewer {
 
 
     async init () {
-        await this.loadDocs()
-        await this.loadApiData()
-        await this.loadTestsData()
-        this.buildNav()
+        await this.loadMetadata()
+        this.setupNavigation()
         this.setupSearch()
         this.route()
     }
 
 
-    async loadDocs () {
+    async loadMetadata () {
         try {
-            const response = await fetch('./docs.json')
-            const data = await response.json()
-            this.docs = data.docs
-            this.guides = data.guides || []
+            const [docsRes, apiRes, testsRes] = await Promise.all([
+                fetch('./docs.json'),
+                fetch('./api.json'),
+                fetch('./tests.json')
+            ])
+            const docsData = await docsRes.json()
+            this.docs = docsData.docs
+            this.guides = docsData.guides || []
+            this.apiData = await apiRes.json()
+            this.testsData = await testsRes.json()
         } catch (error) {
-            logger.error('Failed to load docs.json:', error)
-            this.docs = []
-            this.guides = []
+            logger.error('Failed to load metadata:', error)
         }
     }
 
 
-    async loadApiData () {
-        try {
-            const response = await fetch('./api.json')
-            this.apiData = await response.json()
-        } catch (error) {
-            logger.error('Failed to load api.json:', error)
-            this.apiData = {}
-        }
-    }
-
-
-    async loadTestsData () {
-        try {
-            const response = await fetch('./tests.json')
-            this.testsData = await response.json()
-        } catch (error) {
-            logger.error('Failed to load tests.json:', error)
-            this.testsData = {}
-        }
-    }
-
-
-    buildNav () {
-        this.nav.innerHTML = ''
-
-        const switcherContainer = document.getElementById('nav-switcher')
-        if (switcherContainer) {
-            switcherContainer.innerHTML = ''
-
-            const docsBtn = document.createElement('button')
-            docsBtn.className = 'nav-switch active'
-            docsBtn.dataset.section = 'docs'
-            docsBtn.textContent = 'Docs'
-
-            const guidesBtn = document.createElement('button')
-            guidesBtn.className = 'nav-switch'
-            guidesBtn.dataset.section = 'guides'
-            guidesBtn.textContent = 'Guides'
-
-            switcherContainer.appendChild(docsBtn)
-            switcherContainer.appendChild(guidesBtn)
-        }
-
-        const docsSection = buildNavSectionElement(this.docs, 'docs', 'doc')
-        const guidesSection = buildNavSectionElement(this.guides, 'guides', 'guide')
-        guidesSection.style.display = 'none'
-
-        this.nav.appendChild(docsSection)
-        this.nav.appendChild(guidesSection)
-
+    setupNavigation () {
         this.setupSwitcher()
+        this.setupNavClicks()
     }
 
 
@@ -109,14 +59,24 @@ class DocViewer {
         if (!switcherContainer) {
             return
         }
-        const buttons = switcherContainer.querySelectorAll('.nav-switch')
 
-        for (const btn of buttons) {
+        for (const btn of switcherContainer.querySelectorAll('.nav-switch')) {
             btn.addEventListener('click', () => {
-                const section = btn.dataset.section
-                this.switchSection(section)
+                this.switchSection(btn.dataset.section)
             })
         }
+    }
+
+
+    setupNavClicks () {
+        this.nav.addEventListener('click', (e) => {
+            const item = e.target.closest('.nav-item')
+            if (!item) {
+                return
+            }
+
+            closeMobileMenu()
+        })
     }
 
 
@@ -125,14 +85,12 @@ class DocViewer {
 
         const switcherContainer = document.getElementById('nav-switcher')
         if (switcherContainer) {
-            const buttons = switcherContainer.querySelectorAll('.nav-switch')
-            for (const btn of buttons) {
+            for (const btn of switcherContainer.querySelectorAll('.nav-switch')) {
                 btn.classList.toggle('active', btn.dataset.section === section)
             }
         }
 
-        const sections = this.nav.querySelectorAll('.nav-section')
-        for (const sec of sections) {
+        for (const sec of this.nav.querySelectorAll('.nav-section')) {
             sec.style.display = sec.dataset.section === section ? '' : 'none'
         }
 
@@ -147,44 +105,20 @@ class DocViewer {
             return
         }
 
-        const items = activeSection.querySelectorAll('.nav-item')
-        const categories = activeSection.querySelectorAll('.nav-category')
-
-        filterNavItems(items, search)
-        filterNavCategories(categories, search)
+        filterNavItems(activeSection.querySelectorAll('.nav-item'), search)
+        filterNavCategories(activeSection.querySelectorAll('.nav-category'), search)
     }
 
 
     setupSearch () {
-        this.searchInput.addEventListener('input', (e) => {
-            const search = e.target.value.toLowerCase().trim()
-
-            const activeSection = this.nav.querySelector(`.nav-section[data-section="${this.currentSection}"]`)
-            if (!activeSection) {
-                return
-            }
-
-            const items = activeSection.querySelectorAll('.nav-item')
-            const categories = activeSection.querySelectorAll('.nav-category')
-
-            filterNavItems(items, search)
-            filterNavCategories(categories, search)
+        this.searchInput.addEventListener('input', () => {
+            this.#reapplySearch()
         })
     }
 
 
     route () {
-        const params = new URLSearchParams(window.location.search)
-        let docPath = params.get('doc')
-        let guidePath = params.get('guide')
-        let tab = params.get('tab') || 'doc'
-
-        if (!docPath && !guidePath) {
-            const fromFilename = this.getPathFromFilename()
-            docPath = fromFilename.docPath
-            guidePath = fromFilename.guidePath
-            tab = fromFilename.tab
-        }
+        const {docPath, guidePath, tab} = this.getPathFromFilename()
 
         if (guidePath) {
             this.switchSection('guides')
@@ -236,10 +170,9 @@ class DocViewer {
 
 
     updateActiveNav (docPath) {
-        const items = this.nav.querySelectorAll('.nav-item')
         let activeItem = null
 
-        for (const item of items) {
+        for (const item of this.nav.querySelectorAll('.nav-item')) {
             const isActive = item.dataset.file === docPath
             item.classList.toggle('active', isActive)
             if (isActive) {
@@ -383,65 +316,6 @@ async function loadGuideSourcesFor (guideId) {
 }
 
 
-function getDocUrl (docFile) {
-    if (isProduction) {
-        const htmlFile = docFile.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
-        return htmlFile
-    }
-    return `?doc=${encodeURIComponent(docFile)}`
-}
-
-
-function getGuideUrl (guideId) {
-    if (isProduction) {
-        return `guide_${guideId}.html`
-    }
-    return `?guide=${encodeURIComponent('/doc/guides/' + guideId + '.guide.js')}`
-}
-
-
-function buildNavSectionElement (items, sectionName, type) {
-    const section = document.createElement('div')
-    section.className = 'nav-section'
-    section.dataset.section = sectionName
-
-    const byCategory = {}
-    for (const item of items) {
-        if (!byCategory[item.category]) {
-            byCategory[item.category] = []
-        }
-        byCategory[item.category].push(item)
-    }
-
-    for (const [category, categoryItems] of Object.entries(byCategory)) {
-        const categoryEl = document.createElement('div')
-        categoryEl.className = 'nav-category'
-        categoryEl.textContent = category
-        section.appendChild(categoryEl)
-
-        for (const item of categoryItems) {
-            const link = document.createElement('a')
-            link.className = 'nav-item'
-
-            if (item.featured) {
-                link.classList.add('featured')
-            }
-
-            link.textContent = type === 'guide' ? toHumanCase(item.title) : item.title
-            link.dataset.file = item.file
-            link.dataset.title = item.title.toLowerCase()
-            link.dataset.category = item.category
-            link.dataset.type = type
-            link.href = type === 'guide' ? getGuideUrl(item.id) : getDocUrl(item.file)
-
-            section.appendChild(link)
-        }
-    }
-
-    return section
-}
-
-
 function filterNavItems (items, search) {
     for (const item of items) {
         const matches = !search ||
@@ -455,18 +329,15 @@ function filterNavItems (items, search) {
 function filterNavCategories (categories, search) {
     for (const category of categories) {
         const hasVisibleItems = categoryHasVisibleItems(category)
-        const shouldHide = search ? !hasVisibleItems : false
-
-        category.classList.toggle('hidden', shouldHide)
+        category.classList.toggle('hidden', search ? !hasVisibleItems : false)
     }
 }
 
 
 function categoryHasVisibleItems (category) {
     const parent = category.parentElement
-    const categoryIndex = Array.from(parent.children).indexOf(category)
 
-    for (let i = categoryIndex + 1; i < parent.children.length; i++) {
+    for (let i = Array.from(parent.children).indexOf(category) + 1; i < parent.children.length; i++) {
         const child = parent.children[i]
 
         if (child.classList.contains('nav-category')) {
@@ -483,59 +354,43 @@ function categoryHasVisibleItems (category) {
 
 
 function setupMobileMenu () {
-    let toggle = document.getElementById('mobile-toggle')
-    let overlay = document.getElementById('mobile-overlay')
-    const sidebar = document.querySelector('.docs-sidebar')
+    const toggle = document.getElementById('mobile-toggle')
+    const overlay = document.getElementById('mobile-overlay')
+    const sidebar = document.getElementById('docs-sidebar')
 
-    if (!sidebar) {
+    if (!toggle || !overlay || !sidebar) {
         return
     }
 
-    sidebar.id = 'docs-sidebar'
+    toggle.addEventListener('click', () => {
+        const isOpen = sidebar.classList.contains('open')
+        if (isOpen) {
+            closeMobileMenu()
+        } else {
+            sidebar.classList.add('open')
+            overlay.classList.add('open')
+            toggle.classList.add('hidden')
+        }
+    })
 
-    if (!toggle) {
-        toggle = document.createElement('button')
-        toggle.id = 'mobile-toggle'
-        toggle.className = 'mobile-toggle'
-        toggle.setAttribute('aria-label', 'Toggle menu')
-        toggle.innerHTML = HAMBURGER_ICON
-        document.body.insertBefore(toggle, document.body.firstChild)
-    }
+    overlay.addEventListener('click', closeMobileMenu)
+}
 
-    if (!overlay) {
-        overlay = document.createElement('div')
-        overlay.id = 'mobile-overlay'
-        overlay.className = 'mobile-overlay'
-        document.body.insertBefore(overlay, document.body.firstChild)
-    }
 
-    const openMenu = () => {
-        sidebar.classList.add('open')
-        overlay.classList.add('open')
-        toggle.classList.add('hidden')
-    }
+function closeMobileMenu () {
+    const toggle = document.getElementById('mobile-toggle')
+    const overlay = document.getElementById('mobile-overlay')
+    const sidebar = document.getElementById('docs-sidebar')
 
-    const closeMenu = () => {
+    if (sidebar) {
         sidebar.classList.remove('open')
+    }
+    if (overlay) {
         overlay.classList.remove('open')
+    }
+    if (toggle) {
         toggle.classList.remove('hidden')
     }
-
-    toggle.addEventListener('click', () => {
-        if (sidebar.classList.contains('open')) {
-            closeMenu()
-        } else {
-            openMenu()
-        }
-    })
-
-    overlay.addEventListener('click', closeMenu)
-
-    sidebar.addEventListener('click', (e) => {
-        if (e.target.classList.contains('nav-item')) {
-            closeMenu()
-        }
-    })
 }
 
 
@@ -564,15 +419,30 @@ function updateMobileTabs (docPage) {
     container.style.display = ''
 
     for (const tab of tabs) {
-        const button = document.createElement('button')
-        button.textContent = tab.charAt(0).toUpperCase() + tab.slice(1)
-        button.className = docPage.activeTab === tab ? 'active' : ''
-        button.addEventListener('click', () => {
-            docPage.switchTab(tab)
-            updateMobileTabs(docPage)
-        })
-        container.appendChild(button)
+        const link = document.createElement('a')
+        link.textContent = tab.charAt(0).toUpperCase() + tab.slice(1)
+        link.className = docPage.activeTab === tab ? 'active' : ''
+        link.href = getTabUrl(tab)
+        container.appendChild(link)
     }
+}
+
+
+function getTabUrl (tab) {
+    const pathname = window.location.pathname
+    const filename = pathname.split('/').pop()
+    const baseName = filename
+        .replace('_api.html', '')
+        .replace('_test.html', '')
+        .replace('.html', '')
+
+    if (tab === 'api') {
+        return `${baseName}_api.html`
+    }
+    if (tab === 'test') {
+        return `${baseName}_test.html`
+    }
+    return `${baseName}.html`
 }
 
 

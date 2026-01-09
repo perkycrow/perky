@@ -51,7 +51,7 @@ export default defineConfig({
         minify: false,
         rollupOptions: {
             input: {
-                main: './doc/index.html',
+                main: './doc/entry.html',
                 ...await getDocInputs()
             }
         }
