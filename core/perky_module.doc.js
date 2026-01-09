@@ -193,6 +193,17 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
             logger.log('entities:', entities.map(e => e.$id))
         })
 
+        action('removeChild', () => {
+            const game = new PerkyModule({$id: 'game'})
+            const enemy = game.create(PerkyModule, {$id: 'enemy'})
+
+            logger.log('before:', game.hasChild('enemy'))
+
+            game.removeChild('enemy')
+            logger.log('after:', game.hasChild('enemy'))
+            logger.log('enemy disposed:', enemy.disposed)
+        })
+
     })
 
 
