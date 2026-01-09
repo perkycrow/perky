@@ -15,6 +15,7 @@ export default class DocPage extends HTMLElement {
     #tests = null
     #sources = null
     #activeTab = 'doc'
+    #setupIndex = 0
     #contentEl = null
     #tocEl = null
     #containerEl = null
@@ -283,6 +284,7 @@ export default class DocPage extends HTMLElement {
     #renderDocContent () {
         this.#contentEl.innerHTML = ''
         this.#tocEl.innerHTML = ''
+        this.#setupIndex = 0
 
         const sections = this.#doc.blocks.filter(b => b.type === 'section')
         if (sections.length > 1) {
@@ -470,6 +472,19 @@ export default class DocPage extends HTMLElement {
     }
 
 
+    #getSetupSource (setup) {
+        if (!this.#sources) {
+            return setup.source
+        }
+
+        const match = this.#sources.find(
+            s => s.type === 'setup' && s.index === this.#setupIndex
+        )
+
+        return match?.source || setup.source
+    }
+
+
     #renderContainer (block, setup = null) {
         const wrapper = document.createElement('div')
         wrapper.className = 'doc-container-block'
@@ -565,10 +580,11 @@ export default class DocPage extends HTMLElement {
 
             const codeEl = document.createElement('perky-code')
             codeEl.setAttribute('title', 'Setup')
-            codeEl.code = block.setup.source
+            codeEl.code = this.#getSetupSource(block.setup)
             setupEl.appendChild(codeEl)
 
             wrapper.appendChild(setupEl)
+            this.#setupIndex++
         }
 
         const content = document.createElement('div')

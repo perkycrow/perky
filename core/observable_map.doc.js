@@ -42,20 +42,18 @@ export default doc('ObservableMap', {context: 'simple'}, () => {
         })
 
         action('has', () => {
-            const map = new ObservableMap([
-                ['x', 10],
-                ['y', 20]
-            ])
+            const map = new ObservableMap()
+            map.set('x', 10)
+            map.set('y', 20)
 
             logger.log('has x:', map.has('x'))
             logger.log('has z:', map.has('z'))
         })
 
         action('delete', () => {
-            const map = new ObservableMap([
-                ['a', 1],
-                ['b', 2]
-            ])
+            const map = new ObservableMap()
+            map.set('a', 1)
+            map.set('b', 2)
 
             map.on('delete', (key, value) => {
                 logger.log(`deleted: ${key} = ${value}`)
@@ -72,12 +70,11 @@ export default doc('ObservableMap', {context: 'simple'}, () => {
     section('Bidirectional Lookup', () => {
 
         setup(ctx => {
-            ctx.map = new ObservableMap([
-                ['player1', {name: 'Alice'}],
-                ['player2', {name: 'Bob'}]
-            ])
-            ctx.alice = ctx.map.get('player1')
-            ctx.bob = ctx.map.get('player2')
+            ctx.map = new ObservableMap()
+            ctx.alice = {name: 'Alice'}
+            ctx.bob = {name: 'Bob'}
+            ctx.map.set('player1', ctx.alice)
+            ctx.map.set('player2', ctx.bob)
         })
 
         text('Look up values by key or keys by value.')
@@ -109,11 +106,10 @@ export default doc('ObservableMap', {context: 'simple'}, () => {
     section('Accessing Data', () => {
 
         setup(ctx => {
-            ctx.map = new ObservableMap([
-                ['red', '#ff0000'],
-                ['green', '#00ff00'],
-                ['blue', '#0000ff']
-            ])
+            ctx.map = new ObservableMap()
+            ctx.map.set('red', '#ff0000')
+            ctx.map.set('green', '#00ff00')
+            ctx.map.set('blue', '#0000ff')
         })
 
         text('Various ways to access map contents.')
@@ -188,11 +184,10 @@ export default doc('ObservableMap', {context: 'simple'}, () => {
         })
 
         action('toObject', () => {
-            const map = new ObservableMap([
-                ['name', 'Player'],
-                ['health', 100],
-                ['level', 5]
-            ])
+            const map = new ObservableMap()
+            map.set('name', 'Player')
+            map.set('health', 100)
+            map.set('level', 5)
 
             const obj = map.toObject()
             logger.log('as object:', obj)
@@ -207,9 +202,8 @@ export default doc('ObservableMap', {context: 'simple'}, () => {
         text('Update keys while preserving values.')
 
         action('updateKey', () => {
-            const map = new ObservableMap([
-                ['temp_id', {name: 'Alice'}]
-            ])
+            const map = new ObservableMap()
+            map.set('temp_id', {name: 'Alice'})
 
             map.on('key:updated', (oldKey, newKey, value) => {
                 logger.log(`key updated: ${oldKey} → ${newKey}`)
@@ -224,10 +218,9 @@ export default doc('ObservableMap', {context: 'simple'}, () => {
         action('updateKey (with validation)', () => {
             const alice = {name: 'Alice'}
             const bob = {name: 'Bob'}
-            const map = new ObservableMap([
-                ['p1', alice],
-                ['p2', bob]
-            ])
+            const map = new ObservableMap()
+            map.set('p1', alice)
+            map.set('p2', bob)
 
             // Update only if value matches
             const success1 = map.updateKey('p1', 'player1', alice)
@@ -263,10 +256,9 @@ export default doc('ObservableMap', {context: 'simple'}, () => {
         })
 
         action('delete event', () => {
-            const map = new ObservableMap([
-                ['a', 1],
-                ['b', 2]
-            ])
+            const map = new ObservableMap()
+            map.set('a', 1)
+            map.set('b', 2)
 
             map.on('delete', (key, value) => {
                 logger.log(`removed ${key} (was ${value})`)
@@ -293,11 +285,10 @@ export default doc('ObservableMap', {context: 'simple'}, () => {
         })
 
         action('clear event', () => {
-            const map = new ObservableMap([
-                ['a', 1],
-                ['b', 2],
-                ['c', 3]
-            ])
+            const map = new ObservableMap()
+            map.set('a', 1)
+            map.set('b', 2)
+            map.set('c', 3)
 
             let deleteCount = 0
             map.on('delete', () => deleteCount++)
@@ -435,8 +426,10 @@ export default doc('ObservableMap', {context: 'simple'}, () => {
         text('ObservableMap extends native Map with events and bidirectional lookup.')
 
         code('Native Map equivalence', () => {
-            const nativeMap = new Map([['a', 1]])
-            const observableMap = new ObservableMap([['a', 1]])
+            const nativeMap = new Map()
+            nativeMap.set('a', 1)
+            const observableMap = new ObservableMap()
+            observableMap.set('a', 1)
 
             // Both support standard Map operations
             nativeMap.set('b', 2)

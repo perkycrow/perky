@@ -11,6 +11,7 @@ export function parseDocFile (filePath) {
 function extractBlocks (source) {
     const blocks = []
     const blockTypes = ['code', 'action', 'container']
+    let setupIndex = 0
 
     let ast
     try {
@@ -27,6 +28,12 @@ function extractBlocks (source) {
         const block = extractBlock(node, source, blockTypes)
         if (block) {
             blocks.push(block)
+        }
+
+        const setupBlock = extractSetupBlock(node, source, setupIndex)
+        if (setupBlock) {
+            blocks.push(setupBlock)
+            setupIndex++
         }
     })
 
@@ -107,6 +114,39 @@ function walkNode (node, callback) {
         } else if (child && typeof child === 'object' && child.type) {
             walkNode(child, callback)
         }
+    }
+}
+
+
+function extractSetupBlock (node, source, index) {
+    if (node.type !== 'CallExpression') {
+        return null
+    }
+
+    const callee = node.callee
+    if (callee.type !== 'Identifier' || callee.name !== 'setup') {
+        return null
+    }
+
+    const args = node.arguments
+    if (args.length < 1) {
+        return null
+    }
+
+    const callbackArg = args[0]
+    if (callbackArg.type !== 'ArrowFunctionExpression' && callbackArg.type !== 'FunctionExpression') {
+        return null
+    }
+
+    const body = callbackArg.body
+    if (body.type !== 'BlockStatement') {
+        return null
+    }
+
+    return {
+        type: 'setup',
+        index,
+        source: extractBlockBody(source, body.start, body.end)
     }
 }
 
