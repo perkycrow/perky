@@ -991,12 +991,10 @@ function buildSeeUrl (name, pageType, section) {
         } else {
             url = `core_${baseName}.html`
         }
+    } else if (pageType === 'guide') {
+        url = `?guide=/doc/guides/${baseName}.guide.js`
     } else {
-        if (pageType === 'guide') {
-            url = `?guide=/doc/guides/${baseName}.guide.js`
-        } else {
-            url = `?doc=/core/${baseName}.doc.js&tab=${pageType}`
-        }
+        url = `?doc=/core/${baseName}.doc.js&tab=${pageType}`
     }
 
     if (section) {

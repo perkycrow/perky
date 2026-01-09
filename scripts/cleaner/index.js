@@ -17,6 +17,8 @@ import SingleDescribesAuditor from './auditors/tests/single_describes.js'
 import StaleTestsAuditor from './auditors/coverage/stale_tests.js'
 import MissingCoverageAuditor from './auditors/coverage/missing_coverage.js'
 
+import BrokenLinksAuditor from './auditors/docs/broken_links.js'
+
 import {bold, cyan, dim, green, yellow, gray} from './format.js'
 
 
@@ -33,7 +35,8 @@ const AUDIT_AUDITORS = [
     MissingTestsAuditor,
     DeepNestingAuditor,
     ItUsageAuditor,
-    SingleDescribesAuditor
+    SingleDescribesAuditor,
+    BrokenLinksAuditor
 ]
 
 
