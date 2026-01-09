@@ -50,8 +50,28 @@ class DocViewer {
 
 
     setupNavigation () {
+        this.renderNav()
+        renderSwitcher()
         this.setupSwitcher()
         this.setupNavClicks()
+    }
+
+
+    renderNav () {
+        this.nav.innerHTML = ''
+
+        const docsSection = document.createElement('div')
+        docsSection.className = 'nav-section'
+        docsSection.dataset.section = 'docs'
+        renderNavItems(docsSection, this.docs, 'doc')
+        this.nav.appendChild(docsSection)
+
+        const guidesSection = document.createElement('div')
+        guidesSection.className = 'nav-section'
+        guidesSection.dataset.section = 'guides'
+        guidesSection.style.display = 'none'
+        renderNavItems(guidesSection, this.guides, 'guide')
+        this.nav.appendChild(guidesSection)
     }
 
 
@@ -293,6 +313,58 @@ class DocViewer {
         }
     }
 
+}
+
+
+function renderNavItems (container, items, type) {
+    const byCategory = {}
+
+    for (const item of items) {
+        if (!byCategory[item.category]) {
+            byCategory[item.category] = []
+        }
+        byCategory[item.category].push(item)
+    }
+
+    for (const [category, categoryItems] of Object.entries(byCategory)) {
+        const categoryEl = document.createElement('div')
+        categoryEl.className = 'nav-category'
+        categoryEl.textContent = category
+        container.appendChild(categoryEl)
+
+        for (const item of categoryItems) {
+            const link = document.createElement('a')
+            link.className = 'nav-item'
+            link.href = type === 'guide'
+                ? `guide_${item.id}.html`
+                : item.file.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
+            link.dataset.file = item.file
+            link.dataset.title = item.title.toLowerCase()
+            link.dataset.category = item.category
+            link.textContent = item.title
+            container.appendChild(link)
+        }
+    }
+}
+
+
+function renderSwitcher () {
+    const switcherContainer = document.getElementById('nav-switcher')
+    if (!switcherContainer || switcherContainer.children.length > 0) {
+        return
+    }
+
+    const docsBtn = document.createElement('button')
+    docsBtn.className = 'nav-switch active'
+    docsBtn.dataset.section = 'docs'
+    docsBtn.textContent = 'Docs'
+    switcherContainer.appendChild(docsBtn)
+
+    const guidesBtn = document.createElement('button')
+    guidesBtn.className = 'nav-switch'
+    guidesBtn.dataset.section = 'guides'
+    guidesBtn.textContent = 'Guides'
+    switcherContainer.appendChild(guidesBtn)
 }
 
 

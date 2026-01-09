@@ -251,4 +251,202 @@ function extractFunctionBody (fn) {
 }
 
 
+export function addSpacerIfNeeded () {
+    const hasVisibleLogs = logger.history.some(e => e.event === 'log')
+    const lastEntry = logger.history[logger.history.length - 1]
+    const lastIsSpacer = lastEntry?.event === 'spacer'
+
+    if (hasVisibleLogs && !lastIsSpacer) {
+        logger.spacer()
+    }
+}
+
+
+export async function executeAction (block, sectionSetup = null) {
+    try {
+        addSpacerIfNeeded()
+        const ctx = {}
+
+        if (sectionSetup?.fn) {
+            await sectionSetup.fn(ctx)
+        }
+        await block.fn(ctx)
+    } catch (error) {
+        logger.error('Action error:', error.message)
+    }
+}
+
+
+export async function executeContainer (block, containerEl, sectionSetup = null) {
+    addSpacerIfNeeded()
+
+    const prevApp = containerEl._currentApp
+    if (prevApp?.dispose) {
+        prevApp.dispose()
+    }
+    containerEl.innerHTML = ''
+
+    if (block.preset) {
+        applyContainerPreset(containerEl, block.preset)
+    }
+
+    if (block.scrollable) {
+        containerEl.style.overflow = 'auto'
+    }
+
+    try {
+        let actionsBar = null
+        let slidersBar = null
+        let infoBar = null
+
+        const ctx = {
+            container: containerEl,
+            setApp: (app, ...args) => {
+                containerEl._currentApp = app
+                const [scene] = args
+                if (scene && app.autoFitEnabled && app.render) {
+                    app.on('resize', () => app.render(scene))
+                }
+            },
+            action: (label, callback) => {
+                if (!actionsBar) {
+                    actionsBar = document.createElement('div')
+                    actionsBar.className = 'doc-actions-bar'
+                    containerEl.appendChild(actionsBar)
+                }
+
+                const isFirst = actionsBar.children.length === 0
+                const btn = document.createElement('button')
+                btn.className = 'doc-actions-btn'
+                if (isFirst) {
+                    btn.classList.add('doc-actions-btn--active')
+                }
+                btn.textContent = label
+                btn.addEventListener('click', () => {
+                    actionsBar.querySelectorAll('.doc-actions-btn').forEach(b => b.classList.remove('doc-actions-btn--active'))
+                    btn.classList.add('doc-actions-btn--active')
+                    callback()
+                })
+                actionsBar.appendChild(btn)
+
+                if (isFirst) {
+                    callback()
+                }
+            },
+            slider: (label, opts, onChange) => {
+                if (!slidersBar) {
+                    slidersBar = document.createElement('div')
+                    slidersBar.className = 'doc-sliders-bar'
+                    containerEl.appendChild(slidersBar)
+                }
+
+                const wrapper = document.createElement('div')
+                wrapper.className = 'doc-slider-wrapper'
+
+                const labelEl = document.createElement('span')
+                labelEl.className = 'doc-slider-label'
+                labelEl.textContent = label
+
+                const valueEl = document.createElement('span')
+                valueEl.className = 'doc-slider-value'
+                valueEl.textContent = opts.default ?? opts.min
+
+                const input = document.createElement('input')
+                input.type = 'range'
+                input.className = 'doc-slider'
+                input.min = opts.min
+                input.max = opts.max
+                input.step = opts.step ?? (opts.max - opts.min) / 100
+                input.value = opts.default ?? opts.min
+
+                input.addEventListener('input', () => {
+                    const value = parseFloat(input.value)
+                    valueEl.textContent = Number.isInteger(value) ? value : value.toFixed(2)
+                    onChange(value)
+                })
+
+                wrapper.appendChild(labelEl)
+                wrapper.appendChild(input)
+                wrapper.appendChild(valueEl)
+                slidersBar.appendChild(wrapper)
+
+                onChange(parseFloat(input.value))
+            },
+            info: (formatter) => {
+                if (!infoBar) {
+                    infoBar = document.createElement('div')
+                    infoBar.className = 'doc-info-bar'
+                    containerEl.appendChild(infoBar)
+                }
+
+                const el = document.createElement('div')
+                el.className = 'doc-info'
+                infoBar.appendChild(el)
+                const update = (...args) => {
+                    el.textContent = formatter(...args)
+                }
+                update()
+                return update
+            },
+            hint: (message) => {
+                const el = document.createElement('div')
+                el.className = 'doc-hint'
+                el.textContent = message
+                containerEl.appendChild(el)
+            },
+            display: (formatter) => {
+                const el = document.createElement('div')
+                el.className = 'doc-display'
+                containerEl.appendChild(el)
+                const update = (...args) => {
+                    const result = formatter(...args)
+                    if (Array.isArray(result)) {
+                        el.innerHTML = result.map(item => `<span class="doc-display-tag">${item}</span>`).join('')
+                    } else {
+                        el.innerHTML = result
+                    }
+                }
+                update()
+                return update
+            }
+        }
+
+        if (sectionSetup?.fn) {
+            await sectionSetup.fn(ctx)
+        }
+        await block.fn(ctx)
+
+        if (containerEl.tabIndex >= 0) {
+            containerEl.focus()
+        }
+    } catch (error) {
+        logger.error('Container error:', error.message)
+    }
+}
+
+
+export function renderAction (block, sectionSetup = null, extractedSource = null) {
+    const wrapper = document.createElement('div')
+    wrapper.className = 'doc-action-block'
+
+    const codeEl = document.createElement('perky-code')
+    codeEl.setAttribute('title', block.title)
+    codeEl.code = extractedSource || block.source
+    wrapper.appendChild(codeEl)
+
+    const button = document.createElement('button')
+    button.className = 'doc-action-btn'
+    button.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+        </svg>
+        Run
+    `
+    button.addEventListener('click', () => executeAction(block, sectionSetup))
+    wrapper.appendChild(button)
+
+    return wrapper
+}
+
+
 export {logger}
