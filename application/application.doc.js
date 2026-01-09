@@ -1,4 +1,4 @@
-import {doc, section, text, code, action, logger} from '../doc/runtime.js'
+import {doc, section, text, code, action, container, logger} from '../doc/runtime.js'
 import Application from './application.js'
 
 
@@ -121,24 +121,32 @@ export default doc('Application', {context: 'simple'}, () => {
 
         text('Loading methods are delegated from [[SourceManager]].')
 
-        code('preload', async () => {
+        container({title: 'Load and display image', height: 200, preset: 'centered'}, ctx => {
             const app = new Application({
                 $id: 'demo',
                 manifest: {
                     assets: {
-                        hero: {type: 'image', url: '/hero.png', tags: ['preload']},
-                        music: {type: 'audio', url: '/music.mp3'}
+                        shroom: {
+                            type: 'image',
+                            url: './assets/images/shroom.png',
+                            tags: ['preload']
+                        }
                     }
                 }
             })
 
-            // Load all assets tagged 'preload'
-            await app.preload()
+            app.mount(ctx.container)
+            app.start()
 
-            // Or load specific assets
-            await app.loadAsset('music')
-            await app.loadTag('preload')
-            await app.loadAll()
+            app.on('loader:complete', () => {
+                const img = app.getSource('shroom')
+                img.style.width = '100px'
+                app.element.appendChild(img)
+            })
+
+            app.preload()
+
+            ctx.setApp(app)
         })
 
         code('Loading events', () => {
@@ -166,9 +174,9 @@ export default doc('Application', {context: 'simple'}, () => {
 
         code('mount / dismount', () => {
             const app = new Application({$id: 'demo'})
-            const container = document.getElementById('app')
+            const el = document.getElementById('app')
 
-            app.mount(container)
+            app.mount(el)
             console.log(app.mounted) // true
             console.log(app.element) // DOM element
 
@@ -202,25 +210,54 @@ export default doc('Application', {context: 'simple'}, () => {
 
         text('Input methods are delegated from [[InputSystem]].')
 
-        code('Check input state', () => {
+        container({title: 'Keyboard input', height: 150, preset: 'interactive'}, ctx => {
+            ctx.hint('Click here, then press keys')
+            const updateDisplay = ctx.display(keys => (keys.length ? keys : 'No keys pressed'))
+
             const app = new Application({$id: 'demo'})
-            app.mount(document.body)
+            app.mount(ctx.container)
             app.start()
 
-            // Keyboard
-            if (app.isKeyPressed('Space')) {
-                // jump
+            const update = () => {
+                const pressed = app.inputSystem.keyboard.getPressedControls()
+                updateDisplay(pressed.map(c => c.name))
             }
 
-            // Mouse
-            if (app.isMousePressed('left')) {
-                // shoot
+            app.inputSystem.on('control:pressed', update)
+            app.inputSystem.on('control:released', update)
+
+            ctx.setApp(app)
+        })
+
+        container({title: 'WASD direction', height: 180, preset: 'interactive-alt'}, ctx => {
+            ctx.hint('Use WASD or arrow keys')
+            const updateDisplay = ctx.display(dir => dir || 'Direction: (0, 0)')
+
+            const app = new Application({$id: 'demo'})
+            app.mount(ctx.container)
+            app.start()
+
+            // Bind WASD
+            app.bindInput({controlName: 'KeyW', actionName: 'moveUp'})
+            app.bindInput({controlName: 'KeyS', actionName: 'moveDown'})
+            app.bindInput({controlName: 'KeyA', actionName: 'moveLeft'})
+            app.bindInput({controlName: 'KeyD', actionName: 'moveRight'})
+
+            // Bind arrows too
+            app.bindInput({controlName: 'ArrowUp', actionName: 'moveUp'})
+            app.bindInput({controlName: 'ArrowDown', actionName: 'moveDown'})
+            app.bindInput({controlName: 'ArrowLeft', actionName: 'moveLeft'})
+            app.bindInput({controlName: 'ArrowRight', actionName: 'moveRight'})
+
+            const update = () => {
+                const dir = app.getDirection('move')
+                updateDisplay(`Direction: (${dir.x.toFixed(1)}, ${dir.y.toFixed(1)})`)
             }
 
-            // Touch
-            if (app.isTouchPressed('touch0')) {
-                // interact
-            }
+            app.inputSystem.on('control:pressed', update)
+            app.inputSystem.on('control:released', update)
+
+            ctx.setApp(app)
         })
 
         code('Input bindings', () => {
@@ -242,21 +279,6 @@ export default doc('Application', {context: 'simple'}, () => {
             app.on('input:triggered', (binding, event) => {
                 console.log('Action triggered:', binding.actionName)
             })
-        })
-
-        code('Direction helper', () => {
-            const app = new Application({$id: 'demo'})
-
-            // Bind WASD or arrows to movement
-            app.bindInput({controlName: 'KeyW', actionName: 'moveUp'})
-            app.bindInput({controlName: 'KeyS', actionName: 'moveDown'})
-            app.bindInput({controlName: 'KeyA', actionName: 'moveLeft'})
-            app.bindInput({controlName: 'KeyD', actionName: 'moveRight'})
-
-            // Get normalized direction vector
-            const dir = app.getDirection('move') // Vec2
-            player.x += dir.x * speed
-            player.y += dir.y * speed
         })
 
     })
