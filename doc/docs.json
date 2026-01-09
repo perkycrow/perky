@@ -8,7 +8,8 @@
       "tags": [
         "core",
         "action_controller"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "action_dispatcher",
@@ -18,7 +19,8 @@
       "tags": [
         "core",
         "action_dispatcher"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "inflector",
@@ -28,7 +30,8 @@
       "tags": [
         "core",
         "inflector"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "logger",
@@ -38,7 +41,8 @@
       "tags": [
         "core",
         "logger"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "notifier",
@@ -48,7 +52,8 @@
       "tags": [
         "core",
         "notifier"
-      ]
+      ],
+      "featured": true
     },
     {
       "id": "observable_map",
@@ -58,7 +63,8 @@
       "tags": [
         "core",
         "observable_map"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "observable_set",
@@ -68,7 +74,8 @@
       "tags": [
         "core",
         "observable_set"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "perky_module",
@@ -78,7 +85,8 @@
       "tags": [
         "core",
         "perky_module"
-      ]
+      ],
+      "featured": true
     },
     {
       "id": "perky_query",
@@ -88,7 +96,8 @@
       "tags": [
         "core",
         "perky_query"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "registry",
@@ -98,7 +107,8 @@
       "tags": [
         "core",
         "registry"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "utils",
@@ -108,7 +118,8 @@
       "tags": [
         "core",
         "utils"
-      ]
+      ],
+      "featured": true
     },
     {
       "id": "application",
@@ -118,7 +129,8 @@
       "tags": [
         "application",
         "application"
-      ]
+      ],
+      "featured": true
     },
     {
       "id": "perky_view",
@@ -128,7 +140,8 @@
       "tags": [
         "application",
         "perky_view"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "game_loop",
@@ -138,7 +151,8 @@
       "tags": [
         "game",
         "game_loop"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "canvas_2d",
@@ -148,7 +162,8 @@
       "tags": [
         "render",
         "canvas_2d"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "webgl_canvas_2d",
@@ -158,7 +173,8 @@
       "tags": [
         "render",
         "webgl_canvas_2d"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "input_control",
@@ -168,7 +184,8 @@
       "tags": [
         "input",
         "input_control"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "vec2_control",
@@ -178,7 +195,8 @@
       "tags": [
         "input/input_controls",
         "vec2_control"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "keyboard_device",
@@ -188,7 +206,8 @@
       "tags": [
         "input/input_devices",
         "keyboard_device"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "mouse_device",
@@ -198,7 +217,8 @@
       "tags": [
         "input/input_devices",
         "mouse_device"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "random",
@@ -208,7 +228,8 @@
       "tags": [
         "math",
         "random"
-      ]
+      ],
+      "featured": true
     },
     {
       "id": "vec2",
@@ -218,7 +239,8 @@
       "tags": [
         "math",
         "vec2"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "perky_explorer",
@@ -228,7 +250,8 @@
       "tags": [
         "editor",
         "perky_explorer"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "perky_logger",
@@ -238,7 +261,8 @@
       "tags": [
         "editor",
         "perky_logger"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "toggle_input",
@@ -248,7 +272,8 @@
       "tags": [
         "editor",
         "toggle_input"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "vec2_input",
@@ -258,7 +283,8 @@
       "tags": [
         "editor",
         "vec2_input"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "action_controller_inspector",
@@ -268,7 +294,8 @@
       "tags": [
         "editor/inspectors",
         "action_controller_inspector"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "action_dispatcher_inspector",
@@ -278,7 +305,8 @@
       "tags": [
         "editor/inspectors",
         "action_dispatcher_inspector"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "vec2_log_renderer",
@@ -288,7 +316,8 @@
       "tags": [
         "editor/log_renderers",
         "vec2_log_renderer"
-      ]
+      ],
+      "featured": false
     },
     {
       "id": "audio_system",
@@ -298,7 +327,8 @@
       "tags": [
         "audio",
         "audio_system"
-      ]
+      ],
+      "featured": true
     }
   ],
   "guides": [

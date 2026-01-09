@@ -116,6 +116,9 @@ async function discoverDocs () {
         ignore: ['node_modules/**', 'dist/**', 'doc/**']
     })
 
+    const orderConfig = loadOrderConfig()
+    const featuredList = orderConfig.docs?.featured || []
+
     const docs = files.map(file => {
         const relativePath = '/' + file
         const basename = path.basename(file, '.doc.js')
@@ -123,17 +126,18 @@ async function discoverDocs () {
         const category = directory || 'core'
         const absolutePath = path.join(rootDir, file)
         const extractedTitle = extractTitleFromDoc(absolutePath)
+        const isFeatured = featuredList.includes(basename)
 
         return {
             id: basename,
             file: relativePath,
             category,
             title: extractedTitle || toPascalCase(basename),
-            tags: [category, basename]
+            tags: [category, basename],
+            featured: isFeatured
         }
     })
 
-    const orderConfig = loadOrderConfig()
     sortWithOrder(docs, orderConfig.docs || {})
 
     return {docs}

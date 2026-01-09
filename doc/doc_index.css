@@ -191,6 +191,24 @@ body {
     display: none;
 }
 
+.nav-item.featured {
+    position: relative;
+    font-weight: 500;
+}
+
+.nav-item.featured::before {
+    content: "◆";
+    position: absolute;
+    left: 0.5rem;
+    color: var(--accent-secondary);
+    font-size: 0.7rem;
+    opacity: 0.8;
+}
+
+.nav-item.featured:hover::before {
+    opacity: 1;
+}
+
 .docs-main {
     flex: 1;
     display: flex;

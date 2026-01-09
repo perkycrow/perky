@@ -15,6 +15,18 @@
             "math",
             "editor"
         ],
-        "items": {}
+        "items": {},
+        "featured": [
+            "perky_module",
+            "notifier",
+            "utils",
+            "random",
+            "application",
+            "game",
+            "input_system",
+            "render_system",
+            "audio_system",
+            "manifest"
+        ]
     }
 }

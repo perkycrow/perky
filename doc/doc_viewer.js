@@ -415,6 +415,11 @@ function buildNavSectionElement (items, sectionName, type) {
         for (const item of categoryItems) {
             const link = document.createElement('a')
             link.className = 'nav-item'
+
+            if (item.featured) {
+                link.classList.add('featured')
+            }
+
             link.textContent = type === 'guide' ? toHumanCase(item.title) : item.title
             link.dataset.file = item.file
             link.dataset.title = item.title.toLowerCase()
