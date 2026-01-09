@@ -4259,5 +4259,143 @@
       ]
     },
     "isDefault": true
+  },
+  "/doc/runtime.doc.js": {
+    "type": "module",
+    "file": "/doc/runtime.js",
+    "functions": [
+      {
+        "name": "doc",
+        "line": 9,
+        "params": [
+          "title",
+          "options",
+          "fn"
+        ],
+        "source": "function doc (title, options, fn) {\n    const opts = typeof options === 'function' ? {} : options\n    const callback = typeof options === 'function' ? options : fn\n\n    const docData = {\n        title,\n        options: opts,\n        blocks: []\n    }\n\n    currentBlocks = docData.blocks\n    currentSetup = null\n    callback()\n    currentBlocks = null\n    currentSetup = null\n\n    return docData\n}"
+      },
+      {
+        "name": "section",
+        "line": 29,
+        "params": [
+          "title",
+          "fn"
+        ],
+        "source": "function section (title, fn) {\n    if (!currentBlocks) {\n        throw new Error('section() must be called inside doc()')\n    }\n\n    const sectionData = {\n        type: 'section',\n        title,\n        blocks: [],\n        setup: null\n    }\n\n    const parentBlocks = currentBlocks\n    const parentSetup = currentSetup\n\n    currentBlocks = sectionData.blocks\n    currentSetup = null\n    fn()\n    sectionData.setup = currentSetup\n\n    currentBlocks = parentBlocks\n    currentSetup = parentSetup\n\n    currentBlocks.push(sectionData)\n}"
+      },
+      {
+        "name": "setup",
+        "line": 56,
+        "params": [
+          "fn"
+        ],
+        "source": "function setup (fn) {\n    if (!currentBlocks) {\n        throw new Error('setup() must be called inside doc() or section()')\n    }\n\n    currentSetup = {\n        source: extractFunctionBody(fn),\n        fn\n    }\n}"
+      },
+      {
+        "name": "text",
+        "line": 68,
+        "params": [
+          "content"
+        ],
+        "source": "function text (content) {\n    if (!currentBlocks) {\n        throw new Error('text() must be called inside doc()')\n    }\n\n    currentBlocks.push({\n        type: 'text',\n        content: dedent(content)\n    })\n}"
+      },
+      {
+        "name": "code",
+        "line": 80,
+        "params": [
+          "title",
+          "fn"
+        ],
+        "source": "function code (title, fn) {\n    if (!currentBlocks) {\n        throw new Error('code() must be called inside doc()')\n    }\n\n    currentBlocks.push({\n        type: 'code',\n        title,\n        source: extractFunctionBody(fn)\n    })\n}"
+      },
+      {
+        "name": "action",
+        "line": 93,
+        "params": [
+          "title",
+          "fn"
+        ],
+        "source": "function action (title, fn) {\n    if (!currentBlocks) {\n        throw new Error('action() must be called inside doc()')\n    }\n\n    currentBlocks.push({\n        type: 'action',\n        title,\n        source: extractFunctionBody(fn),\n        fn\n    })\n}"
+      },
+      {
+        "name": "see",
+        "line": 107,
+        "params": [
+          "name",
+          "options = ..."
+        ],
+        "source": "function see (name, options = {}) {\n    if (!currentBlocks) {\n        throw new Error('see() must be called inside doc()')\n    }\n\n    currentBlocks.push({\n        type: 'see',\n        name,\n        pageType: options.type || 'doc',\n        section: options.section || null,\n        category: options.category || null\n    })\n}"
+      },
+      {
+        "name": "disclaimer",
+        "line": 122,
+        "params": [
+          "content"
+        ],
+        "source": "function disclaimer (content) {\n    if (!currentBlocks) {\n        throw new Error('disclaimer() must be called inside doc()')\n    }\n\n    currentBlocks.push({\n        type: 'disclaimer',\n        content: dedent(content)\n    })\n}"
+      },
+      {
+        "name": "container",
+        "line": 181,
+        "params": [
+          "options",
+          "fn"
+        ],
+        "source": "function container (options, fn) {\n    if (!currentBlocks) {\n        throw new Error('container() must be called inside doc()')\n    }\n\n    const opts = typeof options === 'function' ? {} : options\n    const callback = typeof options === 'function' ? options : fn\n\n    currentBlocks.push({\n        type: 'container',\n        width: opts.width || null,\n        height: opts.height || 300,\n        title: opts.title || null,\n        preset: opts.preset || null,\n        scrollable: opts.scrollable || false,\n        source: extractFunctionBody(callback),\n        fn: callback\n    })\n}"
+      },
+      {
+        "name": "applyContainerPreset",
+        "line": 202,
+        "params": [
+          "element",
+          "presetName"
+        ],
+        "source": "function applyContainerPreset (element, presetName) {\n    const preset = CONTAINER_PRESETS[presetName]\n    if (!preset) {\n        return\n    }\n\n    if (preset.tabIndex !== undefined) {\n        element.tabIndex = preset.tabIndex\n    }\n\n    if (preset.style) {\n        Object.assign(element.style, preset.style)\n    }\n}"
+      },
+      {
+        "name": "extractFunctionBody",
+        "line": 218,
+        "params": [
+          "fn"
+        ],
+        "source": "function extractFunctionBody (fn) {\n    const source = fn.toString()\n\n    let body = null\n\n    const arrowMatch = source.match(/^\\s*\\(?[^)]*\\)?\\s*=>\\s*\\{([\\s\\S]*)\\}\\s*$/)\n    if (arrowMatch) {\n        body = arrowMatch[1]\n    }\n\n    if (!body) {\n        const functionMatch = source.match(/^function\\s*\\w*\\s*\\([^)]*\\)\\s*\\{([\\s\\S]*)\\}\\s*$/)\n        if (functionMatch) {\n            body = functionMatch[1]\n        }\n    }\n\n    if (!body) {\n        const arrowExpressionMatch = source.match(/^\\s*\\(?[^)]*\\)?\\s*=>\\s*(.+)$/)\n        if (arrowExpressionMatch) {\n            return arrowExpressionMatch[1].trim()\n        }\n    }\n\n    if (!body) {\n        return source\n    }\n\n    body = body.split('\\n')\n        .filter(line => !line.trim().startsWith('ctx.setApp('))\n        .join('\\n')\n\n    return dedent(body)\n}"
+      },
+      {
+        "name": "addSpacerIfNeeded",
+        "line": 254,
+        "params": [],
+        "source": "function addSpacerIfNeeded () {\n    const hasVisibleLogs = logger.history.some(e => e.event === 'log')\n    const lastEntry = logger.history[logger.history.length - 1]\n    const lastIsSpacer = lastEntry?.event === 'spacer'\n\n    if (hasVisibleLogs && !lastIsSpacer) {\n        logger.spacer()\n    }\n}"
+      },
+      {
+        "name": "executeAction",
+        "line": 265,
+        "params": [
+          "block",
+          "sectionSetup = ..."
+        ],
+        "source": "async function executeAction (block, sectionSetup = null) {\n    try {\n        addSpacerIfNeeded()\n        const ctx = {}\n\n        if (sectionSetup?.fn) {\n            await sectionSetup.fn(ctx)\n        }\n        await block.fn(ctx)\n    } catch (error) {\n        logger.error('Action error:', error.message)\n    }\n}"
+      },
+      {
+        "name": "executeContainer",
+        "line": 280,
+        "params": [
+          "block",
+          "containerEl",
+          "sectionSetup = ..."
+        ],
+        "source": "async function executeContainer (block, containerEl, sectionSetup = null) {\n    addSpacerIfNeeded()\n\n    const prevApp = containerEl._currentApp\n    if (prevApp?.dispose) {\n        prevApp.dispose()\n    }\n    containerEl.innerHTML = ''\n\n    if (block.preset) {\n        applyContainerPreset(containerEl, block.preset)\n    }\n\n    if (block.scrollable) {\n        containerEl.style.overflow = 'auto'\n    }\n\n    try {\n        let actionsBar = null\n        let slidersBar = null\n        let infoBar = null\n\n        const ctx = {\n            container: containerEl,\n            setApp: (app, ...args) => {\n                containerEl._currentApp = app\n                const [scene] = args\n                if (scene && app.autoFitEnabled && app.render) {\n                    app.on('resize', () => app.render(scene))\n                }\n            },\n            action: (label, callback) => {\n                if (!actionsBar) {\n                    actionsBar = document.createElement('div')\n                    actionsBar.className = 'doc-actions-bar'\n                    containerEl.appendChild(actionsBar)\n                }\n\n                const isFirst = actionsBar.children.length === 0\n                const btn = document.createElement('button')\n                btn.className = 'doc-actions-btn'\n                if (isFirst) {\n                    btn.classList.add('doc-actions-btn--active')\n                }\n                btn.textContent = label\n                btn.addEventListener('click', () => {\n                    actionsBar.querySelectorAll('.doc-actions-btn').forEach(b => b.classList.remove('doc-actions-btn--active'))\n                    btn.classList.add('doc-actions-btn--active')\n                    callback()\n                })\n                actionsBar.appendChild(btn)\n\n                if (isFirst) {\n                    callback()\n                }\n            },\n            slider: (label, opts, onChange) => {\n                if (!slidersBar) {\n                    slidersBar = document.createElement('div')\n                    slidersBar.className = 'doc-sliders-bar'\n                    containerEl.appendChild(slidersBar)\n                }\n\n                const wrapper = document.createElement('div')\n                wrapper.className = 'doc-slider-wrapper'\n\n                const labelEl = document.createElement('span')\n                labelEl.className = 'doc-slider-label'\n                labelEl.textContent = label\n\n                const valueEl = document.createElement('span')\n                valueEl.className = 'doc-slider-value'\n                valueEl.textContent = opts.default ?? opts.min\n\n                const input = document.createElement('input')\n                input.type = 'range'\n                input.className = 'doc-slider'\n                input.min = opts.min\n                input.max = opts.max\n                input.step = opts.step ?? (opts.max - opts.min) / 100\n                input.value = opts.default ?? opts.min\n\n                input.addEventListener('input', () => {\n                    const value = parseFloat(input.value)\n                    valueEl.textContent = Number.isInteger(value) ? value : value.toFixed(2)\n                    onChange(value)\n                })\n\n                wrapper.appendChild(labelEl)\n                wrapper.appendChild(input)\n                wrapper.appendChild(valueEl)\n                slidersBar.appendChild(wrapper)\n\n                onChange(parseFloat(input.value))\n            },\n            info: (formatter) => {\n                if (!infoBar) {\n                    infoBar = document.createElement('div')\n                    infoBar.className = 'doc-info-bar'\n                    containerEl.appendChild(infoBar)\n                }\n\n                const el = document.createElement('div')\n                el.className = 'doc-info'\n                infoBar.appendChild(el)\n                const update = (...args) => {\n                    el.textContent = formatter(...args)\n                }\n                update()\n                return update\n            },\n            hint: (message) => {\n                const el = document.createElement('div')\n                el.className = 'doc-hint'\n                el.textContent = message\n                containerEl.appendChild(el)\n            },\n            display: (formatter) => {\n                const el = document.createElement('div')\n                el.className = 'doc-display'\n                containerEl.appendChild(el)\n                const update = (...args) => {\n                    const result = formatter(...args)\n                    if (Array.isArray(result)) {\n                        el.innerHTML = result.map(item => `<span class=\"doc-display-tag\">${item}</span>`).join('')\n                    } else {\n                        el.innerHTML = result\n                    }\n                }\n                update()\n                return update\n            }\n        }\n\n        if (sectionSetup?.fn) {\n            await sectionSetup.fn(ctx)\n        }\n        await block.fn(ctx)\n\n        if (containerEl.tabIndex >= 0) {\n            containerEl.focus()\n        }\n    } catch (error) {\n        logger.error('Container error:', error.message)\n    }\n}"
+      },
+      {
+        "name": "renderAction",
+        "line": 428,
+        "params": [
+          "block",
+          "sectionSetup = ...",
+          "extractedSource = ..."
+        ],
+        "source": "function renderAction (block, sectionSetup = null, extractedSource = null) {\n    const wrapper = document.createElement('div')\n    wrapper.className = 'doc-action-block'\n\n    const codeEl = document.createElement('perky-code')\n    codeEl.setAttribute('title', block.title)\n    codeEl.code = extractedSource || block.source\n    wrapper.appendChild(codeEl)\n\n    const button = document.createElement('button')\n    button.className = 'doc-action-btn'\n    button.innerHTML = `\n        <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"currentColor\">\n            <path d=\"M8 5v14l11-7z\"/>\n        </svg>\n        Run\n    `\n    button.addEventListener('click', () => executeAction(block, sectionSetup))\n    wrapper.appendChild(button)\n\n    return wrapper\n}"
+      }
+    ],
+    "exports": []
   }
 }

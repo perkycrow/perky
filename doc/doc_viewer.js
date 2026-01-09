@@ -4,7 +4,10 @@ import logger from '../core/logger.js'
 import {getTabUrl, extractBaseName} from './utils/paths.js'
 
 
-const docModules = import.meta.glob('../**/*.doc.js')
+const docModules = {
+    ...import.meta.glob('../**/*.doc.js'),
+    ...import.meta.glob('./*.doc.js')
+}
 const guideModules = import.meta.glob('./guides/**/*.guide.js')
 
 
@@ -222,8 +225,13 @@ class DocViewer {
         logger.clear()
 
         try {
-            const modulePath = '..' + docPath
-            const loader = docModules[modulePath]
+            let modulePath = '..' + docPath
+            let loader = docModules[modulePath]
+
+            if (!loader && docPath.startsWith('/doc/')) {
+                modulePath = '.' + docPath.slice(4)
+                loader = docModules[modulePath]
+            }
 
             if (!loader) {
                 throw new Error(`Doc module not found: ${docPath}`)

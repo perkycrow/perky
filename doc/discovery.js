@@ -113,7 +113,7 @@ function extractTitleFromDoc (filePath) {
 async function discoverDocs () {
     const files = await glob('**/*.doc.js', {
         cwd: rootDir,
-        ignore: ['node_modules/**', 'dist/**', 'doc/**']
+        ignore: ['node_modules/**', 'dist/**']
     })
 
     const orderConfig = loadOrderConfig()

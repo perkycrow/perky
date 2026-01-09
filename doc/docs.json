@@ -340,6 +340,17 @@
         "audio_system"
       ],
       "featured": true
+    },
+    {
+      "id": "runtime",
+      "file": "/doc/runtime.doc.js",
+      "category": "doc",
+      "title": "Doc Runtime",
+      "tags": [
+        "doc",
+        "runtime"
+      ],
+      "featured": false
     }
   ],
   "guides": [
