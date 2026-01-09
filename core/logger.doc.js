@@ -1,5 +1,4 @@
 import {doc, section, setup, text, code, action, logger} from '../doc/runtime.js'
-import Logger from './logger.js'
 
 
 export default doc('Logger', {context: 'simple'}, () => {
@@ -36,7 +35,7 @@ export default doc('Logger', {context: 'simple'}, () => {
 
         action('success', () => {
             logger.success('Operation completed')
-            logger.success('✓ All tests passed')
+            logger.success('All tests passed')
         })
 
     })
@@ -71,63 +70,21 @@ export default doc('Logger', {context: 'simple'}, () => {
         text('Logger maintains a history of all log entries.')
 
         action('Accessing history', () => {
-            const customLogger = new Logger()
-            customLogger.consoleOutput = false
+            logger.log('First entry')
+            logger.warn('Second entry')
+            logger.error('Third entry')
 
-            customLogger.log('First entry')
-            customLogger.warn('Second entry')
-            customLogger.error('Third entry')
-
-            logger.log('History length:', customLogger.history.length)
-            logger.log('Last entry:', customLogger.history[customLogger.history.length - 1])
-        })
-
-        action('maxHistory', () => {
-            const customLogger = new Logger()
-            customLogger.consoleOutput = false
-            customLogger.maxHistory = 3
-
-            customLogger.log('Entry 1')
-            customLogger.log('Entry 2')
-            customLogger.log('Entry 3')
-            customLogger.log('Entry 4')
-            customLogger.log('Entry 5')
-
-            logger.log('History length:', customLogger.history.length)
-            logger.log('Oldest entry:', customLogger.history[0].items[0])
+            logger.log('History length:', logger.history.length)
+            logger.log('Last entry:', logger.history[logger.history.length - 1])
         })
 
         action('clearHistory', () => {
-            const customLogger = new Logger()
-            customLogger.consoleOutput = false
+            logger.log('Entry 1')
+            logger.log('Entry 2')
+            logger.log('Before clear:', logger.history.length)
 
-            customLogger.log('Entry 1')
-            customLogger.log('Entry 2')
-            logger.log('Before clear:', customLogger.history.length)
-
-            customLogger.clearHistory()
-            logger.log('After clear:', customLogger.history.length)
-        })
-
-    })
-
-
-    section('Console Output', () => {
-
-        text('Control whether logs are printed to console.')
-
-        action('Disable console output', () => {
-            const customLogger = new Logger()
-
-            logger.log('Console output enabled:')
-            customLogger.consoleOutput = true
-            customLogger.log('This appears in console')
-
-            logger.log('Console output disabled:')
-            customLogger.consoleOutput = false
-            customLogger.log('This is silent (but still recorded)')
-
-            logger.log('History size:', customLogger.history.length)
+            logger.clearHistory()
+            logger.log('After clear:', logger.history.length)
         })
 
     })
@@ -138,49 +95,44 @@ export default doc('Logger', {context: 'simple'}, () => {
         text('Logger emits events for all logging operations.')
 
         action('log event', () => {
-            const customLogger = new Logger()
-            customLogger.consoleOutput = false
+            const handler = entry => {
+                console.log('Log event:', entry.type, '-', entry.items)
+            }
 
-            customLogger.on('log', entry => {
-                logger.log('Log event:', entry.type, '-', entry.items)
-            })
-
-            customLogger.info('Info message')
-            customLogger.warn('Warning message')
-            customLogger.error('Error message')
+            logger.on('log', handler)
+            logger.info('Info message')
+            logger.warn('Warning message')
+            logger.off('log', handler)
         })
 
         action('clear event', () => {
-            const customLogger = new Logger()
-            customLogger.consoleOutput = false
+            const handler = entry => {
+                console.log('Clear event at:', new Date(entry.timestamp))
+            }
 
-            customLogger.on('clear', entry => {
-                logger.log('Clear event at:', new Date(entry.timestamp))
-            })
-
-            customLogger.clear()
+            logger.on('clear', handler)
+            logger.clear()
+            logger.off('clear', handler)
         })
 
         action('title event', () => {
-            const customLogger = new Logger()
-            customLogger.consoleOutput = false
+            const handler = entry => {
+                console.log('Title event:', entry.title)
+            }
 
-            customLogger.on('title', entry => {
-                logger.log('Title event:', entry.title)
-            })
-
-            customLogger.title('Section 1')
+            logger.on('title', handler)
+            logger.title('Section 1')
+            logger.off('title', handler)
         })
 
         action('spacer event', () => {
-            const customLogger = new Logger()
-            customLogger.consoleOutput = false
+            const handler = entry => {
+                console.log('Spacer event at:', entry.timestamp)
+            }
 
-            customLogger.on('spacer', entry => {
-                logger.log('Spacer event at:', entry.timestamp)
-            })
-
-            customLogger.spacer()
+            logger.on('spacer', handler)
+            logger.spacer()
+            logger.off('spacer', handler)
         })
 
     })
@@ -191,12 +143,9 @@ export default doc('Logger', {context: 'simple'}, () => {
         text('Log entries have a consistent structure with metadata.')
 
         action('Log entry format', () => {
-            const customLogger = new Logger()
-            customLogger.consoleOutput = false
+            logger.info('Test message', {data: 'value'})
 
-            customLogger.info('Test message', {data: 'value'})
-
-            const entry = customLogger.history[customLogger.history.length - 1]
+            const entry = logger.history[logger.history.length - 1]
             logger.log('event:', entry.event)
             logger.log('type:', entry.type)
             logger.log('items:', entry.items)
@@ -204,171 +153,40 @@ export default doc('Logger', {context: 'simple'}, () => {
         })
 
         action('Different event types', () => {
-            const customLogger = new Logger()
-            customLogger.consoleOutput = false
+            logger.clearHistory()
 
-            customLogger.log('Log')
-            customLogger.clear()
-            customLogger.title('Title')
-            customLogger.spacer()
+            logger.log('Log')
+            logger.clear()
+            logger.title('Title')
+            logger.spacer()
 
-            customLogger.history.forEach((entry, i) => {
-                logger.log(`Entry ${i}:`, entry.event)
+            logger.history.forEach((entry, i) => {
+                console.log(`Entry ${i}:`, entry.event)
             })
         })
 
     })
 
 
-    section('Practical Examples', () => {
+    section('Configuration', () => {
 
-        text('Real-world logging patterns.')
+        text('Configure logger behavior.')
 
-        action('Debug game state', () => {
-            const gameLogger = new Logger()
-            gameLogger.consoleOutput = false
+        code('maxHistory', () => {
+            // Limit history size (default: 100)
+            logger.maxHistory = 50
 
-            gameLogger.title('Game State Debug')
-            gameLogger.info('Player position:', {x: 100, y: 200})
-            gameLogger.info('Health:', 75)
-            gameLogger.spacer()
-            gameLogger.warn('Low health warning')
-            gameLogger.success('Level completed!')
-
-            logger.log('Total entries:', gameLogger.history.length)
+            // History automatically trims when limit is reached
         })
 
-        action('Error tracking', () => {
-            const errorLogger = new Logger()
-            errorLogger.consoleOutput = false
+        code('consoleOutput', () => {
+            // Disable console output (logs still recorded in history)
+            logger.consoleOutput = false
 
-            const errors = []
-            errorLogger.on('log', entry => {
-                if (entry.type === 'error') {
-                    errors.push(entry)
-                }
-            })
+            logger.log('This is silent but recorded')
 
-            errorLogger.info('Starting process')
-            errorLogger.error('Failed to load asset')
-            errorLogger.warn('Retrying...')
-            errorLogger.error('Connection timeout')
-            errorLogger.success('Recovered')
-
-            logger.log('Total errors:', errors.length)
-            errors.forEach(err => {
-                logger.log('Error:', err.items)
-            })
-        })
-
-        action('Custom UI logger', () => {
-            const uiLogger = new Logger()
-            uiLogger.consoleOutput = false
-
-            const messages = []
-            uiLogger.on('log', entry => {
-                messages.push(`[${entry.type.toUpperCase()}] ${entry.items.join(' ')}`)
-            })
-
-            uiLogger.info('Loading...')
-            uiLogger.success('Ready!')
-            uiLogger.warn('Check settings')
-
-            logger.log('UI messages:')
-            messages.forEach(msg => logger.log(msg))
-        })
-
-    })
-
-
-    section('Advanced Patterns', () => {
-
-        text('Complex logging scenarios.')
-
-        action('Filtered logging', () => {
-            const appLogger = new Logger()
-            appLogger.consoleOutput = false
-
-            // Only listen to warnings and errors
-            appLogger.on('log', entry => {
-                if (entry.type === 'warn' || entry.type === 'error') {
-                    logger.log(`[${entry.type}]`, ...entry.items)
-                }
-            })
-
-            appLogger.info('Starting')
-            appLogger.warn('Deprecated API used')
-            appLogger.error('Network error')
-            appLogger.success('Complete')
-        })
-
-        action('Time-based filtering', () => {
-            const timedLogger = new Logger()
-            timedLogger.consoleOutput = false
-
-            timedLogger.log('Entry 1')
-            timedLogger.log('Entry 2')
-            timedLogger.log('Entry 3')
-
-            const now = Date.now()
-            const recent = timedLogger.history.filter(entry => {
-                return now - entry.timestamp < 1000
-            })
-
-            logger.log('Recent entries:', recent.length)
-        })
-
-        code('Multi-logger system', () => {
-            const gameLogger = new Logger()
-            const networkLogger = new Logger()
-            const renderLogger = new Logger()
-
-            gameLogger.maxHistory = 50
-            networkLogger.maxHistory = 100
-            renderLogger.maxHistory = 20
-
-            // Each logger can be configured independently
-            gameLogger.consoleOutput = true
-            networkLogger.consoleOutput = false
-            renderLogger.consoleOutput = false
-
-            // Central aggregation
-            const allLogs = [
-                ...gameLogger.history,
-                ...networkLogger.history,
-                ...renderLogger.history
-            ].sort((a, b) => a.timestamp - b.timestamp)
-        })
-
-    })
-
-
-    section('Singleton Usage', () => {
-
-        text('The default export is a singleton instance.')
-
-        code('Default logger', () => {
-            // import logger from './logger.js'
-
-            // This is used throughout the codebase
-            logger.log('Message')
-            logger.info('Info')
-            logger.error('Error')
-
-            // Access history
-            const history = logger.history
-        })
-
-        code('Custom logger instances', () => {
-            // import Logger from './logger.js'
-
-            // Create isolated loggers
-            const moduleLogger = new Logger()
-            moduleLogger.consoleOutput = false
-            moduleLogger.maxHistory = 200
-
-            // Won't affect global logger
-            moduleLogger.log('Module message')
+            // Re-enable
+            logger.consoleOutput = true
         })
 
     })
@@ -378,15 +196,12 @@ export default doc('Logger', {context: 'simple'}, () => {
 
         text('Different log levels map to console methods.')
 
-        action('Console method mapping', () => {
-            const customLogger = new Logger()
-
-            // These map to specific console methods:
-            customLogger.info('Uses console.info')
-            customLogger.warn('Uses console.warn')
-            customLogger.error('Uses console.error')
-            customLogger.notice('Uses console.log')
-            customLogger.success('Uses console.log')
+        code('Console method mapping', () => {
+            logger.info('Uses console.info')
+            logger.warn('Uses console.warn')
+            logger.error('Uses console.error')
+            logger.notice('Uses console.log')
+            logger.success('Uses console.log')
         })
 
     })
