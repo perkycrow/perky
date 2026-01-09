@@ -1174,9 +1174,12 @@ const STYLES = buildEditorStyles(
     }
 
     .doc-text {
-        color: var(--fg-secondary);
-        line-height: 1.6;
-        font-size: 13px;
+        font-family: var(--font-text);
+        color: #a8a8b0;
+        font-weight: 300;
+        line-height: 1.75;
+        font-size: 14px;
+        letter-spacing: 0.01em;
     }
 
     .doc-text p {
@@ -1194,6 +1197,11 @@ const STYLES = buildEditorStyles(
         border-radius: 3px;
         font-size: 0.9em;
         color: var(--accent-secondary, #c084fc);
+    }
+
+    .doc-text em {
+        color: #d4b896;
+        font-style: italic;
     }
 
     .doc-text ul {

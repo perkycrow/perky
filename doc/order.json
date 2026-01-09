@@ -1,8 +1,9 @@
 {
     "guides": {
-        "categories": ["general"],
+        "categories": ["prologue", "general"],
         "items": {
-            "general": ["philosophy", "getting_started", "conventions"]
+            "prologue": ["foreword"],
+            "general": ["getting_started", "conventions"]
         }
     },
     "docs": {

@@ -333,12 +333,22 @@
   ],
   "guides": [
     {
+      "id": "foreword",
+      "file": "/doc/guides/prologue/foreword.guide.js",
+      "category": "prologue",
+      "title": "Foreword",
+      "tags": [
+        "prologue",
+        "foreword"
+      ]
+    },
+    {
       "id": "philosophy",
-      "file": "/doc/guides/philosophy.guide.js",
-      "category": "general",
+      "file": "/doc/guides/prologue/philosophy.guide.js",
+      "category": "prologue",
       "title": "Philosophy",
       "tags": [
-        "general",
+        "prologue",
         "philosophy"
       ]
     },

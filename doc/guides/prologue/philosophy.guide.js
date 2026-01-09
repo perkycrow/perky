@@ -1,4 +1,4 @@
-import {doc, section, text} from '../runtime.js'
+import {doc, section, text} from '../../runtime.js'
 
 
 export default doc('Philosophy', () => {

@@ -17,6 +17,7 @@
 
     --border: #38383e;
     --font-mono: "Source Code Pro", "SF Mono", "Monaco", monospace;
+    --font-text: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
 
     --sidebar-width: 260px;
 }

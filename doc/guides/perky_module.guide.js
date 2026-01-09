@@ -347,7 +347,12 @@ export default doc('PerkyModule', () => {
             Queries let you reach into any branch.
 
             Keep it shallow when you can. Deep hierarchies are harder to debug.
-            But don't fight the structure - if your game is hierarchical, embrace it.
+
+            ---
+
+            That said, PerkyModule is entirely optional. It's the backbone of Perky,
+            but not a requirement. Structure your game or app however you want.
+            Use only what you need.
         `)
 
     })
