@@ -54,11 +54,11 @@ export default doc('Conventions', () => {
 
     section('The Cleaner Commands', () => {
         text(`
-            \`yarn clean\` — fix and audit (the daily driver)
+            \`yarn clean\` - fix and audit (the daily driver)
 
-            \`yarn cleaner --audit\` — just look, don't touch
+            \`yarn cleaner --audit\` - just look, don't touch
 
-            \`yarn cleaner --coverage\` — find orphaned tests and missing coverage
+            \`yarn cleaner --coverage\` - find orphaned tests and missing coverage
 
             Run it before you commit. Run it when you're bored. Run it because it makes you feel productive.
         `)

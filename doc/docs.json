@@ -343,16 +343,6 @@
       ]
     },
     {
-      "id": "getting_started",
-      "file": "/doc/guides/getting_started.guide.js",
-      "category": "general",
-      "title": "GettingStarted",
-      "tags": [
-        "general",
-        "getting_started"
-      ]
-    },
-    {
       "id": "conventions",
       "file": "/doc/guides/conventions.guide.js",
       "category": "general",
@@ -360,6 +350,16 @@
       "tags": [
         "general",
         "conventions"
+      ]
+    },
+    {
+      "id": "perky_module",
+      "file": "/doc/guides/perky_module.guide.js",
+      "category": "general",
+      "title": "PerkyModule",
+      "tags": [
+        "general",
+        "perky_module"
       ]
     }
   ]

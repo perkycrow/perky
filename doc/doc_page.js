@@ -3,6 +3,7 @@ import '../editor/perky_code.js'
 import logger from '../core/logger.js'
 import {toKebabCase} from '../core/utils.js'
 import {applyContainerPreset} from './runtime.js'
+import {parseMarkdown} from './parse_markdown.js'
 
 
 const isProduction = import.meta.env.PROD
@@ -623,7 +624,7 @@ function getTabUrl (tab) {
 function renderText (block) {
     const el = document.createElement('div')
     el.className = 'doc-text'
-    el.innerHTML = parseMarkdown(block.content)
+    el.innerHTML = parseMarkdown(block.content, {buildSeeUrl})
     return el
 }
 
@@ -1036,45 +1037,6 @@ function buildSeeLabel (name, pageType, section) {
 }
 
 
-function parseMarkdown (text) {
-    return text
-        .replace(/`([^`]+)`/g, '<code>$1</code>')
-        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-        .replace(/\[\[([^\]]+)\]\]/g, (_, ref) => parseSeeLink(ref))
-        .split('\n\n')
-        .filter(p => p.trim())
-        .map(p => `<p>${p.trim()}</p>`)
-        .join('')
-}
-
-
-function parseSeeLink (ref) {
-    let name = ref
-    let pageType = 'doc'
-    let section = null
-
-    const hashIndex = ref.indexOf('#')
-    if (hashIndex !== -1) {
-        section = ref.slice(hashIndex + 1)
-        ref = ref.slice(0, hashIndex)
-    }
-
-    const colonIndex = ref.indexOf(':')
-    if (colonIndex === -1) {
-        name = ref
-    } else {
-        name = ref.slice(0, colonIndex)
-        pageType = ref.slice(colonIndex + 1)
-    }
-
-    const url = buildSeeUrl(name, pageType, section)
-    const label = section ? `${name} > ${section}` : name
-
-    return `<a href="${url}" class="doc-see-inline">${label}</a>`
-}
-
-
 const STYLES = buildEditorStyles(
     editorButtonStyles,
     editorScrollbarStyles,
@@ -1232,6 +1194,25 @@ const STYLES = buildEditorStyles(
         border-radius: 3px;
         font-size: 0.9em;
         color: var(--accent-secondary, #c084fc);
+    }
+
+    .doc-text ul {
+        margin: 0 0 0.5rem 0;
+        padding-left: 1.5rem;
+    }
+
+    .doc-text ul:last-child {
+        margin-bottom: 0;
+    }
+
+    .doc-text li {
+        margin: 0.25rem 0;
+    }
+
+    .doc-text hr {
+        border: none;
+        border-top: 1px solid var(--border-color, #333);
+        margin: 1rem 0;
     }
 
     .doc-code-block {

@@ -7,6 +7,8 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
     text(`
         Base class for all Perky components.
         Provides lifecycle management, hierarchical composition, and event handling.
+
+        For a conceptual introduction, see the [[PerkyModule:guide]].
     `)
 
 
