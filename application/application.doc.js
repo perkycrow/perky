@@ -1,66 +1,91 @@
-import {doc, section, text, code, logger} from '../doc/runtime.js'
+import {doc, section, text, code, action, logger} from '../doc/runtime.js'
+import Application from './application.js'
 
 
-export default doc('Application', () => {
+export default doc('Application', {context: 'simple'}, () => {
 
     text(`
         Main entry point for Perky applications.
-        Manages view mounting, input system, and asset loading.
+        Extends [[PerkyModule]] with built-in systems for view, input, assets, and actions.
     `)
 
 
     section('Creation', () => {
 
-        text('Applications extend PerkyModule with built-in view and input handling.')
+        text('Create an application with optional manifest data and input bindings.')
 
         code('Basic setup', () => {
+            const app = new Application({$id: 'game'})
+
+            // Mount to DOM and start
+            app.mount(document.getElementById('app'))
+            app.start()
+        })
+
+        code('Subclassing', () => {
             class MyGame extends Application {
                 static $category = 'game'
 
                 configureApplication () {
                     // Called after all systems are created
+                    this.setConfig('debug', true)
                 }
             }
         })
 
-        code('Create and mount', () => {
-            const app = new Application({$id: 'demo'})
-            const container = document.getElementById('app')
-
-            app.mount(container)
-            app.start()
-
-            logger.log(app.mounted) // true
-            logger.log(app.element.tagName) // 'DIV'
-            logger.log(app.perkyView.width, app.perkyView.height)
+        code('With manifest', () => {
+            const app = new Application({
+                $id: 'game',
+                manifest: {
+                    config: {title: 'My Game'},
+                    assets: {
+                        hero: {type: 'sprite', url: '/hero.png', tags: ['preload']}
+                    }
+                }
+            })
         })
 
     })
 
 
-    section('Built-in systems', () => {
+    section('Built-in Systems', () => {
 
         text(`
-            Application creates several child modules automatically:
-            \`manifest\`, \`actionDispatcher\`, \`perkyView\`, \`sourceManager\`, \`inputSystem\`.
+            Application automatically creates these child modules:
+
+            - \`manifest\` - [[Manifest]] for config and assets
+            - \`actionDispatcher\` - [[ActionDispatcher]] for action routing
+            - \`perkyView\` - [[PerkyView]] for DOM and display
+            - \`sourceManager\` - [[SourceManager]] for asset loading
+            - \`inputSystem\` - [[InputSystem]] for keyboard, mouse, touch
         `)
-
-        code('List children', () => {
-            const app = new Application({$id: 'demo'})
-
-            for (const child of app.children) {
-                logger.log(`${child.$id} (${child.$category})`)
-            }
-
-            app.dispose()
-        })
 
         code('Access systems', () => {
             const app = new Application({$id: 'demo'})
 
-            logger.log(app.manifest.$id)
-            logger.log(app.perkyView.$id)
-            logger.log(app.inputSystem.$id)
+            // Direct access via $bind
+            app.manifest         // Manifest instance
+            app.perkyView        // PerkyView instance
+            app.inputSystem      // InputSystem instance
+            app.sourceManager    // SourceManager instance
+            app.actionDispatcher // ActionDispatcher instance
+        })
+
+    })
+
+
+    section('Configuration', () => {
+
+        text('Config methods are delegated from [[Manifest]].')
+
+        action('getConfig / setConfig', () => {
+            const app = new Application({$id: 'demo'})
+
+            app.setConfig('game.title', 'My Game')
+            app.setConfig('game.debug', true)
+
+            logger.log('title:', app.getConfig('game.title'))
+            logger.log('all:', app.getConfig())
 
             app.dispose()
         })
@@ -68,23 +93,68 @@ export default doc('Application', () => {
     })
 
 
-    section('Lifecycle', () => {
+    section('Assets', () => {
 
-        text('Applications inherit PerkyModule lifecycle.')
+        text('Asset methods are delegated from [[Manifest]].')
 
-        code('start / stop', () => {
+        action('addAsset / getAsset', () => {
             const app = new Application({$id: 'demo'})
 
-            app.on('start', () => logger.log('app started'))
-            app.on('stop', () => logger.log('app stopped'))
+            app.addAsset({
+                id: 'player',
+                type: 'sprite',
+                url: '/sprites/player.png',
+                tags: ['preload', 'character']
+            })
 
-            app.start()
-            logger.log(app.running) // true
-
-            app.stop()
-            logger.log(app.running) // false
+            logger.log('asset:', app.getAsset('player').url)
+            logger.log('by type:', app.getAssetsByType('sprite').length)
+            logger.log('by tag:', app.getAssetsByTag('character').length)
 
             app.dispose()
+        })
+
+    })
+
+
+    section('Asset Loading', () => {
+
+        text('Loading methods are delegated from [[SourceManager]].')
+
+        code('preload', async () => {
+            const app = new Application({
+                $id: 'demo',
+                manifest: {
+                    assets: {
+                        hero: {type: 'image', url: '/hero.png', tags: ['preload']},
+                        music: {type: 'audio', url: '/music.mp3'}
+                    }
+                }
+            })
+
+            // Load all assets tagged 'preload'
+            await app.preload()
+
+            // Or load specific assets
+            await app.loadAsset('music')
+            await app.loadTag('preload')
+            await app.loadAll()
+        })
+
+        code('Loading events', () => {
+            const app = new Application({$id: 'demo'})
+
+            app.on('loader:progress', ({loaded, total}) => {
+                console.log(`Loading: ${loaded}/${total}`)
+            })
+
+            app.on('loader:complete', () => {
+                console.log('All assets loaded')
+            })
+
+            app.on('loader:error', ({asset, error}) => {
+                console.error(`Failed to load ${asset.id}:`, error)
+            })
         })
 
     })
@@ -92,24 +162,101 @@ export default doc('Application', () => {
 
     section('View', () => {
 
-        text('The perkyView handles DOM mounting and resizing.')
+        text('View methods are delegated from [[PerkyView]].')
 
-        code('View properties', () => {
+        code('mount / dismount', () => {
             const app = new Application({$id: 'demo'})
+            const container = document.getElementById('app')
 
-            logger.log(app.perkyView.width)
-            logger.log(app.perkyView.height)
-            logger.log(app.perkyView.aspectRatio)
+            app.mount(container)
+            console.log(app.mounted) // true
+            console.log(app.element) // DOM element
+
+            app.dismount()
         })
 
-        code('Resize event', () => {
+        code('Fullscreen', () => {
+            const app = new Application({$id: 'demo'})
+
+            app.enterFullscreenMode()
+            app.exitFullscreenMode()
+            app.toggleFullscreen()
+
+            app.on('displayMode:changed', ({mode}) => {
+                console.log('Display mode:', mode) // 'normal' or 'fullscreen'
+            })
+        })
+
+        code('Resize', () => {
             const app = new Application({$id: 'demo'})
 
             app.on('resize', ({width, height}) => {
-                logger.log('resized to:', width, height)
+                console.log('Resized to:', width, height)
+            })
+        })
+
+    })
+
+
+    section('Input', () => {
+
+        text('Input methods are delegated from [[InputSystem]].')
+
+        code('Check input state', () => {
+            const app = new Application({$id: 'demo'})
+            app.mount(document.body)
+            app.start()
+
+            // Keyboard
+            if (app.isKeyPressed('Space')) {
+                // jump
+            }
+
+            // Mouse
+            if (app.isMousePressed('left')) {
+                // shoot
+            }
+
+            // Touch
+            if (app.isTouchPressed('touch0')) {
+                // interact
+            }
+        })
+
+        code('Input bindings', () => {
+            const app = new Application({$id: 'demo'})
+
+            // Bind keyboard to action
+            app.bindInput({
+                controlName: 'Space',
+                actionName: 'jump',
+                eventType: 'pressed'
             })
 
-            app.perkyView.setSize({width: 800, height: 600})
+            // Check if action is triggered
+            if (app.isActionPressed('jump')) {
+                // player jumps
+            }
+
+            // Listen for action triggers
+            app.on('input:triggered', (binding, event) => {
+                console.log('Action triggered:', binding.actionName)
+            })
+        })
+
+        code('Direction helper', () => {
+            const app = new Application({$id: 'demo'})
+
+            // Bind WASD or arrows to movement
+            app.bindInput({controlName: 'KeyW', actionName: 'moveUp'})
+            app.bindInput({controlName: 'KeyS', actionName: 'moveDown'})
+            app.bindInput({controlName: 'KeyA', actionName: 'moveLeft'})
+            app.bindInput({controlName: 'KeyD', actionName: 'moveRight'})
+
+            // Get normalized direction vector
+            const dir = app.getDirection('move') // Vec2
+            player.x += dir.x * speed
+            player.y += dir.y * speed
         })
 
     })
