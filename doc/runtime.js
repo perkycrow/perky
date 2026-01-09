@@ -117,6 +117,18 @@ export function see (name, options = {}) {
 }
 
 
+export function disclaimer (content) {
+    if (!currentBlocks) {
+        throw new Error('disclaimer() must be called inside doc()')
+    }
+
+    currentBlocks.push({
+        type: 'disclaimer',
+        content: dedent(content)
+    })
+}
+
+
 const CONTAINER_PRESETS = {
     interactive: {
         tabIndex: 0,

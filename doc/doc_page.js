@@ -448,6 +448,7 @@ export default class DocPage extends HTMLElement {
     #renderBlock (block, setup = null) {
         const renderers = {
             text: () => renderText(block),
+            disclaimer: () => renderDisclaimer(block),
             code: () => renderCode(block, this.#getSourceFor(block)),
             action: () => renderAction(block, setup, this.#getSourceFor(block)),
             section: () => this.#renderSection(block),
@@ -624,6 +625,14 @@ function getTabUrl (tab) {
 function renderText (block) {
     const el = document.createElement('div')
     el.className = 'doc-text'
+    el.innerHTML = parseMarkdown(block.content, {buildSeeUrl})
+    return el
+}
+
+
+function renderDisclaimer (block) {
+    const el = document.createElement('div')
+    el.className = 'doc-disclaimer'
     el.innerHTML = parseMarkdown(block.content, {buildSeeUrl})
     return el
 }
@@ -1221,6 +1230,30 @@ const STYLES = buildEditorStyles(
         border: none;
         border-top: 1px solid var(--border-color, #333);
         margin: 1rem 0;
+    }
+
+    .doc-disclaimer {
+        font-family: var(--font-text);
+        font-size: 12px;
+        font-weight: 300;
+        line-height: 1.6;
+        color: var(--fg-muted, #6a6a72);
+        border-top: 1px solid var(--border-color, #333);
+        padding-top: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .doc-disclaimer p {
+        margin: 0 0 0.5rem 0;
+    }
+
+    .doc-disclaimer p:last-child {
+        margin-bottom: 0;
+    }
+
+    .doc-disclaimer em {
+        color: #a89078;
+        font-style: italic;
     }
 
     .doc-code-block {
