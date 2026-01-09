@@ -1,6 +1,8 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
 import WorldView from './world_view.js'
 import Group2D from '../render/group_2d.js'
+import Circle from '../render/circle.js'
+import Image2D from '../render/image_2d.js'
 import PerkyModule from '../core/perky_module.js'
 
 
@@ -361,6 +363,145 @@ describe('WorldView', () => {
             const child = worldView.rootGroup.children[0]
             expect(child.$view).toBeInstanceOf(MockEntityView)
             expect(child.$viewName).toBe('MockEntityView')
+        })
+
+    })
+
+
+    describe('AutoView (Object2D registration)', () => {
+
+        test('registers an Object2D class directly', () => {
+            worldView.register(MockEntity, Circle, {radius: 0.5, color: '#ff0000'})
+            worldView.onStart()
+
+            const entity = new MockEntity({$id: 'circle-1', x: 10, y: 20})
+            mockWorld.addEntity(entity)
+
+            const views = worldView.getViews('circle-1')
+            expect(views.length).toBe(1)
+            expect(views[0].root).toBeInstanceOf(Circle)
+            expect(views[0].root.radius).toBe(0.5)
+            expect(views[0].root.color).toBe('#ff0000')
+        })
+
+
+        test('auto-syncs x and y from entity', () => {
+            worldView.register(MockEntity, Circle, {radius: 0.5})
+            worldView.onStart()
+
+            const entity = new MockEntity({$id: 'sync-xy', x: 5, y: 10})
+            mockWorld.addEntity(entity)
+
+            const view = worldView.getViews('sync-xy')[0]
+            expect(view.root.x).toBe(5)
+            expect(view.root.y).toBe(10)
+
+            entity.x = 15
+            entity.y = 25
+            worldView.sync()
+
+            expect(view.root.x).toBe(15)
+            expect(view.root.y).toBe(25)
+        })
+
+
+        test('supports custom sync bindings with string property name', () => {
+            worldView.register(MockEntity, Circle, {
+                radius: 0.5,
+                sync: {
+                    opacity: 'health'
+                }
+            })
+            worldView.onStart()
+
+            const entity = new MockEntity({$id: 'sync-string', x: 0, y: 0})
+            entity.health = 0.75
+            mockWorld.addEntity(entity)
+
+            worldView.sync()
+
+            const view = worldView.getViews('sync-string')[0]
+            expect(view.root.opacity).toBe(0.75)
+        })
+
+
+        test('supports custom sync bindings with function', () => {
+            worldView.register(MockEntity, Circle, {
+                radius: 0.5,
+                sync: {
+                    scaleX: (entity) => entity.health / 100
+                }
+            })
+            worldView.onStart()
+
+            const entity = new MockEntity({$id: 'sync-fn', x: 0, y: 0})
+            entity.health = 50
+            mockWorld.addEntity(entity)
+
+            worldView.sync()
+
+            const view = worldView.getViews('sync-fn')[0]
+            expect(view.root.scaleX).toBe(0.5)
+        })
+
+
+        test('passes deltaTime to sync function', () => {
+            const syncFn = vi.fn((entity, dt) => dt * 2)
+            worldView.register(MockEntity, Circle, {
+                radius: 0.5,
+                sync: {
+                    opacity: syncFn
+                }
+            })
+            worldView.onStart()
+
+            const entity = new MockEntity({$id: 'sync-dt', x: 0, y: 0})
+            mockWorld.addEntity(entity)
+
+            worldView.sync(0.016)
+
+            expect(syncFn).toHaveBeenCalledWith(entity, 0.016)
+        })
+
+
+        test('sets $viewName to Object2D class name', () => {
+            worldView.register(MockEntity, Circle, {radius: 0.5})
+            worldView.onStart()
+
+            const entity = new MockEntity({$id: 'viewname-test'})
+            mockWorld.addEntity(entity)
+
+            const child = worldView.rootGroup.children[0]
+            expect(child.$viewName).toBe('Circle')
+        })
+
+
+        test('works with Image2D', () => {
+            const mockImage = {width: 100, height: 100}
+            worldView.register(MockEntity, Image2D, {image: mockImage, width: 1, height: 1})
+            worldView.onStart()
+
+            const entity = new MockEntity({$id: 'image-test', x: 0, y: 0})
+            mockWorld.addEntity(entity)
+
+            const view = worldView.getViews('image-test')[0]
+            expect(view.root).toBeInstanceOf(Image2D)
+            expect(view.root.image).toBe(mockImage)
+        })
+
+
+        test('disposes correctly', () => {
+            worldView.register(MockEntity, Circle, {radius: 0.5})
+            worldView.onStart()
+
+            const entity = new MockEntity({$id: 'dispose-test'})
+            mockWorld.addEntity(entity)
+
+            expect(worldView.rootGroup.children.length).toBe(1)
+
+            mockWorld.removeEntity('dispose-test')
+
+            expect(worldView.getViews('dispose-test').length).toBe(0)
         })
 
     })

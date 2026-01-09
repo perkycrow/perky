@@ -1,5 +1,23 @@
 import PerkyModule from '../core/perky_module.js'
 import Group2D from '../render/group_2d.js'
+import Object2D from '../render/object_2d.js'
+import AutoView from './auto_view.js'
+
+
+function isObject2DClass (Class) {
+    if (!Class || typeof Class !== 'function') {
+        return false
+    }
+
+    let proto = Class.prototype
+    while (proto) {
+        if (proto.constructor === Object2D) {
+            return true
+        }
+        proto = Object.getPrototypeOf(proto)
+    }
+    return false
+}
 
 
 export default class WorldView extends PerkyModule {
@@ -20,17 +38,22 @@ export default class WorldView extends PerkyModule {
 
 
     register (classOrMatcher, View, config = null) {
+        const isObject2D = isObject2DClass(View)
+        const registration = isObject2D
+            ? {View: AutoView, config, ObjectClass: View}
+            : {View, config}
+
         if (typeof classOrMatcher === 'function' && classOrMatcher.prototype) {
             const isClass = classOrMatcher.toString().startsWith('class ') ||
                 Object.getOwnPropertyNames(classOrMatcher.prototype).length > 1
 
             if (isClass) {
-                this.#classRegistry.set(classOrMatcher, {View, config})
+                this.#classRegistry.set(classOrMatcher, registration)
                 return this
             }
         }
 
-        this.#matcherRegistry.push({matcher: classOrMatcher, View, config})
+        this.#matcherRegistry.push({matcher: classOrMatcher, ...registration})
         return this
     }
 
@@ -100,12 +123,13 @@ export default class WorldView extends PerkyModule {
 
         const views = []
 
-        for (const {View, config} of registrations) {
+        for (const {View, config, ObjectClass} of registrations) {
             const context = {
                 game: this.game,
                 world: this.world,
                 group: this.rootGroup,
-                config
+                config,
+                ObjectClass
             }
 
             const view = new View(entity, context)
@@ -113,7 +137,7 @@ export default class WorldView extends PerkyModule {
             if (view.root) {
                 view.root.$entity = entity
                 view.root.$view = view
-                view.root.$viewName = View.name
+                view.root.$viewName = ObjectClass ? ObjectClass.name : View.name
                 this.rootGroup.addChild(view.root)
             }
 
