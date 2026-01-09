@@ -307,6 +307,295 @@
     "constructor": null,
     "isDefault": true
   },
+  "/core/inflector.doc.js": {
+    "type": "class",
+    "file": "/core/inflector.js",
+    "name": "Inflector",
+    "line": 48,
+    "extends": null,
+    "statics": [],
+    "methods": [
+      {
+        "name": "plural",
+        "line": 64,
+        "source": "plural (word) {\n    return this.#replaceWord(\n        this.#irregularSingles,\n        this.#irregularPlurals,\n        this.#pluralRules\n    )(word)\n}",
+        "kind": "method",
+        "params": [
+          "word"
+        ]
+      },
+      {
+        "name": "singular",
+        "line": 73,
+        "source": "singular (word) {\n    return this.#replaceWord(\n        this.#irregularPlurals,\n        this.#irregularSingles,\n        this.#singularRules\n    )(word)\n}",
+        "kind": "method",
+        "params": [
+          "word"
+        ]
+      },
+      {
+        "name": "isPlural",
+        "line": 82,
+        "source": "isPlural (word) {\n    return this.#checkWord(\n        this.#irregularSingles,\n        this.#irregularPlurals,\n        this.#pluralRules\n    )(word)\n}",
+        "kind": "method",
+        "params": [
+          "word"
+        ]
+      },
+      {
+        "name": "isSingular",
+        "line": 91,
+        "source": "isSingular (word) {\n    return this.#checkWord(\n        this.#irregularPlurals,\n        this.#irregularSingles,\n        this.#singularRules\n    )(word)\n}",
+        "kind": "method",
+        "params": [
+          "word"
+        ]
+      },
+      {
+        "name": "pluralize",
+        "line": 100,
+        "source": "pluralize (word, count, inclusive) {\n    const pluralized = count === 1 ? this.singular(word) : this.plural(word)\n    return (inclusive ? count + ' ' : '') + pluralized\n}",
+        "kind": "method",
+        "params": [
+          "word",
+          "count",
+          "inclusive"
+        ]
+      },
+      {
+        "name": "toCamelCase",
+        "line": 106,
+        "source": "toCamelCase (string) { // eslint-disable-line local/class-methods-use-this -- clean\n    return string\n        .replace(/[-_\\s]([a-z])/g, (match, letter) => letter.toUpperCase())\n        .replace(/^[A-Z]/, letter => letter.toLowerCase())\n}",
+        "kind": "method",
+        "params": [
+          "string"
+        ]
+      },
+      {
+        "name": "toPascalCase",
+        "line": 113,
+        "source": "toPascalCase (string) {\n    return this.toCamelCase(string).replace(/^[a-z]/, letter => letter.toUpperCase())\n}",
+        "kind": "method",
+        "params": [
+          "string"
+        ]
+      },
+      {
+        "name": "toSnakeCase",
+        "line": 118,
+        "source": "toSnakeCase (string) { // eslint-disable-line local/class-methods-use-this -- clean\n    return string\n        .replace(/[-\\s]/g, '_')\n        .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')\n        .replace(/([a-z])([A-Z])/g, '$1_$2')\n        .toLowerCase()\n        .replace(/^_/, '')\n}",
+        "kind": "method",
+        "params": [
+          "string"
+        ]
+      },
+      {
+        "name": "toKebabCase",
+        "line": 128,
+        "source": "toKebabCase (string) { // eslint-disable-line local/class-methods-use-this -- clean\n    return string\n        .replace(/[_\\s]/g, '-')\n        .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')\n        .replace(/([a-z])([A-Z])/g, '$1-$2')\n        .toLowerCase()\n        .replace(/^-/, '')\n}",
+        "kind": "method",
+        "params": [
+          "string"
+        ]
+      },
+      {
+        "name": "toHumanCase",
+        "line": 138,
+        "source": "toHumanCase (string) { // eslint-disable-line local/class-methods-use-this -- clean\n    return string\n        .replace(/[-_]/g, ' ')\n        .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')\n        .replace(/([a-z])([A-Z])/g, '$1 $2')\n        .replace(/^\\s+/, '')\n        .replace(/\\s+/g, ' ')\n}",
+        "kind": "method",
+        "params": [
+          "string"
+        ]
+      },
+      {
+        "name": "addPluralRule",
+        "line": 148,
+        "source": "addPluralRule (rule, replacement) {\n    this.#pluralRules.push([sanitizeRule(rule), replacement])\n}",
+        "kind": "method",
+        "params": [
+          "rule",
+          "replacement"
+        ]
+      },
+      {
+        "name": "addSingularRule",
+        "line": 153,
+        "source": "addSingularRule (rule, replacement) {\n    this.#singularRules.push([sanitizeRule(rule), replacement])\n}",
+        "kind": "method",
+        "params": [
+          "rule",
+          "replacement"
+        ]
+      },
+      {
+        "name": "addUncountableRule",
+        "line": 158,
+        "source": "addUncountableRule (word) {\n    if (typeof word === 'string') {\n        this.#uncountables[word.toLowerCase()] = true\n        return\n    }\n\n    this.addPluralRule(word, '$0')\n    this.addSingularRule(word, '$0')\n}",
+        "kind": "method",
+        "params": [
+          "word"
+        ]
+      },
+      {
+        "name": "addIrregularRule",
+        "line": 169,
+        "source": "addIrregularRule (single, pluralForm) {\n    const s = single.toLowerCase()\n    const p = pluralForm.toLowerCase()\n\n    this.#irregularSingles[s] = p\n    this.#irregularPlurals[p] = s\n}",
+        "kind": "method",
+        "params": [
+          "single",
+          "pluralForm"
+        ]
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 56,
+      "source": "constructor () {\n    this.#loadIrregulars()\n    this.#loadPlurals()\n    this.#loadSingulars()\n    this.#loadUncountables()\n}",
+      "kind": "constructor",
+      "params": []
+    },
+    "isDefault": true
+  },
+  "/core/logger.doc.js": {
+    "type": "class",
+    "file": "/core/logger.js",
+    "name": "Logger",
+    "line": 13,
+    "extends": "Notifier",
+    "statics": [],
+    "methods": [
+      {
+        "name": "log",
+        "line": 70,
+        "source": "log (...items) {\n    this.#emit('notice', ...items)\n}",
+        "kind": "method",
+        "params": [
+          "...items"
+        ]
+      },
+      {
+        "name": "info",
+        "line": 75,
+        "source": "info (...items) {\n    this.#emit('info', ...items)\n}",
+        "kind": "method",
+        "params": [
+          "...items"
+        ]
+      },
+      {
+        "name": "notice",
+        "line": 80,
+        "source": "notice (...items) {\n    this.#emit('notice', ...items)\n}",
+        "kind": "method",
+        "params": [
+          "...items"
+        ]
+      },
+      {
+        "name": "warn",
+        "line": 85,
+        "source": "warn (...items) {\n    this.#emit('warn', ...items)\n}",
+        "kind": "method",
+        "params": [
+          "...items"
+        ]
+      },
+      {
+        "name": "error",
+        "line": 90,
+        "source": "error (...items) {\n    this.#emit('error', ...items)\n}",
+        "kind": "method",
+        "params": [
+          "...items"
+        ]
+      },
+      {
+        "name": "success",
+        "line": 95,
+        "source": "success (...items) {\n    this.#emit('success', ...items)\n}",
+        "kind": "method",
+        "params": [
+          "...items"
+        ]
+      },
+      {
+        "name": "clear",
+        "line": 100,
+        "source": "clear () {\n    const entry = {event: 'clear', timestamp: Date.now()}\n    this.#record(entry)\n    this.emit('clear', entry)\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "spacer",
+        "line": 107,
+        "source": "spacer () {\n    const entry = {event: 'spacer', timestamp: Date.now()}\n    this.#record(entry)\n    this.emit('spacer', entry)\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "title",
+        "line": 114,
+        "source": "title (title) {\n    const entry = {event: 'title', title, timestamp: Date.now()}\n    this.#record(entry)\n    this.emit('title', entry)\n}",
+        "kind": "method",
+        "params": [
+          "title"
+        ]
+      },
+      {
+        "name": "clearHistory",
+        "line": 121,
+        "source": "clearHistory () {\n    this.#history = []\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [
+      {
+        "name": "history",
+        "line": 19,
+        "source": "get history () {\n    return this.#history\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "maxHistory",
+        "line": 24,
+        "source": "get maxHistory () {\n    return this.#maxHistory\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "consoleOutput",
+        "line": 35,
+        "source": "get consoleOutput () {\n    return this.#consoleOutput\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "maxHistory",
+        "line": 29,
+        "source": "set maxHistory (value) {\n    this.#maxHistory = value\n    this.#trimHistory()\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "consoleOutput",
+        "line": 40,
+        "source": "set consoleOutput (value) {\n    this.#consoleOutput = value\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      }
+    ],
+    "constructor": null
+  },
   "/core/notifier.doc.js": {
     "type": "class",
     "file": "/core/notifier.js",
@@ -441,6 +730,292 @@
     "getters": [],
     "setters": [],
     "constructor": null,
+    "isDefault": true
+  },
+  "/core/observable_map.doc.js": {
+    "type": "class",
+    "file": "/core/observable_map.js",
+    "name": "ObservableMap",
+    "line": 4,
+    "extends": "Notifier",
+    "statics": [],
+    "methods": [
+      {
+        "name": "get",
+        "line": 49,
+        "source": "get (key) {\n    return this.#map.get(key)\n}",
+        "kind": "method",
+        "params": [
+          "key"
+        ]
+      },
+      {
+        "name": "has",
+        "line": 54,
+        "source": "has (key) {\n    return this.#map.has(key)\n}",
+        "kind": "method",
+        "params": [
+          "key"
+        ]
+      },
+      {
+        "name": "hasValue",
+        "line": 59,
+        "source": "hasValue (value) {\n    return this.#values.has(value)\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "keyFor",
+        "line": 64,
+        "source": "keyFor (value) {\n    return this.#keyByValue.get(value)\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "hasEntry",
+        "line": 69,
+        "source": "hasEntry (key, value) {\n    return this.get(key) === value\n}",
+        "kind": "method",
+        "params": [
+          "key",
+          "value"
+        ]
+      },
+      {
+        "name": "isKeyOf",
+        "line": 74,
+        "source": "isKeyOf (key, value) {\n    return this.keyFor(value) === key\n}",
+        "kind": "method",
+        "params": [
+          "key",
+          "value"
+        ]
+      },
+      {
+        "name": "forEach",
+        "line": 79,
+        "source": "forEach (callbackFn, thisArg) {\n    this.#map.forEach(callbackFn, thisArg)\n}",
+        "kind": "method",
+        "params": [
+          "callbackFn",
+          "thisArg"
+        ]
+      },
+      {
+        "name": "set",
+        "line": 84,
+        "source": "set (key, value) {\n    const exists = this.#map.has(key)\n    const oldValue = exists ? this.#map.get(key) : undefined\n    const isReplacing = exists && oldValue !== value\n\n    this.#map.set(key, value)\n    this.#values.add(value)\n    this.#keyByValue.set(value, key)\n\n    if (isReplacing) {\n        this.#removeFromValues(oldValue)\n        this.emit('delete', key, oldValue)\n    }\n\n    this.emit('set', key, value, oldValue)\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "key",
+          "value"
+        ]
+      },
+      {
+        "name": "delete",
+        "line": 104,
+        "source": "delete (key) {\n    const exists = this.#map.has(key)\n\n    if (!exists) {\n        return false\n    }\n\n    const value = this.#map.get(key)\n    const deleted = this.#map.delete(key)\n\n    if (deleted) {\n        this.#removeFromValues(value)\n        this.emit('delete', key, value)\n    }\n\n    return deleted\n}",
+        "kind": "method",
+        "params": [
+          "key"
+        ]
+      },
+      {
+        "name": "updateKey",
+        "line": 123,
+        "source": "updateKey (oldKey, newKey, item) {\n    if (!this.has(oldKey)) {\n        return false\n    }\n\n    if (oldKey === newKey) {\n        return false\n    }\n\n    const value = this.get(oldKey)\n\n    if (item !== undefined && value !== item) {\n        return false\n    }\n\n    this.#map.delete(oldKey)\n    this.#map.set(newKey, value)\n\n    this.emit('key:updated', oldKey, newKey, value)\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "oldKey",
+          "newKey",
+          "item"
+        ]
+      },
+      {
+        "name": "clear",
+        "line": 147,
+        "source": "clear () {\n    if (this.#map.size > 0) {\n        const itemsToDelete = Array.from(this.#map.entries())\n        itemsToDelete.forEach(([key, value]) => {\n            this.emit('delete', key, value)\n        })\n\n        this.#map.clear()\n        this.#values.clear()\n        this.#keyByValue.clear()\n\n        this.emit('clear')\n    }\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "addCollection",
+        "line": 174,
+        "source": "addCollection (collection) {\n    if (!collection || typeof collection !== 'object') {\n        return false\n    }\n\n    if (typeof collection.forEach === 'function') {\n        collection.forEach((value, key) => {\n            this.set(key, value)\n        })\n    } else {\n        for (const key in collection) {\n            if (Object.prototype.hasOwnProperty.call(collection, key)) {\n                this.set(key, collection[key])\n            }\n        }\n    }\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "collection"
+        ]
+      },
+      {
+        "name": "toObject",
+        "line": 195,
+        "source": "toObject () {\n    const object = {}\n    this.#map.forEach((value, key) => {\n        object[key] = value\n    })\n    return object\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [
+      {
+        "name": "size",
+        "line": 19,
+        "source": "get size () {\n    return this.#map.size\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "entries",
+        "line": 24,
+        "source": "get entries () {\n    return Array.from(this.#map.entries())\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "keys",
+        "line": 29,
+        "source": "get keys () {\n    return this.#map.keys()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "values",
+        "line": 34,
+        "source": "get values () {\n    return this.#map.values()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "all",
+        "line": 39,
+        "source": "get all () {\n    return Array.from(this.#map.values())\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "map",
+        "line": 44,
+        "source": "get map () {\n    return this.#map\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 10,
+      "source": "constructor (collection) {\n    super()\n\n    if (collection) {\n        this.addCollection(collection)\n    }\n}",
+      "kind": "constructor",
+      "params": [
+        "collection"
+      ]
+    },
+    "isDefault": true
+  },
+  "/core/observable_set.doc.js": {
+    "type": "class",
+    "file": "/core/observable_set.js",
+    "name": "ObservableSet",
+    "line": 4,
+    "extends": "Notifier",
+    "statics": [],
+    "methods": [
+      {
+        "name": "add",
+        "line": 24,
+        "source": "add (value) {\n    if (!this.#set.has(value)) {\n        this.#set.add(value)\n        this.emit('add', value)\n    }\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "delete",
+        "line": 33,
+        "source": "delete (value) {\n    const deleted = this.#set.delete(value)\n    if (deleted) {\n        this.emit('delete', value)\n    }\n    return deleted\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "clear",
+        "line": 42,
+        "source": "clear () {\n    if (this.#set.size > 0) {\n        const values = Array.from(this.#set)\n        this.#set.clear()\n        this.emit('clear', values)\n    }\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "has",
+        "line": 51,
+        "source": "has (value) {\n    return this.#set.has(value)\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "values",
+        "line": 56,
+        "source": "values () {\n    return this.#set.values()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "keys",
+        "line": 61,
+        "source": "keys () {\n    return this.#set.keys()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "entries",
+        "line": 66,
+        "source": "entries () {\n    return this.#set.entries()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "forEach",
+        "line": 71,
+        "source": "forEach (callbackFn, thisArg) {\n    this.#set.forEach(callbackFn, thisArg)\n}",
+        "kind": "method",
+        "params": [
+          "callbackFn",
+          "thisArg"
+        ]
+      },
+      {
+        "name": "toArray",
+        "line": 81,
+        "source": "toArray () {\n    return Array.from(this.#set)\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [
+      {
+        "name": "size",
+        "line": 19,
+        "source": "get size () {\n    return this.#set.size\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 8,
+      "source": "constructor (values) {\n    super()\n\n    if (values) {\n        for (const value of values) {\n            this.#set.add(value)\n        }\n    }\n}",
+      "kind": "constructor",
+      "params": [
+        "values"
+      ]
+    },
     "isDefault": true
   },
   "/core/perky_module.doc.js": {
@@ -883,6 +1458,149 @@
       "kind": "constructor",
       "params": [
         "options = ..."
+      ]
+    },
+    "isDefault": true
+  },
+  "/core/perky_query.doc.js": {
+    "type": "module",
+    "file": "/core/perky_query.js",
+    "functions": [
+      {
+        "name": "parseSelector",
+        "line": 18,
+        "params": [
+          "selector"
+        ],
+        "source": "function parseSelector (selector) {\n    const segments = selector.trim().split(/\\s+/)\n\n    return segments.map(segment => {\n        const conditions = []\n        let match\n\n        SELECTOR_REGEX.lastIndex = 0\n\n        while ((match = SELECTOR_REGEX.exec(segment)) !== null) {\n            const [, prefix, value] = match\n\n            conditions.push({\n                type: PREFIX_TO_TYPE[prefix],\n                value\n            })\n        }\n\n        return conditions\n    }).filter(segment => segment.length > 0)\n}"
+      },
+      {
+        "name": "matchesConditions",
+        "line": 41,
+        "params": [
+          "module",
+          "conditions"
+        ],
+        "source": "function matchesConditions (module, conditions) {\n    return conditions.every(({type, value}) => {\n        const matcher = TYPE_MATCHERS[type]\n        return matcher ? matcher(module, value) : false\n    })\n}"
+      },
+      {
+        "name": "findMatchingChildren",
+        "line": 49,
+        "params": [
+          "candidates",
+          "conditions"
+        ],
+        "source": "function findMatchingChildren (candidates, conditions) {\n    return candidates.flatMap(candidate => {\n        const children = candidate.children || []\n        return children.filter(child => matchesConditions(child, conditions))\n    })\n}"
+      },
+      {
+        "name": "query",
+        "line": 57,
+        "params": [
+          "root",
+          "selector"
+        ],
+        "source": "function query (root, selector) {\n    const segments = parseSelector(selector)\n\n    if (segments.length === 0) {\n        return null\n    }\n\n    let candidates = [root]\n\n    for (const conditions of segments) {\n        candidates = findMatchingChildren(candidates, conditions)\n\n        if (candidates.length === 0) {\n            return null\n        }\n    }\n\n    return candidates[0] || null\n}"
+      },
+      {
+        "name": "queryAll",
+        "line": 78,
+        "params": [
+          "root",
+          "selector"
+        ],
+        "source": "function queryAll (root, selector) {\n    const segments = parseSelector(selector)\n\n    if (segments.length === 0) {\n        return []\n    }\n\n    let candidates = [root]\n\n    for (const conditions of segments) {\n        candidates = findMatchingChildren(candidates, conditions)\n\n        if (candidates.length === 0) {\n            return []\n        }\n    }\n\n    return candidates\n}"
+      }
+    ],
+    "exports": []
+  },
+  "/core/registry.doc.js": {
+    "type": "class",
+    "file": "/core/registry.js",
+    "name": "Registry",
+    "line": 4,
+    "extends": "ObservableMap",
+    "statics": [],
+    "methods": [
+      {
+        "name": "addIndex",
+        "line": 16,
+        "source": "addIndex (name, keyFunction) {\n    if (keyFunction === undefined) {\n        keyFunction = name\n    }\n\n    if (typeof keyFunction === 'string') {\n        const propertyName = keyFunction\n        keyFunction = (item) => item[propertyName]\n    }\n\n    if (typeof keyFunction !== 'function') {\n        return false\n    }\n\n    const index = {\n        keyFn: keyFunction,\n        data: new Map()\n    }\n\n    this.#indexes.set(name, index)\n\n    for (const value of this.map.values()) {\n        this.#addToIndex(name, value)\n    }\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "name",
+          "keyFunction"
+        ]
+      },
+      {
+        "name": "lookup",
+        "line": 45,
+        "source": "lookup (indexName, key) {\n    const index = this.#indexes.get(indexName)\n\n    if (!index) {\n        throw new Error(`Index '${indexName}' does not exist`)\n    }\n\n    const items = index.data.get(key)\n    return items ? Array.from(items) : []\n}",
+        "kind": "method",
+        "params": [
+          "indexName",
+          "key"
+        ]
+      },
+      {
+        "name": "lookupKeys",
+        "line": 57,
+        "source": "lookupKeys (indexName, key) {\n    const itemsSet = new Set(this.lookup(indexName, key))\n\n    if (itemsSet.size === 0) {\n        return []\n    }\n\n    const keys = []\n    for (const [k, v] of this.map.entries()) {\n        if (itemsSet.has(v)) {\n            keys.push(k)\n        }\n    }\n\n    return keys\n}",
+        "kind": "method",
+        "params": [
+          "indexName",
+          "key"
+        ]
+      },
+      {
+        "name": "hasIndex",
+        "line": 75,
+        "source": "hasIndex (name) {\n    return this.#indexes.has(name)\n}",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "removeIndex",
+        "line": 80,
+        "source": "removeIndex (name) {\n    return this.#indexes.delete(name)\n}",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "updateIndexFor",
+        "line": 85,
+        "source": "updateIndexFor (item, indexName, oldKeys, newKeys) {\n    if (!this.hasValue(item)) {\n        return false\n    }\n\n    const index = this.#indexes.get(indexName)\n    if (!index) {\n        return false\n    }\n\n    const oldKeysArray = Array.isArray(oldKeys) ? oldKeys : [oldKeys]\n    const newKeysArray = Array.isArray(newKeys) ? newKeys : [newKeys]\n\n    for (const oldKey of oldKeysArray) {\n        const items = index.data.get(oldKey)\n        if (items) {\n            items.delete(item)\n            if (items.size === 0) {\n                index.data.delete(oldKey)\n            }\n        }\n    }\n\n    for (const newKey of newKeysArray) {\n        if (!index.data.has(newKey)) {\n            index.data.set(newKey, new Set())\n        }\n        index.data.get(newKey).add(item)\n    }\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "item",
+          "indexName",
+          "oldKeys",
+          "newKeys"
+        ]
+      },
+      {
+        "name": "refreshIndexFor",
+        "line": 119,
+        "source": "refreshIndexFor (value, indexName) {\n    if (!this.hasValue(value)) {\n        return false\n    }\n\n    const index = this.#indexes.get(indexName)\n    if (!index) {\n        return false\n    }\n\n    for (const [key, items] of index.data.entries()) {\n        if (items.has(value)) {\n            items.delete(value)\n            if (items.size === 0) {\n                index.data.delete(key)\n            }\n        }\n    }\n\n    this.#addToIndex(indexName, value)\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "value",
+          "indexName"
+        ]
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 8,
+      "source": "constructor (collection) {\n    super(collection)\n\n    this.on('set', this.#handleSet)\n    this.on('delete', this.#handleDelete)\n}",
+      "kind": "constructor",
+      "params": [
+        "collection"
       ]
     },
     "isDefault": true

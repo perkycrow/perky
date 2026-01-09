@@ -21,6 +21,26 @@
       ]
     },
     {
+      "id": "inflector",
+      "file": "/core/inflector.doc.js",
+      "category": "core",
+      "title": "Inflector",
+      "tags": [
+        "core",
+        "inflector"
+      ]
+    },
+    {
+      "id": "logger",
+      "file": "/core/logger.doc.js",
+      "category": "core",
+      "title": "Logger",
+      "tags": [
+        "core",
+        "logger"
+      ]
+    },
+    {
       "id": "notifier",
       "file": "/core/notifier.doc.js",
       "category": "core",
@@ -31,6 +51,26 @@
       ]
     },
     {
+      "id": "observable_map",
+      "file": "/core/observable_map.doc.js",
+      "category": "core",
+      "title": "ObservableMap",
+      "tags": [
+        "core",
+        "observable_map"
+      ]
+    },
+    {
+      "id": "observable_set",
+      "file": "/core/observable_set.doc.js",
+      "category": "core",
+      "title": "ObservableSet",
+      "tags": [
+        "core",
+        "observable_set"
+      ]
+    },
+    {
       "id": "perky_module",
       "file": "/core/perky_module.doc.js",
       "category": "core",
@@ -38,6 +78,26 @@
       "tags": [
         "core",
         "perky_module"
+      ]
+    },
+    {
+      "id": "perky_query",
+      "file": "/core/perky_query.doc.js",
+      "category": "core",
+      "title": "PerkyQuery",
+      "tags": [
+        "core",
+        "perky_query"
+      ]
+    },
+    {
+      "id": "registry",
+      "file": "/core/registry.doc.js",
+      "category": "core",
+      "title": "Registry",
+      "tags": [
+        "core",
+        "registry"
       ]
     },
     {
