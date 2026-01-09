@@ -14,8 +14,9 @@ import DeepNestingAuditor from './auditors/tests/deep_nesting.js'
 import ItUsageAuditor from './auditors/tests/it_usage.js'
 import SingleDescribesAuditor from './auditors/tests/single_describes.js'
 
-import StaleTestsAuditor from './auditors/coverage/stale_tests.js'
+import StaleFilesAuditor from './auditors/coverage/stale_files.js'
 import MissingCoverageAuditor from './auditors/coverage/missing_coverage.js'
+import MissingDocsAuditor from './auditors/coverage/missing_docs.js'
 
 import BrokenLinksAuditor from './auditors/docs/broken_links.js'
 
@@ -244,8 +245,9 @@ export async function runAll (rootDir, options = {}) {
 
 
 const COVERAGE_AUDITORS = [
-    StaleTestsAuditor,
-    MissingCoverageAuditor
+    StaleFilesAuditor,
+    MissingCoverageAuditor,
+    MissingDocsAuditor
 ]
 
 
@@ -269,7 +271,13 @@ export async function runCoverage (rootDir, options = {}) {
     for (const AuditorClass of COVERAGE_AUDITORS) {
         const auditor = new AuditorClass(rootDir, auditorOptions)
         const key = getAuditorKey(AuditorClass)
-        results[key] = auditor.audit()
+
+        if (auditor.audit.constructor.name === 'AsyncFunction') {
+            results[key] = await auditor.audit()
+        } else {
+            results[key] = auditor.audit()
+        }
+
         hints[key] = auditor.getHint()
     }
 

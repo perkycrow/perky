@@ -6,38 +6,40 @@ import {isExcludedFile} from '../../utils.js'
 import {hint, listItem, divider} from '../../format.js'
 
 
-export default class StaleTestsAuditor extends Auditor {
+export default class StaleFilesAuditor extends Auditor {
 
-    static $name = 'Stale Tests'
+    static $name = 'Stale Files'
     static $category = 'coverage'
     static $canFix = false
 
     #thresholdDays = 30
 
     audit () {
-        const stale = this.#findStaleTests()
+        const staleTests = this.#findStaleFiles('.test.js')
+        const staleDocs = this.#findStaleFiles('.doc.js')
+        const allStale = [...staleTests, ...staleDocs]
 
-        if (stale.length === 0) {
-            this.printClean('All test files are up to date')
-            return {staleTests: 0, files: []}
+        if (allStale.length === 0) {
+            this.printClean('All test and doc files are up to date')
+            return {staleFiles: 0, files: []}
         }
 
         this.printHeader()
         if (!this.silent) {
-            hint(`Test file not updated within ${this.#thresholdDays} days of source change`)
+            hint(`File not updated within ${this.#thresholdDays} days of source change`)
             divider()
 
-            for (const {file, daysBehind} of stale) {
+            for (const {file, daysBehind} of allStale) {
                 listItem(`${file} (${daysBehind} days behind)`)
             }
         }
 
-        return {staleTests: stale.length, files: stale.map(s => s.file)}
+        return {staleFiles: allStale.length, files: allStale.map(s => s.file)}
     }
 
 
     getHint () {
-        return `Source file modified ${this.#thresholdDays}+ days after its test - may need review`
+        return `Source modified ${this.#thresholdDays}+ days after test/doc - may need review`
     }
 
 
@@ -46,7 +48,7 @@ export default class StaleTestsAuditor extends Auditor {
     }
 
 
-    #findStaleTests () {
+    #findStaleFiles (suffix) {
         const files = this.scanFiles()
         const stale = []
 
@@ -65,24 +67,24 @@ export default class StaleTestsAuditor extends Auditor {
                 continue
             }
 
-            const testPath = filePath.replace(/\.js$/, '.test.js')
+            const relatedPath = filePath.replace(/\.js$/, suffix)
 
-            if (!fs.existsSync(testPath)) {
+            if (!fs.existsSync(relatedPath)) {
                 continue
             }
 
             const sourceDate = this.#getLastCommitDate(filePath)
-            const testDate = this.#getLastCommitDate(testPath)
+            const relatedDate = this.#getLastCommitDate(relatedPath)
 
-            if (!sourceDate || !testDate) {
+            if (!sourceDate || !relatedDate) {
                 continue
             }
 
-            const diffDays = Math.floor((sourceDate - testDate) / (1000 * 60 * 60 * 24))
+            const diffDays = Math.floor((sourceDate - relatedDate) / (1000 * 60 * 60 * 24))
 
             if (diffDays > this.#thresholdDays) {
                 stale.push({
-                    file: path.relative(this.rootDir, testPath),
+                    file: path.relative(this.rootDir, relatedPath),
                     daysBehind: diffDays
                 })
             }

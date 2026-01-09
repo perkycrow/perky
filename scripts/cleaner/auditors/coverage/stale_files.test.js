@@ -1,20 +1,20 @@
 import {describe, test, expect, beforeEach} from 'vitest'
-import StaleTestsAuditor from './stale_tests.js'
+import StaleFilesAuditor from './stale_files.js'
 
 
-describe(StaleTestsAuditor, () => {
+describe(StaleFilesAuditor, () => {
 
     let auditor
 
     beforeEach(() => {
-        auditor = new StaleTestsAuditor('/fake/root', {silent: true})
+        auditor = new StaleFilesAuditor('/fake/root', {silent: true})
     })
 
 
     test('static properties', () => {
-        expect(StaleTestsAuditor.$name).toBe('Stale Tests')
-        expect(StaleTestsAuditor.$category).toBe('coverage')
-        expect(StaleTestsAuditor.$canFix).toBe(false)
+        expect(StaleFilesAuditor.$name).toBe('Stale Files')
+        expect(StaleFilesAuditor.$category).toBe('coverage')
+        expect(StaleFilesAuditor.$canFix).toBe(false)
     })
 
 
