@@ -342,7 +342,7 @@ function renderNavItems (container, items, type) {
 
         for (const item of categoryItems) {
             const link = document.createElement('a')
-            link.className = 'nav-item'
+            link.className = item.featured ? 'nav-item featured' : 'nav-item'
             link.href = type === 'guide'
                 ? `guide_${item.id}.html`
                 : item.file.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')

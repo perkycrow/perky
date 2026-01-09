@@ -1,4 +1,716 @@
 {
+  "/core/perky_module.doc.js": {
+    "type": "class",
+    "file": "/core/perky_module.js",
+    "name": "PerkyModule",
+    "line": 8,
+    "extends": "Notifier",
+    "statics": [
+      {
+        "name": "$category",
+        "line": 29,
+        "source": "static $category = 'perkyModule'",
+        "kind": "property",
+        "value": "'perkyModule'"
+      },
+      {
+        "name": "$name",
+        "line": 30,
+        "source": "static $name = null",
+        "kind": "property",
+        "value": "null"
+      },
+      {
+        "name": "$lifecycle",
+        "line": 31,
+        "source": "static $lifecycle = true",
+        "kind": "property",
+        "value": "true"
+      },
+      {
+        "name": "$eagerStart",
+        "line": 32,
+        "source": "static $eagerStart = true",
+        "kind": "property",
+        "value": "true"
+      },
+      {
+        "name": "$tags",
+        "line": 33,
+        "source": "static $tags = []",
+        "kind": "property",
+        "value": "[]"
+      },
+      {
+        "name": "perkyModuleMethods",
+        "line": 504,
+        "source": "static perkyModuleMethods = Notifier.notifierMethods.concat([\n    'start',\n    'stop',\n    'dispose',\n    'install',\n    'uninstall',\n    'create',\n    'getChild',\n    'hasChild',\n    'removeChild',\n    'listNamesFor',\n    'lookup',\n    'childrenByCategory',\n    'hasTag',\n    'addTag',\n    'removeTag',\n    'hasTags',\n    'childrenByTags',\n    'addTagsIndex',\n    'removeTagsIndex',\n    'delegateTo',\n    'cleanDelegations',\n    'delegateEventsTo',\n    'cleanEventDelegations',\n    'query',\n    'queryAll'\n])",
+        "kind": "property",
+        "value": "Notifier.notifierMethods.concat([\n    'start',\n    'stop',\n    'dispose',\n    'install',\n    'uninstall',\n    'create',\n    'getChild',\n    'hasChild',\n    'removeChild',\n    'listNamesFor',\n    'lookup',\n    'childrenByCategory',\n    'hasTag',\n    'addTag',\n    'removeTag',\n    'hasTags',\n    'childrenByTags',\n    'addTagsIndex',\n    'removeTagsIndex',\n    'delegateTo',\n    'cleanDelegations',\n    'delegateEventsTo',\n    'cleanEventDelegations',\n    'query',\n    'queryAll'\n])"
+      }
+    ],
+    "methods": [
+      {
+        "name": "start",
+        "line": 168,
+        "source": "start () {\n    if (this.#started) {\n        return false\n    }\n\n    this.#started = true\n    this.onStart?.()\n    this.emit('start')\n\n    return true\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "stop",
+        "line": 181,
+        "source": "stop () {\n    if (!this.#started) {\n        return false\n    }\n\n    this.#started = false\n    this.onStop?.()\n    this.emit('stop')\n\n    return true\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "dispose",
+        "line": 194,
+        "source": "dispose () {\n    if (this.#disposed) {\n        return false\n    }\n\n    this.#disposed = true\n    this.stop()\n\n    this.cleanExternalListeners()\n\n    this.#childrenRegistry.forEach(child => {\n        if (child && !child.disposed) {\n            child.dispose()\n        }\n    })\n    this.#childrenRegistry.clear()\n\n    this.onDispose?.()\n    this.emit('dispose')\n    this.removeListeners()\n\n    return true\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "install",
+        "line": 219,
+        "source": "install (host, options) {\n    if (this.#installed) {\n        return this.uninstall()\n    }\n\n    this.#host = host\n    if (this.$bind) {\n        host[this.$bind] = this\n    }\n    this.#installed = true\n\n    this.onInstall?.(host, options)\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "host",
+          "options"
+        ]
+      },
+      {
+        "name": "uninstall",
+        "line": 236,
+        "source": "uninstall () {\n    if (!this.#installed) {\n        return false\n    }\n\n    this.cleanDelegations()\n    this.cleanEventDelegations()\n    this.onUninstall?.(this.#host)\n    this.#installed = false\n    this.#host = null\n\n    return true\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "create",
+        "line": 261,
+        "source": "create (Child, options = {}) {\n    options.$category ||= Child.$category\n    options.$name ||= Child.$name || options.$category\n    options.$id ||= uniqueId(this.#childrenRegistry, options.$name)\n    options.$lifecycle = options.$lifecycle ?? Child.$lifecycle ?? true\n    options.$eagerStart = options.$eagerStart ?? Child.$eagerStart ?? true\n\n    return this.#addChild(new Child(options), options)\n}",
+        "kind": "method",
+        "params": [
+          "Child",
+          "options = ..."
+        ]
+      },
+      {
+        "name": "getChild",
+        "line": 288,
+        "source": "getChild (name) {\n    return this.#childrenRegistry.get(name) || null\n}",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "hasChild",
+        "line": 293,
+        "source": "hasChild (name) {\n    return this.#childrenRegistry.has(name)\n}",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "removeChild",
+        "line": 298,
+        "source": "removeChild (name) {\n    const child = this.#childrenRegistry.get(name)\n\n    if (!child) {\n        return false\n    }\n\n    unregisterChild(this, child)\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "listNamesFor",
+        "line": 311,
+        "source": "listNamesFor (key, indexName = '$category') {\n    return this.#childrenRegistry.lookupKeys(indexName, key)\n}",
+        "kind": "method",
+        "params": [
+          "key",
+          "indexName = ..."
+        ]
+      },
+      {
+        "name": "lookup",
+        "line": 316,
+        "source": "lookup (indexName, key) {\n    return this.#childrenRegistry.lookup(indexName, key)\n}",
+        "kind": "method",
+        "params": [
+          "indexName",
+          "key"
+        ]
+      },
+      {
+        "name": "childrenByCategory",
+        "line": 321,
+        "source": "childrenByCategory (category) {\n    return this.lookup('$category', category)\n}",
+        "kind": "method",
+        "params": [
+          "category"
+        ]
+      },
+      {
+        "name": "hasTag",
+        "line": 344,
+        "source": "hasTag (tag) {\n    return this.#tags.has(tag)\n}",
+        "kind": "method",
+        "params": [
+          "tag"
+        ]
+      },
+      {
+        "name": "addTag",
+        "line": 349,
+        "source": "addTag (tag) {\n    if (this.#tags.has(tag)) {\n        return false\n    }\n    this.#tags.add(tag)\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "tag"
+        ]
+      },
+      {
+        "name": "removeTag",
+        "line": 358,
+        "source": "removeTag (tag) {\n    return this.#tags.delete(tag)\n}",
+        "kind": "method",
+        "params": [
+          "tag"
+        ]
+      },
+      {
+        "name": "hasTags",
+        "line": 363,
+        "source": "hasTags (tags) {\n    if (typeof tags === 'string') {\n        return this.hasTag(tags)\n    }\n\n    return Array.isArray(tags) && tags.every(tag => this.#tags.has(tag))\n}",
+        "kind": "method",
+        "params": [
+          "tags"
+        ]
+      },
+      {
+        "name": "childrenByTags",
+        "line": 372,
+        "source": "childrenByTags (tags) {\n    const tagArray = Array.isArray(tags) ? tags : [tags]\n\n    if (tagArray.length === 0) {\n        return []\n    }\n\n    const indexKey = getTagIndexKey(tagArray)\n\n    if (this.#tagIndexes.has(indexKey)) {\n        return this.#childrenRegistry.lookup(indexKey, indexKey)\n    }\n\n    return this.#childrenRegistry.all.filter(\n        child => tagArray.every(tag => child.$tags?.includes(tag))\n    )\n}",
+        "kind": "method",
+        "params": [
+          "tags"
+        ]
+      },
+      {
+        "name": "addTagsIndex",
+        "line": 391,
+        "source": "addTagsIndex (tags) {\n    if (!Array.isArray(tags) || tags.length === 0) {\n        return false\n    }\n\n    const indexKey = getTagIndexKey(tags)\n\n    if (this.#tagIndexes.has(indexKey)) {\n        return false\n    }\n\n    this.#childrenRegistry.addIndex(indexKey, child => {\n        const hasAllTags = tags.every(tag => child.tags?.has(tag))\n        return hasAllTags ? indexKey : null\n    })\n\n    this.#tagIndexes.set(indexKey, tags)\n\n    this.#childrenRegistry.forEach(child => {\n        if (child.tags) {\n            this.#setupTagIndexListeners(child)\n        }\n    })\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "tags"
+        ]
+      },
+      {
+        "name": "removeTagsIndex",
+        "line": 419,
+        "source": "removeTagsIndex (tags) {\n    const indexKey = getTagIndexKey(tags)\n\n    if (!this.#tagIndexes.has(indexKey)) {\n        return false\n    }\n\n    this.#childrenRegistry.removeIndex(indexKey)\n    this.#tagIndexes.delete(indexKey)\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "tags"
+        ]
+      },
+      {
+        "name": "delegateTo",
+        "line": 449,
+        "source": "delegateTo (host, names) {\n    delegateProperties(host, this, names)\n\n    const propertyNames = Array.isArray(names)\n        ? names\n        : Object.values(names)\n\n    this.#delegations.push({host, propertyNames})\n}",
+        "kind": "method",
+        "params": [
+          "host",
+          "names"
+        ]
+      },
+      {
+        "name": "cleanDelegations",
+        "line": 460,
+        "source": "cleanDelegations () {\n    for (const {host, propertyNames} of this.#delegations) {\n        for (const name of propertyNames) {\n            delete host[name]\n        }\n    }\n    this.#delegations.length = 0\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "delegateEventsTo",
+        "line": 470,
+        "source": "delegateEventsTo (host, events, namespace) {\n    const eventArray = Array.isArray(events) ? events : Object.keys(events)\n    const callbacks = []\n\n    for (const event of eventArray) {\n        const prefixedEvent = namespace ? `${namespace}:${event}` : event\n        const callback = (...args) => host.emit(prefixedEvent, ...args)\n        this.on(event, callback)\n        callbacks.push({event, callback})\n    }\n\n    this.#eventDelegations.push({callbacks})\n}",
+        "kind": "method",
+        "params": [
+          "host",
+          "events",
+          "namespace"
+        ]
+      },
+      {
+        "name": "cleanEventDelegations",
+        "line": 485,
+        "source": "cleanEventDelegations () {\n    for (const {callbacks} of this.#eventDelegations) {\n        for (const {event, callback} of callbacks) {\n            this.off(event, callback)\n        }\n    }\n    this.#eventDelegations.length = 0\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "query",
+        "line": 495,
+        "source": "query (selector) {\n    return perkyQuery(this, selector)\n}",
+        "kind": "method",
+        "params": [
+          "selector"
+        ]
+      },
+      {
+        "name": "queryAll",
+        "line": 500,
+        "source": "queryAll (selector) {\n    return perkyQueryAll(this, selector)\n}",
+        "kind": "method",
+        "params": [
+          "selector"
+        ]
+      }
+    ],
+    "getters": [
+      {
+        "name": "$id",
+        "line": 56,
+        "source": "get $id () {\n    return this.#id\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "$name",
+        "line": 71,
+        "source": "get $name () {\n    return this.#name\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "$category",
+        "line": 86,
+        "source": "get $category () {\n    return this.#category\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "$bind",
+        "line": 101,
+        "source": "get $bind () {\n    return this.#bind\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "host",
+        "line": 116,
+        "source": "get host () {\n    return this.#host\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "started",
+        "line": 121,
+        "source": "get started () {\n    return this.#started\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "disposed",
+        "line": 126,
+        "source": "get disposed () {\n    return this.#disposed\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "installed",
+        "line": 131,
+        "source": "get installed () {\n    return this.#installed\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "$eagerStart",
+        "line": 136,
+        "source": "get $eagerStart () {\n    return this.#eagerStart\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "$lifecycle",
+        "line": 141,
+        "source": "get $lifecycle () {\n    return this.#lifecycle\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "$status",
+        "line": 146,
+        "source": "get $status () {\n    if (!this.#lifecycle) {\n        return 'static'\n    }\n\n    if (this.#disposed) {\n        return 'disposed'\n    }\n\n    if (this.#started) {\n        return 'started'\n    }\n\n    return 'stopped'\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "running",
+        "line": 163,
+        "source": "get running () {\n    return this.#started\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "children",
+        "line": 251,
+        "source": "get children () {\n    return this.#childrenRegistry.all\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "childrenRegistry",
+        "line": 256,
+        "source": "get childrenRegistry () {\n    return this.#childrenRegistry\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "$tags",
+        "line": 326,
+        "source": "get $tags () {\n    return this.#tags.toArray()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "tags",
+        "line": 339,
+        "source": "get tags () {\n    return this.#tags\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "$id",
+        "line": 61,
+        "source": "set $id (newId) {\n    const oldId = this.#id\n\n    if (oldId !== newId) {\n        this.#id = newId\n        this.emit('$id:changed', newId, oldId)\n    }\n}",
+        "kind": "method",
+        "params": [
+          "newId"
+        ]
+      },
+      {
+        "name": "$name",
+        "line": 76,
+        "source": "set $name (newName) {\n    const oldName = this.#name\n\n    if (oldName !== newName) {\n        this.#name = newName\n        this.emit('$name:changed', newName, oldName)\n    }\n}",
+        "kind": "method",
+        "params": [
+          "newName"
+        ]
+      },
+      {
+        "name": "$category",
+        "line": 91,
+        "source": "set $category (newCategory) {\n    const oldCategory = this.#category\n\n    if (oldCategory !== newCategory) {\n        this.#category = newCategory\n        this.emit('$category:changed', newCategory, oldCategory)\n    }\n}",
+        "kind": "method",
+        "params": [
+          "newCategory"
+        ]
+      },
+      {
+        "name": "$bind",
+        "line": 106,
+        "source": "set $bind (newBind) {\n    const oldBind = this.#bind\n\n    if (oldBind !== newBind) {\n        this.#bind = newBind\n        this.emit('$bind:changed', newBind, oldBind)\n    }\n}",
+        "kind": "method",
+        "params": [
+          "newBind"
+        ]
+      },
+      {
+        "name": "$tags",
+        "line": 331,
+        "source": "set $tags (newTags) {\n    this.#tags.clear()\n    if (Array.isArray(newTags)) {\n        newTags.forEach(tag => this.#tags.add(tag))\n    }\n}",
+        "kind": "method",
+        "params": [
+          "newTags"
+        ]
+      }
+    ],
+    "constructor": {
+      "name": "constructor",
+      "line": 35,
+      "source": "constructor (options = {}) {\n    super()\n\n    this.options = {...options}\n    this.#name = options.$name || this.constructor.$name || this.constructor.name\n    this.#id = options.$id || this.#name\n    this.#category = options.$category || this.constructor.$category\n    this.#bind = options.$bind\n    this.#eagerStart = (options.$eagerStart ?? this.constructor.$eagerStart) !== false\n    this.#lifecycle = (options.$lifecycle ?? this.constructor.$lifecycle) !== false\n\n    this.#tags = new ObservableSet([\n        ...this.constructor.$tags,\n        ...(options.$tags || [])\n    ])\n\n    this.#childrenRegistry = new Registry()\n    this.#childrenRegistry.addIndex('$category')\n}",
+      "kind": "constructor",
+      "params": [
+        "options = ..."
+      ]
+    },
+    "isDefault": true
+  },
+  "/core/utils.doc.js": {
+    "type": "module",
+    "file": "/core/utils.js",
+    "functions": [
+      {
+        "name": "toCamelCase",
+        "line": 7,
+        "params": [
+          "string"
+        ],
+        "source": "function toCamelCase (string) {\n    return inflector.toCamelCase(string)\n}"
+      },
+      {
+        "name": "toPascalCase",
+        "line": 12,
+        "params": [
+          "string"
+        ],
+        "source": "function toPascalCase (string) {\n    return inflector.toPascalCase(string)\n}"
+      },
+      {
+        "name": "toSnakeCase",
+        "line": 17,
+        "params": [
+          "string"
+        ],
+        "source": "function toSnakeCase (string) {\n    return inflector.toSnakeCase(string)\n}"
+      },
+      {
+        "name": "toKebabCase",
+        "line": 22,
+        "params": [
+          "string"
+        ],
+        "source": "function toKebabCase (string) {\n    return inflector.toKebabCase(string)\n}"
+      },
+      {
+        "name": "toHumanCase",
+        "line": 27,
+        "params": [
+          "string"
+        ],
+        "source": "function toHumanCase (string) {\n    return inflector.toHumanCase(string)\n}"
+      },
+      {
+        "name": "uniqueId",
+        "line": 34,
+        "params": [
+          "collection",
+          "prefix"
+        ],
+        "source": "function uniqueId (collection, prefix) {\n    if (!prefix) {\n        prefix = collection\n        collection = 'default'\n    }\n\n    if (!idCounter[collection]) {\n        idCounter[collection] = {}\n    }\n\n    if (!idCounter[collection][prefix]) {\n        idCounter[collection][prefix] = 0\n    }\n\n    const current = idCounter[collection][prefix]\n    idCounter[collection][prefix]++\n\n    return current === 0 ? prefix : `${prefix}_${current}`\n}"
+      },
+      {
+        "name": "resetUniqueId",
+        "line": 55,
+        "params": [
+          "collection",
+          "prefix"
+        ],
+        "source": "function resetUniqueId (collection, prefix) {\n    if (prefix) {\n        if (idCounter[collection]) {\n            idCounter[collection][prefix] = 0\n        }\n    } else {\n        idCounter[collection] = {}\n    }\n}"
+      },
+      {
+        "name": "singularize",
+        "line": 66,
+        "params": [
+          "word"
+        ],
+        "source": "function singularize (word) {\n    return inflector.singular(word)\n}"
+      },
+      {
+        "name": "pluralize",
+        "line": 71,
+        "params": [
+          "word",
+          "count",
+          "inclusive"
+        ],
+        "source": "function pluralize (word, count, inclusive) {\n    return inflector.pluralize(word, count, inclusive)\n}"
+      },
+      {
+        "name": "plural",
+        "line": 76,
+        "params": [
+          "word"
+        ],
+        "source": "function plural (word) {\n    return inflector.plural(word)\n}"
+      },
+      {
+        "name": "isPlural",
+        "line": 81,
+        "params": [
+          "word"
+        ],
+        "source": "function isPlural (word) {\n    return inflector.isPlural(word)\n}"
+      },
+      {
+        "name": "isSingular",
+        "line": 86,
+        "params": [
+          "word"
+        ],
+        "source": "function isSingular (word) {\n    return inflector.isSingular(word)\n}"
+      },
+      {
+        "name": "setDefaults",
+        "line": 91,
+        "params": [
+          "data",
+          "defaults"
+        ],
+        "source": "function setDefaults (data, defaults) {\n    return deepMerge(defaults, data)\n}"
+      },
+      {
+        "name": "getNestedValue",
+        "line": 96,
+        "params": [
+          "obj",
+          "path"
+        ],
+        "source": "function getNestedValue (obj, path) {\n    if (!path) {\n        return obj\n    }\n\n    const parts = path.split('.')\n    let current = obj\n\n    for (const part of parts) {\n        if (current === undefined || current === null) {\n            return undefined\n        }\n        current = current[part]\n    }\n\n    return current\n}"
+      },
+      {
+        "name": "setNestedValue",
+        "line": 115,
+        "params": [
+          "obj",
+          "path",
+          "value"
+        ],
+        "source": "function setNestedValue (obj, path, value) {\n    const parts = path.split('.')\n    let current = obj\n\n    for (let i = 0; i < parts.length - 1; i++) {\n        const part = parts[i]\n        if (!current[part]) {\n            current[part] = {}\n        }\n        current = current[part]\n    }\n\n    current[parts[parts.length - 1]] = value\n    return obj\n}"
+      },
+      {
+        "name": "deepMerge",
+        "line": 132,
+        "params": [
+          "target",
+          "source"
+        ],
+        "source": "function deepMerge (target, source) {\n    return deepMergeInternal(target, source, new WeakSet())\n}"
+      },
+      {
+        "name": "deepMergeInternal",
+        "line": 137,
+        "params": [
+          "target",
+          "source",
+          "seen"
+        ],
+        "source": "function deepMergeInternal (target, source, seen) {\n    if (!source) {\n        return target\n    }\n\n    if (typeof source === 'object' && source !== null) {\n        if (seen.has(source)) {\n            return source\n        }\n        seen.add(source)\n    }\n\n    const sourceIsArray = Array.isArray(source)\n    const targetIsArray = Array.isArray(target)\n\n    if (sourceIsArray !== targetIsArray) {\n        return cloneIfNeeded(source, seen)\n    }\n\n    if (sourceIsArray) {\n        return mergeArrays(target, source, seen)\n    }\n\n    return mergeObject(target, source, seen)\n}"
+      },
+      {
+        "name": "exportValue",
+        "line": 164,
+        "params": [
+          "value"
+        ],
+        "source": "function exportValue (value) {\n\n    if (value && typeof value === 'object') {\n        if (typeof value.export === 'function') {\n            return value.export()\n        }\n\n        if (Array.isArray(value)) {\n            return value.map(item => exportValue(item))\n        }\n\n        const result = {}\n        for (const key in value) {\n            if (Object.hasOwn(value, key)) {\n                result[key] = exportValue(value[key])\n            }\n        }\n        return result\n    }\n\n    return value\n}"
+      },
+      {
+        "name": "isNonNullObject",
+        "line": 188,
+        "params": [
+          "value"
+        ],
+        "source": "function isNonNullObject (value) {\n    return Boolean(value) && typeof value === 'object'\n}"
+      },
+      {
+        "name": "isSpecial",
+        "line": 193,
+        "params": [
+          "value"
+        ],
+        "source": "function isSpecial (value) {\n    const stringValue = Object.prototype.toString.call(value)\n    return stringValue === '[object RegExp]' || stringValue === '[object Date]'\n}"
+      },
+      {
+        "name": "isMergeableObject",
+        "line": 199,
+        "params": [
+          "value"
+        ],
+        "source": "function isMergeableObject (value) {\n    return isNonNullObject(value) && !isSpecial(value)\n}"
+      },
+      {
+        "name": "emptyTarget",
+        "line": 204,
+        "params": [
+          "value"
+        ],
+        "source": "function emptyTarget (value) {\n    return Array.isArray(value) ? [] : {}\n}"
+      },
+      {
+        "name": "cloneIfNeeded",
+        "line": 209,
+        "params": [
+          "value",
+          "seen"
+        ],
+        "source": "function cloneIfNeeded (value, seen) {\n    return isMergeableObject(value) ? deepMergeInternal(emptyTarget(value), value, seen) : value\n}"
+      },
+      {
+        "name": "mergeArrays",
+        "line": 214,
+        "params": [
+          "target",
+          "source",
+          "seen"
+        ],
+        "source": "function mergeArrays (target, source, seen) {\n    return target.concat(source).map(element => cloneIfNeeded(element, seen))\n}"
+      },
+      {
+        "name": "getKeys",
+        "line": 219,
+        "params": [
+          "target"
+        ],
+        "source": "function getKeys (target) {\n    const symbols = Object.getOwnPropertySymbols\n        ? Object.getOwnPropertySymbols(target).filter(symbol =>\n            Object.propertyIsEnumerable.call(target, symbol))\n        : []\n    return Object.keys(target).concat(symbols)\n}"
+      },
+      {
+        "name": "mergeObject",
+        "line": 228,
+        "params": [
+          "target",
+          "source",
+          "seen"
+        ],
+        "source": "function mergeObject (target, source, seen) {\n    const destination = {}\n\n    if (isMergeableObject(target)) {\n        getKeys(target).forEach(key => {\n            destination[key] = cloneIfNeeded(target[key], seen)\n        })\n    }\n\n    getKeys(source).forEach(key => {\n        if ((key in target) && isMergeableObject(source[key])) {\n            destination[key] = deepMergeInternal(target[key], source[key], seen)\n        } else {\n            destination[key] = cloneIfNeeded(source[key], seen)\n        }\n    })\n\n    return destination\n}"
+      },
+      {
+        "name": "formatNumber",
+        "line": 249,
+        "params": [
+          "n"
+        ],
+        "source": "function formatNumber (n) {\n    if (typeof n !== 'number') {\n        return String(n)\n    }\n    return Number.isInteger(n) ? String(n) : n.toFixed(2)\n}"
+      },
+      {
+        "name": "formatBytes",
+        "line": 257,
+        "params": [
+          "bytes"
+        ],
+        "source": "function formatBytes (bytes) {\n    if (bytes === 0) {\n        return '0 B'\n    }\n\n    const units = ['B', 'KB', 'MB', 'GB']\n    const i = Math.floor(Math.log(bytes) / Math.log(1024))\n    const value = bytes / Math.pow(1024, i)\n\n    return `${value.toFixed(i > 1 ? 2 : 0)} ${units[i]}`\n}"
+      },
+      {
+        "name": "delegateProperties",
+        "line": 270,
+        "params": [
+          "receiver",
+          "source",
+          "names"
+        ],
+        "source": "function delegateProperties (receiver, source, names) {\n    if (Array.isArray(names)) {\n        names.forEach(name => delegateProperty(receiver, source, name, name))\n    } else if (typeof names === 'object') {\n        Object.entries(names).forEach(([sourceName, receiverName]) => {\n            delegateProperty(receiver, source, sourceName, receiverName)\n        })\n    }\n}"
+      },
+      {
+        "name": "delegateProperty",
+        "line": 281,
+        "params": [
+          "receiver",
+          "source",
+          "sourceName",
+          "receiverName"
+        ],
+        "source": "function delegateProperty (receiver, source, sourceName, receiverName) {\n    const descriptor = Object.getOwnPropertyDescriptor(source, sourceName)\n\n    if (descriptor && (descriptor.get || descriptor.set)) {\n        Object.defineProperty(receiver, receiverName, {\n            get: descriptor.get ? descriptor.get.bind(source) : undefined,\n            set: descriptor.set ? descriptor.set.bind(source) : undefined,\n            enumerable: true,\n            configurable: true\n        })\n    } else if (typeof source[sourceName] === 'function') {\n        receiver[receiverName] = source[sourceName].bind(source)\n    } else {\n        Object.defineProperty(receiver, receiverName, {\n            get: () => source[sourceName],\n            set: (value) => {\n                source[sourceName] = value\n            },\n            enumerable: true,\n            configurable: true\n        })\n    }\n}"
+      }
+    ],
+    "exports": []
+  },
   "/core/action_controller.doc.js": {
     "type": "class",
     "file": "/core/action_controller.js",
@@ -1018,450 +1730,6 @@
     },
     "isDefault": true
   },
-  "/core/perky_module.doc.js": {
-    "type": "class",
-    "file": "/core/perky_module.js",
-    "name": "PerkyModule",
-    "line": 8,
-    "extends": "Notifier",
-    "statics": [
-      {
-        "name": "$category",
-        "line": 29,
-        "source": "static $category = 'perkyModule'",
-        "kind": "property",
-        "value": "'perkyModule'"
-      },
-      {
-        "name": "$name",
-        "line": 30,
-        "source": "static $name = null",
-        "kind": "property",
-        "value": "null"
-      },
-      {
-        "name": "$lifecycle",
-        "line": 31,
-        "source": "static $lifecycle = true",
-        "kind": "property",
-        "value": "true"
-      },
-      {
-        "name": "$eagerStart",
-        "line": 32,
-        "source": "static $eagerStart = true",
-        "kind": "property",
-        "value": "true"
-      },
-      {
-        "name": "$tags",
-        "line": 33,
-        "source": "static $tags = []",
-        "kind": "property",
-        "value": "[]"
-      },
-      {
-        "name": "perkyModuleMethods",
-        "line": 504,
-        "source": "static perkyModuleMethods = Notifier.notifierMethods.concat([\n    'start',\n    'stop',\n    'dispose',\n    'install',\n    'uninstall',\n    'create',\n    'getChild',\n    'hasChild',\n    'removeChild',\n    'listNamesFor',\n    'lookup',\n    'childrenByCategory',\n    'hasTag',\n    'addTag',\n    'removeTag',\n    'hasTags',\n    'childrenByTags',\n    'addTagsIndex',\n    'removeTagsIndex',\n    'delegateTo',\n    'cleanDelegations',\n    'delegateEventsTo',\n    'cleanEventDelegations',\n    'query',\n    'queryAll'\n])",
-        "kind": "property",
-        "value": "Notifier.notifierMethods.concat([\n    'start',\n    'stop',\n    'dispose',\n    'install',\n    'uninstall',\n    'create',\n    'getChild',\n    'hasChild',\n    'removeChild',\n    'listNamesFor',\n    'lookup',\n    'childrenByCategory',\n    'hasTag',\n    'addTag',\n    'removeTag',\n    'hasTags',\n    'childrenByTags',\n    'addTagsIndex',\n    'removeTagsIndex',\n    'delegateTo',\n    'cleanDelegations',\n    'delegateEventsTo',\n    'cleanEventDelegations',\n    'query',\n    'queryAll'\n])"
-      }
-    ],
-    "methods": [
-      {
-        "name": "start",
-        "line": 168,
-        "source": "start () {\n    if (this.#started) {\n        return false\n    }\n\n    this.#started = true\n    this.onStart?.()\n    this.emit('start')\n\n    return true\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "stop",
-        "line": 181,
-        "source": "stop () {\n    if (!this.#started) {\n        return false\n    }\n\n    this.#started = false\n    this.onStop?.()\n    this.emit('stop')\n\n    return true\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "dispose",
-        "line": 194,
-        "source": "dispose () {\n    if (this.#disposed) {\n        return false\n    }\n\n    this.#disposed = true\n    this.stop()\n\n    this.cleanExternalListeners()\n\n    this.#childrenRegistry.forEach(child => {\n        if (child && !child.disposed) {\n            child.dispose()\n        }\n    })\n    this.#childrenRegistry.clear()\n\n    this.onDispose?.()\n    this.emit('dispose')\n    this.removeListeners()\n\n    return true\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "install",
-        "line": 219,
-        "source": "install (host, options) {\n    if (this.#installed) {\n        return this.uninstall()\n    }\n\n    this.#host = host\n    if (this.$bind) {\n        host[this.$bind] = this\n    }\n    this.#installed = true\n\n    this.onInstall?.(host, options)\n\n    return true\n}",
-        "kind": "method",
-        "params": [
-          "host",
-          "options"
-        ]
-      },
-      {
-        "name": "uninstall",
-        "line": 236,
-        "source": "uninstall () {\n    if (!this.#installed) {\n        return false\n    }\n\n    this.cleanDelegations()\n    this.cleanEventDelegations()\n    this.onUninstall?.(this.#host)\n    this.#installed = false\n    this.#host = null\n\n    return true\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "create",
-        "line": 261,
-        "source": "create (Child, options = {}) {\n    options.$category ||= Child.$category\n    options.$name ||= Child.$name || options.$category\n    options.$id ||= uniqueId(this.#childrenRegistry, options.$name)\n    options.$lifecycle = options.$lifecycle ?? Child.$lifecycle ?? true\n    options.$eagerStart = options.$eagerStart ?? Child.$eagerStart ?? true\n\n    return this.#addChild(new Child(options), options)\n}",
-        "kind": "method",
-        "params": [
-          "Child",
-          "options = ..."
-        ]
-      },
-      {
-        "name": "getChild",
-        "line": 288,
-        "source": "getChild (name) {\n    return this.#childrenRegistry.get(name) || null\n}",
-        "kind": "method",
-        "params": [
-          "name"
-        ]
-      },
-      {
-        "name": "hasChild",
-        "line": 293,
-        "source": "hasChild (name) {\n    return this.#childrenRegistry.has(name)\n}",
-        "kind": "method",
-        "params": [
-          "name"
-        ]
-      },
-      {
-        "name": "removeChild",
-        "line": 298,
-        "source": "removeChild (name) {\n    const child = this.#childrenRegistry.get(name)\n\n    if (!child) {\n        return false\n    }\n\n    unregisterChild(this, child)\n\n    return true\n}",
-        "kind": "method",
-        "params": [
-          "name"
-        ]
-      },
-      {
-        "name": "listNamesFor",
-        "line": 311,
-        "source": "listNamesFor (key, indexName = '$category') {\n    return this.#childrenRegistry.lookupKeys(indexName, key)\n}",
-        "kind": "method",
-        "params": [
-          "key",
-          "indexName = ..."
-        ]
-      },
-      {
-        "name": "lookup",
-        "line": 316,
-        "source": "lookup (indexName, key) {\n    return this.#childrenRegistry.lookup(indexName, key)\n}",
-        "kind": "method",
-        "params": [
-          "indexName",
-          "key"
-        ]
-      },
-      {
-        "name": "childrenByCategory",
-        "line": 321,
-        "source": "childrenByCategory (category) {\n    return this.lookup('$category', category)\n}",
-        "kind": "method",
-        "params": [
-          "category"
-        ]
-      },
-      {
-        "name": "hasTag",
-        "line": 344,
-        "source": "hasTag (tag) {\n    return this.#tags.has(tag)\n}",
-        "kind": "method",
-        "params": [
-          "tag"
-        ]
-      },
-      {
-        "name": "addTag",
-        "line": 349,
-        "source": "addTag (tag) {\n    if (this.#tags.has(tag)) {\n        return false\n    }\n    this.#tags.add(tag)\n    return true\n}",
-        "kind": "method",
-        "params": [
-          "tag"
-        ]
-      },
-      {
-        "name": "removeTag",
-        "line": 358,
-        "source": "removeTag (tag) {\n    return this.#tags.delete(tag)\n}",
-        "kind": "method",
-        "params": [
-          "tag"
-        ]
-      },
-      {
-        "name": "hasTags",
-        "line": 363,
-        "source": "hasTags (tags) {\n    if (typeof tags === 'string') {\n        return this.hasTag(tags)\n    }\n\n    return Array.isArray(tags) && tags.every(tag => this.#tags.has(tag))\n}",
-        "kind": "method",
-        "params": [
-          "tags"
-        ]
-      },
-      {
-        "name": "childrenByTags",
-        "line": 372,
-        "source": "childrenByTags (tags) {\n    const tagArray = Array.isArray(tags) ? tags : [tags]\n\n    if (tagArray.length === 0) {\n        return []\n    }\n\n    const indexKey = getTagIndexKey(tagArray)\n\n    if (this.#tagIndexes.has(indexKey)) {\n        return this.#childrenRegistry.lookup(indexKey, indexKey)\n    }\n\n    return this.#childrenRegistry.all.filter(\n        child => tagArray.every(tag => child.$tags?.includes(tag))\n    )\n}",
-        "kind": "method",
-        "params": [
-          "tags"
-        ]
-      },
-      {
-        "name": "addTagsIndex",
-        "line": 391,
-        "source": "addTagsIndex (tags) {\n    if (!Array.isArray(tags) || tags.length === 0) {\n        return false\n    }\n\n    const indexKey = getTagIndexKey(tags)\n\n    if (this.#tagIndexes.has(indexKey)) {\n        return false\n    }\n\n    this.#childrenRegistry.addIndex(indexKey, child => {\n        const hasAllTags = tags.every(tag => child.tags?.has(tag))\n        return hasAllTags ? indexKey : null\n    })\n\n    this.#tagIndexes.set(indexKey, tags)\n\n    this.#childrenRegistry.forEach(child => {\n        if (child.tags) {\n            this.#setupTagIndexListeners(child)\n        }\n    })\n\n    return true\n}",
-        "kind": "method",
-        "params": [
-          "tags"
-        ]
-      },
-      {
-        "name": "removeTagsIndex",
-        "line": 419,
-        "source": "removeTagsIndex (tags) {\n    const indexKey = getTagIndexKey(tags)\n\n    if (!this.#tagIndexes.has(indexKey)) {\n        return false\n    }\n\n    this.#childrenRegistry.removeIndex(indexKey)\n    this.#tagIndexes.delete(indexKey)\n    return true\n}",
-        "kind": "method",
-        "params": [
-          "tags"
-        ]
-      },
-      {
-        "name": "delegateTo",
-        "line": 449,
-        "source": "delegateTo (host, names) {\n    delegateProperties(host, this, names)\n\n    const propertyNames = Array.isArray(names)\n        ? names\n        : Object.values(names)\n\n    this.#delegations.push({host, propertyNames})\n}",
-        "kind": "method",
-        "params": [
-          "host",
-          "names"
-        ]
-      },
-      {
-        "name": "cleanDelegations",
-        "line": 460,
-        "source": "cleanDelegations () {\n    for (const {host, propertyNames} of this.#delegations) {\n        for (const name of propertyNames) {\n            delete host[name]\n        }\n    }\n    this.#delegations.length = 0\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "delegateEventsTo",
-        "line": 470,
-        "source": "delegateEventsTo (host, events, namespace) {\n    const eventArray = Array.isArray(events) ? events : Object.keys(events)\n    const callbacks = []\n\n    for (const event of eventArray) {\n        const prefixedEvent = namespace ? `${namespace}:${event}` : event\n        const callback = (...args) => host.emit(prefixedEvent, ...args)\n        this.on(event, callback)\n        callbacks.push({event, callback})\n    }\n\n    this.#eventDelegations.push({callbacks})\n}",
-        "kind": "method",
-        "params": [
-          "host",
-          "events",
-          "namespace"
-        ]
-      },
-      {
-        "name": "cleanEventDelegations",
-        "line": 485,
-        "source": "cleanEventDelegations () {\n    for (const {callbacks} of this.#eventDelegations) {\n        for (const {event, callback} of callbacks) {\n            this.off(event, callback)\n        }\n    }\n    this.#eventDelegations.length = 0\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "query",
-        "line": 495,
-        "source": "query (selector) {\n    return perkyQuery(this, selector)\n}",
-        "kind": "method",
-        "params": [
-          "selector"
-        ]
-      },
-      {
-        "name": "queryAll",
-        "line": 500,
-        "source": "queryAll (selector) {\n    return perkyQueryAll(this, selector)\n}",
-        "kind": "method",
-        "params": [
-          "selector"
-        ]
-      }
-    ],
-    "getters": [
-      {
-        "name": "$id",
-        "line": 56,
-        "source": "get $id () {\n    return this.#id\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "$name",
-        "line": 71,
-        "source": "get $name () {\n    return this.#name\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "$category",
-        "line": 86,
-        "source": "get $category () {\n    return this.#category\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "$bind",
-        "line": 101,
-        "source": "get $bind () {\n    return this.#bind\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "host",
-        "line": 116,
-        "source": "get host () {\n    return this.#host\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "started",
-        "line": 121,
-        "source": "get started () {\n    return this.#started\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "disposed",
-        "line": 126,
-        "source": "get disposed () {\n    return this.#disposed\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "installed",
-        "line": 131,
-        "source": "get installed () {\n    return this.#installed\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "$eagerStart",
-        "line": 136,
-        "source": "get $eagerStart () {\n    return this.#eagerStart\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "$lifecycle",
-        "line": 141,
-        "source": "get $lifecycle () {\n    return this.#lifecycle\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "$status",
-        "line": 146,
-        "source": "get $status () {\n    if (!this.#lifecycle) {\n        return 'static'\n    }\n\n    if (this.#disposed) {\n        return 'disposed'\n    }\n\n    if (this.#started) {\n        return 'started'\n    }\n\n    return 'stopped'\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "running",
-        "line": 163,
-        "source": "get running () {\n    return this.#started\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "children",
-        "line": 251,
-        "source": "get children () {\n    return this.#childrenRegistry.all\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "childrenRegistry",
-        "line": 256,
-        "source": "get childrenRegistry () {\n    return this.#childrenRegistry\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "$tags",
-        "line": 326,
-        "source": "get $tags () {\n    return this.#tags.toArray()\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "tags",
-        "line": 339,
-        "source": "get tags () {\n    return this.#tags\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "setters": [
-      {
-        "name": "$id",
-        "line": 61,
-        "source": "set $id (newId) {\n    const oldId = this.#id\n\n    if (oldId !== newId) {\n        this.#id = newId\n        this.emit('$id:changed', newId, oldId)\n    }\n}",
-        "kind": "method",
-        "params": [
-          "newId"
-        ]
-      },
-      {
-        "name": "$name",
-        "line": 76,
-        "source": "set $name (newName) {\n    const oldName = this.#name\n\n    if (oldName !== newName) {\n        this.#name = newName\n        this.emit('$name:changed', newName, oldName)\n    }\n}",
-        "kind": "method",
-        "params": [
-          "newName"
-        ]
-      },
-      {
-        "name": "$category",
-        "line": 91,
-        "source": "set $category (newCategory) {\n    const oldCategory = this.#category\n\n    if (oldCategory !== newCategory) {\n        this.#category = newCategory\n        this.emit('$category:changed', newCategory, oldCategory)\n    }\n}",
-        "kind": "method",
-        "params": [
-          "newCategory"
-        ]
-      },
-      {
-        "name": "$bind",
-        "line": 106,
-        "source": "set $bind (newBind) {\n    const oldBind = this.#bind\n\n    if (oldBind !== newBind) {\n        this.#bind = newBind\n        this.emit('$bind:changed', newBind, oldBind)\n    }\n}",
-        "kind": "method",
-        "params": [
-          "newBind"
-        ]
-      },
-      {
-        "name": "$tags",
-        "line": 331,
-        "source": "set $tags (newTags) {\n    this.#tags.clear()\n    if (Array.isArray(newTags)) {\n        newTags.forEach(tag => this.#tags.add(tag))\n    }\n}",
-        "kind": "method",
-        "params": [
-          "newTags"
-        ]
-      }
-    ],
-    "constructor": {
-      "name": "constructor",
-      "line": 35,
-      "source": "constructor (options = {}) {\n    super()\n\n    this.options = {...options}\n    this.#name = options.$name || this.constructor.$name || this.constructor.name\n    this.#id = options.$id || this.#name\n    this.#category = options.$category || this.constructor.$category\n    this.#bind = options.$bind\n    this.#eagerStart = (options.$eagerStart ?? this.constructor.$eagerStart) !== false\n    this.#lifecycle = (options.$lifecycle ?? this.constructor.$lifecycle) !== false\n\n    this.#tags = new ObservableSet([\n        ...this.constructor.$tags,\n        ...(options.$tags || [])\n    ])\n\n    this.#childrenRegistry = new Registry()\n    this.#childrenRegistry.addIndex('$category')\n}",
-      "kind": "constructor",
-      "params": [
-        "options = ..."
-      ]
-    },
-    "isDefault": true
-  },
   "/core/perky_query.doc.js": {
     "type": "module",
     "file": "/core/perky_query.js",
@@ -1604,274 +1872,6 @@
       ]
     },
     "isDefault": true
-  },
-  "/core/utils.doc.js": {
-    "type": "module",
-    "file": "/core/utils.js",
-    "functions": [
-      {
-        "name": "toCamelCase",
-        "line": 7,
-        "params": [
-          "string"
-        ],
-        "source": "function toCamelCase (string) {\n    return inflector.toCamelCase(string)\n}"
-      },
-      {
-        "name": "toPascalCase",
-        "line": 12,
-        "params": [
-          "string"
-        ],
-        "source": "function toPascalCase (string) {\n    return inflector.toPascalCase(string)\n}"
-      },
-      {
-        "name": "toSnakeCase",
-        "line": 17,
-        "params": [
-          "string"
-        ],
-        "source": "function toSnakeCase (string) {\n    return inflector.toSnakeCase(string)\n}"
-      },
-      {
-        "name": "toKebabCase",
-        "line": 22,
-        "params": [
-          "string"
-        ],
-        "source": "function toKebabCase (string) {\n    return inflector.toKebabCase(string)\n}"
-      },
-      {
-        "name": "toHumanCase",
-        "line": 27,
-        "params": [
-          "string"
-        ],
-        "source": "function toHumanCase (string) {\n    return inflector.toHumanCase(string)\n}"
-      },
-      {
-        "name": "uniqueId",
-        "line": 34,
-        "params": [
-          "collection",
-          "prefix"
-        ],
-        "source": "function uniqueId (collection, prefix) {\n    if (!prefix) {\n        prefix = collection\n        collection = 'default'\n    }\n\n    if (!idCounter[collection]) {\n        idCounter[collection] = {}\n    }\n\n    if (!idCounter[collection][prefix]) {\n        idCounter[collection][prefix] = 0\n    }\n\n    const current = idCounter[collection][prefix]\n    idCounter[collection][prefix]++\n\n    return current === 0 ? prefix : `${prefix}_${current}`\n}"
-      },
-      {
-        "name": "resetUniqueId",
-        "line": 55,
-        "params": [
-          "collection",
-          "prefix"
-        ],
-        "source": "function resetUniqueId (collection, prefix) {\n    if (prefix) {\n        if (idCounter[collection]) {\n            idCounter[collection][prefix] = 0\n        }\n    } else {\n        idCounter[collection] = {}\n    }\n}"
-      },
-      {
-        "name": "singularize",
-        "line": 66,
-        "params": [
-          "word"
-        ],
-        "source": "function singularize (word) {\n    return inflector.singular(word)\n}"
-      },
-      {
-        "name": "pluralize",
-        "line": 71,
-        "params": [
-          "word",
-          "count",
-          "inclusive"
-        ],
-        "source": "function pluralize (word, count, inclusive) {\n    return inflector.pluralize(word, count, inclusive)\n}"
-      },
-      {
-        "name": "plural",
-        "line": 76,
-        "params": [
-          "word"
-        ],
-        "source": "function plural (word) {\n    return inflector.plural(word)\n}"
-      },
-      {
-        "name": "isPlural",
-        "line": 81,
-        "params": [
-          "word"
-        ],
-        "source": "function isPlural (word) {\n    return inflector.isPlural(word)\n}"
-      },
-      {
-        "name": "isSingular",
-        "line": 86,
-        "params": [
-          "word"
-        ],
-        "source": "function isSingular (word) {\n    return inflector.isSingular(word)\n}"
-      },
-      {
-        "name": "setDefaults",
-        "line": 91,
-        "params": [
-          "data",
-          "defaults"
-        ],
-        "source": "function setDefaults (data, defaults) {\n    return deepMerge(defaults, data)\n}"
-      },
-      {
-        "name": "getNestedValue",
-        "line": 96,
-        "params": [
-          "obj",
-          "path"
-        ],
-        "source": "function getNestedValue (obj, path) {\n    if (!path) {\n        return obj\n    }\n\n    const parts = path.split('.')\n    let current = obj\n\n    for (const part of parts) {\n        if (current === undefined || current === null) {\n            return undefined\n        }\n        current = current[part]\n    }\n\n    return current\n}"
-      },
-      {
-        "name": "setNestedValue",
-        "line": 115,
-        "params": [
-          "obj",
-          "path",
-          "value"
-        ],
-        "source": "function setNestedValue (obj, path, value) {\n    const parts = path.split('.')\n    let current = obj\n\n    for (let i = 0; i < parts.length - 1; i++) {\n        const part = parts[i]\n        if (!current[part]) {\n            current[part] = {}\n        }\n        current = current[part]\n    }\n\n    current[parts[parts.length - 1]] = value\n    return obj\n}"
-      },
-      {
-        "name": "deepMerge",
-        "line": 132,
-        "params": [
-          "target",
-          "source"
-        ],
-        "source": "function deepMerge (target, source) {\n    return deepMergeInternal(target, source, new WeakSet())\n}"
-      },
-      {
-        "name": "deepMergeInternal",
-        "line": 137,
-        "params": [
-          "target",
-          "source",
-          "seen"
-        ],
-        "source": "function deepMergeInternal (target, source, seen) {\n    if (!source) {\n        return target\n    }\n\n    if (typeof source === 'object' && source !== null) {\n        if (seen.has(source)) {\n            return source\n        }\n        seen.add(source)\n    }\n\n    const sourceIsArray = Array.isArray(source)\n    const targetIsArray = Array.isArray(target)\n\n    if (sourceIsArray !== targetIsArray) {\n        return cloneIfNeeded(source, seen)\n    }\n\n    if (sourceIsArray) {\n        return mergeArrays(target, source, seen)\n    }\n\n    return mergeObject(target, source, seen)\n}"
-      },
-      {
-        "name": "exportValue",
-        "line": 164,
-        "params": [
-          "value"
-        ],
-        "source": "function exportValue (value) {\n\n    if (value && typeof value === 'object') {\n        if (typeof value.export === 'function') {\n            return value.export()\n        }\n\n        if (Array.isArray(value)) {\n            return value.map(item => exportValue(item))\n        }\n\n        const result = {}\n        for (const key in value) {\n            if (Object.hasOwn(value, key)) {\n                result[key] = exportValue(value[key])\n            }\n        }\n        return result\n    }\n\n    return value\n}"
-      },
-      {
-        "name": "isNonNullObject",
-        "line": 188,
-        "params": [
-          "value"
-        ],
-        "source": "function isNonNullObject (value) {\n    return Boolean(value) && typeof value === 'object'\n}"
-      },
-      {
-        "name": "isSpecial",
-        "line": 193,
-        "params": [
-          "value"
-        ],
-        "source": "function isSpecial (value) {\n    const stringValue = Object.prototype.toString.call(value)\n    return stringValue === '[object RegExp]' || stringValue === '[object Date]'\n}"
-      },
-      {
-        "name": "isMergeableObject",
-        "line": 199,
-        "params": [
-          "value"
-        ],
-        "source": "function isMergeableObject (value) {\n    return isNonNullObject(value) && !isSpecial(value)\n}"
-      },
-      {
-        "name": "emptyTarget",
-        "line": 204,
-        "params": [
-          "value"
-        ],
-        "source": "function emptyTarget (value) {\n    return Array.isArray(value) ? [] : {}\n}"
-      },
-      {
-        "name": "cloneIfNeeded",
-        "line": 209,
-        "params": [
-          "value",
-          "seen"
-        ],
-        "source": "function cloneIfNeeded (value, seen) {\n    return isMergeableObject(value) ? deepMergeInternal(emptyTarget(value), value, seen) : value\n}"
-      },
-      {
-        "name": "mergeArrays",
-        "line": 214,
-        "params": [
-          "target",
-          "source",
-          "seen"
-        ],
-        "source": "function mergeArrays (target, source, seen) {\n    return target.concat(source).map(element => cloneIfNeeded(element, seen))\n}"
-      },
-      {
-        "name": "getKeys",
-        "line": 219,
-        "params": [
-          "target"
-        ],
-        "source": "function getKeys (target) {\n    const symbols = Object.getOwnPropertySymbols\n        ? Object.getOwnPropertySymbols(target).filter(symbol =>\n            Object.propertyIsEnumerable.call(target, symbol))\n        : []\n    return Object.keys(target).concat(symbols)\n}"
-      },
-      {
-        "name": "mergeObject",
-        "line": 228,
-        "params": [
-          "target",
-          "source",
-          "seen"
-        ],
-        "source": "function mergeObject (target, source, seen) {\n    const destination = {}\n\n    if (isMergeableObject(target)) {\n        getKeys(target).forEach(key => {\n            destination[key] = cloneIfNeeded(target[key], seen)\n        })\n    }\n\n    getKeys(source).forEach(key => {\n        if ((key in target) && isMergeableObject(source[key])) {\n            destination[key] = deepMergeInternal(target[key], source[key], seen)\n        } else {\n            destination[key] = cloneIfNeeded(source[key], seen)\n        }\n    })\n\n    return destination\n}"
-      },
-      {
-        "name": "formatNumber",
-        "line": 249,
-        "params": [
-          "n"
-        ],
-        "source": "function formatNumber (n) {\n    if (typeof n !== 'number') {\n        return String(n)\n    }\n    return Number.isInteger(n) ? String(n) : n.toFixed(2)\n}"
-      },
-      {
-        "name": "formatBytes",
-        "line": 257,
-        "params": [
-          "bytes"
-        ],
-        "source": "function formatBytes (bytes) {\n    if (bytes === 0) {\n        return '0 B'\n    }\n\n    const units = ['B', 'KB', 'MB', 'GB']\n    const i = Math.floor(Math.log(bytes) / Math.log(1024))\n    const value = bytes / Math.pow(1024, i)\n\n    return `${value.toFixed(i > 1 ? 2 : 0)} ${units[i]}`\n}"
-      },
-      {
-        "name": "delegateProperties",
-        "line": 270,
-        "params": [
-          "receiver",
-          "source",
-          "names"
-        ],
-        "source": "function delegateProperties (receiver, source, names) {\n    if (Array.isArray(names)) {\n        names.forEach(name => delegateProperty(receiver, source, name, name))\n    } else if (typeof names === 'object') {\n        Object.entries(names).forEach(([sourceName, receiverName]) => {\n            delegateProperty(receiver, source, sourceName, receiverName)\n        })\n    }\n}"
-      },
-      {
-        "name": "delegateProperty",
-        "line": 281,
-        "params": [
-          "receiver",
-          "source",
-          "sourceName",
-          "receiverName"
-        ],
-        "source": "function delegateProperty (receiver, source, sourceName, receiverName) {\n    const descriptor = Object.getOwnPropertyDescriptor(source, sourceName)\n\n    if (descriptor && (descriptor.get || descriptor.set)) {\n        Object.defineProperty(receiver, receiverName, {\n            get: descriptor.get ? descriptor.get.bind(source) : undefined,\n            set: descriptor.set ? descriptor.set.bind(source) : undefined,\n            enumerable: true,\n            configurable: true\n        })\n    } else if (typeof source[sourceName] === 'function') {\n        receiver[receiverName] = source[sourceName].bind(source)\n    } else {\n        Object.defineProperty(receiver, receiverName, {\n            get: () => source[sourceName],\n            set: (value) => {\n                source[sourceName] = value\n            },\n            enumerable: true,\n            configurable: true\n        })\n    }\n}"
-      }
-    ],
-    "exports": []
   },
   "/application/application.doc.js": {
     "type": "class",
@@ -2307,457 +2307,6 @@
       "name": "constructor",
       "line": 11,
       "source": "constructor (params = {}) {\n    super(params)\n\n    this.lastTime = 0\n    this.accumulator = 0\n    this.maxFrameSkip = params.maxFrameSkip || 5\n    this.frameCount = 0\n    this.screenFrameCount = 0\n    this.lastFpsUpdate = 0\n\n    this.fps = params.fps ?? 60\n    this.frameInterval = 1000 / this.fps\n    this.#fpsLimited = params.fpsLimited ?? false\n}",
-      "kind": "constructor",
-      "params": [
-        "params = ..."
-      ]
-    },
-    "isDefault": true
-  },
-  "/render/canvas_2d.doc.js": {
-    "type": "class",
-    "file": "/render/canvas_2d.js",
-    "name": "Canvas2D",
-    "line": 11,
-    "extends": "BaseRenderer",
-    "statics": [
-      {
-        "name": "$name",
-        "line": 13,
-        "source": "static $name = 'canvas2D'",
-        "kind": "property",
-        "value": "'canvas2D'"
-      }
-    ],
-    "methods": [
-      {
-        "name": "registerRenderer",
-        "line": 50,
-        "source": "registerRenderer (renderer) {\n    renderer.init({ctx: this.ctx, canvas: this.canvas})\n\n    for (const ObjectClass of renderer.constructor.handles) {\n        this.#rendererRegistry.set(ObjectClass, renderer)\n    }\n\n    if (!this.#renderers.includes(renderer)) {\n        this.#renderers.push(renderer)\n    }\n\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "renderer"
-        ]
-      },
-      {
-        "name": "unregisterRenderer",
-        "line": 65,
-        "source": "unregisterRenderer (renderer) {\n    for (const ObjectClass of renderer.constructor.handles) {\n        if (this.#rendererRegistry.get(ObjectClass) === renderer) {\n            this.#rendererRegistry.delete(ObjectClass)\n        }\n    }\n\n    const index = this.#renderers.indexOf(renderer)\n    if (index !== -1) {\n        this.#renderers.splice(index, 1)\n    }\n\n    renderer.dispose()\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "renderer"
-        ]
-      },
-      {
-        "name": "onDispose",
-        "line": 82,
-        "source": "onDispose () {\n    for (const renderer of this.#renderers) {\n        renderer.dispose()\n    }\n    this.#renderers = []\n    this.#rendererRegistry.clear()\n\n    if (this.#debugGizmoRenderer) {\n        this.#debugGizmoRenderer.dispose()\n        this.#debugGizmoRenderer = null\n    }\n\n    super.onDispose()\n    this.ctx = null\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "render",
-        "line": 99,
-        "source": "render (scene) {\n    const ctx = this.ctx\n\n    this.stats.totalObjects = 0\n    this.stats.renderedObjects = 0\n    this.stats.culledObjects = 0\n\n    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)\n\n    if (this.backgroundColor && this.backgroundColor !== 'transparent') {\n        ctx.fillStyle = this.backgroundColor\n        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)\n    }\n\n    this.camera.update()\n\n    ctx.save()\n    this.camera.applyToContext(ctx, this.pixelRatio)\n\n    scene.updateWorldMatrix(false)\n\n    for (const renderer of this.#renderers) {\n        renderer.reset()\n    }\n\n    const debugGizmoRenderer = this.enableDebugGizmos ? this.#debugGizmoRenderer : null\n    if (debugGizmoRenderer) {\n        debugGizmoRenderer.reset()\n    }\n\n    traverseAndCollect(scene, this.#rendererRegistry, {\n        camera: this.camera,\n        enableCulling: this.enableCulling,\n        stats: this.stats,\n        debugGizmoRenderer\n    })\n\n    for (const renderer of this.#renderers) {\n        renderer.flush()\n    }\n\n    if (debugGizmoRenderer) {\n        debugGizmoRenderer.flush()\n    }\n\n    ctx.restore()\n}",
-        "kind": "method",
-        "params": [
-          "scene"
-        ]
-      }
-    ],
-    "getters": [],
-    "setters": [],
-    "constructor": {
-      "name": "constructor",
-      "line": 19,
-      "source": "constructor (options = {}) {\n    super(options)\n\n    this.ctx = this.canvas.getContext('2d')\n\n    this.#setupDefaultRenderers()\n    this.applyPixelRatio()\n\n    this.backgroundColor = options.backgroundColor ?? null\n    this.enableCulling = options.enableCulling ?? false\n    this.enableDebugGizmos = options.enableDebugGizmos ?? true\n\n    this.stats = {\n        totalObjects: 0,\n        renderedObjects: 0,\n        culledObjects: 0\n    }\n}",
-      "kind": "constructor",
-      "params": [
-        "options = ..."
-      ]
-    },
-    "isDefault": true
-  },
-  "/render/webgl_canvas_2d.doc.js": {
-    "type": "class",
-    "file": "/render/webgl_canvas_2d.js",
-    "name": "WebGLCanvas2D",
-    "line": 19,
-    "extends": "BaseRenderer",
-    "statics": [
-      {
-        "name": "$name",
-        "line": 21,
-        "source": "static $name = 'webGLCanvas2D'",
-        "kind": "property",
-        "value": "'webGLCanvas2D'"
-      }
-    ],
-    "methods": [
-      {
-        "name": "registerRenderer",
-        "line": 118,
-        "source": "registerRenderer (renderer) {\n    const context = {\n        gl: this.gl,\n        spriteProgram: this.spriteProgram,\n        primitiveProgram: this.primitiveProgram,\n        textureManager: this.textureManager,\n        shaderEffectRegistry: this.#shaderEffectRegistry\n    }\n\n    renderer.init(context)\n\n    for (const ObjectClass of renderer.constructor.handles) {\n        this.#rendererRegistry.set(ObjectClass, renderer)\n    }\n\n    if (!this.#renderers.includes(renderer)) {\n        this.#renderers.push(renderer)\n    }\n\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "renderer"
-        ]
-      },
-      {
-        "name": "unregisterRenderer",
-        "line": 141,
-        "source": "unregisterRenderer (renderer) {\n    for (const ObjectClass of renderer.constructor.handles) {\n        if (this.#rendererRegistry.get(ObjectClass) === renderer) {\n            this.#rendererRegistry.delete(ObjectClass)\n        }\n    }\n\n    const index = this.#renderers.indexOf(renderer)\n    if (index !== -1) {\n        this.#renderers.splice(index, 1)\n    }\n\n    renderer.dispose()\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "renderer"
-        ]
-      },
-      {
-        "name": "applyPixelRatio",
-        "line": 158,
-        "source": "applyPixelRatio () {\n    super.applyPixelRatio()\n\n    if (this.gl) {\n        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)\n    }\n\n    if (this.#postProcessor) {\n        this.#postProcessor.resize(this.canvas.width, this.canvas.height)\n    }\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "registerShaderEffect",
-        "line": 181,
-        "source": "registerShaderEffect (EffectClass) {\n    return this.#shaderEffectRegistry.register(EffectClass)\n}",
-        "kind": "method",
-        "params": [
-          "EffectClass"
-        ]
-      },
-      {
-        "name": "setUniform",
-        "line": 186,
-        "source": "setUniform (name, value, type = null) {\n    this.#shaderEffectRegistry.setUniform(name, value, type)\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "name",
-          "value",
-          "type = ..."
-        ]
-      },
-      {
-        "name": "getUniform",
-        "line": 192,
-        "source": "getUniform (name) {\n    return this.#shaderEffectRegistry.getUniform(name)\n}",
-        "kind": "method",
-        "params": [
-          "name"
-        ]
-      },
-      {
-        "name": "registerShader",
-        "line": 197,
-        "source": "registerShader (id, definition) {\n    return this.#shaderRegistry.register(id, definition)\n}",
-        "kind": "method",
-        "params": [
-          "id",
-          "definition"
-        ]
-      },
-      {
-        "name": "getShader",
-        "line": 202,
-        "source": "getShader (id) {\n    return this.#shaderRegistry.get(id)\n}",
-        "kind": "method",
-        "params": [
-          "id"
-        ]
-      },
-      {
-        "name": "addPostPass",
-        "line": 212,
-        "source": "addPostPass (pass) {\n    this.#postProcessor.addPass(pass)\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "pass"
-        ]
-      },
-      {
-        "name": "removePostPass",
-        "line": 218,
-        "source": "removePostPass (pass) {\n    this.#postProcessor.removePass(pass)\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "pass"
-        ]
-      },
-      {
-        "name": "setRenderGroups",
-        "line": 224,
-        "source": "setRenderGroups (configs) {\n    this.clearRenderGroups()\n\n    if (!this.#compositeProgram) {\n        this.#setupCompositeShader()\n    }\n    if (!this.#compositeQuad) {\n        this.#compositeQuad = new FullscreenQuad(this.gl)\n    }\n\n    for (const config of configs) {\n        this.create(RenderGroup, config)\n    }\n\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "configs"
-        ]
-      },
-      {
-        "name": "clearRenderGroups",
-        "line": 242,
-        "source": "clearRenderGroups () {\n    const groups = this.renderGroups\n    for (const group of groups) {\n        this.removeChild(group.$id)\n    }\n    return this\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "onDispose",
-        "line": 288,
-        "source": "onDispose () {\n    for (const renderer of this.#renderers) {\n        renderer.dispose()\n    }\n    this.#renderers = []\n    this.#rendererRegistry.clear()\n\n    if (this.#debugGizmoRenderer) {\n        this.#debugGizmoRenderer.dispose()\n        this.#debugGizmoRenderer = null\n    }\n\n    this.clearRenderGroups()\n\n    if (this.#compositeQuad) {\n        this.#compositeQuad.dispose(this.gl)\n        this.#compositeQuad = null\n    }\n\n    if (this.#postProcessor) {\n        this.#postProcessor.dispose()\n        this.#postProcessor = null\n    }\n\n    if (this.#shaderEffectRegistry) {\n        this.#shaderEffectRegistry.dispose()\n        this.#shaderEffectRegistry = null\n    }\n\n    if (this.#shaderRegistry) {\n        this.#shaderRegistry.dispose()\n        this.#shaderRegistry = null\n    }\n\n    super.onDispose()\n    this.gl = null\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "render",
-        "line": 348,
-        "source": "render (scene) {\n    if (this.renderGroups.length > 0 && !scene) {\n        return this.#renderWithGroups()\n    }\n    return this.#renderSingleScene(scene)\n}",
-        "kind": "method",
-        "params": [
-          "scene"
-        ]
-      }
-    ],
-    "getters": [
-      {
-        "name": "shaderRegistry",
-        "line": 171,
-        "source": "get shaderRegistry () {\n    return this.#shaderRegistry\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "shaderEffectRegistry",
-        "line": 176,
-        "source": "get shaderEffectRegistry () {\n    return this.#shaderEffectRegistry\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "postProcessor",
-        "line": 207,
-        "source": "get postProcessor () {\n    return this.#postProcessor\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "renderGroups",
-        "line": 251,
-        "source": "get renderGroups () {\n    return this.childrenByCategory('renderGroup')\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "setters": [],
-    "constructor": {
-      "name": "constructor",
-      "line": 33,
-      "source": "constructor (options = {}) {\n    const {autoFit, ...parentOptions} = options\n    super(parentOptions)\n\n    this.#setupWebGL()\n    this.#setupDefaultRenderers()\n    this.applyPixelRatio()\n\n    this.backgroundColor = options.backgroundColor ?? null\n    this.enableCulling = options.enableCulling ?? false\n    this.enableDebugGizmos = options.enableDebugGizmos ?? true\n\n    this.stats = {\n        totalObjects: 0,\n        renderedObjects: 0,\n        culledObjects: 0,\n        drawCalls: 0\n    }\n\n    if (autoFit) {\n        this.autoFitEnabled = true\n    }\n}",
-      "kind": "constructor",
-      "params": [
-        "options = ..."
-      ]
-    },
-    "isDefault": true
-  },
-  "/input/input_control.doc.js": {
-    "type": "class",
-    "file": "/input/input_control.js",
-    "name": "InputControl",
-    "line": 8,
-    "extends": "Notifier",
-    "statics": [
-      {
-        "name": "VALUE",
-        "line": 10,
-        "source": "static VALUE = VALUE",
-        "kind": "property",
-        "value": "VALUE"
-      },
-      {
-        "name": "OLD_VALUE",
-        "line": 11,
-        "source": "static OLD_VALUE = OLD_VALUE",
-        "kind": "property",
-        "value": "OLD_VALUE"
-      }
-    ],
-    "methods": [
-      {
-        "name": "setValue",
-        "line": 27,
-        "source": "setValue (value, event = null) {\n    if (value === this[VALUE]) {\n        return false\n    }\n\n    this[OLD_VALUE] = this[VALUE]\n    this[VALUE] = value\n\n    this.emit('updated', this[VALUE], this[OLD_VALUE], event)\n\n    return true\n}",
-        "kind": "method",
-        "params": [
-          "value",
-          "event = ..."
-        ]
-      },
-      {
-        "name": "getDefaultValue",
-        "line": 51,
-        "source": "getDefaultValue () { // eslint-disable-line local/class-methods-use-this -- clean\n    return 0\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "reset",
-        "line": 56,
-        "source": "reset () {\n    this.value = this.getDefaultValue()\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "getters": [
-      {
-        "name": "value",
-        "line": 41,
-        "source": "get value () {\n    return this[VALUE]\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "oldValue",
-        "line": 46,
-        "source": "get oldValue () {\n    return this[OLD_VALUE]\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "setters": [
-      {
-        "name": "value",
-        "line": 22,
-        "source": "set value (value) {\n    this.setValue(value)\n}",
-        "kind": "method",
-        "params": [
-          "value"
-        ]
-      }
-    ],
-    "constructor": {
-      "name": "constructor",
-      "line": 13,
-      "source": "constructor ({device, name, value}) {\n    super()\n    this.device     = device\n    this.name       = name\n    this[OLD_VALUE] = null\n    this[VALUE]     = value ?? this.getDefaultValue()\n}",
-      "kind": "constructor",
-      "params": [
-        "{...}"
-      ]
-    },
-    "isDefault": true
-  },
-  "/input/input_controls/vec2_control.doc.js": {
-    "type": "class",
-    "file": "/input/input_controls/vec2_control.js",
-    "name": "Vec2Control",
-    "line": 7,
-    "extends": "InputControl",
-    "statics": [],
-    "methods": [
-      {
-        "name": "getDefaultValue",
-        "line": 9,
-        "source": "getDefaultValue () { // eslint-disable-line local/class-methods-use-this -- clean\n    return new Vec2()\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "setValue",
-        "line": 14,
-        "source": "setValue (value, event = null) {\n    if (!(value instanceof Vec2)) {\n        value = new Vec2(value)\n    }\n\n    if (this[VALUE] && this[VALUE].equals(value)) {\n        return false\n    }\n\n    this[OLD_VALUE] = this[VALUE]\n    this[VALUE] = new Vec2(value)\n\n    this.emit('updated', this[VALUE], this[OLD_VALUE], event)\n\n    return true\n}",
-        "kind": "method",
-        "params": [
-          "value",
-          "event = ..."
-        ]
-      }
-    ],
-    "getters": [],
-    "setters": [],
-    "constructor": null,
-    "isDefault": true
-  },
-  "/input/input_devices/keyboard_device.doc.js": {
-    "type": "class",
-    "file": "/input/input_devices/keyboard_device.js",
-    "name": "KeyboardDevice",
-    "line": 5,
-    "extends": "InputDevice",
-    "statics": [
-      {
-        "name": "$name",
-        "line": 7,
-        "source": "static $name = 'keyboard'",
-        "kind": "property",
-        "value": "'keyboard'"
-      }
-    ],
-    "methods": [
-      {
-        "name": "onStart",
-        "line": 24,
-        "source": "onStart () {\n    this.container.addEventListener('keydown', this.#keydownListener, true)\n    this.container.addEventListener('keyup', this.#keyupListener, true)\n    this.container.addEventListener('blur', this.#blurListener)\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "onStop",
-        "line": 31,
-        "source": "onStop () {\n    this.container.removeEventListener('keydown', this.#keydownListener, true)\n    this.container.removeEventListener('keyup', this.#keyupListener, true)\n    this.container.removeEventListener('blur', this.#blurListener)\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "getters": [],
-    "setters": [],
-    "constructor": {
-      "name": "constructor",
-      "line": 13,
-      "source": "constructor (params = {}) {\n    super(params)\n\n    this.shouldPreventDefault = params.shouldPreventDefault\n\n    this.#keydownListener = this.#handleKeydown.bind(this)\n    this.#keyupListener = this.#handleKeyup.bind(this)\n    this.#blurListener = this.#handleBlur.bind(this)\n}",
-      "kind": "constructor",
-      "params": [
-        "params = ..."
-      ]
-    },
-    "isDefault": true
-  },
-  "/input/input_devices/mouse_device.doc.js": {
-    "type": "class",
-    "file": "/input/input_devices/mouse_device.js",
-    "name": "MouseDevice",
-    "line": 7,
-    "extends": "InputDevice",
-    "statics": [
-      {
-        "name": "$name",
-        "line": 9,
-        "source": "static $name = 'mouse'",
-        "kind": "property",
-        "value": "'mouse'"
-      }
-    ],
-    "methods": [
-      {
-        "name": "onStart",
-        "line": 32,
-        "source": "onStart () {\n    this.container.addEventListener('mousedown', this.#mousedownListener)\n    this.container.addEventListener('mouseup', this.#mouseupListener)\n    this.container.addEventListener('mousemove', this.#mousemoveListener)\n    this.container.addEventListener('contextmenu', this.#contextmenuListener)\n    this.container.addEventListener('wheel', this.#wheelListener, {passive: false})\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "onStop",
-        "line": 41,
-        "source": "onStop () {\n    this.container.removeEventListener('mousedown', this.#mousedownListener)\n    this.container.removeEventListener('mouseup', this.#mouseupListener)\n    this.container.removeEventListener('mousemove', this.#mousemoveListener)\n    this.container.removeEventListener('contextmenu', this.#contextmenuListener)\n    this.container.removeEventListener('wheel', this.#wheelListener, {passive: false})\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "getters": [],
-    "setters": [],
-    "constructor": {
-      "name": "constructor",
-      "line": 17,
-      "source": "constructor (params = {}) {\n    super(params)\n\n    this.shouldPreventDefault = params.shouldPreventDefault\n\n    this.#createControls()\n\n    this.#mousedownListener = this.#handleMousedown.bind(this)\n    this.#mouseupListener = this.#handleMouseup.bind(this)\n    this.#mousemoveListener = this.#handleMousemove.bind(this)\n    this.#contextmenuListener = this.#handleContextmenu.bind(this)\n    this.#wheelListener = this.#handleWheel.bind(this)\n}",
       "kind": "constructor",
       "params": [
         "params = ..."
@@ -3376,6 +2925,783 @@
     },
     "isDefault": true
   },
+  "/render/canvas_2d.doc.js": {
+    "type": "class",
+    "file": "/render/canvas_2d.js",
+    "name": "Canvas2D",
+    "line": 11,
+    "extends": "BaseRenderer",
+    "statics": [
+      {
+        "name": "$name",
+        "line": 13,
+        "source": "static $name = 'canvas2D'",
+        "kind": "property",
+        "value": "'canvas2D'"
+      }
+    ],
+    "methods": [
+      {
+        "name": "registerRenderer",
+        "line": 50,
+        "source": "registerRenderer (renderer) {\n    renderer.init({ctx: this.ctx, canvas: this.canvas})\n\n    for (const ObjectClass of renderer.constructor.handles) {\n        this.#rendererRegistry.set(ObjectClass, renderer)\n    }\n\n    if (!this.#renderers.includes(renderer)) {\n        this.#renderers.push(renderer)\n    }\n\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "renderer"
+        ]
+      },
+      {
+        "name": "unregisterRenderer",
+        "line": 65,
+        "source": "unregisterRenderer (renderer) {\n    for (const ObjectClass of renderer.constructor.handles) {\n        if (this.#rendererRegistry.get(ObjectClass) === renderer) {\n            this.#rendererRegistry.delete(ObjectClass)\n        }\n    }\n\n    const index = this.#renderers.indexOf(renderer)\n    if (index !== -1) {\n        this.#renderers.splice(index, 1)\n    }\n\n    renderer.dispose()\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "renderer"
+        ]
+      },
+      {
+        "name": "onDispose",
+        "line": 82,
+        "source": "onDispose () {\n    for (const renderer of this.#renderers) {\n        renderer.dispose()\n    }\n    this.#renderers = []\n    this.#rendererRegistry.clear()\n\n    if (this.#debugGizmoRenderer) {\n        this.#debugGizmoRenderer.dispose()\n        this.#debugGizmoRenderer = null\n    }\n\n    super.onDispose()\n    this.ctx = null\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "render",
+        "line": 99,
+        "source": "render (scene) {\n    const ctx = this.ctx\n\n    this.stats.totalObjects = 0\n    this.stats.renderedObjects = 0\n    this.stats.culledObjects = 0\n\n    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)\n\n    if (this.backgroundColor && this.backgroundColor !== 'transparent') {\n        ctx.fillStyle = this.backgroundColor\n        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)\n    }\n\n    this.camera.update()\n\n    ctx.save()\n    this.camera.applyToContext(ctx, this.pixelRatio)\n\n    scene.updateWorldMatrix(false)\n\n    for (const renderer of this.#renderers) {\n        renderer.reset()\n    }\n\n    const debugGizmoRenderer = this.enableDebugGizmos ? this.#debugGizmoRenderer : null\n    if (debugGizmoRenderer) {\n        debugGizmoRenderer.reset()\n    }\n\n    traverseAndCollect(scene, this.#rendererRegistry, {\n        camera: this.camera,\n        enableCulling: this.enableCulling,\n        stats: this.stats,\n        debugGizmoRenderer\n    })\n\n    for (const renderer of this.#renderers) {\n        renderer.flush()\n    }\n\n    if (debugGizmoRenderer) {\n        debugGizmoRenderer.flush()\n    }\n\n    ctx.restore()\n}",
+        "kind": "method",
+        "params": [
+          "scene"
+        ]
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 19,
+      "source": "constructor (options = {}) {\n    super(options)\n\n    this.ctx = this.canvas.getContext('2d')\n\n    this.#setupDefaultRenderers()\n    this.applyPixelRatio()\n\n    this.backgroundColor = options.backgroundColor ?? null\n    this.enableCulling = options.enableCulling ?? false\n    this.enableDebugGizmos = options.enableDebugGizmos ?? true\n\n    this.stats = {\n        totalObjects: 0,\n        renderedObjects: 0,\n        culledObjects: 0\n    }\n}",
+      "kind": "constructor",
+      "params": [
+        "options = ..."
+      ]
+    },
+    "isDefault": true
+  },
+  "/render/webgl_canvas_2d.doc.js": {
+    "type": "class",
+    "file": "/render/webgl_canvas_2d.js",
+    "name": "WebGLCanvas2D",
+    "line": 19,
+    "extends": "BaseRenderer",
+    "statics": [
+      {
+        "name": "$name",
+        "line": 21,
+        "source": "static $name = 'webGLCanvas2D'",
+        "kind": "property",
+        "value": "'webGLCanvas2D'"
+      }
+    ],
+    "methods": [
+      {
+        "name": "registerRenderer",
+        "line": 118,
+        "source": "registerRenderer (renderer) {\n    const context = {\n        gl: this.gl,\n        spriteProgram: this.spriteProgram,\n        primitiveProgram: this.primitiveProgram,\n        textureManager: this.textureManager,\n        shaderEffectRegistry: this.#shaderEffectRegistry\n    }\n\n    renderer.init(context)\n\n    for (const ObjectClass of renderer.constructor.handles) {\n        this.#rendererRegistry.set(ObjectClass, renderer)\n    }\n\n    if (!this.#renderers.includes(renderer)) {\n        this.#renderers.push(renderer)\n    }\n\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "renderer"
+        ]
+      },
+      {
+        "name": "unregisterRenderer",
+        "line": 141,
+        "source": "unregisterRenderer (renderer) {\n    for (const ObjectClass of renderer.constructor.handles) {\n        if (this.#rendererRegistry.get(ObjectClass) === renderer) {\n            this.#rendererRegistry.delete(ObjectClass)\n        }\n    }\n\n    const index = this.#renderers.indexOf(renderer)\n    if (index !== -1) {\n        this.#renderers.splice(index, 1)\n    }\n\n    renderer.dispose()\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "renderer"
+        ]
+      },
+      {
+        "name": "applyPixelRatio",
+        "line": 158,
+        "source": "applyPixelRatio () {\n    super.applyPixelRatio()\n\n    if (this.gl) {\n        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)\n    }\n\n    if (this.#postProcessor) {\n        this.#postProcessor.resize(this.canvas.width, this.canvas.height)\n    }\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "registerShaderEffect",
+        "line": 181,
+        "source": "registerShaderEffect (EffectClass) {\n    return this.#shaderEffectRegistry.register(EffectClass)\n}",
+        "kind": "method",
+        "params": [
+          "EffectClass"
+        ]
+      },
+      {
+        "name": "setUniform",
+        "line": 186,
+        "source": "setUniform (name, value, type = null) {\n    this.#shaderEffectRegistry.setUniform(name, value, type)\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "name",
+          "value",
+          "type = ..."
+        ]
+      },
+      {
+        "name": "getUniform",
+        "line": 192,
+        "source": "getUniform (name) {\n    return this.#shaderEffectRegistry.getUniform(name)\n}",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "registerShader",
+        "line": 197,
+        "source": "registerShader (id, definition) {\n    return this.#shaderRegistry.register(id, definition)\n}",
+        "kind": "method",
+        "params": [
+          "id",
+          "definition"
+        ]
+      },
+      {
+        "name": "getShader",
+        "line": 202,
+        "source": "getShader (id) {\n    return this.#shaderRegistry.get(id)\n}",
+        "kind": "method",
+        "params": [
+          "id"
+        ]
+      },
+      {
+        "name": "addPostPass",
+        "line": 212,
+        "source": "addPostPass (pass) {\n    this.#postProcessor.addPass(pass)\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "pass"
+        ]
+      },
+      {
+        "name": "removePostPass",
+        "line": 218,
+        "source": "removePostPass (pass) {\n    this.#postProcessor.removePass(pass)\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "pass"
+        ]
+      },
+      {
+        "name": "setRenderGroups",
+        "line": 224,
+        "source": "setRenderGroups (configs) {\n    this.clearRenderGroups()\n\n    if (!this.#compositeProgram) {\n        this.#setupCompositeShader()\n    }\n    if (!this.#compositeQuad) {\n        this.#compositeQuad = new FullscreenQuad(this.gl)\n    }\n\n    for (const config of configs) {\n        this.create(RenderGroup, config)\n    }\n\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "configs"
+        ]
+      },
+      {
+        "name": "clearRenderGroups",
+        "line": 242,
+        "source": "clearRenderGroups () {\n    const groups = this.renderGroups\n    for (const group of groups) {\n        this.removeChild(group.$id)\n    }\n    return this\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onDispose",
+        "line": 288,
+        "source": "onDispose () {\n    for (const renderer of this.#renderers) {\n        renderer.dispose()\n    }\n    this.#renderers = []\n    this.#rendererRegistry.clear()\n\n    if (this.#debugGizmoRenderer) {\n        this.#debugGizmoRenderer.dispose()\n        this.#debugGizmoRenderer = null\n    }\n\n    this.clearRenderGroups()\n\n    if (this.#compositeQuad) {\n        this.#compositeQuad.dispose(this.gl)\n        this.#compositeQuad = null\n    }\n\n    if (this.#postProcessor) {\n        this.#postProcessor.dispose()\n        this.#postProcessor = null\n    }\n\n    if (this.#shaderEffectRegistry) {\n        this.#shaderEffectRegistry.dispose()\n        this.#shaderEffectRegistry = null\n    }\n\n    if (this.#shaderRegistry) {\n        this.#shaderRegistry.dispose()\n        this.#shaderRegistry = null\n    }\n\n    super.onDispose()\n    this.gl = null\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "render",
+        "line": 348,
+        "source": "render (scene) {\n    if (this.renderGroups.length > 0 && !scene) {\n        return this.#renderWithGroups()\n    }\n    return this.#renderSingleScene(scene)\n}",
+        "kind": "method",
+        "params": [
+          "scene"
+        ]
+      }
+    ],
+    "getters": [
+      {
+        "name": "shaderRegistry",
+        "line": 171,
+        "source": "get shaderRegistry () {\n    return this.#shaderRegistry\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "shaderEffectRegistry",
+        "line": 176,
+        "source": "get shaderEffectRegistry () {\n    return this.#shaderEffectRegistry\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "postProcessor",
+        "line": 207,
+        "source": "get postProcessor () {\n    return this.#postProcessor\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "renderGroups",
+        "line": 251,
+        "source": "get renderGroups () {\n    return this.childrenByCategory('renderGroup')\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 33,
+      "source": "constructor (options = {}) {\n    const {autoFit, ...parentOptions} = options\n    super(parentOptions)\n\n    this.#setupWebGL()\n    this.#setupDefaultRenderers()\n    this.applyPixelRatio()\n\n    this.backgroundColor = options.backgroundColor ?? null\n    this.enableCulling = options.enableCulling ?? false\n    this.enableDebugGizmos = options.enableDebugGizmos ?? true\n\n    this.stats = {\n        totalObjects: 0,\n        renderedObjects: 0,\n        culledObjects: 0,\n        drawCalls: 0\n    }\n\n    if (autoFit) {\n        this.autoFitEnabled = true\n    }\n}",
+      "kind": "constructor",
+      "params": [
+        "options = ..."
+      ]
+    },
+    "isDefault": true
+  },
+  "/input/input_control.doc.js": {
+    "type": "class",
+    "file": "/input/input_control.js",
+    "name": "InputControl",
+    "line": 8,
+    "extends": "Notifier",
+    "statics": [
+      {
+        "name": "VALUE",
+        "line": 10,
+        "source": "static VALUE = VALUE",
+        "kind": "property",
+        "value": "VALUE"
+      },
+      {
+        "name": "OLD_VALUE",
+        "line": 11,
+        "source": "static OLD_VALUE = OLD_VALUE",
+        "kind": "property",
+        "value": "OLD_VALUE"
+      }
+    ],
+    "methods": [
+      {
+        "name": "setValue",
+        "line": 27,
+        "source": "setValue (value, event = null) {\n    if (value === this[VALUE]) {\n        return false\n    }\n\n    this[OLD_VALUE] = this[VALUE]\n    this[VALUE] = value\n\n    this.emit('updated', this[VALUE], this[OLD_VALUE], event)\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "value",
+          "event = ..."
+        ]
+      },
+      {
+        "name": "getDefaultValue",
+        "line": 51,
+        "source": "getDefaultValue () { // eslint-disable-line local/class-methods-use-this -- clean\n    return 0\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "reset",
+        "line": 56,
+        "source": "reset () {\n    this.value = this.getDefaultValue()\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [
+      {
+        "name": "value",
+        "line": 41,
+        "source": "get value () {\n    return this[VALUE]\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "oldValue",
+        "line": 46,
+        "source": "get oldValue () {\n    return this[OLD_VALUE]\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "value",
+        "line": 22,
+        "source": "set value (value) {\n    this.setValue(value)\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      }
+    ],
+    "constructor": {
+      "name": "constructor",
+      "line": 13,
+      "source": "constructor ({device, name, value}) {\n    super()\n    this.device     = device\n    this.name       = name\n    this[OLD_VALUE] = null\n    this[VALUE]     = value ?? this.getDefaultValue()\n}",
+      "kind": "constructor",
+      "params": [
+        "{...}"
+      ]
+    },
+    "isDefault": true
+  },
+  "/input/input_controls/vec2_control.doc.js": {
+    "type": "class",
+    "file": "/input/input_controls/vec2_control.js",
+    "name": "Vec2Control",
+    "line": 7,
+    "extends": "InputControl",
+    "statics": [],
+    "methods": [
+      {
+        "name": "getDefaultValue",
+        "line": 9,
+        "source": "getDefaultValue () { // eslint-disable-line local/class-methods-use-this -- clean\n    return new Vec2()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "setValue",
+        "line": 14,
+        "source": "setValue (value, event = null) {\n    if (!(value instanceof Vec2)) {\n        value = new Vec2(value)\n    }\n\n    if (this[VALUE] && this[VALUE].equals(value)) {\n        return false\n    }\n\n    this[OLD_VALUE] = this[VALUE]\n    this[VALUE] = new Vec2(value)\n\n    this.emit('updated', this[VALUE], this[OLD_VALUE], event)\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "value",
+          "event = ..."
+        ]
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": null,
+    "isDefault": true
+  },
+  "/input/input_devices/keyboard_device.doc.js": {
+    "type": "class",
+    "file": "/input/input_devices/keyboard_device.js",
+    "name": "KeyboardDevice",
+    "line": 5,
+    "extends": "InputDevice",
+    "statics": [
+      {
+        "name": "$name",
+        "line": 7,
+        "source": "static $name = 'keyboard'",
+        "kind": "property",
+        "value": "'keyboard'"
+      }
+    ],
+    "methods": [
+      {
+        "name": "onStart",
+        "line": 24,
+        "source": "onStart () {\n    this.container.addEventListener('keydown', this.#keydownListener, true)\n    this.container.addEventListener('keyup', this.#keyupListener, true)\n    this.container.addEventListener('blur', this.#blurListener)\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onStop",
+        "line": 31,
+        "source": "onStop () {\n    this.container.removeEventListener('keydown', this.#keydownListener, true)\n    this.container.removeEventListener('keyup', this.#keyupListener, true)\n    this.container.removeEventListener('blur', this.#blurListener)\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 13,
+      "source": "constructor (params = {}) {\n    super(params)\n\n    this.shouldPreventDefault = params.shouldPreventDefault\n\n    this.#keydownListener = this.#handleKeydown.bind(this)\n    this.#keyupListener = this.#handleKeyup.bind(this)\n    this.#blurListener = this.#handleBlur.bind(this)\n}",
+      "kind": "constructor",
+      "params": [
+        "params = ..."
+      ]
+    },
+    "isDefault": true
+  },
+  "/input/input_devices/mouse_device.doc.js": {
+    "type": "class",
+    "file": "/input/input_devices/mouse_device.js",
+    "name": "MouseDevice",
+    "line": 7,
+    "extends": "InputDevice",
+    "statics": [
+      {
+        "name": "$name",
+        "line": 9,
+        "source": "static $name = 'mouse'",
+        "kind": "property",
+        "value": "'mouse'"
+      }
+    ],
+    "methods": [
+      {
+        "name": "onStart",
+        "line": 32,
+        "source": "onStart () {\n    this.container.addEventListener('mousedown', this.#mousedownListener)\n    this.container.addEventListener('mouseup', this.#mouseupListener)\n    this.container.addEventListener('mousemove', this.#mousemoveListener)\n    this.container.addEventListener('contextmenu', this.#contextmenuListener)\n    this.container.addEventListener('wheel', this.#wheelListener, {passive: false})\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onStop",
+        "line": 41,
+        "source": "onStop () {\n    this.container.removeEventListener('mousedown', this.#mousedownListener)\n    this.container.removeEventListener('mouseup', this.#mouseupListener)\n    this.container.removeEventListener('mousemove', this.#mousemoveListener)\n    this.container.removeEventListener('contextmenu', this.#contextmenuListener)\n    this.container.removeEventListener('wheel', this.#wheelListener, {passive: false})\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": {
+      "name": "constructor",
+      "line": 17,
+      "source": "constructor (params = {}) {\n    super(params)\n\n    this.shouldPreventDefault = params.shouldPreventDefault\n\n    this.#createControls()\n\n    this.#mousedownListener = this.#handleMousedown.bind(this)\n    this.#mouseupListener = this.#handleMouseup.bind(this)\n    this.#mousemoveListener = this.#handleMousemove.bind(this)\n    this.#contextmenuListener = this.#handleContextmenu.bind(this)\n    this.#wheelListener = this.#handleWheel.bind(this)\n}",
+      "kind": "constructor",
+      "params": [
+        "params = ..."
+      ]
+    },
+    "isDefault": true
+  },
+  "/audio/audio_system.doc.js": {
+    "type": "class",
+    "file": "/audio/audio_system.js",
+    "name": "AudioSystem",
+    "line": 9,
+    "extends": "PerkyModule",
+    "statics": [
+      {
+        "name": "$category",
+        "line": 11,
+        "source": "static $category = 'audioSystem'",
+        "kind": "property",
+        "value": "'audioSystem'"
+      }
+    ],
+    "methods": [
+      {
+        "name": "onInstall",
+        "line": 56,
+        "source": "onInstall (host) {\n    this.delegateTo(host, [\n        'play',\n        'playAt',\n        'playOscillator',\n        'playOscillatorAt',\n        'stop',\n        'stopChannel',\n        'stopAll',\n        'setVolume',\n        'getVolume',\n        'setChannelVolume',\n        'getChannelVolume',\n        'muteChannel',\n        'unmuteChannel',\n        'getChannel',\n        'hasChannel',\n        'unlock',\n        'setListenerPosition',\n        'getListenerPosition'\n    ])\n\n    this.delegateEventsTo(host, [\n        'audio:play',\n        'audio:stop',\n        'audio:unlocked'\n    ], 'audio')\n\n    if (host.sourceManager) {\n        this.listenTo(host.sourceManager, 'loader:progress', (_progress, {asset, source}) => {\n            if (asset.type === 'audio' && source?.type === 'deferred_audio') {\n                this.#pendingAudio.set(asset.id, source.url)\n            }\n        })\n    }\n\n    this.#applyConfig()\n}",
+        "kind": "method",
+        "params": [
+          "host"
+        ]
+      },
+      {
+        "name": "onStart",
+        "line": 96,
+        "source": "onStart () {\n    onAudioUnlock(() => this.unlock())\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onStop",
+        "line": 101,
+        "source": "onStop () {\n    if (this.#unlocked) {\n        this.#audioContext.suspend()\n    }\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onDispose",
+        "line": 108,
+        "source": "onDispose () {\n    this.stopAll()\n    this.#buffers.clear()\n    this.#audioContext.dispose()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "unlock",
+        "line": 115,
+        "source": "async unlock () {\n    if (this.#unlocked) {\n        return true\n    }\n\n    try {\n        await this.#audioContext.resume()\n        this.#unlocked = true\n        await this.#loadPendingAudio()\n        this.emit('audio:unlocked')\n        return true\n    } catch {\n        return false\n    }\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "createChannel",
+        "line": 144,
+        "source": "createChannel (name, options = {}) {\n    return this.create(AudioChannel, {\n        $id: name,\n        $bind: name,\n        audioContext: this.#audioContext,\n        ...options\n    })\n}",
+        "kind": "method",
+        "params": [
+          "name",
+          "options = ..."
+        ]
+      },
+      {
+        "name": "getChannel",
+        "line": 154,
+        "source": "getChannel (name) {\n    return this.getChild(name)\n}",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "hasChannel",
+        "line": 159,
+        "source": "hasChannel (name) {\n    return this.hasChild(name)\n}",
+        "kind": "method",
+        "params": [
+          "name"
+        ]
+      },
+      {
+        "name": "listChannels",
+        "line": 164,
+        "source": "listChannels () {\n    return this.listNamesFor('audioChannel')\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "registerBuffer",
+        "line": 169,
+        "source": "registerBuffer (id, buffer) {\n    this.#buffers.set(id, buffer)\n    this.emit('buffer:registered', id, buffer)\n}",
+        "kind": "method",
+        "params": [
+          "id",
+          "buffer"
+        ]
+      },
+      {
+        "name": "registerArrayBuffer",
+        "line": 175,
+        "source": "async registerArrayBuffer (id, arrayBuffer) {\n    try {\n        const audioBuffer = await this.#audioContext.decodeAudioData(arrayBuffer)\n        this.registerBuffer(id, audioBuffer)\n        return audioBuffer\n    } catch (e) {\n        this.emit('buffer:error', id, e)\n        return null\n    }\n}",
+        "kind": "method",
+        "params": [
+          "id",
+          "arrayBuffer"
+        ]
+      },
+      {
+        "name": "getBuffer",
+        "line": 187,
+        "source": "getBuffer (id) {\n    return this.#buffers.get(id) || null\n}",
+        "kind": "method",
+        "params": [
+          "id"
+        ]
+      },
+      {
+        "name": "hasBuffer",
+        "line": 192,
+        "source": "hasBuffer (id) {\n    return this.#buffers.has(id)\n}",
+        "kind": "method",
+        "params": [
+          "id"
+        ]
+      },
+      {
+        "name": "loadBuffer",
+        "line": 197,
+        "source": "async loadBuffer (id, url) {\n    try {\n        const response = await fetch(url)\n        const arrayBuffer = await response.arrayBuffer()\n        return this.registerArrayBuffer(id, arrayBuffer)\n    } catch (e) {\n        this.emit('buffer:error', id, e)\n        return null\n    }\n}",
+        "kind": "method",
+        "params": [
+          "id",
+          "url"
+        ]
+      },
+      {
+        "name": "play",
+        "line": 209,
+        "source": "play (bufferId, options = {}) {\n    if (!this.#unlocked) {\n        return null\n    }\n\n    const buffer = this.#buffers.get(bufferId)\n\n    if (!buffer) {\n        return null\n    }\n\n    const channelName = options.channel ?? 'sfx'\n    const channel = this.getChannel(channelName)\n\n    const sourceId = options.$id ?? uniqueId(this.childrenRegistry, bufferId)\n\n    const source = new AudioSource({\n        $id: sourceId,\n        audioContext: this.#audioContext,\n        channel,\n        loop: options.loop ?? false,\n        volume: options.volume ?? 1,\n        playbackRate: options.playbackRate ?? 1\n    })\n\n    source.playBuffer(buffer, options.offset ?? 0)\n\n    this.emit('audio:play', sourceId, bufferId, options)\n\n    return source\n}",
+        "kind": "method",
+        "params": [
+          "bufferId",
+          "options = ..."
+        ]
+      },
+      {
+        "name": "playAt",
+        "line": 242,
+        "source": "playAt (bufferId, x, y, options = {}) {\n    return this.play(bufferId, {\n        ...options,\n        spatial: true,\n        x,\n        y\n    })\n}",
+        "kind": "method",
+        "params": [
+          "bufferId",
+          "x",
+          "y",
+          "options = ..."
+        ]
+      },
+      {
+        "name": "playOscillator",
+        "line": 252,
+        "source": "playOscillator (options = {}) {\n    if (!this.#unlocked) {\n        return null\n    }\n\n    const channel = this.getChannel(options.channel ?? 'sfx')\n    const sourceId = options.$id ?? uniqueId(this.childrenRegistry, 'oscillator')\n\n    const source = new AudioSource({\n        ...options,\n        $id: sourceId,\n        audioContext: this.#audioContext,\n        channel\n    })\n\n    source.playOscillator(options.type, options.frequency, options.duration)\n    this.emit('audio:play', sourceId, 'oscillator', options)\n\n    return source\n}",
+        "kind": "method",
+        "params": [
+          "options = ..."
+        ]
+      },
+      {
+        "name": "playOscillatorAt",
+        "line": 274,
+        "source": "playOscillatorAt (x, y, options = {}) {\n    return this.playOscillator({\n        ...options,\n        spatial: true,\n        x,\n        y\n    })\n}",
+        "kind": "method",
+        "params": [
+          "x",
+          "y",
+          "options = ..."
+        ]
+      },
+      {
+        "name": "stop",
+        "line": 284,
+        "source": "stop (sourceId) {\n    for (const channelName of this.listChannels()) {\n        const channel = this.getChannel(channelName)\n        const source = channel?.getSource(sourceId)\n        if (source) {\n            source.stop()\n            this.emit('audio:stop', sourceId)\n            return true\n        }\n    }\n    return false\n}",
+        "kind": "method",
+        "params": [
+          "sourceId"
+        ]
+      },
+      {
+        "name": "stopChannel",
+        "line": 298,
+        "source": "stopChannel (channelName) {\n    const channel = this.getChannel(channelName)\n    if (channel) {\n        channel.stopAll()\n        return true\n    }\n    return false\n}",
+        "kind": "method",
+        "params": [
+          "channelName"
+        ]
+      },
+      {
+        "name": "stopAll",
+        "line": 308,
+        "source": "stopAll () {\n    for (const channelName of this.listChannels()) {\n        this.stopChannel(channelName)\n    }\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "setVolume",
+        "line": 315,
+        "source": "setVolume (value) {\n    this.masterVolume = value\n    this.emit('volume:changed', value)\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "getVolume",
+        "line": 322,
+        "source": "getVolume () {\n    return this.masterVolume\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "setChannelVolume",
+        "line": 327,
+        "source": "setChannelVolume (channelName, value) {\n    const channel = this.getChannel(channelName)\n    if (channel) {\n        channel.setVolume(value)\n    }\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "channelName",
+          "value"
+        ]
+      },
+      {
+        "name": "getChannelVolume",
+        "line": 336,
+        "source": "getChannelVolume (channelName) {\n    const channel = this.getChannel(channelName)\n    return channel ? channel.getVolume() : 0\n}",
+        "kind": "method",
+        "params": [
+          "channelName"
+        ]
+      },
+      {
+        "name": "muteChannel",
+        "line": 342,
+        "source": "muteChannel (channelName) {\n    const channel = this.getChannel(channelName)\n    if (channel) {\n        channel.mute()\n    }\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "channelName"
+        ]
+      },
+      {
+        "name": "unmuteChannel",
+        "line": 351,
+        "source": "unmuteChannel (channelName) {\n    const channel = this.getChannel(channelName)\n    if (channel) {\n        channel.unmute()\n    }\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "channelName"
+        ]
+      },
+      {
+        "name": "setListenerPosition",
+        "line": 360,
+        "source": "setListenerPosition (x, y) {\n    this.#audioContext.setListenerPosition(x, y, 0)\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "x",
+          "y"
+        ]
+      },
+      {
+        "name": "getListenerPosition",
+        "line": 366,
+        "source": "getListenerPosition () {\n    const pos = this.#audioContext.getListenerPosition()\n    return {x: pos.x, y: pos.y}\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [
+      {
+        "name": "audioContext",
+        "line": 31,
+        "source": "get audioContext () {\n    return this.#audioContext\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "unlocked",
+        "line": 36,
+        "source": "get unlocked () {\n    return this.#unlocked\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "currentTime",
+        "line": 41,
+        "source": "get currentTime () {\n    return this.#audioContext.currentTime\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "masterVolume",
+        "line": 46,
+        "source": "get masterVolume () {\n    return this.#audioContext.getMasterVolume()\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "masterVolume",
+        "line": 51,
+        "source": "set masterVolume (value) {\n    this.#audioContext.setMasterVolume(value)\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      }
+    ],
+    "constructor": {
+      "name": "constructor",
+      "line": 18,
+      "source": "constructor (options = {}) {\n    super(options)\n\n    this.#audioContext = new AudioContext()\n\n    const defaultChannels = options.channels ?? ['music', 'sfx', 'ambiance']\n\n    for (const channelName of defaultChannels) {\n        this.createChannel(channelName)\n    }\n}",
+      "kind": "constructor",
+      "params": [
+        "options = ..."
+      ]
+    },
+    "isDefault": true
+  },
   "/editor/perky_explorer.doc.js": {
     "type": "class",
     "file": "/editor/perky_explorer.js",
@@ -3934,332 +4260,6 @@
     ],
     "exports": []
   },
-  "/audio/audio_system.doc.js": {
-    "type": "class",
-    "file": "/audio/audio_system.js",
-    "name": "AudioSystem",
-    "line": 9,
-    "extends": "PerkyModule",
-    "statics": [
-      {
-        "name": "$category",
-        "line": 11,
-        "source": "static $category = 'audioSystem'",
-        "kind": "property",
-        "value": "'audioSystem'"
-      }
-    ],
-    "methods": [
-      {
-        "name": "onInstall",
-        "line": 56,
-        "source": "onInstall (host) {\n    this.delegateTo(host, [\n        'play',\n        'playAt',\n        'playOscillator',\n        'playOscillatorAt',\n        'stop',\n        'stopChannel',\n        'stopAll',\n        'setVolume',\n        'getVolume',\n        'setChannelVolume',\n        'getChannelVolume',\n        'muteChannel',\n        'unmuteChannel',\n        'getChannel',\n        'hasChannel',\n        'unlock',\n        'setListenerPosition',\n        'getListenerPosition'\n    ])\n\n    this.delegateEventsTo(host, [\n        'audio:play',\n        'audio:stop',\n        'audio:unlocked'\n    ], 'audio')\n\n    if (host.sourceManager) {\n        this.listenTo(host.sourceManager, 'loader:progress', (_progress, {asset, source}) => {\n            if (asset.type === 'audio' && source?.type === 'deferred_audio') {\n                this.#pendingAudio.set(asset.id, source.url)\n            }\n        })\n    }\n\n    this.#applyConfig()\n}",
-        "kind": "method",
-        "params": [
-          "host"
-        ]
-      },
-      {
-        "name": "onStart",
-        "line": 96,
-        "source": "onStart () {\n    onAudioUnlock(() => this.unlock())\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "onStop",
-        "line": 101,
-        "source": "onStop () {\n    if (this.#unlocked) {\n        this.#audioContext.suspend()\n    }\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "onDispose",
-        "line": 108,
-        "source": "onDispose () {\n    this.stopAll()\n    this.#buffers.clear()\n    this.#audioContext.dispose()\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "unlock",
-        "line": 115,
-        "source": "async unlock () {\n    if (this.#unlocked) {\n        return true\n    }\n\n    try {\n        await this.#audioContext.resume()\n        this.#unlocked = true\n        await this.#loadPendingAudio()\n        this.emit('audio:unlocked')\n        return true\n    } catch {\n        return false\n    }\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "createChannel",
-        "line": 144,
-        "source": "createChannel (name, options = {}) {\n    return this.create(AudioChannel, {\n        $id: name,\n        $bind: name,\n        audioContext: this.#audioContext,\n        ...options\n    })\n}",
-        "kind": "method",
-        "params": [
-          "name",
-          "options = ..."
-        ]
-      },
-      {
-        "name": "getChannel",
-        "line": 154,
-        "source": "getChannel (name) {\n    return this.getChild(name)\n}",
-        "kind": "method",
-        "params": [
-          "name"
-        ]
-      },
-      {
-        "name": "hasChannel",
-        "line": 159,
-        "source": "hasChannel (name) {\n    return this.hasChild(name)\n}",
-        "kind": "method",
-        "params": [
-          "name"
-        ]
-      },
-      {
-        "name": "listChannels",
-        "line": 164,
-        "source": "listChannels () {\n    return this.listNamesFor('audioChannel')\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "registerBuffer",
-        "line": 169,
-        "source": "registerBuffer (id, buffer) {\n    this.#buffers.set(id, buffer)\n    this.emit('buffer:registered', id, buffer)\n}",
-        "kind": "method",
-        "params": [
-          "id",
-          "buffer"
-        ]
-      },
-      {
-        "name": "registerArrayBuffer",
-        "line": 175,
-        "source": "async registerArrayBuffer (id, arrayBuffer) {\n    try {\n        const audioBuffer = await this.#audioContext.decodeAudioData(arrayBuffer)\n        this.registerBuffer(id, audioBuffer)\n        return audioBuffer\n    } catch (e) {\n        this.emit('buffer:error', id, e)\n        return null\n    }\n}",
-        "kind": "method",
-        "params": [
-          "id",
-          "arrayBuffer"
-        ]
-      },
-      {
-        "name": "getBuffer",
-        "line": 187,
-        "source": "getBuffer (id) {\n    return this.#buffers.get(id) || null\n}",
-        "kind": "method",
-        "params": [
-          "id"
-        ]
-      },
-      {
-        "name": "hasBuffer",
-        "line": 192,
-        "source": "hasBuffer (id) {\n    return this.#buffers.has(id)\n}",
-        "kind": "method",
-        "params": [
-          "id"
-        ]
-      },
-      {
-        "name": "loadBuffer",
-        "line": 197,
-        "source": "async loadBuffer (id, url) {\n    try {\n        const response = await fetch(url)\n        const arrayBuffer = await response.arrayBuffer()\n        return this.registerArrayBuffer(id, arrayBuffer)\n    } catch (e) {\n        this.emit('buffer:error', id, e)\n        return null\n    }\n}",
-        "kind": "method",
-        "params": [
-          "id",
-          "url"
-        ]
-      },
-      {
-        "name": "play",
-        "line": 209,
-        "source": "play (bufferId, options = {}) {\n    if (!this.#unlocked) {\n        return null\n    }\n\n    const buffer = this.#buffers.get(bufferId)\n\n    if (!buffer) {\n        return null\n    }\n\n    const channelName = options.channel ?? 'sfx'\n    const channel = this.getChannel(channelName)\n\n    const sourceId = options.$id ?? uniqueId(this.childrenRegistry, bufferId)\n\n    const source = new AudioSource({\n        $id: sourceId,\n        audioContext: this.#audioContext,\n        channel,\n        loop: options.loop ?? false,\n        volume: options.volume ?? 1,\n        playbackRate: options.playbackRate ?? 1\n    })\n\n    source.playBuffer(buffer, options.offset ?? 0)\n\n    this.emit('audio:play', sourceId, bufferId, options)\n\n    return source\n}",
-        "kind": "method",
-        "params": [
-          "bufferId",
-          "options = ..."
-        ]
-      },
-      {
-        "name": "playAt",
-        "line": 242,
-        "source": "playAt (bufferId, x, y, options = {}) {\n    return this.play(bufferId, {\n        ...options,\n        spatial: true,\n        x,\n        y\n    })\n}",
-        "kind": "method",
-        "params": [
-          "bufferId",
-          "x",
-          "y",
-          "options = ..."
-        ]
-      },
-      {
-        "name": "playOscillator",
-        "line": 252,
-        "source": "playOscillator (options = {}) {\n    if (!this.#unlocked) {\n        return null\n    }\n\n    const channel = this.getChannel(options.channel ?? 'sfx')\n    const sourceId = options.$id ?? uniqueId(this.childrenRegistry, 'oscillator')\n\n    const source = new AudioSource({\n        ...options,\n        $id: sourceId,\n        audioContext: this.#audioContext,\n        channel\n    })\n\n    source.playOscillator(options.type, options.frequency, options.duration)\n    this.emit('audio:play', sourceId, 'oscillator', options)\n\n    return source\n}",
-        "kind": "method",
-        "params": [
-          "options = ..."
-        ]
-      },
-      {
-        "name": "playOscillatorAt",
-        "line": 274,
-        "source": "playOscillatorAt (x, y, options = {}) {\n    return this.playOscillator({\n        ...options,\n        spatial: true,\n        x,\n        y\n    })\n}",
-        "kind": "method",
-        "params": [
-          "x",
-          "y",
-          "options = ..."
-        ]
-      },
-      {
-        "name": "stop",
-        "line": 284,
-        "source": "stop (sourceId) {\n    for (const channelName of this.listChannels()) {\n        const channel = this.getChannel(channelName)\n        const source = channel?.getSource(sourceId)\n        if (source) {\n            source.stop()\n            this.emit('audio:stop', sourceId)\n            return true\n        }\n    }\n    return false\n}",
-        "kind": "method",
-        "params": [
-          "sourceId"
-        ]
-      },
-      {
-        "name": "stopChannel",
-        "line": 298,
-        "source": "stopChannel (channelName) {\n    const channel = this.getChannel(channelName)\n    if (channel) {\n        channel.stopAll()\n        return true\n    }\n    return false\n}",
-        "kind": "method",
-        "params": [
-          "channelName"
-        ]
-      },
-      {
-        "name": "stopAll",
-        "line": 308,
-        "source": "stopAll () {\n    for (const channelName of this.listChannels()) {\n        this.stopChannel(channelName)\n    }\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "setVolume",
-        "line": 315,
-        "source": "setVolume (value) {\n    this.masterVolume = value\n    this.emit('volume:changed', value)\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "value"
-        ]
-      },
-      {
-        "name": "getVolume",
-        "line": 322,
-        "source": "getVolume () {\n    return this.masterVolume\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "setChannelVolume",
-        "line": 327,
-        "source": "setChannelVolume (channelName, value) {\n    const channel = this.getChannel(channelName)\n    if (channel) {\n        channel.setVolume(value)\n    }\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "channelName",
-          "value"
-        ]
-      },
-      {
-        "name": "getChannelVolume",
-        "line": 336,
-        "source": "getChannelVolume (channelName) {\n    const channel = this.getChannel(channelName)\n    return channel ? channel.getVolume() : 0\n}",
-        "kind": "method",
-        "params": [
-          "channelName"
-        ]
-      },
-      {
-        "name": "muteChannel",
-        "line": 342,
-        "source": "muteChannel (channelName) {\n    const channel = this.getChannel(channelName)\n    if (channel) {\n        channel.mute()\n    }\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "channelName"
-        ]
-      },
-      {
-        "name": "unmuteChannel",
-        "line": 351,
-        "source": "unmuteChannel (channelName) {\n    const channel = this.getChannel(channelName)\n    if (channel) {\n        channel.unmute()\n    }\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "channelName"
-        ]
-      },
-      {
-        "name": "setListenerPosition",
-        "line": 360,
-        "source": "setListenerPosition (x, y) {\n    this.#audioContext.setListenerPosition(x, y, 0)\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "x",
-          "y"
-        ]
-      },
-      {
-        "name": "getListenerPosition",
-        "line": 366,
-        "source": "getListenerPosition () {\n    const pos = this.#audioContext.getListenerPosition()\n    return {x: pos.x, y: pos.y}\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "getters": [
-      {
-        "name": "audioContext",
-        "line": 31,
-        "source": "get audioContext () {\n    return this.#audioContext\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "unlocked",
-        "line": 36,
-        "source": "get unlocked () {\n    return this.#unlocked\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "currentTime",
-        "line": 41,
-        "source": "get currentTime () {\n    return this.#audioContext.currentTime\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "masterVolume",
-        "line": 46,
-        "source": "get masterVolume () {\n    return this.#audioContext.getMasterVolume()\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "setters": [
-      {
-        "name": "masterVolume",
-        "line": 51,
-        "source": "set masterVolume (value) {\n    this.#audioContext.setMasterVolume(value)\n}",
-        "kind": "method",
-        "params": [
-          "value"
-        ]
-      }
-    ],
-    "constructor": {
-      "name": "constructor",
-      "line": 18,
-      "source": "constructor (options = {}) {\n    super(options)\n\n    this.#audioContext = new AudioContext()\n\n    const defaultChannels = options.channels ?? ['music', 'sfx', 'ambiance']\n\n    for (const channelName of defaultChannels) {\n        this.createChannel(channelName)\n    }\n}",
-      "kind": "constructor",
-      "params": [
-        "options = ..."
-      ]
-    },
-    "isDefault": true
-  },
   "/doc/runtime.doc.js": {
     "type": "module",
     "file": "/doc/runtime.js",
@@ -4397,5 +4397,128 @@
       }
     ],
     "exports": []
+  },
+  "/doc/doc_page.doc.js": {
+    "type": "class",
+    "file": "/doc/doc_page.js",
+    "name": "DocPage",
+    "line": 11,
+    "extends": "HTMLElement",
+    "statics": [],
+    "methods": [
+      {
+        "name": "connectedCallback",
+        "line": 31,
+        "source": "connectedCallback () {\n    this.#buildDOM()\n    this.#setupAnchorNavigation()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "disconnectedCallback",
+        "line": 56,
+        "source": "disconnectedCallback () {\n    this.#disposeAll()\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [
+      {
+        "name": "doc",
+        "line": 80,
+        "source": "get doc () {\n    return this.#doc\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "api",
+        "line": 93,
+        "source": "get api () {\n    return this.#api\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "sources",
+        "line": 103,
+        "source": "get sources () {\n    return this.#sources\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "tests",
+        "line": 113,
+        "source": "get tests () {\n    return this.#tests\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "activeTab",
+        "line": 125,
+        "source": "get activeTab () {\n    return this.#activeTab\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "availableTabs",
+        "line": 130,
+        "source": "get availableTabs () {\n    const tabs = ['doc']\n    if (this.#api) {\n        tabs.push('api')\n    }\n    if (this.#tests) {\n        tabs.push('test')\n    }\n    return tabs\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "doc",
+        "line": 72,
+        "source": "set doc (value) {\n    this.#doc = value\n    if (this.isConnected) {\n        this.#render()\n    }\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "api",
+        "line": 85,
+        "source": "set api (value) {\n    this.#api = value\n    if (this.isConnected) {\n        this.#render()\n    }\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "sources",
+        "line": 98,
+        "source": "set sources (value) {\n    this.#sources = value\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "tests",
+        "line": 108,
+        "source": "set tests (value) {\n    this.#tests = value\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "initialTab",
+        "line": 118,
+        "source": "set initialTab (value) {\n    if (value === 'api' || value === 'doc' || value === 'test') {\n        this.#activeTab = value\n    }\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      }
+    ],
+    "constructor": {
+      "name": "constructor",
+      "line": 25,
+      "source": "constructor () {\n    super()\n    this.attachShadow({mode: 'open'})\n}",
+      "kind": "constructor",
+      "params": []
+    },
+    "isDefault": true
   }
 }

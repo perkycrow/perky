@@ -79,6 +79,10 @@ function sortWithOrder (items, orderConfig) {
             return compareCategoriesWithSameRoot(a.category, b.category)
         }
 
+        if (a.featured !== b.featured) {
+            return a.featured ? -1 : 1
+        }
+
         const itemPosA = getItemPosition(a.id, a.category, itemOrder)
         const itemPosB = getItemPosition(b.id, b.category, itemOrder)
 

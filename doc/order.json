@@ -11,15 +11,17 @@
             "core",
             "application",
             "game",
+            "math",
             "render",
             "input",
-            "math",
-            "editor"
+            "audio",
+            "editor",
+            "doc"
         ],
         "items": {},
         "featured": [
+            "runtime",
             "perky_module",
-            "notifier",
             "utils",
             "random",
             "application",

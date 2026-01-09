@@ -1,6 +1,28 @@
 {
   "docs": [
     {
+      "id": "perky_module",
+      "file": "/core/perky_module.doc.js",
+      "category": "core",
+      "title": "PerkyModule",
+      "tags": [
+        "core",
+        "perky_module"
+      ],
+      "featured": true
+    },
+    {
+      "id": "utils",
+      "file": "/core/utils.doc.js",
+      "category": "core",
+      "title": "Utils",
+      "tags": [
+        "core",
+        "utils"
+      ],
+      "featured": true
+    },
+    {
       "id": "action_controller",
       "file": "/core/action_controller.doc.js",
       "category": "core",
@@ -53,7 +75,7 @@
         "core",
         "notifier"
       ],
-      "featured": true
+      "featured": false
     },
     {
       "id": "observable_map",
@@ -78,17 +100,6 @@
       "featured": false
     },
     {
-      "id": "perky_module",
-      "file": "/core/perky_module.doc.js",
-      "category": "core",
-      "title": "PerkyModule",
-      "tags": [
-        "core",
-        "perky_module"
-      ],
-      "featured": true
-    },
-    {
       "id": "perky_query",
       "file": "/core/perky_query.doc.js",
       "category": "core",
@@ -109,17 +120,6 @@
         "registry"
       ],
       "featured": false
-    },
-    {
-      "id": "utils",
-      "file": "/core/utils.doc.js",
-      "category": "core",
-      "title": "Utils",
-      "tags": [
-        "core",
-        "utils"
-      ],
-      "featured": true
     },
     {
       "id": "application",
@@ -162,6 +162,28 @@
       "tags": [
         "game",
         "game_loop"
+      ],
+      "featured": false
+    },
+    {
+      "id": "random",
+      "file": "/math/random.doc.js",
+      "category": "math",
+      "title": "Random",
+      "tags": [
+        "math",
+        "random"
+      ],
+      "featured": true
+    },
+    {
+      "id": "vec2",
+      "file": "/math/vec2.doc.js",
+      "category": "math",
+      "title": "Vec2",
+      "tags": [
+        "math",
+        "vec2"
       ],
       "featured": false
     },
@@ -232,26 +254,15 @@
       "featured": false
     },
     {
-      "id": "random",
-      "file": "/math/random.doc.js",
-      "category": "math",
-      "title": "Random",
+      "id": "audio_system",
+      "file": "/audio/audio_system.doc.js",
+      "category": "audio",
+      "title": "AudioSystem",
       "tags": [
-        "math",
-        "random"
+        "audio",
+        "audio_system"
       ],
       "featured": true
-    },
-    {
-      "id": "vec2",
-      "file": "/math/vec2.doc.js",
-      "category": "math",
-      "title": "Vec2",
-      "tags": [
-        "math",
-        "vec2"
-      ],
-      "featured": false
     },
     {
       "id": "perky_explorer",
@@ -331,17 +342,6 @@
       "featured": false
     },
     {
-      "id": "audio_system",
-      "file": "/audio/audio_system.doc.js",
-      "category": "audio",
-      "title": "AudioSystem",
-      "tags": [
-        "audio",
-        "audio_system"
-      ],
-      "featured": true
-    },
-    {
       "id": "runtime",
       "file": "/doc/runtime.doc.js",
       "category": "doc",
@@ -349,6 +349,17 @@
       "tags": [
         "doc",
         "runtime"
+      ],
+      "featured": true
+    },
+    {
+      "id": "doc_page",
+      "file": "/doc/doc_page.doc.js",
+      "category": "doc",
+      "title": "Doc Page",
+      "tags": [
+        "doc",
+        "doc_page"
       ],
       "featured": false
     }
