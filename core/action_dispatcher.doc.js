@@ -149,12 +149,6 @@ export default doc('ActionDispatcher', () => {
             (see [[ActionController#Propagation]]).
         `)
 
-        text(`
-            Example: in Elden Ring, the player can move and jump. Opening a menu
-            pushes a MenuController on top. Movement could still work (propagates
-            to GameController), while confirm/cancel only affect the menu.
-        `)
-
         action('Propagation demo', () => {
             class GameController extends ActionController {
                 move () {

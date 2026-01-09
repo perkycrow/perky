@@ -389,33 +389,4 @@ export default doc('Inflector', {context: 'simple'}, () => {
     })
 
 
-    section('Integration', () => {
-
-        text('Inflector is used throughout Perky for naming conventions.')
-
-        code('In PerkyModule', () => {
-            // Module names and categories often use inflections
-            class Player extends PerkyModule {
-                static $category = 'entity'  // singular
-            }
-
-            // Query all entities (plural)
-            const entities = app.queryAll('@entity')
-        })
-
-        code('In Registry', () => {
-            const inflector = new Inflector()
-
-            // Convert model names to collection names
-            const modelName = 'Player'
-            const collectionName = inflector.plural(
-                inflector.toCamelCase(modelName)
-            )
-
-            // Store in registry
-            registry.set(collectionName, [])
-        })
-
-    })
-
 })
