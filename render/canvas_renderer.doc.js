@@ -1,15 +1,15 @@
 import {doc, section, text, code, container, logger} from '../doc/runtime.js'
-import Canvas2D from './canvas_2d.js'
+import CanvasRenderer from './canvas_renderer.js'
 import Rectangle from './rectangle.js'
 import Circle from './circle.js'
 import Group2D from './group_2d.js'
 
 
-export default doc('Canvas2D', () => {
+export default doc('CanvasRenderer', () => {
 
     text(`
         Canvas 2D renderer using the native Canvas API. Renders scenes with [[Rectangle@render]],
-        [[Circle@render]], images, [[Sprite2D@render]], and supports debug gizmos and frustum culling.
+        [[Circle@render]], images, [[Sprite@render]], and supports debug gizmos and frustum culling.
     `)
 
 
@@ -21,7 +21,7 @@ export default doc('Canvas2D', () => {
         `)
 
         container({title: 'Simple rectangle', height: 200}, ctx => {
-            const renderer = new Canvas2D({
+            const renderer = new CanvasRenderer({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#1a1a2e'
@@ -51,7 +51,7 @@ export default doc('Canvas2D', () => {
         text('Render multiple shapes with different colors and positions.')
 
         container({title: 'Circles and rectangles', height: 200}, ctx => {
-            const renderer = new Canvas2D({
+            const renderer = new CanvasRenderer({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#16213e'
@@ -95,7 +95,7 @@ export default doc('Canvas2D', () => {
         text('Objects support position, rotation, scale, and anchor point.')
 
         container({title: 'Rotated shapes', height: 200}, ctx => {
-            const renderer = new Canvas2D({
+            const renderer = new CanvasRenderer({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#1a1a2e'
@@ -148,7 +148,7 @@ export default doc('Canvas2D', () => {
         text('Use [[Group2D@render]] to group objects and apply transformations to all children.')
 
         container({title: 'Nested groups', height: 200}, ctx => {
-            const renderer = new Canvas2D({
+            const renderer = new CanvasRenderer({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#1a1a2e'
@@ -198,7 +198,7 @@ export default doc('Canvas2D', () => {
         text('The camera controls the view position and zoom level.')
 
         container({title: 'Camera zoom', height: 200}, ctx => {
-            const renderer = new Canvas2D({
+            const renderer = new CanvasRenderer({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#16213e'
@@ -229,7 +229,7 @@ export default doc('Canvas2D', () => {
         })
 
         container({title: 'Camera pan', height: 200}, ctx => {
-            const renderer = new Canvas2D({
+            const renderer = new CanvasRenderer({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#16213e'
@@ -275,7 +275,7 @@ export default doc('Canvas2D', () => {
         text('Enable debug gizmos to visualize bounding boxes and object origins.')
 
         container({title: 'Debug visualization', height: 200}, ctx => {
-            const renderer = new Canvas2D({
+            const renderer = new CanvasRenderer({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#1a1a2e',
@@ -330,7 +330,7 @@ export default doc('Canvas2D', () => {
         `)
 
         container({title: 'Culling stats', height: 200}, ctx => {
-            const renderer = new Canvas2D({
+            const renderer = new CanvasRenderer({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#16213e',
@@ -362,7 +362,7 @@ export default doc('Canvas2D', () => {
         })
 
         code('Culling options', () => {
-            const renderer = new Canvas2D({
+            const renderer = new CanvasRenderer({
                 enableCulling: true
             })
 
@@ -382,12 +382,12 @@ export default doc('Canvas2D', () => {
 
         code('Background options', () => {
             // Solid color
-            const renderer1 = new Canvas2D({
+            const renderer1 = new CanvasRenderer({
                 backgroundColor: '#1a1a2e'
             })
 
             // Transparent (default)
-            const renderer2 = new Canvas2D({
+            const renderer2 = new CanvasRenderer({
                 backgroundColor: null
             })
 

@@ -1,6 +1,6 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
-import WebGLCanvas2D from './webgl_canvas_2d.js'
-import Camera2D from './camera_2d.js'
+import WebGLRenderer from './webgl_renderer.js'
+import Camera from './camera.js'
 import Group2D from './group_2d.js'
 import Circle from './circle.js'
 import Rectangle from './rectangle.js'
@@ -9,7 +9,7 @@ import Rectangle from './rectangle.js'
 // WebGL mock is provided by test/setup.js
 
 
-describe('WebGLCanvas2D', () => {
+describe('WebGLRenderer', () => {
 
     let canvas
     let renderer
@@ -18,7 +18,7 @@ describe('WebGLCanvas2D', () => {
         canvas = document.createElement('canvas')
         canvas.width = 800
         canvas.height = 600
-        renderer = new WebGLCanvas2D({canvas})
+        renderer = new WebGLRenderer({canvas})
     })
 
 
@@ -35,30 +35,30 @@ describe('WebGLCanvas2D', () => {
 
 
         test('initializes camera', () => {
-            expect(renderer.camera).toBeInstanceOf(Camera2D)
+            expect(renderer.camera).toBeInstanceOf(Camera)
         })
 
 
         test('has static $name', () => {
-            expect(WebGLCanvas2D.$name).toBe('webGLCanvas2D')
+            expect(WebGLRenderer.$name).toBe('webGLRenderer')
         })
 
 
         test('with provided camera', () => {
-            const camera = new Camera2D({x: 10, y: 20})
-            const r = new WebGLCanvas2D({canvas, camera})
+            const camera = new Camera({x: 10, y: 20})
+            const r = new WebGLRenderer({canvas, camera})
             expect(r.camera).toBe(camera)
         })
 
 
         test('with backgroundColor', () => {
-            const r = new WebGLCanvas2D({canvas, backgroundColor: '#FF0000'})
+            const r = new WebGLRenderer({canvas, backgroundColor: '#FF0000'})
             expect(r.backgroundColor).toBe('#FF0000')
         })
 
 
         test('with enableCulling', () => {
-            const r = new WebGLCanvas2D({canvas, enableCulling: true})
+            const r = new WebGLRenderer({canvas, enableCulling: true})
             expect(r.enableCulling).toBe(true)
         })
 

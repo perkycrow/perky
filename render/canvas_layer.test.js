@@ -1,6 +1,6 @@
 import {describe, test, expect, beforeEach} from 'vitest'
 import CanvasLayer from './canvas_layer.js'
-import Camera2D from './camera_2d.js'
+import Camera from './camera.js'
 import Group2D from './group_2d.js'
 import Circle from './circle.js'
 
@@ -28,12 +28,12 @@ describe(CanvasLayer, () => {
 
 
     test('constructor creates default camera if not provided', () => {
-        expect(layer.renderer.camera).toBeInstanceOf(Camera2D)
+        expect(layer.renderer.camera).toBeInstanceOf(Camera)
     })
 
 
     test('constructor with provided camera', () => {
-        const camera = new Camera2D({x: 10, y: 20})
+        const camera = new Camera({x: 10, y: 20})
         const l = new CanvasLayer({$id: 'test', camera})
 
         expect(l.renderer.camera).toBe(camera)
@@ -141,7 +141,7 @@ describe(CanvasLayer, () => {
 
 
     test('resize updates camera viewport dimensions', () => {
-        const camera = new Camera2D()
+        const camera = new Camera()
         const l = new CanvasLayer({$id: 'test', camera, pixelRatio: 1})
 
         l.resize(1024, 768)
@@ -205,7 +205,7 @@ describe(CanvasLayer, () => {
 
 
     test('provided camera gets viewport updated', () => {
-        const camera = new Camera2D({
+        const camera = new Camera({
             viewportWidth: 100,
             viewportHeight: 100,
             pixelRatio: 1
@@ -262,15 +262,15 @@ describe(CanvasLayer, () => {
         })
 
 
-        test('creates WebGLCanvas2D renderer when rendererType is webgl', () => {
+        test('creates WebGLRenderer renderer when rendererType is webgl', () => {
             const l = new CanvasLayer({$id: 'webgl-test', rendererType: 'webgl'})
-            expect(l.renderer.constructor.name).toBe('WebGLCanvas2D')
+            expect(l.renderer.constructor.name).toBe('WebGLRenderer')
         })
 
 
-        test('creates Canvas2D renderer when rendererType is canvas', () => {
+        test('creates CanvasRenderer renderer when rendererType is canvas', () => {
             const l = new CanvasLayer({$id: 'canvas-test', rendererType: 'canvas'})
-            expect(l.renderer.constructor.name).toBe('Canvas2D')
+            expect(l.renderer.constructor.name).toBe('CanvasRenderer')
         })
 
 

@@ -1,6 +1,6 @@
 import {describe, test, expect, beforeEach} from 'vitest'
 import HTMLLayer from './html_layer.js'
-import Camera2D from './camera_2d.js'
+import Camera from './camera.js'
 
 
 describe(HTMLLayer, () => {
@@ -40,7 +40,7 @@ describe(HTMLLayer, () => {
 
 
     test('constructor with camera option', () => {
-        const camera = new Camera2D()
+        const camera = new Camera()
         const l = new HTMLLayer({$id: 'test', camera})
 
         expect(l.camera).toBe(camera)
@@ -84,7 +84,7 @@ describe(HTMLLayer, () => {
 
 
     test('setCamera', () => {
-        const camera = new Camera2D()
+        const camera = new Camera()
 
         layer.setCamera(camera)
 
@@ -93,7 +93,7 @@ describe(HTMLLayer, () => {
 
 
     test('createWorldElement creates element', () => {
-        layer.camera = new Camera2D()
+        layer.camera = new Camera()
 
         const el = layer.createWorldElement('<div>Test</div>', 10, 20)
 
@@ -105,7 +105,7 @@ describe(HTMLLayer, () => {
 
 
     test('createWorldElement with options', () => {
-        layer.camera = new Camera2D()
+        layer.camera = new Camera()
 
         const el = layer.createWorldElement(
             '<span>Label</span>',
@@ -133,7 +133,7 @@ describe(HTMLLayer, () => {
 
 
     test('createWorldElement with targetObject', () => {
-        layer.camera = new Camera2D()
+        layer.camera = new Camera()
         const target = {x: 5, y: 10}
 
         layer.createWorldElement('<div>Target</div>', 0, 0, {
@@ -146,7 +146,7 @@ describe(HTMLLayer, () => {
 
 
     test('removeWorldElement', () => {
-        layer.camera = new Camera2D()
+        layer.camera = new Camera()
         const el = layer.createWorldElement('<div>Remove me</div>', 0, 0)
 
         expect(layer.worldElements.length).toBe(1)
@@ -160,7 +160,7 @@ describe(HTMLLayer, () => {
 
 
     test('updateElementWorldPosition', () => {
-        layer.camera = new Camera2D()
+        layer.camera = new Camera()
         const el = layer.createWorldElement('<div>Move me</div>', 0, 0)
 
         layer.updateElementWorldPosition(el, 15, 25)
@@ -172,7 +172,7 @@ describe(HTMLLayer, () => {
 
 
     test('setElementTarget', () => {
-        layer.camera = new Camera2D()
+        layer.camera = new Camera()
         const el = layer.createWorldElement('<div>Target me</div>', 0, 0)
         const target = {x: 10, y: 20}
 
@@ -192,7 +192,7 @@ describe(HTMLLayer, () => {
 
 
     test('updateWorldElements positions element', () => {
-        const camera = new Camera2D({
+        const camera = new Camera({
             x: 0,
             y: 0,
             zoom: 1,
@@ -212,7 +212,7 @@ describe(HTMLLayer, () => {
 
 
     test('updateWorldElements syncs targetObject position', () => {
-        const camera = new Camera2D()
+        const camera = new Camera()
         layer.camera = camera
 
         const target = {x: 5, y: 10}
@@ -229,7 +229,7 @@ describe(HTMLLayer, () => {
 
 
     test('updateWorldElements with inheritTransform', () => {
-        const camera = new Camera2D()
+        const camera = new Camera()
         layer.camera = camera
 
         const target = {
@@ -253,7 +253,7 @@ describe(HTMLLayer, () => {
 
 
     test('updateWorldElements culls offscreen elements', () => {
-        const camera = new Camera2D({
+        const camera = new Camera({
             x: 0,
             y: 0,
             zoom: 1,
@@ -275,7 +275,7 @@ describe(HTMLLayer, () => {
 
 
     test('cssToWorldUnits', () => {
-        const camera = new Camera2D({
+        const camera = new Camera({
             unitsInView: 10,
             viewportHeight: 600,
             zoom: 1,
@@ -290,7 +290,7 @@ describe(HTMLLayer, () => {
 
 
     test('worldUnitsToCss', () => {
-        const camera = new Camera2D({
+        const camera = new Camera({
             unitsInView: 10,
             viewportHeight: 600,
             zoom: 1,

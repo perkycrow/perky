@@ -5,11 +5,11 @@ import Object2D from './object_2d.js'
 export default doc('Object2D', () => {
 
     text(`
-        Base class for all 2D renderable objects. Extends [[Transform2D@render]].
+        Base class for all 2D renderable objects. Extends [[Transform@render]].
         Provides visibility, opacity, depth sorting, anchors, and debug gizmos.
 
         Subclasses: [[Rectangle@render]], [[Circle@render]], [[Image2D@render]],
-        [[Sprite2D@render]], [[Group2D@render]].
+        [[Sprite@render]], [[Group2D@render]].
     `)
 
 
@@ -164,7 +164,7 @@ export default doc('Object2D', () => {
 
     section('Transforms', () => {
 
-        text('Position, rotation, and scale inherited from [[Transform2D@render]].')
+        text('Position, rotation, and scale inherited from [[Transform@render]].')
 
         action('Position', () => {
             const obj = new Object2D({x: 100, y: 50})

@@ -29,8 +29,8 @@
             "input_system",
             "render_system",
             "audio_system",
-            "canvas_2d",
-            "webgl_canvas_2d"
+            "canvas_renderer",
+            "webgl_renderer"
         ]
     }
 }

@@ -6,8 +6,8 @@ export default doc('Image2D', () => {
 
     text(`
         Static image display extending [[Object2D@render]].
-        For animated sprites, use [[Sprite2D@render]] instead.
-        Use with [[Canvas2D@render]] or [[WebGLCanvas2D@render]] for rendering.
+        For animated sprites, use [[Sprite@render]] instead.
+        Use with [[CanvasRenderer@render]] or [[WebGLRenderer@render]] for rendering.
     `)
 
 

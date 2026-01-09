@@ -1,7 +1,7 @@
 import Object2D from './object_2d.js'
 
 
-export default class Sprite2D extends Object2D {
+export default class Sprite extends Object2D {
 
     constructor (options = {}) {
         super(options)

@@ -1,7 +1,7 @@
 import {describe, test, expect, beforeEach, vi, afterEach} from 'vitest'
-import SpriteAnimation2D from './sprite_animation_2d.js'
+import SpriteAnimation from './sprite_animation.js'
 
-describe('SpriteAnimation2D', () => {
+describe('SpriteAnimation', () => {
     let spritesheet
     let animation
     let frames
@@ -24,7 +24,7 @@ describe('SpriteAnimation2D', () => {
 
         frames = ['frame1', 'frame2', 'frame3']
 
-        animation = new SpriteAnimation2D({
+        animation = new SpriteAnimation({
             sprite: spritesheet,
             frames,
             fps: 10,

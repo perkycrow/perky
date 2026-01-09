@@ -6,7 +6,7 @@ export default doc('Circle', () => {
 
     text(`
         A filled circle shape extending [[Object2D@render]].
-        Use with [[Canvas2D@render]] or [[WebGLCanvas2D@render]] for rendering.
+        Use with [[CanvasRenderer@render]] or [[WebGLRenderer@render]] for rendering.
     `)
 
 

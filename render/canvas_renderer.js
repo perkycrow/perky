@@ -8,9 +8,9 @@ import CanvasSpriteRenderer from './canvas/canvas_sprite_renderer.js'
 import CanvasDebugGizmoRenderer from './canvas/canvas_debug_gizmo_renderer.js'
 
 
-export default class Canvas2D extends BaseRenderer {
+export default class CanvasRenderer extends BaseRenderer {
 
-    static $name = 'canvas2D'
+    static $name = 'canvasRenderer'
 
     #rendererRegistry = new Map()
     #renderers = []

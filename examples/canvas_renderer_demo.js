@@ -106,14 +106,14 @@ infoPanel.className = 'info-panel'
 infoPanel.innerHTML = `
     <div class="info-item">
         <span class="info-label">Renderer:</span>
-        <span class="info-value">Canvas2D (PerkyModule)</span>
+        <span class="info-value">CanvasRenderer (PerkyModule)</span>
     </div>
     <div class="info-item">
         <span class="info-label">Shapes:</span>
         <span class="info-value">${shapes.length + 1}</span>
     </div>
     <div class="info-item">
-        <span class="info-label">Canvas2D.$category:</span>
+        <span class="info-label">CanvasRenderer.$category:</span>
         <span class="info-value">${layer.renderer.$category}</span>
     </div>
 `

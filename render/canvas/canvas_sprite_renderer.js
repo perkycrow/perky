@@ -1,11 +1,11 @@
 import CanvasObjectRenderer from './canvas_object_renderer.js'
-import Sprite2D from '../sprite_2d.js'
+import Sprite from '../sprite.js'
 
 
 export default class CanvasSpriteRenderer extends CanvasObjectRenderer {
 
     static get handles () {
-        return [Sprite2D]
+        return [Sprite]
     }
 
 

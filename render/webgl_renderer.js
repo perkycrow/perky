@@ -16,9 +16,9 @@ import WebGLRectangleRenderer from './webgl/webgl_rectangle_renderer.js'
 import WebGLDebugGizmoRenderer from './webgl/webgl_debug_gizmo_renderer.js'
 
 
-export default class WebGLCanvas2D extends BaseRenderer {
+export default class WebGLRenderer extends BaseRenderer {
 
-    static $name = 'webGLCanvas2D'
+    static $name = 'webGLRenderer'
 
     #rendererRegistry = new Map()
     #renderers = []

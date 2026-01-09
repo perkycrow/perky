@@ -1,12 +1,12 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
-import Canvas2D from './canvas_2d.js'
-import Camera2D from './camera_2d.js'
+import CanvasRenderer from './canvas_renderer.js'
+import Camera from './camera.js'
 import Group2D from './group_2d.js'
 import Circle from './circle.js'
 import Rectangle from './rectangle.js'
 
 
-describe(Canvas2D, () => {
+describe(CanvasRenderer, () => {
 
     let canvas
     let renderer
@@ -15,21 +15,21 @@ describe(Canvas2D, () => {
         canvas = document.createElement('canvas')
         canvas.width = 800
         canvas.height = 600
-        renderer = new Canvas2D({canvas})
+        renderer = new CanvasRenderer({canvas})
     })
 
 
     test('constructor with canvas', () => {
         expect(renderer.canvas).toBe(canvas)
         expect(renderer.ctx).toBe(canvas.getContext('2d'))
-        expect(renderer.camera).toBeInstanceOf(Camera2D)
+        expect(renderer.camera).toBeInstanceOf(Camera)
         expect(renderer.backgroundColor).toBe(null)
     })
 
 
     test('constructor with container', () => {
         const container = document.createElement('div')
-        const r = new Canvas2D({container, width: 400, height: 300})
+        const r = new CanvasRenderer({container, width: 400, height: 300})
 
         expect(r.canvas).toBeInstanceOf(HTMLCanvasElement)
         expect(r.container).toBe(container)
@@ -38,8 +38,8 @@ describe(Canvas2D, () => {
 
 
     test('constructor with options', () => {
-        const camera = new Camera2D()
-        const r = new Canvas2D({
+        const camera = new Camera()
+        const r = new CanvasRenderer({
             canvas,
             camera,
             backgroundColor: '#ffffff'
@@ -56,7 +56,7 @@ describe(Canvas2D, () => {
         Object.defineProperty(container, 'clientWidth', {value: 400, writable: true})
         Object.defineProperty(container, 'clientHeight', {value: 300, writable: true})
 
-        const r = new Canvas2D({container, autoFit: true})
+        const r = new CanvasRenderer({container, autoFit: true})
 
         expect(r.displayWidth).toBe(400)
         expect(r.displayHeight).toBe(300)
@@ -70,7 +70,7 @@ describe(Canvas2D, () => {
         Object.defineProperty(container, 'clientWidth', {value: 400, writable: true})
         Object.defineProperty(container, 'clientHeight', {value: 300, writable: true})
 
-        const r = new Canvas2D({container, autoFit: true})
+        const r = new CanvasRenderer({container, autoFit: true})
 
         expect(r.canvas).toBeInstanceOf(HTMLCanvasElement)
         expect(r.ctx).toBeDefined()
@@ -87,7 +87,7 @@ describe(Canvas2D, () => {
         Object.defineProperty(container, 'clientWidth', {value: 400, writable: true})
         Object.defineProperty(container, 'clientHeight', {value: 300, writable: true})
 
-        const r = new Canvas2D({container, autoFit: true})
+        const r = new CanvasRenderer({container, autoFit: true})
 
         expect(r.autoFitEnabled).toBe(true)
         expect(r.displayWidth).toBe(400)
@@ -114,7 +114,7 @@ describe(Canvas2D, () => {
         Object.defineProperty(container2, 'clientWidth', {value: 800, writable: true})
         Object.defineProperty(container2, 'clientHeight', {value: 600, writable: true})
 
-        const r = new Canvas2D({container: container1, autoFit: true})
+        const r = new CanvasRenderer({container: container1, autoFit: true})
 
         expect(r.displayWidth).toBe(400)
         expect(r.displayHeight).toBe(300)
@@ -140,7 +140,7 @@ describe(Canvas2D, () => {
         Object.defineProperty(container2, 'clientWidth', {value: 800, writable: true})
         Object.defineProperty(container2, 'clientHeight', {value: 600, writable: true})
 
-        const r = new Canvas2D({container: container1, width: 400, height: 300})
+        const r = new CanvasRenderer({container: container1, width: 400, height: 300})
 
         expect(r.displayWidth).toBe(400)
         expect(r.displayHeight).toBe(300)

@@ -1,5 +1,5 @@
 import Image2D from '../image_2d.js'
-import Sprite2D from '../sprite_2d.js'
+import Sprite from '../sprite.js'
 
 
 const DEFAULT_TEX_COORDS = [0, 1, 1, 1, 1, 0, 0, 0]
@@ -14,7 +14,7 @@ function extractImageAndFrame (object) {
 
     if (object instanceof Image2D) {
         image = object.image
-    } else if (object instanceof Sprite2D) {
+    } else if (object instanceof Sprite) {
         image = object.image || (object.currentFrame ? object.currentFrame.image : null)
         frame = object.currentFrame
     }

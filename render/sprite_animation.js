@@ -1,7 +1,7 @@
 import PerkyModule from '../core/perky_module.js'
 
 
-export default class SpriteAnimation2D extends PerkyModule {
+export default class SpriteAnimation extends PerkyModule {
 
     #animationId = null
     #lastFrameTime = 0

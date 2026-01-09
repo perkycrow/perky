@@ -9,7 +9,7 @@ export default doc('Group2D', () => {
     text(`
         Container for grouping [[Object2D@render]] instances.
         Transforms applied to the group affect all children.
-        Use with [[Canvas2D@render]] or [[WebGLCanvas2D@render]] for rendering.
+        Use with [[CanvasRenderer@render]] or [[WebGLRenderer@render]] for rendering.
     `)
 
 

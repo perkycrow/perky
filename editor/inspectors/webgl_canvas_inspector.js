@@ -1,13 +1,13 @@
 import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
-import WebGLCanvas2D from '../../render/webgl_canvas_2d.js'
+import WebGLRenderer from '../../render/webgl_renderer.js'
 import {passStyles, renderPass} from './inspector_helpers.js'
 
 
 export default class WebGLCanvasInspector extends BaseInspector {
 
     static matches (module) {
-        return module instanceof WebGLCanvas2D
+        return module instanceof WebGLRenderer
     }
 
 

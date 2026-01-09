@@ -1,9 +1,9 @@
 import {describe, test, expect, vi, beforeEach} from 'vitest'
-import Sprite2D from './sprite_2d.js'
+import Sprite from './sprite.js'
 import CanvasSpriteRenderer from './canvas/canvas_sprite_renderer.js'
 
 
-describe('Sprite2D', () => {
+describe('Sprite', () => {
     let mockImage
     let mockFrame
     let sprite
@@ -21,7 +21,7 @@ describe('Sprite2D', () => {
             frame: {x: 0, y: 0, w: 10, h: 10},
             image: mockImage
         }
-        sprite = new Sprite2D({
+        sprite = new Sprite({
             frame: mockFrame,
             width: 5
         })
@@ -41,7 +41,7 @@ describe('Sprite2D', () => {
     })
 
     test('getBounds calculates bounds from frame and height', () => {
-        sprite = new Sprite2D({
+        sprite = new Sprite({
             frame: mockFrame,
             height: 10
         })
@@ -134,13 +134,13 @@ describe('CanvasSpriteRenderer', () => {
     })
 
 
-    test('handles Sprite2D class', () => {
-        expect(CanvasSpriteRenderer.handles).toContain(Sprite2D)
+    test('handles Sprite class', () => {
+        expect(CanvasSpriteRenderer.handles).toContain(Sprite)
     })
 
 
     test('render draws frame using image from frame data', () => {
-        const sprite = new Sprite2D({
+        const sprite = new Sprite({
             frame: mockFrame,
             width: 5
         })

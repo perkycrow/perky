@@ -1,15 +1,15 @@
 import {doc, section, text, code, container} from '../doc/runtime.js'
-import WebGLCanvas2D from './webgl_canvas_2d.js'
+import WebGLRenderer from './webgl_renderer.js'
 import Rectangle from './rectangle.js'
 import Circle from './circle.js'
 import Group2D from './group_2d.js'
 import Image2D from './image_2d.js'
 
 
-export default doc('WebGLCanvas2D', () => {
+export default doc('WebGLRenderer', () => {
 
     text(`
-        WebGL2-based 2D renderer. Renders scenes with [[Rectangle@render]], [[Circle@render]], [[Sprite2D@render]],
+        WebGL2-based 2D renderer. Renders scenes with [[Rectangle@render]], [[Circle@render]], [[Sprite@render]],
         and supports post-processing effects, render groups, and shader customization.
     `)
 
@@ -22,7 +22,7 @@ export default doc('WebGLCanvas2D', () => {
         `)
 
         container({title: 'Simple rectangle', height: 200}, ctx => {
-            const renderer = new WebGLCanvas2D({
+            const renderer = new WebGLRenderer({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#1a1a2e'
@@ -52,7 +52,7 @@ export default doc('WebGLCanvas2D', () => {
         text('Render multiple shapes with different colors and positions.')
 
         container({title: 'Circles and rectangles', height: 200}, ctx => {
-            const renderer = new WebGLCanvas2D({
+            const renderer = new WebGLRenderer({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#16213e'
@@ -96,7 +96,7 @@ export default doc('WebGLCanvas2D', () => {
         text('Objects support position, rotation, scale, and anchor point.')
 
         container({title: 'Rotated shapes', height: 200}, ctx => {
-            const renderer = new WebGLCanvas2D({
+            const renderer = new WebGLRenderer({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#1a1a2e'
@@ -149,7 +149,7 @@ export default doc('WebGLCanvas2D', () => {
         text('Use [[Group2D@render]] to group objects and apply transformations to all children.')
 
         container({title: 'Nested groups', height: 200}, ctx => {
-            const renderer = new WebGLCanvas2D({
+            const renderer = new WebGLRenderer({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#1a1a2e'
@@ -199,7 +199,7 @@ export default doc('WebGLCanvas2D', () => {
         text('The camera controls the view position and zoom level.')
 
         container({title: 'Camera zoom', height: 200}, ctx => {
-            const renderer = new WebGLCanvas2D({
+            const renderer = new WebGLRenderer({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#16213e'
@@ -230,7 +230,7 @@ export default doc('WebGLCanvas2D', () => {
         })
 
         container({title: 'Camera pan', height: 200}, ctx => {
-            const renderer = new WebGLCanvas2D({
+            const renderer = new WebGLRenderer({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#16213e'
@@ -276,7 +276,7 @@ export default doc('WebGLCanvas2D', () => {
         text('Render images and sprites using [[Image2D@render]] objects.')
 
         container({title: 'Sprite rendering', height: 200}, ctx => {
-            const renderer = new WebGLCanvas2D({
+            const renderer = new WebGLRenderer({
                 container: ctx.container,
                 autoFit: true,
                 backgroundColor: '#1a1a2e'
@@ -314,12 +314,12 @@ export default doc('WebGLCanvas2D', () => {
 
         code('Background options', () => {
             // Solid color
-            const renderer1 = new WebGLCanvas2D({
+            const renderer1 = new WebGLRenderer({
                 backgroundColor: '#1a1a2e'
             })
 
             // Transparent (default)
-            const renderer2 = new WebGLCanvas2D({
+            const renderer2 = new WebGLRenderer({
                 backgroundColor: 'transparent'
             })
 

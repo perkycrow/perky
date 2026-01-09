@@ -1,8 +1,8 @@
 import {doc, section, text, code, action, logger} from '../doc/runtime.js'
-import Transform2D from './transform_2d.js'
+import Transform from './transform.js'
 
 
-export default doc('Transform2D', () => {
+export default doc('Transform', () => {
 
     text(`
         Low-level 2D transformation class with matrix math.
@@ -17,7 +17,7 @@ export default doc('Transform2D', () => {
         text('Basic transform properties. Changes automatically mark the matrix as dirty.')
 
         action('Position', () => {
-            const t = new Transform2D()
+            const t = new Transform()
             logger.log('default x:', t.x)
             logger.log('default y:', t.y)
 
@@ -27,7 +27,7 @@ export default doc('Transform2D', () => {
         })
 
         action('Rotation', () => {
-            const t = new Transform2D()
+            const t = new Transform()
             logger.log('default rotation:', t.rotation)
 
             t.rotation = Math.PI / 4
@@ -38,7 +38,7 @@ export default doc('Transform2D', () => {
         })
 
         action('Scale', () => {
-            const t = new Transform2D()
+            const t = new Transform()
             logger.log('default scale:', t.scaleX, t.scaleY)
 
             t.scaleX = 2
@@ -47,7 +47,7 @@ export default doc('Transform2D', () => {
         })
 
         action('Pivot', () => {
-            const t = new Transform2D()
+            const t = new Transform()
             logger.log('default pivot:', t.pivotX, t.pivotY)
 
             t.pivotX = 50
@@ -60,12 +60,12 @@ export default doc('Transform2D', () => {
 
     section('Hierarchy', () => {
 
-        text('Transform2D supports parent-child relationships for nested transforms.')
+        text('Transform supports parent-child relationships for nested transforms.')
 
         action('add / remove', () => {
-            const parent = new Transform2D()
-            const child1 = new Transform2D()
-            const child2 = new Transform2D()
+            const parent = new Transform()
+            const child1 = new Transform()
+            const child2 = new Transform()
 
             parent.add(child1, child2)
             logger.log('children count:', parent.children.length)
@@ -77,9 +77,9 @@ export default doc('Transform2D', () => {
         })
 
         action('Reparenting', () => {
-            const parent1 = new Transform2D()
-            const parent2 = new Transform2D()
-            const child = new Transform2D()
+            const parent1 = new Transform()
+            const parent2 = new Transform()
+            const child = new Transform()
 
             parent1.add(child)
             logger.log('initial parent:', child.parent === parent1)
@@ -97,11 +97,11 @@ export default doc('Transform2D', () => {
         text('Children can be sorted by depth for rendering order.')
 
         action('getSortedChildren', () => {
-            const parent = new Transform2D()
+            const parent = new Transform()
 
-            const a = new Transform2D()
-            const b = new Transform2D()
-            const c = new Transform2D()
+            const a = new Transform()
+            const b = new Transform()
+            const c = new Transform()
 
             a.depth = 10
             b.depth = 0
@@ -119,7 +119,7 @@ export default doc('Transform2D', () => {
     section('Matrices', () => {
 
         text(`
-            Transform2D uses 2x3 affine matrices stored as 6-element arrays:
+            Transform uses 2x3 affine matrices stored as 6-element arrays:
             \`[a, b, c, d, tx, ty]\` representing the matrix:
             \`\`\`
             | a  c  tx |
@@ -129,7 +129,7 @@ export default doc('Transform2D', () => {
         `)
 
         action('worldMatrix', () => {
-            const t = new Transform2D()
+            const t = new Transform()
             t.x = 100
             t.y = 50
             t.updateWorldMatrix()
@@ -138,11 +138,11 @@ export default doc('Transform2D', () => {
         })
 
         action('updateWorldMatrix', () => {
-            const parent = new Transform2D()
+            const parent = new Transform()
             parent.x = 100
             parent.y = 100
 
-            const child = new Transform2D()
+            const child = new Transform()
             child.x = 50
             child.y = 0
 
@@ -154,10 +154,10 @@ export default doc('Transform2D', () => {
         })
 
         code('Matrix propagation', () => {
-            const root = new Transform2D()
+            const root = new Transform()
             root.x = 100
 
-            const child = new Transform2D()
+            const child = new Transform()
             child.x = 50
 
             root.add(child)
@@ -180,8 +180,8 @@ export default doc('Transform2D', () => {
         `)
 
         action('markDirty', () => {
-            const parent = new Transform2D()
-            const child = new Transform2D()
+            const parent = new Transform()
+            const child = new Transform()
             parent.add(child)
 
             parent.updateWorldMatrix()
@@ -197,9 +197,9 @@ export default doc('Transform2D', () => {
         })
 
         code('Dirty propagation', () => {
-            const parent = new Transform2D()
-            const child = new Transform2D()
-            const grandchild = new Transform2D()
+            const parent = new Transform()
+            const child = new Transform()
+            const grandchild = new Transform()
 
             child.add(grandchild)
             parent.add(child)
@@ -219,7 +219,7 @@ export default doc('Transform2D', () => {
         text('Transform local points to world space using the world matrix.')
 
         action('transformPoint', () => {
-            const t = new Transform2D()
+            const t = new Transform()
             t.x = 100
             t.y = 50
             t.rotation = Math.PI / 2
@@ -233,7 +233,7 @@ export default doc('Transform2D', () => {
         })
 
         action('With custom matrix', () => {
-            const t = new Transform2D()
+            const t = new Transform()
 
             // Identity matrix with translation
             const customMatrix = [1, 0, 0, 1, 200, 100]
@@ -252,7 +252,7 @@ export default doc('Transform2D', () => {
         text('Rotation is applied around the pivot point.')
 
         action('Rotation with pivot', () => {
-            const t = new Transform2D()
+            const t = new Transform()
             t.pivotX = 50
             t.pivotY = 0
             t.rotation = Math.PI / 2
@@ -266,7 +266,7 @@ export default doc('Transform2D', () => {
         })
 
         action('Combined transforms', () => {
-            const t = new Transform2D()
+            const t = new Transform()
             t.x = 100
             t.y = 100
             t.rotation = Math.PI / 4

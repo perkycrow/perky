@@ -1,13 +1,13 @@
 import {describe, test, expect, beforeEach} from 'vitest'
-import Transform2D from './transform_2d.js'
+import Transform from './transform.js'
 
 
-describe(Transform2D, () => {
+describe(Transform, () => {
 
     let transform
 
     beforeEach(() => {
-        transform = new Transform2D()
+        transform = new Transform()
     })
 
 
@@ -25,8 +25,8 @@ describe(Transform2D, () => {
 
 
     test('add child', () => {
-        const child1 = new Transform2D()
-        const child2 = new Transform2D()
+        const child1 = new Transform()
+        const child2 = new Transform()
 
         transform.add(child1, child2)
 
@@ -37,9 +37,9 @@ describe(Transform2D, () => {
 
 
     test('add child removes from previous parent', () => {
-        const parent1 = new Transform2D()
-        const parent2 = new Transform2D()
-        const child = new Transform2D()
+        const parent1 = new Transform()
+        const parent2 = new Transform()
+        const child = new Transform()
 
         parent1.add(child)
         expect(parent1.children).toEqual([child])
@@ -53,7 +53,7 @@ describe(Transform2D, () => {
 
 
     test('remove child', () => {
-        const child = new Transform2D()
+        const child = new Transform()
 
         transform.add(child)
         expect(transform.children).toEqual([child])
@@ -133,11 +133,11 @@ describe(Transform2D, () => {
 
 
     test('updateWorldMatrix with parent', () => {
-        const parent = new Transform2D()
+        const parent = new Transform()
         parent.x = 10
         parent.y = 20
 
-        const child = new Transform2D()
+        const child = new Transform()
         child.x = 5
         child.y = 5
 
@@ -151,8 +151,8 @@ describe(Transform2D, () => {
 
 
     test('markDirty propagates to children', () => {
-        const child1 = new Transform2D()
-        const child2 = new Transform2D()
+        const child1 = new Transform()
+        const child2 = new Transform()
 
         transform.add(child1)
         child1.add(child2)
@@ -172,11 +172,11 @@ describe(Transform2D, () => {
 
 
     test('getSortedChildren returns children sorted by depth', () => {
-        const child1 = new Transform2D()
+        const child1 = new Transform()
         child1.depth = 2
-        const child2 = new Transform2D()
+        const child2 = new Transform()
         child2.depth = 0
-        const child3 = new Transform2D()
+        const child3 = new Transform()
         child3.depth = 1
 
         transform.add(child1, child2, child3)
@@ -190,9 +190,9 @@ describe(Transform2D, () => {
 
 
     test('getSortedChildren caches result', () => {
-        const child1 = new Transform2D()
+        const child1 = new Transform()
         child1.depth = 1
-        const child2 = new Transform2D()
+        const child2 = new Transform()
         child2.depth = 0
 
         transform.add(child1, child2)
@@ -205,9 +205,9 @@ describe(Transform2D, () => {
 
 
     test('markChildrenNeedSort invalidates cache', () => {
-        const child1 = new Transform2D()
+        const child1 = new Transform()
         child1.depth = 1
-        const child2 = new Transform2D()
+        const child2 = new Transform()
         child2.depth = 0
 
         transform.add(child1, child2)
@@ -221,13 +221,13 @@ describe(Transform2D, () => {
 
 
     test('add triggers re-sort on next getSortedChildren call', () => {
-        const child1 = new Transform2D()
+        const child1 = new Transform()
         child1.depth = 1
 
         transform.add(child1)
         transform.getSortedChildren()
 
-        const child2 = new Transform2D()
+        const child2 = new Transform()
         child2.depth = 0
         transform.add(child2)
 
@@ -238,9 +238,9 @@ describe(Transform2D, () => {
 
 
     test('remove triggers re-sort on next getSortedChildren call', () => {
-        const child1 = new Transform2D()
+        const child1 = new Transform()
         child1.depth = 0
-        const child2 = new Transform2D()
+        const child2 = new Transform()
         child2.depth = 1
 
         transform.add(child1, child2)

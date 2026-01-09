@@ -1,13 +1,13 @@
 import {doc, section, text, code, action, logger} from '../doc/runtime.js'
-import Sprite2D from './sprite_2d.js'
+import Sprite from './sprite.js'
 
 
-export default doc('Sprite2D', () => {
+export default doc('Sprite', () => {
 
     text(`
         Animated sprite extending [[Object2D@render]].
         Displays a single frame from a spritesheet and supports frame-based animations.
-        Use with [[Canvas2D@render]] or [[WebGLCanvas2D@render]] for rendering.
+        Use with [[CanvasRenderer@render]] or [[WebGLRenderer@render]] for rendering.
     `)
 
 
@@ -16,7 +16,7 @@ export default doc('Sprite2D', () => {
         text('Create sprites with an image and optional frame data.')
 
         code('Basic sprite', () => {
-            const sprite = new Sprite2D({
+            const sprite = new Sprite({
                 image: myImage,
                 x: 100,
                 y: 100
@@ -29,7 +29,7 @@ export default doc('Sprite2D', () => {
                 frame: {x: 0, y: 0, w: 32, h: 32}
             }
 
-            const sprite = new Sprite2D({
+            const sprite = new Sprite({
                 image: spritesheet,
                 frame: frame,
                 x: 100,
@@ -38,7 +38,7 @@ export default doc('Sprite2D', () => {
         })
 
         code('With custom size', () => {
-            const sprite = new Sprite2D({
+            const sprite = new Sprite({
                 image: myImage,
                 width: 64,   // Scales width, height auto-calculated
                 x: 100,
@@ -57,7 +57,7 @@ export default doc('Sprite2D', () => {
         `)
 
         action('setFrame', () => {
-            const sprite = new Sprite2D({image: null})
+            const sprite = new Sprite({image: null})
 
             const frame1 = {frame: {x: 0, y: 0, w: 32, h: 32}}
             const frame2 = {frame: {x: 32, y: 0, w: 32, h: 32}}
@@ -89,7 +89,7 @@ export default doc('Sprite2D', () => {
         `)
 
         action('addAnimation / play / stop', () => {
-            const sprite = new Sprite2D({image: null})
+            const sprite = new Sprite({image: null})
 
             // Mock animation object
             const walkAnim = {
@@ -112,7 +112,7 @@ export default doc('Sprite2D', () => {
         })
 
         code('Animation setup', () => {
-            const sprite = new Sprite2D({image: spritesheet})
+            const sprite = new Sprite({image: spritesheet})
 
             // Add animations (typically SpriteAnimation instances)
             sprite.addAnimation('idle', idleAnimation)
@@ -138,19 +138,19 @@ export default doc('Sprite2D', () => {
 
         code('Explicit sizing', () => {
             // Set width, height auto-calculated from aspect ratio
-            const sprite1 = new Sprite2D({
+            const sprite1 = new Sprite({
                 image: myImage,
                 width: 64
             })
 
             // Set height, width auto-calculated from aspect ratio
-            const sprite2 = new Sprite2D({
+            const sprite2 = new Sprite({
                 image: myImage,
                 height: 48
             })
 
             // Both null = use frame dimensions
-            const sprite3 = new Sprite2D({
+            const sprite3 = new Sprite({
                 image: myImage,
                 frame: frame
             })
@@ -165,7 +165,7 @@ export default doc('Sprite2D', () => {
 
         action('With frame', () => {
             const frame = {frame: {x: 0, y: 0, w: 64, h: 48}}
-            const sprite = new Sprite2D({
+            const sprite = new Sprite({
                 image: null,
                 frame: frame
             })
@@ -176,7 +176,7 @@ export default doc('Sprite2D', () => {
 
         action('With explicit width', () => {
             const frame = {frame: {x: 0, y: 0, w: 64, h: 48}}
-            const sprite = new Sprite2D({
+            const sprite = new Sprite({
                 image: null,
                 frame: frame,
                 width: 128
@@ -194,7 +194,7 @@ export default doc('Sprite2D', () => {
         text('Inherited from [[Object2D@render]]. Supports position, rotation, scale, and anchor.')
 
         code('Transform example', () => {
-            const sprite = new Sprite2D({
+            const sprite = new Sprite({
                 image: myImage,
                 x: 200,
                 y: 150,

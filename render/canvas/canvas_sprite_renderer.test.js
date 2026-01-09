@@ -1,7 +1,7 @@
 import {describe, test, expect, beforeEach} from 'vitest'
 import CanvasSpriteRenderer from './canvas_sprite_renderer.js'
 import CanvasObjectRenderer from './canvas_object_renderer.js'
-import Sprite2D from '../sprite_2d.js'
+import Sprite from '../sprite.js'
 
 
 describe('CanvasSpriteRenderer', () => {
@@ -26,8 +26,8 @@ describe('CanvasSpriteRenderer', () => {
     })
 
 
-    test('handles returns Sprite2D', () => {
-        expect(CanvasSpriteRenderer.handles).toEqual([Sprite2D])
+    test('handles returns Sprite', () => {
+        expect(CanvasSpriteRenderer.handles).toEqual([Sprite])
     })
 
 

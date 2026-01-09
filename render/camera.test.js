@@ -1,14 +1,14 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
-import Camera2D from './camera_2d.js'
+import Camera from './camera.js'
 import PerkyModule from '../core/perky_module.js'
 
 
-describe(Camera2D, () => {
+describe(Camera, () => {
 
     let camera
 
     beforeEach(() => {
-        camera = new Camera2D()
+        camera = new Camera()
     })
 
 
@@ -18,7 +18,7 @@ describe(Camera2D, () => {
 
 
     test('$category', () => {
-        expect(Camera2D.$category).toBe('camera')
+        expect(Camera.$category).toBe('camera')
         expect(camera.$category).toBe('camera')
     })
 
@@ -36,7 +36,7 @@ describe(Camera2D, () => {
 
 
     test('constructor with options', () => {
-        const cam = new Camera2D({
+        const cam = new Camera({
             x: 10,
             y: 20,
             zoom: 2,
@@ -299,7 +299,7 @@ describe(Camera2D, () => {
     describe('unitsInView modes', () => {
 
         test('height-based mode with explicit object', () => {
-            const cam = new Camera2D({
+            const cam = new Camera({
                 unitsInView: {height: 10},
                 viewportWidth: 800,
                 viewportHeight: 600
@@ -311,7 +311,7 @@ describe(Camera2D, () => {
 
 
         test('width-based mode', () => {
-            const cam = new Camera2D({
+            const cam = new Camera({
                 unitsInView: {width: 20},
                 viewportWidth: 800,
                 viewportHeight: 600
@@ -324,7 +324,7 @@ describe(Camera2D, () => {
 
         test('cover mode shows at least both dimensions', () => {
             // Landscape viewport (800x600, ratio 4:3)
-            const cam = new Camera2D({
+            const cam = new Camera({
                 unitsInView: {width: 14, height: 5},
                 viewportWidth: 800,
                 viewportHeight: 600
@@ -342,7 +342,7 @@ describe(Camera2D, () => {
 
         test('cover mode on portrait viewport', () => {
             // Portrait viewport (600x800, ratio 3:4)
-            const cam = new Camera2D({
+            const cam = new Camera({
                 unitsInView: {width: 14, height: 5},
                 viewportWidth: 600,
                 viewportHeight: 800
@@ -357,7 +357,7 @@ describe(Camera2D, () => {
 
         test('cover mode on square viewport', () => {
             // Square viewport (800x800)
-            const cam = new Camera2D({
+            const cam = new Camera({
                 unitsInView: {width: 10, height: 10},
                 viewportWidth: 800,
                 viewportHeight: 800
@@ -387,7 +387,7 @@ describe(Camera2D, () => {
 
 
         test('width-based mode with zoom', () => {
-            const cam = new Camera2D({
+            const cam = new Camera({
                 unitsInView: {width: 20},
                 viewportWidth: 800,
                 viewportHeight: 600,
@@ -400,7 +400,7 @@ describe(Camera2D, () => {
 
 
         test('cover mode with zoom', () => {
-            const cam = new Camera2D({
+            const cam = new Camera({
                 unitsInView: {width: 14, height: 5},
                 viewportWidth: 800,
                 viewportHeight: 600,
@@ -452,7 +452,7 @@ describe(Camera2D, () => {
 
 
     test('transitionTo animates to another camera state', () => {
-        const otherCamera = new Camera2D({x: 50, y: 100, zoom: 3, rotation: Math.PI / 2})
+        const otherCamera = new Camera({x: 50, y: 100, zoom: 3, rotation: Math.PI / 2})
 
         camera.transitionTo(otherCamera, {duration: 1})
 
