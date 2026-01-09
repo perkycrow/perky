@@ -10,6 +10,34 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
     `)
 
 
+    section('$ Convention', () => {
+
+        text(`
+            All Perky configuration properties are prefixed with \`$\` to avoid conflicts
+            with your own properties. This convention ensures that you can freely use
+            any property name without risking collision with internal configuration.
+        `)
+
+        code('Reserved $ properties', () => {
+            const module = new PerkyModule({
+                $id: 'player',
+                $name: 'Player',
+                $category: 'entity',
+                $tags: ['controllable'],
+                $bind: 'player',
+                $lifecycle: true,
+                $eagerStart: true
+            })
+
+            // Your own properties are safe
+            module.health = 100
+            module.name = 'Hero'  // No conflict with $name
+            module.id = 'custom'  // No conflict with $id
+        })
+
+    })
+
+
     section('Creation', () => {
 
         text('Modules can be created directly or via subclassing.')
@@ -91,8 +119,11 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
     section('Children', () => {
 
         text(`
-            Modules can contain child modules.
+            Modules can contain child modules, stored in a [[Registry]] (\`childrenRegistry\`).
             Children inherit lifecycle from their parent.
+
+            Use \`create()\` to add children - it handles installation and lifecycle binding.
+            Using \`new\` directly won't call \`onInstall\` or set up the parent-child relationship.
         `)
 
         action('create', () => {
@@ -103,19 +134,10 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
                 $category: 'component'
             })
 
-            logger.log('children count:', parent.children.length)
-            logger.log('child.$id:', child.$id)
             logger.log('child.host:', child.host.$id)
-        })
-
-        action('getChild / hasChild', () => {
-            const parent = new PerkyModule({$id: 'parent'})
-            parent.create(PerkyModule, {$id: 'player'})
-            parent.create(PerkyModule, {$id: 'enemy'})
-
-            logger.log('hasChild player:', parent.hasChild('player'))
-            logger.log('hasChild boss:', parent.hasChild('boss'))
-            logger.log('getChild:', parent.getChild('player').$id)
+            logger.log('child.installed:', child.installed)
+            logger.log('hasChild:', parent.hasChild('child'))
+            logger.log('getChild:', parent.getChild('child').$id)
         })
 
         action('Lifecycle propagation', () => {
@@ -130,6 +152,33 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
 
             logger.log('Stopping parent...')
             parent.stop()
+        })
+
+        text(`
+            By default, \`$eagerStart\` is \`true\`. When a child is created on an already
+            started parent, the child will automatically start. Use \`$eagerStart: false\`
+            to defer startup and control it manually.
+        `)
+
+        action('$eagerStart (default: true)', () => {
+            const parent = new PerkyModule({$id: 'parent'})
+            parent.start()
+            logger.log('parent started:', parent.started)
+
+            // Child auto-starts because $eagerStart is true by default
+            const eager = parent.create(PerkyModule, {$id: 'eager'})
+            logger.log('eager.started:', eager.started)
+
+            // Disable auto-start with $eagerStart: false
+            const lazy = parent.create(PerkyModule, {
+                $id: 'lazy',
+                $eagerStart: false
+            })
+            logger.log('lazy.started:', lazy.started)
+
+            // Lazy child can be started manually
+            lazy.start()
+            logger.log('lazy after manual start:', lazy.started)
         })
 
         action('childrenByCategory', () => {
@@ -147,7 +196,10 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
 
     section('Tags', () => {
 
-        text('Tags allow flexible categorization and querying of modules.')
+        text(`
+            Tags allow flexible categorization and querying of modules.
+            Internally, tags are stored as an [[ObservableSet]], accessible via \`module.tags\`.
+        `)
 
         action('Basic tags', () => {
             const module = new PerkyModule({
@@ -186,7 +238,11 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
 
     section('Query', () => {
 
-        text('CSS-like selectors for finding modules in the hierarchy.')
+        text(`
+            CSS-like selectors for finding modules in the hierarchy.
+            \`#id\` matches by $id, \`.tag\` by tag, \`@category\` or bare \`category\` by $category.
+            See [[PerkyQuery]] for full syntax.
+        `)
 
         action('query / queryAll', () => {
             const app = new PerkyModule({$id: 'app'})
@@ -194,9 +250,9 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
             game.create(PerkyModule, {$id: 'player', $category: 'entity', $tags: ['controllable']})
             game.create(PerkyModule, {$id: 'enemy', $category: 'entity', $tags: ['hostile']})
 
-            logger.log('query #player:', app.query('#player')?.$id)
-            logger.log('queryAll entity:', app.queryAll('entity').map(e => e.$id))
-            logger.log('queryAll .hostile:', app.queryAll('.hostile').map(e => e.$id))
+            logger.log('#player:', app.query('#player')?.$id)
+            logger.log('@entity:', app.queryAll('@entity').map(e => e.$id))
+            logger.log('.hostile:', app.queryAll('.hostile').map(e => e.$id))
         })
 
     })
@@ -204,7 +260,7 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
 
     section('Events', () => {
 
-        text('PerkyModule extends Notifier for event handling.')
+        text('PerkyModule extends [[Notifier]] for event handling.')
 
         action('on / emit', () => {
             const module = new PerkyModule({$id: 'test'})
