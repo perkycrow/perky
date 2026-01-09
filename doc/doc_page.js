@@ -123,6 +123,28 @@ export default class DocPage extends HTMLElement {
     }
 
 
+    get activeTab () {
+        return this.#activeTab
+    }
+
+
+    get availableTabs () {
+        const tabs = ['doc']
+        if (this.#api) {
+            tabs.push('api')
+        }
+        if (this.#tests) {
+            tabs.push('test')
+        }
+        return tabs
+    }
+
+
+    switchTab (tab) {
+        this.#switchTab(tab)
+    }
+
+
     #buildDOM () {
         const style = document.createElement('style')
         style.textContent = STYLES
@@ -1752,33 +1774,22 @@ const STYLES = buildEditorStyles(
         }
 
         .doc-header {
-            flex-direction: column;
-            align-items: flex-start;
-            padding-top: 0;
-            border-bottom: none;
+            padding: 0.5rem 0;
             margin-bottom: 1rem;
+            border-bottom: none;
         }
 
         .doc-header h1 {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
         }
 
         .doc-tabs {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 1000;
-            border: 1px solid var(--border);
-            height: 44px;
-            padding: 0.25rem;
-            box-sizing: border-box;
+            display: none;
         }
 
         .doc-tab {
-            padding: 0 0.6rem;
-            height: 100%;
-            display: flex;
-            align-items: center;
+            padding: 0.3rem 0.5rem;
+            font-size: 0.7rem;
         }
     }
 `

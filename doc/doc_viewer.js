@@ -8,6 +8,8 @@ const docModules = import.meta.glob('../**/*.doc.js')
 const guideModules = import.meta.glob('./guides/**/*.guide.js')
 const isProduction = import.meta.env.PROD
 
+const HAMBURGER_ICON = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"></path></svg>'
+
 
 class DocViewer {
 
@@ -297,8 +299,11 @@ class DocViewer {
             }
 
             this.container.appendChild(docPage)
-
             this.currentDoc = docPath
+
+            requestAnimationFrame(() => {
+                updateMobileTabs(docPage)
+            })
         } catch (error) {
             logger.error('Failed to load doc:', error)
             this.container.innerHTML = `
@@ -307,6 +312,7 @@ class DocViewer {
                     <p>${error.message}</p>
                 </div>
             `
+            hideMobileTabs()
         }
     }
 
@@ -339,8 +345,8 @@ class DocViewer {
             }
 
             this.container.appendChild(docPage)
-
             this.currentDoc = guidePath
+            hideMobileTabs()
         } catch (error) {
             logger.error('Failed to load guide:', error)
             this.container.innerHTML = `
@@ -349,6 +355,7 @@ class DocViewer {
                     <p>${error.message}</p>
                 </div>
             `
+            hideMobileTabs()
         }
     }
 
@@ -476,12 +483,30 @@ function categoryHasVisibleItems (category) {
 
 
 function setupMobileMenu () {
-    const toggle = document.getElementById('mobile-toggle')
-    const sidebar = document.getElementById('docs-sidebar')
-    const overlay = document.getElementById('mobile-overlay')
+    let toggle = document.getElementById('mobile-toggle')
+    let overlay = document.getElementById('mobile-overlay')
+    const sidebar = document.querySelector('.docs-sidebar')
 
-    if (!toggle || !sidebar || !overlay) {
+    if (!sidebar) {
         return
+    }
+
+    sidebar.id = 'docs-sidebar'
+
+    if (!toggle) {
+        toggle = document.createElement('button')
+        toggle.id = 'mobile-toggle'
+        toggle.className = 'mobile-toggle'
+        toggle.setAttribute('aria-label', 'Toggle menu')
+        toggle.innerHTML = HAMBURGER_ICON
+        document.body.insertBefore(toggle, document.body.firstChild)
+    }
+
+    if (!overlay) {
+        overlay = document.createElement('div')
+        overlay.id = 'mobile-overlay'
+        overlay.className = 'mobile-overlay'
+        document.body.insertBefore(overlay, document.body.firstChild)
     }
 
     const openMenu = () => {
@@ -511,6 +536,51 @@ function setupMobileMenu () {
             closeMenu()
         }
     })
+}
+
+
+function getMobileTabsContainer () {
+    let container = document.getElementById('mobile-tabs')
+    if (!container) {
+        container = document.createElement('div')
+        container.id = 'mobile-tabs'
+        container.className = 'mobile-tabs'
+        document.body.appendChild(container)
+    }
+    return container
+}
+
+
+function updateMobileTabs (docPage) {
+    const container = getMobileTabsContainer()
+    const tabs = docPage.availableTabs
+
+    if (tabs.length <= 1) {
+        container.style.display = 'none'
+        return
+    }
+
+    container.innerHTML = ''
+    container.style.display = ''
+
+    for (const tab of tabs) {
+        const button = document.createElement('button')
+        button.textContent = tab.charAt(0).toUpperCase() + tab.slice(1)
+        button.className = docPage.activeTab === tab ? 'active' : ''
+        button.addEventListener('click', () => {
+            docPage.switchTab(tab)
+            updateMobileTabs(docPage)
+        })
+        container.appendChild(button)
+    }
+}
+
+
+function hideMobileTabs () {
+    const container = document.getElementById('mobile-tabs')
+    if (container) {
+        container.style.display = 'none'
+    }
 }
 
 
