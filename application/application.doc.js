@@ -1,5 +1,6 @@
 import {doc, section, text, code, action, container, logger} from '../doc/runtime.js'
 import Application from './application.js'
+import ActionController from '../core/action_controller.js'
 
 
 export default doc('Application', {context: 'simple'}, () => {
@@ -266,40 +267,57 @@ export default doc('Application', {context: 'simple'}, () => {
             app.execute('greet')
         })
 
-        container({title: 'Input → Action', height: 150, preset: 'interactive-alt'}, ctx => {
-            ctx.hint('Press G to greet')
+        container({title: 'Custom controller', height: 150, preset: 'interactive-alt'}, ctx => {
+            ctx.hint('Press G to greet, F to farewell')
 
             const app = new Application({$id: 'demo'})
             app.mount(ctx.container)
             app.start()
 
-            const updateDisplay = ctx.display(msg => msg || 'Waiting...')
+            // Custom controller with methods as actions
+            class GreetController extends ActionController {
+                greet () {
+                    logger.log('Hello!')
+                }
 
-            // Register action
-            app.addAction('greet', () => {
-                updateDisplay('Hello!')
-                setTimeout(() => updateDisplay('Waiting...'), 500)
-            })
+                farewell () {
+                    logger.log('Goodbye!')
+                }
+            }
 
-            // Bind key to action - ActionDispatcher listens to input:triggered
-            app.bindInput({controlName: 'KeyG', actionName: 'greet', eventType: 'pressed'})
+            app.registerController('greeter', GreetController)
+            app.pushActiveController('greeter')
+
+            // Bind keys to controller actions
+            app.bindInput({controlName: 'KeyG', actionName: 'greet'})
+            app.bindInput({controlName: 'KeyF', actionName: 'farewell'})
 
             ctx.setApp(app)
         })
 
-        code('ActionDispatcher flow', () => {
-            const app = new Application({$id: 'demo'})
+        code('Controller with bindings', () => {
+            class GameController extends ActionController {
+                static bindings = {
+                    moveUp: ['KeyW', 'ArrowUp'],
+                    moveDown: ['KeyS', 'ArrowDown'],
+                    shoot: 'Space'
+                }
 
-            // 1. Add action to main controller
-            app.addAction('jump', () => console.log('Jump!'))
+                moveUp () {
+                    console.log('up')
+                }
 
-            // 2. Bind input to action name
-            app.bindInput({controlName: 'Space', actionName: 'jump', eventType: 'pressed'})
+                moveDown () {
+                    console.log('down')
+                }
 
-            // 3. When Space is pressed:
-            //    InputSystem emits 'input:triggered' with {actionName: 'jump'}
-            //    ActionDispatcher.dispatchAction() receives it
-            //    ActionDispatcher.execute('jump') calls the action
+                shoot () {
+                    console.log('shoot')
+                }
+            }
+
+            // Bindings are auto-registered when controller is added
+            app.registerController('game', GameController)
         })
 
     })
