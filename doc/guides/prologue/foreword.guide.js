@@ -51,7 +51,7 @@ export default doc('Foreword', () => {
             track what's happening, a command palette for quick actions. These tools just
             work out of the box when you need them.
 
-            But here's the catch: they're not welded on. The same system that powers the
+            And they're not welded on. The same system that powers the
             built-in inspector can power yours. Want to visualize your custom AI behavior?
             Add your own inspector. Need a special way to display certain values in the
             logger? Write a log renderer. The framework eats its own cooking - everything

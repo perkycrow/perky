@@ -40,11 +40,11 @@ export default doc('Application', {context: 'simple'}, () => {
         text(`
             Application automatically creates these child modules:
 
-            - \`manifest\` - [[Manifest]] for config and assets
+            - \`manifest\` - [[Manifest@application]] for config and assets
             - \`actionDispatcher\` - [[ActionDispatcher]] for action routing
-            - \`perkyView\` - [[PerkyView]] for DOM and display
-            - \`sourceManager\` - [[SourceManager]] for asset loading
-            - \`inputSystem\` - [[InputSystem]] for keyboard, mouse, touch
+            - \`perkyView\` - [[PerkyView@application]] for DOM and display
+            - \`sourceManager\` - [[SourceManager@application]] for asset loading
+            - \`inputSystem\` - [[InputSystem@input]] for keyboard, mouse, touch
         `)
 
     })
@@ -52,7 +52,7 @@ export default doc('Application', {context: 'simple'}, () => {
 
     section('Configuration', () => {
 
-        text('Config methods are delegated from [[Manifest]].')
+        text('Config methods are delegated from [[Manifest@application]].')
 
         action('setConfig / getConfig', () => {
             const app = new Application({$id: 'demo'})
@@ -71,7 +71,7 @@ export default doc('Application', {context: 'simple'}, () => {
 
     section('Assets', () => {
 
-        text('Asset methods are delegated from [[Manifest]] and [[SourceManager]].')
+        text('Asset methods are delegated from [[Manifest@application]] and [[SourceManager@application]].')
 
         container({title: 'Load and display assets', height: 200, preset: 'centered'}, ctx => {
             const updateDisplay = ctx.display(content => content || 'Loading...')
@@ -130,7 +130,7 @@ export default doc('Application', {context: 'simple'}, () => {
 
     section('View', () => {
 
-        text('View methods are delegated from [[PerkyView]].')
+        text('View methods are delegated from [[PerkyView@application]].')
 
         container({title: 'Resize events', height: 200, preset: 'centered'}, ctx => {
             const app = new Application({$id: 'demo'})
@@ -164,7 +164,7 @@ export default doc('Application', {context: 'simple'}, () => {
 
     section('Input', () => {
 
-        text('Input methods are delegated from [[InputSystem]].')
+        text('Input methods are delegated from [[InputSystem@input]].')
 
         container({title: 'Move the box', height: 200, preset: 'interactive'}, ctx => {
             ctx.hint('Use WASD or arrow keys')

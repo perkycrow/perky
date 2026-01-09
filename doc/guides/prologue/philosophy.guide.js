@@ -12,9 +12,7 @@ export default doc('Philosophy', () => {
         text(`
             Everything is a \`PerkyModule\`. Your game, your player, that janky particle system you'll fix later. All modules.
 
-            Modules have children. Events bubble up. Actions go down. Learn it once, use it everywhere.
-
-            No magic. No special cases. Just trees all the way down.
+            Modules have children. Children have children. Learn it once, use it everywhere.
         `)
     })
 
@@ -22,7 +20,7 @@ export default doc('Philosophy', () => {
         text(`
             Open the \`package.json\`. Look at the runtime dependencies. There aren't any.
 
-            No lodash. No moment. No mystery package that pulls in half of npm. When something breaks, you know exactly where to look.
+            Less moving parts means less surprises. When something breaks, you know where to look.
         `)
     })
 
@@ -44,9 +42,9 @@ export default doc('Philosophy', () => {
 
     section('Go Build Something', () => {
         text(`
-            The API will change. Things will break. That's fine.
+            Perky has been growing for years, one feature at a time. It's a labor of love, not a weekend experiment.
 
-            The philosophy won't: **simple tools, no bullshit**.
+            If you build something with it, or just want to chat, the door's always open.
 
             *Stay perky.*
         `)
