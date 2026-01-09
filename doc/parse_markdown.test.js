@@ -142,6 +142,20 @@ describe('parse_markdown', () => {
             expect(result).toContain('Notifier</a>')
         })
 
+
+        test('doc link with category [[Name@category]]', () => {
+            const result = parseMarkdown('See [[Application@application]]')
+            expect(result).toContain('/application/application.doc.js')
+            expect(result).toContain('Application</a>')
+        })
+
+
+        test('doc link with category and section [[Name@category#Section]]', () => {
+            const result = parseMarkdown('See [[Game@game#Lifecycle]]')
+            expect(result).toContain('/game/game.doc.js')
+            expect(result).toContain('Game > Lifecycle</a>')
+        })
+
     })
 
 
@@ -151,8 +165,16 @@ describe('parse_markdown', () => {
             const customBuildUrl = vi.fn(() => '/custom/url')
             const result = parseMarkdown('See [[Test]]', {buildSeeUrl: customBuildUrl})
 
-            expect(customBuildUrl).toHaveBeenCalledWith('Test', 'doc', null)
+            expect(customBuildUrl).toHaveBeenCalledWith('Test', 'doc', null, null)
             expect(result).toContain('href="/custom/url"')
+        })
+
+
+        test('passes category to buildSeeUrl', () => {
+            const customBuildUrl = vi.fn(() => '/custom/url')
+            parseMarkdown('See [[Game@game]]', {buildSeeUrl: customBuildUrl})
+
+            expect(customBuildUrl).toHaveBeenCalledWith('Game', 'doc', null, 'game')
         })
 
     })

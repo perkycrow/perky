@@ -56,11 +56,18 @@ function parseSeeLink (ref, buildSeeUrl) {
     let name = ref
     let pageType = 'doc'
     let section = null
+    let category = null
 
     const hashIndex = ref.indexOf('#')
     if (hashIndex !== -1) {
         section = ref.slice(hashIndex + 1)
         ref = ref.slice(0, hashIndex)
+    }
+
+    const atIndex = ref.indexOf('@')
+    if (atIndex !== -1) {
+        category = ref.slice(atIndex + 1)
+        ref = ref.slice(0, atIndex)
     }
 
     const colonIndex = ref.indexOf(':')
@@ -71,21 +78,22 @@ function parseSeeLink (ref, buildSeeUrl) {
         pageType = ref.slice(colonIndex + 1)
     }
 
-    const url = buildSeeUrl(name, pageType, section)
+    const url = buildSeeUrl(name, pageType, section, category)
     const label = section ? `${name} > ${section}` : name
 
     return `<a href="${url}" class="doc-see-inline">${label}</a>`
 }
 
 
-function defaultBuildSeeUrl (name, pageType, section) {
+function defaultBuildSeeUrl (name, pageType, section, category = null) {
     const baseName = toKebabCase(name).replace(/-/g, '_')
-    let url = `?doc=/core/${baseName}.doc.js`
+    const cat = category || 'core'
+    let url = `?doc=/${cat}/${baseName}.doc.js`
 
     if (pageType === 'guide') {
         url = `?guide=/doc/guides/${baseName}.guide.js`
     } else if (pageType !== 'doc') {
-        url = `?doc=/core/${baseName}.doc.js&tab=${pageType}`
+        url = `?doc=/${cat}/${baseName}.doc.js&tab=${pageType}`
     }
 
     if (section) {

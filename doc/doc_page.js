@@ -986,7 +986,7 @@ function renderSee (block) {
 
     const link = document.createElement('a')
     link.className = 'doc-see-link'
-    link.href = buildSeeUrl(block.name, block.pageType, block.section)
+    link.href = buildSeeUrl(block.name, block.pageType, block.section, block.category)
 
     const label = buildSeeLabel(block.name, block.pageType, block.section)
     link.innerHTML = `
@@ -1003,24 +1003,25 @@ function renderSee (block) {
 }
 
 
-function buildSeeUrl (name, pageType, section) {
+function buildSeeUrl (name, pageType, section, category = null) {
     const baseName = toKebabCase(name).replace(/-/g, '_')
+    const cat = category || 'core'
     let url = ''
 
     if (isProduction) {
         if (pageType === 'guide') {
             url = `guide_${baseName}.html`
         } else if (pageType === 'api') {
-            url = `core_${baseName}_api.html`
+            url = `${cat}_${baseName}_api.html`
         } else if (pageType === 'test') {
-            url = `core_${baseName}_test.html`
+            url = `${cat}_${baseName}_test.html`
         } else {
-            url = `core_${baseName}.html`
+            url = `${cat}_${baseName}.html`
         }
     } else if (pageType === 'guide') {
         url = `?guide=/doc/guides/${baseName}.guide.js`
     } else {
-        url = `?doc=/core/${baseName}.doc.js&tab=${pageType}`
+        url = `?doc=/${cat}/${baseName}.doc.js&tab=${pageType}`
     }
 
     if (section) {

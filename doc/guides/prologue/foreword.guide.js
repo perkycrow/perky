@@ -33,7 +33,7 @@ export default doc('Foreword', () => {
         text(`
             So I made Perky fully optional. Every piece works standalone. Don't like a module?
             Ignore it, replace it, or delete it entirely. Look at the inheritance chain:
-            [[PerkyModule]] → [[Application]] → [[Game]]. Each layer adds the minimum building
+            [[PerkyModule]] → [[Application@application]] → [[Game@game]]. Each layer adds the minimum building
             blocks you might need. You can start from there, or if you know exactly what you
             want, start from [[PerkyModule]] and compose your own stack.
 

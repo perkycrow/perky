@@ -148,7 +148,7 @@ function extractLinks (content) {
     }
 
 
-    const inlineRegex = /\[\[([A-Za-z][A-Za-z0-9]*(?::[a-z]+)?(?:#[A-Za-z][A-Za-z0-9]*)?)\]\]/g
+    const inlineRegex = /\[\[([A-Za-z][A-Za-z0-9]*(?:@[a-z]+)?(?::[a-z]+)?(?:#[A-Za-z][A-Za-z0-9]*)?)\]\]/g
 
     while ((match = inlineRegex.exec(content)) !== null) {
         const ref = match[1]
@@ -167,6 +167,11 @@ function parseInlineLink (ref) {
     const hashIndex = ref.indexOf('#')
     if (hashIndex !== -1) {
         ref = ref.slice(0, hashIndex)
+    }
+
+    const atIndex = ref.indexOf('@')
+    if (atIndex !== -1) {
+        ref = ref.slice(0, atIndex)
     }
 
     const colonIndex = ref.indexOf(':')

@@ -112,7 +112,8 @@ export function see (name, options = {}) {
         type: 'see',
         name,
         pageType: options.type || 'doc',
-        section: options.section || null
+        section: options.section || null,
+        category: options.category || null
     })
 }
 
