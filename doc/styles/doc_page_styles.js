@@ -696,7 +696,12 @@ export const DOC_PAGE_STYLES = buildEditorStyles(
             display: none;
         }
 
+        .doc-main {
+            padding-right: 1rem;
+        }
+
         .doc-header {
+            position: static;
             padding: 0.5rem 0;
             margin-bottom: 1rem;
             border-bottom: none;

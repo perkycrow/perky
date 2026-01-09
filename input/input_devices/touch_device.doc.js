@@ -82,7 +82,7 @@ export default doc('TouchDevice', () => {
 
         container({title: 'Swipe detection', height: 200, preset: 'interactive-alt'}, ctx => {
             ctx.hint('Swipe up or down')
-            const updateDisplay = ctx.display(text => text || 'Waiting...')
+            const updateDisplay = ctx.display(t => t || 'Waiting...')
 
             const touch = new TouchDevice({
                 container: ctx.container
@@ -169,7 +169,7 @@ export default doc('TouchDevice', () => {
             const position = touch.getControl('position')
 
             position.on('updated', () => {
-                console.log('Touch at:', position.value.x, position.value.y)
+                logger.log('Touch at:', position.value.x, position.value.y)
             })
 
             touch.start()
@@ -182,10 +182,10 @@ export default doc('TouchDevice', () => {
 
             touch.on('control:pressed', (control) => {
                 if (control.name === 'swipeUp') {
-                    console.log('Swiped up!')
+                    logger.log('Swiped up!')
                 }
                 if (control.name === 'tap') {
-                    console.log('Tapped!')
+                    logger.log('Tapped!')
                 }
             })
 

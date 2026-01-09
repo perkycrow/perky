@@ -230,7 +230,11 @@ export default class PerkyLogger extends HTMLElement {
 
 
     #updateControlsVisibility () {
-
+        if (!this.#controlsEl) {
+            return
+        }
+        const hasEntries = this.#entries.length > 0
+        this.#controlsEl.classList.toggle('has-entries', hasEntries)
     }
 
 
@@ -585,7 +589,7 @@ const STYLES = buildEditorStyles(
     }
 
     .logger-content {
-        max-height: 250px;
+        max-height: min(250px, 25vh);
         overflow-y: auto;
     }
 
@@ -847,6 +851,17 @@ const STYLES = buildEditorStyles(
     .log-object-method-name,
     .log-module-method-name {
         white-space: nowrap;
+    }
+
+    @media (max-width: 1024px) {
+        .logger-content {
+            max-height: 150px;
+        }
+
+        .logger-controls.has-entries {
+            opacity: 1;
+            pointer-events: auto;
+        }
     }
 `
 )

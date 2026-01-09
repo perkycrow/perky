@@ -124,6 +124,7 @@ export default doc('ButtonControl', () => {
                 device: null,
                 name: 'test'
             })
+
             // button.pressThreshold is now 0.2
         })
 
