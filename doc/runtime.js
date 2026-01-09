@@ -103,6 +103,20 @@ export function action (title, fn) {
 }
 
 
+export function see (name, options = {}) {
+    if (!currentBlocks) {
+        throw new Error('see() must be called inside doc()')
+    }
+
+    currentBlocks.push({
+        type: 'see',
+        name,
+        pageType: options.type || 'doc',
+        section: options.section || null
+    })
+}
+
+
 const CONTAINER_PRESETS = {
     interactive: {
         tabIndex: 0,

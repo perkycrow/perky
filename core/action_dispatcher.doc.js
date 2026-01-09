@@ -145,7 +145,8 @@ export default doc('ActionDispatcher', () => {
         text(`
             Actions propagate through the controller stack from top to bottom.
             By default, an action stops at the first controller that handles it.
-            Use \`static propagable\` to let actions continue to lower controllers.
+            Use \`static propagable\` to let actions continue to lower controllers
+            (see [[ActionController#Propagation]]).
         `)
 
         text(`

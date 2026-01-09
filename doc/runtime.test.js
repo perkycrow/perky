@@ -1,5 +1,5 @@
 import {describe, test, expect, vi} from 'vitest'
-import {doc, section, setup, text, code, action, container, applyContainerPreset} from './runtime.js'
+import {doc, section, setup, text, code, action, see, container, applyContainerPreset} from './runtime.js'
 
 
 vi.mock('../core/logger.js', () => ({
@@ -210,6 +210,58 @@ describe('container', () => {
         expect(() => {
             container(() => {})
         }).toThrow('container() must be called inside doc()')
+    })
+
+})
+
+
+describe('see', () => {
+
+    test('creates see block with defaults', () => {
+        const result = doc('Test', () => {
+            see('ActionController')
+        })
+
+        expect(result.blocks[0].type).toBe('see')
+        expect(result.blocks[0].name).toBe('ActionController')
+        expect(result.blocks[0].pageType).toBe('doc')
+        expect(result.blocks[0].section).toBeNull()
+    })
+
+
+    test('creates see block with section', () => {
+        const result = doc('Test', () => {
+            see('ActionController', {section: 'Propagation'})
+        })
+
+        expect(result.blocks[0].name).toBe('ActionController')
+        expect(result.blocks[0].section).toBe('Propagation')
+    })
+
+
+    test('creates see block with type', () => {
+        const result = doc('Test', () => {
+            see('ActionController', {type: 'api'})
+        })
+
+        expect(result.blocks[0].pageType).toBe('api')
+    })
+
+
+    test('creates see block with type and section', () => {
+        const result = doc('Test', () => {
+            see('ActionController', {type: 'api', section: 'methods'})
+        })
+
+        expect(result.blocks[0].pageType).toBe('api')
+        expect(result.blocks[0].section).toBe('methods')
+    })
+
+
+    test('throws when called outside doc', () => {
+        expect(() => {
+            see('ActionController')
+        }).toThrow('see() must be called inside doc()')
     })
 
 })

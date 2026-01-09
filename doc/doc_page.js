@@ -448,7 +448,8 @@ export default class DocPage extends HTMLElement {
             code: () => renderCode(block, this.#getSourceFor(block)),
             action: () => renderAction(block, setup, this.#getSourceFor(block)),
             section: () => this.#renderSection(block),
-            container: () => this.#renderContainer(block, setup)
+            container: () => this.#renderContainer(block, setup),
+            see: () => renderSee(block)
         }
 
         const renderer = renderers[block.type]
@@ -953,15 +954,110 @@ function renderCode (block, extractedSource = null) {
 }
 
 
+function renderSee (block) {
+    const wrapper = document.createElement('div')
+    wrapper.className = 'doc-see'
+
+    const link = document.createElement('a')
+    link.className = 'doc-see-link'
+    link.href = buildSeeUrl(block.name, block.pageType, block.section)
+
+    const label = buildSeeLabel(block.name, block.pageType, block.section)
+    link.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        ${label}
+    `
+
+    wrapper.appendChild(link)
+    return wrapper
+}
+
+
+function buildSeeUrl (name, pageType, section) {
+    const baseName = toKebabCase(name).replace(/-/g, '_')
+    let url = ''
+
+    if (isProduction) {
+        if (pageType === 'guide') {
+            url = `guide_${baseName}.html`
+        } else if (pageType === 'api') {
+            url = `core_${baseName}_api.html`
+        } else if (pageType === 'test') {
+            url = `core_${baseName}_test.html`
+        } else {
+            url = `core_${baseName}.html`
+        }
+    } else {
+        if (pageType === 'guide') {
+            url = `?guide=/doc/guides/${baseName}.guide.js`
+        } else {
+            url = `?doc=/core/${baseName}.doc.js&tab=${pageType}`
+        }
+    }
+
+    if (section) {
+        url += `#${toKebabCase(section)}`
+    }
+
+    return url
+}
+
+
+function buildSeeLabel (name, pageType, section) {
+    let label = `See ${name}`
+
+    if (pageType !== 'doc') {
+        label += ` (${pageType})`
+    }
+
+    if (section) {
+        label += ` > ${section}`
+    }
+
+    return label
+}
+
+
 function parseMarkdown (text) {
     return text
         .replace(/`([^`]+)`/g, '<code>$1</code>')
         .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
         .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+        .replace(/\[\[([^\]]+)\]\]/g, (_, ref) => parseSeeLink(ref))
         .split('\n\n')
         .filter(p => p.trim())
         .map(p => `<p>${p.trim()}</p>`)
         .join('')
+}
+
+
+function parseSeeLink (ref) {
+    let name = ref
+    let pageType = 'doc'
+    let section = null
+
+    const hashIndex = ref.indexOf('#')
+    if (hashIndex !== -1) {
+        section = ref.slice(hashIndex + 1)
+        ref = ref.slice(0, hashIndex)
+    }
+
+    const colonIndex = ref.indexOf(':')
+    if (colonIndex !== -1) {
+        name = ref.slice(0, colonIndex)
+        pageType = ref.slice(colonIndex + 1)
+    } else {
+        name = ref
+    }
+
+    const url = buildSeeUrl(name, pageType, section)
+    const label = section ? `${name} > ${section}` : name
+
+    return `<a href="${url}" class="doc-see-inline">${label}</a>`
 }
 
 
@@ -1415,6 +1511,44 @@ const STYLES = buildEditorStyles(
         position: relative;
     }
 
+    .doc-see {
+        margin: 0.5rem 0;
+    }
+
+    .doc-see-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--accent);
+        text-decoration: none;
+        padding: 0.4rem 0.75rem;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        transition: background 0.15s, border-color 0.15s;
+    }
+
+    .doc-see-link:hover {
+        background: var(--bg-hover);
+        border-color: var(--accent);
+    }
+
+    .doc-see-link svg {
+        flex-shrink: 0;
+        opacity: 0.7;
+    }
+
+    .doc-see-inline {
+        color: var(--accent);
+        text-decoration: none;
+        border-bottom: 1px dotted var(--accent);
+        transition: border-color 0.15s;
+    }
+
+    .doc-see-inline:hover {
+        border-bottom-style: solid;
+    }
 
     .api-extends {
         font-size: 0.85rem;

@@ -19,7 +19,7 @@ vi.mock('../core/logger.js', () => ({
 }))
 
 vi.mock('../core/utils.js', () => ({
-    toKebabCase: vi.fn(str => str.toLowerCase().replace(/\s+/g, '-'))
+    toKebabCase: vi.fn(str => str.toLowerCase().replace(/\s+/g, '-').replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase())
 }))
 
 vi.mock('./runtime.js', () => ({
@@ -115,6 +115,26 @@ describe('doc_page', () => {
             const page = new DocPage()
             page.initialTab = 'api'
             page.initialTab = 'invalid'
+        })
+
+    })
+
+
+    describe('see block rendering', () => {
+
+        test('renderBlock handles see block type', () => {
+            const page = new DocPage()
+            const seeBlock = {
+                type: 'see',
+                name: 'ActionController',
+                pageType: 'doc',
+                section: null
+            }
+
+            page.doc = {
+                title: 'Test',
+                blocks: [seeBlock]
+            }
         })
 
     })
