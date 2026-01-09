@@ -217,13 +217,6 @@ export default class DocPage extends HTMLElement {
         title.textContent = this.#doc.title
         titleRow.appendChild(title)
 
-        if (this.#doc.options?.context) {
-            const context = document.createElement('span')
-            context.className = 'doc-context'
-            context.textContent = this.#doc.options.context
-            titleRow.appendChild(context)
-        }
-
         return titleRow
     }
 

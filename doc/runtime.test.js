@@ -30,12 +30,12 @@ describe('doc', () => {
 
 
     test('accepts options object', () => {
-        const result = doc('My Doc', {context: 'Core'}, () => {
+        const result = doc('My Doc', {foo: 'bar'}, () => {
             text('Hello')
         })
 
         expect(result.title).toBe('My Doc')
-        expect(result.options.context).toBe('Core')
+        expect(result.options.foo).toBe('bar')
     })
 
 

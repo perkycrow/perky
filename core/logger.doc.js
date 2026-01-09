@@ -1,7 +1,7 @@
 import {doc, section, text, code, action, logger} from '../doc/runtime.js'
 
 
-export default doc('Logger', {context: 'simple'}, () => {
+export default doc('Logger', () => {
 
     text(`
         Centralized logging system with history and event emission.

@@ -2,7 +2,7 @@ import {doc, section, setup, text, code, action, logger} from '../doc/runtime.js
 import Registry from './registry.js'
 
 
-export default doc('Registry', {context: 'simple'}, () => {
+export default doc('Registry', () => {
 
     text(`
         Extends [[ObservableMap]] with indexing capabilities.

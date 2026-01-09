@@ -2,7 +2,7 @@ import {doc, section, setup, text, code, action, logger} from '../doc/runtime.js
 import Vec2 from '../math/vec2.js'
 
 
-export default doc('PerkyLogger', {context: 'simple'}, () => {
+export default doc('PerkyLogger', () => {
 
     text(`
         Web component for displaying log messages.

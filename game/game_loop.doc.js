@@ -3,7 +3,7 @@ import GameLoop from './game_loop.js'
 import logger from '../core/logger.js'
 
 
-export default doc('GameLoop', {context: 'game'}, () => {
+export default doc('GameLoop', () => {
 
     text(`
         GameLoop manages the main update and render cycle of your game.

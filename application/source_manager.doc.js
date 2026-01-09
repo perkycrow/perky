@@ -4,7 +4,7 @@ import Manifest from './manifest.js'
 import Registry from '../core/registry.js'
 
 
-export default doc('SourceManager', {context: 'simple'}, () => {
+export default doc('SourceManager', () => {
 
     text(`
         Handles asset loading for Perky applications.

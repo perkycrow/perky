@@ -1,7 +1,7 @@
 import {doc, section, text, code, container, see, logger} from './runtime.js'
 
 
-export default doc('Doc Page', {context: 'Core'}, () => {
+export default doc('Doc Page', () => {
 
     text(`
         Web component that renders documentation pages.
@@ -38,7 +38,6 @@ export default doc('Doc Page', {context: 'Core'}, () => {
             // Main documentation data
             docPage.doc = {
                 title: 'Module Name',
-                options: {context: 'Core'},
                 blocks: []
             }
         })

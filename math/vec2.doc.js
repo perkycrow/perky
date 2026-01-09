@@ -2,7 +2,7 @@ import {doc, section, setup, text, code, action, logger} from '../doc/runtime.js
 import Vec2 from './vec2.js'
 
 
-export default doc('Vec2', {context: 'simple'}, () => {
+export default doc('Vec2', () => {
 
     text(`
         Mutable 2D vector with method chaining.

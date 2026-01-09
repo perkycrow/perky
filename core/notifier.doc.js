@@ -2,7 +2,7 @@ import {doc, section, text, action, logger} from '../doc/runtime.js'
 import Notifier from './notifier.js'
 
 
-export default doc('Notifier', {context: 'simple'}, () => {
+export default doc('Notifier', () => {
 
     text(`
         Event emitter for decoupled communication between components.

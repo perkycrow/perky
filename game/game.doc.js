@@ -1,7 +1,7 @@
 import {doc, text, see} from '../doc/runtime.js'
 
 
-export default doc('Game', {context: 'game'}, () => {
+export default doc('Game', () => {
 
     text(`
         Game extends [[Application@application]] with a game loop and render system built-in.

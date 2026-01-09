@@ -22,7 +22,7 @@ import {
 } from './utils.js'
 
 
-export default doc('Utils', {context: 'simple'}, () => {
+export default doc('Utils', () => {
 
     text(`
         Collection of utility functions for string manipulation,

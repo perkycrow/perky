@@ -2,7 +2,7 @@ import {doc, section, setup, text, code, action, logger} from '../doc/runtime.js
 import Inflector from './inflector.js'
 
 
-export default doc('Inflector', {context: 'simple'}, () => {
+export default doc('Inflector', () => {
 
     text(`
         English language inflection and string transformation utilities.

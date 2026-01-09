@@ -2,7 +2,7 @@ import {doc, section, setup, text, code, action, logger} from '../doc/runtime.js
 import Manifest from './manifest.js'
 
 
-export default doc('Manifest', {context: 'simple'}, () => {
+export default doc('Manifest', () => {
 
     text(`
         Manages application configuration and assets.

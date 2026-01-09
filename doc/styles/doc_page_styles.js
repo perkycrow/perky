@@ -93,15 +93,6 @@ export const DOC_PAGE_STYLES = buildEditorStyles(
         color: var(--fg-primary);
     }
 
-    .doc-context {
-        font-family: var(--font-mono);
-        font-size: 0.7rem;
-        padding: 0.2rem 0.5rem;
-        background: var(--bg-hover);
-        border-radius: 4px;
-        color: var(--fg-muted);
-    }
-
     .doc-tabs {
         display: flex;
         gap: 0.25rem;
