@@ -157,8 +157,8 @@ export default class PerkyLogger extends HTMLElement {
         style.textContent = STYLES
         this.shadowRoot.appendChild(style)
 
-        this.#containerEl = document.createElement('div')
-        this.#updateClasses()
+        const wrapper = document.createElement('div')
+        wrapper.className = 'logger-wrapper'
 
         this.#controlsEl = document.createElement('div')
         this.#controlsEl.className = 'logger-controls'
@@ -170,6 +170,13 @@ export default class PerkyLogger extends HTMLElement {
         clearBtn.addEventListener('click', () => this.clear())
         this.#controlsEl.appendChild(clearBtn)
 
+        const copyAllBtn = document.createElement('button')
+        copyAllBtn.className = 'logger-btn'
+        copyAllBtn.innerHTML = COPY_ICON
+        copyAllBtn.title = 'Copy all logs'
+        copyAllBtn.addEventListener('click', () => this.#copyAllLogs())
+        this.#controlsEl.appendChild(copyAllBtn)
+
         this.#opacityToggle = document.createElement('button')
         this.#opacityToggle.className = 'logger-btn pinned'
         this.#opacityToggle.innerHTML = EYE_ICON
@@ -177,12 +184,17 @@ export default class PerkyLogger extends HTMLElement {
         this.#opacityToggle.addEventListener('click', () => this.#togglePin())
         this.#controlsEl.appendChild(this.#opacityToggle)
 
-        this.#containerEl.appendChild(this.#controlsEl)
+        wrapper.appendChild(this.#controlsEl)
+
+        this.#containerEl = document.createElement('div')
+        this.#updateClasses()
 
         this.#contentEl = createLoggerContent()
         this.#containerEl.appendChild(this.#contentEl)
 
-        this.shadowRoot.appendChild(this.#containerEl)
+        wrapper.appendChild(this.#containerEl)
+
+        this.shadowRoot.appendChild(wrapper)
     }
 
 
@@ -193,10 +205,32 @@ export default class PerkyLogger extends HTMLElement {
     }
 
 
+    #copyAllLogs () {
+        const allText = this.#entries
+            .map(entry => {
+                if (entry.classList.contains('logger-spacer')) {
+                    return '---'
+                }
+                if (entry.classList.contains('logger-title-entry')) {
+                    return `=== ${entry.textContent} ===`
+                }
+                const message = entry.querySelector('.logger-message')
+                const timestamp = entry.querySelector('.logger-timestamp')
+                if (message && timestamp) {
+                    const formattedText = extractFormattedText(message)
+                    return `[${timestamp.textContent}] ${formattedText}`
+                }
+                return ''
+            })
+            .filter(text => text)
+            .join('\n\n')
+
+        copyToClipboard(allText)
+    }
+
+
     #updateControlsVisibility () {
-        if (this.#controlsEl) {
-            this.#controlsEl.classList.toggle('visible', this.#entries.length >= 2)
-        }
+
     }
 
 
@@ -302,6 +336,17 @@ export default class PerkyLogger extends HTMLElement {
         timestampEl.textContent = time.toLocaleTimeString()
         entry.appendChild(timestampEl)
 
+        const copyBtn = document.createElement('button')
+        copyBtn.className = 'logger-copy-btn'
+        copyBtn.innerHTML = COPY_ICON
+        copyBtn.title = 'Copy log entry'
+        copyBtn.addEventListener('click', (e) => {
+            e.stopPropagation()
+            const text = extractFormattedText(messageElement)
+            copyToClipboard(`[${timestampEl.textContent}] ${text}`)
+        })
+        entry.appendChild(copyBtn)
+
         this.#entries.push(entry)
 
         while (this.#entries.length > this.#maxEntries) {
@@ -397,9 +442,51 @@ function formatMessage (...messages) {
 }
 
 
+function extractFormattedText (element) {
+    const rows = element.querySelectorAll('.log-object-row, .log-array-row, .log-module-row, .log-module-meta-row')
+
+    if (rows.length === 0) {
+        return element.textContent.trim()
+    }
+
+    const getRowDepth = (row) => {
+        let depth = 0
+        let parent = row.parentElement
+
+        while (parent && parent !== row.closest('.logger-message')) {
+            if (parent.classList.contains('log-object-expanded') ||
+                parent.classList.contains('log-array-expanded') ||
+                parent.classList.contains('log-module-expanded')) {
+                depth++
+            }
+            parent = parent.parentElement
+        }
+
+        return depth
+    }
+
+    const lines = Array.from(rows).map(row => {
+        const depth = getRowDepth(row)
+        const indent = '  '.repeat(depth)
+        return indent + row.textContent.trim()
+    })
+
+    return lines.join('\n')
+}
+
+
+function copyToClipboard (text) {
+    navigator.clipboard.writeText(text).catch(err => {
+        logger.error('Failed to copy to clipboard:', err)
+    })
+}
+
+
 const EYE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>'
 
 const CLEAR_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>'
+
+const COPY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>'
 
 
 const STYLES = buildEditorStyles(
@@ -415,20 +502,47 @@ const STYLES = buildEditorStyles(
         --logger-padding: 0;
         --logger-border: 1px solid var(--border);
         --logger-border-radius: 6px;
+        --logger-bg: var(--bg-primary);
+    }
+
+    .logger-wrapper {
+        width: var(--logger-width);
+        margin: var(--logger-margin);
+        position: relative;
+    }
+
+    .logger-controls {
+        display: flex;
+        gap: 2px;
+        background: var(--logger-bg);
+        padding: 4px 6px;
+        border: var(--logger-border);
+        border-bottom: none;
+        border-radius: var(--logger-border-radius) var(--logger-border-radius) 0 0;
+        width: fit-content;
+        margin-left: auto;
+        margin-right: 10px;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        pointer-events: none;
+    }
+
+    .logger-wrapper:hover .logger-controls {
+        opacity: 1;
+        pointer-events: auto;
     }
 
     .logger {
-        width: var(--logger-width);
-        margin: var(--logger-margin);
-        padding: var(--logger-padding);
         border-radius: var(--logger-border-radius);
         overflow: hidden;
         z-index: 100;
         position: relative;
-        background: var(--bg-primary);
+        background: var(--logger-bg);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         border: var(--logger-border);
         color: var(--fg-primary);
+        padding: var(--logger-padding);
         transition: opacity 0.2s ease;
     }
 
@@ -438,22 +552,6 @@ const STYLES = buildEditorStyles(
 
     .logger-faded:hover {
         opacity: 1;
-    }
-
-    .logger-controls {
-        position: absolute;
-        top: 4px;
-        right: 4px;
-        display: none;
-        gap: 2px;
-        z-index: 10;
-        background: var(--bg-primary);
-        padding: 2px;
-        border-radius: 4px;
-    }
-
-    .logger-controls.visible {
-        display: flex;
     }
 
     .logger-btn {
@@ -494,7 +592,7 @@ const STYLES = buildEditorStyles(
     .logger-entry {
         padding: 3px 12px;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         gap: 8px;
         font-size: 10px;
     }
@@ -506,6 +604,7 @@ const STYLES = buildEditorStyles(
         flex-shrink: 0;
         background: var(--fg-muted);
         opacity: 0.5;
+        margin-top: 6px;
     }
 
     .log-info .logger-indicator {
@@ -540,10 +639,42 @@ const STYLES = buildEditorStyles(
         flex-shrink: 0;
         opacity: 0;
         transition: opacity 0.15s;
+        margin-top: 2px;
     }
 
     .logger-entry:hover .logger-timestamp {
         opacity: 1;
+    }
+
+    .logger-copy-btn {
+        width: 14px;
+        height: 14px;
+        padding: 2px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: var(--fg-muted);
+        opacity: 0;
+        transition: opacity 0.15s, color 0.15s;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1px;
+    }
+
+    .logger-copy-btn svg {
+        width: 100%;
+        height: 100%;
+    }
+
+    .logger-entry:hover .logger-copy-btn {
+        opacity: 0.5;
+    }
+
+    .logger-copy-btn:hover {
+        opacity: 1 !important;
+        color: var(--accent);
     }
 
     .logger-message {

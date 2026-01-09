@@ -10,12 +10,9 @@ import VignettePass from '../render/postprocessing/passes/vignette_pass.js'
 import DayNightPass from './postprocessing/day_night_pass.js'
 
 import manifest from './manifest.js'
-import debug from '../core/debug.js'
 import logger from '../core/logger.js'
 
 
-debug.enableDebug()
-window.debug = debug
 window.logger = logger
 
 export default class DefendTheDen extends Game {

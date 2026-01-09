@@ -250,10 +250,10 @@ export default doc('ObservableMap', {context: 'simple'}, () => {
             const map = new ObservableMap()
 
             map.on('set', (key, value, oldValue) => {
-                if (oldValue !== undefined) {
-                    logger.log(`updated ${key}: ${oldValue} → ${value}`)
-                } else {
+                if (oldValue === undefined) {
                     logger.log(`added ${key}: ${value}`)
+                } else {
+                    logger.log(`updated ${key}: ${oldValue} → ${value}`)
                 }
             })
 
@@ -423,6 +423,7 @@ export default doc('ObservableMap', {context: 'simple'}, () => {
             })
 
             primary.set('sync', 'test')
+
             // replica now also has 'sync' → 'test'
         })
 

@@ -990,6 +990,7 @@ const STYLES = buildEditorStyles(
     .doc-main {
         flex: 1;
         min-width: 0;
+        padding-right: 1rem;
     }
 
     .doc-toc {

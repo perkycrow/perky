@@ -224,8 +224,7 @@ export default doc('Registry', {context: 'simple'}, () => {
             logger.log('weapons:', registry.lookup('type', 'weapon'))
             logger.log('rare armor:',
                 registry.lookup('rarity', 'rare')
-                    .filter(item => item.type === 'armor')
-            )
+                    .filter(item => item.type === 'armor'))
         })
 
         code('Observable integration', () => {
@@ -233,11 +232,11 @@ export default doc('Registry', {context: 'simple'}, () => {
 
             // Registry extends ObservableMap
             registry.on('set', (key, value) => {
-                console.log('added:', key, value)
+                logger.log('added:', key, value)
             })
 
             registry.on('delete', (key, value) => {
-                console.log('removed:', key, value)
+                logger.log('removed:', key, value)
             })
 
             registry.set('item', {data: 'test'})

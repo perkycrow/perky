@@ -3488,8 +3488,8 @@
       },
       {
         "name": "log",
-        "line": 284,
-        "source": "log (message, type = 'info', format = 'text', timestamp = null) {\n    const entry = document.createElement('div')\n    entry.className = `logger-entry log-${type}`\n\n    const indicator = document.createElement('span')\n    indicator.className = 'logger-indicator'\n    entry.appendChild(indicator)\n\n    const messageElement = document.createElement('span')\n    messageElement.className = 'logger-message'\n\n    processMessage(messageElement, message, format)\n\n    entry.appendChild(messageElement)\n\n    const time = timestamp ? new Date(timestamp) : new Date()\n    const timestampEl = document.createElement('span')\n    timestampEl.className = 'logger-timestamp'\n    timestampEl.textContent = time.toLocaleTimeString()\n    entry.appendChild(timestampEl)\n\n    this.#entries.push(entry)\n\n    while (this.#entries.length > this.#maxEntries) {\n        const removed = this.#entries.shift()\n        if (removed.parentNode) {\n            removed.parentNode.removeChild(removed)\n        }\n    }\n\n    if (this.#contentEl) {\n        this.#contentEl.appendChild(entry)\n        this.#contentEl.scrollTop = this.#contentEl.scrollHeight\n    }\n\n    this.#updateControlsVisibility()\n\n    return entry\n}",
+        "line": 318,
+        "source": "log (message, type = 'info', format = 'text', timestamp = null) {\n    const entry = document.createElement('div')\n    entry.className = `logger-entry log-${type}`\n\n    const indicator = document.createElement('span')\n    indicator.className = 'logger-indicator'\n    entry.appendChild(indicator)\n\n    const messageElement = document.createElement('span')\n    messageElement.className = 'logger-message'\n\n    processMessage(messageElement, message, format)\n\n    entry.appendChild(messageElement)\n\n    const time = timestamp ? new Date(timestamp) : new Date()\n    const timestampEl = document.createElement('span')\n    timestampEl.className = 'logger-timestamp'\n    timestampEl.textContent = time.toLocaleTimeString()\n    entry.appendChild(timestampEl)\n\n    const copyBtn = document.createElement('button')\n    copyBtn.className = 'logger-copy-btn'\n    copyBtn.innerHTML = COPY_ICON\n    copyBtn.title = 'Copy log entry'\n    copyBtn.addEventListener('click', (e) => {\n        e.stopPropagation()\n        const text = extractFormattedText(messageElement)\n        copyToClipboard(`[${timestampEl.textContent}] ${text}`)\n    })\n    entry.appendChild(copyBtn)\n\n    this.#entries.push(entry)\n\n    while (this.#entries.length > this.#maxEntries) {\n        const removed = this.#entries.shift()\n        if (removed.parentNode) {\n            removed.parentNode.removeChild(removed)\n        }\n    }\n\n    if (this.#contentEl) {\n        this.#contentEl.appendChild(entry)\n        this.#contentEl.scrollTop = this.#contentEl.scrollHeight\n    }\n\n    this.#updateControlsVisibility()\n\n    return entry\n}",
         "kind": "method",
         "params": [
           "message",
@@ -3500,7 +3500,7 @@
       },
       {
         "name": "info",
-        "line": 325,
+        "line": 370,
         "source": "info (...messages) {\n    return this.log(formatMessage(...messages), 'info')\n}",
         "kind": "method",
         "params": [
@@ -3509,7 +3509,7 @@
       },
       {
         "name": "notice",
-        "line": 330,
+        "line": 375,
         "source": "notice (...messages) {\n    return this.log(formatMessage(...messages), 'notice')\n}",
         "kind": "method",
         "params": [
@@ -3518,7 +3518,7 @@
       },
       {
         "name": "warn",
-        "line": 335,
+        "line": 380,
         "source": "warn (...messages) {\n    return this.log(formatMessage(...messages), 'warn')\n}",
         "kind": "method",
         "params": [
@@ -3527,7 +3527,7 @@
       },
       {
         "name": "error",
-        "line": 340,
+        "line": 385,
         "source": "error (...messages) {\n    return this.log(formatMessage(...messages), 'error')\n}",
         "kind": "method",
         "params": [
@@ -3536,7 +3536,7 @@
       },
       {
         "name": "success",
-        "line": 345,
+        "line": 390,
         "source": "success (...messages) {\n    return this.log(formatMessage(...messages), 'success')\n}",
         "kind": "method",
         "params": [
@@ -3545,14 +3545,14 @@
       },
       {
         "name": "spacer",
-        "line": 350,
+        "line": 395,
         "source": "spacer () {\n    const entry = document.createElement('div')\n    entry.className = 'logger-entry logger-spacer'\n    this.#entries.push(entry)\n\n    if (this.#contentEl) {\n        this.#contentEl.appendChild(entry)\n    }\n}",
         "kind": "method",
         "params": []
       },
       {
         "name": "title",
-        "line": 361,
+        "line": 406,
         "source": "title (title) {\n    const entry = document.createElement('div')\n    entry.className = 'logger-entry logger-title-entry'\n    entry.textContent = title\n    this.#entries.push(entry)\n\n    if (this.#contentEl) {\n        this.#contentEl.appendChild(entry)\n    }\n}",
         "kind": "method",
         "params": [
@@ -3561,7 +3561,7 @@
       },
       {
         "name": "clear",
-        "line": 373,
+        "line": 418,
         "source": "clear () {\n    this.#entries = []\n    if (this.#contentEl) {\n        this.#contentEl.innerHTML = ''\n    }\n    this.#updateControlsVisibility()\n}",
         "kind": "method",
         "params": []
