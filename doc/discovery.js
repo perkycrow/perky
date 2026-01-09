@@ -24,29 +24,63 @@ function loadOrderConfig () {
 }
 
 
+function getCategoryRootAndFull (category) {
+    const parts = category.split('/')
+    const root = parts[0]
+    return {root, full: category}
+}
+
+
+function getCategoryPosition (category, categoryOrder) {
+    const cat = getCategoryRootAndFull(category)
+    let index = categoryOrder.indexOf(cat.full)
+    if (index === -1) {
+        index = categoryOrder.indexOf(cat.root)
+    }
+    return index === -1 ? 999 : index
+}
+
+
+function compareCategoriesWithSameRoot (categoryA, categoryB) {
+    const aCat = getCategoryRootAndFull(categoryA)
+    const bCat = getCategoryRootAndFull(categoryB)
+
+    if (aCat.root === aCat.full && bCat.root !== bCat.full && aCat.root === bCat.root) {
+        return -1
+    }
+    if (bCat.root === bCat.full && aCat.root !== aCat.full && aCat.root === bCat.root) {
+        return 1
+    }
+
+    return categoryA.localeCompare(categoryB)
+}
+
+
+function getItemPosition (itemId, category, itemOrder) {
+    const categoryItems = itemOrder[category] || []
+    const index = categoryItems.indexOf(itemId)
+    return index === -1 ? 999 : index
+}
+
+
 function sortWithOrder (items, orderConfig) {
     const categoryOrder = orderConfig.categories || []
     const itemOrder = orderConfig.items || {}
 
     return items.sort((a, b) => {
-        const catIndexA = categoryOrder.indexOf(a.category)
-        const catIndexB = categoryOrder.indexOf(b.category)
-        const catPosA = catIndexA === -1 ? 999 : catIndexA
-        const catPosB = catIndexB === -1 ? 999 : catIndexB
+        const catPosA = getCategoryPosition(a.category, categoryOrder)
+        const catPosB = getCategoryPosition(b.category, categoryOrder)
 
         if (catPosA !== catPosB) {
             return catPosA - catPosB
         }
 
         if (a.category !== b.category) {
-            return a.category.localeCompare(b.category)
+            return compareCategoriesWithSameRoot(a.category, b.category)
         }
 
-        const categoryItems = itemOrder[a.category] || []
-        const itemIndexA = categoryItems.indexOf(a.id)
-        const itemIndexB = categoryItems.indexOf(b.id)
-        const itemPosA = itemIndexA === -1 ? 999 : itemIndexA
-        const itemPosB = itemIndexB === -1 ? 999 : itemIndexB
+        const itemPosA = getItemPosition(a.id, a.category, itemOrder)
+        const itemPosB = getItemPosition(b.id, b.category, itemOrder)
 
         if (itemPosA !== itemPosB) {
             return itemPosA - itemPosB

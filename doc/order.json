@@ -10,13 +10,10 @@
             "core",
             "application",
             "game",
-            "editor",
-            "editor/inspectors",
-            "editor/log_renderers",
+            "render",
             "input",
-            "input/input_devices",
             "math",
-            "render"
+            "editor"
         ],
         "items": {}
     }

@@ -1575,433 +1575,312 @@
     },
     "isDefault": true
   },
-  "/editor/perky_explorer.doc.js": {
+  "/render/canvas_2d.doc.js": {
     "type": "class",
-    "file": "/editor/perky_explorer.js",
-    "name": "PerkyExplorer",
-    "line": 10,
-    "extends": "BaseEditorComponent",
+    "file": "/render/canvas_2d.js",
+    "name": "Canvas2D",
+    "line": 11,
+    "extends": "BaseRenderer",
     "statics": [
       {
-        "name": "observedAttributes",
-        "line": 12,
-        "source": "static observedAttributes = ['embedded']",
+        "name": "$name",
+        "line": 13,
+        "source": "static $name = 'canvas2D'",
         "kind": "property",
-        "value": "['embedded']"
+        "value": "'canvas2D'"
       }
     ],
     "methods": [
       {
-        "name": "connectedCallback",
-        "line": 36,
-        "source": "connectedCallback () {\n    this.#buildDOM()\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "disconnectedCallback",
-        "line": 41,
-        "source": "disconnectedCallback () {\n    if (this.#contextMenuEl && this.#contextMenuEl.parentNode) {\n        this.#contextMenuEl.parentNode.removeChild(this.#contextMenuEl)\n    }\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "attributeChangedCallback",
-        "line": 48,
-        "source": "attributeChangedCallback (name, oldValue, newValue) {\n    if (oldValue === newValue) {\n        return\n    }\n\n    if (name === 'embedded') {\n        this.#embedded = newValue !== null\n        this.#updateEmbeddedMode()\n    }\n}",
-        "kind": "method",
-        "params": [
-          "name",
-          "oldValue",
-          "newValue"
-        ]
-      },
-      {
-        "name": "setModule",
-        "line": 76,
-        "source": "setModule (module) {\n    this.#module = module\n    this.#rootModule = module\n    this.#selectedModule = null\n\n    if (this.#rootNode) {\n        this.#rootNode.setModule(module, 0)\n        if (module) {\n            this.#rootNode.setExpanded(true)\n        }\n    }\n\n    this.#updateTreeVisibility()\n    this.#updateDetails()\n    this.#updateHeaderControls()\n    this.#closeSceneTree()\n}",
-        "kind": "method",
-        "params": [
-          "module"
-        ]
-      },
-      {
-        "name": "getModule",
-        "line": 95,
-        "source": "getModule () {\n    return this.#module\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "focusModule",
-        "line": 466,
-        "source": "focusModule (module) {\n    if (!module) {\n        return\n    }\n\n    this.#rootModule = module\n    this.#rootNode.setModule(module, 0)\n    this.#rootNode.setExpanded(true)\n    this.#updateHeaderControls()\n\n\n    if (this.#selectedModule) {\n        const node = this.#rootNode.findNode(n => n.getModule() === this.#selectedModule)\n        if (node) {\n            node.setSelected(true)\n        } else {\n\n\n            this.#handleNodeSelect(module)\n        }\n    }\n}",
-        "kind": "method",
-        "params": [
-          "module"
-        ]
-      }
-    ],
-    "getters": [
-      {
-        "name": "embedded",
-        "line": 60,
-        "source": "get embedded () {\n    return this.#embedded\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "setters": [
-      {
-        "name": "embedded",
-        "line": 65,
-        "source": "set embedded (value) {\n    this.#embedded = value\n    if (value) {\n        this.setAttribute('embedded', '')\n    } else {\n        this.removeAttribute('embedded')\n    }\n    this.#updateEmbeddedMode()\n}",
-        "kind": "method",
-        "params": [
-          "value"
-        ]
-      }
-    ],
-    "constructor": null,
-    "isDefault": true
-  },
-  "/editor/perky_logger.doc.js": {
-    "type": "class",
-    "file": "/editor/perky_logger.js",
-    "name": "PerkyLogger",
-    "line": 17,
-    "extends": "HTMLElement",
-    "statics": [
-      {
-        "name": "observedAttributes",
-        "line": 19,
-        "source": "static observedAttributes = ['max-entries', 'position', 'timestamp', 'theme']",
-        "kind": "property",
-        "value": "['max-entries', 'position', 'timestamp', 'theme']"
-      }
-    ],
-    "methods": [
-      {
-        "name": "connectedCallback",
-        "line": 44,
-        "source": "connectedCallback () {\n    this.#buildDOM()\n    this.#bindLoggerEvents()\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "disconnectedCallback",
+        "name": "registerRenderer",
         "line": 50,
-        "source": "disconnectedCallback () {\n    this.#unbindLoggerEvents()\n}",
+        "source": "registerRenderer (renderer) {\n    renderer.init({ctx: this.ctx, canvas: this.canvas})\n\n    for (const ObjectClass of renderer.constructor.handles) {\n        this.#rendererRegistry.set(ObjectClass, renderer)\n    }\n\n    if (!this.#renderers.includes(renderer)) {\n        this.#renderers.push(renderer)\n    }\n\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "renderer"
+        ]
+      },
+      {
+        "name": "unregisterRenderer",
+        "line": 65,
+        "source": "unregisterRenderer (renderer) {\n    for (const ObjectClass of renderer.constructor.handles) {\n        if (this.#rendererRegistry.get(ObjectClass) === renderer) {\n            this.#rendererRegistry.delete(ObjectClass)\n        }\n    }\n\n    const index = this.#renderers.indexOf(renderer)\n    if (index !== -1) {\n        this.#renderers.splice(index, 1)\n    }\n\n    renderer.dispose()\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "renderer"
+        ]
+      },
+      {
+        "name": "onDispose",
+        "line": 82,
+        "source": "onDispose () {\n    for (const renderer of this.#renderers) {\n        renderer.dispose()\n    }\n    this.#renderers = []\n    this.#rendererRegistry.clear()\n\n    if (this.#debugGizmoRenderer) {\n        this.#debugGizmoRenderer.dispose()\n        this.#debugGizmoRenderer = null\n    }\n\n    super.onDispose()\n    this.ctx = null\n}",
         "kind": "method",
         "params": []
       },
       {
-        "name": "attributeChangedCallback",
-        "line": 55,
-        "source": "attributeChangedCallback (name, oldValue, newValue) {\n    if (oldValue === newValue) {\n        return\n    }\n\n    this.#handleAttributeChange(name, newValue)\n}",
+        "name": "render",
+        "line": 99,
+        "source": "render (scene) {\n    const ctx = this.ctx\n\n    this.stats.totalObjects = 0\n    this.stats.renderedObjects = 0\n    this.stats.culledObjects = 0\n\n    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)\n\n    if (this.backgroundColor && this.backgroundColor !== 'transparent') {\n        ctx.fillStyle = this.backgroundColor\n        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)\n    }\n\n    this.camera.update()\n\n    ctx.save()\n    this.camera.applyToContext(ctx, this.pixelRatio)\n\n    scene.updateWorldMatrix(false)\n\n    for (const renderer of this.#renderers) {\n        renderer.reset()\n    }\n\n    const debugGizmoRenderer = this.enableDebugGizmos ? this.#debugGizmoRenderer : null\n    if (debugGizmoRenderer) {\n        debugGizmoRenderer.reset()\n    }\n\n    traverseAndCollect(scene, this.#rendererRegistry, {\n        camera: this.camera,\n        enableCulling: this.enableCulling,\n        stats: this.stats,\n        debugGizmoRenderer\n    })\n\n    for (const renderer of this.#renderers) {\n        renderer.flush()\n    }\n\n    if (debugGizmoRenderer) {\n        debugGizmoRenderer.flush()\n    }\n\n    ctx.restore()\n}",
         "kind": "method",
         "params": [
-          "name",
-          "oldValue",
-          "newValue"
-        ]
-      },
-      {
-        "name": "log",
-        "line": 284,
-        "source": "log (message, type = 'info', format = 'text', timestamp = null) {\n    const entry = document.createElement('div')\n    entry.className = `logger-entry log-${type}`\n\n    const indicator = document.createElement('span')\n    indicator.className = 'logger-indicator'\n    entry.appendChild(indicator)\n\n    const messageElement = document.createElement('span')\n    messageElement.className = 'logger-message'\n\n    processMessage(messageElement, message, format)\n\n    entry.appendChild(messageElement)\n\n    const time = timestamp ? new Date(timestamp) : new Date()\n    const timestampEl = document.createElement('span')\n    timestampEl.className = 'logger-timestamp'\n    timestampEl.textContent = time.toLocaleTimeString()\n    entry.appendChild(timestampEl)\n\n    this.#entries.push(entry)\n\n    while (this.#entries.length > this.#maxEntries) {\n        const removed = this.#entries.shift()\n        if (removed.parentNode) {\n            removed.parentNode.removeChild(removed)\n        }\n    }\n\n    if (this.#contentEl) {\n        this.#contentEl.appendChild(entry)\n        this.#contentEl.scrollTop = this.#contentEl.scrollHeight\n    }\n\n    this.#updateControlsVisibility()\n\n    return entry\n}",
-        "kind": "method",
-        "params": [
-          "message",
-          "type = ...",
-          "format = ...",
-          "timestamp = ..."
-        ]
-      },
-      {
-        "name": "info",
-        "line": 325,
-        "source": "info (...messages) {\n    return this.log(formatMessage(...messages), 'info')\n}",
-        "kind": "method",
-        "params": [
-          "...messages"
-        ]
-      },
-      {
-        "name": "notice",
-        "line": 330,
-        "source": "notice (...messages) {\n    return this.log(formatMessage(...messages), 'notice')\n}",
-        "kind": "method",
-        "params": [
-          "...messages"
-        ]
-      },
-      {
-        "name": "warn",
-        "line": 335,
-        "source": "warn (...messages) {\n    return this.log(formatMessage(...messages), 'warn')\n}",
-        "kind": "method",
-        "params": [
-          "...messages"
-        ]
-      },
-      {
-        "name": "error",
-        "line": 340,
-        "source": "error (...messages) {\n    return this.log(formatMessage(...messages), 'error')\n}",
-        "kind": "method",
-        "params": [
-          "...messages"
-        ]
-      },
-      {
-        "name": "success",
-        "line": 345,
-        "source": "success (...messages) {\n    return this.log(formatMessage(...messages), 'success')\n}",
-        "kind": "method",
-        "params": [
-          "...messages"
-        ]
-      },
-      {
-        "name": "spacer",
-        "line": 350,
-        "source": "spacer () {\n    const entry = document.createElement('div')\n    entry.className = 'logger-entry logger-spacer'\n    this.#entries.push(entry)\n\n    if (this.#contentEl) {\n        this.#contentEl.appendChild(entry)\n    }\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "title",
-        "line": 361,
-        "source": "title (title) {\n    const entry = document.createElement('div')\n    entry.className = 'logger-entry logger-title-entry'\n    entry.textContent = title\n    this.#entries.push(entry)\n\n    if (this.#contentEl) {\n        this.#contentEl.appendChild(entry)\n    }\n}",
-        "kind": "method",
-        "params": [
-          "title"
-        ]
-      },
-      {
-        "name": "clear",
-        "line": 373,
-        "source": "clear () {\n    this.#entries = []\n    if (this.#contentEl) {\n        this.#contentEl.innerHTML = ''\n    }\n    this.#updateControlsVisibility()\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "getters": [
-      {
-        "name": "maxEntries",
-        "line": 97,
-        "source": "get maxEntries () {\n    return this.#maxEntries\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "position",
-        "line": 108,
-        "source": "get position () {\n    return this.#position\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "timestamp",
-        "line": 120,
-        "source": "get timestamp () {\n    return this.#timestamp\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "theme",
-        "line": 135,
-        "source": "get theme () {\n    return this.#theme\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "entries",
-        "line": 150,
-        "source": "get entries () {\n    return this.#entries\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "setters": [
-      {
-        "name": "maxEntries",
-        "line": 102,
-        "source": "set maxEntries (value) {\n    this.#maxEntries = value\n    this.setAttribute('max-entries', value)\n}",
-        "kind": "method",
-        "params": [
-          "value"
-        ]
-      },
-      {
-        "name": "position",
-        "line": 113,
-        "source": "set position (value) {\n    this.#position = value\n    this.setAttribute('position', value)\n    this.#updateClasses()\n}",
-        "kind": "method",
-        "params": [
-          "value"
-        ]
-      },
-      {
-        "name": "timestamp",
-        "line": 125,
-        "source": "set timestamp (value) {\n    this.#timestamp = value\n    if (value) {\n        this.setAttribute('timestamp', '')\n    } else {\n        this.removeAttribute('timestamp')\n    }\n}",
-        "kind": "method",
-        "params": [
-          "value"
-        ]
-      },
-      {
-        "name": "theme",
-        "line": 140,
-        "source": "set theme (value) {\n    this.#theme = value\n    if (value) {\n        this.setAttribute('theme', value)\n    } else {\n        this.removeAttribute('theme')\n    }\n}",
-        "kind": "method",
-        "params": [
-          "value"
+          "scene"
         ]
       }
     ],
+    "getters": [],
+    "setters": [],
     "constructor": {
       "name": "constructor",
-      "line": 38,
-      "source": "constructor () {\n    super()\n    this.attachShadow({mode: 'open'})\n}",
+      "line": 19,
+      "source": "constructor (options = {}) {\n    super(options)\n\n    this.ctx = this.canvas.getContext('2d')\n\n    this.#setupDefaultRenderers()\n    this.applyPixelRatio()\n\n    this.backgroundColor = options.backgroundColor ?? null\n    this.enableCulling = options.enableCulling ?? false\n    this.enableDebugGizmos = options.enableDebugGizmos ?? true\n\n    this.stats = {\n        totalObjects: 0,\n        renderedObjects: 0,\n        culledObjects: 0\n    }\n}",
       "kind": "constructor",
-      "params": []
+      "params": [
+        "options = ..."
+      ]
     },
     "isDefault": true
   },
-  "/editor/toggle_input.doc.js": {
+  "/render/webgl_canvas_2d.doc.js": {
     "type": "class",
-    "file": "/editor/toggle_input.js",
-    "name": "ToggleInput",
-    "line": 67,
-    "extends": "HTMLElement",
+    "file": "/render/webgl_canvas_2d.js",
+    "name": "WebGLCanvas2D",
+    "line": 19,
+    "extends": "BaseRenderer",
     "statics": [
       {
-        "name": "observedAttributes",
-        "line": 75,
-        "source": "static get observedAttributes () {\n    return ['checked', 'label']\n}",
-        "kind": "method",
-        "params": []
+        "name": "$name",
+        "line": 21,
+        "source": "static $name = 'webGLCanvas2D'",
+        "kind": "property",
+        "value": "'webGLCanvas2D'"
       }
     ],
     "methods": [
       {
-        "name": "connectedCallback",
-        "line": 87,
-        "source": "connectedCallback () {\n    this.#updateDisplay()\n}",
+        "name": "registerRenderer",
+        "line": 118,
+        "source": "registerRenderer (renderer) {\n    const context = {\n        gl: this.gl,\n        spriteProgram: this.spriteProgram,\n        primitiveProgram: this.primitiveProgram,\n        textureManager: this.textureManager,\n        shaderEffectRegistry: this.#shaderEffectRegistry\n    }\n\n    renderer.init(context)\n\n    for (const ObjectClass of renderer.constructor.handles) {\n        this.#rendererRegistry.set(ObjectClass, renderer)\n    }\n\n    if (!this.#renderers.includes(renderer)) {\n        this.#renderers.push(renderer)\n    }\n\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "renderer"
+        ]
+      },
+      {
+        "name": "unregisterRenderer",
+        "line": 141,
+        "source": "unregisterRenderer (renderer) {\n    for (const ObjectClass of renderer.constructor.handles) {\n        if (this.#rendererRegistry.get(ObjectClass) === renderer) {\n            this.#rendererRegistry.delete(ObjectClass)\n        }\n    }\n\n    const index = this.#renderers.indexOf(renderer)\n    if (index !== -1) {\n        this.#renderers.splice(index, 1)\n    }\n\n    renderer.dispose()\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "renderer"
+        ]
+      },
+      {
+        "name": "applyPixelRatio",
+        "line": 158,
+        "source": "applyPixelRatio () {\n    super.applyPixelRatio()\n\n    if (this.gl) {\n        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)\n    }\n\n    if (this.#postProcessor) {\n        this.#postProcessor.resize(this.canvas.width, this.canvas.height)\n    }\n}",
         "kind": "method",
         "params": []
       },
       {
-        "name": "attributeChangedCallback",
-        "line": 92,
-        "source": "attributeChangedCallback (name, oldValue, newValue) {\n    handleAttributeChange(this, name, oldValue, newValue)\n}",
+        "name": "registerShaderEffect",
+        "line": 181,
+        "source": "registerShaderEffect (EffectClass) {\n    return this.#shaderEffectRegistry.register(EffectClass)\n}",
+        "kind": "method",
+        "params": [
+          "EffectClass"
+        ]
+      },
+      {
+        "name": "setUniform",
+        "line": 186,
+        "source": "setUniform (name, value, type = null) {\n    this.#shaderEffectRegistry.setUniform(name, value, type)\n    return this\n}",
         "kind": "method",
         "params": [
           "name",
-          "oldValue",
-          "newValue"
+          "value",
+          "type = ..."
         ]
       },
       {
-        "name": "setChecked",
-        "line": 111,
-        "source": "setChecked (val) {\n    this.#checked = val\n    this.#updateDisplay()\n}",
+        "name": "getUniform",
+        "line": 192,
+        "source": "getUniform (name) {\n    return this.#shaderEffectRegistry.getUniform(name)\n}",
         "kind": "method",
         "params": [
-          "val"
+          "name"
         ]
       },
       {
-        "name": "setLabel",
-        "line": 117,
-        "source": "setLabel (val) {\n    this.#label = val\n    if (this.#labelEl) {\n        this.#labelEl.textContent = this.#label\n    }\n}",
+        "name": "registerShader",
+        "line": 197,
+        "source": "registerShader (id, definition) {\n    return this.#shaderRegistry.register(id, definition)\n}",
         "kind": "method",
         "params": [
-          "val"
+          "id",
+          "definition"
+        ]
+      },
+      {
+        "name": "getShader",
+        "line": 202,
+        "source": "getShader (id) {\n    return this.#shaderRegistry.get(id)\n}",
+        "kind": "method",
+        "params": [
+          "id"
+        ]
+      },
+      {
+        "name": "addPostPass",
+        "line": 212,
+        "source": "addPostPass (pass) {\n    this.#postProcessor.addPass(pass)\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "pass"
+        ]
+      },
+      {
+        "name": "removePostPass",
+        "line": 218,
+        "source": "removePostPass (pass) {\n    this.#postProcessor.removePass(pass)\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "pass"
+        ]
+      },
+      {
+        "name": "setRenderGroups",
+        "line": 224,
+        "source": "setRenderGroups (configs) {\n    this.clearRenderGroups()\n\n    if (!this.#compositeProgram) {\n        this.#setupCompositeShader()\n    }\n    if (!this.#compositeQuad) {\n        this.#compositeQuad = new FullscreenQuad(this.gl)\n    }\n\n    for (const config of configs) {\n        this.create(RenderGroup, config)\n    }\n\n    return this\n}",
+        "kind": "method",
+        "params": [
+          "configs"
+        ]
+      },
+      {
+        "name": "clearRenderGroups",
+        "line": 242,
+        "source": "clearRenderGroups () {\n    const groups = this.renderGroups\n    for (const group of groups) {\n        this.removeChild(group.$id)\n    }\n    return this\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onDispose",
+        "line": 288,
+        "source": "onDispose () {\n    for (const renderer of this.#renderers) {\n        renderer.dispose()\n    }\n    this.#renderers = []\n    this.#rendererRegistry.clear()\n\n    if (this.#debugGizmoRenderer) {\n        this.#debugGizmoRenderer.dispose()\n        this.#debugGizmoRenderer = null\n    }\n\n    this.clearRenderGroups()\n\n    if (this.#compositeQuad) {\n        this.#compositeQuad.dispose(this.gl)\n        this.#compositeQuad = null\n    }\n\n    if (this.#postProcessor) {\n        this.#postProcessor.dispose()\n        this.#postProcessor = null\n    }\n\n    if (this.#shaderEffectRegistry) {\n        this.#shaderEffectRegistry.dispose()\n        this.#shaderEffectRegistry = null\n    }\n\n    if (this.#shaderRegistry) {\n        this.#shaderRegistry.dispose()\n        this.#shaderRegistry = null\n    }\n\n    super.onDispose()\n    this.gl = null\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "render",
+        "line": 348,
+        "source": "render (scene) {\n    if (this.renderGroups.length > 0 && !scene) {\n        return this.#renderWithGroups()\n    }\n    return this.#renderSingleScene(scene)\n}",
+        "kind": "method",
+        "params": [
+          "scene"
         ]
       }
     ],
     "getters": [
       {
-        "name": "checked",
-        "line": 97,
-        "source": "get checked () {\n    return this.#checked\n}",
+        "name": "shaderRegistry",
+        "line": 171,
+        "source": "get shaderRegistry () {\n    return this.#shaderRegistry\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "shaderEffectRegistry",
+        "line": 176,
+        "source": "get shaderEffectRegistry () {\n    return this.#shaderEffectRegistry\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "postProcessor",
+        "line": 207,
+        "source": "get postProcessor () {\n    return this.#postProcessor\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "renderGroups",
+        "line": 251,
+        "source": "get renderGroups () {\n    return this.childrenByCategory('renderGroup')\n}",
         "kind": "method",
         "params": []
       }
     ],
-    "setters": [
-      {
-        "name": "checked",
-        "line": 102,
-        "source": "set checked (val) {\n    const newChecked = Boolean(val)\n    if (this.#checked !== newChecked) {\n        this.#checked = newChecked\n        this.#updateDisplay()\n    }\n}",
-        "kind": "method",
-        "params": [
-          "val"
-        ]
-      }
-    ],
+    "setters": [],
     "constructor": {
       "name": "constructor",
-      "line": 80,
-      "source": "constructor () {\n    super()\n    this.attachShadow({mode: 'open'})\n    this.#buildDOM()\n}",
+      "line": 33,
+      "source": "constructor (options = {}) {\n    const {autoFit, ...parentOptions} = options\n    super(parentOptions)\n\n    this.#setupWebGL()\n    this.#setupDefaultRenderers()\n    this.applyPixelRatio()\n\n    this.backgroundColor = options.backgroundColor ?? null\n    this.enableCulling = options.enableCulling ?? false\n    this.enableDebugGizmos = options.enableDebugGizmos ?? true\n\n    this.stats = {\n        totalObjects: 0,\n        renderedObjects: 0,\n        culledObjects: 0,\n        drawCalls: 0\n    }\n\n    if (autoFit) {\n        this.autoFitEnabled = true\n    }\n}",
       "kind": "constructor",
-      "params": []
+      "params": [
+        "options = ..."
+      ]
     },
     "isDefault": true
   },
-  "/editor/vec2_input.doc.js": {
+  "/input/input_control.doc.js": {
     "type": "class",
-    "file": "/editor/vec2_input.js",
-    "name": "Vec2Input",
-    "line": 43,
-    "extends": "HTMLElement",
+    "file": "/input/input_control.js",
+    "name": "InputControl",
+    "line": 8,
+    "extends": "Notifier",
     "statics": [
       {
-        "name": "observedAttributes",
+        "name": "VALUE",
+        "line": 10,
+        "source": "static VALUE = VALUE",
+        "kind": "property",
+        "value": "VALUE"
+      },
+      {
+        "name": "OLD_VALUE",
+        "line": 11,
+        "source": "static OLD_VALUE = OLD_VALUE",
+        "kind": "property",
+        "value": "OLD_VALUE"
+      }
+    ],
+    "methods": [
+      {
+        "name": "setValue",
+        "line": 27,
+        "source": "setValue (value, event = null) {\n    if (value === this[VALUE]) {\n        return false\n    }\n\n    this[OLD_VALUE] = this[VALUE]\n    this[VALUE] = value\n\n    this.emit('updated', this[VALUE], this[OLD_VALUE], event)\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "value",
+          "event = ..."
+        ]
+      },
+      {
+        "name": "getDefaultValue",
         "line": 51,
-        "source": "static get observedAttributes () {\n    return ['label']\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
-    "methods": [
-      {
-        "name": "connectedCallback",
-        "line": 63,
-        "source": "connectedCallback () {\n    this.#updateDisplay()\n}",
+        "source": "getDefaultValue () { // eslint-disable-line local/class-methods-use-this -- clean\n    return 0\n}",
         "kind": "method",
         "params": []
       },
       {
-        "name": "attributeChangedCallback",
-        "line": 68,
-        "source": "attributeChangedCallback (name, oldValue, newValue) {\n    handleAttributeChange(this, name, oldValue, newValue)\n}",
+        "name": "reset",
+        "line": 56,
+        "source": "reset () {\n    this.value = this.getDefaultValue()\n}",
         "kind": "method",
-        "params": [
-          "name",
-          "oldValue",
-          "newValue"
-        ]
-      },
-      {
-        "name": "setLabel",
-        "line": 84,
-        "source": "setLabel (val) {\n    this.#label = val\n    if (this.#labelEl) {\n        this.#labelEl.textContent = this.#label\n    }\n}",
-        "kind": "method",
-        "params": [
-          "val"
-        ]
+        "params": []
       }
     ],
     "getters": [
       {
         "name": "value",
-        "line": 73,
-        "source": "get value () {\n    return this.#vec2\n}",
+        "line": 41,
+        "source": "get value () {\n    return this[VALUE]\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "oldValue",
+        "line": 46,
+        "source": "get oldValue () {\n    return this[OLD_VALUE]\n}",
         "kind": "method",
         "params": []
       }
@@ -2009,129 +1888,24 @@
     "setters": [
       {
         "name": "value",
-        "line": 78,
-        "source": "set value (vec2) {\n    this.#vec2 = vec2\n    this.#updateDisplay()\n}",
+        "line": 22,
+        "source": "set value (value) {\n    this.setValue(value)\n}",
         "kind": "method",
         "params": [
-          "vec2"
+          "value"
         ]
       }
     ],
     "constructor": {
       "name": "constructor",
-      "line": 56,
-      "source": "constructor () {\n    super()\n    this.attachShadow({mode: 'open'})\n    this.#buildDOM()\n}",
+      "line": 13,
+      "source": "constructor ({device, name, value}) {\n    super()\n    this.device     = device\n    this.name       = name\n    this[OLD_VALUE] = null\n    this[VALUE]     = value ?? this.getDefaultValue()\n}",
       "kind": "constructor",
-      "params": []
+      "params": [
+        "{...}"
+      ]
     },
     "isDefault": true
-  },
-  "/editor/inspectors/action_controller_inspector.doc.js": {
-    "type": "class",
-    "file": "/editor/inspectors/action_controller_inspector.js",
-    "name": "ActionControllerInspector",
-    "line": 87,
-    "extends": "BaseInspector",
-    "statics": [
-      {
-        "name": "matches",
-        "line": 89,
-        "source": "static matches (module) {\n    return module instanceof ActionController\n}",
-        "kind": "method",
-        "params": [
-          "module"
-        ]
-      }
-    ],
-    "methods": [
-      {
-        "name": "buildDOM",
-        "line": 101,
-        "source": "buildDOM () {\n    super.buildDOM()\n\n    this.#containerEl = document.createElement('div')\n    this.shadowRoot.insertBefore(this.#containerEl, this.gridEl)\n    this.gridEl.style.display = 'none'\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "onModuleSet",
-        "line": 110,
-        "source": "onModuleSet (module) {\n    if (module) {\n        this.#update()\n    }\n}",
-        "kind": "method",
-        "params": [
-          "module"
-        ]
-      }
-    ],
-    "getters": [],
-    "setters": [],
-    "constructor": {
-      "name": "constructor",
-      "line": 95,
-      "source": "constructor () {\n    super(customStyles)\n    this.buildDOM()\n}",
-      "kind": "constructor",
-      "params": []
-    },
-    "isDefault": true
-  },
-  "/editor/inspectors/action_dispatcher_inspector.doc.js": {
-    "type": "class",
-    "file": "/editor/inspectors/action_dispatcher_inspector.js",
-    "name": "ActionDispatcherInspector",
-    "line": 105,
-    "extends": "BaseInspector",
-    "statics": [
-      {
-        "name": "matches",
-        "line": 107,
-        "source": "static matches (module) {\n    return module instanceof ActionDispatcher\n}",
-        "kind": "method",
-        "params": [
-          "module"
-        ]
-      }
-    ],
-    "methods": [
-      {
-        "name": "buildDOM",
-        "line": 119,
-        "source": "buildDOM () {\n    super.buildDOM()\n\n    this.#containerEl = document.createElement('div')\n    this.shadowRoot.insertBefore(this.#containerEl, this.gridEl)\n    this.gridEl.style.display = 'none'\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "onModuleSet",
-        "line": 128,
-        "source": "onModuleSet (module) {\n    if (module) {\n        this.#update()\n    }\n}",
-        "kind": "method",
-        "params": [
-          "module"
-        ]
-      }
-    ],
-    "getters": [],
-    "setters": [],
-    "constructor": {
-      "name": "constructor",
-      "line": 113,
-      "source": "constructor () {\n    super(customStyles)\n    this.buildDOM()\n}",
-      "kind": "constructor",
-      "params": []
-    },
-    "isDefault": true
-  },
-  "/editor/log_renderers/vec2_log_renderer.doc.js": {
-    "type": "module",
-    "file": "/editor/log_renderers/vec2_log_renderer.js",
-    "functions": [
-      {
-        "name": "formatNumber",
-        "line": 5,
-        "params": [
-          "n"
-        ],
-        "source": "function formatNumber (n) {\n    if (Number.isInteger(n)) {\n        return String(n)\n    }\n    return n.toFixed(2)\n}"
-      }
-    ],
-    "exports": []
   },
   "/input/input_devices/keyboard_device.doc.js": {
     "type": "class",
@@ -2832,54 +2606,489 @@
     },
     "isDefault": true
   },
-  "/render/canvas_2d.doc.js": {
+  "/editor/perky_explorer.doc.js": {
     "type": "class",
-    "file": "/render/canvas_2d.js",
-    "name": "Canvas2D",
-    "line": 11,
-    "extends": "BaseRenderer",
+    "file": "/editor/perky_explorer.js",
+    "name": "PerkyExplorer",
+    "line": 10,
+    "extends": "BaseEditorComponent",
     "statics": [
       {
-        "name": "$name",
-        "line": 13,
-        "source": "static $name = 'canvas2D'",
+        "name": "observedAttributes",
+        "line": 12,
+        "source": "static observedAttributes = ['embedded']",
         "kind": "property",
-        "value": "'canvas2D'"
+        "value": "['embedded']"
       }
     ],
     "methods": [
       {
-        "name": "registerRenderer",
-        "line": 50,
-        "source": "registerRenderer (renderer) {\n    renderer.init({ctx: this.ctx, canvas: this.canvas})\n\n    for (const ObjectClass of renderer.constructor.handles) {\n        this.#rendererRegistry.set(ObjectClass, renderer)\n    }\n\n    if (!this.#renderers.includes(renderer)) {\n        this.#renderers.push(renderer)\n    }\n\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "renderer"
-        ]
-      },
-      {
-        "name": "unregisterRenderer",
-        "line": 65,
-        "source": "unregisterRenderer (renderer) {\n    for (const ObjectClass of renderer.constructor.handles) {\n        if (this.#rendererRegistry.get(ObjectClass) === renderer) {\n            this.#rendererRegistry.delete(ObjectClass)\n        }\n    }\n\n    const index = this.#renderers.indexOf(renderer)\n    if (index !== -1) {\n        this.#renderers.splice(index, 1)\n    }\n\n    renderer.dispose()\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "renderer"
-        ]
-      },
-      {
-        "name": "onDispose",
-        "line": 82,
-        "source": "onDispose () {\n    for (const renderer of this.#renderers) {\n        renderer.dispose()\n    }\n    this.#renderers = []\n    this.#rendererRegistry.clear()\n\n    if (this.#debugGizmoRenderer) {\n        this.#debugGizmoRenderer.dispose()\n        this.#debugGizmoRenderer = null\n    }\n\n    super.onDispose()\n    this.ctx = null\n}",
+        "name": "connectedCallback",
+        "line": 36,
+        "source": "connectedCallback () {\n    this.#buildDOM()\n}",
         "kind": "method",
         "params": []
       },
       {
-        "name": "render",
-        "line": 99,
-        "source": "render (scene) {\n    const ctx = this.ctx\n\n    this.stats.totalObjects = 0\n    this.stats.renderedObjects = 0\n    this.stats.culledObjects = 0\n\n    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)\n\n    if (this.backgroundColor && this.backgroundColor !== 'transparent') {\n        ctx.fillStyle = this.backgroundColor\n        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)\n    }\n\n    this.camera.update()\n\n    ctx.save()\n    this.camera.applyToContext(ctx, this.pixelRatio)\n\n    scene.updateWorldMatrix(false)\n\n    for (const renderer of this.#renderers) {\n        renderer.reset()\n    }\n\n    const debugGizmoRenderer = this.enableDebugGizmos ? this.#debugGizmoRenderer : null\n    if (debugGizmoRenderer) {\n        debugGizmoRenderer.reset()\n    }\n\n    traverseAndCollect(scene, this.#rendererRegistry, {\n        camera: this.camera,\n        enableCulling: this.enableCulling,\n        stats: this.stats,\n        debugGizmoRenderer\n    })\n\n    for (const renderer of this.#renderers) {\n        renderer.flush()\n    }\n\n    if (debugGizmoRenderer) {\n        debugGizmoRenderer.flush()\n    }\n\n    ctx.restore()\n}",
+        "name": "disconnectedCallback",
+        "line": 41,
+        "source": "disconnectedCallback () {\n    if (this.#contextMenuEl && this.#contextMenuEl.parentNode) {\n        this.#contextMenuEl.parentNode.removeChild(this.#contextMenuEl)\n    }\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "attributeChangedCallback",
+        "line": 48,
+        "source": "attributeChangedCallback (name, oldValue, newValue) {\n    if (oldValue === newValue) {\n        return\n    }\n\n    if (name === 'embedded') {\n        this.#embedded = newValue !== null\n        this.#updateEmbeddedMode()\n    }\n}",
         "kind": "method",
         "params": [
-          "scene"
+          "name",
+          "oldValue",
+          "newValue"
+        ]
+      },
+      {
+        "name": "setModule",
+        "line": 76,
+        "source": "setModule (module) {\n    this.#module = module\n    this.#rootModule = module\n    this.#selectedModule = null\n\n    if (this.#rootNode) {\n        this.#rootNode.setModule(module, 0)\n        if (module) {\n            this.#rootNode.setExpanded(true)\n        }\n    }\n\n    this.#updateTreeVisibility()\n    this.#updateDetails()\n    this.#updateHeaderControls()\n    this.#closeSceneTree()\n}",
+        "kind": "method",
+        "params": [
+          "module"
+        ]
+      },
+      {
+        "name": "getModule",
+        "line": 95,
+        "source": "getModule () {\n    return this.#module\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "focusModule",
+        "line": 466,
+        "source": "focusModule (module) {\n    if (!module) {\n        return\n    }\n\n    this.#rootModule = module\n    this.#rootNode.setModule(module, 0)\n    this.#rootNode.setExpanded(true)\n    this.#updateHeaderControls()\n\n\n    if (this.#selectedModule) {\n        const node = this.#rootNode.findNode(n => n.getModule() === this.#selectedModule)\n        if (node) {\n            node.setSelected(true)\n        } else {\n\n\n            this.#handleNodeSelect(module)\n        }\n    }\n}",
+        "kind": "method",
+        "params": [
+          "module"
+        ]
+      }
+    ],
+    "getters": [
+      {
+        "name": "embedded",
+        "line": 60,
+        "source": "get embedded () {\n    return this.#embedded\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "embedded",
+        "line": 65,
+        "source": "set embedded (value) {\n    this.#embedded = value\n    if (value) {\n        this.setAttribute('embedded', '')\n    } else {\n        this.removeAttribute('embedded')\n    }\n    this.#updateEmbeddedMode()\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      }
+    ],
+    "constructor": null,
+    "isDefault": true
+  },
+  "/editor/perky_logger.doc.js": {
+    "type": "class",
+    "file": "/editor/perky_logger.js",
+    "name": "PerkyLogger",
+    "line": 17,
+    "extends": "HTMLElement",
+    "statics": [
+      {
+        "name": "observedAttributes",
+        "line": 19,
+        "source": "static observedAttributes = ['max-entries', 'position', 'timestamp', 'theme']",
+        "kind": "property",
+        "value": "['max-entries', 'position', 'timestamp', 'theme']"
+      }
+    ],
+    "methods": [
+      {
+        "name": "connectedCallback",
+        "line": 44,
+        "source": "connectedCallback () {\n    this.#buildDOM()\n    this.#bindLoggerEvents()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "disconnectedCallback",
+        "line": 50,
+        "source": "disconnectedCallback () {\n    this.#unbindLoggerEvents()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "attributeChangedCallback",
+        "line": 55,
+        "source": "attributeChangedCallback (name, oldValue, newValue) {\n    if (oldValue === newValue) {\n        return\n    }\n\n    this.#handleAttributeChange(name, newValue)\n}",
+        "kind": "method",
+        "params": [
+          "name",
+          "oldValue",
+          "newValue"
+        ]
+      },
+      {
+        "name": "log",
+        "line": 284,
+        "source": "log (message, type = 'info', format = 'text', timestamp = null) {\n    const entry = document.createElement('div')\n    entry.className = `logger-entry log-${type}`\n\n    const indicator = document.createElement('span')\n    indicator.className = 'logger-indicator'\n    entry.appendChild(indicator)\n\n    const messageElement = document.createElement('span')\n    messageElement.className = 'logger-message'\n\n    processMessage(messageElement, message, format)\n\n    entry.appendChild(messageElement)\n\n    const time = timestamp ? new Date(timestamp) : new Date()\n    const timestampEl = document.createElement('span')\n    timestampEl.className = 'logger-timestamp'\n    timestampEl.textContent = time.toLocaleTimeString()\n    entry.appendChild(timestampEl)\n\n    this.#entries.push(entry)\n\n    while (this.#entries.length > this.#maxEntries) {\n        const removed = this.#entries.shift()\n        if (removed.parentNode) {\n            removed.parentNode.removeChild(removed)\n        }\n    }\n\n    if (this.#contentEl) {\n        this.#contentEl.appendChild(entry)\n        this.#contentEl.scrollTop = this.#contentEl.scrollHeight\n    }\n\n    this.#updateControlsVisibility()\n\n    return entry\n}",
+        "kind": "method",
+        "params": [
+          "message",
+          "type = ...",
+          "format = ...",
+          "timestamp = ..."
+        ]
+      },
+      {
+        "name": "info",
+        "line": 325,
+        "source": "info (...messages) {\n    return this.log(formatMessage(...messages), 'info')\n}",
+        "kind": "method",
+        "params": [
+          "...messages"
+        ]
+      },
+      {
+        "name": "notice",
+        "line": 330,
+        "source": "notice (...messages) {\n    return this.log(formatMessage(...messages), 'notice')\n}",
+        "kind": "method",
+        "params": [
+          "...messages"
+        ]
+      },
+      {
+        "name": "warn",
+        "line": 335,
+        "source": "warn (...messages) {\n    return this.log(formatMessage(...messages), 'warn')\n}",
+        "kind": "method",
+        "params": [
+          "...messages"
+        ]
+      },
+      {
+        "name": "error",
+        "line": 340,
+        "source": "error (...messages) {\n    return this.log(formatMessage(...messages), 'error')\n}",
+        "kind": "method",
+        "params": [
+          "...messages"
+        ]
+      },
+      {
+        "name": "success",
+        "line": 345,
+        "source": "success (...messages) {\n    return this.log(formatMessage(...messages), 'success')\n}",
+        "kind": "method",
+        "params": [
+          "...messages"
+        ]
+      },
+      {
+        "name": "spacer",
+        "line": 350,
+        "source": "spacer () {\n    const entry = document.createElement('div')\n    entry.className = 'logger-entry logger-spacer'\n    this.#entries.push(entry)\n\n    if (this.#contentEl) {\n        this.#contentEl.appendChild(entry)\n    }\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "title",
+        "line": 361,
+        "source": "title (title) {\n    const entry = document.createElement('div')\n    entry.className = 'logger-entry logger-title-entry'\n    entry.textContent = title\n    this.#entries.push(entry)\n\n    if (this.#contentEl) {\n        this.#contentEl.appendChild(entry)\n    }\n}",
+        "kind": "method",
+        "params": [
+          "title"
+        ]
+      },
+      {
+        "name": "clear",
+        "line": 373,
+        "source": "clear () {\n    this.#entries = []\n    if (this.#contentEl) {\n        this.#contentEl.innerHTML = ''\n    }\n    this.#updateControlsVisibility()\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "getters": [
+      {
+        "name": "maxEntries",
+        "line": 97,
+        "source": "get maxEntries () {\n    return this.#maxEntries\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "position",
+        "line": 108,
+        "source": "get position () {\n    return this.#position\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "timestamp",
+        "line": 120,
+        "source": "get timestamp () {\n    return this.#timestamp\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "theme",
+        "line": 135,
+        "source": "get theme () {\n    return this.#theme\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "entries",
+        "line": 150,
+        "source": "get entries () {\n    return this.#entries\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "maxEntries",
+        "line": 102,
+        "source": "set maxEntries (value) {\n    this.#maxEntries = value\n    this.setAttribute('max-entries', value)\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "position",
+        "line": 113,
+        "source": "set position (value) {\n    this.#position = value\n    this.setAttribute('position', value)\n    this.#updateClasses()\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "timestamp",
+        "line": 125,
+        "source": "set timestamp (value) {\n    this.#timestamp = value\n    if (value) {\n        this.setAttribute('timestamp', '')\n    } else {\n        this.removeAttribute('timestamp')\n    }\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      },
+      {
+        "name": "theme",
+        "line": 140,
+        "source": "set theme (value) {\n    this.#theme = value\n    if (value) {\n        this.setAttribute('theme', value)\n    } else {\n        this.removeAttribute('theme')\n    }\n}",
+        "kind": "method",
+        "params": [
+          "value"
+        ]
+      }
+    ],
+    "constructor": {
+      "name": "constructor",
+      "line": 38,
+      "source": "constructor () {\n    super()\n    this.attachShadow({mode: 'open'})\n}",
+      "kind": "constructor",
+      "params": []
+    },
+    "isDefault": true
+  },
+  "/editor/toggle_input.doc.js": {
+    "type": "class",
+    "file": "/editor/toggle_input.js",
+    "name": "ToggleInput",
+    "line": 67,
+    "extends": "HTMLElement",
+    "statics": [
+      {
+        "name": "observedAttributes",
+        "line": 75,
+        "source": "static get observedAttributes () {\n    return ['checked', 'label']\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "methods": [
+      {
+        "name": "connectedCallback",
+        "line": 87,
+        "source": "connectedCallback () {\n    this.#updateDisplay()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "attributeChangedCallback",
+        "line": 92,
+        "source": "attributeChangedCallback (name, oldValue, newValue) {\n    handleAttributeChange(this, name, oldValue, newValue)\n}",
+        "kind": "method",
+        "params": [
+          "name",
+          "oldValue",
+          "newValue"
+        ]
+      },
+      {
+        "name": "setChecked",
+        "line": 111,
+        "source": "setChecked (val) {\n    this.#checked = val\n    this.#updateDisplay()\n}",
+        "kind": "method",
+        "params": [
+          "val"
+        ]
+      },
+      {
+        "name": "setLabel",
+        "line": 117,
+        "source": "setLabel (val) {\n    this.#label = val\n    if (this.#labelEl) {\n        this.#labelEl.textContent = this.#label\n    }\n}",
+        "kind": "method",
+        "params": [
+          "val"
+        ]
+      }
+    ],
+    "getters": [
+      {
+        "name": "checked",
+        "line": 97,
+        "source": "get checked () {\n    return this.#checked\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "checked",
+        "line": 102,
+        "source": "set checked (val) {\n    const newChecked = Boolean(val)\n    if (this.#checked !== newChecked) {\n        this.#checked = newChecked\n        this.#updateDisplay()\n    }\n}",
+        "kind": "method",
+        "params": [
+          "val"
+        ]
+      }
+    ],
+    "constructor": {
+      "name": "constructor",
+      "line": 80,
+      "source": "constructor () {\n    super()\n    this.attachShadow({mode: 'open'})\n    this.#buildDOM()\n}",
+      "kind": "constructor",
+      "params": []
+    },
+    "isDefault": true
+  },
+  "/editor/vec2_input.doc.js": {
+    "type": "class",
+    "file": "/editor/vec2_input.js",
+    "name": "Vec2Input",
+    "line": 43,
+    "extends": "HTMLElement",
+    "statics": [
+      {
+        "name": "observedAttributes",
+        "line": 51,
+        "source": "static get observedAttributes () {\n    return ['label']\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "methods": [
+      {
+        "name": "connectedCallback",
+        "line": 63,
+        "source": "connectedCallback () {\n    this.#updateDisplay()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "attributeChangedCallback",
+        "line": 68,
+        "source": "attributeChangedCallback (name, oldValue, newValue) {\n    handleAttributeChange(this, name, oldValue, newValue)\n}",
+        "kind": "method",
+        "params": [
+          "name",
+          "oldValue",
+          "newValue"
+        ]
+      },
+      {
+        "name": "setLabel",
+        "line": 84,
+        "source": "setLabel (val) {\n    this.#label = val\n    if (this.#labelEl) {\n        this.#labelEl.textContent = this.#label\n    }\n}",
+        "kind": "method",
+        "params": [
+          "val"
+        ]
+      }
+    ],
+    "getters": [
+      {
+        "name": "value",
+        "line": 73,
+        "source": "get value () {\n    return this.#vec2\n}",
+        "kind": "method",
+        "params": []
+      }
+    ],
+    "setters": [
+      {
+        "name": "value",
+        "line": 78,
+        "source": "set value (vec2) {\n    this.#vec2 = vec2\n    this.#updateDisplay()\n}",
+        "kind": "method",
+        "params": [
+          "vec2"
+        ]
+      }
+    ],
+    "constructor": {
+      "name": "constructor",
+      "line": 56,
+      "source": "constructor () {\n    super()\n    this.attachShadow({mode: 'open'})\n    this.#buildDOM()\n}",
+      "kind": "constructor",
+      "params": []
+    },
+    "isDefault": true
+  },
+  "/editor/inspectors/action_controller_inspector.doc.js": {
+    "type": "class",
+    "file": "/editor/inspectors/action_controller_inspector.js",
+    "name": "ActionControllerInspector",
+    "line": 87,
+    "extends": "BaseInspector",
+    "statics": [
+      {
+        "name": "matches",
+        "line": 89,
+        "source": "static matches (module) {\n    return module instanceof ActionController\n}",
+        "kind": "method",
+        "params": [
+          "module"
+        ]
+      }
+    ],
+    "methods": [
+      {
+        "name": "buildDOM",
+        "line": 101,
+        "source": "buildDOM () {\n    super.buildDOM()\n\n    this.#containerEl = document.createElement('div')\n    this.shadowRoot.insertBefore(this.#containerEl, this.gridEl)\n    this.gridEl.style.display = 'none'\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "onModuleSet",
+        "line": 110,
+        "source": "onModuleSet (module) {\n    if (module) {\n        this.#update()\n    }\n}",
+        "kind": "method",
+        "params": [
+          "module"
         ]
       }
     ],
@@ -2887,196 +3096,73 @@
     "setters": [],
     "constructor": {
       "name": "constructor",
-      "line": 19,
-      "source": "constructor (options = {}) {\n    super(options)\n\n    this.ctx = this.canvas.getContext('2d')\n\n    this.#setupDefaultRenderers()\n    this.applyPixelRatio()\n\n    this.backgroundColor = options.backgroundColor ?? null\n    this.enableCulling = options.enableCulling ?? false\n    this.enableDebugGizmos = options.enableDebugGizmos ?? true\n\n    this.stats = {\n        totalObjects: 0,\n        renderedObjects: 0,\n        culledObjects: 0\n    }\n}",
+      "line": 95,
+      "source": "constructor () {\n    super(customStyles)\n    this.buildDOM()\n}",
       "kind": "constructor",
-      "params": [
-        "options = ..."
-      ]
+      "params": []
     },
     "isDefault": true
   },
-  "/render/webgl_canvas_2d.doc.js": {
+  "/editor/inspectors/action_dispatcher_inspector.doc.js": {
     "type": "class",
-    "file": "/render/webgl_canvas_2d.js",
-    "name": "WebGLCanvas2D",
-    "line": 19,
-    "extends": "BaseRenderer",
+    "file": "/editor/inspectors/action_dispatcher_inspector.js",
+    "name": "ActionDispatcherInspector",
+    "line": 105,
+    "extends": "BaseInspector",
     "statics": [
       {
-        "name": "$name",
-        "line": 21,
-        "source": "static $name = 'webGLCanvas2D'",
-        "kind": "property",
-        "value": "'webGLCanvas2D'"
+        "name": "matches",
+        "line": 107,
+        "source": "static matches (module) {\n    return module instanceof ActionDispatcher\n}",
+        "kind": "method",
+        "params": [
+          "module"
+        ]
       }
     ],
     "methods": [
       {
-        "name": "registerRenderer",
-        "line": 118,
-        "source": "registerRenderer (renderer) {\n    const context = {\n        gl: this.gl,\n        spriteProgram: this.spriteProgram,\n        primitiveProgram: this.primitiveProgram,\n        textureManager: this.textureManager,\n        shaderEffectRegistry: this.#shaderEffectRegistry\n    }\n\n    renderer.init(context)\n\n    for (const ObjectClass of renderer.constructor.handles) {\n        this.#rendererRegistry.set(ObjectClass, renderer)\n    }\n\n    if (!this.#renderers.includes(renderer)) {\n        this.#renderers.push(renderer)\n    }\n\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "renderer"
-        ]
-      },
-      {
-        "name": "unregisterRenderer",
-        "line": 141,
-        "source": "unregisterRenderer (renderer) {\n    for (const ObjectClass of renderer.constructor.handles) {\n        if (this.#rendererRegistry.get(ObjectClass) === renderer) {\n            this.#rendererRegistry.delete(ObjectClass)\n        }\n    }\n\n    const index = this.#renderers.indexOf(renderer)\n    if (index !== -1) {\n        this.#renderers.splice(index, 1)\n    }\n\n    renderer.dispose()\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "renderer"
-        ]
-      },
-      {
-        "name": "applyPixelRatio",
-        "line": 158,
-        "source": "applyPixelRatio () {\n    super.applyPixelRatio()\n\n    if (this.gl) {\n        this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)\n    }\n\n    if (this.#postProcessor) {\n        this.#postProcessor.resize(this.canvas.width, this.canvas.height)\n    }\n}",
+        "name": "buildDOM",
+        "line": 119,
+        "source": "buildDOM () {\n    super.buildDOM()\n\n    this.#containerEl = document.createElement('div')\n    this.shadowRoot.insertBefore(this.#containerEl, this.gridEl)\n    this.gridEl.style.display = 'none'\n}",
         "kind": "method",
         "params": []
       },
       {
-        "name": "registerShaderEffect",
-        "line": 181,
-        "source": "registerShaderEffect (EffectClass) {\n    return this.#shaderEffectRegistry.register(EffectClass)\n}",
+        "name": "onModuleSet",
+        "line": 128,
+        "source": "onModuleSet (module) {\n    if (module) {\n        this.#update()\n    }\n}",
         "kind": "method",
         "params": [
-          "EffectClass"
-        ]
-      },
-      {
-        "name": "setUniform",
-        "line": 186,
-        "source": "setUniform (name, value, type = null) {\n    this.#shaderEffectRegistry.setUniform(name, value, type)\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "name",
-          "value",
-          "type = ..."
-        ]
-      },
-      {
-        "name": "getUniform",
-        "line": 192,
-        "source": "getUniform (name) {\n    return this.#shaderEffectRegistry.getUniform(name)\n}",
-        "kind": "method",
-        "params": [
-          "name"
-        ]
-      },
-      {
-        "name": "registerShader",
-        "line": 197,
-        "source": "registerShader (id, definition) {\n    return this.#shaderRegistry.register(id, definition)\n}",
-        "kind": "method",
-        "params": [
-          "id",
-          "definition"
-        ]
-      },
-      {
-        "name": "getShader",
-        "line": 202,
-        "source": "getShader (id) {\n    return this.#shaderRegistry.get(id)\n}",
-        "kind": "method",
-        "params": [
-          "id"
-        ]
-      },
-      {
-        "name": "addPostPass",
-        "line": 212,
-        "source": "addPostPass (pass) {\n    this.#postProcessor.addPass(pass)\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "pass"
-        ]
-      },
-      {
-        "name": "removePostPass",
-        "line": 218,
-        "source": "removePostPass (pass) {\n    this.#postProcessor.removePass(pass)\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "pass"
-        ]
-      },
-      {
-        "name": "setRenderGroups",
-        "line": 224,
-        "source": "setRenderGroups (configs) {\n    this.clearRenderGroups()\n\n    if (!this.#compositeProgram) {\n        this.#setupCompositeShader()\n    }\n    if (!this.#compositeQuad) {\n        this.#compositeQuad = new FullscreenQuad(this.gl)\n    }\n\n    for (const config of configs) {\n        this.create(RenderGroup, config)\n    }\n\n    return this\n}",
-        "kind": "method",
-        "params": [
-          "configs"
-        ]
-      },
-      {
-        "name": "clearRenderGroups",
-        "line": 242,
-        "source": "clearRenderGroups () {\n    const groups = this.renderGroups\n    for (const group of groups) {\n        this.removeChild(group.$id)\n    }\n    return this\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "onDispose",
-        "line": 288,
-        "source": "onDispose () {\n    for (const renderer of this.#renderers) {\n        renderer.dispose()\n    }\n    this.#renderers = []\n    this.#rendererRegistry.clear()\n\n    if (this.#debugGizmoRenderer) {\n        this.#debugGizmoRenderer.dispose()\n        this.#debugGizmoRenderer = null\n    }\n\n    this.clearRenderGroups()\n\n    if (this.#compositeQuad) {\n        this.#compositeQuad.dispose(this.gl)\n        this.#compositeQuad = null\n    }\n\n    if (this.#postProcessor) {\n        this.#postProcessor.dispose()\n        this.#postProcessor = null\n    }\n\n    if (this.#shaderEffectRegistry) {\n        this.#shaderEffectRegistry.dispose()\n        this.#shaderEffectRegistry = null\n    }\n\n    if (this.#shaderRegistry) {\n        this.#shaderRegistry.dispose()\n        this.#shaderRegistry = null\n    }\n\n    super.onDispose()\n    this.gl = null\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "render",
-        "line": 348,
-        "source": "render (scene) {\n    if (this.renderGroups.length > 0 && !scene) {\n        return this.#renderWithGroups()\n    }\n    return this.#renderSingleScene(scene)\n}",
-        "kind": "method",
-        "params": [
-          "scene"
+          "module"
         ]
       }
     ],
-    "getters": [
-      {
-        "name": "shaderRegistry",
-        "line": 171,
-        "source": "get shaderRegistry () {\n    return this.#shaderRegistry\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "shaderEffectRegistry",
-        "line": 176,
-        "source": "get shaderEffectRegistry () {\n    return this.#shaderEffectRegistry\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "postProcessor",
-        "line": 207,
-        "source": "get postProcessor () {\n    return this.#postProcessor\n}",
-        "kind": "method",
-        "params": []
-      },
-      {
-        "name": "renderGroups",
-        "line": 251,
-        "source": "get renderGroups () {\n    return this.childrenByCategory('renderGroup')\n}",
-        "kind": "method",
-        "params": []
-      }
-    ],
+    "getters": [],
     "setters": [],
     "constructor": {
       "name": "constructor",
-      "line": 33,
-      "source": "constructor (options = {}) {\n    const {autoFit, ...parentOptions} = options\n    super(parentOptions)\n\n    this.#setupWebGL()\n    this.#setupDefaultRenderers()\n    this.applyPixelRatio()\n\n    this.backgroundColor = options.backgroundColor ?? null\n    this.enableCulling = options.enableCulling ?? false\n    this.enableDebugGizmos = options.enableDebugGizmos ?? true\n\n    this.stats = {\n        totalObjects: 0,\n        renderedObjects: 0,\n        culledObjects: 0,\n        drawCalls: 0\n    }\n\n    if (autoFit) {\n        this.autoFitEnabled = true\n    }\n}",
+      "line": 113,
+      "source": "constructor () {\n    super(customStyles)\n    this.buildDOM()\n}",
       "kind": "constructor",
-      "params": [
-        "options = ..."
-      ]
+      "params": []
     },
     "isDefault": true
+  },
+  "/editor/log_renderers/vec2_log_renderer.doc.js": {
+    "type": "module",
+    "file": "/editor/log_renderers/vec2_log_renderer.js",
+    "functions": [
+      {
+        "name": "formatNumber",
+        "line": 5,
+        "params": [
+          "n"
+        ],
+        "source": "function formatNumber (n) {\n    if (Number.isInteger(n)) {\n        return String(n)\n    }\n    return n.toFixed(2)\n}"
+      }
+    ],
+    "exports": []
   },
   "/audio/audio_system.doc.js": {
     "type": "class",

@@ -81,6 +81,76 @@
       ]
     },
     {
+      "id": "canvas_2d",
+      "file": "/render/canvas_2d.doc.js",
+      "category": "render",
+      "title": "Canvas2D",
+      "tags": [
+        "render",
+        "canvas_2d"
+      ]
+    },
+    {
+      "id": "webgl_canvas_2d",
+      "file": "/render/webgl_canvas_2d.doc.js",
+      "category": "render",
+      "title": "WebGLCanvas2D",
+      "tags": [
+        "render",
+        "webgl_canvas_2d"
+      ]
+    },
+    {
+      "id": "input_control",
+      "file": "/input/input_control.doc.js",
+      "category": "input",
+      "title": "InputControl",
+      "tags": [
+        "input",
+        "input_control"
+      ]
+    },
+    {
+      "id": "keyboard_device",
+      "file": "/input/input_devices/keyboard_device.doc.js",
+      "category": "input/input_devices",
+      "title": "KeyboardDevice",
+      "tags": [
+        "input/input_devices",
+        "keyboard_device"
+      ]
+    },
+    {
+      "id": "mouse_device",
+      "file": "/input/input_devices/mouse_device.doc.js",
+      "category": "input/input_devices",
+      "title": "MouseDevice",
+      "tags": [
+        "input/input_devices",
+        "mouse_device"
+      ]
+    },
+    {
+      "id": "random",
+      "file": "/math/random.doc.js",
+      "category": "math",
+      "title": "Random",
+      "tags": [
+        "math",
+        "random"
+      ]
+    },
+    {
+      "id": "vec2",
+      "file": "/math/vec2.doc.js",
+      "category": "math",
+      "title": "Vec2",
+      "tags": [
+        "math",
+        "vec2"
+      ]
+    },
+    {
       "id": "perky_explorer",
       "file": "/editor/perky_explorer.doc.js",
       "category": "editor",
@@ -148,66 +218,6 @@
       "tags": [
         "editor/log_renderers",
         "vec2_log_renderer"
-      ]
-    },
-    {
-      "id": "keyboard_device",
-      "file": "/input/input_devices/keyboard_device.doc.js",
-      "category": "input/input_devices",
-      "title": "KeyboardDevice",
-      "tags": [
-        "input/input_devices",
-        "keyboard_device"
-      ]
-    },
-    {
-      "id": "mouse_device",
-      "file": "/input/input_devices/mouse_device.doc.js",
-      "category": "input/input_devices",
-      "title": "MouseDevice",
-      "tags": [
-        "input/input_devices",
-        "mouse_device"
-      ]
-    },
-    {
-      "id": "random",
-      "file": "/math/random.doc.js",
-      "category": "math",
-      "title": "Random",
-      "tags": [
-        "math",
-        "random"
-      ]
-    },
-    {
-      "id": "vec2",
-      "file": "/math/vec2.doc.js",
-      "category": "math",
-      "title": "Vec2",
-      "tags": [
-        "math",
-        "vec2"
-      ]
-    },
-    {
-      "id": "canvas_2d",
-      "file": "/render/canvas_2d.doc.js",
-      "category": "render",
-      "title": "Canvas2D",
-      "tags": [
-        "render",
-        "canvas_2d"
-      ]
-    },
-    {
-      "id": "webgl_canvas_2d",
-      "file": "/render/webgl_canvas_2d.doc.js",
-      "category": "render",
-      "title": "WebGLCanvas2D",
-      "tags": [
-        "render",
-        "webgl_canvas_2d"
       ]
     },
     {
