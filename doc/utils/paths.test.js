@@ -12,6 +12,7 @@ describe('paths', () => {
     let buildDocUrl
     let docFileToHtml
     let guideIdToHtml
+    let getTabUrl
 
     beforeEach(async () => {
         const module = await import('./paths.js')
@@ -19,6 +20,7 @@ describe('paths', () => {
         buildDocUrl = module.buildDocUrl
         docFileToHtml = module.docFileToHtml
         guideIdToHtml = module.guideIdToHtml
+        getTabUrl = module.getTabUrl
     })
 
 
@@ -113,6 +115,46 @@ describe('paths', () => {
 
         test('converts nested guide id', () => {
             expect(guideIdToHtml('getting_started')).toBe('guide_getting_started.html')
+        })
+
+    })
+
+
+    describe('getTabUrl', () => {
+
+        test('returns doc url for doc tab', () => {
+            const originalPathname = window.location.pathname
+            Object.defineProperty(window, 'location', {
+                value: {pathname: '/doc/core_logger.html'},
+                writable: true
+            })
+
+            expect(getTabUrl('doc')).toBe('core_logger.html')
+
+            Object.defineProperty(window, 'location', {
+                value: {pathname: originalPathname},
+                writable: true
+            })
+        })
+
+
+        test('returns api url for api tab', () => {
+            Object.defineProperty(window, 'location', {
+                value: {pathname: '/doc/core_logger.html'},
+                writable: true
+            })
+
+            expect(getTabUrl('api')).toBe('core_logger_api.html')
+        })
+
+
+        test('returns test url for test tab', () => {
+            Object.defineProperty(window, 'location', {
+                value: {pathname: '/doc/core_logger_api.html'},
+                writable: true
+            })
+
+            expect(getTabUrl('test')).toBe('core_logger_test.html')
         })
 
     })

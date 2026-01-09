@@ -1,11 +1,17 @@
-import {describe, test, expect, vi} from 'vitest'
-import {doc, section, setup, text, code, action, see, disclaimer, container, applyContainerPreset} from './runtime.js'
+import {describe, test, expect, vi, beforeEach} from 'vitest'
+import {
+    doc, section, setup, text, code, action, see, disclaimer, container,
+    applyContainerPreset, addSpacerIfNeeded, executeAction, executeContainer, renderAction
+} from './runtime.js'
+import logger from '../core/logger.js'
 
 
 vi.mock('../core/logger.js', () => ({
     default: {
         log: vi.fn(),
-        error: vi.fn()
+        error: vi.fn(),
+        spacer: vi.fn(),
+        history: []
     }
 }))
 
@@ -385,6 +391,217 @@ describe('applyContainerPreset', () => {
         applyContainerPreset(element, 'unknown')
 
         expect(Object.keys(element.style)).toHaveLength(0)
+    })
+
+})
+
+
+describe('addSpacerIfNeeded', () => {
+
+    beforeEach(() => {
+        logger.history.length = 0
+        vi.clearAllMocks()
+    })
+
+
+    test('adds spacer when history has logs and no trailing spacer', () => {
+        logger.history.push({event: 'log'})
+
+        addSpacerIfNeeded()
+
+        expect(logger.spacer).toHaveBeenCalled()
+    })
+
+
+    test('does not add spacer when history is empty', () => {
+        addSpacerIfNeeded()
+
+        expect(logger.spacer).not.toHaveBeenCalled()
+    })
+
+
+    test('does not add spacer when last entry is already spacer', () => {
+        logger.history.push({event: 'log'}, {event: 'spacer'})
+
+        addSpacerIfNeeded()
+
+        expect(logger.spacer).not.toHaveBeenCalled()
+    })
+
+})
+
+
+describe('executeAction', () => {
+
+    beforeEach(() => {
+        logger.history.length = 0
+        vi.clearAllMocks()
+    })
+
+
+    test('executes block function', async () => {
+        const fn = vi.fn()
+        const block = {fn}
+
+        await executeAction(block)
+
+        expect(fn).toHaveBeenCalledWith({})
+    })
+
+
+    test('executes setup function before block', async () => {
+        const order = []
+        const setupFn = vi.fn(() => order.push('setup'))
+        const blockFn = vi.fn(() => order.push('block'))
+        const block = {fn: blockFn}
+        const sectionSetup = {fn: setupFn}
+
+        await executeAction(block, sectionSetup)
+
+        expect(order).toEqual(['setup', 'block'])
+    })
+
+
+    test('logs error on failure', async () => {
+        const block = {fn: () => {
+            throw new Error('Test error')
+        }}
+
+        await executeAction(block)
+
+        expect(logger.error).toHaveBeenCalledWith('Action error:', 'Test error')
+    })
+
+})
+
+
+describe('executeContainer', () => {
+
+    beforeEach(() => {
+        logger.history.length = 0
+        vi.clearAllMocks()
+    })
+
+
+    test('clears container before execution', async () => {
+        const containerEl = {
+            innerHTML: '<div>old</div>',
+            _currentApp: null,
+            style: {},
+            tabIndex: -1
+        }
+        const block = {fn: vi.fn()}
+
+        await executeContainer(block, containerEl)
+
+        expect(containerEl.innerHTML).toBe('')
+    })
+
+
+    test('disposes previous app', async () => {
+        const dispose = vi.fn()
+        const containerEl = {
+            innerHTML: '',
+            _currentApp: {dispose},
+            style: {},
+            tabIndex: -1
+        }
+        const block = {fn: vi.fn()}
+
+        await executeContainer(block, containerEl)
+
+        expect(dispose).toHaveBeenCalled()
+    })
+
+
+    test('applies preset when specified', async () => {
+        const containerEl = {
+            innerHTML: '',
+            _currentApp: null,
+            style: {},
+            tabIndex: -1
+        }
+        const block = {preset: 'interactive', fn: vi.fn()}
+
+        await executeContainer(block, containerEl)
+
+        expect(containerEl.tabIndex).toBe(0)
+    })
+
+
+    test('sets overflow when scrollable', async () => {
+        const containerEl = {
+            innerHTML: '',
+            _currentApp: null,
+            style: {},
+            tabIndex: -1
+        }
+        const block = {scrollable: true, fn: vi.fn()}
+
+        await executeContainer(block, containerEl)
+
+        expect(containerEl.style.overflow).toBe('auto')
+    })
+
+
+    test('logs error on failure', async () => {
+        const containerEl = {
+            innerHTML: '',
+            _currentApp: null,
+            style: {},
+            tabIndex: -1
+        }
+        const block = {fn: () => {
+            throw new Error('Container error')
+        }}
+
+        await executeContainer(block, containerEl)
+
+        expect(logger.error).toHaveBeenCalledWith('Container error:', 'Container error')
+    })
+
+})
+
+
+describe('renderAction', () => {
+
+    test('creates action block wrapper', () => {
+        const block = {title: 'Run Test', source: 'console.log("test")'}
+
+        const el = renderAction(block)
+
+        expect(el.className).toBe('doc-action-block')
+    })
+
+
+    test('creates perky-code element with title', () => {
+        const block = {title: 'Example', source: 'const x = 1'}
+
+        const el = renderAction(block)
+        const codeEl = el.querySelector('perky-code')
+
+        expect(codeEl.getAttribute('title')).toBe('Example')
+    })
+
+
+    test('uses extracted source when provided', () => {
+        const block = {title: 'Test', source: 'original'}
+
+        const el = renderAction(block, null, 'extracted')
+        const codeEl = el.querySelector('perky-code')
+
+        expect(codeEl.code).toBe('extracted')
+    })
+
+
+    test('creates run button', () => {
+        const block = {title: 'Test', source: ''}
+
+        const el = renderAction(block)
+        const button = el.querySelector('.doc-action-btn')
+
+        expect(button).toBeTruthy()
+        expect(button.textContent).toContain('Run')
     })
 
 })
