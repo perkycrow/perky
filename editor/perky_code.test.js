@@ -297,4 +297,15 @@ console.log(view.element.tagName) // 'DIV'`
         expect(element.formattedCode).toContain("'DIV'")
     })
 
+
+    test('method named like keyword should not leave placeholder', () => {
+        element.code = 'const keys = Array.from(ctx.map.keys)'
+        element.formatCode()
+
+        expect(element.formattedCode).not.toContain('__PLACEHOLDER_')
+        expect(element.formattedCode).toContain('Array')
+        expect(element.formattedCode).toContain('from')
+        expect(element.formattedCode).toContain('keys')
+    })
+
 })
