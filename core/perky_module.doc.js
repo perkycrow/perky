@@ -8,7 +8,7 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
         Base class for all Perky components.
         Provides lifecycle management, hierarchical composition, and event handling.
 
-        For a conceptual introduction, see the [[PerkyModule:guide]].
+        For a conceptual introduction, see the [[PerkyModule:guide]] guide.
     `)
 
 
@@ -131,15 +131,12 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
         action('create', () => {
             const parent = new PerkyModule({$id: 'parent'})
 
-            const child = parent.create(PerkyModule, {
-                $id: 'child',
-                $category: 'component'
-            })
+            parent.create(PerkyModule, {$id: 'child1', $category: 'component'})
+            parent.create(PerkyModule, {$id: 'child2', $category: 'component'})
 
-            logger.log('child.host:', child.host.$id)
-            logger.log('child.installed:', child.installed)
-            logger.log('hasChild:', parent.hasChild('child'))
-            logger.log('getChild:', parent.getChild('child').$id)
+            logger.log('children:', parent.children.map(c => c.$id))
+            logger.log('hasChild:', parent.hasChild('child1'))
+            logger.log('getChild:', parent.getChild('child1').$id)
         })
 
         action('Lifecycle propagation', () => {
@@ -299,6 +296,51 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
             })
 
             enemy.emit('attack', 30)
+        })
+
+    })
+
+
+    section('Delegation', () => {
+
+        text(`
+            Modules can delegate methods and events to their parent.
+            This is useful for creating facade patterns where a child exposes its API through the parent.
+        `)
+
+        action('delegateTo', () => {
+            class AudioSystem extends PerkyModule {
+                play (sound) {
+                    logger.log('playing:', sound)
+                }
+
+                stop () {
+                    logger.log('stopping audio')
+                }
+
+                onInstall (host) {
+                    this.delegateTo(host, ['play', 'stop'])
+                }
+            }
+
+            const game = new PerkyModule({$id: 'game'})
+            game.create(AudioSystem, {$id: 'audio'})
+
+            game.play('explosion.mp3')
+            game.stop()
+        })
+
+        action('delegateEventsTo', () => {
+            const game = new PerkyModule({$id: 'game'})
+            const player = game.create(PerkyModule, {$id: 'player'})
+
+            player.delegateEventsTo(game, ['damage', 'death'], 'player')
+
+            game.on('player:damage', amount => logger.log('game heard player damage:', amount))
+            game.on('player:death', () => logger.log('game heard player death'))
+
+            player.emit('damage', 50)
+            player.emit('death')
         })
 
     })
