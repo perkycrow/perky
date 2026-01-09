@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import {execSync} from 'child_process'
 import Auditor from '../../auditor.js'
 import {hint, listItem, divider} from '../../format.js'
 
@@ -13,6 +14,7 @@ export default class BrokenLinksAuditor extends Auditor {
     #validTargets = null
 
     async audit () {
+        this.#runDiscovery()
         this.#loadValidTargets()
         const brokenLinks = this.#findBrokenLinks()
 
@@ -89,6 +91,15 @@ export default class BrokenLinksAuditor extends Auditor {
         }
 
         return brokenLinks
+    }
+
+
+    #runDiscovery () {
+        try {
+            execSync('node doc/discovery.js', {cwd: this.rootDir, stdio: 'pipe'})
+        } catch {
+
+        }
     }
 
 }

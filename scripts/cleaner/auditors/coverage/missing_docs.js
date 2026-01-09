@@ -48,39 +48,18 @@ export default class MissingDocsAuditor extends Auditor {
         const config = await this.#loadConfig()
         const excludeDirs = config.missingDocs?.excludeDirs || []
         const excludeFiles = config.missingDocs?.excludeFiles || []
-        const files = this.scanFiles()
-        const missing = []
 
-        for (const filePath of files) {
-            const relativePath = path.relative(this.rootDir, filePath)
-
-            if (shouldSkipFile(relativePath)) {
-                continue
-            }
-
-            if (isExcludedFile(relativePath)) {
-                continue
-            }
-
-            if (shouldExcludeFromDocAudit(relativePath, excludeDirs)) {
-                continue
-            }
-
-            if (shouldExcludeFilePattern(relativePath, excludeFiles)) {
-                continue
-            }
-
-            const docPath = filePath.replace(/\.js$/, '.doc.js')
-
-            if (!fs.existsSync(docPath)) {
-                missing.push({
-                    file: relativePath,
-                    expectedDoc: path.relative(this.rootDir, docPath)
-                })
-            }
-        }
-
-        return missing
+        return this.scanFiles()
+            .map(filePath => ({filePath, relativePath: path.relative(this.rootDir, filePath)}))
+            .filter(({relativePath}) => !shouldSkipFile(relativePath))
+            .filter(({relativePath}) => !isExcludedFile(relativePath))
+            .filter(({relativePath}) => !shouldExcludeFromDocAudit(relativePath, excludeDirs))
+            .filter(({relativePath}) => !shouldExcludeFilePattern(relativePath, excludeFiles))
+            .filter(({filePath}) => !fs.existsSync(filePath.replace(/\.js$/, '.doc.js')))
+            .map(({filePath, relativePath}) => ({
+                file: relativePath,
+                expectedDoc: path.relative(this.rootDir, filePath.replace(/\.js$/, '.doc.js'))
+            }))
     }
 
 
@@ -109,60 +88,25 @@ function shouldSkipFile (relativePath) {
 }
 
 
-function shouldExcludeFromDocAudit (relativePath, excludeDirs = []) {
+const EXCLUDED_DIRS = ['scripts/', 'doc/', 'editor/', 'examples/', 'eslint/', 'den/']
 
+
+export function shouldExcludeFromDocAudit (relativePath, excludeDirs = []) {
     if (!relativePath.includes('/')) {
         return true
     }
-
 
     if (relativePath.endsWith('/index.js') || relativePath === 'index.js') {
         return true
     }
 
-
-    if (relativePath.startsWith('scripts/')) {
-        return true
-    }
-
-
-    if (relativePath.startsWith('doc/')) {
-        return true
-    }
-
-
-    if (relativePath.startsWith('editor/')) {
-        return true
-    }
-
-
-    if (relativePath.startsWith('examples/')) {
-        return true
-    }
-
-
-    if (relativePath.startsWith('eslint/')) {
-        return true
-    }
-
-
-    if (relativePath.startsWith('den/')) {
-        return true
-    }
-
-
     if (relativePath.endsWith('test_helpers.js')) {
         return true
     }
 
+    const allExcludedDirs = [...EXCLUDED_DIRS, ...excludeDirs]
 
-    for (const dir of excludeDirs) {
-        if (relativePath.startsWith(dir)) {
-            return true
-        }
-    }
-
-    return false
+    return allExcludedDirs.some(dir => relativePath.startsWith(dir))
 }
 
 

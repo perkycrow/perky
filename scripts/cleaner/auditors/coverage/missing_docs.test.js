@@ -1,5 +1,5 @@
 import {describe, test, expect, vi, beforeEach} from 'vitest'
-import MissingDocsAuditor from './missing_docs.js'
+import MissingDocsAuditor, {shouldExcludeFromDocAudit} from './missing_docs.js'
 import fs from 'fs'
 
 
@@ -137,6 +137,67 @@ describe(MissingDocsAuditor, () => {
     test('analyze returns empty array', () => {
         const auditor = new MissingDocsAuditor('/root', {silent: true})
         expect(auditor.analyze()).toEqual([])
+    })
+
+})
+
+
+describe('shouldExcludeFromDocAudit', () => {
+
+    test('excludes root level files', () => {
+        expect(shouldExcludeFromDocAudit('config.js')).toBe(true)
+    })
+
+
+    test('excludes index.js files', () => {
+        expect(shouldExcludeFromDocAudit('src/index.js')).toBe(true)
+        expect(shouldExcludeFromDocAudit('index.js')).toBe(true)
+    })
+
+
+    test('excludes scripts directory', () => {
+        expect(shouldExcludeFromDocAudit('scripts/build.js')).toBe(true)
+    })
+
+
+    test('excludes doc directory', () => {
+        expect(shouldExcludeFromDocAudit('doc/api.js')).toBe(true)
+    })
+
+
+    test('excludes editor directory', () => {
+        expect(shouldExcludeFromDocAudit('editor/main.js')).toBe(true)
+    })
+
+
+    test('excludes examples directory', () => {
+        expect(shouldExcludeFromDocAudit('examples/demo.js')).toBe(true)
+    })
+
+
+    test('excludes eslint directory', () => {
+        expect(shouldExcludeFromDocAudit('eslint/rules.js')).toBe(true)
+    })
+
+
+    test('excludes den directory', () => {
+        expect(shouldExcludeFromDocAudit('den/module.js')).toBe(true)
+    })
+
+
+    test('excludes test_helpers.js', () => {
+        expect(shouldExcludeFromDocAudit('src/test_helpers.js')).toBe(true)
+    })
+
+
+    test('excludes custom directories from config', () => {
+        expect(shouldExcludeFromDocAudit('custom/', ['custom/'])).toBe(true)
+    })
+
+
+    test('includes regular source files', () => {
+        expect(shouldExcludeFromDocAudit('src/module.js')).toBe(false)
+        expect(shouldExcludeFromDocAudit('core/action.js')).toBe(false)
     })
 
 })
