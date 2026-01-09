@@ -595,6 +595,7 @@ const STYLES = buildEditorStyles(
         align-items: flex-start;
         gap: 8px;
         font-size: 10px;
+        line-height: 1.4;
     }
 
     .logger-indicator {
@@ -604,7 +605,8 @@ const STYLES = buildEditorStyles(
         flex-shrink: 0;
         background: var(--fg-muted);
         opacity: 0.5;
-        margin-top: 3px;
+        position: relative;
+        top: 0.45em;
     }
 
     .log-info .logger-indicator {
