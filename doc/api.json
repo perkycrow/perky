@@ -1907,6 +1907,37 @@
     },
     "isDefault": true
   },
+  "/input/input_controls/vec2_control.doc.js": {
+    "type": "class",
+    "file": "/input/input_controls/vec2_control.js",
+    "name": "Vec2Control",
+    "line": 7,
+    "extends": "InputControl",
+    "statics": [],
+    "methods": [
+      {
+        "name": "getDefaultValue",
+        "line": 9,
+        "source": "getDefaultValue () { // eslint-disable-line local/class-methods-use-this -- clean\n    return new Vec2()\n}",
+        "kind": "method",
+        "params": []
+      },
+      {
+        "name": "setValue",
+        "line": 14,
+        "source": "setValue (value, event = null) {\n    if (!(value instanceof Vec2)) {\n        value = new Vec2(value)\n    }\n\n    if (this[VALUE] && this[VALUE].equals(value)) {\n        return false\n    }\n\n    this[OLD_VALUE] = this[VALUE]\n    this[VALUE] = new Vec2(value)\n\n    this.emit('updated', this[VALUE], this[OLD_VALUE], event)\n\n    return true\n}",
+        "kind": "method",
+        "params": [
+          "value",
+          "event = ..."
+        ]
+      }
+    ],
+    "getters": [],
+    "setters": [],
+    "constructor": null,
+    "isDefault": true
+  },
   "/input/input_devices/keyboard_device.doc.js": {
     "type": "class",
     "file": "/input/input_devices/keyboard_device.js",

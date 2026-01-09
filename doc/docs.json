@@ -111,6 +111,16 @@
       ]
     },
     {
+      "id": "vec2_control",
+      "file": "/input/input_controls/vec2_control.doc.js",
+      "category": "input/input_controls",
+      "title": "Vec2Control",
+      "tags": [
+        "input/input_controls",
+        "vec2_control"
+      ]
+    },
+    {
       "id": "keyboard_device",
       "file": "/input/input_devices/keyboard_device.doc.js",
       "category": "input/input_devices",
