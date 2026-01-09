@@ -55,7 +55,7 @@ export default doc('MouseDevice', () => {
     section('Position Tracking', () => {
 
         text(`
-            The \`position\` control tracks cursor coordinates as a Vec2.
+            The \`position\` control tracks cursor coordinates as a [[Vec2@math]].
             Values are relative to the viewport (clientX/clientY).
         `)
 

@@ -156,9 +156,13 @@ function printDetails (result) {
 
 function printIssues (result) {
     for (const fileIssue of result.issues) {
-        if (fileIssue.file) {
-            const count = fileIssue.issues?.length || 1
-            console.log(`    • ${fileIssue.file} (${count})`)
+        if (!fileIssue.file) {
+            continue
+        }
+        const count = fileIssue.issues?.length || 1
+        console.log(`    • ${fileIssue.file} (${count})`)
+        for (const issue of fileIssue.issues || []) {
+            console.log(`        → ${issue}`)
         }
     }
 }

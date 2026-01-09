@@ -31,14 +31,14 @@ export default class BrokenLinksAuditor extends Auditor {
             for (const {file, links} of brokenLinks) {
                 listItem(file, links.length)
                 for (const link of links) {
-                    console.log(`      → ${link.name} (${link.type})`)
+                    console.log(`      → L${link.line}: ${link.name} (${link.type})`)
                 }
             }
         }
 
         const issues = brokenLinks.map(({file, links}) => ({
             file,
-            issues: links.map(l => `${l.name} (${l.type})`)
+            issues: links.map(l => `L${l.line}: ${l.name} (${l.type})`)
         }))
 
         return {
@@ -133,6 +133,7 @@ function findDocFiles (files) {
 
 function extractLinks (content) {
     const links = []
+    const lines = content.split('\n')
 
 
     const seeRegex = /\bsee\s*\(\s*['"]([^'"]+)['"]\s*(?:,\s*\{([^}]*)\})?\s*\)/g
@@ -143,8 +144,9 @@ function extractLinks (content) {
         const options = match[2] || ''
         const typeMatch = options.match(/type\s*:\s*['"]([^'"]+)['"]/)
         const type = typeMatch ? typeMatch[1] : 'doc'
+        const line = getLineNumber(lines, match.index)
 
-        links.push({name, type, source: 'see()'})
+        links.push({name, type, source: 'see()', line})
     }
 
 
@@ -153,10 +155,23 @@ function extractLinks (content) {
     while ((match = inlineRegex.exec(content)) !== null) {
         const ref = match[1]
         const parsed = parseInlineLink(ref)
-        links.push({...parsed, source: '[[]]'})
+        const line = getLineNumber(lines, match.index)
+        links.push({...parsed, source: '[[]]', line})
     }
 
     return links
+}
+
+
+function getLineNumber (lines, index) {
+    let charCount = 0
+    for (let i = 0; i < lines.length; i++) {
+        charCount += lines[i].length + 1
+        if (charCount > index) {
+            return i + 1
+        }
+    }
+    return lines.length
 }
 
 

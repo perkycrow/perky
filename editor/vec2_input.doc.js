@@ -6,7 +6,7 @@ import './vec2_input.js'
 export default doc('Vec2Input', () => {
 
     text(`
-        A dual number input for Vec2 objects. Displays x/y fields and emits
+        A dual number input for [[Vec2@math]] objects. Displays x/y fields and emits
         "change" events with the modified vector.
     `)
 

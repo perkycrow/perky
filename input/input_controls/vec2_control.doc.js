@@ -6,7 +6,7 @@ import Vec2 from '../../math/vec2.js'
 export default doc('Vec2Control', () => {
 
     text(`
-        Input control for 2D vector values. Extends InputControl to handle Vec2 objects,
+        Input control for 2D vector values. Extends [[InputControl@input]] to handle [[Vec2@math]] objects,
         commonly used for joystick axes or mouse movement.
     `)
 
@@ -37,7 +37,7 @@ export default doc('Vec2Control', () => {
     section('Auto Conversion', () => {
 
         text(`
-            Vec2Control automatically converts plain objects to Vec2 instances.
+            Vec2Control automatically converts plain objects to [[Vec2@math]] instances.
         `)
 
         code('Object to Vec2', () => {

@@ -9,7 +9,7 @@ import Image2D from './image_2d.js'
 export default doc('WebGLCanvas2D', () => {
 
     text(`
-        WebGL2-based 2D renderer. Renders scenes with rectangles, circles, sprites,
+        WebGL2-based 2D renderer. Renders scenes with [[Rectangle@render]], [[Circle@render]], [[Sprite@render]],
         and supports post-processing effects, render groups, and shader customization.
     `)
 
@@ -146,7 +146,7 @@ export default doc('WebGLCanvas2D', () => {
 
     section('Groups', () => {
 
-        text('Group objects together to apply transformations to all children.')
+        text('Use [[Group2D@render]] to group objects and apply transformations to all children.')
 
         container({title: 'Nested groups', height: 200}, ctx => {
             const renderer = new WebGLCanvas2D({
@@ -273,7 +273,7 @@ export default doc('WebGLCanvas2D', () => {
 
     section('Images', () => {
 
-        text('Render images and sprites using Image2D objects.')
+        text('Render images and sprites using [[Image2D@render]] objects.')
 
         container({title: 'Sprite rendering', height: 200}, ctx => {
             const renderer = new WebGLCanvas2D({

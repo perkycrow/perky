@@ -71,7 +71,7 @@ export default doc('PerkyLogger', {context: 'simple'}, () => {
 
     section('Rich objects', () => {
 
-        text('Objects, arrays, and Vec2 are rendered with special formatting.')
+        text('Objects, arrays, and [[Vec2@math]] are rendered with special formatting.')
 
         action('Object', () => {
             logger.log('user:', {name: 'Alice', age: 30, active: true})

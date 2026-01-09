@@ -6,7 +6,7 @@ export default doc('KeyboardDevice', () => {
 
     text(`
         Keyboard input device. Listens for keydown/keyup events and creates
-        ButtonControl instances dynamically for each key pressed.
+        [[ButtonControl@input]] instances dynamically for each key pressed.
     `)
 
 

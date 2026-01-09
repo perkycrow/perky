@@ -6,8 +6,8 @@ import './action_controller_inspector.js'
 export default doc('ActionControllerInspector', () => {
 
     text(`
-        Visual inspector for ActionController modules. Displays all registered
-        actions with execute buttons. Used in PerkyExplorer devtools.
+        Visual inspector for [[ActionController@application]] modules. Displays all registered
+        actions with execute buttons. Used in [[PerkyExplorer@editor]] devtools.
     `)
 
 
@@ -67,7 +67,7 @@ export default doc('ActionControllerInspector', () => {
             The inspector shows:
             - Action count header
             - Each action with its name
-            - "propagable" badge for actions in \`static propagable\`
+            - "propagable" badge for actions in \`static propagable\` (see [[ActionController@application#propagable-actions]])
             - "Run" button to execute actions directly
         `)
 

@@ -7,8 +7,8 @@ import './action_dispatcher_inspector.js'
 export default doc('ActionDispatcherInspector', () => {
 
     text(`
-        Visual inspector for ActionDispatcher modules. Displays all registered
-        controllers and their actions grouped by controller. Used in PerkyExplorer devtools.
+        Visual inspector for [[ActionDispatcher]] modules. Displays all registered
+        controllers and their actions grouped by controller. Used in [[PerkyExplorer@editor]] devtools.
     `)
 
 

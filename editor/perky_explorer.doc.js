@@ -6,7 +6,7 @@ import '../editor/perky_explorer.js'
 export default doc('PerkyExplorer', () => {
 
     text(`
-        Visual inspector for exploring Perky module trees.
+        Visual inspector for exploring [[PerkyModule]] trees.
         Displays the hierarchy of modules, their properties, and allows navigation.
     `)
 

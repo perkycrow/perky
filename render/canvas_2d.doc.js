@@ -8,8 +8,8 @@ import Group2D from './group_2d.js'
 export default doc('Canvas2D', () => {
 
     text(`
-        Canvas 2D renderer using the native Canvas API. Renders scenes with rectangles,
-        circles, images, sprites, and supports debug gizmos and frustum culling.
+        Canvas 2D renderer using the native Canvas API. Renders scenes with [[Rectangle@render]],
+        [[Circle@render]], images, [[Sprite@render]], and supports debug gizmos and frustum culling.
     `)
 
 
@@ -145,7 +145,7 @@ export default doc('Canvas2D', () => {
 
     section('Groups', () => {
 
-        text('Group objects together to apply transformations to all children.')
+        text('Use [[Group2D@render]] to group objects and apply transformations to all children.')
 
         container({title: 'Nested groups', height: 200}, ctx => {
             const renderer = new Canvas2D({
