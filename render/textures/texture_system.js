@@ -15,6 +15,7 @@ export default class TextureSystem extends PerkyModule {
         this.#atlasManager = new TextureAtlasManager({
             atlasSize: options.atlasSize
         })
+        this.fallback = options.fallback ?? null
     }
 
 
@@ -45,7 +46,17 @@ export default class TextureSystem extends PerkyModule {
 
 
     getRegion (id) {
-        return this.#manualRegions.get(id) || this.#atlasManager.get(id)
+        const region = this.#manualRegions.get(id) || this.#atlasManager.get(id)
+        if (region) {
+            return region
+        }
+
+        const source = this.fallback?.(id)
+        if (source) {
+            return TextureRegion.fromImage(source)
+        }
+
+        return null
     }
 
 

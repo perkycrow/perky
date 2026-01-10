@@ -10,13 +10,13 @@ export default class EnemyView extends EntityView {
         super(entity, context)
 
         const config = context.config || {}
-        const image = context.game.getSource(config.image)
+        const region = context.game.getRegion(config.image)
 
         this.baseScaleX = config.width ?? 1
         this.baseScaleY = config.height ?? 1
 
         this.root = new Sprite({
-            image,
+            region,
             x: entity.x,
             y: entity.y,
             width: this.baseScaleX,

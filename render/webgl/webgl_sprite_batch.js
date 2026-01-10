@@ -23,9 +23,20 @@ function computeTexCoords (region, texCoords) {
 
 
 function getValidTexture (image, textureManager) {
-    if (!image || !image.complete || image.naturalWidth === 0) {
+    if (!image) {
         return null
     }
+
+    // HTMLImageElement needs to be loaded
+    if (image.complete !== undefined && (!image.complete || image.naturalWidth === 0)) {
+        return null
+    }
+
+    // Canvas/OffscreenCanvas just need width > 0
+    if (image.width === 0) {
+        return null
+    }
+
     return textureManager.getTexture(image)
 }
 

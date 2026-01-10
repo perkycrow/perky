@@ -19,12 +19,12 @@ export default class ProjectileView extends EntityView {
         const sprite = entity.sprite || config.image
 
         if (sprite) {
-            const image = context.game.getSource(sprite)
+            const region = context.game.getRegion(sprite)
 
             this.root = new Sprite({
                 x: entity.x,
                 y: entity.y,
-                image,
+                region,
                 width: entity.size,
                 height: entity.size,
                 anchorX: 0.5,

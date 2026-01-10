@@ -8,14 +8,14 @@ export default class PlayerView extends EntityView {
     constructor (entity, context) {
         super(entity, context)
 
-        this.images = {
-            right: context.game.getSource('wolf_right'),
-            up: context.game.getSource('wolf_up'),
-            down: context.game.getSource('wolf_down')
+        this.regions = {
+            right: context.game.getRegion('wolf_right'),
+            up: context.game.getRegion('wolf_up'),
+            down: context.game.getRegion('wolf_down')
         }
 
         this.root = new Sprite({
-            image: this.images.right,
+            region: this.regions.right,
             x: entity.x,
             y: entity.y,
             width: 1,
@@ -37,9 +37,9 @@ export default class PlayerView extends EntityView {
         const velocity = this.entity.velocity
 
         if (Math.abs(velocity.y) > 0.1) {
-            this.root.image = velocity.y > 0 ? this.images.up : this.images.down
+            this.root.region = velocity.y > 0 ? this.regions.up : this.regions.down
         } else {
-            this.root.image = this.images.right
+            this.root.region = this.regions.right
         }
 
         if (this.entity.shootRecoilTimer > 0) {

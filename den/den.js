@@ -53,7 +53,6 @@ export default class DefendTheDen extends Game {
 
 
     configureGame () {
-
         this.world = this.create(DenWorld)
 
         this.camera = this.renderSystem.getCamera('main')
@@ -154,6 +153,8 @@ export default class DefendTheDen extends Game {
 
 
     onStart () {
+        this.#buildTextureAtlases()
+
         this.execute('spawnPlayer', {x: -2.5})
 
         const gameController = this.getController('game')
@@ -217,6 +218,13 @@ export default class DefendTheDen extends Game {
             gameController.onWaveStart(nextWave, this.currentDay)
             this.emit('wave:start', {wave: nextWave, dayNumber: this.currentDay})
         }
+    }
+
+
+    #buildTextureAtlases () {
+        const assets = this.getAllAssets()
+        this.textureSystem.buildFromAssets(assets)
+        logger.info('TextureSystem', `Built ${this.textureSystem.atlases.length} atlas(es) with ${this.textureSystem.regionCount} regions`)
     }
 
 }
