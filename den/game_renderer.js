@@ -1,5 +1,5 @@
 import Group2D from '../render/group_2d.js'
-import Image2D from '../render/image_2d.js'
+import Sprite from '../render/sprite.js'
 import WorldView from '../game/world_view.js'
 import PerkyModule from '../core/perky_module.js'
 import {ShadowTransform} from '../render/transforms/index.js'
@@ -87,7 +87,7 @@ export default class GameRenderer extends PerkyModule {
         const backgroundHeight = 5
         const backgroundWidth = (backgroundImage.width / backgroundImage.height) * backgroundHeight
 
-        const background = new Image2D({
+        const background = new Sprite({
             image: backgroundImage,
             x: 0,
             y: 0,

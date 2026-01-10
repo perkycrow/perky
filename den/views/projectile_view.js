@@ -1,6 +1,6 @@
 import EntityView from '../../game/entity_view.js'
 import Circle from '../../render/circle.js'
-import Image2D from '../../render/image_2d.js'
+import Sprite from '../../render/sprite.js'
 import WaveEffect from '../effects/wave_effect.js'
 
 
@@ -21,7 +21,7 @@ export default class ProjectileView extends EntityView {
         if (sprite) {
             const image = context.game.getSource(sprite)
 
-            this.root = new Image2D({
+            this.root = new Sprite({
                 x: entity.x,
                 y: entity.y,
                 image,

@@ -1,6 +1,6 @@
 import {describe, test, expect, vi} from 'vitest'
 import WebGLSpriteBatch from './webgl_sprite_batch.js'
-import Image2D from '../image_2d.js'
+import Sprite from '../sprite.js'
 import {createMockGLWithSpies} from '../test_helpers.js'
 
 
@@ -115,7 +115,7 @@ describe(WebGLSpriteBatch, () => {
         const batch = new WebGLSpriteBatch(gl, {}, textureManager)
 
         const mockImage = {complete: true, naturalWidth: 100, width: 100, height: 100}
-        const sprite = new Image2D({image: mockImage})
+        const sprite = new Sprite({image: mockImage})
         sprite.updateWorldMatrix()
 
         batch.begin()

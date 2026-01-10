@@ -1,6 +1,5 @@
 import WebGLObjectRenderer from './webgl_object_renderer.js'
 import WebGLSpriteBatch from './webgl_sprite_batch.js'
-import Image2D from '../image_2d.js'
 import Sprite from '../sprite.js'
 
 
@@ -10,7 +9,7 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
     #shaderEffectRegistry = null
 
     static get handles () {
-        return [Image2D, Sprite]
+        return [Sprite]
     }
 
 

@@ -3,7 +3,7 @@ import WebGLRenderer from './webgl_renderer.js'
 import Rectangle from './rectangle.js'
 import Circle from './circle.js'
 import Group2D from './group_2d.js'
-import Image2D from './image_2d.js'
+import Sprite from './sprite.js'
 
 
 export default doc('WebGLRenderer', {featured: true}, () => {
@@ -273,7 +273,7 @@ export default doc('WebGLRenderer', {featured: true}, () => {
 
     section('Images', () => {
 
-        text('Render images and sprites using [[Image2D@render]] objects.')
+        text('Render images and sprites using [[Sprite@render]] objects.')
 
         container({title: 'Sprite rendering', height: 200}, ctx => {
             const renderer = new WebGLRenderer({
@@ -288,7 +288,7 @@ export default doc('WebGLRenderer', {featured: true}, () => {
             shroomImage.src = './assets/images/shroom.png'
 
             shroomImage.onload = () => {
-                const sprite = new Image2D({
+                const sprite = new Sprite({
                     x: 0,
                     y: 0,
                     width: 7,

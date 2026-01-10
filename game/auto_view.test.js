@@ -1,7 +1,7 @@
 import {describe, test, expect, vi} from 'vitest'
 import AutoView from './auto_view.js'
 import Circle from '../render/circle.js'
-import Image2D from '../render/image_2d.js'
+import Sprite from '../render/sprite.js'
 import Group2D from '../render/group_2d.js'
 
 
@@ -60,14 +60,14 @@ describe('AutoView', () => {
         })
 
 
-        test('works with Image2D', () => {
+        test('works with Sprite', () => {
             const mockImage = {width: 100, height: 100}
             const entity = createEntity({x: 5, y: 10})
-            const context = createContext(Image2D, {image: mockImage, width: 1, height: 1})
+            const context = createContext(Sprite, {image: mockImage, width: 1, height: 1})
 
             const view = new AutoView(entity, context)
 
-            expect(view.root).toBeInstanceOf(Image2D)
+            expect(view.root).toBeInstanceOf(Sprite)
             expect(view.root.image).toBe(mockImage)
         })
 

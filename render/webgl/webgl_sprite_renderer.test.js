@@ -1,13 +1,12 @@
 import {describe, test, expect, vi} from 'vitest'
 import WebGLSpriteRenderer from './webgl_sprite_renderer.js'
-import Image2D from '../image_2d.js'
 import Sprite from '../sprite.js'
 
 
 describe(WebGLSpriteRenderer, () => {
 
-    test('handles returns Image2D and Sprite', () => {
-        expect(WebGLSpriteRenderer.handles).toEqual([Image2D, Sprite])
+    test('handles returns Sprite', () => {
+        expect(WebGLSpriteRenderer.handles).toEqual([Sprite])
     })
 
 

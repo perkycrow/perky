@@ -1,5 +1,5 @@
 import EntityView from '../../game/entity_view.js'
-import Image2D from '../../render/image_2d.js'
+import Sprite from '../../render/sprite.js'
 import OutlineEffect from '../../render/sprite_effects/outline_effect.js'
 
 
@@ -14,7 +14,7 @@ export default class PlayerView extends EntityView {
             down: context.game.getSource('wolf_down')
         }
 
-        this.root = new Image2D({
+        this.root = new Sprite({
             image: this.images.right,
             x: entity.x,
             y: entity.y,

@@ -1,5 +1,5 @@
 import EntityView from '../../game/entity_view.js'
-import Image2D from '../../render/image_2d.js'
+import Sprite from '../../render/sprite.js'
 import ImpactSquashEffect from '../effects/impact_squash_effect.js'
 import ChromaticEffect from '../effects/chromatic_effect.js'
 
@@ -15,7 +15,7 @@ export default class EnemyView extends EntityView {
         this.baseScaleX = config.width ?? 1
         this.baseScaleY = config.height ?? 1
 
-        this.root = new Image2D({
+        this.root = new Sprite({
             image,
             x: entity.x,
             y: entity.y,

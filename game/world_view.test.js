@@ -2,7 +2,7 @@ import {describe, test, expect, beforeEach, vi} from 'vitest'
 import WorldView from './world_view.js'
 import Group2D from '../render/group_2d.js'
 import Circle from '../render/circle.js'
-import Image2D from '../render/image_2d.js'
+import Sprite from '../render/sprite.js'
 import PerkyModule from '../core/perky_module.js'
 
 
@@ -476,16 +476,16 @@ describe('WorldView', () => {
         })
 
 
-        test('works with Image2D', () => {
+        test('works with Sprite', () => {
             const mockImage = {width: 100, height: 100}
-            worldView.register(MockEntity, Image2D, {image: mockImage, width: 1, height: 1})
+            worldView.register(MockEntity, Sprite, {image: mockImage, width: 1, height: 1})
             worldView.onStart()
 
             const entity = new MockEntity({$id: 'image-test', x: 0, y: 0})
             mockWorld.addEntity(entity)
 
             const view = worldView.getViews('image-test')[0]
-            expect(view.root).toBeInstanceOf(Image2D)
+            expect(view.root).toBeInstanceOf(Sprite)
             expect(view.root.image).toBe(mockImage)
         })
 

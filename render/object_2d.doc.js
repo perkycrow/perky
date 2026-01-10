@@ -8,8 +8,7 @@ export default doc('Object2D', () => {
         Base class for all 2D renderable objects. Extends [[Transform@render]].
         Provides visibility, opacity, depth sorting, anchors, and debug gizmos.
 
-        Subclasses: [[Rectangle@render]], [[Circle@render]], [[Image2D@render]],
-        [[Sprite@render]], [[Group2D@render]].
+        Subclasses: [[Rectangle@render]], [[Circle@render]], [[Sprite@render]], [[Group2D@render]].
     `)
 
 
