@@ -108,6 +108,27 @@ export const explorerStyles = `
         color: var(--fg-primary);
     }
 
+    .explorer-btn-icon {
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .explorer-btn-icon svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .explorer-btn.active {
+        background: var(--accent);
+        color: var(--bg-primary);
+    }
+
+    .explorer-btn.active:hover {
+        filter: brightness(1.1);
+    }
+
     .explorer-tree {
         flex-shrink: 0;
         padding: 8px 0;
@@ -267,6 +288,27 @@ export const nodeStyles = `
         color: var(--fg-muted);
         font-size: 10px;
         flex-shrink: 0;
+    }
+
+    .node-content {
+        position: relative;
+    }
+
+    .node-system-icon {
+        position: absolute;
+        left: 11px;
+        top: 50%;
+        transform: translateY(calc(-50% + 1px));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .node-system-icon svg {
+        width: 8px;
+        height: 8px;
+        fill: var(--fg-muted);
+        opacity: 0.4;
     }
 
     .node-children {

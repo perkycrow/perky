@@ -5,6 +5,20 @@ import './scene_tree_sidebar.js'
 import './inspectors/index.js'
 import ExplorerContextMenu from './explorer_context_menu.js'
 import {getActionsForModule, registerActionProvider} from './context_menu_actions.js'
+import {ICONS} from './devtools/devtools_icons.js'
+
+
+const DEFAULT_SYSTEM_CATEGORIES = [
+    'actionDispatcher',
+    'inputSystem',
+    'renderSystem',
+    'sourceManager',
+    'perkyView',
+    'gameLoop',
+    'textureSystem',
+    'audioSystem',
+    'manifest'
+]
 
 
 export default class PerkyExplorer extends BaseEditorComponent {
@@ -17,6 +31,8 @@ export default class PerkyExplorer extends BaseEditorComponent {
     #sceneTreeMode = false
     #focusMode = false
     #embedded = false
+    #showSystemModules = false
+    #systemCategories = [...DEFAULT_SYSTEM_CATEGORIES]
 
     #containerEl = null
     #sidebarEl = null
@@ -28,6 +44,7 @@ export default class PerkyExplorer extends BaseEditorComponent {
     #detailsEl = null
     #collapseBtnEl = null
     #minimizeBtnEl = null
+    #layersBtnEl = null
 
     #selectedModule = null
     #rootModule = null
@@ -70,6 +87,37 @@ export default class PerkyExplorer extends BaseEditorComponent {
             this.removeAttribute('embedded')
         }
         this.#updateEmbeddedMode()
+    }
+
+
+    get systemCategories () {
+        return this.#systemCategories
+    }
+
+
+    set systemCategories (value) {
+        this.#systemCategories = value
+        this.#refresh()
+    }
+
+
+    get showSystemModules () {
+        return this.#showSystemModules
+    }
+
+
+    set showSystemModules (value) {
+        this.#showSystemModules = value
+        this.#updateLayersButton()
+        this.#refresh()
+        this.dispatchEvent(new CustomEvent('showSystemModules:change', {
+            detail: {showSystemModules: value}
+        }))
+    }
+
+
+    isSystemModule (module) {
+        return module && this.#systemCategories.includes(module.$category)
     }
 
 
@@ -218,7 +266,17 @@ export default class PerkyExplorer extends BaseEditorComponent {
             this.#updateViewState()
         })
 
+        this.#layersBtnEl = document.createElement('button')
+        this.#layersBtnEl.className = 'explorer-btn explorer-btn-icon'
+        this.#layersBtnEl.innerHTML = ICONS.layers
+        this.#layersBtnEl.title = 'Show system modules'
+        this.#layersBtnEl.addEventListener('click', (e) => {
+            e.stopPropagation()
+            this.showSystemModules = !this.#showSystemModules
+        })
+
         buttons.appendChild(refreshBtn)
+        buttons.appendChild(this.#layersBtnEl)
         buttons.appendChild(this.#collapseBtnEl)
         buttons.appendChild(this.#minimizeBtnEl)
 
@@ -280,6 +338,17 @@ export default class PerkyExplorer extends BaseEditorComponent {
             onInspect: () => this.dispatchEvent(new CustomEvent('inspect'))
         })
 
+        if (module === this.#rootModule) {
+            actions.push({separator: true})
+            actions.push({
+                iconSvg: ICONS.layers,
+                label: this.#showSystemModules ? 'Hide system modules' : 'Show system modules',
+                action: () => {
+                    this.showSystemModules = !this.#showSystemModules
+                }
+            })
+        }
+
         this.#contextMenuEl.show(actions, module, {x, y})
     }
 
@@ -334,6 +403,21 @@ export default class PerkyExplorer extends BaseEditorComponent {
             this.#detailsEl.classList.remove('hidden')
             this.#collapseBtnEl.textContent = '−'
             this.#collapseBtnEl.title = 'Collapse'
+        }
+    }
+
+
+    #updateLayersButton () {
+        if (!this.#layersBtnEl) {
+            return
+        }
+
+        if (this.#showSystemModules) {
+            this.#layersBtnEl.classList.add('active')
+            this.#layersBtnEl.title = 'Hide system modules'
+        } else {
+            this.#layersBtnEl.classList.remove('active')
+            this.#layersBtnEl.title = 'Show system modules'
         }
     }
 

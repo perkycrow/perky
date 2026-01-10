@@ -165,6 +165,49 @@ export const sidebarStyles = `
         color: var(--fg-primary);
     }
 
+    .sidebar-actions {
+        display: flex;
+        gap: 4px;
+        margin-left: auto;
+        margin-right: 8px;
+    }
+
+    .sidebar-action-btn {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        color: var(--fg-muted);
+        transition: background 0.15s, color 0.15s;
+    }
+
+    .sidebar-action-btn svg {
+        width: 14px;
+        height: 14px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .sidebar-action-btn:hover {
+        background: var(--bg-hover);
+        color: var(--fg-primary);
+    }
+
+    .sidebar-action-btn.active {
+        background: var(--accent);
+        color: var(--bg-primary);
+    }
+
+    .sidebar-action-btn.active:hover {
+        filter: brightness(1.1);
+    }
+
     .sidebar-content {
         flex: 1;
         overflow: auto;

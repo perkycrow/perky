@@ -38,6 +38,22 @@ export default class ExplorerTool extends BaseTool {
     }
 
 
+    getHeaderActions () {
+        return [
+            {
+                icon: ICONS.layers,
+                title: this.#explorerEl?.showSystemModules ? 'Hide system modules' : 'Show system modules',
+                active: this.#explorerEl?.showSystemModules || false,
+                onClick: () => {
+                    if (this.#explorerEl) {
+                        this.#explorerEl.showSystemModules = !this.#explorerEl.showSystemModules
+                    }
+                }
+            }
+        ]
+    }
+
+
     #buildDOM () {
         const style = document.createElement('style')
         style.textContent = STYLES
@@ -46,6 +62,9 @@ export default class ExplorerTool extends BaseTool {
         this.#explorerEl = document.createElement('perky-explorer')
         this.#explorerEl.embedded = true
         this.#explorerEl.addEventListener('inspect', () => this.state?.openLogger())
+        this.#explorerEl.addEventListener('showSystemModules:change', () => {
+            this.dispatchEvent(new CustomEvent('headeractions:change', {bubbles: true, composed: true}))
+        })
 
         this.shadowRoot.appendChild(this.#explorerEl)
 

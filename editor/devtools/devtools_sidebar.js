@@ -20,6 +20,7 @@ export default class DevToolsSidebar extends BaseEditorComponent {
     #titleIconEl = null
     #titleTextEl = null
     #closeBtn = null
+    #actionsEl = null
     #contentEl = null
     #currentToolEl = null
     #currentToolId = null
@@ -84,6 +85,9 @@ export default class DevToolsSidebar extends BaseEditorComponent {
         this.#titleEl.appendChild(this.#titleIconEl)
         this.#titleEl.appendChild(this.#titleTextEl)
 
+        this.#actionsEl = document.createElement('div')
+        this.#actionsEl.className = 'sidebar-actions'
+
         this.#closeBtn = document.createElement('button')
         this.#closeBtn.className = 'sidebar-close'
         this.#closeBtn.textContent = '\u00D7'
@@ -93,9 +97,35 @@ export default class DevToolsSidebar extends BaseEditorComponent {
         })
 
         header.appendChild(this.#titleEl)
+        header.appendChild(this.#actionsEl)
         header.appendChild(this.#closeBtn)
 
         return header
+    }
+
+
+    #updateHeaderActions () {
+        this.#actionsEl.innerHTML = ''
+
+        if (!this.#currentToolEl?.getHeaderActions) {
+            return
+        }
+
+        const actions = this.#currentToolEl.getHeaderActions()
+        for (const action of actions) {
+            const btn = document.createElement('button')
+            btn.className = 'sidebar-action-btn'
+            if (action.active) {
+                btn.classList.add('active')
+            }
+            btn.innerHTML = action.icon
+            btn.title = action.title
+            btn.addEventListener('click', () => {
+                action.onClick()
+                this.#updateHeaderActions()
+            })
+            this.#actionsEl.appendChild(btn)
+        }
     }
 
 
@@ -123,8 +153,13 @@ export default class DevToolsSidebar extends BaseEditorComponent {
         this.#currentToolEl.setState(this.#state)
         this.#currentToolId = toolId
 
+        this.#currentToolEl.addEventListener('headeractions:change', () => {
+            this.#updateHeaderActions()
+        })
+
         this.#contentEl.appendChild(this.#currentToolEl)
         this.#currentToolEl.onActivate?.()
+        this.#updateHeaderActions()
     }
 
 

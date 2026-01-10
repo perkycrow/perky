@@ -1,4 +1,5 @@
 import BaseTreeNode from './base_tree_node.js'
+import {ICONS} from './devtools/devtools_icons.js'
 
 
 export default class PerkyExplorerNode extends BaseTreeNode {
@@ -7,6 +8,7 @@ export default class PerkyExplorerNode extends BaseTreeNode {
 
     #module = null
     #childNodes = new Map()
+    #isSystemModule = false
 
     constructor () {
         super()
@@ -43,17 +45,47 @@ export default class PerkyExplorerNode extends BaseTreeNode {
 
 
     hasChildren () {
-        return this.#module && this.#module.children.length > 0
+        return this.getChildren().length > 0
     }
 
 
     getChildren () {
-        return this.#module ? this.#module.children : []
+        if (!this.#module) {
+            return []
+        }
+
+        const explorer = this.#getExplorer()
+        if (!explorer || explorer.showSystemModules || this.depth > 0) {
+            return this.#module.children
+        }
+
+        return this.#module.children.filter(child => !explorer.isSystemModule(child))
+    }
+
+
+    #getExplorer () {
+        let current = this
+        while (current) {
+            if (current.tagName === 'PERKY-EXPLORER') {
+                return current
+            }
+            const root = current.getRootNode()
+            if (root && root.host) {
+                current = root.host
+            } else {
+                current = current.parentElement
+            }
+        }
+        return null
     }
 
 
     createChildNode (child) {
         const childNode = document.createElement('perky-explorer-node')
+        const explorer = this.#getExplorer()
+        if (explorer?.isSystemModule(child)) {
+            childNode.setSystemModule(true)
+        }
         childNode.setModule(child, this.depth + 1)
         this.#childNodes.set(child.$id, childNode)
         return childNode
@@ -64,6 +96,7 @@ export default class PerkyExplorerNode extends BaseTreeNode {
         this.#updateStatus()
         this.#updateId()
         this.#updateCategory()
+        this.#updateSystemClass()
     }
 
 
@@ -83,9 +116,9 @@ export default class PerkyExplorerNode extends BaseTreeNode {
         }
 
         const currentIds = new Set(this.#childNodes.keys())
-        const moduleChildren = this.#module.children
+        const filteredChildren = this.getChildren()
 
-        for (const child of moduleChildren) {
+        for (const child of filteredChildren) {
             if (!this.#childNodes.has(child.$id)) {
                 const childNode = this.createChildNode(child)
                 this.childrenEl.appendChild(childNode)
@@ -173,6 +206,29 @@ export default class PerkyExplorerNode extends BaseTreeNode {
         }
 
         categoryEl.textContent = this.#module.$category
+    }
+
+
+    setSystemModule (value) {
+        this.#isSystemModule = value
+        this.#updateSystemClass()
+    }
+
+
+    #updateSystemClass () {
+        let iconEl = this.contentEl.querySelector('.node-system-icon')
+
+        if (this.#isSystemModule) {
+            if (!iconEl) {
+                iconEl = document.createElement('span')
+                iconEl.className = 'node-system-icon'
+                iconEl.innerHTML = ICONS.system
+                iconEl.title = 'System module'
+                this.contentEl.appendChild(iconEl)
+            }
+        } else if (iconEl) {
+            iconEl.remove()
+        }
     }
 
 

@@ -38,6 +38,11 @@ export default class BaseTool extends BaseEditorComponent {
     }
 
 
+    getHeaderActions () {
+        return []
+    }
+
+
     static register () {
         registerTool(this)
     }
