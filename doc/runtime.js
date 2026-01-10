@@ -427,6 +427,91 @@ export async function executeContainer (block, containerEl, sectionSetup = null)
                 el.style.cssText = `width:${size}px;height:${size}px;background:${color};position:absolute;border-radius:50%;transform:translate(-50%,-50%);left:${x}px;top:${y}px`
                 containerEl.appendChild(el)
                 return el
+            },
+            column: (opts = {}) => {
+                const gap = opts.gap || 4
+                const el = document.createElement('div')
+                el.style.cssText = `display:flex;flex-direction:column;align-items:center;gap:${gap}px;`
+                if (opts.parent) {
+                    opts.parent.appendChild(el)
+                } else {
+                    containerEl.appendChild(el)
+                }
+                return el
+            },
+            row: (opts = {}) => {
+                const gap = opts.gap || 8
+                const el = document.createElement('div')
+                el.style.cssText = `display:flex;flex-direction:row;align-items:center;gap:${gap}px;flex-wrap:wrap;justify-content:center;`
+                if (opts.parent) {
+                    opts.parent.appendChild(el)
+                } else {
+                    containerEl.appendChild(el)
+                }
+                return el
+            },
+            label: (content, opts = {}) => {
+                const el = document.createElement('div')
+                el.style.cssText = 'color:#666;font-family:monospace;font-size:11px;'
+                el.textContent = content
+                if (opts.parent) {
+                    opts.parent.appendChild(el)
+                } else {
+                    containerEl.appendChild(el)
+                }
+                return el
+            },
+            checkerBoard: (opts = {}) => {
+                const size = opts.size || 8
+                const color1 = opts.color1 || '#222'
+                const color2 = opts.color2 || '#1a1a1a'
+                const el = document.createElement('div')
+                el.style.cssText = `background:repeating-conic-gradient(${color1} 0% 25%, ${color2} 0% 50%) 50% / ${size * 2}px ${size * 2}px;border:1px solid #333;overflow:hidden;`
+                if (opts.width) {
+                    el.style.width = opts.width + 'px'
+                }
+                if (opts.height) {
+                    el.style.height = opts.height + 'px'
+                }
+                if (opts.parent) {
+                    opts.parent.appendChild(el)
+                } else {
+                    containerEl.appendChild(el)
+                }
+                return el
+            },
+            canvas: (source, opts = {}) => {
+                const wrapper = document.createElement('div')
+                const size = opts.checkerSize || 8
+                wrapper.style.cssText = `background:repeating-conic-gradient(#222 0% 25%, #1a1a1a 0% 50%) 50% / ${size * 2}px ${size * 2}px;border:1px solid #333;display:inline-block;`
+                if (opts.parent) {
+                    opts.parent.appendChild(wrapper)
+                } else {
+                    containerEl.appendChild(wrapper)
+                }
+
+                const displayCanvas = document.createElement('canvas')
+                displayCanvas.style.cssText = 'display:block;'
+                if (opts.maxWidth) {
+                    displayCanvas.style.maxWidth = opts.maxWidth + 'px'
+                    displayCanvas.style.height = 'auto'
+                }
+                wrapper.appendChild(displayCanvas)
+
+                const update = (src) => {
+                    const canvas = src || source
+                    displayCanvas.width = canvas.width
+                    displayCanvas.height = canvas.height
+                    const dctx = displayCanvas.getContext('2d')
+                    dctx.clearRect(0, 0, canvas.width, canvas.height)
+                    dctx.drawImage(canvas, 0, 0)
+                }
+
+                if (source) {
+                    update(source)
+                }
+
+                return {element: wrapper, canvas: displayCanvas, update}
             }
         }
 
