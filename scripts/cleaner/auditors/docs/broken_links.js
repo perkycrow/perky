@@ -49,11 +49,6 @@ export default class BrokenLinksAuditor extends Auditor {
     }
 
 
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
-
     #loadValidTargets () {
         const docsPath = path.join(this.rootDir, 'doc', 'docs.json')
 

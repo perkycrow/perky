@@ -61,11 +61,6 @@ export default class DirectivesAuditor extends EslintAuditor {
     }
 
 
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
-
     #findUnusedDirectives () {
         const target = this.getEslintTarget()
         const {output} = this.runEslintCommand(`--report-unused-disable-directives --format json ${target}`)

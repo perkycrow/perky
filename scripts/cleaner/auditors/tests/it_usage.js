@@ -38,11 +38,6 @@ export default class ItUsageAuditor extends Auditor {
     }
 
 
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
-
     #findItUsage () {
         const files = this.scanFiles().filter((filePath) => {
             const relativePath = path.relative(this.rootDir, filePath)

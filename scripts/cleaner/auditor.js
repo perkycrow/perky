@@ -125,7 +125,7 @@ export default class Auditor {
 
 
     analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        throw new Error('analyze() must be implemented by subclass')
+        return []
     }
 
 

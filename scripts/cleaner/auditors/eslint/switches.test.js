@@ -9,12 +9,4 @@ describe('SwitchesAuditor', () => {
         expect(SwitchesAuditor.$canFix).toBe(false)
     })
 
-
-    test('analyze returns empty array', () => {
-        const auditor = new SwitchesAuditor('/tmp')
-        const result = auditor.analyze('const x = 1')
-
-        expect(result).toEqual([])
-    })
-
 })

@@ -42,11 +42,6 @@ export default class StaleFilesAuditor extends Auditor {
     }
 
 
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
-
     #findStaleFiles (suffix) {
         const files = this.scanFiles()
         const stale = []

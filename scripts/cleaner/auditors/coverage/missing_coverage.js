@@ -43,11 +43,6 @@ export default class MissingCoverageAuditor extends Auditor {
     }
 
 
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
-
     #findMissingCoverage () {
         const files = this.scanFiles()
         const results = []

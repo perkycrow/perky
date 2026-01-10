@@ -37,11 +37,6 @@ export default class SingleDescribesAuditor extends Auditor {
     }
 
 
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
-
     #findSingleTestDescribes () {
         const files = this.scanFiles().filter((filePath) => {
             const relativePath = path.relative(this.rootDir, filePath)

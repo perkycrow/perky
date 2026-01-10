@@ -36,11 +36,6 @@ export default class SwitchesAuditor extends EslintAuditor {
     }
 
 
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
-
     #findSwitchStatements () {
         const files = this.scanFiles()
         const switches = []

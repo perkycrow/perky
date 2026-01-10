@@ -38,11 +38,6 @@ export default class MissingTestsAuditor extends Auditor {
     }
 
 
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
-
     async #findFilesWithoutTests () { // eslint-disable-line complexity -- clean
         const config = await this.#loadConfig()
         const excludeDirs = config.missingTests?.excludeDirs || []

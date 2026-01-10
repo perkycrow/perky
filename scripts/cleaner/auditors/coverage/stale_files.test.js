@@ -23,9 +23,4 @@ describe(StaleFilesAuditor, () => {
         expect(auditor.getHint()).toContain('days')
     })
 
-
-    test('analyze returns empty array', () => {
-        expect(auditor.analyze()).toEqual([])
-    })
-
 })

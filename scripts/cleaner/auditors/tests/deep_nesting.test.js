@@ -10,12 +10,4 @@ describe('DeepNestingAuditor', () => {
         expect(DeepNestingAuditor.$canFix).toBe(false)
     })
 
-
-    test('analyze returns empty array', () => {
-        const auditor = new DeepNestingAuditor('/tmp')
-        const result = auditor.analyze('const x = 1')
-
-        expect(result).toEqual([])
-    })
-
 })

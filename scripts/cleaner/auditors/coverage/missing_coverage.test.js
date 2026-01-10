@@ -22,9 +22,4 @@ describe(MissingCoverageAuditor, () => {
         expect(auditor.getHint()).toContain('not referenced')
     })
 
-
-    test('analyze returns empty array', () => {
-        expect(auditor.analyze()).toEqual([])
-    })
-
 })

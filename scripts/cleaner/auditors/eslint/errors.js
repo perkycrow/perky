@@ -87,11 +87,6 @@ export default class EslintErrorsAuditor extends EslintAuditor {
         return {filesFixed: 0, issuesFixed: 0}
     }
 
-
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
 }
 
 

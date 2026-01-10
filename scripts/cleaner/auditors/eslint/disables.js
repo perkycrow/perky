@@ -70,11 +70,6 @@ export default class DisablesAuditor extends EslintAuditor {
     }
 
 
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
-
     #findEslintDisables () {
         const files = this.scanFiles()
         const disables = []

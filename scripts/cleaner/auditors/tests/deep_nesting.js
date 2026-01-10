@@ -34,11 +34,6 @@ export default class DeepNestingAuditor extends Auditor {
     }
 
 
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
-
     #findDeepNesting () {
         const files = this.scanFiles().filter((filePath) => {
             const relativePath = path.relative(this.rootDir, filePath)

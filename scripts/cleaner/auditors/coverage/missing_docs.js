@@ -35,11 +35,6 @@ export default class MissingDocsAuditor extends Auditor {
     }
 
 
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
-
     async #findFilesWithoutDocs () {
         const config = await this.#loadConfig()
         const excludeDirs = config.missingDocs?.excludeDirs || []

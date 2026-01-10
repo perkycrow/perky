@@ -133,12 +133,6 @@ describe(MissingDocsAuditor, () => {
         expect(auditor.getHint()).toContain('.doc.js')
     })
 
-
-    test('analyze returns empty array', () => {
-        const auditor = new MissingDocsAuditor('/root', {silent: true})
-        expect(auditor.analyze()).toEqual([])
-    })
-
 })
 
 
