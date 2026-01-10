@@ -3,7 +3,7 @@ import {parseSelector, matchesConditions, query, queryAll} from './perky_query.j
 import PerkyModule from './perky_module.js'
 
 
-export default doc('PerkyQuery', () => {
+export default doc('PerkyQuery', {advanced: true}, () => {
 
     text(`
         Path-based selector system for querying [[PerkyModule]] hierarchies.

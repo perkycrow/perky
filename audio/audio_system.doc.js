@@ -2,7 +2,7 @@ import {doc, section, text, code, container, logger} from '../doc/runtime.js'
 import AudioSystem from './audio_system.js'
 
 
-export default doc('AudioSystem', () => {
+export default doc('AudioSystem', {featured: true}, () => {
 
     text(`
         Manages audio playback with support for multiple channels, spatial audio,

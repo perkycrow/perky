@@ -18,19 +18,6 @@
             "editor",
             "doc"
         ],
-        "items": {},
-        "featured": [
-            "runtime",
-            "perky_module",
-            "utils",
-            "random",
-            "application",
-            "game",
-            "input_system",
-            "render_system",
-            "audio_system",
-            "canvas_renderer",
-            "webgl_renderer"
-        ]
+        "items": {}
     }
 }

@@ -3,7 +3,7 @@ import Application from './application.js'
 import ActionController from '../core/action_controller.js'
 
 
-export default doc('Application', () => {
+export default doc('Application', {featured: true}, () => {
 
     text(`
         Main entry point for Perky applications.

@@ -3,7 +3,7 @@ import Vec2Control from './vec2_control.js'
 import Vec2 from '../../math/vec2.js'
 
 
-export default doc('Vec2Control', () => {
+export default doc('Vec2Control', {advanced: true}, () => {
 
     text(`
         Input control for 2D vector values. Extends [[InputControl@input]] to handle [[Vec2@math]] objects,

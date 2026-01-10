@@ -2,7 +2,7 @@ import {doc, section, setup, text, action, logger} from '../doc/runtime.js'
 import ObservableMap from './observable_map.js'
 
 
-export default doc('ObservableMap', () => {
+export default doc('ObservableMap', {advanced: true}, () => {
 
     text(`
         Map data structure that emits events on modifications.

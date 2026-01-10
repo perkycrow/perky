@@ -143,6 +143,60 @@ body {
     padding: 0.25rem 0;
 }
 
+.advanced-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.advanced-toggle.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.advanced-toggle-input {
+    display: none;
+}
+
+.advanced-toggle-track {
+    position: relative;
+    width: 32px;
+    height: 18px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.advanced-toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    background: var(--fg-muted);
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.advanced-toggle-input:checked + .advanced-toggle-track {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.advanced-toggle-input:checked + .advanced-toggle-track .advanced-toggle-thumb {
+    transform: translateX(14px);
+    background: var(--bg-primary);
+}
+
+.advanced-toggle-label {
+    font-size: 0.75rem;
+    color: var(--fg-secondary);
+}
+
 .sidebar-nav::-webkit-scrollbar {
     width: 6px;
 }
@@ -188,6 +242,7 @@ body {
 }
 
 .nav-item.hidden,
+.nav-item.hidden-advanced,
 .nav-category.hidden {
     display: none;
 }
@@ -208,6 +263,18 @@ body {
 
 .nav-item.featured:hover::before {
     opacity: 1;
+}
+
+.nav-item.advanced {
+    color: var(--fg-muted);
+}
+
+.nav-item.advanced:hover {
+    color: var(--fg-secondary);
+}
+
+.nav-item.advanced.active {
+    color: var(--accent);
 }
 
 .docs-main {

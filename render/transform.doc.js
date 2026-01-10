@@ -2,7 +2,7 @@ import {doc, section, text, code, action, logger} from '../doc/runtime.js'
 import Transform from './transform.js'
 
 
-export default doc('Transform', () => {
+export default doc('Transform', {advanced: true}, () => {
 
     text(`
         Low-level 2D transformation class with matrix math.

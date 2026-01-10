@@ -17,12 +17,15 @@ class DocViewer {
         this.container = document.getElementById('doc-container')
         this.nav = document.getElementById('docs-nav')
         this.searchInput = document.querySelector('.sidebar-search .search-input')
+        this.advancedToggle = document.getElementById('advanced-toggle')
+        this.advancedCheckbox = this.advancedToggle?.querySelector('.advanced-toggle-input')
         this.docs = []
         this.guides = []
         this.apiData = {}
         this.testsData = {}
         this.currentDoc = null
         this.currentSection = 'docs'
+        this.showAdvanced = false
     }
 
 
@@ -57,6 +60,7 @@ class DocViewer {
         renderSwitcher()
         this.setupSwitcher()
         this.setupNavClicks()
+        this.setupAdvancedToggle()
     }
 
 
@@ -104,6 +108,36 @@ class DocViewer {
     }
 
 
+    setupAdvancedToggle () {
+        if (!this.advancedCheckbox) {
+            return
+        }
+
+        this.advancedCheckbox.addEventListener('change', () => {
+            this.showAdvanced = this.advancedCheckbox.checked
+            this.#applyAdvancedFilter()
+        })
+
+        this.#applyAdvancedFilter()
+    }
+
+
+    #applyAdvancedFilter () {
+        const activeSection = this.nav.querySelector(`.nav-section[data-section="${this.currentSection}"]`)
+        if (!activeSection) {
+            return
+        }
+
+        for (const item of activeSection.querySelectorAll('.nav-item.advanced')) {
+            const isSearchActive = this.searchInput.value.trim().length > 0
+            const shouldShow = this.showAdvanced || isSearchActive
+            item.classList.toggle('hidden-advanced', !shouldShow)
+        }
+
+        filterNavCategories(activeSection.querySelectorAll('.nav-category'))
+    }
+
+
     switchSection (section) {
         this.currentSection = section
 
@@ -129,8 +163,14 @@ class DocViewer {
             return
         }
 
-        filterNavItems(activeSection.querySelectorAll('.nav-item'), search)
-        filterNavCategories(activeSection.querySelectorAll('.nav-category'), search)
+        const isSearchActive = search.length > 0
+        if (this.advancedToggle) {
+            this.advancedToggle.classList.toggle('disabled', isSearchActive)
+        }
+
+        this.#applyAdvancedFilter()
+        filterNavItems(activeSection.querySelectorAll('.nav-item:not(.hidden-advanced)'), search)
+        filterNavCategories(activeSection.querySelectorAll('.nav-category'))
     }
 
 
@@ -335,14 +375,22 @@ function renderNavItems (container, items, type) {
     }
 
     for (const [category, categoryItems] of Object.entries(byCategory)) {
+        const allAdvanced = categoryItems.every(item => item.advanced)
         const categoryEl = document.createElement('div')
-        categoryEl.className = 'nav-category'
+        categoryEl.className = allAdvanced ? 'nav-category hidden' : 'nav-category'
         categoryEl.textContent = category
         container.appendChild(categoryEl)
 
         for (const item of categoryItems) {
             const link = document.createElement('a')
-            link.className = item.featured ? 'nav-item featured' : 'nav-item'
+            const classes = ['nav-item']
+            if (item.featured) {
+                classes.push('featured')
+            }
+            if (item.advanced) {
+                classes.push('advanced', 'hidden-advanced')
+            }
+            link.className = classes.join(' ')
             link.href = type === 'guide'
                 ? `guide_${item.id}.html`
                 : item.file.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
@@ -407,10 +455,10 @@ function filterNavItems (items, search) {
 }
 
 
-function filterNavCategories (categories, search) {
+function filterNavCategories (categories) {
     for (const category of categories) {
         const hasVisibleItems = categoryHasVisibleItems(category)
-        category.classList.toggle('hidden', search ? !hasVisibleItems : false)
+        category.classList.toggle('hidden', !hasVisibleItems)
     }
 }
 
@@ -425,7 +473,9 @@ function categoryHasVisibleItems (category) {
             break
         }
 
-        if (child.classList.contains('nav-item') && !child.classList.contains('hidden')) {
+        if (child.classList.contains('nav-item') &&
+            !child.classList.contains('hidden') &&
+            !child.classList.contains('hidden-advanced')) {
             return true
         }
     }

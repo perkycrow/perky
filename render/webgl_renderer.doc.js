@@ -6,7 +6,7 @@ import Group2D from './group_2d.js'
 import Image2D from './image_2d.js'
 
 
-export default doc('WebGLRenderer', () => {
+export default doc('WebGLRenderer', {featured: true}, () => {
 
     text(`
         WebGL2-based 2D renderer. Renders scenes with [[Rectangle@render]], [[Circle@render]], [[Sprite@render]],

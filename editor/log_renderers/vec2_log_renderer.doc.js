@@ -3,7 +3,7 @@ import Vec2 from '../../math/vec2.js'
 import './vec2_log_renderer.js'
 
 
-export default doc('Vec2LogRenderer', () => {
+export default doc('Vec2LogRenderer', {advanced: true}, () => {
 
     text(`
         Custom log renderer for [[Vec2@math]] objects. Displays vector components

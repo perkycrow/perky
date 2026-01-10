@@ -103,13 +103,26 @@ function toPascalCase (str) {
 }
 
 
-function extractTitleFromDoc (filePath) {
+function extractDocMetadata (filePath) {
     try {
         const source = fs.readFileSync(filePath, 'utf-8')
-        const match = source.match(/export\s+default\s+doc\s*\(\s*['"`]([^'"`]+)['"`]/)
-        return match ? match[1] : null
+
+        const titleMatch = source.match(/export\s+default\s+doc\s*\(\s*['"`]([^'"`]+)['"`]/)
+        const title = titleMatch ? titleMatch[1] : null
+
+        const optionsMatch = source.match(/export\s+default\s+doc\s*\(\s*['"`][^'"`]+['"`]\s*,\s*(\{[^}]+\})/)
+        let featured = false
+        let advanced = false
+
+        if (optionsMatch) {
+            const optionsStr = optionsMatch[1]
+            featured = /featured\s*:\s*true/.test(optionsStr)
+            advanced = /advanced\s*:\s*true/.test(optionsStr)
+        }
+
+        return {title, featured, advanced}
     } catch {
-        return null
+        return {title: null, featured: false, advanced: false}
     }
 }
 
@@ -121,7 +134,6 @@ async function discoverDocs () {
     })
 
     const orderConfig = loadOrderConfig()
-    const featuredList = orderConfig.docs?.featured || []
 
     const docs = files.map(file => {
         const relativePath = '/' + file
@@ -129,16 +141,16 @@ async function discoverDocs () {
         const directory = path.dirname(file)
         const category = directory || 'core'
         const absolutePath = path.join(rootDir, file)
-        const extractedTitle = extractTitleFromDoc(absolutePath)
-        const isFeatured = featuredList.includes(basename)
+        const metadata = extractDocMetadata(absolutePath)
 
         return {
             id: basename,
             file: relativePath,
             category,
-            title: extractedTitle || toPascalCase(basename),
+            title: metadata.title || toPascalCase(basename),
             tags: [category, basename],
-            featured: isFeatured
+            featured: metadata.featured,
+            advanced: metadata.advanced
         }
     })
 
@@ -310,6 +322,13 @@ function generateIndexHtml () {
                     <input type="text" class="search-input" placeholder="Search...">
                 </div>
                 <div class="nav-switcher" id="nav-switcher"></div>
+                <label class="advanced-toggle" id="advanced-toggle">
+                    <input type="checkbox" class="advanced-toggle-input">
+                    <span class="advanced-toggle-track">
+                        <span class="advanced-toggle-thumb"></span>
+                    </span>
+                    <span class="advanced-toggle-label">Show advanced</span>
+                </label>
             </div>
             <nav class="sidebar-nav" id="docs-nav"></nav>
         </aside>

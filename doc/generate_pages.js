@@ -335,6 +335,13 @@ function generatePageHtml (pageData) {
                     <input type="text" class="search-input" placeholder="Search...">
                 </div>
                 <div class="nav-switcher" id="nav-switcher">${switcherHtml}</div>
+                <label class="advanced-toggle" id="advanced-toggle">
+                    <input type="checkbox" class="advanced-toggle-input">
+                    <span class="advanced-toggle-track">
+                        <span class="advanced-toggle-thumb"></span>
+                    </span>
+                    <span class="advanced-toggle-label">Show advanced</span>
+                </label>
             </div>
             <nav class="sidebar-nav" id="docs-nav">${navHtml}</nav>
         </aside>
@@ -392,15 +399,29 @@ function generateItemsHtml (items, activeFile, type) {
     let html = ''
 
     for (const [category, categoryItems] of Object.entries(byCategory)) {
-        html += `<div class="nav-category">${escapeHtml(category)}</div>`
+        const allAdvanced = categoryItems.every(item => item.advanced)
+        const categoryClasses = ['nav-category']
+        if (allAdvanced) {
+            categoryClasses.push('hidden')
+        }
+        html += `<div class="${categoryClasses.join(' ')}">${escapeHtml(category)}</div>`
 
         for (const item of categoryItems) {
-            const isActive = item.file === activeFile ? ' active' : ''
+            const classes = ['nav-item']
+            if (item.file === activeFile) {
+                classes.push('active')
+            }
+            if (item.featured) {
+                classes.push('featured')
+            }
+            if (item.advanced) {
+                classes.push('advanced', 'hidden-advanced')
+            }
             const href = type === 'guide'
                 ? guideIdToHtml(item.id)
                 : docFileToHtml(item.file)
             const displayTitle = type === 'guide' ? toHumanCase(item.title) : item.title
-            html += `<a class="nav-item${isActive}" href="${href}" data-file="${escapeHtml(item.file)}" data-title="${escapeHtml(item.title.toLowerCase())}" data-category="${escapeHtml(item.category)}">${escapeHtml(displayTitle)}</a>`
+            html += `<a class="${classes.join(' ')}" href="${href}" data-file="${escapeHtml(item.file)}" data-title="${escapeHtml(item.title.toLowerCase())}" data-category="${escapeHtml(item.category)}">${escapeHtml(displayTitle)}</a>`
         }
     }
 

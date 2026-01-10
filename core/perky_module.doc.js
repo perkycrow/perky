@@ -2,7 +2,7 @@ import {doc, section, setup, text, code, action, logger} from '../doc/runtime.js
 import PerkyModule from './perky_module.js'
 
 
-export default doc('PerkyModule', () => {
+export default doc('PerkyModule', {featured: true}, () => {
 
     text(`
         Base class for all Perky components.

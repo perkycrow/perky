@@ -5,7 +5,7 @@ import Circle from './circle.js'
 import Group2D from './group_2d.js'
 
 
-export default doc('CanvasRenderer', () => {
+export default doc('CanvasRenderer', {featured: true}, () => {
 
     text(`
         Canvas 2D renderer using the native Canvas API. Renders scenes with [[Rectangle@render]],

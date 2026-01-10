@@ -4,7 +4,7 @@ import PerkyModule from '../core/perky_module.js'
 import PerkyView from '../application/perky_view.js'
 
 
-export default doc('InputSystem', () => {
+export default doc('InputSystem', {featured: true}, () => {
 
     text(`
         Manages input devices (keyboard, mouse, touch) and input bindings.

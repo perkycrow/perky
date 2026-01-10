@@ -3,7 +3,7 @@ import Vec2 from '../math/vec2.js'
 import './vec2_input.js'
 
 
-export default doc('Vec2Input', () => {
+export default doc('Vec2Input', {advanced: true}, () => {
 
     text(`
         A dual number input for [[Vec2@math]] objects. Displays x/y fields and emits

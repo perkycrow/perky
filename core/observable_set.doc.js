@@ -2,7 +2,7 @@ import {doc, section, text, action, logger} from '../doc/runtime.js'
 import ObservableSet from './observable_set.js'
 
 
-export default doc('ObservableSet', () => {
+export default doc('ObservableSet', {advanced: true}, () => {
 
     text(`
         Set data structure that emits events on modifications.

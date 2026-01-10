@@ -2,7 +2,7 @@ import {doc, section, text, code, action, logger} from '../../doc/runtime.js'
 import ButtonControl from './button_control.js'
 
 
-export default doc('ButtonControl', () => {
+export default doc('ButtonControl', {advanced: true}, () => {
 
     text(`
         Input control for binary button states (pressed/released).
