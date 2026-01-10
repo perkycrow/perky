@@ -73,7 +73,8 @@ export default class Auditor {
             const fileIssues = this.analyze(content, relativePath, filePath)
 
             if (fileIssues && fileIssues.length > 0) {
-                issues.push({file: relativePath, issues: fileIssues})
+                const formattedIssues = fileIssues.map(issue => this.formatIssue(issue))
+                issues.push({file: relativePath, issues: formattedIssues})
                 issueCount += fileIssues.length
             }
         }
@@ -126,6 +127,11 @@ export default class Auditor {
 
     analyze () { // eslint-disable-line local/class-methods-use-this -- clean
         return []
+    }
+
+
+    formatIssue (issue) { // eslint-disable-line local/class-methods-use-this -- clean
+        return typeof issue === 'string' ? issue : String(issue)
     }
 
 
