@@ -3,7 +3,7 @@ import ActionDispatcher from './action_dispatcher.js'
 import ActionController from './action_controller.js'
 
 
-export default doc('ActionDispatcher', () => {
+export default doc('ActionDispatcher', {advanced: true}, () => {
 
     text(`
         Manages action controllers and dispatches actions to them.

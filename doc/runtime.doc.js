@@ -1,7 +1,7 @@
 import {doc, section, text, code, action, container, disclaimer, see, logger} from './runtime.js'
 
 
-export default doc('Doc Runtime', {featured: true}, () => {
+export default doc('Doc Runtime', {advanced: true}, () => {
 
     text(`
         The documentation DSL for writing interactive Perky docs.

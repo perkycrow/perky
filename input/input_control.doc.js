@@ -2,7 +2,7 @@ import {doc, section, text, code, logger} from '../doc/runtime.js'
 import InputControl from './input_control.js'
 
 
-export default doc('InputControl', () => {
+export default doc('InputControl', {advanced: true}, () => {
 
     text(`
         Base class for input controls. Represents a single input value (button, axis, etc.)

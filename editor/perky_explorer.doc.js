@@ -3,7 +3,7 @@ import Game from '../game/game.js'
 import '../editor/perky_explorer.js'
 
 
-export default doc('PerkyExplorer', () => {
+export default doc('PerkyExplorer', {advanced: true}, () => {
 
     text(`
         Visual inspector for exploring [[PerkyModule]] trees.

@@ -2,7 +2,7 @@ import {doc, section, text, code, action, logger} from '../doc/runtime.js'
 import Asset from './asset.js'
 
 
-export default doc('Asset', () => {
+export default doc('Asset', {advanced: true}, () => {
 
     text(`
         Represents a loadable resource in a Perky application.

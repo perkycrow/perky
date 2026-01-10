@@ -2,7 +2,7 @@ import {doc, section, text, code, container} from '../../doc/runtime.js'
 import KeyboardDevice from './keyboard_device.js'
 
 
-export default doc('KeyboardDevice', () => {
+export default doc('KeyboardDevice', {advanced: true}, () => {
 
     text(`
         Keyboard input device. Listens for keydown/keyup events and creates

@@ -2,7 +2,7 @@ import {doc, section, text, code, container} from '../../doc/runtime.js'
 import TouchDevice from './touch_device.js'
 
 
-export default doc('TouchDevice', () => {
+export default doc('TouchDevice', {advanced: true}, () => {
 
     text(`
         Touch input device for mobile and touch-enabled screens.

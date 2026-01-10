@@ -1,7 +1,7 @@
 import {doc, section, text, code, container, see, logger} from './runtime.js'
 
 
-export default doc('Doc Page', () => {
+export default doc('Doc Page', {advanced: true}, () => {
 
     text(`
         Web component that renders documentation pages.

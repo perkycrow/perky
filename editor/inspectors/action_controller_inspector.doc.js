@@ -3,7 +3,7 @@ import ActionController from '../../core/action_controller.js'
 import './action_controller_inspector.js'
 
 
-export default doc('ActionControllerInspector', () => {
+export default doc('ActionControllerInspector', {advanced: true}, () => {
 
     text(`
         Visual inspector for [[ActionController@application]] modules. Displays all registered

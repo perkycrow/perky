@@ -4,7 +4,7 @@ import ActionController from '../../core/action_controller.js'
 import './action_dispatcher_inspector.js'
 
 
-export default doc('ActionDispatcherInspector', () => {
+export default doc('ActionDispatcherInspector', {advanced: true}, () => {
 
     text(`
         Visual inspector for [[ActionDispatcher]] modules. Displays all registered
