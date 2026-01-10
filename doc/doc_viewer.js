@@ -113,8 +113,15 @@ class DocViewer {
             return
         }
 
+        const stored = localStorage.getItem('perky-docs-show-advanced')
+        if (stored === 'true') {
+            this.showAdvanced = true
+            this.advancedCheckbox.checked = true
+        }
+
         this.advancedCheckbox.addEventListener('change', () => {
             this.showAdvanced = this.advancedCheckbox.checked
+            localStorage.setItem('perky-docs-show-advanced', this.showAdvanced)
             this.#applyAdvancedFilter()
         })
 
