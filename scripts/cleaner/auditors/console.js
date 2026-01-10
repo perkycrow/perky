@@ -11,6 +11,7 @@ export default class ConsoleAuditor extends Auditor {
     static $name = 'Console Statements'
     static $category = 'console'
     static $canFix = false
+    static $hint = "Use Logger instead: import logger from 'core/logger.js'"
 
     analyze (content) { // eslint-disable-line local/class-methods-use-this -- clean
         const issues = []
@@ -34,11 +35,6 @@ export default class ConsoleAuditor extends Auditor {
         }
 
         return issues
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return "Use Logger instead: import logger from 'core/logger.js'"
     }
 
 }

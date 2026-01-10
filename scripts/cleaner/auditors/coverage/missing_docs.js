@@ -11,6 +11,7 @@ export default class MissingDocsAuditor extends Auditor {
     static $name = 'Missing Docs'
     static $category = 'coverage'
     static $canFix = false
+    static $hint = 'Create .doc.js files for these source files'
 
     async audit () {
         const missing = await this.#findFilesWithoutDocs()
@@ -31,11 +32,6 @@ export default class MissingDocsAuditor extends Auditor {
         }
 
         return {filesWithoutDocs: missing.length, files: missing.map(m => m.expectedDoc)}
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Create .doc.js files for these source files'
     }
 
 

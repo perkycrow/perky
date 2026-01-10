@@ -12,6 +12,7 @@ export default class MultipleClassesAuditor extends Auditor {
     static $name = 'Multiple Classes'
     static $category = 'multiple_classes'
     static $canFix = false
+    static $hint = 'Each file should contain only one class. Split into separate files.'
 
     async audit () {
         const config = await this.#loadConfig()
@@ -60,11 +61,6 @@ export default class MultipleClassesAuditor extends Auditor {
         }
 
         return findMultipleClasses(ast)
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Each file should contain only one class. Split into separate files.'
     }
 
 

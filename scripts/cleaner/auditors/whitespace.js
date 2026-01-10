@@ -24,11 +24,6 @@ export default class WhitespaceAuditor extends Auditor {
         }
     }
 
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return null
-    }
-
 }
 
 

@@ -17,6 +17,7 @@ export default class DisablesAuditor extends EslintAuditor {
 
     static $name = 'ESLint Disables'
     static $canFix = false
+    static $hint = 'Add "-- clean" at end of eslint comment if legit'
 
     audit () {
         const disables = this.#findEslintDisables()
@@ -66,11 +67,6 @@ export default class DisablesAuditor extends EslintAuditor {
                 locations: occurrences.map(o => `${o.file}:${o.line}`)
             }))
         }
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Add "-- clean" at end of eslint comment if legit'
     }
 
 

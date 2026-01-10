@@ -9,6 +9,7 @@ export default class DeepNestingAuditor extends Auditor {
     static $name = 'Deep Nesting'
     static $category = 'tests'
     static $canFix = false
+    static $hint = 'Flatten structure - remove unnecessary describe wrappers'
 
     audit () {
         const issues = this.#findDeepNesting()
@@ -30,11 +31,6 @@ export default class DeepNestingAuditor extends Auditor {
         }
 
         return {filesWithDeepNesting: issues.length, files: issues.map(i => i.file)}
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Flatten structure - remove unnecessary describe wrappers'
     }
 
 

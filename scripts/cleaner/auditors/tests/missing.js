@@ -11,6 +11,7 @@ export default class MissingTestsAuditor extends Auditor {
     static $name = 'Missing Tests'
     static $category = 'tests'
     static $canFix = false
+    static $hint = 'Create test files for these files'
 
     async audit () {
         const missing = await this.#findFilesWithoutTests()
@@ -34,11 +35,6 @@ export default class MissingTestsAuditor extends Auditor {
         }
 
         return {filesWithoutTests: missing.length, files: missing.map(m => m.expectedTest)}
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Create test files for these files'
     }
 
 

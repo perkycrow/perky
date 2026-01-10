@@ -9,6 +9,7 @@ export default class SwitchesAuditor extends EslintAuditor {
 
     static $name = 'Switch Statements'
     static $canFix = false
+    static $hint = 'Consider refactoring to object lookups or polymorphism'
 
     audit () {
         const switches = this.#findSwitchStatements()
@@ -32,11 +33,6 @@ export default class SwitchesAuditor extends EslintAuditor {
         }
 
         return {switchesFound: switches.length, filesWithSwitches: files.length, files}
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Consider refactoring to object lookups or polymorphism'
     }
 
 

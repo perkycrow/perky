@@ -10,6 +10,7 @@ export default class Auditor {
     static $name = 'Base'
     static $category = 'default'
     static $canFix = false
+    static $hint = null
 
     #rootDir = null
     #options = {}
@@ -133,8 +134,9 @@ export default class Auditor {
     }
 
 
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return null
+    getHint () {
+        const hintValue = this.constructor.$hint
+        return typeof hintValue === 'function' ? hintValue(this) : hintValue
     }
 
 

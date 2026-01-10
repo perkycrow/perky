@@ -10,6 +10,7 @@ export default class MissingCoverageAuditor extends Auditor {
     static $name = 'Missing Coverage'
     static $category = 'coverage'
     static $canFix = false
+    static $hint = 'Exports/methods not referenced in corresponding test file'
 
     audit () {
         const missing = this.#findMissingCoverage()
@@ -39,11 +40,6 @@ export default class MissingCoverageAuditor extends Auditor {
             filesWithMissingCoverage: missing.length,
             files: filesList
         }
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Exports/methods not referenced in corresponding test file'
     }
 
 

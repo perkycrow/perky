@@ -7,6 +7,7 @@ export default class CommentsAuditor extends Auditor {
     static $name = 'Comments'
     static $category = 'comments'
     static $canFix = true
+    static $hint = 'Keep eslint directives and essential comments'
 
     analyze (content) { // eslint-disable-line local/class-methods-use-this -- clean
         const comments = []
@@ -71,11 +72,6 @@ export default class CommentsAuditor extends Auditor {
             fixed: fixCount > 0,
             fixCount
         }
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Keep eslint directives and essential comments'
     }
 
 }

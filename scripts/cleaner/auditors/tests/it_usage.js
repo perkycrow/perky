@@ -9,6 +9,7 @@ export default class ItUsageAuditor extends Auditor {
     static $name = 'it() Usage'
     static $category = 'tests'
     static $canFix = false
+    static $hint = 'Use test() instead of it() for unit tests'
 
     audit () {
         const issues = this.#findItUsage()
@@ -34,11 +35,6 @@ export default class ItUsageAuditor extends Auditor {
         }
 
         return {filesWithItUsage: issues.length, files: issues.map(i => i.file)}
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Use test() instead of it() for unit tests'
     }
 
 

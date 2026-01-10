@@ -12,7 +12,11 @@ export default class StaleFilesAuditor extends Auditor {
     static $category = 'coverage'
     static $canFix = false
 
-    #thresholdDays = 30
+    static $hint (auditor) {
+        return `Source modified ${auditor.thresholdDays}+ days after test/doc - may need review`
+    }
+
+    thresholdDays = 30
 
     audit () {
         const staleTests = this.#findStaleFiles('.test.js')
@@ -26,7 +30,7 @@ export default class StaleFilesAuditor extends Auditor {
 
         this.printHeader()
         if (!this.silent) {
-            hint(`File not updated within ${this.#thresholdDays} days of source change`)
+            hint(`File not updated within ${this.thresholdDays} days of source change`)
             divider()
 
             for (const {file, daysBehind} of allStale) {
@@ -35,11 +39,6 @@ export default class StaleFilesAuditor extends Auditor {
         }
 
         return {staleFiles: allStale.length, files: allStale.map(s => s.file)}
-    }
-
-
-    getHint () {
-        return `Source modified ${this.#thresholdDays}+ days after test/doc - may need review`
     }
 
 
@@ -82,7 +81,7 @@ export default class StaleFilesAuditor extends Auditor {
 
             const diffDays = Math.floor((sourceDate - relatedDate) / (1000 * 60 * 60 * 24))
 
-            if (diffDays > this.#thresholdDays) {
+            if (diffDays > this.thresholdDays) {
                 stale.push({
                     file: path.relative(this.rootDir, relatedPath),
                     daysBehind: diffDays

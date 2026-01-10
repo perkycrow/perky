@@ -9,6 +9,7 @@ export default class SingleDescribesAuditor extends Auditor {
     static $name = 'Single Test Describes'
     static $category = 'tests'
     static $canFix = false
+    static $hint = 'Remove describe() wrapper when testing only one scenario'
 
     audit () {
         const issues = this.#findSingleTestDescribes()
@@ -33,11 +34,6 @@ export default class SingleDescribesAuditor extends Auditor {
             filesWithSingleTestDescribes: issues.length,
             files: issues.map(i => i.file)
         }
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Remove describe() wrapper when testing only one scenario'
     }
 
 

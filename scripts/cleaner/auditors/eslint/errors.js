@@ -21,6 +21,7 @@ export default class EslintErrorsAuditor extends EslintAuditor {
 
     static $name = 'ESLint Errors'
     static $canFix = true
+    static $hint = 'Run: npx eslint . --fix'
 
     audit () {
         const target = this.getEslintTarget()
@@ -75,11 +76,6 @@ export default class EslintErrorsAuditor extends EslintAuditor {
                 locations: occurrences.map(o => `${o.file}:${o.line}`)
             }))
         }
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Run: npx eslint . --fix'
     }
 
 

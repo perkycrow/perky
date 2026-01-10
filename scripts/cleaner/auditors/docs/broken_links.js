@@ -10,6 +10,7 @@ export default class BrokenLinksAuditor extends Auditor {
     static $name = 'Doc Links'
     static $category = 'docs'
     static $canFix = false
+    static $hint = 'These documentation links point to non-existent targets'
 
     #validTargets = null
 
@@ -45,11 +46,6 @@ export default class BrokenLinksAuditor extends Auditor {
             brokenLinks: brokenLinks.reduce((sum, b) => sum + b.links.length, 0),
             issues
         }
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'These documentation links point to non-existent targets'
     }
 
 
