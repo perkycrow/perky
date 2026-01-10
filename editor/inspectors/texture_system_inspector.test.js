@@ -10,12 +10,12 @@ class MockAtlas {
         this.height = options.height ?? 512
         this.regionCount = options.regionCount ?? 0
         this.canvas = options.canvas ?? null
-        this._regions = options.regions ?? new Map()
+        this.regions = options.regions ?? new Map()
     }
 
 
     getAllRegions () {
-        return this._regions
+        return this.regions
     }
 
 }
@@ -24,18 +24,18 @@ class MockAtlas {
 class MockTextureSystem {
 
     constructor (options = {}) {
-        this._atlases = options.atlases ?? []
-        this._regionCount = options.regionCount ?? 0
+        this.atlasesData = options.atlases ?? []
+        this.regionCountData = options.regionCount ?? 0
     }
 
 
     get atlases () {
-        return this._atlases
+        return this.atlasesData
     }
 
 
     get regionCount () {
-        return this._regionCount
+        return this.regionCountData
     }
 
 }
