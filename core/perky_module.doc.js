@@ -124,8 +124,8 @@ export default doc('PerkyModule', {featured: true}, () => {
             Modules can contain child modules, stored in a [[Registry]] (\`childrenRegistry\`).
             Children inherit lifecycle from their parent.
 
-            Use \`create()\` to add children - it handles installation and lifecycle binding.
-            Using \`new\` directly won't call \`onInstall\` or set up the parent-child relationship.
+            Use \`create()\` to add children - it handles instantiation and lifecycle binding.
+            For special cases, \`addChild()\` allows adding a pre-created module.
         `)
 
         action('create', () => {
@@ -138,6 +138,24 @@ export default doc('PerkyModule', {featured: true}, () => {
             logger.log('hasChild:', parent.hasChild('child1'))
             logger.log('getChild:', parent.getChild('child1').$id)
         })
+
+        action('addChild', () => {
+            const parent = new PerkyModule({$id: 'parent'})
+
+            // Create module separately
+            const player = new PerkyModule({$id: 'player', $category: 'entity'})
+
+            // Add it later
+            parent.addChild(player)
+
+            logger.log('player.host:', player.host.$id)
+            logger.log('player.installed:', player.installed)
+        })
+
+        text(`
+            If a module with the same \`$id\` already exists, \`addChild()\` will
+            automatically generate a unique ID (\`enemy\` → \`enemy_1\` → \`enemy_2\`).
+        `)
 
         action('Lifecycle propagation', () => {
             const parent = new PerkyModule({$id: 'parent'})

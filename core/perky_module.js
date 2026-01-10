@@ -1,7 +1,7 @@
 import Notifier from './notifier.js'
 import Registry from './registry.js'
 import ObservableSet from './observable_set.js'
-import {uniqueId, delegateProperties} from './utils.js'
+import {delegateProperties} from './utils.js'
 import {query as perkyQuery, queryAll as perkyQueryAll} from './perky_query.js'
 
 
@@ -20,6 +20,7 @@ export default class PerkyModule extends Notifier {
     #childrenRegistry = null
     #tags = null
     #tagIndexes = new Map()
+    #idCounters = new Map()
     #delegations = []
     #eventDelegations = []
 
@@ -261,16 +262,44 @@ export default class PerkyModule extends Notifier {
     create (Child, options = {}) {
         options.$category ||= Child.$category
         options.$name ||= Child.$name || options.$category
-        options.$id ||= uniqueId(this.#childrenRegistry, options.$name)
         options.$lifecycle = options.$lifecycle ?? Child.$lifecycle ?? true
         options.$eagerStart = options.$eagerStart ?? Child.$eagerStart ?? true
 
-        return this.#addChild(new Child(options), options)
+        const hasExplicitId = '$id' in options
+
+        if (hasExplicitId) {
+            unregisterExisting(this, options.$id)
+        }
+
+        return this.addChild(new Child(options))
+    }
+
+
+    addChild (child) {
+        if (!(child instanceof PerkyModule)) {
+            throw new Error('addChild expects a PerkyModule instance')
+        }
+
+        if (child.installed) {
+            throw new Error('Module is already installed in another parent')
+        }
+
+        if (this.#childrenRegistry.has(child.$id)) {
+            child.$id = this.#findUniqueId(child.$name)
+        }
+
+        return this.#addChild(child, child.options)
+    }
+
+
+    #findUniqueId (baseName) {
+        let counter = this.#idCounters.get(baseName) || 1
+        this.#idCounters.set(baseName, counter + 1)
+        return `${baseName}_${counter}`
     }
 
 
     #addChild (child, options = {}) {
-        unregisterExisting(this, child.$id)
 
         child.install(this, options)
         this.#childrenRegistry.set(child.$id, child)
@@ -508,6 +537,7 @@ export default class PerkyModule extends Notifier {
         'install',
         'uninstall',
         'create',
+        'addChild',
         'getChild',
         'hasChild',
         'removeChild',

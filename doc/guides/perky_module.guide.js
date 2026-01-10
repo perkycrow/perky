@@ -35,10 +35,8 @@ export default doc('PerkyModule', () => {
         })
 
         text(`
-            One thing to know: always use \`create()\` to add children, not \`new\`.
-
-            \`create()\` wires everything up - parent-child relationship, lifecycle binding,
-            the \`onInstall\` hook. \`new\` alone just gives you an orphan floating in the void.
+            Use \`create()\` to add children - it's the standard way.
+            For special cases, \`addChild()\` lets you create a module first and attach it later.
 
             Under the hood, children live in a [[Registry]] with O(1) lookups by $id or $category.
         `)
