@@ -190,6 +190,59 @@ export default doc('CanvasRenderer', {featured: true}, () => {
             ctx.setApp(renderer, scene)
         })
 
+        container({title: 'Articulated chain', height: 200}, ctx => {
+            const renderer = new CanvasRenderer({
+                container: ctx.container,
+                autoFit: true,
+                backgroundColor: '#1a1a2e'
+            })
+
+            const scene = new Group2D()
+            const segments = []
+            const segmentCount = 6
+            const segmentLength = 1.5
+
+            let parent = scene
+            const colors = ['#e94560', '#0f3460', '#533483', '#f39c12', '#1abc9c', '#9b59b6']
+
+            for (let i = 0; i < segmentCount; i++) {
+                const group = new Group2D({x: i === 0 ? 0 : segmentLength, y: 0})
+
+                group.add(new Rectangle({
+                    width: segmentLength,
+                    height: 0.4,
+                    color: colors[i % colors.length],
+                    anchorX: 0,
+                    anchorY: 0.5,
+                    x: 0,
+                    y: 0
+                }))
+
+                group.add(new Circle({
+                    radius: 0.15,
+                    color: '#ffffff',
+                    x: 0,
+                    y: 0
+                }))
+
+                parent.add(group)
+                segments.push(group)
+                parent = group
+            }
+
+            renderer.render(scene)
+
+            ctx.slider('rotation', {min: -45, max: 45, default: 0}, value => {
+                const rad = value * Math.PI / 180
+                for (const segment of segments) {
+                    segment.rotation = rad
+                }
+                renderer.render(scene)
+            })
+
+            ctx.setApp(renderer, scene)
+        })
+
     })
 
 
@@ -289,30 +342,30 @@ export default doc('CanvasRenderer', {featured: true}, () => {
                 height: 2,
                 color: '#e94560',
                 x: -3,
-                y: 0,
-                debugGizmo: true
+                y: 0
             })
+            rect.showDebugGizmos()
 
             const circle = new Circle({
                 radius: 1.5,
                 color: '#0f3460',
                 x: 3,
-                y: 0,
-                debugGizmo: true
+                y: 0
             })
+            circle.showDebugGizmos()
 
             scene.add(rect, circle)
             renderer.render(scene)
 
             ctx.action('Gizmos On', () => {
-                rect.debugGizmo = true
-                circle.debugGizmo = true
+                rect.showDebugGizmos()
+                circle.showDebugGizmos()
                 renderer.render(scene)
             })
 
             ctx.action('Gizmos Off', () => {
-                rect.debugGizmo = false
-                circle.debugGizmo = false
+                rect.hideDebugGizmos()
+                circle.hideDebugGizmos()
                 renderer.render(scene)
             })
 
