@@ -4,7 +4,7 @@ import TextureAtlasManager from './texture_atlas_manager.js'
 import {pluralize} from '../../core/utils.js'
 
 
-export default doc('TextureAtlas', () => {
+export default doc('TextureAtlas', {advanced: true}, () => {
 
     text(`
         Dynamic texture atlas that packs multiple images into a single texture.
@@ -49,8 +49,15 @@ export default doc('TextureAtlas', () => {
             }
 
             function buildAtlases () {
-                for (const {name, img, scale} of loadedImages) {
-                    manager.add(name, scaleImage(img, scale))
+                const scaled = loadedImages.map(({name, img, scale}) => ({
+                    name,
+                    canvas: scaleImage(img, scale)
+                }))
+
+                scaled.sort((a, b) => b.canvas.height - a.canvas.height)
+
+                for (const {name, canvas} of scaled) {
+                    manager.add(name, canvas)
                 }
 
                 manager.atlases.forEach((atlas, i) => {
