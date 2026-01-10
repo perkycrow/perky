@@ -4,6 +4,17 @@ import CanvasObjectRenderer from './canvas_object_renderer.js'
 import Image2D from '../image_2d.js'
 
 
+function createMockImage (width = 256, height = 256) {
+    return {
+        width,
+        height,
+        naturalWidth: width,
+        naturalHeight: height,
+        complete: true
+    }
+}
+
+
 describe('CanvasImageRenderer', () => {
 
     let renderer
@@ -39,13 +50,7 @@ describe('CanvasImageRenderer', () => {
                 drawn = true
             }
 
-            const image = {
-                image: null,
-                width: 100,
-                height: 100,
-                anchorX: 0,
-                anchorY: 0
-            }
+            const image = new Image2D()
 
             renderer.render(image, ctx)
 
@@ -59,13 +64,8 @@ describe('CanvasImageRenderer', () => {
                 drawn = true
             }
 
-            const image = {
-                image: {complete: false},
-                width: 100,
-                height: 100,
-                anchorX: 0,
-                anchorY: 0
-            }
+            const img = {complete: false, width: 100, height: 100}
+            const image = new Image2D({image: img, width: 100, height: 100})
 
             renderer.render(image, ctx)
 
@@ -79,13 +79,8 @@ describe('CanvasImageRenderer', () => {
                 drawn = true
             }
 
-            const image = {
-                image: {complete: true},
-                width: 100,
-                height: 100,
-                anchorX: 0,
-                anchorY: 0
-            }
+            const img = createMockImage()
+            const image = new Image2D({image: img, width: 100, height: 100})
 
             renderer.render(image, ctx)
 
@@ -103,13 +98,8 @@ describe('CanvasImageRenderer', () => {
                 restored = true
             }
 
-            const image = {
-                image: {complete: true},
-                width: 100,
-                height: 100,
-                anchorX: 0,
-                anchorY: 0
-            }
+            const img = createMockImage()
+            const image = new Image2D({image: img, width: 100, height: 100})
 
             renderer.render(image, ctx)
 
@@ -124,13 +114,8 @@ describe('CanvasImageRenderer', () => {
                 scaleArgs = args
             }
 
-            const image = {
-                image: {complete: true},
-                width: 100,
-                height: 100,
-                anchorX: 0,
-                anchorY: 0
-            }
+            const img = createMockImage()
+            const image = new Image2D({image: img, width: 100, height: 100})
 
             renderer.render(image, ctx)
 
@@ -144,22 +129,22 @@ describe('CanvasImageRenderer', () => {
                 drawArgs = args
             }
 
-            const imgElement = {complete: true}
-            const image = {
-                image: imgElement,
+            const img = createMockImage(200, 100)
+            const image = new Image2D({
+                image: img,
                 width: 100,
                 height: 50,
                 anchorX: 0,
                 anchorY: 0
-            }
+            })
 
             renderer.render(image, ctx)
 
-            expect(drawArgs[0]).toBe(imgElement)
-            expect(drawArgs[1]).toBe(-0)
-            expect(drawArgs[2]).toBe(-0 - 50)
-            expect(drawArgs[3]).toBe(100)
-            expect(drawArgs[4]).toBe(50)
+            expect(drawArgs[0]).toBe(img)
+            expect(drawArgs[5]).toBeCloseTo(0)
+            expect(drawArgs[6]).toBeCloseTo(-50)
+            expect(drawArgs[7]).toBe(100)
+            expect(drawArgs[8]).toBe(50)
         })
 
 
@@ -169,18 +154,19 @@ describe('CanvasImageRenderer', () => {
                 drawArgs = args
             }
 
-            const image = {
-                image: {complete: true},
+            const img = createMockImage()
+            const image = new Image2D({
+                image: img,
                 width: 100,
                 height: 100,
                 anchorX: 0.5,
                 anchorY: 0.5
-            }
+            })
 
             renderer.render(image, ctx)
 
-            expect(drawArgs[1]).toBe(-50)
-            expect(drawArgs[2]).toBe(-50)
+            expect(drawArgs[5]).toBe(-50)
+            expect(drawArgs[6]).toBe(-50)
         })
 
     })

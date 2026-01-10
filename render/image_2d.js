@@ -1,14 +1,15 @@
-import Object2D from './object_2d.js'
+import Sprite from './sprite.js'
 
 
-export default class Image2D extends Object2D {
+export default class Image2D extends Sprite {
 
     constructor (options = {}) {
-        super(options)
+        const spriteOptions = {...options}
 
-        this.image = options.image ?? null
-        this.width = options.width ?? 10
-        this.height = options.height ?? 10
+        spriteOptions.width = resolveDimension(options.width, options.height, 10)
+        spriteOptions.height = resolveDimension(options.height, options.width, 10)
+
+        super(spriteOptions)
     }
 
 
@@ -26,4 +27,17 @@ export default class Image2D extends Object2D {
         }
     }
 
+}
+
+
+function resolveDimension (primary, fallback, defaultValue) {
+    if (primary !== undefined) {
+        return primary
+    }
+
+    if (fallback !== undefined) {
+        return fallback
+    }
+
+    return defaultValue
 }

@@ -10,21 +10,26 @@ export default class CanvasImageRenderer extends CanvasObjectRenderer {
 
 
     render (image, ctx) { // eslint-disable-line local/class-methods-use-this -- clean
-        if (image.image && image.image.complete) {
-            const offsetX = -image.width * image.anchorX
-            const offsetY = -image.height * image.anchorY
+        const region = image.region
 
-            ctx.save()
-            ctx.scale(1, -1)
-            ctx.drawImage(
-                image.image,
-                offsetX,
-                -offsetY - image.height,
-                image.width,
-                image.height
-            )
-            ctx.restore()
+        if (!region || !region.image || !region.image.complete) {
+            return
         }
+
+        const bounds = image.getBounds()
+        const {x, y, width: w, height: h} = region.bounds
+
+        ctx.save()
+        ctx.scale(1, -1)
+        ctx.drawImage(
+            region.image,
+            x, y, w, h,
+            bounds.minX,
+            -bounds.maxY,
+            bounds.width,
+            bounds.height
+        )
+        ctx.restore()
     }
 
 }

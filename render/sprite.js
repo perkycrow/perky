@@ -1,23 +1,68 @@
 import Object2D from './object_2d.js'
+import TextureRegion from './textures/texture_region.js'
 
 
 export default class Sprite extends Object2D {
 
+    #region = null
+
     constructor (options = {}) {
         super(options)
 
-        this.image = options.image || null
-        this.currentFrame = options.frame || null
         this.width = options.width ?? null
         this.height = options.height ?? null
 
         this.animations = new Map()
         this.currentAnimation = null
+
+        if (options.region) {
+            this.#region = options.region
+        } else if (options.frame) {
+            this.setFrame(options.frame)
+        } else if (options.image) {
+            this.#region = TextureRegion.fromImage(options.image)
+        }
+    }
+
+
+    get region () {
+        return this.#region
+    }
+
+
+    set region (value) {
+        this.#region = value
+    }
+
+
+    get image () {
+        return this.#region?.image ?? null
+    }
+
+
+    set image (value) {
+        if (value) {
+            this.#region = TextureRegion.fromImage(value)
+        } else {
+            this.#region = null
+        }
+    }
+
+
+    get currentFrame () {
+        return this.#region
     }
 
 
     setFrame (frame) {
-        this.currentFrame = frame
+        if (frame instanceof TextureRegion) {
+            this.#region = frame
+        } else if (frame && frame.frame) {
+            const image = frame.image
+            this.#region = TextureRegion.fromFrame(image, frame.frame)
+        } else {
+            this.#region = null
+        }
     }
 
 
@@ -47,11 +92,14 @@ export default class Sprite extends Object2D {
 
 
     getBounds () {
-        if (!this.currentFrame) {
+        const region = this.#region
+
+        if (!region) {
             return super.getBounds()
         }
 
-        const {w, h} = this.currentFrame.frame
+        const w = region.width
+        const h = region.height
 
         let renderW = w
         let renderH = h

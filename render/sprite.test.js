@@ -1,9 +1,11 @@
 import {describe, test, expect, vi, beforeEach} from 'vitest'
 import Sprite from './sprite.js'
+import TextureRegion from './textures/texture_region.js'
 import CanvasSpriteRenderer from './canvas/canvas_sprite_renderer.js'
 
 
 describe('Sprite', () => {
+
     let mockImage
     let mockFrame
     let sprite
@@ -27,20 +29,41 @@ describe('Sprite', () => {
         })
     })
 
-    test('initializes with frame and options', () => {
-        expect(sprite.currentFrame).toBe(mockFrame)
+
+    test('initializes with frame and converts to region', () => {
+        expect(sprite.region).toBeInstanceOf(TextureRegion)
+        expect(sprite.region.width).toBe(10)
+        expect(sprite.region.height).toBe(10)
         expect(sprite.width).toBe(5)
         expect(sprite.height).toBeNull()
     })
 
-    test('getBounds calculates bounds from frame and width', () => {
+
+    test('initializes with image', () => {
+        const s = new Sprite({image: mockImage})
+
+        expect(s.region).toBeInstanceOf(TextureRegion)
+        expect(s.image).toBe(mockImage)
+    })
+
+
+    test('initializes with region', () => {
+        const region = new TextureRegion({image: mockImage, x: 0, y: 0, width: 50, height: 50})
+        const s = new Sprite({region})
+
+        expect(s.region).toBe(region)
+    })
+
+
+    test('getBounds calculates bounds from region and width', () => {
         const bounds = sprite.getBounds()
 
         expect(bounds.width).toBe(5)
         expect(bounds.height).toBe(5)
     })
 
-    test('getBounds calculates bounds from frame and height', () => {
+
+    test('getBounds calculates bounds from region and height', () => {
         sprite = new Sprite({
             frame: mockFrame,
             height: 10
@@ -51,6 +74,7 @@ describe('Sprite', () => {
         expect(bounds.height).toBe(10)
     })
 
+
     test('addAnimation stores animation', () => {
         const mockAnim = {
             play: vi.fn(),
@@ -60,6 +84,7 @@ describe('Sprite', () => {
         sprite.addAnimation('walk', mockAnim)
         expect(sprite.animations.get('walk')).toBe(mockAnim)
     })
+
 
     test('play starts animation', () => {
         const mockAnim = {
@@ -73,6 +98,7 @@ describe('Sprite', () => {
         expect(sprite.currentAnimation).toBe(mockAnim)
         expect(mockAnim.play).toHaveBeenCalled()
     })
+
 
     test('stop stops current animation', () => {
         const mockAnim = {
@@ -89,7 +115,7 @@ describe('Sprite', () => {
     })
 
 
-    test('setFrame updates currentFrame', () => {
+    test('setFrame updates region from legacy frame format', () => {
         const newFrame = {
             filename: 'frame2',
             frame: {x: 10, y: 0, w: 20, h: 20},
@@ -98,12 +124,43 @@ describe('Sprite', () => {
 
         sprite.setFrame(newFrame)
 
-        expect(sprite.currentFrame).toBe(newFrame)
+        expect(sprite.region).toBeInstanceOf(TextureRegion)
+        expect(sprite.region.x).toBe(10)
+        expect(sprite.region.width).toBe(20)
     })
+
+
+    test('setFrame accepts TextureRegion directly', () => {
+        const region = new TextureRegion({image: mockImage, x: 32, y: 64, width: 16, height: 16})
+
+        sprite.setFrame(region)
+
+        expect(sprite.region).toBe(region)
+    })
+
+
+    test('image setter updates region', () => {
+        const newImage = {width: 200, height: 200}
+        sprite.image = newImage
+
+        expect(sprite.image).toBe(newImage)
+        expect(sprite.region).toBeInstanceOf(TextureRegion)
+        expect(sprite.region.width).toBe(200)
+    })
+
+
+    test('image setter with null clears region', () => {
+        sprite.image = null
+
+        expect(sprite.image).toBeNull()
+        expect(sprite.region).toBeNull()
+    })
+
 })
 
 
 describe('CanvasSpriteRenderer', () => {
+
     let renderer
     let ctx
     let mockImage
@@ -139,7 +196,7 @@ describe('CanvasSpriteRenderer', () => {
     })
 
 
-    test('render draws frame using image from frame data', () => {
+    test('render draws frame using region data', () => {
         const sprite = new Sprite({
             frame: mockFrame,
             width: 5
@@ -154,4 +211,5 @@ describe('CanvasSpriteRenderer', () => {
             5, 5
         )
     })
+
 })
