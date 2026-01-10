@@ -192,31 +192,23 @@ describe('TextureAtlas', () => {
     })
 
 
-    describe('regionCount', () => {
+    test('regionCount counts added regions', () => {
+        expect(atlas.regionCount).toBe(0)
 
-        test('counts added regions', () => {
-            expect(atlas.regionCount).toBe(0)
+        atlas.add('s1', createMockImage(32, 32))
+        expect(atlas.regionCount).toBe(1)
 
-            atlas.add('s1', createMockImage(32, 32))
-            expect(atlas.regionCount).toBe(1)
-
-            atlas.add('s2', createMockImage(32, 32))
-            expect(atlas.regionCount).toBe(2)
-        })
-
+        atlas.add('s2', createMockImage(32, 32))
+        expect(atlas.regionCount).toBe(2)
     })
 
 
-    describe('markClean', () => {
+    test('markClean clears dirty flag', () => {
+        atlas.add('sprite1', createMockImage(32, 32))
+        expect(atlas.dirty).toBe(true)
 
-        test('clears dirty flag', () => {
-            atlas.add('sprite1', createMockImage(32, 32))
-            expect(atlas.dirty).toBe(true)
-
-            atlas.markClean()
-            expect(atlas.dirty).toBe(false)
-        })
-
+        atlas.markClean()
+        expect(atlas.dirty).toBe(false)
     })
 
 

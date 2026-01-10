@@ -213,8 +213,8 @@ describe(PerkyModule, () => {
             const onInstallSpy = vi.fn()
 
             class TestModule extends PerkyModule {
-                onInstall (host) {
-                    onInstallSpy(host)
+                onInstall (installedHost) {
+                    onInstallSpy(installedHost)
                 }
             }
 

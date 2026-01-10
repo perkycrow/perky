@@ -49,13 +49,9 @@ describe('TextureSystem', () => {
     })
 
 
-    describe('constructor', () => {
-
-        test('initializes with atlas manager', () => {
-            expect(system.atlasManager).toBeDefined()
-            expect(system.regionCount).toBe(0)
-        })
-
+    test('constructor initializes with atlas manager', () => {
+        expect(system.atlasManager).toBeDefined()
+        expect(system.regionCount).toBe(0)
     })
 
 
@@ -81,19 +77,15 @@ describe('TextureSystem', () => {
     })
 
 
-    describe('addRegions', () => {
+    test('addRegions adds multiple images', () => {
+        const images = {
+            s1: createMockImage(32, 32),
+            s2: createMockImage(48, 48)
+        }
 
-        test('adds multiple images', () => {
-            const images = {
-                s1: createMockImage(32, 32),
-                s2: createMockImage(48, 48)
-            }
+        system.addRegions(images)
 
-            system.addRegions(images)
-
-            expect(system.regionCount).toBe(2)
-        })
-
+        expect(system.regionCount).toBe(2)
     })
 
 
@@ -194,14 +186,10 @@ describe('TextureSystem', () => {
     })
 
 
-    describe('atlases', () => {
+    test('atlases returns list of atlases', () => {
+        system.addRegion('s1', createMockImage(32, 32))
 
-        test('returns list of atlases', () => {
-            system.addRegion('s1', createMockImage(32, 32))
-
-            expect(system.atlases.length).toBe(1)
-        })
-
+        expect(system.atlases.length).toBe(1)
     })
 
 
@@ -224,35 +212,27 @@ describe('TextureSystem', () => {
     })
 
 
-    describe('clear', () => {
-
-        test('removes all regions', () => {
-            system.addRegion('s1', createMockImage(32, 32))
-            system.registerManualAtlas('atlas', createMockImage(256, 256), {
-                frame1: {x: 0, y: 0, w: 32, h: 32}
-            })
-
-            system.clear()
-
-            expect(system.regionCount).toBe(0)
-            expect(system.hasRegion('s1')).toBe(false)
-            expect(system.hasRegion('atlas:frame1')).toBe(false)
+    test('clear removes all regions', () => {
+        system.addRegion('s1', createMockImage(32, 32))
+        system.registerManualAtlas('atlas', createMockImage(256, 256), {
+            frame1: {x: 0, y: 0, w: 32, h: 32}
         })
 
+        system.clear()
+
+        expect(system.regionCount).toBe(0)
+        expect(system.hasRegion('s1')).toBe(false)
+        expect(system.hasRegion('atlas:frame1')).toBe(false)
     })
 
 
-    describe('onInstall', () => {
+    test('onInstall delegates methods to host', () => {
+        const host = {}
+        system.onInstall(host)
 
-        test('delegates methods to host', () => {
-            const host = {}
-            system.onInstall(host)
-
-            expect(host.getRegion).toBeDefined()
-            expect(host.hasRegion).toBeDefined()
-            expect(host.addRegion).toBeDefined()
-        })
-
+        expect(host.getRegion).toBeDefined()
+        expect(host.hasRegion).toBeDefined()
+        expect(host.addRegion).toBeDefined()
     })
 
 })

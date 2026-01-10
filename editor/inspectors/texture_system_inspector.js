@@ -276,30 +276,11 @@ export default class TextureSystemInspector extends BaseInspector {
         }
         const totalMB = (totalPixels * 4 / 1024 / 1024).toFixed(2)
 
-        stats.appendChild(this.#createStatCard(atlases.length, 'Atlases'))
-        stats.appendChild(this.#createStatCard(regionCount, 'Regions'))
-        stats.appendChild(this.#createStatCard(`${totalMB}MB`, 'Memory'))
+        stats.appendChild(createStatCard(atlases.length, 'Atlases'))
+        stats.appendChild(createStatCard(regionCount, 'Regions'))
+        stats.appendChild(createStatCard(`${totalMB}MB`, 'Memory'))
 
         return stats
-    }
-
-
-    #createStatCard (value, label) {
-        const card = document.createElement('div')
-        card.className = 'stat-card'
-
-        const valueEl = document.createElement('div')
-        valueEl.className = 'stat-value'
-        valueEl.textContent = value
-
-        const labelEl = document.createElement('div')
-        labelEl.className = 'stat-label'
-        labelEl.textContent = label
-
-        card.appendChild(valueEl)
-        card.appendChild(labelEl)
-
-        return card
     }
 
 
@@ -434,7 +415,7 @@ export default class TextureSystemInspector extends BaseInspector {
         }
 
         content.appendChild(preview)
-        content.appendChild(this.#createRegionsList(atlas))
+        content.appendChild(createRegionsList(atlas))
 
         card.appendChild(header)
         card.appendChild(content)
@@ -442,45 +423,63 @@ export default class TextureSystemInspector extends BaseInspector {
         return card
     }
 
-
-    #createRegionsList (atlas) {
-        const section = document.createElement('div')
-        section.className = 'regions-section'
-
-        const header = document.createElement('div')
-        header.className = 'regions-header'
-        header.textContent = 'Regions'
-
-        const list = document.createElement('div')
-        list.className = 'regions-list'
-
-        const regions = atlas.getAllRegions()
-        for (const [id, region] of regions) {
-            const tag = document.createElement('span')
-            tag.className = 'region-tag'
-            tag.title = `${id} (${region.width}×${region.height})`
-
-            const nameSpan = document.createElement('span')
-            nameSpan.textContent = id
-
-            const sizeSpan = document.createElement('span')
-            sizeSpan.className = 'region-size'
-            sizeSpan.textContent = `${region.width}×${region.height}`
-
-            tag.appendChild(nameSpan)
-            tag.appendChild(sizeSpan)
-
-            list.appendChild(tag)
-        }
-
-        section.appendChild(header)
-        section.appendChild(list)
-
-        return section
-    }
-
 }
 
+
+function createStatCard (value, label) {
+    const card = document.createElement('div')
+    card.className = 'stat-card'
+
+    const valueEl = document.createElement('div')
+    valueEl.className = 'stat-value'
+    valueEl.textContent = value
+
+    const labelEl = document.createElement('div')
+    labelEl.className = 'stat-label'
+    labelEl.textContent = label
+
+    card.appendChild(valueEl)
+    card.appendChild(labelEl)
+
+    return card
+}
+
+
+function createRegionsList (atlas) {
+    const section = document.createElement('div')
+    section.className = 'regions-section'
+
+    const header = document.createElement('div')
+    header.className = 'regions-header'
+    header.textContent = 'Regions'
+
+    const list = document.createElement('div')
+    list.className = 'regions-list'
+
+    const regions = atlas.getAllRegions()
+    for (const [id, region] of regions) {
+        const tag = document.createElement('span')
+        tag.className = 'region-tag'
+        tag.title = `${id} (${region.width}×${region.height})`
+
+        const nameSpan = document.createElement('span')
+        nameSpan.textContent = id
+
+        const sizeSpan = document.createElement('span')
+        sizeSpan.className = 'region-size'
+        sizeSpan.textContent = `${region.width}×${region.height}`
+
+        tag.appendChild(nameSpan)
+        tag.appendChild(sizeSpan)
+
+        list.appendChild(tag)
+    }
+
+    section.appendChild(header)
+    section.appendChild(list)
+
+    return section
+}
 
 customElements.define('texture-system-inspector', TextureSystemInspector)
 

@@ -112,26 +112,22 @@ describe('TextureRegion', () => {
     })
 
 
-    describe('bounds', () => {
-
-        test('returns bounds object', () => {
-            const image = createMockImage(256, 256)
-            const region = new TextureRegion({
-                image,
-                x: 10,
-                y: 20,
-                width: 30,
-                height: 40
-            })
-
-            const bounds = region.bounds
-
-            expect(bounds.x).toBe(10)
-            expect(bounds.y).toBe(20)
-            expect(bounds.width).toBe(30)
-            expect(bounds.height).toBe(40)
+    test('bounds returns bounds object', () => {
+        const image = createMockImage(256, 256)
+        const region = new TextureRegion({
+            image,
+            x: 10,
+            y: 20,
+            width: 30,
+            height: 40
         })
 
+        const bounds = region.bounds
+
+        expect(bounds.x).toBe(10)
+        expect(bounds.y).toBe(20)
+        expect(bounds.width).toBe(30)
+        expect(bounds.height).toBe(40)
     })
 
 

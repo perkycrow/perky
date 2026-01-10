@@ -49,13 +49,9 @@ describe('TextureAtlasManager', () => {
     })
 
 
-    describe('constructor', () => {
-
-        test('initializes empty', () => {
-            expect(manager.atlasCount).toBe(0)
-            expect(manager.regionCount).toBe(0)
-        })
-
+    test('constructor initializes empty', () => {
+        expect(manager.atlasCount).toBe(0)
+        expect(manager.regionCount).toBe(0)
     })
 
 
@@ -211,32 +207,24 @@ describe('TextureAtlasManager', () => {
     })
 
 
-    describe('clear', () => {
+    test('clear removes all atlases and regions', () => {
+        manager.add('s1', createMockImage(32, 32))
+        manager.add('s2', createMockImage(32, 32))
 
-        test('removes all atlases and regions', () => {
-            manager.add('s1', createMockImage(32, 32))
-            manager.add('s2', createMockImage(32, 32))
+        manager.clear()
 
-            manager.clear()
-
-            expect(manager.atlasCount).toBe(0)
-            expect(manager.regionCount).toBe(0)
-        })
-
+        expect(manager.atlasCount).toBe(0)
+        expect(manager.regionCount).toBe(0)
     })
 
 
-    describe('atlases', () => {
+    test('atlases returns list of atlases', () => {
+        manager.add('large1', createMockImage(200, 200))
+        manager.add('large2', createMockImage(200, 200))
 
-        test('returns list of atlases', () => {
-            manager.add('large1', createMockImage(200, 200))
-            manager.add('large2', createMockImage(200, 200))
+        const atlases = manager.atlases
 
-            const atlases = manager.atlases
-
-            expect(atlases.length).toBe(2)
-        })
-
+        expect(atlases.length).toBe(2)
     })
 
 })

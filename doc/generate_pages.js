@@ -386,6 +386,25 @@ function generateSwitcherHtml (activeSection = 'docs') {
 }
 
 
+function generateItemHtml (item, activeFile, type) {
+    const classes = ['nav-item']
+    if (item.file === activeFile) {
+        classes.push('active')
+    }
+    if (item.featured) {
+        classes.push('featured')
+    }
+    if (item.advanced) {
+        classes.push('advanced', 'hidden-advanced')
+    }
+    const href = type === 'guide'
+        ? guideIdToHtml(item.id)
+        : docFileToHtml(item.file)
+    const displayTitle = type === 'guide' ? toHumanCase(item.title) : item.title
+    return `<a class="${classes.join(' ')}" href="${href}" data-file="${escapeHtml(item.file)}" data-title="${escapeHtml(item.title.toLowerCase())}" data-category="${escapeHtml(item.category)}">${escapeHtml(displayTitle)}</a>`
+}
+
+
 function generateItemsHtml (items, activeFile, type) {
     const byCategory = {}
 
@@ -407,21 +426,7 @@ function generateItemsHtml (items, activeFile, type) {
         html += `<div class="${categoryClasses.join(' ')}">${escapeHtml(category)}</div>`
 
         for (const item of categoryItems) {
-            const classes = ['nav-item']
-            if (item.file === activeFile) {
-                classes.push('active')
-            }
-            if (item.featured) {
-                classes.push('featured')
-            }
-            if (item.advanced) {
-                classes.push('advanced', 'hidden-advanced')
-            }
-            const href = type === 'guide'
-                ? guideIdToHtml(item.id)
-                : docFileToHtml(item.file)
-            const displayTitle = type === 'guide' ? toHumanCase(item.title) : item.title
-            html += `<a class="${classes.join(' ')}" href="${href}" data-file="${escapeHtml(item.file)}" data-title="${escapeHtml(item.title.toLowerCase())}" data-category="${escapeHtml(item.category)}">${escapeHtml(displayTitle)}</a>`
+            html += generateItemHtml(item, activeFile, type)
         }
     }
 
