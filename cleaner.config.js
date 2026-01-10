@@ -12,5 +12,11 @@ export default {
         excludeDirs: [
             'den/'
         ]
+    },
+    multipleClasses: {
+        excludeDirs: [
+            'den/',
+            'examples/'
+        ]
     }
 }

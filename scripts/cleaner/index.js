@@ -14,6 +14,8 @@ import DeepNestingAuditor from './auditors/tests/deep_nesting.js'
 import ItUsageAuditor from './auditors/tests/it_usage.js'
 import SingleDescribesAuditor from './auditors/tests/single_describes.js'
 
+import MultipleClassesAuditor from './auditors/multiple_classes.js'
+
 import StaleFilesAuditor from './auditors/coverage/stale_files.js'
 import MissingCoverageAuditor from './auditors/coverage/missing_coverage.js'
 import MissingDocsAuditor from './auditors/coverage/missing_docs.js'
@@ -37,7 +39,8 @@ const AUDIT_AUDITORS = [
     DeepNestingAuditor,
     ItUsageAuditor,
     SingleDescribesAuditor,
-    BrokenLinksAuditor
+    BrokenLinksAuditor,
+    MultipleClassesAuditor
 ]
 
 
