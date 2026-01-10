@@ -227,4 +227,15 @@ describe('TextureAtlasManager', () => {
         expect(atlases.length).toBe(2)
     })
 
+
+    test('dispose clears all atlases and regions', () => {
+        manager.add('s1', createMockImage(32, 32))
+        manager.add('s2', createMockImage(32, 32))
+
+        manager.dispose()
+
+        expect(manager.atlasCount).toBe(0)
+        expect(manager.regionCount).toBe(0)
+    })
+
 })

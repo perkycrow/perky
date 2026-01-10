@@ -117,9 +117,8 @@ export default class TextureSystem extends PerkyModule {
     }
 
 
-    dispose () {
+    onDispose () {
         this.clear()
-        super.dispose()
     }
 
 }

@@ -235,4 +235,18 @@ describe('TextureSystem', () => {
         expect(host.addRegion).toBeDefined()
     })
 
+
+    test('onDispose clears all regions', () => {
+        system.addRegion('s1', createMockImage(32, 32))
+        system.registerManualAtlas('atlas', createMockImage(256, 256), {
+            frame1: {x: 0, y: 0, w: 32, h: 32}
+        })
+
+        system.onDispose()
+
+        expect(system.regionCount).toBe(0)
+        expect(system.hasRegion('s1')).toBe(false)
+        expect(system.hasRegion('atlas:frame1')).toBe(false)
+    })
+
 })

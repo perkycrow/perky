@@ -257,6 +257,31 @@ describe('TextureAtlas', () => {
     })
 
 
+    describe('getAllRegions', () => {
+
+        test('returns map of all regions', () => {
+            atlas.add('s1', createMockImage(32, 32))
+            atlas.add('s2', createMockImage(48, 48))
+
+            const regions = atlas.getAllRegions()
+
+            expect(regions).toBeInstanceOf(Map)
+            expect(regions.size).toBe(2)
+            expect(regions.has('s1')).toBe(true)
+            expect(regions.has('s2')).toBe(true)
+        })
+
+
+        test('returns empty map when no regions', () => {
+            const regions = atlas.getAllRegions()
+
+            expect(regions).toBeInstanceOf(Map)
+            expect(regions.size).toBe(0)
+        })
+
+    })
+
+
     describe('static properties', () => {
 
         test('DEFAULT_SIZE', () => {

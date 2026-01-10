@@ -197,11 +197,10 @@ export default class SpriteAnimation extends PerkyModule {
     }
 
 
-    dispose () {
+    onDispose () {
         this.pause()
         this.sprite = null
         this.frames = []
-        super.dispose()
     }
 
 }
