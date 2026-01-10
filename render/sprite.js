@@ -93,23 +93,43 @@ export default class Sprite extends Object2D {
 
     getBounds () {
         const region = this.#region
+        const hasWidth = this.width !== null
+        const hasHeight = this.height !== null
 
         if (!region) {
-            return super.getBounds()
+            const renderW = hasWidth ? this.width : 10
+            const renderH = hasHeight ? this.height : 10
+            const offsetX = -renderW * this.anchorX
+            const offsetY = -renderH * this.anchorY
+
+            return {
+                minX: offsetX,
+                minY: offsetY,
+                maxX: offsetX + renderW,
+                maxY: offsetY + renderH,
+                width: renderW,
+                height: renderH
+            }
         }
 
         const w = region.width
         const h = region.height
 
-        let renderW = w
-        let renderH = h
+        let renderW
+        let renderH
 
-        if (this.width !== null) {
+        if (hasWidth && hasHeight) {
+            renderW = this.width
+            renderH = this.height
+        } else if (hasWidth) {
             renderW = this.width
             renderH = (h / w) * renderW
-        } else if (this.height !== null) {
+        } else if (hasHeight) {
             renderH = this.height
             renderW = (w / h) * renderH
+        } else {
+            renderW = w
+            renderH = h
         }
 
         const offsetX = -renderW * this.anchorX

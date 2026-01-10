@@ -1,10 +1,20 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
 import Image2D from './image_2d.js'
+import Sprite from './sprite.js'
 import TextureRegion from './textures/texture_region.js'
-import CanvasImageRenderer from './canvas/canvas_image_renderer.js'
+import CanvasSpriteRenderer from './canvas/canvas_sprite_renderer.js'
 
 
-describe(Image2D, () => {
+describe('Image2D (Sprite alias)', () => {
+
+    test('Image2D is Sprite', () => {
+        expect(Image2D).toBe(Sprite)
+    })
+
+})
+
+
+describe(Sprite, () => {
 
     let image2d
 
@@ -16,8 +26,12 @@ describe(Image2D, () => {
     test('constructor defaults', () => {
         expect(image2d.image).toBe(null)
         expect(image2d.region).toBe(null)
-        expect(image2d.width).toBe(10)
-        expect(image2d.height).toBe(10)
+        expect(image2d.width).toBe(null)
+        expect(image2d.height).toBe(null)
+
+        const bounds = image2d.getBounds()
+        expect(bounds.width).toBe(10)
+        expect(bounds.height).toBe(10)
     })
 
 
@@ -99,13 +113,13 @@ describe(Image2D, () => {
 })
 
 
-describe(CanvasImageRenderer, () => {
+describe(CanvasSpriteRenderer, () => {
 
     let renderer
     let ctx
 
     beforeEach(() => {
-        renderer = new CanvasImageRenderer()
+        renderer = new CanvasSpriteRenderer()
         ctx = {
             save: vi.fn(),
             scale: vi.fn(),
@@ -115,8 +129,8 @@ describe(CanvasImageRenderer, () => {
     })
 
 
-    test('handles Image2D class', () => {
-        expect(CanvasImageRenderer.handles).toContain(Image2D)
+    test('handles Sprite class', () => {
+        expect(CanvasSpriteRenderer.handles).toContain(Sprite)
     })
 
 

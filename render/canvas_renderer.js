@@ -3,7 +3,6 @@ import {traverseAndCollect} from './traverse.js'
 
 import CanvasCircleRenderer from './canvas/canvas_circle_renderer.js'
 import CanvasRectangleRenderer from './canvas/canvas_rectangle_renderer.js'
-import CanvasImageRenderer from './canvas/canvas_image_renderer.js'
 import CanvasSpriteRenderer from './canvas/canvas_sprite_renderer.js'
 import CanvasDebugGizmoRenderer from './canvas/canvas_debug_gizmo_renderer.js'
 
@@ -39,7 +38,6 @@ export default class CanvasRenderer extends BaseRenderer {
     #setupDefaultRenderers () {
         this.registerRenderer(new CanvasCircleRenderer())
         this.registerRenderer(new CanvasRectangleRenderer())
-        this.registerRenderer(new CanvasImageRenderer())
         this.registerRenderer(new CanvasSpriteRenderer())
 
         this.#debugGizmoRenderer = new CanvasDebugGizmoRenderer()
