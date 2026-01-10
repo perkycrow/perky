@@ -89,6 +89,11 @@ export default class TextureAtlas {
     }
 
 
+    getAllRegions () {
+        return this.#regions
+    }
+
+
     canFit (width, height) {
         return this.#packer.canFit(width, height)
     }
