@@ -29,11 +29,7 @@ export default class ConsoleAuditor extends Auditor {
                     continue
                 }
 
-                issues.push({
-                    line: i + 1,
-                    method: match[1],
-                    text: line.trim()
-                })
+                issues.push(`${gray(`L${i + 1}:`)} console.${match[1]}(...)`)
             }
         }
 
@@ -43,11 +39,6 @@ export default class ConsoleAuditor extends Auditor {
 
     getHint () { // eslint-disable-line local/class-methods-use-this -- clean
         return "Use Logger instead: import logger from 'core/logger.js'"
-    }
-
-
-    formatIssue (issue) { // eslint-disable-line local/class-methods-use-this -- clean
-        return `${gray(`L${issue.line}:`)} console.${issue.method}(...)`
     }
 
 }

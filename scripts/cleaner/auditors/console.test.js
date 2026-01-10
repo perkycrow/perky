@@ -10,7 +10,7 @@ describe('ConsoleAuditor', () => {
         const issues = auditor.analyze(content)
 
         expect(issues).toHaveLength(1)
-        expect(issues[0].method).toBe('log')
+        expect(issues[0]).toContain('console.log')
     })
 
 
@@ -20,7 +20,7 @@ describe('ConsoleAuditor', () => {
         const issues = auditor.analyze(content)
 
         expect(issues).toHaveLength(1)
-        expect(issues[0].method).toBe('warn')
+        expect(issues[0]).toContain('console.warn')
     })
 
 
@@ -30,7 +30,7 @@ describe('ConsoleAuditor', () => {
         const issues = auditor.analyze(content)
 
         expect(issues).toHaveLength(1)
-        expect(issues[0].method).toBe('error')
+        expect(issues[0]).toContain('console.error')
     })
 
 
@@ -61,7 +61,7 @@ describe('ConsoleAuditor', () => {
         const content = 'const x = 1\nconsole.log("test")'
         const issues = auditor.analyze(content)
 
-        expect(issues[0].line).toBe(2)
+        expect(issues[0]).toContain('L2:')
     })
 
 })

@@ -1,4 +1,4 @@
-import {doc, section, text, code, container} from '../../doc/runtime.js'
+import {doc, section, text, code, container, logger} from '../../doc/runtime.js'
 import TextureAtlas from './texture_atlas.js'
 import TextureAtlasManager from './texture_atlas_manager.js'
 import {pluralize} from '../../core/utils.js'
@@ -135,12 +135,12 @@ export default doc('TextureAtlas', {advanced: true}, () => {
             atlas.add('image1', img1)
             atlas.add('image2', img2)
 
-            console.log(atlas.regionCount) // 2
-            console.log(atlas.full)        // false (probably)
-            console.log(atlas.dirty)       // true
+            logger.log(atlas.regionCount) // 2
+            logger.log(atlas.full)        // false (probably)
+            logger.log(atlas.dirty)       // true
 
             atlas.markClean()
-            console.log(atlas.dirty)       // false
+            logger.log(atlas.dirty)       // false
         })
 
     })
