@@ -407,11 +407,14 @@ describe('CollisionSystem', () => {
     describe('Spatial Grid', () => {
 
         test('setupSpatialGrid without bounds logs warning', () => {
+            const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
             const system = new CollisionSystem({spatialGrid: false})
 
             system.setupSpatialGrid()
 
+            expect(warnSpy).toHaveBeenCalled()
             expect(system.grid).toBeUndefined()
+            warnSpy.mockRestore()
         })
 
 
