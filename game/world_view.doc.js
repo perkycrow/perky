@@ -19,7 +19,7 @@ export default doc('WorldView', () => {
         Automatically creates views when entities are added and disposes them when removed.
 
         WorldView supports two registration modes:
-        - **Custom View**: Full control with an [[EntityView]] subclass
+        - **Custom View**: Full control with an [[EntityView@game]] subclass
         - **Auto View**: Direct Object2D class with optional sync bindings
     `)
 
@@ -27,7 +27,7 @@ export default doc('WorldView', () => {
     section('Basic Setup', () => {
 
         text(`
-            WorldView connects a [[World]] to a renderer by creating visual representations
+            WorldView connects a [[World@game]] to a renderer by creating visual representations
             for each entity based on registered mappings.
         `)
 
