@@ -43,7 +43,6 @@ export default class GameRenderer extends PerkyModule {
         })
 
         this.impactParticles = this.create(ImpactParticles, {
-            $id: 'impactParticles',
             count: 8,
             minSpeed: 3,
             maxSpeed: 6,

@@ -17,6 +17,8 @@ const DEFAULT_CONFIG = {
 
 export default class ImpactParticles extends PerkyModule {
 
+    static $category = 'impactParticles'
+
     constructor (options = {}) {
         super(options)
 
