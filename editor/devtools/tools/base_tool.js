@@ -38,7 +38,7 @@ export default class BaseTool extends BaseEditorComponent {
     }
 
 
-    getHeaderActions () {
+    getHeaderActions () { // eslint-disable-line local/class-methods-use-this -- clean
         return []
     }
 
