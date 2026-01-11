@@ -1,6 +1,6 @@
 import RenderSystem from '/render/render_system.js'
 import Group2D from '/render/group_2d.js'
-import Image2D from '/render/image_2d.js'
+import Sprite from '/render/sprite.js'
 import ShaderEffect from '/render/shaders/shader_effect.js'
 import OutlineEffect from '/render/shaders/builtin/effects/outline_effect.js'
 
@@ -130,7 +130,7 @@ function createSprites (count) {
         const radius = Math.random() * 4
 
         const sprite = {
-            image: new Image2D({
+            image: new Sprite({
                 x: Math.cos(angle) * radius,
                 y: Math.sin(angle) * radius,
                 width: 0.5 + Math.random() * 0.5,

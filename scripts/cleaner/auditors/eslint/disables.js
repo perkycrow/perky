@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import EslintAuditor from './base.js'
-import {findJsFiles, groupBy, isInsideString} from '../../utils.js'
+import {groupBy, isInsideString} from '../../utils.js'
 import {success, hint, subHeader, listItem, divider} from '../../format.js'
 
 
@@ -17,6 +17,7 @@ export default class DisablesAuditor extends EslintAuditor {
 
     static $name = 'ESLint Disables'
     static $canFix = false
+    static $hint = 'Add "-- clean" at end of eslint comment if legit'
 
     audit () {
         const disables = this.#findEslintDisables()
@@ -69,18 +70,8 @@ export default class DisablesAuditor extends EslintAuditor {
     }
 
 
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Add "-- clean" at end of eslint comment if legit'
-    }
-
-
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
-
     #findEslintDisables () {
-        const files = findJsFiles(this.rootDir)
+        const files = this.scanFiles()
         const disables = []
 
         const patterns = [

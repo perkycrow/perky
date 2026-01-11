@@ -7,17 +7,30 @@ export default class CommentsAuditor extends Auditor {
     static $name = 'Comments'
     static $category = 'comments'
     static $canFix = true
+    static $hint = 'Keep eslint directives and essential comments'
 
     analyze (content) { // eslint-disable-line local/class-methods-use-this -- clean
         const comments = []
+        const lines = content.split('\n')
+        let textFromStart = ''
 
-        content.replace(/^(.*?)\/\/(.*)$/gm, (match, before, after, offset) => {
-            const textFromStart = content.substring(0, offset) + before
-            if (!isUrlComment(before) && !isInsideString(textFromStart) && !isProtectedComment(after)) {
-                comments.push({type: 'single-line', text: '//' + after.trim()})
+        for (const line of lines) {
+            const match = line.match(/^(.*?)\/\/(.*)$/)
+
+            if (match) {
+                const [, before, after] = match
+                const currentLineBeforeComment = textFromStart + before
+
+                if (!isUrlComment(before) && !isInsideString(currentLineBeforeComment) && !isProtectedComment(after)) {
+                    comments.push({type: 'single-line', text: '//' + after.trim()})
+                    textFromStart += before + '\n'
+                } else {
+                    textFromStart += line + '\n'
+                }
+            } else {
+                textFromStart += line + '\n'
             }
-            return match
-        })
+        }
 
         content.replace(/\/\*[\s\S]*?\*\//g, (match, offset) => {
             const beforeMatch = content.substring(0, offset)
@@ -61,11 +74,6 @@ export default class CommentsAuditor extends Auditor {
         }
     }
 
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Keep eslint directives and essential comments'
-    }
-
 }
 
 
@@ -76,17 +84,33 @@ export function isUrlComment (textBefore) {
 
 function removeSingleLineComments (content) {
     const comments = []
+    const lines = content.split('\n')
+    const resultLines = []
+    let textFromStart = ''
 
-    const result = content.replace(/^(.*?)\/\/(.*)$/gm, (match, before, after, offset) => {
-        const textFromStart = content.substring(0, offset) + before
-        if (isUrlComment(before) || isInsideString(textFromStart) || isProtectedComment(after)) {
-            return match
+    for (const line of lines) {
+        const match = line.match(/^(.*?)\/\/(.*)$/)
+
+        if (match) {
+            const [, before, after] = match
+            const currentLineBeforeComment = textFromStart + before
+
+            if (isUrlComment(before) || isInsideString(currentLineBeforeComment) || isProtectedComment(after)) {
+                resultLines.push(line)
+                textFromStart += line + '\n'
+            } else {
+                comments.push({type: 'single-line', text: '//' + after.trim()})
+                const cleaned = before.trimEnd()
+                resultLines.push(cleaned)
+                textFromStart += before + '\n'
+            }
+        } else {
+            resultLines.push(line)
+            textFromStart += line + '\n'
         }
-        comments.push({type: 'single-line', text: '//' + after.trim()})
-        return before.trimEnd()
-    })
+    }
 
-    return {result, comments}
+    return {result: resultLines.join('\n'), comments}
 }
 
 

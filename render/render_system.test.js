@@ -269,7 +269,7 @@ describe('RenderSystem', () => {
     })
 
 
-    test('resolveCamera with Camera2D returns same camera', () => {
+    test('resolveCamera with Camera returns same camera', () => {
         const existing = renderSystem.getCamera('main')
 
         const resolved = renderSystem.resolveCamera(existing)

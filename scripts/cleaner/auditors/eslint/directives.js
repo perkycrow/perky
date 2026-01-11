@@ -8,6 +8,7 @@ export default class DirectivesAuditor extends EslintAuditor {
 
     static $name = 'Unused ESLint Directives'
     static $canFix = true
+    static $hint = 'Remove directives that no longer suppress any rules'
 
     audit () {
         const unused = this.#findUnusedDirectives()
@@ -31,11 +32,6 @@ export default class DirectivesAuditor extends EslintAuditor {
         }
 
         return {filesWithIssues: unused.length, directivesFound: totalDirectives, files: filesWithIssues}
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Remove directives that no longer suppress any rules'
     }
 
 
@@ -65,13 +61,9 @@ export default class DirectivesAuditor extends EslintAuditor {
     }
 
 
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
-
     #findUnusedDirectives () {
-        const {output} = this.runEslintCommand('--report-unused-disable-directives --format json .')
+        const target = this.getEslintTarget()
+        const {output} = this.runEslintCommand(`--report-unused-disable-directives --format json ${target}`)
         const data = this.parseEslintJson(output)
 
         if (!data) {

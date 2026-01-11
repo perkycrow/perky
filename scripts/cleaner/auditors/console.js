@@ -11,6 +11,7 @@ export default class ConsoleAuditor extends Auditor {
     static $name = 'Console Statements'
     static $category = 'console'
     static $canFix = false
+    static $hint = "Use Logger instead: import logger from 'core/logger.js'"
 
     analyze (content) { // eslint-disable-line local/class-methods-use-this -- clean
         const issues = []
@@ -29,25 +30,11 @@ export default class ConsoleAuditor extends Auditor {
                     continue
                 }
 
-                issues.push({
-                    line: i + 1,
-                    method: match[1],
-                    text: line.trim()
-                })
+                issues.push(`${gray(`L${i + 1}:`)} console.${match[1]}(...)`)
             }
         }
 
         return issues
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return "Use Logger instead: import logger from 'core/logger.js'"
-    }
-
-
-    formatIssue (issue) { // eslint-disable-line local/class-methods-use-this -- clean
-        return `${gray(`L${issue.line}:`)} console.${issue.method}(...)`
     }
 
 }

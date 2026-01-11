@@ -1,37 +1,12 @@
-import Image2D from '../image_2d.js'
-import Sprite2D from '../sprite_2d.js'
-
-
 const DEFAULT_TEX_COORDS = [0, 1, 1, 1, 1, 0, 0, 0]
 const DEFAULT_TINT = [0, 0, 0, 0]
 const DEFAULT_EFFECT_PARAMS = [0, 0, 0, 0]
 const FLOATS_PER_VERTEX = 14
 
 
-function extractImageAndFrame (object) {
-    let image = null
-    let frame = null
-
-    if (object instanceof Image2D) {
-        image = object.image
-    } else if (object instanceof Sprite2D) {
-        image = object.image || (object.currentFrame ? object.currentFrame.image : null)
-        frame = object.currentFrame
-    }
-
-    return {image, frame}
-}
-
-
-function computeTexCoords (frame, image, texCoords) {
-    if (frame) {
-        const {x, y, w, h} = frame.frame
-        const iw = image.width
-        const ih = image.height
-        const u0 = x / iw
-        const u1 = (x + w) / iw
-        const v0 = y / ih
-        const v1 = (y + h) / ih
+function computeTexCoords (region, texCoords) {
+    if (region) {
+        const {u0, v0, u1, v1} = region.uvs
 
         texCoords[0] = u0
         texCoords[1] = v1
@@ -48,9 +23,20 @@ function computeTexCoords (frame, image, texCoords) {
 
 
 function getValidTexture (image, textureManager) {
-    if (!image || !image.complete || image.naturalWidth === 0) {
+    if (!image) {
         return null
     }
+
+
+    if (image.complete !== undefined && (!image.complete || image.naturalWidth === 0)) {
+        return null
+    }
+
+
+    if (image.width === 0) {
+        return null
+    }
+
     return textureManager.getTexture(image)
 }
 
@@ -162,7 +148,8 @@ export default class WebGLSpriteBatch {
 
 
     addSprite (object, effectiveOpacity, hints = null) {
-        const {image, frame} = extractImageAndFrame(object)
+        const region = object.region
+        const image = region?.image
         const texture = getValidTexture(image, this.textureManager)
 
         if (!texture) {
@@ -181,7 +168,7 @@ export default class WebGLSpriteBatch {
         const bounds = object.getBounds()
 
         transformCorners(object.worldMatrix, bounds, corners)
-        computeTexCoords(frame, image, texCoords)
+        computeTexCoords(region, texCoords)
 
         const localAnchorX = bounds.minX + object.anchorX * bounds.width
         const localAnchorY = bounds.minY + object.anchorY * bounds.height

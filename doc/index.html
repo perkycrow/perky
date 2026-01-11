@@ -11,13 +11,21 @@
         <aside class="docs-sidebar">
             <div class="sidebar-header">
                 <h1>perky docs</h1>
-            </div>
-            <div class="sidebar-search">
-                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="m21 21-4.35-4.35"></path>
-                </svg>
-                <input type="text" class="search-input" placeholder="Search...">
+                <div class="sidebar-search">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input type="text" class="search-input" placeholder="Search...">
+                </div>
+                <div class="nav-switcher" id="nav-switcher"></div>
+                <label class="advanced-toggle" id="advanced-toggle">
+                    <input type="checkbox" class="advanced-toggle-input">
+                    <span class="advanced-toggle-track">
+                        <span class="advanced-toggle-thumb"></span>
+                    </span>
+                    <span class="advanced-toggle-label">Show advanced</span>
+                </label>
             </div>
             <nav class="sidebar-nav" id="docs-nav"></nav>
         </aside>

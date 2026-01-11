@@ -1,32 +1,7 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
 import ShaderEffectRegistry from './shader_effect_registry.js'
 import ShaderEffect from './shader_effect.js'
-
-
-function createMockGL () {
-    return {
-        VERTEX_SHADER: 0x8B31,
-        FRAGMENT_SHADER: 0x8B30,
-        COMPILE_STATUS: 0x8B81,
-        LINK_STATUS: 0x8B82,
-
-        createShader: vi.fn(() => ({})),
-        shaderSource: vi.fn(),
-        compileShader: vi.fn(),
-        getShaderParameter: vi.fn(() => true),
-        getShaderInfoLog: vi.fn(() => ''),
-        deleteShader: vi.fn(),
-        createProgram: vi.fn(() => ({})),
-        attachShader: vi.fn(),
-        linkProgram: vi.fn(),
-        getProgramParameter: vi.fn(() => true),
-        getProgramInfoLog: vi.fn(() => ''),
-        deleteProgram: vi.fn(),
-        useProgram: vi.fn(),
-        getUniformLocation: vi.fn((p, name) => ({name})),
-        getAttribLocation: vi.fn(() => 0)
-    }
-}
+import {createMockGLWithSpies} from '../test_helpers.js'
 
 
 function createMockShaderRegistry () {
@@ -78,7 +53,7 @@ describe('ShaderEffectRegistry', () => {
     let registry
 
     beforeEach(() => {
-        gl = createMockGL()
+        gl = createMockGLWithSpies()
         shaderRegistry = createMockShaderRegistry()
         registry = new ShaderEffectRegistry(gl, shaderRegistry)
     })

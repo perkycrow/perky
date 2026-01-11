@@ -29,9 +29,9 @@ describe('Auditor', () => {
     })
 
 
-    test('analyze throws when not implemented', () => {
+    test('analyze returns empty array by default', () => {
         const auditor = new Auditor('/tmp')
-        expect(() => auditor.analyze('content')).toThrow('analyze() must be implemented by subclass')
+        expect(auditor.analyze('content')).toEqual([])
     })
 
 

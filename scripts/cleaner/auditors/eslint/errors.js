@@ -21,9 +21,11 @@ export default class EslintErrorsAuditor extends EslintAuditor {
 
     static $name = 'ESLint Errors'
     static $canFix = true
+    static $hint = 'Run: npx eslint . --fix'
 
     audit () {
-        const {output} = this.runEslintCommand('--format json .')
+        const target = this.getEslintTarget()
+        const {output} = this.runEslintCommand(`--format json ${target}`)
         const data = this.parseEslintJson(output)
 
         if (!data) {
@@ -77,21 +79,12 @@ export default class EslintErrorsAuditor extends EslintAuditor {
     }
 
 
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Run: npx eslint . --fix'
-    }
-
-
     fix () {
-        this.runEslintCommand('--fix .')
+        const target = this.getEslintTarget()
+        this.runEslintCommand(`--fix ${target}`)
         this.printClean('ESLint auto-fix completed')
 
         return {filesFixed: 0, issuesFixed: 0}
-    }
-
-
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
     }
 
 }

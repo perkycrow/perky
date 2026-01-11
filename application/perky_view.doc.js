@@ -1,7 +1,7 @@
 import {doc, section, text, code, logger} from '../doc/runtime.js'
 
 
-export default doc('PerkyView', () => {
+export default doc('PerkyView', {advanced: true}, () => {
 
     text(`
         DOM element wrapper that handles mounting, resizing, and fullscreen mode.

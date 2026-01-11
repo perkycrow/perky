@@ -1,4 +1,5 @@
 import logger from '../core/logger.js'
+import {dedent} from './utils/dedent.js'
 
 
 let currentBlocks = null
@@ -99,6 +100,33 @@ export function action (title, fn) {
         title,
         source: extractFunctionBody(fn),
         fn
+    })
+}
+
+
+export function see (name, options = {}) {
+    if (!currentBlocks) {
+        throw new Error('see() must be called inside doc()')
+    }
+
+    currentBlocks.push({
+        type: 'see',
+        name,
+        pageType: options.type || 'doc',
+        section: options.section || null,
+        category: options.category || null
+    })
+}
+
+
+export function disclaimer (content) {
+    if (!currentBlocks) {
+        throw new Error('disclaimer() must be called inside doc()')
+    }
+
+    currentBlocks.push({
+        type: 'disclaimer',
+        content: dedent(content)
     })
 }
 
@@ -223,37 +251,305 @@ function extractFunctionBody (fn) {
 }
 
 
-function dedent (str) {
-    let lines = str.split('\n')
+export function addSpacerIfNeeded () {
+    const hasVisibleLogs = logger.history.some(e => e.event === 'log')
+    const lastEntry = logger.history[logger.history.length - 1]
+    const lastIsSpacer = lastEntry?.event === 'spacer'
 
-    while (lines.length > 0 && lines[0].trim() === '') {
-        lines.shift()
+    if (hasVisibleLogs && !lastIsSpacer) {
+        logger.spacer()
     }
-    while (lines.length > 0 && lines[lines.length - 1].trim() === '') {
-        lines.pop()
+}
+
+
+export async function executeAction (block, sectionSetup = null) {
+    try {
+        addSpacerIfNeeded()
+        const ctx = {}
+
+        if (sectionSetup?.fn) {
+            await sectionSetup.fn(ctx)
+        }
+        await block.fn(ctx)
+    } catch (error) {
+        logger.error('Action error:', error.message)
+    }
+}
+
+
+export async function executeContainer (block, containerEl, sectionSetup = null) {
+    addSpacerIfNeeded()
+
+    const prevApp = containerEl._currentApp
+    if (prevApp?.dispose) {
+        prevApp.dispose()
+    }
+    containerEl.innerHTML = ''
+
+    if (block.preset) {
+        applyContainerPreset(containerEl, block.preset)
     }
 
-    if (lines.length === 0) {
-        return ''
+    if (block.scrollable) {
+        containerEl.style.overflow = 'auto'
     }
 
-    const nonEmptyLines = lines.filter(line => line.trim())
-    if (nonEmptyLines.length === 0) {
-        return lines.join('\n')
+    try {
+        let actionsBar = null
+        let slidersBar = null
+        let infoBar = null
+
+        const ctx = {
+            container: containerEl,
+            setApp: (app, ...args) => {
+                containerEl._currentApp = app
+                const [scene] = args
+                if (scene && app.autoFitEnabled && app.render) {
+                    app.on('resize', () => app.render(scene))
+                }
+            },
+            action: (label, callback) => {
+                if (!actionsBar) {
+                    actionsBar = document.createElement('div')
+                    actionsBar.className = 'doc-actions-bar'
+                    containerEl.appendChild(actionsBar)
+                }
+
+                const isFirst = actionsBar.children.length === 0
+                const btn = document.createElement('button')
+                btn.className = 'doc-actions-btn'
+                if (isFirst) {
+                    btn.classList.add('doc-actions-btn--active')
+                }
+                btn.textContent = label
+                btn.addEventListener('click', () => {
+                    actionsBar.querySelectorAll('.doc-actions-btn').forEach(b => b.classList.remove('doc-actions-btn--active'))
+                    btn.classList.add('doc-actions-btn--active')
+                    callback()
+                })
+                actionsBar.appendChild(btn)
+
+                if (isFirst) {
+                    callback()
+                }
+            },
+            slider: (label, opts, onChange) => {
+                if (!slidersBar) {
+                    slidersBar = document.createElement('div')
+                    slidersBar.className = 'doc-sliders-bar'
+                    containerEl.appendChild(slidersBar)
+                }
+
+                const wrapper = document.createElement('div')
+                wrapper.className = 'doc-slider-wrapper'
+
+                const labelEl = document.createElement('span')
+                labelEl.className = 'doc-slider-label'
+                labelEl.textContent = label
+
+                const valueEl = document.createElement('span')
+                valueEl.className = 'doc-slider-value'
+                valueEl.textContent = opts.default ?? opts.min
+
+                const input = document.createElement('input')
+                input.type = 'range'
+                input.className = 'doc-slider'
+                input.min = opts.min
+                input.max = opts.max
+                input.step = opts.step ?? (opts.max - opts.min) / 100
+                input.value = opts.default ?? opts.min
+
+                input.addEventListener('input', () => {
+                    const value = parseFloat(input.value)
+                    valueEl.textContent = Number.isInteger(value) ? value : value.toFixed(2)
+                    onChange(value)
+                })
+
+                wrapper.appendChild(labelEl)
+                wrapper.appendChild(input)
+                wrapper.appendChild(valueEl)
+                slidersBar.appendChild(wrapper)
+
+                onChange(parseFloat(input.value))
+            },
+            info: (formatter) => {
+                if (!infoBar) {
+                    infoBar = document.createElement('div')
+                    infoBar.className = 'doc-info-bar'
+                    containerEl.appendChild(infoBar)
+                }
+
+                const el = document.createElement('div')
+                el.className = 'doc-info'
+                infoBar.appendChild(el)
+                const update = (...args) => {
+                    el.textContent = formatter(...args)
+                }
+                update()
+                return update
+            },
+            hint: (message) => {
+                const el = document.createElement('div')
+                el.className = 'doc-hint'
+                el.textContent = message
+                containerEl.appendChild(el)
+            },
+            display: (formatter) => {
+                const el = document.createElement('div')
+                el.className = 'doc-display'
+                containerEl.appendChild(el)
+                const update = (...args) => {
+                    const result = formatter(...args)
+                    if (result instanceof HTMLElement) {
+                        el.innerHTML = ''
+                        el.appendChild(result)
+                    } else if (Array.isArray(result)) {
+                        el.innerHTML = result.map(item => `<span class="doc-display-tag">${item}</span>`).join('')
+                    } else {
+                        el.innerHTML = result
+                    }
+                }
+                update()
+                return update
+            },
+            box: (opts = {}) => {
+                const size = opts.size || 40
+                const color = opts.color || '#4a9eff'
+                const el = document.createElement('div')
+                el.style.cssText = `width:${size}px;height:${size}px;background:${color};position:absolute;border-radius:4px;left:50%;top:50%;transform:translate(-50%,-50%)`
+                containerEl.appendChild(el)
+                return el
+            },
+            marker: (x = 0, y = 0, opts = {}) => {
+                const size = opts.size || 20
+                const color = opts.color || '#4a9eff'
+                const el = document.createElement('div')
+                el.style.cssText = `width:${size}px;height:${size}px;background:${color};position:absolute;border-radius:50%;transform:translate(-50%,-50%);left:${x}px;top:${y}px`
+                containerEl.appendChild(el)
+                return el
+            },
+            column: (opts = {}) => {
+                const gap = opts.gap || 4
+                const el = document.createElement('div')
+                el.style.cssText = `display:flex;flex-direction:column;align-items:center;gap:${gap}px;`
+                if (opts.parent) {
+                    opts.parent.appendChild(el)
+                } else {
+                    containerEl.appendChild(el)
+                }
+                return el
+            },
+            row: (opts = {}) => {
+                const gap = opts.gap || 8
+                const el = document.createElement('div')
+                el.style.cssText = `display:flex;flex-direction:row;align-items:center;gap:${gap}px;flex-wrap:wrap;justify-content:center;`
+                if (opts.parent) {
+                    opts.parent.appendChild(el)
+                } else {
+                    containerEl.appendChild(el)
+                }
+                return el
+            },
+            label: (content, opts = {}) => {
+                const el = document.createElement('div')
+                el.style.cssText = 'color:#666;font-family:monospace;font-size:11px;'
+                el.textContent = content
+                if (opts.parent) {
+                    opts.parent.appendChild(el)
+                } else {
+                    containerEl.appendChild(el)
+                }
+                return el
+            },
+            checkerBoard: (opts = {}) => {
+                const size = opts.size || 8
+                const color1 = opts.color1 || '#222'
+                const color2 = opts.color2 || '#1a1a1a'
+                const el = document.createElement('div')
+                el.style.cssText = `background:repeating-conic-gradient(${color1} 0% 25%, ${color2} 0% 50%) 50% / ${size * 2}px ${size * 2}px;border:1px solid #333;overflow:hidden;`
+                if (opts.width) {
+                    el.style.width = opts.width + 'px'
+                }
+                if (opts.height) {
+                    el.style.height = opts.height + 'px'
+                }
+                if (opts.parent) {
+                    opts.parent.appendChild(el)
+                } else {
+                    containerEl.appendChild(el)
+                }
+                return el
+            },
+            canvas: (source, opts = {}) => {
+                const wrapper = document.createElement('div')
+                const size = opts.checkerSize || 8
+                wrapper.style.cssText = `background:repeating-conic-gradient(#222 0% 25%, #1a1a1a 0% 50%) 50% / ${size * 2}px ${size * 2}px;border:1px solid #333;display:inline-block;`
+                if (opts.parent) {
+                    opts.parent.appendChild(wrapper)
+                } else {
+                    containerEl.appendChild(wrapper)
+                }
+
+                const displayCanvas = document.createElement('canvas')
+                displayCanvas.style.cssText = 'display:block;'
+                if (opts.maxWidth) {
+                    displayCanvas.style.maxWidth = opts.maxWidth + 'px'
+                    displayCanvas.style.height = 'auto'
+                }
+                wrapper.appendChild(displayCanvas)
+
+                const update = (src) => {
+                    const canvas = src || source
+                    displayCanvas.width = canvas.width
+                    displayCanvas.height = canvas.height
+                    const dctx = displayCanvas.getContext('2d')
+                    dctx.clearRect(0, 0, canvas.width, canvas.height)
+                    dctx.drawImage(canvas, 0, 0)
+                }
+
+                if (source) {
+                    update(source)
+                }
+
+                return {element: wrapper, canvas: displayCanvas, update}
+            }
+        }
+
+        if (sectionSetup?.fn) {
+            await sectionSetup.fn(ctx)
+        }
+        await block.fn(ctx)
+
+        if (containerEl.tabIndex >= 0) {
+            containerEl.focus()
+        }
+    } catch (error) {
+        logger.error('Container error:', error.message)
     }
+}
 
-    const minIndent = Math.min(
-        ...nonEmptyLines.map(line => {
-            const match = line.match(/^(\s*)/)
-            return match ? match[1].length : 0
-        })
-    )
 
-    if (minIndent === 0) {
-        return lines.join('\n')
-    }
+export function renderAction (block, sectionSetup = null, extractedSource = null) {
+    const wrapper = document.createElement('div')
+    wrapper.className = 'doc-action-block'
 
-    return lines.map(line => line.slice(minIndent)).join('\n')
+    const codeEl = document.createElement('perky-code')
+    codeEl.setAttribute('title', block.title)
+    codeEl.code = extractedSource || block.source
+    wrapper.appendChild(codeEl)
+
+    const button = document.createElement('button')
+    button.className = 'doc-action-btn'
+    button.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+        </svg>
+        Run
+    `
+    button.addEventListener('click', () => executeAction(block, sectionSetup))
+    wrapper.appendChild(button)
+
+    return wrapper
 }
 
 

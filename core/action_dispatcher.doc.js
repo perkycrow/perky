@@ -3,7 +3,7 @@ import ActionDispatcher from './action_dispatcher.js'
 import ActionController from './action_controller.js'
 
 
-export default doc('ActionDispatcher', () => {
+export default doc('ActionDispatcher', {advanced: true}, () => {
 
     text(`
         Manages action controllers and dispatches actions to them.
@@ -18,20 +18,6 @@ export default doc('ActionDispatcher', () => {
             Add actions to controllers and execute them.
         `)
 
-        code('Creation', () => {
-            const dispatcher = new ActionDispatcher({$id: 'dispatcher'})
-
-            // Register a controller and add an action
-            const main = dispatcher.register('main')
-            main.addAction('jump', () => {
-                logger.log('Jump!')
-            })
-
-            // Set it active and execute
-            dispatcher.setActive('main')
-            dispatcher.execute('jump')
-        })
-
         action('Add and execute action', () => {
             const dispatcher = new ActionDispatcher({$id: 'dispatcher'})
 
@@ -42,41 +28,25 @@ export default doc('ActionDispatcher', () => {
 
             dispatcher.setActive('main')
             dispatcher.execute('greet', 'World')
-            dispatcher.dispose()
         })
 
     })
 
 
-    section('Controllers', () => {
+    section('Controller Stack', () => {
 
         text(`
             Register multiple controllers to organize actions by context.
-            Use \`setActive\` to control which controllers receive actions.
+            Use \`pushActive\` and \`popActive\` to manage the stack.
         `)
 
-        code('Multiple controllers', () => {
-            const dispatcher = new ActionDispatcher({$id: 'dispatcher'})
-
-            // Register a game controller
-            const gameCtrl = dispatcher.register('game')
-            gameCtrl.addAction('pause', () => logger.log('Paused'))
-
-            // Register a menu controller
-            const menuCtrl = dispatcher.register('menu')
-            menuCtrl.addAction('select', () => logger.log('Selected'))
-
-            // Set active controllers
-            dispatcher.setActive(['game', 'menu'])
-        })
-
-        action('Controller stack', () => {
+        action('Stack operations', () => {
             const dispatcher = new ActionDispatcher({$id: 'dispatcher'})
 
             dispatcher.register('game')
             dispatcher.register('menu')
 
-            logger.log('Initial active:', dispatcher.getActive())
+            logger.log('Initial:', dispatcher.getActive())
 
             dispatcher.pushActive('game')
             logger.log('After push game:', dispatcher.getActive())
@@ -86,32 +56,6 @@ export default doc('ActionDispatcher', () => {
 
             dispatcher.popActive()
             logger.log('After pop:', dispatcher.getActive())
-
-            dispatcher.dispose()
-        })
-
-    })
-
-
-    section('Direct Execution', () => {
-
-        text(`
-            Use \`executeTo\` to target a specific controller directly,
-            bypassing the active stack propagation.
-        `)
-
-        action('executeTo', () => {
-            const dispatcher = new ActionDispatcher({$id: 'dispatcher'})
-
-            const ctrl = dispatcher.register('myController')
-            ctrl.addAction('test', () => {
-                logger.log('Action executed on myController')
-            })
-
-            dispatcher.setActive('myController')
-            dispatcher.executeTo('myController', 'test')
-
-            dispatcher.dispose()
         })
 
     })
@@ -123,29 +67,6 @@ export default doc('ActionDispatcher', () => {
             Extend \`ActionController\` to create custom controllers.
             Public methods automatically become executable actions.
         `)
-
-        code('Custom controller class', () => {
-            class GameController extends ActionController {
-                shoot () {
-                    logger.log('Shooting!')
-                }
-
-                jump (height = 1) {
-                    logger.log(`Jumping ${height} units`)
-                }
-
-                setSpeed (speed) {
-                    this.speed = speed
-                }
-            }
-
-            const dispatcher = new ActionDispatcher({$id: 'dispatcher'})
-            const ctrl = dispatcher.register('game', GameController)
-
-            dispatcher.setActive('game')
-            dispatcher.execute('shoot')
-            dispatcher.execute('jump', 2)
-        })
 
         action('Methods as actions', () => {
             class PlayerController extends ActionController {
@@ -164,8 +85,28 @@ export default doc('ActionDispatcher', () => {
 
             dispatcher.execute('shoot')
             dispatcher.execute('heal', 25)
+        })
 
-            dispatcher.dispose()
+    })
+
+
+    section('Direct Execution', () => {
+
+        text(`
+            Use \`executeTo\` to target a specific controller directly,
+            bypassing the stack propagation.
+        `)
+
+        action('executeTo', () => {
+            const dispatcher = new ActionDispatcher({$id: 'dispatcher'})
+
+            const ctrl = dispatcher.register('myController')
+            ctrl.addAction('test', () => {
+                logger.log('Action executed on myController')
+            })
+
+            dispatcher.setActive('myController')
+            dispatcher.executeTo('myController', 'test')
         })
 
     })
@@ -194,8 +135,58 @@ export default doc('ActionDispatcher', () => {
             for (const [controllerName, actions] of actionsMap) {
                 logger.log(`${controllerName}:`, actions.map(a => a.name).join(', '))
             }
+        })
 
-            dispatcher.dispose()
+    })
+
+
+    section('Propagation', () => {
+
+        text(`
+            Actions propagate through the controller stack from top to bottom.
+            By default, an action stops at the first controller that handles it.
+            Use \`static propagable\` to let actions continue to lower controllers
+            (see [[ActionController#Propagation]]).
+        `)
+
+        action('Propagation demo', () => {
+            class GameController extends ActionController {
+                move () {
+                    logger.log('Game: player moves')
+                }
+
+                jump () {
+                    logger.log('Game: player jumps')
+                }
+            }
+
+            class MenuController extends ActionController {
+                static propagable = ['move']
+
+                move () {
+                    logger.log('Menu: navigate')
+                }
+
+                confirm () {
+                    logger.log('Menu: confirm selection')
+                }
+            }
+
+            const dispatcher = new ActionDispatcher({$id: 'dispatcher'})
+
+            dispatcher.register('game', GameController)
+            dispatcher.register('menu', MenuController)
+
+            dispatcher.setActive(['game', 'menu'])
+
+            logger.log('--- move action (propagates) ---')
+            dispatcher.execute('move')
+
+            logger.log('--- confirm action (stops at menu) ---')
+            dispatcher.execute('confirm')
+
+            logger.log('--- jump action (only on game) ---')
+            dispatcher.execute('jump')
         })
 
     })

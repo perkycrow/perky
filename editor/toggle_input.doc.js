@@ -2,7 +2,7 @@ import {doc, section, text, code, container, logger} from '../doc/runtime.js'
 import './toggle_input.js'
 
 
-export default doc('ToggleInput', () => {
+export default doc('ToggleInput', {advanced: true}, () => {
 
     text(`
         A toggle switch input component. Emits a "change" event with

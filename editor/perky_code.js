@@ -347,16 +347,6 @@ export default class PerkyCode extends HTMLElement {
         result = result
             .replace(/(["'`])(?:(?=(\\?))\2.)*?\1/g,
                 match => replaceWithPlaceholder(match, 'hl-string'))
-            .replace(/\b(import|from|const|let|var|function|class|extends|return|async|await|new)\b/g,
-                match => replaceWithPlaceholder(match, 'hl-keyword'))
-            .replace(/\b(if|else|try|catch)\b/g,
-                match => replaceWithPlaceholder(match, 'hl-keyword'))
-            .replace(/\b(true|false)\b/g,
-                match => replaceWithPlaceholder(match, 'hl-constant'))
-            .replace(/\b(\d+(\.\d+)?([eE][+-]?\d+)?)\b/g,
-                match => replaceWithPlaceholder(match, 'hl-constant'))
-            .replace(/\b(document|window|console)\b(?=\.)/g,
-                match => replaceWithPlaceholder(match, 'hl-keyword'))
             .replace(/\.(\w+)(?=\()/g,
                 match => {
                     const methodName = match.substring(1)
@@ -367,6 +357,16 @@ export default class PerkyCode extends HTMLElement {
                     const propName = match.substring(1)
                     return '.' + replaceWithPlaceholder(propName, 'hl-constant')
                 })
+            .replace(/\b(import|from|const|let|var|function|class|extends|return|async|await|new)\b/g,
+                match => replaceWithPlaceholder(match, 'hl-keyword'))
+            .replace(/\b(if|else|try|catch)\b/g,
+                match => replaceWithPlaceholder(match, 'hl-keyword'))
+            .replace(/\b(true|false)\b/g,
+                match => replaceWithPlaceholder(match, 'hl-constant'))
+            .replace(/\b(\d+(\.\d+)?([eE][+-]?\d+)?)\b/g,
+                match => replaceWithPlaceholder(match, 'hl-constant'))
+            .replace(/\b(document|window|console)\b(?=\.)/g,
+                match => replaceWithPlaceholder(match, 'hl-keyword'))
 
         placeholders.forEach(item => {
             result = result.replace(item.placeholder, item.replacement)

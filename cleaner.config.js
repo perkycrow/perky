@@ -1,7 +1,22 @@
 export default {
     missingTests: {
         excludeDirs: [
-            'defend_the_den/'
+            'den/'
+        ],
+        excludeFiles: [
+            '**/test_helpers.js',
+            '**/setup_tests.js'
+        ]
+    },
+    missingDocs: {
+        excludeDirs: [
+            'den/'
+        ]
+    },
+    multipleClasses: {
+        excludeDirs: [
+            'den/',
+            'examples/'
         ]
     }
 }

@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 import Auditor from '../../auditor.js'
-import {findJsFiles} from '../../utils.js'
 import {hint, listItem, divider} from '../../format.js'
 
 
@@ -10,6 +9,7 @@ export default class DeepNestingAuditor extends Auditor {
     static $name = 'Deep Nesting'
     static $category = 'tests'
     static $canFix = false
+    static $hint = 'Flatten structure - remove unnecessary describe wrappers'
 
     audit () {
         const issues = this.#findDeepNesting()
@@ -34,18 +34,13 @@ export default class DeepNestingAuditor extends Auditor {
     }
 
 
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Flatten structure - remove unnecessary describe wrappers'
-    }
-
-
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
-
     #findDeepNesting () {
-        const files = findTestFiles(this.rootDir)
+        const files = this.scanFiles().filter((filePath) => {
+            const relativePath = path.relative(this.rootDir, filePath)
+            return relativePath.endsWith('.test.js') &&
+                !relativePath.startsWith('scripts/cleaner/') &&
+                !relativePath.startsWith('doc/')
+        })
         const indentThreshold = 12
 
         return files
@@ -53,16 +48,6 @@ export default class DeepNestingAuditor extends Auditor {
             .filter(Boolean)
     }
 
-}
-
-
-function findTestFiles (rootDir) {
-    return findJsFiles(rootDir).filter((filePath) => {
-        const relativePath = path.relative(rootDir, filePath)
-        return relativePath.endsWith('.test.js') &&
-            !relativePath.startsWith('scripts/cleaner/') &&
-            !relativePath.startsWith('doc/')
-    })
 }
 
 

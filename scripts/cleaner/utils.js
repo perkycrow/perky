@@ -32,10 +32,22 @@ export function isInsideRegex (textBefore) {
     if (lastSlash === -1) {
         return false
     }
-    const afterSlash = textBefore.substring(lastSlash + 1)
-    if (/[a-zA-Z0-9_$)\]}"'`]/.test(textBefore[lastSlash - 1])) {
+
+    const charBefore = textBefore[lastSlash - 1]
+    if (/[a-zA-Z0-9_$)\]}"'`]/.test(charBefore)) {
         return false
     }
+
+    const textBeforeSlash = textBefore.substring(0, lastSlash)
+    const doubleQuotes = (textBeforeSlash.match(/"/g) || []).length
+    const singleQuotes = (textBeforeSlash.match(/'/g) || []).length
+    const backticks = (textBeforeSlash.match(/`/g) || []).length
+
+    if ((doubleQuotes + singleQuotes + backticks) % 2 !== 0) {
+        return false
+    }
+
+    const afterSlash = textBefore.substring(lastSlash + 1)
     if (/^[^/]*$/.test(afterSlash)) {
         return true
     }
@@ -48,14 +60,29 @@ export function shouldSkipDirectory (name) {
 }
 
 
-export function findJsFiles (dir, files = []) {
+export function findJsFiles (dir, files = [], targetPath = null) {
+    if (targetPath) {
+        const stats = fs.statSync(targetPath)
+
+        if (stats.isFile()) {
+            return [targetPath]
+        }
+
+        return findJsFilesInDirectory(targetPath, [])
+    }
+
+    return findJsFilesInDirectory(dir, files)
+}
+
+
+function findJsFilesInDirectory (dir, files = []) {
     const entries = fs.readdirSync(dir, {withFileTypes: true})
 
     for (const entry of entries) {
         const fullPath = path.join(dir, entry.name)
 
         if (entry.isDirectory() && !shouldSkipDirectory(entry.name)) {
-            findJsFiles(fullPath, files)
+            findJsFilesInDirectory(fullPath, files)
         } else if (entry.isFile() && entry.name.endsWith('.js')) {
             files.push(fullPath)
         }

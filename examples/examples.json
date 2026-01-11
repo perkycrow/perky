@@ -12,16 +12,16 @@
       "description": "A simple random number generator using Perky."
     },
     {
-      "id": "canvas2d_demo",
-      "file": "canvas2d_demo.html",
+      "id": "canvas_renderer_demo",
+      "file": "canvas_renderer_demo.html",
       "category": "render",
       "tags": [
         "render",
-        "canvas2d",
+        "canvas",
         "animation"
       ],
-      "title": "Canvas2D Render Demo",
-      "description": "Animated shapes demo showcasing the Canvas2D renderer with PerkyModule integration."
+      "title": "Canvas Renderer Demo",
+      "description": "Animated shapes demo showcasing the CanvasRenderer with PerkyModule integration."
     },
     {
       "id": "camera_demo",
@@ -76,6 +76,58 @@
       ],
       "title": "Shader Effects Stress Test",
       "description": "Performance test combining multiple custom shader effects (Outline, Chromatic, Wave, Pulse) with batching optimization."
+    },
+    {
+      "id": "audio_demo",
+      "file": "audio_demo.html",
+      "category": "audio",
+      "tags": [
+        "audio",
+        "oscillator",
+        "synthesis",
+        "channels"
+      ],
+      "title": "Audio System Demo",
+      "description": "Procedural audio generation with oscillators, channels, and volume control."
+    },
+    {
+      "id": "audio_assets_demo",
+      "file": "audio_assets_demo.html",
+      "category": "audio",
+      "tags": [
+        "audio",
+        "assets",
+        "manifest",
+        "loading"
+      ],
+      "title": "Audio Assets Demo",
+      "description": "Loading and playing audio files through the manifest and SourceManager."
+    },
+    {
+      "id": "audio_spatial_demo",
+      "file": "audio_spatial_demo.html",
+      "category": "audio",
+      "tags": [
+        "audio",
+        "spatial",
+        "3d",
+        "panning"
+      ],
+      "title": "Spatial Audio Demo",
+      "description": "2D positional audio with distance attenuation and stereo panning."
+    },
+    {
+      "id": "audio_pattern_demo",
+      "file": "audio_pattern_demo.html",
+      "category": "audio",
+      "tags": [
+        "audio",
+        "pattern",
+        "sequencer",
+        "strudel"
+      ],
+      "title": "Audio Pattern Demo",
+      "description": "Strudel-inspired pattern sequencing with mini-notation."
     }
   ]
 }

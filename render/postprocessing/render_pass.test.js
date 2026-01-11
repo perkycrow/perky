@@ -1,5 +1,6 @@
-import {describe, test, expect, beforeEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach} from 'vitest'
 import RenderPass from './render_pass.js'
+import {createMockGLWithSpies, createMockProgram, createMockShaderRegistry, createMockQuad} from '../test_helpers.js'
 
 
 class TestPass extends RenderPass {
@@ -17,43 +18,6 @@ class TestPass extends RenderPass {
 
 
 class NoShaderPass extends RenderPass {}
-
-
-function createMockProgram () {
-    return {
-        use: vi.fn(),
-        setUniform1i: vi.fn(),
-        setUniform1f: vi.fn(),
-        setUniform2f: vi.fn(),
-        setUniform3f: vi.fn(),
-        setUniform4f: vi.fn(),
-        attributes: {aPosition: 0, aTexCoord: 1}
-    }
-}
-
-
-function createMockShaderRegistry (program) {
-    return {
-        register: vi.fn(() => program)
-    }
-}
-
-
-function createMockGL () {
-    return {
-        TEXTURE0: 0x84C0,
-        TEXTURE_2D: 0x0DE1,
-        activeTexture: vi.fn(),
-        bindTexture: vi.fn()
-    }
-}
-
-
-function createMockQuad () {
-    return {
-        draw: vi.fn()
-    }
-}
 
 
 describe(RenderPass, () => {
@@ -143,7 +107,7 @@ describe(RenderPass, () => {
             pass = new TestPass()
             program = createMockProgram()
             pass.init(createMockShaderRegistry(program))
-            gl = createMockGL()
+            gl = createMockGLWithSpies()
             quad = createMockQuad()
         })
 

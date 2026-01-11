@@ -8,6 +8,7 @@ export default class ImportsAuditor extends Auditor {
     static $name = 'Import Extensions'
     static $category = 'imports'
     static $canFix = true
+    static $hint = 'Add .js extension for ESM compatibility'
 
     analyze (content, _relativePath, absolutePath) { // eslint-disable-line local/class-methods-use-this -- clean
         const fileDir = path.dirname(absolutePath)
@@ -65,11 +66,6 @@ export default class ImportsAuditor extends Auditor {
             fixed: true,
             fixCount: issues.length
         }
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Add .js extension for ESM compatibility'
     }
 
 }

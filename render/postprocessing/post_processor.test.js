@@ -1,83 +1,7 @@
-import {describe, test, expect, beforeEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach} from 'vitest'
 import PostProcessor from './post_processor.js'
 import RenderPass from './render_pass.js'
-
-
-function createMockGL () {
-    return {
-        FRAMEBUFFER: 0x8D40,
-        RENDERBUFFER: 0x8D41,
-        READ_FRAMEBUFFER: 0x8CA8,
-        DRAW_FRAMEBUFFER: 0x8CA9,
-        COLOR_ATTACHMENT0: 0x8CE0,
-        TEXTURE_2D: 0x0DE1,
-        TEXTURE0: 0x84C0,
-        RGBA8: 0x8058,
-        RGBA: 0x1908,
-        UNSIGNED_BYTE: 0x1401,
-        TEXTURE_MIN_FILTER: 0x2801,
-        TEXTURE_MAG_FILTER: 0x2800,
-        TEXTURE_WRAP_S: 0x2802,
-        TEXTURE_WRAP_T: 0x2803,
-        LINEAR: 0x2601,
-        CLAMP_TO_EDGE: 0x812F,
-        ARRAY_BUFFER: 0x8892,
-        STATIC_DRAW: 0x88E4,
-        MAX_SAMPLES: 0x8D57,
-        COLOR_BUFFER_BIT: 0x00004000,
-        NEAREST: 0x2600,
-        FRAMEBUFFER_COMPLETE: 0x8CD5,
-        BLEND: 0x0BE2,
-        SRC_ALPHA: 0x0302,
-        ONE_MINUS_SRC_ALPHA: 0x0303,
-        FLOAT: 0x1406,
-        TRIANGLE_STRIP: 0x0005,
-
-        getParameter: vi.fn(() => 8),
-        createFramebuffer: vi.fn(() => ({})),
-        deleteFramebuffer: vi.fn(),
-        bindFramebuffer: vi.fn(),
-        createRenderbuffer: vi.fn(() => ({})),
-        deleteRenderbuffer: vi.fn(),
-        bindRenderbuffer: vi.fn(),
-        renderbufferStorageMultisample: vi.fn(),
-        framebufferRenderbuffer: vi.fn(),
-        framebufferTexture2D: vi.fn(),
-        checkFramebufferStatus: vi.fn(() => 0x8CD5),
-        createTexture: vi.fn(() => ({})),
-        deleteTexture: vi.fn(),
-        bindTexture: vi.fn(),
-        texImage2D: vi.fn(),
-        texParameteri: vi.fn(),
-        viewport: vi.fn(),
-        blitFramebuffer: vi.fn(),
-        createBuffer: vi.fn(() => ({})),
-        deleteBuffer: vi.fn(),
-        bindBuffer: vi.fn(),
-        bufferData: vi.fn(),
-        enableVertexAttribArray: vi.fn(),
-        vertexAttribPointer: vi.fn(),
-        drawArrays: vi.fn(),
-        enable: vi.fn(),
-        disable: vi.fn(),
-        blendFunc: vi.fn(),
-        clearColor: vi.fn(),
-        clear: vi.fn(),
-        activeTexture: vi.fn()
-    }
-}
-
-
-function createMockShaderRegistry () {
-    return {
-        register: vi.fn(() => ({
-            use: vi.fn(),
-            setUniform1i: vi.fn(),
-            setUniform1f: vi.fn(),
-            attributes: {aPosition: 0, aTexCoord: 1}
-        }))
-    }
-}
+import {createMockGLWithSpies, createMockShaderRegistry} from '../test_helpers.js'
 
 
 class MockPass extends RenderPass {
@@ -97,7 +21,7 @@ describe(PostProcessor, () => {
     let processor
 
     beforeEach(() => {
-        gl = createMockGL()
+        gl = createMockGLWithSpies()
         shaderRegistry = createMockShaderRegistry()
         processor = new PostProcessor(gl, shaderRegistry, 800, 600)
     })

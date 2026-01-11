@@ -20,7 +20,7 @@ Everything is a **PerkyModule** - one base class that handles identity, lifecycl
 
 ### What's Included
 
-- **Rendering** - Canvas2D, WebGL, and HTML renderers with cameras, layers, sprites, and post-processing
+- **Rendering** - Canvas, WebGL, and HTML renderers with cameras, layers, sprites, and post-processing
 - **Input** - Keyboard, mouse, and gamepad with action binding
 - **Collision** - Detection and resolution with spatial partitioning
 - **Math** - Vectors, easing, random, grids, pathfinding

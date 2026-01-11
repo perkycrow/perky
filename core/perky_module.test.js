@@ -148,6 +148,148 @@ describe(PerkyModule, () => {
     })
 
 
+    describe('addChild', () => {
+
+        test('adds a pre-created module', () => {
+            const module = new PerkyModule({$id: 'player', $category: 'entity'})
+
+            const result = child.addChild(module)
+
+            expect(result).toBe(module)
+            expect(child.hasChild('player')).toBe(true)
+            expect(child.getChild('player')).toBe(module)
+            expect(module.host).toBe(child)
+            expect(module.installed).toBe(true)
+        })
+
+
+        test('auto-generates unique ID on collision', () => {
+            child.create(PerkyModule, {$id: 'enemy'})
+
+            const module = new PerkyModule({$id: 'enemy', $name: 'enemy'})
+            child.addChild(module)
+
+            expect(module.$id).toBe('enemy_1')
+            expect(child.hasChild('enemy')).toBe(true)
+            expect(child.hasChild('enemy_1')).toBe(true)
+        })
+
+
+        test('auto-generates sequential IDs on multiple collisions', () => {
+            const m1 = new PerkyModule({$id: 'enemy', $name: 'enemy'})
+            const m2 = new PerkyModule({$id: 'enemy', $name: 'enemy'})
+            const m3 = new PerkyModule({$id: 'enemy', $name: 'enemy'})
+
+            child.addChild(m1)
+            child.addChild(m2)
+            child.addChild(m3)
+
+            expect(m1.$id).toBe('enemy')
+            expect(m2.$id).toBe('enemy_1')
+            expect(m3.$id).toBe('enemy_2')
+        })
+
+
+        test('throws if module is already installed', () => {
+            const parent1 = new PerkyModule({$id: 'parent1'})
+            const parent2 = new PerkyModule({$id: 'parent2'})
+            const module = new PerkyModule({$id: 'child'})
+
+            parent1.addChild(module)
+
+            expect(() => parent2.addChild(module)).toThrow('Module is already installed in another parent')
+        })
+
+
+        test('throws if not a PerkyModule instance', () => {
+            expect(() => child.addChild({})).toThrow('addChild expects a PerkyModule instance')
+            expect(() => child.addChild(null)).toThrow('addChild expects a PerkyModule instance')
+            expect(() => child.addChild('test')).toThrow('addChild expects a PerkyModule instance')
+            expect(() => child.addChild(42)).toThrow('addChild expects a PerkyModule instance')
+        })
+
+
+        test('calls onInstall hook', () => {
+            const onInstallSpy = vi.fn()
+
+            class TestModule extends PerkyModule {
+                onInstall (installedHost) {
+                    onInstallSpy(installedHost)
+                }
+            }
+
+            const module = new TestModule({$id: 'test'})
+            child.addChild(module)
+
+            expect(onInstallSpy).toHaveBeenCalledWith(child)
+        })
+
+
+        test('sets up lifecycle binding', () => {
+            const module = new PerkyModule({$id: 'test'})
+            child.addChild(module)
+
+            const startSpy = vi.spyOn(module, 'start')
+            const stopSpy = vi.spyOn(module, 'stop')
+
+            child.start()
+            expect(startSpy).toHaveBeenCalled()
+
+            child.stop()
+            expect(stopSpy).toHaveBeenCalled()
+        })
+
+
+        test('respects $eagerStart when parent is already started', () => {
+            child.start()
+
+            const eager = new PerkyModule({$id: 'eager', $eagerStart: true})
+            const lazy = new PerkyModule({$id: 'lazy', $eagerStart: false})
+
+            child.addChild(eager)
+            child.addChild(lazy)
+
+            expect(eager.started).toBe(true)
+            expect(lazy.started).toBe(false)
+        })
+
+
+        test('emits registration events', () => {
+            const emitSpy = vi.spyOn(child, 'emit')
+            const module = new PerkyModule({$id: 'test', $category: 'entity'})
+
+            child.addChild(module)
+
+            expect(emitSpy).toHaveBeenCalledWith('entity:set', 'test', module)
+        })
+
+
+        test('works with $bind option', () => {
+            const module = new PerkyModule({$id: 'audio', $bind: 'audioSystem'})
+
+            child.addChild(module)
+
+            expect(child.audioSystem).toBe(module)
+        })
+
+
+        test('respects $lifecycle: false', () => {
+            const module = new PerkyModule({$id: 'static', $lifecycle: false})
+            child.addChild(module)
+
+            const startSpy = vi.spyOn(module, 'start')
+            const stopSpy = vi.spyOn(module, 'stop')
+
+            child.start()
+            expect(startSpy).not.toHaveBeenCalled()
+
+            child.stop()
+            expect(stopSpy).not.toHaveBeenCalled()
+        })
+
+    })
+
+
     test('listNamesFor - single category', () => {
         class TestChild1 extends PerkyModule { }
         class TestChild2 extends PerkyModule { }

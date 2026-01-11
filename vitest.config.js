@@ -2,7 +2,12 @@ import {defineConfig} from 'vitest/config'
 
 
 const ignoredMessages = [
-
+    'Discovered',
+    'doc file(s)',
+    'guide file(s)',
+    'Generated API data',
+    'Generated tests data',
+    'Extracted sources'
 ]
 
 export default defineConfig({

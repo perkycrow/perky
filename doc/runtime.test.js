@@ -1,11 +1,17 @@
-import {describe, test, expect, vi} from 'vitest'
-import {doc, section, setup, text, code, action, container, applyContainerPreset} from './runtime.js'
+import {describe, test, expect, vi, beforeEach} from 'vitest'
+import {
+    doc, section, setup, text, code, action, see, disclaimer, container,
+    applyContainerPreset, addSpacerIfNeeded, executeAction, executeContainer, renderAction
+} from './runtime.js'
+import logger from '../core/logger.js'
 
 
 vi.mock('../core/logger.js', () => ({
     default: {
         log: vi.fn(),
-        error: vi.fn()
+        error: vi.fn(),
+        spacer: vi.fn(),
+        history: []
     }
 }))
 
@@ -24,12 +30,12 @@ describe('doc', () => {
 
 
     test('accepts options object', () => {
-        const result = doc('My Doc', {context: 'Core'}, () => {
+        const result = doc('My Doc', {foo: 'bar'}, () => {
             text('Hello')
         })
 
         expect(result.title).toBe('My Doc')
-        expect(result.options.context).toBe('Core')
+        expect(result.options.foo).toBe('bar')
     })
 
 
@@ -215,6 +221,121 @@ describe('container', () => {
 })
 
 
+describe('see', () => {
+
+    test('creates see block with defaults', () => {
+        const result = doc('Test', () => {
+            see('ActionController')
+        })
+
+        expect(result.blocks[0].type).toBe('see')
+        expect(result.blocks[0].name).toBe('ActionController')
+        expect(result.blocks[0].pageType).toBe('doc')
+        expect(result.blocks[0].section).toBeNull()
+    })
+
+
+    test('creates see block with section', () => {
+        const result = doc('Test', () => {
+            see('ActionController', {section: 'Propagation'})
+        })
+
+        expect(result.blocks[0].name).toBe('ActionController')
+        expect(result.blocks[0].section).toBe('Propagation')
+    })
+
+
+    test('creates see block with type', () => {
+        const result = doc('Test', () => {
+            see('ActionController', {type: 'api'})
+        })
+
+        expect(result.blocks[0].pageType).toBe('api')
+    })
+
+
+    test('creates see block with type and section', () => {
+        const result = doc('Test', () => {
+            see('ActionController', {type: 'api', section: 'methods'})
+        })
+
+        expect(result.blocks[0].pageType).toBe('api')
+        expect(result.blocks[0].section).toBe('methods')
+    })
+
+
+    test('throws when called outside doc', () => {
+        expect(() => {
+            see('ActionController')
+        }).toThrow('see() must be called inside doc()')
+    })
+
+
+    test('creates see block with category', () => {
+        const result = doc('Test', () => {
+            see('Application', {category: 'application'})
+        })
+
+        expect(result.blocks[0].name).toBe('Application')
+        expect(result.blocks[0].category).toBe('application')
+    })
+
+
+    test('creates see block with category and type', () => {
+        const result = doc('Test', () => {
+            see('GameLoop', {category: 'game', type: 'api'})
+        })
+
+        expect(result.blocks[0].name).toBe('GameLoop')
+        expect(result.blocks[0].category).toBe('game')
+        expect(result.blocks[0].pageType).toBe('api')
+    })
+
+
+    test('category defaults to null', () => {
+        const result = doc('Test', () => {
+            see('PerkyModule')
+        })
+
+        expect(result.blocks[0].category).toBeNull()
+    })
+
+})
+
+
+describe('disclaimer', () => {
+
+    test('creates disclaimer block', () => {
+        const result = doc('Test', () => {
+            disclaimer('This is a disclaimer')
+        })
+
+        expect(result.blocks[0].type).toBe('disclaimer')
+        expect(result.blocks[0].content).toBe('This is a disclaimer')
+    })
+
+
+    test('dedents content', () => {
+        const result = doc('Test', () => {
+            disclaimer(`
+                First line
+                Second line
+            `)
+        })
+
+        expect(result.blocks[0].content).toBe('First line\nSecond line')
+    })
+
+
+    test('throws when called outside doc', () => {
+        expect(() => {
+            disclaimer('Test')
+        }).toThrow('disclaimer() must be called inside doc()')
+    })
+
+})
+
+
 describe('applyContainerPreset', () => {
 
     test('applies interactive preset', () => {
@@ -270,6 +391,217 @@ describe('applyContainerPreset', () => {
         applyContainerPreset(element, 'unknown')
 
         expect(Object.keys(element.style)).toHaveLength(0)
+    })
+
+})
+
+
+describe('addSpacerIfNeeded', () => {
+
+    beforeEach(() => {
+        logger.history.length = 0
+        vi.clearAllMocks()
+    })
+
+
+    test('adds spacer when history has logs and no trailing spacer', () => {
+        logger.history.push({event: 'log'})
+
+        addSpacerIfNeeded()
+
+        expect(logger.spacer).toHaveBeenCalled()
+    })
+
+
+    test('does not add spacer when history is empty', () => {
+        addSpacerIfNeeded()
+
+        expect(logger.spacer).not.toHaveBeenCalled()
+    })
+
+
+    test('does not add spacer when last entry is already spacer', () => {
+        logger.history.push({event: 'log'}, {event: 'spacer'})
+
+        addSpacerIfNeeded()
+
+        expect(logger.spacer).not.toHaveBeenCalled()
+    })
+
+})
+
+
+describe('executeAction', () => {
+
+    beforeEach(() => {
+        logger.history.length = 0
+        vi.clearAllMocks()
+    })
+
+
+    test('executes block function', async () => {
+        const fn = vi.fn()
+        const block = {fn}
+
+        await executeAction(block)
+
+        expect(fn).toHaveBeenCalledWith({})
+    })
+
+
+    test('executes setup function before block', async () => {
+        const order = []
+        const setupFn = vi.fn(() => order.push('setup'))
+        const blockFn = vi.fn(() => order.push('block'))
+        const block = {fn: blockFn}
+        const sectionSetup = {fn: setupFn}
+
+        await executeAction(block, sectionSetup)
+
+        expect(order).toEqual(['setup', 'block'])
+    })
+
+
+    test('logs error on failure', async () => {
+        const block = {fn: () => {
+            throw new Error('Test error')
+        }}
+
+        await executeAction(block)
+
+        expect(logger.error).toHaveBeenCalledWith('Action error:', 'Test error')
+    })
+
+})
+
+
+describe('executeContainer', () => {
+
+    beforeEach(() => {
+        logger.history.length = 0
+        vi.clearAllMocks()
+    })
+
+
+    test('clears container before execution', async () => {
+        const containerEl = {
+            innerHTML: '<div>old</div>',
+            _currentApp: null,
+            style: {},
+            tabIndex: -1
+        }
+        const block = {fn: vi.fn()}
+
+        await executeContainer(block, containerEl)
+
+        expect(containerEl.innerHTML).toBe('')
+    })
+
+
+    test('disposes previous app', async () => {
+        const dispose = vi.fn()
+        const containerEl = {
+            innerHTML: '',
+            _currentApp: {dispose},
+            style: {},
+            tabIndex: -1
+        }
+        const block = {fn: vi.fn()}
+
+        await executeContainer(block, containerEl)
+
+        expect(dispose).toHaveBeenCalled()
+    })
+
+
+    test('applies preset when specified', async () => {
+        const containerEl = {
+            innerHTML: '',
+            _currentApp: null,
+            style: {},
+            tabIndex: -1
+        }
+        const block = {preset: 'interactive', fn: vi.fn()}
+
+        await executeContainer(block, containerEl)
+
+        expect(containerEl.tabIndex).toBe(0)
+    })
+
+
+    test('sets overflow when scrollable', async () => {
+        const containerEl = {
+            innerHTML: '',
+            _currentApp: null,
+            style: {},
+            tabIndex: -1
+        }
+        const block = {scrollable: true, fn: vi.fn()}
+
+        await executeContainer(block, containerEl)
+
+        expect(containerEl.style.overflow).toBe('auto')
+    })
+
+
+    test('logs error on failure', async () => {
+        const containerEl = {
+            innerHTML: '',
+            _currentApp: null,
+            style: {},
+            tabIndex: -1
+        }
+        const block = {fn: () => {
+            throw new Error('Container error')
+        }}
+
+        await executeContainer(block, containerEl)
+
+        expect(logger.error).toHaveBeenCalledWith('Container error:', 'Container error')
+    })
+
+})
+
+
+describe('renderAction', () => {
+
+    test('creates action block wrapper', () => {
+        const block = {title: 'Run Test', source: 'console.log("test")'}
+
+        const el = renderAction(block)
+
+        expect(el.className).toBe('doc-action-block')
+    })
+
+
+    test('creates perky-code element with title', () => {
+        const block = {title: 'Example', source: 'const x = 1'}
+
+        const el = renderAction(block)
+        const codeEl = el.querySelector('perky-code')
+
+        expect(codeEl.getAttribute('title')).toBe('Example')
+    })
+
+
+    test('uses extracted source when provided', () => {
+        const block = {title: 'Test', source: 'original'}
+
+        const el = renderAction(block, null, 'extracted')
+        const codeEl = el.querySelector('perky-code')
+
+        expect(codeEl.code).toBe('extracted')
+    })
+
+
+    test('creates run button', () => {
+        const block = {title: 'Test', source: ''}
+
+        const el = renderAction(block)
+        const button = el.querySelector('.doc-action-btn')
+
+        expect(button).toBeTruthy()
+        expect(button.textContent).toContain('Run')
     })
 
 })

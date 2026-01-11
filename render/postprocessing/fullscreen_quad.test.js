@@ -1,33 +1,6 @@
-import {describe, test, expect, beforeEach, vi} from 'vitest'
+import {describe, test, expect, beforeEach} from 'vitest'
 import FullscreenQuad from './fullscreen_quad.js'
-
-
-function createMockGL () {
-    return {
-        ARRAY_BUFFER: 0x8892,
-        STATIC_DRAW: 0x88E4,
-        FLOAT: 0x1406,
-        TRIANGLE_STRIP: 0x0005,
-
-        createBuffer: vi.fn(() => ({id: Math.random()})),
-        deleteBuffer: vi.fn(),
-        bindBuffer: vi.fn(),
-        bufferData: vi.fn(),
-        enableVertexAttribArray: vi.fn(),
-        vertexAttribPointer: vi.fn(),
-        drawArrays: vi.fn()
-    }
-}
-
-
-function createMockProgram (hasTexCoord = true) {
-    return {
-        attributes: {
-            aPosition: 0,
-            aTexCoord: hasTexCoord ? 1 : undefined
-        }
-    }
-}
+import {createMockGLWithSpies, createMockProgram} from '../test_helpers.js'
 
 
 describe(FullscreenQuad, () => {
@@ -36,7 +9,7 @@ describe(FullscreenQuad, () => {
     let quad
 
     beforeEach(() => {
-        gl = createMockGL()
+        gl = createMockGLWithSpies()
         quad = new FullscreenQuad(gl)
     })
 
@@ -61,7 +34,7 @@ describe(FullscreenQuad, () => {
 
 
     test('draw without aTexCoord attribute', () => {
-        const program = createMockProgram(false)
+        const program = createMockProgram({hasTexCoord: false})
         quad.draw(gl, program)
 
         expect(gl.enableVertexAttribArray).toHaveBeenCalledWith(0)

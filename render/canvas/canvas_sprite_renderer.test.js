@@ -1,7 +1,26 @@
 import {describe, test, expect, beforeEach} from 'vitest'
 import CanvasSpriteRenderer from './canvas_sprite_renderer.js'
 import CanvasObjectRenderer from './canvas_object_renderer.js'
-import Sprite2D from '../sprite_2d.js'
+import Sprite from '../sprite.js'
+
+
+function createMockImage (width = 256, height = 256) {
+    return {
+        width,
+        height,
+        naturalWidth: width,
+        naturalHeight: height,
+        complete: true
+    }
+}
+
+
+function createMockFrame (frameData) {
+    return {
+        frame: {x: frameData.x, y: frameData.y, w: frameData.w, h: frameData.h},
+        image: frameData.image
+    }
+}
 
 
 describe('CanvasSpriteRenderer', () => {
@@ -26,27 +45,20 @@ describe('CanvasSpriteRenderer', () => {
     })
 
 
-    test('handles returns Sprite2D', () => {
-        expect(CanvasSpriteRenderer.handles).toEqual([Sprite2D])
+    test('handles returns Sprite', () => {
+        expect(CanvasSpriteRenderer.handles).toEqual([Sprite])
     })
 
 
     describe('render', () => {
 
-        test('does not draw without currentFrame', () => {
+        test('does not draw without region', () => {
             let drawn = false
             ctx.drawImage = () => {
                 drawn = true
             }
 
-            const sprite = {
-                image: null,
-                currentFrame: null,
-                anchorX: 0,
-                anchorY: 0,
-                width: null,
-                height: null
-            }
+            const sprite = new Sprite()
 
             renderer.render(sprite, ctx)
 
@@ -60,14 +72,8 @@ describe('CanvasSpriteRenderer', () => {
                 drawn = true
             }
 
-            const sprite = {
-                image: {complete: false, naturalWidth: 100},
-                currentFrame: {frame: {x: 0, y: 0, w: 32, h: 32}},
-                anchorX: 0,
-                anchorY: 0,
-                width: null,
-                height: null
-            }
+            const img = {complete: false, naturalWidth: 100, width: 100, height: 100}
+            const sprite = new Sprite({frame: createMockFrame({x: 0, y: 0, w: 32, h: 32, image: img})})
 
             renderer.render(sprite, ctx)
 
@@ -81,14 +87,8 @@ describe('CanvasSpriteRenderer', () => {
                 drawn = true
             }
 
-            const sprite = {
-                image: {complete: true, naturalWidth: 0},
-                currentFrame: {frame: {x: 0, y: 0, w: 32, h: 32}},
-                anchorX: 0,
-                anchorY: 0,
-                width: null,
-                height: null
-            }
+            const img = {complete: true, naturalWidth: 0, width: 100, height: 100}
+            const sprite = new Sprite({frame: createMockFrame({x: 0, y: 0, w: 32, h: 32, image: img})})
 
             renderer.render(sprite, ctx)
 
@@ -96,24 +96,14 @@ describe('CanvasSpriteRenderer', () => {
         })
 
 
-        test('draws sprite from currentFrame', () => {
+        test('draws sprite from region', () => {
             let drawArgs = null
             ctx.drawImage = (...args) => {
                 drawArgs = args
             }
 
-            const img = {complete: true, naturalWidth: 256}
-            const sprite = {
-                image: img,
-                currentFrame: {
-                    frame: {x: 32, y: 64, w: 32, h: 32},
-                    image: img
-                },
-                anchorX: 0,
-                anchorY: 0,
-                width: null,
-                height: null
-            }
+            const img = createMockImage()
+            const sprite = new Sprite({frame: createMockFrame({x: 32, y: 64, w: 32, h: 32, image: img})})
 
             renderer.render(sprite, ctx)
 
@@ -125,49 +115,17 @@ describe('CanvasSpriteRenderer', () => {
         })
 
 
-        test('uses currentFrame.image when sprite.image is null', () => {
-            let drawArgs = null
-            ctx.drawImage = (...args) => {
-                drawArgs = args
-            }
-
-            const frameImg = {complete: true, naturalWidth: 256}
-            const sprite = {
-                image: null,
-                currentFrame: {
-                    frame: {x: 0, y: 0, w: 32, h: 32},
-                    image: frameImg
-                },
-                anchorX: 0,
-                anchorY: 0,
-                width: null,
-                height: null
-            }
-
-            renderer.render(sprite, ctx)
-
-            expect(drawArgs[0]).toBe(frameImg)
-        })
-
-
         test('scales by width when width is set', () => {
             let drawArgs = null
             ctx.drawImage = (...args) => {
                 drawArgs = args
             }
 
-            const img = {complete: true, naturalWidth: 256}
-            const sprite = {
-                image: img,
-                currentFrame: {
-                    frame: {x: 0, y: 0, w: 32, h: 64},
-                    image: img
-                },
-                anchorX: 0,
-                anchorY: 0,
-                width: 64,
-                height: null
-            }
+            const img = createMockImage()
+            const sprite = new Sprite({
+                frame: createMockFrame({x: 0, y: 0, w: 32, h: 64, image: img}),
+                width: 64
+            })
 
             renderer.render(sprite, ctx)
 
@@ -182,18 +140,11 @@ describe('CanvasSpriteRenderer', () => {
                 drawArgs = args
             }
 
-            const img = {complete: true, naturalWidth: 256}
-            const sprite = {
-                image: img,
-                currentFrame: {
-                    frame: {x: 0, y: 0, w: 64, h: 32},
-                    image: img
-                },
-                anchorX: 0,
-                anchorY: 0,
-                width: null,
+            const img = createMockImage()
+            const sprite = new Sprite({
+                frame: createMockFrame({x: 0, y: 0, w: 64, h: 32, image: img}),
                 height: 64
-            }
+            })
 
             renderer.render(sprite, ctx)
 
@@ -208,18 +159,12 @@ describe('CanvasSpriteRenderer', () => {
                 drawArgs = args
             }
 
-            const img = {complete: true, naturalWidth: 256}
-            const sprite = {
-                image: img,
-                currentFrame: {
-                    frame: {x: 0, y: 0, w: 100, h: 100},
-                    image: img
-                },
+            const img = createMockImage()
+            const sprite = new Sprite({
+                frame: createMockFrame({x: 0, y: 0, w: 100, h: 100, image: img}),
                 anchorX: 0.5,
-                anchorY: 0.5,
-                width: null,
-                height: null
-            }
+                anchorY: 0.5
+            })
 
             renderer.render(sprite, ctx)
 
@@ -237,18 +182,8 @@ describe('CanvasSpriteRenderer', () => {
                 restored = true
             }
 
-            const img = {complete: true, naturalWidth: 256}
-            const sprite = {
-                image: img,
-                currentFrame: {
-                    frame: {x: 0, y: 0, w: 32, h: 32},
-                    image: img
-                },
-                anchorX: 0,
-                anchorY: 0,
-                width: null,
-                height: null
-            }
+            const img = createMockImage()
+            const sprite = new Sprite({frame: createMockFrame({x: 0, y: 0, w: 32, h: 32, image: img})})
 
             renderer.render(sprite, ctx)
 
@@ -263,18 +198,8 @@ describe('CanvasSpriteRenderer', () => {
                 scaleArgs = args
             }
 
-            const img = {complete: true, naturalWidth: 256}
-            const sprite = {
-                image: img,
-                currentFrame: {
-                    frame: {x: 0, y: 0, w: 32, h: 32},
-                    image: img
-                },
-                anchorX: 0,
-                anchorY: 0,
-                width: null,
-                height: null
-            }
+            const img = createMockImage()
+            const sprite = new Sprite({frame: createMockFrame({x: 0, y: 0, w: 32, h: 32, image: img})})
 
             renderer.render(sprite, ctx)
 

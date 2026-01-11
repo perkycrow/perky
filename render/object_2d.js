@@ -1,8 +1,8 @@
-import Transform2D from './transform_2d.js'
+import Transform from './transform.js'
 import SpriteEffectStack from './sprite_effects/sprite_effect_stack.js'
 
 
-export default class Object2D extends Transform2D {
+export default class Object2D extends Transform {
 
     #tint = null
     #effects = null

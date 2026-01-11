@@ -24,29 +24,67 @@ function loadOrderConfig () {
 }
 
 
+function getCategoryRootAndFull (category) {
+    const parts = category.split('/')
+    const root = parts[0]
+    return {root, full: category}
+}
+
+
+function getCategoryPosition (category, categoryOrder) {
+    const cat = getCategoryRootAndFull(category)
+    let index = categoryOrder.indexOf(cat.full)
+    if (index === -1) {
+        index = categoryOrder.indexOf(cat.root)
+    }
+    return index === -1 ? 999 : index
+}
+
+
+function compareCategoriesWithSameRoot (categoryA, categoryB) {
+    const aCat = getCategoryRootAndFull(categoryA)
+    const bCat = getCategoryRootAndFull(categoryB)
+
+    if (aCat.root === aCat.full && bCat.root !== bCat.full && aCat.root === bCat.root) {
+        return -1
+    }
+    if (bCat.root === bCat.full && aCat.root !== aCat.full && aCat.root === bCat.root) {
+        return 1
+    }
+
+    return categoryA.localeCompare(categoryB)
+}
+
+
+function getItemPosition (itemId, category, itemOrder) {
+    const categoryItems = itemOrder[category] || []
+    const index = categoryItems.indexOf(itemId)
+    return index === -1 ? 999 : index
+}
+
+
 function sortWithOrder (items, orderConfig) {
     const categoryOrder = orderConfig.categories || []
     const itemOrder = orderConfig.items || {}
 
     return items.sort((a, b) => {
-        const catIndexA = categoryOrder.indexOf(a.category)
-        const catIndexB = categoryOrder.indexOf(b.category)
-        const catPosA = catIndexA === -1 ? 999 : catIndexA
-        const catPosB = catIndexB === -1 ? 999 : catIndexB
+        const catPosA = getCategoryPosition(a.category, categoryOrder)
+        const catPosB = getCategoryPosition(b.category, categoryOrder)
 
         if (catPosA !== catPosB) {
             return catPosA - catPosB
         }
 
         if (a.category !== b.category) {
-            return a.category.localeCompare(b.category)
+            return compareCategoriesWithSameRoot(a.category, b.category)
         }
 
-        const categoryItems = itemOrder[a.category] || []
-        const itemIndexA = categoryItems.indexOf(a.id)
-        const itemIndexB = categoryItems.indexOf(b.id)
-        const itemPosA = itemIndexA === -1 ? 999 : itemIndexA
-        const itemPosB = itemIndexB === -1 ? 999 : itemIndexB
+        if (a.featured !== b.featured) {
+            return a.featured ? -1 : 1
+        }
+
+        const itemPosA = getItemPosition(a.id, a.category, itemOrder)
+        const itemPosB = getItemPosition(b.id, b.category, itemOrder)
 
         if (itemPosA !== itemPosB) {
             return itemPosA - itemPosB
@@ -65,28 +103,57 @@ function toPascalCase (str) {
 }
 
 
+function extractDocMetadata (filePath) {
+    try {
+        const source = fs.readFileSync(filePath, 'utf-8')
+
+        const titleMatch = source.match(/export\s+default\s+doc\s*\(\s*['"`]([^'"`]+)['"`]/)
+        const title = titleMatch ? titleMatch[1] : null
+
+        const optionsMatch = source.match(/export\s+default\s+doc\s*\(\s*['"`][^'"`]+['"`]\s*,\s*(\{[^}]+\})/)
+        let featured = false
+        let advanced = false
+
+        if (optionsMatch) {
+            const optionsStr = optionsMatch[1]
+            featured = /featured\s*:\s*true/.test(optionsStr)
+            advanced = /advanced\s*:\s*true/.test(optionsStr)
+        }
+
+        return {title, featured, advanced}
+    } catch {
+        return {title: null, featured: false, advanced: false}
+    }
+}
+
+
 async function discoverDocs () {
     const files = await glob('**/*.doc.js', {
         cwd: rootDir,
-        ignore: ['node_modules/**', 'dist/**', 'doc/**']
+        ignore: ['node_modules/**', 'dist/**']
     })
+
+    const orderConfig = loadOrderConfig()
 
     const docs = files.map(file => {
         const relativePath = '/' + file
         const basename = path.basename(file, '.doc.js')
         const directory = path.dirname(file)
         const category = directory || 'core'
+        const absolutePath = path.join(rootDir, file)
+        const metadata = extractDocMetadata(absolutePath)
 
         return {
             id: basename,
             file: relativePath,
             category,
-            title: toPascalCase(basename),
-            tags: [category, basename]
+            title: metadata.title || toPascalCase(basename),
+            tags: [category, basename],
+            featured: metadata.featured,
+            advanced: metadata.advanced
         }
     })
 
-    const orderConfig = loadOrderConfig()
     sortWithOrder(docs, orderConfig.docs || {})
 
     return {docs}
@@ -233,6 +300,54 @@ function buildTestsData (docs) {
 }
 
 
+function generateIndexHtml () {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perky Docs</title>
+    <link rel="stylesheet" href="doc_index.css">
+</head>
+<body>
+    <div class="docs-layout">
+        <aside class="docs-sidebar">
+            <div class="sidebar-header">
+                <h1>perky docs</h1>
+                <div class="sidebar-search">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input type="text" class="search-input" placeholder="Search...">
+                </div>
+                <div class="nav-switcher" id="nav-switcher"></div>
+                <label class="advanced-toggle" id="advanced-toggle">
+                    <input type="checkbox" class="advanced-toggle-input">
+                    <span class="advanced-toggle-track">
+                        <span class="advanced-toggle-thumb"></span>
+                    </span>
+                    <span class="advanced-toggle-label">Show advanced</span>
+                </label>
+            </div>
+            <nav class="sidebar-nav" id="docs-nav"></nav>
+        </aside>
+
+        <main class="docs-main">
+            <div class="docs-content" id="doc-container"></div>
+            <div class="docs-logger">
+                <perky-logger id="main-logger" max-entries="30"></perky-logger>
+            </div>
+        </main>
+    </div>
+
+    <script type="module" src="doc_viewer.js"></script>
+</body>
+</html>
+`
+}
+
+
 async function main () {
     const result = await discoverDocs()
     const guides = await discoverGuides()
@@ -276,6 +391,11 @@ async function main () {
 
     const guideSourcesCount = buildGuideSources(guides)
     logger.log(`Extracted sources for ${guideSourcesCount} guide file(s)`)
+
+    const indexHtml = generateIndexHtml()
+    const indexPath = path.join(__dirname, 'index.html')
+    fs.writeFileSync(indexPath, indexHtml)
+    logger.log('\nGenerated index.html')
 }
 
 

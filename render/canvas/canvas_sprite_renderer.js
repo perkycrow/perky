@@ -1,48 +1,40 @@
 import CanvasObjectRenderer from './canvas_object_renderer.js'
-import Sprite2D from '../sprite_2d.js'
+import Sprite from '../sprite.js'
 
 
 export default class CanvasSpriteRenderer extends CanvasObjectRenderer {
 
     static get handles () {
-        return [Sprite2D]
+        return [Sprite]
     }
 
 
-    render (sprite, ctx) { // eslint-disable-line local/class-methods-use-this, local/nested-complexity -- clean
-        const img = sprite.image || (sprite.currentFrame ? sprite.currentFrame.image : null)
+    render (sprite, ctx) { // eslint-disable-line local/class-methods-use-this -- clean
+        const region = sprite.region
 
-        if (img && img.complete && img.naturalWidth > 0 && sprite.currentFrame) {
-            const {x, y, w, h} = sprite.currentFrame.frame
-
-            let renderW = w
-            let renderH = h
-
-            if (sprite.width !== null) {
-                renderW = sprite.width
-                renderH = (h / w) * renderW
-            } else if (sprite.height !== null) {
-                renderH = sprite.height
-                renderW = (w / h) * renderH
-            }
-
-            const offsetX = -renderW * sprite.anchorX
-            const offsetY = -renderH * sprite.anchorY
-
-            ctx.save()
-
-            ctx.scale(1, -1)
-
-            ctx.drawImage(
-                img,
-                x, y, w, h,
-                offsetX,
-                -offsetY - renderH,
-                renderW, renderH
-            )
-
-            ctx.restore()
+        if (!region || !region.image) {
+            return
         }
+
+        const img = region.image
+
+        if (!img.complete || img.naturalWidth === 0) {
+            return
+        }
+
+        const {x, y, width: w, height: h} = region.bounds
+        const bounds = sprite.getBounds()
+
+        ctx.save()
+        ctx.scale(1, -1)
+        ctx.drawImage(
+            img,
+            x, y, w, h,
+            bounds.minX,
+            -bounds.maxY,
+            bounds.width, bounds.height
+        )
+        ctx.restore()
     }
 
 }

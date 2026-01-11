@@ -1,12 +1,14 @@
 import './doc_page.js'
 import '../editor/perky_logger.js'
 import logger from '../core/logger.js'
-import {toHumanCase} from '../core/utils.js'
+import {getTabUrl, extractBaseName} from './utils/paths.js'
 
 
-const docModules = import.meta.glob('../**/*.doc.js')
+const docModules = {
+    ...import.meta.glob('../**/*.doc.js'),
+    ...import.meta.glob('./*.doc.js')
+}
 const guideModules = import.meta.glob('./guides/**/*.guide.js')
-const isProduction = import.meta.env.PROD
 
 
 class DocViewer {
@@ -15,90 +17,68 @@ class DocViewer {
         this.container = document.getElementById('doc-container')
         this.nav = document.getElementById('docs-nav')
         this.searchInput = document.querySelector('.sidebar-search .search-input')
+        this.advancedToggle = document.getElementById('advanced-toggle')
+        this.advancedCheckbox = this.advancedToggle?.querySelector('.advanced-toggle-input')
         this.docs = []
         this.guides = []
         this.apiData = {}
         this.testsData = {}
         this.currentDoc = null
         this.currentSection = 'docs'
+        this.showAdvanced = false
     }
 
 
     async init () {
-        await this.loadDocs()
-        await this.loadApiData()
-        await this.loadTestsData()
-        this.buildNav()
+        await this.loadMetadata()
+        this.setupNavigation()
         this.setupSearch()
         this.route()
     }
 
 
-    async loadDocs () {
+    async loadMetadata () {
         try {
-            const response = await fetch('./docs.json')
-            const data = await response.json()
-            this.docs = data.docs
-            this.guides = data.guides || []
+            const [docsRes, apiRes, testsRes] = await Promise.all([
+                fetch('./docs.json'),
+                fetch('./api.json'),
+                fetch('./tests.json')
+            ])
+            const docsData = await docsRes.json()
+            this.docs = docsData.docs
+            this.guides = docsData.guides || []
+            this.apiData = await apiRes.json()
+            this.testsData = await testsRes.json()
         } catch (error) {
-            logger.error('Failed to load docs.json:', error)
-            this.docs = []
-            this.guides = []
+            logger.error('Failed to load metadata:', error)
         }
     }
 
 
-    async loadApiData () {
-        try {
-            const response = await fetch('./api.json')
-            this.apiData = await response.json()
-        } catch (error) {
-            logger.error('Failed to load api.json:', error)
-            this.apiData = {}
-        }
+    setupNavigation () {
+        this.renderNav()
+        renderSwitcher()
+        this.setupSwitcher()
+        this.setupNavClicks()
+        this.setupAdvancedToggle()
     }
 
 
-    async loadTestsData () {
-        try {
-            const response = await fetch('./tests.json')
-            this.testsData = await response.json()
-        } catch (error) {
-            logger.error('Failed to load tests.json:', error)
-            this.testsData = {}
-        }
-    }
-
-
-    buildNav () {
+    renderNav () {
         this.nav.innerHTML = ''
 
-        const switcherContainer = document.getElementById('nav-switcher')
-        if (switcherContainer) {
-            switcherContainer.innerHTML = ''
-
-            const docsBtn = document.createElement('button')
-            docsBtn.className = 'nav-switch active'
-            docsBtn.dataset.section = 'docs'
-            docsBtn.textContent = 'Docs'
-
-            const guidesBtn = document.createElement('button')
-            guidesBtn.className = 'nav-switch'
-            guidesBtn.dataset.section = 'guides'
-            guidesBtn.textContent = 'Guides'
-
-            switcherContainer.appendChild(docsBtn)
-            switcherContainer.appendChild(guidesBtn)
-        }
-
-        const docsSection = buildNavSectionElement(this.docs, 'docs', 'doc')
-        const guidesSection = buildNavSectionElement(this.guides, 'guides', 'guide')
-        guidesSection.style.display = 'none'
-
+        const docsSection = document.createElement('div')
+        docsSection.className = 'nav-section'
+        docsSection.dataset.section = 'docs'
+        renderNavItems(docsSection, this.docs, 'doc')
         this.nav.appendChild(docsSection)
-        this.nav.appendChild(guidesSection)
 
-        this.setupSwitcher()
+        const guidesSection = document.createElement('div')
+        guidesSection.className = 'nav-section'
+        guidesSection.dataset.section = 'guides'
+        guidesSection.style.display = 'none'
+        renderNavItems(guidesSection, this.guides, 'guide')
+        this.nav.appendChild(guidesSection)
     }
 
 
@@ -107,14 +87,61 @@ class DocViewer {
         if (!switcherContainer) {
             return
         }
-        const buttons = switcherContainer.querySelectorAll('.nav-switch')
 
-        for (const btn of buttons) {
+        for (const btn of switcherContainer.querySelectorAll('.nav-switch')) {
             btn.addEventListener('click', () => {
-                const section = btn.dataset.section
-                this.switchSection(section)
+                this.switchSection(btn.dataset.section)
             })
         }
+    }
+
+
+    setupNavClicks () {
+        this.nav.addEventListener('click', (e) => {
+            const item = e.target.closest('.nav-item')
+            if (!item) {
+                return
+            }
+
+            closeMobileMenu()
+        })
+    }
+
+
+    setupAdvancedToggle () {
+        if (!this.advancedCheckbox) {
+            return
+        }
+
+        const stored = localStorage.getItem('perky-docs-show-advanced')
+        if (stored === 'true') {
+            this.showAdvanced = true
+            this.advancedCheckbox.checked = true
+        }
+
+        this.advancedCheckbox.addEventListener('change', () => {
+            this.showAdvanced = this.advancedCheckbox.checked
+            localStorage.setItem('perky-docs-show-advanced', this.showAdvanced)
+            this.#applyAdvancedFilter()
+        })
+
+        this.#applyAdvancedFilter()
+    }
+
+
+    #applyAdvancedFilter () {
+        const activeSection = this.nav.querySelector(`.nav-section[data-section="${this.currentSection}"]`)
+        if (!activeSection) {
+            return
+        }
+
+        for (const item of activeSection.querySelectorAll('.nav-item.advanced')) {
+            const isSearchActive = this.searchInput.value.trim().length > 0
+            const shouldShow = this.showAdvanced || isSearchActive
+            item.classList.toggle('hidden-advanced', !shouldShow)
+        }
+
+        filterNavCategories(activeSection.querySelectorAll('.nav-category'))
     }
 
 
@@ -123,43 +150,46 @@ class DocViewer {
 
         const switcherContainer = document.getElementById('nav-switcher')
         if (switcherContainer) {
-            const buttons = switcherContainer.querySelectorAll('.nav-switch')
-            for (const btn of buttons) {
+            for (const btn of switcherContainer.querySelectorAll('.nav-switch')) {
                 btn.classList.toggle('active', btn.dataset.section === section)
             }
         }
 
-        const sections = this.nav.querySelectorAll('.nav-section')
-        for (const sec of sections) {
+        for (const sec of this.nav.querySelectorAll('.nav-section')) {
             sec.style.display = sec.dataset.section === section ? '' : 'none'
         }
+
+        this.#reapplySearch()
+    }
+
+
+    #reapplySearch () {
+        const search = this.searchInput.value.toLowerCase().trim()
+        const activeSection = this.nav.querySelector(`.nav-section[data-section="${this.currentSection}"]`)
+        if (!activeSection) {
+            return
+        }
+
+        const isSearchActive = search.length > 0
+        if (this.advancedToggle) {
+            this.advancedToggle.classList.toggle('disabled', isSearchActive)
+        }
+
+        this.#applyAdvancedFilter()
+        filterNavItems(activeSection.querySelectorAll('.nav-item:not(.hidden-advanced)'), search)
+        filterNavCategories(activeSection.querySelectorAll('.nav-category'))
     }
 
 
     setupSearch () {
-        this.searchInput.addEventListener('input', (e) => {
-            const search = e.target.value.toLowerCase().trim()
-            const items = this.nav.querySelectorAll('.nav-item')
-            const categories = this.nav.querySelectorAll('.nav-category')
-
-            filterNavItems(items, search)
-            filterNavCategories(categories, search)
+        this.searchInput.addEventListener('input', () => {
+            this.#reapplySearch()
         })
     }
 
 
     route () {
-        const params = new URLSearchParams(window.location.search)
-        let docPath = params.get('doc')
-        let guidePath = params.get('guide')
-        let tab = params.get('tab') || 'doc'
-
-        if (!docPath && !guidePath) {
-            const fromFilename = this.getPathFromFilename()
-            docPath = fromFilename.docPath
-            guidePath = fromFilename.guidePath
-            tab = fromFilename.tab
-        }
+        const {docPath, guidePath, tab} = this.getPathFromFilename()
 
         if (guidePath) {
             this.switchSection('guides')
@@ -191,7 +221,7 @@ class DocViewer {
 
         const isApiPage = filename.endsWith('_api.html')
         const isTestPage = filename.endsWith('_test.html')
-        const baseName = filename.replace('_api.html', '').replace('_test.html', '').replace('.html', '')
+        const baseName = extractBaseName(filename)
 
         const doc = this.docs.find(d => {
             const docBaseName = d.file.slice(1).replace(/\//g, '_').replace('.doc.js', '')
@@ -211,10 +241,9 @@ class DocViewer {
 
 
     updateActiveNav (docPath) {
-        const items = this.nav.querySelectorAll('.nav-item')
         let activeItem = null
 
-        for (const item of items) {
+        for (const item of this.nav.querySelectorAll('.nav-item')) {
             const isActive = item.dataset.file === docPath
             item.classList.toggle('active', isActive)
             if (isActive) {
@@ -243,8 +272,13 @@ class DocViewer {
         logger.clear()
 
         try {
-            const modulePath = '..' + docPath
-            const loader = docModules[modulePath]
+            let modulePath = '..' + docPath
+            let loader = docModules[modulePath]
+
+            if (!loader && docPath.startsWith('/doc/')) {
+                modulePath = '.' + docPath.slice(4)
+                loader = docModules[modulePath]
+            }
 
             if (!loader) {
                 throw new Error(`Doc module not found: ${docPath}`)
@@ -274,8 +308,11 @@ class DocViewer {
             }
 
             this.container.appendChild(docPage)
-
             this.currentDoc = docPath
+
+            requestAnimationFrame(() => {
+                updateMobileTabs(docPage)
+            })
         } catch (error) {
             logger.error('Failed to load doc:', error)
             this.container.innerHTML = `
@@ -284,6 +321,7 @@ class DocViewer {
                     <p>${error.message}</p>
                 </div>
             `
+            hideMobileTabs()
         }
     }
 
@@ -316,8 +354,8 @@ class DocViewer {
             }
 
             this.container.appendChild(docPage)
-
             this.currentDoc = guidePath
+            hideMobileTabs()
         } catch (error) {
             logger.error('Failed to load guide:', error)
             this.container.innerHTML = `
@@ -326,9 +364,70 @@ class DocViewer {
                     <p>${error.message}</p>
                 </div>
             `
+            hideMobileTabs()
         }
     }
 
+}
+
+
+function renderNavItems (container, items, type) {
+    const byCategory = {}
+
+    for (const item of items) {
+        if (!byCategory[item.category]) {
+            byCategory[item.category] = []
+        }
+        byCategory[item.category].push(item)
+    }
+
+    for (const [category, categoryItems] of Object.entries(byCategory)) {
+        const allAdvanced = categoryItems.every(item => item.advanced)
+        const categoryEl = document.createElement('div')
+        categoryEl.className = allAdvanced ? 'nav-category hidden' : 'nav-category'
+        categoryEl.textContent = category
+        container.appendChild(categoryEl)
+
+        for (const item of categoryItems) {
+            const link = document.createElement('a')
+            const classes = ['nav-item']
+            if (item.featured) {
+                classes.push('featured')
+            }
+            if (item.advanced) {
+                classes.push('advanced', 'hidden-advanced')
+            }
+            link.className = classes.join(' ')
+            link.href = type === 'guide'
+                ? `guide_${item.id}.html`
+                : item.file.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
+            link.dataset.file = item.file
+            link.dataset.title = item.title.toLowerCase()
+            link.dataset.category = item.category
+            link.textContent = item.title
+            container.appendChild(link)
+        }
+    }
+}
+
+
+function renderSwitcher () {
+    const switcherContainer = document.getElementById('nav-switcher')
+    if (!switcherContainer || switcherContainer.children.length > 0) {
+        return
+    }
+
+    const docsBtn = document.createElement('button')
+    docsBtn.className = 'nav-switch active'
+    docsBtn.dataset.section = 'docs'
+    docsBtn.textContent = 'Docs'
+    switcherContainer.appendChild(docsBtn)
+
+    const guidesBtn = document.createElement('button')
+    guidesBtn.className = 'nav-switch'
+    guidesBtn.dataset.section = 'guides'
+    guidesBtn.textContent = 'Guides'
+    switcherContainer.appendChild(guidesBtn)
 }
 
 
@@ -353,60 +452,6 @@ async function loadGuideSourcesFor (guideId) {
 }
 
 
-function getDocUrl (docFile) {
-    if (isProduction) {
-        const htmlFile = docFile.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
-        return htmlFile
-    }
-    return `?doc=${encodeURIComponent(docFile)}`
-}
-
-
-function getGuideUrl (guideId) {
-    if (isProduction) {
-        return `guide_${guideId}.html`
-    }
-    return `?guide=${encodeURIComponent('/doc/guides/' + guideId + '.guide.js')}`
-}
-
-
-function buildNavSectionElement (items, sectionName, type) {
-    const section = document.createElement('div')
-    section.className = 'nav-section'
-    section.dataset.section = sectionName
-
-    const byCategory = {}
-    for (const item of items) {
-        if (!byCategory[item.category]) {
-            byCategory[item.category] = []
-        }
-        byCategory[item.category].push(item)
-    }
-
-    for (const [category, categoryItems] of Object.entries(byCategory)) {
-        const categoryEl = document.createElement('div')
-        categoryEl.className = 'nav-category'
-        categoryEl.textContent = category
-        section.appendChild(categoryEl)
-
-        for (const item of categoryItems) {
-            const link = document.createElement('a')
-            link.className = 'nav-item'
-            link.textContent = type === 'guide' ? toHumanCase(item.title) : item.title
-            link.dataset.file = item.file
-            link.dataset.title = item.title.toLowerCase()
-            link.dataset.category = item.category
-            link.dataset.type = type
-            link.href = type === 'guide' ? getGuideUrl(item.id) : getDocUrl(item.file)
-
-            section.appendChild(link)
-        }
-    }
-
-    return section
-}
-
-
 function filterNavItems (items, search) {
     for (const item of items) {
         const matches = !search ||
@@ -417,31 +462,120 @@ function filterNavItems (items, search) {
 }
 
 
-function filterNavCategories (categories, search) {
+function filterNavCategories (categories) {
     for (const category of categories) {
-        const categoryName = category.textContent.toLowerCase()
         const hasVisibleItems = categoryHasVisibleItems(category)
-
-        category.classList.toggle('hidden', !hasVisibleItems && search && !categoryName.includes(search))
+        category.classList.toggle('hidden', !hasVisibleItems)
     }
 }
 
 
 function categoryHasVisibleItems (category) {
-    let nextEl = category.nextElementSibling
+    const parent = category.parentElement
 
-    while (nextEl && !nextEl.classList.contains('nav-category')) {
-        if (nextEl.classList.contains('nav-item') && !nextEl.classList.contains('hidden')) {
+    for (let i = Array.from(parent.children).indexOf(category) + 1; i < parent.children.length; i++) {
+        const child = parent.children[i]
+
+        if (child.classList.contains('nav-category')) {
+            break
+        }
+
+        if (child.classList.contains('nav-item') &&
+            !child.classList.contains('hidden') &&
+            !child.classList.contains('hidden-advanced')) {
             return true
         }
-        nextEl = nextEl.nextElementSibling
     }
 
     return false
 }
 
 
+function setupMobileMenu () {
+    const toggle = document.getElementById('mobile-toggle')
+    const overlay = document.getElementById('mobile-overlay')
+    const sidebar = document.getElementById('docs-sidebar')
+
+    if (!toggle || !overlay || !sidebar) {
+        return
+    }
+
+    toggle.addEventListener('click', () => {
+        const isOpen = sidebar.classList.contains('open')
+        if (isOpen) {
+            closeMobileMenu()
+        } else {
+            sidebar.classList.add('open')
+            overlay.classList.add('open')
+            toggle.classList.add('hidden')
+        }
+    })
+
+    overlay.addEventListener('click', closeMobileMenu)
+}
+
+
+function closeMobileMenu () {
+    const toggle = document.getElementById('mobile-toggle')
+    const overlay = document.getElementById('mobile-overlay')
+    const sidebar = document.getElementById('docs-sidebar')
+
+    if (sidebar) {
+        sidebar.classList.remove('open')
+    }
+    if (overlay) {
+        overlay.classList.remove('open')
+    }
+    if (toggle) {
+        toggle.classList.remove('hidden')
+    }
+}
+
+
+function getMobileTabsContainer () {
+    let container = document.getElementById('mobile-tabs')
+    if (!container) {
+        container = document.createElement('div')
+        container.id = 'mobile-tabs'
+        container.className = 'mobile-tabs'
+        document.body.appendChild(container)
+    }
+    return container
+}
+
+
+function updateMobileTabs (docPage) {
+    const container = getMobileTabsContainer()
+    const tabs = docPage.availableTabs
+
+    if (tabs.length <= 1) {
+        container.style.display = 'none'
+        return
+    }
+
+    container.innerHTML = ''
+    container.style.display = ''
+
+    for (const tab of tabs) {
+        const link = document.createElement('a')
+        link.textContent = tab.charAt(0).toUpperCase() + tab.slice(1)
+        link.className = docPage.activeTab === tab ? 'active' : ''
+        link.href = getTabUrl(tab)
+        container.appendChild(link)
+    }
+}
+
+
+function hideMobileTabs () {
+    const container = document.getElementById('mobile-tabs')
+    if (container) {
+        container.style.display = 'none'
+    }
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const viewer = new DocViewer()
     viewer.init()
+    setupMobileMenu()
 })

@@ -10,6 +10,7 @@ export default class Auditor {
     static $name = 'Base'
     static $category = 'default'
     static $canFix = false
+    static $hint = null
 
     #rootDir = null
     #options = {}
@@ -20,6 +21,7 @@ export default class Auditor {
             dryRun: false,
             compact: false,
             silent: false,
+            targetPath: null,
             ...options
         }
     }
@@ -50,6 +52,11 @@ export default class Auditor {
     }
 
 
+    get targetPath () {
+        return this.#options.targetPath
+    }
+
+
     audit () {
         const files = this.#scanFiles()
         const issues = []
@@ -66,7 +73,8 @@ export default class Auditor {
             const fileIssues = this.analyze(content, relativePath, filePath)
 
             if (fileIssues && fileIssues.length > 0) {
-                issues.push({file: relativePath, issues: fileIssues})
+                const formattedIssues = fileIssues.map(issue => this.formatIssue(issue))
+                issues.push({file: relativePath, issues: formattedIssues})
                 issueCount += fileIssues.length
             }
         }
@@ -118,7 +126,12 @@ export default class Auditor {
 
 
     analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        throw new Error('analyze() must be implemented by subclass')
+        return []
+    }
+
+
+    formatIssue (issue) { // eslint-disable-line local/class-methods-use-this -- clean
+        return typeof issue === 'string' ? issue : String(issue)
     }
 
 
@@ -127,8 +140,9 @@ export default class Auditor {
     }
 
 
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return null
+    getHint () {
+        const hintValue = this.constructor.$hint
+        return typeof hintValue === 'function' ? hintValue(this) : hintValue
     }
 
 
@@ -144,6 +158,11 @@ export default class Auditor {
 
     relativePath (absolutePath) {
         return path.relative(this.#rootDir, absolutePath)
+    }
+
+
+    scanFiles () {
+        return this.#scanFiles()
     }
 
 
@@ -168,7 +187,7 @@ export default class Auditor {
 
 
     #scanFiles () {
-        return findJsFiles(this.#rootDir)
+        return findJsFiles(this.#rootDir, [], this.targetPath)
     }
 
 

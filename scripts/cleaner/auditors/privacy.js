@@ -8,6 +8,7 @@ export default class PrivacyAuditor extends Auditor {
     static $name = 'Privacy'
     static $category = 'privacy'
     static $canFix = false
+    static $hint = 'Use # for real privacy, extract to module-level function, or just remove the _'
 
     analyze (content) { // eslint-disable-line local/class-methods-use-this -- clean
         const ast = parseContent(content)
@@ -17,11 +18,6 @@ export default class PrivacyAuditor extends Auditor {
         }
 
         return findUnderscoreMembers(ast)
-    }
-
-
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Use # for real privacy, extract to module-level function, or just remove the _'
     }
 
 

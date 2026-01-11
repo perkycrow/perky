@@ -46,7 +46,7 @@ if (!customElements.get('slider-input')) {
 }
 
 
-class MockWebGLCanvas2D {
+class MockWebGLRenderer {
 
     constructor (options = {}) {  
         this.canvas = {
@@ -109,14 +109,14 @@ describe('WebGLCanvasInspector', () => {
     describe('setModule', () => {
 
         test('stores the module', () => {
-            const module = new MockWebGLCanvas2D()
+            const module = new MockWebGLRenderer()
             inspector.setModule(module)
             expect(inspector.getModule()).toBe(module)
         })
 
 
         test('renders canvas info when module is set', () => {
-            const module = new MockWebGLCanvas2D()
+            const module = new MockWebGLRenderer()
             inspector.setModule(module)
 
             const labels = inspector.gridEl.querySelectorAll('.inspector-label')
@@ -129,7 +129,7 @@ describe('WebGLCanvasInspector', () => {
     describe('rendering', () => {
 
         test('shows type as WebGL2', () => {
-            const module = new MockWebGLCanvas2D()
+            const module = new MockWebGLRenderer()
             inspector.setModule(module)
 
             const values = inspector.gridEl.querySelectorAll('.inspector-value')
@@ -139,7 +139,7 @@ describe('WebGLCanvasInspector', () => {
 
 
         test('shows canvas dimensions', () => {
-            const module = new MockWebGLCanvas2D({width: 1920, height: 1080})
+            const module = new MockWebGLRenderer({width: 1920, height: 1080})
             inspector.setModule(module)
 
             const values = inspector.gridEl.querySelectorAll('.inspector-value')
@@ -149,7 +149,7 @@ describe('WebGLCanvasInspector', () => {
 
 
         test('shows pixel ratio', () => {
-            const module = new MockWebGLCanvas2D({pixelRatio: 2})
+            const module = new MockWebGLRenderer({pixelRatio: 2})
             inspector.setModule(module)
 
             const values = inspector.gridEl.querySelectorAll('.inspector-value')
@@ -159,7 +159,7 @@ describe('WebGLCanvasInspector', () => {
 
 
         test('shows background color', () => {
-            const module = new MockWebGLCanvas2D({backgroundColor: '#000000'})
+            const module = new MockWebGLRenderer({backgroundColor: '#000000'})
             inspector.setModule(module)
 
             const values = inspector.gridEl.querySelectorAll('.inspector-value')
@@ -169,7 +169,7 @@ describe('WebGLCanvasInspector', () => {
 
 
         test('shows transparent when no background color', () => {
-            const module = new MockWebGLCanvas2D({backgroundColor: null})
+            const module = new MockWebGLRenderer({backgroundColor: null})
             inspector.setModule(module)
 
             const values = inspector.gridEl.querySelectorAll('.inspector-value')
@@ -179,7 +179,7 @@ describe('WebGLCanvasInspector', () => {
 
 
         test('shows culling enabled', () => {
-            const module = new MockWebGLCanvas2D({enableCulling: true})
+            const module = new MockWebGLRenderer({enableCulling: true})
             inspector.setModule(module)
 
             const values = inspector.gridEl.querySelectorAll('.inspector-value')
@@ -189,7 +189,7 @@ describe('WebGLCanvasInspector', () => {
 
 
         test('shows culling disabled', () => {
-            const module = new MockWebGLCanvas2D({enableCulling: false})
+            const module = new MockWebGLRenderer({enableCulling: false})
             inspector.setModule(module)
 
             const values = inspector.gridEl.querySelectorAll('.inspector-value')
@@ -203,7 +203,7 @@ describe('WebGLCanvasInspector', () => {
     describe('post-processing', () => {
 
         test('does not render post-processing section when no postProcessor', () => {
-            const module = new MockWebGLCanvas2D({postProcessor: null})
+            const module = new MockWebGLRenderer({postProcessor: null})
             inspector.setModule(module)
 
             const labels = inspector.gridEl.querySelectorAll('.inspector-label')
@@ -213,7 +213,7 @@ describe('WebGLCanvasInspector', () => {
 
 
         test('shows post-processing status', () => {
-            const module = new MockWebGLCanvas2D({
+            const module = new MockWebGLRenderer({
                 postProcessor: {enabled: true, passes: []}
             })
             inspector.setModule(module)
@@ -225,7 +225,7 @@ describe('WebGLCanvasInspector', () => {
 
 
         test('shows passes count', () => {
-            const module = new MockWebGLCanvas2D({
+            const module = new MockWebGLRenderer({
                 postProcessor: {
                     enabled: true,
                     passes: [
@@ -243,7 +243,7 @@ describe('WebGLCanvasInspector', () => {
 
 
         test('shows no passes message when empty', () => {
-            const module = new MockWebGLCanvas2D({
+            const module = new MockWebGLRenderer({
                 postProcessor: {enabled: true, passes: []}
             })
             inspector.setModule(module)
@@ -255,7 +255,7 @@ describe('WebGLCanvasInspector', () => {
 
 
         test('renders pass sections', () => {
-            const module = new MockWebGLCanvas2D({
+            const module = new MockWebGLRenderer({
                 postProcessor: {
                     enabled: true,
                     passes: [
@@ -277,10 +277,10 @@ describe('WebGLCanvasInspector', () => {
 
 
     test('clearContent clears and re-renders on module change', () => {
-        const module1 = new MockWebGLCanvas2D({width: 800, height: 600})
+        const module1 = new MockWebGLRenderer({width: 800, height: 600})
         inspector.setModule(module1)
 
-        const module2 = new MockWebGLCanvas2D({width: 1920, height: 1080})
+        const module2 = new MockWebGLRenderer({width: 1920, height: 1080})
         inspector.setModule(module2)
 
         const values = inspector.gridEl.querySelectorAll('.inspector-value')

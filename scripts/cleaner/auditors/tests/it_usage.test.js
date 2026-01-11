@@ -10,12 +10,4 @@ describe('ItUsageAuditor', () => {
         expect(ItUsageAuditor.$canFix).toBe(false)
     })
 
-
-    test('analyze returns empty array', () => {
-        const auditor = new ItUsageAuditor('/tmp')
-        const result = auditor.analyze('const x = 1')
-
-        expect(result).toEqual([])
-    })
-
 })

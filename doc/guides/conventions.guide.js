@@ -3,42 +3,42 @@ import {doc, section, text} from '../runtime.js'
 
 export default doc('Conventions', () => {
     text(`
-        We don't argue about tabs vs spaces here. The machine decides.
+        Formatting debates are exhausting. So the machine decides.
 
-        Run \`yarn clean\`. It fixes what it can. It yells about the rest. Listen to it.
+        Run \`yarn clean\`. It fixes what it can and flags the rest.
     `)
 
     section('Comments Are Deleted', () => {
         text(`
-            Yes, all of them. The cleaner is ruthless.
+            The cleaner removes all comments. Yes, even the clever ones.
 
-            If your code needs a comment to be understood, your code needs a rewrite. Rename things. Extract functions. Make it obvious.
-
-            ESLint directives survive. Everything else? Gone.
+            If the code isn't clear without a comment, it probably needs a rename or a refactor. ESLint directives are the only exception.
         `)
     })
 
     section('Console Is Forbidden', () => {
         text(`
-            You know that \`console.log\` you left in there? The cleaner knows too.
+            The cleaner flags \`console.log\` calls.
 
-            Use \`logger\` from \`core/logger.js\`. It's got levels, filtering, and doesn't make your teammates hunt for stray logs in production.
+            \`logger\` from \`core/logger.js\` has levels and filtering, which makes debugging less painful when there's more than one person on the project.
         `)
     })
 
-    section('Fake Privacy Is Embarrassing', () => {
+    section('Actually Private', () => {
         text(`
-            It's not 2015 anymore. JavaScript has real private fields now.
+            JavaScript has real private fields. Perky uses them.
 
-            \`_underscoreMethods\` are a polite suggestion. \`#privateMethods\` are enforced by the runtime. Use the real thing or don't bother.
+            If your method uses \`this\` and shouldn't be called from outside, make it \`#private\`.
+
+            But if you just want a helper that doesn't need \`this\`? Put a plain function below your class. It's already invisible to the outside world.
         `)
     })
 
     section('Keep It Flat', () => {
         text(`
-            If you're indenting more than three levels deep, you've lost the plot.
+            Deep nesting makes code harder to follow.
 
-            Extract a function. Early return. Do whatever it takes. Deeply nested code is where bugs go to hide.
+            Three levels of indentation is a good limit. After that, extracting a function or using early returns usually helps.
         `)
     })
 
@@ -46,21 +46,19 @@ export default doc('Conventions', () => {
         text(`
             Every \`.js\` file gets a \`.test.js\` sibling. The cleaner checks.
 
-            Use \`test()\`, not \`it()\`. We're not writing novels here. \`test('methodName')\` is fine. Save the prose for edge cases.
+            \`test()\` over \`it()\`. \`test('methodName')\` is enough. Prose is for edge cases.
 
-            Keep test structure flat too. If you're nesting describes three levels deep, you're overcomplicating it.
+            Flat test structure too. Deep nesting in tests has the same problems as deep nesting anywhere else.
         `)
     })
 
     section('The Cleaner Commands', () => {
         text(`
-            \`yarn clean\` — fix and audit (the daily driver)
+            \`yarn clean\` - fix and audit
 
-            \`yarn cleaner --audit\` — just look, don't touch
+            \`yarn cleaner --audit\` - check without modifying
 
-            \`yarn cleaner --coverage\` — find orphaned tests and missing coverage
-
-            Run it before you commit. Run it when you're bored. Run it because it makes you feel productive.
+            \`yarn cleaner --coverage\` - find orphaned tests and missing coverage
         `)
     })
 })

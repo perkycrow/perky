@@ -1,6 +1,6 @@
 import RenderSystem from '/render/render_system.js'
 import Group2D from '/render/group_2d.js'
-import Image2D from '/render/image_2d.js'
+import Sprite from '/render/sprite.js'
 import Circle from '/render/circle.js'
 import {ShadowTransform} from '/render/transforms/index.js'
 
@@ -37,7 +37,7 @@ const spritePositions = [
 ]
 
 spritePositions.forEach(pos => {
-    const sprite = new Image2D({
+    const sprite = new Sprite({
         x: pos.x,
         y: pos.y,
         width: pos.scale,

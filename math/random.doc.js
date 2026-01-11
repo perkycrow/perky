@@ -2,7 +2,7 @@ import {doc, text, code, action, logger} from '../doc/runtime.js'
 import Random from './random.js'
 
 
-export default doc('Random', {context: 'simple'}, () => {
+export default doc('Random', {featured: true}, () => {
 
     text(`
         Deterministic (seedable) random number generator.

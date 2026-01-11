@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import {pathToFileURL} from 'url'
 import Auditor from '../../auditor.js'
-import {findJsFiles, isExcludedFile} from '../../utils.js'
+import {isExcludedFile} from '../../utils.js'
 import {hint, listItem, divider} from '../../format.js'
 
 
@@ -11,6 +11,7 @@ export default class MissingTestsAuditor extends Auditor {
     static $name = 'Missing Tests'
     static $category = 'tests'
     static $canFix = false
+    static $hint = 'Create test files for these files'
 
     async audit () {
         const missing = await this.#findFilesWithoutTests()
@@ -37,20 +38,11 @@ export default class MissingTestsAuditor extends Auditor {
     }
 
 
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Create test files for these files'
-    }
-
-
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
-
-    async #findFilesWithoutTests () {
+    async #findFilesWithoutTests () { // eslint-disable-line complexity -- clean
         const config = await this.#loadConfig()
         const excludeDirs = config.missingTests?.excludeDirs || []
-        const files = findJsFiles(this.rootDir)
+        const excludeFiles = config.missingTests?.excludeFiles || []
+        const files = this.scanFiles()
         const missing = []
 
         for (const filePath of files) {
@@ -69,6 +61,10 @@ export default class MissingTestsAuditor extends Auditor {
             }
 
             if (shouldExcludeFromTestAudit(relativePath, excludeDirs)) {
+                continue
+            }
+
+            if (shouldExcludeFilePattern(relativePath, excludeFiles)) {
                 continue
             }
 
@@ -131,5 +127,25 @@ function shouldExcludeFromTestAudit (relativePath, excludeDirs = []) { // eslint
         return true
     }
 
+    return false
+}
+
+
+function shouldExcludeFilePattern (relativePath, excludeFiles = []) {
+    for (const pattern of excludeFiles) {
+        if (pattern.startsWith('**/')) {
+            const filename = pattern.slice(3)
+            if (relativePath.endsWith(filename)) {
+                return true
+            }
+        } else if (pattern.includes('*')) {
+            const regex = new RegExp('^' + pattern.replaceAll('*', '.*') + '$')
+            if (regex.test(relativePath)) {
+                return true
+            }
+        } else if (relativePath === pattern || relativePath.endsWith('/' + pattern)) {
+            return true
+        }
+    }
     return false
 }

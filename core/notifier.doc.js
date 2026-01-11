@@ -2,7 +2,7 @@ import {doc, section, text, action, logger} from '../doc/runtime.js'
 import Notifier from './notifier.js'
 
 
-export default doc('Notifier', {context: 'simple'}, () => {
+export default doc('Notifier', () => {
 
     text(`
         Event emitter for decoupled communication between components.
@@ -186,24 +186,5 @@ export default doc('Notifier', {context: 'simple'}, () => {
 
     })
 
-
-    section('Inspection', () => {
-
-        text('Query registered listeners.')
-
-        action('getListenersFor', () => {
-            const notifier = new Notifier()
-
-            notifier.on('event', () => {})
-            notifier.on('event', () => {})
-            notifier.on('other', () => {})
-
-            const listeners = notifier.getListenersFor('event')
-            logger.log('event listeners:', listeners.length)
-            logger.log('other listeners:', notifier.getListenersFor('other').length)
-            logger.log('none listeners:', notifier.getListenersFor('none'))
-        })
-
-    })
 
 })

@@ -1,11 +1,11 @@
 import Layer from './layer.js'
-import Canvas2D from './canvas_2d.js'
-import WebGLCanvas2D from './webgl_canvas_2d.js'
+import CanvasRenderer from './canvas_renderer.js'
+import WebGLRenderer from './webgl_renderer.js'
 
 
 const RENDERERS = {
-    canvas: Canvas2D,
-    webgl: WebGLCanvas2D
+    canvas: CanvasRenderer,
+    webgl: WebGLRenderer
 }
 
 

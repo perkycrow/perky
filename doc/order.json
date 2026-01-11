@@ -1,8 +1,9 @@
 {
     "guides": {
-        "categories": ["general"],
+        "categories": ["prologue", "general"],
         "items": {
-            "general": ["philosophy", "getting_started", "conventions"]
+            "prologue": ["foreword"],
+            "general": ["getting_started", "conventions"]
         }
     },
     "docs": {
@@ -10,13 +11,12 @@
             "core",
             "application",
             "game",
-            "editor",
-            "editor/inspectors",
-            "editor/log_renderers",
-            "input",
-            "input/input_devices",
             "math",
-            "render"
+            "render",
+            "input",
+            "audio",
+            "editor",
+            "doc"
         ],
         "items": {}
     }

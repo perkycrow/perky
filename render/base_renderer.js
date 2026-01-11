@@ -1,5 +1,5 @@
 import PerkyModule from '../core/perky_module.js'
-import Camera2D from './camera_2d.js'
+import Camera from './camera.js'
 
 
 export default class BaseRenderer extends PerkyModule {
@@ -17,7 +17,7 @@ export default class BaseRenderer extends PerkyModule {
         this.displayWidth = options.width ?? this.canvas.width
         this.displayHeight = options.height ?? this.canvas.height
 
-        this.camera = options.camera ?? new Camera2D({
+        this.camera = options.camera ?? new Camera({
             viewportWidth: this.displayWidth,
             viewportHeight: this.displayHeight,
             pixelRatio: 1

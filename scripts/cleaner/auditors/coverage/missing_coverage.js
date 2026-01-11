@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import Auditor from '../../auditor.js'
-import {findJsFiles, isExcludedFile} from '../../utils.js'
+import {isExcludedFile} from '../../utils.js'
 import {hint, listItem, divider, dim} from '../../format.js'
 
 
@@ -10,6 +10,7 @@ export default class MissingCoverageAuditor extends Auditor {
     static $name = 'Missing Coverage'
     static $category = 'coverage'
     static $canFix = false
+    static $hint = 'Exports/methods not referenced in corresponding test file'
 
     audit () {
         const missing = this.#findMissingCoverage()
@@ -42,18 +43,8 @@ export default class MissingCoverageAuditor extends Auditor {
     }
 
 
-    getHint () { // eslint-disable-line local/class-methods-use-this -- clean
-        return 'Exports/methods not referenced in corresponding test file'
-    }
-
-
-    analyze () { // eslint-disable-line local/class-methods-use-this -- clean
-        return []
-    }
-
-
     #findMissingCoverage () {
-        const files = findJsFiles(this.rootDir)
+        const files = this.scanFiles()
         const results = []
 
         for (const filePath of files) {

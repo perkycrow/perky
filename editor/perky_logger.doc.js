@@ -2,7 +2,7 @@ import {doc, section, setup, text, code, action, logger} from '../doc/runtime.js
 import Vec2 from '../math/vec2.js'
 
 
-export default doc('PerkyLogger', {context: 'simple'}, () => {
+export default doc('PerkyLogger', {advanced: true}, () => {
 
     text(`
         Web component for displaying log messages.
@@ -71,7 +71,7 @@ export default doc('PerkyLogger', {context: 'simple'}, () => {
 
     section('Rich objects', () => {
 
-        text('Objects, arrays, and Vec2 are rendered with special formatting.')
+        text('Objects, arrays, and [[Vec2@math]] are rendered with special formatting.')
 
         action('Object', () => {
             logger.log('user:', {name: 'Alice', age: 30, active: true})

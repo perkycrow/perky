@@ -2,7 +2,7 @@ import {doc, section, text, code, container} from '../../doc/runtime.js'
 import MouseDevice from './mouse_device.js'
 
 
-export default doc('MouseDevice', () => {
+export default doc('MouseDevice', {advanced: true}, () => {
 
     text(`
         Mouse input device. Tracks button presses, cursor position, and wheel/trackpad navigation.
@@ -55,7 +55,7 @@ export default doc('MouseDevice', () => {
     section('Position Tracking', () => {
 
         text(`
-            The \`position\` control tracks cursor coordinates as a Vec2.
+            The \`position\` control tracks cursor coordinates as a [[Vec2@math]].
             Values are relative to the viewport (clientX/clientY).
         `)
 

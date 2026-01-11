@@ -17,22 +17,6 @@ export default doc('ActionController', () => {
             becomes an action that can be executed via \`execute()\`.
         `)
 
-        code('Creating a controller', () => {
-            class PlayerController extends ActionController {
-                jump () {
-                    logger.log('Player jumps!')
-                }
-
-                shoot () {
-                    logger.log('Player shoots!')
-                }
-            }
-
-            const controller = new PlayerController({$id: 'player'})
-            controller.execute('jump')
-            controller.execute('shoot')
-        })
-
         action('Execute actions', () => {
             class GameController extends ActionController {
                 start () {
@@ -47,7 +31,6 @@ export default doc('ActionController', () => {
             const controller = new GameController({$id: 'game'})
             controller.execute('start')
             controller.execute('pause')
-            controller.dispose()
         })
 
     })
@@ -60,20 +43,6 @@ export default doc('ActionController', () => {
             These work alongside methods defined on the class.
         `)
 
-        code('Adding actions', () => {
-            const controller = new ActionController({$id: 'main'})
-
-            controller.addAction('save', () => {
-                logger.log('Saving...')
-            })
-
-            controller.addAction('load', () => {
-                logger.log('Loading...')
-            })
-
-            controller.execute('save')
-        })
-
         action('Dynamic actions', () => {
             const controller = new ActionController({$id: 'main'})
 
@@ -82,7 +51,6 @@ export default doc('ActionController', () => {
             })
 
             controller.execute('greet', 'World')
-            controller.dispose()
         })
 
     })
@@ -91,23 +59,6 @@ export default doc('ActionController', () => {
     section('Action Parameters', () => {
 
         text('Actions can receive parameters when executed.')
-
-        code('With parameters', () => {
-            class PlayerController extends ActionController {
-                move (x, y) {
-                    logger.log(`Moving to ${x}, ${y}`)
-                }
-
-                heal (amount = 10) {
-                    logger.log(`Healing ${amount} HP`)
-                }
-            }
-
-            const controller = new PlayerController({$id: 'player'})
-            controller.execute('move', 5, 10)
-            controller.execute('heal', 25)
-            controller.execute('heal') // Uses default value
-        })
 
         action('Parameters demo', () => {
             class MathController extends ActionController {
@@ -124,7 +75,6 @@ export default doc('ActionController', () => {
             controller.execute('add', 3, 4)
             controller.execute('multiply', 5, 3)
             controller.execute('multiply', 10)
-            controller.dispose()
         })
 
     })
@@ -154,8 +104,6 @@ export default doc('ActionController', () => {
                 const params = actionInfo.params.map(p => p.name).join(', ')
                 logger.log(`${actionInfo.name}(${params})`)
             }
-
-            controller.dispose()
         })
 
     })
@@ -169,23 +117,6 @@ export default doc('ActionController', () => {
             Use these for internal logic.
         `)
 
-        code('Internal methods', () => {
-            class GameController extends ActionController {
-                // Exposed as actions
-                shoot () {}
-                jump () {}
-
-                // NOT exposed (internal)
-                onStart () {}
-                updateState () {}
-                getPlayer () {}
-                checkCollision () {}
-            }
-
-            const controller = new GameController({$id: 'game'})
-            logger.log(controller.listActions()) // ['shoot', 'jump']
-        })
-
         action('Check exposed actions', () => {
             class TestController extends ActionController {
                 publicAction () {}
@@ -196,7 +127,6 @@ export default doc('ActionController', () => {
 
             const controller = new TestController({$id: 'test'})
             logger.log('Exposed actions:', controller.listActions())
-            controller.dispose()
         })
 
     })
@@ -205,25 +135,37 @@ export default doc('ActionController', () => {
     section('Propagation', () => {
 
         text(`
-            When used with ActionDispatcher, actions can propagate through
-            the controller stack. Define \`static propagable\` to allow propagation.
+            When used with ActionDispatcher, actions propagate through a stack
+            of controllers from top to bottom. By default, actions stop at the
+            first controller that handles them. Use \`static propagable\` to let
+            specific actions continue to lower controllers.
+        `)
+
+        text(`
+            Example: in Elden Ring, opening a menu pushes a MenuController on top.
+            Movement could still reach the GameController below, while confirm/cancel
+            stop at the menu.
         `)
 
         code('Propagable actions', () => {
-            class GameController extends ActionController {
+            class MenuController extends ActionController {
                 static propagable = ['move']
 
                 move () {
-                    logger.log('Game: move')
+                    logger.log('Menu: navigate')
                 }
 
-                shoot () {
-                    logger.log('Game: shoot')
+                confirm () {
+                    logger.log('Menu: confirm')
+                }
+
+                cancel () {
+                    logger.log('Menu: cancel')
                 }
             }
 
-            // 'move' will propagate to lower controllers
-            // 'shoot' will stop at this controller
+            // 'move' propagates to GameController below
+            // 'confirm' and 'cancel' stop here
         })
 
     })

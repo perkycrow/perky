@@ -2,12 +2,42 @@ import {doc, section, setup, text, code, action, logger} from '../doc/runtime.js
 import PerkyModule from './perky_module.js'
 
 
-export default doc('PerkyModule', {context: 'simple'}, () => {
+export default doc('PerkyModule', {featured: true}, () => {
 
     text(`
         Base class for all Perky components.
         Provides lifecycle management, hierarchical composition, and event handling.
+
+        For a conceptual introduction, see the [[PerkyModule:guide]] guide.
     `)
+
+
+    section('$ Convention', () => {
+
+        text(`
+            All Perky configuration properties are prefixed with \`$\` to avoid conflicts
+            with your own properties. This convention ensures that you can freely use
+            any property name without risking collision with internal configuration.
+        `)
+
+        code('Reserved $ properties', () => {
+            const module = new PerkyModule({
+                $id: 'player',
+                $name: 'Player',
+                $category: 'entity',
+                $tags: ['controllable'],
+                $bind: 'player',
+                $lifecycle: true,
+                $eagerStart: true
+            })
+
+            // Your own properties are safe
+            module.health = 100
+            module.name = 'Hero'  // No conflict with $name
+            module.id = 'custom'  // No conflict with $id
+        })
+
+    })
 
 
     section('Creation', () => {
@@ -91,32 +121,41 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
     section('Children', () => {
 
         text(`
-            Modules can contain child modules.
+            Modules can contain child modules, stored in a [[Registry]] (\`childrenRegistry\`).
             Children inherit lifecycle from their parent.
+
+            Use \`create()\` to add children - it handles instantiation and lifecycle binding.
+            For special cases, \`addChild()\` allows adding a pre-created module.
         `)
 
         action('create', () => {
             const parent = new PerkyModule({$id: 'parent'})
 
-            const child = parent.create(PerkyModule, {
-                $id: 'child',
-                $category: 'component'
-            })
+            parent.create(PerkyModule, {$id: 'child1', $category: 'component'})
+            parent.create(PerkyModule, {$id: 'child2', $category: 'component'})
 
-            logger.log('children count:', parent.children.length)
-            logger.log('child.$id:', child.$id)
-            logger.log('child.host:', child.host.$id)
+            logger.log('children:', parent.children.map(c => c.$id))
+            logger.log('hasChild:', parent.hasChild('child1'))
+            logger.log('getChild:', parent.getChild('child1').$id)
         })
 
-        action('getChild / hasChild', () => {
+        action('addChild', () => {
             const parent = new PerkyModule({$id: 'parent'})
-            parent.create(PerkyModule, {$id: 'player'})
-            parent.create(PerkyModule, {$id: 'enemy'})
 
-            logger.log('hasChild player:', parent.hasChild('player'))
-            logger.log('hasChild boss:', parent.hasChild('boss'))
-            logger.log('getChild:', parent.getChild('player').$id)
+            // Create module separately
+            const player = new PerkyModule({$id: 'player', $category: 'entity'})
+
+            // Add it later
+            parent.addChild(player)
+
+            logger.log('player.host:', player.host.$id)
+            logger.log('player.installed:', player.installed)
         })
+
+        text(`
+            If a module with the same \`$id\` already exists, \`addChild()\` will
+            automatically generate a unique ID (\`enemy\` → \`enemy_1\` → \`enemy_2\`).
+        `)
 
         action('Lifecycle propagation', () => {
             const parent = new PerkyModule({$id: 'parent'})
@@ -132,6 +171,33 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
             parent.stop()
         })
 
+        text(`
+            By default, \`$eagerStart\` is \`true\`. When a child is created on an already
+            started parent, the child will automatically start. Use \`$eagerStart: false\`
+            to defer startup and control it manually.
+        `)
+
+        action('$eagerStart (default: true)', () => {
+            const parent = new PerkyModule({$id: 'parent'})
+            parent.start()
+            logger.log('parent started:', parent.started)
+
+            // Child auto-starts because $eagerStart is true by default
+            const eager = parent.create(PerkyModule, {$id: 'eager'})
+            logger.log('eager.started:', eager.started)
+
+            // Disable auto-start with $eagerStart: false
+            const lazy = parent.create(PerkyModule, {
+                $id: 'lazy',
+                $eagerStart: false
+            })
+            logger.log('lazy.started:', lazy.started)
+
+            // Lazy child can be started manually
+            lazy.start()
+            logger.log('lazy after manual start:', lazy.started)
+        })
+
         action('childrenByCategory', () => {
             const game = new PerkyModule({$id: 'game'})
             game.create(PerkyModule, {$id: 'player', $category: 'entity'})
@@ -142,12 +208,26 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
             logger.log('entities:', entities.map(e => e.$id))
         })
 
+        action('removeChild', () => {
+            const game = new PerkyModule({$id: 'game'})
+            const enemy = game.create(PerkyModule, {$id: 'enemy'})
+
+            logger.log('before:', game.hasChild('enemy'))
+
+            game.removeChild('enemy')
+            logger.log('after:', game.hasChild('enemy'))
+            logger.log('enemy disposed:', enemy.disposed)
+        })
+
     })
 
 
     section('Tags', () => {
 
-        text('Tags allow flexible categorization and querying of modules.')
+        text(`
+            Tags allow flexible categorization and querying of modules.
+            Internally, tags are stored as an [[ObservableSet]], accessible via \`module.tags\`.
+        `)
 
         action('Basic tags', () => {
             const module = new PerkyModule({
@@ -186,7 +266,14 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
 
     section('Query', () => {
 
-        text('CSS-like selectors for finding modules in the hierarchy.')
+        text(`
+            Path-based selectors for finding modules in the hierarchy.
+            \`#id\` matches by $id, \`.tag\` by tag, \`@category\` by $category.
+
+            Each space-separated segment matches **direct children only** (not deep descendants).
+            This is intentional for O(1) performance in gameloops.
+            See [[PerkyQuery]] for full syntax.
+        `)
 
         action('query / queryAll', () => {
             const app = new PerkyModule({$id: 'app'})
@@ -194,9 +281,10 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
             game.create(PerkyModule, {$id: 'player', $category: 'entity', $tags: ['controllable']})
             game.create(PerkyModule, {$id: 'enemy', $category: 'entity', $tags: ['hostile']})
 
-            logger.log('query #player:', app.query('#player')?.$id)
-            logger.log('queryAll entity:', app.queryAll('entity').map(e => e.$id))
-            logger.log('queryAll .hostile:', app.queryAll('.hostile').map(e => e.$id))
+            // Direct child queries
+            logger.log('#game:', app.query('#game')?.$id)
+            logger.log('#game @entity:', app.queryAll('#game @entity').map(e => e.$id))
+            logger.log('#game .hostile:', app.query('#game .hostile')?.$id)
         })
 
     })
@@ -204,7 +292,7 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
 
     section('Events', () => {
 
-        text('PerkyModule extends Notifier for event handling.')
+        text('PerkyModule extends [[Notifier]] for event handling.')
 
         action('on / emit', () => {
             const module = new PerkyModule({$id: 'test'})
@@ -226,6 +314,51 @@ export default doc('PerkyModule', {context: 'simple'}, () => {
             })
 
             enemy.emit('attack', 30)
+        })
+
+    })
+
+
+    section('Delegation', () => {
+
+        text(`
+            Modules can delegate methods and events to their parent.
+            This is useful for creating facade patterns where a child exposes its API through the parent.
+        `)
+
+        action('delegateTo', () => {
+            class AudioSystem extends PerkyModule {
+                play (sound) {
+                    logger.log('playing:', sound)
+                }
+
+                stop () {
+                    logger.log('stopping audio')
+                }
+
+                onInstall (host) {
+                    this.delegateTo(host, ['play', 'stop'])
+                }
+            }
+
+            const game = new PerkyModule({$id: 'game'})
+            game.create(AudioSystem, {$id: 'audio'})
+
+            game.play('explosion.mp3')
+            game.stop()
+        })
+
+        action('delegateEventsTo', () => {
+            const game = new PerkyModule({$id: 'game'})
+            const player = game.create(PerkyModule, {$id: 'player'})
+
+            player.delegateEventsTo(game, ['damage', 'death'], 'player')
+
+            game.on('player:damage', amount => logger.log('game heard player damage:', amount))
+            game.on('player:death', () => logger.log('game heard player death'))
+
+            player.emit('damage', 50)
+            player.emit('death')
         })
 
     })

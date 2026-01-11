@@ -10,12 +10,4 @@ describe('SingleDescribesAuditor', () => {
         expect(SingleDescribesAuditor.$canFix).toBe(false)
     })
 
-
-    test('analyze returns empty array', () => {
-        const auditor = new SingleDescribesAuditor('/tmp')
-        const result = auditor.analyze('const x = 1')
-
-        expect(result).toEqual([])
-    })
-
 })

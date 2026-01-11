@@ -3,6 +3,7 @@ import path from 'path'
 import {fileURLToPath} from 'url'
 import logger from '../core/logger.js'
 import {toHumanCase} from '../core/utils.js'
+import {docFileToHtml, guideIdToHtml} from './utils/paths.js'
 
 
 const __filename = fileURLToPath(import.meta.url)
@@ -316,8 +317,14 @@ function generatePageHtml (pageData) {
             ${content}
         </div>
     </noscript>
+    <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12h18M3 6h18M3 18h18"></path>
+        </svg>
+    </button>
+    <div class="mobile-overlay" id="mobile-overlay"></div>
     <div class="docs-layout">
-        <aside class="docs-sidebar">
+        <aside class="docs-sidebar" id="docs-sidebar">
             <div class="sidebar-header">
                 <h1>perky docs</h1>
                 <div class="sidebar-search">
@@ -328,6 +335,13 @@ function generatePageHtml (pageData) {
                     <input type="text" class="search-input" placeholder="Search...">
                 </div>
                 <div class="nav-switcher" id="nav-switcher">${switcherHtml}</div>
+                <label class="advanced-toggle" id="advanced-toggle">
+                    <input type="checkbox" class="advanced-toggle-input">
+                    <span class="advanced-toggle-track">
+                        <span class="advanced-toggle-thumb"></span>
+                    </span>
+                    <span class="advanced-toggle-label">Show advanced</span>
+                </label>
             </div>
             <nav class="sidebar-nav" id="docs-nav">${navHtml}</nav>
         </aside>
@@ -372,6 +386,25 @@ function generateSwitcherHtml (activeSection = 'docs') {
 }
 
 
+function generateItemHtml (item, activeFile, type) {
+    const classes = ['nav-item']
+    if (item.file === activeFile) {
+        classes.push('active')
+    }
+    if (item.featured) {
+        classes.push('featured')
+    }
+    if (item.advanced) {
+        classes.push('advanced', 'hidden-advanced')
+    }
+    const href = type === 'guide'
+        ? guideIdToHtml(item.id)
+        : docFileToHtml(item.file)
+    const displayTitle = type === 'guide' ? toHumanCase(item.title) : item.title
+    return `<a class="${classes.join(' ')}" href="${href}" data-file="${escapeHtml(item.file)}" data-title="${escapeHtml(item.title.toLowerCase())}" data-category="${escapeHtml(item.category)}">${escapeHtml(displayTitle)}</a>`
+}
+
+
 function generateItemsHtml (items, activeFile, type) {
     const byCategory = {}
 
@@ -385,15 +418,15 @@ function generateItemsHtml (items, activeFile, type) {
     let html = ''
 
     for (const [category, categoryItems] of Object.entries(byCategory)) {
-        html += `<div class="nav-category">${escapeHtml(category)}</div>`
+        const allAdvanced = categoryItems.every(item => item.advanced)
+        const categoryClasses = ['nav-category']
+        if (allAdvanced) {
+            categoryClasses.push('hidden')
+        }
+        html += `<div class="${categoryClasses.join(' ')}">${escapeHtml(category)}</div>`
 
         for (const item of categoryItems) {
-            const isActive = item.file === activeFile ? ' active' : ''
-            const href = type === 'guide'
-                ? `guide_${item.id}.html`
-                : item.file.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
-            const displayTitle = type === 'guide' ? toHumanCase(item.title) : item.title
-            html += `<a class="nav-item${isActive}" href="${href}" data-file="${escapeHtml(item.file)}" data-title="${escapeHtml(item.title.toLowerCase())}" data-category="${escapeHtml(item.category)}">${escapeHtml(displayTitle)}</a>`
+            html += generateItemHtml(item, activeFile, type)
         }
     }
 
@@ -422,17 +455,14 @@ function generateSitemap (docs, apiData, testsData, baseUrl) {
     xml += `  <url>\n    <loc>${baseUrl}/</loc>\n    <lastmod>${today}</lastmod>\n    <priority>1.0</priority>\n  </url>\n`
 
     for (const doc of docs) {
-        const docFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
-        xml += `  <url>\n    <loc>${baseUrl}/${docFileName}</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.8</priority>\n  </url>\n`
+        xml += `  <url>\n    <loc>${baseUrl}/${docFileToHtml(doc.file)}</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.8</priority>\n  </url>\n`
 
         if (apiData[doc.file]) {
-            const apiFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '_api.html')
-            xml += `  <url>\n    <loc>${baseUrl}/${apiFileName}</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.6</priority>\n  </url>\n`
+            xml += `  <url>\n    <loc>${baseUrl}/${docFileToHtml(doc.file, 'api')}</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.6</priority>\n  </url>\n`
         }
 
         if (testsData[doc.file]) {
-            const testFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '_test.html')
-            xml += `  <url>\n    <loc>${baseUrl}/${testFileName}</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.5</priority>\n  </url>\n`
+            xml += `  <url>\n    <loc>${baseUrl}/${docFileToHtml(doc.file, 'test')}</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.5</priority>\n  </url>\n`
         }
     }
 
@@ -475,19 +505,16 @@ async function main () {
         const pageData = {doc, sources, api, tests, docs, guides, cssFile, section: 'docs'}
 
         const docHtml = generatePageHtml({...pageData, tab: 'doc'})
-        const docFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '.html')
-        fs.writeFileSync(path.join(distDir, docFileName), docHtml)
+        fs.writeFileSync(path.join(distDir, docFileToHtml(doc.file)), docHtml)
 
         if (api) {
             const apiHtml = generatePageHtml({...pageData, tab: 'api'})
-            const apiFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '_api.html')
-            fs.writeFileSync(path.join(distDir, apiFileName), apiHtml)
+            fs.writeFileSync(path.join(distDir, docFileToHtml(doc.file, 'api')), apiHtml)
         }
 
         if (tests) {
             const testHtml = generatePageHtml({...pageData, tab: 'test'})
-            const testFileName = doc.file.slice(1).replace(/\//g, '_').replace('.doc.js', '_test.html')
-            fs.writeFileSync(path.join(distDir, testFileName), testHtml)
+            fs.writeFileSync(path.join(distDir, docFileToHtml(doc.file, 'test')), testHtml)
         }
 
         logger.log(`  - ${doc.title}`)
@@ -509,8 +536,7 @@ async function main () {
         }
 
         const guideHtml = generatePageHtml({...pageData, tab: 'doc'})
-        const guideFileName = `guide_${guide.id}.html`
-        fs.writeFileSync(path.join(distDir, guideFileName), guideHtml)
+        fs.writeFileSync(path.join(distDir, guideIdToHtml(guide.id)), guideHtml)
 
         logger.log(`  - ${guide.title}`)
     }
