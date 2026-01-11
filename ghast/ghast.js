@@ -55,7 +55,7 @@ export default class Ghast extends Game {
 
         gameController.renderer = this.renderer
 
-        // Setup ground pass
+
         const gameLayer = this.getCanvas('game')
         this.groundPass = new GroundPass()
         gameLayer.renderer.addPostPass(this.groundPass)

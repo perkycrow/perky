@@ -10,7 +10,6 @@ export default class GameController extends WorldController {
         moveRight: ['KeyD', 'ArrowRight', 'swipeRight']
     }
 
-
     update (game, deltaTime) {
         this.world.update(deltaTime, game)
     }

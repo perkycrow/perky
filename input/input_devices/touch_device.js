@@ -152,20 +152,16 @@ export default class TouchDevice extends InputDevice {
             if (!swipeUpControl.isPressed) {
                 swipeUpControl.press(event)
             }
-        } else {
-            if (swipeUpControl.isPressed) {
-                swipeUpControl.release(event)
-            }
+        } else if (swipeUpControl.isPressed) {
+            swipeUpControl.release(event)
         }
 
         if (deltaY < -this.swipeThreshold) {
             if (!swipeDownControl.isPressed) {
                 swipeDownControl.press(event)
             }
-        } else {
-            if (swipeDownControl.isPressed) {
-                swipeDownControl.release(event)
-            }
+        } else if (swipeDownControl.isPressed) {
+            swipeDownControl.release(event)
         }
     }
 
@@ -179,20 +175,16 @@ export default class TouchDevice extends InputDevice {
             if (!swipeLeftControl.isPressed) {
                 swipeLeftControl.press(event)
             }
-        } else {
-            if (swipeLeftControl.isPressed) {
-                swipeLeftControl.release(event)
-            }
+        } else if (swipeLeftControl.isPressed) {
+            swipeLeftControl.release(event)
         }
 
         if (deltaX < -this.swipeThreshold) {
             if (!swipeRightControl.isPressed) {
                 swipeRightControl.press(event)
             }
-        } else {
-            if (swipeRightControl.isPressed) {
-                swipeRightControl.release(event)
-            }
+        } else if (swipeRightControl.isPressed) {
+            swipeRightControl.release(event)
         }
     }
 
