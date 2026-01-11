@@ -273,6 +273,15 @@ describe(PerkyModule, () => {
         })
 
 
+        test('works with $bind: true using $name', () => {
+            const module = new PerkyModule({$id: 'audio', $name: 'audioSystem', $bind: true})
+
+            child.addChild(module)
+
+            expect(child.audioSystem).toBe(module)
+        })
+
+
         test('respects $lifecycle: false', () => {
             const module = new PerkyModule({$id: 'static', $lifecycle: false})
             child.addChild(module)

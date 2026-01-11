@@ -40,7 +40,7 @@ export default class PerkyModule extends Notifier {
         this.#name = options.$name || this.constructor.$name || this.constructor.name
         this.#id = options.$id || this.#name
         this.#category = options.$category || this.constructor.$category
-        this.#bind = options.$bind
+        this.#bind = options.$bind === true ? this.#name : options.$bind
         this.#eagerStart = (options.$eagerStart ?? this.constructor.$eagerStart) !== false
         this.#lifecycle = (options.$lifecycle ?? this.constructor.$lifecycle) !== false
 
