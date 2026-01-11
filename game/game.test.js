@@ -178,7 +178,6 @@ describe('Game', () => {
         const container = document.createElement('div')
         game.mount(container)
 
-        game.createLayer('game', 'canvas')
         const layer = game.getLayer('game')
 
         expect(layer).toBeDefined()

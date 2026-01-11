@@ -14,29 +14,8 @@ export default class Ghast extends Game {
     static Renderer = GhastRenderer
     static Controller = GhastController
 
-    constructor (params = {}) {
-        const renderSystemConfig = {
-            cameras: {
-                main: {
-                    unitsInView: {width: 4.5, height: 4.5}
-                }
-            },
-            layers: [
-                {
-                    name: 'game',
-                    type: 'webgl',
-                    camera: 'main',
-                    backgroundColor: 'transparent',
-                    pixelRatio: 1
-                }
-            ]
-        }
-
-        super({
-            ...params,
-            renderSystem: renderSystemConfig
-        })
-    }
+    static camera = {unitsInView: {width: 4.5, height: 4.5}}
+    static layer = {type: 'webgl', backgroundColor: 'transparent', pixelRatio: 1}
 
 
     configureGame () {

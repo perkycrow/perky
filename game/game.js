@@ -12,15 +12,16 @@ export default class Game extends Application {
     static World = World
     static Renderer = GameRenderer
     static Controller = GameController
+    static RenderSystem = RenderSystem
+
+    static camera = {unitsInView: {width: 10, height: 10}}
+    static layer = {type: 'webgl'}
 
     constructor (params = {}) {
         super(params)
 
         this.create(GameLoop, {$bind: 'gameLoop'})
-        this.create(RenderSystem, {
-            $bind: 'renderSystem',
-            ...params.renderSystem
-        })
+        this.#createRenderSystem(params)
         this.create(TextureSystem, {
             $bind: 'textureSystem',
             fallback: (id) => this.getSource(id),
@@ -82,6 +83,51 @@ export default class Game extends Application {
             if (controller && typeof controller.update === 'function') {
                 controller.update(this, deltaTime)
             }
+        }
+    }
+
+
+    #createRenderSystem (params) {
+        const RenderSystemClass = this.constructor.RenderSystem
+        if (!RenderSystemClass) {
+            return
+        }
+
+        const config = this.#buildRenderSystemConfig(params)
+        this.create(RenderSystemClass, {
+            $bind: 'renderSystem',
+            ...config
+        })
+    }
+
+
+    #buildRenderSystemConfig (params) {
+        if (params.renderSystem) {
+            return params.renderSystem
+        }
+
+        const cameraConfig = this.constructor.camera
+        const layersConfig = this.constructor.layers
+        const layerConfig = this.constructor.layer
+
+        let layers
+        if (layersConfig) {
+            layers = layersConfig
+        } else {
+            layers = [
+                {
+                    name: 'game',
+                    camera: 'main',
+                    ...layerConfig
+                }
+            ]
+        }
+
+        return {
+            cameras: {
+                main: cameraConfig
+            },
+            layers
         }
     }
 

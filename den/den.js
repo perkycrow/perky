@@ -23,36 +23,23 @@ export default class DefendTheDen extends Game {
     static Renderer = DenRenderer
     static Controller = DenController
 
-    constructor (params = {}) {
-        const renderSystemConfig = {
-            cameras: {
-                main: {
-                    unitsInView: {width: 7, height: 5}
-                }
-            },
-            layers: [
-                {
-                    name: 'game',
-                    type: 'webgl',
-                    camera: 'main',
-                    pixelRatio: 1.5,
-                    backgroundColor: '#000000',
-                    enableCulling: true
-                },
-                {
-                    name: 'ui',
-                    type: 'html',
-                    camera: 'main',
-                    pointerEvents: 'none'
-                }
-            ]
+    static camera = {unitsInView: {width: 7, height: 5}}
+    static layers = [
+        {
+            name: 'game',
+            type: 'webgl',
+            camera: 'main',
+            pixelRatio: 1.5,
+            backgroundColor: '#000000',
+            enableCulling: true
+        },
+        {
+            name: 'ui',
+            type: 'html',
+            camera: 'main',
+            pointerEvents: 'none'
         }
-
-        super({
-            ...params,
-            renderSystem: renderSystemConfig
-        })
-    }
+    ]
 
 
     configureGame () {
