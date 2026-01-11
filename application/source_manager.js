@@ -20,7 +20,8 @@ export default class SourceManager extends PerkyModule {
         this.delegateEventsTo(host, [
             'loader:progress',
             'loader:complete',
-            'loader:error'
+            'loader:error',
+            'asset:loaded'
         ])
     }
 
@@ -71,6 +72,10 @@ export default class SourceManager extends PerkyModule {
             'complete',
             'error'
         ], 'loader')
+
+        this.listenTo(loader, 'progress', (progress, {asset}) => {
+            this.emit('asset:loaded', asset)
+        })
     }
 
 }

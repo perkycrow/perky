@@ -77,6 +77,33 @@ export default class Game extends Application {
     }
 
 
+    onStart () {
+        this.#buildTextureAtlases()
+        this.#listenForLateAssets()
+    }
+
+
+    #listenForLateAssets () {
+        if (!this.textureSystem) {
+            return
+        }
+
+        this.on('asset:loaded', (asset) => {
+            this.textureSystem.addFromAsset(asset)
+        })
+    }
+
+
+    #buildTextureAtlases () {
+        if (!this.textureSystem) {
+            return
+        }
+
+        const assets = this.getAllAssets()
+        this.textureSystem.buildFromAssets(assets)
+    }
+
+
     #updateActiveControllers (deltaTime) {
         const activeControllers = this.getActiveControllers()
 

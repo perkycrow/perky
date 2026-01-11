@@ -90,9 +90,9 @@ describe(AudioSystem, () => {
         test('delegates audio methods to host', () => {
             const host = {emit: vi.fn()}
             system.onInstall(host)
-            expect(host.play).toBeDefined()
-            expect(host.stop).toBeDefined()
-            expect(host.unlock).toBeDefined()
+            expect(host.playSound).toBeDefined()
+            expect(host.stopSound).toBeDefined()
+            expect(host.unlockAudio).toBeDefined()
         })
 
         test('delegates audio events to host', () => {

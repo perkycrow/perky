@@ -4,7 +4,10 @@ import TextureRegion from './texture_region.js'
 
 export default class TextureAtlasManager {
 
+    static DEFAULT_ATLAS = Symbol('default')
+
     #atlases = []
+    #atlasGroups = new Map()
     #regionIndex = new Map()
     #atlasSize = TextureAtlas.DEFAULT_SIZE
 
@@ -63,6 +66,41 @@ export default class TextureAtlasManager {
     }
 
 
+    addToNamedAtlas (atlasName, id, image) {
+        if (this.#regionIndex.has(id)) {
+            return this.#regionIndex.get(id)
+        }
+
+        if (!isValidImage(image)) {
+            return null
+        }
+
+        if (isOversized(image, this.#atlasSize)) {
+            return this.#addOversizedImage(id, image)
+        }
+
+        const region = this.#addToNamedAtlas(atlasName, id, image)
+
+        if (region) {
+            this.#regionIndex.set(id, region)
+        }
+
+        return region
+    }
+
+
+    addBatchToNamedAtlas (atlasName, images) {
+        const results = new Map()
+
+        for (const [id, image] of Object.entries(images)) {
+            const region = this.addToNamedAtlas(atlasName, id, image)
+            results.set(id, region)
+        }
+
+        return results
+    }
+
+
     get (id) {
         return this.#regionIndex.get(id) || null
     }
@@ -90,6 +128,7 @@ export default class TextureAtlasManager {
             atlas.dispose()
         }
         this.#atlases = []
+        this.#atlasGroups.clear()
         this.#regionIndex.clear()
     }
 
@@ -100,7 +139,19 @@ export default class TextureAtlasManager {
 
 
     #addToAtlas (id, image) {
-        for (const atlas of this.#atlases) {
+        return this.#addToNamedAtlas(TextureAtlasManager.DEFAULT_ATLAS, id, image)
+    }
+
+
+    #addToNamedAtlas (atlasName, id, image) {
+        let atlasGroup = this.#atlasGroups.get(atlasName)
+
+        if (!atlasGroup) {
+            atlasGroup = []
+            this.#atlasGroups.set(atlasName, atlasGroup)
+        }
+
+        for (const atlas of atlasGroup) {
             if (atlas.canFit(image.width, image.height)) {
                 return atlas.add(id, image)
             }
@@ -111,6 +162,7 @@ export default class TextureAtlasManager {
             height: this.#atlasSize
         })
 
+        atlasGroup.push(newAtlas)
         this.#atlases.push(newAtlas)
 
         return newAtlas.add(id, image)

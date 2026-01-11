@@ -10,10 +10,7 @@ import VignettePass from '../render/postprocessing/passes/vignette_pass.js'
 import DayNightPass from './postprocessing/day_night_pass.js'
 
 import manifest from './manifest.js'
-import logger from '../core/logger.js'
 
-
-window.logger = logger
 
 export default class DefendTheDen extends Game {
 
@@ -118,7 +115,7 @@ export default class DefendTheDen extends Game {
 
 
     onStart () {
-        this.#buildTextureAtlases()
+        super.onStart()
 
         this.execute('spawnPlayer', {x: -2.5})
 
@@ -142,13 +139,6 @@ export default class DefendTheDen extends Game {
         this.renderer.shadowTransform.scaleY = shadowParams.scaleY
         this.renderer.shadowTransform.offsetY = shadowParams.offsetY
         this.renderer.shadowTransform.color = shadowParams.color
-    }
-
-
-    #buildTextureAtlases () {
-        const assets = this.getAllAssets()
-        this.textureSystem.buildFromAssets(assets)
-        logger.info('TextureSystem', `Built ${this.textureSystem.atlases.length} atlas(es) with ${this.textureSystem.regionCount} regions`)
     }
 
 }

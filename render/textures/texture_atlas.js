@@ -2,7 +2,7 @@ import TextureRegion from './texture_region.js'
 import ShelfPacker from './shelf_packer.js'
 
 
-const DEFAULT_SIZE = 2048
+const DEFAULT_SIZE = 4096
 const MAX_SIZE = 4096
 const PADDING = 1
 

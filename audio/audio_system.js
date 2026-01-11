@@ -58,6 +58,7 @@ export default class AudioSystem extends PerkyModule {
             play: 'playSound',
             playAt: 'playSoundAt',
             stop: 'stopSound',
+            unlock: 'unlockAudio',
             setVolume: 'setVolume',
             getVolume: 'getVolume'
         })

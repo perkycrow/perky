@@ -5,19 +5,18 @@ export default class WaveSystem extends PerkyModule {
 
     static $category = 'waveSystem'
 
-    // Config
+
     wavesPerDay = 4
     spawnDurations = [25, 25, 25, 25]
     announcementDuration = 3
 
-    // State
+
     wave = 0
     day = 0
     timeOfDay = 0
     elapsedTime = 0
     paused = false
     waitingForClear = false
-
 
     get isSpawning () {
         return this.progress < 1

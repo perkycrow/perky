@@ -88,16 +88,57 @@ export default class TextureSystem extends PerkyModule {
     }
 
 
+    addFromAsset (asset) {
+        if (!isImageAsset(asset) || !asset.source) {
+            return null
+        }
+
+        if (this.hasRegion(asset.id)) {
+            return this.getRegion(asset.id)
+        }
+
+        if (asset.config?.atlas === false) {
+            const region = TextureRegion.fromImage(asset.source)
+            this.#manualRegions.set(asset.id, region)
+            return region
+        }
+
+        return this.addRegion(asset.id, asset.source)
+    }
+
+
     buildFromAssets (assets) {
-        const images = {}
+        const atlasGroups = new Map()
+        const defaultImages = {}
 
         for (const asset of assets) {
-            if (isImageAsset(asset) && asset.source) {
-                images[asset.id] = asset.source
+            if (!isImageAsset(asset) || !asset.source) {
+                continue
+            }
+
+            const atlasName = asset.config?.atlas
+            if (atlasName === false) {
+
+                this.#manualRegions.set(asset.id, TextureRegion.fromImage(asset.source))
+            } else if (atlasName) {
+
+                if (!atlasGroups.has(atlasName)) {
+                    atlasGroups.set(atlasName, {})
+                }
+                atlasGroups.get(atlasName)[asset.id] = asset.source
+            } else {
+
+                defaultImages[asset.id] = asset.source
             }
         }
 
-        return this.addRegions(images)
+
+        for (const [atlasName, images] of atlasGroups) {
+            this.#atlasManager.addBatchToNamedAtlas(atlasName, images)
+        }
+
+
+        return this.addRegions(defaultImages)
     }
 
 
