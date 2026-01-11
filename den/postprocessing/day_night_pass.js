@@ -94,6 +94,20 @@ export default class DayNightPass extends RenderPass {
             const float STAR_GRID_SIZE = 60.0;
             const float STAR_THRESHOLD = 0.92;
 
+            // Fog/haze (atmospheric depth)
+            const vec3 FOG_COLOR_NIGHT = vec3(0.45, 0.55, 0.75);
+            const vec3 FOG_COLOR_DAY = vec3(0.85, 0.88, 0.92);
+            const float FOG_STRENGTH = 0.25;
+            const float FOG_START_Y = 0.15;
+            const float FOG_END_Y = 0.85;
+            const float HAZE_START_Y = 0.50;
+            const float HAZE_END_Y = 0.88;
+            const float HAZE_STRENGTH = 0.20;
+
+            // Grain
+            const float GRAIN_AMOUNT_DAY = 0.015;
+            const float GRAIN_AMOUNT_NIGHT = 0.035;
+
             // DEBUG: uncomment to visualize sun radius and terrain intersection
             // #define DEBUG_SUN_RADIUS
             // DEBUG: uncomment to visualize hill circles
@@ -106,6 +120,11 @@ export default class DayNightPass extends RenderPass {
             // ─────────────────────────────────────────────────────────────
             float random(vec2 st) {
                 return fract(sin(dot(st, vec2(12.9898, 78.233))) * 43758.5453);
+            }
+
+            float grain(vec2 uv, float time) {
+                vec2 p = uv * vec2(1280.0, 720.0);
+                return random(floor(p) + time) - 0.5;
             }
 
             // ─────────────────────────────────────────────────────────────
@@ -542,9 +561,10 @@ export default class DayNightPass extends RenderPass {
                 // Always use sun-based ambiance - it handles below-horizon naturally
                 Ambiance ambiance = getAmbianceFromSun(sun);
 
-                // Sky detection
+                // Sky detection (combine blueness + luminance to avoid matching blue sprites)
                 float blueness = color.b - max(color.r, color.g);
-                float skyFactor = smoothstep(-0.08, 0.15, blueness);
+                float lum = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+                float skyFactor = smoothstep(-0.08, 0.15, blueness) * smoothstep(0.25, 0.55, lum);
 
                 // Sprite protection: reduce ambiance effects on non-sky elements
                 // skyFactor ~1 for sky, ~0 for sprites/characters
@@ -602,6 +622,21 @@ export default class DayNightPass extends RenderPass {
                 float starsFactor = step(0.0, blueness) * ambiance.starsIntensity * skyBlend;
                 float baseLum = dot(color.rgb, vec3(0.299, 0.587, 0.114));
                 rgb = applyStars(rgb, vTexCoord, baseLum, starsFactor);
+
+                // Fog/haze (atmospheric depth)
+                vec3 fogColor = mix(FOG_COLOR_DAY, FOG_COLOR_NIGHT, ambiance.nightFactor);
+                float fogAmount = smoothstep(FOG_START_Y, FOG_END_Y, vTexCoord.y) * FOG_STRENGTH;
+                fogAmount *= effectStrength;
+                rgb = mix(rgb, fogColor, fogAmount);
+
+                // Horizon haze (stronger in sky areas)
+                float haze = smoothstep(HAZE_START_Y, HAZE_END_Y, vTexCoord.y) * HAZE_STRENGTH;
+                haze *= skyBlend * (0.6 + 0.4 * ambiance.nightFactor);
+                rgb = mix(rgb, fogColor, haze);
+
+                // Grain (subtle, more visible at night)
+                float grainAmount = mix(GRAIN_AMOUNT_DAY, GRAIN_AMOUNT_NIGHT, ambiance.nightFactor);
+                rgb += grain(vTexCoord, uDayNightProgress * 100.0) * grainAmount;
 
                 fragColor = vec4(clamp(rgb, 0.0, 1.0), color.a);
             }
