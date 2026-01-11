@@ -157,11 +157,14 @@ export default class GroundPass extends RenderPass {
                     }
                 }
 
-                // If inside a light blob, use light color
-                if (minDist < 0.0) {
-                    float lightVariation = hash(closestLightTile * 2.2) * 0.03 - 0.015;
-                    baseColor = COLOR_LIGHT + lightVariation;
-                }
+                // Smooth transition between light and dark tiles
+                float pixelSize = 1.0 / uPixelsPerUnit;
+                float edgeSmooth = pixelSize * 1.5; // Smooth over ~1.5 pixels
+                float lightBlend = 1.0 - smoothstep(-edgeSmooth, edgeSmooth, minDist);
+
+                vec3 darkColor = COLOR_DARK + hash(tileIndex * 1.1) * 0.03 - 0.015;
+                vec3 lightColor = COLOR_LIGHT + hash(closestLightTile * 2.2) * 0.03 - 0.015;
+                baseColor = mix(darkColor, lightColor, lightBlend);
 
                 // Paint splatters
                 float grayBlend;
