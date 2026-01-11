@@ -18,8 +18,6 @@ export default class TouchDevice extends InputDevice {
     #currentX = 0
     #currentY = 0
     #touchStartTime = 0
-    #swipeReferenceX = 0
-    #swipeReferenceY = 0
 
     constructor (params = {}) {
         super(params)
@@ -103,8 +101,6 @@ export default class TouchDevice extends InputDevice {
         this.#startY = touch.clientY
         this.#currentX = touch.clientX
         this.#currentY = touch.clientY
-        this.#swipeReferenceX = touch.clientX
-        this.#swipeReferenceY = touch.clientY
         this.#touchStartTime = Date.now()
 
         const positionControl = this.getControl('position')
@@ -148,7 +144,7 @@ export default class TouchDevice extends InputDevice {
 
 
     #updateVerticalSwipes (event) {
-        const deltaY = this.#swipeReferenceY - this.#currentY
+        const deltaY = this.#startY - this.#currentY
         const swipeUpControl = this.getControl('swipeUp')
         const swipeDownControl = this.getControl('swipeDown')
 
@@ -156,24 +152,26 @@ export default class TouchDevice extends InputDevice {
             if (!swipeUpControl.isPressed) {
                 swipeUpControl.press(event)
             }
-            if (swipeDownControl.isPressed) {
-                swipeDownControl.release(event)
-                this.#swipeReferenceY = this.#currentY
+        } else {
+            if (swipeUpControl.isPressed) {
+                swipeUpControl.release(event)
             }
-        } else if (deltaY < -this.swipeThreshold) {
+        }
+
+        if (deltaY < -this.swipeThreshold) {
             if (!swipeDownControl.isPressed) {
                 swipeDownControl.press(event)
             }
-            if (swipeUpControl.isPressed) {
-                swipeUpControl.release(event)
-                this.#swipeReferenceY = this.#currentY
+        } else {
+            if (swipeDownControl.isPressed) {
+                swipeDownControl.release(event)
             }
         }
     }
 
 
     #updateHorizontalSwipes (event) {
-        const deltaX = this.#swipeReferenceX - this.#currentX
+        const deltaX = this.#startX - this.#currentX
         const swipeLeftControl = this.getControl('swipeLeft')
         const swipeRightControl = this.getControl('swipeRight')
 
@@ -181,17 +179,19 @@ export default class TouchDevice extends InputDevice {
             if (!swipeLeftControl.isPressed) {
                 swipeLeftControl.press(event)
             }
-            if (swipeRightControl.isPressed) {
-                swipeRightControl.release(event)
-                this.#swipeReferenceX = this.#currentX
+        } else {
+            if (swipeLeftControl.isPressed) {
+                swipeLeftControl.release(event)
             }
-        } else if (deltaX < -this.swipeThreshold) {
+        }
+
+        if (deltaX < -this.swipeThreshold) {
             if (!swipeRightControl.isPressed) {
                 swipeRightControl.press(event)
             }
-            if (swipeLeftControl.isPressed) {
-                swipeLeftControl.release(event)
-                this.#swipeReferenceX = this.#currentX
+        } else {
+            if (swipeRightControl.isPressed) {
+                swipeRightControl.release(event)
             }
         }
     }

@@ -38,7 +38,8 @@ export default class InputSystem extends PerkyModule {
         this.registerDevice(TouchDevice, {
             $id: 'touch',
             $bind: 'touch',
-            container: host.element
+            container: host.element,
+            shouldPreventDefault: true
         })
 
         this.delegateTo(host, [
