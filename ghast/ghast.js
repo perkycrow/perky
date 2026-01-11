@@ -15,7 +15,7 @@ export default class Ghast extends Game {
         const renderSystemConfig = {
             cameras: {
                 main: {
-                    unitsInView: {width: 8, height: 6}
+                    unitsInView: {width: 7, height: 5}
                 }
             },
             layers: [
@@ -23,7 +23,8 @@ export default class Ghast extends Game {
                     name: 'game',
                     type: 'webgl',
                     camera: 'main',
-                    backgroundColor: 'transparent'
+                    backgroundColor: 'transparent',
+                    pixelRatio: 1
                 }
             ]
         }
@@ -84,7 +85,7 @@ export default class Ghast extends Game {
 
         this.groundPass.setUniform('uCameraPos', [this.camera.x, this.camera.y])
         this.groundPass.setUniform('uResolution', [gameLayer.canvas.width, gameLayer.canvas.height])
-        this.groundPass.setUniform('uPixelsPerUnit', this.camera.pixelsPerUnit)
+        this.groundPass.setUniform('uPixelsPerUnit', this.camera.pixelsPerUnit * gameLayer.renderer.pixelRatio)
         this.groundPass.setUniform('uTime', performance.now() / 1000)
     }
 
