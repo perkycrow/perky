@@ -21,6 +21,7 @@
     "ghast:build": "vite build --config vite.ghast.config.js",
     "ghast:preview": "vite preview --config vite.ghast.config.js",
     "ghast:serve": "vite build --config vite.ghast.config.js && vite preview --config vite.ghast.config.js",
+    "ghast:deploy": "vite build --config vite.ghast.config.js && rm -rf ../perkycrow_com/public/ghast && cp -r dist/ghast ../perkycrow_com/public/ghast",
     "test": "vitest run",
     "cleaner": "node scripts/cleaner.js",
     "clean": "node scripts/cleaner.js --audit --fix",

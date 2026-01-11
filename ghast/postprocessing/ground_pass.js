@@ -59,7 +59,7 @@ export default class GroundPass extends RenderPass {
             }
 
             // Distance to a curly tendril path
-            float curlTendril(vec2 p, vec2 tileIndex, int tendrilId) {
+            float curlTendril(vec2 p, vec2 tileIndex, int tendrilId, float time) {
                 vec2 seed = tileIndex + vec2(float(tendrilId) * 7.77, float(tendrilId) * 3.33);
 
                 // Starting direction from tile edge
@@ -69,8 +69,17 @@ export default class GroundPass extends RenderPass {
                 // Start position at edge of tile (radius ~0.5)
                 vec2 startPos = startDir * 0.48;
 
-                // Tendril properties - thin crack-like
-                float totalLength = 0.15 + hash(seed * 1.1) * 0.2;
+                // Animated length - slow breathing effect
+                float timeOffset = hash(seed * 6.66) * 6.28;
+                float breatheSpeed = 0.3 + hash(seed * 7.77) * 0.2; // 0.3 to 0.5 - slow
+                float breathe = sin(time * breatheSpeed + timeOffset) * 0.5 + 0.5; // 0 to 1
+
+                // Tendril properties - more variation in length, bigger amplitude
+                float baseLength = 0.1 + hash(seed * 1.1) * 0.4; // 0.1 to 0.5
+                float totalLength = baseLength * (0.4 + breathe * 0.6); // animate between 40% and 100%
+
+                // Wiggle speed - moderate and varies per tendril
+                float wiggleSpeed = 1.2 + hash(seed * 8.88) * 1.0; // 1.2 to 2.2
                 float baseWidth = 0.015 + hash(seed * 2.2) * 0.01;
                 float curliness = 1.0 + hash(seed * 3.3) * 1.5;
                 float curlFreq = 3.0 + hash(seed * 4.4) * 2.0;
@@ -82,8 +91,10 @@ export default class GroundPass extends RenderPass {
                 for (int step = 0; step < 30; step++) {
                     float t = float(step) / 29.0;
 
-                    // Curl the direction as we go outward
-                    float curlAngle = startAngle + sin(t * curlFreq + hash(seed * 5.5) * 6.28) * curliness * t;
+                    // Curl the direction as we go outward - with animated wiggle
+                    // Wiggle increases along the tendril (tip moves more than base)
+                    float wiggle = sin(time * wiggleSpeed + t * 3.0 + timeOffset) * 0.8 * t;
+                    float curlAngle = startAngle + wiggle + sin(t * curlFreq + hash(seed * 5.5) * 6.28) * curliness * t;
                     vec2 dir = vec2(cos(curlAngle), sin(curlAngle));
 
                     // Width tapers toward tip
@@ -102,7 +113,7 @@ export default class GroundPass extends RenderPass {
             }
 
             // Tendril extensions from tile edges
-            float tendrilDistance(vec2 localPos, vec2 tileIndex) {
+            float tendrilDistance(vec2 localPos, vec2 tileIndex, float time) {
                 vec2 p = localPos - 0.5;
 
                 // Determine if this tile has tendrils
@@ -114,7 +125,7 @@ export default class GroundPass extends RenderPass {
 
                 for (int i = 0; i < 4; i++) {
                     if (i >= numTendrils) break;
-                    float d = curlTendril(p, tileIndex, i);
+                    float d = curlTendril(p, tileIndex, i, time);
                     minDist = min(minDist, d);
                 }
 
@@ -122,7 +133,7 @@ export default class GroundPass extends RenderPass {
             }
 
             // Distance to a puffy square blob with subtle imperfections
-            float blobDistance(vec2 localPos, vec2 tileIndex) {
+            float blobDistance(vec2 localPos, vec2 tileIndex, float time) {
                 vec2 p = localPos - 0.5;
 
                 // Squircle - sweet spot for slight corner rounding
@@ -142,7 +153,7 @@ export default class GroundPass extends RenderPass {
                 float blobDist = baseDist - size - wobble;
 
                 // Combine with tendrils
-                float tendrilDist = tendrilDistance(localPos, tileIndex);
+                float tendrilDist = tendrilDistance(localPos, tileIndex, time);
 
                 return min(blobDist, tendrilDist);
             }
@@ -215,7 +226,7 @@ export default class GroundPass extends RenderPass {
 
                         if (isLightTile(neighbor)) {
                             vec2 localInNeighbor = tileLocal - vec2(float(dx), float(dy));
-                            float d = blobDistance(localInNeighbor, neighbor);
+                            float d = blobDistance(localInNeighbor, neighbor, uTime);
 
                             if (d < minDist) {
                                 minDist = d;
