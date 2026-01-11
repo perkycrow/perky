@@ -65,7 +65,7 @@ export default class Game extends Application {
 
 
     update () {
-        // Override in subclass for custom update logic
+
     }
 
 

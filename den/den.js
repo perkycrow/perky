@@ -41,7 +41,6 @@ export default class DefendTheDen extends Game {
         }
     ]
 
-
     configureGame () {
         const gameLayer = this.getCanvas('game')
 

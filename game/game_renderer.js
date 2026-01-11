@@ -28,7 +28,7 @@ export default class GameRenderer extends PerkyModule {
 
 
     registerViews () {
-        // Override in subclass to register entity views
+
     }
 
 

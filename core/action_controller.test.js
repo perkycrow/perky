@@ -49,7 +49,6 @@ describe(ActionController, () => {
 
 
         test('engine falls back to host.host', () => {
-            const mockApp = {name: 'app'}
             const dispatcher = new PerkyModule()
             const app = new PerkyModule()
 

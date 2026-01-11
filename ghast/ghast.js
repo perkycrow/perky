@@ -17,7 +17,6 @@ export default class Ghast extends Game {
     static camera = {unitsInView: {width: 4.5, height: 4.5}}
     static layer = {type: 'webgl', backgroundColor: 'transparent', pixelRatio: 1}
 
-
     configureGame () {
         const gameLayer = this.getCanvas('game')
         this.groundPass = new GroundPass()

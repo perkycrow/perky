@@ -63,7 +63,9 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     register (nameOrController, ControllerOrOptions = ActionController, maybeOptions = {}) {
-        let name, Controller, options
+        let name
+        let Controller
+        let options
 
         if (typeof nameOrController === 'string') {
             name = nameOrController
