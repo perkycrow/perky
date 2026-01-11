@@ -62,6 +62,8 @@ describe(TouchDevice, () => {
     test('creates controls on construction', () => {
         expect(device.getControl('swipeUp')).toBeInstanceOf(ButtonControl)
         expect(device.getControl('swipeDown')).toBeInstanceOf(ButtonControl)
+        expect(device.getControl('swipeLeft')).toBeInstanceOf(ButtonControl)
+        expect(device.getControl('swipeRight')).toBeInstanceOf(ButtonControl)
         expect(device.getControl('position')).toBeInstanceOf(Vec2Control)
         expect(device.getControl('delta')).toBeInstanceOf(Vec2Control)
         expect(device.getControl('tap')).toBeInstanceOf(ButtonControl)
@@ -146,11 +148,63 @@ describe(TouchDevice, () => {
         const touchmoveListener = mockContainer.addEventListener.mock.calls
             .find(call => call[0] === 'touchmove')[1]
 
-        touchstartListener(createTouchEvent('touchstart', [{clientY: 200}]))
-        touchmoveListener(createTouchEvent('touchmove', [{clientY: 210}]))
+        touchstartListener(createTouchEvent('touchstart', [{clientX: 200, clientY: 200}]))
+        touchmoveListener(createTouchEvent('touchmove', [{clientX: 210, clientY: 210}]))
 
         expect(device.isPressed('swipeUp')).toBe(false)
         expect(device.isPressed('swipeDown')).toBe(false)
+        expect(device.isPressed('swipeLeft')).toBe(false)
+        expect(device.isPressed('swipeRight')).toBe(false)
+    })
+
+
+    test('touchmove triggers swipeLeft when moving left past threshold', () => {
+        device.start()
+
+        const touchstartListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'touchstart')[1]
+        const touchmoveListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'touchmove')[1]
+
+        touchstartListener(createTouchEvent('touchstart', [{clientX: 200, clientY: 200}]))
+        touchmoveListener(createTouchEvent('touchmove', [{clientX: 150, clientY: 200}]))
+
+        expect(device.isPressed('swipeLeft')).toBe(true)
+        expect(device.isPressed('swipeRight')).toBe(false)
+    })
+
+
+    test('touchmove triggers swipeRight when moving right past threshold', () => {
+        device.start()
+
+        const touchstartListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'touchstart')[1]
+        const touchmoveListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'touchmove')[1]
+
+        touchstartListener(createTouchEvent('touchstart', [{clientX: 200, clientY: 200}]))
+        touchmoveListener(createTouchEvent('touchmove', [{clientX: 250, clientY: 200}]))
+
+        expect(device.isPressed('swipeRight')).toBe(true)
+        expect(device.isPressed('swipeLeft')).toBe(false)
+    })
+
+
+    test('switching from swipeLeft to swipeRight releases swipeLeft', () => {
+        device.start()
+
+        const touchstartListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'touchstart')[1]
+        const touchmoveListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'touchmove')[1]
+
+        touchstartListener(createTouchEvent('touchstart', [{clientX: 200, clientY: 200}]))
+        touchmoveListener(createTouchEvent('touchmove', [{clientX: 150, clientY: 200}]))
+        expect(device.isPressed('swipeLeft')).toBe(true)
+
+        touchmoveListener(createTouchEvent('touchmove', [{clientX: 250, clientY: 200}]))
+        expect(device.isPressed('swipeLeft')).toBe(false)
+        expect(device.isPressed('swipeRight')).toBe(true)
     })
 
 

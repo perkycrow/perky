@@ -15,8 +15,10 @@ export default class TouchDevice extends InputDevice {
     #activeTouch = null
     #startX = 0
     #startY = 0
+    #currentX = 0
     #currentY = 0
     #touchStartTime = 0
+    #swipeReferenceX = 0
     #swipeReferenceY = 0
 
     constructor (params = {}) {
@@ -63,6 +65,16 @@ export default class TouchDevice extends InputDevice {
             name: 'swipeDown'
         }))
 
+        this.registerControl(new ButtonControl({
+            device: this,
+            name: 'swipeLeft'
+        }))
+
+        this.registerControl(new ButtonControl({
+            device: this,
+            name: 'swipeRight'
+        }))
+
         this.registerControl(new Vec2Control({
             device: this,
             name: 'position'
@@ -89,7 +101,9 @@ export default class TouchDevice extends InputDevice {
         this.#activeTouch = touch.identifier
         this.#startX = touch.clientX
         this.#startY = touch.clientY
+        this.#currentX = touch.clientX
         this.#currentY = touch.clientY
+        this.#swipeReferenceX = touch.clientX
         this.#swipeReferenceY = touch.clientY
         this.#touchStartTime = Date.now()
 
@@ -109,7 +123,9 @@ export default class TouchDevice extends InputDevice {
             return
         }
 
+        const previousX = this.#currentX
         const previousY = this.#currentY
+        this.#currentX = touch.clientX
         this.#currentY = touch.clientY
 
         const positionControl = this.getControl('position')
@@ -120,10 +136,18 @@ export default class TouchDevice extends InputDevice {
 
         const deltaControl = this.getControl('delta')
         deltaControl.setValue({
-            x: 0,
+            x: this.#currentX - previousX,
             y: this.#currentY - previousY
         }, event)
 
+        this.#updateVerticalSwipes(event)
+        this.#updateHorizontalSwipes(event)
+
+        this.preventDefault(event, positionControl)
+    }
+
+
+    #updateVerticalSwipes (event) {
         const deltaY = this.#swipeReferenceY - this.#currentY
         const swipeUpControl = this.getControl('swipeUp')
         const swipeDownControl = this.getControl('swipeDown')
@@ -145,8 +169,31 @@ export default class TouchDevice extends InputDevice {
                 this.#swipeReferenceY = this.#currentY
             }
         }
+    }
 
-        this.preventDefault(event, positionControl)
+
+    #updateHorizontalSwipes (event) {
+        const deltaX = this.#swipeReferenceX - this.#currentX
+        const swipeLeftControl = this.getControl('swipeLeft')
+        const swipeRightControl = this.getControl('swipeRight')
+
+        if (deltaX > this.swipeThreshold) {
+            if (!swipeLeftControl.isPressed) {
+                swipeLeftControl.press(event)
+            }
+            if (swipeRightControl.isPressed) {
+                swipeRightControl.release(event)
+                this.#swipeReferenceX = this.#currentX
+            }
+        } else if (deltaX < -this.swipeThreshold) {
+            if (!swipeRightControl.isPressed) {
+                swipeRightControl.press(event)
+            }
+            if (swipeLeftControl.isPressed) {
+                swipeLeftControl.release(event)
+                this.#swipeReferenceX = this.#currentX
+            }
+        }
     }
 
 
@@ -202,12 +249,20 @@ export default class TouchDevice extends InputDevice {
     #releaseAllSwipes (event) {
         const swipeUpControl = this.getControl('swipeUp')
         const swipeDownControl = this.getControl('swipeDown')
+        const swipeLeftControl = this.getControl('swipeLeft')
+        const swipeRightControl = this.getControl('swipeRight')
 
         if (swipeUpControl.isPressed) {
             swipeUpControl.release(event)
         }
         if (swipeDownControl.isPressed) {
             swipeDownControl.release(event)
+        }
+        if (swipeLeftControl.isPressed) {
+            swipeLeftControl.release(event)
+        }
+        if (swipeRightControl.isPressed) {
+            swipeRightControl.release(event)
         }
     }
 

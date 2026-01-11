@@ -246,7 +246,7 @@ const MOUSE_CONTROLS = [
 ]
 
 const TOUCH_CONTROLS = [
-    'swipeUp', 'swipeDown', 'tap'
+    'swipeUp', 'swipeDown', 'swipeLeft', 'swipeRight', 'tap'
 ]
 
 const GAMEPAD_CONTROL_PATTERNS = [

@@ -15,7 +15,7 @@ export default class Ghast extends Game {
         const renderSystemConfig = {
             cameras: {
                 main: {
-                    unitsInView: {width: 7, height: 5}
+                    unitsInView: {width: 4.5, height: 4.5}
                 }
             },
             layers: [

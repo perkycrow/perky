@@ -4,10 +4,10 @@ import WorldController from '../../game/world_controller.js'
 export default class GameController extends WorldController {
 
     static bindings = {
-        moveUp: ['KeyW', 'ArrowUp'],
-        moveDown: ['KeyS', 'ArrowDown'],
-        moveLeft: ['KeyA', 'ArrowLeft'],
-        moveRight: ['KeyD', 'ArrowRight']
+        moveUp: ['KeyW', 'ArrowUp', 'swipeUp'],
+        moveDown: ['KeyS', 'ArrowDown', 'swipeDown'],
+        moveLeft: ['KeyA', 'ArrowLeft', 'swipeLeft'],
+        moveRight: ['KeyD', 'ArrowRight', 'swipeRight']
     }
 
 
