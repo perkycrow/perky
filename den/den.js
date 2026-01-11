@@ -4,7 +4,6 @@ import DenWorld from './den_world.js'
 import DenController from './controllers/den_controller.js'
 import DenRenderer from './den_renderer.js'
 import WaveProgressBar from './ui/wave_progress_bar.js'
-import DenAudioManager from './den_audio_manager.js'
 import WaveSystem from './wave_system.js'
 
 import VignettePass from '../render/postprocessing/passes/vignette_pass.js'
@@ -100,9 +99,20 @@ export default class DefendTheDen extends Game {
         })
         waveProgressBar.mount(uiLayer)
 
-        this.denAudio = this.create(DenAudioManager, {
-            $id: 'denAudio',
-            game: this
+        this.on('day:announce', () => {
+            this.playSound('howl', {channel: 'sfx', volume: 0.6})
+        })
+
+        this.world.on('enemy:hit', ({x, y}) => {
+            this.playSoundAt('wound', x, y, {volume: 0.4})
+        })
+
+        this.world.on('enemy:destroyed', ({x, y}) => {
+            this.playSoundAt('wound', x, y, {volume: 0.3})
+        })
+
+        this.world.on('player:hit', ({x, y}) => {
+            this.playSoundAt('wound', x, y, {volume: 0.4})
         })
     }
 

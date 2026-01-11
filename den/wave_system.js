@@ -4,7 +4,6 @@ import PerkyModule from '../core/perky_module.js'
 export default class WaveSystem extends PerkyModule {
 
     static $category = 'waveSystem'
-    static $name = 'waveSystem'
 
     // Config
     wavesPerDay = 4

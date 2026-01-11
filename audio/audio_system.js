@@ -54,26 +54,13 @@ export default class AudioSystem extends PerkyModule {
 
 
     onInstall (host) {
-        this.delegateTo(host, [
-            'play',
-            'playAt',
-            'playOscillator',
-            'playOscillatorAt',
-            'stop',
-            'stopChannel',
-            'stopAll',
-            'setVolume',
-            'getVolume',
-            'setChannelVolume',
-            'getChannelVolume',
-            'muteChannel',
-            'unmuteChannel',
-            'getChannel',
-            'hasChannel',
-            'unlock',
-            'setListenerPosition',
-            'getListenerPosition'
-        ])
+        this.delegateTo(host, {
+            play: 'playSound',
+            playAt: 'playSoundAt',
+            stop: 'stopSound',
+            setVolume: 'setVolume',
+            getVolume: 'getVolume'
+        })
 
         this.delegateEventsTo(host, [
             'audio:play',

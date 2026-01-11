@@ -2,6 +2,7 @@ import Application from '../application/application.js'
 import GameLoop from './game_loop.js'
 import RenderSystem from '../render/render_system.js'
 import TextureSystem from '../render/textures/texture_system.js'
+import AudioSystem from '../audio/audio_system.js'
 import World from './world.js'
 import GameRenderer from './game_renderer.js'
 import GameController from './game_controller.js'
@@ -13,6 +14,7 @@ export default class Game extends Application {
     static Renderer = GameRenderer
     static Controller = GameController
     static RenderSystem = RenderSystem
+    static AudioSystem = AudioSystem
 
     static camera = {unitsInView: {width: 10, height: 10}}
     static layer = {type: 'webgl'}
@@ -22,6 +24,7 @@ export default class Game extends Application {
 
         this.create(GameLoop, {$bind: 'gameLoop'})
         this.#createRenderSystem(params)
+        this.#createAudioSystem(params)
         this.create(TextureSystem, {
             $bind: 'textureSystem',
             fallback: (id) => this.getSource(id),
@@ -129,6 +132,19 @@ export default class Game extends Application {
             },
             layers
         }
+    }
+
+
+    #createAudioSystem (params) {
+        const AudioSystemClass = this.constructor.AudioSystem
+        if (!AudioSystemClass) {
+            return
+        }
+
+        this.create(AudioSystemClass, {
+            $bind: 'audioSystem',
+            ...params.audioSystem
+        })
     }
 
 }
