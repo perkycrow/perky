@@ -19,6 +19,8 @@ export default class DefendTheDen extends Game {
 
     static $name = 'defendTheDen'
     static manifest = manifest
+    static World = DenWorld
+    static Renderer = DenRenderer
 
     constructor (params = {}) {
         const renderSystemConfig = {
@@ -53,16 +55,6 @@ export default class DefendTheDen extends Game {
 
 
     configureGame () {
-        this.world = this.create(DenWorld)
-
-        this.camera = this.renderSystem.getCamera('main')
-
-        this.renderer = this.create(DenRenderer, {
-            $id: 'renderer',
-            world: this.world,
-            game: this
-        })
-
         this.registerController(DenController)
 
         const gameLayer = this.getCanvas('game')
@@ -140,10 +132,6 @@ export default class DefendTheDen extends Game {
         this.denAudio = this.create(DenAudioManager, {
             $id: 'denAudio',
             game: this
-        })
-
-        this.on('render', () => {
-            this.renderer.render()
         })
     }
 

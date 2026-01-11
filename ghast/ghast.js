@@ -10,6 +10,8 @@ export default class Ghast extends Game {
 
     static $name = 'ghast'
     static manifest = manifest
+    static World = GhastWorld
+    static Renderer = GhastRenderer
 
     constructor (params = {}) {
         const renderSystemConfig = {
@@ -37,18 +39,7 @@ export default class Ghast extends Game {
 
 
     configureGame () {
-        this.world = this.create(GhastWorld)
-
-        this.camera = this.renderSystem.getCamera('main')
-
-        this.renderer = this.create(GhastRenderer, {
-            $id: 'renderer',
-            world: this.world,
-            game: this
-        })
-
         this.registerController(GhastController)
-
 
         const gameLayer = this.getCanvas('game')
         this.groundPass = new GroundPass()
@@ -57,10 +48,6 @@ export default class Ghast extends Game {
         this.on('update', () => {
             this.#updateCamera()
             this.#updateGroundPass()
-        })
-
-        this.on('render', () => {
-            this.renderer.render()
         })
     }
 
