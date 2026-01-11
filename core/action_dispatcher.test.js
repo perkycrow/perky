@@ -33,41 +33,17 @@ describe(ActionDispatcher, () => {
     })
 
 
-    test('onInstall creates main controller by default', () => {
-        const host = new PerkyModule()
-        const newDispatcher = new ActionDispatcher()
-
-        newDispatcher.install(host, {main: true})
-
-        expect(newDispatcher.mainControllerName).toBe('main')
-        expect(newDispatcher.getController('main')).toBeInstanceOf(ActionController)
-        expect(newDispatcher.getActive()).toEqual(['main'])
-        expect(newDispatcher.mainController).toBeInstanceOf(ActionController)
+    test('mainController returns null when no controllers registered', () => {
+        expect(dispatcher.mainController).toBeNull()
     })
 
 
-    test('onInstall creates main controller with custom name', () => {
-        const host = new PerkyModule()
-        const newDispatcher = new ActionDispatcher()
+    test('mainController returns first registered controller', () => {
+        dispatcher.register('game', ActionController)
+        dispatcher.register('ui', ActionController)
 
-        newDispatcher.install(host, {main: 'base'})
-
-        expect(newDispatcher.mainControllerName).toBe('base')
-        expect(newDispatcher.getController('base')).toBeInstanceOf(ActionController)
-        expect(newDispatcher.getActive()).toEqual(['base'])
-        expect(newDispatcher.mainController).toBeInstanceOf(ActionController)
-    })
-
-
-    test('onInstall skips main controller when main is false', () => {
-        const host = new PerkyModule()
-        const newDispatcher = new ActionDispatcher()
-
-        newDispatcher.install(host, {main: false})
-
-        expect(newDispatcher.mainControllerName).toBeNull()
-        expect(newDispatcher.getActive()).toEqual([])
-        expect(newDispatcher.mainController).toBeNull()
+        expect(dispatcher.mainController).toBeInstanceOf(ActionController)
+        expect(dispatcher.mainController.$id).toBe('game')
     })
 
 
@@ -466,7 +442,8 @@ describe(ActionDispatcher, () => {
     test('addAction delegates to main controller', () => {
         const host = new PerkyModule()
         const newDispatcher = new ActionDispatcher()
-        newDispatcher.install(host, {main: true})
+        newDispatcher.install(host)
+        newDispatcher.register('main', ActionController)
 
         const action = vi.fn()
         newDispatcher.addAction('customAction', action)
@@ -490,7 +467,8 @@ describe(ActionDispatcher, () => {
     test('removeAction delegates to main controller', () => {
         const host = new PerkyModule()
         const newDispatcher = new ActionDispatcher()
-        newDispatcher.install(host, {main: true})
+        newDispatcher.install(host)
+        newDispatcher.register('main', ActionController)
 
         const action = vi.fn()
         newDispatcher.addAction('customAction', action)

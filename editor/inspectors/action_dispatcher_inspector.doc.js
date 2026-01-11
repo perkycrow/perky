@@ -127,7 +127,7 @@ export default doc('ActionDispatcherInspector', {advanced: true}, () => {
         text('When no controllers are registered, an empty message is shown.')
 
         container({title: 'No controllers', height: 120, preset: 'inspector'}, ctx => {
-            const dispatcher = new ActionDispatcher({$id: 'empty', main: false})
+            const dispatcher = new ActionDispatcher({$id: 'empty'})
 
             const inspector = document.createElement('action-dispatcher-inspector')
             inspector.setModule(dispatcher)

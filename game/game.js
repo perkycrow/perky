@@ -4,12 +4,14 @@ import RenderSystem from '../render/render_system.js'
 import TextureSystem from '../render/textures/texture_system.js'
 import World from './world.js'
 import GameRenderer from './game_renderer.js'
+import GameController from './game_controller.js'
 
 
 export default class Game extends Application {
 
     static World = World
     static Renderer = GameRenderer
+    static Controller = GameController
 
     constructor (params = {}) {
         super(params)

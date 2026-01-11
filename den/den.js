@@ -21,6 +21,7 @@ export default class DefendTheDen extends Game {
     static manifest = manifest
     static World = DenWorld
     static Renderer = DenRenderer
+    static Controller = DenController
 
     constructor (params = {}) {
         const renderSystemConfig = {
@@ -55,8 +56,6 @@ export default class DefendTheDen extends Game {
 
 
     configureGame () {
-        this.registerController(DenController)
-
         const gameLayer = this.getCanvas('game')
 
         this.dayNightPass = new DayNightPass()

@@ -12,6 +12,7 @@ export default class Ghast extends Game {
     static manifest = manifest
     static World = GhastWorld
     static Renderer = GhastRenderer
+    static Controller = GhastController
 
     constructor (params = {}) {
         const renderSystemConfig = {
@@ -39,8 +40,6 @@ export default class Ghast extends Game {
 
 
     configureGame () {
-        this.registerController(GhastController)
-
         const gameLayer = this.getCanvas('game')
         this.groundPass = new GroundPass()
         gameLayer.renderer.addPostPass(this.groundPass)

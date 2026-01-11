@@ -8,11 +8,8 @@ export default class ActionDispatcher extends PerkyModule {
     static $category = 'actionDispatcher'
 
     #activeControllers = []
-    mainControllerName = null
 
-    onInstall (host, options) {
-        this.#setupMainController(options)
-
+    onInstall (host) {
         this.listenTo(host, 'input:triggered', this.dispatchAction.bind(this))
 
         this.delegateTo(host, {
@@ -41,21 +38,9 @@ export default class ActionDispatcher extends PerkyModule {
     }
 
 
-    #setupMainController (options) {
-        const mainOption = options.main ?? true
-
-        if (mainOption !== false) {
-            const mainName = typeof mainOption === 'string' ? mainOption : 'main'
-            this.mainControllerName = mainName
-
-            this.register(mainName)
-            this.setActive(mainName)
-        }
-    }
-
-
     get mainController () {
-        return this.getController(this.mainControllerName)
+        const controllers = this.listControllers()
+        return controllers.length > 0 ? this.getController(controllers[0]) : null
     }
 
 

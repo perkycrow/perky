@@ -1,6 +1,7 @@
 import PerkyModule from '../core/perky_module.js'
 import Manifest from './manifest.js'
 import ActionDispatcher from '../core/action_dispatcher.js'
+import ActionController from '../core/action_controller.js'
 import Registry from '../core/registry.js'
 import PerkyView from './perky_view.js'
 import SourceManager from './source_manager.js'
@@ -13,6 +14,8 @@ export default class Application extends PerkyModule {
     static $category = 'application'
 
     static $eagerStart = false
+
+    static Controller = ActionController
 
     constructor (options = {}) {
         super(options)
@@ -46,7 +49,18 @@ export default class Application extends PerkyModule {
 
         this.actionDispatcher.on('controller:set', this.#autoRegisterBindings.bind(this))
 
+        this.#createMainController()
+
         this.configureApplication?.(options)
+    }
+
+
+    #createMainController () {
+        const Controller = this.constructor.Controller
+        if (Controller) {
+            const controller = this.registerController(Controller)
+            this.setActiveControllers(controller.$id)
+        }
     }
 
 
