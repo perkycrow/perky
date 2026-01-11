@@ -58,6 +58,69 @@ export default class GroundPass extends RenderPass {
                 return mod(tileIndex.x + tileIndex.y, 2.0) < 0.5;
             }
 
+            // Distance to a curly tendril path
+            float curlTendril(vec2 p, vec2 tileIndex, int tendrilId) {
+                vec2 seed = tileIndex + vec2(float(tendrilId) * 7.77, float(tendrilId) * 3.33);
+
+                // Starting direction from tile edge
+                float startAngle = hash(seed) * 6.28;
+                vec2 startDir = vec2(cos(startAngle), sin(startAngle));
+
+                // Start position at edge of tile (radius ~0.5)
+                vec2 startPos = startDir * 0.48;
+
+                // Tendril properties - thin crack-like
+                float totalLength = 0.15 + hash(seed * 1.1) * 0.2;
+                float baseWidth = 0.015 + hash(seed * 2.2) * 0.01;
+                float curliness = 1.0 + hash(seed * 3.3) * 1.5;
+                float curlFreq = 3.0 + hash(seed * 4.4) * 2.0;
+
+                // March along the tendril and find closest point
+                float minDist = 1.0;
+                vec2 pos = startPos;
+
+                for (int step = 0; step < 30; step++) {
+                    float t = float(step) / 29.0;
+
+                    // Curl the direction as we go outward
+                    float curlAngle = startAngle + sin(t * curlFreq + hash(seed * 5.5) * 6.28) * curliness * t;
+                    vec2 dir = vec2(cos(curlAngle), sin(curlAngle));
+
+                    // Width tapers toward tip
+                    float width = baseWidth * (1.0 - t * 0.8);
+
+                    // Distance from query point to this segment
+                    float d = length(p - pos) - width;
+                    minDist = min(minDist, d);
+
+                    // Move along path
+                    float stepSize = totalLength / 29.0;
+                    pos += dir * stepSize;
+                }
+
+                return minDist;
+            }
+
+            // Tendril extensions from tile edges
+            float tendrilDistance(vec2 localPos, vec2 tileIndex) {
+                vec2 p = localPos - 0.5;
+
+                // Determine if this tile has tendrils
+                float damageLevel = hash(tileIndex * 3.33);
+                if (damageLevel < 0.5) return 1.0;
+
+                float minDist = 1.0;
+                int numTendrils = 2 + int(hash(tileIndex * 4.44) * 3.0);
+
+                for (int i = 0; i < 4; i++) {
+                    if (i >= numTendrils) break;
+                    float d = curlTendril(p, tileIndex, i);
+                    minDist = min(minDist, d);
+                }
+
+                return minDist;
+            }
+
             // Distance to a puffy square blob with subtle imperfections
             float blobDistance(vec2 localPos, vec2 tileIndex) {
                 vec2 p = localPos - 0.5;
@@ -76,7 +139,12 @@ export default class GroundPass extends RenderPass {
                 wobble += sin(angle * 13.0 + hash(tileIndex * 2.2) * 6.28) * 0.003;
                 wobble += (noise(tileIndex * 2.0 + vec2(cos(angle), sin(angle)) * 0.5) - 0.5) * 0.008;
 
-                return baseDist - size - wobble;
+                float blobDist = baseDist - size - wobble;
+
+                // Combine with tendrils
+                float tendrilDist = tendrilDistance(localPos, tileIndex);
+
+                return min(blobDist, tendrilDist);
             }
 
             // Paint splatters
