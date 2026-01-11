@@ -1,4 +1,10 @@
-export default class RenderPass {
+import PerkyModule from '../../core/perky_module.js'
+
+
+export default class RenderPass extends PerkyModule {
+
+    static $category = 'renderPass'
+    static $lifecycle = false
 
     static shaderDefinition = null
     static defaultUniforms = {}
@@ -8,7 +14,8 @@ export default class RenderPass {
     #program = null
     #uniforms = {}
 
-    constructor () {
+    constructor (options = {}) {
+        super(options)
         this.#uniforms = {...this.constructor.defaultUniforms}
     }
 
@@ -94,7 +101,7 @@ export default class RenderPass {
     }
 
 
-    dispose () {
+    onDispose () {
         this.#program = null
         this.#uniforms = {}
     }

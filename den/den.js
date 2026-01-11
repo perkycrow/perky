@@ -37,23 +37,22 @@ export default class DefendTheDen extends Game {
             pointerEvents: 'none'
         }
     ]
+    static postPasses = [DayNightPass, VignettePass]
+
+    get dayNightPass () {
+        return this.getCanvas('game')?.renderer?.getPass('dayNightPass')
+    }
+
 
     configureGame () {
-        const gameLayer = this.getCanvas('game')
-
-        this.dayNightPass = new DayNightPass()
-        gameLayer.renderer.addPostPass(this.dayNightPass)
-        this.dayNightPass.setNight()
-
-        const vignettePass = new VignettePass()
-        gameLayer.renderer.addPostPass(vignettePass)
+        const gameCanvas = this.getCanvas('game')
 
         this.waveSystem = this.create(WaveSystem, {$bind: 'waveSystem'})
 
         this.waveSystem.on('tick', ({wave, day, progress, timeOfDay, isSpawning}) => {
-            this.dayNightPass.setUniform('uAspectRatio', gameLayer.canvas.width / gameLayer.canvas.height)
-            this.dayNightPass.setUniform('uTime', performance.now() / 1000)
-            this.dayNightPass.setProgress(timeOfDay)
+            this.dayNightPass?.setUniform('uAspectRatio', gameCanvas.canvas.width / gameCanvas.canvas.height)
+            this.dayNightPass?.setUniform('uTime', performance.now() / 1000)
+            this.dayNightPass?.setProgress(timeOfDay)
             this.#updateShadows(timeOfDay)
 
             const denController = this.getController('den')

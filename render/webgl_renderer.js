@@ -209,15 +209,27 @@ export default class WebGLRenderer extends BaseRenderer {
     }
 
 
-    addPostPass (pass) {
+    addPostPass (PassClass, options = {}) {
+        const pass = this.create(PassClass, options)
         this.#postProcessor.addPass(pass)
-        return this
+        return pass
     }
 
 
     removePostPass (pass) {
+        this.removeChild(pass.$id)
         this.#postProcessor.removePass(pass)
         return this
+    }
+
+
+    getPass (name) {
+        return this.getChild(name)
+    }
+
+
+    get postPasses () {
+        return this.childrenByCategory('renderPass')
     }
 
 

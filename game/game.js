@@ -18,6 +18,7 @@ export default class Game extends Application {
 
     static camera = {unitsInView: {width: 10, height: 10}}
     static layer = {type: 'webgl'}
+    static postPasses = []
 
     constructor (params = {}) {
         super(params)
@@ -80,6 +81,24 @@ export default class Game extends Application {
     onStart () {
         this.#buildTextureAtlases()
         this.#listenForLateAssets()
+        this.#setupPostPasses()
+    }
+
+
+    #setupPostPasses () {
+        const postPasses = this.constructor.postPasses
+        if (!postPasses || postPasses.length === 0) {
+            return
+        }
+
+        const canvas = this.getCanvas('game')
+        if (!canvas?.renderer?.addPostPass) {
+            return
+        }
+
+        for (const PassClass of postPasses) {
+            canvas.renderer.addPostPass(PassClass)
+        }
     }
 
 

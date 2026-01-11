@@ -4,6 +4,28 @@ import Camera from './camera.js'
 import Group2D from './group_2d.js'
 import Circle from './circle.js'
 import Rectangle from './rectangle.js'
+import RenderPass from './postprocessing/render_pass.js'
+
+
+class MockPass extends RenderPass {
+
+    static $name = 'mockPass'
+
+    static shaderDefinition = {
+        vertex: `#version 300 es
+            in vec2 aPosition;
+            void main() { gl_Position = vec4(aPosition, 0.0, 1.0); }
+        `,
+        fragment: `#version 300 es
+            precision mediump float;
+            out vec4 fragColor;
+            void main() { fragColor = vec4(1.0); }
+        `,
+        uniforms: [],
+        attributes: ['aPosition']
+    }
+
+}
 
 
 // WebGL mock is provided by test/setup.js
@@ -163,41 +185,28 @@ describe('WebGLRenderer', () => {
 
 
         test('can add post pass', () => {
-            const mockPass = {
-                init: vi.fn(),
-                getShaderDefinition: () => ({
-                    vertex: 'void main() {}',
-                    fragment: 'void main() {}',
-                    uniforms: [],
-                    attributes: []
-                }),
-                enabled: true,
-                render: vi.fn(),
-                dispose: vi.fn()
-            }
-
-            renderer.addPostPass(mockPass)
+            const pass = renderer.addPostPass(MockPass)
             expect(renderer.postProcessor.passes.length).toBe(1)
+            expect(pass).toBeInstanceOf(MockPass)
+        })
+
+
+        test('can get post pass by name', () => {
+            renderer.addPostPass(MockPass)
+            expect(renderer.getPass('mockPass')).toBeInstanceOf(MockPass)
         })
 
 
         test('can remove post pass', () => {
-            const mockPass = {
-                init: vi.fn(),
-                getShaderDefinition: () => ({
-                    vertex: 'void main() {}',
-                    fragment: 'void main() {}',
-                    uniforms: [],
-                    attributes: []
-                }),
-                enabled: true,
-                render: vi.fn(),
-                dispose: vi.fn()
-            }
-
-            renderer.addPostPass(mockPass)
-            renderer.removePostPass(mockPass)
+            const pass = renderer.addPostPass(MockPass)
+            renderer.removePostPass(pass)
             expect(renderer.postProcessor.passes.length).toBe(0)
+        })
+
+
+        test('postPasses returns all render passes', () => {
+            renderer.addPostPass(MockPass)
+            expect(renderer.postPasses.length).toBe(1)
         })
 
     })

@@ -3,6 +3,8 @@ import RenderPass from '../../render/postprocessing/render_pass.js'
 
 export default class DayNightPass extends RenderPass {
 
+    static $name = 'dayNightPass'
+
     static shaderDefinition = {
         vertex: `#version 300 es
             in vec2 aPosition;

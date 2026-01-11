@@ -3,6 +3,8 @@ import RenderPass from '../render_pass.js'
 
 export default class VignettePass extends RenderPass {
 
+    static $name = 'vignettePass'
+
     static shaderDefinition = {
         vertex: `#version 300 es
             in vec2 aPosition;
