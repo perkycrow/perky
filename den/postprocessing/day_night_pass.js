@@ -18,6 +18,7 @@ export default class DayNightPass extends RenderPass {
             uniform sampler2D uTexture;
             uniform float uDayNightProgress;
             uniform float uAspectRatio;
+            uniform float uTime;
             in vec2 vTexCoord;
             out vec4 fragColor;
 
@@ -102,11 +103,11 @@ export default class DayNightPass extends RenderPass {
             const float FOG_END_Y = 0.85;
             const float HAZE_START_Y = 0.50;
             const float HAZE_END_Y = 0.88;
-            const float HAZE_STRENGTH = 0.20;
+            const float HAZE_STRENGTH = 0.30;
 
             // Grain
             const float GRAIN_AMOUNT_DAY = 0.015;
-            const float GRAIN_AMOUNT_NIGHT = 0.035;
+            const float GRAIN_AMOUNT_NIGHT = 0.02;
 
             // DEBUG: uncomment to visualize sun radius and terrain intersection
             // #define DEBUG_SUN_RADIUS
@@ -124,7 +125,8 @@ export default class DayNightPass extends RenderPass {
 
             float grain(vec2 uv, float time) {
                 vec2 p = uv * vec2(1280.0, 720.0);
-                return random(floor(p) + time) - 0.5;
+                float t = floor(time) + random(floor(p) * 0.01);
+                return random(floor(p) + t) - 0.5;
             }
 
             // ─────────────────────────────────────────────────────────────
@@ -636,18 +638,19 @@ export default class DayNightPass extends RenderPass {
 
                 // Grain (subtle, more visible at night)
                 float grainAmount = mix(GRAIN_AMOUNT_DAY, GRAIN_AMOUNT_NIGHT, ambiance.nightFactor);
-                rgb += grain(vTexCoord, uDayNightProgress * 100.0) * grainAmount;
+                rgb += grain(vTexCoord, uTime * 60.0) * grainAmount;
 
                 fragColor = vec4(clamp(rgb, 0.0, 1.0), color.a);
             }
         `,
-        uniforms: ['uTexture', 'uDayNightProgress', 'uAspectRatio'],
+        uniforms: ['uTexture', 'uDayNightProgress', 'uAspectRatio', 'uTime'],
         attributes: ['aPosition', 'aTexCoord']
     }
 
     static defaultUniforms = {
         uDayNightProgress: 0.0,
-        uAspectRatio: 1.0
+        uAspectRatio: 1.0,
+        uTime: 0.0
     }
 
     static uniformConfig = {

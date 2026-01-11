@@ -94,6 +94,7 @@ export default class DefendTheDen extends Game {
 
         this.on('update', (delta) => {
             this.dayNightPass.setUniform('uAspectRatio', gameLayer.canvas.width / gameLayer.canvas.height)
+            this.dayNightPass.setUniform('uTime', performance.now() / 1000)
 
             if (this.dayPaused) {
                 return
