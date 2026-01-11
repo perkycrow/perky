@@ -1,5 +1,5 @@
 import EntityView from '../../game/entity_view.js'
-import Circle from '../../render/circle.js'
+import Sprite from '../../render/sprite.js'
 
 
 export default class PlayerView extends EntityView {
@@ -7,11 +7,12 @@ export default class PlayerView extends EntityView {
     constructor (entity, context) {
         super(entity, context)
 
-        this.root = new Circle({
+        this.root = new Sprite({
+            region: context.game.getRegion('shade'),
             x: entity.x,
             y: entity.y,
-            radius: 0.3,
-            color: '#ffffff'
+            width: 1,
+            height: 1
         })
     }
 

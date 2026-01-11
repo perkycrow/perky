@@ -3,11 +3,13 @@ import GhastWorld from './ghast_world.js'
 import GameController from './controllers/game_controller.js'
 import GameRenderer from './game_renderer.js'
 import GroundPass from './postprocessing/ground_pass.js'
+import manifest from './manifest.js'
 
 
 export default class Ghast extends Game {
 
     static $name = 'ghast'
+    static manifest = manifest
 
     constructor (params = {}) {
         const renderSystemConfig = {
@@ -88,7 +90,14 @@ export default class Ghast extends Game {
 
 
     onStart () {
+        this.#buildTextureAtlases()
         this.execute('spawnPlayer', {x: 0, y: 0})
+    }
+
+
+    #buildTextureAtlases () {
+        const assets = this.getAllAssets()
+        this.textureSystem.buildFromAssets(assets)
     }
 
 }

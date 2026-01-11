@@ -9,7 +9,8 @@ async function init () {
 
     const container = document.getElementById('ghast')
     const app = await appManager.spawn('ghast', {
-        container
+        container,
+        preload: 'all'
     })
 
     window.ghast = app
