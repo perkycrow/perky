@@ -1,6 +1,6 @@
 import Game from '../game/game.js'
 import GhastWorld from './ghast_world.js'
-import GameController from './controllers/game_controller.js'
+import GhastController from './controllers/ghast_controller.js'
 import GameRenderer from './game_renderer.js'
 import GroundPass from './postprocessing/ground_pass.js'
 import manifest from './manifest.js'
@@ -41,19 +41,13 @@ export default class Ghast extends Game {
 
         this.camera = this.renderSystem.getCamera('main')
 
-        this.registerController('game', GameController)
-        this.setActiveControllers(['game'])
-
-        const gameController = this.getController('game')
-        gameController.world = this.world
-
         this.renderer = this.create(GameRenderer, {
             $id: 'renderer',
             world: this.world,
             game: this
         })
 
-        gameController.renderer = this.renderer
+        this.registerController(GhastController)
 
 
         const gameLayer = this.getCanvas('game')

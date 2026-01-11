@@ -1,4 +1,5 @@
 import ActionController from './action_controller.js'
+import PerkyModule from './perky_module.js'
 import {vi} from 'vitest'
 
 
@@ -13,6 +14,153 @@ describe(ActionController, () => {
 
     test('constructor', () => {
         expect(controller.getAction('any')).toBeUndefined()
+    })
+
+
+    test('static resources is empty by default', () => {
+        expect(ActionController.resources).toEqual([])
+    })
+
+
+    describe('engine', () => {
+
+        test('engine is null by default when no host', () => {
+            expect(controller.engine).toBeNull()
+        })
+
+
+        test('engine can be set explicitly', () => {
+            const mockEngine = {name: 'test'}
+            controller.engine = mockEngine
+
+            expect(controller.engine).toBe(mockEngine)
+        })
+
+
+        test('engine falls back to host.engine', () => {
+            const mockEngine = {name: 'test'}
+            const dispatcher = new PerkyModule()
+            dispatcher.engine = mockEngine
+
+            dispatcher.addChild(controller)
+
+            expect(controller.engine).toBe(mockEngine)
+        })
+
+
+        test('engine falls back to host.host', () => {
+            const mockApp = {name: 'app'}
+            const dispatcher = new PerkyModule()
+            const app = new PerkyModule()
+
+            app.addChild(dispatcher)
+            dispatcher.addChild(controller)
+
+            expect(controller.engine).toBe(app)
+        })
+
+
+        test('engine falls back to host', () => {
+            const host = new PerkyModule()
+            host.addChild(controller)
+
+            expect(controller.engine).toBe(host)
+        })
+
+
+        test('explicit engine takes priority', () => {
+            const explicitEngine = {name: 'explicit'}
+            const host = new PerkyModule()
+            host.engine = {name: 'host-engine'}
+
+            host.addChild(controller)
+            controller.engine = explicitEngine
+
+            expect(controller.engine).toBe(explicitEngine)
+        })
+
+    })
+
+
+    describe('resource getters', () => {
+
+        test('creates getters for static resources', () => {
+            class TestController extends ActionController {
+                static resources = ['world', 'renderer']
+            }
+
+            const mockWorld = {name: 'world'}
+            const mockRenderer = {name: 'renderer'}
+            const mockEngine = {world: mockWorld, renderer: mockRenderer}
+
+            const testController = new TestController()
+            testController.engine = mockEngine
+
+            expect(testController.world).toBe(mockWorld)
+            expect(testController.renderer).toBe(mockRenderer)
+        })
+
+
+        test('getters are lazy - engine can be set after construction', () => {
+            class TestController extends ActionController {
+                static resources = ['world']
+            }
+
+            const testController = new TestController()
+            expect(testController.world).toBeUndefined()
+
+            const mockWorld = {name: 'world'}
+            testController.engine = {world: mockWorld}
+
+            expect(testController.world).toBe(mockWorld)
+        })
+
+
+        test('getters reflect engine changes', () => {
+            class TestController extends ActionController {
+                static resources = ['world']
+            }
+
+            const world1 = {name: 'world1'}
+            const world2 = {name: 'world2'}
+
+            const testController = new TestController()
+            testController.engine = {world: world1}
+            expect(testController.world).toBe(world1)
+
+            testController.engine = {world: world2}
+            expect(testController.world).toBe(world2)
+        })
+
+
+        test('can override getter with direct assignment', () => {
+            class TestController extends ActionController {
+                static resources = ['world']
+            }
+
+            const engineWorld = {name: 'engine'}
+            const directWorld = {name: 'direct'}
+
+            const testController = new TestController()
+            testController.engine = {world: engineWorld}
+            testController.world = directWorld
+
+            expect(testController.world).toBe(directWorld)
+        })
+
+
+        test('skips resources already defined on instance', () => {
+            class TestController extends ActionController {
+                static resources = ['world']
+                world = {name: 'predefined'}
+            }
+
+            const testController = new TestController()
+            testController.engine = {world: {name: 'engine'}}
+
+            expect(testController.world.name).toBe('predefined')
+        })
+
     })
 
 

@@ -1,13 +1,15 @@
-import WorldController from '../../game/world_controller.js'
+import GameController from '../../game/game_controller.js'
 
 
-export default class GameController extends WorldController {
+export default class DenController extends GameController {
 
     static bindings = {
         moveUp: ['KeyW', 'ArrowUp', 'swipeUp'],
         moveDown: ['KeyS', 'ArrowDown', 'swipeDown'],
         shoot: ['Space', 'tap']
     }
+
+    static resources = ['world', 'renderer', 'denAudio']
 
     static waveSettings = {
         baseEnemySpeed: 0.4,
@@ -149,7 +151,7 @@ export default class GameController extends WorldController {
             y: player.y + 0.4
         })
 
-        this.game.denAudio?.playShoot()
+        this.denAudio?.playShoot()
     }
 
 

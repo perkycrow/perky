@@ -1,7 +1,7 @@
-import WorldController from '../../game/world_controller.js'
+import GameController from '../../game/game_controller.js'
 
 
-export default class GameController extends WorldController {
+export default class GhastController extends GameController {
 
     static bindings = {
         moveUp: ['KeyW', 'ArrowUp', 'swipeUp'],

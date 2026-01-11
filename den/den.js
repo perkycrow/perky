@@ -1,7 +1,7 @@
 import Game from '../game/game.js'
 import DenWorld from './den_world.js'
 
-import GameController from './controllers/game_controller.js'
+import DenController from './controllers/den_controller.js'
 import GameRenderer from './game_renderer.js'
 import WaveProgressBar from './ui/wave_progress_bar.js'
 import DenAudioManager from './den_audio_manager.js'
@@ -57,20 +57,13 @@ export default class DefendTheDen extends Game {
 
         this.camera = this.renderSystem.getCamera('main')
 
-        this.registerController('game', GameController)
-        this.setActiveControllers(['game'])
-
-
         this.renderer = this.create(GameRenderer, {
             $id: 'renderer',
             world: this.world,
             game: this
         })
 
-        const gameController = this.getController('game')
-        gameController.world = this.world
-        gameController.renderer = this.renderer
-        gameController.game = this
+        this.registerController(DenController)
 
         const gameLayer = this.getCanvas('game')
 
@@ -120,9 +113,11 @@ export default class DefendTheDen extends Game {
 
             const hasEnemies = this.world.childrenByTags('enemy').length > 0
 
+            const denController = this.getController('den')
+
             if (!isSpawning && hasEnemies) {
                 this.waitingForClear = true
-                gameController.setSpawning(false)
+                denController.setSpawning(false)
                 this.emit('wave:tick', {wave, progress: 1, dayNumber, timeOfDay: this.timeOfDay, isSpawning: false})
                 return
             }
@@ -130,7 +125,7 @@ export default class DefendTheDen extends Game {
             this.dayNightPass.setProgress(this.timeOfDay)
             this.#updateShadows(this.timeOfDay)
 
-            gameController.setSpawning(isSpawning)
+            denController.setSpawning(isSpawning)
 
             this.emit('wave:tick', {wave, progress: waveProgress, dayNumber, timeOfDay: this.timeOfDay, isSpawning})
         })
@@ -158,8 +153,8 @@ export default class DefendTheDen extends Game {
 
         this.execute('spawnPlayer', {x: -2.5})
 
-        const gameController = this.getController('game')
-        gameController.onWaveStart(0, 0)
+        const denController = this.getController('den')
+        denController.onWaveStart(0, 0)
         this.emit('wave:start', {wave: 0, dayNumber: 0})
         this.emit('day:start', {dayNumber: 0})
     }
@@ -195,7 +190,7 @@ export default class DefendTheDen extends Game {
 
     #startNextWave () {
         const nextWave = this.currentWave + 1
-        const gameController = this.getController('game')
+        const denController = this.getController('den')
 
         if (nextWave >= 4) {
             this.currentDay++
@@ -204,19 +199,19 @@ export default class DefendTheDen extends Game {
             this.waveElapsedTime = 0
 
             this.dayPaused = true
-            gameController.setSpawning(false)
+            denController.setSpawning(false)
             this.emit('day:announce', {dayNumber: this.currentDay})
 
             setTimeout(() => {
                 this.dayPaused = false
-                gameController.onWaveStart(0, this.currentDay)
+                denController.onWaveStart(0, this.currentDay)
                 this.emit('wave:start', {wave: 0, dayNumber: this.currentDay})
                 this.emit('day:start', {dayNumber: this.currentDay})
             }, this.dayAnnouncementDuration * 1000)
         } else {
             this.currentWave = nextWave
             this.waveElapsedTime = 0
-            gameController.onWaveStart(nextWave, this.currentDay)
+            denController.onWaveStart(nextWave, this.currentDay)
             this.emit('wave:start', {wave: nextWave, dayNumber: this.currentDay})
         }
     }

@@ -6,15 +6,45 @@ export default class ActionController extends PerkyModule {
 
     static propagable = []
     static bindings = {}
+    static resources = []
     static $category = 'actionController'
 
     #actions = new Registry()
     #actionList = []
+    #engine = null
 
     constructor (options = {}) {
         super(options)
-        this.context = {}
         this.#actionList = extractPrototypeMethods(this)
+        this.#defineResourceGetters()
+    }
+
+
+    get engine () {
+        return this.#engine ?? this.host?.engine ?? this.host?.host ?? this.host
+    }
+
+
+    set engine (value) {
+        this.#engine = value
+    }
+
+
+    #defineResourceGetters () {
+        for (const name of this.constructor.resources) {
+            if (this[name] === undefined) {
+                let override
+                Object.defineProperty(this, name, {
+                    get: () => {
+                        return override === undefined ? this.engine?.[name] : override
+                    },
+                    set: (value) => {
+                        override = value
+                    },
+                    configurable: true
+                })
+            }
+        }
     }
 
 
@@ -109,7 +139,7 @@ export default class ActionController extends PerkyModule {
         'listActions',
         'listActionsWithParams',
         'execute',
-        'context'
+        'engine'
     ])
 
 }

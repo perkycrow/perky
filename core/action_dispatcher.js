@@ -77,11 +77,33 @@ export default class ActionDispatcher extends PerkyModule {
     }
 
 
-    register (name, Controller = ActionController) {
-        return this.create(Controller, {
+    register (nameOrController, ControllerOrOptions = ActionController, maybeOptions = {}) {
+        let name, Controller, options
+
+        if (typeof nameOrController === 'string') {
+            name = nameOrController
+            Controller = ControllerOrOptions
+            options = maybeOptions
+        } else if (typeof nameOrController === 'function') {
+            Controller = nameOrController
+            options = typeof ControllerOrOptions === 'object' ? ControllerOrOptions : {}
+            name = options.name || Controller.$name || resolveControllerName(Controller)
+        } else {
+            return null
+        }
+
+        const controller = this.create(Controller, {
             $id: name,
             $category: 'controller'
         })
+
+        if (options.active !== false && this.#activeControllers.length === 1) {
+            this.pushActive(name)
+        }
+
+        this.emit('controller:set', name, controller)
+
+        return controller
     }
 
 
@@ -239,4 +261,12 @@ export default class ActionDispatcher extends PerkyModule {
         return allActions
     }
 
+}
+
+
+function resolveControllerName (Controller) {
+    const className = Controller.name || 'controller'
+    return className
+        .replace(/Controller$/, '')
+        .replace(/^[A-Z]/, c => c.toLowerCase())
 }
