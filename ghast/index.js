@@ -1,5 +1,6 @@
 import ApplicationManager from '../application/application_manager.js'
 import Ghast from './ghast.js'
+import {PerkyDevTools} from '../editor/devtools/index.js'
 
 
 async function init () {
@@ -13,8 +14,14 @@ async function init () {
         preload: 'all'
     })
 
+    const devtools = new PerkyDevTools()
+    document.body.appendChild(devtools)
+    devtools.setModule(app)
+    devtools.setAppManager(appManager)
+
     window.ghast = app
     window.appManager = appManager
+    window.devtools = devtools
 }
 
 if (document.readyState === 'loading') {
