@@ -1,7 +1,7 @@
 import Game from '../game/game.js'
 import GhastWorld from './ghast_world.js'
 import GhastController from './controllers/ghast_controller.js'
-import GameRenderer from './game_renderer.js'
+import GhastRenderer from './ghast_renderer.js'
 import GroundPass from './postprocessing/ground_pass.js'
 import manifest from './manifest.js'
 
@@ -41,7 +41,7 @@ export default class Ghast extends Game {
 
         this.camera = this.renderSystem.getCamera('main')
 
-        this.renderer = this.create(GameRenderer, {
+        this.renderer = this.create(GhastRenderer, {
             $id: 'renderer',
             world: this.world,
             game: this

@@ -2,7 +2,7 @@ import Game from '../game/game.js'
 import DenWorld from './den_world.js'
 
 import DenController from './controllers/den_controller.js'
-import GameRenderer from './game_renderer.js'
+import DenRenderer from './den_renderer.js'
 import WaveProgressBar from './ui/wave_progress_bar.js'
 import DenAudioManager from './den_audio_manager.js'
 
@@ -57,7 +57,7 @@ export default class DefendTheDen extends Game {
 
         this.camera = this.renderSystem.getCamera('main')
 
-        this.renderer = this.create(GameRenderer, {
+        this.renderer = this.create(DenRenderer, {
             $id: 'renderer',
             world: this.world,
             game: this

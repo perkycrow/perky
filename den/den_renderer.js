@@ -1,7 +1,6 @@
+import GameRenderer from '../game/game_renderer.js'
 import Group2D from '../render/group_2d.js'
 import Sprite from '../render/sprite.js'
-import WorldView from '../game/world_view.js'
-import PerkyModule from '../core/perky_module.js'
 import {ShadowTransform} from '../render/transforms/index.js'
 
 import Player from './player.js'
@@ -26,21 +25,10 @@ import WaveEffect from './effects/wave_effect.js'
 import HitboxDebug from './hitbox_debug.js'
 
 
-export default class GameRenderer extends PerkyModule {
+export default class DenRenderer extends GameRenderer {
 
     constructor (options = {}) {
         super(options)
-        this.world = options.world
-        this.game = options.game
-
-        this.backgroundGroup = new Group2D({name: 'background'})
-        this.entitiesGroup = new Group2D({name: 'entities'})
-
-        this.worldView = this.create(WorldView, {
-            $id: 'worldView',
-            world: this.world,
-            game: this.game
-        })
 
         this.impactParticles = this.create(ImpactParticles, {
             count: 8,
@@ -51,11 +39,11 @@ export default class GameRenderer extends PerkyModule {
 
         this.hitboxDebug = new HitboxDebug(this.world)
 
-        this.#registerViews()
+        this.#registerShaderEffects()
     }
 
 
-    #registerViews () {
+    registerViews () {
         this.worldView
             .register(Player, PlayerView)
             .register(PigEnemy, PigEnemyView, {image: 'pig', width: 1, height: 1})
@@ -66,46 +54,10 @@ export default class GameRenderer extends PerkyModule {
     }
 
 
-    onStart () {
-        this.#registerShaderEffects()
-        this.#buildScene()
-        this.#setupRenderGroups()
-    }
-
-
-    #registerShaderEffects () {
+    setupRenderGroups () {
         const gameLayer = this.game.getCanvas('game')
-        gameLayer.renderer.registerShaderEffect(ChromaticEffect)
-        gameLayer.renderer.registerShaderEffect(OutlineEffect)
-        gameLayer.renderer.registerShaderEffect(WaveEffect)
-    }
 
-
-    #buildScene () {
-        const backgroundRegion = this.game.getRegion('background')
-        const backgroundHeight = 5
-        const backgroundWidth = (backgroundRegion.width / backgroundRegion.height) * backgroundHeight
-
-        const background = new Sprite({
-            region: backgroundRegion,
-            x: 0,
-            y: 0,
-            width: backgroundWidth,
-            height: backgroundHeight
-        })
-
-        this.backgroundGroup.addChild(background)
-        this.entitiesGroup.addChild(this.worldView.rootGroup)
-        this.entitiesGroup.addChild(this.impactParticles.particleGroup)
-
-        this.listenTo(this.world, 'enemy:hit', (data) => {
-            this.impactParticles.spawn(data.x, data.y, data.direction)
-        })
-    }
-
-
-    #setupRenderGroups () {
-        const gameLayer = this.game.getCanvas('game')
+        this.backgroundGroup = new Group2D({name: 'background'})
 
         this.shadowTransform = new ShadowTransform({
             skewX: 0.1,
@@ -113,6 +65,9 @@ export default class GameRenderer extends PerkyModule {
             offsetY: 0.0,
             color: [0, 0, 0, 0.3]
         })
+
+        this.entitiesGroup.addChild(this.worldView.rootGroup)
+        this.entitiesGroup.addChild(this.impactParticles.particleGroup)
 
         gameLayer.renderer.setRenderGroups([
             {
@@ -133,6 +88,41 @@ export default class GameRenderer extends PerkyModule {
                 content: this.hitboxDebug.group
             }
         ])
+
+        this.listenTo(this.world, 'enemy:hit', (data) => {
+            this.impactParticles.spawn(data.x, data.y, data.direction)
+        })
+    }
+
+
+    onStart () {
+        super.onStart()
+        this.#buildBackground()
+    }
+
+
+    #registerShaderEffects () {
+        const gameLayer = this.game.getCanvas('game')
+        gameLayer.renderer.registerShaderEffect(ChromaticEffect)
+        gameLayer.renderer.registerShaderEffect(OutlineEffect)
+        gameLayer.renderer.registerShaderEffect(WaveEffect)
+    }
+
+
+    #buildBackground () {
+        const backgroundRegion = this.game.getRegion('background')
+        const backgroundHeight = 5
+        const backgroundWidth = (backgroundRegion.width / backgroundRegion.height) * backgroundHeight
+
+        const background = new Sprite({
+            region: backgroundRegion,
+            x: 0,
+            y: 0,
+            width: backgroundWidth,
+            height: backgroundHeight
+        })
+
+        this.backgroundGroup.addChild(background)
     }
 
 

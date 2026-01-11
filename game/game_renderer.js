@@ -1,9 +1,6 @@
 import Group2D from '../render/group_2d.js'
-import WorldView from '../game/world_view.js'
+import WorldView from './world_view.js'
 import PerkyModule from '../core/perky_module.js'
-
-import Player from './player.js'
-import PlayerView from './views/player_view.js'
 
 
 export default class GameRenderer extends PerkyModule {
@@ -21,21 +18,21 @@ export default class GameRenderer extends PerkyModule {
             game: this.game
         })
 
-        this.#registerViews()
-    }
-
-
-    #registerViews () {
-        this.worldView.register(Player, PlayerView)
+        this.registerViews()
     }
 
 
     onStart () {
-        this.#setupRenderGroups()
+        this.setupRenderGroups()
     }
 
 
-    #setupRenderGroups () {
+    registerViews () {
+        // Override in subclass to register entity views
+    }
+
+
+    setupRenderGroups () {
         const gameLayer = this.game.getCanvas('game')
 
         this.entitiesGroup.addChild(this.worldView.rootGroup)
