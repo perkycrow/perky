@@ -53,8 +53,8 @@ describe('TextureAtlas', () => {
 
         test('default dimensions', () => {
             const defaultAtlas = new TextureAtlas()
-            expect(defaultAtlas.width).toBe(2048)
-            expect(defaultAtlas.height).toBe(2048)
+            expect(defaultAtlas.width).toBe(4096)
+            expect(defaultAtlas.height).toBe(4096)
         })
 
 
@@ -285,7 +285,7 @@ describe('TextureAtlas', () => {
     describe('static properties', () => {
 
         test('DEFAULT_SIZE', () => {
-            expect(TextureAtlas.DEFAULT_SIZE).toBe(2048)
+            expect(TextureAtlas.DEFAULT_SIZE).toBe(4096)
         })
 
 
