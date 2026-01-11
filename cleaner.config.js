@@ -1,7 +1,9 @@
 export default {
     missingTests: {
         excludeDirs: [
-            'den/'
+            'den/',
+            'ghast/',
+            'examples/'
         ],
         excludeFiles: [
             '**/test_helpers.js',
@@ -10,7 +12,9 @@ export default {
     },
     missingDocs: {
         excludeDirs: [
-            'den/'
+            'den/',
+            'ghast/',
+            'examples/'
         ]
     },
     multipleClasses: {
