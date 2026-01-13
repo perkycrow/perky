@@ -11,8 +11,8 @@ import GameController from './game_controller.js'
 export default class Game extends Application {
 
     static World = World
-    static View = GameView
-    static Controller = GameController
+    static GameView = GameView
+    static ActionController = GameController
     static RenderSystem = RenderSystem
     static AudioSystem = AudioSystem
 
@@ -53,7 +53,7 @@ export default class Game extends Application {
     #createView () {
         this.camera = this.renderSystem.getCamera('main')
 
-        const ViewClass = this.constructor.View
+        const ViewClass = this.constructor.GameView
         if (ViewClass) {
             this.view = this.create(ViewClass, {
                 $id: 'view',

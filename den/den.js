@@ -17,8 +17,8 @@ export default class DefendTheDen extends Game {
     static $name = 'defendTheDen'
     static manifest = manifest
     static World = DenWorld
-    static View = DenView
-    static Controller = DenController
+    static GameView = DenView
+    static ActionController = DenController
 
     static camera = {unitsInView: {width: 7, height: 5}}
     static layers = [

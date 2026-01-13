@@ -52,7 +52,7 @@ export default class GameView extends PerkyModule {
 
 
     registerViews () {
-        // Override in subclass
+
     }
 
 

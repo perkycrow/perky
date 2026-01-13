@@ -15,7 +15,7 @@ export default class Application extends PerkyModule {
 
     static $eagerStart = false
 
-    static Controller = ActionController
+    static ActionController = ActionController
 
     constructor (options = {}) {
         super(options)
@@ -56,9 +56,9 @@ export default class Application extends PerkyModule {
 
 
     #createMainController () {
-        const Controller = this.constructor.Controller
-        if (Controller) {
-            const controller = this.registerController(Controller)
+        const ControllerClass = this.constructor.ActionController
+        if (ControllerClass) {
+            const controller = this.registerController(ControllerClass)
             this.setActiveControllers(controller.$id)
         }
     }
