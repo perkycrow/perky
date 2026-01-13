@@ -1,12 +1,11 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
-import WorldView from './world_view.js'
+import GameView from './game_view.js'
 import Group2D from '../render/group_2d.js'
 import Circle from '../render/circle.js'
 import Sprite from '../render/sprite.js'
 import PerkyModule from '../core/perky_module.js'
 
 
-// Mock EntityView for testing
 class MockEntityView {
     constructor (entity, context) {
         this.entity = entity
@@ -27,7 +26,6 @@ class MockEntityView {
 }
 
 
-// Mock Entity class
 class MockEntity extends PerkyModule {
     static $category = 'entity'
 
@@ -44,13 +42,11 @@ class MockEntity extends PerkyModule {
 }
 
 
-// Another mock entity for testing multiple registrations
 class AnotherMockEntity extends PerkyModule {
     static $category = 'entity'
 }
 
 
-// Mock World that emits events
 class MockWorld extends PerkyModule {
     #entities = new Map()
 
@@ -70,17 +66,29 @@ class MockWorld extends PerkyModule {
 }
 
 
-describe('WorldView', () => {
+describe('GameView', () => {
 
-    let worldView
+    let gameView
     let mockWorld
     let mockGame
+    let mockCanvas
 
     beforeEach(() => {
         mockWorld = new MockWorld()
-        mockGame = {getSource: vi.fn()}
+        mockCanvas = {
+            renderer: {
+                setRenderGroups: vi.fn()
+            },
+            markDirty: vi.fn(),
+            render: vi.fn()
+        }
+        mockGame = {
+            getSource: vi.fn(),
+            getCanvas: vi.fn().mockReturnValue(mockCanvas),
+            clock: {deltaTime: 0.016}
+        }
 
-        worldView = new WorldView({
+        gameView = new GameView({
             world: mockWorld,
             game: mockGame
         })
@@ -90,18 +98,18 @@ describe('WorldView', () => {
     describe('constructor', () => {
 
         test('initializes with world and game references', () => {
-            expect(worldView.world).toBe(mockWorld)
-            expect(worldView.game).toBe(mockGame)
+            expect(gameView.world).toBe(mockWorld)
+            expect(gameView.game).toBe(mockGame)
         })
 
 
         test('creates a rootGroup', () => {
-            expect(worldView.rootGroup).toBeInstanceOf(Group2D)
+            expect(gameView.rootGroup).toBeInstanceOf(Group2D)
         })
 
 
         test('has correct $category', () => {
-            expect(WorldView.$category).toBe('worldView')
+            expect(GameView.$category).toBe('gameView')
         })
 
     })
@@ -110,44 +118,44 @@ describe('WorldView', () => {
     describe('register', () => {
 
         test('registers a view by class', () => {
-            worldView.register(MockEntity, MockEntityView)
+            gameView.register(MockEntity, MockEntityView)
 
             const entity = new MockEntity({$id: 'test-1'})
             mockWorld.addEntity(entity)
-            worldView.onStart()
+            gameView.onStart()
 
-            expect(worldView.getViews('test-1').length).toBe(1)
+            expect(gameView.getViews('test-1').length).toBe(1)
         })
 
 
         test('registers a view by matcher function', () => {
             const matcher = (entity) => entity.hasTag('enemy')
-            worldView.register(matcher, MockEntityView)
+            gameView.register(matcher, MockEntityView)
 
             const entity = new MockEntity({$id: 'test-2', entityTags: ['enemy']})
             mockWorld.addEntity(entity)
-            worldView.onStart()
+            gameView.onStart()
 
-            expect(worldView.getViews('test-2').length).toBe(1)
+            expect(gameView.getViews('test-2').length).toBe(1)
         })
 
 
         test('registers with config', () => {
             const config = {color: 'red', size: 10}
-            worldView.register(MockEntity, MockEntityView, config)
+            gameView.register(MockEntity, MockEntityView, config)
 
             const entity = new MockEntity({$id: 'test-3'})
             mockWorld.addEntity(entity)
-            worldView.onStart()
+            gameView.onStart()
 
-            const views = worldView.getViews('test-3')
+            const views = gameView.getViews('test-3')
             expect(views[0].context.config).toEqual(config)
         })
 
 
         test('returns this for chaining', () => {
-            const result = worldView.register(MockEntity, MockEntityView)
-            expect(result).toBe(worldView)
+            const result = gameView.register(MockEntity, MockEntityView)
+            expect(result).toBe(gameView)
         })
 
     })
@@ -156,8 +164,8 @@ describe('WorldView', () => {
     describe('unregister', () => {
 
         test('unregisters a class registration', () => {
-            worldView.register(MockEntity, MockEntityView)
-            const result = worldView.unregister(MockEntity)
+            gameView.register(MockEntity, MockEntityView)
+            const result = gameView.unregister(MockEntity)
 
             expect(result).toBe(true)
         })
@@ -165,15 +173,15 @@ describe('WorldView', () => {
 
         test('unregisters a matcher registration', () => {
             const matcher = (entity) => entity.hasTag('test')
-            worldView.register(matcher, MockEntityView)
-            const result = worldView.unregister(matcher)
+            gameView.register(matcher, MockEntityView)
+            const result = gameView.unregister(matcher)
 
             expect(result).toBe(true)
         })
 
 
         test('returns false for non-existent registration', () => {
-            const result = worldView.unregister(MockEntity)
+            const result = gameView.unregister(MockEntity)
             expect(result).toBe(false)
         })
 
@@ -181,40 +189,40 @@ describe('WorldView', () => {
 
 
     test('clearRegistry clears all registrations', () => {
-        worldView.register(MockEntity, MockEntityView)
-        worldView.register(AnotherMockEntity, MockEntityView)
+        gameView.register(MockEntity, MockEntityView)
+        gameView.register(AnotherMockEntity, MockEntityView)
 
-        const result = worldView.clearRegistry()
+        const result = gameView.clearRegistry()
 
-        expect(result).toBe(worldView)
+        expect(result).toBe(gameView)
     })
 
 
     describe('onStart', () => {
 
         test('listens to world entity:set events', () => {
-            worldView.register(MockEntity, MockEntityView)
-            worldView.onStart()
+            gameView.register(MockEntity, MockEntityView)
+            gameView.onStart()
 
             const entity = new MockEntity({$id: 'dynamic-1'})
             mockWorld.addEntity(entity)
 
-            expect(worldView.getViews('dynamic-1').length).toBe(1)
+            expect(gameView.getViews('dynamic-1').length).toBe(1)
         })
 
 
         test('listens to world entity:delete events', () => {
-            worldView.register(MockEntity, MockEntityView)
-            worldView.onStart()
+            gameView.register(MockEntity, MockEntityView)
+            gameView.onStart()
 
             const entity = new MockEntity({$id: 'to-delete'})
             mockWorld.addEntity(entity)
 
-            expect(worldView.getViews('to-delete').length).toBe(1)
+            expect(gameView.getViews('to-delete').length).toBe(1)
 
             mockWorld.removeEntity('to-delete')
 
-            expect(worldView.getViews('to-delete').length).toBe(0)
+            expect(gameView.getViews('to-delete').length).toBe(0)
         })
 
 
@@ -222,72 +230,96 @@ describe('WorldView', () => {
             const entity = new MockEntity({$id: 'existing-1'})
             mockWorld.addEntity(entity)
 
-            worldView.register(MockEntity, MockEntityView)
-            worldView.onStart()
+            gameView.register(MockEntity, MockEntityView)
+            gameView.onStart()
 
-            expect(worldView.getViews('existing-1').length).toBe(1)
+            expect(gameView.getViews('existing-1').length).toBe(1)
         })
 
 
         test('does nothing if no world', () => {
-            const noWorldView = new WorldView({game: mockGame})
+            const noWorldView = new GameView({game: mockGame})
             expect(() => noWorldView.onStart()).not.toThrow()
+        })
+
+
+        test('sets up render groups', () => {
+            gameView.onStart()
+
+            expect(mockCanvas.renderer.setRenderGroups).toHaveBeenCalledWith([
+                {
+                    $name: 'entities',
+                    content: gameView.rootGroup
+                }
+            ])
         })
 
     })
 
 
     test('onStop disposes all views', () => {
-        worldView.register(MockEntity, MockEntityView)
-        worldView.onStart()
+        gameView.register(MockEntity, MockEntityView)
+        gameView.onStart()
 
         const entity = new MockEntity({$id: 'stop-test'})
         mockWorld.addEntity(entity)
 
-        const views = worldView.getViews('stop-test')
+        const views = gameView.getViews('stop-test')
         expect(views.length).toBe(1)
 
-        worldView.onStop()
+        gameView.onStop()
 
-        // After stop, views should be cleared
-        expect(worldView.getViews('stop-test').length).toBe(0)
+        expect(gameView.getViews('stop-test').length).toBe(0)
     })
 
 
-    test('sync calls sync on all views', () => {
-        worldView.register(MockEntity, MockEntityView)
-        worldView.onStart()
+    describe('sync', () => {
 
-        const entity1 = new MockEntity({$id: 'sync-1'})
-        const entity2 = new MockEntity({$id: 'sync-2'})
-        mockWorld.addEntity(entity1)
-        mockWorld.addEntity(entity2)
+        test('calls sync on all views', () => {
+            gameView.register(MockEntity, MockEntityView)
+            gameView.onStart()
 
-        worldView.sync()
+            const entity1 = new MockEntity({$id: 'sync-1'})
+            const entity2 = new MockEntity({$id: 'sync-2'})
+            mockWorld.addEntity(entity1)
+            mockWorld.addEntity(entity2)
 
-        const views1 = worldView.getViews('sync-1')
-        const views2 = worldView.getViews('sync-2')
+            gameView.sync()
 
-        expect(views1[0].syncCalled).toBe(true)
-        expect(views2[0].syncCalled).toBe(true)
+            const views1 = gameView.getViews('sync-1')
+            const views2 = gameView.getViews('sync-2')
+
+            expect(views1[0].syncCalled).toBe(true)
+            expect(views2[0].syncCalled).toBe(true)
+        })
+
+
+        test('marks canvas dirty and renders', () => {
+            gameView.onStart()
+            gameView.sync()
+
+            expect(mockCanvas.markDirty).toHaveBeenCalled()
+            expect(mockCanvas.render).toHaveBeenCalled()
+        })
+
     })
 
 
     describe('getViews', () => {
 
         test('returns empty array for unknown entity', () => {
-            expect(worldView.getViews('unknown')).toEqual([])
+            expect(gameView.getViews('unknown')).toEqual([])
         })
 
 
         test('returns views for known entity', () => {
-            worldView.register(MockEntity, MockEntityView)
-            worldView.onStart()
+            gameView.register(MockEntity, MockEntityView)
+            gameView.onStart()
 
             const entity = new MockEntity({$id: 'get-test'})
             mockWorld.addEntity(entity)
 
-            const views = worldView.getViews('get-test')
+            const views = gameView.getViews('get-test')
             expect(views.length).toBe(1)
             expect(views[0]).toBeInstanceOf(MockEntityView)
         })
@@ -299,10 +331,10 @@ describe('WorldView', () => {
 
         test('emits view:added when entity is added', () => {
             const addedHandler = vi.fn()
-            worldView.on('view:added', addedHandler)
+            gameView.on('view:added', addedHandler)
 
-            worldView.register(MockEntity, MockEntityView)
-            worldView.onStart()
+            gameView.register(MockEntity, MockEntityView)
+            gameView.onStart()
 
             const entity = new MockEntity({$id: 'event-add'})
             mockWorld.addEntity(entity)
@@ -313,10 +345,10 @@ describe('WorldView', () => {
 
         test('emits view:removed when entity is deleted', () => {
             const removedHandler = vi.fn()
-            worldView.on('view:removed', removedHandler)
+            gameView.on('view:removed', removedHandler)
 
-            worldView.register(MockEntity, MockEntityView)
-            worldView.onStart()
+            gameView.register(MockEntity, MockEntityView)
+            gameView.onStart()
 
             const entity = new MockEntity({$id: 'event-remove'})
             mockWorld.addEntity(entity)
@@ -331,36 +363,36 @@ describe('WorldView', () => {
     describe('view root integration', () => {
 
         test('adds view root to rootGroup', () => {
-            worldView.register(MockEntity, MockEntityView)
-            worldView.onStart()
+            gameView.register(MockEntity, MockEntityView)
+            gameView.onStart()
 
             const entity = new MockEntity({$id: 'root-test'})
             mockWorld.addEntity(entity)
 
-            expect(worldView.rootGroup.children.length).toBe(1)
+            expect(gameView.rootGroup.children.length).toBe(1)
         })
 
 
         test('sets $entity on view root', () => {
-            worldView.register(MockEntity, MockEntityView)
-            worldView.onStart()
+            gameView.register(MockEntity, MockEntityView)
+            gameView.onStart()
 
             const entity = new MockEntity({$id: 'meta-test'})
             mockWorld.addEntity(entity)
 
-            const child = worldView.rootGroup.children[0]
+            const child = gameView.rootGroup.children[0]
             expect(child.$entity).toBe(entity)
         })
 
 
         test('sets $view and $viewName on view root', () => {
-            worldView.register(MockEntity, MockEntityView)
-            worldView.onStart()
+            gameView.register(MockEntity, MockEntityView)
+            gameView.onStart()
 
             const entity = new MockEntity({$id: 'view-meta'})
             mockWorld.addEntity(entity)
 
-            const child = worldView.rootGroup.children[0]
+            const child = gameView.rootGroup.children[0]
             expect(child.$view).toBeInstanceOf(MockEntityView)
             expect(child.$viewName).toBe('MockEntityView')
         })
@@ -371,13 +403,13 @@ describe('WorldView', () => {
     describe('AutoView (Object2D registration)', () => {
 
         test('registers an Object2D class directly', () => {
-            worldView.register(MockEntity, Circle, {radius: 0.5, color: '#ff0000'})
-            worldView.onStart()
+            gameView.register(MockEntity, Circle, {radius: 0.5, color: '#ff0000'})
+            gameView.onStart()
 
             const entity = new MockEntity({$id: 'circle-1', x: 10, y: 20})
             mockWorld.addEntity(entity)
 
-            const views = worldView.getViews('circle-1')
+            const views = gameView.getViews('circle-1')
             expect(views.length).toBe(1)
             expect(views[0].root).toBeInstanceOf(Circle)
             expect(views[0].root.radius).toBe(0.5)
@@ -386,19 +418,19 @@ describe('WorldView', () => {
 
 
         test('auto-syncs x and y from entity', () => {
-            worldView.register(MockEntity, Circle, {radius: 0.5})
-            worldView.onStart()
+            gameView.register(MockEntity, Circle, {radius: 0.5})
+            gameView.onStart()
 
             const entity = new MockEntity({$id: 'sync-xy', x: 5, y: 10})
             mockWorld.addEntity(entity)
 
-            const view = worldView.getViews('sync-xy')[0]
+            const view = gameView.getViews('sync-xy')[0]
             expect(view.root.x).toBe(5)
             expect(view.root.y).toBe(10)
 
             entity.x = 15
             entity.y = 25
-            worldView.sync()
+            gameView.sync()
 
             expect(view.root.x).toBe(15)
             expect(view.root.y).toBe(25)
@@ -406,102 +438,102 @@ describe('WorldView', () => {
 
 
         test('supports custom sync bindings with string property name', () => {
-            worldView.register(MockEntity, Circle, {
+            gameView.register(MockEntity, Circle, {
                 radius: 0.5,
                 sync: {
                     opacity: 'health'
                 }
             })
-            worldView.onStart()
+            gameView.onStart()
 
             const entity = new MockEntity({$id: 'sync-string', x: 0, y: 0})
             entity.health = 0.75
             mockWorld.addEntity(entity)
 
-            worldView.sync()
+            gameView.sync()
 
-            const view = worldView.getViews('sync-string')[0]
+            const view = gameView.getViews('sync-string')[0]
             expect(view.root.opacity).toBe(0.75)
         })
 
 
         test('supports custom sync bindings with function', () => {
-            worldView.register(MockEntity, Circle, {
+            gameView.register(MockEntity, Circle, {
                 radius: 0.5,
                 sync: {
                     scaleX: (entity) => entity.health / 100
                 }
             })
-            worldView.onStart()
+            gameView.onStart()
 
             const entity = new MockEntity({$id: 'sync-fn', x: 0, y: 0})
             entity.health = 50
             mockWorld.addEntity(entity)
 
-            worldView.sync()
+            gameView.sync()
 
-            const view = worldView.getViews('sync-fn')[0]
+            const view = gameView.getViews('sync-fn')[0]
             expect(view.root.scaleX).toBe(0.5)
         })
 
 
         test('passes deltaTime to sync function', () => {
             const syncFn = vi.fn((entity, dt) => dt * 2)
-            worldView.register(MockEntity, Circle, {
+            gameView.register(MockEntity, Circle, {
                 radius: 0.5,
                 sync: {
                     opacity: syncFn
                 }
             })
-            worldView.onStart()
+            gameView.onStart()
 
             const entity = new MockEntity({$id: 'sync-dt', x: 0, y: 0})
             mockWorld.addEntity(entity)
 
-            worldView.sync(0.016)
+            gameView.sync()
 
             expect(syncFn).toHaveBeenCalledWith(entity, 0.016)
         })
 
 
         test('sets $viewName to Object2D class name', () => {
-            worldView.register(MockEntity, Circle, {radius: 0.5})
-            worldView.onStart()
+            gameView.register(MockEntity, Circle, {radius: 0.5})
+            gameView.onStart()
 
             const entity = new MockEntity({$id: 'viewname-test'})
             mockWorld.addEntity(entity)
 
-            const child = worldView.rootGroup.children[0]
+            const child = gameView.rootGroup.children[0]
             expect(child.$viewName).toBe('Circle')
         })
 
 
         test('works with Sprite', () => {
             const mockImage = {width: 100, height: 100}
-            worldView.register(MockEntity, Sprite, {image: mockImage, width: 1, height: 1})
-            worldView.onStart()
+            gameView.register(MockEntity, Sprite, {image: mockImage, width: 1, height: 1})
+            gameView.onStart()
 
             const entity = new MockEntity({$id: 'image-test', x: 0, y: 0})
             mockWorld.addEntity(entity)
 
-            const view = worldView.getViews('image-test')[0]
+            const view = gameView.getViews('image-test')[0]
             expect(view.root).toBeInstanceOf(Sprite)
             expect(view.root.image).toBe(mockImage)
         })
 
 
         test('disposes correctly', () => {
-            worldView.register(MockEntity, Circle, {radius: 0.5})
-            worldView.onStart()
+            gameView.register(MockEntity, Circle, {radius: 0.5})
+            gameView.onStart()
 
             const entity = new MockEntity({$id: 'dispose-test'})
             mockWorld.addEntity(entity)
 
-            expect(worldView.rootGroup.children.length).toBe(1)
+            expect(gameView.rootGroup.children.length).toBe(1)
 
             mockWorld.removeEntity('dispose-test')
 
-            expect(worldView.getViews('dispose-test').length).toBe(0)
+            expect(gameView.getViews('dispose-test').length).toBe(0)
         })
 
     })

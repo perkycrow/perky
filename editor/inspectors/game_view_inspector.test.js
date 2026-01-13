@@ -1,8 +1,8 @@
 import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
-import WorldViewInspector from './world_view_inspector.js'
+import GameViewInspector from './game_view_inspector.js'
 
 
-class MockWorldView {
+class MockGameView {
 
     constructor (options = {}) {
         this.world = options.world || null
@@ -13,7 +13,7 @@ class MockWorldView {
 }
 
 
-describe('WorldViewInspector', () => {
+describe('GameViewInspector', () => {
 
     let inspector
     let container
@@ -23,7 +23,7 @@ describe('WorldViewInspector', () => {
         container = document.createElement('div')
         document.body.appendChild(container)
 
-        inspector = document.createElement('world-view-inspector')
+        inspector = document.createElement('game-view-inspector')
         container.appendChild(inspector)
     })
 
@@ -53,21 +53,21 @@ describe('WorldViewInspector', () => {
 
 
     test('matches static matches method exists', () => {
-        expect(typeof WorldViewInspector.matches).toBe('function')
+        expect(typeof GameViewInspector.matches).toBe('function')
     })
 
 
     describe('setModule', () => {
 
         test('stores the module', () => {
-            const module = new MockWorldView()
+            const module = new MockGameView()
             inspector.setModule(module)
             expect(inspector.getModule()).toBe(module)
         })
 
 
         test('renders world view info when module is set', () => {
-            const module = new MockWorldView()
+            const module = new MockGameView()
             inspector.setModule(module)
 
             const labels = inspector.gridEl.querySelectorAll('.inspector-label')
@@ -80,7 +80,7 @@ describe('WorldViewInspector', () => {
     describe('rendering', () => {
 
         test('shows world id', () => {
-            const module = new MockWorldView({
+            const module = new MockGameView({
                 world: {$id: 'main-world'}
             })
             inspector.setModule(module)
@@ -92,7 +92,7 @@ describe('WorldViewInspector', () => {
 
 
         test('shows none when no world', () => {
-            const module = new MockWorldView({world: null})
+            const module = new MockGameView({world: null})
             inspector.setModule(module)
 
             const values = inspector.gridEl.querySelectorAll('.inspector-value')
@@ -102,7 +102,7 @@ describe('WorldViewInspector', () => {
 
 
         test('shows game id', () => {
-            const module = new MockWorldView({
+            const module = new MockGameView({
                 game: {$id: 'my-game'}
             })
             inspector.setModule(module)
@@ -114,7 +114,7 @@ describe('WorldViewInspector', () => {
 
 
         test('shows none when no game', () => {
-            const module = new MockWorldView({game: null})
+            const module = new MockGameView({game: null})
             inspector.setModule(module)
 
             const values = inspector.gridEl.querySelectorAll('.inspector-value')
@@ -124,7 +124,7 @@ describe('WorldViewInspector', () => {
 
 
         test('shows entity count', () => {
-            const module = new MockWorldView({
+            const module = new MockGameView({
                 rootGroup: {children: [{}, {}, {}, {}]}
             })
             inspector.setModule(module)
@@ -136,7 +136,7 @@ describe('WorldViewInspector', () => {
 
 
         test('shows zero entities when rootGroup has no children', () => {
-            const module = new MockWorldView({
+            const module = new MockGameView({
                 rootGroup: {children: []}
             })
             inspector.setModule(module)
@@ -148,7 +148,7 @@ describe('WorldViewInspector', () => {
 
 
         test('shows zero entities when no rootGroup', () => {
-            const module = new MockWorldView({rootGroup: null})
+            const module = new MockGameView({rootGroup: null})
             inspector.setModule(module)
 
             const values = inspector.gridEl.querySelectorAll('.inspector-value')
@@ -162,7 +162,7 @@ describe('WorldViewInspector', () => {
     describe('scene tree button', () => {
 
         test('shows Scene Tree button when rootGroup has children', () => {
-            const module = new MockWorldView({
+            const module = new MockGameView({
                 rootGroup: {children: [{}]}
             })
             inspector.setModule(module)
@@ -174,7 +174,7 @@ describe('WorldViewInspector', () => {
 
 
         test('does not show button when no rootGroup', () => {
-            const module = new MockWorldView({rootGroup: null})
+            const module = new MockGameView({rootGroup: null})
             inspector.setModule(module)
 
             const btn = inspector.actionsEl.querySelector('button')
@@ -183,7 +183,7 @@ describe('WorldViewInspector', () => {
 
 
         test('does not show button when rootGroup has no children', () => {
-            const module = new MockWorldView({
+            const module = new MockGameView({
                 rootGroup: {children: []}
             })
             inspector.setModule(module)
@@ -195,7 +195,7 @@ describe('WorldViewInspector', () => {
 
         test('dispatches open:scene-tree event when clicked', () => {
             const rootGroup = {children: [{}]}
-            const module = new MockWorldView({rootGroup})
+            const module = new MockGameView({rootGroup})
             inspector.setModule(module)
 
             const eventHandler = vi.fn()
@@ -206,19 +206,19 @@ describe('WorldViewInspector', () => {
 
             expect(eventHandler).toHaveBeenCalled()
             expect(eventHandler.mock.calls[0][0].detail.content).toBe(rootGroup)
-            expect(eventHandler.mock.calls[0][0].detail.worldView).toBe(module)
+            expect(eventHandler.mock.calls[0][0].detail.gameView).toBe(module)
         })
 
     })
 
 
     test('clearContent clears and re-renders on module change', () => {
-        const module1 = new MockWorldView({
+        const module1 = new MockGameView({
             world: {$id: 'world-1'}
         })
         inspector.setModule(module1)
 
-        const module2 = new MockWorldView({
+        const module2 = new MockGameView({
             world: {$id: 'world-2'}
         })
         inspector.setModule(module2)

@@ -4,14 +4,14 @@ import RenderSystem from '../render/render_system.js'
 import TextureSystem from '../render/textures/texture_system.js'
 import AudioSystem from '../audio/audio_system.js'
 import World from './world.js'
-import GameRenderer from './game_renderer.js'
+import GameView from './game_view.js'
 import GameController from './game_controller.js'
 
 
 export default class Game extends Application {
 
     static World = World
-    static Renderer = GameRenderer
+    static View = GameView
     static Controller = GameController
     static RenderSystem = RenderSystem
     static AudioSystem = AudioSystem
@@ -36,7 +36,7 @@ export default class Game extends Application {
         this.on('update', (...args) => this.update(...args))
 
         this.#createWorld()
-        this.#createRenderer()
+        this.#createView()
 
         this.configureGame?.(params)
     }
@@ -50,13 +50,13 @@ export default class Game extends Application {
     }
 
 
-    #createRenderer () {
+    #createView () {
         this.camera = this.renderSystem.getCamera('main')
 
-        const RendererClass = this.constructor.Renderer
-        if (RendererClass) {
-            this.renderer = this.create(RendererClass, {
-                $id: 'renderer',
+        const ViewClass = this.constructor.View
+        if (ViewClass) {
+            this.view = this.create(ViewClass, {
+                $id: 'view',
                 world: this.world,
                 game: this
             })
@@ -74,7 +74,7 @@ export default class Game extends Application {
 
 
     render () {
-        this.renderer?.render()
+        this.view?.sync()
     }
 
 

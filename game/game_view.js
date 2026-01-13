@@ -20,9 +20,9 @@ function isObject2DClass (Class) {
 }
 
 
-export default class WorldView extends PerkyModule {
+export default class GameView extends PerkyModule {
 
-    static $category = 'worldView'
+    static $category = 'gameView'
 
     #classRegistry = new Map()
     #matcherRegistry = []
@@ -33,7 +33,26 @@ export default class WorldView extends PerkyModule {
 
         this.world = options.world
         this.game = options.game
-        this.rootGroup = new Group2D({name: 'world'})
+
+        this.rootGroup = new Group2D({name: 'entities'})
+
+        this.registerViews()
+    }
+
+
+    onStart () {
+        this.#bindWorldEvents()
+        this.setupRenderGroups()
+    }
+
+
+    onStop () {
+        this.#disposeAllViews()
+    }
+
+
+    registerViews () {
+        // Override in subclass
     }
 
 
@@ -81,7 +100,39 @@ export default class WorldView extends PerkyModule {
     }
 
 
-    onStart () {
+    getViews (entityId) {
+        return this.#views.get(entityId) || []
+    }
+
+
+    setupRenderGroups () {
+        const gameLayer = this.game.getCanvas('game')
+
+        gameLayer.renderer.setRenderGroups([
+            {
+                $name: 'entities',
+                content: this.rootGroup
+            }
+        ])
+    }
+
+
+    sync () {
+        const deltaTime = this.game.clock?.deltaTime ?? 0.016
+
+        for (const views of this.#views.values()) {
+            for (const view of views) {
+                view.sync(deltaTime)
+            }
+        }
+
+        const gameLayer = this.game.getCanvas('game')
+        gameLayer.markDirty()
+        gameLayer.render()
+    }
+
+
+    #bindWorldEvents () {
         if (!this.world) {
             return
         }
@@ -92,25 +143,6 @@ export default class WorldView extends PerkyModule {
         for (const entity of this.world.entities) {
             this.#handleEntitySet(entity)
         }
-    }
-
-
-    onStop () {
-        this.#disposeAllViews()
-    }
-
-
-    sync (deltaTime = 0) {
-        for (const views of this.#views.values()) {
-            for (const view of views) {
-                view.sync(deltaTime)
-            }
-        }
-    }
-
-
-    getViews (entityId) {
-        return this.#views.get(entityId) || []
     }
 
 

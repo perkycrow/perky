@@ -1,6 +1,6 @@
 import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
-import WorldView from '../../game/world_view.js'
+import GameView from '../../game/game_view.js'
 
 
 const customStyles = `
@@ -33,10 +33,10 @@ const customStyles = `
 `
 
 
-export default class WorldViewInspector extends BaseInspector {
+export default class GameViewInspector extends BaseInspector {
 
     static matches (module) {
-        return module instanceof WorldView
+        return module instanceof GameView
     }
 
 
@@ -60,15 +60,15 @@ export default class WorldViewInspector extends BaseInspector {
 
         this.clearContent()
 
-        const worldView = this.module
+        const gameView = this.module
 
-        this.addRow('world', worldView.world?.$id || '(none)')
-        this.addRow('game', worldView.game?.$id || '(none)')
+        this.addRow('world', gameView.world?.$id || '(none)')
+        this.addRow('game', gameView.game?.$id || '(none)')
 
-        const entityCount = worldView.rootGroup?.children?.length ?? 0
+        const entityCount = gameView.rootGroup?.children?.length ?? 0
         this.addRow('entities', entityCount, true)
 
-        if (worldView.rootGroup && entityCount > 0) {
+        if (gameView.rootGroup && entityCount > 0) {
             const sceneTreeBtn = this.createButton('🎬', 'Scene Tree', () => this.#openSceneTree())
             sceneTreeBtn.classList.add('primary')
             this.actionsEl.appendChild(sceneTreeBtn)
@@ -86,7 +86,7 @@ export default class WorldViewInspector extends BaseInspector {
             composed: true,
             detail: {
                 content: this.module.rootGroup,
-                worldView: this.module
+                gameView: this.module
             }
         }))
     }
@@ -94,6 +94,6 @@ export default class WorldViewInspector extends BaseInspector {
 }
 
 
-customElements.define('world-view-inspector', WorldViewInspector)
+customElements.define('game-view-inspector', GameViewInspector)
 
-PerkyExplorerDetails.registerInspector(WorldViewInspector)
+PerkyExplorerDetails.registerInspector(GameViewInspector)
