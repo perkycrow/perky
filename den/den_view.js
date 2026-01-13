@@ -1,4 +1,4 @@
-import GameRenderer from '../game/game_renderer.js'
+import GameView from '../game/game_view.js'
 import Group2D from '../render/group_2d.js'
 import Sprite from '../render/sprite.js'
 import {ShadowTransform} from '../render/transforms/index.js'
@@ -25,7 +25,7 @@ import WaveEffect from './effects/wave_effect.js'
 import HitboxDebug from './hitbox_debug.js'
 
 
-export default class DenRenderer extends GameRenderer {
+export default class DenView extends GameView {
 
     constructor (options = {}) {
         super(options)
@@ -44,8 +44,7 @@ export default class DenRenderer extends GameRenderer {
 
 
     registerViews () {
-        this.worldView
-            .register(Player, PlayerView)
+        this.register(Player, PlayerView)
             .register(PigEnemy, PigEnemyView, {image: 'pig', width: 1, height: 1})
             .register(RedEnemy, RedEnemyView, {image: 'red', width: 1, height: 1})
             .register(GrannyEnemy, GrannyEnemyView, {image: 'granny', width: 1, height: 1})
@@ -58,6 +57,7 @@ export default class DenRenderer extends GameRenderer {
         const gameLayer = this.game.getCanvas('game')
 
         this.backgroundGroup = new Group2D({name: 'background'})
+        this.entitiesGroup = new Group2D({name: 'entities'})
 
         this.shadowTransform = new ShadowTransform({
             skewX: 0.1,
@@ -66,7 +66,7 @@ export default class DenRenderer extends GameRenderer {
             color: [0, 0, 0, 0.3]
         })
 
-        this.entitiesGroup.addChild(this.worldView.rootGroup)
+        this.entitiesGroup.addChild(this.rootGroup)
         this.entitiesGroup.addChild(this.impactParticles.particleGroup)
 
         gameLayer.renderer.setRenderGroups([
@@ -126,10 +126,10 @@ export default class DenRenderer extends GameRenderer {
     }
 
 
-    render () {
+    sync () {
         const deltaTime = this.game.clock?.deltaTime ?? 0.016
 
-        this.worldView.sync(deltaTime)
+        this.syncViews(deltaTime)
         this.impactParticles.update(deltaTime)
         this.hitboxDebug.update()
 

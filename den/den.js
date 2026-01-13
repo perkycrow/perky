@@ -2,7 +2,7 @@ import Game from '../game/game.js'
 import DenWorld from './den_world.js'
 
 import DenController from './controllers/den_controller.js'
-import DenRenderer from './den_renderer.js'
+import DenView from './den_view.js'
 import WaveProgressBar from './ui/wave_progress_bar.js'
 import WaveSystem from './wave_system.js'
 
@@ -17,7 +17,7 @@ export default class DefendTheDen extends Game {
     static $name = 'defendTheDen'
     static manifest = manifest
     static World = DenWorld
-    static Renderer = DenRenderer
+    static View = DenView
     static Controller = DenController
 
     static camera = {unitsInView: {width: 7, height: 5}}
@@ -124,20 +124,20 @@ export default class DefendTheDen extends Game {
 
 
     setHitboxDebug (enabled) {
-        this.renderer.setHitboxDebug(enabled)
+        this.view.setHitboxDebug(enabled)
     }
 
 
     #updateShadows (timeOfDay) {
-        if (!this.renderer.shadowTransform) {
+        if (!this.view.shadowTransform) {
             return
         }
 
         const shadowParams = DayNightPass.getShadowParams(timeOfDay)
-        this.renderer.shadowTransform.skewX = shadowParams.skewX
-        this.renderer.shadowTransform.scaleY = shadowParams.scaleY
-        this.renderer.shadowTransform.offsetY = shadowParams.offsetY
-        this.renderer.shadowTransform.color = shadowParams.color
+        this.view.shadowTransform.skewX = shadowParams.skewX
+        this.view.shadowTransform.scaleY = shadowParams.scaleY
+        this.view.shadowTransform.offsetY = shadowParams.offsetY
+        this.view.shadowTransform.color = shadowParams.color
     }
 
 }

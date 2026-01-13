@@ -1,7 +1,7 @@
 import Game from '../game/game.js'
 import GhastWorld from './ghast_world.js'
 import GhastController from './controllers/ghast_controller.js'
-import GhastRenderer from './ghast_renderer.js'
+import GhastView from './ghast_view.js'
 import GroundPass from './postprocessing/ground_pass.js'
 import manifest from './manifest.js'
 
@@ -11,7 +11,7 @@ export default class Ghast extends Game {
     static $name = 'ghast'
     static manifest = manifest
     static World = GhastWorld
-    static Renderer = GhastRenderer
+    static View = GhastView
     static Controller = GhastController
 
     static camera = {unitsInView: {width: 4.5, height: 4.5}}
