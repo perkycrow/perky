@@ -105,10 +105,19 @@ export default class GameView extends PerkyModule {
     }
 
 
-    syncViews (deltaTime) {
+    updateViews (deltaTime) {
         for (const views of this.#views.values()) {
             for (const view of views) {
-                view.sync(deltaTime)
+                view.update?.(deltaTime)
+            }
+        }
+    }
+
+
+    syncViews () {
+        for (const views of this.#views.values()) {
+            for (const view of views) {
+                view.sync()
             }
         }
     }
@@ -126,10 +135,13 @@ export default class GameView extends PerkyModule {
     }
 
 
-    sync () {
-        const deltaTime = this.game.clock?.deltaTime ?? 0.016
+    update (deltaTime) {
+        this.updateViews(deltaTime)
+    }
 
-        this.syncViews(deltaTime)
+
+    sync () {
+        this.syncViews()
 
         const gameLayer = this.game.getCanvas('game')
         gameLayer.markDirty()

@@ -32,8 +32,8 @@ export default class Game extends Application {
             ...params.textureSystem
         })
 
-        this.on('update', this.#updateActiveControllers)
-        this.on('update', (...args) => this.update(...args))
+        this.on('update', this.#onUpdate)
+        this.on('render', this.#onRender)
 
         this.#createWorld()
         this.#createView()
@@ -61,10 +61,25 @@ export default class Game extends Application {
                 game: this
             })
         }
+    }
 
-        this.on('render', (...args) => {
-            this.render(...args)
-        })
+
+    #onUpdate (deltaTime) {
+        this.#updateActiveControllers(deltaTime)
+        this.update(deltaTime)
+
+        for (const view of this.childrenByCategory('gameView')) {
+            view.update(deltaTime)
+        }
+    }
+
+
+    #onRender () {
+        for (const view of this.childrenByCategory('gameView')) {
+            view.sync()
+        }
+
+        this.render()
     }
 
 
@@ -74,7 +89,7 @@ export default class Game extends Application {
 
 
     render () {
-        this.view?.sync()
+
     }
 
 

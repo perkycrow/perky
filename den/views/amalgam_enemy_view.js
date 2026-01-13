@@ -10,8 +10,8 @@ export default class AmalgamEnemyView extends EnemyView {
     }
 
 
-    sync (deltaTime = 0) {
-        super.sync(deltaTime)
+    sync () {
+        super.sync()
         this.syncStalkingAnimation()
         this.syncFearCharge()
         this.syncFearActive()

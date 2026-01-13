@@ -9,8 +9,8 @@ export default class RedEnemyView extends EnemyView {
     }
 
 
-    sync (deltaTime = 0) {
-        super.sync(deltaTime)
+    sync () {
+        super.sync()
         this.syncHop()
         this.syncThrow()
     }

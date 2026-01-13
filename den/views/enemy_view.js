@@ -37,25 +37,24 @@ export default class EnemyView extends EntityView {
     }
 
 
-    sync (deltaTime = 0) {
-        if (!this.root) {
-            return
-        }
-
-        this.syncDamage(deltaTime)
-        this.syncPosition()
-        this.syncHitFlash()
-        this.syncStun()
-        this.syncSquash()
-    }
-
-
-    syncDamage (deltaTime) {
+    update (deltaTime) {
         if (this.entity.hp < this.lastHp) {
             this.impactSquash.trigger({x: 1, y: 0})
             this.lastHp = this.entity.hp
         }
         this.impactSquash.update(deltaTime)
+    }
+
+
+    sync () {
+        if (!this.root) {
+            return
+        }
+
+        this.syncPosition()
+        this.syncHitFlash()
+        this.syncStun()
+        this.syncSquash()
     }
 
 

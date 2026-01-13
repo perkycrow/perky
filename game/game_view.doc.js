@@ -474,7 +474,7 @@ export default doc('GameView', () => {
             app.start()
 
             // In game loop
-            gameView.sync(deltaTime)
+            gameView.sync()
 
             // app.stop() triggers gameView.onStop()
             app.stop()

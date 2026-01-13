@@ -48,8 +48,8 @@ export default class AutoView extends EntityView {
     }
 
 
-    sync (deltaTime) {
-        super.sync(deltaTime)
+    sync () {
+        super.sync()
 
         if (this.#stringBindings) {
             for (let i = 0; i < this.#stringBindings.length; i++) {
@@ -61,7 +61,7 @@ export default class AutoView extends EntityView {
         if (this.#functionBindings) {
             for (let i = 0; i < this.#functionBindings.length; i++) {
                 const {prop, fn} = this.#functionBindings[i]
-                this.root[prop] = fn(this.entity, deltaTime)
+                this.root[prop] = fn(this.entity)
             }
         }
     }

@@ -477,8 +477,8 @@ describe('GameView', () => {
         })
 
 
-        test('passes deltaTime to sync function', () => {
-            const syncFn = vi.fn((entity, dt) => dt * 2)
+        test('calls sync function with entity', () => {
+            const syncFn = vi.fn((entity) => entity.health * 2)
             gameView.register(MockEntity, Circle, {
                 radius: 0.5,
                 sync: {
@@ -487,12 +487,12 @@ describe('GameView', () => {
             })
             gameView.onStart()
 
-            const entity = new MockEntity({$id: 'sync-dt', x: 0, y: 0})
+            const entity = new MockEntity({$id: 'sync-dt', x: 0, y: 0, health: 0.5})
             mockWorld.addEntity(entity)
 
             gameView.sync()
 
-            expect(syncFn).toHaveBeenCalledWith(entity, 0.016)
+            expect(syncFn).toHaveBeenCalledWith(entity)
         })
 
 

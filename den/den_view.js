@@ -126,11 +126,14 @@ export default class DenView extends GameView {
     }
 
 
-    sync () {
-        const deltaTime = this.game.clock?.deltaTime ?? 0.016
-
-        this.syncViews(deltaTime)
+    update (deltaTime) {
+        super.update(deltaTime)
         this.impactParticles.update(deltaTime)
+    }
+
+
+    sync () {
+        this.syncViews()
         this.hitboxDebug.update()
 
         const gameLayer = this.game.getCanvas('game')

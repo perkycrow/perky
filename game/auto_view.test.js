@@ -118,19 +118,19 @@ describe('AutoView', () => {
         })
 
 
-        test('passes deltaTime to function binding', () => {
-            const syncFn = vi.fn((entity, dt) => dt * 2)
-            const entity = createEntity()
+        test('calls function binding with entity', () => {
+            const syncFn = vi.fn((entity) => entity.health * 2)
+            const entity = createEntity({health: 0.5})
             const context = createContext(Circle, {
                 radius: 0.5,
                 sync: {opacity: syncFn}
             })
             const view = new AutoView(entity, context)
 
-            view.sync(0.016)
+            view.sync()
 
-            expect(syncFn).toHaveBeenCalledWith(entity, 0.016)
-            expect(view.root.opacity).toBe(0.032)
+            expect(syncFn).toHaveBeenCalledWith(entity)
+            expect(view.root.opacity).toBe(1)
         })
 
 

@@ -10,8 +10,8 @@ export default class GrannyEnemyView extends EnemyView {
     }
 
 
-    sync (deltaTime = 0) {
-        super.sync(deltaTime)
+    sync () {
+        super.sync()
         this.syncWalkerAnimation()
         this.syncChargeAnimation()
         this.syncFireAnimation()
