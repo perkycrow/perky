@@ -20,9 +20,9 @@ function isObject2DClass (Class) {
 }
 
 
-export default class GameView extends PerkyModule {
+export default class ViewDispatcher extends PerkyModule {
 
-    static $category = 'gameView'
+    static $category = 'viewDispatcher'
 
     #classRegistry = new Map()
     #matcherRegistry = []
@@ -35,8 +35,6 @@ export default class GameView extends PerkyModule {
         this.game = options.game
 
         this.rootGroup = new Group2D({name: 'entities'})
-
-        this.registerViews()
     }
 
 
@@ -48,11 +46,6 @@ export default class GameView extends PerkyModule {
 
     onStop () {
         this.#disposeAllViews()
-    }
-
-
-    registerViews () {
-
     }
 
 

@@ -1,9 +1,11 @@
 import Game from '../game/game.js'
 import GhastWorld from './ghast_world.js'
 import GhastController from './controllers/ghast_controller.js'
-import GhastView from './ghast_view.js'
 import GroundPass from './postprocessing/ground_pass.js'
 import manifest from './manifest.js'
+
+import Player from './player.js'
+import PlayerView from './views/player_view.js'
 
 
 export default class Ghast extends Game {
@@ -11,13 +13,14 @@ export default class Ghast extends Game {
     static $name = 'ghast'
     static manifest = manifest
     static World = GhastWorld
-    static GameView = GhastView
     static ActionController = GhastController
 
     static camera = {unitsInView: {width: 4.5, height: 4.5}}
     static layer = {type: 'webgl', backgroundColor: 'transparent', pixelRatio: 1}
 
     configureGame () {
+        this.view.register(Player, PlayerView)
+
         const gameLayer = this.getCanvas('game')
         this.groundPass = new GroundPass()
         gameLayer.renderer.addPostPass(this.groundPass)

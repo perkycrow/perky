@@ -4,14 +4,14 @@ import RenderSystem from '../render/render_system.js'
 import TextureSystem from '../render/textures/texture_system.js'
 import AudioSystem from '../audio/audio_system.js'
 import World from './world.js'
-import GameView from './game_view.js'
+import ViewDispatcher from './view_dispatcher.js'
 import GameController from './game_controller.js'
 
 
 export default class Game extends Application {
 
     static World = World
-    static GameView = GameView
+    static ViewDispatcher = ViewDispatcher
     static ActionController = GameController
     static RenderSystem = RenderSystem
     static AudioSystem = AudioSystem
@@ -53,9 +53,9 @@ export default class Game extends Application {
     #createView () {
         this.camera = this.renderSystem.getCamera('main')
 
-        const ViewClass = this.constructor.GameView
-        if (ViewClass) {
-            this.view = this.create(ViewClass, {
+        const ViewDispatcherClass = this.constructor.ViewDispatcher
+        if (ViewDispatcherClass) {
+            this.view = this.create(ViewDispatcherClass, {
                 $id: 'view',
                 world: this.world,
                 game: this
@@ -68,14 +68,14 @@ export default class Game extends Application {
         this.#updateActiveControllers(deltaTime)
         this.update(deltaTime)
 
-        for (const view of this.childrenByCategory('gameView')) {
+        for (const view of this.childrenByCategory('viewDispatcher')) {
             view.update(deltaTime)
         }
     }
 
 
     #onRender () {
-        for (const view of this.childrenByCategory('gameView')) {
+        for (const view of this.childrenByCategory('viewDispatcher')) {
             view.sync()
         }
 

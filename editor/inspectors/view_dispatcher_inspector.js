@@ -1,6 +1,6 @@
 import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
-import GameView from '../../game/game_view.js'
+import ViewDispatcher from '../../game/view_dispatcher.js'
 
 
 const customStyles = `
@@ -33,10 +33,10 @@ const customStyles = `
 `
 
 
-export default class GameViewInspector extends BaseInspector {
+export default class ViewDispatcherInspector extends BaseInspector {
 
     static matches (module) {
-        return module instanceof GameView
+        return module instanceof ViewDispatcher
     }
 
 
@@ -60,15 +60,15 @@ export default class GameViewInspector extends BaseInspector {
 
         this.clearContent()
 
-        const gameView = this.module
+        const viewDispatcher = this.module
 
-        this.addRow('world', gameView.world?.$id || '(none)')
-        this.addRow('game', gameView.game?.$id || '(none)')
+        this.addRow('world', viewDispatcher.world?.$id || '(none)')
+        this.addRow('game', viewDispatcher.game?.$id || '(none)')
 
-        const entityCount = gameView.rootGroup?.children?.length ?? 0
+        const entityCount = viewDispatcher.rootGroup?.children?.length ?? 0
         this.addRow('entities', entityCount, true)
 
-        if (gameView.rootGroup && entityCount > 0) {
+        if (viewDispatcher.rootGroup && entityCount > 0) {
             const sceneTreeBtn = this.createButton('🎬', 'Scene Tree', () => this.#openSceneTree())
             sceneTreeBtn.classList.add('primary')
             this.actionsEl.appendChild(sceneTreeBtn)
@@ -86,7 +86,7 @@ export default class GameViewInspector extends BaseInspector {
             composed: true,
             detail: {
                 content: this.module.rootGroup,
-                gameView: this.module
+                viewDispatcher: this.module
             }
         }))
     }
@@ -94,6 +94,6 @@ export default class GameViewInspector extends BaseInspector {
 }
 
 
-customElements.define('game-view-inspector', GameViewInspector)
+customElements.define('view-dispatcher-inspector', ViewDispatcherInspector)
 
-PerkyExplorerDetails.registerInspector(GameViewInspector)
+PerkyExplorerDetails.registerInspector(ViewDispatcherInspector)
