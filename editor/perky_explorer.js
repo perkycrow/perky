@@ -12,6 +12,7 @@ const DEFAULT_SYSTEM_CATEGORIES = [
     'actionDispatcher',
     'inputSystem',
     'renderSystem',
+    'viewDispatcher',
     'sourceManager',
     'perkyView',
     'gameLoop',

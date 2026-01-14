@@ -36,7 +36,7 @@ export default class Game extends Application {
         this.on('render', this.#onRender)
 
         this.#createWorld()
-        this.#createView()
+        this.#createViewDispatcher()
 
         this.configureGame?.(params)
     }
@@ -50,13 +50,13 @@ export default class Game extends Application {
     }
 
 
-    #createView () {
+    #createViewDispatcher () {
         this.camera = this.renderSystem.getCamera('main')
 
         const ViewDispatcherClass = this.constructor.ViewDispatcher
         if (ViewDispatcherClass) {
-            this.view = this.create(ViewDispatcherClass, {
-                $id: 'view',
+            this.create(ViewDispatcherClass, {
+                $bind: 'viewDispatcher',
                 world: this.world,
                 game: this
             })
