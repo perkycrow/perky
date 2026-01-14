@@ -40,7 +40,6 @@ export default class ViewDispatcher extends PerkyModule {
 
     onStart () {
         this.#bindWorldEvents()
-        this.setupRenderGroups()
     }
 
 

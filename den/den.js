@@ -196,7 +196,7 @@ export default class DefendTheDen extends Game {
     }
 
 
-    #buildBackground () {
+    buildBackground () {
         const backgroundRegion = this.getRegion('background')
         const backgroundHeight = 5
         const backgroundWidth = (backgroundRegion.width / backgroundRegion.height) * backgroundHeight
@@ -247,7 +247,7 @@ export default class DefendTheDen extends Game {
     }
 
 
-    #updateShadows (timeOfDay) {
+    updateShadows (timeOfDay) {
         if (!this.shadowTransform) {
             return
         }
