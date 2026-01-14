@@ -78,10 +78,7 @@ describe('WorldView', () => {
         const mockRenderer = {
             setRenderGroups: vi.fn()
         }
-        mockCanvas = {
-            markDirty: vi.fn(),
-            render: vi.fn()
-        }
+        mockCanvas = {}
         mockGame = {
             getSource: vi.fn(),
             getRenderer: vi.fn().mockReturnValue(mockRenderer),
@@ -297,14 +294,6 @@ describe('WorldView', () => {
             expect(views2[0].syncCalled).toBe(true)
         })
 
-
-        test('marks canvas dirty and renders', () => {
-            worldView.onStart()
-            worldView.sync()
-
-            expect(mockCanvas.markDirty).toHaveBeenCalled()
-            expect(mockCanvas.render).toHaveBeenCalled()
-        })
 
     })
 

@@ -17,7 +17,6 @@ describe(Layer, () => {
         expect(layer.visible).toBe(true)
         expect(layer.opacity).toBe(1)
         expect(layer.pointerEvents).toBe('auto')
-        expect(layer.dirty).toBe(true)
         expect(layer.element).toBe(null)
         expect(layer.container).toBe(null)
     })
@@ -126,17 +125,6 @@ describe(Layer, () => {
         expect(vp.y).toBe(430) // 600 - 150 - 20
         expect(vp.width).toBe(200)
         expect(vp.height).toBe(150)
-    })
-
-
-    test('markDirty and markClean', () => {
-        layer.dirty = false
-
-        layer.markDirty()
-        expect(layer.dirty).toBe(true)
-
-        layer.markClean()
-        expect(layer.dirty).toBe(false)
     })
 
 

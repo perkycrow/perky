@@ -73,23 +73,17 @@ export default class CanvasLayer extends Layer {
 
     setContent (content) {
         this.content = content
-        this.markDirty()
         return this
     }
 
 
     render () {
-        if (!this.dirty) {
-            return this
-        }
-
         if (this.renderer.renderGroups?.length > 0) {
             this.renderer.render()
         } else if (this.content) {
             this.renderer.render(this.content)
         }
 
-        this.markClean()
         return this
     }
 
@@ -98,7 +92,6 @@ export default class CanvasLayer extends Layer {
         const vp = this.calculateViewport(width, height)
         this.renderer.resize(vp.width, vp.height)
         this.applyViewport()
-        this.markDirty()
         return this
     }
 

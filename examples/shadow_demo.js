@@ -122,7 +122,6 @@ function animate () {
         skewInfo.textContent = shadowTransform.skewX.toFixed(2)
     }
 
-    layer.markDirty()
     layer.render()
 
     requestAnimationFrame(animate)

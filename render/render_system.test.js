@@ -370,23 +370,4 @@ describe('RenderSystem', () => {
     })
 
 
-    test('markAllDirty marks all layers dirty', () => {
-        renderSystem.createLayer('layer1', 'canvas')
-        renderSystem.createLayer('layer2', 'canvas')
-
-        const layer1 = renderSystem.getLayer('layer1')
-        const layer2 = renderSystem.getLayer('layer2')
-
-        layer1.markClean()
-        layer2.markClean()
-
-        expect(layer1.dirty).toBe(false)
-        expect(layer2.dirty).toBe(false)
-
-        renderSystem.markAllDirty()
-
-        expect(layer1.dirty).toBe(true)
-        expect(layer2.dirty).toBe(true)
-    })
-
 })

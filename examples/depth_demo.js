@@ -68,7 +68,6 @@ function animate () {
 
     moon.setDepth(y > 0 ? -1 : 1)
 
-    layer.markDirty()
     layer.render()
 
     requestAnimationFrame(animate)

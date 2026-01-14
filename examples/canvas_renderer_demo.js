@@ -92,7 +92,6 @@ function animate () {
 
     mainCamera.rotation = Math.sin(time * 0.5) * 0.1
 
-    layer.markDirty()
     layer.render()
 
     requestAnimationFrame(animate)

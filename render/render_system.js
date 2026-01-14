@@ -283,12 +283,6 @@ export default class RenderSystem extends PerkyModule {
     }
 
 
-    markAllDirty () {
-        this.childrenByCategory('layer').forEach(layer => layer.markDirty())
-        return this
-    }
-
-
     showLayer (name) {
         const layer = this.getLayer(name)
         if (layer) {

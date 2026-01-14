@@ -80,34 +80,17 @@ describe(CanvasLayer, () => {
     })
 
 
-    test('setContent stores content and marks dirty', () => {
-        expect(layer.dirty).toBe(true)
-        layer.markClean()
-        expect(layer.dirty).toBe(false)
-
+    test('setContent stores content', () => {
         const scene = new Group2D()
         layer.setContent(scene)
 
         expect(layer.content).toBe(scene)
-        expect(layer.dirty).toBe(true)
     })
 
 
-    test('render calls renderer.render when dirty', () => {
+    test('render calls renderer.render', () => {
         const scene = new Group2D()
         layer.setContent(scene)
-
-        layer.render()
-        expect(layer.dirty).toBe(false)
-    })
-
-
-    test('render does nothing when not dirty', () => {
-        const scene = new Group2D()
-        layer.setContent(scene)
-        layer.render()
-
-        layer.markClean()
 
         expect(() => layer.render()).not.toThrow()
     })
@@ -124,7 +107,6 @@ describe(CanvasLayer, () => {
 
         expect(layer.canvas.width).toBe(1024)
         expect(layer.canvas.height).toBe(768)
-        expect(layer.dirty).toBe(true)
     })
 
 
@@ -198,9 +180,8 @@ describe(CanvasLayer, () => {
         scene.addChild(circle)
 
         layer.setContent(scene)
-        layer.render()
 
-        expect(layer.dirty).toBe(false)
+        expect(() => layer.render()).not.toThrow()
     })
 
 
@@ -280,10 +261,8 @@ describe(CanvasLayer, () => {
 
             l.setContent(scene)
             expect(l.content).toBe(scene)
-            expect(l.dirty).toBe(true)
 
-            l.render()
-            expect(l.dirty).toBe(false)
+            expect(() => l.render()).not.toThrow()
         })
 
 

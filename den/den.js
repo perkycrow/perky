@@ -232,7 +232,6 @@ export default class DefendTheDen extends Game {
         this.hitboxDebug.update()
 
         this.getRenderer('game').setUniform('uTime', performance.now() / 1000)
-        this.getLayer('game').markDirty()
     }
 
 

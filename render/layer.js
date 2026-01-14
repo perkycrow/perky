@@ -12,7 +12,6 @@ export default class Layer extends PerkyModule {
         this.visible = options.visible ?? true
         this.opacity = options.opacity ?? 1
         this.pointerEvents = options.pointerEvents ?? 'auto'
-        this.dirty = true
 
         this.element = null
         this.container = null
@@ -113,18 +112,6 @@ export default class Layer extends PerkyModule {
         if (this.element) {
             this.element.style.pointerEvents = value
         }
-        return this
-    }
-
-
-    markDirty () {
-        this.dirty = true
-        return this
-    }
-
-
-    markClean () {
-        this.dirty = false
         return this
     }
 

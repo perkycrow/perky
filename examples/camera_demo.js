@@ -116,7 +116,6 @@ function animate (time) {
     player.y = Math.sin(playerAngle) * 2
     player.rotation += deltaTime * 3
 
-    layer.markDirty()
     layer.render()
 
     requestAnimationFrame(animate)

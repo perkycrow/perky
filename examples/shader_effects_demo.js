@@ -230,7 +230,6 @@ function animate () {
         }
     }
 
-    layer.markDirty()
     layer.render()
 
     requestAnimationFrame(animate)

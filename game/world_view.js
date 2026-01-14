@@ -134,10 +134,6 @@ export default class WorldView extends PerkyModule {
 
     sync () {
         this.syncViews()
-
-        const gameLayer = this.game.getLayer('game')
-        gameLayer.markDirty()
-        gameLayer.render()
     }
 
 
