@@ -185,14 +185,4 @@ describe('Game', () => {
     })
 
 
-    test('delegates renderAll method to host', () => {
-        expect(typeof game.renderAll).toBe('function')
-
-        const container = document.createElement('div')
-        game.mount(container)
-        game.createLayer('test', 'canvas')
-
-        expect(() => game.renderAll()).not.toThrow()
-    })
-
 })

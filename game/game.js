@@ -80,6 +80,7 @@ export default class Game extends Application {
         }
 
         this.render()
+        this.renderSystem?.render()
     }
 
 

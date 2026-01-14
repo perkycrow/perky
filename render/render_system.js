@@ -261,7 +261,7 @@ export default class RenderSystem extends PerkyModule {
     }
 
 
-    renderAll () {
+    render () {
         this.childrenByCategory('layer').forEach(layer => {
             if (layer instanceof CanvasLayer && layer.autoRender) {
                 layer.render()
@@ -314,7 +314,6 @@ export default class RenderSystem extends PerkyModule {
             'getRenderer',
             'getHTML',
             'removeLayer',
-            'renderAll',
             'renderLayer',
             'showLayer',
             'hideLayer',

@@ -231,12 +231,8 @@ export default class DefendTheDen extends Game {
         this.worldView.syncViews()
         this.hitboxDebug.update()
 
-        const gameRenderer = this.getRenderer('game')
-        const gameLayer = this.getLayer('game')
-
-        gameRenderer.setUniform('uTime', performance.now() / 1000)
-        gameLayer.markDirty()
-        gameLayer.render()
+        this.getRenderer('game').setUniform('uTime', performance.now() / 1000)
+        this.getLayer('game').markDirty()
     }
 
 

@@ -97,8 +97,8 @@ describe('RenderSystem', () => {
         })
 
 
-        test('renderAll does not throw', () => {
-            expect(() => renderSystem.renderAll()).not.toThrow()
+        test('render does not throw', () => {
+            expect(() => renderSystem.render()).not.toThrow()
         })
 
 
@@ -217,7 +217,7 @@ describe('RenderSystem', () => {
 
         expect(host.createLayer).toBeDefined()
         expect(host.getLayer).toBeDefined()
-        expect(host.renderAll).toBeDefined()
+        expect(host.renderLayer).toBeDefined()
     })
 
 
