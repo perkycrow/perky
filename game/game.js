@@ -4,14 +4,14 @@ import RenderSystem from '../render/render_system.js'
 import TextureSystem from '../render/textures/texture_system.js'
 import AudioSystem from '../audio/audio_system.js'
 import World from './world.js'
-import ViewDispatcher from './view_dispatcher.js'
+import WorldView from './world_view.js'
 import GameController from './game_controller.js'
 
 
 export default class Game extends Application {
 
     static World = World
-    static ViewDispatcher = ViewDispatcher
+    static WorldView = WorldView
     static ActionController = GameController
     static RenderSystem = RenderSystem
     static AudioSystem = AudioSystem
@@ -36,7 +36,7 @@ export default class Game extends Application {
         this.on('render', this.#onRender)
 
         this.#createWorld()
-        this.#createViewDispatcher()
+        this.#createWorldView()
 
         this.configureGame?.(params)
     }
@@ -50,13 +50,13 @@ export default class Game extends Application {
     }
 
 
-    #createViewDispatcher () {
+    #createWorldView () {
         this.camera = this.renderSystem.getCamera('main')
 
-        const ViewDispatcherClass = this.constructor.ViewDispatcher
-        if (ViewDispatcherClass) {
-            this.create(ViewDispatcherClass, {
-                $bind: 'viewDispatcher',
+        const WorldViewClass = this.constructor.WorldView
+        if (WorldViewClass) {
+            this.create(WorldViewClass, {
+                $bind: 'worldView',
                 world: this.world,
                 game: this
             })
@@ -68,15 +68,15 @@ export default class Game extends Application {
         this.#updateActiveControllers(deltaTime)
         this.update(deltaTime)
 
-        for (const view of this.childrenByCategory('viewDispatcher')) {
-            view.update(deltaTime)
+        for (const worldView of this.childrenByCategory('worldView')) {
+            worldView.update(deltaTime)
         }
     }
 
 
     #onRender () {
-        for (const view of this.childrenByCategory('viewDispatcher')) {
-            view.sync()
+        for (const worldView of this.childrenByCategory('worldView')) {
+            worldView.sync()
         }
 
         this.render()

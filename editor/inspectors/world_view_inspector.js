@@ -1,6 +1,6 @@
 import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
-import ViewDispatcher from '../../game/view_dispatcher.js'
+import WorldView from '../../game/world_view.js'
 
 
 const customStyles = `
@@ -33,10 +33,10 @@ const customStyles = `
 `
 
 
-export default class ViewDispatcherInspector extends BaseInspector {
+export default class WorldViewInspector extends BaseInspector {
 
     static matches (module) {
-        return module instanceof ViewDispatcher
+        return module instanceof WorldView
     }
 
 
@@ -60,15 +60,15 @@ export default class ViewDispatcherInspector extends BaseInspector {
 
         this.clearContent()
 
-        const viewDispatcher = this.module
+        const worldView = this.module
 
-        this.addRow('world', viewDispatcher.world?.$id || '(none)')
-        this.addRow('game', viewDispatcher.game?.$id || '(none)')
+        this.addRow('world', worldView.world?.$id || '(none)')
+        this.addRow('game', worldView.game?.$id || '(none)')
 
-        const entityCount = viewDispatcher.rootGroup?.children?.length ?? 0
+        const entityCount = worldView.rootGroup?.children?.length ?? 0
         this.addRow('entities', entityCount, true)
 
-        if (viewDispatcher.rootGroup && entityCount > 0) {
+        if (worldView.rootGroup && entityCount > 0) {
             const sceneTreeBtn = this.createButton('🎬', 'Scene Tree', () => this.#openSceneTree())
             sceneTreeBtn.classList.add('primary')
             this.actionsEl.appendChild(sceneTreeBtn)
@@ -86,7 +86,7 @@ export default class ViewDispatcherInspector extends BaseInspector {
             composed: true,
             detail: {
                 content: this.module.rootGroup,
-                viewDispatcher: this.module
+                worldView: this.module
             }
         }))
     }
@@ -94,6 +94,6 @@ export default class ViewDispatcherInspector extends BaseInspector {
 }
 
 
-customElements.define('view-dispatcher-inspector', ViewDispatcherInspector)
+customElements.define('world-view-inspector', WorldViewInspector)
 
-PerkyExplorerDetails.registerInspector(ViewDispatcherInspector)
+PerkyExplorerDetails.registerInspector(WorldViewInspector)

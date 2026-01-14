@@ -20,9 +20,9 @@ function isObject2DClass (Class) {
 }
 
 
-export default class ViewDispatcher extends PerkyModule {
+export default class WorldView extends PerkyModule {
 
-    static $category = 'viewDispatcher'
+    static $category = 'worldView'
 
     #classRegistry = new Map()
     #matcherRegistry = []

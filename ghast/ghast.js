@@ -19,7 +19,7 @@ export default class Ghast extends Game {
     static layer = {type: 'webgl', backgroundColor: 'transparent', pixelRatio: 1}
 
     configureGame () {
-        this.view.register(Player, PlayerView)
+        this.worldView.register(Player, PlayerView)
 
         const gameLayer = this.getCanvas('game')
         this.groundPass = new GroundPass()

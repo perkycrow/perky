@@ -69,7 +69,7 @@ export default class DefendTheDen extends Game {
     configureGame () {
         const gameCanvas = this.getCanvas('game')
 
-        this.viewDispatcher
+        this.worldView
             .register(Player, PlayerView)
             .register(PigEnemy, PigEnemyView, {image: 'pig', width: 1, height: 1})
             .register(RedEnemy, RedEnemyView, {image: 'red', width: 1, height: 1})
@@ -171,7 +171,7 @@ export default class DefendTheDen extends Game {
             color: [0, 0, 0, 0.3]
         })
 
-        this.entitiesGroup.addChild(this.viewDispatcher.rootGroup)
+        this.entitiesGroup.addChild(this.worldView.rootGroup)
         this.entitiesGroup.addChild(this.impactParticles.particleGroup)
 
         gameLayer.renderer.setRenderGroups([
@@ -227,7 +227,7 @@ export default class DefendTheDen extends Game {
 
 
     render () {
-        this.viewDispatcher.syncViews()
+        this.worldView.syncViews()
         this.hitboxDebug.update()
 
         const gameLayer = this.getCanvas('game')

@@ -1,6 +1,6 @@
 import {doc, section, text, code, container, action, logger} from '../doc/runtime.js'
 import PerkyModule from '../core/perky_module.js'
-import ViewDispatcher from './view_dispatcher.js'
+import WorldView from './world_view.js'
 import World from './world.js'
 import Entity from './entity.js'
 import EntityView from './entity_view.js'
@@ -12,13 +12,13 @@ import CanvasRenderer from '../render/canvas_renderer.js'
 import WebGLRenderer from '../render/webgl_renderer.js'
 
 
-export default doc('ViewDispatcher', () => {
+export default doc('WorldView', () => {
 
     text(`
         Bridges the game world (entities) with the rendering system (Object2D).
         Automatically creates views when entities are added and disposes them when removed.
 
-        ViewDispatcher supports two registration modes:
+        WorldView supports two registration modes:
         - **Custom View**: Full control with an [[EntityView@game]] subclass
         - **Auto View**: Direct Object2D class with optional sync bindings
     `)
@@ -27,7 +27,7 @@ export default doc('ViewDispatcher', () => {
     section('Basic Setup', () => {
 
         text(`
-            ViewDispatcher connects a [[World@game]] to a renderer by creating visual representations
+            WorldView connects a [[World@game]] to a renderer by creating visual representations
             for each entity based on registered mappings.
         `)
 
@@ -39,11 +39,11 @@ export default doc('ViewDispatcher', () => {
                 backgroundColor: '#1a1a2e'
             })
             const world = app.create(World)
-            const viewDispatcher = app.create(ViewDispatcher, {world})
+            const worldView = app.create(WorldView, {world})
 
             class Ball extends Entity {}
 
-            viewDispatcher.register(Ball, Circle, {
+            worldView.register(Ball, Circle, {
                 radius: 0.8,
                 color: '#e94560'
             })
@@ -51,7 +51,7 @@ export default doc('ViewDispatcher', () => {
             app.start()
 
             const scene = new Group2D()
-            scene.add(viewDispatcher.rootGroup)
+            scene.add(worldView.rootGroup)
 
             world.create(Ball, {x: -3, y: 0})
             world.create(Ball, {x: 0, y: 0})
@@ -68,7 +68,7 @@ export default doc('ViewDispatcher', () => {
 
         text(`
             Register an Object2D class directly instead of creating a custom EntityView.
-            ViewDispatcher automatically syncs x/y from the entity to the render object.
+            WorldView automatically syncs x/y from the entity to the render object.
         `)
 
         container({title: 'Moving entities', height: 200}, ctx => {
@@ -79,11 +79,11 @@ export default doc('ViewDispatcher', () => {
                 backgroundColor: '#16213e'
             })
             const world = app.create(World)
-            const viewDispatcher = app.create(ViewDispatcher, {world})
+            const worldView = app.create(WorldView, {world})
 
             class Particle extends Entity {}
 
-            viewDispatcher.register(Particle, Circle, {
+            worldView.register(Particle, Circle, {
                 radius: 0.5,
                 color: '#4a9eff'
             })
@@ -91,7 +91,7 @@ export default doc('ViewDispatcher', () => {
             app.start()
 
             const scene = new Group2D()
-            scene.add(viewDispatcher.rootGroup)
+            scene.add(worldView.rootGroup)
 
             const particles = []
             for (let i = 0; i < 5; i++) {
@@ -109,7 +109,7 @@ export default doc('ViewDispatcher', () => {
                 particles.forEach((p, i) => {
                     p.y = Math.sin(t + i * 0.5) * 2
                 })
-                viewDispatcher.sync()
+                worldView.sync()
                 renderer.render(scene)
             })
 
@@ -134,7 +134,7 @@ export default doc('ViewDispatcher', () => {
                 backgroundColor: '#1a1a2e'
             })
             const world = app.create(World)
-            const viewDispatcher = app.create(ViewDispatcher, {world})
+            const worldView = app.create(WorldView, {world})
 
             class HealthOrb extends Entity {
                 constructor (options) {
@@ -143,7 +143,7 @@ export default doc('ViewDispatcher', () => {
                 }
             }
 
-            viewDispatcher.register(HealthOrb, Circle, {
+            worldView.register(HealthOrb, Circle, {
                 radius: 1,
                 color: '#4aff4a',
                 sync: {
@@ -156,7 +156,7 @@ export default doc('ViewDispatcher', () => {
             app.start()
 
             const scene = new Group2D()
-            scene.add(viewDispatcher.rootGroup)
+            scene.add(worldView.rootGroup)
 
             const orb = world.create(HealthOrb, {x: 0, y: 0, health: 1})
 
@@ -164,7 +164,7 @@ export default doc('ViewDispatcher', () => {
 
             ctx.slider('Health', {min: 0, max: 100, default: 100}, value => {
                 orb.health = value / 100
-                viewDispatcher.sync()
+                worldView.sync()
                 renderer.render(scene)
             })
 
@@ -179,7 +179,7 @@ export default doc('ViewDispatcher', () => {
                 backgroundColor: '#16213e'
             })
             const world = app.create(World)
-            const viewDispatcher = app.create(ViewDispatcher, {world})
+            const worldView = app.create(WorldView, {world})
 
             class Spinner extends Entity {
                 constructor (options) {
@@ -189,7 +189,7 @@ export default doc('ViewDispatcher', () => {
                 }
             }
 
-            viewDispatcher.register(Spinner, Rectangle, {
+            worldView.register(Spinner, Rectangle, {
                 width: 2,
                 height: 0.5,
                 color: '#ff4a4a',
@@ -201,7 +201,7 @@ export default doc('ViewDispatcher', () => {
             app.start()
 
             const scene = new Group2D()
-            scene.add(viewDispatcher.rootGroup)
+            scene.add(worldView.rootGroup)
 
             const spinners = []
             for (let i = 0; i < 3; i++) {
@@ -220,7 +220,7 @@ export default doc('ViewDispatcher', () => {
                 spinners.forEach((s, i) => {
                     s.angle = t * s.speed
                 })
-                viewDispatcher.sync()
+                worldView.sync()
                 renderer.render(scene)
             })
 
@@ -245,7 +245,7 @@ export default doc('ViewDispatcher', () => {
                 backgroundColor: '#1a1a2e'
             })
             const world = app.create(World)
-            const viewDispatcher = app.create(ViewDispatcher, {world})
+            const worldView = app.create(WorldView, {world})
 
             class Robot extends Entity {
                 constructor (options) {
@@ -299,12 +299,12 @@ export default doc('ViewDispatcher', () => {
                 }
             }
 
-            viewDispatcher.register(Robot, RobotView)
+            worldView.register(Robot, RobotView)
 
             app.start()
 
             const scene = new Group2D()
-            scene.add(viewDispatcher.rootGroup)
+            scene.add(worldView.rootGroup)
 
             const robot = world.create(Robot, {x: 0, y: -0.5, mood: 0})
 
@@ -312,7 +312,7 @@ export default doc('ViewDispatcher', () => {
 
             ctx.slider('Mood', {min: 0, max: 100, default: 0}, value => {
                 robot.mood = value / 100
-                viewDispatcher.sync()
+                worldView.sync()
                 renderer.render(scene)
             })
 
@@ -336,14 +336,14 @@ export default doc('ViewDispatcher', () => {
                 backgroundColor: '#16213e'
             })
             const world = app.create(World)
-            const viewDispatcher = app.create(ViewDispatcher, {world})
+            const worldView = app.create(WorldView, {world})
 
-            viewDispatcher.register(
+            worldView.register(
                 entity => entity.hasTag('friendly'),
                 Circle,
                 {radius: 0.6, color: '#4aff4a'}
             )
-            viewDispatcher.register(
+            worldView.register(
                 entity => entity.hasTag('hostile'),
                 Circle,
                 {radius: 0.6, color: '#ff4a4a'}
@@ -352,7 +352,7 @@ export default doc('ViewDispatcher', () => {
             app.start()
 
             const scene = new Group2D()
-            scene.add(viewDispatcher.rootGroup)
+            scene.add(worldView.rootGroup)
 
             world.create(Entity, {x: -4, y: 0, $tags: ['friendly']})
             world.create(Entity, {x: -2, y: 0, $tags: ['friendly']})
@@ -381,11 +381,11 @@ export default doc('ViewDispatcher', () => {
                 backgroundColor: '#1a1a2e'
             })
             const world = app.create(World)
-            const viewDispatcher = app.create(ViewDispatcher, {world})
+            const worldView = app.create(WorldView, {world})
 
             class Bullet extends Entity {}
 
-            viewDispatcher.register(Bullet, Circle, {
+            worldView.register(Bullet, Circle, {
                 radius: 0.3,
                 color: '#ffff4a'
             })
@@ -393,7 +393,7 @@ export default doc('ViewDispatcher', () => {
             app.start()
 
             const scene = new Group2D()
-            scene.add(viewDispatcher.rootGroup)
+            scene.add(worldView.rootGroup)
 
             renderer.render(scene)
 
@@ -436,16 +436,16 @@ export default doc('ViewDispatcher', () => {
         code('register', () => {
             const app = new PerkyModule()
             const world = app.create(World)
-            const viewDispatcher = app.create(ViewDispatcher, {world})
+            const worldView = app.create(WorldView, {world})
 
             // Custom EntityView
-            viewDispatcher.register(Player, PlayerView)
+            worldView.register(Player, PlayerView)
 
             // Object2D with config
-            viewDispatcher.register(Bullet, Circle, {radius: 0.2, color: '#fff'})
+            worldView.register(Bullet, Circle, {radius: 0.2, color: '#fff'})
 
             // Object2D with sync bindings
-            viewDispatcher.register(Enemy, Rectangle, {
+            worldView.register(Enemy, Rectangle, {
                 width: 1,
                 height: 1,
                 sync: {
@@ -455,7 +455,7 @@ export default doc('ViewDispatcher', () => {
             })
 
             // Matcher function
-            viewDispatcher.register(
+            worldView.register(
                 entity => entity.hasTag('visible'),
                 Circle,
                 {radius: 0.5}
@@ -465,18 +465,18 @@ export default doc('ViewDispatcher', () => {
         code('Lifecycle', () => {
             const app = new PerkyModule()
             const world = app.create(World)
-            const viewDispatcher = app.create(ViewDispatcher, {world})
+            const worldView = app.create(WorldView, {world})
 
             // Register views before start
-            viewDispatcher.register(Enemy, EnemyView)
+            worldView.register(Enemy, EnemyView)
 
-            // app.start() triggers viewDispatcher.onStart()
+            // app.start() triggers worldView.onStart()
             app.start()
 
             // In game loop
-            viewDispatcher.sync()
+            worldView.sync()
 
-            // app.stop() triggers viewDispatcher.onStop()
+            // app.stop() triggers worldView.onStop()
             app.stop()
         })
 
