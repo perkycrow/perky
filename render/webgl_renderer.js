@@ -55,6 +55,20 @@ export default class WebGLRenderer extends BaseRenderer {
     }
 
 
+    onInstall (host) {
+        this.delegateTo(host, [
+            'setRenderGroups',
+            'clearRenderGroups',
+            'setUniform',
+            'getUniform',
+            'getPass',
+            'addPostPass',
+            'removePostPass',
+            'registerShaderEffect'
+        ])
+    }
+
+
     #setupWebGL () {
         this.gl = this.canvas.getContext('webgl2', {
             alpha: true,

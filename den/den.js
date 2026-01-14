@@ -62,7 +62,7 @@ export default class DefendTheDen extends Game {
     static postPasses = [DayNightPass, VignettePass]
 
     get dayNightPass () {
-        return this.getCanvas('game')?.renderer?.getPass('dayNightPass')
+        return this.getCanvas('game')?.getPass('dayNightPass')
     }
 
 
@@ -77,9 +77,9 @@ export default class DefendTheDen extends Game {
             .register(AmalgamEnemy, AmalgamEnemyView, {image: 'amalgam', width: 1.2, height: 1.2})
             .register(Projectile, ProjectileView)
 
-        gameCanvas.renderer.registerShaderEffect(ChromaticEffect)
-        gameCanvas.renderer.registerShaderEffect(OutlineEffect)
-        gameCanvas.renderer.registerShaderEffect(WaveEffect)
+        gameCanvas.registerShaderEffect(ChromaticEffect)
+        gameCanvas.registerShaderEffect(OutlineEffect)
+        gameCanvas.registerShaderEffect(WaveEffect)
 
         this.impactParticles = this.create(ImpactParticles, {
             count: 8,
@@ -174,7 +174,7 @@ export default class DefendTheDen extends Game {
         this.entitiesGroup.addChild(this.worldView.rootGroup)
         this.entitiesGroup.addChild(this.impactParticles.particleGroup)
 
-        gameLayer.renderer.setRenderGroups([
+        gameLayer.setRenderGroups([
             {
                 $name: 'background',
                 content: this.backgroundGroup
@@ -231,7 +231,7 @@ export default class DefendTheDen extends Game {
         this.hitboxDebug.update()
 
         const gameLayer = this.getCanvas('game')
-        gameLayer.renderer.setUniform('uTime', performance.now() / 1000)
+        gameLayer.setUniform('uTime', performance.now() / 1000)
         gameLayer.markDirty()
         gameLayer.render()
     }

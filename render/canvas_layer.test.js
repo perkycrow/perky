@@ -316,4 +316,77 @@ describe(CanvasLayer, () => {
         expect(l.canvas.style.display).toBe('none')
     })
 
+
+    describe('WebGLRenderer delegation via onInstall', () => {
+
+        let webglLayer
+
+        beforeEach(() => {
+            webglLayer = new CanvasLayer({$id: 'webgl-delegation', rendererType: 'webgl'})
+        })
+
+
+        test('setRenderGroups is delegated to layer', () => {
+            const group = new Group2D()
+            const configs = [{$name: 'test', content: group}]
+
+            webglLayer.setRenderGroups(configs)
+
+            expect(webglLayer.renderer.renderGroups).toHaveLength(1)
+        })
+
+
+        test('clearRenderGroups is delegated to layer', () => {
+            const group = new Group2D()
+            webglLayer.setRenderGroups([{$name: 'test', content: group}])
+
+            webglLayer.clearRenderGroups()
+
+            expect(webglLayer.renderer.renderGroups).toHaveLength(0)
+        })
+
+
+        test('setUniform is delegated to layer', () => {
+            webglLayer.setUniform('uTime', 1.5)
+
+            expect(webglLayer.getUniform('uTime')).toBe(1.5)
+        })
+
+
+        test('getUniform is delegated to layer', () => {
+            webglLayer.setUniform('uTest', 42)
+
+            expect(webglLayer.getUniform('uTest')).toBe(42)
+        })
+
+
+        test('getPass is delegated to layer', () => {
+            expect(webglLayer.getPass('nonexistent')).toBeNull()
+        })
+
+
+        test('registerShaderEffect is delegated to layer', () => {
+            const MockEffect = {
+                name: 'mockEffect',
+                uniforms: {},
+                vertexShader: '',
+                fragmentShader: ''
+            }
+
+            webglLayer.registerShaderEffect(MockEffect)
+
+            expect(webglLayer.renderer.shaderEffectRegistry.get('mockEffect')).toBe(MockEffect)
+        })
+
+
+        test('canvas renderer does not have WebGL methods', () => {
+            const canvasLayer = new CanvasLayer({$id: 'canvas-test', rendererType: 'canvas'})
+
+            expect(canvasLayer.setRenderGroups).toBeUndefined()
+            expect(canvasLayer.setUniform).toBeUndefined()
+            expect(canvasLayer.registerShaderEffect).toBeUndefined()
+        })
+
+    })
+
 })
