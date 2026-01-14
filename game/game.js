@@ -106,13 +106,13 @@ export default class Game extends Application {
             return
         }
 
-        const canvas = this.getCanvas('game')
-        if (!canvas?.renderer?.addPostPass) {
+        const renderer = this.getRenderer('game')
+        if (!renderer?.addPostPass) {
             return
         }
 
         for (const PassClass of postPasses) {
-            canvas.renderer.addPostPass(PassClass)
+            renderer.addPostPass(PassClass)
         }
     }
 

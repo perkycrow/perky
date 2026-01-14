@@ -75,16 +75,17 @@ describe('WorldView', () => {
 
     beforeEach(() => {
         mockWorld = new MockWorld()
+        const mockRenderer = {
+            setRenderGroups: vi.fn()
+        }
         mockCanvas = {
-            renderer: {
-                setRenderGroups: vi.fn()
-            },
             markDirty: vi.fn(),
             render: vi.fn()
         }
         mockGame = {
             getSource: vi.fn(),
-            getCanvas: vi.fn().mockReturnValue(mockCanvas),
+            getRenderer: vi.fn().mockReturnValue(mockRenderer),
+            getLayer: vi.fn().mockReturnValue(mockCanvas),
             clock: {deltaTime: 0.016}
         }
 
@@ -244,10 +245,12 @@ describe('WorldView', () => {
 
 
         test('setupRenderGroups configures renderer', () => {
+            const mockRenderer = mockGame.getRenderer('game')
+
             worldView.onStart()
             worldView.setupRenderGroups()
 
-            expect(mockCanvas.renderer.setRenderGroups).toHaveBeenCalledWith([
+            expect(mockRenderer.setRenderGroups).toHaveBeenCalledWith([
                 {
                     $name: 'entities',
                     content: worldView.rootGroup

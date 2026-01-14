@@ -41,8 +41,9 @@ const moon = new Circle({
 sceneGroup.add(moon)
 
 
-const layer = renderSystem.getCanvas('game')
-layer.renderer.setRenderGroups([
+const layer = renderSystem.getLayer('game')
+const renderer = renderSystem.getRenderer('game')
+renderer.setRenderGroups([
     {$name: 'scene', content: sceneGroup}
 ])
 

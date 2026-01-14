@@ -62,12 +62,13 @@ export default class DefendTheDen extends Game {
     static postPasses = [DayNightPass, VignettePass]
 
     get dayNightPass () {
-        return this.getCanvas('game')?.getPass('dayNightPass')
+        return this.getRenderer('game')?.getPass('dayNightPass')
     }
 
 
     configureGame () {
-        const gameCanvas = this.getCanvas('game')
+        const gameRenderer = this.getRenderer('game')
+        const gameLayer = this.getLayer('game')
 
         this.worldView
             .register(Player, PlayerView)
@@ -77,9 +78,9 @@ export default class DefendTheDen extends Game {
             .register(AmalgamEnemy, AmalgamEnemyView, {image: 'amalgam', width: 1.2, height: 1.2})
             .register(Projectile, ProjectileView)
 
-        gameCanvas.registerShaderEffect(ChromaticEffect)
-        gameCanvas.registerShaderEffect(OutlineEffect)
-        gameCanvas.registerShaderEffect(WaveEffect)
+        gameRenderer.registerShaderEffect(ChromaticEffect)
+        gameRenderer.registerShaderEffect(OutlineEffect)
+        gameRenderer.registerShaderEffect(WaveEffect)
 
         this.impactParticles = this.create(ImpactParticles, {
             count: 8,
@@ -93,7 +94,7 @@ export default class DefendTheDen extends Game {
         this.waveSystem = this.create(WaveSystem, {$bind: 'waveSystem'})
 
         this.waveSystem.on('tick', ({wave, day, progress, timeOfDay, isSpawning}) => {
-            this.dayNightPass?.setUniform('uAspectRatio', gameCanvas.canvas.width / gameCanvas.canvas.height)
+            this.dayNightPass?.setUniform('uAspectRatio', gameLayer.canvas.width / gameLayer.canvas.height)
             this.dayNightPass?.setUniform('uTime', performance.now() / 1000)
             this.dayNightPass?.setProgress(timeOfDay)
             this.updateShadows(timeOfDay)
@@ -159,7 +160,7 @@ export default class DefendTheDen extends Game {
 
 
     setupRenderGroups () {
-        const gameLayer = this.getCanvas('game')
+        const gameRenderer = this.getRenderer('game')
 
         this.backgroundGroup = new Group2D({name: 'background'})
         this.entitiesGroup = new Group2D({name: 'entities'})
@@ -174,7 +175,7 @@ export default class DefendTheDen extends Game {
         this.entitiesGroup.addChild(this.worldView.rootGroup)
         this.entitiesGroup.addChild(this.impactParticles.particleGroup)
 
-        gameLayer.setRenderGroups([
+        gameRenderer.setRenderGroups([
             {
                 $name: 'background',
                 content: this.backgroundGroup
@@ -230,8 +231,10 @@ export default class DefendTheDen extends Game {
         this.worldView.syncViews()
         this.hitboxDebug.update()
 
-        const gameLayer = this.getCanvas('game')
-        gameLayer.setUniform('uTime', performance.now() / 1000)
+        const gameRenderer = this.getRenderer('game')
+        const gameLayer = this.getLayer('game')
+
+        gameRenderer.setUniform('uTime', performance.now() / 1000)
         gameLayer.markDirty()
         gameLayer.render()
     }

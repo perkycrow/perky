@@ -68,9 +68,10 @@ const shadowTransform = new ShadowTransform({
 })
 
 
-const layer = renderSystem.getCanvas('game')
+const layer = renderSystem.getLayer('game')
+const renderer = renderSystem.getRenderer('game')
 
-layer.renderer.setRenderGroups([
+renderer.setRenderGroups([
     {
         $name: 'helpers',
         content: helpersGroup

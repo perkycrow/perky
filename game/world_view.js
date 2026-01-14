@@ -116,9 +116,9 @@ export default class WorldView extends PerkyModule {
 
 
     setupRenderGroups () {
-        const gameLayer = this.game.getCanvas('game')
+        const gameRenderer = this.game.getRenderer('game')
 
-        gameLayer.renderer.setRenderGroups([
+        gameRenderer.setRenderGroups([
             {
                 $name: 'entities',
                 content: this.rootGroup
@@ -135,7 +135,7 @@ export default class WorldView extends PerkyModule {
     sync () {
         this.syncViews()
 
-        const gameLayer = this.game.getCanvas('game')
+        const gameLayer = this.game.getLayer('game')
         gameLayer.markDirty()
         gameLayer.render()
     }

@@ -88,13 +88,14 @@ renderSystem.createLayer('game', 'webgl', {
 const mainCamera = renderSystem.getCamera('main')
 mainCamera.setUnitsInView(10)
 
-const layer = renderSystem.getCanvas('game')
+const layer = renderSystem.getLayer('game')
+const renderer = renderSystem.getRenderer('game')
 
 
-layer.renderer.registerShaderEffect(ChromaticEffect)
-layer.renderer.registerShaderEffect(WaveEffect)
-layer.renderer.registerShaderEffect(PulseEffect)
-layer.renderer.registerShaderEffect(OutlineEffect)
+renderer.registerShaderEffect(ChromaticEffect)
+renderer.registerShaderEffect(WaveEffect)
+renderer.registerShaderEffect(PulseEffect)
+renderer.registerShaderEffect(OutlineEffect)
 
 
 const shroomImage = new Image()
@@ -181,7 +182,7 @@ function updateSpriteCountDisplay () {
 }
 
 
-layer.renderer.setRenderGroups([
+renderer.setRenderGroups([
     {
         $name: 'entities',
         content: entitiesGroup
@@ -208,7 +209,7 @@ function animate () {
         }
     }
 
-    layer.renderer.setUniform('uTime', now / 1000)
+    renderer.setUniform('uTime', now / 1000)
 
     for (const sprite of sprites) {
         sprite.image.x += sprite.vx * deltaTime

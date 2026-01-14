@@ -191,21 +191,13 @@ export default class RenderSystem extends PerkyModule {
     }
 
 
-    getCanvas (name) {
-        const layer = this.getLayer(name)
-        if (layer instanceof CanvasLayer) {
-            return layer
-        }
-        throw new Error(`Layer "${name}" is not a canvas layer`)
+    getRenderer (name) {
+        return this.getLayer(name).renderer
     }
 
 
     getHTML (name) {
-        const layer = this.getLayer(name)
-        if (layer instanceof HTMLLayer) {
-            return layer
-        }
-        throw new Error(`Layer "${name}" is not an HTML layer`)
+        return this.getLayer(name).element
     }
 
 
@@ -319,7 +311,7 @@ export default class RenderSystem extends PerkyModule {
         this.delegateTo(host, [
             'createLayer',
             'getLayer',
-            'getCanvas',
+            'getRenderer',
             'getHTML',
             'removeLayer',
             'renderAll',

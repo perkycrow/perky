@@ -21,9 +21,9 @@ export default class Ghast extends Game {
     configureGame () {
         this.worldView.register(Player, PlayerView)
 
-        const gameLayer = this.getCanvas('game')
+        const gameRenderer = this.getRenderer('game')
         this.groundPass = new GroundPass()
-        gameLayer.renderer.addPostPass(this.groundPass)
+        gameRenderer.addPostPass(this.groundPass)
 
         this.on('update', () => {
             this.#updateCamera()
@@ -42,11 +42,12 @@ export default class Ghast extends Game {
 
 
     #updateGroundPass () {
-        const gameLayer = this.getCanvas('game')
+        const gameLayer = this.getLayer('game')
+        const gameRenderer = this.getRenderer('game')
 
         this.groundPass.setUniform('uCameraPos', [this.camera.x, this.camera.y])
         this.groundPass.setUniform('uResolution', [gameLayer.canvas.width, gameLayer.canvas.height])
-        this.groundPass.setUniform('uPixelsPerUnit', this.camera.pixelsPerUnit * gameLayer.renderer.pixelRatio)
+        this.groundPass.setUniform('uPixelsPerUnit', this.camera.pixelsPerUnit * gameRenderer.pixelRatio)
         this.groundPass.setUniform('uTime', performance.now() / 1000)
     }
 

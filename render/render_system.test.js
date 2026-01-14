@@ -70,11 +70,21 @@ describe('RenderSystem', () => {
         })
 
 
-        test('getCanvas retrieves canvas from layer', () => {
+        test('getRenderer retrieves renderer from layer', () => {
             renderSystem.createLayer('game', 'canvas')
-            const canvas = renderSystem.getCanvas('game')
+            const renderer = renderSystem.getRenderer('game')
 
-            expect(canvas).toBeDefined()
+            expect(renderer).toBeDefined()
+            expect(renderer.constructor.name).toBe('CanvasRenderer')
+        })
+
+
+        test('getRenderer retrieves WebGLRenderer for webgl layer', () => {
+            renderSystem.createLayer('game', 'webgl')
+            const renderer = renderSystem.getRenderer('game')
+
+            expect(renderer).toBeDefined()
+            expect(renderer.constructor.name).toBe('WebGLRenderer')
         })
 
     })
@@ -285,20 +295,15 @@ describe('RenderSystem', () => {
     })
 
 
-    test('getHTML throws for canvas layer', () => {
+    test('getHTML returns element from any layer', () => {
         renderSystem.createLayer('canvasLayer', 'canvas')
-
-        expect(() => renderSystem.getHTML('canvasLayer')).toThrow('not an HTML layer')
-    })
-
-
-    test('getHTML returns html layer', () => {
         renderSystem.createLayer('htmlLayer', 'html')
 
-        const layer = renderSystem.getHTML('htmlLayer')
+        const canvasElement = renderSystem.getHTML('canvasLayer')
+        const htmlElement = renderSystem.getHTML('htmlLayer')
 
-        expect(layer).toBeDefined()
-        expect(layer.$id).toBe('htmlLayer')
+        expect(canvasElement).toBeInstanceOf(HTMLCanvasElement)
+        expect(htmlElement).toBeInstanceOf(HTMLDivElement)
     })
 
 
