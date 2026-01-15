@@ -118,12 +118,10 @@ export default class WorldView extends PerkyModule {
     setupRenderGroups () {
         const gameRenderer = this.game.getRenderer('game')
 
-        gameRenderer.setRenderGroups([
-            {
-                $name: 'entities',
-                content: this.rootGroup
-            }
-        ])
+        gameRenderer.appendRenderGroup({
+            $name: 'entities',
+            content: this.rootGroup
+        })
     }
 
 

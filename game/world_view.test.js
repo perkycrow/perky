@@ -76,7 +76,8 @@ describe('WorldView', () => {
     beforeEach(() => {
         mockWorld = new MockWorld()
         const mockRenderer = {
-            setRenderGroups: vi.fn()
+            setRenderGroups: vi.fn(),
+            appendRenderGroup: vi.fn()
         }
         mockCanvas = {}
         mockGame = {
@@ -247,12 +248,10 @@ describe('WorldView', () => {
             worldView.onStart()
             worldView.setupRenderGroups()
 
-            expect(mockRenderer.setRenderGroups).toHaveBeenCalledWith([
-                {
-                    $name: 'entities',
-                    content: worldView.rootGroup
-                }
-            ])
+            expect(mockRenderer.appendRenderGroup).toHaveBeenCalledWith({
+                $name: 'entities',
+                content: worldView.rootGroup
+            })
         })
 
     })

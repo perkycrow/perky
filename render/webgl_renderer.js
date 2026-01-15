@@ -28,6 +28,7 @@ export default class WebGLRenderer extends BaseRenderer {
 
     #compositeQuad = null
     #compositeProgram = null
+    #renderGroupOrder = []
 
     constructor (options = {}) {
         const {autoFit, ...parentOptions} = options
@@ -58,6 +59,9 @@ export default class WebGLRenderer extends BaseRenderer {
         this.delegateTo(host, [
             'setRenderGroups',
             'clearRenderGroups',
+            'prependRenderGroup',
+            'appendRenderGroup',
+            'removeRenderGroup',
             'setUniform',
             'getUniform',
             'getPass',
@@ -244,15 +248,8 @@ export default class WebGLRenderer extends BaseRenderer {
     setRenderGroups (configs) {
         this.clearRenderGroups()
 
-        if (!this.#compositeProgram) {
-            this.#setupCompositeShader()
-        }
-        if (!this.#compositeQuad) {
-            this.#compositeQuad = new FullscreenQuad(this.gl)
-        }
-
         for (const config of configs) {
-            this.create(RenderGroup, config)
+            this.appendRenderGroup(config)
         }
 
         return this
@@ -260,16 +257,55 @@ export default class WebGLRenderer extends BaseRenderer {
 
 
     clearRenderGroups () {
-        const groups = this.renderGroups
-        for (const group of groups) {
+        for (const group of this.#renderGroupOrder) {
             this.removeChild(group.$id)
         }
+        this.#renderGroupOrder = []
         return this
     }
 
 
     get renderGroups () {
-        return this.childrenByCategory('renderGroup')
+        return this.#renderGroupOrder
+    }
+
+
+    prependRenderGroup (config) {
+        this.#ensureCompositeSetup()
+        const group = this.create(RenderGroup, config)
+        this.#renderGroupOrder.unshift(group)
+        return group
+    }
+
+
+    appendRenderGroup (config) {
+        this.#ensureCompositeSetup()
+        const group = this.create(RenderGroup, config)
+        this.#renderGroupOrder.push(group)
+        return group
+    }
+
+
+    removeRenderGroup (groupOrId) {
+        const id = typeof groupOrId === 'string' ? groupOrId : groupOrId.$id
+        const index = this.#renderGroupOrder.findIndex(g => g.$id === id)
+
+        if (index !== -1) {
+            this.#renderGroupOrder.splice(index, 1)
+            this.removeChild(id)
+        }
+
+        return this
+    }
+
+
+    #ensureCompositeSetup () {
+        if (!this.#compositeProgram) {
+            this.#setupCompositeShader()
+        }
+        if (!this.#compositeQuad) {
+            this.#compositeQuad = new FullscreenQuad(this.gl)
+        }
     }
 
 
