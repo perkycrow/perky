@@ -295,4 +295,40 @@ describe('TextureAtlas', () => {
 
     })
 
+
+    describe('dispose', () => {
+
+        test('clears all internal references', () => {
+            atlas.add('s1', createMockImage(32, 32))
+            atlas.add('s2', createMockImage(32, 32))
+
+            atlas.dispose()
+
+            expect(atlas.canvas).toBeNull()
+            expect(atlas.regionCount).toBe(0)
+        })
+
+
+        test('clears regions', () => {
+            atlas.add('s1', createMockImage(32, 32))
+            atlas.add('s2', createMockImage(32, 32))
+
+            expect(atlas.regionCount).toBe(2)
+
+            atlas.dispose()
+
+            expect(atlas.getAllRegions().size).toBe(0)
+        })
+
+
+        test('can be called multiple times safely', () => {
+            atlas.add('s1', createMockImage(32, 32))
+
+            atlas.dispose()
+
+            expect(() => atlas.dispose()).not.toThrow()
+        })
+
+    })
+
 })

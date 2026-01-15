@@ -130,4 +130,18 @@ describe('BaseTool', () => {
         expect(typeof BaseTool.register).toBe('function')
     })
 
+
+    describe('getHeaderActions', () => {
+
+        test('returns empty array by default', () => {
+            expect(tool.getHeaderActions()).toEqual([])
+        })
+
+
+        test('returns an array', () => {
+            expect(Array.isArray(tool.getHeaderActions())).toBe(true)
+        })
+
+    })
+
 })

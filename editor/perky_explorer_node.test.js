@@ -176,6 +176,48 @@ describe('PerkyExplorerNode', () => {
         expect(node.childrenEl.children.length).toBe(0)
     })
 
+
+    describe('setSystemModule', () => {
+
+        test('should add system icon when set to true', () => {
+            node.setModule(createMockModule())
+            node.setSystemModule(true)
+
+            const systemIcon = node.contentEl.querySelector('.node-system-icon')
+            expect(systemIcon).not.toBeNull()
+        })
+
+
+        test('should remove system icon when set to false', () => {
+            node.setModule(createMockModule())
+            node.setSystemModule(true)
+            node.setSystemModule(false)
+
+            const systemIcon = node.contentEl.querySelector('.node-system-icon')
+            expect(systemIcon).toBeNull()
+        })
+
+
+        test('should not add duplicate icons when called multiple times with true', () => {
+            node.setModule(createMockModule())
+            node.setSystemModule(true)
+            node.setSystemModule(true)
+
+            const systemIcons = node.contentEl.querySelectorAll('.node-system-icon')
+            expect(systemIcons.length).toBe(1)
+        })
+
+
+        test('system icon should have title', () => {
+            node.setModule(createMockModule())
+            node.setSystemModule(true)
+
+            const systemIcon = node.contentEl.querySelector('.node-system-icon')
+            expect(systemIcon.title).toBe('System module')
+        })
+
+    })
+
 })
 
 

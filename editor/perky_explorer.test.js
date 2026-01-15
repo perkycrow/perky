@@ -401,6 +401,65 @@ describe('PerkyExplorer', () => {
     })
 
 
+    describe('isSystemModule', () => {
+
+        test('returns true for system category modules', () => {
+            const systemModule = new PerkyModule({$id: 'input', $category: 'inputSystem'})
+
+            expect(explorer.isSystemModule(systemModule)).toBe(true)
+        })
+
+
+        test('returns false for non-system category modules', () => {
+            const regularModule = new PerkyModule({$id: 'player', $category: 'entity'})
+
+            expect(explorer.isSystemModule(regularModule)).toBe(false)
+        })
+
+
+        test('returns falsy for null module', () => {
+            expect(explorer.isSystemModule(null)).toBeFalsy()
+        })
+
+
+        test('returns falsy for undefined module', () => {
+            expect(explorer.isSystemModule(undefined)).toBeFalsy()
+        })
+
+
+        test('recognizes all default system categories', () => {
+            const systemCategories = [
+                'actionDispatcher',
+                'inputSystem',
+                'renderSystem',
+                'sourceManager',
+                'perkyView',
+                'gameLoop',
+                'textureSystem',
+                'audioSystem',
+                'manifest'
+            ]
+
+            for (const category of systemCategories) {
+                const module = new PerkyModule({$id: 'test', $category: category})
+                expect(explorer.isSystemModule(module)).toBe(true)
+            }
+        })
+
+
+        test('respects custom systemCategories', () => {
+            explorer.systemCategories = ['customSystem', 'anotherSystem']
+
+            const customSystem = new PerkyModule({$id: 'test', $category: 'customSystem'})
+            const defaultSystem = new PerkyModule({$id: 'test2', $category: 'inputSystem'})
+
+            expect(explorer.isSystemModule(customSystem)).toBe(true)
+            expect(explorer.isSystemModule(defaultSystem)).toBe(false)
+        })
+
+    })
+
+
     describe('focusModule', () => {
 
         test('should change root to focused module', () => {

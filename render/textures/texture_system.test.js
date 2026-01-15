@@ -186,6 +186,85 @@ describe('TextureSystem', () => {
     })
 
 
+    describe('addFromAsset', () => {
+
+        test('adds image asset to atlas', () => {
+            const asset = {
+                id: 'sprite1',
+                type: 'image',
+                source: createMockImage(32, 32)
+            }
+
+            const region = system.addFromAsset(asset)
+
+            expect(region).not.toBeNull()
+            expect(region.width).toBe(32)
+            expect(system.hasRegion('sprite1')).toBe(true)
+        })
+
+
+        test('returns null for non-image asset', () => {
+            const asset = {
+                id: 'sound1',
+                type: 'audio',
+                source: {}
+            }
+
+            const region = system.addFromAsset(asset)
+
+            expect(region).toBeNull()
+        })
+
+
+        test('returns null for asset without source', () => {
+            const asset = {
+                id: 'no-source',
+                type: 'image',
+                source: null
+            }
+
+            const region = system.addFromAsset(asset)
+
+            expect(region).toBeNull()
+        })
+
+
+        test('returns existing region for duplicate asset', () => {
+            const asset = {
+                id: 'sprite1',
+                type: 'image',
+                source: createMockImage(32, 32)
+            }
+
+            const region1 = system.addFromAsset(asset)
+            const region2 = system.addFromAsset({
+                id: 'sprite1',
+                type: 'image',
+                source: createMockImage(64, 64)
+            })
+
+            expect(region1).toBe(region2)
+        })
+
+
+        test('stores as manual region when atlas config is false', () => {
+            const asset = {
+                id: 'standalone',
+                type: 'image',
+                source: createMockImage(32, 32),
+                config: {atlas: false}
+            }
+
+            const region = system.addFromAsset(asset)
+
+            expect(region).not.toBeNull()
+            expect(system.hasRegion('standalone')).toBe(true)
+            expect(region.image).toBe(asset.source)
+        })
+
+    })
+
+
     test('atlases returns list of atlases', () => {
         system.addRegion('s1', createMockImage(32, 32))
 

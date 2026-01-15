@@ -238,4 +238,121 @@ describe('TextureAtlasManager', () => {
         expect(manager.regionCount).toBe(0)
     })
 
+
+    describe('addToNamedAtlas', () => {
+
+        test('adds image to named atlas', () => {
+            const image = createMockImage(32, 32)
+            const region = manager.addToNamedAtlas('characters', 'hero', image)
+
+            expect(region).not.toBeNull()
+            expect(region.width).toBe(32)
+        })
+
+
+        test('returns existing region for duplicate id', () => {
+            const image = createMockImage(32, 32)
+            const region1 = manager.addToNamedAtlas('characters', 'hero', image)
+            const region2 = manager.addToNamedAtlas('characters', 'hero', createMockImage(64, 64))
+
+            expect(region1).toBe(region2)
+        })
+
+
+        test('creates separate atlases for different named groups', () => {
+            manager.addToNamedAtlas('characters', 'hero', createMockImage(200, 200))
+            manager.addToNamedAtlas('items', 'sword', createMockImage(200, 200))
+
+            expect(manager.atlasCount).toBe(2)
+        })
+
+
+        test('reuses named atlas when space available', () => {
+            manager.addToNamedAtlas('characters', 'hero', createMockImage(32, 32))
+            manager.addToNamedAtlas('characters', 'villain', createMockImage(32, 32))
+
+            expect(manager.atlasCount).toBe(1)
+        })
+
+
+        test('returns null for invalid image', () => {
+            expect(manager.addToNamedAtlas('test', 'invalid', null)).toBeNull()
+        })
+
+
+        test('handles oversized images as standalone regions', () => {
+            const oversized = createMockImage(500, 500)
+            const region = manager.addToNamedAtlas('test', 'oversized', oversized)
+
+            expect(region).not.toBeNull()
+            expect(region.image).toBe(oversized)
+            expect(manager.atlasCount).toBe(0)
+        })
+
+
+        test('region is retrievable by id', () => {
+            manager.addToNamedAtlas('characters', 'hero', createMockImage(32, 32))
+
+            expect(manager.has('hero')).toBe(true)
+            expect(manager.get('hero')).not.toBeNull()
+        })
+
+    })
+
+
+    describe('addBatchToNamedAtlas', () => {
+
+        test('adds multiple images to named atlas', () => {
+            const images = {
+                hero: createMockImage(32, 32),
+                villain: createMockImage(48, 48),
+                npc: createMockImage(24, 24)
+            }
+
+            const results = manager.addBatchToNamedAtlas('characters', images)
+
+            expect(results.size).toBe(3)
+            expect(manager.regionCount).toBe(3)
+        })
+
+
+        test('returns map of regions', () => {
+            const images = {
+                hero: createMockImage(32, 32),
+                villain: createMockImage(48, 48)
+            }
+
+            const results = manager.addBatchToNamedAtlas('characters', images)
+
+            expect(results.get('hero')).not.toBeNull()
+            expect(results.get('villain')).not.toBeNull()
+        })
+
+
+        test('all images go to same named atlas group', () => {
+            const images = {
+                s1: createMockImage(32, 32),
+                s2: createMockImage(32, 32),
+                s3: createMockImage(32, 32)
+            }
+
+            manager.addBatchToNamedAtlas('sprites', images)
+
+            expect(manager.atlasCount).toBe(1)
+        })
+
+
+        test('creates new atlas in group when full', () => {
+            const images = {
+                large1: createMockImage(200, 200),
+                large2: createMockImage(200, 200)
+            }
+
+            manager.addBatchToNamedAtlas('large', images)
+
+            expect(manager.atlasCount).toBe(2)
+        })
+
+    })
+
 })

@@ -116,4 +116,58 @@ describe('ExplorerTool', () => {
         expect(() => tool.onActivate()).not.toThrow()
     })
 
+
+    describe('getHeaderActions', () => {
+
+        test('returns an array with one action', () => {
+            const actions = tool.getHeaderActions()
+
+            expect(Array.isArray(actions)).toBe(true)
+            expect(actions.length).toBe(1)
+        })
+
+
+        test('action has required properties', () => {
+            const actions = tool.getHeaderActions()
+            const action = actions[0]
+
+            expect(action).toHaveProperty('icon')
+            expect(action).toHaveProperty('title')
+            expect(action).toHaveProperty('active')
+            expect(action).toHaveProperty('onClick')
+        })
+
+
+        test('action title reflects showSystemModules state', () => {
+            const explorer = tool.shadowRoot.querySelector('perky-explorer')
+            explorer.showSystemModules = false
+
+            const actions = tool.getHeaderActions()
+
+            expect(actions[0].title).toBe('Show system modules')
+        })
+
+
+        test('action active reflects showSystemModules state', () => {
+            const explorer = tool.shadowRoot.querySelector('perky-explorer')
+            explorer.showSystemModules = false
+
+            const actions = tool.getHeaderActions()
+
+            expect(actions[0].active).toBe(false)
+        })
+
+
+        test('onClick toggles showSystemModules', () => {
+            const explorer = tool.shadowRoot.querySelector('perky-explorer')
+            explorer.showSystemModules = false
+
+            const actions = tool.getHeaderActions()
+            actions[0].onClick()
+
+            expect(explorer.showSystemModules).toBe(true)
+        })
+
+    })
+
 })

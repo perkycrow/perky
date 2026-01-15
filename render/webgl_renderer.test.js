@@ -424,4 +424,137 @@ describe('WebGLRenderer', () => {
 
     })
 
+
+    describe('prependRenderGroup', () => {
+
+        test('adds group at the beginning', () => {
+            const scene1 = new Group2D()
+            const scene2 = new Group2D()
+
+            renderer.appendRenderGroup({$id: 'existing', content: scene1})
+            renderer.prependRenderGroup({$id: 'first', content: scene2})
+
+            expect(renderer.renderGroups.length).toBe(2)
+            expect(renderer.renderGroups[0].$id).toBe('first')
+            expect(renderer.renderGroups[1].$id).toBe('existing')
+        })
+
+
+        test('returns the created group', () => {
+            const scene = new Group2D()
+
+            const group = renderer.prependRenderGroup({$id: 'test', content: scene})
+
+            expect(group).toBeDefined()
+            expect(group.$id).toBe('test')
+        })
+
+
+        test('creates group with content', () => {
+            const scene = new Group2D()
+
+            const group = renderer.prependRenderGroup({$id: 'test', content: scene})
+
+            expect(group.content).toBe(scene)
+        })
+
+    })
+
+
+    describe('appendRenderGroup', () => {
+
+        test('adds group at the end', () => {
+            const scene1 = new Group2D()
+            const scene2 = new Group2D()
+
+            renderer.appendRenderGroup({$id: 'first', content: scene1})
+            renderer.appendRenderGroup({$id: 'second', content: scene2})
+
+            expect(renderer.renderGroups.length).toBe(2)
+            expect(renderer.renderGroups[0].$id).toBe('first')
+            expect(renderer.renderGroups[1].$id).toBe('second')
+        })
+
+
+        test('returns the created group', () => {
+            const scene = new Group2D()
+
+            const group = renderer.appendRenderGroup({$id: 'test', content: scene})
+
+            expect(group).toBeDefined()
+            expect(group.$id).toBe('test')
+        })
+
+
+        test('creates group with content', () => {
+            const scene = new Group2D()
+
+            const group = renderer.appendRenderGroup({$id: 'test', content: scene})
+
+            expect(group.content).toBe(scene)
+        })
+
+    })
+
+
+    describe('removeRenderGroup', () => {
+
+        test('removes group by id string', () => {
+            const scene = new Group2D()
+
+            renderer.appendRenderGroup({$id: 'group1', content: scene})
+            renderer.appendRenderGroup({$id: 'group2', content: scene})
+
+            expect(renderer.renderGroups.length).toBe(2)
+
+            const result = renderer.removeRenderGroup('group1')
+
+            expect(result).toBe(renderer)
+            expect(renderer.renderGroups.length).toBe(1)
+            expect(renderer.renderGroups[0].$id).toBe('group2')
+        })
+
+
+        test('removes group by group object', () => {
+            const scene = new Group2D()
+
+            const group1 = renderer.appendRenderGroup({$id: 'group1', content: scene})
+            renderer.appendRenderGroup({$id: 'group2', content: scene})
+
+            const result = renderer.removeRenderGroup(group1)
+
+            expect(result).toBe(renderer)
+            expect(renderer.renderGroups.length).toBe(1)
+            expect(renderer.renderGroups[0].$id).toBe('group2')
+        })
+
+
+        test('does nothing for non-existent group', () => {
+            const scene = new Group2D()
+
+            renderer.appendRenderGroup({$id: 'existing', content: scene})
+
+            const result = renderer.removeRenderGroup('nonexistent')
+
+            expect(result).toBe(renderer)
+            expect(renderer.renderGroups.length).toBe(1)
+        })
+
+
+        test('removes correct group when multiple exist', () => {
+            const scene = new Group2D()
+
+            renderer.appendRenderGroup({$id: 'first', content: scene})
+            renderer.appendRenderGroup({$id: 'middle', content: scene})
+            renderer.appendRenderGroup({$id: 'last', content: scene})
+
+            renderer.removeRenderGroup('middle')
+
+            expect(renderer.renderGroups.length).toBe(2)
+            expect(renderer.renderGroups[0].$id).toBe('first')
+            expect(renderer.renderGroups[1].$id).toBe('last')
+        })
+
+    })
+
 })

@@ -292,6 +292,119 @@ describe('WorldView', () => {
     })
 
 
+    describe('updateViews', () => {
+
+        test('calls update on all views with deltaTime', () => {
+            class ViewWithUpdate {
+                constructor () {
+                    this.root = new Group2D()
+                    this.updateCalled = false
+                    this.lastDeltaTime = null
+                }
+
+                update (deltaTime) {
+                    this.updateCalled = true
+                    this.lastDeltaTime = deltaTime
+                }
+
+                sync () {}
+
+                dispose () {
+                    this.root = null
+                }
+            }
+
+            worldView.register(MockEntity, ViewWithUpdate)
+            worldView.onStart()
+
+            const entity = new MockEntity({$id: 'update-test'})
+            mockWorld.addEntity(entity)
+
+            worldView.updateViews(0.016)
+
+            const views = worldView.getViews('update-test')
+            expect(views[0].updateCalled).toBe(true)
+            expect(views[0].lastDeltaTime).toBe(0.016)
+        })
+
+
+        test('skips views without update method', () => {
+            worldView.register(MockEntity, MockEntityView)
+            worldView.onStart()
+
+            const entity = new MockEntity({$id: 'no-update'})
+            mockWorld.addEntity(entity)
+
+            expect(() => worldView.updateViews(0.016)).not.toThrow()
+        })
+
+
+        test('updates multiple entities', () => {
+            class ViewWithUpdate {
+                constructor () {
+                    this.root = new Group2D()
+                    this.updateCount = 0
+                }
+
+                update () {
+                    this.updateCount++
+                }
+
+                sync () {}
+
+                dispose () {
+                    this.root = null
+                }
+            }
+
+            worldView.register(MockEntity, ViewWithUpdate)
+            worldView.onStart()
+
+            mockWorld.addEntity(new MockEntity({$id: 'multi-1'}))
+            mockWorld.addEntity(new MockEntity({$id: 'multi-2'}))
+            mockWorld.addEntity(new MockEntity({$id: 'multi-3'}))
+
+            worldView.updateViews(0.016)
+
+            expect(worldView.getViews('multi-1')[0].updateCount).toBe(1)
+            expect(worldView.getViews('multi-2')[0].updateCount).toBe(1)
+            expect(worldView.getViews('multi-3')[0].updateCount).toBe(1)
+        })
+
+    })
+
+
+    describe('syncViews', () => {
+
+        test('calls sync on all views', () => {
+            worldView.register(MockEntity, MockEntityView)
+            worldView.onStart()
+
+            const entity = new MockEntity({$id: 'sync-test'})
+            mockWorld.addEntity(entity)
+
+            worldView.syncViews()
+
+            expect(worldView.getViews('sync-test')[0].syncCalled).toBe(true)
+        })
+
+
+        test('syncs multiple entities', () => {
+            worldView.register(MockEntity, MockEntityView)
+            worldView.onStart()
+
+            mockWorld.addEntity(new MockEntity({$id: 'multi-sync-1'}))
+            mockWorld.addEntity(new MockEntity({$id: 'multi-sync-2'}))
+
+            worldView.syncViews()
+
+            expect(worldView.getViews('multi-sync-1')[0].syncCalled).toBe(true)
+            expect(worldView.getViews('multi-sync-2')[0].syncCalled).toBe(true)
+        })
+
+    })
+
+
     describe('getViews', () => {
 
         test('returns empty array for unknown entity', () => {
