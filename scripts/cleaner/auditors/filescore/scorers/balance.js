@@ -3,17 +3,6 @@ import path from 'path'
 import BaseScorer from './base_scorer.js'
 
 
-function isValidJsFile (name) {
-    if (!name.endsWith('.js')) {
-        return false
-    }
-    if (name.endsWith('.test.js') || name.endsWith('.doc.js')) {
-        return false
-    }
-    return true
-}
-
-
 export default class BalanceScorer extends BaseScorer {
 
     static $name = 'Balance'
@@ -113,4 +102,15 @@ export default class BalanceScorer extends BaseScorer {
         results.push(...this.#getJsFiles(fullPath, relativeTo))
     }
 
+}
+
+
+function isValidJsFile (name) {
+    if (!name.endsWith('.js')) {
+        return false
+    }
+    if (name.endsWith('.test.js') || name.endsWith('.doc.js')) {
+        return false
+    }
+    return true
 }

@@ -2,18 +2,6 @@ import fs from 'fs'
 import BaseScorer from './base_scorer.js'
 
 
-function hasTestFile (filePath) {
-    const testPath = filePath.replace(/\.js$/, '.test.js')
-    return fs.existsSync(testPath)
-}
-
-
-function hasDocFile (filePath) {
-    const docPath = filePath.replace(/\.js$/, '.doc.js')
-    return fs.existsSync(docPath)
-}
-
-
 export default class CoverageScorer extends BaseScorer {
 
     static $name = 'Coverage'
@@ -40,4 +28,16 @@ export default class CoverageScorer extends BaseScorer {
         return {points, breakdown}
     }
 
+}
+
+
+function hasTestFile (filePath) {
+    const testPath = filePath.replace(/\.js$/, '.test.js')
+    return fs.existsSync(testPath)
+}
+
+
+function hasDocFile (filePath) {
+    const docPath = filePath.replace(/\.js$/, '.doc.js')
+    return fs.existsSync(docPath)
 }

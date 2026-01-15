@@ -273,27 +273,22 @@ describe('WorldView', () => {
     })
 
 
-    describe('sync', () => {
+    test('sync calls sync on all views', () => {
+        worldView.register(MockEntity, MockEntityView)
+        worldView.onStart()
 
-        test('calls sync on all views', () => {
-            worldView.register(MockEntity, MockEntityView)
-            worldView.onStart()
+        const entity1 = new MockEntity({$id: 'sync-1'})
+        const entity2 = new MockEntity({$id: 'sync-2'})
+        mockWorld.addEntity(entity1)
+        mockWorld.addEntity(entity2)
 
-            const entity1 = new MockEntity({$id: 'sync-1'})
-            const entity2 = new MockEntity({$id: 'sync-2'})
-            mockWorld.addEntity(entity1)
-            mockWorld.addEntity(entity2)
+        worldView.sync()
 
-            worldView.sync()
+        const views1 = worldView.getViews('sync-1')
+        const views2 = worldView.getViews('sync-2')
 
-            const views1 = worldView.getViews('sync-1')
-            const views2 = worldView.getViews('sync-2')
-
-            expect(views1[0].syncCalled).toBe(true)
-            expect(views2[0].syncCalled).toBe(true)
-        })
-
-
+        expect(views1[0].syncCalled).toBe(true)
+        expect(views2[0].syncCalled).toBe(true)
     })
 
 

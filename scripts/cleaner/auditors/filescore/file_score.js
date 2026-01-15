@@ -22,30 +22,6 @@ const SCORERS = [
 ]
 
 
-function printHeader (flop) {
-    const title = flop ? '     FLOP 10 FILES       ' : '        FILE SCORES          '
-    const subtitle = flop
-        ? 'Files needing the most attention'
-        : 'Higher score = healthier file'
-
-    console.log('')
-    console.log(cyan('  ╭─────────────────────────────╮'))
-    console.log(cyan('  │') + bold(title) + cyan('│'))
-    console.log(cyan('  ╰─────────────────────────────╯'))
-    console.log(dim(`  ${subtitle}`))
-    console.log('')
-}
-
-
-function printSummary (displayList, flop) {
-    const avgScore = Math.round(displayList.reduce((sum, s) => sum + s.total, 0) / displayList.length)
-
-    console.log('')
-    console.log(`  ${green('Summary:')} ${displayList.length} files${flop ? ' (worst)' : ''}, avg score: ${avgScore} pts`)
-    console.log('')
-}
-
-
 export default class FileScoreAuditor extends Auditor {
 
     static $name = 'File Scores'
@@ -225,4 +201,28 @@ export default class FileScoreAuditor extends Auditor {
         }
     }
 
+}
+
+
+function printHeader (flop) {
+    const title = flop ? '     FLOP 10 FILES       ' : '        FILE SCORES          '
+    const subtitle = flop
+        ? 'Files needing the most attention'
+        : 'Higher score = healthier file'
+
+    console.log('')
+    console.log(cyan('  ╭─────────────────────────────╮'))
+    console.log(cyan('  │') + bold(title) + cyan('│'))
+    console.log(cyan('  ╰─────────────────────────────╯'))
+    console.log(dim(`  ${subtitle}`))
+    console.log('')
+}
+
+
+function printSummary (displayList, flop) {
+    const avgScore = Math.round(displayList.reduce((sum, s) => sum + s.total, 0) / displayList.length)
+
+    console.log('')
+    console.log(`  ${green('Summary:')} ${displayList.length} files${flop ? ' (worst)' : ''}, avg score: ${avgScore} pts`)
+    console.log('')
 }
