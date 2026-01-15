@@ -12,7 +12,6 @@ export default class MaturityScorer extends BaseScorer {
     #pointsPerSession = 5
     #linesPerPoint = 100
 
-
     score (filePath) {
         const sessions = this.#countSessions(filePath)
         const totalLines = this.#getTotalLinesChanged(filePath)

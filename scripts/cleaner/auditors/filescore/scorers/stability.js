@@ -11,7 +11,6 @@ export default class StabilityScorer extends BaseScorer {
     #stableDays = 30
     #stableBonus = 10
 
-
     score (filePath) {
         const daysSinceLastCommit = this.#getDaysSinceLastCommit(filePath)
         const isStable = daysSinceLastCommit >= this.#stableDays

@@ -11,7 +11,6 @@ export default class AgeScorer extends BaseScorer {
     #pointsPerMonth = 2
     #maxMonths = 24
 
-
     score (filePath) {
         const months = this.#getAgeInMonths(filePath)
         const cappedMonths = Math.min(months, this.#maxMonths)

@@ -38,7 +38,7 @@ export default class BaseScorer {
 
 
     score () {
-        return 0
+        return {points: this.weight * 0, breakdown: []}
     }
 
 }

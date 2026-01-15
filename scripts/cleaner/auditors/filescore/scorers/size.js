@@ -11,7 +11,6 @@ export default class SizeScorer extends BaseScorer {
     #pointsPerSavedChunk = 2
     #chunkSize = 50
 
-
     score (filePath, content) {
         const lines = content.split('\n').length
         const savedLines = Math.max(0, this.#maxLines - lines)

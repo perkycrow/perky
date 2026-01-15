@@ -3,6 +3,17 @@ import path from 'path'
 import BaseScorer from './base_scorer.js'
 
 
+function isValidJsFile (name) {
+    if (!name.endsWith('.js')) {
+        return false
+    }
+    if (name.endsWith('.test.js') || name.endsWith('.doc.js')) {
+        return false
+    }
+    return true
+}
+
+
 export default class BalanceScorer extends BaseScorer {
 
     static $name = 'Balance'
@@ -11,7 +22,6 @@ export default class BalanceScorer extends BaseScorer {
 
     #maxBonus = 15
     #median = null
-
 
     score (filePath, content) {
         if (this.#median === null) {
@@ -26,7 +36,7 @@ export default class BalanceScorer extends BaseScorer {
 
         const breakdown = []
         if (points > 0) {
-            const direction = lines < this.#median ? 'small' : lines > this.#median ? 'large' : 'median'
+            const direction = this.#getDirection(lines)
             breakdown.push(`Balance: +${points} (${lines} lines, ${direction})`)
         }
 
@@ -34,13 +44,21 @@ export default class BalanceScorer extends BaseScorer {
     }
 
 
+    #getDirection (lines) {
+        if (lines < this.#median) {
+            return 'small'
+        }
+        if (lines > this.#median) {
+            return 'large'
+        }
+        return 'median'
+    }
+
+
     #calculateMedian () {
         const jsFiles = this.#getJsFiles(this.rootDir)
         const sizes = jsFiles
-            .map(file => {
-                const content = fs.readFileSync(file, 'utf-8')
-                return content.split('\n').length
-            })
+            .map(file => fs.readFileSync(file, 'utf-8').split('\n').length)
             .sort((a, b) => a - b)
 
         if (sizes.length === 0) {
@@ -48,36 +66,51 @@ export default class BalanceScorer extends BaseScorer {
         }
 
         const mid = Math.floor(sizes.length / 2)
-        return sizes.length % 2 === 0
-            ? Math.floor((sizes[mid - 1] + sizes[mid]) / 2)
-            : sizes[mid]
+        if (sizes.length % 2 === 0) {
+            return Math.floor((sizes[mid - 1] + sizes[mid]) / 2)
+        }
+        return sizes[mid]
     }
 
 
     #getJsFiles (dir, relativeTo = this.rootDir) {
-        const results = []
         const entries = fs.readdirSync(dir, {withFileTypes: true})
+        const results = []
 
         for (const entry of entries) {
-            const fullPath = path.join(dir, entry.name)
-            const relativePath = path.relative(relativeTo, fullPath)
-
-            if (entry.isDirectory()) {
-                if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === 'scripts' || entry.name === 'dist') {
-                    continue
-                }
-                if (this.excludeDirs.some(excluded => relativePath.startsWith(excluded))) {
-                    continue
-                }
-                results.push(...this.#getJsFiles(fullPath, relativeTo))
-            } else if (entry.isFile() && entry.name.endsWith('.js')) {
-                if (!entry.name.endsWith('.test.js') && !entry.name.endsWith('.doc.js')) {
-                    results.push(fullPath)
-                }
-            }
+            this.#processEntry(entry, dir, relativeTo, results)
         }
 
         return results
+    }
+
+
+    #processEntry (entry, dir, relativeTo, results) {
+        const fullPath = path.join(dir, entry.name)
+
+        if (entry.isDirectory()) {
+            this.#processDirectory(entry, fullPath, relativeTo, results)
+            return
+        }
+
+        if (isValidJsFile(entry.name)) {
+            results.push(fullPath)
+        }
+    }
+
+
+    #processDirectory (entry, fullPath, relativeTo, results) {
+        const skipDirs = ['node_modules', '.git', 'scripts', 'dist']
+        if (skipDirs.includes(entry.name)) {
+            return
+        }
+
+        const relativePath = path.relative(relativeTo, fullPath)
+        if (this.excludeDirs.some(excluded => relativePath.startsWith(excluded))) {
+            return
+        }
+
+        results.push(...this.#getJsFiles(fullPath, relativeTo))
     }
 
 }

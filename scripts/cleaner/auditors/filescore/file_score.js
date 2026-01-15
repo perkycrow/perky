@@ -22,6 +22,30 @@ const SCORERS = [
 ]
 
 
+function printHeader (flop) {
+    const title = flop ? '     FLOP 10 FILES       ' : '        FILE SCORES          '
+    const subtitle = flop
+        ? 'Files needing the most attention'
+        : 'Higher score = healthier file'
+
+    console.log('')
+    console.log(cyan('  ╭─────────────────────────────╮'))
+    console.log(cyan('  │') + bold(title) + cyan('│'))
+    console.log(cyan('  ╰─────────────────────────────╯'))
+    console.log(dim(`  ${subtitle}`))
+    console.log('')
+}
+
+
+function printSummary (displayList, flop) {
+    const avgScore = Math.round(displayList.reduce((sum, s) => sum + s.total, 0) / displayList.length)
+
+    console.log('')
+    console.log(`  ${green('Summary:')} ${displayList.length} files${flop ? ' (worst)' : ''}, avg score: ${avgScore} pts`)
+    console.log('')
+}
+
+
 export default class FileScoreAuditor extends Auditor {
 
     static $name = 'File Scores'
@@ -31,7 +55,6 @@ export default class FileScoreAuditor extends Auditor {
 
     #scorers = []
     #excludeDirs = []
-
 
     constructor (rootDir, options = {}) {
         super(rootDir, options)
@@ -177,25 +200,20 @@ export default class FileScoreAuditor extends Auditor {
             return
         }
 
-        const title = flop ? '     FLOP 10 FILES       ' : '        FILE SCORES          '
-        const subtitle = flop
-            ? 'Files needing the most attention'
-            : 'Higher score = healthier file'
+        printHeader(flop)
+        this.#printFiles(displayList, flop)
+        printSummary(displayList, flop)
+    }
 
-        console.log('')
-        console.log(cyan('  ╭─────────────────────────────╮'))
-        console.log(cyan('  │') + bold(title) + cyan('│'))
-        console.log(cyan('  ╰─────────────────────────────╯'))
-        console.log(dim(`  ${subtitle}`))
-        console.log('')
 
+    #printFiles (displayList, flop) {
         const verbose = this.options.verbose
+        const color = flop ? yellow : s => s
 
         for (const item of displayList) {
             const percent = `${item.percent}%`.padStart(4)
             const points = `(${item.total} pts)`
             const filePadded = item.file.padEnd(45)
-            const color = flop ? yellow : (s => s)
 
             console.log(`  ${color(filePadded)} ${percent} ${gray(points)}`)
 
@@ -205,13 +223,6 @@ export default class FileScoreAuditor extends Auditor {
                 }
             }
         }
-
-        const allScores = this.options.flop ? displayList : displayList
-        const avgScore = Math.round(allScores.reduce((sum, s) => sum + s.total, 0) / allScores.length)
-
-        console.log('')
-        console.log(`  ${green('Summary:')} ${displayList.length} files${flop ? ' (worst)' : ''}, avg score: ${avgScore} pts`)
-        console.log('')
     }
 
 }
