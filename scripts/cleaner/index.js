@@ -22,6 +22,7 @@ import MissingCoverageAuditor from './auditors/coverage/missing_coverage.js'
 import MissingDocsAuditor from './auditors/coverage/missing_docs.js'
 
 import BrokenLinksAuditor from './auditors/docs/broken_links.js'
+import FileScoreAuditor from './auditors/filescore/file_score.js'
 
 import {bold, cyan, dim, green, yellow, gray} from './format.js'
 
@@ -293,4 +294,10 @@ export async function runCoverage (rootDir, options = {}) {
     printSummary(results, hints)
 
     return results
+}
+
+
+export function runFilescore (rootDir, options = {}) {
+    const auditor = new FileScoreAuditor(rootDir, options)
+    return auditor.audit()
 }

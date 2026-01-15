@@ -3,7 +3,7 @@
 import fs from 'fs'
 import path from 'path'
 import {fileURLToPath} from 'url'
-import {runAudit, runFix, runAll, runCoverage} from './cleaner/index.js'
+import {runAudit, runFix, runAll, runCoverage, runFilescore} from './cleaner/index.js'
 
 
 const __filename = fileURLToPath(import.meta.url)
@@ -18,6 +18,9 @@ const dryRun = hasFlag('--dry-run')
 const auditMode = hasFlag('--audit')
 const fixMode = hasFlag('--fix')
 const coverageMode = hasFlag('--coverage')
+const filescoreMode = hasFlag('--filescore')
+const flopMode = hasFlag('--flop')
+const verboseMode = hasFlag('--verbose')
 
 
 const targetPath = args.find(arg => !arg.startsWith('--'))
@@ -59,6 +62,9 @@ function printHelp () {
     console.log('  --audit     Audit only (no changes)')
     console.log('  --fix       Fix issues')
     console.log('  --coverage  Check test coverage (stale tests, missing exports)')
+    console.log('  --filescore Score files by health (higher = better)')
+    console.log('  --flop      Show 10 worst files (use with --filescore)')
+    console.log('  --verbose   Show detailed breakdown (with --filescore)')
     console.log('  --dry-run   Preview fixes without applying\n')
     console.log('Arguments:')
     console.log('  path        Optional path to specific file or directory to clean')
@@ -72,7 +78,9 @@ function printHelp () {
 
 const validatedPath = validateTargetPath(targetPath)
 
-if (coverageMode) {
+if (filescoreMode || flopMode) {
+    runFilescore(rootDir, {targetPath: validatedPath, verbose: verboseMode, flop: flopMode})
+} else if (coverageMode) {
     await runCoverage(rootDir, {targetPath: validatedPath})
 } else if (auditMode && fixMode) {
     await runAll(rootDir, {targetPath: validatedPath})
