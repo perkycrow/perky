@@ -54,18 +54,22 @@ export default class BalanceScorer extends BaseScorer {
     }
 
 
-    #getJsFiles (dir) {
+    #getJsFiles (dir, relativeTo = this.rootDir) {
         const results = []
         const entries = fs.readdirSync(dir, {withFileTypes: true})
 
         for (const entry of entries) {
             const fullPath = path.join(dir, entry.name)
+            const relativePath = path.relative(relativeTo, fullPath)
 
             if (entry.isDirectory()) {
                 if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === 'scripts' || entry.name === 'dist') {
                     continue
                 }
-                results.push(...this.#getJsFiles(fullPath))
+                if (this.excludeDirs.some(excluded => relativePath.startsWith(excluded))) {
+                    continue
+                }
+                results.push(...this.#getJsFiles(fullPath, relativeTo))
             } else if (entry.isFile() && entry.name.endsWith('.js')) {
                 if (!entry.name.endsWith('.test.js') && !entry.name.endsWith('.doc.js')) {
                     results.push(fullPath)

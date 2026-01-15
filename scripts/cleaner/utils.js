@@ -103,3 +103,28 @@ export function groupBy (items, keyFn) {
     }
     return result
 }
+
+
+let cleanerConfigCache = null
+
+export async function loadCleanerConfig (rootDir) {
+    if (cleanerConfigCache) {
+        return cleanerConfigCache
+    }
+
+    const configPath = path.join(rootDir, 'cleaner.config.js')
+
+    if (fs.existsSync(configPath)) {
+        const module = await import(configPath)
+        cleanerConfigCache = module.default || {}
+    } else {
+        cleanerConfigCache = {}
+    }
+
+    return cleanerConfigCache
+}
+
+
+export function isExcludedByConfig (relativePath, excludeDirs = []) {
+    return excludeDirs.some(dir => relativePath.startsWith(dir))
+}

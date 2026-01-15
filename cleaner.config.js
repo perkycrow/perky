@@ -22,5 +22,12 @@ export default {
             'den/',
             'examples/'
         ]
+    },
+    filescore: {
+        excludeDirs: [
+            'den/',
+            'ghast/',
+            'examples/'
+        ]
     }
 }

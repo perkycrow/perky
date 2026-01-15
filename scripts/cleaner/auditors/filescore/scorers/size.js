@@ -8,7 +8,7 @@ export default class SizeScorer extends BaseScorer {
     static $description = 'Smaller files score higher'
 
     #maxLines = 500
-    #pointsPerSavedChunk = 1
+    #pointsPerSavedChunk = 2
     #chunkSize = 50
 
 

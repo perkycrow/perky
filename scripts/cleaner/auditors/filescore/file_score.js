@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import Auditor from '../../auditor.js'
-import {isExcludedFile} from '../../utils.js'
+import {isExcludedFile, loadCleanerConfig, isExcludedByConfig} from '../../utils.js'
 import {bold, dim, cyan, gray, green, yellow} from '../../format.js'
 
 import CoverageScorer from './scorers/coverage.js'
@@ -30,6 +30,7 @@ export default class FileScoreAuditor extends Auditor {
     static $hint = 'Higher score = healthier file'
 
     #scorers = []
+    #excludeDirs = []
 
 
     constructor (rootDir, options = {}) {
@@ -38,7 +39,14 @@ export default class FileScoreAuditor extends Auditor {
     }
 
 
-    audit () {
+    async audit () {
+        const config = await loadCleanerConfig(this.rootDir)
+        this.#excludeDirs = config.filescore?.excludeDirs || []
+
+        for (const scorer of this.#scorers) {
+            scorer.excludeDirs = this.#excludeDirs
+        }
+
         const scores = this.#calculateScores()
 
         if (scores.length === 0) {
@@ -71,15 +79,20 @@ export default class FileScoreAuditor extends Auditor {
 
 
     #calculateScores () {
-        const files = this.scanFiles()
-        const results = []
+        const allFiles = this.scanFiles()
+        const files = allFiles.filter(filePath => {
+            const relativePath = path.relative(this.rootDir, filePath)
+            return !this.#shouldSkip(relativePath)
+        })
 
-        for (const filePath of files) {
+        const results = []
+        const total = files.length
+
+        for (let i = 0; i < files.length; i++) {
+            const filePath = files[i]
             const relativePath = path.relative(this.rootDir, filePath)
 
-            if (this.#shouldSkip(relativePath)) {
-                continue
-            }
+            this.#updateProgress(i + 1, total)
 
             const content = fs.readFileSync(filePath, 'utf-8')
             const scoreResult = this.#scoreFile(filePath, content)
@@ -90,12 +103,41 @@ export default class FileScoreAuditor extends Auditor {
             })
         }
 
+        this.#clearProgress()
         return results
+    }
+
+
+    #updateProgress (current, total) {
+        if (this.silent) {
+            return
+        }
+
+        const percent = Math.round((current / total) * 100)
+        const barWidth = 30
+        const filled = Math.round((current / total) * barWidth)
+        const empty = barWidth - filled
+        const bar = '█'.repeat(filled) + '░'.repeat(empty)
+
+        process.stdout.write(`\r  ${cyan('Analyzing')} ${bar} ${percent}% (${current}/${total})`)
+    }
+
+
+    #clearProgress () {
+        if (this.silent) {
+            return
+        }
+
+        process.stdout.write('\r' + ' '.repeat(70) + '\r')
     }
 
 
     #shouldSkip (relativePath) {
         if (isExcludedFile(relativePath)) {
+            return true
+        }
+
+        if (isExcludedByConfig(relativePath, this.#excludeDirs)) {
             return true
         }
 

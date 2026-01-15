@@ -5,6 +5,7 @@ export default class BaseScorer {
     static $description = ''
 
     #rootDir = null
+    #excludeDirs = []
 
     constructor (rootDir) {
         this.#rootDir = rootDir
@@ -13,6 +14,16 @@ export default class BaseScorer {
 
     get rootDir () {
         return this.#rootDir
+    }
+
+
+    get excludeDirs () {
+        return this.#excludeDirs
+    }
+
+
+    set excludeDirs (dirs) {
+        this.#excludeDirs = dirs
     }
 
 
