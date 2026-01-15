@@ -110,7 +110,8 @@ describe('SPRITE_SHADER_DEF', () => {
             'aTexCoord',
             'aOpacity',
             'aTintColor',
-            'aEffectParams'
+            'aEffectParams',
+            'aUVBounds'
         ])
     })
 
