@@ -7,13 +7,6 @@ import './log_renderers/perky_module_log_renderer.js'
 import './log_renderers/vec2_log_renderer.js'
 
 
-function createLoggerContent () {
-    const content = document.createElement('div')
-    content.className = 'logger-content'
-    return content
-}
-
-
 export default class PerkyLogger extends HTMLElement {
 
     static observedAttributes = ['max-entries', 'position', 'timestamp', 'theme']
@@ -427,6 +420,13 @@ export default class PerkyLogger extends HTMLElement {
         this.#updateControlsVisibility()
     }
 
+}
+
+
+function createLoggerContent () {
+    const content = document.createElement('div')
+    content.className = 'logger-content'
+    return content
 }
 
 

@@ -3,57 +3,6 @@ import {buildEditorStyles, editorScrollbarStyles, editorButtonStyles, editorBase
 import {ICONS} from '../devtools_icons.js'
 
 
-function createSection (title, type) {
-    const section = document.createElement('div')
-    section.className = 'apps-section'
-
-    const header = document.createElement('div')
-    header.className = 'apps-section-header'
-    header.textContent = title
-
-    const list = document.createElement('div')
-    list.className = 'apps-list'
-    list.dataset.type = type
-
-    section.appendChild(header)
-    section.appendChild(list)
-
-    return section
-}
-
-
-function createRegisteredItem (name) {
-    const item = document.createElement('div')
-    item.className = 'apps-item'
-
-    const info = document.createElement('div')
-    info.className = 'apps-item-info'
-
-    const nameEl = document.createElement('span')
-    nameEl.className = 'apps-item-name'
-    nameEl.textContent = name
-
-    info.appendChild(nameEl)
-    item.appendChild(info)
-
-    return item
-}
-
-
-function getStatusClass (app) {
-    if (app.$status === 'started') {
-        return 'started'
-    }
-    if (app.$status === 'stopped') {
-        return 'stopped'
-    }
-    if (app.$status === 'disposed') {
-        return 'disposed'
-    }
-    return ''
-}
-
-
 export default class AppsTool extends BaseTool {
 
     static toolId = 'apps'
@@ -248,6 +197,57 @@ export default class AppsTool extends BaseTool {
         this.#refresh()
     }
 
+}
+
+
+function createSection (title, type) {
+    const section = document.createElement('div')
+    section.className = 'apps-section'
+
+    const header = document.createElement('div')
+    header.className = 'apps-section-header'
+    header.textContent = title
+
+    const list = document.createElement('div')
+    list.className = 'apps-list'
+    list.dataset.type = type
+
+    section.appendChild(header)
+    section.appendChild(list)
+
+    return section
+}
+
+
+function createRegisteredItem (name) {
+    const item = document.createElement('div')
+    item.className = 'apps-item'
+
+    const info = document.createElement('div')
+    info.className = 'apps-item-info'
+
+    const nameEl = document.createElement('span')
+    nameEl.className = 'apps-item-name'
+    nameEl.textContent = name
+
+    info.appendChild(nameEl)
+    item.appendChild(info)
+
+    return item
+}
+
+
+function getStatusClass (app) {
+    if (app.$status === 'started') {
+        return 'started'
+    }
+    if (app.$status === 'stopped') {
+        return 'stopped'
+    }
+    if (app.$status === 'disposed') {
+        return 'disposed'
+    }
+    return ''
 }
 
 

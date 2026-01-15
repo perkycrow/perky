@@ -97,17 +97,6 @@ const numberStyles = createInputStyles(`
 `)
 
 
-function getMultiplier (event) {
-    if (event.shiftKey) {
-        return SHIFT_MULTIPLIER
-    }
-    if (event.ctrlKey || event.metaKey) {
-        return CTRL_MULTIPLIER
-    }
-    return 1
-}
-
-
 export default class NumberInput extends HTMLElement {
 
     #value = 0
@@ -360,6 +349,17 @@ export default class NumberInput extends HTMLElement {
         document.addEventListener('mouseup', this.#onDragEnd)
     }
 
+}
+
+
+function getMultiplier (event) {
+    if (event.shiftKey) {
+        return SHIFT_MULTIPLIER
+    }
+    if (event.ctrlKey || event.metaKey) {
+        return CTRL_MULTIPLIER
+    }
+    return 1
 }
 
 

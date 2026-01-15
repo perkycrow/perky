@@ -4,16 +4,6 @@ import {getSidebarTools} from './devtools_registry.js'
 import {ICONS} from './devtools_icons.js'
 
 
-function createDockButton (icon, title, onClick) {
-    const button = document.createElement('button')
-    button.className = 'dock-button'
-    button.innerHTML = icon
-    button.title = title
-    button.addEventListener('click', onClick)
-    return button
-}
-
-
 export default class DevToolsDock extends BaseEditorComponent {
 
     #state = null
@@ -216,6 +206,16 @@ export default class DevToolsDock extends BaseEditorComponent {
         }
     }
 
+}
+
+
+function createDockButton (icon, title, onClick) {
+    const button = document.createElement('button')
+    button.className = 'dock-button'
+    button.innerHTML = icon
+    button.title = title
+    button.addEventListener('click', onClick)
+    return button
 }
 
 

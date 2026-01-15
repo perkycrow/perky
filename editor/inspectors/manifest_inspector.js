@@ -3,31 +3,6 @@ import PerkyExplorerDetails from '../perky_explorer_details.js'
 import Manifest from '../../application/manifest.js'
 
 
-function matchesSearch (asset, query) {
-    const lowerQuery = query.toLowerCase()
-
-
-    if ((asset.id || '').toLowerCase().includes(lowerQuery)) {
-        return true
-    }
-
-
-    if ((asset.name || '').toLowerCase().includes(lowerQuery)) {
-        return true
-    }
-
-    if ((asset.type || '').toLowerCase().includes(lowerQuery)) {
-        return true
-    }
-
-    if (asset.tags && asset.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))) {
-        return true
-    }
-
-    return false
-}
-
-
 const customStyles = `
     .filters-container {
         margin-bottom: 12px;
@@ -697,6 +672,31 @@ export default class ManifestInspector extends BaseInspector {
         return group
     }
 
+}
+
+
+function matchesSearch (asset, query) {
+    const lowerQuery = query.toLowerCase()
+
+
+    if ((asset.id || '').toLowerCase().includes(lowerQuery)) {
+        return true
+    }
+
+
+    if ((asset.name || '').toLowerCase().includes(lowerQuery)) {
+        return true
+    }
+
+    if ((asset.type || '').toLowerCase().includes(lowerQuery)) {
+        return true
+    }
+
+    if (asset.tags && asset.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))) {
+        return true
+    }
+
+    return false
 }
 
 

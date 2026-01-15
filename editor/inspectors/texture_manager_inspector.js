@@ -5,48 +5,6 @@ import {formatBytes} from '../../core/utils.js'
 import logger from '../../core/logger.js'
 
 
-function createStatCard (label, value, sub, className = '') {
-    const card = document.createElement('div')
-    card.className = 'stat-card'
-
-    const labelEl = document.createElement('div')
-    labelEl.className = 'stat-label'
-    labelEl.textContent = label
-
-    const valueEl = document.createElement('div')
-    valueEl.className = `stat-value ${className}`
-    valueEl.textContent = value
-
-    const subEl = document.createElement('div')
-    subEl.className = 'stat-sub'
-    subEl.textContent = sub
-
-    card.appendChild(labelEl)
-    card.appendChild(valueEl)
-    card.appendChild(subEl)
-
-    return card
-}
-
-
-function createInfoRow (label) {
-    const row = document.createElement('div')
-    row.className = 'info-row'
-
-    const labelEl = document.createElement('span')
-    labelEl.className = 'info-label'
-    labelEl.textContent = label
-
-    const valueEl = document.createElement('span')
-    valueEl.className = 'info-value'
-
-    row.appendChild(labelEl)
-    row.appendChild(valueEl)
-
-    return row
-}
-
-
 const customStyles = `
     .inspector-stats {
         display: grid;
@@ -354,6 +312,48 @@ export default class TextureManagerInspector extends BaseInspector {
         this.#autoFlushEl.className = `info-value ${autoFlushEnabled ? 'enabled' : 'disabled'}`
     }
 
+}
+
+
+function createStatCard (label, value, sub, className = '') {
+    const card = document.createElement('div')
+    card.className = 'stat-card'
+
+    const labelEl = document.createElement('div')
+    labelEl.className = 'stat-label'
+    labelEl.textContent = label
+
+    const valueEl = document.createElement('div')
+    valueEl.className = `stat-value ${className}`
+    valueEl.textContent = value
+
+    const subEl = document.createElement('div')
+    subEl.className = 'stat-sub'
+    subEl.textContent = sub
+
+    card.appendChild(labelEl)
+    card.appendChild(valueEl)
+    card.appendChild(subEl)
+
+    return card
+}
+
+
+function createInfoRow (label) {
+    const row = document.createElement('div')
+    row.className = 'info-row'
+
+    const labelEl = document.createElement('span')
+    labelEl.className = 'info-label'
+    labelEl.textContent = label
+
+    const valueEl = document.createElement('span')
+    valueEl.className = 'info-value'
+
+    row.appendChild(labelEl)
+    row.appendChild(valueEl)
+
+    return row
 }
 
 

@@ -1,50 +1,3 @@
-function sanitizeRule (rule) {
-    if (typeof rule === 'string') {
-        return new RegExp('^' + rule + '$', 'i')
-    }
-    return rule
-}
-
-
-function restoreCase (word, token) {
-    if (word === token) {
-        return token
-    }
-
-    if (word === word.toLowerCase()) {
-        return token.toLowerCase()
-    }
-
-    if (word === word.toUpperCase()) {
-        return token.toUpperCase()
-    }
-
-    if (word[0] === word[0].toUpperCase()) {
-        return token.charAt(0).toUpperCase() + token.slice(1).toLowerCase()
-    }
-
-    return token.toLowerCase()
-}
-
-
-function interpolate (str, args) {
-    return str.replace(/\$(\d{1,2})/g, (_, index) => args[index] ?? '')
-}
-
-
-function replace (word, rule) {
-    return word.replace(rule[0], function (match) {
-        const result = interpolate(rule[1], arguments)
-
-        if (match === '') {
-            return restoreCase(word[arguments[arguments.length - 2] - 1], result)
-        }
-
-        return restoreCase(match, result)
-    })
-}
-
-
 export default class Inflector {
 
     #pluralRules = []
@@ -386,4 +339,51 @@ export default class Inflector {
         }
     }
 
+}
+
+
+function sanitizeRule (rule) {
+    if (typeof rule === 'string') {
+        return new RegExp('^' + rule + '$', 'i')
+    }
+    return rule
+}
+
+
+function restoreCase (word, token) {
+    if (word === token) {
+        return token
+    }
+
+    if (word === word.toLowerCase()) {
+        return token.toLowerCase()
+    }
+
+    if (word === word.toUpperCase()) {
+        return token.toUpperCase()
+    }
+
+    if (word[0] === word[0].toUpperCase()) {
+        return token.charAt(0).toUpperCase() + token.slice(1).toLowerCase()
+    }
+
+    return token.toLowerCase()
+}
+
+
+function interpolate (str, args) {
+    return str.replace(/\$(\d{1,2})/g, (_, index) => args[index] ?? '')
+}
+
+
+function replace (word, rule) {
+    return word.replace(rule[0], function (match) {
+        const result = interpolate(rule[1], arguments)
+
+        if (match === '') {
+            return restoreCase(word[arguments[arguments.length - 2] - 1], result)
+        }
+
+        return restoreCase(match, result)
+    })
 }

@@ -1,14 +1,3 @@
-function getFramebufferStatusName (gl, status) {
-    const statusNames = {
-        [gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT]: 'INCOMPLETE_ATTACHMENT',
-        [gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT]: 'INCOMPLETE_MISSING_ATTACHMENT',
-        [gl.FRAMEBUFFER_UNSUPPORTED]: 'UNSUPPORTED',
-        [gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE]: 'INCOMPLETE_MULTISAMPLE'
-    }
-    return statusNames[status] || `UNKNOWN (${status})`
-}
-
-
 export default class FramebufferManager {
 
     #gl = null
@@ -345,4 +334,15 @@ export default class FramebufferManager {
         this.#gl = null
     }
 
+}
+
+
+function getFramebufferStatusName (gl, status) {
+    const statusNames = {
+        [gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT]: 'INCOMPLETE_ATTACHMENT',
+        [gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT]: 'INCOMPLETE_MISSING_ATTACHMENT',
+        [gl.FRAMEBUFFER_UNSUPPORTED]: 'UNSUPPORTED',
+        [gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE]: 'INCOMPLETE_MULTISAMPLE'
+    }
+    return statusNames[status] || `UNKNOWN (${status})`
 }

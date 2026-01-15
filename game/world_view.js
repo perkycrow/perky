@@ -4,22 +4,6 @@ import Object2D from '../render/object_2d.js'
 import AutoView from './auto_view.js'
 
 
-function isObject2DClass (Class) {
-    if (!Class || typeof Class !== 'function') {
-        return false
-    }
-
-    let proto = Class.prototype
-    while (proto) {
-        if (proto.constructor === Object2D) {
-            return true
-        }
-        proto = Object.getPrototypeOf(proto)
-    }
-    return false
-}
-
-
 export default class WorldView extends PerkyModule {
 
     static $category = 'worldView'
@@ -225,4 +209,20 @@ export default class WorldView extends PerkyModule {
         return results
     }
 
+}
+
+
+function isObject2DClass (Class) {
+    if (!Class || typeof Class !== 'function') {
+        return false
+    }
+
+    let proto = Class.prototype
+    while (proto) {
+        if (proto.constructor === Object2D) {
+            return true
+        }
+        proto = Object.getPrototypeOf(proto)
+    }
+    return false
 }

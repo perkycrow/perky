@@ -76,14 +76,6 @@ const sliderStyles = createInputStyles(`
 `)
 
 
-function formatSliderValue (value) {
-    if (Math.abs(value) < 0.01) {
-        return value.toFixed(3)
-    }
-    return value.toFixed(2)
-}
-
-
 export default class SliderInput extends HTMLElement {
 
     #value = 0
@@ -225,6 +217,14 @@ export default class SliderInput extends HTMLElement {
         return Math.max(this.#min, Math.min(this.#max, value))
     }
 
+}
+
+
+function formatSliderValue (value) {
+    if (Math.abs(value) < 0.01) {
+        return value.toFixed(3)
+    }
+    return value.toFixed(2)
 }
 
 

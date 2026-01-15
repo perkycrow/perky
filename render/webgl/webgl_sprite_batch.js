@@ -5,56 +5,6 @@ const DEFAULT_UV_BOUNDS = [0, 0, 1, 1]
 const FLOATS_PER_VERTEX = 18
 
 
-function computeTexCoords (region, texCoords) {
-    if (region) {
-        const {u0, v0, u1, v1} = region.uvs
-
-        texCoords[0] = u0
-        texCoords[1] = v1
-        texCoords[2] = u1
-        texCoords[3] = v1
-        texCoords[4] = u1
-        texCoords[5] = v0
-        texCoords[6] = u0
-        texCoords[7] = v0
-    } else {
-        texCoords.set(DEFAULT_TEX_COORDS)
-    }
-}
-
-
-function getValidTexture (image, textureManager) {
-    if (!image) {
-        return null
-    }
-
-
-    if (image.complete !== undefined && (!image.complete || image.naturalWidth === 0)) {
-        return null
-    }
-
-
-    if (image.width === 0) {
-        return null
-    }
-
-    return textureManager.getTexture(image)
-}
-
-
-function transformCorners (m, bounds, corners) {
-    const {minX, minY, maxX, maxY} = bounds
-    corners[0] = m[0] * minX + m[2] * minY + m[4]
-    corners[1] = m[1] * minX + m[3] * minY + m[5]
-    corners[2] = m[0] * maxX + m[2] * minY + m[4]
-    corners[3] = m[1] * maxX + m[3] * minY + m[5]
-    corners[4] = m[0] * maxX + m[2] * maxY + m[4]
-    corners[5] = m[1] * maxX + m[3] * maxY + m[5]
-    corners[6] = m[0] * minX + m[2] * maxY + m[4]
-    corners[7] = m[1] * minX + m[3] * maxY + m[5]
-}
-
-
 export default class WebGLSpriteBatch {
 
     #tempCorners = new Float32Array(8)
@@ -264,4 +214,54 @@ export default class WebGLSpriteBatch {
         gl.deleteBuffer(this.indexBuffer)
     }
 
+}
+
+
+function computeTexCoords (region, texCoords) {
+    if (region) {
+        const {u0, v0, u1, v1} = region.uvs
+
+        texCoords[0] = u0
+        texCoords[1] = v1
+        texCoords[2] = u1
+        texCoords[3] = v1
+        texCoords[4] = u1
+        texCoords[5] = v0
+        texCoords[6] = u0
+        texCoords[7] = v0
+    } else {
+        texCoords.set(DEFAULT_TEX_COORDS)
+    }
+}
+
+
+function getValidTexture (image, textureManager) {
+    if (!image) {
+        return null
+    }
+
+
+    if (image.complete !== undefined && (!image.complete || image.naturalWidth === 0)) {
+        return null
+    }
+
+
+    if (image.width === 0) {
+        return null
+    }
+
+    return textureManager.getTexture(image)
+}
+
+
+function transformCorners (m, bounds, corners) {
+    const {minX, minY, maxX, maxY} = bounds
+    corners[0] = m[0] * minX + m[2] * minY + m[4]
+    corners[1] = m[1] * minX + m[3] * minY + m[5]
+    corners[2] = m[0] * maxX + m[2] * minY + m[4]
+    corners[3] = m[1] * maxX + m[3] * minY + m[5]
+    corners[4] = m[0] * maxX + m[2] * maxY + m[4]
+    corners[5] = m[1] * maxX + m[3] * maxY + m[5]
+    corners[6] = m[0] * minX + m[2] * maxY + m[4]
+    corners[7] = m[1] * minX + m[3] * maxY + m[5]
 }

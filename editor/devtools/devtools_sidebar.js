@@ -4,13 +4,6 @@ import {getTool} from './devtools_registry.js'
 import logger from '../../core/logger.js'
 
 
-function createSidebarContent () {
-    const content = document.createElement('div')
-    content.className = 'sidebar-content'
-    return content
-}
-
-
 export default class DevToolsSidebar extends BaseEditorComponent {
 
     #state = null
@@ -176,6 +169,13 @@ export default class DevToolsSidebar extends BaseEditorComponent {
         }
     }
 
+}
+
+
+function createSidebarContent () {
+    const content = document.createElement('div')
+    content.className = 'sidebar-content'
+    return content
 }
 
 
