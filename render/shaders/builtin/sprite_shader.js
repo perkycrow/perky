@@ -4,6 +4,7 @@ in vec2 aTexCoord;
 in float aOpacity;
 in vec4 aTintColor;
 in vec4 aEffectParams;
+in vec4 aUVBounds;
 
 uniform mat3 uProjectionMatrix;
 uniform mat3 uViewMatrix;
@@ -13,6 +14,7 @@ out vec2 vTexCoord;
 out float vOpacity;
 out vec4 vTintColor;
 out vec4 vEffectParams;
+out vec4 vUVBounds;
 
 void main() {
     vec3 worldPos = uModelMatrix * vec3(aPosition, 1.0);
@@ -24,6 +26,7 @@ void main() {
     vOpacity = aOpacity;
     vTintColor = aTintColor;
     vEffectParams = aEffectParams;
+    vUVBounds = aUVBounds;
 }
 `
 
@@ -38,6 +41,7 @@ in vec2 vTexCoord;
 in float vOpacity;
 in vec4 vTintColor;
 in vec4 vEffectParams;
+in vec4 vUVBounds;
 
 out vec4 fragColor;
 
@@ -63,5 +67,5 @@ export const SPRITE_SHADER_DEF = {
         'uTexture',
         'uTexelSize'
     ],
-    attributes: ['aPosition', 'aTexCoord', 'aOpacity', 'aTintColor', 'aEffectParams']
+    attributes: ['aPosition', 'aTexCoord', 'aOpacity', 'aTintColor', 'aEffectParams', 'aUVBounds']
 }

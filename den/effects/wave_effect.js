@@ -8,6 +8,9 @@ export default class WaveEffect extends ShaderEffect {
         fragment: `
             float wave = sin(texCoord.x * 10.0 + phase) * amplitude;
             vec2 distorted = texCoord + vec2(0.0, wave * 0.05);
+            if (distorted.x < uvMin.x || distorted.x > uvMax.x || distorted.y < uvMin.y || distorted.y > uvMax.y) {
+                discard;
+            }
             color = texture(uTexture, distorted);
         `
     }

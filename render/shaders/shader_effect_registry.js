@@ -2,7 +2,7 @@ import {SPRITE_VERTEX} from './builtin/sprite_shader.js'
 import logger from '../../core/logger.js'
 
 
-const SPRITE_ATTRIBUTES = ['aPosition', 'aTexCoord', 'aOpacity', 'aTintColor', 'aEffectParams']
+const SPRITE_ATTRIBUTES = ['aPosition', 'aTexCoord', 'aOpacity', 'aTintColor', 'aEffectParams', 'aUVBounds']
 
 const PARAM_SLOTS = ['x', 'y', 'z', 'w']
 
@@ -208,6 +208,7 @@ in vec2 vTexCoord;
 in float vOpacity;
 in vec4 vTintColor;
 in vec4 vEffectParams;
+in vec4 vUVBounds;
 
 out vec4 fragColor;
 
@@ -216,6 +217,8 @@ void main() {
     vec2 texCoord = vTexCoord;
     vec2 texelSize = uTexelSize;
     vec4 effectParams = vEffectParams;
+    vec2 uvMin = vUVBounds.xy;
+    vec2 uvMax = vUVBounds.zw;
 ${snippets.join('\n')}
 
 

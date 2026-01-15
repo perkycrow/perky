@@ -1,7 +1,8 @@
 const DEFAULT_TEX_COORDS = [0, 1, 1, 1, 1, 0, 0, 0]
 const DEFAULT_TINT = [0, 0, 0, 0]
 const DEFAULT_EFFECT_PARAMS = [0, 0, 0, 0]
-const FLOATS_PER_VERTEX = 14
+const DEFAULT_UV_BOUNDS = [0, 0, 1, 1]
+const FLOATS_PER_VERTEX = 18
 
 
 function computeTexCoords (region, texCoords) {
@@ -117,9 +118,10 @@ export default class WebGLSpriteBatch {
 
 
     #writeVertices (sprite) {
-        const {corners, texCoords, opacity, hints, anchorY} = sprite
+        const {corners, texCoords, opacity, hints, anchorY, uvBounds} = sprite
         const t = hints?.tint || DEFAULT_TINT
         const ep = hints?.effectParams || DEFAULT_EFFECT_PARAMS
+        const uv = uvBounds || DEFAULT_UV_BOUNDS
 
         for (let i = 0; i < 4; i++) {
             const idx = this.vertexIndex
@@ -139,6 +141,10 @@ export default class WebGLSpriteBatch {
             this.vertexData[idx + 11] = ep[1]
             this.vertexData[idx + 12] = ep[2]
             this.vertexData[idx + 13] = ep[3]
+            this.vertexData[idx + 14] = uv[0]
+            this.vertexData[idx + 15] = uv[1]
+            this.vertexData[idx + 16] = uv[2]
+            this.vertexData[idx + 17] = uv[3]
 
             this.vertexIndex += FLOATS_PER_VERTEX
         }
@@ -175,12 +181,15 @@ export default class WebGLSpriteBatch {
         const m = object.worldMatrix
         const worldAnchorY = m[1] * localAnchorX + m[3] * localAnchorY + m[5]
 
+        const uvBounds = region ? [region.uvs.u0, region.uvs.v0, region.uvs.u1, region.uvs.v1] : null
+
         this.#writeVertices({
             corners,
             texCoords,
             opacity: effectiveOpacity,
             hints,
-            anchorY: worldAnchorY
+            anchorY: worldAnchorY,
+            uvBounds
         })
     }
 
@@ -230,7 +239,8 @@ export default class WebGLSpriteBatch {
         const optionalAttrs = [
             {name: 'aAnchorY', size: 1, offset: 5 * 4},
             {name: 'aTintColor', size: 4, offset: 6 * 4},
-            {name: 'aEffectParams', size: 4, offset: 10 * 4}
+            {name: 'aEffectParams', size: 4, offset: 10 * 4},
+            {name: 'aUVBounds', size: 4, offset: 14 * 4}
         ]
 
         for (const {name, size, offset} of optionalAttrs) {
