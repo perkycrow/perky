@@ -15,6 +15,7 @@ import ItUsageAuditor from './auditors/tests/it_usage.js'
 import SingleDescribesAuditor from './auditors/tests/single_describes.js'
 
 import MultipleClassesAuditor from './auditors/multiple_classes.js'
+import FunctionOrderAuditor from './auditors/function_order.js'
 
 import StaleFilesAuditor from './auditors/coverage/stale_files.js'
 import MissingCoverageAuditor from './auditors/coverage/missing_coverage.js'
@@ -40,7 +41,8 @@ const AUDIT_AUDITORS = [
     ItUsageAuditor,
     SingleDescribesAuditor,
     BrokenLinksAuditor,
-    MultipleClassesAuditor
+    MultipleClassesAuditor,
+    FunctionOrderAuditor
 ]
 
 
