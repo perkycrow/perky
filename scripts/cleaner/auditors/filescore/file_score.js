@@ -200,7 +200,9 @@ export default class FileScoreAuditor extends Auditor {
             console.log(`  ${color(filePadded)} ${percent} ${gray(points)}`)
 
             if (verbose && item.breakdown.length > 0) {
-                console.log(dim(`    → ${item.breakdown.join(' | ')}`))
+                for (const detail of item.breakdown) {
+                    console.log(dim(`      ${detail}`))
+                }
             }
         }
 
