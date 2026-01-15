@@ -9,6 +9,7 @@ import SizeScorer from './scorers/size.js'
 import MaturityScorer from './scorers/maturity.js'
 import AgeScorer from './scorers/age.js'
 import StabilityScorer from './scorers/stability.js'
+import BalanceScorer from './scorers/balance.js'
 
 
 const SCORERS = [
@@ -16,7 +17,8 @@ const SCORERS = [
     SizeScorer,
     MaturityScorer,
     AgeScorer,
-    StabilityScorer
+    StabilityScorer,
+    BalanceScorer
 ]
 
 
