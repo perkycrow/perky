@@ -1,8 +1,12 @@
+import PerkyModule from '../../core/perky_module.js'
 import FramebufferManager from './framebuffer_manager.js'
 import FullscreenQuad from './fullscreen_quad.js'
 
 
-export default class PostProcessor {
+export default class PostProcessor extends PerkyModule {
+
+    static $category = 'postProcessor'
+    static $bind = 'postProcessor'
 
     #gl = null
     #shaderRegistry = null
@@ -11,11 +15,23 @@ export default class PostProcessor {
     #passes = []
     #enabled = true
 
-    constructor (gl, shaderRegistry, width, height) {
-        this.#gl = gl
-        this.#shaderRegistry = shaderRegistry
-        this.#framebufferManager = new FramebufferManager(gl, width, height)
-        this.#fullscreenQuad = new FullscreenQuad(gl)
+    constructor (options = {}) {
+        super(options)
+
+        this.#gl = options.gl
+        this.#shaderRegistry = options.shaderRegistry
+        this.width = options.width
+        this.height = options.height
+    }
+
+
+    onInstall () {
+        this.#framebufferManager = new FramebufferManager(
+            this.#gl,
+            this.width,
+            this.height
+        )
+        this.#fullscreenQuad = new FullscreenQuad(this.#gl)
     }
 
 
@@ -66,7 +82,9 @@ export default class PostProcessor {
 
 
     resize (width, height) {
-        this.#framebufferManager.resize(width, height)
+        this.width = width
+        this.height = height
+        this.#framebufferManager?.resize(width, height)
     }
 
 
@@ -127,7 +145,7 @@ export default class PostProcessor {
     }
 
 
-    dispose () {
+    onDispose () {
         this.clearPasses()
 
         if (this.#framebufferManager) {

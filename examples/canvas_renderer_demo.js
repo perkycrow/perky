@@ -19,7 +19,7 @@ const mainCamera = renderSystem.getCamera('main')
 mainCamera.setUnitsInView(12)
 
 
-const scene = new Group2D({name: 'scene'})
+const scene = new Group2D()
 
 const shapes = []
 const colors = ['#e94560', '#0f3460', '#16c79a', '#f7d060', '#ff6b6b', '#4ecdc4']

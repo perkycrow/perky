@@ -38,7 +38,7 @@ export default class RenderGroup extends PerkyModule {
 
         const fbManager = renderer.postProcessor?.framebufferManager
         if (fbManager) {
-            fbManager.getOrCreateBuffer(this.$name)
+            fbManager.getOrCreateBuffer(this.$id)
         }
     }
 
@@ -74,7 +74,7 @@ export default class RenderGroup extends PerkyModule {
     onDispose () {
         const fbManager = this.host?.postProcessor?.framebufferManager
         if (fbManager) {
-            fbManager.disposeBuffer(this.$name)
+            fbManager.disposeBuffer(this.$id)
         }
 
         for (const pass of this.postPasses) {

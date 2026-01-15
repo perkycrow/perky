@@ -10,7 +10,7 @@ class MockEntityView {
     constructor (entity, context) {
         this.entity = entity
         this.context = context
-        this.root = new Group2D({name: 'mock-root'})
+        this.root = new Group2D()
         this.syncCalled = false
         this.disposed = false
     }

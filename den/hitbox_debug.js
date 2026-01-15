@@ -7,7 +7,7 @@ export default class HitboxDebug {
     constructor (world) {
         this.world = world
         this.enabled = false
-        this.group = new Group2D({name: 'hitboxDebug'})
+        this.group = new Group2D()
         this.visuals = new Map()
     }
 

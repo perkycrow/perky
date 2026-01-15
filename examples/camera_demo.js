@@ -20,7 +20,7 @@ renderSystem.createLayer('game', 'canvas', {
 })
 
 
-const scene = new Group2D({name: 'scene'})
+const scene = new Group2D()
 
 
 const gridSize = 20

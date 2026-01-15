@@ -24,7 +24,6 @@ export default class WebGLRenderer extends BaseRenderer {
     #renderers = []
     #shaderRegistry = null
     #shaderEffectRegistry = null
-    #postProcessor = null
     #debugGizmoRenderer = null
 
     #compositeQuad = null
@@ -95,12 +94,12 @@ export default class WebGLRenderer extends BaseRenderer {
             gl
         })
 
-        this.#postProcessor = new PostProcessor(
+        this.create(PostProcessor, {
             gl,
-            this.#shaderRegistry,
-            this.canvas.width,
-            this.canvas.height
-        )
+            shaderRegistry: this.#shaderRegistry,
+            width: this.canvas.width,
+            height: this.canvas.height
+        })
     }
 
 
@@ -176,8 +175,8 @@ export default class WebGLRenderer extends BaseRenderer {
             this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
         }
 
-        if (this.#postProcessor) {
-            this.#postProcessor.resize(this.canvas.width, this.canvas.height)
+        if (this.postProcessor) {
+            this.postProcessor.resize(this.canvas.width, this.canvas.height)
         }
     }
 
@@ -218,21 +217,16 @@ export default class WebGLRenderer extends BaseRenderer {
     }
 
 
-    get postProcessor () {
-        return this.#postProcessor
-    }
-
-
     addPostPass (PassClass, options = {}) {
         const pass = this.create(PassClass, options)
-        this.#postProcessor.addPass(pass)
+        this.postProcessor.addPass(pass)
         return pass
     }
 
 
     removePostPass (pass) {
         this.removeChild(pass.$id)
-        this.#postProcessor.removePass(pass)
+        this.postProcessor.removePass(pass)
         return this
     }
 
@@ -330,11 +324,6 @@ export default class WebGLRenderer extends BaseRenderer {
             this.#compositeQuad = null
         }
 
-        if (this.#postProcessor) {
-            this.#postProcessor.dispose()
-            this.#postProcessor = null
-        }
-
         if (this.#shaderEffectRegistry) {
             this.#shaderEffectRegistry.dispose()
             this.#shaderEffectRegistry = null
@@ -382,7 +371,7 @@ export default class WebGLRenderer extends BaseRenderer {
     #renderSingleScene (scene) {
         this.#resetStats()
 
-        const usePostProcessing = this.#postProcessor.begin()
+        const usePostProcessing = this.postProcessor.begin()
 
         this.#clearWithBackground()
         this.camera.update()
@@ -416,7 +405,7 @@ export default class WebGLRenderer extends BaseRenderer {
         }
 
         if (usePostProcessing) {
-            this.#postProcessor.finish()
+            this.postProcessor.finish()
         }
     }
 
@@ -442,9 +431,9 @@ export default class WebGLRenderer extends BaseRenderer {
 
     #renderGroupToTexture (group, matrices) {
         const gl = this.gl
-        const fbManager = this.#postProcessor.framebufferManager
+        const fbManager = this.postProcessor.framebufferManager
 
-        fbManager.getOrCreateBuffer(group.$name)
+        fbManager.getOrCreateBuffer(group.$id)
         fbManager.bindSceneBuffer()
 
         gl.clearColor(0, 0, 0, 0)
@@ -481,7 +470,7 @@ export default class WebGLRenderer extends BaseRenderer {
             debugGizmoRenderer.flush(matrices)
         }
 
-        fbManager.resolveToBuffer(group.$name)
+        fbManager.resolveToBuffer(group.$id)
 
         if (group.hasActivePasses()) {
             this.#applyGroupPasses(group)
@@ -490,8 +479,8 @@ export default class WebGLRenderer extends BaseRenderer {
 
 
     #compositeGroups () {
-        const hasGlobalPostProcessing = this.#postProcessor.hasActivePasses()
-        const fbManager = this.#postProcessor.framebufferManager
+        const hasGlobalPostProcessing = this.postProcessor.hasActivePasses()
+        const fbManager = this.postProcessor.framebufferManager
 
         if (hasGlobalPostProcessing) {
             fbManager.bindSceneBuffer()
@@ -505,14 +494,14 @@ export default class WebGLRenderer extends BaseRenderer {
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
 
         if (hasGlobalPostProcessing) {
-            this.#postProcessor.finish()
+            this.postProcessor.finish()
         }
     }
 
 
     #drawAllGroups () {
         const gl = this.gl
-        const fbManager = this.#postProcessor.framebufferManager
+        const fbManager = this.postProcessor.framebufferManager
 
         this.#compositeProgram.use()
         gl.activeTexture(gl.TEXTURE0)
@@ -523,7 +512,7 @@ export default class WebGLRenderer extends BaseRenderer {
                 continue
             }
 
-            const texture = fbManager.getBufferTexture(group.$name)
+            const texture = fbManager.getBufferTexture(group.$id)
             if (texture) {
                 this.#drawGroup(group, texture)
             }
@@ -562,7 +551,7 @@ export default class WebGLRenderer extends BaseRenderer {
 
     #applyGroupPasses (group) {
         const gl = this.gl
-        const fbManager = this.#postProcessor.framebufferManager
+        const fbManager = this.postProcessor.framebufferManager
         const activePasses = group.postPasses.filter(pass => pass.enabled)
 
         if (activePasses.length === 0) {
@@ -578,7 +567,7 @@ export default class WebGLRenderer extends BaseRenderer {
 
         this.#compositeProgram.use()
         gl.activeTexture(gl.TEXTURE0)
-        gl.bindTexture(gl.TEXTURE_2D, fbManager.getBufferTexture(group.$name))
+        gl.bindTexture(gl.TEXTURE_2D, fbManager.getBufferTexture(group.$id))
         this.#compositeProgram.setUniform1i('uTexture', 0)
         this.#compositeProgram.setUniform1f('uOpacity', 1.0)
         this.#compositeQuad.draw(gl, this.#compositeProgram)
@@ -589,7 +578,7 @@ export default class WebGLRenderer extends BaseRenderer {
             const isLast = i === activePasses.length - 1
 
             if (isLast) {
-                fbManager.bindBuffer(group.$name)
+                fbManager.bindBuffer(group.$id)
             } else {
                 fbManager.bindPingPong()
             }

@@ -169,7 +169,7 @@ describe('RenderGroup', () => {
             renderer.create(RenderGroup, {$id: 'test'})
 
             expect(renderer.postProcessor.framebufferManager.getOrCreateBuffer)
-                .toHaveBeenCalledWith('renderGroup')
+                .toHaveBeenCalledWith('test')
         })
 
 

@@ -24,8 +24,8 @@ const shroomImage = new Image()
 shroomImage.src = '/examples/assets/images/shroom.png'
 
 
-const entitiesGroup = new Group2D({name: 'entities'})
-const helpersGroup = new Group2D({name: 'helpers'})
+const entitiesGroup = new Group2D()
+const helpersGroup = new Group2D()
 
 
 const spritePositions = [

@@ -1,6 +1,7 @@
 import {describe, test, expect, beforeEach} from 'vitest'
 import PostProcessor from './post_processor.js'
 import RenderPass from './render_pass.js'
+import PerkyModule from '../../core/perky_module.js'
 import {createMockGLWithSpies, createMockShaderRegistry} from '../test_helpers.js'
 
 
@@ -14,6 +15,21 @@ class MockPass extends RenderPass {
 }
 
 
+class MockHost extends PerkyModule {}
+
+
+function createProcessor (gl, shaderRegistry, width = 800, height = 600) {
+    const host = new MockHost()
+    const processor = host.create(PostProcessor, {
+        gl,
+        shaderRegistry,
+        width,
+        height
+    })
+    return processor
+}
+
+
 describe(PostProcessor, () => {
 
     let gl
@@ -23,7 +39,18 @@ describe(PostProcessor, () => {
     beforeEach(() => {
         gl = createMockGLWithSpies()
         shaderRegistry = createMockShaderRegistry()
-        processor = new PostProcessor(gl, shaderRegistry, 800, 600)
+        processor = createProcessor(gl, shaderRegistry)
+    })
+
+
+    test('is a PerkyModule', () => {
+        expect(processor).toBeInstanceOf(PerkyModule)
+    })
+
+
+    test('static properties', () => {
+        expect(PostProcessor.$category).toBe('postProcessor')
+        expect(PostProcessor.$bind).toBe('postProcessor')
     })
 
 

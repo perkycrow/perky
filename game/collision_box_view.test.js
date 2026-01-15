@@ -14,7 +14,7 @@ class MockEntity {
 
 class MockContext {
     constructor (config = {}) {
-        this.group = new Group2D({name: 'test-group'})
+        this.group = new Group2D()
         this.config = config
     }
 }

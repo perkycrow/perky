@@ -34,7 +34,7 @@ export default class WorldView extends PerkyModule {
         this.world = options.world
         this.game = options.game
 
-        this.rootGroup = new Group2D({name: 'entities'})
+        this.rootGroup = new Group2D()
     }
 
 

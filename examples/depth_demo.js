@@ -18,7 +18,7 @@ const mainCamera = renderSystem.getCamera('main')
 mainCamera.setUnitsInView(6)
 
 
-const sceneGroup = new Group2D({name: 'scene'})
+const sceneGroup = new Group2D()
 
 
 const planet = new Circle({

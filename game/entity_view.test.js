@@ -13,7 +13,7 @@ class MockEntity {
 
 class MockContext {
     constructor () {
-        this.group = new Group2D({name: 'test-group'})
+        this.group = new Group2D()
         this.config = {}
     }
 }
@@ -91,7 +91,7 @@ describe('EntityView', () => {
     describe('dispose', () => {
 
         test('removes root from context group', () => {
-            const mockRoot = new Group2D({name: 'mock-root'})
+            const mockRoot = new Group2D()
             context.group.addChild(mockRoot)
             view.root = mockRoot
 

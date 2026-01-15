@@ -162,8 +162,8 @@ export default class DefendTheDen extends Game {
     setupRenderGroups () {
         const gameRenderer = this.getRenderer('game')
 
-        this.backgroundGroup = new Group2D({name: 'background'})
-        this.entitiesGroup = new Group2D({name: 'entities'})
+        this.backgroundGroup = new Group2D()
+        this.entitiesGroup = new Group2D()
 
         this.shadowTransform = new ShadowTransform({
             skewX: 0.1,

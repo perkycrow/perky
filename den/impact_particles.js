@@ -23,7 +23,7 @@ export default class ImpactParticles extends PerkyModule {
         super(options)
 
         this.particles = []
-        this.particleGroup = new Group2D({name: 'particles'})
+        this.particleGroup = new Group2D()
 
         this.config = {...DEFAULT_CONFIG, ...options}
     }
