@@ -20,6 +20,7 @@ import FunctionOrderAuditor from './auditors/function_order.js'
 import StaleFilesAuditor from './auditors/coverage/stale_files.js'
 import MissingCoverageAuditor from './auditors/coverage/missing_coverage.js'
 import MissingDocsAuditor from './auditors/coverage/missing_docs.js'
+import ImportUsageAuditor from './auditors/coverage/import_usage.js'
 
 import BrokenLinksAuditor from './auditors/docs/broken_links.js'
 import FileScoreAuditor from './auditors/filescore/file_score.js'
@@ -257,7 +258,8 @@ export async function runAll (rootDir, options = {}) {
 const COVERAGE_AUDITORS = [
     StaleFilesAuditor,
     MissingCoverageAuditor,
-    MissingDocsAuditor
+    MissingDocsAuditor,
+    ImportUsageAuditor
 ]
 
 
@@ -299,5 +301,11 @@ export async function runCoverage (rootDir, options = {}) {
 
 export function runFilescore (rootDir, options = {}) {
     const auditor = new FileScoreAuditor(rootDir, options)
+    return auditor.audit()
+}
+
+
+export function runImports (rootDir, options = {}) {
+    const auditor = new ImportUsageAuditor(rootDir, options)
     return auditor.audit()
 }

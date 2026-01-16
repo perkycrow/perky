@@ -27,7 +27,14 @@ export default {
         excludeDirs: [
             'den/',
             'ghast/',
-            'examples/'
+            'examples/',
+            'editor/',
+            'doc/'
+        ],
+        excludeFiles: [
+            '**/setup_tests.js',
+            '**/test_helpers.js',
+            'eslint/index.js'
         ]
     }
 }

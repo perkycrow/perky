@@ -1,5 +1,5 @@
 import AudioSystem from '/audio/audio_system.js'
-import {Sequencer} from '/audio/patterns/index.js'
+import Sequencer from '/audio/patterns/sequencer.js'
 
 
 const container = document.getElementById('audio-container')

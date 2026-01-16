@@ -10,6 +10,7 @@ import MaturityScorer from './scorers/maturity.js'
 import AgeScorer from './scorers/age.js'
 import StabilityScorer from './scorers/stability.js'
 import BalanceScorer from './scorers/balance.js'
+import UsageScorer from './scorers/usage.js'
 
 
 const SCORERS = [
@@ -18,7 +19,8 @@ const SCORERS = [
     MaturityScorer,
     AgeScorer,
     StabilityScorer,
-    BalanceScorer
+    BalanceScorer,
+    UsageScorer
 ]
 
 
@@ -31,6 +33,7 @@ export default class FileScoreAuditor extends Auditor {
 
     #scorers = []
     #excludeDirs = []
+    #excludeFiles = []
 
     constructor (rootDir, options = {}) {
         super(rootDir, options)
@@ -41,6 +44,7 @@ export default class FileScoreAuditor extends Auditor {
     async audit () {
         const config = await loadCleanerConfig(this.rootDir)
         this.#excludeDirs = config.filescore?.excludeDirs || []
+        this.#excludeFiles = config.filescore?.excludeFiles || []
 
         for (const scorer of this.#scorers) {
             scorer.excludeDirs = this.#excludeDirs
@@ -140,6 +144,10 @@ export default class FileScoreAuditor extends Auditor {
             return true
         }
 
+        if (this.#shouldExcludeFilePattern(relativePath)) {
+            return true
+        }
+
         if (relativePath.endsWith('.test.js')) {
             return true
         }
@@ -156,6 +164,26 @@ export default class FileScoreAuditor extends Auditor {
             return true
         }
 
+        return false
+    }
+
+
+    #shouldExcludeFilePattern (relativePath) {
+        for (const pattern of this.#excludeFiles) {
+            if (pattern.startsWith('**/')) {
+                const filename = pattern.slice(3)
+                if (relativePath.endsWith(filename)) {
+                    return true
+                }
+            } else if (pattern.includes('*')) {
+                const regex = new RegExp('^' + pattern.replaceAll('*', '.*') + '$')
+                if (regex.test(relativePath)) {
+                    return true
+                }
+            } else if (relativePath === pattern || relativePath.endsWith('/' + pattern)) {
+                return true
+            }
+        }
         return false
     }
 
