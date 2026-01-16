@@ -747,26 +747,36 @@ function parseToolParams (args) {
     const params = {}
 
     for (const arg of args) {
-        if (typeof arg === 'string' && arg.includes('=')) {
-            const eqIndex = arg.indexOf('=')
-            const key = arg.slice(0, eqIndex)
-            let value = arg.slice(eqIndex + 1)
-
-            if (value === 'true') {
-                value = true
-            } else if (value === 'false') {
-                value = false
-            } else if (!isNaN(value) && value !== '') {
-                value = Number(value)
-            }
-
-            params[key] = value
-        } else if (typeof arg === 'object') {
+        if (typeof arg === 'object') {
             Object.assign(params, arg)
+            continue
         }
+
+        if (typeof arg !== 'string' || !arg.includes('=')) {
+            continue
+        }
+
+        const eqIndex = arg.indexOf('=')
+        const key = arg.slice(0, eqIndex)
+        const value = parseParamValue(arg.slice(eqIndex + 1))
+        params[key] = value
     }
 
     return params
+}
+
+
+function parseParamValue (value) {
+    if (value === 'true') {
+        return true
+    }
+    if (value === 'false') {
+        return false
+    }
+    if (!isNaN(value) && value !== '') {
+        return Number(value)
+    }
+    return value
 }
 
 

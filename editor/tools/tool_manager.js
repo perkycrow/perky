@@ -1,4 +1,5 @@
 import ToolWindow from './tool_window.js'
+import logger from '../../core/logger.js'
 
 
 export default class ToolManager {
@@ -35,7 +36,7 @@ export default class ToolManager {
         const ToolClass = this.#registry.get(toolId)
 
         if (!ToolClass) {
-            console.warn(`Tool "${toolId}" not found in registry`)
+            logger.warn(`Tool "${toolId}" not found in registry`)
             return null
         }
 

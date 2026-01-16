@@ -1,4 +1,5 @@
 import BaseFloatingTool from '../../editor/tools/base_floating_tool.js'
+import logger from '../../core/logger.js'
 
 
 export default class FoobarTool extends BaseFloatingTool {
@@ -56,12 +57,12 @@ export default class FoobarTool extends BaseFloatingTool {
 
 
     onOpen () {
-        console.log('Foobar tool opened!')
+        logger.info(`${this.constructor.toolName} opened!`)
     }
 
 
     onClose () {
-        console.log('Foobar tool closed!')
+        logger.info(`${this.constructor.toolName} closed!`)
     }
 
 }

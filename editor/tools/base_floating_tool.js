@@ -24,7 +24,7 @@ export default class BaseFloatingTool extends BaseEditorComponent {
     }
 
 
-    onParamsSet (params) { }
+    onParamsSet () { }
 
 
     onOpen () { }
