@@ -1,8 +1,13 @@
-import {readFile, mkdir, readdir, unlink} from 'fs/promises'
+import {readFile, mkdir, writeFile} from 'fs/promises'
 import {basename, dirname, join} from 'path'
 import Psd from '@webtoon/psd'
 import sharp from 'sharp'
 import {bold, cyan, dim, green, yellow} from '../format.js'
+import ShelfPacker from '../../render/textures/shelf_packer.js'
+
+
+const MAX_ATLAS_SIZE = 4096
+const PADDING = 1
 
 
 export function printBanner () {
@@ -10,7 +15,7 @@ export function printBanner () {
     console.log(cyan('  ╭─────────────────────────────╮'))
     console.log(cyan('  │') + bold('       PSD EXPORTER          ') + cyan('│'))
     console.log(cyan('  ╰─────────────────────────────╯'))
-    console.log(dim('  Export animation frames from PSD'))
+    console.log(dim('  Export spritesheet from PSD'))
     console.log('')
 }
 
@@ -39,12 +44,12 @@ export function parseFrameNumber (layerName) {
 }
 
 
-export async function exportLayer (layer, psd, outputPath) {
+async function extractFrameData (layer, psd) {
     const pixels = await layer.composite(false)
     const layerWidth = layer.width
     const layerHeight = layer.height
 
-    await sharp(Buffer.from(pixels.buffer), {
+    const buffer = await sharp(Buffer.from(pixels.buffer), {
         raw: {
             width: layerWidth,
             height: layerHeight,
@@ -59,32 +64,127 @@ export async function exportLayer (layer, psd, outputPath) {
             background: {r: 0, g: 0, b: 0, alpha: 0}
         })
         .toColorspace('srgb')
+        .raw()
+        .toBuffer()
+
+    return {
+        buffer,
+        width: psd.width,
+        height: psd.height
+    }
+}
+
+
+function packFramesIntoAtlases (frames, atlasSize) {
+    const atlases = []
+    let currentAtlas = {
+        packer: new ShelfPacker(atlasSize, atlasSize, PADDING),
+        frames: []
+    }
+    atlases.push(currentAtlas)
+
+    for (const frame of frames) {
+        let slot = currentAtlas.packer.pack(frame.width, frame.height)
+
+        if (!slot) {
+            currentAtlas = {
+                packer: new ShelfPacker(atlasSize, atlasSize, PADDING),
+                frames: []
+            }
+            atlases.push(currentAtlas)
+            slot = currentAtlas.packer.pack(frame.width, frame.height)
+
+            if (!slot) {
+                console.log(yellow(`  ⚠ Frame too large: ${frame.filename}`))
+                continue
+            }
+        }
+
+        currentAtlas.frames.push({
+            ...frame,
+            x: slot.x,
+            y: slot.y,
+            atlasIndex: atlases.length - 1
+        })
+    }
+
+    return atlases
+}
+
+
+async function compositeAtlas (packedFrames, atlasWidth, atlasHeight) {
+    const compositeOperations = packedFrames.map(frame => ({
+        input: frame.buffer,
+        raw: {
+            width: frame.width,
+            height: frame.height,
+            channels: 4
+        },
+        left: frame.x,
+        top: frame.y
+    }))
+
+    const atlas = await sharp({
+        create: {
+            width: atlasWidth,
+            height: atlasHeight,
+            channels: 4,
+            background: {r: 0, g: 0, b: 0, alpha: 0}
+        }
+    })
+        .composite(compositeOperations)
         .png()
-        .toFile(outputPath)
+        .toBuffer()
+
+    return atlas
 }
 
 
-async function findExistingPngs (dir) {
-    try {
-        const files = await readdir(dir)
-        return files.filter(f => f.endsWith('.png'))
-    } catch {
-        return []
+function buildJsonData (atlases, animations, psdName) {
+    const allFrames = []
+    const images = []
+
+    for (let i = 0; i < atlases.length; i++) {
+        const atlas = atlases[i]
+        const imageName = atlases.length === 1
+            ? `${psdName}.png`
+            : `${psdName}_${i}.png`
+
+        images.push({
+            filename: imageName,
+            size: {
+                w: MAX_ATLAS_SIZE,
+                h: atlas.finalHeight
+            }
+        })
+
+        for (const frame of atlas.frames) {
+            allFrames.push({
+                filename: frame.filename,
+                frame: {
+                    x: frame.x,
+                    y: frame.y,
+                    w: frame.width,
+                    h: frame.height
+                },
+                sourceSize: {
+                    w: frame.width,
+                    h: frame.height
+                },
+                atlas: i
+            })
+        }
     }
-}
 
-
-async function cleanOrphanedFiles (outputDir, exportedFiles) {
-    const existingFiles = await findExistingPngs(outputDir)
-    const exportedSet = new Set(exportedFiles)
-    const orphaned = existingFiles.filter(f => !exportedSet.has(f))
-
-    for (const file of orphaned) {
-        await unlink(join(outputDir, file))
-        console.log(`  ${yellow('✗')} ${file} (removed)`)
+    return {
+        frames: allFrames,
+        animations,
+        meta: {
+            app: 'perky-psd-exporter',
+            version: '1.0',
+            images
+        }
     }
-
-    return orphaned.length
 }
 
 
@@ -107,11 +207,16 @@ export async function exportPsd (psdPath) {
 
     console.log(`Found ${animGroups.length} animation group(s)`)
 
-    const exportedFiles = []
+    const frames = []
+    const animations = {}
 
     for (const group of animGroups) {
         const animName = parseAnimationName(group.name)
         console.log(`\nProcessing: ${group.name}`)
+
+        animations[animName] = []
+
+        const layersWithFrameNumbers = []
 
         for (const layer of group.children) {
             if (layer.type !== 'Layer') {
@@ -120,27 +225,86 @@ export async function exportPsd (psdPath) {
 
             const frameNumber = parseFrameNumber(layer.name)
             if (!frameNumber) {
-                console.log(`  Skipping "${layer.name}" (no frame number)`)
+                console.log(`  ${yellow('⚠')} Skipping "${layer.name}" (no frame number)`)
                 continue
             }
 
-            const outputName = `${psdName}_${animName}_${frameNumber}.png`
-            const outputPath = join(outputDir, outputName)
+            layersWithFrameNumbers.push({
+                layer,
+                frameNumber: parseInt(frameNumber, 10)
+            })
+        }
 
-            await exportLayer(layer, psd, outputPath)
-            exportedFiles.push(outputName)
+        layersWithFrameNumbers.sort((a, b) => a.frameNumber - b.frameNumber)
 
-            console.log(`  ${green('✓')} ${outputName}`)
+        for (const {layer, frameNumber} of layersWithFrameNumbers) {
+            const filename = `${animName}/${frameNumber}`
+
+            console.log(`  ${dim('extracting')} ${filename}`)
+
+            const frameData = await extractFrameData(layer, psd)
+
+            frames.push({
+                filename,
+                buffer: frameData.buffer,
+                width: frameData.width,
+                height: frameData.height,
+                animName,
+                frameNumber
+            })
+
+            animations[animName].push(filename)
         }
     }
 
-    const removedCount = await cleanOrphanedFiles(outputDir, exportedFiles)
+    if (frames.length === 0) {
+        console.log(yellow('\nNo frames found to export'))
+        return
+    }
+
+    console.log(`\n${dim('Packing')} ${frames.length} frames...`)
+
+    const atlases = packFramesIntoAtlases(frames, MAX_ATLAS_SIZE)
+    console.log(`  Created ${atlases.length} atlas(es)`)
+
+    console.log(`\n${dim('Compositing...')}`)
+
+    let totalFrames = 0
+
+    for (let i = 0; i < atlases.length; i++) {
+        const atlas = atlases[i]
+        const usedHeight = atlas.packer.currentY
+        atlas.finalHeight = nextPowerOfTwo(usedHeight)
+
+        const imageName = atlases.length === 1
+            ? `${psdName}.png`
+            : `${psdName}_${i}.png`
+
+        const atlasBuffer = await compositeAtlas(atlas.frames, MAX_ATLAS_SIZE, atlas.finalHeight)
+        await writeFile(join(outputDir, imageName), atlasBuffer)
+
+        console.log(`  ${green('✓')} ${imageName} (${MAX_ATLAS_SIZE}x${atlas.finalHeight}, ${atlas.frames.length} frames)`)
+        totalFrames += atlas.frames.length
+    }
+
+    const jsonName = `${psdName}.json`
+    const jsonData = buildJsonData(atlases, animations, psdName)
+    await writeFile(join(outputDir, jsonName), JSON.stringify(jsonData, null, 2))
+    console.log(`  ${green('✓')} ${jsonName}`)
 
     console.log('')
-    if (removedCount > 0) {
-        console.log(green('✓') + bold(` Done! (${removedCount} orphaned file${removedCount > 1 ? 's' : ''} removed)`))
-    } else {
-        console.log(green('✓') + bold(' Done!'))
-    }
+    console.log(green('✓') + bold(` Done! Exported ${totalFrames} frames in ${atlases.length} atlas(es)`))
+    console.log(dim(`  ${outputDir}/`))
     console.log('')
+}
+
+
+function nextPowerOfTwo (n) {
+    const powers = [16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
+    for (const p of powers) {
+        if (p >= n) {
+            return p
+        }
+    }
+    return 4096
 }

@@ -31,6 +31,9 @@ const manifest = {
         fireball: {type: 'image', url: './assets/images/fireball.png', config: {atlas: 'projectiles'}},
 
 
+        redSpritesheet: {type: 'spritesheet', url: './assets/spritesheets/red.json'},
+
+
         click: {type: 'audio', url: './assets/audio/click.ogg', tags: ['sfx']},
         howl: {type: 'audio', url: './assets/audio/howl.ogg', tags: ['sfx']},
         throw: {type: 'audio', url: './assets/audio/throw.ogg', tags: ['sfx']},

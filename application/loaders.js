@@ -131,6 +131,26 @@ export function removeFileExtension (filename) {
 }
 
 
+export async function loadSpritesheet (params) {
+    const {url} = normalizeParams(params)
+
+    const data = await loadJson({url})
+
+    const baseUrl = url.substring(0, url.lastIndexOf('/') + 1)
+
+    const imagePromises = data.meta.images.map(imageInfo => {
+        const imageUrl = baseUrl + imageInfo.filename
+        return loadImage({url: imageUrl})
+    })
+
+    const images = await Promise.all(imagePromises)
+
+    return {
+        data,
+        images
+    }
+}
+
 
 
 
@@ -142,5 +162,6 @@ export const loaders = {
     json: loadJson,
     arrayBuffer: loadArrayBuffer,
     audio: loadAudio,
-    font: loadFont
+    font: loadFont,
+    spritesheet: loadSpritesheet
 }

@@ -1,0 +1,263 @@
+{
+  "frames": [
+    {
+      "filename": "throw/1",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 600,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 600,
+        "h": 600
+      },
+      "atlas": 0
+    },
+    {
+      "filename": "throw/2",
+      "frame": {
+        "x": 601,
+        "y": 0,
+        "w": 600,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 600,
+        "h": 600
+      },
+      "atlas": 0
+    },
+    {
+      "filename": "throw/3",
+      "frame": {
+        "x": 1202,
+        "y": 0,
+        "w": 600,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 600,
+        "h": 600
+      },
+      "atlas": 0
+    },
+    {
+      "filename": "throw/4",
+      "frame": {
+        "x": 1803,
+        "y": 0,
+        "w": 600,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 600,
+        "h": 600
+      },
+      "atlas": 0
+    },
+    {
+      "filename": "throw/5",
+      "frame": {
+        "x": 2404,
+        "y": 0,
+        "w": 600,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 600,
+        "h": 600
+      },
+      "atlas": 0
+    },
+    {
+      "filename": "throw/6",
+      "frame": {
+        "x": 3005,
+        "y": 0,
+        "w": 600,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 600,
+        "h": 600
+      },
+      "atlas": 0
+    },
+    {
+      "filename": "throw/7",
+      "frame": {
+        "x": 0,
+        "y": 601,
+        "w": 600,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 600,
+        "h": 600
+      },
+      "atlas": 0
+    },
+    {
+      "filename": "throw/8",
+      "frame": {
+        "x": 601,
+        "y": 601,
+        "w": 600,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 600,
+        "h": 600
+      },
+      "atlas": 0
+    },
+    {
+      "filename": "skip/1",
+      "frame": {
+        "x": 1202,
+        "y": 601,
+        "w": 600,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 600,
+        "h": 600
+      },
+      "atlas": 0
+    },
+    {
+      "filename": "skip/2",
+      "frame": {
+        "x": 1803,
+        "y": 601,
+        "w": 600,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 600,
+        "h": 600
+      },
+      "atlas": 0
+    },
+    {
+      "filename": "skip/3",
+      "frame": {
+        "x": 2404,
+        "y": 601,
+        "w": 600,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 600,
+        "h": 600
+      },
+      "atlas": 0
+    },
+    {
+      "filename": "skip/4",
+      "frame": {
+        "x": 3005,
+        "y": 601,
+        "w": 600,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 600,
+        "h": 600
+      },
+      "atlas": 0
+    },
+    {
+      "filename": "skip/5",
+      "frame": {
+        "x": 0,
+        "y": 1202,
+        "w": 600,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 600,
+        "h": 600
+      },
+      "atlas": 0
+    },
+    {
+      "filename": "skip/6",
+      "frame": {
+        "x": 601,
+        "y": 1202,
+        "w": 600,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 600,
+        "h": 600
+      },
+      "atlas": 0
+    },
+    {
+      "filename": "skip/7",
+      "frame": {
+        "x": 1202,
+        "y": 1202,
+        "w": 600,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 600,
+        "h": 600
+      },
+      "atlas": 0
+    },
+    {
+      "filename": "skip/8",
+      "frame": {
+        "x": 1803,
+        "y": 1202,
+        "w": 600,
+        "h": 600
+      },
+      "sourceSize": {
+        "w": 600,
+        "h": 600
+      },
+      "atlas": 0
+    }
+  ],
+  "animations": {
+    "throw": [
+      "throw/1",
+      "throw/2",
+      "throw/3",
+      "throw/4",
+      "throw/5",
+      "throw/6",
+      "throw/7",
+      "throw/8"
+    ],
+    "skip": [
+      "skip/1",
+      "skip/2",
+      "skip/3",
+      "skip/4",
+      "skip/5",
+      "skip/6",
+      "skip/7",
+      "skip/8"
+    ]
+  },
+  "meta": {
+    "app": "perky-psd-exporter",
+    "version": "1.0",
+    "images": [
+      {
+        "filename": "red.png",
+        "size": {
+          "w": 4096,
+          "h": 2048
+        }
+      }
+    ]
+  }
+}
