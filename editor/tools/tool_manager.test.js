@@ -59,14 +59,10 @@ describe('ToolManager', () => {
     })
 
 
-    describe('unregister', () => {
-
-        test('should unregister a tool', () => {
-            manager.register(MockTool)
-            manager.unregister('mock-tool')
-            expect(manager.has('mock-tool')).toBe(false)
-        })
-
+    test('unregister should unregister a tool', () => {
+        manager.register(MockTool)
+        manager.unregister('mock-tool')
+        expect(manager.has('mock-tool')).toBe(false)
     })
 
 

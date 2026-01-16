@@ -1,5 +1,5 @@
 import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
-import ToolWindow from './tool_window.js'
+import './tool_window.js'
 
 
 describe('ToolWindow', () => {
@@ -60,36 +60,24 @@ describe('ToolWindow', () => {
     })
 
 
-    describe('setTitle', () => {
-
-        test('should update the title text', () => {
-            toolWindow.setTitle('My Tool')
-            const titleEl = toolWindow.shadowRoot.querySelector('.tool-window-title')
-            expect(titleEl.textContent).toBe('My Tool')
-        })
-
+    test('setTitle should update the title text', () => {
+        toolWindow.setTitle('My Tool')
+        const titleEl = toolWindow.shadowRoot.querySelector('.tool-window-title')
+        expect(titleEl.textContent).toBe('My Tool')
     })
 
 
-    describe('setPosition', () => {
-
-        test('should update left and top styles', () => {
-            toolWindow.setPosition(100, 200)
-            expect(toolWindow.style.left).toBe('100px')
-            expect(toolWindow.style.top).toBe('200px')
-        })
-
+    test('setPosition should update left and top styles', () => {
+        toolWindow.setPosition(100, 200)
+        expect(toolWindow.style.left).toBe('100px')
+        expect(toolWindow.style.top).toBe('200px')
     })
 
 
-    describe('setSize', () => {
-
-        test('should update width and height styles', () => {
-            toolWindow.setSize(500, 400)
-            expect(toolWindow.style.width).toBe('500px')
-            expect(toolWindow.style.height).toBe('400px')
-        })
-
+    test('setSize should update width and height styles', () => {
+        toolWindow.setSize(500, 400)
+        expect(toolWindow.style.width).toBe('500px')
+        expect(toolWindow.style.height).toBe('400px')
     })
 
 
@@ -129,68 +117,52 @@ describe('ToolWindow', () => {
     })
 
 
-    describe('bringToFront', () => {
-
-        test('should dispatch focus event', () => {
-            const focusSpy = vi.fn()
-            toolWindow.addEventListener('focus', focusSpy)
-            toolWindow.bringToFront()
-            expect(focusSpy).toHaveBeenCalled()
-        })
-
+    test('bringToFront should dispatch focus event', () => {
+        const focusSpy = vi.fn()
+        toolWindow.addEventListener('focus', focusSpy)
+        toolWindow.bringToFront()
+        expect(focusSpy).toHaveBeenCalled()
     })
 
 
-    describe('close button', () => {
-
-        test('should close window when clicked', () => {
-            const closeSpy = vi.fn()
-            toolWindow.addEventListener('close', closeSpy)
-            const closeBtn = toolWindow.shadowRoot.querySelector('.tool-window-close')
-            closeBtn.click()
-            expect(closeSpy).toHaveBeenCalled()
-        })
-
+    test('close button should close window when clicked', () => {
+        const closeSpy = vi.fn()
+        toolWindow.addEventListener('close', closeSpy)
+        const closeBtn = toolWindow.shadowRoot.querySelector('.tool-window-close')
+        closeBtn.click()
+        expect(closeSpy).toHaveBeenCalled()
     })
 
 
-    describe('dragging', () => {
+    test('dragging should update position on drag', () => {
+        toolWindow.setPosition(20, 20)
+        const header = toolWindow.shadowRoot.querySelector('.tool-window-header')
 
-        test('should update position on drag', () => {
-            toolWindow.setPosition(20, 20)
-            const header = toolWindow.shadowRoot.querySelector('.tool-window-header')
+        header.dispatchEvent(new MouseEvent('mousedown', {
+            clientX: 50,
+            clientY: 50,
+            bubbles: true
+        }))
 
-            header.dispatchEvent(new MouseEvent('mousedown', {
-                clientX: 50,
-                clientY: 50,
-                bubbles: true
-            }))
+        window.dispatchEvent(new MouseEvent('mousemove', {
+            clientX: 150,
+            clientY: 200,
+            bubbles: true
+        }))
 
-            window.dispatchEvent(new MouseEvent('mousemove', {
-                clientX: 150,
-                clientY: 200,
-                bubbles: true
-            }))
+        window.dispatchEvent(new MouseEvent('mouseup', {bubbles: true}))
 
-            window.dispatchEvent(new MouseEvent('mouseup', {bubbles: true}))
-
-            expect(toolWindow.style.left).toBe('120px')
-            expect(toolWindow.style.top).toBe('170px')
-        })
-
+        expect(toolWindow.style.left).toBe('120px')
+        expect(toolWindow.style.top).toBe('170px')
     })
 
 
-    describe('disconnectedCallback', () => {
-
-        test('should clean up window event listeners', () => {
-            const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener')
-            toolWindow.remove()
-            expect(removeEventListenerSpy).toHaveBeenCalledWith('mousemove', expect.any(Function))
-            expect(removeEventListenerSpy).toHaveBeenCalledWith('mouseup', expect.any(Function))
-            removeEventListenerSpy.mockRestore()
-        })
-
+    test('disconnectedCallback should clean up window event listeners', () => {
+        const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener')
+        toolWindow.remove()
+        expect(removeEventListenerSpy).toHaveBeenCalledWith('mousemove', expect.any(Function))
+        expect(removeEventListenerSpy).toHaveBeenCalledWith('mouseup', expect.any(Function))
+        removeEventListenerSpy.mockRestore()
     })
 
 })
