@@ -23,6 +23,7 @@ async function init () {
 
     const toolManager = new ToolManager()
     toolManager.register(FoobarTool)
+    devtools.setToolManager(toolManager)
 
     window.defendTheDen = app
     window.appManager = appManager

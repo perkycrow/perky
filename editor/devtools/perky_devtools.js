@@ -46,6 +46,11 @@ export default class PerkyDevTools extends BaseEditorComponent {
     }
 
 
+    setToolManager (toolManager) {
+        this.#state.setToolManager(toolManager)
+    }
+
+
     openTool (toolId) {
         this.#state.openTool(toolId)
     }

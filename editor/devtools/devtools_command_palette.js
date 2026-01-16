@@ -211,7 +211,29 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
             icon: ICONS.logger
         })
 
+        this.#addFloatingToolCommands(commands)
+
         return commands
+    }
+
+
+    #addFloatingToolCommands (commands) {
+        const toolManager = this.#state?.toolManager
+        if (!toolManager) {
+            return
+        }
+
+        const tools = toolManager.listTools()
+        for (const tool of tools) {
+            commands.push({
+                id: `tool:${tool.id}`,
+                title: `/tool ${tool.id}`,
+                placeholder: 'key=value ...',
+                subtitle: `Open ${tool.name}`,
+                type: 'template',
+                icon: tool.icon
+            })
+        }
     }
 
 
@@ -461,6 +483,11 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
 
 
     #executeTemplateCommand (commandId, arg) {
+        if (commandId.startsWith('tool:')) {
+            this.#executeToolCommand(commandId)
+            return
+        }
+
         const appManager = this.#state?.appManager
         if (!appManager) {
             return
@@ -480,6 +507,24 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
             handler()
             this.#state?.closeCommandPalette()
         }
+    }
+
+
+    #executeToolCommand (commandId) {
+        const toolManager = this.#state?.toolManager
+        if (!toolManager) {
+            return
+        }
+
+        const toolId = commandId.replace('tool:', '')
+        const input = this.#inputEl.value.trim()
+        const {args} = parseCommand(input)
+
+        const params = parseToolParams(args)
+
+        this.#addToHistory(input, {id: commandId})
+        toolManager.open(toolId, params)
+        this.#state?.closeCommandPalette()
     }
 
 
@@ -695,6 +740,33 @@ function parsePart (part) {
         return {type: 'method', name, arg}
     }
     return part
+}
+
+
+function parseToolParams (args) {
+    const params = {}
+
+    for (const arg of args) {
+        if (typeof arg === 'string' && arg.includes('=')) {
+            const eqIndex = arg.indexOf('=')
+            const key = arg.slice(0, eqIndex)
+            let value = arg.slice(eqIndex + 1)
+
+            if (value === 'true') {
+                value = true
+            } else if (value === 'false') {
+                value = false
+            } else if (!isNaN(value) && value !== '') {
+                value = Number(value)
+            }
+
+            params[key] = value
+        } else if (typeof arg === 'object') {
+            Object.assign(params, arg)
+        }
+    }
+
+    return params
 }
 
 

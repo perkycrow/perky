@@ -6,6 +6,7 @@ export default class DevToolsState extends EventTarget {
     #loggerOpen = false
     #module = null
     #appManager = null
+    #toolManager = null
 
     get sidebarOpen () {
         return this.#sidebarOpen
@@ -34,6 +35,11 @@ export default class DevToolsState extends EventTarget {
 
     get appManager () {
         return this.#appManager
+    }
+
+
+    get toolManager () {
+        return this.#toolManager
     }
 
 
@@ -158,6 +164,16 @@ export default class DevToolsState extends EventTarget {
 
         this.dispatchEvent(new CustomEvent('appmanager:change', {
             detail: {appManager, previousAppManager}
+        }))
+    }
+
+
+    setToolManager (toolManager) {
+        const previousToolManager = this.#toolManager
+        this.#toolManager = toolManager
+
+        this.dispatchEvent(new CustomEvent('toolmanager:change', {
+            detail: {toolManager, previousToolManager}
         }))
     }
 
