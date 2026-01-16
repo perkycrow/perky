@@ -13,7 +13,6 @@ export default class BaseFloatingTool extends BaseEditorComponent {
 
     #params = {}
 
-
     setParams (params) {
         this.#params = params
         this.onParamsSet?.(params)

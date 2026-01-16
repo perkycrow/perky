@@ -2,7 +2,7 @@ import {describe, test, expect, beforeEach, vi, afterEach} from 'vitest'
 import SpriteAnimation from './sprite_animation.js'
 
 describe('SpriteAnimation', () => {
-    let spritesheet
+    let sprite
     let animation
     let frames
 
@@ -18,14 +18,18 @@ describe('SpriteAnimation', () => {
             now: () => Date.now()
         })
 
-        spritesheet = {
-            setFrame: vi.fn()
+        sprite = {
+            region: null
         }
 
-        frames = ['frame1', 'frame2', 'frame3']
+        frames = [
+            {region: 'region1'},
+            {region: 'region2'},
+            {region: 'region3'}
+        ]
 
         animation = new SpriteAnimation({
-            sprite: spritesheet,
+            sprite,
             frames,
             fps: 10,
             loop: true,
@@ -64,13 +68,13 @@ describe('SpriteAnimation', () => {
         vi.stubGlobal('performance', {now: () => 1000})
         animation.play()
 
-        animation.update(1100)
+        animation.update(0.1)
         expect(animation.currentIndex).toBe(1)
-        expect(spritesheet.setFrame).toHaveBeenCalledWith('frame2')
+        expect(sprite.region).toBe('region2')
 
-        animation.update(1200)
+        animation.update(0.1)
         expect(animation.currentIndex).toBe(2)
-        expect(spritesheet.setFrame).toHaveBeenCalledWith('frame3')
+        expect(sprite.region).toBe('region3')
 
         vi.unstubAllGlobals()
     })
@@ -79,14 +83,14 @@ describe('SpriteAnimation', () => {
         vi.stubGlobal('performance', {now: () => 1000})
         animation.play()
 
-        animation.update(1100)
-        animation.update(1200)
+        animation.update(0.1)
+        animation.update(0.1)
         expect(animation.currentIndex).toBe(2)
 
         const loopSpy = vi.fn()
         animation.on('loop', loopSpy)
 
-        animation.update(1300)
+        animation.update(0.1)
         expect(animation.currentIndex).toBe(0)
         expect(loopSpy).toHaveBeenCalled()
 
@@ -102,9 +106,9 @@ describe('SpriteAnimation', () => {
         const completeSpy = vi.fn()
         animation.on('complete', completeSpy)
 
-        animation.update(1100)
-        animation.update(1200)
-        animation.update(1300)
+        animation.update(0.1)
+        animation.update(0.1)
+        animation.update(0.1)
 
         expect(animation.playing).toBe(false)
         expect(animation.completed).toBe(true)
@@ -116,13 +120,24 @@ describe('SpriteAnimation', () => {
     test('setFrame sets frame by index', () => {
         animation.setFrame(2)
         expect(animation.currentIndex).toBe(2)
-        expect(spritesheet.setFrame).toHaveBeenCalledWith('frame3')
+        expect(sprite.region).toBe('region3')
     })
 
     test('setFrameByName sets frame by name', () => {
-        animation.setFrameByName('frame2')
-        expect(animation.currentIndex).toBe(1)
-        expect(spritesheet.setFrame).toHaveBeenCalledWith('frame2')
+        const namedFrames = [
+            {name: 'frame1', region: 'region1'},
+            {name: 'frame2', region: 'region2'},
+            {name: 'frame3', region: 'region3'}
+        ]
+        const namedAnimation = new SpriteAnimation({
+            sprite,
+            frames: namedFrames,
+            fps: 10
+        })
+        namedAnimation.setFrameByName(namedFrames[1])
+        expect(namedAnimation.currentIndex).toBe(1)
+        expect(sprite.region).toBe('region2')
+        namedAnimation.dispose()
     })
 
 
@@ -149,7 +164,7 @@ describe('SpriteAnimation', () => {
         animation.on('stop', stopSpy)
 
         animation.play()
-        animation.update(1100)
+        animation.update(0.1)
         expect(animation.currentIndex).toBe(1)
 
         animation.stop()
@@ -168,7 +183,7 @@ describe('SpriteAnimation', () => {
         vi.stubGlobal('performance', {now: () => 1000})
 
         animation.play()
-        animation.update(1100)
+        animation.update(0.1)
         expect(animation.currentIndex).toBe(1)
 
         animation.restart()

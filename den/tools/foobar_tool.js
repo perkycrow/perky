@@ -11,7 +11,6 @@ export default class FoobarTool extends BaseFloatingTool {
 
     #contentEl = null
 
-
     connectedCallback () {
         this.#buildDOM()
     }

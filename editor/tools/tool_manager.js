@@ -13,7 +13,6 @@ export default class ToolManager {
     #nextY = 20
     #cascadeOffset = 30
 
-
     constructor (container = document.body) {
         this.#container = container
     }

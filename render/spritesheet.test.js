@@ -18,27 +18,27 @@ describe('Spritesheet', () => {
     }
 
     test('initializes with image and data', () => {
-        const sheet = new Spritesheet(mockImage, mockData)
-        expect(sheet.image).toBe(mockImage)
+        const sheet = new Spritesheet({image: mockImage, data: mockData})
+        expect(sheet.images[0]).toBe(mockImage)
         expect(sheet.data).toBe(mockData)
     })
 
     test('getFrame retrieves frame by name', () => {
-        const sheet = new Spritesheet(mockImage, mockData)
+        const sheet = new Spritesheet({image: mockImage, data: mockData})
         const frame = sheet.getFrame('frame1')
         expect(frame).toBeDefined()
         expect(frame.filename).toBe('frame1')
         expect(frame.image).toBe(mockImage)
     })
 
-    test('getFrame returns undefined for non-existent frame', () => {
-        const sheet = new Spritesheet(mockImage, mockData)
+    test('getFrame returns null for non-existent frame', () => {
+        const sheet = new Spritesheet({image: mockImage, data: mockData})
         const frame = sheet.getFrame('non-existent')
-        expect(frame).toBeUndefined()
+        expect(frame).toBeNull()
     })
 
     test('getFrames retrieves multiple frames by names', () => {
-        const sheet = new Spritesheet(mockImage, mockData)
+        const sheet = new Spritesheet({image: mockImage, data: mockData})
         const frames = sheet.getFrames(['frame1', 'frame2'])
         expect(frames).toHaveLength(2)
         expect(frames[0].filename).toBe('frame1')
@@ -46,13 +46,13 @@ describe('Spritesheet', () => {
     })
 
     test('getFrames returns all frames without arguments', () => {
-        const sheet = new Spritesheet(mockImage, mockData)
+        const sheet = new Spritesheet({image: mockImage, data: mockData})
         const frames = sheet.getFrames()
         expect(frames).toHaveLength(2)
     })
 
     test('listFrames returns all frame names', () => {
-        const sheet = new Spritesheet(mockImage, mockData)
+        const sheet = new Spritesheet({image: mockImage, data: mockData})
         const names = sheet.listFrames()
         expect(names).toEqual(['frame1', 'frame2'])
     })

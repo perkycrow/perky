@@ -23,7 +23,6 @@ export default class ToolWindow extends BaseEditorComponent {
     #onMouseMove = null
     #onMouseUp = null
 
-
     connectedCallback () {
         this.#buildDOM()
         this.#setupDrag()
