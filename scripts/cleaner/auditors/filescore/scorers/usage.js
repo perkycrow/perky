@@ -5,29 +5,6 @@ import BaseScorer from './base_scorer.js'
 import {findJsFiles} from '../../../utils.js'
 
 
-function extractImports (filePath) {
-    try {
-        const content = fs.readFileSync(filePath, 'utf-8')
-        const ast = acorn.parse(content, {
-            ecmaVersion: 'latest',
-            sourceType: 'module'
-        })
-
-        const imports = []
-
-        for (const node of ast.body) {
-            if (node.type === 'ImportDeclaration' && node.source?.value) {
-                imports.push(node.source.value)
-            }
-        }
-
-        return imports
-    } catch {
-        return []
-    }
-}
-
-
 export default class UsageScorer extends BaseScorer {
 
     static $name = 'Usage'
@@ -169,4 +146,27 @@ export default class UsageScorer extends BaseScorer {
         return resolved
     }
 
+}
+
+
+function extractImports (filePath) {
+    try {
+        const content = fs.readFileSync(filePath, 'utf-8')
+        const ast = acorn.parse(content, {
+            ecmaVersion: 'latest',
+            sourceType: 'module'
+        })
+
+        const imports = []
+
+        for (const node of ast.body) {
+            if (node.type === 'ImportDeclaration' && node.source?.value) {
+                imports.push(node.source.value)
+            }
+        }
+
+        return imports
+    } catch {
+        return []
+    }
 }
