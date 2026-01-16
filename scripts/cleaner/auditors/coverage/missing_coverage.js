@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import Auditor from '../../auditor.js'
 import {isExcludedFile} from '../../utils.js'
-import {hint, listItem, divider, dim} from '../../format.js'
+import {hint, listItem, divider, dim} from '../../../format.js'
 
 
 export default class MissingCoverageAuditor extends Auditor {

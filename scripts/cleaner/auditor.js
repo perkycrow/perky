@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import {findJsFiles} from './utils.js'
-import {header, success, successCompact, failureCompact, hint, listItem, divider} from './format.js'
+import {header, success, successCompact, failureCompact, hint, listItem, divider} from '../format.js'
 import {EXCLUSIONS} from './config.js'
 
 

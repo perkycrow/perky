@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import Auditor from '../../auditor.js'
 import {isExcludedFile, loadCleanerConfig, isExcludedByConfig} from '../../utils.js'
-import {bold, dim, cyan, gray, green, yellow} from '../../format.js'
+import {bold, dim, cyan, gray, green, yellow} from '../../../format.js'
 
 import CoverageScorer from './scorers/coverage.js'
 import SizeScorer from './scorers/size.js'

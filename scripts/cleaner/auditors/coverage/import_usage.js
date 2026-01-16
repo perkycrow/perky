@@ -3,7 +3,7 @@ import path from 'path'
 import * as acorn from 'acorn'
 import Auditor from '../../auditor.js'
 import {findJsFiles} from '../../utils.js'
-import {hint, divider, dim, yellow} from '../../format.js'
+import {hint, divider, dim, yellow} from '../../../format.js'
 
 
 export default class ImportUsageAuditor extends Auditor {

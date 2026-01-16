@@ -3,7 +3,7 @@ import path from 'path'
 import {pathToFileURL} from 'url'
 import * as acorn from 'acorn'
 import Auditor from '../auditor.js'
-import {gray} from '../format.js'
+import {gray} from '../../format.js'
 import {isExcludedFile} from '../utils.js'
 
 

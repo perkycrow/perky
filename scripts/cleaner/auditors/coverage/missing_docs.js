@@ -3,7 +3,7 @@ import path from 'path'
 import {pathToFileURL} from 'url'
 import Auditor from '../../auditor.js'
 import {isExcludedFile} from '../../utils.js'
-import {hint, listItem, divider} from '../../format.js'
+import {hint, listItem, divider} from '../../../format.js'
 
 
 export default class MissingDocsAuditor extends Auditor {

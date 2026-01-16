@@ -1,7 +1,7 @@
 import path from 'path'
 import EslintAuditor from './base.js'
 import {groupBy} from '../../utils.js'
-import {hint, subHeader, listItem, divider} from '../../format.js'
+import {hint, subHeader, listItem, divider} from '../../../format.js'
 
 
 const RULE_HINTS = {

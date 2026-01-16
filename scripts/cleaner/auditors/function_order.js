@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import * as acorn from 'acorn'
 import Auditor from '../auditor.js'
-import {gray} from '../format.js'
+import {gray} from '../../format.js'
 import {isExcludedFile} from '../utils.js'
 
 

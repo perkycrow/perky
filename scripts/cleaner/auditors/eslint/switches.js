@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import EslintAuditor from './base.js'
 import {groupBy} from '../../utils.js'
-import {hint, listItem, divider} from '../../format.js'
+import {hint, listItem, divider} from '../../../format.js'
 
 
 export default class SwitchesAuditor extends EslintAuditor {

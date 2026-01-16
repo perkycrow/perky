@@ -25,7 +25,7 @@ import ImportUsageAuditor from './auditors/coverage/import_usage.js'
 import BrokenLinksAuditor from './auditors/docs/broken_links.js'
 import FileScoreAuditor from './auditors/filescore/file_score.js'
 
-import {bold, cyan, dim, green, yellow, gray} from './format.js'
+import {bold, cyan, dim, green, yellow, gray} from '../format.js'
 
 
 const AUDIT_AUDITORS = [

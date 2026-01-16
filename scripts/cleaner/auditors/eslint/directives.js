@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import EslintAuditor from './base.js'
-import {header, success, hint, listItem, divider} from '../../format.js'
+import {header, success, hint, listItem, divider} from '../../../format.js'
 
 
 export default class DirectivesAuditor extends EslintAuditor {

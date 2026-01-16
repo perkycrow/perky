@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import Auditor from '../../auditor.js'
-import {hint, listItem, divider} from '../../format.js'
+import {hint, listItem, divider} from '../../../format.js'
 
 
 export default class SingleDescribesAuditor extends Auditor {

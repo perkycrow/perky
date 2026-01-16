@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import Auditor from '../../auditor.js'
 import {isExcludedFile} from '../../utils.js'
-import {hint, listItem, divider} from '../../format.js'
+import {hint, listItem, divider} from '../../../format.js'
 
 
 export default class StaleFilesAuditor extends Auditor {

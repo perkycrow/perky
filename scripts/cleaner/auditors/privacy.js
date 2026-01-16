@@ -1,6 +1,6 @@
 import * as acorn from 'acorn'
 import Auditor from '../auditor.js'
-import {gray} from '../format.js'
+import {gray} from '../../format.js'
 
 
 export default class PrivacyAuditor extends Auditor {

@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import EslintAuditor from './base.js'
 import {groupBy, isInsideString} from '../../utils.js'
-import {success, hint, subHeader, listItem, divider} from '../../format.js'
+import {success, hint, subHeader, listItem, divider} from '../../../format.js'
 
 
 const RULE_HINTS = {

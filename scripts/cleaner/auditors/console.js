@@ -1,6 +1,6 @@
 import Auditor from '../auditor.js'
 import {isInsideString} from '../utils.js'
-import {gray} from '../format.js'
+import {gray} from '../../format.js'
 
 
 const CONSOLE_PATTERN = /\bconsole\.(log|warn|error|info|debug)\s*\(/g

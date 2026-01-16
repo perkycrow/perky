@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import {execSync} from 'child_process'
 import Auditor from '../../auditor.js'
-import {hint, listItem, divider} from '../../format.js'
+import {hint, listItem, divider} from '../../../format.js'
 
 
 export default class BrokenLinksAuditor extends Auditor {

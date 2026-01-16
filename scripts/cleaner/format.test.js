@@ -1,5 +1,5 @@
 import {describe, expect, test} from 'vitest'
-import {gray, green, yellow, cyan} from './format.js'
+import {gray, green, yellow, cyan} from '../format.js'
 
 
 describe('format colors', () => {
