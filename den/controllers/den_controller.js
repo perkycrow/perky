@@ -20,7 +20,7 @@ export default class DenController extends GameController {
     }
 
     static waveSpawnRatios = [
-        {pig: 1, red: 0, granny: 0},
+        {pig: 1 / 2, red: 1 / 2, granny: 0},
         {pig: 2 / 3, red: 1 / 3, granny: 0},
         {pig: 5 / 10, red: 3 / 10, granny: 2 / 10},
         {pig: 5 / 10, red: 3 / 10, granny: 2 / 10}

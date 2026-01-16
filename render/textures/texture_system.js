@@ -1,6 +1,7 @@
 import PerkyModule from '../../core/perky_module.js'
 import TextureAtlasManager from './texture_atlas_manager.js'
 import TextureRegion from './texture_region.js'
+import Spritesheet from '../spritesheet.js'
 
 
 export default class TextureSystem extends PerkyModule {
@@ -9,6 +10,7 @@ export default class TextureSystem extends PerkyModule {
 
     #atlasManager = null
     #manualRegions = new Map()
+    #spritesheets = new Map()
 
     constructor (options = {}) {
         super(options)
@@ -25,7 +27,9 @@ export default class TextureSystem extends PerkyModule {
             'hasRegion',
             'addRegion',
             'addRegions',
-            'registerManualAtlas'
+            'registerManualAtlas',
+            'getSpritesheet',
+            'registerSpritesheet'
         ])
     }
 
@@ -85,6 +89,18 @@ export default class TextureSystem extends PerkyModule {
             const region = TextureRegion.fromFrame(image, frameData)
             this.#manualRegions.set(regionId, region)
         }
+    }
+
+
+    registerSpritesheet (id, source) {
+        const spritesheet = new Spritesheet(source)
+        this.#spritesheets.set(id, spritesheet)
+        return spritesheet
+    }
+
+
+    getSpritesheet (id) {
+        return this.#spritesheets.get(id) || null
     }
 
 
@@ -155,6 +171,7 @@ export default class TextureSystem extends PerkyModule {
     clear () {
         this.#atlasManager.clear()
         this.#manualRegions.clear()
+        this.#spritesheets.clear()
     }
 
 

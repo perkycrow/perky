@@ -96,6 +96,7 @@ export default class Game extends Application {
 
     onStart () {
         this.#buildTextureAtlases()
+        this.#buildSpritesheets()
         this.#listenForLateAssets()
         this.#setupPostPasses()
     }
@@ -136,6 +137,20 @@ export default class Game extends Application {
 
         const assets = this.getAllAssets()
         this.textureSystem.buildFromAssets(assets)
+    }
+
+
+    #buildSpritesheets () {
+        if (!this.textureSystem) {
+            return
+        }
+
+        const assets = this.getAllAssets()
+        for (const asset of assets) {
+            if (asset.type === 'spritesheet' && asset.source) {
+                this.textureSystem.registerSpritesheet(asset.id, asset.source)
+            }
+        }
     }
 
 

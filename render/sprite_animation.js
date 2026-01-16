@@ -1,32 +1,52 @@
 import PerkyModule from '../core/perky_module.js'
 
 
+export const PLAYBACK_FORWARD = 'forward'
+export const PLAYBACK_REVERSE = 'reverse'
+export const PLAYBACK_PINGPONG = 'pingpong'
+
+
 export default class SpriteAnimation extends PerkyModule {
 
-    #animationId = null
-    #lastFrameTime = 0
+    #elapsed = 0
+    #events = new Map()
+    #pingpongDirection = 1
 
-    constructor ({sprite, frames, fps = 12, loop = true, autoStart = false} = {}) {
+    constructor ({sprite, frames, fps = 12, loop = true, speed = 1, playbackMode = PLAYBACK_FORWARD} = {}) {
         super()
 
         this.sprite = sprite
         this.frames = Array.isArray(frames) ? frames : []
         this.fps = fps
         this.loop = loop
-        this.autoStart = autoStart
+        this.speed = speed
+        this.playbackMode = playbackMode
 
         this.currentIndex = 0
         this.playing = false
         this.completed = false
-
-        if (this.autoStart) {
-            this.play()
-        }
     }
 
 
-    get frameInterval () {
-        return 1000 / this.fps
+    get frameDuration () {
+        return 1 / this.fps
+    }
+
+
+    getFrameDuration (index) {
+        const frame = this.frames[index]
+        const baseDuration = this.frameDuration
+
+        if (frame && typeof frame.duration === 'number') {
+            return baseDuration * frame.duration
+        }
+
+        return baseDuration
+    }
+
+
+    get currentFrameDuration () {
+        return this.getFrameDuration(this.currentIndex)
     }
 
 
@@ -52,9 +72,8 @@ export default class SpriteAnimation extends PerkyModule {
 
         this.playing = true
         this.completed = false
-        this.#lastFrameTime = performance.now()
-
-        this.#animate()
+        this.#elapsed = 0
+        this.#updateSpriteFrame()
         this.emit('play')
 
         return this
@@ -67,30 +86,32 @@ export default class SpriteAnimation extends PerkyModule {
         }
 
         this.playing = false
-
-        if (this.#animationId) {
-            cancelAnimationFrame(this.#animationId)
-            this.#animationId = null
-        }
-
         this.emit('pause')
+
         return this
     }
 
 
     stop () {
-        this.pause()
+        this.playing = false
         this.currentIndex = 0
         this.completed = false
+        this.#elapsed = 0
         this.#updateSpriteFrame()
         this.emit('stop')
+
         return this
     }
 
 
     restart () {
-        this.stop()
-        this.play()
+        this.currentIndex = 0
+        this.completed = false
+        this.#elapsed = 0
+        this.playing = true
+        this.#updateSpriteFrame()
+        this.emit('play')
+
         return this
     }
 
@@ -141,50 +162,190 @@ export default class SpriteAnimation extends PerkyModule {
     }
 
 
-    #animate () {
-        if (!this.playing) {
-            return
-        }
-
-        this.update(performance.now())
-
-        this.#animationId = requestAnimationFrame(() => this.#animate())
+    setSpeed (speed) {
+        this.speed = speed
+        return this
     }
 
 
-    update (now) {
-        if (!this.playing) {
+    setPlaybackMode (mode) {
+        this.playbackMode = mode
+        if (mode === PLAYBACK_REVERSE) {
+            this.#pingpongDirection = -1
+        } else {
+            this.#pingpongDirection = 1
+        }
+        return this
+    }
+
+
+    addEvent (frameIndex, eventName) {
+        if (!this.#events.has(frameIndex)) {
+            this.#events.set(frameIndex, [])
+        }
+        this.#events.get(frameIndex).push(eventName)
+        return this
+    }
+
+
+    removeEvent (frameIndex, eventName) {
+        if (!this.#events.has(frameIndex)) {
+            return this
+        }
+
+        const events = this.#events.get(frameIndex)
+        const index = events.indexOf(eventName)
+
+        if (index !== -1) {
+            events.splice(index, 1)
+        }
+
+        if (events.length === 0) {
+            this.#events.delete(frameIndex)
+        }
+
+        return this
+    }
+
+
+    clearEvents () {
+        this.#events.clear()
+        return this
+    }
+
+
+    getEvents (frameIndex) {
+        return this.#events.get(frameIndex) || []
+    }
+
+
+    seekToFrame (index) {
+        if (index >= 0 && index < this.totalFrames) {
+            this.currentIndex = index
+            this.#elapsed = 0
+            this.#updateSpriteFrame()
+        }
+        return this
+    }
+
+
+    seekToProgress (progress) {
+        const clampedProgress = Math.max(0, Math.min(1, progress))
+        const targetIndex = Math.floor(clampedProgress * this.totalFrames)
+        return this.seekToFrame(Math.min(targetIndex, this.totalFrames - 1))
+    }
+
+
+    update (deltaTime) {
+        if (!this.playing || this.completed) {
             return
         }
 
-        const elapsed = now - this.#lastFrameTime
+        this.#elapsed += deltaTime * this.speed
 
-        if (elapsed >= this.frameInterval) {
+        while (this.#elapsed >= this.currentFrameDuration) {
+            this.#elapsed -= this.currentFrameDuration
             this.#advanceFrame()
-            this.#lastFrameTime = now - (elapsed % this.frameInterval)
+
+            if (this.completed) {
+                break
+            }
         }
     }
 
 
     #advanceFrame () {
-        const wasLastFrame = this.currentIndex === this.totalFrames - 1
+        const previousIndex = this.currentIndex
+        const nextIndex = this.#getNextFrameIndex()
 
-        if (wasLastFrame) {
-            if (this.loop) {
-                this.currentIndex = 0
-                this.emit('loop')
-            } else {
-                this.playing = false
-                this.completed = true
-                this.emit('complete')
-                return
-            }
-        } else {
-            this.currentIndex++
+        if (nextIndex === null) {
+            this.playing = false
+            this.completed = true
+            this.emit('complete')
+            return
         }
 
+        this.currentIndex = nextIndex
+        this.#emitFrameEvents(previousIndex, this.currentIndex)
         this.#updateSpriteFrame()
         this.emit('frameChanged', this.currentFrame, this.currentIndex)
+    }
+
+
+    #getNextFrameIndex () {
+        const lastIndex = this.totalFrames - 1
+
+        if (this.playbackMode === PLAYBACK_FORWARD) {
+            return this.#getNextForward(lastIndex)
+        }
+
+        if (this.playbackMode === PLAYBACK_REVERSE) {
+            return this.#getNextReverse(lastIndex)
+        }
+
+        if (this.playbackMode === PLAYBACK_PINGPONG) {
+            return this.#getNextPingpong(lastIndex)
+        }
+
+        return this.#getNextForward(lastIndex)
+    }
+
+
+    #getNextForward (lastIndex) {
+        if (this.currentIndex < lastIndex) {
+            return this.currentIndex + 1
+        }
+
+        if (this.loop) {
+            this.emit('loop')
+            return 0
+        }
+
+        return null
+    }
+
+
+    #getNextReverse (lastIndex) {
+        if (this.currentIndex > 0) {
+            return this.currentIndex - 1
+        }
+
+        if (this.loop) {
+            this.emit('loop')
+            return lastIndex
+        }
+
+        return null
+    }
+
+
+    #getNextPingpong (lastIndex) {
+        const nextIndex = this.currentIndex + this.#pingpongDirection
+
+        if (nextIndex >= 0 && nextIndex <= lastIndex) {
+            return nextIndex
+        }
+
+        this.#pingpongDirection *= -1
+        this.emit('bounce', this.#pingpongDirection)
+
+        if (!this.loop && this.currentIndex === 0) {
+            return null
+        }
+
+        return this.currentIndex + this.#pingpongDirection
+    }
+
+
+    #emitFrameEvents (previousIndex, currentIndex) {
+        const events = this.#events.get(currentIndex)
+
+        if (events) {
+            for (const eventName of events) {
+                this.emit('event', eventName, currentIndex)
+                this.emit(`event:${eventName}`, currentIndex)
+            }
+        }
     }
 
 
@@ -193,14 +354,19 @@ export default class SpriteAnimation extends PerkyModule {
             return
         }
 
-        this.sprite.setFrame(this.currentFrame)
+        if (this.currentFrame.region) {
+            this.sprite.region = this.currentFrame.region
+        } else {
+            this.sprite.region = this.currentFrame
+        }
     }
 
 
     onDispose () {
-        this.pause()
+        this.playing = false
         this.sprite = null
         this.frames = []
+        this.#events.clear()
     }
 
 }
