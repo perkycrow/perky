@@ -1,7 +1,7 @@
 import Game from '../game/game.js'
 import Group2D from '../render/group_2d.js'
 import Sprite from '../render/sprite.js'
-import {ShadowTransform} from '../render/transforms/index.js'
+import ShadowTransform from '../render/transforms/shadow_transform.js'
 
 import DenWorld from './den_world.js'
 import DenController from './controllers/den_controller.js'

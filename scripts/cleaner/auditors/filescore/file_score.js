@@ -148,6 +148,10 @@ export default class FileScoreAuditor extends Auditor {
             return true
         }
 
+        if (relativePath.endsWith('.config.js')) {
+            return true
+        }
+
         if (relativePath.startsWith('scripts/')) {
             return true
         }
@@ -205,7 +209,7 @@ export default class FileScoreAuditor extends Auditor {
 
 
 function printHeader (flop) {
-    const title = flop ? '     FLOP 10 FILES       ' : '        FILE SCORES          '
+    const title = flop ? '       FLOP 10 FILES         ' : '        FILE SCORES          '
     const subtitle = flop
         ? 'Files needing the most attention'
         : 'Higher score = healthier file'
