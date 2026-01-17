@@ -250,7 +250,7 @@ const STYLES = buildEditorStyles(
     .tool-window-content {
         flex: 1;
         overflow: auto;
-        padding: 12px;
+        padding: 8px;
     }
 
     .tool-window-resize {
