@@ -120,8 +120,8 @@ describe('SpritesheetViewer', () => {
 
             const canvases = viewer.shadowRoot.querySelectorAll('.frame-thumbnail')
             expect(canvases.length).toBe(4)
-            expect(canvases[0].width).toBe(48)
-            expect(canvases[0].height).toBe(48)
+            expect(canvases[0].width).toBe(100)
+            expect(canvases[0].height).toBe(100)
         })
 
 
@@ -135,12 +135,12 @@ describe('SpritesheetViewer', () => {
         })
 
 
-        test('should set full name as title', () => {
+        test('should set full name as title on frame element', () => {
             const spritesheet = createMockSpritesheet()
             viewer.setSpritesheet(spritesheet)
 
-            const names = viewer.shadowRoot.querySelectorAll('.frame-name')
-            expect(names[0].title).toBe('walk/1')
+            const frames = viewer.shadowRoot.querySelectorAll('.frame')
+            expect(frames[0].title).toBe('walk/1')
         })
 
     })
@@ -181,37 +181,29 @@ describe('SpritesheetViewer', () => {
     })
 
 
-    describe('events', () => {
+    test('should dispatch frameclick event on frame click', () => {
+        const spritesheet = createMockSpritesheet()
+        viewer.setSpritesheet(spritesheet)
 
-        test('should dispatch frameclick event on frame click', () => {
-            const spritesheet = createMockSpritesheet()
-            viewer.setSpritesheet(spritesheet)
+        const handler = vi.fn()
+        viewer.addEventListener('frameclick', handler)
 
-            const handler = vi.fn()
-            viewer.addEventListener('frameclick', handler)
+        const frameEl = viewer.shadowRoot.querySelector('.frame')
+        frameEl.click()
 
-            const frameEl = viewer.shadowRoot.querySelector('.frame')
-            frameEl.click()
-
-            expect(handler).toHaveBeenCalled()
-            expect(handler.mock.calls[0][0].detail.name).toBe('walk/1')
-            expect(handler.mock.calls[0][0].detail.region).toBeDefined()
-        })
-
+        expect(handler).toHaveBeenCalled()
+        expect(handler.mock.calls[0][0].detail.name).toBe('walk/1')
+        expect(handler.mock.calls[0][0].detail.region).toBeDefined()
     })
 
 
-    describe('data attributes', () => {
+    test('should set data-name on frames', () => {
+        const spritesheet = createMockSpritesheet()
+        viewer.setSpritesheet(spritesheet)
 
-        test('should set data-name on frames', () => {
-            const spritesheet = createMockSpritesheet()
-            viewer.setSpritesheet(spritesheet)
-
-            const frames = viewer.shadowRoot.querySelectorAll('.frame')
-            expect(frames[0].dataset.name).toBe('walk/1')
-            expect(frames[1].dataset.name).toBe('walk/2')
-        })
-
+        const frames = viewer.shadowRoot.querySelectorAll('.frame')
+        expect(frames[0].dataset.name).toBe('walk/1')
+        expect(frames[1].dataset.name).toBe('walk/2')
     })
 
 

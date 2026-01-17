@@ -32,14 +32,6 @@ export default class ToolWindow extends BaseEditorComponent {
     }
 
 
-    #getPointerCoords (e) {
-        if (e.touches && e.touches.length > 0) {
-            return {x: e.touches[0].clientX, y: e.touches[0].clientY}
-        }
-        return {x: e.clientX, y: e.clientY}
-    }
-
-
     disconnectedCallback () {
         this.#cleanupWindowListeners()
     }
@@ -88,7 +80,7 @@ export default class ToolWindow extends BaseEditorComponent {
                 return
             }
 
-            const coords = this.#getPointerCoords(e)
+            const coords = getPointerCoords(e)
             this.#isDragging = true
             this.#dragOffset = {
                 x: coords.x - this.#x,
@@ -105,7 +97,7 @@ export default class ToolWindow extends BaseEditorComponent {
                 return
             }
 
-            const coords = this.#getPointerCoords(e)
+            const coords = getPointerCoords(e)
 
             if (this.#isDragging) {
                 this.#x = coords.x - this.#dragOffset.x
@@ -211,6 +203,14 @@ export default class ToolWindow extends BaseEditorComponent {
         this.#applyPosition()
     }
 
+}
+
+
+function getPointerCoords (e) {
+    if (e.touches && e.touches.length > 0) {
+        return {x: e.touches[0].clientX, y: e.touches[0].clientY}
+    }
+    return {x: e.clientX, y: e.clientY}
 }
 
 

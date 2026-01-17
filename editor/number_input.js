@@ -425,7 +425,6 @@ export default class NumberInput extends HTMLElement {
         document.addEventListener('mouseup', this.#onDragEnd)
     }
 
-
 }
 
 

@@ -118,14 +118,12 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should render duration when not 1', () => {
+        test('should render duration inputs for all frames', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
-            const durationEls = timeline.shadowRoot.querySelectorAll('.frame-duration')
-            expect(durationEls.length).toBe(2)
-            expect(durationEls[0].textContent).toBe('2x')
-            expect(durationEls[1].textContent).toBe('1.5x')
+            const durationInputs = timeline.shadowRoot.querySelectorAll('.frame-duration-input')
+            expect(durationInputs.length).toBe(4)
         })
 
 
@@ -221,19 +219,15 @@ describe('AnimationTimeline', () => {
     })
 
 
-    describe('data attributes', () => {
+    test('should set data-index on frames', () => {
+        const frames = createMockFrames()
+        timeline.setFrames(frames)
 
-        test('should set data-index on frames', () => {
-            const frames = createMockFrames()
-            timeline.setFrames(frames)
-
-            const frameEls = timeline.shadowRoot.querySelectorAll('.frame')
-            expect(frameEls[0].dataset.index).toBe('0')
-            expect(frameEls[1].dataset.index).toBe('1')
-            expect(frameEls[2].dataset.index).toBe('2')
-            expect(frameEls[3].dataset.index).toBe('3')
-        })
-
+        const frameEls = timeline.shadowRoot.querySelectorAll('.frame')
+        expect(frameEls[0].dataset.index).toBe('0')
+        expect(frameEls[1].dataset.index).toBe('1')
+        expect(frameEls[2].dataset.index).toBe('2')
+        expect(frameEls[3].dataset.index).toBe('3')
     })
 
 

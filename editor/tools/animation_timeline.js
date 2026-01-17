@@ -96,7 +96,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
                 }
             }))
         } catch {
-            // Invalid JSON, ignore
+
         }
     }
 
@@ -115,7 +115,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
                 }
             }))
         } catch {
-            // Invalid JSON, ignore
+
         }
     }
 

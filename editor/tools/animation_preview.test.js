@@ -250,18 +250,14 @@ describe('AnimationPreview', () => {
     })
 
 
-    describe('cleanup', () => {
+    test('should stop playback on disconnect', () => {
+        const animation = createMockAnimation()
+        preview.setAnimation(animation)
+        preview.play()
 
-        test('should stop playback on disconnect', () => {
-            const animation = createMockAnimation()
-            preview.setAnimation(animation)
-            preview.play()
+        preview.remove()
 
-            preview.remove()
-
-            expect(preview.isPlaying).toBe(false)
-        })
-
+        expect(preview.isPlaying).toBe(false)
     })
 
 

@@ -86,15 +86,6 @@ export default class SpritesheetViewer extends BaseEditorComponent {
     }
 
 
-    #getAnimationPrefix (frameName) {
-        const slashIndex = frameName.lastIndexOf('/')
-        if (slashIndex === -1) {
-            return null
-        }
-        return frameName.substring(0, slashIndex)
-    }
-
-
     #renderFilter () {
         this.#filterEl.innerHTML = ''
 
@@ -162,7 +153,7 @@ export default class SpritesheetViewer extends BaseEditorComponent {
         frameEl.draggable = true
         frameEl.title = name
 
-        const animPrefix = this.#getAnimationPrefix(name)
+        const animPrefix = getAnimationPrefix(name)
         if (animPrefix && this.#animationColorMap.has(animPrefix)) {
             frameEl.style.background = this.#animationColorMap.get(animPrefix)
         }
@@ -274,7 +265,7 @@ export default class SpritesheetViewer extends BaseEditorComponent {
             e.preventDefault()
             this.#updateDragGhost(touch.clientX, touch.clientY)
 
-            const timeline = this.#findTimeline(touch.clientX, touch.clientY)
+            const timeline = findTimeline(touch.clientX, touch.clientY)
             if (timeline) {
                 timeline.handleTouchDragOver(touch.clientX)
             } else if (this.#lastTimeline) {
@@ -289,7 +280,7 @@ export default class SpritesheetViewer extends BaseEditorComponent {
     #onTouchEnd (e) {
         if (this.#touchDragData) {
             const touch = e.changedTouches[0]
-            const timeline = this.#findTimeline(touch.clientX, touch.clientY)
+            const timeline = findTimeline(touch.clientX, touch.clientY)
 
             if (timeline) {
                 timeline.handleTouchDrop(this.#touchDragData)
@@ -376,37 +367,46 @@ export default class SpritesheetViewer extends BaseEditorComponent {
         }
     }
 
-
-    #findTimeline (x, y) {
-        const visited = new Set()
-        return this.#findElementInShadowDom(document, x, y, 'animation-timeline', visited)
-    }
+}
 
 
-    #findElementInShadowDom (root, x, y, tagName, visited) {
-        const elements = root.elementsFromPoint(x, y)
+function findTimeline (x, y) {
+    const visited = new Set()
+    return findElementInShadowDom({root: document, x, y, tagName: 'animation-timeline', visited})
+}
 
-        for (const el of elements) {
-            if (visited.has(el)) {
-                continue
-            }
-            visited.add(el)
 
-            if (el.tagName?.toLowerCase() === tagName) {
-                return el
-            }
-
-            if (el.shadowRoot) {
-                const found = this.#findElementInShadowDom(el.shadowRoot, x, y, tagName, visited)
-                if (found) {
-                    return found
-                }
-            }
-        }
-
+function getAnimationPrefix (frameName) {
+    const slashIndex = frameName.lastIndexOf('/')
+    if (slashIndex === -1) {
         return null
     }
+    return frameName.substring(0, slashIndex)
+}
 
+
+function findElementInShadowDom ({root, x, y, tagName, visited}) {
+    const elements = root.elementsFromPoint(x, y)
+
+    for (const el of elements) {
+        if (visited.has(el)) {
+            continue
+        }
+        visited.add(el)
+
+        if (el.tagName?.toLowerCase() === tagName) {
+            return el
+        }
+
+        if (el.shadowRoot) {
+            const found = findElementInShadowDom({root: el.shadowRoot, x, y, tagName, visited})
+            if (found) {
+                return found
+            }
+        }
+    }
+
+    return null
 }
 
 

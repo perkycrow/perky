@@ -262,26 +262,7 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
         fpsInput.setMax(60)
         infoEl.insertBefore(fpsInput, infoEl.firstChild)
 
-        this.#setupAnimationInfoListeners(infoEl, anim)
-    }
-
-
-    #setupAnimationInfoListeners (infoEl, anim) {
-        const fpsInput = infoEl.querySelector('.fps-input')
-        const loopInput = infoEl.querySelector('.loop-input')
-        const playbackSelect = infoEl.querySelector('.playback-select')
-
-        fpsInput.addEventListener('change', (e) => {
-            anim.setFps(e.detail.value)
-        })
-
-        loopInput.addEventListener('change', (e) => {
-            anim.setLoop(e.target.checked)
-        })
-
-        playbackSelect.addEventListener('change', (e) => {
-            anim.setPlaybackMode(e.target.value)
-        })
+        setupAnimationInfoListeners(infoEl, anim)
     }
 
 
@@ -401,6 +382,25 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
         }
     }
 
+}
+
+
+function setupAnimationInfoListeners (infoEl, anim) {
+    const fpsInput = infoEl.querySelector('.fps-input')
+    const loopInput = infoEl.querySelector('.loop-input')
+    const playbackSelect = infoEl.querySelector('.playback-select')
+
+    fpsInput.addEventListener('change', (e) => {
+        anim.setFps(e.detail.value)
+    })
+
+    loopInput.addEventListener('change', (e) => {
+        anim.setLoop(e.target.checked)
+    })
+
+    playbackSelect.addEventListener('change', (e) => {
+        anim.setPlaybackMode(e.target.value)
+    })
 }
 
 
