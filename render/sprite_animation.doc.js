@@ -292,19 +292,19 @@ export default doc('SpriteAnimation', () => {
             const animation = new SpriteAnimation({frames, fps: 12})
 
             animation.on('play', () => {
-                console.log('Animation started')
+                logger.log('Animation started')
             })
 
             animation.on('complete', () => {
-                console.log('Animation finished')
+                logger.log('Animation finished')
             })
 
             animation.on('loop', () => {
-                console.log('Animation looped')
+                logger.log('Animation looped')
             })
 
             animation.on('frameChanged', (frame, index) => {
-                console.log('Now on frame', index)
+                logger.log('Now on frame', index)
             })
         })
 
@@ -367,7 +367,7 @@ export default doc('SpriteAnimation', () => {
 
             // Or listen to all frame events
             walkAnimation.on('event', (eventName, frameIndex) => {
-                console.log(`Event "${eventName}" at frame ${frameIndex}`)
+                logger.log(`Event "${eventName}" at frame ${frameIndex}`)
             })
         })
 
