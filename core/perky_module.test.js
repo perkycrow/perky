@@ -2062,5 +2062,211 @@ describe(PerkyModule, () => {
 
     })
 
+
+    describe('link / unlink', () => {
+
+        test('link stores reference to another module', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+            const moduleB = new PerkyModule({$id: 'moduleB'})
+
+            moduleA.link(moduleB, 'linkedModule')
+
+            expect(moduleA.linked).toHaveLength(1)
+            expect(moduleA.getLinked('linkedModule')).toBe(moduleB)
+            expect(moduleA.hasLinked('linkedModule')).toBe(true)
+        })
+
+
+        test('link creates alias on the module', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+            const moduleB = new PerkyModule({$id: 'moduleB'})
+
+            moduleA.link(moduleB, 'myAlias')
+
+            expect(moduleA.myAlias).toBe(moduleB)
+        })
+
+
+        test('link uses $id as key and creates bind when no alias provided', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+            const moduleB = new PerkyModule({$id: 'moduleB'})
+
+            moduleA.link(moduleB)
+
+            expect(moduleA.getLinked('moduleB')).toBe(moduleB)
+            expect(moduleA.hasLinked('moduleB')).toBe(true)
+            expect(moduleA.moduleB).toBe(moduleB)
+        })
+
+
+        test('link with false alias does not create bind', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+            const moduleB = new PerkyModule({$id: 'moduleB'})
+
+            moduleA.link(moduleB, false)
+
+            expect(moduleA.getLinked('moduleB')).toBe(moduleB)
+            expect(moduleA.moduleB).toBeUndefined()
+        })
+
+
+        test('link emits link event', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+            const moduleB = new PerkyModule({$id: 'moduleB'})
+            const spy = vi.fn()
+
+            moduleA.on('link', spy)
+            moduleA.link(moduleB, 'linkedModule')
+
+            expect(spy).toHaveBeenCalledWith('linkedModule', moduleB)
+        })
+
+
+        test('unlink removes the reference', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+            const moduleB = new PerkyModule({$id: 'moduleB'})
+
+            moduleA.link(moduleB, 'linkedModule')
+            const result = moduleA.unlink('linkedModule')
+
+            expect(result).toBe(true)
+            expect(moduleA.getLinked('linkedModule')).toBeNull()
+            expect(moduleA.hasLinked('linkedModule')).toBe(false)
+            expect(moduleA.linked).toHaveLength(0)
+        })
+
+
+        test('unlink removes the alias', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+            const moduleB = new PerkyModule({$id: 'moduleB'})
+
+            moduleA.link(moduleB, 'myAlias')
+            moduleA.unlink('myAlias')
+
+            expect(moduleA.myAlias).toBeUndefined()
+        })
+
+
+        test('unlink emits unlink event', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+            const moduleB = new PerkyModule({$id: 'moduleB'})
+            const spy = vi.fn()
+
+            moduleA.link(moduleB, 'linkedModule')
+            moduleA.on('unlink', spy)
+            moduleA.unlink('linkedModule')
+
+            expect(spy).toHaveBeenCalledWith('linkedModule', moduleB)
+        })
+
+
+        test('unlink returns false for non-existent key', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+
+            const result = moduleA.unlink('nonexistent')
+
+            expect(result).toBe(false)
+        })
+
+
+        test('linked module dispose triggers automatic unlink', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+            const moduleB = new PerkyModule({$id: 'moduleB'})
+            const spy = vi.fn()
+
+            moduleA.link(moduleB, 'linkedModule')
+            moduleA.on('unlink', spy)
+
+            moduleB.dispose()
+
+            expect(moduleA.getLinked('linkedModule')).toBeNull()
+            expect(moduleA.linked).toHaveLength(0)
+            expect(spy).toHaveBeenCalledWith('linkedModule', moduleB)
+        })
+
+
+        test('dispose cleans up all linked modules', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+            const moduleB = new PerkyModule({$id: 'moduleB'})
+            const moduleC = new PerkyModule({$id: 'moduleC'})
+
+            moduleA.link(moduleB, 'linkB')
+            moduleA.link(moduleC, 'linkC')
+
+            moduleA.dispose()
+
+            expect(moduleA.linked).toHaveLength(0)
+        })
+
+
+        test('unlinkAll removes all links', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+            const moduleB = new PerkyModule({$id: 'moduleB'})
+            const moduleC = new PerkyModule({$id: 'moduleC'})
+
+            moduleA.link(moduleB, 'linkB')
+            moduleA.link(moduleC, 'linkC')
+
+            moduleA.unlinkAll()
+
+            expect(moduleA.linked).toHaveLength(0)
+            expect(moduleA.linkB).toBeUndefined()
+            expect(moduleA.linkC).toBeUndefined()
+        })
+
+
+        test('link throws if not a PerkyModule', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+
+            expect(() => moduleA.link({}, 'notAModule')).toThrow('link expects a PerkyModule instance')
+        })
+
+
+        test('link replaces existing link with same key', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+            const moduleB = new PerkyModule({$id: 'moduleB'})
+            const moduleC = new PerkyModule({$id: 'moduleC'})
+
+            moduleA.link(moduleB, 'linkedModule')
+            moduleA.link(moduleC, 'linkedModule')
+
+            expect(moduleA.getLinked('linkedModule')).toBe(moduleC)
+            expect(moduleA.linked).toHaveLength(1)
+        })
+
+
+        test('linking does not affect the linked module lifecycle', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+            const moduleB = new PerkyModule({$id: 'moduleB'})
+
+            moduleA.link(moduleB, 'linkedModule')
+
+            // moduleB should not be installed
+            expect(moduleB.installed).toBe(false)
+            expect(moduleB.host).toBeNull()
+
+            // disposing moduleA should not dispose moduleB
+            moduleA.dispose()
+
+            expect(moduleB.disposed).toBe(false)
+        })
+
+
+        test('linked getter returns array of all linked modules', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+            const moduleB = new PerkyModule({$id: 'moduleB'})
+            const moduleC = new PerkyModule({$id: 'moduleC'})
+
+            moduleA.link(moduleB, 'linkB')
+            moduleA.link(moduleC, 'linkC')
+
+            const linked = moduleA.linked
+            expect(linked).toHaveLength(2)
+            expect(linked).toContain(moduleB)
+            expect(linked).toContain(moduleC)
+        })
+
+    })
+
 })
 

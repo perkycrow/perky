@@ -23,6 +23,7 @@ export default class PerkyModule extends Notifier {
     #idCounters = new Map()
     #delegations = []
     #eventDelegations = []
+    #linked = new Map()
 
 
     // === STATIC ===
@@ -202,6 +203,7 @@ export default class PerkyModule extends Notifier {
         this.#disposed = true
         this.stop()
 
+        this.unlinkAll()
         this.cleanExternalListeners()
 
         this.#childrenRegistry.forEach(child => {
@@ -532,6 +534,75 @@ export default class PerkyModule extends Notifier {
         return perkyQueryAll(this, selector)
     }
 
+
+    link (module, alias) {
+        if (!(module instanceof PerkyModule)) {
+            throw new Error('link expects a PerkyModule instance')
+        }
+
+        const key = alias || module.$id
+        const shouldBind = alias !== false
+
+        if (this.#linked.has(key)) {
+            this.unlink(key)
+        }
+
+        this.#linked.set(key, module)
+
+        if (shouldBind) {
+            this[key] = module
+        }
+
+        this.listenTo(module, 'dispose', () => {
+            this.unlink(key)
+        })
+
+        this.emit('link', key, module)
+
+        return module
+    }
+
+
+    unlink (key) {
+        const module = this.#linked.get(key)
+
+        if (!module) {
+            return false
+        }
+
+        this.#linked.delete(key)
+
+        if (this[key] === module) {
+            delete this[key]
+        }
+
+        this.emit('unlink', key, module)
+
+        return true
+    }
+
+
+    getLinked (key) {
+        return this.#linked.get(key) || null
+    }
+
+
+    get linked () {
+        return Array.from(this.#linked.values())
+    }
+
+
+    hasLinked (key) {
+        return this.#linked.has(key)
+    }
+
+
+    unlinkAll () {
+        for (const key of this.#linked.keys()) {
+            this.unlink(key)
+        }
+    }
+
     static perkyModuleMethods = Notifier.notifierMethods.concat([
         'start',
         'stop',
@@ -558,7 +629,12 @@ export default class PerkyModule extends Notifier {
         'delegateEventsTo',
         'cleanEventDelegations',
         'query',
-        'queryAll'
+        'queryAll',
+        'link',
+        'unlink',
+        'getLinked',
+        'hasLinked',
+        'unlinkAll'
     ])
 
 }

@@ -363,4 +363,64 @@ export default doc('PerkyModule', {featured: true}, () => {
 
     })
 
+
+    section('Linking', () => {
+
+        text(`
+            Sometimes you need to reference another module without owning it.
+            \`link()\` creates a non-owning reference to a module that belongs to another parent.
+
+            Unlike \`addChild()\`, linked modules:
+            - Are not installed on the linking module
+            - Do not participate in lifecycle (start/stop/dispose)
+            - Are automatically unlinked when disposed
+        `)
+
+        action('link / unlink', () => {
+            const game = new PerkyModule({$id: 'game'})
+            const textureSystem = game.create(PerkyModule, {$id: 'textureSystem'})
+
+            const tool = new PerkyModule({$id: 'tool'})
+            tool.link(textureSystem, 'textures')
+
+            logger.log('linked:', tool.textures.$id)
+            logger.log('hasLinked:', tool.hasLinked('textures'))
+
+            tool.unlink('textures')
+            logger.log('after unlink:', tool.hasLinked('textures'))
+        })
+
+        action('Auto-unlink on dispose', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+            const moduleB = new PerkyModule({$id: 'moduleB'})
+
+            moduleA.link(moduleB, 'ref')
+            moduleA.on('unlink', (key) => logger.log('unlinked:', key))
+
+            logger.log('before dispose:', moduleA.hasLinked('ref'))
+            moduleB.dispose()
+            logger.log('after dispose:', moduleA.hasLinked('ref'))
+        })
+
+        text(`
+            By default, \`link()\` creates a property binding using the alias or the module's $id.
+            Pass \`false\` as alias to skip the binding:
+        `)
+
+        code('Link without binding', () => {
+            const moduleA = new PerkyModule({$id: 'moduleA'})
+            const moduleB = new PerkyModule({$id: 'moduleB'})
+
+            moduleA.link(moduleB)              // creates moduleA.moduleB
+            moduleA.link(moduleB, 'custom')    // creates moduleA.custom
+            moduleA.link(moduleB, false)       // no binding, use getLinked()
+        })
+
+        text(`
+            This is useful for tools, editors, or any module that needs to access
+            resources owned by another part of the system without creating tight coupling.
+        `)
+
+    })
+
 })
