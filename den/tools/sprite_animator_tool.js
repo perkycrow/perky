@@ -2,6 +2,7 @@ import BaseFloatingTool from '../../editor/tools/base_floating_tool.js'
 import SpriteAnimator from '../../render/sprite_animator.js'
 import '../../editor/tools/animation_preview.js'
 import '../../editor/tools/animation_timeline.js'
+import '../../editor/tools/spritesheet_viewer.js'
 
 
 const redEnemyAnimations = {
@@ -34,12 +35,14 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
     static toolName = 'Sprite Animator'
     static toolIcon = '🎬'
     static defaultWidth = 600
-    static defaultHeight = 350
+    static defaultHeight = 450
 
     #contentEl = null
     #timelineEl = null
     #previewEl = null
+    #spritesheetViewerEl = null
     #animator = null
+    #spritesheet = null
     #selectedAnimation = null
 
     connectedCallback () {
@@ -61,12 +64,11 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
 
 
     onParamsSet () {
-        const {animator, textureSystem} = this.params
+        const {animator, textureSystem, spritesheet} = this.params
 
         if (animator) {
             this.#animator = animator
         } else if (textureSystem) {
-
             this.#animator = new SpriteAnimator({
                 sprite: null,
                 config: redEnemyAnimations,
@@ -74,6 +76,14 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
             })
         } else {
             this.#animator = null
+        }
+
+        if (spritesheet) {
+            this.#spritesheet = spritesheet
+        } else if (textureSystem) {
+            this.#spritesheet = textureSystem.getSpritesheet('redSpritesheet')
+        } else {
+            this.#spritesheet = null
         }
 
         this.#selectedAnimation = null
@@ -117,9 +127,14 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
                 <select class="animation-select"></select>
                 <div class="animation-info"></div>
             </div>
-            <div class="animator-body">
-                <animation-preview></animation-preview>
-                <animation-timeline></animation-timeline>
+            <div class="animator-main">
+                <div class="animator-left">
+                    <animation-preview></animation-preview>
+                </div>
+                <div class="animator-right">
+                    <animation-timeline></animation-timeline>
+                    <spritesheet-viewer></spritesheet-viewer>
+                </div>
             </div>
         `
 
@@ -127,6 +142,7 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
         this.#renderAnimationInfo()
         this.#setupPreview()
         this.#setupTimeline()
+        this.#setupSpritesheetViewer()
     }
 
 
@@ -197,6 +213,15 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
         })
     }
 
+
+    #setupSpritesheetViewer () {
+        this.#spritesheetViewerEl = this.#contentEl.querySelector('spritesheet-viewer')
+
+        if (this.#spritesheet) {
+            this.#spritesheetViewerEl.setSpritesheet(this.#spritesheet)
+        }
+    }
+
 }
 
 
@@ -257,15 +282,32 @@ const STYLES = SpriteAnimatorTool.buildStyles(`
         border-radius: 3px;
     }
 
-    .animator-body {
+    .animator-main {
         display: flex;
         gap: 8px;
         flex: 1;
         min-height: 0;
     }
 
-    animation-timeline {
+    .animator-left {
+        flex-shrink: 0;
+    }
+
+    .animator-right {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
         flex: 1;
+        min-width: 0;
+    }
+
+    animation-timeline {
+        flex-shrink: 0;
+    }
+
+    spritesheet-viewer {
+        flex: 1;
+        min-height: 80px;
     }
 `)
 
