@@ -1,6 +1,7 @@
 import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import ToolManager from './tool_manager.js'
 import BaseFloatingTool from './base_floating_tool.js'
+import logger from '../../core/logger.js'
 
 
 class MockTool extends BaseFloatingTool {
@@ -69,8 +70,10 @@ describe('ToolManager', () => {
     describe('open', () => {
 
         test('should return null for unregistered tool', () => {
+            const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
             const result = manager.open('nonexistent')
             expect(result).toBeNull()
+            warnSpy.mockRestore()
         })
 
 
