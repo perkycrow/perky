@@ -126,6 +126,7 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
             <div class="animator-header">
                 <select class="animation-select"></select>
                 <div class="animation-info"></div>
+                <button class="export-btn" title="Copy config to clipboard">Export</button>
             </div>
             <div class="animator-main">
                 <div class="animator-left">
@@ -140,9 +141,70 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
 
         this.#renderAnimationSelect(animations)
         this.#renderAnimationInfo()
+        this.#setupExportButton()
         this.#setupPreview()
         this.#setupTimeline()
         this.#setupSpritesheetViewer()
+    }
+
+
+    #setupExportButton () {
+        const btn = this.#contentEl.querySelector('.export-btn')
+        btn.addEventListener('click', () => this.#exportToClipboard())
+    }
+
+
+    #exportToClipboard () {
+        if (!this.#selectedAnimation) {
+            return
+        }
+
+        const config = this.#buildAnimationConfig()
+        const text = JSON.stringify(config, null, 4)
+
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = this.#contentEl.querySelector('.export-btn')
+            const original = btn.textContent
+            btn.textContent = 'Copied!'
+            setTimeout(() => {
+                btn.textContent = original
+            }, 1500)
+        })
+    }
+
+
+    #buildAnimationConfig () {
+        const anim = this.#selectedAnimation
+        const config = {
+            fps: anim.fps,
+            loop: anim.loop
+        }
+
+        if (anim.playbackMode !== 'forward') {
+            config.playbackMode = anim.playbackMode
+        }
+
+        config.frames = anim.frames.map(frame => {
+            const frameConfig = {}
+
+            if (frame.name) {
+                frameConfig.source = `${this.#spritesheet?.$id || 'spritesheet'}:${frame.name}`
+            } else if (frame.source) {
+                frameConfig.source = frame.source
+            }
+
+            if (frame.duration && frame.duration !== 1) {
+                frameConfig.duration = frame.duration
+            }
+
+            if (frame.events && frame.events.length > 0) {
+                frameConfig.events = [...frame.events]
+            }
+
+            return frameConfig
+        })
+
+        return config
     }
 
 
@@ -386,6 +448,24 @@ const STYLES = SpriteAnimatorTool.buildStyles(`
         gap: 12px;
         color: var(--fg-secondary);
         font-size: 11px;
+        flex: 1;
+    }
+
+    .export-btn {
+        background: var(--bg-secondary);
+        color: var(--fg-primary);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 4px 10px;
+        font-family: inherit;
+        font-size: 11px;
+        cursor: pointer;
+        margin-left: auto;
+    }
+
+    .export-btn:hover {
+        background: var(--bg-tertiary);
+        border-color: var(--accent);
     }
 
     .info-item {
