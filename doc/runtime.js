@@ -371,6 +371,14 @@ export async function executeContainer (block, containerEl, sectionSetup = null)
                 slidersBar.appendChild(wrapper)
 
                 onChange(parseFloat(input.value))
+
+                return {
+                    set: (value) => {
+                        input.value = value
+                        valueEl.textContent = Number.isInteger(value) ? value : value.toFixed(2)
+                    },
+                    get: () => parseFloat(input.value)
+                }
             },
             info: (formatter) => {
                 if (!infoBar) {
@@ -452,8 +460,11 @@ export async function executeContainer (block, containerEl, sectionSetup = null)
             },
             label: (content, opts = {}) => {
                 const el = document.createElement('div')
-                el.style.cssText = 'color:#666;font-family:monospace;font-size:11px;'
+                el.style.cssText = 'color:#888;font-family:monospace;font-size:11px;'
                 el.textContent = content
+                if (opts.overlay) {
+                    el.style.cssText += 'position:absolute;top:64px;left:50%;transform:translateX(-50%);z-index:10;'
+                }
                 if (opts.parent) {
                     opts.parent.appendChild(el)
                 } else {

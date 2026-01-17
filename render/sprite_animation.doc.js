@@ -1,5 +1,10 @@
-import {doc, section, text, code, action, logger} from '../doc/runtime.js'
+import {doc, section, text, code, action, logger, container} from '../doc/runtime.js'
+import {loadSpritesheet} from '../application/loaders.js'
 import SpriteAnimation, {PLAYBACK_FORWARD, PLAYBACK_REVERSE, PLAYBACK_PINGPONG} from './sprite_animation.js'
+import Spritesheet from './spritesheet.js'
+import Sprite from './sprite.js'
+import Group2D from './group_2d.js'
+import WebGLRenderer from './webgl_renderer.js'
 
 
 export default doc('SpriteAnimation', () => {
@@ -9,6 +14,129 @@ export default doc('SpriteAnimation', () => {
         Manages frame sequencing, timing, playback modes, and animation events.
         Extends [[PerkyModule@core]].
     `)
+
+
+    section('Live Demo', () => {
+
+        text('Interactive animation with frame navigation and playback controls.')
+
+        container({title: 'Animation playback', height: 350}, async ctx => {
+            const source = await loadSpritesheet('./assets/spritesheets/red.json')
+            const spritesheet = new Spritesheet(source)
+
+            const renderer = new WebGLRenderer({
+                container: ctx.container,
+                autoFit: true,
+                backgroundColor: '#1a1a2e'
+            })
+
+            const scene = new Group2D()
+
+            const sprite = new Sprite({
+                image: spritesheet.images[0],
+                width: 8,
+                height: 8,
+                anchorX: 0.5,
+                anchorY: 0.5
+            })
+
+            scene.add(sprite)
+
+            const animation = new SpriteAnimation({
+                sprite: sprite,
+                frames: spritesheet.getAnimationRegions('skip'),
+                fps: 12,
+                loop: true
+            })
+
+            renderer.render(scene)
+
+            const frameLabel = ctx.label(`Frame: 0 / ${animation.totalFrames - 1}`, {overlay: true})
+
+            const frameSlider = ctx.slider('frame', {
+                min: 0,
+                max: animation.totalFrames - 1,
+                step: 1
+            }, value => {
+                animation.setFrame(value)
+                renderer.render(scene)
+            })
+
+            animation.on('frameChanged', () => {
+                frameLabel.textContent = `Frame: ${animation.currentIndex} / ${animation.totalFrames - 1}`
+                frameSlider.set(animation.currentIndex)
+                renderer.render(scene)
+            })
+
+            ctx.action('Next', () => {
+                animation.nextFrame()
+            })
+
+            ctx.action('Previous', () => {
+                animation.previousFrame()
+            })
+
+            ctx.setApp(renderer, scene)
+        })
+
+        container({title: 'Playback modes', height: 300}, async ctx => {
+            const source = await loadSpritesheet('./assets/spritesheets/red.json')
+            const spritesheet = new Spritesheet(source)
+
+            const renderer = new WebGLRenderer({
+                container: ctx.container,
+                autoFit: true,
+                backgroundColor: '#16213e'
+            })
+
+            const scene = new Group2D()
+
+            const sprite = new Sprite({
+                image: spritesheet.images[0],
+                width: 8,
+                height: 8,
+                anchorX: 0.5,
+                anchorY: 0.5
+            })
+
+            scene.add(sprite)
+
+            let playbackMode = PLAYBACK_FORWARD
+
+            const animation = new SpriteAnimation({
+                sprite: sprite,
+                frames: spritesheet.getAnimationRegions('skip'),
+                fps: 10,
+                loop: true,
+                playbackMode
+            })
+
+            renderer.render(scene)
+
+            ctx.slider('frame', {min: 0, max: animation.totalFrames - 1, step: 1, default: 0}, value => {
+                animation.setFrame(value)
+                renderer.render(scene)
+            })
+
+            ctx.action('Forward', () => {
+                playbackMode = PLAYBACK_FORWARD
+                animation.setPlaybackMode(playbackMode)
+            })
+
+            ctx.action('Reverse', () => {
+                playbackMode = PLAYBACK_REVERSE
+                animation.setPlaybackMode(playbackMode)
+            })
+
+            ctx.action('Ping-pong', () => {
+                playbackMode = PLAYBACK_PINGPONG
+                animation.setPlaybackMode(playbackMode)
+            })
+
+            ctx.setApp(renderer, scene)
+        })
+
+    })
 
 
     section('Creation', () => {
