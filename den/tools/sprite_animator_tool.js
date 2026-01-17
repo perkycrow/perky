@@ -176,11 +176,45 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
 
         const anim = this.#selectedAnimation
         infoEl.innerHTML = `
-            <span class="info-item">fps: ${anim.fps}</span>
-            <span class="info-item">loop: ${anim.loop}</span>
-            <span class="info-item">mode: ${anim.playbackMode}</span>
+            <label class="info-item">
+                fps: <input type="number" class="fps-input" min="1" max="60" step="1" value="${anim.fps}">
+            </label>
+            <label class="info-item">
+                loop: <input type="checkbox" class="loop-input" ${anim.loop ? 'checked' : ''}>
+            </label>
+            <label class="info-item">
+                mode: <select class="playback-select">
+                    <option value="forward" ${anim.playbackMode === 'forward' ? 'selected' : ''}>forward</option>
+                    <option value="reverse" ${anim.playbackMode === 'reverse' ? 'selected' : ''}>reverse</option>
+                    <option value="pingpong" ${anim.playbackMode === 'pingpong' ? 'selected' : ''}>pingpong</option>
+                </select>
+            </label>
             <span class="info-item">frames: ${anim.totalFrames}</span>
         `
+
+        this.#setupAnimationInfoListeners(infoEl, anim)
+    }
+
+
+    #setupAnimationInfoListeners (infoEl, anim) {
+        const fpsInput = infoEl.querySelector('.fps-input')
+        const loopInput = infoEl.querySelector('.loop-input')
+        const playbackSelect = infoEl.querySelector('.playback-select')
+
+        fpsInput.addEventListener('change', (e) => {
+            const value = parseInt(e.target.value, 10)
+            if (value >= 1 && value <= 60) {
+                anim.setFps(value)
+            }
+        })
+
+        loopInput.addEventListener('change', (e) => {
+            anim.setLoop(e.target.checked)
+        })
+
+        playbackSelect.addEventListener('change', (e) => {
+            anim.setPlaybackMode(e.target.value)
+        })
     }
 
 
@@ -341,6 +375,34 @@ const STYLES = SpriteAnimatorTool.buildStyles(`
         background: var(--bg-secondary);
         padding: 2px 6px;
         border-radius: 3px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .info-item input[type="number"] {
+        width: 40px;
+        background: var(--bg-tertiary);
+        color: var(--fg-primary);
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        padding: 2px 4px;
+        font-family: inherit;
+        font-size: 11px;
+    }
+
+    .info-item input[type="checkbox"] {
+        accent-color: var(--accent);
+    }
+
+    .info-item select {
+        background: var(--bg-tertiary);
+        color: var(--fg-primary);
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        padding: 2px 4px;
+        font-family: inherit;
+        font-size: 11px;
     }
 
     .animator-main {
