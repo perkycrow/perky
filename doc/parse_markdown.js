@@ -78,7 +78,7 @@ function parseSeeLink (ref, buildSeeUrl) {
         pageType = ref.slice(colonIndex + 1)
     }
 
-    const url = buildSeeUrl(name, pageType, section, category)
+    const url = buildSeeUrl({name, pageType, section, category})
     const label = section ? `${name} > ${section}` : name
 
     return `<a href="${url}" class="doc-see-inline">${label}</a>`

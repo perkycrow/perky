@@ -17,20 +17,15 @@ describe('doc_registry', () => {
     ]
 
 
-    describe('initRegistry', () => {
-
-        test('initializes the registry', () => {
-            initRegistry(mockDocs, mockGuides)
-            expect(isRegistryInitialized()).toBe(true)
-        })
-
-    })
-
-
     describe('lookupDoc', () => {
 
         beforeEach(() => {
             initRegistry(mockDocs, mockGuides)
+        })
+
+
+        test('initializes the registry', () => {
+            expect(isRegistryInitialized()).toBe(true)
         })
 
 

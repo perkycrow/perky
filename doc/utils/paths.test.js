@@ -47,33 +47,33 @@ describe('paths', () => {
     describe('buildDocUrl', () => {
 
         test('builds doc url with default category', () => {
-            expect(buildDocUrl('Logger')).toBe('core_logger.html')
+            expect(buildDocUrl({name: 'Logger'})).toBe('core_logger.html')
         })
 
 
         test('builds api url', () => {
-            expect(buildDocUrl('Logger', 'api')).toBe('core_logger_api.html')
+            expect(buildDocUrl({name: 'Logger', pageType: 'api'})).toBe('core_logger_api.html')
         })
 
 
         test('builds test url', () => {
-            expect(buildDocUrl('Logger', 'test')).toBe('core_logger_test.html')
+            expect(buildDocUrl({name: 'Logger', pageType: 'test'})).toBe('core_logger_test.html')
         })
 
 
         test('builds guide url', () => {
-            expect(buildDocUrl('Foreword', 'guide')).toBe('guide_foreword.html')
+            expect(buildDocUrl({name: 'Foreword', pageType: 'guide'})).toBe('guide_foreword.html')
         })
 
 
         test('builds url with custom category', () => {
-            expect(buildDocUrl('Application', 'doc', null, 'application'))
+            expect(buildDocUrl({name: 'Application', pageType: 'doc', category: 'application'}))
                 .toBe('application_application.html')
         })
 
 
         test('builds url with section anchor', () => {
-            expect(buildDocUrl('Logger', 'doc', 'Events'))
+            expect(buildDocUrl({name: 'Logger', pageType: 'doc', section: 'Events'}))
                 .toBe('core_logger.html#events')
         })
 
@@ -94,32 +94,32 @@ describe('paths', () => {
 
 
         test('uses registry to resolve WebGLRenderer correctly', () => {
-            expect(buildDocUrl('WebGLRenderer')).toBe('render_webgl_renderer.html')
+            expect(buildDocUrl({name: 'WebGLRenderer'})).toBe('render_webgl_renderer.html')
         })
 
 
         test('uses registry to resolve Object2D correctly', () => {
-            expect(buildDocUrl('Object2D')).toBe('render_object_2d.html')
+            expect(buildDocUrl({name: 'Object2D'})).toBe('render_object_2d.html')
         })
 
 
         test('uses registry to resolve Vec2 correctly', () => {
-            expect(buildDocUrl('Vec2')).toBe('math_vec2.html')
+            expect(buildDocUrl({name: 'Vec2'})).toBe('math_vec2.html')
         })
 
 
         test('uses registry for api pages', () => {
-            expect(buildDocUrl('WebGLRenderer', 'api')).toBe('render_webgl_renderer_api.html')
+            expect(buildDocUrl({name: 'WebGLRenderer', pageType: 'api'})).toBe('render_webgl_renderer_api.html')
         })
 
 
         test('uses registry for test pages', () => {
-            expect(buildDocUrl('Object2D', 'test')).toBe('render_object_2d_test.html')
+            expect(buildDocUrl({name: 'Object2D', pageType: 'test'})).toBe('render_object_2d_test.html')
         })
 
 
         test('uses registry for guides by title', () => {
-            expect(buildDocUrl('Foreword', 'guide')).toBe('guide_foreword.html')
+            expect(buildDocUrl({name: 'Foreword', pageType: 'guide'})).toBe('guide_foreword.html')
         })
 
     })

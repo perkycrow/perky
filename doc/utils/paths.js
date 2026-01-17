@@ -25,39 +25,38 @@ export function extractBaseName (filename) {
 }
 
 
-export function buildDocUrl (name, pageType = 'doc', section = null, category = null) {
-    let url = ''
+export function buildDocUrl ({name, pageType = 'doc', section = null, category = null} = {}) {
+    const url = pageType === 'guide'
+        ? buildGuideUrl(name)
+        : buildDocPageUrl(name, pageType, category)
 
-    if (pageType === 'guide') {
-        const guide = lookupGuide(name)
-        if (guide) {
-            url = `guide_${guide.id}.html`
-        } else {
-            const baseName = toKebabCase(name).replace(/-/g, '_')
-            url = `guide_${baseName}.html`
-        }
-    } else {
-        const doc = lookupDoc(name)
-        if (doc) {
-            url = docFileToHtml(doc.file, pageType)
-        } else {
-            const baseName = toKebabCase(name).replace(/-/g, '_')
-            const cat = category || 'core'
-            if (pageType === 'api') {
-                url = `${cat}_${baseName}_api.html`
-            } else if (pageType === 'test') {
-                url = `${cat}_${baseName}_test.html`
-            } else {
-                url = `${cat}_${baseName}.html`
-            }
-        }
+    return section ? `${url}#${toKebabCase(section)}` : url
+}
+
+
+function buildGuideUrl (name) {
+    const guide = lookupGuide(name)
+    if (guide) {
+        return guideIdToHtml(guide.id)
     }
+    return guideIdToHtml(toKebabCase(name).replace(/-/g, '_'))
+}
 
-    if (section) {
-        url += `#${toKebabCase(section)}`
+
+function buildDocPageUrl (name, pageType, category) {
+    const doc = lookupDoc(name)
+    if (doc) {
+        return docFileToHtml(doc.file, pageType)
     }
+    return buildFallbackUrl(name, pageType, category)
+}
 
-    return url
+
+function buildFallbackUrl (name, pageType, category) {
+    const baseName = toKebabCase(name).replace(/-/g, '_')
+    const cat = category || 'core'
+    const suffix = {api: '_api', test: '_test'}[pageType] || ''
+    return `${cat}_${baseName}${suffix}.html`
 }
 
 

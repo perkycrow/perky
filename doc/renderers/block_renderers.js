@@ -37,7 +37,12 @@ export function renderSee (block) {
 
     const link = document.createElement('a')
     link.className = 'doc-see-link'
-    link.href = buildSeeUrl(block.name, block.pageType, block.section, block.category)
+    link.href = buildSeeUrl({
+        name: block.name,
+        pageType: block.pageType,
+        section: block.section,
+        category: block.category
+    })
 
     const label = buildSeeLabel(block.name, block.pageType, block.section)
     link.innerHTML = `

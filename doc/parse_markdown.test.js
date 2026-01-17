@@ -165,7 +165,7 @@ describe('parse_markdown', () => {
             const customBuildUrl = vi.fn(() => '/custom/url')
             const result = parseMarkdown('See [[Test]]', {buildSeeUrl: customBuildUrl})
 
-            expect(customBuildUrl).toHaveBeenCalledWith('Test', 'doc', null, null)
+            expect(customBuildUrl).toHaveBeenCalledWith({name: 'Test', pageType: 'doc', section: null, category: null})
             expect(result).toContain('href="/custom/url"')
         })
 
@@ -174,7 +174,7 @@ describe('parse_markdown', () => {
             const customBuildUrl = vi.fn(() => '/custom/url')
             parseMarkdown('See [[Game@game]]', {buildSeeUrl: customBuildUrl})
 
-            expect(customBuildUrl).toHaveBeenCalledWith('Game', 'doc', null, 'game')
+            expect(customBuildUrl).toHaveBeenCalledWith({name: 'Game', pageType: 'doc', section: null, category: 'game'})
         })
 
     })
