@@ -328,4 +328,62 @@ describe('TextureSystem', () => {
         expect(system.hasRegion('atlas:frame1')).toBe(false)
     })
 
+
+    describe('spritesheets', () => {
+
+        test('registerSpritesheet registers a spritesheet and returns it', () => {
+            const source = {
+                image: createMockImage(256, 256),
+                data: {
+                    frames: [
+                        {filename: 'frame1', frame: {x: 0, y: 0, w: 32, h: 32}}
+                    ],
+                    animations: {},
+                    meta: {}
+                }
+            }
+
+            const spritesheet = system.registerSpritesheet('player', source)
+
+            expect(spritesheet).not.toBeNull()
+            expect(spritesheet.getFrame('frame1')).not.toBeNull()
+        })
+
+
+        test('getSpritesheet retrieves registered spritesheet', () => {
+            const source = {
+                image: createMockImage(256, 256),
+                data: {
+                    frames: [],
+                    animations: {},
+                    meta: {}
+                }
+            }
+
+            system.registerSpritesheet('player', source)
+            const spritesheet = system.getSpritesheet('player')
+
+            expect(spritesheet).not.toBeNull()
+        })
+
+
+        test('getSpritesheet returns null for non-existent spritesheet', () => {
+            expect(system.getSpritesheet('non-existent')).toBeNull()
+        })
+
+
+        test('clear also clears spritesheets', () => {
+            const source = {
+                image: createMockImage(256, 256),
+                data: {frames: [], animations: {}, meta: {}}
+            }
+
+            system.registerSpritesheet('player', source)
+            system.clear()
+
+            expect(system.getSpritesheet('player')).toBeNull()
+        })
+
+    })
+
 })

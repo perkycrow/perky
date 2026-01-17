@@ -85,6 +85,12 @@ describe('PerkyDevTools', () => {
     })
 
 
+    test('setToolManager delegates to state', () => {
+        const toolManager = {getTool: () => null}
+        expect(() => devtools.setToolManager(toolManager)).not.toThrow()
+    })
+
+
     test('openTool delegates to state', () => {
         vi.spyOn(console, 'warn').mockImplementation(() => {})
         expect(() => devtools.openTool('explorer')).not.toThrow()

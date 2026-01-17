@@ -1,5 +1,9 @@
 import {describe, test, expect, beforeEach, vi, afterEach} from 'vitest'
-import SpriteAnimation from './sprite_animation.js'
+import SpriteAnimation, {
+    PLAYBACK_FORWARD,
+    PLAYBACK_REVERSE,
+    PLAYBACK_PINGPONG
+} from './sprite_animation.js'
 
 describe('SpriteAnimation', () => {
     let sprite
@@ -231,5 +235,160 @@ describe('SpriteAnimation', () => {
 
         expect(animation.fps).toBe(30)
         expect(fpsSpy).toHaveBeenCalledWith(30)
+    })
+
+
+    test('playback mode constants are exported', () => {
+        expect(PLAYBACK_FORWARD).toBe('forward')
+        expect(PLAYBACK_REVERSE).toBe('reverse')
+        expect(PLAYBACK_PINGPONG).toBe('pingpong')
+    })
+
+
+    test('getFrameDuration returns base duration for frames without custom duration', () => {
+        const duration = animation.getFrameDuration(0)
+        expect(duration).toBe(0.1)
+    })
+
+
+    test('getFrameDuration returns scaled duration for frames with custom duration', () => {
+        const customFrames = [
+            {region: 'region1', duration: 2},
+            {region: 'region2'},
+            {region: 'region3', duration: 0.5}
+        ]
+        const customAnimation = new SpriteAnimation({
+            sprite,
+            frames: customFrames,
+            fps: 10
+        })
+
+        expect(customAnimation.getFrameDuration(0)).toBe(0.2)
+        expect(customAnimation.getFrameDuration(1)).toBe(0.1)
+        expect(customAnimation.getFrameDuration(2)).toBe(0.05)
+
+        customAnimation.dispose()
+    })
+
+
+    test('setSpeed updates speed', () => {
+        animation.setSpeed(2)
+        expect(animation.speed).toBe(2)
+
+        animation.setSpeed(0.5)
+        expect(animation.speed).toBe(0.5)
+    })
+
+
+    test('setPlaybackMode updates playback mode', () => {
+        animation.setPlaybackMode(PLAYBACK_REVERSE)
+        expect(animation.playbackMode).toBe(PLAYBACK_REVERSE)
+
+        animation.setPlaybackMode(PLAYBACK_PINGPONG)
+        expect(animation.playbackMode).toBe(PLAYBACK_PINGPONG)
+
+        animation.setPlaybackMode(PLAYBACK_FORWARD)
+        expect(animation.playbackMode).toBe(PLAYBACK_FORWARD)
+    })
+
+
+    describe('events', () => {
+
+        test('addEvent adds event to frame', () => {
+            animation.addEvent(1, 'footstep')
+            expect(animation.getEvents(1)).toEqual(['footstep'])
+        })
+
+
+        test('addEvent adds multiple events to same frame', () => {
+            animation.addEvent(1, 'footstep')
+            animation.addEvent(1, 'sound')
+            expect(animation.getEvents(1)).toEqual(['footstep', 'sound'])
+        })
+
+
+        test('removeEvent removes specific event from frame', () => {
+            animation.addEvent(1, 'footstep')
+            animation.addEvent(1, 'sound')
+
+            animation.removeEvent(1, 'footstep')
+
+            expect(animation.getEvents(1)).toEqual(['sound'])
+        })
+
+
+        test('removeEvent does nothing for non-existent frame', () => {
+            animation.removeEvent(99, 'footstep')
+            expect(animation.getEvents(99)).toEqual([])
+        })
+
+
+        test('removeEvent removes frame entry when no events remain', () => {
+            animation.addEvent(1, 'footstep')
+            animation.removeEvent(1, 'footstep')
+
+            expect(animation.getEvents(1)).toEqual([])
+        })
+
+
+        test('clearEvents removes all events', () => {
+            animation.addEvent(0, 'start')
+            animation.addEvent(1, 'footstep')
+            animation.addEvent(2, 'end')
+
+            animation.clearEvents()
+
+            expect(animation.getEvents(0)).toEqual([])
+            expect(animation.getEvents(1)).toEqual([])
+            expect(animation.getEvents(2)).toEqual([])
+        })
+
+
+        test('getEvents returns empty array for frame without events', () => {
+            expect(animation.getEvents(0)).toEqual([])
+        })
+
+    })
+
+
+    describe('seek methods', () => {
+
+        test('seekToFrame sets frame and resets elapsed time', () => {
+            animation.seekToFrame(2)
+            expect(animation.currentIndex).toBe(2)
+            expect(sprite.region).toBe('region3')
+        })
+
+
+        test('seekToFrame does nothing for invalid index', () => {
+            animation.seekToFrame(0)
+            animation.seekToFrame(-1)
+            expect(animation.currentIndex).toBe(0)
+
+            animation.seekToFrame(99)
+            expect(animation.currentIndex).toBe(0)
+        })
+
+
+        test('seekToProgress seeks to frame based on progress', () => {
+            animation.seekToProgress(0)
+            expect(animation.currentIndex).toBe(0)
+
+            animation.seekToProgress(0.5)
+            expect(animation.currentIndex).toBe(1)
+
+            animation.seekToProgress(1)
+            expect(animation.currentIndex).toBe(2)
+        })
+
+
+        test('seekToProgress clamps progress to valid range', () => {
+            animation.seekToProgress(-0.5)
+            expect(animation.currentIndex).toBe(0)
+
+            animation.seekToProgress(1.5)
+            expect(animation.currentIndex).toBe(2)
+        })
+
     })
 })

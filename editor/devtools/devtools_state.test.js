@@ -43,6 +43,11 @@ describe('DevToolsState', () => {
             expect(state.appManager).toBe(null)
         })
 
+
+        test('toolManager is null', () => {
+            expect(state.toolManager).toBe(null)
+        })
+
     })
 
 
@@ -300,6 +305,33 @@ describe('DevToolsState', () => {
             expect(handler).toHaveBeenCalledWith(
                 expect.objectContaining({
                     detail: {appManager, previousAppManager: null}
+                })
+            )
+        })
+
+    })
+
+
+    describe('setToolManager', () => {
+
+        test('sets toolManager', () => {
+            const toolManager = {id: 'test'}
+            state.setToolManager(toolManager)
+
+            expect(state.toolManager).toBe(toolManager)
+        })
+
+
+        test('dispatches toolmanager:change event', () => {
+            const toolManager = {id: 'test'}
+            const handler = vi.fn()
+            state.addEventListener('toolmanager:change', handler)
+
+            state.setToolManager(toolManager)
+
+            expect(handler).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    detail: {toolManager, previousToolManager: null}
                 })
             )
         })

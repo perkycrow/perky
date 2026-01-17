@@ -293,6 +293,58 @@ describe('Loaders', () => {
     })
 
 
+    describe('loadSpritesheet', () => {
+        test('loads JSON and images from spritesheet', async () => {
+            triggerLoad = true
+            triggerError = false
+
+            const spritesheetData = {
+                meta: {
+                    images: [
+                        {filename: 'sprite-0.png'},
+                        {filename: 'sprite-1.png'}
+                    ]
+                },
+                frames: {}
+            }
+            mockResponse.json.mockResolvedValue(spritesheetData)
+
+            const imageBlob = new Blob(['test'], {type: 'image/png'})
+            mockResponse.blob.mockResolvedValue(imageBlob)
+            global.URL.createObjectURL.mockReturnValue('blob:test')
+
+            const result = await loaders.loadSpritesheet('http://example.com/assets/spritesheet.json')
+
+            expect(mockFetch).toHaveBeenCalledWith('http://example.com/assets/spritesheet.json', {})
+            expect(result.data).toEqual(spritesheetData)
+            expect(result.images).toHaveLength(2)
+        })
+
+
+        test('loads spritesheet with object params', async () => {
+            triggerLoad = true
+            triggerError = false
+
+            const spritesheetData = {
+                meta: {
+                    images: [{filename: 'sprite.png'}]
+                }
+            }
+            mockResponse.json.mockResolvedValue(spritesheetData)
+
+            const imageBlob = new Blob(['test'], {type: 'image/png'})
+            mockResponse.blob.mockResolvedValue(imageBlob)
+            global.URL.createObjectURL.mockReturnValue('blob:test')
+
+            const result = await loaders.loadSpritesheet({url: 'http://example.com/sprites/data.json'})
+
+            expect(mockFetch).toHaveBeenCalledWith('http://example.com/sprites/data.json', {})
+            expect(result.data).toEqual(spritesheetData)
+            expect(result.images).toHaveLength(1)
+        })
+    })
+
+
     describe('Utility Functions', () => {
         test('replaceUrlFilename', () => {
             expect(loaders.replaceUrlFilename('/path/to/file.json', 'newfile.json'))
