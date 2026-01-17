@@ -1,5 +1,6 @@
 import BaseEditorComponent from '../base_editor_component.js'
 import {buildEditorStyles, editorBaseStyles, editorScrollbarStyles} from '../editor_theme.js'
+import '../number_input.js'
 
 
 const DRAG_TYPE_SPRITESHEET = 'application/x-spritesheet-frame'
@@ -244,18 +245,20 @@ export default class AnimationTimeline extends BaseEditorComponent {
             frameEl.appendChild(eventsEl)
         }
 
-        const durationEl = document.createElement('input')
-        durationEl.type = 'number'
+        const durationEl = document.createElement('number-input')
         durationEl.className = 'frame-duration-input'
-        durationEl.min = '0.1'
-        durationEl.max = '10'
-        durationEl.step = '0.1'
-        durationEl.value = frame.duration || 1
+        durationEl.setCompact(true)
+        durationEl.setValue(frame.duration || 1)
+        durationEl.setStep(0.1)
+        durationEl.setPrecision(1)
+        durationEl.setMin(0.1)
+        durationEl.setMax(10)
         durationEl.title = 'Frame duration multiplier'
         durationEl.addEventListener('click', (e) => e.stopPropagation())
+        durationEl.addEventListener('mousedown', (e) => e.stopPropagation())
         durationEl.addEventListener('change', (e) => {
             this.dispatchEvent(new CustomEvent('frameduration', {
-                detail: {index, duration: parseFloat(e.target.value)}
+                detail: {index, duration: e.detail.value}
             }))
         })
         frameEl.appendChild(durationEl)
@@ -361,13 +364,14 @@ const STYLES = buildEditorStyles(
         display: block;
         overflow-x: auto;
         overflow-y: hidden;
+        height: fit-content;
     }
 
     .timeline {
         display: flex;
         gap: 2px;
         padding: 4px 0;
-        min-width: min-content;
+        width: fit-content;
         position: relative;
     }
 
@@ -437,27 +441,8 @@ const STYLES = buildEditorStyles(
     }
 
     .frame-duration-input {
-        width: 40px;
+        width: 44px;
         font-size: 9px;
-        font-family: inherit;
-        background: transparent;
-        color: var(--fg-muted);
-        border: none;
-        border-bottom: 1px solid transparent;
-        padding: 2px 4px;
-        text-align: center;
-        transition: border-color 0.15s, color 0.15s;
-    }
-
-    .frame-duration-input:hover {
-        border-bottom-color: var(--border);
-        color: var(--fg-secondary);
-    }
-
-    .frame-duration-input:focus {
-        outline: none;
-        border-bottom-color: var(--accent);
-        color: var(--fg-primary);
     }
 
     .frame-delete {

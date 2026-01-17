@@ -94,6 +94,69 @@ const numberStyles = createInputStyles(`
         background: var(--accent);
         color: var(--bg-primary);
     }
+
+    :host([compact]) .number-input-container {
+        background: transparent;
+        border: none;
+        padding: 0;
+        height: auto;
+        gap: 2px;
+    }
+
+    :host([compact]) .number-input-container:focus-within {
+        border-color: transparent;
+    }
+
+    :host([compact]) .number-input-label {
+        display: none;
+    }
+
+    :host([compact]) .number-input-field {
+        text-align: center;
+        padding: 2px 4px;
+        color: var(--fg-muted);
+        transition: color 0.15s;
+    }
+
+    :host([compact]) .number-input-field:hover {
+        color: var(--fg-secondary);
+    }
+
+    :host([compact]) .number-input-field:focus {
+        color: var(--fg-primary);
+    }
+
+    :host([compact]) .number-input-steppers {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    :host([compact]) .number-input-stepper {
+        width: 12px;
+        height: 10px;
+        font-size: 0;
+        border-radius: 2px;
+    }
+
+    :host([compact]) .number-input-stepper::after {
+        font-size: 6px;
+    }
+
+    :host([compact]) .number-input-stepper:first-child {
+        border-radius: 2px 2px 0 0;
+    }
+
+    :host([compact]) .number-input-stepper:first-child::after {
+        content: '▲';
+    }
+
+    :host([compact]) .number-input-stepper:last-child {
+        border-radius: 0 0 2px 2px;
+    }
+
+    :host([compact]) .number-input-stepper:last-child::after {
+        content: '▼';
+    }
 `)
 
 
@@ -134,7 +197,9 @@ export default class NumberInput extends HTMLElement {
 
     #onDragEnd = () => {
         this.#isDragging = false
-        this.#labelEl.classList.remove('dragging')
+        if (this.#labelEl) {
+            this.#labelEl.classList.remove('dragging')
+        }
         document.body.style.cursor = ''
         document.removeEventListener('mousemove', this.#onDragMove)
         document.removeEventListener('mouseup', this.#onDragEnd)
@@ -218,6 +283,15 @@ export default class NumberInput extends HTMLElement {
     }
 
 
+    setCompact (val) {
+        if (val) {
+            this.setAttribute('compact', '')
+        } else {
+            this.removeAttribute('compact')
+        }
+    }
+
+
     #buildDOM () {
         const style = document.createElement('style')
         style.textContent = numberStyles
@@ -255,8 +329,8 @@ export default class NumberInput extends HTMLElement {
         this.#incrementBtn.tabIndex = -1
         this.#incrementBtn.addEventListener('click', (e) => this.#handleStep(1, e))
 
-        stepperContainer.appendChild(this.#decrementBtn)
         stepperContainer.appendChild(this.#incrementBtn)
+        stepperContainer.appendChild(this.#decrementBtn)
 
         container.appendChild(this.#labelEl)
         container.appendChild(this.#input)
@@ -343,11 +417,14 @@ export default class NumberInput extends HTMLElement {
         this.#isDragging = true
         this.#dragStartX = event.clientX
         this.#dragStartValue = this.#value
-        this.#labelEl.classList.add('dragging')
+        if (this.#labelEl) {
+            this.#labelEl.classList.add('dragging')
+        }
         document.body.style.cursor = 'ew-resize'
         document.addEventListener('mousemove', this.#onDragMove)
         document.addEventListener('mouseup', this.#onDragEnd)
     }
+
 
 }
 
