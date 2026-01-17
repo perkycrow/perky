@@ -18,7 +18,7 @@ export default doc('TextureRegion', {advanced: true}, () => {
             This is essential for GPU rendering where textures are sampled using normalized coordinates.
         `)
 
-        container({title: 'UV visualization', height: 350, preset: 'centered'}, ctx => {
+        container({title: 'UV visualization', height: 400, preset: 'centered'}, ctx => {
             const wrapper = ctx.column({gap: 12})
 
             const img = new Image()
