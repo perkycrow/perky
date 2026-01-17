@@ -340,6 +340,24 @@ describe('Inflector', () => {
             expect(inflector.toSnakeCase('Hello')).toBe('hello')
         })
 
+
+        test('handles names ending with number and letter (2D suffix)', () => {
+            expect(inflector.toSnakeCase('Object2D')).toBe('object_2d')
+            expect(inflector.toSnakeCase('Group2D')).toBe('group_2d')
+        })
+
+
+        test('handles names with number followed by word', () => {
+            expect(inflector.toSnakeCase('Vec2Control')).toBe('vec2_control')
+            expect(inflector.toSnakeCase('Vec2Input')).toBe('vec2_input')
+        })
+
+
+        test('handles names ending with number only', () => {
+            expect(inflector.toSnakeCase('Vec2')).toBe('vec2')
+            expect(inflector.toSnakeCase('Vec3')).toBe('vec3')
+        })
+
     })
 
 
@@ -367,6 +385,24 @@ describe('Inflector', () => {
 
         test('handles single word', () => {
             expect(inflector.toKebabCase('Hello')).toBe('hello')
+        })
+
+
+        test('handles names ending with number and letter (2D suffix)', () => {
+            expect(inflector.toKebabCase('Object2D')).toBe('object-2d')
+            expect(inflector.toKebabCase('Group2D')).toBe('group-2d')
+        })
+
+
+        test('handles names with number followed by word', () => {
+            expect(inflector.toKebabCase('Vec2Control')).toBe('vec2-control')
+            expect(inflector.toKebabCase('Vec2Input')).toBe('vec2-input')
+        })
+
+
+        test('handles names ending with number only', () => {
+            expect(inflector.toKebabCase('Vec2')).toBe('vec2')
+            expect(inflector.toKebabCase('Vec3')).toBe('vec3')
         })
 
     })
@@ -401,6 +437,24 @@ describe('Inflector', () => {
 
         test('handles single word', () => {
             expect(inflector.toHumanCase('Hello')).toBe('Hello')
+        })
+
+
+        test('handles names ending with number and letter (2D suffix)', () => {
+            expect(inflector.toHumanCase('Object2D')).toBe('Object 2D')
+            expect(inflector.toHumanCase('Group2D')).toBe('Group 2D')
+        })
+
+
+        test('handles names with number followed by word', () => {
+            expect(inflector.toHumanCase('Vec2Control')).toBe('Vec2 Control')
+            expect(inflector.toHumanCase('Vec2Input')).toBe('Vec2 Input')
+        })
+
+
+        test('handles names ending with number only', () => {
+            expect(inflector.toHumanCase('Vec2')).toBe('Vec2')
+            expect(inflector.toHumanCase('Vec3')).toBe('Vec3')
         })
 
     })

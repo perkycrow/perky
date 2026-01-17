@@ -73,6 +73,8 @@ export default class Inflector {
             .replace(/[-\s]/g, '_')
             .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
             .replace(/([a-z])([A-Z])/g, '$1_$2')
+            .replace(/([a-z])(\d+[A-Z])$/g, '$1_$2')
+            .replace(/(\d)([A-Z][a-z])/g, '$1_$2')
             .toLowerCase()
             .replace(/^_/, '')
     }
@@ -83,6 +85,8 @@ export default class Inflector {
             .replace(/[_\s]/g, '-')
             .replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
             .replace(/([a-z])([A-Z])/g, '$1-$2')
+            .replace(/([a-z])(\d+[A-Z])$/g, '$1-$2')
+            .replace(/(\d)([A-Z][a-z])/g, '$1-$2')
             .toLowerCase()
             .replace(/^-/, '')
     }
@@ -93,6 +97,8 @@ export default class Inflector {
             .replace(/[-_]/g, ' ')
             .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
             .replace(/([a-z])([A-Z])/g, '$1 $2')
+            .replace(/([a-z])(\d+[A-Z])$/g, '$1 $2')
+            .replace(/(\d)([A-Z][a-z])/g, '$1 $2')
             .replace(/^\s+/, '')
             .replace(/\s+/g, ' ')
     }

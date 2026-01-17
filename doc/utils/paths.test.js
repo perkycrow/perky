@@ -1,4 +1,5 @@
 import {describe, test, expect, vi, beforeEach} from 'vitest'
+import {initRegistry} from '../doc_registry.js'
 
 
 vi.mock('../../core/utils.js', () => ({
@@ -74,6 +75,51 @@ describe('paths', () => {
         test('builds url with section anchor', () => {
             expect(buildDocUrl('Logger', 'doc', 'Events'))
                 .toBe('core_logger.html#events')
+        })
+
+    })
+
+
+    describe('buildDocUrl with registry', () => {
+
+        beforeEach(() => {
+            initRegistry([
+                {title: 'WebGLRenderer', file: '/render/webgl_renderer.doc.js', category: 'render'},
+                {title: 'Object2D', file: '/render/object_2d.doc.js', category: 'render'},
+                {title: 'Vec2', file: '/math/vec2.doc.js', category: 'math'}
+            ], [
+                {id: 'foreword', title: 'Foreword', file: '/doc/guides/prologue/foreword.guide.js'}
+            ])
+        })
+
+
+        test('uses registry to resolve WebGLRenderer correctly', () => {
+            expect(buildDocUrl('WebGLRenderer')).toBe('render_webgl_renderer.html')
+        })
+
+
+        test('uses registry to resolve Object2D correctly', () => {
+            expect(buildDocUrl('Object2D')).toBe('render_object_2d.html')
+        })
+
+
+        test('uses registry to resolve Vec2 correctly', () => {
+            expect(buildDocUrl('Vec2')).toBe('math_vec2.html')
+        })
+
+
+        test('uses registry for api pages', () => {
+            expect(buildDocUrl('WebGLRenderer', 'api')).toBe('render_webgl_renderer_api.html')
+        })
+
+
+        test('uses registry for test pages', () => {
+            expect(buildDocUrl('Object2D', 'test')).toBe('render_object_2d_test.html')
+        })
+
+
+        test('uses registry for guides by title', () => {
+            expect(buildDocUrl('Foreword', 'guide')).toBe('guide_foreword.html')
         })
 
     })

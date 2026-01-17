@@ -2,6 +2,7 @@ import './doc_page.js'
 import '../editor/perky_logger.js'
 import logger from '../core/logger.js'
 import {getTabUrl, extractBaseName} from './utils/paths.js'
+import {initRegistry} from './doc_registry.js'
 
 
 const docModules = {
@@ -49,6 +50,8 @@ class DocViewer {
             this.guides = docsData.guides || []
             this.apiData = await apiRes.json()
             this.testsData = await testsRes.json()
+
+            initRegistry(this.docs, this.guides)
         } catch (error) {
             logger.error('Failed to load metadata:', error)
         }

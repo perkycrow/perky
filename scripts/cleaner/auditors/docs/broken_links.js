@@ -207,5 +207,7 @@ function isValidLink (link, targets) {
 function toSnakeCase (str) {
     return str
         .replace(/([a-z])([A-Z])/g, '$1_$2')
+        .replace(/([a-z])(\d+[A-Z])$/g, '$1_$2')
+        .replace(/(\d)([A-Z][a-z])/g, '$1_$2')
         .toLowerCase()
 }

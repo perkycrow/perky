@@ -1,4 +1,5 @@
 import {toKebabCase} from '../../core/utils.js'
+import {lookupDoc, lookupGuide} from '../doc_registry.js'
 
 
 export function getTabUrl (tab) {
@@ -25,18 +26,31 @@ export function extractBaseName (filename) {
 
 
 export function buildDocUrl (name, pageType = 'doc', section = null, category = null) {
-    const baseName = toKebabCase(name).replace(/-/g, '_')
-    const cat = category || 'core'
     let url = ''
 
     if (pageType === 'guide') {
-        url = `guide_${baseName}.html`
-    } else if (pageType === 'api') {
-        url = `${cat}_${baseName}_api.html`
-    } else if (pageType === 'test') {
-        url = `${cat}_${baseName}_test.html`
+        const guide = lookupGuide(name)
+        if (guide) {
+            url = `guide_${guide.id}.html`
+        } else {
+            const baseName = toKebabCase(name).replace(/-/g, '_')
+            url = `guide_${baseName}.html`
+        }
     } else {
-        url = `${cat}_${baseName}.html`
+        const doc = lookupDoc(name)
+        if (doc) {
+            url = docFileToHtml(doc.file, pageType)
+        } else {
+            const baseName = toKebabCase(name).replace(/-/g, '_')
+            const cat = category || 'core'
+            if (pageType === 'api') {
+                url = `${cat}_${baseName}_api.html`
+            } else if (pageType === 'test') {
+                url = `${cat}_${baseName}_test.html`
+            } else {
+                url = `${cat}_${baseName}.html`
+            }
+        }
     }
 
     if (section) {
