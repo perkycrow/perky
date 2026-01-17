@@ -22,6 +22,7 @@ export default class ToolWindow extends BaseEditorComponent {
 
     #onMouseMove = null
     #onMouseUp = null
+    #title = 'Tool'
 
     connectedCallback () {
         this.#buildDOM()
@@ -49,7 +50,7 @@ export default class ToolWindow extends BaseEditorComponent {
 
         const titleEl = document.createElement('span')
         titleEl.className = 'tool-window-title'
-        titleEl.textContent = this.getAttribute('title') || 'Tool'
+        titleEl.textContent = this.#title
         this.#headerEl.appendChild(titleEl)
 
         const closeBtn = document.createElement('button')
@@ -164,6 +165,7 @@ export default class ToolWindow extends BaseEditorComponent {
 
 
     setTitle (title) {
+        this.#title = title
         const titleEl = this.shadowRoot.querySelector('.tool-window-title')
         if (titleEl) {
             titleEl.textContent = title

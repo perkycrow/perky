@@ -3,6 +3,7 @@ import SpriteAnimator from '../../render/sprite_animator.js'
 import '../../editor/tools/animation_preview.js'
 import '../../editor/tools/animation_timeline.js'
 import '../../editor/tools/spritesheet_viewer.js'
+import '../../editor/number_input.js'
 
 
 const redEnemyAnimations = {
@@ -239,9 +240,6 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
         const anim = this.#selectedAnimation
         infoEl.innerHTML = `
             <label class="info-item">
-                fps: <input type="number" class="fps-input" min="1" max="60" step="1" value="${anim.fps}">
-            </label>
-            <label class="info-item">
                 loop: <input type="checkbox" class="loop-input" ${anim.loop ? 'checked' : ''}>
             </label>
             <label class="info-item">
@@ -251,8 +249,18 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
                     <option value="pingpong" ${anim.playbackMode === 'pingpong' ? 'selected' : ''}>pingpong</option>
                 </select>
             </label>
-            <span class="info-item">frames: ${anim.totalFrames}</span>
+            <span class="info-item frames-count">frames: ${anim.totalFrames}</span>
         `
+
+        const fpsInput = document.createElement('number-input')
+        fpsInput.className = 'fps-input'
+        fpsInput.setLabel('fps')
+        fpsInput.setValue(anim.fps)
+        fpsInput.setStep(1)
+        fpsInput.setPrecision(0)
+        fpsInput.setMin(1)
+        fpsInput.setMax(60)
+        infoEl.insertBefore(fpsInput, infoEl.firstChild)
 
         this.#setupAnimationInfoListeners(infoEl, anim)
     }
@@ -264,10 +272,7 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
         const playbackSelect = infoEl.querySelector('.playback-select')
 
         fpsInput.addEventListener('change', (e) => {
-            const value = parseInt(e.target.value, 10)
-            if (value >= 1 && value <= 60) {
-                anim.setFps(value)
-            }
+            anim.setFps(e.detail.value)
         })
 
         loopInput.addEventListener('change', (e) => {
@@ -486,29 +491,6 @@ const STYLES = SpriteAnimatorTool.buildStyles(`
         color: var(--fg-muted);
     }
 
-    .info-item input[type="number"] {
-        width: 40px;
-        background: transparent;
-        color: var(--fg-secondary);
-        border: none;
-        border-bottom: 1px solid transparent;
-        padding: 2px 4px;
-        font-family: inherit;
-        font-size: 11px;
-        text-align: center;
-        transition: border-color 0.15s, color 0.15s;
-    }
-
-    .info-item input[type="number"]:hover {
-        border-bottom-color: var(--border);
-    }
-
-    .info-item input[type="number"]:focus {
-        outline: none;
-        border-bottom-color: var(--accent);
-        color: var(--fg-primary);
-    }
-
     .info-item input[type="checkbox"] {
         accent-color: var(--accent);
     }
@@ -531,6 +513,14 @@ const STYLES = SpriteAnimatorTool.buildStyles(`
     .info-item select:focus {
         outline: none;
         color: var(--fg-primary);
+    }
+
+    .fps-input {
+        width: 90px;
+    }
+
+    .frames-count {
+        margin-left: auto;
     }
 
     .animator-main {
