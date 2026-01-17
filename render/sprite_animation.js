@@ -7,8 +7,10 @@ export default class SpriteAnimation extends PerkyModule {
     #events = new Map()
     #pingpongDirection = 1
 
-    constructor ({sprite, frames, fps = 12, loop = true, speed = 1, playbackMode = 'forward'} = {}) {
-        super()
+    constructor (options = {}) {
+        super(options)
+
+        const {sprite, frames, fps = 12, loop = true, speed = 1, playbackMode = 'forward'} = options
 
         this.sprite = sprite
         this.frames = Array.isArray(frames) ? frames : []

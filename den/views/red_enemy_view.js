@@ -1,6 +1,30 @@
 import EnemyView from './enemy_view.js'
-import SpriteAnimation from '../../render/sprite_animation.js'
+import SpriteAnimator from '../../render/sprite_animator.js'
 import logger from '../../core/logger.js'
+
+
+const redEnemyAnimations = {
+    skip: {
+        source: 'redSpritesheet:skip',
+        fps: 12,
+        loop: true,
+        playbackMode: 'pingpong'
+    },
+    throw: {
+        fps: 16,
+        loop: false,
+        frames: [
+            {source: 'redSpritesheet:throw/1'},
+            {source: 'redSpritesheet:throw/2'},
+            {source: 'redSpritesheet:throw/3', duration: 1.8, events: ['windup']},
+            {source: 'redSpritesheet:throw/4', events: ['release']},
+            {source: 'redSpritesheet:throw/5'},
+            {source: 'redSpritesheet:throw/6'},
+            {source: 'redSpritesheet:throw/7'},
+            {source: 'redSpritesheet:throw/8'}
+        ]
+    }
+}
 
 
 export default class RedEnemyView extends EnemyView {
@@ -8,42 +32,23 @@ export default class RedEnemyView extends EnemyView {
     constructor (entity, context) {
         super(entity, context)
 
-        const spritesheet = context.game.getSpritesheet('redSpritesheet')
+        this.animator = new SpriteAnimator({
+            sprite: this.root,
+            config: redEnemyAnimations,
+            textureSystem: context.game.textureSystem
+        })
 
-        this.animations = {
-            skip: new SpriteAnimation({
-                sprite: this.root,
-                frames: spritesheet.getAnimationRegions('skip'),
-                fps: 12,
-                loop: true,
-                playbackMode: 'pingpong'
-            }),
-            throw: new SpriteAnimation({
-                sprite: this.root,
-                frames: buildThrowFrames(spritesheet),
-                fps: 16,
-                loop: false
-            })
-        }
+        this.animator.get('throw').on('event:release', () => {
+            logger.log('throw released')
+        })
 
-        this.animations.throw
-            .addEvent(2, 'windup')
-            .addEvent(4, 'release')
-            .on('event:release', () => {
-                logger.log('throw released')
-            })
-
-        this.currentAnimation = null
         this.lastState = null
     }
 
 
     update (deltaTime) {
         super.update(deltaTime)
-
-        if (this.currentAnimation) {
-            this.currentAnimation.update(deltaTime)
-        }
+        this.animator.update(deltaTime)
     }
 
 
@@ -61,18 +66,18 @@ export default class RedEnemyView extends EnemyView {
             this.lastState = state
 
             if (state === 'stopping') {
-                this.playAnimation('throw')
+                this.animator.play('throw')
             } else {
-                this.playAnimation('skip')
+                this.animator.play('skip')
             }
         }
     }
 
 
     syncAnimationSpeed () {
-        const skipAnim = this.animations.skip
+        const skipAnim = this.animator.get('skip')
 
-        if (this.currentAnimation === skipAnim) {
+        if (this.animator.current === skipAnim) {
             const velocity = this.entity.velocity
             const speed = Math.sqrt(velocity.x ** 2 + velocity.y ** 2)
             const normalizedSpeed = speed / this.entity.maxSpeed
@@ -81,27 +86,4 @@ export default class RedEnemyView extends EnemyView {
         }
     }
 
-
-    playAnimation (name) {
-        if (this.currentAnimation) {
-            this.currentAnimation.stop()
-        }
-
-        this.currentAnimation = this.animations[name]
-
-        if (this.currentAnimation) {
-            this.currentAnimation.restart()
-        }
-    }
-
-}
-
-
-function buildThrowFrames (spritesheet) {
-    const regions = spritesheet.getAnimationRegions('throw')
-
-    return regions.map((region, index) => ({
-        region,
-        duration: index === 2 ? 1.8 : 1.0
-    }))
 }
