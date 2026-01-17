@@ -111,6 +111,7 @@ export default class SpritesheetViewer extends BaseEditorComponent {
         const frameEl = document.createElement('div')
         frameEl.className = 'frame'
         frameEl.dataset.name = name
+        frameEl.draggable = true
 
         const canvas = document.createElement('canvas')
         canvas.className = 'frame-thumbnail'
@@ -121,7 +122,7 @@ export default class SpritesheetViewer extends BaseEditorComponent {
 
         const nameEl = document.createElement('div')
         nameEl.className = 'frame-name'
-        nameEl.textContent = getShortName(name)
+        nameEl.textContent = name
         nameEl.title = name
         frameEl.appendChild(nameEl)
 
@@ -131,15 +132,27 @@ export default class SpritesheetViewer extends BaseEditorComponent {
             }))
         })
 
+        frameEl.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('application/x-spritesheet-frame', JSON.stringify({
+                name,
+                regionData: {
+                    x: frameData.region?.x,
+                    y: frameData.region?.y,
+                    width: frameData.region?.width,
+                    height: frameData.region?.height
+                }
+            }))
+            e.dataTransfer.effectAllowed = 'copy'
+            frameEl.classList.add('dragging')
+        })
+
+        frameEl.addEventListener('dragend', () => {
+            frameEl.classList.remove('dragging')
+        })
+
         return frameEl
     }
 
-}
-
-
-function getShortName (name) {
-    const parts = name.split('/')
-    return parts[parts.length - 1]
 }
 
 
@@ -225,6 +238,10 @@ const STYLES = buildEditorStyles(
 
     .frame:hover {
         border-color: var(--accent);
+    }
+
+    .frame.dragging {
+        opacity: 0.5;
     }
 
     .frame-thumbnail {

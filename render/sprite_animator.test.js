@@ -14,9 +14,15 @@ describe('SpriteAnimator', () => {
             getSpritesheet: (name) => {
                 if (name === 'testSheet') {
                     return {
+                        getAnimation: (animName) => {
+                            if (animName === 'walk') {
+                                return ['walk/1', 'walk/2', 'walk/3']
+                            }
+                            return null
+                        },
                         getAnimationRegions: (animName) => {
                             if (animName === 'walk') {
-                                return ['walk1', 'walk2', 'walk3']
+                                return ['region:walk/1', 'region:walk/2', 'region:walk/3']
                             }
                             return []
                         },

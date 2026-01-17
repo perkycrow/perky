@@ -194,6 +194,47 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
         this.#timelineEl.addEventListener('frameclick', (e) => {
             this.#previewEl?.setCurrentIndex(e.detail.index)
         })
+
+        this.#timelineEl.addEventListener('framedrop', (e) => {
+            this.#handleFrameDrop(e.detail)
+        })
+
+        this.#timelineEl.addEventListener('framemove', (e) => {
+            this.#handleFrameMove(e.detail)
+        })
+    }
+
+
+    #handleFrameDrop ({index, frameName}) {
+        if (!this.#selectedAnimation || !this.#spritesheet) {
+            return
+        }
+
+        const region = this.#spritesheet.getRegion(frameName)
+        if (!region) {
+            return
+        }
+
+        const newFrame = {region, name: frameName}
+        this.#selectedAnimation.frames.splice(index, 0, newFrame)
+
+        this.#timelineEl.setFrames(this.#selectedAnimation.frames)
+        this.#renderAnimationInfo()
+    }
+
+
+    #handleFrameMove ({fromIndex, toIndex}) {
+        if (!this.#selectedAnimation) {
+            return
+        }
+
+        const frames = this.#selectedAnimation.frames
+        const [movedFrame] = frames.splice(fromIndex, 1)
+
+        const insertIndex = fromIndex < toIndex ? toIndex - 1 : toIndex
+        frames.splice(insertIndex, 0, movedFrame)
+
+        this.#timelineEl.setFrames(frames)
     }
 
 

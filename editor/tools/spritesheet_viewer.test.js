@@ -2,6 +2,19 @@ import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './spritesheet_viewer.js'
 
 
+function createMockDataTransfer () {
+    const data = {}
+    return {
+        setData: (type, value) => {
+            data[type] = value
+        },
+        getData: (type) => data[type] || '',
+        types: Object.keys(data),
+        effectAllowed: 'none'
+    }
+}
+
+
 function createMockSpritesheet () {
     const framesMap = new Map([
         ['walk/1', {region: {width: 32, height: 32, x: 0, y: 0, image: null}}],
@@ -112,13 +125,13 @@ describe('SpritesheetViewer', () => {
         })
 
 
-        test('should render short frame names', () => {
+        test('should render full frame names', () => {
             const spritesheet = createMockSpritesheet()
             viewer.setSpritesheet(spritesheet)
 
             const names = viewer.shadowRoot.querySelectorAll('.frame-name')
-            expect(names[0].textContent).toBe('1')
-            expect(names[2].textContent).toBe('1')
+            expect(names[0].textContent).toBe('walk/1')
+            expect(names[2].textContent).toBe('jump/1')
         })
 
 
@@ -197,6 +210,50 @@ describe('SpritesheetViewer', () => {
             const frames = viewer.shadowRoot.querySelectorAll('.frame')
             expect(frames[0].dataset.name).toBe('walk/1')
             expect(frames[1].dataset.name).toBe('walk/2')
+        })
+
+    })
+
+
+    describe('drag and drop', () => {
+
+        test('should make frames draggable', () => {
+            const spritesheet = createMockSpritesheet()
+            viewer.setSpritesheet(spritesheet)
+
+            const frame = viewer.shadowRoot.querySelector('.frame')
+            expect(frame.draggable).toBe(true)
+        })
+
+
+        test('should add dragging class on dragstart', () => {
+            const spritesheet = createMockSpritesheet()
+            viewer.setSpritesheet(spritesheet)
+
+            const frame = viewer.shadowRoot.querySelector('.frame')
+
+            const dragStartEvent = new Event('dragstart', {bubbles: true})
+            dragStartEvent.dataTransfer = createMockDataTransfer()
+            frame.dispatchEvent(dragStartEvent)
+
+            expect(frame.classList.contains('dragging')).toBe(true)
+        })
+
+
+        test('should remove dragging class on dragend', () => {
+            const spritesheet = createMockSpritesheet()
+            viewer.setSpritesheet(spritesheet)
+
+            const frame = viewer.shadowRoot.querySelector('.frame')
+
+            const dragStartEvent = new Event('dragstart', {bubbles: true})
+            dragStartEvent.dataTransfer = createMockDataTransfer()
+            frame.dispatchEvent(dragStartEvent)
+
+            const dragEndEvent = new Event('dragend', {bubbles: true})
+            frame.dispatchEvent(dragEndEvent)
+
+            expect(frame.classList.contains('dragging')).toBe(false)
         })
 
     })

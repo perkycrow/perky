@@ -57,8 +57,11 @@ export default class SpriteAnimator extends PerkyModule {
             return []
         }
 
-        const regions = spritesheet.getAnimationRegions(animationName)
-        return regions.map(region => ({region}))
+        const frameNames = spritesheet.getAnimation(animationName) || []
+        return frameNames.map(frameName => ({
+            region: spritesheet.getRegion(frameName),
+            name: frameName
+        }))
     }
 
 
@@ -82,6 +85,7 @@ export default class SpriteAnimator extends PerkyModule {
 
         return {
             region,
+            name: frameName,
             duration: frameConfig.duration,
             events: frameConfig.events
         }

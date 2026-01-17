@@ -2,11 +2,18 @@ import BaseEditorComponent from '../base_editor_component.js'
 import {buildEditorStyles, editorBaseStyles, editorScrollbarStyles} from '../editor_theme.js'
 
 
+const DRAG_TYPE_SPRITESHEET = 'application/x-spritesheet-frame'
+const DRAG_TYPE_TIMELINE = 'application/x-timeline-frame'
+
+
 export default class AnimationTimeline extends BaseEditorComponent {
 
     #containerEl = null
+    #dropIndicator = null
     #frames = []
     #currentIndex = 0
+    #dropIndex = -1
+    #dragSourceIndex = -1
 
     connectedCallback () {
         this.#buildDOM()
@@ -20,7 +27,147 @@ export default class AnimationTimeline extends BaseEditorComponent {
 
         this.#containerEl = document.createElement('div')
         this.#containerEl.className = 'timeline'
+
+        this.#dropIndicator = document.createElement('div')
+        this.#dropIndicator.className = 'drop-indicator'
+        this.#dropIndicator.innerHTML = '<div class="drop-label"></div>'
+        this.#containerEl.appendChild(this.#dropIndicator)
+
+        this.#setupDropZone()
         this.shadowRoot.appendChild(this.#containerEl)
+    }
+
+
+    #setupDropZone () {
+        this.#containerEl.addEventListener('dragover', (e) => {
+            const isSpritesheetDrag = e.dataTransfer.types.includes(DRAG_TYPE_SPRITESHEET)
+            const isTimelineDrag = e.dataTransfer.types.includes(DRAG_TYPE_TIMELINE)
+
+            if (!isSpritesheetDrag && !isTimelineDrag) {
+                return
+            }
+
+            e.preventDefault()
+            e.dataTransfer.dropEffect = isTimelineDrag ? 'move' : 'copy'
+
+            this.#containerEl.classList.add('drag-over')
+            this.#dropIndex = this.#calculateDropIndex(e.clientX)
+            this.#updateDropIndicator(isTimelineDrag ? 'move' : 'insert')
+        })
+
+        this.#containerEl.addEventListener('dragleave', (e) => {
+            if (!this.#containerEl.contains(e.relatedTarget)) {
+                this.#containerEl.classList.remove('drag-over')
+                this.#hideDropIndicator()
+            }
+        })
+
+        this.#containerEl.addEventListener('drop', (e) => {
+            e.preventDefault()
+            this.#containerEl.classList.remove('drag-over')
+
+            const timelineData = e.dataTransfer.getData(DRAG_TYPE_TIMELINE)
+            if (timelineData) {
+                this.#handleTimelineDrop(timelineData)
+                this.#hideDropIndicator()
+                return
+            }
+
+            const spritesheetData = e.dataTransfer.getData(DRAG_TYPE_SPRITESHEET)
+            if (spritesheetData) {
+                this.#handleSpritesheetDrop(spritesheetData)
+            }
+            this.#hideDropIndicator()
+        })
+    }
+
+
+    #handleSpritesheetDrop (data) {
+        try {
+            const frameData = JSON.parse(data)
+            this.dispatchEvent(new CustomEvent('framedrop', {
+                detail: {
+                    index: this.#dropIndex,
+                    frameName: frameData.name,
+                    regionData: frameData.regionData
+                }
+            }))
+        } catch {
+            // Invalid JSON, ignore
+        }
+    }
+
+
+    #handleTimelineDrop (data) {
+        try {
+            const {sourceIndex} = JSON.parse(data)
+            if (sourceIndex === this.#dropIndex || sourceIndex === this.#dropIndex - 1) {
+                return
+            }
+
+            this.dispatchEvent(new CustomEvent('framemove', {
+                detail: {
+                    fromIndex: sourceIndex,
+                    toIndex: this.#dropIndex
+                }
+            }))
+        } catch {
+            // Invalid JSON, ignore
+        }
+    }
+
+
+    #calculateDropIndex (clientX) {
+        const frameEls = this.#containerEl.querySelectorAll('.frame')
+        if (frameEls.length === 0) {
+            return 0
+        }
+
+        for (let i = 0; i < frameEls.length; i++) {
+            const rect = frameEls[i].getBoundingClientRect()
+            const midpoint = rect.left + rect.width / 2
+
+            if (clientX < midpoint) {
+                return i
+            }
+        }
+
+        return frameEls.length
+    }
+
+
+    #updateDropIndicator (mode) {
+        const frameEls = this.#containerEl.querySelectorAll('.frame')
+        this.#dropIndicator.classList.add('visible')
+        this.#dropIndicator.dataset.mode = mode
+
+        const label = this.#dropIndicator.querySelector('.drop-label')
+        label.textContent = this.#dropIndex
+
+        if (frameEls.length === 0 || this.#dropIndex === 0) {
+            this.#dropIndicator.style.left = '0px'
+            return
+        }
+
+        if (this.#dropIndex >= frameEls.length) {
+            const lastFrame = frameEls[frameEls.length - 1]
+            const containerRect = this.#containerEl.getBoundingClientRect()
+            const frameRect = lastFrame.getBoundingClientRect()
+            this.#dropIndicator.style.left = `${frameRect.right - containerRect.left + 2}px`
+            return
+        }
+
+        const targetFrame = frameEls[this.#dropIndex]
+        const containerRect = this.#containerEl.getBoundingClientRect()
+        const frameRect = targetFrame.getBoundingClientRect()
+        this.#dropIndicator.style.left = `${frameRect.left - containerRect.left - 2}px`
+    }
+
+
+    #hideDropIndicator () {
+        this.#dropIndicator.classList.remove('visible')
+        delete this.#dropIndicator.dataset.mode
+        this.#dropIndex = -1
     }
 
 
@@ -42,6 +189,11 @@ export default class AnimationTimeline extends BaseEditorComponent {
     #render () {
         this.#containerEl.innerHTML = ''
 
+        this.#dropIndicator = document.createElement('div')
+        this.#dropIndicator.className = 'drop-indicator'
+        this.#dropIndicator.innerHTML = '<div class="drop-label"></div>'
+        this.#containerEl.appendChild(this.#dropIndicator)
+
         for (let i = 0; i < this.#frames.length; i++) {
             const frame = this.#frames[i]
             const frameEl = this.#createFrameElement(frame, i)
@@ -56,6 +208,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
         const frameEl = document.createElement('div')
         frameEl.className = 'frame'
         frameEl.dataset.index = index
+        frameEl.draggable = true
 
         if (frame.duration && frame.duration !== 1) {
             frameEl.style.flexGrow = frame.duration
@@ -72,6 +225,15 @@ export default class AnimationTimeline extends BaseEditorComponent {
         indexEl.className = 'frame-index'
         indexEl.textContent = index
         frameEl.appendChild(indexEl)
+
+        const frameName = frame.name || frame.source
+        if (frameName) {
+            const nameEl = document.createElement('div')
+            nameEl.className = 'frame-name'
+            nameEl.textContent = frameName
+            nameEl.title = frameName
+            frameEl.appendChild(nameEl)
+        }
 
         if (frame.events && frame.events.length > 0) {
             const eventsEl = document.createElement('div')
@@ -91,6 +253,18 @@ export default class AnimationTimeline extends BaseEditorComponent {
             this.dispatchEvent(new CustomEvent('frameclick', {
                 detail: {index}
             }))
+        })
+
+        frameEl.addEventListener('dragstart', (e) => {
+            this.#dragSourceIndex = index
+            e.dataTransfer.setData(DRAG_TYPE_TIMELINE, JSON.stringify({sourceIndex: index}))
+            e.dataTransfer.effectAllowed = 'move'
+            frameEl.classList.add('dragging')
+        })
+
+        frameEl.addEventListener('dragend', () => {
+            this.#dragSourceIndex = -1
+            frameEl.classList.remove('dragging')
         })
 
         return frameEl
@@ -156,6 +330,7 @@ const STYLES = buildEditorStyles(
         gap: 4px;
         padding: 4px 0;
         min-width: min-content;
+        position: relative;
     }
 
     .frame {
@@ -169,17 +344,27 @@ const STYLES = buildEditorStyles(
         border: 1px solid var(--border);
         min-width: 56px;
         flex-shrink: 0;
-        cursor: pointer;
+        cursor: grab;
+        transition: opacity 0.15s, transform 0.15s, border-color 0.15s;
     }
 
     .frame:hover {
         border-color: var(--accent);
     }
 
+    .frame:active {
+        cursor: grabbing;
+    }
+
     .frame.active {
         border-color: var(--accent);
         background: var(--bg-tertiary);
         box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .frame.dragging {
+        opacity: 0.4;
+        transform: scale(0.95);
     }
 
     .frame-thumbnail {
@@ -190,6 +375,16 @@ const STYLES = buildEditorStyles(
     .frame-index {
         font-size: 10px;
         color: var(--fg-secondary);
+    }
+
+    .frame-name {
+        font-size: 9px;
+        color: var(--fg-tertiary);
+        max-width: 56px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: center;
     }
 
     .frame-events {
@@ -208,6 +403,52 @@ const STYLES = buildEditorStyles(
         font-size: 9px;
         color: var(--fg-secondary);
         opacity: 0.7;
+    }
+
+    .timeline.drag-over {
+        background: rgba(100, 200, 255, 0.05);
+        border-radius: 4px;
+    }
+
+    .drop-indicator {
+        position: absolute;
+        top: 4px;
+        bottom: 4px;
+        width: 3px;
+        background: var(--accent);
+        border-radius: 2px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.1s, left 0.1s;
+        box-shadow: 0 0 6px var(--accent);
+    }
+
+    .drop-indicator.visible {
+        opacity: 1;
+    }
+
+    .drop-label {
+        position: absolute;
+        top: -16px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--accent);
+        color: var(--bg-primary);
+        font-size: 9px;
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 3px;
+        white-space: nowrap;
+    }
+
+    .drop-indicator[data-mode="insert"] .drop-label::before {
+        content: '+';
+        margin-right: 2px;
+    }
+
+    .drop-indicator[data-mode="move"] .drop-label::before {
+        content: '→';
+        margin-right: 2px;
     }
 `
 )

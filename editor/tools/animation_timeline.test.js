@@ -2,6 +2,21 @@ import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './animation_timeline.js'
 
 
+function createMockDataTransfer () {
+    const data = {}
+    return {
+        setData: (type, value) => {
+            data[type] = value
+        },
+        getData: (type) => data[type] || '',
+        get types () {
+            return Object.keys(data)
+        },
+        dropEffect: 'none'
+    }
+}
+
+
 function createMockFrames () {
     return [
         {region: null},
@@ -217,6 +232,119 @@ describe('AnimationTimeline', () => {
             expect(frameEls[1].dataset.index).toBe('1')
             expect(frameEls[2].dataset.index).toBe('2')
             expect(frameEls[3].dataset.index).toBe('3')
+        })
+
+    })
+
+
+    describe('drop zone', () => {
+
+        test('should have drop indicator element', () => {
+            const dropIndicator = timeline.shadowRoot.querySelector('.drop-indicator')
+            expect(dropIndicator).not.toBeNull()
+        })
+
+
+        test('should dispatch framedrop event on spritesheet drop', () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            const handler = vi.fn()
+            timeline.addEventListener('framedrop', handler)
+
+            const timelineEl = timeline.shadowRoot.querySelector('.timeline')
+
+            const dragOverDataTransfer = createMockDataTransfer()
+            dragOverDataTransfer.setData('application/x-spritesheet-frame', '{}')
+            const dragOverEvent = new Event('dragover', {bubbles: true, cancelable: true})
+            dragOverEvent.dataTransfer = dragOverDataTransfer
+            dragOverEvent.clientX = 100
+            timelineEl.dispatchEvent(dragOverEvent)
+
+            const dropDataTransfer = createMockDataTransfer()
+            dropDataTransfer.setData('application/x-spritesheet-frame', JSON.stringify({
+                name: 'walk/1',
+                regionData: {x: 0, y: 0, width: 32, height: 32}
+            }))
+            const dropEvent = new Event('drop', {bubbles: true, cancelable: true})
+            dropEvent.dataTransfer = dropDataTransfer
+            timelineEl.dispatchEvent(dropEvent)
+
+            expect(handler).toHaveBeenCalled()
+            expect(handler.mock.calls[0][0].detail.frameName).toBe('walk/1')
+        })
+
+
+        test('should add drag-over class during dragover', () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            const timelineEl = timeline.shadowRoot.querySelector('.timeline')
+
+            const dragOverDataTransfer = createMockDataTransfer()
+            dragOverDataTransfer.setData('application/x-spritesheet-frame', '{}')
+            const dragOverEvent = new Event('dragover', {bubbles: true, cancelable: true})
+            dragOverEvent.dataTransfer = dragOverDataTransfer
+            dragOverEvent.clientX = 100
+            timelineEl.dispatchEvent(dragOverEvent)
+
+            expect(timelineEl.classList.contains('drag-over')).toBe(true)
+        })
+
+    })
+
+
+    describe('frame reordering', () => {
+
+        test('should make frames draggable', () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            const frame = timeline.shadowRoot.querySelector('.frame')
+            expect(frame.draggable).toBe(true)
+        })
+
+
+        test('should add dragging class on dragstart', () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            const frame = timeline.shadowRoot.querySelector('.frame')
+
+            const dragStartEvent = new Event('dragstart', {bubbles: true})
+            dragStartEvent.dataTransfer = createMockDataTransfer()
+            frame.dispatchEvent(dragStartEvent)
+
+            expect(frame.classList.contains('dragging')).toBe(true)
+        })
+
+
+        test('should dispatch framemove event on timeline drop', () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            const handler = vi.fn()
+            timeline.addEventListener('framemove', handler)
+
+            const timelineEl = timeline.shadowRoot.querySelector('.timeline')
+
+            const dragOverDataTransfer = createMockDataTransfer()
+            dragOverDataTransfer.setData('application/x-timeline-frame', '{}')
+            const dragOverEvent = new Event('dragover', {bubbles: true, cancelable: true})
+            dragOverEvent.dataTransfer = dragOverDataTransfer
+            dragOverEvent.clientX = 200
+            timelineEl.dispatchEvent(dragOverEvent)
+
+            const dropDataTransfer = createMockDataTransfer()
+            dropDataTransfer.setData('application/x-timeline-frame', JSON.stringify({
+                sourceIndex: 0
+            }))
+            const dropEvent = new Event('drop', {bubbles: true, cancelable: true})
+            dropEvent.dataTransfer = dropDataTransfer
+            timelineEl.dispatchEvent(dropEvent)
+
+            expect(handler).toHaveBeenCalled()
+            expect(handler.mock.calls[0][0].detail.fromIndex).toBe(0)
         })
 
     })
