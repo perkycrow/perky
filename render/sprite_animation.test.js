@@ -1,9 +1,5 @@
 import {describe, test, expect, beforeEach, vi, afterEach} from 'vitest'
-import SpriteAnimation, {
-    PLAYBACK_FORWARD,
-    PLAYBACK_REVERSE,
-    PLAYBACK_PINGPONG
-} from './sprite_animation.js'
+import SpriteAnimation from './sprite_animation.js'
 
 describe('SpriteAnimation', () => {
     let sprite
@@ -238,10 +234,12 @@ describe('SpriteAnimation', () => {
     })
 
 
-    test('playback mode constants are exported', () => {
-        expect(PLAYBACK_FORWARD).toBe('forward')
-        expect(PLAYBACK_REVERSE).toBe('reverse')
-        expect(PLAYBACK_PINGPONG).toBe('pingpong')
+    test('playback modes work with string values', () => {
+        expect(animation.playbackMode).toBe('forward')
+        animation.setPlaybackMode('reverse')
+        expect(animation.playbackMode).toBe('reverse')
+        animation.setPlaybackMode('pingpong')
+        expect(animation.playbackMode).toBe('pingpong')
     })
 
 
@@ -281,14 +279,14 @@ describe('SpriteAnimation', () => {
 
 
     test('setPlaybackMode updates playback mode', () => {
-        animation.setPlaybackMode(PLAYBACK_REVERSE)
-        expect(animation.playbackMode).toBe(PLAYBACK_REVERSE)
+        animation.setPlaybackMode('reverse')
+        expect(animation.playbackMode).toBe('reverse')
 
-        animation.setPlaybackMode(PLAYBACK_PINGPONG)
-        expect(animation.playbackMode).toBe(PLAYBACK_PINGPONG)
+        animation.setPlaybackMode('pingpong')
+        expect(animation.playbackMode).toBe('pingpong')
 
-        animation.setPlaybackMode(PLAYBACK_FORWARD)
-        expect(animation.playbackMode).toBe(PLAYBACK_FORWARD)
+        animation.setPlaybackMode('forward')
+        expect(animation.playbackMode).toBe('forward')
     })
 
 

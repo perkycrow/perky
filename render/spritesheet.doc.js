@@ -94,9 +94,11 @@ export default doc('Spritesheet', () => {
 
         code('getFrame / getRegion', () => {
             const frame = spritesheet.getFrame('hero/idle')
+
             // Returns frame data or null
 
             const region = spritesheet.getRegion('hero/idle')
+
             // Returns TextureRegion or null
         })
 
@@ -145,6 +147,7 @@ export default doc('Spritesheet', () => {
         code('getAnimation / getAnimationRegions', () => {
             // Get array of frame names for an animation
             const frameNames = spritesheet.getAnimation('walk')
+
             // ['walk/1', 'walk/2', 'walk/3']
 
             // Get TextureRegions directly for use with SpriteAnimation
@@ -179,10 +182,12 @@ export default doc('Spritesheet', () => {
         code('listFrames / listAnimations', () => {
             // Get all frame names
             const frames = spritesheet.listFrames()
+
             // ['idle/1', 'idle/2', 'walk/1', 'walk/2']
 
             // Get all animation names
             const animations = spritesheet.listAnimations()
+
             // ['idle', 'walk']
         })
 

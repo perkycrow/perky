@@ -1,6 +1,6 @@
 import {doc, section, text, code, action, logger, container} from '../doc/runtime.js'
 import {loadSpritesheet} from '../application/loaders.js'
-import SpriteAnimation, {PLAYBACK_FORWARD, PLAYBACK_REVERSE, PLAYBACK_PINGPONG} from './sprite_animation.js'
+import SpriteAnimation from './sprite_animation.js'
 import Spritesheet from './spritesheet.js'
 import Sprite from './sprite.js'
 import Group2D from './group_2d.js'
@@ -101,7 +101,7 @@ export default doc('SpriteAnimation', () => {
 
             scene.add(sprite)
 
-            let playbackMode = PLAYBACK_FORWARD
+            let playbackMode = 'forward'
 
             const animation = new SpriteAnimation({
                 sprite: sprite,
@@ -119,17 +119,17 @@ export default doc('SpriteAnimation', () => {
             })
 
             ctx.action('Forward', () => {
-                playbackMode = PLAYBACK_FORWARD
+                playbackMode = 'forward'
                 animation.setPlaybackMode(playbackMode)
             })
 
             ctx.action('Reverse', () => {
-                playbackMode = PLAYBACK_REVERSE
+                playbackMode = 'reverse'
                 animation.setPlaybackMode(playbackMode)
             })
 
             ctx.action('Ping-pong', () => {
-                playbackMode = PLAYBACK_PINGPONG
+                playbackMode = 'pingpong'
                 animation.setPlaybackMode(playbackMode)
             })
 
@@ -158,7 +158,7 @@ export default doc('SpriteAnimation', () => {
                 fps: 24,
                 loop: true,
                 speed: 1,
-                playbackMode: PLAYBACK_FORWARD
+                playbackMode: 'forward'
             })
         })
 
@@ -232,9 +232,9 @@ export default doc('SpriteAnimation', () => {
 
         text(`
             Three playback modes control how frames advance:
-            - \`PLAYBACK_FORWARD\`: Frames play 0 → last, then loop or complete
-            - \`PLAYBACK_REVERSE\`: Frames play last → 0, then loop or complete
-            - \`PLAYBACK_PINGPONG\`: Frames bounce back and forth (0 → last → 0)
+            - \`'forward'\`: Frames play 0 → last, then loop or complete
+            - \`'reverse'\`: Frames play last → 0, then loop or complete
+            - \`'pingpong'\`: Frames bounce back and forth (0 → last → 0)
         `)
 
         action('setPlaybackMode', () => {
@@ -243,23 +243,23 @@ export default doc('SpriteAnimation', () => {
                 fps: 12
             })
 
-            animation.setPlaybackMode(PLAYBACK_FORWARD)
+            animation.setPlaybackMode('forward')
             logger.log('forward mode:', animation.playbackMode)
 
-            animation.setPlaybackMode(PLAYBACK_REVERSE)
+            animation.setPlaybackMode('reverse')
             logger.log('reverse mode:', animation.playbackMode)
 
-            animation.setPlaybackMode(PLAYBACK_PINGPONG)
+            animation.setPlaybackMode('pingpong')
             logger.log('pingpong mode:', animation.playbackMode)
         })
 
         code('Playback mode constants', () => {
             // Import constants from sprite_animation.js
-            // import {PLAYBACK_FORWARD, PLAYBACK_REVERSE, PLAYBACK_PINGPONG} from './sprite_animation.js'
+            // import {'forward', 'reverse', 'pingpong'} from './sprite_animation.js'
 
             const animation = new SpriteAnimation({
                 frames: walkFrames,
-                playbackMode: PLAYBACK_PINGPONG
+                playbackMode: 'pingpong'
             })
         })
 

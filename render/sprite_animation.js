@@ -1,18 +1,13 @@
 import PerkyModule from '../core/perky_module.js'
 
 
-export const PLAYBACK_FORWARD = 'forward'
-export const PLAYBACK_REVERSE = 'reverse'
-export const PLAYBACK_PINGPONG = 'pingpong'
-
-
 export default class SpriteAnimation extends PerkyModule {
 
     #elapsed = 0
     #events = new Map()
     #pingpongDirection = 1
 
-    constructor ({sprite, frames, fps = 12, loop = true, speed = 1, playbackMode = PLAYBACK_FORWARD} = {}) {
+    constructor ({sprite, frames, fps = 12, loop = true, speed = 1, playbackMode = 'forward'} = {}) {
         super()
 
         this.sprite = sprite
@@ -170,7 +165,7 @@ export default class SpriteAnimation extends PerkyModule {
 
     setPlaybackMode (mode) {
         this.playbackMode = mode
-        if (mode === PLAYBACK_REVERSE) {
+        if (mode === 'reverse') {
             this.#pingpongDirection = -1
         } else {
             this.#pingpongDirection = 1
@@ -275,15 +270,15 @@ export default class SpriteAnimation extends PerkyModule {
     #getNextFrameIndex () {
         const lastIndex = this.totalFrames - 1
 
-        if (this.playbackMode === PLAYBACK_FORWARD) {
+        if (this.playbackMode === 'forward') {
             return this.#getNextForward(lastIndex)
         }
 
-        if (this.playbackMode === PLAYBACK_REVERSE) {
+        if (this.playbackMode === 'reverse') {
             return this.#getNextReverse(lastIndex)
         }
 
-        if (this.playbackMode === PLAYBACK_PINGPONG) {
+        if (this.playbackMode === 'pingpong') {
             return this.#getNextPingpong(lastIndex)
         }
 

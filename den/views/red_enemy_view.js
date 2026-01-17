@@ -1,5 +1,5 @@
 import EnemyView from './enemy_view.js'
-import SpriteAnimation, {PLAYBACK_PINGPONG} from '../../render/sprite_animation.js'
+import SpriteAnimation from '../../render/sprite_animation.js'
 import logger from '../../core/logger.js'
 
 
@@ -16,7 +16,7 @@ export default class RedEnemyView extends EnemyView {
                 frames: spritesheet.getAnimationRegions('skip'),
                 fps: 12,
                 loop: true,
-                playbackMode: PLAYBACK_PINGPONG
+                playbackMode: 'pingpong'
             }),
             throw: new SpriteAnimation({
                 sprite: this.root,
