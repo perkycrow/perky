@@ -349,4 +349,64 @@ describe('AnimationTimeline', () => {
 
     })
 
+
+    describe('frame deletion', () => {
+
+        test('should have delete button on frames', () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            const deleteBtn = timeline.shadowRoot.querySelector('.frame-delete')
+            expect(deleteBtn).not.toBeNull()
+        })
+
+
+        test('should dispatch framedelete event on delete button click', () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            const handler = vi.fn()
+            timeline.addEventListener('framedelete', handler)
+
+            const deleteBtn = timeline.shadowRoot.querySelectorAll('.frame-delete')[1]
+            deleteBtn.click()
+
+            expect(handler).toHaveBeenCalled()
+            expect(handler.mock.calls[0][0].detail.index).toBe(1)
+        })
+
+
+        test('should dispatch framedelete event on Delete key', () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+            timeline.setCurrentIndex(2)
+
+            const handler = vi.fn()
+            timeline.addEventListener('framedelete', handler)
+
+            const keyEvent = new KeyboardEvent('keydown', {key: 'Delete', bubbles: true})
+            timeline.dispatchEvent(keyEvent)
+
+            expect(handler).toHaveBeenCalled()
+            expect(handler.mock.calls[0][0].detail.index).toBe(2)
+        })
+
+
+        test('should dispatch framedelete event on Backspace key', () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+            timeline.setCurrentIndex(1)
+
+            const handler = vi.fn()
+            timeline.addEventListener('framedelete', handler)
+
+            const keyEvent = new KeyboardEvent('keydown', {key: 'Backspace', bubbles: true})
+            timeline.dispatchEvent(keyEvent)
+
+            expect(handler).toHaveBeenCalled()
+            expect(handler.mock.calls[0][0].detail.index).toBe(1)
+        })
+
+    })
+
 })

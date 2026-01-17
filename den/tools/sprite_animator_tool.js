@@ -202,6 +202,10 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
         this.#timelineEl.addEventListener('framemove', (e) => {
             this.#handleFrameMove(e.detail)
         })
+
+        this.#timelineEl.addEventListener('framedelete', (e) => {
+            this.#handleFrameDelete(e.detail)
+        })
     }
 
 
@@ -235,6 +239,22 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
         frames.splice(insertIndex, 0, movedFrame)
 
         this.#timelineEl.setFrames(frames)
+    }
+
+
+    #handleFrameDelete ({index}) {
+        if (!this.#selectedAnimation) {
+            return
+        }
+
+        const frames = this.#selectedAnimation.frames
+        if (index < 0 || index >= frames.length) {
+            return
+        }
+
+        frames.splice(index, 1)
+        this.#timelineEl.setFrames(frames)
+        this.#renderAnimationInfo()
     }
 
 

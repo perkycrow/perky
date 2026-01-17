@@ -17,6 +17,8 @@ export default class AnimationTimeline extends BaseEditorComponent {
 
     connectedCallback () {
         this.#buildDOM()
+        this.tabIndex = 0
+        this.addEventListener('keydown', (e) => this.#handleKeydown(e))
     }
 
 
@@ -249,6 +251,16 @@ export default class AnimationTimeline extends BaseEditorComponent {
             frameEl.appendChild(durationEl)
         }
 
+        const deleteBtn = document.createElement('button')
+        deleteBtn.className = 'frame-delete'
+        deleteBtn.textContent = '×'
+        deleteBtn.title = 'Delete frame'
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation()
+            this.#dispatchDeleteEvent(index)
+        })
+        frameEl.appendChild(deleteBtn)
+
         frameEl.addEventListener('click', () => {
             this.dispatchEvent(new CustomEvent('frameclick', {
                 detail: {index}
@@ -277,6 +289,23 @@ export default class AnimationTimeline extends BaseEditorComponent {
         frameEls.forEach((el, i) => {
             el.classList.toggle('active', i === this.#currentIndex)
         })
+    }
+
+
+    #dispatchDeleteEvent (index) {
+        this.dispatchEvent(new CustomEvent('framedelete', {
+            detail: {index}
+        }))
+    }
+
+
+    #handleKeydown (e) {
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+            if (this.#currentIndex >= 0 && this.#currentIndex < this.#frames.length) {
+                e.preventDefault()
+                this.#dispatchDeleteEvent(this.#currentIndex)
+            }
+        }
     }
 
 }
@@ -334,6 +363,7 @@ const STYLES = buildEditorStyles(
     }
 
     .frame {
+        position: relative;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -403,6 +433,32 @@ const STYLES = buildEditorStyles(
         font-size: 9px;
         color: var(--fg-secondary);
         opacity: 0.7;
+    }
+
+    .frame-delete {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 16px;
+        height: 16px;
+        padding: 0;
+        border: none;
+        background: rgba(255, 100, 100, 0.8);
+        color: white;
+        font-size: 12px;
+        line-height: 14px;
+        border-radius: 50%;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.15s;
+    }
+
+    .frame:hover .frame-delete {
+        opacity: 1;
+    }
+
+    .frame-delete:hover {
+        background: rgba(255, 60, 60, 1);
     }
 
     .timeline.drag-over {
