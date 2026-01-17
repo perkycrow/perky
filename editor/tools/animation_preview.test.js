@@ -17,7 +17,10 @@ function createMockAnimation () {
         play: vi.fn(),
         pause: vi.fn(),
         stop: vi.fn(),
-        update: vi.fn()
+        update: vi.fn(),
+        seekToFrame: vi.fn(function (index) {
+            this.currentIndex = index
+        })
     }
 }
 
@@ -257,6 +260,39 @@ describe('AnimationPreview', () => {
             preview.remove()
 
             expect(preview.isPlaying).toBe(false)
+        })
+
+    })
+
+
+    describe('setCurrentIndex', () => {
+
+        test('should seek animation to frame', () => {
+            const animation = createMockAnimation()
+            preview.setAnimation(animation)
+
+            preview.setCurrentIndex(2)
+
+            expect(animation.seekToFrame).toHaveBeenCalledWith(2)
+        })
+
+
+        test('should dispatch frame event', () => {
+            const animation = createMockAnimation()
+            preview.setAnimation(animation)
+
+            const handler = vi.fn()
+            preview.addEventListener('frame', handler)
+
+            preview.setCurrentIndex(2)
+
+            expect(handler).toHaveBeenCalled()
+            expect(handler.mock.calls[0][0].detail.index).toBe(2)
+        })
+
+
+        test('should do nothing when no animation', () => {
+            expect(() => preview.setCurrentIndex(2)).not.toThrow()
         })
 
     })

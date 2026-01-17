@@ -174,6 +174,10 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
         if (this.#selectedAnimation) {
             this.#timelineEl.setFrames(this.#selectedAnimation.frames)
         }
+
+        this.#timelineEl.addEventListener('frameclick', (e) => {
+            this.#previewEl?.setCurrentIndex(e.detail.index)
+        })
     }
 
 

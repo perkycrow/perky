@@ -212,6 +212,21 @@ export default class AnimationPreview extends BaseEditorComponent {
         return this.#isPlaying
     }
 
+
+    setCurrentIndex (index) {
+        if (!this.#animation) {
+            return
+        }
+
+        this.#animation.seekToFrame(index)
+        this.#updateSprite()
+        this.#render()
+
+        this.dispatchEvent(new CustomEvent('frame', {
+            detail: {index: this.#animation.currentIndex}
+        }))
+    }
+
 }
 
 
