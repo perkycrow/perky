@@ -129,4 +129,21 @@ describe('NumberInput', () => {
         expect(handler.mock.calls[0][0].detail.value).toBeGreaterThan(0)
     })
 
+
+    describe('setCompact', () => {
+
+        test('should add compact attribute when true', () => {
+            input.setCompact(true)
+            expect(input.hasAttribute('compact')).toBe(true)
+        })
+
+
+        test('should remove compact attribute when false', () => {
+            input.setCompact(true)
+            input.setCompact(false)
+            expect(input.hasAttribute('compact')).toBe(false)
+        })
+
+    })
+
 })

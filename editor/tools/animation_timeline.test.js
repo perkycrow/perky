@@ -403,4 +403,61 @@ describe('AnimationTimeline', () => {
 
     })
 
+
+    describe('touch drag handlers', () => {
+
+        test('handleTouchDragOver should add drag-over class and update drop indicator', () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            timeline.handleTouchDragOver(100)
+
+            const timelineEl = timeline.shadowRoot.querySelector('.timeline')
+            expect(timelineEl.classList.contains('drag-over')).toBe(true)
+
+            const dropIndicator = timeline.shadowRoot.querySelector('.drop-indicator')
+            expect(dropIndicator.classList.contains('visible')).toBe(true)
+        })
+
+
+        test('handleTouchDrop should dispatch framedrop event and remove drag-over class', () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            timeline.handleTouchDragOver(100)
+
+            const handler = vi.fn()
+            timeline.addEventListener('framedrop', handler)
+
+            timeline.handleTouchDrop({
+                name: 'walk/1',
+                regionData: {x: 0, y: 0, width: 32, height: 32}
+            })
+
+            const timelineEl = timeline.shadowRoot.querySelector('.timeline')
+            expect(timelineEl.classList.contains('drag-over')).toBe(false)
+            expect(handler).toHaveBeenCalled()
+            expect(handler.mock.calls[0][0].detail.frameName).toBe('walk/1')
+        })
+
+
+        test('handleTouchDragLeave should remove drag-over class and hide drop indicator', () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            timeline.handleTouchDragOver(100)
+
+            const timelineEl = timeline.shadowRoot.querySelector('.timeline')
+            expect(timelineEl.classList.contains('drag-over')).toBe(true)
+
+            timeline.handleTouchDragLeave()
+
+            expect(timelineEl.classList.contains('drag-over')).toBe(false)
+
+            const dropIndicator = timeline.shadowRoot.querySelector('.drop-indicator')
+            expect(dropIndicator.classList.contains('visible')).toBe(false)
+        })
+
+    })
+
 })

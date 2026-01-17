@@ -305,4 +305,85 @@ describe('SpriteAnimator', () => {
 
     })
 
+
+    describe('resolveSourceFrames', () => {
+
+        test('returns frames from spritesheet animation', () => {
+            animator = new SpriteAnimator({sprite, textureSystem})
+
+            const frames = animator.resolveSourceFrames('testSheet:walk')
+
+            expect(frames).toHaveLength(3)
+            expect(frames[0].name).toBe('walk/1')
+            expect(frames[0].region).toBe('region:walk/1')
+            expect(frames[1].name).toBe('walk/2')
+            expect(frames[2].name).toBe('walk/3')
+        })
+
+
+        test('returns empty array when spritesheet not found', () => {
+            animator = new SpriteAnimator({sprite, textureSystem})
+
+            const frames = animator.resolveSourceFrames('unknownSheet:walk')
+
+            expect(frames).toEqual([])
+        })
+
+
+        test('returns empty array when animation not found', () => {
+            animator = new SpriteAnimator({sprite, textureSystem})
+
+            const frames = animator.resolveSourceFrames('testSheet:unknownAnim')
+
+            expect(frames).toEqual([])
+        })
+
+    })
+
+
+    describe('resolveFrame', () => {
+
+        test('resolves frame with region format', () => {
+            animator = new SpriteAnimator({sprite, textureSystem})
+
+            const frame = animator.resolveFrame({
+                region: 'myTexture',
+                duration: 2,
+                events: ['hit']
+            })
+
+            expect(frame.region).toBe('direct:myTexture')
+            expect(frame.duration).toBe(2)
+            expect(frame.events).toEqual(['hit'])
+        })
+
+
+        test('resolves frame with source format', () => {
+            animator = new SpriteAnimator({sprite, textureSystem})
+
+            const frame = animator.resolveFrame({
+                source: 'testSheet:frame1',
+                duration: 1.5,
+                events: ['sound']
+            })
+
+            expect(frame.region).toBe('region:frame1')
+            expect(frame.name).toBe('frame1')
+            expect(frame.duration).toBe(1.5)
+            expect(frame.events).toEqual(['sound'])
+        })
+
+
+        test('returns null region when spritesheet not found', () => {
+            animator = new SpriteAnimator({sprite, textureSystem})
+
+            const frame = animator.resolveFrame({
+                source: 'unknownSheet:frame1'
+            })
+
+            expect(frame.region).toBeNull()
+        })
+
+    })
+
 })
