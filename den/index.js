@@ -3,6 +3,7 @@ import DefendTheDen from './den.js'
 import {PerkyDevTools} from '../editor/devtools/index.js'
 import ToolManager from '../editor/tools/tool_manager.js'
 import FoobarTool from './tools/foobar_tool.js'
+import SpriteAnimatorTool from './tools/sprite_animator_tool.js'
 
 
 async function init () {
@@ -23,6 +24,7 @@ async function init () {
 
     const toolManager = new ToolManager()
     toolManager.register(FoobarTool)
+    toolManager.register(SpriteAnimatorTool)
     devtools.setToolManager(toolManager)
 
     window.defendTheDen = app
