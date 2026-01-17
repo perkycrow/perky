@@ -407,6 +407,7 @@ const STYLES = SpriteAnimatorTool.buildStyles(`
         display: flex;
         flex-direction: column;
         height: 100%;
+        gap: 12px;
     }
 
     .no-animator {
@@ -415,77 +416,97 @@ const STYLES = SpriteAnimatorTool.buildStyles(`
         align-items: center;
         justify-content: center;
         height: 100%;
-        color: var(--fg-secondary);
+        color: var(--fg-muted);
+        gap: 8px;
     }
 
     .no-animator .hint {
         font-size: 10px;
-        opacity: 0.6;
+        color: var(--fg-muted);
     }
 
     .animator-header {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid var(--border);
-        margin-bottom: 8px;
+        gap: 12px;
         flex-shrink: 0;
     }
 
     .animation-select {
         background: var(--bg-secondary);
         color: var(--fg-primary);
-        border: 1px solid var(--border);
+        border: none;
         border-radius: 4px;
-        padding: 4px 8px;
+        padding: 6px 10px;
         font-family: inherit;
         font-size: 12px;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+    .animation-select:hover {
+        background: var(--bg-hover);
+    }
+
+    .animation-select:focus {
+        outline: none;
+        background: var(--bg-hover);
     }
 
     .animation-info {
         display: flex;
-        gap: 12px;
+        gap: 16px;
         color: var(--fg-secondary);
         font-size: 11px;
         flex: 1;
+        align-items: center;
     }
 
     .export-btn {
-        background: var(--bg-secondary);
-        color: var(--fg-primary);
-        border: 1px solid var(--border);
+        background: var(--bg-hover);
+        color: var(--fg-secondary);
+        border: none;
         border-radius: 4px;
-        padding: 4px 10px;
+        padding: 6px 12px;
         font-family: inherit;
         font-size: 11px;
         cursor: pointer;
-        margin-left: auto;
+        transition: background 0.15s, color 0.15s;
     }
 
     .export-btn:hover {
-        background: var(--bg-tertiary);
-        border-color: var(--accent);
+        background: var(--bg-selected);
+        color: var(--fg-primary);
     }
 
     .info-item {
-        background: var(--bg-secondary);
-        padding: 2px 6px;
-        border-radius: 3px;
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 6px;
+        color: var(--fg-muted);
     }
 
     .info-item input[type="number"] {
         width: 40px;
-        background: var(--bg-tertiary);
-        color: var(--fg-primary);
-        border: 1px solid var(--border);
-        border-radius: 3px;
+        background: transparent;
+        color: var(--fg-secondary);
+        border: none;
+        border-bottom: 1px solid transparent;
         padding: 2px 4px;
         font-family: inherit;
         font-size: 11px;
+        text-align: center;
+        transition: border-color 0.15s, color 0.15s;
+    }
+
+    .info-item input[type="number"]:hover {
+        border-bottom-color: var(--border);
+    }
+
+    .info-item input[type="number"]:focus {
+        outline: none;
+        border-bottom-color: var(--accent);
+        color: var(--fg-primary);
     }
 
     .info-item input[type="checkbox"] {
@@ -493,18 +514,28 @@ const STYLES = SpriteAnimatorTool.buildStyles(`
     }
 
     .info-item select {
-        background: var(--bg-tertiary);
-        color: var(--fg-primary);
-        border: 1px solid var(--border);
-        border-radius: 3px;
+        background: transparent;
+        color: var(--fg-secondary);
+        border: none;
         padding: 2px 4px;
         font-family: inherit;
         font-size: 11px;
+        cursor: pointer;
+        transition: color 0.15s;
+    }
+
+    .info-item select:hover {
+        color: var(--fg-primary);
+    }
+
+    .info-item select:focus {
+        outline: none;
+        color: var(--fg-primary);
     }
 
     .animator-main {
         display: flex;
-        gap: 8px;
+        gap: 12px;
         flex: 1;
         min-height: 0;
     }
@@ -516,7 +547,7 @@ const STYLES = SpriteAnimatorTool.buildStyles(`
     .animator-right {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 12px;
         flex: 1;
         min-width: 0;
     }

@@ -241,33 +241,37 @@ const STYLES = buildEditorStyles(
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 4px;
+        gap: 8px;
     }
 
     .preview-canvas {
-        border-radius: 4px;
-        background: #1a1a1a;
-        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg-secondary);
     }
 
     .preview-controls {
         display: flex;
-        gap: 8px;
+        gap: 4px;
     }
 
     .preview-controls button {
-        background: var(--bg-secondary);
-        color: var(--fg-primary);
-        border: 1px solid var(--border);
+        background: var(--bg-hover);
+        color: var(--fg-secondary);
+        border: none;
         border-radius: 4px;
-        padding: 4px 12px;
+        width: 32px;
+        height: 32px;
         cursor: pointer;
         font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.15s, color 0.15s;
     }
 
     .preview-controls button:hover {
-        background: var(--bg-tertiary);
-        border-color: var(--accent);
+        background: var(--bg-selected);
+        color: var(--fg-primary);
     }
 `
 )

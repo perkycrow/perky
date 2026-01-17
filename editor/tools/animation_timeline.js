@@ -365,7 +365,7 @@ const STYLES = buildEditorStyles(
 
     .timeline {
         display: flex;
-        gap: 4px;
+        gap: 2px;
         padding: 4px 0;
         min-width: min-content;
         position: relative;
@@ -378,17 +378,16 @@ const STYLES = buildEditorStyles(
         align-items: center;
         gap: 2px;
         padding: 4px;
-        background: var(--bg-secondary);
+        background: transparent;
         border-radius: 4px;
-        border: 1px solid var(--border);
         min-width: 56px;
         flex-shrink: 0;
         cursor: grab;
-        transition: opacity 0.15s, transform 0.15s, border-color 0.15s;
+        transition: opacity 0.15s, transform 0.15s, background 0.15s;
     }
 
     .frame:hover {
-        border-color: var(--accent);
+        background: var(--bg-hover);
     }
 
     .frame:active {
@@ -396,9 +395,11 @@ const STYLES = buildEditorStyles(
     }
 
     .frame.active {
-        border-color: var(--accent);
-        background: var(--bg-tertiary);
-        box-shadow: 0 0 0 1px var(--accent);
+        background: var(--bg-selected);
+    }
+
+    .frame.active .frame-thumbnail {
+        box-shadow: 0 0 0 2px var(--accent);
     }
 
     .frame.dragging {
@@ -407,18 +408,18 @@ const STYLES = buildEditorStyles(
     }
 
     .frame-thumbnail {
-        border-radius: 2px;
-        background: #1a1a1a;
+        border-radius: 3px;
+        background: var(--bg-secondary);
     }
 
     .frame-index {
         font-size: 10px;
-        color: var(--fg-secondary);
+        color: var(--fg-muted);
     }
 
     .frame-name {
         font-size: 9px;
-        color: var(--fg-tertiary);
+        color: var(--fg-muted);
         max-width: 56px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -429,9 +430,6 @@ const STYLES = buildEditorStyles(
     .frame-events {
         font-size: 9px;
         color: var(--accent);
-        background: rgba(100, 200, 255, 0.1);
-        padding: 2px 4px;
-        border-radius: 2px;
         max-width: 60px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -439,20 +437,27 @@ const STYLES = buildEditorStyles(
     }
 
     .frame-duration-input {
-        width: 44px;
+        width: 40px;
         font-size: 9px;
         font-family: inherit;
-        background: var(--bg-tertiary);
-        color: var(--fg-secondary);
-        border: 1px solid var(--border);
-        border-radius: 2px;
+        background: transparent;
+        color: var(--fg-muted);
+        border: none;
+        border-bottom: 1px solid transparent;
         padding: 2px 4px;
         text-align: center;
+        transition: border-color 0.15s, color 0.15s;
+    }
+
+    .frame-duration-input:hover {
+        border-bottom-color: var(--border);
+        color: var(--fg-secondary);
     }
 
     .frame-duration-input:focus {
         outline: none;
-        border-color: var(--accent);
+        border-bottom-color: var(--accent);
+        color: var(--fg-primary);
     }
 
     .frame-delete {
@@ -463,7 +468,7 @@ const STYLES = buildEditorStyles(
         height: 16px;
         padding: 0;
         border: none;
-        background: rgba(255, 100, 100, 0.8);
+        background: var(--status-error);
         color: white;
         font-size: 12px;
         line-height: 14px;
@@ -478,25 +483,19 @@ const STYLES = buildEditorStyles(
     }
 
     .frame-delete:hover {
-        background: rgba(255, 60, 60, 1);
-    }
-
-    .timeline.drag-over {
-        background: rgba(100, 200, 255, 0.05);
-        border-radius: 4px;
+        filter: brightness(1.2);
     }
 
     .drop-indicator {
         position: absolute;
         top: 4px;
         bottom: 4px;
-        width: 3px;
+        width: 2px;
         background: var(--accent);
-        border-radius: 2px;
+        border-radius: 1px;
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.1s, left 0.1s;
-        box-shadow: 0 0 6px var(--accent);
     }
 
     .drop-indicator.visible {
@@ -505,14 +504,14 @@ const STYLES = buildEditorStyles(
 
     .drop-label {
         position: absolute;
-        top: -16px;
+        top: -14px;
         left: 50%;
         transform: translateX(-50%);
         background: var(--accent);
         color: var(--bg-primary);
         font-size: 9px;
-        font-weight: bold;
-        padding: 2px 6px;
+        font-weight: 500;
+        padding: 1px 5px;
         border-radius: 3px;
         white-space: nowrap;
     }

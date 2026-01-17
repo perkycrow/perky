@@ -201,27 +201,42 @@ const STYLES = buildEditorStyles(
         display: flex;
         flex-direction: column;
         height: 100%;
-        gap: 4px;
+        gap: 8px;
     }
 
     .filter-select {
         background: var(--bg-secondary);
-        color: var(--fg-primary);
-        border: 1px solid var(--border);
+        color: var(--fg-secondary);
+        border: none;
         border-radius: 4px;
-        padding: 4px 8px;
+        padding: 6px 10px;
         font-family: var(--font-mono);
         font-size: 11px;
         flex-shrink: 0;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+    }
+
+    .filter-select:hover {
+        background: var(--bg-hover);
+        color: var(--fg-primary);
+    }
+
+    .filter-select:focus {
+        outline: none;
+        background: var(--bg-hover);
     }
 
     .frame-grid {
         display: flex;
         flex-wrap: wrap;
-        gap: 4px;
+        gap: 2px;
         overflow-y: auto;
         flex: 1;
         align-content: flex-start;
+        padding: 4px;
+        background: var(--bg-secondary);
+        border-radius: 6px;
     }
 
     .frame {
@@ -230,14 +245,18 @@ const STYLES = buildEditorStyles(
         align-items: center;
         gap: 2px;
         padding: 4px;
-        background: var(--bg-secondary);
+        background: transparent;
         border-radius: 4px;
-        border: 1px solid var(--border);
-        cursor: pointer;
+        cursor: grab;
+        transition: background 0.15s;
     }
 
     .frame:hover {
-        border-color: var(--accent);
+        background: var(--bg-hover);
+    }
+
+    .frame:active {
+        cursor: grabbing;
     }
 
     .frame.dragging {
@@ -245,13 +264,13 @@ const STYLES = buildEditorStyles(
     }
 
     .frame-thumbnail {
-        border-radius: 2px;
-        background: #1a1a1a;
+        border-radius: 3px;
+        background: var(--bg-primary);
     }
 
     .frame-name {
         font-size: 9px;
-        color: var(--fg-secondary);
+        color: var(--fg-muted);
         max-width: 48px;
         overflow: hidden;
         text-overflow: ellipsis;
