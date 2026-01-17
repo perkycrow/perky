@@ -244,12 +244,21 @@ export default class AnimationTimeline extends BaseEditorComponent {
             frameEl.appendChild(eventsEl)
         }
 
-        if (frame.duration && frame.duration !== 1) {
-            const durationEl = document.createElement('div')
-            durationEl.className = 'frame-duration'
-            durationEl.textContent = `${frame.duration}x`
-            frameEl.appendChild(durationEl)
-        }
+        const durationEl = document.createElement('input')
+        durationEl.type = 'number'
+        durationEl.className = 'frame-duration-input'
+        durationEl.min = '0.1'
+        durationEl.max = '10'
+        durationEl.step = '0.1'
+        durationEl.value = frame.duration || 1
+        durationEl.title = 'Frame duration multiplier'
+        durationEl.addEventListener('click', (e) => e.stopPropagation())
+        durationEl.addEventListener('change', (e) => {
+            this.dispatchEvent(new CustomEvent('frameduration', {
+                detail: {index, duration: parseFloat(e.target.value)}
+            }))
+        })
+        frameEl.appendChild(durationEl)
 
         const deleteBtn = document.createElement('button')
         deleteBtn.className = 'frame-delete'
@@ -429,10 +438,21 @@ const STYLES = buildEditorStyles(
         white-space: nowrap;
     }
 
-    .frame-duration {
+    .frame-duration-input {
+        width: 44px;
         font-size: 9px;
+        font-family: inherit;
+        background: var(--bg-tertiary);
         color: var(--fg-secondary);
-        opacity: 0.7;
+        border: 1px solid var(--border);
+        border-radius: 2px;
+        padding: 2px 4px;
+        text-align: center;
+    }
+
+    .frame-duration-input:focus {
+        outline: none;
+        border-color: var(--accent);
     }
 
     .frame-delete {
