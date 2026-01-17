@@ -2,6 +2,18 @@ import BaseEditorComponent from '../base_editor_component.js'
 import {buildEditorStyles, editorBaseStyles, editorScrollbarStyles} from '../editor_theme.js'
 
 
+const ANIMATION_COLORS = [
+    'rgba(99, 102, 241, 0.15)',
+    'rgba(236, 72, 153, 0.15)',
+    'rgba(34, 197, 94, 0.15)',
+    'rgba(249, 115, 22, 0.15)',
+    'rgba(14, 165, 233, 0.15)',
+    'rgba(168, 85, 247, 0.15)',
+    'rgba(234, 179, 8, 0.15)',
+    'rgba(20, 184, 166, 0.15)'
+]
+
+
 export default class SpritesheetViewer extends BaseEditorComponent {
 
     #containerEl = null
@@ -9,9 +21,22 @@ export default class SpritesheetViewer extends BaseEditorComponent {
     #gridEl = null
     #spritesheet = null
     #filter = null
+    #animationColorMap = new Map()
+
+    #touchDragData = null
+    #touchDragGhost = null
+    #touchStartPos = null
+    #touchStartEl = null
+    #lastTimeline = null
 
     connectedCallback () {
         this.#buildDOM()
+        this.#setupTouchDrag()
+    }
+
+
+    disconnectedCallback () {
+        this.#cleanupTouchDrag()
     }
 
 
@@ -42,8 +67,31 @@ export default class SpritesheetViewer extends BaseEditorComponent {
     setSpritesheet (spritesheet) {
         this.#spritesheet = spritesheet
         this.#filter = null
+        this.#buildAnimationColorMap()
         this.#renderFilter()
         this.#renderGrid()
+    }
+
+
+    #buildAnimationColorMap () {
+        this.#animationColorMap.clear()
+        if (!this.#spritesheet) {
+            return
+        }
+
+        const animations = this.#spritesheet.listAnimations()
+        animations.forEach((name, index) => {
+            this.#animationColorMap.set(name, ANIMATION_COLORS[index % ANIMATION_COLORS.length])
+        })
+    }
+
+
+    #getAnimationPrefix (frameName) {
+        const slashIndex = frameName.lastIndexOf('/')
+        if (slashIndex === -1) {
+            return null
+        }
+        return frameName.substring(0, slashIndex)
     }
 
 
@@ -112,18 +160,23 @@ export default class SpritesheetViewer extends BaseEditorComponent {
         frameEl.className = 'frame'
         frameEl.dataset.name = name
         frameEl.draggable = true
+        frameEl.title = name
+
+        const animPrefix = this.#getAnimationPrefix(name)
+        if (animPrefix && this.#animationColorMap.has(animPrefix)) {
+            frameEl.style.background = this.#animationColorMap.get(animPrefix)
+        }
 
         const canvas = document.createElement('canvas')
         canvas.className = 'frame-thumbnail'
-        canvas.width = 48
-        canvas.height = 48
+        canvas.width = 100
+        canvas.height = 100
         drawFrameThumbnail(canvas, frameData.region)
         frameEl.appendChild(canvas)
 
         const nameEl = document.createElement('div')
         nameEl.className = 'frame-name'
         nameEl.textContent = name
-        nameEl.title = name
         frameEl.appendChild(nameEl)
 
         frameEl.addEventListener('click', () => {
@@ -151,6 +204,207 @@ export default class SpritesheetViewer extends BaseEditorComponent {
         })
 
         return frameEl
+    }
+
+
+    #setupTouchDrag () {
+        this.addEventListener('touchstart', (e) => this.#onTouchStart(e), {passive: false})
+        this.#boundTouchMove = (e) => this.#onTouchMove(e)
+        this.#boundTouchEnd = (e) => this.#onTouchEnd(e)
+        document.addEventListener('touchmove', this.#boundTouchMove, {passive: false})
+        document.addEventListener('touchend', this.#boundTouchEnd)
+    }
+
+    #boundTouchMove = null
+    #boundTouchEnd = null
+
+    #cleanupTouchDrag () {
+        if (this.#boundTouchMove) {
+            document.removeEventListener('touchmove', this.#boundTouchMove)
+        }
+        if (this.#boundTouchEnd) {
+            document.removeEventListener('touchend', this.#boundTouchEnd)
+        }
+        this.#removeDragGhost()
+    }
+
+
+    #onTouchStart (e) {
+        const touch = e.touches[0]
+        const target = e.composedPath()[0]
+        const frameEl = target.closest?.('.frame') || this.#findFrameFromPoint(touch.clientX, touch.clientY)
+
+        if (!frameEl) {
+            return
+        }
+
+        this.#touchStartPos = {x: touch.clientX, y: touch.clientY}
+        this.#touchStartEl = frameEl
+        this.#touchDragData = null
+    }
+
+
+    #findFrameFromPoint (x, y) {
+        const elements = this.shadowRoot.elementsFromPoint(x, y)
+        for (const el of elements) {
+            if (el.classList?.contains('frame')) {
+                return el
+            }
+        }
+        return null
+    }
+
+
+    #onTouchMove (e) {
+        if (!this.#touchStartEl) {
+            return
+        }
+
+        const touch = e.touches[0]
+        const dx = touch.clientX - this.#touchStartPos.x
+        const dy = touch.clientY - this.#touchStartPos.y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+
+        if (!this.#touchDragData && distance > 10) {
+            e.preventDefault()
+            this.#startTouchDrag(touch)
+        }
+
+        if (this.#touchDragData) {
+            e.preventDefault()
+            this.#updateDragGhost(touch.clientX, touch.clientY)
+
+            const timeline = this.#findTimeline(touch.clientX, touch.clientY)
+            if (timeline) {
+                timeline.handleTouchDragOver(touch.clientX)
+            } else if (this.#lastTimeline) {
+                this.#lastTimeline.handleTouchDragLeave()
+                this.#lastTimeline = null
+            }
+            this.#lastTimeline = timeline
+        }
+    }
+
+
+    #onTouchEnd (e) {
+        if (this.#touchDragData) {
+            const touch = e.changedTouches[0]
+            const timeline = this.#findTimeline(touch.clientX, touch.clientY)
+
+            if (timeline) {
+                timeline.handleTouchDrop(this.#touchDragData)
+            } else if (this.#lastTimeline) {
+                this.#lastTimeline.handleTouchDragLeave()
+            }
+
+            this.#touchStartEl?.classList.remove('dragging')
+            this.#removeDragGhost()
+        }
+
+        this.#touchStartPos = null
+        this.#touchStartEl = null
+        this.#touchDragData = null
+        this.#lastTimeline = null
+    }
+
+
+    #startTouchDrag (touch) {
+        const frameEl = this.#touchStartEl
+        const name = frameEl.dataset.name
+        const frameData = this.#spritesheet?.framesMap.get(name)
+
+        if (!frameData) {
+            return
+        }
+
+        this.#touchDragData = {
+            name,
+            regionData: {
+                x: frameData.region?.x,
+                y: frameData.region?.y,
+                width: frameData.region?.width,
+                height: frameData.region?.height
+            }
+        }
+
+        frameEl.classList.add('dragging')
+        this.#createDragGhost(frameEl, touch.clientX, touch.clientY)
+    }
+
+
+    #createDragGhost (frameEl, x, y) {
+        const canvas = frameEl.querySelector('canvas')
+        if (!canvas) {
+            return
+        }
+
+        this.#touchDragGhost = document.createElement('div')
+        this.#touchDragGhost.className = 'touch-drag-ghost'
+        this.#touchDragGhost.style.cssText = `
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            opacity: 0.8;
+            transform: translate(-50%, -50%) scale(0.8);
+        `
+
+        const clonedCanvas = document.createElement('canvas')
+        clonedCanvas.width = canvas.width
+        clonedCanvas.height = canvas.height
+        clonedCanvas.style.cssText = 'border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);'
+        clonedCanvas.getContext('2d').drawImage(canvas, 0, 0)
+
+        this.#touchDragGhost.appendChild(clonedCanvas)
+        document.body.appendChild(this.#touchDragGhost)
+
+        this.#updateDragGhost(x, y)
+    }
+
+
+    #updateDragGhost (x, y) {
+        if (this.#touchDragGhost) {
+            this.#touchDragGhost.style.left = `${x}px`
+            this.#touchDragGhost.style.top = `${y}px`
+        }
+    }
+
+
+    #removeDragGhost () {
+        if (this.#touchDragGhost) {
+            this.#touchDragGhost.remove()
+            this.#touchDragGhost = null
+        }
+    }
+
+
+    #findTimeline (x, y) {
+        const visited = new Set()
+        return this.#findElementInShadowDom(document, x, y, 'animation-timeline', visited)
+    }
+
+
+    #findElementInShadowDom (root, x, y, tagName, visited) {
+        const elements = root.elementsFromPoint(x, y)
+
+        for (const el of elements) {
+            if (visited.has(el)) {
+                continue
+            }
+            visited.add(el)
+
+            if (el.tagName?.toLowerCase() === tagName) {
+                return el
+            }
+
+            if (el.shadowRoot) {
+                const found = this.#findElementInShadowDom(el.shadowRoot, x, y, tagName, visited)
+                if (found) {
+                    return found
+                }
+            }
+        }
+
+        return null
     }
 
 }
@@ -228,13 +482,11 @@ const STYLES = buildEditorStyles(
     }
 
     .frame-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 2px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 100px);
         overflow-y: auto;
         flex: 1;
         align-content: flex-start;
-        padding: 4px;
         background: var(--bg-secondary);
         border-radius: 6px;
     }
@@ -243,16 +495,13 @@ const STYLES = buildEditorStyles(
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 2px;
-        padding: 4px;
-        background: transparent;
-        border-radius: 4px;
+        padding: 2px;
         cursor: grab;
-        transition: background 0.15s;
+        transition: filter 0.15s;
     }
 
     .frame:hover {
-        background: var(--bg-hover);
+        filter: brightness(1.2);
     }
 
     .frame:active {
@@ -264,14 +513,13 @@ const STYLES = buildEditorStyles(
     }
 
     .frame-thumbnail {
-        border-radius: 3px;
-        background: var(--bg-primary);
+        display: block;
     }
 
     .frame-name {
-        font-size: 9px;
+        font-size: 8px;
         color: var(--fg-muted);
-        max-width: 48px;
+        max-width: 100px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;

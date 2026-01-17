@@ -20,8 +20,8 @@ export default class ToolWindow extends BaseEditorComponent {
     #minHeight = 150
     #resizable = true
 
-    #onMouseMove = null
-    #onMouseUp = null
+    #onPointerMove = null
+    #onPointerUp = null
     #title = 'Tool'
 
     connectedCallback () {
@@ -29,6 +29,14 @@ export default class ToolWindow extends BaseEditorComponent {
         this.#setupDrag()
         this.#setupResize()
         this.#applyPosition()
+    }
+
+
+    #getPointerCoords (e) {
+        if (e.touches && e.touches.length > 0) {
+            return {x: e.touches[0].clientX, y: e.touches[0].clientY}
+        }
+        return {x: e.clientX, y: e.clientY}
     }
 
 
@@ -75,54 +83,69 @@ export default class ToolWindow extends BaseEditorComponent {
 
 
     #setupDrag () {
-        this.#headerEl.addEventListener('mousedown', (e) => {
+        const startDrag = (e) => {
             if (e.target.closest('.tool-window-close')) {
                 return
             }
 
+            const coords = this.#getPointerCoords(e)
             this.#isDragging = true
             this.#dragOffset = {
-                x: e.clientX - this.#x,
-                y: e.clientY - this.#y
+                x: coords.x - this.#x,
+                y: coords.y - this.#y
             }
             this.bringToFront()
-        })
+        }
 
-        this.#onMouseMove = (e) => {
+        this.#headerEl.addEventListener('mousedown', startDrag)
+        this.#headerEl.addEventListener('touchstart', startDrag, {passive: true})
+
+        this.#onPointerMove = (e) => {
+            if (!this.#isDragging && !this.#isResizing) {
+                return
+            }
+
+            const coords = this.#getPointerCoords(e)
+
             if (this.#isDragging) {
-                this.#x = e.clientX - this.#dragOffset.x
-                this.#y = e.clientY - this.#dragOffset.y
+                this.#x = coords.x - this.#dragOffset.x
+                this.#y = coords.y - this.#dragOffset.y
                 this.#applyPosition()
             }
 
             if (this.#isResizing) {
-                this.#width = Math.max(this.#minWidth, e.clientX - this.#x)
-                this.#height = Math.max(this.#minHeight, e.clientY - this.#y)
+                this.#width = Math.max(this.#minWidth, coords.x - this.#x)
+                this.#height = Math.max(this.#minHeight, coords.y - this.#y)
                 this.#applyPosition()
             }
         }
 
-        this.#onMouseUp = () => {
+        this.#onPointerUp = () => {
             this.#isDragging = false
             this.#isResizing = false
         }
 
-        window.addEventListener('mousemove', this.#onMouseMove)
-        window.addEventListener('mouseup', this.#onMouseUp)
+        window.addEventListener('mousemove', this.#onPointerMove)
+        window.addEventListener('mouseup', this.#onPointerUp)
+        window.addEventListener('touchmove', this.#onPointerMove, {passive: true})
+        window.addEventListener('touchend', this.#onPointerUp)
     }
 
 
     #setupResize () {
         const handle = this.shadowRoot.querySelector('.tool-window-resize')
 
-        handle.addEventListener('mousedown', (e) => {
+        const startResize = (e) => {
             if (!this.#resizable) {
                 return
             }
             e.stopPropagation()
             this.#isResizing = true
             this.bringToFront()
-        })
+        }
+
+        handle.addEventListener('mousedown', startResize)
+        handle.addEventListener('touchstart', startResize, {passive: false})
     }
 
 
@@ -136,11 +159,13 @@ export default class ToolWindow extends BaseEditorComponent {
 
 
     #cleanupWindowListeners () {
-        if (this.#onMouseMove) {
-            window.removeEventListener('mousemove', this.#onMouseMove)
+        if (this.#onPointerMove) {
+            window.removeEventListener('mousemove', this.#onPointerMove)
+            window.removeEventListener('touchmove', this.#onPointerMove)
         }
-        if (this.#onMouseUp) {
-            window.removeEventListener('mouseup', this.#onMouseUp)
+        if (this.#onPointerUp) {
+            window.removeEventListener('mouseup', this.#onPointerUp)
+            window.removeEventListener('touchend', this.#onPointerUp)
         }
     }
 

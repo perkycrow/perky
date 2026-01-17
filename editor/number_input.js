@@ -127,7 +127,7 @@ const numberStyles = createInputStyles(`
     }
 
     :host([compact]) .number-input-steppers {
-        flex-direction: column;
+        flex-direction: column-reverse;
         gap: 0;
     }
 
@@ -143,19 +143,19 @@ const numberStyles = createInputStyles(`
     }
 
     :host([compact]) .number-input-stepper:first-child {
-        border-radius: 2px 2px 0 0;
-    }
-
-    :host([compact]) .number-input-stepper:first-child::after {
-        content: '▲';
-    }
-
-    :host([compact]) .number-input-stepper:last-child {
         border-radius: 0 0 2px 2px;
     }
 
-    :host([compact]) .number-input-stepper:last-child::after {
+    :host([compact]) .number-input-stepper:first-child::after {
         content: '▼';
+    }
+
+    :host([compact]) .number-input-stepper:last-child {
+        border-radius: 2px 2px 0 0;
+    }
+
+    :host([compact]) .number-input-stepper:last-child::after {
+        content: '▲';
     }
 `)
 
@@ -329,8 +329,8 @@ export default class NumberInput extends HTMLElement {
         this.#incrementBtn.tabIndex = -1
         this.#incrementBtn.addEventListener('click', (e) => this.#handleStep(1, e))
 
-        stepperContainer.appendChild(this.#incrementBtn)
         stepperContainer.appendChild(this.#decrementBtn)
+        stepperContainer.appendChild(this.#incrementBtn)
 
         container.appendChild(this.#labelEl)
         container.appendChild(this.#input)

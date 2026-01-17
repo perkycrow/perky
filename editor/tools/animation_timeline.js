@@ -320,6 +320,53 @@ export default class AnimationTimeline extends BaseEditorComponent {
         }
     }
 
+
+    handleTouchDragOver (clientX) {
+        this.#containerEl.classList.add('drag-over')
+        this.#dropIndex = this.#calculateDropIndex(clientX)
+        this.#updateDropIndicator('insert')
+    }
+
+
+    handleTouchDrop (frameData) {
+        this.#containerEl.classList.remove('drag-over')
+        const insertIndex = this.#dropIndex
+        if (insertIndex >= 0) {
+            this.#handleSpritesheetDrop(JSON.stringify(frameData))
+            requestAnimationFrame(() => this.#flashFrameAt(insertIndex))
+        }
+        this.#hideDropIndicator()
+    }
+
+
+    #flashFrameAt (index) {
+        const frameEls = this.#containerEl.querySelectorAll('.frame')
+        const frameEl = frameEls[index]
+
+        if (!frameEl) {
+            return
+        }
+
+        frameEl.classList.add('just-added')
+        frameEl.addEventListener('animationend', () => {
+            frameEl.classList.remove('just-added')
+        }, {once: true})
+
+        for (let i = index + 1; i < frameEls.length; i++) {
+            const el = frameEls[i]
+            el.classList.add('pushed-right')
+            el.addEventListener('animationend', () => {
+                el.classList.remove('pushed-right')
+            }, {once: true})
+        }
+    }
+
+
+    handleTouchDragLeave () {
+        this.#containerEl.classList.remove('drag-over')
+        this.#hideDropIndicator()
+    }
+
 }
 
 
@@ -411,6 +458,39 @@ const STYLES = buildEditorStyles(
         transform: scale(0.95);
     }
 
+    .frame.just-added {
+        animation: frame-added 0.4s ease-out;
+    }
+
+    @keyframes frame-added {
+        0% {
+            background: var(--accent);
+            transform: scale(0.8);
+            opacity: 0;
+        }
+        50% {
+            transform: scale(1.05);
+            opacity: 1;
+        }
+        100% {
+            background: transparent;
+            transform: scale(1);
+        }
+    }
+
+    .frame.pushed-right {
+        animation: pushed-right 0.3s ease-out;
+    }
+
+    @keyframes pushed-right {
+        0% {
+            transform: translateX(-20px);
+        }
+        100% {
+            transform: translateX(0);
+        }
+    }
+
     .frame-thumbnail {
         border-radius: 3px;
         background: var(--bg-secondary);
@@ -447,20 +527,20 @@ const STYLES = buildEditorStyles(
 
     .frame-delete {
         position: absolute;
-        top: 2px;
-        right: 2px;
+        top: -6px;
+        right: -6px;
         width: 16px;
         height: 16px;
         padding: 0;
         border: none;
-        background: var(--status-error);
-        color: white;
+        background: var(--bg-secondary);
+        color: var(--fg-muted);
         font-size: 12px;
-        line-height: 14px;
+        line-height: 16px;
         border-radius: 50%;
         cursor: pointer;
         opacity: 0;
-        transition: opacity 0.15s;
+        transition: opacity 0.15s, color 0.15s, background 0.15s;
     }
 
     .frame:hover .frame-delete {
@@ -468,7 +548,8 @@ const STYLES = buildEditorStyles(
     }
 
     .frame-delete:hover {
-        filter: brightness(1.2);
+        background: var(--bg-hover);
+        color: var(--fg-primary);
     }
 
     .drop-indicator {
