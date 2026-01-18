@@ -1,34 +1,9 @@
 import BaseFloatingTool from '../../editor/tools/base_floating_tool.js'
-import SpriteAnimator from '../../render/sprite_animator.js'
 import {ICONS} from '../../editor/devtools/devtools_icons.js'
 import '../../editor/tools/animation_preview.js'
 import '../../editor/tools/animation_timeline.js'
 import '../../editor/tools/spritesheet_viewer.js'
 import '../../editor/number_input.js'
-
-
-const redEnemyAnimations = {
-    skip: {
-        source: 'redSpritesheet:skip',
-        fps: 12,
-        loop: true,
-        playbackMode: 'pingpong'
-    },
-    throw: {
-        fps: 16,
-        loop: false,
-        frames: [
-            {source: 'redSpritesheet:throw/1'},
-            {source: 'redSpritesheet:throw/2'},
-            {source: 'redSpritesheet:throw/3', duration: 1.8, events: ['windup']},
-            {source: 'redSpritesheet:throw/4', events: ['release']},
-            {source: 'redSpritesheet:throw/5'},
-            {source: 'redSpritesheet:throw/6'},
-            {source: 'redSpritesheet:throw/7'},
-            {source: 'redSpritesheet:throw/8'}
-        ]
-    }
-}
 
 
 export default class SpriteAnimatorTool extends BaseFloatingTool {
@@ -43,6 +18,7 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
     #timelineEl = null
     #previewEl = null
     #spritesheetViewerEl = null
+    #animatorClass = null
     #animator = null
     #spritesheet = null
     #selectedAnimation = null
@@ -66,14 +42,15 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
 
 
     onParamsSet () {
-        const {animator, textureSystem, spritesheet} = this.params
+        const {animator, animatorClass, textureSystem, spritesheet} = this.params
+
+        this.#animatorClass = animatorClass || null
 
         if (animator) {
             this.#animator = animator
-        } else if (textureSystem) {
-            this.#animator = new SpriteAnimator({
+        } else if (animatorClass && textureSystem) {
+            this.#animator = new animatorClass({
                 sprite: null,
-                config: redEnemyAnimations,
                 textureSystem
             })
         } else {
@@ -82,14 +59,36 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
 
         if (spritesheet) {
             this.#spritesheet = spritesheet
-        } else if (textureSystem) {
-            this.#spritesheet = textureSystem.getSpritesheet('redSpritesheet')
+        } else if (animatorClass && textureSystem) {
+            const spritesheetName = this.#inferSpritesheetName()
+            this.#spritesheet = spritesheetName ? textureSystem.getSpritesheet(spritesheetName) : null
         } else {
             this.#spritesheet = null
         }
 
         this.#selectedAnimation = null
         this.#render()
+    }
+
+
+    #inferSpritesheetName () {
+        const animations = this.#animatorClass?.animations
+
+        if (!animations) {
+            return null
+        }
+
+        const firstAnim = Object.values(animations)[0]
+
+        if (firstAnim?.source) {
+            return firstAnim.source.split(':')[0]
+        }
+
+        if (firstAnim?.frames?.[0]?.source) {
+            return firstAnim.frames[0].source.split(':')[0]
+        }
+
+        return null
     }
 
 
@@ -111,7 +110,7 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
         this.#contentEl.innerHTML = `
             <div class="no-animator">
                 <p>No animator provided</p>
-                <p class="hint">Open with: /tool sprite-animator animator=...</p>
+                <p class="hint">Open with: animatorClass + textureSystem</p>
             </div>
         `
     }
@@ -157,12 +156,12 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
 
 
     #exportToClipboard () {
-        if (!this.#selectedAnimation) {
+        if (!this.#animator) {
             return
         }
 
-        const config = this.#buildAnimationConfig()
-        const text = JSON.stringify(config, null, 4)
+        const fullConfig = this.#buildFullConfig()
+        const text = `static animations = ${JSON.stringify(fullConfig, null, 4)}`
 
         navigator.clipboard.writeText(text).then(() => {
             const btn = this.#contentEl.querySelector('.export-btn')
@@ -175,8 +174,18 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
     }
 
 
-    #buildAnimationConfig () {
-        const anim = this.#selectedAnimation
+    #buildFullConfig () {
+        const config = {}
+
+        for (const anim of this.#animator.children) {
+            config[anim.$id] = this.#buildAnimationConfig(anim)
+        }
+
+        return config
+    }
+
+
+    #buildAnimationConfig (anim) {
         const config = {
             fps: anim.fps,
             loop: anim.loop

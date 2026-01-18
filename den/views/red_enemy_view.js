@@ -1,30 +1,6 @@
 import EnemyView from './enemy_view.js'
-import SpriteAnimator from '../../render/sprite_animator.js'
+import RedEnemyAnimator from '../animators/red_enemy_animator.js'
 import logger from '../../core/logger.js'
-
-
-const redEnemyAnimations = {
-    skip: {
-        source: 'redSpritesheet:skip',
-        fps: 12,
-        loop: true,
-        playbackMode: 'pingpong'
-    },
-    throw: {
-        fps: 16,
-        loop: false,
-        frames: [
-            {source: 'redSpritesheet:throw/1'},
-            {source: 'redSpritesheet:throw/2'},
-            {source: 'redSpritesheet:throw/3', duration: 1.8, events: ['windup']},
-            {source: 'redSpritesheet:throw/4', events: ['release']},
-            {source: 'redSpritesheet:throw/5'},
-            {source: 'redSpritesheet:throw/6'},
-            {source: 'redSpritesheet:throw/7'},
-            {source: 'redSpritesheet:throw/8'}
-        ]
-    }
-}
 
 
 export default class RedEnemyView extends EnemyView {
@@ -32,9 +8,8 @@ export default class RedEnemyView extends EnemyView {
     constructor (entity, context) {
         super(entity, context)
 
-        this.animator = new SpriteAnimator({
+        this.animator = new RedEnemyAnimator({
             sprite: this.root,
-            config: redEnemyAnimations,
             textureSystem: context.game.textureSystem
         })
 

@@ -12,8 +12,9 @@ export default class SpriteAnimator extends PerkyModule {
         this.textureSystem = textureSystem
         this.current = null
 
-        if (config) {
-            this.loadConfig(config)
+        const animationsConfig = config || this.constructor.animations
+        if (animationsConfig) {
+            this.loadConfig(animationsConfig)
         }
     }
 
