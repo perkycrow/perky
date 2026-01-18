@@ -1,4 +1,5 @@
 import BaseFloatingTool from '../../editor/tools/base_floating_tool.js'
+import {ICONS} from '../../editor/devtools/devtools_icons.js'
 import logger from '../../core/logger.js'
 
 
@@ -6,7 +7,7 @@ export default class FoobarTool extends BaseFloatingTool {
 
     static toolId = 'foobar'
     static toolName = 'Foobar Test'
-    static toolIcon = '🧪'
+    static toolIcon = ICONS.flask
     static defaultWidth = 400
     static defaultHeight = 250
 

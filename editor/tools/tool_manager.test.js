@@ -1,23 +1,24 @@
 import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import ToolManager from './tool_manager.js'
 import BaseFloatingTool from './base_floating_tool.js'
+import {ICONS} from '../devtools/devtools_icons.js'
 import logger from '../../core/logger.js'
 
 
 class MockTool extends BaseFloatingTool {
-    static toolId = 'mock-tool'
+    static toolId = 'mockTool'
     static toolName = 'Mock Tool'
-    static toolIcon = '🔧'
+    static toolIcon = ICONS.wrench
     static defaultWidth = 300
     static defaultHeight = 200
 }
-customElements.define('mock-tool', MockTool)
+customElements.define('mockTool', MockTool)
 
 
 class AnotherMockTool extends BaseFloatingTool {
-    static toolId = 'another-tool'
+    static toolId = 'anotherTool'
     static toolName = 'Another Tool'
-    static toolIcon = '🛠️'
+    static toolIcon = ICONS.tools
     static resizable = false
 }
 customElements.define('another-mock-tool', AnotherMockTool)
@@ -46,7 +47,7 @@ describe('ToolManager', () => {
 
         test('should register a tool class', () => {
             manager.register(MockTool)
-            expect(manager.has('mock-tool')).toBe(true)
+            expect(manager.has('mockTool')).toBe(true)
         })
 
 
@@ -62,8 +63,8 @@ describe('ToolManager', () => {
 
     test('unregister should unregister a tool', () => {
         manager.register(MockTool)
-        manager.unregister('mock-tool')
-        expect(manager.has('mock-tool')).toBe(false)
+        manager.unregister('mockTool')
+        expect(manager.has('mockTool')).toBe(false)
     })
 
 
@@ -79,14 +80,14 @@ describe('ToolManager', () => {
 
         test('should open a registered tool and return instance id', () => {
             manager.register(MockTool)
-            const instanceId = manager.open('mock-tool')
+            const instanceId = manager.open('mockTool')
             expect(instanceId).toMatch(/^mock-tool-\d+$/)
         })
 
 
         test('should append tool window to container', () => {
             manager.register(MockTool)
-            manager.open('mock-tool')
+            manager.open('mockTool')
             const window = container.querySelector('tool-window')
             expect(window).not.toBeNull()
         })
@@ -94,7 +95,7 @@ describe('ToolManager', () => {
 
         test('should pass params to tool', () => {
             manager.register(MockTool)
-            const instanceId = manager.open('mock-tool', {foo: 'bar'})
+            const instanceId = manager.open('mockTool', {foo: 'bar'})
             const tool = manager.get(instanceId)
             expect(tool.params).toEqual({foo: 'bar'})
         })
@@ -103,7 +104,7 @@ describe('ToolManager', () => {
         test('should call onOpen on the tool', () => {
             manager.register(MockTool)
             const onOpenSpy = vi.spyOn(MockTool.prototype, 'onOpen')
-            manager.open('mock-tool')
+            manager.open('mockTool')
             expect(onOpenSpy).toHaveBeenCalled()
             onOpenSpy.mockRestore()
         })
@@ -111,8 +112,8 @@ describe('ToolManager', () => {
 
         test('should create unique instance ids for multiple opens', () => {
             manager.register(MockTool)
-            const id1 = manager.open('mock-tool')
-            const id2 = manager.open('mock-tool')
+            const id1 = manager.open('mockTool')
+            const id2 = manager.open('mockTool')
             expect(id1).not.toBe(id2)
         })
 
@@ -123,7 +124,7 @@ describe('ToolManager', () => {
 
         test('should close an open tool', () => {
             manager.register(MockTool)
-            const instanceId = manager.open('mock-tool')
+            const instanceId = manager.open('mockTool')
             manager.close(instanceId)
             expect(manager.isOpen(instanceId)).toBe(false)
         })
@@ -132,7 +133,7 @@ describe('ToolManager', () => {
         test('should call onClose on the tool', () => {
             manager.register(MockTool)
             const onCloseSpy = vi.spyOn(MockTool.prototype, 'onClose')
-            const instanceId = manager.open('mock-tool')
+            const instanceId = manager.open('mockTool')
             manager.close(instanceId)
             expect(onCloseSpy).toHaveBeenCalled()
             onCloseSpy.mockRestore()
@@ -151,8 +152,8 @@ describe('ToolManager', () => {
         test('should close all tool instances', () => {
             manager.register(MockTool)
             manager.register(AnotherMockTool)
-            const id1 = manager.open('mock-tool')
-            const id2 = manager.open('another-tool')
+            const id1 = manager.open('mockTool')
+            const id2 = manager.open('anotherTool')
             manager.closeAll()
             expect(manager.isOpen(id1)).toBe(false)
             expect(manager.isOpen(id2)).toBe(false)
@@ -162,9 +163,9 @@ describe('ToolManager', () => {
         test('should close only instances of specified tool', () => {
             manager.register(MockTool)
             manager.register(AnotherMockTool)
-            const mockId = manager.open('mock-tool')
-            const anotherId = manager.open('another-tool')
-            manager.closeAll('mock-tool')
+            const mockId = manager.open('mockTool')
+            const anotherId = manager.open('anotherTool')
+            manager.closeAll('mockTool')
             expect(manager.isOpen(mockId)).toBe(false)
             expect(manager.isOpen(anotherId)).toBe(true)
         })
@@ -176,7 +177,7 @@ describe('ToolManager', () => {
 
         test('should return tool instance by id', () => {
             manager.register(MockTool)
-            const instanceId = manager.open('mock-tool')
+            const instanceId = manager.open('mockTool')
             const tool = manager.get(instanceId)
             expect(tool).toBeInstanceOf(MockTool)
         })
@@ -201,8 +202,8 @@ describe('ToolManager', () => {
             manager.register(AnotherMockTool)
             const tools = manager.listTools()
             expect(tools).toHaveLength(2)
-            expect(tools).toContainEqual({id: 'mock-tool', name: 'Mock Tool', icon: '🔧'})
-            expect(tools).toContainEqual({id: 'another-tool', name: 'Another Tool', icon: '🛠️'})
+            expect(tools).toContainEqual({id: 'mockTool', name: 'Mock Tool', icon: '🔧'})
+            expect(tools).toContainEqual({id: 'anotherTool', name: 'Another Tool', icon: '🛠️'})
         })
 
     })
@@ -217,8 +218,8 @@ describe('ToolManager', () => {
 
         test('should return list of open instance ids', () => {
             manager.register(MockTool)
-            const id1 = manager.open('mock-tool')
-            const id2 = manager.open('mock-tool')
+            const id1 = manager.open('mockTool')
+            const id2 = manager.open('mockTool')
             const instances = manager.listInstances()
             expect(instances).toContain(id1)
             expect(instances).toContain(id2)
@@ -236,7 +237,7 @@ describe('ToolManager', () => {
 
         test('should return true for registered tool', () => {
             manager.register(MockTool)
-            expect(manager.has('mock-tool')).toBe(true)
+            expect(manager.has('mockTool')).toBe(true)
         })
 
     })
@@ -251,7 +252,7 @@ describe('ToolManager', () => {
 
         test('should return true for open instance', () => {
             manager.register(MockTool)
-            const instanceId = manager.open('mock-tool')
+            const instanceId = manager.open('mockTool')
             expect(manager.isOpen(instanceId)).toBe(true)
         })
 

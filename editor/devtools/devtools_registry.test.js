@@ -8,12 +8,13 @@ import {
     getSidebarTools,
     getBottomTools
 } from './devtools_registry.js'
+import {ICONS} from './devtools_icons.js'
 
 
 class MockTool {
     static toolId = 'mock'
     static toolName = 'Mock Tool'
-    static toolIcon = '🔧'
+    static toolIcon = ICONS.wrench
     static location = 'sidebar'
     static order = 50
 }
@@ -22,7 +23,7 @@ class MockTool {
 class MockTool2 {
     static toolId = 'mock2'
     static toolName = 'Mock Tool 2'
-    static toolIcon = '🔨'
+    static toolIcon = ICONS.hammer
     static location = 'sidebar'
     static order = 10
 }
@@ -31,7 +32,7 @@ class MockTool2 {
 class MockBottomTool {
     static toolId = 'mockBottom'
     static toolName = 'Mock Bottom'
-    static toolIcon = '📋'
+    static toolIcon = ICONS.clipboard
     static location = 'bottom'
     static order = 100
 }

@@ -1,11 +1,12 @@
 import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import BaseFloatingTool from './base_floating_tool.js'
+import {ICONS} from '../devtools/devtools_icons.js'
 
 
 class TestFloatingTool extends BaseFloatingTool {
-    static toolId = 'test-tool'
+    static toolId = 'testTool'
     static toolName = 'Test Tool'
-    static toolIcon = '🧪'
+    static toolIcon = ICONS.flask
 }
 customElements.define('test-floating-tool', TestFloatingTool)
 

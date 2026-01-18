@@ -1,11 +1,12 @@
 import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import BaseTool from './base_tool.js'
+import {ICONS} from '../devtools_icons.js'
 
 
 class TestTool extends BaseTool {
     static toolId = 'test'
     static toolName = 'Test Tool'
-    static toolIcon = '🔧'
+    static toolIcon = ICONS.wrench
 }
 
 if (!customElements.get('test-tool')) {

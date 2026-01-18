@@ -23,6 +23,7 @@ export default class ToolWindow extends BaseEditorComponent {
     #onPointerMove = null
     #onPointerUp = null
     #title = 'Tool'
+    #icon = ''
 
     connectedCallback () {
         this.#buildDOM()
@@ -47,6 +48,11 @@ export default class ToolWindow extends BaseEditorComponent {
 
         this.#headerEl = document.createElement('div')
         this.#headerEl.className = 'tool-window-header'
+
+        const iconEl = document.createElement('span')
+        iconEl.className = 'tool-window-icon'
+        iconEl.innerHTML = this.#icon
+        this.#headerEl.appendChild(iconEl)
 
         const titleEl = document.createElement('span')
         titleEl.className = 'tool-window-title'
@@ -190,6 +196,15 @@ export default class ToolWindow extends BaseEditorComponent {
     }
 
 
+    setIcon (iconSvg) {
+        this.#icon = iconSvg || ''
+        const iconEl = this.shadowRoot.querySelector('.tool-window-icon')
+        if (iconEl) {
+            iconEl.innerHTML = this.#icon
+        }
+    }
+
+
     setPosition (x, y) {
         this.#x = x
         this.#y = y
@@ -237,7 +252,7 @@ const STYLES = buildEditorStyles(
     .tool-window-header {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        gap: 8px;
         padding: 8px 12px;
         background: var(--bg-secondary);
         border-bottom: 1px solid var(--border);
@@ -249,6 +264,24 @@ const STYLES = buildEditorStyles(
         cursor: grabbing;
     }
 
+    .tool-window-icon {
+        width: 14px;
+        height: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--fg-muted);
+    }
+
+    .tool-window-icon:empty {
+        display: none;
+    }
+
+    .tool-window-icon svg {
+        width: 100%;
+        height: 100%;
+    }
+
     .tool-window-title {
         font-size: 12px;
         font-weight: 500;
@@ -258,6 +291,7 @@ const STYLES = buildEditorStyles(
     .tool-window-close {
         width: 20px;
         height: 20px;
+        margin-left: auto;
         border: none;
         background: transparent;
         color: var(--fg-muted);

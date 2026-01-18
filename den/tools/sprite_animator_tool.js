@@ -1,5 +1,6 @@
 import BaseFloatingTool from '../../editor/tools/base_floating_tool.js'
 import SpriteAnimator from '../../render/sprite_animator.js'
+import {ICONS} from '../../editor/devtools/devtools_icons.js'
 import '../../editor/tools/animation_preview.js'
 import '../../editor/tools/animation_timeline.js'
 import '../../editor/tools/spritesheet_viewer.js'
@@ -32,9 +33,9 @@ const redEnemyAnimations = {
 
 export default class SpriteAnimatorTool extends BaseFloatingTool {
 
-    static toolId = 'sprite-animator'
+    static toolId = 'spriteAnimator'
     static toolName = 'Sprite Animator'
-    static toolIcon = '🎬'
+    static toolIcon = ICONS.clapperboard
     static defaultWidth = 600
     static defaultHeight = 450
 

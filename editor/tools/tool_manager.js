@@ -44,6 +44,7 @@ export default class ToolManager {
 
         const windowEl = new ToolWindow()
         windowEl.setTitle(ToolClass.toolName || toolId)
+        windowEl.setIcon(ToolClass.toolIcon)
         windowEl.setPosition(this.#nextX, this.#nextY)
 
         const width = ToolClass.defaultWidth || 400
