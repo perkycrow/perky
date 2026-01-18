@@ -17,7 +17,7 @@ export default class RedEnemyView extends EnemyView {
             logger.log('throw released')
         })
 
-        this.lastState = null
+        this.hopHeight = 0.1
     }
 
 
@@ -30,34 +30,33 @@ export default class RedEnemyView extends EnemyView {
     sync () {
         super.sync()
         this.syncAnimation()
-        this.syncAnimationSpeed()
+        this.syncHop()
+    }
+
+
+    syncHop () {
+        const skipAnim = this.animator.get('skip')
+
+        if (this.animator.current === skipAnim && skipAnim.totalFrames > 0) {
+            const progress = skipAnim.currentIndex / skipAnim.totalFrames
+            const t = (progress * 2) % 1
+            const hop = 4 * t * (1 - t)
+            this.root.y += hop * this.hopHeight
+        }
     }
 
 
     syncAnimation () {
         const state = this.entity.state
-
-        if (state !== this.lastState) {
-            this.lastState = state
-
-            if (state === 'stopping') {
-                this.animator.play('throw')
-            } else {
-                this.animator.play('skip')
-            }
-        }
-    }
-
-
-    syncAnimationSpeed () {
         const skipAnim = this.animator.get('skip')
+        const throwAnim = this.animator.get('throw')
 
-        if (this.animator.current === skipAnim) {
-            const velocity = this.entity.velocity
-            const speed = Math.sqrt(velocity.x ** 2 + velocity.y ** 2)
-            const normalizedSpeed = speed / this.entity.maxSpeed
-
-            skipAnim.setSpeed(0.5 + normalizedSpeed * 1.5)
+        if (state === 'stopping') {
+            if (this.animator.current !== throwAnim) {
+                this.animator.play('throw')
+            }
+        } else if (this.animator.current !== skipAnim) {
+            this.animator.play('skip')
         }
     }
 

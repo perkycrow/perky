@@ -87,6 +87,7 @@ export default class SpriteAnimator extends PerkyModule {
         return {
             region,
             name: frameName,
+            source: frameConfig.source,
             duration: frameConfig.duration,
             events: frameConfig.events
         }

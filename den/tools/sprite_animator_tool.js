@@ -246,10 +246,10 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
         config.frames = anim.frames.map(frame => {
             const frameConfig = {}
 
-            if (frame.name) {
-                frameConfig.source = `${this.#spritesheet?.$id || 'spritesheet'}:${frame.name}`
-            } else if (frame.source) {
+            if (frame.source) {
                 frameConfig.source = frame.source
+            } else if (frame.name) {
+                frameConfig.source = `${this.#spritesheet?.$id || 'spritesheet'}:${frame.name}`
             }
 
             if (frame.duration && frame.duration !== 1) {
