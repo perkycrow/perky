@@ -5,13 +5,14 @@ export default class Object2D extends Transform {
 
     #tint = null
     #debugGizmos = null
+    #depth = 0
 
     constructor (options = {}) { // eslint-disable-line complexity -- clean
         super()
 
         this.visible = options.visible ?? true
         this.opacity = options.opacity ?? 1
-        this.depth = options.depth ?? 0
+        this.#depth = options.depth ?? 0
         this.anchorX = options.anchorX ?? 0.5
         this.anchorY = options.anchorY ?? 0.5
 
@@ -64,6 +65,22 @@ export default class Object2D extends Transform {
 
     set debugGizmos (value) {
         this.#debugGizmos = value
+    }
+
+
+    get depth () {
+        return this.#depth
+    }
+
+
+    set depth (value) {
+        if (this.#depth !== value) {
+            this.#depth = value
+            if (this.parent) {
+                this.parent.markChildrenNeedSort()
+            }
+            this.markDirty()
+        }
     }
 
 
@@ -122,13 +139,7 @@ export default class Object2D extends Transform {
 
 
     setDepth (depth) {
-        if (this.depth !== depth) {
-            this.depth = depth
-            if (this.parent) {
-                this.parent.markChildrenNeedSort()
-            }
-            this.markDirty()
-        }
+        this.depth = depth
         return this
     }
 
