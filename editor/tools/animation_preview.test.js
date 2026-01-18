@@ -68,14 +68,12 @@ describe('AnimationPreview', () => {
         test('should render play button', () => {
             const playBtn = preview.shadowRoot.querySelector('.play-btn')
             expect(playBtn).not.toBeNull()
-            expect(playBtn.textContent).toBe('▶')
         })
 
 
         test('should render stop button', () => {
             const stopBtn = preview.shadowRoot.querySelector('.stop-btn')
             expect(stopBtn).not.toBeNull()
-            expect(stopBtn.textContent).toBe('⏹')
         })
 
     })
@@ -120,14 +118,6 @@ describe('AnimationPreview', () => {
         })
 
 
-        test('play should change button text to pause', () => {
-            const animation = createMockAnimation()
-            preview.setAnimation(animation)
-            preview.play()
-
-            const playBtn = preview.shadowRoot.querySelector('.play-btn')
-            expect(playBtn.textContent).toBe('⏸')
-        })
 
 
         test('pause should stop playback', () => {
@@ -141,15 +131,6 @@ describe('AnimationPreview', () => {
         })
 
 
-        test('pause should change button text back to play', () => {
-            const animation = createMockAnimation()
-            preview.setAnimation(animation)
-            preview.play()
-            preview.pause()
-
-            const playBtn = preview.shadowRoot.querySelector('.play-btn')
-            expect(playBtn.textContent).toBe('▶')
-        })
 
 
         test('stop should reset animation', () => {

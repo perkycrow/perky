@@ -43,18 +43,8 @@ describe('BaseFloatingTool', () => {
         })
 
 
-        test('should have static toolId', () => {
-            expect(TestFloatingTool.toolId).toBe('test-tool')
-        })
-
-
         test('should have static toolName', () => {
             expect(TestFloatingTool.toolName).toBe('Test Tool')
-        })
-
-
-        test('should have static toolIcon', () => {
-            expect(TestFloatingTool.toolIcon).toBe('🧪')
         })
 
 
@@ -95,10 +85,39 @@ describe('BaseFloatingTool', () => {
     })
 
 
+    describe('options', () => {
+
+        test('should have empty options by default', () => {
+            expect(tool.options).toEqual({})
+        })
+
+
+        test('should set options via setOptions', () => {
+            const options = {theme: 'dark', enabled: true}
+            tool.setOptions(options)
+            expect(tool.options).toEqual(options)
+        })
+
+
+        test('should call onOptionsSet when options are set', () => {
+            const onOptionsSetSpy = vi.spyOn(tool, 'onOptionsSet')
+            const options = {setting: 'value'}
+            tool.setOptions(options)
+            expect(onOptionsSetSpy).toHaveBeenCalledWith(options)
+        })
+
+    })
+
+
     describe('lifecycle hooks', () => {
 
         test('onParamsSet should be callable', () => {
             expect(() => tool.onParamsSet()).not.toThrow()
+        })
+
+
+        test('onOptionsSet should be callable', () => {
+            expect(() => tool.onOptionsSet()).not.toThrow()
         })
 
 

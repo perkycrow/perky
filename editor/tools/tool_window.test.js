@@ -67,6 +67,33 @@ describe('ToolWindow', () => {
     })
 
 
+    describe('setIcon', () => {
+
+        test('should update the icon innerHTML', () => {
+            const svgIcon = '<svg><path d="M0 0"/></svg>'
+            toolWindow.setIcon(svgIcon)
+            const iconEl = toolWindow.shadowRoot.querySelector('.tool-window-icon')
+            expect(iconEl.innerHTML).toContain('<svg>')
+            expect(iconEl.innerHTML).toContain('path')
+        })
+
+
+        test('should set empty string when called with null', () => {
+            toolWindow.setIcon(null)
+            const iconEl = toolWindow.shadowRoot.querySelector('.tool-window-icon')
+            expect(iconEl.innerHTML).toBe('')
+        })
+
+
+        test('should set empty string when called with undefined', () => {
+            toolWindow.setIcon(undefined)
+            const iconEl = toolWindow.shadowRoot.querySelector('.tool-window-icon')
+            expect(iconEl.innerHTML).toBe('')
+        })
+
+    })
+
+
     test('setPosition should update left and top styles', () => {
         toolWindow.setPosition(100, 200)
         expect(toolWindow.style.left).toBe('100px')

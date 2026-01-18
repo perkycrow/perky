@@ -46,11 +46,6 @@ describe('BaseTool', () => {
         })
 
 
-        test('toolIcon', () => {
-            expect(BaseTool.toolIcon).toBe('🔧')
-        })
-
-
         test('location', () => {
             expect(BaseTool.location).toBe('sidebar')
         })
