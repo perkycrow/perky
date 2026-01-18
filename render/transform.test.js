@@ -298,5 +298,61 @@ describe(Transform, () => {
         expect(result.y).toBeCloseTo(10)
     })
 
+
+    test('markDirty skips already dirty children', () => {
+        const child1 = new Transform()
+        const child2 = new Transform()
+        const grandchild = new Transform()
+
+        transform.add(child1)
+        child1.add(grandchild)
+        transform.add(child2)
+
+        // All start dirty, so clear them
+        transform.updateWorldMatrix()
+
+        // Mark only child1 dirty
+        child1.markDirty()
+
+        // Now mark parent dirty - should not re-traverse child1's subtree
+        // since child1 is already dirty
+        let markDirtyCallCount = 0
+        const originalMarkDirty = grandchild.markDirty.bind(grandchild)
+        grandchild.markDirty = () => {
+            markDirtyCallCount++
+            originalMarkDirty()
+        }
+
+        transform.markDirty()
+
+        // grandchild.markDirty should only be called once (from child1, not from transform)
+        // because child1 was already dirty and should short-circuit
+        expect(markDirtyCallCount).toBe(0)
+    })
+
+
+    test('markDirty propagates when not already dirty', () => {
+        const child = new Transform()
+        const grandchild = new Transform()
+
+        transform.add(child)
+        child.add(grandchild)
+
+        // Clear dirty flags
+        transform.updateWorldMatrix()
+
+        // Track if grandchild gets marked
+        let grandchildMarked = false
+        const originalMarkDirty = grandchild.markDirty.bind(grandchild)
+        grandchild.markDirty = () => {
+            grandchildMarked = true
+            originalMarkDirty()
+        }
+
+        transform.markDirty()
+
+        expect(grandchildMarked).toBe(true)
+    })
+
 })
 

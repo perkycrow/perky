@@ -163,6 +163,9 @@ export default class Transform {
 
 
     markDirty () {
+        if (this.#dirty) {
+            return
+        }
         this.#dirty = true
         this.children.forEach(child => child.markDirty())
     }

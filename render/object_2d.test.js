@@ -259,4 +259,55 @@ describe(Object2D, () => {
         expect(object.visible).toBe(true)
     })
 
+
+    test('depth setter triggers markChildrenNeedSort on parent', () => {
+        const parent = new Object2D()
+        const child1 = new Object2D({depth: 0})
+        const child2 = new Object2D({depth: 1})
+
+        parent.add(child1, child2)
+
+        // Get initial sorted children
+        const sorted1 = parent.getSortedChildren()
+        expect(sorted1[0]).toBe(child1)
+        expect(sorted1[1]).toBe(child2)
+
+        // Change depth using setter
+        child1.depth = 10
+
+        // Should trigger re-sort
+        const sorted2 = parent.getSortedChildren()
+        expect(sorted2[0]).toBe(child2)
+        expect(sorted2[1]).toBe(child1)
+    })
+
+
+    test('depth setter does not trigger if value unchanged', () => {
+        const parent = new Object2D()
+        const child = new Object2D({depth: 5})
+
+        parent.add(child)
+        parent.getSortedChildren()
+
+        // Set same value
+        child.depth = 5
+
+        // Cache should still be valid (same reference)
+        const sorted1 = parent.getSortedChildren()
+        const sorted2 = parent.getSortedChildren()
+        expect(sorted1).toBe(sorted2)
+    })
+
+
+    test('depth setter works without parent', () => {
+        const obj = new Object2D()
+
+        // Should not throw when no parent
+        expect(() => {
+            obj.depth = 10
+        }).not.toThrow()
+
+        expect(obj.depth).toBe(10)
+    })
+
 })
