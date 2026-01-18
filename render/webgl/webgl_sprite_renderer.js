@@ -38,7 +38,7 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
 
         const batches = this.#groupByShaderEffects()
 
-        for (const [effectKey, items] of batches) {
+        for (const {key: effectKey, items} of batches) {
             const program = this.#getProgramForEffects(effectKey, transform)
 
             this.#spriteBatch.begin(program)
@@ -68,16 +68,21 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
 
 
     #groupByShaderEffects () {
-        const batches = new Map()
+        const batches = []
+        let currentKey = null
+        let currentBatch = null
 
         for (const item of this.collected) {
             const effectTypes = item.hints?.shaderEffectTypes || []
-            const key = [...effectTypes].sort().join('|')
+            const key = [...effectTypes].sort().join('|') || 'none'
 
-            if (!batches.has(key)) {
-                batches.set(key, [])
+            if (key !== currentKey) {
+                currentKey = key
+                currentBatch = {key, items: []}
+                batches.push(currentBatch)
             }
-            batches.get(key).push(item)
+
+            currentBatch.items.push(item)
         }
 
         return batches
@@ -89,7 +94,7 @@ export default class WebGLSpriteRenderer extends WebGLObjectRenderer {
             return transform.getProgram()
         }
 
-        if (!effectKey || !this.#shaderEffectRegistry) {
+        if (!effectKey || effectKey === 'none' || !this.#shaderEffectRegistry) {
             return this.context.spriteProgram
         }
 

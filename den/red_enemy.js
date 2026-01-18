@@ -8,7 +8,7 @@ export default class RedEnemy extends Enemy {
 
     constructor (params = {}) {
         super({
-            maxSpeed: 4,
+            maxSpeed: 2,
             hp: 2,
             ...params
         })
