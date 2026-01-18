@@ -19,11 +19,11 @@ export default class ToolManager {
     }
 
 
-    register (ToolClass) {
+    register (ToolClass, options = {}) {
         if (!ToolClass.toolId) {
             throw new Error('Tool must have a static toolId')
         }
-        this.#registry.set(ToolClass.toolId, ToolClass)
+        this.#registry.set(ToolClass.toolId, {ToolClass, options})
     }
 
 
@@ -33,13 +33,14 @@ export default class ToolManager {
 
 
     open (toolId, params = {}) {
-        const ToolClass = this.#registry.get(toolId)
+        const entry = this.#registry.get(toolId)
 
-        if (!ToolClass) {
+        if (!entry) {
             logger.warn(`Tool "${toolId}" not found in registry`)
             return null
         }
 
+        const {ToolClass, options} = entry
         const instanceId = `${toolId}-${this.#nextInstanceId++}`
 
         const windowEl = new ToolWindow()
@@ -57,6 +58,7 @@ export default class ToolManager {
         this.#advanceCascade()
 
         const toolEl = new ToolClass()
+        toolEl.setOptions?.(options)
         toolEl.setParams?.(params)
 
         windowEl.appendChild(toolEl)
@@ -109,10 +111,10 @@ export default class ToolManager {
 
 
     listTools () {
-        return Array.from(this.#registry.entries()).map(([id, Tool]) => ({
+        return Array.from(this.#registry.entries()).map(([id, {ToolClass}]) => ({
             id,
-            name: Tool.toolName || id,
-            icon: Tool.toolIcon || '🔧'
+            name: ToolClass.toolName || id,
+            icon: ToolClass.toolIcon || '🔧'
         }))
     }
 

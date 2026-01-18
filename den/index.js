@@ -4,6 +4,7 @@ import {PerkyDevTools} from '../editor/devtools/index.js'
 import ToolManager from '../editor/tools/tool_manager.js'
 import FoobarTool from './tools/foobar_tool.js'
 import SpriteAnimatorTool from './tools/sprite_animator_tool.js'
+import RedEnemyAnimator from './animators/red_enemy_animator.js'
 
 
 async function init () {
@@ -24,7 +25,9 @@ async function init () {
 
     const toolManager = new ToolManager()
     toolManager.register(FoobarTool)
-    toolManager.register(SpriteAnimatorTool)
+    toolManager.register(SpriteAnimatorTool, {
+        animators: {RedEnemyAnimator}
+    })
     devtools.setToolManager(toolManager)
 
     window.defendTheDen = app

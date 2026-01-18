@@ -18,6 +18,7 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
     #timelineEl = null
     #previewEl = null
     #spritesheetViewerEl = null
+    #animators = {}
     #animatorClass = null
     #animator = null
     #spritesheet = null
@@ -25,6 +26,11 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
 
     connectedCallback () {
         this.#buildDOM()
+    }
+
+
+    onOptionsSet () {
+        this.#animators = this.options.animators || {}
     }
 
 
@@ -42,7 +48,21 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
 
 
     onParamsSet () {
-        const {animator, animatorClass, textureSystem, spritesheet} = this.params
+        const {animator, animatorClass, spritesheet} = this.params
+
+        const resolvedClass = animatorClass || this.#getDefaultAnimatorClass()
+        this.#selectAnimatorClass(resolvedClass, {animator, spritesheet})
+    }
+
+
+    #getDefaultAnimatorClass () {
+        const animatorNames = Object.keys(this.#animators)
+        return animatorNames.length > 0 ? this.#animators[animatorNames[0]] : null
+    }
+
+
+    #selectAnimatorClass (animatorClass, {animator, spritesheet} = {}) {
+        const {textureSystem} = this.params
 
         this.#animatorClass = animatorClass || null
 
@@ -123,11 +143,18 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
             this.#selectedAnimation = animations[0]
         }
 
+        const hasAnimators = Object.keys(this.#animators).length > 0
+
         this.#contentEl.innerHTML = `
+            ${hasAnimators ? `
+            <div class="animator-topbar">
+                <select class="animator-select"></select>
+                <button class="export-all-btn" title="Copy animator config to clipboard">Export</button>
+            </div>
+            ` : ''}
             <div class="animator-header">
                 <select class="animation-select"></select>
                 <div class="animation-info"></div>
-                <button class="export-btn" title="Copy config to clipboard">Export</button>
             </div>
             <div class="animator-main">
                 <div class="animator-left">
@@ -140,22 +167,43 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
             </div>
         `
 
+        if (hasAnimators) {
+            this.#setupAnimatorSelect()
+            this.#setupExportAllButton()
+        }
         this.#renderAnimationSelect(animations)
         this.#renderAnimationInfo()
-        this.#setupExportButton()
         this.#setupPreview()
         this.#setupTimeline()
         this.#setupSpritesheetViewer()
     }
 
 
-    #setupExportButton () {
-        const btn = this.#contentEl.querySelector('.export-btn')
-        btn.addEventListener('click', () => this.#exportToClipboard())
+    #setupAnimatorSelect () {
+        const select = this.#contentEl.querySelector('.animator-select')
+
+        for (const [name, AnimatorClass] of Object.entries(this.#animators)) {
+            const option = document.createElement('option')
+            option.value = name
+            option.textContent = name
+            option.selected = AnimatorClass === this.#animatorClass
+            select.appendChild(option)
+        }
+
+        select.addEventListener('change', (e) => {
+            const AnimatorClass = this.#animators[e.target.value]
+            this.#selectAnimatorClass(AnimatorClass)
+        })
     }
 
 
-    #exportToClipboard () {
+    #setupExportAllButton () {
+        const btn = this.#contentEl.querySelector('.export-all-btn')
+        btn.addEventListener('click', () => this.#exportAnimatorToClipboard())
+    }
+
+
+    #exportAnimatorToClipboard () {
         if (!this.#animator) {
             return
         }
@@ -164,7 +212,7 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
         const text = `static animations = ${JSON.stringify(fullConfig, null, 4)}`
 
         navigator.clipboard.writeText(text).then(() => {
-            const btn = this.#contentEl.querySelector('.export-btn')
+            const btn = this.#contentEl.querySelector('.export-all-btn')
             const original = btn.textContent
             btn.textContent = 'Copied!'
             setTimeout(() => {
@@ -440,6 +488,37 @@ const STYLES = SpriteAnimatorTool.buildStyles(`
         color: var(--fg-muted);
     }
 
+    .animator-topbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--bg-hover);
+    }
+
+    .animator-topbar .animator-select {
+        flex: 1;
+    }
+
+    .export-all-btn {
+        width: 100px;
+        background: var(--bg-hover);
+        color: var(--fg-secondary);
+        border: none;
+        border-radius: 4px;
+        padding: 6px 12px;
+        font-family: inherit;
+        font-size: 11px;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+    }
+
+    .export-all-btn:hover {
+        background: var(--bg-selected);
+        color: var(--fg-primary);
+    }
+
     .animator-header {
         display: flex;
         align-items: center;
@@ -447,6 +526,7 @@ const STYLES = SpriteAnimatorTool.buildStyles(`
         flex-shrink: 0;
     }
 
+    .animator-select,
     .animation-select {
         background: var(--bg-secondary);
         color: var(--fg-primary);
@@ -459,10 +539,12 @@ const STYLES = SpriteAnimatorTool.buildStyles(`
         transition: background 0.15s;
     }
 
+    .animator-select:hover,
     .animation-select:hover {
         background: var(--bg-hover);
     }
 
+    .animator-select:focus,
     .animation-select:focus {
         outline: none;
         background: var(--bg-hover);
@@ -475,23 +557,6 @@ const STYLES = SpriteAnimatorTool.buildStyles(`
         font-size: 11px;
         flex: 1;
         align-items: center;
-    }
-
-    .export-btn {
-        background: var(--bg-hover);
-        color: var(--fg-secondary);
-        border: none;
-        border-radius: 4px;
-        padding: 6px 12px;
-        font-family: inherit;
-        font-size: 11px;
-        cursor: pointer;
-        transition: background 0.15s, color 0.15s;
-    }
-
-    .export-btn:hover {
-        background: var(--bg-selected);
-        color: var(--fg-primary);
     }
 
     .info-item {

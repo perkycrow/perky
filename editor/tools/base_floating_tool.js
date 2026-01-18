@@ -13,6 +13,18 @@ export default class BaseFloatingTool extends BaseEditorComponent {
     static resizable = true
 
     #params = {}
+    #options = {}
+
+    setOptions (options) {
+        this.#options = options
+        this.onOptionsSet?.(options)
+    }
+
+
+    get options () {
+        return this.#options
+    }
+
 
     setParams (params) {
         this.#params = params
@@ -23,6 +35,9 @@ export default class BaseFloatingTool extends BaseEditorComponent {
     get params () {
         return this.#params
     }
+
+
+    onOptionsSet () { }
 
 
     onParamsSet () { }
