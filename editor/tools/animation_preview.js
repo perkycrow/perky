@@ -1,5 +1,6 @@
 import BaseEditorComponent from '../base_editor_component.js'
 import {buildEditorStyles, editorBaseStyles} from '../editor_theme.js'
+import {ICONS} from '../devtools/devtools_icons.js'
 import WebGLRenderer from '../../render/webgl_renderer.js'
 import Sprite from '../../render/sprite.js'
 import Object2D from '../../render/object_2d.js'
@@ -48,12 +49,12 @@ export default class AnimationPreview extends BaseEditorComponent {
 
         const playBtn = document.createElement('button')
         playBtn.className = 'play-btn'
-        playBtn.textContent = '▶'
+        playBtn.innerHTML = ICONS.start
         playBtn.addEventListener('click', () => this.#togglePlay())
 
         const stopBtn = document.createElement('button')
         stopBtn.className = 'stop-btn'
-        stopBtn.textContent = '⏹'
+        stopBtn.innerHTML = ICONS.stop
         stopBtn.addEventListener('click', () => this.stop())
 
         controls.appendChild(playBtn)
@@ -143,7 +144,7 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#animationFrameId = requestAnimationFrame((t) => this.#loop(t))
 
         const playBtn = this.shadowRoot.querySelector('.play-btn')
-        playBtn.textContent = '⏸'
+        playBtn.innerHTML = ICONS.pause
 
         this.dispatchEvent(new CustomEvent('play'))
     }
@@ -159,7 +160,7 @@ export default class AnimationPreview extends BaseEditorComponent {
         }
 
         const playBtn = this.shadowRoot.querySelector('.play-btn')
-        playBtn.textContent = '▶'
+        playBtn.innerHTML = ICONS.start
 
         this.dispatchEvent(new CustomEvent('pause'))
     }
@@ -261,12 +262,18 @@ const STYLES = buildEditorStyles(
         border-radius: 4px;
         width: 32px;
         height: 32px;
+        padding: 8px;
         cursor: pointer;
-        font-size: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: background 0.15s, color 0.15s;
+    }
+
+    .preview-controls button svg {
+        width: 100%;
+        height: 100%;
+        fill: currentColor;
     }
 
     .preview-controls button:hover {
