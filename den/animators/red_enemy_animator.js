@@ -9,7 +9,8 @@ export default class RedEnemyAnimator extends SpriteAnimator {
             loop: true,
             frames: [
                 {
-                    source: 'redSpritesheet:skip/1'
+                    source: 'redSpritesheet:skip/1',
+                    events: ['hop']
                 },
                 {
                     source: 'redSpritesheet:skip/2'
@@ -21,7 +22,8 @@ export default class RedEnemyAnimator extends SpriteAnimator {
                     source: 'redSpritesheet:skip/4'
                 },
                 {
-                    source: 'redSpritesheet:skip/5'
+                    source: 'redSpritesheet:skip/5',
+                    events: ['hop']
                 },
                 {
                     source: 'redSpritesheet:skip/6'

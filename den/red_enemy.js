@@ -95,7 +95,7 @@ export default class RedEnemy extends Enemy {
 
         this.emit('throw:pie', {
             x: this.position.x,
-            y: this.position.y,
+            y: this.position.y + 0.25,
             sprite
         })
     }

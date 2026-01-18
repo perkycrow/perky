@@ -5,6 +5,7 @@ export default class SpriteAnimation extends PerkyModule {
 
     #elapsed = 0
     #events = new Map()
+    #framesByEvent = new Map()
     #pingpongDirection = 1
 
     constructor (options = {}) {
@@ -181,6 +182,12 @@ export default class SpriteAnimation extends PerkyModule {
             this.#events.set(frameIndex, [])
         }
         this.#events.get(frameIndex).push(eventName)
+
+        if (!this.#framesByEvent.has(eventName)) {
+            this.#framesByEvent.set(eventName, [])
+        }
+        this.#framesByEvent.get(eventName).push(frameIndex)
+
         return this
     }
 
@@ -201,18 +208,63 @@ export default class SpriteAnimation extends PerkyModule {
             this.#events.delete(frameIndex)
         }
 
+        if (this.#framesByEvent.has(eventName)) {
+            const frames = this.#framesByEvent.get(eventName)
+            const frameIdx = frames.indexOf(frameIndex)
+            if (frameIdx !== -1) {
+                frames.splice(frameIdx, 1)
+            }
+            if (frames.length === 0) {
+                this.#framesByEvent.delete(eventName)
+            }
+        }
+
         return this
     }
 
 
     clearEvents () {
         this.#events.clear()
+        this.#framesByEvent.clear()
         return this
     }
 
 
     getEvents (frameIndex) {
         return this.#events.get(frameIndex) || []
+    }
+
+
+    getFramesByEvent (eventName) {
+        return this.#framesByEvent.get(eventName) || []
+    }
+
+
+    getSegmentProgress (eventName) {
+        const keyframes = this.getFramesByEvent(eventName)
+
+        if (keyframes.length < 2) {
+            return 0
+        }
+
+        const current = this.currentIndex
+
+        for (let i = 0; i < keyframes.length; i++) {
+            const start = keyframes[i]
+            const end = keyframes[(i + 1) % keyframes.length]
+
+            const isInSegment = (end > start)
+                ? (current >= start && current < end)
+                : (current >= start || current < end)
+
+            if (isInSegment) {
+                const segmentLength = (end > start) ? (end - start) : (this.totalFrames - start + end)
+                const position = (current >= start) ? (current - start) : (this.totalFrames - start + current)
+                return position / segmentLength
+            }
+        }
+
+        return 0
     }
 
 
@@ -364,6 +416,7 @@ export default class SpriteAnimation extends PerkyModule {
         this.sprite = null
         this.frames = []
         this.#events.clear()
+        this.#framesByEvent.clear()
     }
 
 }

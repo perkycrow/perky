@@ -37,12 +37,13 @@ export default class RedEnemyView extends EnemyView {
     syncHop () {
         const skipAnim = this.animator.get('skip')
 
-        if (this.animator.current === skipAnim && skipAnim.totalFrames > 0) {
-            const progress = skipAnim.currentIndex / skipAnim.totalFrames
-            const t = (progress * 2) % 1
-            const hop = 4 * t * (1 - t)
-            this.root.y += hop * this.hopHeight
+        if (this.animator.current !== skipAnim) {
+            return
         }
+
+        const t = skipAnim.getSegmentProgress('hop')
+        const hop = 4 * t * (1 - t)
+        this.root.y += hop * this.hopHeight
     }
 
 

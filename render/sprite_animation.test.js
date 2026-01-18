@@ -346,6 +346,102 @@ describe('SpriteAnimation', () => {
             expect(animation.getEvents(0)).toEqual([])
         })
 
+
+        test('getFramesByEvent returns frames for event', () => {
+            animation.addEvent(0, 'hop')
+            animation.addEvent(2, 'hop')
+            animation.addEvent(1, 'sound')
+
+            expect(animation.getFramesByEvent('hop')).toEqual([0, 2])
+            expect(animation.getFramesByEvent('sound')).toEqual([1])
+            expect(animation.getFramesByEvent('unknown')).toEqual([])
+        })
+
+
+        test('getFramesByEvent updates when events are removed', () => {
+            animation.addEvent(0, 'hop')
+            animation.addEvent(2, 'hop')
+
+            animation.removeEvent(0, 'hop')
+
+            expect(animation.getFramesByEvent('hop')).toEqual([2])
+        })
+
+
+        test('getFramesByEvent is cleared when clearEvents is called', () => {
+            animation.addEvent(0, 'hop')
+            animation.addEvent(2, 'hop')
+
+            animation.clearEvents()
+
+            expect(animation.getFramesByEvent('hop')).toEqual([])
+        })
+
+    })
+
+
+    describe('getSegmentProgress', () => {
+
+        test('returns 0 when event has less than 2 keyframes', () => {
+            animation.addEvent(0, 'single')
+
+            expect(animation.getSegmentProgress('single')).toBe(0)
+            expect(animation.getSegmentProgress('unknown')).toBe(0)
+        })
+
+
+        test('returns progress within segment', () => {
+            animation.addEvent(0, 'hop')
+            animation.addEvent(2, 'hop')
+
+            animation.setFrame(0)
+            expect(animation.getSegmentProgress('hop')).toBe(0)
+
+            animation.setFrame(1)
+            expect(animation.getSegmentProgress('hop')).toBe(0.5)
+        })
+
+
+        test('handles wrap-around segment', () => {
+            animation.addEvent(0, 'hop')
+            animation.addEvent(2, 'hop')
+
+            animation.setFrame(2)
+            expect(animation.getSegmentProgress('hop')).toBe(0)
+        })
+
+
+        test('works with multiple segments', () => {
+            const sixFrames = [
+                {region: 'r1'}, {region: 'r2'}, {region: 'r3'},
+                {region: 'r4'}, {region: 'r5'}, {region: 'r6'}
+            ]
+            const multiAnimation = new SpriteAnimation({sprite, frames: sixFrames, fps: 10})
+
+            multiAnimation.addEvent(0, 'hop')
+            multiAnimation.addEvent(3, 'hop')
+
+            multiAnimation.setFrame(0)
+            expect(multiAnimation.getSegmentProgress('hop')).toBe(0)
+
+            multiAnimation.setFrame(1)
+            expect(multiAnimation.getSegmentProgress('hop')).toBeCloseTo(1 / 3)
+
+            multiAnimation.setFrame(2)
+            expect(multiAnimation.getSegmentProgress('hop')).toBeCloseTo(2 / 3)
+
+            multiAnimation.setFrame(3)
+            expect(multiAnimation.getSegmentProgress('hop')).toBe(0)
+
+            multiAnimation.setFrame(4)
+            expect(multiAnimation.getSegmentProgress('hop')).toBeCloseTo(1 / 3)
+
+            multiAnimation.setFrame(5)
+            expect(multiAnimation.getSegmentProgress('hop')).toBeCloseTo(2 / 3)
+
+            multiAnimation.dispose()
+        })
+
     })
 
 

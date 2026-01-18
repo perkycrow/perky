@@ -100,7 +100,7 @@ export default class DenWorld extends World {
         })
 
         enemy.on('throw:pie', ({x, y, sprite}) => {
-            this.spawnEnemyProjectile({x, y, sprite})
+            this.spawnEnemyProjectile({x, y, sprite, size: 0.15})
         })
 
         return enemy
