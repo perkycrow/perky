@@ -1,10 +1,12 @@
 import Object2D from './object_2d.js'
 import TextureRegion from './textures/texture_region.js'
+import SpriteEffectStack from './sprite_effects/sprite_effect_stack.js'
 
 
 export default class Sprite extends Object2D {
 
     #region = null
+    #effects = null
 
     constructor (options = {}) {
         super(options)
@@ -88,6 +90,41 @@ export default class Sprite extends Object2D {
             this.currentAnimation.stop()
             this.currentAnimation = null
         }
+    }
+
+
+    get effects () {
+        if (!this.#effects) {
+            this.#effects = new SpriteEffectStack()
+        }
+        return this.#effects
+    }
+
+
+    get renderHints () {
+        const parentHints = super.renderHints
+        const hasEffects = this.#effects !== null && this.#effects.count > 0
+
+        if (!parentHints && !hasEffects) {
+            return null
+        }
+
+        const hints = parentHints ? {...parentHints} : {}
+
+        if (hasEffects) {
+            const effectHints = this.#effects.getHints()
+            if (effectHints) {
+                hints.effects = effectHints
+            }
+
+            const shaderEffectTypes = this.#effects.getShaderEffectTypes()
+            if (shaderEffectTypes.length > 0) {
+                hints.shaderEffectTypes = shaderEffectTypes
+                hints.effectParams = this.#effects.getShaderEffectParams()
+            }
+        }
+
+        return hints
     }
 
 

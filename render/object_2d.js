@@ -1,11 +1,9 @@
 import Transform from './transform.js'
-import SpriteEffectStack from './sprite_effects/sprite_effect_stack.js'
 
 
 export default class Object2D extends Transform {
 
     #tint = null
-    #effects = null
     #debugGizmos = null
 
     constructor (options = {}) { // eslint-disable-line complexity -- clean
@@ -56,14 +54,6 @@ export default class Object2D extends Transform {
 
     set tint (value) {
         this.#tint = value
-    }
-
-
-    get effects () {
-        if (!this.#effects) {
-            this.#effects = new SpriteEffectStack()
-        }
-        return this.#effects
     }
 
 
@@ -208,32 +198,12 @@ export default class Object2D extends Transform {
 
     get renderHints () {
         const hasTint = this.#tint !== null
-        const hasEffects = this.#effects !== null && this.#effects.count > 0
 
-        if (!hasTint && !hasEffects) {
+        if (!hasTint) {
             return null
         }
 
-        const hints = {}
-
-        if (hasTint) {
-            hints.tint = this.#tint
-        }
-
-        if (hasEffects) {
-            const effectHints = this.#effects.getHints()
-            if (effectHints) {
-                hints.effects = effectHints
-            }
-
-            const shaderEffectTypes = this.#effects.getShaderEffectTypes()
-            if (shaderEffectTypes.length > 0) {
-                hints.shaderEffectTypes = shaderEffectTypes
-                hints.effectParams = this.#effects.getShaderEffectParams()
-            }
-        }
-
-        return hints
+        return {tint: this.#tint}
     }
 
 

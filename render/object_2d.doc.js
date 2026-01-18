@@ -219,28 +219,6 @@ export default doc('Object2D', () => {
     })
 
 
-    section('Effects', () => {
-
-        text('Access the [[SpriteEffectStack@render]] for post-processing effects.')
-
-        action('effects', () => {
-            const obj = new Object2D()
-
-            // Accessing effects creates the stack lazily
-            const stack = obj.effects
-            logger.log('effects stack:', stack.constructor.name)
-        })
-
-        code('Adding effects', () => {
-            const obj = new Object2D()
-
-            // Effects are added to the stack
-            obj.effects.add(myEffect)
-        })
-
-    })
-
-
     section('Debug Gizmos', () => {
 
         text('Visualize bounds, anchor, pivot, and origin for debugging.')
