@@ -1,4 +1,4 @@
-import {doc, section, text, action, logger, container} from '../../doc/runtime.js'
+import {doc, section, text, code, action, logger, container} from '../../doc/runtime.js'
 import SpriteEffectStack from './sprite_effect_stack.js'
 import OutlineEffect from '../shaders/builtin/effects/outline_effect.js'
 import WebGLRenderer from '../webgl_renderer.js'
@@ -228,6 +228,45 @@ export default doc('SpriteEffectStack', () => {
             outline.enabled = true
             logger.log('after enable:', outline.enabled)
         })
+
+    })
+
+
+    section('Performance', () => {
+
+        text(`
+            Sprites are batched by shader effect to minimize draw calls.
+            When sprites with different effects are interleaved in depth order,
+            the renderer creates a new batch at each effect change.
+        `)
+
+        code('Best case', () => {
+            // All sprites with same effect are consecutive in depth
+            // → 1 draw call for OutlineEffect sprites
+            // → 1 draw call for no-effect sprites
+
+            spriteA.depth = 0  // OutlineEffect
+            spriteB.depth = 1  // OutlineEffect
+            spriteC.depth = 2  // no effect
+            spriteD.depth = 3  // no effect
+        })
+
+        code('Worst case', () => {
+            // Sprites with different effects interleaved in depth
+            // → Up to N draw calls for N sprites
+
+            spriteA.depth = 0  // OutlineEffect
+            spriteB.depth = 1  // no effect
+            spriteC.depth = 2  // OutlineEffect
+            spriteD.depth = 3  // no effect
+        })
+
+        text(`
+            For most games this is fine. If you have hundreds of sprites with
+            different effects interleaved, consider creating a single custom
+            ShaderEffect that combines all your effects with toggle parameters.
+            This gives you full batching control.
+        `)
 
     })
 
