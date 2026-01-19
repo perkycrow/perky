@@ -1,15 +1,30 @@
-import {cssVariables} from './perky_explorer_styles.js'
+import {adoptStyles, createSheet, controlsSheet} from './styles/index.js'
 
 
+/**
+ * Setup styles for an input component using the shared styles system
+ *
+ * @param {ShadowRoot} shadowRoot - The shadow root to style
+ * @param {string} componentCSS - Component-specific CSS
+ * @returns {CSSStyleSheet} The component stylesheet (for reference if needed)
+ */
+export function setupInputStyles (shadowRoot, componentCSS = '') {
+    const componentSheet = componentCSS ? createSheet(componentCSS) : null
+    if (componentSheet) {
+        adoptStyles(shadowRoot, controlsSheet, componentSheet)
+    } else {
+        adoptStyles(shadowRoot, controlsSheet)
+    }
+    return componentSheet
+}
+
+
+/**
+ * @deprecated Use setupInputStyles() instead
+ * Kept for backwards compatibility during migration
+ */
 export function createInputStyles (customStyles) {
-    return `
-        :host {
-            ${cssVariables}
-            display: inline-flex;
-            font-family: var(--font-mono);
-        }
-        ${customStyles}
-    `
+    return customStyles
 }
 
 

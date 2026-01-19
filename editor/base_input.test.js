@@ -6,10 +6,9 @@ describe('base_input', () => {
 
     describe('createInputStyles', () => {
 
-        test('should return a string containing host styles', () => {
-            const styles = createInputStyles('')
-            expect(styles).toContain(':host')
-            expect(styles).toContain('display: inline-flex')
+        test('should return the input string (passthrough for backwards compat)', () => {
+            const styles = createInputStyles('.foo { color: red; }')
+            expect(styles).toBe('.foo { color: red; }')
         })
 
 

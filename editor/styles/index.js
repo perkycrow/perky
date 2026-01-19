@@ -19,15 +19,31 @@ import {resetCSS} from './reset.styles.js'
 import {controlsCSS} from './controls.styles.js'
 
 
-// Create stylesheet instances (shared in memory)
-export const themeSheet = new CSSStyleSheet()
-export const resetSheet = new CSSStyleSheet()
-export const controlsSheet = new CSSStyleSheet()
+// Check if Constructable Stylesheets are supported (not in jsdom/tests)
+const supportsConstructableStylesheets = (() => {
+    try {
+        const sheet = new CSSStyleSheet()
+        return typeof sheet.replaceSync === 'function'
+    } catch {
+        return false
+    }
+})()
 
-// Initialize stylesheets
-themeSheet.replaceSync(themeCSS)
-resetSheet.replaceSync(resetCSS)
-controlsSheet.replaceSync(controlsCSS)
+
+// Create stylesheet instances (shared in memory)
+export let themeSheet = null
+export let resetSheet = null
+export let controlsSheet = null
+
+if (supportsConstructableStylesheets) {
+    themeSheet = new CSSStyleSheet()
+    resetSheet = new CSSStyleSheet()
+    controlsSheet = new CSSStyleSheet()
+
+    themeSheet.replaceSync(themeCSS)
+    resetSheet.replaceSync(resetCSS)
+    controlsSheet.replaceSync(controlsCSS)
+}
 
 
 /**
@@ -38,7 +54,21 @@ controlsSheet.replaceSync(controlsCSS)
  * @param {...CSSStyleSheet} extraSheets - Additional stylesheets to adopt
  */
 export function adoptStyles (shadowRoot, ...extraSheets) {
-    shadowRoot.adoptedStyleSheets = [themeSheet, resetSheet, ...extraSheets]
+    if (supportsConstructableStylesheets) {
+        const sheets = [themeSheet, resetSheet, ...extraSheets].filter(Boolean)
+        shadowRoot.adoptedStyleSheets = sheets
+    } else {
+        // Fallback for environments without Constructable Stylesheets (jsdom)
+        const allCSS = [themeCSS, resetCSS]
+        extraSheets.forEach(sheet => {
+            if (sheet && sheet._css) {
+                allCSS.push(sheet._css)
+            }
+        })
+        const style = document.createElement('style')
+        style.textContent = allCSS.join('\n')
+        shadowRoot.appendChild(style)
+    }
 }
 
 
@@ -47,12 +77,16 @@ export function adoptStyles (shadowRoot, ...extraSheets) {
  * Useful for component-specific styles that aren't shared
  *
  * @param {string} css - CSS string
- * @returns {CSSStyleSheet}
+ * @returns {CSSStyleSheet|{_css: string}}
  */
 export function createSheet (css) {
-    const sheet = new CSSStyleSheet()
-    sheet.replaceSync(css)
-    return sheet
+    if (supportsConstructableStylesheets) {
+        const sheet = new CSSStyleSheet()
+        sheet.replaceSync(css)
+        return sheet
+    }
+    // Fallback: return object with CSS for later use
+    return {_css: css}
 }
 
 

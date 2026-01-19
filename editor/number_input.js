@@ -1,4 +1,4 @@
-import {createInputStyles, emitChange, handleAttributeChange} from './base_input.js'
+import {setupInputStyles, emitChange, handleAttributeChange} from './base_input.js'
 
 
 const SHIFT_MULTIPLIER = 10
@@ -6,19 +6,19 @@ const CTRL_MULTIPLIER = 0.1
 const DRAG_SENSITIVITY = 0.5
 
 
-const numberStyles = createInputStyles(`
+const numberInputCSS = `
     .number-input-container {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: var(--spacing-sm);
         flex: 1;
         min-width: 0;
         background: var(--bg-primary);
         border: 1px solid var(--border);
-        border-radius: 4px;
-        padding: 0 2px 0 8px;
-        height: 26px;
-        transition: border-color 0.15s;
+        border-radius: var(--radius-sm);
+        padding: 0 2px 0 var(--spacing-sm);
+        height: var(--input-height);
+        transition: border-color var(--transition-fast);
     }
 
     .number-input-container:focus-within {
@@ -26,10 +26,11 @@ const numberStyles = createInputStyles(`
     }
 
     .number-input-label {
-        font-size: 11px;
+        font-size: var(--font-size-sm);
         color: var(--fg-muted);
         cursor: ew-resize;
         user-select: none;
+        -webkit-user-select: none;
         min-width: 10px;
         text-transform: lowercase;
         touch-action: none;
@@ -48,11 +49,12 @@ const numberStyles = createInputStyles(`
         background: transparent;
         border: none;
         color: var(--fg-primary);
-        font-size: 11px;
+        font-size: var(--font-size-sm);
         font-family: var(--font-mono);
         min-width: 0;
         text-align: right;
         padding: 0;
+        height: auto;
     }
 
     .number-input-field:focus {
@@ -72,10 +74,14 @@ const numberStyles = createInputStyles(`
         font-size: 7px;
         width: 14px;
         height: 18px;
+        min-height: auto;
+        min-width: auto;
+        padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: background 0.1s, color 0.1s;
+        transition: background var(--transition-fast), color var(--transition-fast);
+        border-radius: 0;
     }
 
     .number-input-stepper:first-child {
@@ -94,8 +100,10 @@ const numberStyles = createInputStyles(`
     .number-input-stepper:active {
         background: var(--accent);
         color: var(--bg-primary);
+        transform: none;
     }
 
+    /* Compact mode */
     :host([compact]) .number-input-container {
         background: transparent;
         border: none;
@@ -116,7 +124,7 @@ const numberStyles = createInputStyles(`
         text-align: center;
         padding: 2px 4px;
         color: var(--fg-muted);
-        transition: color 0.15s;
+        transition: color var(--transition-fast);
     }
 
     :host([compact]) .number-input-field:hover {
@@ -158,7 +166,28 @@ const numberStyles = createInputStyles(`
     :host([compact]) .number-input-stepper:last-child::after {
         content: '▲';
     }
-`)
+
+    /* Context: Studio - larger touch targets */
+    :host([context="studio"]) .number-input-container {
+        height: var(--touch-target);
+        padding: 0 var(--spacing-xs) 0 var(--spacing-md);
+        border-radius: var(--radius-md);
+    }
+
+    :host([context="studio"]) .number-input-label {
+        font-size: var(--font-size-md);
+    }
+
+    :host([context="studio"]) .number-input-field {
+        font-size: var(--font-size-md);
+    }
+
+    :host([context="studio"]) .number-input-stepper {
+        width: 28px;
+        height: 32px;
+        font-size: 12px;
+    }
+`
 
 
 export default class NumberInput extends HTMLElement {
@@ -215,6 +244,7 @@ export default class NumberInput extends HTMLElement {
     constructor () {
         super()
         this.attachShadow({mode: 'open'})
+        setupInputStyles(this.shadowRoot, numberInputCSS)
         this.#buildDOM()
     }
 
@@ -295,10 +325,6 @@ export default class NumberInput extends HTMLElement {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = numberStyles
-        this.shadowRoot.appendChild(style)
-
         const container = document.createElement('div')
         container.className = 'number-input-container'
 
