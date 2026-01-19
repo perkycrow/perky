@@ -1,5 +1,5 @@
 import BaseEditorComponent from '../base_editor_component.js'
-import {buildEditorStyles, editorBaseStyles} from '../editor_theme.js'
+import {adoptStyles, createSheet} from '../styles/index.js'
 import '../number_input.js'
 
 
@@ -52,9 +52,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = STYLES
-        this.shadowRoot.appendChild(style)
+        adoptStyles(this.shadowRoot, timelineStyles)
 
         // Main wrapper
         this.#wrapperEl = document.createElement('div')
@@ -729,9 +727,7 @@ function drawFrameThumbnail (canvas, frame) {
 }
 
 
-const STYLES = buildEditorStyles(
-    editorBaseStyles,
-    `
+const timelineStyles = createSheet(`
     :host {
         display: block;
         height: fit-content;
@@ -979,8 +975,11 @@ const STYLES = buildEditorStyles(
         content: '→';
         margin-right: 2px;
     }
-`
-)
+
+    .hidden {
+        display: none !important;
+    }
+`)
 
 
 customElements.define('animation-timeline', AnimationTimeline)

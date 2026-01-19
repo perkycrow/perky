@@ -1,5 +1,5 @@
 import BaseEditorComponent from '../base_editor_component.js'
-import {buildEditorStyles, editorBaseStyles, editorScrollbarStyles} from '../editor_theme.js'
+import {adoptStyles, createSheet} from '../styles/index.js'
 
 
 const ANIMATION_COLORS = [
@@ -45,9 +45,7 @@ export default class SpritesheetViewer extends BaseEditorComponent {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = STYLES
-        this.shadowRoot.appendChild(style)
+        adoptStyles(this.shadowRoot, viewerStyles)
 
         this.#containerEl = document.createElement('div')
         this.#containerEl.className = 'viewer-container'
@@ -464,10 +462,7 @@ function drawFrameThumbnail (canvas, region) {
 }
 
 
-const STYLES = buildEditorStyles(
-    editorBaseStyles,
-    editorScrollbarStyles,
-    `
+const viewerStyles = createSheet(`
     :host {
         display: block;
         overflow: hidden;
