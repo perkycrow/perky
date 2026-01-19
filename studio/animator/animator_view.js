@@ -42,17 +42,13 @@ const animatorStyles = createSheet(`
 
     .preview-section {
         flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: var(--spacing-lg);
         min-height: 200px;
-        background: var(--bg-tertiary);
+        overflow: hidden;
     }
 
-    .preview-canvas {
-        max-width: 100%;
-        max-height: 100%;
+    .preview-section animation-preview {
+        width: 100%;
+        height: 100%;
     }
 
 
@@ -332,7 +328,6 @@ export default class AnimatorView extends BaseEditorComponent {
         section.className = 'preview-section'
 
         this.#previewEl = document.createElement('animation-preview')
-        this.#previewEl.className = 'preview-canvas'
         if (this.#selectedAnimation) {
             this.#previewEl.setAnimation(this.#selectedAnimation)
         }

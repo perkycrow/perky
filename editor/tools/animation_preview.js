@@ -38,11 +38,15 @@ export default class AnimationPreview extends BaseEditorComponent {
         const container = document.createElement('div')
         container.className = 'preview-container'
 
+        const previewArea = document.createElement('div')
+        previewArea.className = 'preview-area'
+
         this.#canvas = document.createElement('canvas')
         this.#canvas.className = 'preview-canvas'
-        this.#canvas.width = 128
-        this.#canvas.height = 128
-        container.appendChild(this.#canvas)
+        this.#canvas.width = 256
+        this.#canvas.height = 256
+        previewArea.appendChild(this.#canvas)
+        container.appendChild(previewArea)
 
         const controls = document.createElement('div')
         controls.className = 'preview-controls'
@@ -70,12 +74,12 @@ export default class AnimationPreview extends BaseEditorComponent {
     #setupRenderer () {
         this.#renderer = new WebGLRenderer({
             canvas: this.#canvas,
-            backgroundColor: '#1a1a1a',
-            width: 128,
-            height: 128
+            backgroundColor: 'transparent',
+            width: 256,
+            height: 256
         })
 
-        this.#renderer.camera.setUnitsInView({width: 128, height: 128})
+        this.#renderer.camera.setUnitsInView({width: 256, height: 256})
 
         this.#scene = new Object2D()
         this.#sprite = new Sprite({
@@ -112,8 +116,8 @@ export default class AnimationPreview extends BaseEditorComponent {
             return
         }
 
-        const canvasSize = 128
-        const padding = 8
+        const canvasSize = 256
+        const padding = 16
 
         const scaleX = (canvasSize - padding * 2) / region.width
         const scaleY = (canvasSize - padding * 2) / region.height
@@ -240,32 +244,55 @@ const STYLES = buildEditorStyles(
     `
     :host {
         display: block;
+        width: 100%;
+        height: 100%;
     }
 
     .preview-container {
         display: flex;
         flex-direction: column;
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+
+    .preview-area {
+        flex: 1;
+        display: flex;
         align-items: center;
-        gap: 8px;
+        justify-content: center;
+        padding: var(--spacing-lg);
+        background-image:
+            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-size: 32px 32px;
+        background-color: var(--bg-tertiary);
     }
 
     .preview-canvas {
-        border-radius: 6px;
-        background: var(--bg-secondary);
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
     }
 
     .preview-controls {
+        position: absolute;
+        bottom: var(--spacing-md);
+        left: 50%;
+        transform: translateX(-50%);
         display: flex;
-        gap: 4px;
+        gap: var(--spacing-xs);
+        padding: var(--spacing-xs);
+        background: var(--bg-secondary);
+        border-radius: var(--radius-md);
     }
 
     .preview-controls button {
-        background: var(--bg-hover);
+        background: transparent;
         color: var(--fg-secondary);
         border: none;
-        border-radius: 4px;
-        width: 32px;
-        height: 32px;
+        border-radius: var(--radius-sm);
+        width: 36px;
+        height: 36px;
         padding: 8px;
         cursor: pointer;
         display: flex;
@@ -281,8 +308,13 @@ const STYLES = buildEditorStyles(
     }
 
     .preview-controls button:hover {
-        background: var(--bg-selected);
+        background: var(--bg-hover);
         color: var(--fg-primary);
+    }
+
+    .preview-controls button:active {
+        background: var(--accent);
+        color: var(--bg-primary);
     }
 `
 )
