@@ -1,9 +1,221 @@
 import BaseEditorComponent from '../../editor/base_editor_component.js'
-import {buildEditorStyles, editorBaseStyles, editorScrollbarStyles} from '../../editor/editor_theme.js'
+import {adoptStyles, createSheet} from '../../editor/styles/index.js'
+import '../../editor/layout/app_layout.js'
+import '../../editor/layout/overlay.js'
 import '../../editor/tools/animation_preview.js'
 import '../../editor/tools/animation_timeline.js'
 import '../../editor/tools/spritesheet_viewer.js'
 import '../../editor/number_input.js'
+
+
+const animatorStyles = createSheet(`
+    :host {
+        display: block;
+        height: 100%;
+        background: var(--bg-primary);
+        color: var(--fg-primary);
+        font-family: var(--font-mono);
+        font-size: 12px;
+    }
+
+    app-layout {
+        height: 100%;
+    }
+
+    .animator-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: var(--fg-muted);
+    }
+
+    /* Preview section - takes remaining space */
+    .preview-section {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-lg);
+        min-height: 200px;
+        background: var(--bg-tertiary);
+    }
+
+    .preview-canvas {
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    /* Header/Footer controls (slotted into app-layout) */
+    .header-controls,
+    .footer-controls {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .toolbar-select {
+        appearance: none;
+        background: var(--bg-tertiary);
+        color: var(--fg-primary);
+        border: none;
+        border-radius: var(--radius-md);
+        padding: 10px 14px;
+        font-family: inherit;
+        font-size: 13px;
+        min-width: 120px;
+        min-height: var(--touch-target);
+        cursor: pointer;
+        transition: background var(--transition-fast);
+    }
+
+    .toolbar-select:hover {
+        background: var(--bg-hover);
+    }
+
+    .toolbar-select:focus {
+        outline: none;
+        background: var(--bg-hover);
+    }
+
+    .toolbar-select-small {
+        min-width: 50px;
+        padding: 10px 12px;
+        text-align: center;
+    }
+
+    .toolbar-btn {
+        appearance: none;
+        background: var(--bg-tertiary);
+        color: var(--fg-secondary);
+        border: none;
+        border-radius: var(--radius-md);
+        padding: 10px 16px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background var(--transition-fast), color var(--transition-fast), transform 0.1s;
+        min-height: var(--touch-target);
+        min-width: var(--touch-target);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .toolbar-btn:hover {
+        background: var(--bg-hover);
+        color: var(--fg-primary);
+    }
+
+    .toolbar-btn:active {
+        transform: scale(0.96);
+    }
+
+    .toolbar-btn-primary {
+        background: var(--accent);
+        color: var(--bg-primary);
+        font-size: 20px;
+        font-weight: 400;
+    }
+
+    .toolbar-btn-primary:hover {
+        background: var(--accent-hover);
+        color: var(--bg-primary);
+    }
+
+    .toolbar-toggle {
+        font-size: 16px;
+    }
+
+    .toolbar-toggle.active {
+        background: var(--accent);
+        color: var(--bg-primary);
+    }
+
+    .toolbar-btn.success {
+        background: var(--status-success);
+        color: var(--bg-primary);
+    }
+
+    .config-input {
+        width: 80px;
+    }
+
+    /* Timeline */
+    .timeline-section {
+        flex-shrink: 0;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border);
+        padding: var(--spacing-md) var(--spacing-lg);
+        min-height: 120px;
+        overflow: hidden;
+        max-width: 100%;
+    }
+
+    /* Spritesheet panel (inside overlay) */
+    .spritesheet-panel {
+        background: var(--bg-secondary);
+        border-radius: var(--radius-lg);
+        width: 90%;
+        max-width: 900px;
+        height: 80%;
+        max-height: 700px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .spritesheet-header {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-lg);
+        padding: var(--spacing-lg) var(--spacing-xl);
+        background: var(--bg-tertiary);
+        flex-shrink: 0;
+    }
+
+    .spritesheet-close {
+        appearance: none;
+        background: var(--bg-hover);
+        border: none;
+        color: var(--fg-secondary);
+        width: var(--touch-target);
+        height: var(--touch-target);
+        border-radius: var(--radius-md);
+        font-size: 18px;
+        cursor: pointer;
+        transition: background var(--transition-fast), color var(--transition-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .spritesheet-close:hover {
+        background: var(--bg-selected);
+        color: var(--fg-primary);
+    }
+
+    .spritesheet-title {
+        font-size: var(--font-size-lg);
+        font-weight: 500;
+        color: var(--fg-primary);
+    }
+
+    .spritesheet-content {
+        flex: 1;
+        padding: var(--spacing-lg);
+        overflow: auto;
+    }
+`)
 
 
 export default class AnimatorView extends BaseEditorComponent {
@@ -15,8 +227,8 @@ export default class AnimatorView extends BaseEditorComponent {
     #spritesheet = null
     #selectedAnimation = null
 
+    #appLayout = null
     #containerEl = null
-    #toolbarEl = null
     #previewEl = null
     #timelineEl = null
     #overlayEl = null
@@ -89,27 +301,34 @@ export default class AnimatorView extends BaseEditorComponent {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = STYLES
-        this.shadowRoot.appendChild(style)
+        adoptStyles(this.shadowRoot, animatorStyles)
 
+        // App layout wrapper
+        this.#appLayout = document.createElement('app-layout')
+        this.#appLayout.setAttribute('no-menu', '')
+        this.#appLayout.setAttribute('no-close', '')
+
+        // Content container (preview + timeline)
         this.#containerEl = document.createElement('div')
         this.#containerEl.className = 'animator-container'
-        this.shadowRoot.appendChild(this.#containerEl)
+        this.#appLayout.appendChild(this.#containerEl)
 
-        // Spritesheet overlay (hidden by default)
-        this.#overlayEl = document.createElement('div')
-        this.#overlayEl.className = 'spritesheet-overlay'
-        this.#overlayEl.addEventListener('click', (e) => {
-            if (e.target === this.#overlayEl) {
-                this.#closeSpritesheetOverlay()
-            }
-        })
-        this.shadowRoot.appendChild(this.#overlayEl)
+        // Spritesheet overlay
+        this.#overlayEl = document.createElement('editor-overlay')
+        this.#overlayEl.setAttribute('slot', 'overlay')
+        this.#appLayout.appendChild(this.#overlayEl)
+
+        this.shadowRoot.appendChild(this.#appLayout)
     }
 
 
     #render () {
+        // Clear previous slotted elements
+        this.#appLayout.querySelectorAll('[slot]').forEach(el => {
+            if (el !== this.#overlayEl) {
+                el.remove()
+            }
+        })
         this.#containerEl.innerHTML = ''
 
         if (!this.#animator) {
@@ -117,15 +336,13 @@ export default class AnimatorView extends BaseEditorComponent {
             return
         }
 
-        // Preview section (takes most space)
+        // Header: selects in header-start, controls in header-end
+        this.#buildHeaderControls()
+
+        // Content: preview + timeline
         const previewSection = this.#createPreviewSection()
         this.#containerEl.appendChild(previewSection)
 
-        // Toolbar (compact, below preview)
-        this.#toolbarEl = this.#createToolbar()
-        this.#containerEl.appendChild(this.#toolbarEl)
-
-        // Timeline (bottom)
         this.#timelineEl = document.createElement('animation-timeline')
         this.#timelineEl.className = 'timeline-section'
         if (this.#selectedAnimation) {
@@ -133,6 +350,9 @@ export default class AnimatorView extends BaseEditorComponent {
         }
         this.#setupTimelineEvents()
         this.#containerEl.appendChild(this.#timelineEl)
+
+        // Footer: actions
+        this.#buildFooterControls()
 
         // Build spritesheet overlay content
         this.#buildSpritesheetOverlay()
@@ -158,13 +378,11 @@ export default class AnimatorView extends BaseEditorComponent {
     }
 
 
-    #createToolbar () {
-        const toolbar = document.createElement('div')
-        toolbar.className = 'toolbar'
-
-        // Left group: selects
-        const leftGroup = document.createElement('div')
-        leftGroup.className = 'toolbar-group'
+    #buildHeaderControls () {
+        // Header start: selects
+        const headerStart = document.createElement('div')
+        headerStart.className = 'header-controls'
+        headerStart.setAttribute('slot', 'header-start')
 
         // Animator select
         const animatorSelect = document.createElement('select')
@@ -195,14 +413,16 @@ export default class AnimatorView extends BaseEditorComponent {
             this.#updateForSelectedAnimation()
         })
 
-        leftGroup.appendChild(animatorSelect)
-        leftGroup.appendChild(animSelect)
+        headerStart.appendChild(animatorSelect)
+        headerStart.appendChild(animSelect)
+        this.#appLayout.appendChild(headerStart)
 
-        // Center group: config
-        const centerGroup = document.createElement('div')
-        centerGroup.className = 'toolbar-group toolbar-config'
-
+        // Header end: animation config
         if (this.#selectedAnimation) {
+            const headerEnd = document.createElement('div')
+            headerEnd.className = 'header-controls'
+            headerEnd.setAttribute('slot', 'header-end')
+
             const anim = this.#selectedAnimation
 
             // FPS
@@ -230,10 +450,11 @@ export default class AnimatorView extends BaseEditorComponent {
             // Mode
             const modeSelect = document.createElement('select')
             modeSelect.className = 'toolbar-select toolbar-select-small'
+            const modeSymbols = {forward: '→', reverse: '←', pingpong: '↔'}
             for (const mode of ['forward', 'reverse', 'pingpong']) {
                 const opt = document.createElement('option')
                 opt.value = mode
-                opt.textContent = mode === 'pingpong' ? '↔' : mode === 'reverse' ? '←' : '→'
+                opt.textContent = modeSymbols[mode]
                 opt.selected = anim.playbackMode === mode
                 modeSelect.appendChild(opt)
             }
@@ -242,36 +463,41 @@ export default class AnimatorView extends BaseEditorComponent {
                 anim.setPlaybackMode(e.target.value)
             })
 
-            centerGroup.appendChild(fpsInput)
-            centerGroup.appendChild(loopBtn)
-            centerGroup.appendChild(modeSelect)
+            headerEnd.appendChild(fpsInput)
+            headerEnd.appendChild(loopBtn)
+            headerEnd.appendChild(modeSelect)
+            this.#appLayout.appendChild(headerEnd)
         }
+    }
 
-        // Right group: actions
-        const rightGroup = document.createElement('div')
-        rightGroup.className = 'toolbar-group'
 
-        // Add frames button
+    #buildFooterControls () {
+        // Footer start: add button
+        const footerStart = document.createElement('div')
+        footerStart.className = 'footer-controls'
+        footerStart.setAttribute('slot', 'footer-start')
+
         const addBtn = document.createElement('button')
         addBtn.className = 'toolbar-btn toolbar-btn-primary'
         addBtn.innerHTML = '+'
         addBtn.title = 'Add frames from spritesheet'
         addBtn.addEventListener('click', () => this.#openSpritesheetOverlay())
 
-        // Export button
+        footerStart.appendChild(addBtn)
+        this.#appLayout.appendChild(footerStart)
+
+        // Footer end: export button
+        const footerEnd = document.createElement('div')
+        footerEnd.className = 'footer-controls'
+        footerEnd.setAttribute('slot', 'footer-end')
+
         const exportBtn = document.createElement('button')
         exportBtn.className = 'toolbar-btn'
         exportBtn.textContent = 'Export'
         exportBtn.addEventListener('click', () => this.#exportToClipboard(exportBtn))
 
-        rightGroup.appendChild(addBtn)
-        rightGroup.appendChild(exportBtn)
-
-        toolbar.appendChild(leftGroup)
-        toolbar.appendChild(centerGroup)
-        toolbar.appendChild(rightGroup)
-
-        return toolbar
+        footerEnd.appendChild(exportBtn)
+        this.#appLayout.appendChild(footerEnd)
     }
 
 
@@ -312,16 +538,19 @@ export default class AnimatorView extends BaseEditorComponent {
         panel.appendChild(header)
         panel.appendChild(this.#spritesheetEl)
         this.#overlayEl.appendChild(panel)
+
+        // Close on backdrop click
+        this.#overlayEl.addEventListener('close', () => this.#closeSpritesheetOverlay())
     }
 
 
     #openSpritesheetOverlay () {
-        this.#overlayEl.classList.add('visible')
+        this.#overlayEl.open()
     }
 
 
     #closeSpritesheetOverlay () {
-        this.#overlayEl.classList.remove('visible')
+        this.#overlayEl.close()
     }
 
 
@@ -376,10 +605,10 @@ export default class AnimatorView extends BaseEditorComponent {
             this.#timelineEl?.setFrames(this.#selectedAnimation.frames)
             this.#previewEl?.setAnimation(this.#selectedAnimation)
         }
-        // Rebuild toolbar
-        const oldToolbar = this.#toolbarEl
-        this.#toolbarEl = this.#createToolbar()
-        oldToolbar?.replaceWith(this.#toolbarEl)
+
+        // Rebuild header controls
+        this.#appLayout.querySelectorAll('[slot^="header"]').forEach(el => el.remove())
+        this.#buildHeaderControls()
     }
 
 
@@ -499,256 +728,6 @@ export default class AnimatorView extends BaseEditorComponent {
     }
 
 }
-
-
-const STYLES = buildEditorStyles(
-    editorBaseStyles,
-    editorScrollbarStyles,
-    `
-    :host {
-        display: block;
-        height: 100%;
-        background: #121216;
-        color: var(--fg-primary);
-        font-family: var(--font-mono);
-        font-size: 12px;
-    }
-
-    .animator-container {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        overflow: hidden;
-    }
-
-    .empty {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        color: var(--fg-muted);
-    }
-
-    /* Preview section - takes remaining space */
-    .preview-section {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px;
-        min-height: 200px;
-        background: #0d0d10;
-    }
-
-    .preview-canvas {
-        max-width: 100%;
-        max-height: 100%;
-    }
-
-    /* Toolbar */
-    .toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 12px 16px;
-        background: #1a1a1e;
-        border-top: 1px solid #2a2a30;
-        flex-shrink: 0;
-    }
-
-    .toolbar-group {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .toolbar-config {
-        gap: 12px;
-    }
-
-    .toolbar-select {
-        appearance: none;
-        background: #24242a;
-        color: var(--fg-primary);
-        border: none;
-        border-radius: 8px;
-        padding: 10px 14px;
-        font-family: inherit;
-        font-size: 13px;
-        min-width: 120px;
-        cursor: pointer;
-        transition: background 0.15s;
-    }
-
-    .toolbar-select:hover {
-        background: #2e2e36;
-    }
-
-    .toolbar-select:focus {
-        outline: none;
-        background: #2e2e36;
-    }
-
-    .toolbar-select-small {
-        min-width: 50px;
-        padding: 10px 12px;
-        text-align: center;
-    }
-
-    .toolbar-btn {
-        appearance: none;
-        background: #24242a;
-        color: var(--fg-secondary);
-        border: none;
-        border-radius: 8px;
-        padding: 10px 16px;
-        font-family: inherit;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background 0.15s, color 0.15s, transform 0.1s;
-        min-height: 44px;
-        min-width: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .toolbar-btn:hover {
-        background: #2e2e36;
-        color: var(--fg-primary);
-    }
-
-    .toolbar-btn:active {
-        transform: scale(0.96);
-    }
-
-    .toolbar-btn-primary {
-        background: var(--accent);
-        color: #121216;
-        font-size: 20px;
-        font-weight: 400;
-    }
-
-    .toolbar-btn-primary:hover {
-        background: #7daaff;
-        color: #121216;
-    }
-
-    .toolbar-toggle {
-        font-size: 16px;
-    }
-
-    .toolbar-toggle.active {
-        background: var(--accent);
-        color: #121216;
-    }
-
-    .toolbar-btn.success {
-        background: var(--status-success);
-        color: #121216;
-    }
-
-    .config-input {
-        width: 80px;
-    }
-
-    /* Timeline */
-    .timeline-section {
-        flex-shrink: 0;
-        background: #1a1a1e;
-        border-top: 1px solid #2a2a30;
-        padding: 12px 16px;
-        min-height: 120px;
-        overflow: hidden;
-        max-width: 100%;
-    }
-
-    /* Spritesheet overlay */
-    .spritesheet-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 150px;
-        background: rgba(0, 0, 0, 0.9);
-        z-index: 1000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s;
-    }
-
-    .spritesheet-overlay.visible {
-        opacity: 1;
-        pointer-events: auto;
-    }
-
-    .spritesheet-panel {
-        background: #1a1a1e;
-        border-radius: 16px;
-        width: 90%;
-        max-width: 900px;
-        height: 80%;
-        max-height: 700px;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
-        transform: scale(0.95);
-        transition: transform 0.2s;
-    }
-
-    .spritesheet-overlay.visible .spritesheet-panel {
-        transform: scale(1);
-    }
-
-    .spritesheet-header {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        padding: 16px 20px;
-        background: #24242a;
-        flex-shrink: 0;
-    }
-
-    .spritesheet-close {
-        appearance: none;
-        background: #2e2e36;
-        border: none;
-        color: var(--fg-secondary);
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        font-size: 18px;
-        cursor: pointer;
-        transition: background 0.15s, color 0.15s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .spritesheet-close:hover {
-        background: #3a3a44;
-        color: var(--fg-primary);
-    }
-
-    .spritesheet-title {
-        font-size: 16px;
-        font-weight: 500;
-        color: var(--fg-primary);
-    }
-
-    .spritesheet-content {
-        flex: 1;
-        padding: 16px;
-        overflow: auto;
-    }
-`
-)
 
 
 customElements.define('animator-view', AnimatorView)

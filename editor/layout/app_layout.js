@@ -1,24 +1,34 @@
 /**
- * AppLayout - Fullscreen layout for apps (Studio tools, etc.)
+ * AppLayout - Flexible fullscreen layout for apps (Studio tools, etc.)
  *
  * Structure:
  * ┌─────────────────────────────────────────────────────────────────┐
- * │  [≡]  Title                                    [actions] [✕]   │ ← Header (44px)
+ * │  [≡?]  [header-start] Title [header-center] [header-end] [✕?]  │ ← Header
  * ├─────────────────────────────────────────────────────────────────┤
  * │                                                                 │
  * │                        CONTENT (slot)                           │
  * │                                                                 │
  * ├─────────────────────────────────────────────────────────────────┤
- * │  [◀]  [toolbar items...]                      [primary action]  │ ← Footer (safe area)
+ * │  [footer-start]    [footer-center]    [footer-end]             │ ← Footer (safe area)
  * └─────────────────────────────────────────────────────────────────┘
  *
+ * Attributes:
+ *   title        - Title text (optional)
+ *   no-header    - Hide header completely
+ *   no-footer    - Hide footer completely
+ *   no-menu      - Hide menu button (≡)
+ *   no-close     - Hide close button (✕)
+ *
+ * Events:
+ *   menu  - Fired when menu button clicked
+ *   close - Fired when close button clicked
+ *
  * Usage:
- *   <app-layout>
- *     <div slot="header-start">...</div>
- *     <div slot="header-end">...</div>
+ *   <app-layout title="My App" no-menu>
+ *     <select slot="header-start">...</select>
  *     <div>Main content</div>
- *     <div slot="footer-start">...</div>
- *     <div slot="footer-end">...</div>
+ *     <div slot="footer-center">...</div>
+ *     <button slot="footer-end">Export</button>
  *   </app-layout>
  */
 
@@ -42,7 +52,6 @@ const appLayoutCSS = createSheet(`
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: var(--touch-target);
         min-height: var(--touch-target);
         padding: 0 var(--spacing-md);
         background: var(--bg-secondary);
@@ -80,7 +89,11 @@ const appLayoutCSS = createSheet(`
         text-overflow: ellipsis;
     }
 
-    .menu-btn {
+    .title:empty {
+        display: none;
+    }
+
+    .header-btn {
         appearance: none;
         background: transparent;
         border: none;
@@ -99,13 +112,17 @@ const appLayoutCSS = createSheet(`
         padding: 0;
     }
 
-    .menu-btn:hover {
+    .header-btn:hover {
         background: var(--bg-hover);
         color: var(--fg-primary);
     }
 
-    .menu-btn:active {
+    .header-btn:active {
         background: var(--bg-selected);
+    }
+
+    .header-btn.hidden {
+        display: none;
     }
 
     /* Content */
@@ -153,13 +170,6 @@ const appLayoutCSS = createSheet(`
         gap: var(--spacing-sm);
     }
 
-    .footer:empty,
-    .footer-start:empty,
-    .footer-center:empty,
-    .footer-end:empty {
-        display: none;
-    }
-
     :host([no-footer]) .footer {
         display: none;
     }
@@ -189,6 +199,8 @@ export default class AppLayout extends HTMLElement {
 
     #headerEl = null
     #titleEl = null
+    #menuBtn = null
+    #closeBtn = null
     #contentEl = null
     #footerEl = null
 
@@ -201,18 +213,20 @@ export default class AppLayout extends HTMLElement {
 
 
     connectedCallback () {
-        this.#updateFooterVisibility()
+        this.#updateButtonVisibility()
     }
 
 
     static get observedAttributes () {
-        return ['title', 'no-header', 'no-footer']
+        return ['title', 'no-header', 'no-footer', 'no-menu', 'no-close']
     }
 
 
-    attributeChangedCallback (name, oldValue, newValue) {
+    attributeChangedCallback (name) {
         if (name === 'title') {
             this.#updateTitle()
+        } else if (name === 'no-menu' || name === 'no-close') {
+            this.#updateButtonVisibility()
         }
     }
 
@@ -240,11 +254,11 @@ export default class AppLayout extends HTMLElement {
         const headerStart = document.createElement('div')
         headerStart.className = 'header-start'
 
-        const menuBtn = document.createElement('button')
-        menuBtn.className = 'menu-btn'
-        menuBtn.innerHTML = '≡'
-        menuBtn.addEventListener('click', () => this.#emitEvent('menu'))
-        headerStart.appendChild(menuBtn)
+        this.#menuBtn = document.createElement('button')
+        this.#menuBtn.className = 'header-btn menu-btn'
+        this.#menuBtn.innerHTML = '≡'
+        this.#menuBtn.addEventListener('click', () => this.#emitEvent('menu'))
+        headerStart.appendChild(this.#menuBtn)
 
         const headerStartSlot = document.createElement('slot')
         headerStartSlot.name = 'header-start'
@@ -268,11 +282,11 @@ export default class AppLayout extends HTMLElement {
         headerEndSlot.name = 'header-end'
         headerEnd.appendChild(headerEndSlot)
 
-        const closeBtn = document.createElement('button')
-        closeBtn.className = 'menu-btn'
-        closeBtn.innerHTML = '✕'
-        closeBtn.addEventListener('click', () => this.#emitEvent('close'))
-        headerEnd.appendChild(closeBtn)
+        this.#closeBtn = document.createElement('button')
+        this.#closeBtn.className = 'header-btn close-btn'
+        this.#closeBtn.innerHTML = '✕'
+        this.#closeBtn.addEventListener('click', () => this.#emitEvent('close'))
+        headerEnd.appendChild(this.#closeBtn)
 
         this.#headerEl.appendChild(headerStart)
         this.#headerEl.appendChild(headerCenter)
@@ -335,17 +349,12 @@ export default class AppLayout extends HTMLElement {
     }
 
 
-    #updateFooterVisibility () {
-        // Footer is shown if any slot has content
-        const hasFooterContent =
-            this.querySelector('[slot="footer-start"]') ||
-            this.querySelector('[slot="footer-center"]') ||
-            this.querySelector('[slot="footer-end"]')
-
-        if (!hasFooterContent && !this.hasAttribute('no-footer')) {
-            this.#footerEl.style.display = 'none'
-        } else {
-            this.#footerEl.style.display = ''
+    #updateButtonVisibility () {
+        if (this.#menuBtn) {
+            this.#menuBtn.classList.toggle('hidden', this.hasAttribute('no-menu'))
+        }
+        if (this.#closeBtn) {
+            this.#closeBtn.classList.toggle('hidden', this.hasAttribute('no-close'))
         }
     }
 

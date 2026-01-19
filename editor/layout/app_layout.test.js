@@ -75,11 +75,36 @@ describe('AppLayout', () => {
             eventFired = true
         })
 
-        const buttons = layout.shadowRoot.querySelectorAll('.menu-btn')
-        const closeBtn = buttons[buttons.length - 1]
+        const closeBtn = layout.shadowRoot.querySelector('.close-btn')
         closeBtn.click()
 
         expect(eventFired).toBe(true)
+    })
+
+
+    it('hides menu button when no-menu attribute is set', () => {
+        layout.setAttribute('no-menu', '')
+        const menuBtn = layout.shadowRoot.querySelector('.menu-btn')
+        expect(menuBtn.classList.contains('hidden')).toBe(true)
+    })
+
+
+    it('hides close button when no-close attribute is set', () => {
+        layout.setAttribute('no-close', '')
+        const closeBtn = layout.shadowRoot.querySelector('.close-btn')
+        expect(closeBtn.classList.contains('hidden')).toBe(true)
+    })
+
+
+    it('shows menu button by default', () => {
+        const menuBtn = layout.shadowRoot.querySelector('.menu-btn')
+        expect(menuBtn.classList.contains('hidden')).toBe(false)
+    })
+
+
+    it('shows close button by default', () => {
+        const closeBtn = layout.shadowRoot.querySelector('.close-btn')
+        expect(closeBtn.classList.contains('hidden')).toBe(false)
     })
 
 
