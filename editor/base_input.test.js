@@ -1,8 +1,48 @@
 import {describe, test, expect, vi} from 'vitest'
-import {createInputStyles, emitChange, handleAttributeChange} from './base_input.js'
+import {createInputStyles, emitChange, handleAttributeChange, setupInputStyles} from './base_input.js'
 
 
 describe('base_input', () => {
+
+    describe('setupInputStyles', () => {
+
+        test('should adopt controlsSheet to shadowRoot', () => {
+            const mockShadowRoot = {
+                adoptedStyleSheets: []
+            }
+            setupInputStyles(mockShadowRoot)
+            expect(mockShadowRoot.adoptedStyleSheets.length).toBeGreaterThan(0)
+        })
+
+
+        test('should adopt component styles when provided', () => {
+            const mockShadowRoot = {
+                adoptedStyleSheets: []
+            }
+            const result = setupInputStyles(mockShadowRoot, '.custom { color: red; }')
+            expect(result).not.toBeNull()
+        })
+
+
+        test('should return null when no component CSS provided', () => {
+            const mockShadowRoot = {
+                adoptedStyleSheets: []
+            }
+            const result = setupInputStyles(mockShadowRoot)
+            expect(result).toBeNull()
+        })
+
+
+        test('should return null for empty component CSS string', () => {
+            const mockShadowRoot = {
+                adoptedStyleSheets: []
+            }
+            const result = setupInputStyles(mockShadowRoot, '')
+            expect(result).toBeNull()
+        })
+
+    })
+
 
     describe('createInputStyles', () => {
 

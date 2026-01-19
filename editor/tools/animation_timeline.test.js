@@ -502,4 +502,41 @@ describe('AnimationTimeline', () => {
 
     })
 
+
+    describe('flashMovedFrame', () => {
+
+        test('should add just-moved class to frame at specified index', async () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            timeline.flashMovedFrame(1)
+
+            // Wait for requestAnimationFrame
+            await new Promise(resolve => requestAnimationFrame(resolve))
+
+            const frameEls = timeline.shadowRoot.querySelectorAll('.frame')
+            expect(frameEls[1].classList.contains('just-moved')).toBe(true)
+        })
+
+
+        test('should not throw if index is out of bounds', async () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            expect(() => timeline.flashMovedFrame(100)).not.toThrow()
+
+            // Wait for requestAnimationFrame
+            await new Promise(resolve => requestAnimationFrame(resolve))
+        })
+
+
+        test('should not throw if no frames exist', async () => {
+            expect(() => timeline.flashMovedFrame(0)).not.toThrow()
+
+            // Wait for requestAnimationFrame
+            await new Promise(resolve => requestAnimationFrame(resolve))
+        })
+
+    })
+
 })
