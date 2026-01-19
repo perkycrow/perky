@@ -5,31 +5,39 @@ export default class RedEnemyAnimator extends SpriteAnimator {
 
     static animations = {
         skip: {
-            fps: 12,
+            fps: 10,
             loop: true,
             frames: [
                 {
                     source: 'redSpritesheet:skip/1',
-                    events: ['hop']
+                    duration: 0.8,
+                    events: [
+                        'hop'
+                    ]
                 },
                 {
                     source: 'redSpritesheet:skip/2'
                 },
                 {
-                    source: 'redSpritesheet:skip/3'
+                    source: 'redSpritesheet:skip/3',
+                    duration: 2.000000000000001
                 },
                 {
                     source: 'redSpritesheet:skip/4'
                 },
                 {
                     source: 'redSpritesheet:skip/5',
-                    events: ['hop']
+                    duration: 0.8,
+                    events: [
+                        'hop'
+                    ]
                 },
                 {
                     source: 'redSpritesheet:skip/6'
                 },
                 {
-                    source: 'redSpritesheet:skip/7'
+                    source: 'redSpritesheet:skip/7',
+                    duration: 2.000000000000001
                 },
                 {
                     source: 'redSpritesheet:skip/8'

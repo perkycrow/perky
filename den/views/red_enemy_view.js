@@ -17,7 +17,7 @@ export default class RedEnemyView extends EnemyView {
             logger.log('throw released')
         })
 
-        this.hopHeight = 0.1
+        this.hopHeight = 0.06
     }
 
 

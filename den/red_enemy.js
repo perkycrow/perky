@@ -48,7 +48,7 @@ export default class RedEnemy extends Enemy {
         this.hopProgress = Math.min(1, this.stateTimer / this.hopDuration)
 
         const hopCurve = Math.sin(this.hopProgress * Math.PI)
-        const speedMultiplier = 0.5 + hopCurve * 1.5
+        const speedMultiplier = 0.25 + hopCurve * 1.5
 
         this.position.add(this.velocity.clone().multiplyScalar(deltaTime * speedMultiplier))
 
