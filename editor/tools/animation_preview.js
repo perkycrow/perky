@@ -144,7 +144,9 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#animationFrameId = requestAnimationFrame((t) => this.#loop(t))
 
         const playBtn = this.shadowRoot.querySelector('.play-btn')
-        playBtn.innerHTML = ICONS.pause
+        if (playBtn) {
+            playBtn.innerHTML = ICONS.pause
+        }
 
         this.dispatchEvent(new CustomEvent('play'))
     }
@@ -160,7 +162,9 @@ export default class AnimationPreview extends BaseEditorComponent {
         }
 
         const playBtn = this.shadowRoot.querySelector('.play-btn')
-        playBtn.innerHTML = ICONS.start
+        if (playBtn) {
+            playBtn.innerHTML = ICONS.start
+        }
 
         this.dispatchEvent(new CustomEvent('pause'))
     }

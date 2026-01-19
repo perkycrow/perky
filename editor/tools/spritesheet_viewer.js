@@ -32,6 +32,10 @@ export default class SpritesheetViewer extends BaseEditorComponent {
     connectedCallback () {
         this.#buildDOM()
         this.#setupTouchDrag()
+        if (this.#spritesheet) {
+            this.#renderFilter()
+            this.#renderGrid()
+        }
     }
 
 
@@ -68,8 +72,10 @@ export default class SpritesheetViewer extends BaseEditorComponent {
         this.#spritesheet = spritesheet
         this.#filter = null
         this.#buildAnimationColorMap()
-        this.#renderFilter()
-        this.#renderGrid()
+        if (this.#filterEl) {
+            this.#renderFilter()
+            this.#renderGrid()
+        }
     }
 
 

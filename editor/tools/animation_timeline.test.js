@@ -2,6 +2,16 @@ import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './animation_timeline.js'
 
 
+// Polyfill PointerEvent for jsdom
+if (typeof PointerEvent === 'undefined') {
+    globalThis.PointerEvent = class PointerEvent extends MouseEvent {
+        constructor (type, params) {
+            super(type, params)
+        }
+    }
+}
+
+
 function createMockDataTransfer () {
     const data = {}
     return {
@@ -290,52 +300,84 @@ describe('AnimationTimeline', () => {
 
     describe('frame reordering', () => {
 
-        test('should make frames draggable', () => {
+        test('should have frames that can be dragged', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
             const frame = timeline.shadowRoot.querySelector('.frame')
-            expect(frame.draggable).toBe(true)
+            expect(frame).not.toBeNull()
+            expect(frame.className).toContain('frame')
         })
 
 
-        test('should add dragging class on dragstart', () => {
+        test('should add dragging class after pointer drag threshold', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
             const frame = timeline.shadowRoot.querySelector('.frame')
 
-            const dragStartEvent = new Event('dragstart', {bubbles: true})
-            dragStartEvent.dataTransfer = createMockDataTransfer()
-            frame.dispatchEvent(dragStartEvent)
+            // Start drag with pointerdown
+            const pointerDownEvent = new PointerEvent('pointerdown', {
+                bubbles: true,
+                clientX: 100,
+                clientY: 100,
+                button: 0
+            })
+            frame.dispatchEvent(pointerDownEvent)
+
+            // Move pointer beyond threshold (>10px)
+            const pointerMoveEvent = new PointerEvent('pointermove', {
+                bubbles: true,
+                clientX: 120,
+                clientY: 100
+            })
+            document.dispatchEvent(pointerMoveEvent)
 
             expect(frame.classList.contains('dragging')).toBe(true)
+
+            // Cleanup
+            document.dispatchEvent(new PointerEvent('pointerup', {bubbles: true}))
         })
 
 
-        test('should dispatch framemove event on timeline drop', () => {
+        test('should dispatch framemove event after drag and drop', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
             const handler = vi.fn()
             timeline.addEventListener('framemove', handler)
 
-            const timelineEl = timeline.shadowRoot.querySelector('.timeline')
+            const frameEls = timeline.shadowRoot.querySelectorAll('.frame')
+            const firstFrame = frameEls[0]
 
-            const dragOverDataTransfer = createMockDataTransfer()
-            dragOverDataTransfer.setData('application/x-timeline-frame', '{}')
-            const dragOverEvent = new Event('dragover', {bubbles: true, cancelable: true})
-            dragOverEvent.dataTransfer = dragOverDataTransfer
-            dragOverEvent.clientX = 200
-            timelineEl.dispatchEvent(dragOverEvent)
+            // Mock getBoundingClientRect for drop index calculation
+            frameEls.forEach((el, i) => {
+                el.getBoundingClientRect = () => ({
+                    left: 50 + i * 70,
+                    width: 60,
+                    right: 50 + i * 70 + 60
+                })
+            })
 
-            const dropDataTransfer = createMockDataTransfer()
-            dropDataTransfer.setData('application/x-timeline-frame', JSON.stringify({
-                sourceIndex: 0
-            }))
-            const dropEvent = new Event('drop', {bubbles: true, cancelable: true})
-            dropEvent.dataTransfer = dropDataTransfer
-            timelineEl.dispatchEvent(dropEvent)
+            // Start drag with pointerdown
+            const pointerDownEvent = new PointerEvent('pointerdown', {
+                bubbles: true,
+                clientX: 80,
+                clientY: 100,
+                button: 0
+            })
+            firstFrame.dispatchEvent(pointerDownEvent)
+
+            // Move beyond threshold to position 2
+            const pointerMoveEvent = new PointerEvent('pointermove', {
+                bubbles: true,
+                clientX: 200,
+                clientY: 100
+            })
+            document.dispatchEvent(pointerMoveEvent)
+
+            // End drag
+            document.dispatchEvent(new PointerEvent('pointerup', {bubbles: true}))
 
             expect(handler).toHaveBeenCalled()
             expect(handler.mock.calls[0][0].detail.fromIndex).toBe(0)

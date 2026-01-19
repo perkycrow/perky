@@ -1,25 +1,53 @@
 import BaseEditorComponent from '../base_editor_component.js'
-import {buildEditorStyles, editorBaseStyles, editorScrollbarStyles} from '../editor_theme.js'
+import {buildEditorStyles, editorBaseStyles} from '../editor_theme.js'
 import '../number_input.js'
 
 
 const DRAG_TYPE_SPRITESHEET = 'application/x-spritesheet-frame'
-const DRAG_TYPE_TIMELINE = 'application/x-timeline-frame'
 
 
 export default class AnimationTimeline extends BaseEditorComponent {
 
+    #wrapperEl = null
+    #viewportEl = null
     #containerEl = null
+    #scrubberEl = null
+    #scrubberThumbEl = null
     #dropIndicator = null
     #frames = []
     #currentIndex = 0
     #dropIndex = -1
-    #dragSourceIndex = -1
+
+    // Scroll state (virtual scroll via transform)
+    #scrollLeft = 0
+    #maxScroll = 0
+
+    // Scrubber drag state
+    #scrubberDragging = false
+    #scrubberStartX = 0
+    #scrubberStartScroll = 0
+
+    // Internal drag state (mouse-based reordering)
+    #internalDragActive = false
+    #internalDragIndex = -1
+    #internalDragGhost = null
+    #internalDragStartX = 0
+    #internalDragStartY = 0
 
     connectedCallback () {
         this.#buildDOM()
         this.tabIndex = 0
         this.addEventListener('keydown', (e) => this.#handleKeydown(e))
+        this.#setupInternalDrag()
+        if (this.#frames.length > 0) {
+            this.#render()
+        }
+    }
+
+
+    disconnectedCallback () {
+        this.#cleanupScrubberEvents()
+        this.#cleanupInternalDrag()
     }
 
 
@@ -28,6 +56,15 @@ export default class AnimationTimeline extends BaseEditorComponent {
         style.textContent = STYLES
         this.shadowRoot.appendChild(style)
 
+        // Main wrapper
+        this.#wrapperEl = document.createElement('div')
+        this.#wrapperEl.className = 'timeline-wrapper'
+
+        // Viewport (clips the content)
+        this.#viewportEl = document.createElement('div')
+        this.#viewportEl.className = 'timeline-viewport'
+
+        // Frames container (moves via transform)
         this.#containerEl = document.createElement('div')
         this.#containerEl.className = 'timeline'
 
@@ -36,52 +73,375 @@ export default class AnimationTimeline extends BaseEditorComponent {
         this.#dropIndicator.innerHTML = '<div class="drop-label"></div>'
         this.#containerEl.appendChild(this.#dropIndicator)
 
+        // Scrubber bar (hidden by default, shown when overflow)
+        this.#scrubberEl = document.createElement('div')
+        this.#scrubberEl.className = 'scrubber hidden'
+
+        this.#scrubberThumbEl = document.createElement('div')
+        this.#scrubberThumbEl.className = 'scrubber-thumb'
+        this.#scrubberEl.appendChild(this.#scrubberThumbEl)
+
         this.#setupDropZone()
-        this.shadowRoot.appendChild(this.#containerEl)
+        this.#setupScrubber()
+
+        this.#viewportEl.appendChild(this.#containerEl)
+        this.#wrapperEl.appendChild(this.#viewportEl)
+        this.#wrapperEl.appendChild(this.#scrubberEl)
+        this.shadowRoot.appendChild(this.#wrapperEl)
+    }
+
+
+    #setupScrubber () {
+        // Mouse events
+        this.#scrubberEl.addEventListener('mousedown', (e) => this.#onScrubberStart(e))
+        this.#boundMouseMove = (e) => this.#onScrubberMove(e)
+        this.#boundMouseUp = () => this.#onScrubberEnd()
+        document.addEventListener('mousemove', this.#boundMouseMove)
+        document.addEventListener('mouseup', this.#boundMouseUp)
+
+        // Touch events
+        this.#scrubberEl.addEventListener('touchstart', (e) => this.#onScrubberTouchStart(e), {passive: false})
+        this.#boundTouchMove = (e) => this.#onScrubberTouchMove(e)
+        this.#boundTouchEnd = () => this.#onScrubberEnd()
+        document.addEventListener('touchmove', this.#boundTouchMove, {passive: false})
+        document.addEventListener('touchend', this.#boundTouchEnd)
+
+        // Click on track to jump
+        this.#scrubberEl.addEventListener('click', (e) => this.#onScrubberClick(e))
+    }
+
+    #boundMouseMove = null
+    #boundMouseUp = null
+    #boundTouchMove = null
+    #boundTouchEnd = null
+
+
+    #cleanupScrubberEvents () {
+        if (this.#boundMouseMove) {
+            document.removeEventListener('mousemove', this.#boundMouseMove)
+        }
+        if (this.#boundMouseUp) {
+            document.removeEventListener('mouseup', this.#boundMouseUp)
+        }
+        if (this.#boundTouchMove) {
+            document.removeEventListener('touchmove', this.#boundTouchMove)
+        }
+        if (this.#boundTouchEnd) {
+            document.removeEventListener('touchend', this.#boundTouchEnd)
+        }
+    }
+
+
+    // Internal drag (pointer events for unified mouse/touch reordering)
+    #boundPointerMove = null
+    #boundPointerUp = null
+
+    #setupInternalDrag () {
+        this.#boundPointerMove = (e) => this.#onInternalDragMove(e)
+        this.#boundPointerUp = (e) => this.#onInternalDragEnd(e)
+        document.addEventListener('pointermove', this.#boundPointerMove)
+        document.addEventListener('pointerup', this.#boundPointerUp)
+        document.addEventListener('pointercancel', this.#boundPointerUp)
+    }
+
+
+    #cleanupInternalDrag () {
+        if (this.#boundPointerMove) {
+            document.removeEventListener('pointermove', this.#boundPointerMove)
+        }
+        if (this.#boundPointerUp) {
+            document.removeEventListener('pointerup', this.#boundPointerUp)
+            document.removeEventListener('pointercancel', this.#boundPointerUp)
+        }
+        this.#removeInternalDragGhost()
+    }
+
+
+    #onInternalDragStart (e, index) {
+        if (e.button !== 0) {
+            return
+        }
+        if (isInteractiveElement(e.target, e.currentTarget)) {
+            return
+        }
+
+        this.#internalDragIndex = index
+        this.#internalDragStartX = e.clientX
+        this.#internalDragStartY = e.clientY
+        this.#internalDragActive = false
+    }
+
+
+    #onInternalDragMove (e) {
+        if (this.#internalDragIndex < 0) {
+            return
+        }
+
+        const dx = e.clientX - this.#internalDragStartX
+        const dy = e.clientY - this.#internalDragStartY
+        const distance = Math.sqrt(dx * dx + dy * dy)
+
+        // Start drag after threshold
+        if (!this.#internalDragActive && distance > 10) {
+            this.#internalDragActive = true
+            this.#createInternalDragGhost(e.clientX, e.clientY)
+            this.#markFrameDragging(this.#internalDragIndex, true)
+        }
+
+        if (this.#internalDragActive) {
+            e.preventDefault()
+            this.#updateInternalDragGhost(e.clientX, e.clientY)
+            this.#containerEl.classList.add('drag-over')
+            this.#dropIndex = this.#calculateDropIndex(e.clientX)
+            this.#updateDropIndicator('move')
+        }
+    }
+
+
+    #onInternalDragEnd () {
+        if (this.#internalDragIndex < 0) {
+            return
+        }
+
+        if (this.#internalDragActive) {
+            const sourceIndex = this.#internalDragIndex
+            const targetIndex = this.#dropIndex
+
+            if (targetIndex >= 0 && sourceIndex !== targetIndex && sourceIndex !== targetIndex - 1) {
+                this.dispatchEvent(new CustomEvent('framemove', {
+                    detail: {
+                        fromIndex: sourceIndex,
+                        toIndex: targetIndex
+                    }
+                }))
+            }
+
+            this.#markFrameDragging(this.#internalDragIndex, false)
+            this.#removeInternalDragGhost()
+            this.#containerEl.classList.remove('drag-over')
+            this.#hideDropIndicator()
+        }
+
+        this.#internalDragIndex = -1
+        this.#internalDragActive = false
+    }
+
+
+    #markFrameDragging (index, isDragging) {
+        const frameEls = this.#containerEl.querySelectorAll('.frame')
+        const frameEl = frameEls[index]
+        if (frameEl) {
+            frameEl.classList.toggle('dragging', isDragging)
+        }
+    }
+
+
+    #createInternalDragGhost (x, y) {
+        const frameEls = this.#containerEl.querySelectorAll('.frame')
+        const frameEl = frameEls[this.#internalDragIndex]
+        if (!frameEl) {
+            return
+        }
+
+        const canvas = frameEl.querySelector('canvas')
+        if (!canvas) {
+            return
+        }
+
+        this.#internalDragGhost = document.createElement('div')
+        this.#internalDragGhost.style.cssText = `
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            opacity: 0.8;
+            transform: translate(-50%, -50%) scale(0.9);
+        `
+
+        const clonedCanvas = document.createElement('canvas')
+        clonedCanvas.width = canvas.width
+        clonedCanvas.height = canvas.height
+        clonedCanvas.style.cssText = 'border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);'
+        clonedCanvas.getContext('2d').drawImage(canvas, 0, 0)
+
+        this.#internalDragGhost.appendChild(clonedCanvas)
+        document.body.appendChild(this.#internalDragGhost)
+        this.#updateInternalDragGhost(x, y)
+    }
+
+
+    #updateInternalDragGhost (x, y) {
+        if (this.#internalDragGhost) {
+            this.#internalDragGhost.style.left = `${x}px`
+            this.#internalDragGhost.style.top = `${y}px`
+        }
+    }
+
+
+    #removeInternalDragGhost () {
+        if (this.#internalDragGhost) {
+            this.#internalDragGhost.remove()
+            this.#internalDragGhost = null
+        }
+    }
+
+
+    #onScrubberStart (e) {
+        if (e.target === this.#scrubberThumbEl) {
+            e.preventDefault()
+            this.#scrubberDragging = true
+            this.#scrubberStartX = e.clientX
+            this.#scrubberStartScroll = this.#containerEl.scrollLeft
+            this.#scrubberEl.classList.add('dragging')
+        }
+    }
+
+
+    #onScrubberTouchStart (e) {
+        const touch = e.touches[0]
+        const rect = this.#scrubberThumbEl.getBoundingClientRect()
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right) {
+            e.preventDefault()
+            this.#scrubberDragging = true
+            this.#scrubberStartX = touch.clientX
+            this.#scrubberStartScroll = this.#containerEl.scrollLeft
+            this.#scrubberEl.classList.add('dragging')
+        }
+    }
+
+
+    #onScrubberMove (e) {
+        if (!this.#scrubberDragging) {
+            return
+        }
+        this.#updateScrollFromScrubber(e.clientX)
+    }
+
+
+    #onScrubberTouchMove (e) {
+        if (!this.#scrubberDragging) {
+            return
+        }
+        e.preventDefault()
+        const touch = e.touches[0]
+        this.#updateScrollFromScrubber(touch.clientX)
+    }
+
+
+    #updateScrollFromScrubber (clientX) {
+        const scrubberRect = this.#scrubberEl.getBoundingClientRect()
+        const thumbWidth = this.#scrubberThumbEl.offsetWidth
+        const trackWidth = scrubberRect.width - thumbWidth
+
+        if (trackWidth <= 0) {
+            return
+        }
+
+        const deltaX = clientX - this.#scrubberStartX
+
+        // Direct mapping: thumb position on track = scroll position
+        const newScroll = this.#scrubberStartScroll + (deltaX / trackWidth) * this.#maxScroll
+        this.#setScrollLeft(newScroll)
+    }
+
+
+    #setScrollLeft (value) {
+        this.#scrollLeft = Math.max(0, Math.min(this.#maxScroll, value))
+        this.#containerEl.style.transform = `translateX(${-this.#scrollLeft}px)`
+        this.#updateScrubberThumb()
+    }
+
+
+    #onScrubberEnd () {
+        if (this.#scrubberDragging) {
+            this.#scrubberDragging = false
+            this.#scrubberEl.classList.remove('dragging')
+        }
+    }
+
+
+    #onScrubberClick (e) {
+        if (e.target === this.#scrubberThumbEl) {
+            return
+        }
+
+        const scrubberRect = this.#scrubberEl.getBoundingClientRect()
+        const thumbWidth = this.#scrubberThumbEl.offsetWidth
+        const clickX = e.clientX - scrubberRect.left - thumbWidth / 2
+        const trackWidth = scrubberRect.width - thumbWidth
+
+        const scrollRatio = Math.max(0, Math.min(1, clickX / trackWidth))
+        this.#setScrollLeft(scrollRatio * this.#maxScroll)
+    }
+
+
+    #updateScrubberThumb () {
+        const viewportWidth = this.#viewportEl.clientWidth
+        const contentWidth = this.#containerEl.scrollWidth
+
+        this.#maxScroll = Math.max(0, contentWidth - viewportWidth)
+
+        // Add small threshold to avoid floating point issues
+        if (this.#maxScroll <= 1) {
+            // No overflow, hide scrubber
+            this.#scrubberEl.classList.add('hidden')
+            return
+        }
+
+        this.#scrubberEl.classList.remove('hidden')
+
+        const scrubberWidth = this.#scrubberEl.clientWidth
+        if (scrubberWidth === 0) {
+            return
+        }
+
+        const thumbRatio = viewportWidth / contentWidth
+        const thumbWidth = Math.max(44, scrubberWidth * thumbRatio)
+        const scrollRatio = this.#maxScroll > 0 ? this.#scrollLeft / this.#maxScroll : 0
+        const thumbLeft = scrollRatio * (scrubberWidth - thumbWidth)
+
+        this.#scrubberThumbEl.style.width = `${thumbWidth}px`
+        this.#scrubberThumbEl.style.left = `${thumbLeft}px`
     }
 
 
     #setupDropZone () {
-        this.#containerEl.addEventListener('dragover', (e) => {
-            const isSpritesheetDrag = e.dataTransfer.types.includes(DRAG_TYPE_SPRITESHEET)
-            const isTimelineDrag = e.dataTransfer.types.includes(DRAG_TYPE_TIMELINE)
-
-            if (!isSpritesheetDrag && !isTimelineDrag) {
+        // Handle drops from spritesheet viewer (HTML5 drag and drop)
+        const handleDragOver = (e) => {
+            if (!e.dataTransfer.types.includes(DRAG_TYPE_SPRITESHEET)) {
                 return
             }
 
             e.preventDefault()
-            e.dataTransfer.dropEffect = isTimelineDrag ? 'move' : 'copy'
+            e.dataTransfer.dropEffect = 'copy'
 
             this.#containerEl.classList.add('drag-over')
             this.#dropIndex = this.#calculateDropIndex(e.clientX)
-            this.#updateDropIndicator(isTimelineDrag ? 'move' : 'insert')
-        })
+            this.#updateDropIndicator('insert')
+        }
 
-        this.#containerEl.addEventListener('dragleave', (e) => {
-            if (!this.#containerEl.contains(e.relatedTarget)) {
+        const handleDragLeave = (e) => {
+            const rect = this.#viewportEl.getBoundingClientRect()
+            if (e.clientX < rect.left || e.clientX > rect.right ||
+                e.clientY < rect.top || e.clientY > rect.bottom) {
                 this.#containerEl.classList.remove('drag-over')
                 this.#hideDropIndicator()
             }
-        })
+        }
 
-        this.#containerEl.addEventListener('drop', (e) => {
+        const handleDrop = (e) => {
             e.preventDefault()
             this.#containerEl.classList.remove('drag-over')
-
-            const timelineData = e.dataTransfer.getData(DRAG_TYPE_TIMELINE)
-            if (timelineData) {
-                this.#handleTimelineDrop(timelineData)
-                this.#hideDropIndicator()
-                return
-            }
 
             const spritesheetData = e.dataTransfer.getData(DRAG_TYPE_SPRITESHEET)
             if (spritesheetData) {
                 this.#handleSpritesheetDrop(spritesheetData)
             }
             this.#hideDropIndicator()
-        })
+        }
+
+        this.#viewportEl.addEventListener('dragover', handleDragOver)
+        this.#viewportEl.addEventListener('dragleave', handleDragLeave)
+        this.#viewportEl.addEventListener('drop', handleDrop)
     }
 
 
@@ -93,25 +453,6 @@ export default class AnimationTimeline extends BaseEditorComponent {
                     index: this.#dropIndex,
                     frameName: frameData.name,
                     regionData: frameData.regionData
-                }
-            }))
-        } catch {
-
-        }
-    }
-
-
-    #handleTimelineDrop (data) {
-        try {
-            const {sourceIndex} = JSON.parse(data)
-            if (sourceIndex === this.#dropIndex || sourceIndex === this.#dropIndex - 1) {
-                return
-            }
-
-            this.dispatchEvent(new CustomEvent('framemove', {
-                detail: {
-                    fromIndex: sourceIndex,
-                    toIndex: this.#dropIndex
                 }
             }))
         } catch {
@@ -156,14 +497,14 @@ export default class AnimationTimeline extends BaseEditorComponent {
             const lastFrame = frameEls[frameEls.length - 1]
             const containerRect = this.#containerEl.getBoundingClientRect()
             const frameRect = lastFrame.getBoundingClientRect()
-            this.#dropIndicator.style.left = `${frameRect.right - containerRect.left + 2}px`
+            this.#dropIndicator.style.left = `${frameRect.right - containerRect.left + this.#scrollLeft + 2}px`
             return
         }
 
         const targetFrame = frameEls[this.#dropIndex]
         const containerRect = this.#containerEl.getBoundingClientRect()
         const frameRect = targetFrame.getBoundingClientRect()
-        this.#dropIndicator.style.left = `${frameRect.left - containerRect.left - 2}px`
+        this.#dropIndicator.style.left = `${frameRect.left - containerRect.left + this.#scrollLeft - 2}px`
     }
 
 
@@ -176,7 +517,9 @@ export default class AnimationTimeline extends BaseEditorComponent {
 
     setFrames (frames) {
         this.#frames = frames
-        this.#render()
+        if (this.#containerEl) {
+            this.#render()
+        }
     }
 
 
@@ -204,6 +547,9 @@ export default class AnimationTimeline extends BaseEditorComponent {
         }
 
         this.#updateHighlight()
+
+        // Update scrubber after render
+        requestAnimationFrame(() => this.#updateScrubberThumb())
     }
 
 
@@ -211,11 +557,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
         const frameEl = document.createElement('div')
         frameEl.className = 'frame'
         frameEl.dataset.index = index
-        frameEl.draggable = true
 
-        if (frame.duration && frame.duration !== 1) {
-            frameEl.style.flexGrow = frame.duration
-        }
 
         const canvas = document.createElement('canvas')
         canvas.className = 'frame-thumbnail'
@@ -279,17 +621,8 @@ export default class AnimationTimeline extends BaseEditorComponent {
             }))
         })
 
-        frameEl.addEventListener('dragstart', (e) => {
-            this.#dragSourceIndex = index
-            e.dataTransfer.setData(DRAG_TYPE_TIMELINE, JSON.stringify({sourceIndex: index}))
-            e.dataTransfer.effectAllowed = 'move'
-            frameEl.classList.add('dragging')
-        })
-
-        frameEl.addEventListener('dragend', () => {
-            this.#dragSourceIndex = -1
-            frameEl.classList.remove('dragging')
-        })
+        // Pointer events for internal reordering (unified mouse/touch)
+        frameEl.addEventListener('pointerdown', (e) => this.#onInternalDragStart(e, index))
 
         return frameEl
     }
@@ -367,6 +700,35 @@ export default class AnimationTimeline extends BaseEditorComponent {
         this.#hideDropIndicator()
     }
 
+
+    flashMovedFrame (newIndex) {
+        requestAnimationFrame(() => {
+            const frameEls = this.#containerEl.querySelectorAll('.frame')
+            const frameEl = frameEls[newIndex]
+
+            if (!frameEl) {
+                return
+            }
+
+            frameEl.classList.add('just-moved')
+            frameEl.addEventListener('animationend', () => {
+                frameEl.classList.remove('just-moved')
+            }, {once: true})
+        })
+    }
+
+}
+
+
+function isInteractiveElement (el, stopAt) {
+    const interactiveTags = ['button', 'number-input', 'input']
+    while (el && el !== stopAt) {
+        if (interactiveTags.includes(el.tagName?.toLowerCase())) {
+            return true
+        }
+        el = el.parentElement
+    }
+    return false
 }
 
 
@@ -405,21 +767,66 @@ function drawFrameThumbnail (canvas, frame) {
 
 const STYLES = buildEditorStyles(
     editorBaseStyles,
-    editorScrollbarStyles,
     `
     :host {
         display: block;
-        overflow-x: auto;
-        overflow-y: hidden;
         height: fit-content;
+    }
+
+    .timeline-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .timeline-viewport {
+        overflow: hidden;
+        flex-shrink: 0;
     }
 
     .timeline {
         display: flex;
         gap: 2px;
         padding: 4px 0;
-        width: fit-content;
         position: relative;
+        width: fit-content;
+        min-width: 100%;
+        will-change: transform;
+    }
+
+    /* Scrubber */
+    .scrubber {
+        position: relative;
+        height: 24px;
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        cursor: pointer;
+        touch-action: none;
+        flex-shrink: 0;
+    }
+
+    .scrubber.hidden {
+        display: none !important;
+    }
+
+    .scrubber-thumb {
+        position: absolute;
+        top: 2px;
+        bottom: 2px;
+        min-width: 44px;
+        background: var(--bg-hover);
+        border-radius: 10px;
+        cursor: grab;
+        transition: background 0.15s;
+    }
+
+    .scrubber-thumb:hover,
+    .scrubber.dragging .scrubber-thumb {
+        background: var(--accent);
+    }
+
+    .scrubber.dragging .scrubber-thumb {
+        cursor: grabbing;
     }
 
     .frame {
@@ -456,6 +863,7 @@ const STYLES = buildEditorStyles(
     .frame.dragging {
         opacity: 0.4;
         transform: scale(0.95);
+        pointer-events: none;
     }
 
     .frame.just-added {
@@ -471,6 +879,21 @@ const STYLES = buildEditorStyles(
         50% {
             transform: scale(1.05);
             opacity: 1;
+        }
+        100% {
+            background: transparent;
+            transform: scale(1);
+        }
+    }
+
+    .frame.just-moved {
+        animation: frame-moved 0.35s ease-out;
+    }
+
+    @keyframes frame-moved {
+        0% {
+            background: var(--accent);
+            transform: scale(1.1);
         }
         100% {
             background: transparent;
@@ -562,6 +985,7 @@ const STYLES = buildEditorStyles(
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.1s, left 0.1s;
+        z-index: 10;
     }
 
     .drop-indicator.visible {
