@@ -26,8 +26,8 @@ export default defineConfig({
     },
     plugins: [{
         name: 'copy-den-assets',
-        closeBundle() {
-            // Copy den/ assets so studio can load them
+        closeBundle () {
+
             cpSync(
                 path.resolve(__dirname, 'den/assets'),
                 path.resolve(__dirname, 'dist/studio/den-assets'),

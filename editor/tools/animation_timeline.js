@@ -18,16 +18,16 @@ export default class AnimationTimeline extends BaseEditorComponent {
     #currentIndex = 0
     #dropIndex = -1
 
-    // Scroll state (virtual scroll via transform)
+
     #scrollLeft = 0
     #maxScroll = 0
 
-    // Scrubber drag state
+
     #scrubberDragging = false
     #scrubberStartX = 0
     #scrubberStartScroll = 0
 
-    // Internal drag state (mouse-based reordering)
+
     #internalDragActive = false
     #internalDragIndex = -1
     #internalDragGhost = null
@@ -54,15 +54,15 @@ export default class AnimationTimeline extends BaseEditorComponent {
     #buildDOM () {
         adoptStyles(this.shadowRoot, timelineStyles)
 
-        // Main wrapper
+
         this.#wrapperEl = document.createElement('div')
         this.#wrapperEl.className = 'timeline-wrapper'
 
-        // Viewport (clips the content)
+
         this.#viewportEl = document.createElement('div')
         this.#viewportEl.className = 'timeline-viewport'
 
-        // Frames container (moves via transform)
+
         this.#containerEl = document.createElement('div')
         this.#containerEl.className = 'timeline'
 
@@ -71,7 +71,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
         this.#dropIndicator.innerHTML = '<div class="drop-label"></div>'
         this.#containerEl.appendChild(this.#dropIndicator)
 
-        // Scrubber bar (hidden by default, shown when overflow)
+
         this.#scrubberEl = document.createElement('div')
         this.#scrubberEl.className = 'scrubber hidden'
 
@@ -97,13 +97,12 @@ export default class AnimationTimeline extends BaseEditorComponent {
         document.addEventListener('pointerup', this.#boundScrubberUp)
         document.addEventListener('pointercancel', this.#boundScrubberUp)
 
-        // Click on track to jump
+
         this.#scrubberEl.addEventListener('click', (e) => this.#onScrubberClick(e))
     }
 
     #boundScrubberMove = null
     #boundScrubberUp = null
-
 
     #cleanupScrubberEvents () {
         if (this.#boundScrubberMove) {
@@ -115,8 +114,6 @@ export default class AnimationTimeline extends BaseEditorComponent {
         }
     }
 
-
-    // Internal drag (pointer events for unified mouse/touch reordering)
     #boundPointerMove = null
     #boundPointerUp = null
 
@@ -165,7 +162,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
         const dy = e.clientY - this.#internalDragStartY
         const distance = Math.sqrt(dx * dx + dy * dy)
 
-        // Start drag after threshold
+
         if (!this.#internalDragActive && distance > 10) {
             this.#internalDragActive = true
             this.#createInternalDragGhost(e.clientX, e.clientY)
@@ -300,7 +297,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
 
         const deltaX = clientX - this.#scrubberStartX
 
-        // Direct mapping: thumb position on track = scroll position
+
         const newScroll = this.#scrubberStartScroll + (deltaX / trackWidth) * this.#maxScroll
         this.#setScrollLeft(newScroll)
     }
@@ -510,7 +507,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
 
         this.#updateHighlight()
 
-        // Update scrubber after render
+
         requestAnimationFrame(() => this.#updateScrubberThumb())
     }
 
@@ -583,7 +580,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
             }))
         })
 
-        // Pointer events for internal reordering (unified mouse/touch)
+
         frameEl.addEventListener('pointerdown', (e) => this.#onInternalDragStart(e, index))
 
         return frameEl
@@ -754,7 +751,7 @@ const timelineStyles = createSheet(`
         will-change: transform;
     }
 
-    /* Scrubber */
+
     .scrubber {
         position: relative;
         height: 24px;

@@ -1,14 +1,4 @@
-/**
- * Overlay - Modal/popup container with backdrop
- *
- * Usage:
- *   <editor-overlay>
- *     <div>Modal content</div>
- *   </editor-overlay>
- *
- *   overlay.open()
- *   overlay.close()
- */
+
 
 import {adoptStyles, createSheet} from '../styles/index.js'
 
@@ -81,7 +71,7 @@ const overlayCSS = createSheet(`
         padding-bottom: 10vh;
     }
 
-    /* Fullscreen variant */
+
     :host([fullscreen]) .container {
         width: 100%;
         height: 100%;
@@ -91,7 +81,7 @@ const overlayCSS = createSheet(`
         border: none;
     }
 
-    /* Context: Studio */
+
     :host([context="studio"]) .container {
         border-radius: var(--radius-xl);
     }
@@ -168,7 +158,7 @@ export default class Overlay extends HTMLElement {
         this.shadowRoot.appendChild(this.#backdrop)
         this.shadowRoot.appendChild(this.#container)
 
-        // Close on Escape
+
         this.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && !this.hasAttribute('no-close-on-escape')) {
                 this.close()

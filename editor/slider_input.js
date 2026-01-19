@@ -74,7 +74,7 @@ const sliderInputCSS = `
         font-variant-numeric: tabular-nums;
     }
 
-    /* Context: Studio - larger touch targets */
+
     :host([context="studio"]) .slider-input-container {
         gap: var(--spacing-md);
     }

@@ -1,17 +1,4 @@
-/**
- * Panel - Floating or docked window for editor tools
- *
- * Features:
- * - Draggable header (when floating)
- * - Resizable (when floating)
- * - Collapsible
- * - Dockable to edges
- *
- * Usage:
- *   <editor-panel title="Properties" floating>
- *     <div>Panel content</div>
- *   </editor-panel>
- */
+
 
 import {adoptStyles, createSheet} from '../styles/index.js'
 
@@ -45,7 +32,7 @@ const panelCSS = createSheet(`
         display: none;
     }
 
-    /* Header */
+
     .panel-header {
         display: flex;
         align-items: center;
@@ -110,7 +97,7 @@ const panelCSS = createSheet(`
         background: var(--bg-selected);
     }
 
-    /* Content */
+
     .panel-content {
         padding: var(--spacing-sm);
         overflow: auto;
@@ -121,7 +108,7 @@ const panelCSS = createSheet(`
         padding: 0;
     }
 
-    /* Context: Studio */
+
     :host([context="studio"]) .panel-header {
         height: var(--touch-target);
         padding: 0 var(--spacing-md);
@@ -231,7 +218,7 @@ export default class Panel extends HTMLElement {
 
 
     #buildDOM () {
-        // Header
+
         this.#headerEl = document.createElement('div')
         this.#headerEl.className = 'panel-header'
         this.#headerEl.addEventListener('pointerdown', (e) => this.#handleDragStart(e))
@@ -265,14 +252,14 @@ export default class Panel extends HTMLElement {
         this.#headerEl.appendChild(this.#titleEl)
         this.#headerEl.appendChild(actions)
 
-        // Content
+
         this.#contentEl = document.createElement('div')
         this.#contentEl.className = 'panel-content'
 
         const slot = document.createElement('slot')
         this.#contentEl.appendChild(slot)
 
-        // Assemble
+
         this.shadowRoot.appendChild(this.#headerEl)
         this.shadowRoot.appendChild(this.#contentEl)
 

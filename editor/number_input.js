@@ -103,7 +103,7 @@ const numberInputCSS = `
         transform: none;
     }
 
-    /* Compact mode */
+
     :host([compact]) .number-input-container {
         background: transparent;
         border: none;
@@ -167,7 +167,7 @@ const numberInputCSS = `
         content: '▲';
     }
 
-    /* Context: Studio - larger touch targets */
+
     :host([context="studio"]) .number-input-container {
         height: var(--touch-target);
         padding: 0 var(--spacing-xs) 0 var(--spacing-md);

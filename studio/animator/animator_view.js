@@ -37,7 +37,7 @@ const animatorStyles = createSheet(`
         color: var(--fg-muted);
     }
 
-    /* Preview section - takes remaining space */
+
     .preview-section {
         flex: 1;
         display: flex;
@@ -53,7 +53,7 @@ const animatorStyles = createSheet(`
         max-height: 100%;
     }
 
-    /* Header/Footer controls (slotted into app-layout) */
+
     .header-controls,
     .footer-controls {
         display: flex;
@@ -149,7 +149,7 @@ const animatorStyles = createSheet(`
         width: 80px;
     }
 
-    /* Timeline */
+
     .timeline-section {
         flex-shrink: 0;
         background: var(--bg-secondary);
@@ -160,7 +160,7 @@ const animatorStyles = createSheet(`
         max-width: 100%;
     }
 
-    /* Spritesheet panel (inside overlay) */
+
     .spritesheet-panel {
         background: var(--bg-secondary);
         border-radius: var(--radius-lg);
@@ -303,17 +303,17 @@ export default class AnimatorView extends BaseEditorComponent {
     #buildDOM () {
         adoptStyles(this.shadowRoot, animatorStyles)
 
-        // App layout wrapper
+
         this.#appLayout = document.createElement('app-layout')
         this.#appLayout.setAttribute('no-menu', '')
         this.#appLayout.setAttribute('no-close', '')
 
-        // Content container (preview + timeline)
+
         this.#containerEl = document.createElement('div')
         this.#containerEl.className = 'animator-container'
         this.#appLayout.appendChild(this.#containerEl)
 
-        // Spritesheet overlay
+
         this.#overlayEl = document.createElement('editor-overlay')
         this.#overlayEl.setAttribute('slot', 'overlay')
         this.#appLayout.appendChild(this.#overlayEl)
@@ -323,7 +323,7 @@ export default class AnimatorView extends BaseEditorComponent {
 
 
     #render () {
-        // Clear previous slotted elements
+
         this.#appLayout.querySelectorAll('[slot]').forEach(el => {
             if (el !== this.#overlayEl) {
                 el.remove()
@@ -336,10 +336,10 @@ export default class AnimatorView extends BaseEditorComponent {
             return
         }
 
-        // Header: selects in header-start, controls in header-end
+
         this.#buildHeaderControls()
 
-        // Content: preview + timeline
+
         const previewSection = this.#createPreviewSection()
         this.#containerEl.appendChild(previewSection)
 
@@ -351,10 +351,10 @@ export default class AnimatorView extends BaseEditorComponent {
         this.#setupTimelineEvents()
         this.#containerEl.appendChild(this.#timelineEl)
 
-        // Footer: actions
+
         this.#buildFooterControls()
 
-        // Build spritesheet overlay content
+
         this.#buildSpritesheetOverlay()
     }
 
@@ -379,12 +379,12 @@ export default class AnimatorView extends BaseEditorComponent {
 
 
     #buildHeaderControls () {
-        // Header start: selects
+
         const headerStart = document.createElement('div')
         headerStart.className = 'header-controls'
         headerStart.setAttribute('slot', 'header-start')
 
-        // Animator select
+
         const animatorSelect = document.createElement('select')
         animatorSelect.className = 'toolbar-select'
         for (const name of Object.keys(this.#animators)) {
@@ -398,7 +398,7 @@ export default class AnimatorView extends BaseEditorComponent {
             this.#selectAnimator(e.target.value)
         })
 
-        // Animation select
+
         const animSelect = document.createElement('select')
         animSelect.className = 'toolbar-select'
         for (const anim of this.#animator.children) {
@@ -417,7 +417,7 @@ export default class AnimatorView extends BaseEditorComponent {
         headerStart.appendChild(animSelect)
         this.#appLayout.appendChild(headerStart)
 
-        // Header end: animation config
+
         if (this.#selectedAnimation) {
             const headerEnd = document.createElement('div')
             headerEnd.className = 'header-controls'
@@ -425,7 +425,7 @@ export default class AnimatorView extends BaseEditorComponent {
 
             const anim = this.#selectedAnimation
 
-            // FPS
+
             const fpsInput = document.createElement('number-input')
             fpsInput.className = 'config-input'
             fpsInput.setLabel('fps')
@@ -437,7 +437,7 @@ export default class AnimatorView extends BaseEditorComponent {
                 anim.setFps(e.detail.value)
             })
 
-            // Loop
+
             const loopBtn = document.createElement('button')
             loopBtn.className = `toolbar-btn toolbar-toggle ${anim.loop ? 'active' : ''}`
             loopBtn.textContent = '⟳'
@@ -447,7 +447,7 @@ export default class AnimatorView extends BaseEditorComponent {
                 loopBtn.classList.toggle('active', anim.loop)
             })
 
-            // Mode
+
             const modeSelect = document.createElement('select')
             modeSelect.className = 'toolbar-select toolbar-select-small'
             const modeSymbols = {forward: '→', reverse: '←', pingpong: '↔'}
@@ -472,7 +472,7 @@ export default class AnimatorView extends BaseEditorComponent {
 
 
     #buildFooterControls () {
-        // Footer start: add button
+
         const footerStart = document.createElement('div')
         footerStart.className = 'footer-controls'
         footerStart.setAttribute('slot', 'footer-start')
@@ -486,7 +486,7 @@ export default class AnimatorView extends BaseEditorComponent {
         footerStart.appendChild(addBtn)
         this.#appLayout.appendChild(footerStart)
 
-        // Footer end: export button
+
         const footerEnd = document.createElement('div')
         footerEnd.className = 'footer-controls'
         footerEnd.setAttribute('slot', 'footer-end')
@@ -507,7 +507,7 @@ export default class AnimatorView extends BaseEditorComponent {
         const panel = document.createElement('div')
         panel.className = 'spritesheet-panel'
 
-        // Header
+
         const header = document.createElement('div')
         header.className = 'spritesheet-header'
 
@@ -523,14 +523,14 @@ export default class AnimatorView extends BaseEditorComponent {
         header.appendChild(closeBtn)
         header.appendChild(title)
 
-        // Spritesheet viewer
+
         this.#spritesheetEl = document.createElement('spritesheet-viewer')
         this.#spritesheetEl.className = 'spritesheet-content'
         if (this.#spritesheet) {
             this.#spritesheetEl.setSpritesheet(this.#spritesheet)
         }
 
-        // Listen for frame clicks to add to timeline
+
         this.#spritesheetEl.addEventListener('frameclick', (e) => {
             this.#addFrameToTimeline(e.detail)
         })
@@ -539,7 +539,7 @@ export default class AnimatorView extends BaseEditorComponent {
         panel.appendChild(this.#spritesheetEl)
         this.#overlayEl.appendChild(panel)
 
-        // Close on backdrop click
+
         this.#overlayEl.addEventListener('close', () => this.#closeSpritesheetOverlay())
     }
 
@@ -563,7 +563,7 @@ export default class AnimatorView extends BaseEditorComponent {
         this.#timelineEl.setFrames(this.#selectedAnimation.frames)
         this.#updateFramesCount()
 
-        // Visual feedback - flash the last frame
+
         requestAnimationFrame(() => {
             const frames = this.#timelineEl.shadowRoot?.querySelectorAll('.frame')
             const lastFrame = frames?.[frames.length - 1]
@@ -606,7 +606,7 @@ export default class AnimatorView extends BaseEditorComponent {
             this.#previewEl?.setAnimation(this.#selectedAnimation)
         }
 
-        // Rebuild header controls
+
         this.#appLayout.querySelectorAll('[slot^="header"]').forEach(el => el.remove())
         this.#buildHeaderControls()
     }
@@ -668,7 +668,7 @@ export default class AnimatorView extends BaseEditorComponent {
 
 
     #updateFramesCount () {
-        // Could update a counter in toolbar if needed
+
     }
 
 

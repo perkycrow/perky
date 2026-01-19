@@ -1,6 +1,4 @@
-/**
- * CSS Reset for shadow DOM components
- */
+
 
 export const resetCSS = `
     *, *::before, *::after {
@@ -19,7 +17,7 @@ export const resetCSS = `
         display: none !important;
     }
 
-    /* Scrollbar styling */
+
     ::-webkit-scrollbar {
         width: 6px;
         height: 6px;
@@ -38,7 +36,7 @@ export const resetCSS = `
         background: var(--fg-muted);
     }
 
-    /* Focus visible for keyboard navigation */
+
     :focus-visible {
         outline: 2px solid var(--accent);
         outline-offset: 2px;

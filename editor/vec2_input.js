@@ -37,7 +37,7 @@ const vec2InputCSS = `
         min-width: 0;
     }
 
-    /* Context: Studio - larger touch targets */
+
     :host([context="studio"]) .vec2-input-container {
         gap: var(--spacing-sm);
     }

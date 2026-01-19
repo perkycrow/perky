@@ -1,13 +1,4 @@
-/**
- * Toolbar - Horizontal toolbar with slots for controls
- *
- * Usage:
- *   <editor-toolbar>
- *     <div slot="start">Left items</div>
- *     <div slot="center">Center items</div>
- *     <div slot="end">Right items</div>
- *   </editor-toolbar>
- */
+
 
 import {adoptStyles, createSheet} from '../styles/index.js'
 
@@ -58,7 +49,7 @@ const toolbarCSS = createSheet(`
         justify-content: flex-end;
     }
 
-    /* Separator */
+
     .toolbar-separator {
         width: 1px;
         height: 16px;
@@ -66,7 +57,7 @@ const toolbarCSS = createSheet(`
         margin: 0 var(--spacing-xs);
     }
 
-    /* Context: Studio */
+
     :host([context="studio"]) {
         height: var(--touch-target);
         padding: 0 var(--spacing-md);
@@ -100,25 +91,25 @@ export default class Toolbar extends HTMLElement {
 
 
     #buildDOM () {
-        // Start section
+
         const start = document.createElement('div')
         start.className = 'toolbar-section toolbar-start'
         const startSlot = document.createElement('slot')
         startSlot.name = 'start'
         start.appendChild(startSlot)
 
-        // Center section
+
         const center = document.createElement('div')
         center.className = 'toolbar-section toolbar-center'
         const centerSlot = document.createElement('slot')
         centerSlot.name = 'center'
         center.appendChild(centerSlot)
 
-        // Also accept default slot in center
+
         const defaultSlot = document.createElement('slot')
         center.appendChild(defaultSlot)
 
-        // End section
+
         const end = document.createElement('div')
         end.className = 'toolbar-section toolbar-end'
         const endSlot = document.createElement('slot')

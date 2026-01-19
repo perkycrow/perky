@@ -1,17 +1,4 @@
-/**
- * EditorButton - Standardized button component
- *
- * Usage:
- *   <editor-button>Click me</editor-button>
- *   <editor-button variant="primary">Save</editor-button>
- *   <editor-button variant="danger" icon>🗑</editor-button>
- *
- * Attributes:
- *   - variant: 'default' | 'primary' | 'danger' | 'ghost'
- *   - icon: boolean - icon-only button (square)
- *   - disabled: boolean
- *   - active: boolean - toggle state
- */
+
 
 import {adoptStyles, controlsSheet, createSheet} from '../styles/index.js'
 
@@ -25,7 +12,7 @@ const componentStyles = createSheet(`
         width: 100%;
     }
 
-    /* Ensure touch target on touch devices */
+
     @media (pointer: coarse) {
         button {
             min-height: var(--touch-target);
@@ -65,6 +52,7 @@ export default class EditorButton extends HTMLElement {
         return this.getAttribute('variant') || 'default'
     }
 
+
     set variant (value) {
         this.setAttribute('variant', value)
     }
@@ -73,6 +61,7 @@ export default class EditorButton extends HTMLElement {
     get disabled () {
         return this.hasAttribute('disabled')
     }
+
 
     set disabled (value) {
         if (value) {
@@ -86,6 +75,7 @@ export default class EditorButton extends HTMLElement {
     get active () {
         return this.hasAttribute('active')
     }
+
 
     set active (value) {
         if (value) {
@@ -120,38 +110,39 @@ export default class EditorButton extends HTMLElement {
             return
         }
 
-        // Reset classes
+
         this.#buttonEl.className = ''
 
-        // Variant
+
         const variant = this.variant
         if (variant !== 'default') {
             this.#buttonEl.classList.add(variant)
         }
 
-        // Icon-only
+
         if (this.hasAttribute('icon')) {
             this.#buttonEl.classList.add('icon-only')
         }
 
-        // Active state
+
         if (this.active) {
             this.#buttonEl.classList.add('active')
         }
 
-        // Disabled
+
         this.#buttonEl.disabled = this.disabled
     }
 
 
-    // Programmatic API
     focus () {
         this.#buttonEl?.focus()
     }
 
+
     blur () {
         this.#buttonEl?.blur()
     }
+
 
     click () {
         this.#buttonEl?.click()

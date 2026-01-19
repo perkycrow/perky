@@ -1,36 +1,4 @@
-/**
- * AppLayout - Flexible fullscreen layout for apps (Studio tools, etc.)
- *
- * Structure:
- * ┌─────────────────────────────────────────────────────────────────┐
- * │  [≡?]  [header-start] Title [header-center] [header-end] [✕?]  │ ← Header
- * ├─────────────────────────────────────────────────────────────────┤
- * │                                                                 │
- * │                        CONTENT (slot)                           │
- * │                                                                 │
- * ├─────────────────────────────────────────────────────────────────┤
- * │  [footer-start]    [footer-center]    [footer-end]             │ ← Footer (safe area)
- * └─────────────────────────────────────────────────────────────────┘
- *
- * Attributes:
- *   title        - Title text (optional)
- *   no-header    - Hide header completely
- *   no-footer    - Hide footer completely
- *   no-menu      - Hide menu button (≡)
- *   no-close     - Hide close button (✕)
- *
- * Events:
- *   menu  - Fired when menu button clicked
- *   close - Fired when close button clicked
- *
- * Usage:
- *   <app-layout title="My App" no-menu>
- *     <select slot="header-start">...</select>
- *     <div>Main content</div>
- *     <div slot="footer-center">...</div>
- *     <button slot="footer-end">Export</button>
- *   </app-layout>
- */
+
 
 import {adoptStyles, createSheet} from '../styles/index.js'
 
@@ -47,7 +15,7 @@ const appLayoutCSS = createSheet(`
         overflow: hidden;
     }
 
-    /* Header */
+
     .header {
         display: flex;
         align-items: center;
@@ -125,7 +93,7 @@ const appLayoutCSS = createSheet(`
         display: none;
     }
 
-    /* Content */
+
     .content {
         flex: 1;
         overflow: auto;
@@ -136,7 +104,7 @@ const appLayoutCSS = createSheet(`
         height: 100%;
     }
 
-    /* Footer */
+
     .footer {
         display: flex;
         align-items: center;
@@ -178,7 +146,7 @@ const appLayoutCSS = createSheet(`
         display: none;
     }
 
-    /* Overlay slot for modals/panels */
+
     .overlay-container {
         position: absolute;
         top: 0;
@@ -247,7 +215,7 @@ export default class AppLayout extends HTMLElement {
 
 
     #buildDOM () {
-        // Header
+
         this.#headerEl = document.createElement('header')
         this.#headerEl.className = 'header'
 
@@ -292,14 +260,14 @@ export default class AppLayout extends HTMLElement {
         this.#headerEl.appendChild(headerCenter)
         this.#headerEl.appendChild(headerEnd)
 
-        // Content
+
         this.#contentEl = document.createElement('main')
         this.#contentEl.className = 'content'
 
         const contentSlot = document.createElement('slot')
         this.#contentEl.appendChild(contentSlot)
 
-        // Overlay container
+
         const overlayContainer = document.createElement('div')
         overlayContainer.className = 'overlay-container'
         const overlaySlot = document.createElement('slot')
@@ -307,7 +275,7 @@ export default class AppLayout extends HTMLElement {
         overlayContainer.appendChild(overlaySlot)
         this.#contentEl.appendChild(overlayContainer)
 
-        // Footer
+
         this.#footerEl = document.createElement('footer')
         this.#footerEl.className = 'footer'
 
@@ -333,7 +301,7 @@ export default class AppLayout extends HTMLElement {
         this.#footerEl.appendChild(footerCenter)
         this.#footerEl.appendChild(footerEnd)
 
-        // Assemble
+
         this.shadowRoot.appendChild(this.#headerEl)
         this.shadowRoot.appendChild(this.#contentEl)
         this.shadowRoot.appendChild(this.#footerEl)

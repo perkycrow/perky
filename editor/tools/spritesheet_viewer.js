@@ -227,7 +227,7 @@ export default class SpritesheetViewer extends BaseEditorComponent {
 
 
     #onPointerStart (e) {
-        // Mouse uses HTML5 Drag and Drop (native)
+
         if (e.pointerType === 'mouse') {
             return
         }
@@ -260,7 +260,7 @@ export default class SpritesheetViewer extends BaseEditorComponent {
         if (!this.#dragStartEl) {
             return
         }
-        // Mouse uses HTML5 Drag and Drop
+
         if (e.pointerType === 'mouse') {
             return
         }
@@ -294,7 +294,7 @@ export default class SpritesheetViewer extends BaseEditorComponent {
         if (!this.#dragStartEl) {
             return
         }
-        // Mouse uses HTML5 Drag and Drop
+
         if (e.pointerType === 'mouse') {
             return
         }
@@ -542,8 +542,7 @@ const viewerStyles = createSheet(`
         white-space: nowrap;
         text-align: center;
     }
-`
-)
+`)
 
 
 customElements.define('spritesheet-viewer', SpritesheetViewer)

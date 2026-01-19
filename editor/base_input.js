@@ -1,13 +1,6 @@
 import {adoptStyles, createSheet, controlsSheet} from './styles/index.js'
 
 
-/**
- * Setup styles for an input component using the shared styles system
- *
- * @param {ShadowRoot} shadowRoot - The shadow root to style
- * @param {string} componentCSS - Component-specific CSS
- * @returns {CSSStyleSheet} The component stylesheet (for reference if needed)
- */
 export function setupInputStyles (shadowRoot, componentCSS = '') {
     const componentSheet = componentCSS ? createSheet(componentCSS) : null
     if (componentSheet) {
@@ -19,10 +12,6 @@ export function setupInputStyles (shadowRoot, componentCSS = '') {
 }
 
 
-/**
- * @deprecated Use setupInputStyles() instead
- * Kept for backwards compatibility during migration
- */
 export function createInputStyles (customStyles) {
     return customStyles
 }

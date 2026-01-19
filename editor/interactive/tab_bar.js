@@ -1,19 +1,4 @@
-/**
- * TabBar - Tab selector for switching between views/modes
- *
- * Usage:
- *   <tab-bar>
- *     <button slot="tab" data-value="sprites">Sprites</button>
- *     <button slot="tab" data-value="animations">Animations</button>
- *     <button slot="tab" data-value="settings">Settings</button>
- *   </tab-bar>
- *
- * Or programmatically:
- *   tabBar.setTabs([
- *     {value: 'sprites', label: 'Sprites'},
- *     {value: 'animations', label: 'Animations'}
- *   ])
- */
+
 
 import {adoptStyles, createSheet} from '../styles/index.js'
 
@@ -52,7 +37,7 @@ const tabBarCSS = createSheet(`
         box-shadow: var(--shadow-sm);
     }
 
-    /* Slotted tabs */
+
     ::slotted(button) {
         appearance: none;
         background: transparent;
@@ -77,7 +62,7 @@ const tabBarCSS = createSheet(`
         box-shadow: var(--shadow-sm);
     }
 
-    /* Context: Studio */
+
     :host([context="studio"]) {
         padding: 4px;
         gap: 4px;
@@ -216,13 +201,13 @@ export default class TabBar extends HTMLElement {
 
 
     #updateActiveState () {
-        // Update programmatic tabs
+
         const buttons = this.#container.querySelectorAll('.tab')
         for (const btn of buttons) {
             btn.classList.toggle('active', btn.dataset.value === this.#value)
         }
 
-        // Update slotted tabs
+
         const slot = this.shadowRoot.querySelector('slot[name="tab"]')
         const slottedButtons = slot.assignedElements()
         for (const btn of slottedButtons) {

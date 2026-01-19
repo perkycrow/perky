@@ -1,9 +1,7 @@
-/**
- * Shared styles for form controls (inputs, buttons, selects)
- */
+
 
 export const controlsCSS = `
-    /* Base input styles */
+
     input[type="text"],
     input[type="number"],
     input[type="search"],
@@ -38,7 +36,7 @@ export const controlsCSS = `
         cursor: not-allowed;
     }
 
-    /* Select styles */
+
     select {
         appearance: none;
         background: var(--bg-secondary);
@@ -65,7 +63,7 @@ export const controlsCSS = `
         background-color: var(--bg-hover);
     }
 
-    /* Button base */
+
     button {
         appearance: none;
         background: var(--bg-secondary);
@@ -104,7 +102,7 @@ export const controlsCSS = `
         transform: none;
     }
 
-    /* Button variants */
+
     button.primary {
         background: var(--accent);
         color: var(--bg-primary);
@@ -135,26 +133,26 @@ export const controlsCSS = `
         color: var(--fg-primary);
     }
 
-    /* Toggle button state */
+
     button.active,
     button[aria-pressed="true"] {
         background: var(--accent);
         color: var(--bg-primary);
     }
 
-    /* Icon-only button */
+
     button.icon-only {
         padding: 0;
         width: var(--input-height);
     }
 
-    /* Success feedback */
+
     button.success {
         background: var(--status-success);
         color: var(--bg-primary);
     }
 
-    /* Label styles */
+
     label {
         color: var(--fg-secondary);
         font-size: var(--font-size-sm);

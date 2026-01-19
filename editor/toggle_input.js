@@ -63,7 +63,7 @@ const toggleInputCSS = `
         background: var(--bg-primary);
     }
 
-    /* Context: Studio - larger touch targets */
+
     :host([context="studio"]) .toggle-input-container {
         gap: var(--spacing-md);
     }
