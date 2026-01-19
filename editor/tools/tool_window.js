@@ -86,34 +86,30 @@ export default class ToolWindow extends BaseEditorComponent {
                 return
             }
 
-            const coords = getPointerCoords(e)
             this.#isDragging = true
             this.#dragOffset = {
-                x: coords.x - this.#x,
-                y: coords.y - this.#y
+                x: e.clientX - this.#x,
+                y: e.clientY - this.#y
             }
             this.bringToFront()
         }
 
-        this.#headerEl.addEventListener('mousedown', startDrag)
-        this.#headerEl.addEventListener('touchstart', startDrag, {passive: true})
+        this.#headerEl.addEventListener('pointerdown', startDrag)
 
         this.#onPointerMove = (e) => {
             if (!this.#isDragging && !this.#isResizing) {
                 return
             }
 
-            const coords = getPointerCoords(e)
-
             if (this.#isDragging) {
-                this.#x = coords.x - this.#dragOffset.x
-                this.#y = coords.y - this.#dragOffset.y
+                this.#x = e.clientX - this.#dragOffset.x
+                this.#y = e.clientY - this.#dragOffset.y
                 this.#applyPosition()
             }
 
             if (this.#isResizing) {
-                this.#width = Math.max(this.#minWidth, coords.x - this.#x)
-                this.#height = Math.max(this.#minHeight, coords.y - this.#y)
+                this.#width = Math.max(this.#minWidth, e.clientX - this.#x)
+                this.#height = Math.max(this.#minHeight, e.clientY - this.#y)
                 this.#applyPosition()
             }
         }
@@ -123,10 +119,9 @@ export default class ToolWindow extends BaseEditorComponent {
             this.#isResizing = false
         }
 
-        window.addEventListener('mousemove', this.#onPointerMove)
-        window.addEventListener('mouseup', this.#onPointerUp)
-        window.addEventListener('touchmove', this.#onPointerMove, {passive: true})
-        window.addEventListener('touchend', this.#onPointerUp)
+        window.addEventListener('pointermove', this.#onPointerMove)
+        window.addEventListener('pointerup', this.#onPointerUp)
+        window.addEventListener('pointercancel', this.#onPointerUp)
     }
 
 
@@ -142,8 +137,7 @@ export default class ToolWindow extends BaseEditorComponent {
             this.bringToFront()
         }
 
-        handle.addEventListener('mousedown', startResize)
-        handle.addEventListener('touchstart', startResize, {passive: false})
+        handle.addEventListener('pointerdown', startResize)
     }
 
 
@@ -158,12 +152,11 @@ export default class ToolWindow extends BaseEditorComponent {
 
     #cleanupWindowListeners () {
         if (this.#onPointerMove) {
-            window.removeEventListener('mousemove', this.#onPointerMove)
-            window.removeEventListener('touchmove', this.#onPointerMove)
+            window.removeEventListener('pointermove', this.#onPointerMove)
         }
         if (this.#onPointerUp) {
-            window.removeEventListener('mouseup', this.#onPointerUp)
-            window.removeEventListener('touchend', this.#onPointerUp)
+            window.removeEventListener('pointerup', this.#onPointerUp)
+            window.removeEventListener('pointercancel', this.#onPointerUp)
         }
     }
 
@@ -218,14 +211,6 @@ export default class ToolWindow extends BaseEditorComponent {
         this.#applyPosition()
     }
 
-}
-
-
-function getPointerCoords (e) {
-    if (e.touches && e.touches.length > 0) {
-        return {x: e.touches[0].clientX, y: e.touches[0].clientY}
-    }
-    return {x: e.clientX, y: e.clientY}
 }
 
 

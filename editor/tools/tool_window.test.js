@@ -2,6 +2,18 @@ import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './tool_window.js'
 
 
+// Polyfill PointerEvent for jsdom
+if (typeof PointerEvent === 'undefined') {
+    globalThis.PointerEvent = class PointerEvent extends MouseEvent {
+        constructor (type, params) {
+            super(type, params)
+            this.pointerType = params?.pointerType || 'mouse'
+            this.pointerId = params?.pointerId || 1
+        }
+    }
+}
+
+
 describe('ToolWindow', () => {
 
     let toolWindow
@@ -165,19 +177,19 @@ describe('ToolWindow', () => {
         toolWindow.setPosition(20, 20)
         const header = toolWindow.shadowRoot.querySelector('.tool-window-header')
 
-        header.dispatchEvent(new MouseEvent('mousedown', {
+        header.dispatchEvent(new PointerEvent('pointerdown', {
             clientX: 50,
             clientY: 50,
             bubbles: true
         }))
 
-        window.dispatchEvent(new MouseEvent('mousemove', {
+        window.dispatchEvent(new PointerEvent('pointermove', {
             clientX: 150,
             clientY: 200,
             bubbles: true
         }))
 
-        window.dispatchEvent(new MouseEvent('mouseup', {bubbles: true}))
+        window.dispatchEvent(new PointerEvent('pointerup', {bubbles: true}))
 
         expect(toolWindow.style.left).toBe('120px')
         expect(toolWindow.style.top).toBe('170px')
@@ -187,8 +199,8 @@ describe('ToolWindow', () => {
     test('disconnectedCallback should clean up window event listeners', () => {
         const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener')
         toolWindow.remove()
-        expect(removeEventListenerSpy).toHaveBeenCalledWith('mousemove', expect.any(Function))
-        expect(removeEventListenerSpy).toHaveBeenCalledWith('mouseup', expect.any(Function))
+        expect(removeEventListenerSpy).toHaveBeenCalledWith('pointermove', expect.any(Function))
+        expect(removeEventListenerSpy).toHaveBeenCalledWith('pointerup', expect.any(Function))
         removeEventListenerSpy.mockRestore()
     })
 

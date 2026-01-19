@@ -92,42 +92,28 @@ export default class AnimationTimeline extends BaseEditorComponent {
 
 
     #setupScrubber () {
-        // Mouse events
-        this.#scrubberEl.addEventListener('mousedown', (e) => this.#onScrubberStart(e))
-        this.#boundMouseMove = (e) => this.#onScrubberMove(e)
-        this.#boundMouseUp = () => this.#onScrubberEnd()
-        document.addEventListener('mousemove', this.#boundMouseMove)
-        document.addEventListener('mouseup', this.#boundMouseUp)
-
-        // Touch events
-        this.#scrubberEl.addEventListener('touchstart', (e) => this.#onScrubberTouchStart(e), {passive: false})
-        this.#boundTouchMove = (e) => this.#onScrubberTouchMove(e)
-        this.#boundTouchEnd = () => this.#onScrubberEnd()
-        document.addEventListener('touchmove', this.#boundTouchMove, {passive: false})
-        document.addEventListener('touchend', this.#boundTouchEnd)
+        this.#scrubberEl.addEventListener('pointerdown', (e) => this.#onScrubberStart(e))
+        this.#boundScrubberMove = (e) => this.#onScrubberMove(e)
+        this.#boundScrubberUp = () => this.#onScrubberEnd()
+        document.addEventListener('pointermove', this.#boundScrubberMove)
+        document.addEventListener('pointerup', this.#boundScrubberUp)
+        document.addEventListener('pointercancel', this.#boundScrubberUp)
 
         // Click on track to jump
         this.#scrubberEl.addEventListener('click', (e) => this.#onScrubberClick(e))
     }
 
-    #boundMouseMove = null
-    #boundMouseUp = null
-    #boundTouchMove = null
-    #boundTouchEnd = null
+    #boundScrubberMove = null
+    #boundScrubberUp = null
 
 
     #cleanupScrubberEvents () {
-        if (this.#boundMouseMove) {
-            document.removeEventListener('mousemove', this.#boundMouseMove)
+        if (this.#boundScrubberMove) {
+            document.removeEventListener('pointermove', this.#boundScrubberMove)
         }
-        if (this.#boundMouseUp) {
-            document.removeEventListener('mouseup', this.#boundMouseUp)
-        }
-        if (this.#boundTouchMove) {
-            document.removeEventListener('touchmove', this.#boundTouchMove)
-        }
-        if (this.#boundTouchEnd) {
-            document.removeEventListener('touchend', this.#boundTouchEnd)
+        if (this.#boundScrubberUp) {
+            document.removeEventListener('pointerup', this.#boundScrubberUp)
+            document.removeEventListener('pointercancel', this.#boundScrubberUp)
         }
     }
 
@@ -290,20 +276,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
             e.preventDefault()
             this.#scrubberDragging = true
             this.#scrubberStartX = e.clientX
-            this.#scrubberStartScroll = this.#containerEl.scrollLeft
-            this.#scrubberEl.classList.add('dragging')
-        }
-    }
-
-
-    #onScrubberTouchStart (e) {
-        const touch = e.touches[0]
-        const rect = this.#scrubberThumbEl.getBoundingClientRect()
-        if (touch.clientX >= rect.left && touch.clientX <= rect.right) {
-            e.preventDefault()
-            this.#scrubberDragging = true
-            this.#scrubberStartX = touch.clientX
-            this.#scrubberStartScroll = this.#containerEl.scrollLeft
+            this.#scrubberStartScroll = this.#scrollLeft
             this.#scrubberEl.classList.add('dragging')
         }
     }
@@ -313,17 +286,8 @@ export default class AnimationTimeline extends BaseEditorComponent {
         if (!this.#scrubberDragging) {
             return
         }
-        this.#updateScrollFromScrubber(e.clientX)
-    }
-
-
-    #onScrubberTouchMove (e) {
-        if (!this.#scrubberDragging) {
-            return
-        }
         e.preventDefault()
-        const touch = e.touches[0]
-        this.#updateScrollFromScrubber(touch.clientX)
+        this.#updateScrollFromScrubber(e.clientX)
     }
 
 

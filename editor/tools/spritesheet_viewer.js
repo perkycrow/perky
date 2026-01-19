@@ -23,15 +23,15 @@ export default class SpritesheetViewer extends BaseEditorComponent {
     #filter = null
     #animationColorMap = new Map()
 
-    #touchDragData = null
-    #touchDragGhost = null
-    #touchStartPos = null
-    #touchStartEl = null
+    #dragData = null
+    #dragGhost = null
+    #dragStartPos = null
+    #dragStartEl = null
     #lastTimeline = null
 
     connectedCallback () {
         this.#buildDOM()
-        this.#setupTouchDrag()
+        this.#setupPointerDrag()
         if (this.#spritesheet) {
             this.#renderFilter()
             this.#renderGrid()
@@ -40,7 +40,7 @@ export default class SpritesheetViewer extends BaseEditorComponent {
 
 
     disconnectedCallback () {
-        this.#cleanupTouchDrag()
+        this.#cleanupPointerDrag()
     }
 
 
@@ -204,40 +204,46 @@ export default class SpritesheetViewer extends BaseEditorComponent {
     }
 
 
-    #setupTouchDrag () {
-        this.addEventListener('touchstart', (e) => this.#onTouchStart(e), {passive: false})
-        this.#boundTouchMove = (e) => this.#onTouchMove(e)
-        this.#boundTouchEnd = (e) => this.#onTouchEnd(e)
-        document.addEventListener('touchmove', this.#boundTouchMove, {passive: false})
-        document.addEventListener('touchend', this.#boundTouchEnd)
+    #setupPointerDrag () {
+        this.addEventListener('pointerdown', (e) => this.#onPointerStart(e))
+        this.#boundPointerMove = (e) => this.#onPointerMove(e)
+        this.#boundPointerEnd = (e) => this.#onPointerEnd(e)
+        document.addEventListener('pointermove', this.#boundPointerMove)
+        document.addEventListener('pointerup', this.#boundPointerEnd)
+        document.addEventListener('pointercancel', this.#boundPointerEnd)
     }
 
-    #boundTouchMove = null
-    #boundTouchEnd = null
+    #boundPointerMove = null
+    #boundPointerEnd = null
 
-    #cleanupTouchDrag () {
-        if (this.#boundTouchMove) {
-            document.removeEventListener('touchmove', this.#boundTouchMove)
+    #cleanupPointerDrag () {
+        if (this.#boundPointerMove) {
+            document.removeEventListener('pointermove', this.#boundPointerMove)
         }
-        if (this.#boundTouchEnd) {
-            document.removeEventListener('touchend', this.#boundTouchEnd)
+        if (this.#boundPointerEnd) {
+            document.removeEventListener('pointerup', this.#boundPointerEnd)
+            document.removeEventListener('pointercancel', this.#boundPointerEnd)
         }
         this.#removeDragGhost()
     }
 
 
-    #onTouchStart (e) {
-        const touch = e.touches[0]
+    #onPointerStart (e) {
+        // Mouse uses HTML5 Drag and Drop (native)
+        if (e.pointerType === 'mouse') {
+            return
+        }
+
         const target = e.composedPath()[0]
-        const frameEl = target.closest?.('.frame') || this.#findFrameFromPoint(touch.clientX, touch.clientY)
+        const frameEl = target.closest?.('.frame') || this.#findFrameFromPoint(e.clientX, e.clientY)
 
         if (!frameEl) {
             return
         }
 
-        this.#touchStartPos = {x: touch.clientX, y: touch.clientY}
-        this.#touchStartEl = frameEl
-        this.#touchDragData = null
+        this.#dragStartPos = {x: e.clientX, y: e.clientY}
+        this.#dragStartEl = frameEl
+        this.#dragData = null
     }
 
 
@@ -252,28 +258,31 @@ export default class SpritesheetViewer extends BaseEditorComponent {
     }
 
 
-    #onTouchMove (e) {
-        if (!this.#touchStartEl) {
+    #onPointerMove (e) {
+        if (!this.#dragStartEl) {
+            return
+        }
+        // Mouse uses HTML5 Drag and Drop
+        if (e.pointerType === 'mouse') {
             return
         }
 
-        const touch = e.touches[0]
-        const dx = touch.clientX - this.#touchStartPos.x
-        const dy = touch.clientY - this.#touchStartPos.y
+        const dx = e.clientX - this.#dragStartPos.x
+        const dy = e.clientY - this.#dragStartPos.y
         const distance = Math.sqrt(dx * dx + dy * dy)
 
-        if (!this.#touchDragData && distance > 10) {
+        if (!this.#dragData && distance > 10) {
             e.preventDefault()
-            this.#startTouchDrag(touch)
+            this.#startDrag(e.clientX, e.clientY)
         }
 
-        if (this.#touchDragData) {
+        if (this.#dragData) {
             e.preventDefault()
-            this.#updateDragGhost(touch.clientX, touch.clientY)
+            this.#updateDragGhost(e.clientX, e.clientY)
 
-            const timeline = findTimeline(touch.clientX, touch.clientY)
+            const timeline = findTimeline(e.clientX, e.clientY)
             if (timeline) {
-                timeline.handleTouchDragOver(touch.clientX)
+                timeline.handleTouchDragOver(e.clientX)
             } else if (this.#lastTimeline) {
                 this.#lastTimeline.handleTouchDragLeave()
                 this.#lastTimeline = null
@@ -283,30 +292,37 @@ export default class SpritesheetViewer extends BaseEditorComponent {
     }
 
 
-    #onTouchEnd (e) {
-        if (this.#touchDragData) {
-            const touch = e.changedTouches[0]
-            const timeline = findTimeline(touch.clientX, touch.clientY)
+    #onPointerEnd (e) {
+        if (!this.#dragStartEl) {
+            return
+        }
+        // Mouse uses HTML5 Drag and Drop
+        if (e.pointerType === 'mouse') {
+            return
+        }
+
+        if (this.#dragData) {
+            const timeline = findTimeline(e.clientX, e.clientY)
 
             if (timeline) {
-                timeline.handleTouchDrop(this.#touchDragData)
+                timeline.handleTouchDrop(this.#dragData)
             } else if (this.#lastTimeline) {
                 this.#lastTimeline.handleTouchDragLeave()
             }
 
-            this.#touchStartEl?.classList.remove('dragging')
+            this.#dragStartEl?.classList.remove('dragging')
             this.#removeDragGhost()
         }
 
-        this.#touchStartPos = null
-        this.#touchStartEl = null
-        this.#touchDragData = null
+        this.#dragStartPos = null
+        this.#dragStartEl = null
+        this.#dragData = null
         this.#lastTimeline = null
     }
 
 
-    #startTouchDrag (touch) {
-        const frameEl = this.#touchStartEl
+    #startDrag (x, y) {
+        const frameEl = this.#dragStartEl
         const name = frameEl.dataset.name
         const frameData = this.#spritesheet?.framesMap.get(name)
 
@@ -314,7 +330,7 @@ export default class SpritesheetViewer extends BaseEditorComponent {
             return
         }
 
-        this.#touchDragData = {
+        this.#dragData = {
             name,
             regionData: {
                 x: frameData.region?.x,
@@ -325,7 +341,7 @@ export default class SpritesheetViewer extends BaseEditorComponent {
         }
 
         frameEl.classList.add('dragging')
-        this.#createDragGhost(frameEl, touch.clientX, touch.clientY)
+        this.#createDragGhost(frameEl, x, y)
     }
 
 
@@ -335,9 +351,9 @@ export default class SpritesheetViewer extends BaseEditorComponent {
             return
         }
 
-        this.#touchDragGhost = document.createElement('div')
-        this.#touchDragGhost.className = 'touch-drag-ghost'
-        this.#touchDragGhost.style.cssText = `
+        this.#dragGhost = document.createElement('div')
+        this.#dragGhost.className = 'drag-ghost'
+        this.#dragGhost.style.cssText = `
             position: fixed;
             pointer-events: none;
             z-index: 10000;
@@ -351,25 +367,25 @@ export default class SpritesheetViewer extends BaseEditorComponent {
         clonedCanvas.style.cssText = 'border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);'
         clonedCanvas.getContext('2d').drawImage(canvas, 0, 0)
 
-        this.#touchDragGhost.appendChild(clonedCanvas)
-        document.body.appendChild(this.#touchDragGhost)
+        this.#dragGhost.appendChild(clonedCanvas)
+        document.body.appendChild(this.#dragGhost)
 
         this.#updateDragGhost(x, y)
     }
 
 
     #updateDragGhost (x, y) {
-        if (this.#touchDragGhost) {
-            this.#touchDragGhost.style.left = `${x}px`
-            this.#touchDragGhost.style.top = `${y}px`
+        if (this.#dragGhost) {
+            this.#dragGhost.style.left = `${x}px`
+            this.#dragGhost.style.top = `${y}px`
         }
     }
 
 
     #removeDragGhost () {
-        if (this.#touchDragGhost) {
-            this.#touchDragGhost.remove()
-            this.#touchDragGhost = null
+        if (this.#dragGhost) {
+            this.#dragGhost.remove()
+            this.#dragGhost = null
         }
     }
 

@@ -32,6 +32,7 @@ const numberStyles = createInputStyles(`
         user-select: none;
         min-width: 10px;
         text-transform: lowercase;
+        touch-action: none;
     }
 
     .number-input-label:hover {
@@ -201,8 +202,9 @@ export default class NumberInput extends HTMLElement {
             this.#labelEl.classList.remove('dragging')
         }
         document.body.style.cursor = ''
-        document.removeEventListener('mousemove', this.#onDragMove)
-        document.removeEventListener('mouseup', this.#onDragEnd)
+        document.removeEventListener('pointermove', this.#onDragMove)
+        document.removeEventListener('pointerup', this.#onDragEnd)
+        document.removeEventListener('pointercancel', this.#onDragEnd)
     }
 
     static get observedAttributes () {
@@ -303,7 +305,7 @@ export default class NumberInput extends HTMLElement {
         this.#labelEl = document.createElement('span')
         this.#labelEl.className = 'number-input-label'
         this.#labelEl.textContent = this.#label
-        this.#labelEl.addEventListener('mousedown', (e) => this.#startDrag(e))
+        this.#labelEl.addEventListener('pointerdown', (e) => this.#startDrag(e))
 
         this.#input = document.createElement('input')
         this.#input.className = 'number-input-field'
@@ -421,8 +423,9 @@ export default class NumberInput extends HTMLElement {
             this.#labelEl.classList.add('dragging')
         }
         document.body.style.cursor = 'ew-resize'
-        document.addEventListener('mousemove', this.#onDragMove)
-        document.addEventListener('mouseup', this.#onDragEnd)
+        document.addEventListener('pointermove', this.#onDragMove)
+        document.addEventListener('pointerup', this.#onDragEnd)
+        document.addEventListener('pointercancel', this.#onDragEnd)
     }
 
 }
