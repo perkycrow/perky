@@ -1,15 +1,15 @@
-import {createInputStyles, emitChange, handleAttributeChange} from './base_input.js'
+import {setupInputStyles, emitChange, handleAttributeChange} from './base_input.js'
 
 
-const sliderStyles = createInputStyles(`
+const sliderInputCSS = `
     .slider-input-container {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: var(--spacing-sm);
     }
 
     .slider-input-label {
-        font-size: 10px;
+        font-size: var(--font-size-xs);
         color: var(--fg-muted);
         min-width: 60px;
     }
@@ -49,7 +49,7 @@ const sliderStyles = createInputStyles(`
         border-radius: 50%;
         cursor: pointer;
         margin-top: -4px;
-        transition: transform 0.1s, box-shadow 0.1s;
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast);
     }
 
     .slider-input-track::-webkit-slider-thumb:hover {
@@ -67,13 +67,53 @@ const sliderStyles = createInputStyles(`
     }
 
     .slider-input-value {
-        font-size: 10px;
+        font-size: var(--font-size-xs);
         color: var(--fg-secondary);
         min-width: 32px;
         text-align: right;
         font-variant-numeric: tabular-nums;
     }
-`)
+
+    /* Context: Studio - larger touch targets */
+    :host([context="studio"]) .slider-input-container {
+        gap: var(--spacing-md);
+    }
+
+    :host([context="studio"]) .slider-input-label {
+        font-size: var(--font-size-md);
+        min-width: 80px;
+    }
+
+    :host([context="studio"]) .slider-input-track {
+        height: 8px;
+    }
+
+    :host([context="studio"]) .slider-input-track::-webkit-slider-runnable-track {
+        height: 8px;
+        border-radius: 4px;
+    }
+
+    :host([context="studio"]) .slider-input-track::-webkit-slider-thumb {
+        width: 24px;
+        height: 24px;
+        margin-top: -8px;
+    }
+
+    :host([context="studio"]) .slider-input-track::-moz-range-track {
+        height: 8px;
+        border-radius: 4px;
+    }
+
+    :host([context="studio"]) .slider-input-track::-moz-range-thumb {
+        width: 24px;
+        height: 24px;
+    }
+
+    :host([context="studio"]) .slider-input-value {
+        font-size: var(--font-size-md);
+        min-width: 48px;
+    }
+`
 
 
 export default class SliderInput extends HTMLElement {
@@ -96,6 +136,7 @@ export default class SliderInput extends HTMLElement {
     constructor () {
         super()
         this.attachShadow({mode: 'open'})
+        setupInputStyles(this.shadowRoot, sliderInputCSS)
         this.#buildDOM()
     }
 
@@ -163,10 +204,6 @@ export default class SliderInput extends HTMLElement {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = sliderStyles
-        this.shadowRoot.appendChild(style)
-
         const container = document.createElement('div')
         container.className = 'slider-input-container'
 

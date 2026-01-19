@@ -1,11 +1,11 @@
-import {createInputStyles, emitChange, handleAttributeChange} from './base_input.js'
+import {setupInputStyles, emitChange, handleAttributeChange} from './base_input.js'
 
 
-const toggleStyles = createInputStyles(`
+const toggleInputCSS = `
     .toggle-input-container {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: var(--spacing-sm);
         cursor: pointer;
     }
 
@@ -15,7 +15,7 @@ const toggleStyles = createInputStyles(`
         height: 14px;
         background: var(--bg-hover);
         border-radius: 7px;
-        transition: background 0.2s;
+        transition: background var(--transition-normal);
         flex-shrink: 0;
     }
 
@@ -31,7 +31,7 @@ const toggleStyles = createInputStyles(`
         height: 10px;
         background: var(--fg-muted);
         border-radius: 50%;
-        transition: transform 0.2s, background 0.2s;
+        transition: transform var(--transition-normal), background var(--transition-normal);
     }
 
     .toggle-input-track.checked .toggle-input-thumb {
@@ -40,10 +40,11 @@ const toggleStyles = createInputStyles(`
     }
 
     .toggle-input-label {
-        font-size: 11px;
+        font-size: var(--font-size-sm);
         color: var(--fg-primary);
         font-weight: 500;
         user-select: none;
+        -webkit-user-select: none;
     }
 
     .toggle-input-label:empty {
@@ -61,7 +62,33 @@ const toggleStyles = createInputStyles(`
     .toggle-input-track.checked:hover .toggle-input-thumb {
         background: var(--bg-primary);
     }
-`)
+
+    /* Context: Studio - larger touch targets */
+    :host([context="studio"]) .toggle-input-container {
+        gap: var(--spacing-md);
+    }
+
+    :host([context="studio"]) .toggle-input-track {
+        width: 52px;
+        height: 32px;
+        border-radius: 16px;
+    }
+
+    :host([context="studio"]) .toggle-input-thumb {
+        top: 4px;
+        left: 4px;
+        width: 24px;
+        height: 24px;
+    }
+
+    :host([context="studio"]) .toggle-input-track.checked .toggle-input-thumb {
+        transform: translateX(20px);
+    }
+
+    :host([context="studio"]) .toggle-input-label {
+        font-size: var(--font-size-lg);
+    }
+`
 
 
 export default class ToggleInput extends HTMLElement {
@@ -80,6 +107,7 @@ export default class ToggleInput extends HTMLElement {
     constructor () {
         super()
         this.attachShadow({mode: 'open'})
+        setupInputStyles(this.shadowRoot, toggleInputCSS)
         this.#buildDOM()
     }
 
@@ -123,10 +151,6 @@ export default class ToggleInput extends HTMLElement {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = toggleStyles
-        this.shadowRoot.appendChild(style)
-
         const container = document.createElement('div')
         container.className = 'toggle-input-container'
 

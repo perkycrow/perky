@@ -1,23 +1,22 @@
-import {createInputStyles, emitChange, handleAttributeChange} from './base_input.js'
+import {setupInputStyles, emitChange, handleAttributeChange} from './base_input.js'
 import './number_input.js'
 
 
-const vec2Styles = createInputStyles(`
+const vec2InputCSS = `
     :host {
         display: block;
         width: 100%;
-        box-sizing: border-box;
     }
 
     .vec2-input-container {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: var(--spacing-xs);
         width: 100%;
     }
 
     .vec2-input-label {
-        font-size: 10px;
+        font-size: var(--font-size-xs);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         color: var(--fg-muted);
@@ -29,7 +28,7 @@ const vec2Styles = createInputStyles(`
 
     .vec2-inputs {
         display: flex;
-        gap: 8px;
+        gap: var(--spacing-sm);
         width: 100%;
     }
 
@@ -37,7 +36,24 @@ const vec2Styles = createInputStyles(`
         flex: 1;
         min-width: 0;
     }
-`)
+
+    /* Context: Studio - larger touch targets */
+    :host([context="studio"]) .vec2-input-container {
+        gap: var(--spacing-sm);
+    }
+
+    :host([context="studio"]) .vec2-input-label {
+        font-size: var(--font-size-sm);
+    }
+
+    :host([context="studio"]) .vec2-inputs {
+        gap: var(--spacing-md);
+    }
+
+    :host([context="studio"]) .vec2-inputs number-input {
+        --input-height: var(--touch-target);
+    }
+`
 
 
 export default class Vec2Input extends HTMLElement {
@@ -56,17 +72,22 @@ export default class Vec2Input extends HTMLElement {
     constructor () {
         super()
         this.attachShadow({mode: 'open'})
+        setupInputStyles(this.shadowRoot, vec2InputCSS)
         this.#buildDOM()
     }
 
 
     connectedCallback () {
         this.#updateDisplay()
+        this.#syncContext()
     }
 
 
     attributeChangedCallback (name, oldValue, newValue) {
         handleAttributeChange(this, name, oldValue, newValue)
+        if (name === 'context') {
+            this.#syncContext()
+        }
     }
 
 
@@ -90,10 +111,6 @@ export default class Vec2Input extends HTMLElement {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = vec2Styles
-        this.shadowRoot.appendChild(style)
-
         const container = document.createElement('div')
         container.className = 'vec2-input-container'
 
@@ -133,6 +150,18 @@ export default class Vec2Input extends HTMLElement {
 
         this.#xInput.value = this.#vec2.x
         this.#yInput.value = this.#vec2.y
+    }
+
+
+    #syncContext () {
+        const context = this.getAttribute('context')
+        if (context) {
+            this.#xInput?.setAttribute('context', context)
+            this.#yInput?.setAttribute('context', context)
+        } else {
+            this.#xInput?.removeAttribute('context')
+            this.#yInput?.removeAttribute('context')
+        }
     }
 
 
