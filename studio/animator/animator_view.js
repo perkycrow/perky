@@ -6,6 +6,8 @@ import '../../editor/tools/animation_preview.js'
 import '../../editor/tools/animation_timeline.js'
 import '../../editor/tools/spritesheet_viewer.js'
 import '../../editor/number_input.js'
+import '../../editor/select_input.js'
+import '../../editor/toggle_input.js'
 
 
 const animatorStyles = createSheet(`
@@ -58,37 +60,7 @@ const animatorStyles = createSheet(`
     .footer-controls {
         display: flex;
         align-items: center;
-        gap: var(--spacing-sm);
-    }
-
-    .toolbar-select {
-        appearance: none;
-        background: var(--bg-tertiary);
-        color: var(--fg-primary);
-        border: none;
-        border-radius: var(--radius-md);
-        padding: 10px 14px;
-        font-family: inherit;
-        font-size: 13px;
-        min-width: 120px;
-        min-height: var(--touch-target);
-        cursor: pointer;
-        transition: background var(--transition-fast);
-    }
-
-    .toolbar-select:hover {
-        background: var(--bg-hover);
-    }
-
-    .toolbar-select:focus {
-        outline: none;
-        background: var(--bg-hover);
-    }
-
-    .toolbar-select-small {
-        min-width: 50px;
-        padding: 10px 12px;
-        text-align: center;
+        gap: var(--spacing-md);
     }
 
     .toolbar-btn {
@@ -143,10 +115,6 @@ const animatorStyles = createSheet(`
     .toolbar-btn.success {
         background: var(--status-success);
         color: var(--bg-primary);
-    }
-
-    .config-input {
-        width: 80px;
     }
 
 
@@ -385,31 +353,24 @@ export default class AnimatorView extends BaseEditorComponent {
         headerStart.setAttribute('slot', 'header-start')
 
 
-        const animatorSelect = document.createElement('select')
-        animatorSelect.className = 'toolbar-select'
-        for (const name of Object.keys(this.#animators)) {
-            const option = document.createElement('option')
-            option.value = name
-            option.textContent = name
-            option.selected = this.#animators[name] === this.#animatorClass
-            animatorSelect.appendChild(option)
-        }
+        const animatorSelect = document.createElement('select-input')
+        animatorSelect.setAttribute('context', 'studio')
+        const animatorNames = Object.keys(this.#animators)
+        const currentAnimatorName = animatorNames.find(name => this.#animators[name] === this.#animatorClass)
+        animatorSelect.setOptions(animatorNames)
+        animatorSelect.setValue(currentAnimatorName)
         animatorSelect.addEventListener('change', (e) => {
-            this.#selectAnimator(e.target.value)
+            this.#selectAnimator(e.detail.value)
         })
 
 
-        const animSelect = document.createElement('select')
-        animSelect.className = 'toolbar-select'
-        for (const anim of this.#animator.children) {
-            const option = document.createElement('option')
-            option.value = anim.$id
-            option.textContent = anim.$id
-            option.selected = anim === this.#selectedAnimation
-            animSelect.appendChild(option)
-        }
+        const animSelect = document.createElement('select-input')
+        animSelect.setAttribute('context', 'studio')
+        const animOptions = this.#animator.children.map(anim => ({value: anim.$id, label: anim.$id}))
+        animSelect.setOptions(animOptions)
+        animSelect.setValue(this.#selectedAnimation?.$id)
         animSelect.addEventListener('change', (e) => {
-            this.#selectedAnimation = this.#animator.getChild(e.target.value)
+            this.#selectedAnimation = this.#animator.getChild(e.detail.value)
             this.#updateForSelectedAnimation()
         })
 
@@ -427,10 +388,11 @@ export default class AnimatorView extends BaseEditorComponent {
 
 
             const fpsInput = document.createElement('number-input')
-            fpsInput.className = 'config-input'
-            fpsInput.setLabel('fps')
+            fpsInput.setAttribute('context', 'studio')
+            fpsInput.setLabel('FPS')
             fpsInput.setValue(anim.fps)
             fpsInput.setStep(1)
+            fpsInput.setPrecision(0)
             fpsInput.setMin(1)
             fpsInput.setMax(60)
             fpsInput.addEventListener('change', (e) => {
@@ -438,33 +400,29 @@ export default class AnimatorView extends BaseEditorComponent {
             })
 
 
-            const loopBtn = document.createElement('button')
-            loopBtn.className = `toolbar-btn toolbar-toggle ${anim.loop ? 'active' : ''}`
-            loopBtn.textContent = '⟳'
-            loopBtn.title = 'Loop'
-            loopBtn.addEventListener('click', () => {
-                anim.setLoop(!anim.loop)
-                loopBtn.classList.toggle('active', anim.loop)
+            const loopToggle = document.createElement('toggle-input')
+            loopToggle.setAttribute('context', 'studio')
+            loopToggle.setLabel('Loop')
+            loopToggle.setChecked(anim.loop)
+            loopToggle.addEventListener('change', (e) => {
+                anim.setLoop(e.detail.checked)
             })
 
 
-            const modeSelect = document.createElement('select')
-            modeSelect.className = 'toolbar-select toolbar-select-small'
-            const modeSymbols = {forward: '→', reverse: '←', pingpong: '↔'}
-            for (const mode of ['forward', 'reverse', 'pingpong']) {
-                const opt = document.createElement('option')
-                opt.value = mode
-                opt.textContent = modeSymbols[mode]
-                opt.selected = anim.playbackMode === mode
-                modeSelect.appendChild(opt)
-            }
-            modeSelect.title = 'Playback mode'
+            const modeSelect = document.createElement('select-input')
+            modeSelect.setAttribute('context', 'studio')
+            modeSelect.setOptions([
+                {value: 'forward', label: 'Forward'},
+                {value: 'reverse', label: 'Reverse'},
+                {value: 'pingpong', label: 'Ping-pong'}
+            ])
+            modeSelect.setValue(anim.playbackMode)
             modeSelect.addEventListener('change', (e) => {
-                anim.setPlaybackMode(e.target.value)
+                anim.setPlaybackMode(e.detail.value)
             })
 
             headerEnd.appendChild(fpsInput)
-            headerEnd.appendChild(loopBtn)
+            headerEnd.appendChild(loopToggle)
             headerEnd.appendChild(modeSelect)
             this.#appLayout.appendChild(headerEnd)
         }

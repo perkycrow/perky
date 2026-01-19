@@ -7,22 +7,18 @@ const DRAG_SENSITIVITY = 0.5
 
 
 const numberInputCSS = `
+    :host {
+        display: inline-block;
+    }
+
     .number-input-container {
         display: flex;
         align-items: center;
-        gap: var(--spacing-sm);
-        flex: 1;
+        gap: var(--spacing-xs);
         min-width: 0;
-        background: var(--bg-primary);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        padding: 0 2px 0 var(--spacing-sm);
+        background: transparent;
+        padding: 0;
         height: var(--input-height);
-        transition: border-color var(--transition-fast);
-    }
-
-    .number-input-container:focus-within {
-        border-color: var(--accent);
     }
 
     .number-input-label {
@@ -45,20 +41,26 @@ const numberInputCSS = `
     }
 
     .number-input-field {
-        flex: 1;
         background: transparent;
         border: none;
+        border-radius: 0;
         color: var(--fg-primary);
         font-size: var(--font-size-sm);
         font-family: var(--font-mono);
-        min-width: 0;
+        width: 28px;
         text-align: right;
         padding: 0;
         height: auto;
     }
 
+    .number-input-field:hover {
+        background: transparent;
+    }
+
     .number-input-field:focus {
         outline: none;
+        border: none;
+        background: transparent;
     }
 
     .number-input-steppers {
@@ -67,7 +69,7 @@ const numberInputCSS = `
     }
 
     .number-input-stepper {
-        background: var(--bg-hover);
+        background: transparent;
         border: none;
         color: var(--fg-muted);
         cursor: pointer;
@@ -81,19 +83,11 @@ const numberInputCSS = `
         align-items: center;
         justify-content: center;
         transition: background var(--transition-fast), color var(--transition-fast);
-        border-radius: 0;
-    }
-
-    .number-input-stepper:first-child {
-        border-radius: 2px 0 0 2px;
-    }
-
-    .number-input-stepper:last-child {
-        border-radius: 0 2px 2px 0;
+        border-radius: var(--radius-sm);
     }
 
     .number-input-stepper:hover {
-        background: var(--bg-selected);
+        background: var(--bg-hover);
         color: var(--fg-primary);
     }
 
@@ -180,6 +174,7 @@ const numberInputCSS = `
 
     :host([context="studio"]) .number-input-field {
         font-size: var(--font-size-md);
+        width: 24px;
     }
 
     :host([context="studio"]) .number-input-stepper {

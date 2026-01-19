@@ -7,27 +7,24 @@ export const controlsCSS = `
     input[type="search"],
     textarea {
         appearance: none;
-        background: var(--bg-input);
+        background: transparent;
         color: var(--fg-primary);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-md);
-        padding: 0 var(--spacing-sm);
-        height: var(--input-height);
+        border: none;
+        padding: 0;
+        height: auto;
         font-family: inherit;
         font-size: inherit;
-        transition: border-color var(--transition-fast), background var(--transition-fast);
     }
 
     input:hover,
     textarea:hover {
-        background: var(--bg-hover);
+        background: transparent;
     }
 
     input:focus,
     textarea:focus {
         outline: none;
-        border-color: var(--accent);
-        background: var(--bg-input);
+        background: transparent;
     }
 
     input:disabled,
