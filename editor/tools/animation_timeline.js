@@ -517,52 +517,42 @@ export default class AnimationTimeline extends BaseEditorComponent {
         frameEl.className = 'frame'
         frameEl.dataset.index = index
 
+        const thumbnailWrapper = document.createElement('div')
+        thumbnailWrapper.className = 'frame-thumbnail-wrapper'
 
         const canvas = document.createElement('canvas')
         canvas.className = 'frame-thumbnail'
-        canvas.width = 48
-        canvas.height = 48
+        canvas.width = 72
+        canvas.height = 72
         drawFrameThumbnail(canvas, frame)
-        frameEl.appendChild(canvas)
+        thumbnailWrapper.appendChild(canvas)
 
         const indexEl = document.createElement('div')
         indexEl.className = 'frame-index'
         indexEl.textContent = index
-        frameEl.appendChild(indexEl)
+        thumbnailWrapper.appendChild(indexEl)
 
-        const frameName = frame.name || frame.source
-        if (frameName) {
-            const nameEl = document.createElement('div')
-            nameEl.className = 'frame-name'
-            nameEl.textContent = frameName
-            nameEl.title = frameName
-            frameEl.appendChild(nameEl)
-        }
+        const durationBadge = document.createElement('div')
+        durationBadge.className = 'frame-duration-badge'
+        const duration = frame.duration || 1
+        const displayDuration = Number.isInteger(duration) ? duration : duration.toFixed(1)
+        durationBadge.textContent = `×${displayDuration}`
+        durationBadge.title = 'Click to edit duration'
+        durationBadge.addEventListener('click', (e) => {
+            e.stopPropagation()
+            this.#showDurationEditor(index, durationBadge, duration)
+        })
+        thumbnailWrapper.appendChild(durationBadge)
 
         if (frame.events && frame.events.length > 0) {
-            const eventsEl = document.createElement('div')
-            eventsEl.className = 'frame-events'
-            eventsEl.textContent = frame.events.join(', ')
-            frameEl.appendChild(eventsEl)
+            const eventBadge = document.createElement('div')
+            eventBadge.className = 'frame-event-badge'
+            eventBadge.textContent = '⚡'
+            eventBadge.title = frame.events.join(', ')
+            thumbnailWrapper.appendChild(eventBadge)
         }
 
-        const durationEl = document.createElement('number-input')
-        durationEl.className = 'frame-duration-input'
-        durationEl.setCompact(true)
-        durationEl.setValue(frame.duration || 1)
-        durationEl.setStep(0.1)
-        durationEl.setPrecision(1)
-        durationEl.setMin(0.1)
-        durationEl.setMax(10)
-        durationEl.title = 'Frame duration multiplier'
-        durationEl.addEventListener('click', (e) => e.stopPropagation())
-        durationEl.addEventListener('mousedown', (e) => e.stopPropagation())
-        durationEl.addEventListener('change', (e) => {
-            this.dispatchEvent(new CustomEvent('frameduration', {
-                detail: {index, duration: e.detail.value}
-            }))
-        })
-        frameEl.appendChild(durationEl)
+        frameEl.appendChild(thumbnailWrapper)
 
         const deleteBtn = document.createElement('button')
         deleteBtn.className = 'frame-delete'
@@ -579,7 +569,6 @@ export default class AnimationTimeline extends BaseEditorComponent {
                 detail: {index}
             }))
         })
-
 
         frameEl.addEventListener('pointerdown', (e) => this.#onInternalDragStart(e, index))
 
@@ -600,6 +589,45 @@ export default class AnimationTimeline extends BaseEditorComponent {
         this.dispatchEvent(new CustomEvent('framedelete', {
             detail: {index}
         }))
+    }
+
+
+    #showDurationEditor (index, badgeEl, currentDuration) {
+        const input = document.createElement('input')
+        input.type = 'number'
+        input.className = 'duration-editor'
+        input.value = currentDuration
+        input.step = '0.1'
+        input.min = '0.1'
+
+        const originalText = badgeEl.textContent
+        badgeEl.textContent = ''
+        badgeEl.appendChild(input)
+        input.focus()
+        input.select()
+
+        const commit = () => {
+            const newDuration = parseFloat(input.value) || 1
+            badgeEl.textContent = originalText
+            if (newDuration !== currentDuration) {
+                const displayDuration = Number.isInteger(newDuration) ? newDuration : newDuration.toFixed(1)
+                badgeEl.textContent = `×${displayDuration}`
+                this.dispatchEvent(new CustomEvent('frameduration', {
+                    detail: {index, duration: newDuration}
+                }))
+            }
+        }
+
+        input.addEventListener('blur', commit)
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault()
+                input.blur()
+            } else if (e.key === 'Escape') {
+                e.preventDefault()
+                badgeEl.textContent = originalText
+            }
+        })
     }
 
 
@@ -788,14 +816,9 @@ const timelineStyles = createSheet(`
 
     .frame {
         position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 2px;
         padding: 4px;
         background: transparent;
         border-radius: 4px;
-        min-width: 56px;
         flex-shrink: 0;
         cursor: grab;
         transition: opacity 0.15s, transform 0.15s, background 0.15s;
@@ -871,38 +894,76 @@ const timelineStyles = createSheet(`
         }
     }
 
+    .frame-thumbnail-wrapper {
+        position: relative;
+    }
+
     .frame-thumbnail {
         border-radius: 3px;
         background: var(--bg-secondary);
+        display: block;
     }
 
     .frame-index {
-        font-size: 10px;
-        color: var(--fg-muted);
-    }
-
-    .frame-name {
+        position: absolute;
+        top: 2px;
+        left: 2px;
         font-size: 9px;
         color: var(--fg-muted);
-        max-width: 56px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 1px 4px;
+        border-radius: 2px;
+        line-height: 1;
+    }
+
+    .frame-duration-badge {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        font-size: 9px;
+        color: var(--fg-primary);
+        background: rgba(0, 0, 0, 0.6);
+        padding: 1px 4px;
+        border-radius: 2px;
+        line-height: 1;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+    .frame-duration-badge:hover {
+        background: rgba(0, 0, 0, 0.8);
+    }
+
+    .duration-editor {
+        width: 32px;
+        background: transparent;
+        border: none;
+        color: var(--fg-primary);
+        font-size: 9px;
+        font-family: var(--font-mono);
         text-align: center;
+        padding: 0;
+        margin: 0;
+        outline: none;
     }
 
-    .frame-events {
-        font-size: 9px;
-        color: var(--accent);
-        max-width: 60px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+    .duration-editor::-webkit-inner-spin-button,
+    .duration-editor::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
     }
 
-    .frame-duration-input {
-        width: 44px;
-        font-size: 9px;
+    .frame-event-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        font-size: 10px;
+        color: var(--status-warning, #ffc107);
+        background: rgba(0, 0, 0, 0.6);
+        padding: 1px 3px;
+        border-radius: 2px;
+        line-height: 1;
+        cursor: help;
     }
 
     .frame-delete {
