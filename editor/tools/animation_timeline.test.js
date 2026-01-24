@@ -112,28 +112,29 @@ describe('AnimationTimeline', () => {
 
             const canvases = timeline.shadowRoot.querySelectorAll('.frame-thumbnail')
             expect(canvases.length).toBe(4)
-            expect(canvases[0].width).toBe(48)
-            expect(canvases[0].height).toBe(48)
+            expect(canvases[0].width).toBe(80)
+            expect(canvases[0].height).toBe(80)
         })
 
 
-        test('renders events when present', () => {
+        test('renders event badges when present', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
-            const eventsEls = timeline.shadowRoot.querySelectorAll('.frame-events')
-            expect(eventsEls.length).toBe(2)
-            expect(eventsEls[0].textContent).toBe('hit')
-            expect(eventsEls[1].textContent).toBe('end')
+            const eventBadges = timeline.shadowRoot.querySelectorAll('.frame-event-badge')
+            expect(eventBadges.length).toBe(2)
+            expect(eventBadges[0].title).toBe('hit')
+            expect(eventBadges[1].title).toBe('end')
         })
 
 
-        test('renders duration inputs for all frames', () => {
+        test('renders duration badges only for non-default durations', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
-            const durationInputs = timeline.shadowRoot.querySelectorAll('.frame-duration-input')
-            expect(durationInputs.length).toBe(4)
+            // Only frames with duration != 1 should have badges (frames at index 2 and 3)
+            const durationBadges = timeline.shadowRoot.querySelectorAll('.frame-duration-badge')
+            expect(durationBadges.length).toBe(2)
         })
 
 
@@ -150,17 +151,17 @@ describe('AnimationTimeline', () => {
 
     describe('setCurrentIndex', () => {
 
-        test('highlights active frame', () => {
+        test('highlights current frame', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
             timeline.setCurrentIndex(2)
 
             const frameEls = timeline.shadowRoot.querySelectorAll('.frame')
-            expect(frameEls[0].classList.contains('active')).toBe(false)
-            expect(frameEls[1].classList.contains('active')).toBe(false)
-            expect(frameEls[2].classList.contains('active')).toBe(true)
-            expect(frameEls[3].classList.contains('active')).toBe(false)
+            expect(frameEls[0].classList.contains('current')).toBe(false)
+            expect(frameEls[1].classList.contains('current')).toBe(false)
+            expect(frameEls[2].classList.contains('current')).toBe(true)
+            expect(frameEls[3].classList.contains('current')).toBe(false)
         })
 
 
@@ -172,8 +173,8 @@ describe('AnimationTimeline', () => {
             timeline.setCurrentIndex(3)
 
             const frameEls = timeline.shadowRoot.querySelectorAll('.frame')
-            expect(frameEls[1].classList.contains('active')).toBe(false)
-            expect(frameEls[3].classList.contains('active')).toBe(true)
+            expect(frameEls[1].classList.contains('current')).toBe(false)
+            expect(frameEls[3].classList.contains('current')).toBe(true)
         })
 
 
@@ -186,7 +187,7 @@ describe('AnimationTimeline', () => {
 
             timeline.setCurrentIndex(1)
 
-            expect(frameEl.classList.contains('active')).toBe(true)
+            expect(frameEl.classList.contains('current')).toBe(true)
         })
 
     })
@@ -194,12 +195,12 @@ describe('AnimationTimeline', () => {
 
     describe('events', () => {
 
-        test('dispatches frameclick event on frame click', () => {
+        test('dispatches frameselect event on frame click', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
             const handler = vi.fn()
-            timeline.addEventListener('frameclick', handler)
+            timeline.addEventListener('frameselect', handler)
 
             const frameEl = timeline.shadowRoot.querySelectorAll('.frame')[2]
             frameEl.click()
@@ -214,7 +215,7 @@ describe('AnimationTimeline', () => {
             timeline.setFrames(frames)
 
             const indices = []
-            timeline.addEventListener('frameclick', (e) => {
+            timeline.addEventListener('frameselect', (e) => {
                 indices.push(e.detail.index)
             })
 
@@ -223,6 +224,7 @@ describe('AnimationTimeline', () => {
             frameEls[3].click()
             frameEls[1].click()
 
+            // Click toggles selection, so first click selects 0, second selects 3, third selects 1
             expect(indices).toEqual([0, 3, 1])
         })
 
@@ -359,6 +361,15 @@ describe('AnimationTimeline', () => {
                 })
             })
 
+            // Mock viewport getBoundingClientRect to ensure pointer is recognized as inside
+            const viewport = timeline.shadowRoot.querySelector('.timeline-viewport')
+            viewport.getBoundingClientRect = () => ({
+                left: 0,
+                right: 500,
+                top: 0,
+                bottom: 200
+            })
+
             // Start drag with pointerdown
             const pointerDownEvent = new PointerEvent('pointerdown', {
                 bubbles: true,
@@ -368,10 +379,10 @@ describe('AnimationTimeline', () => {
             })
             firstFrame.dispatchEvent(pointerDownEvent)
 
-            // Move beyond threshold to position 2
+            // Move beyond threshold to position 3 (past frame 2) so it actually moves
             const pointerMoveEvent = new PointerEvent('pointermove', {
                 bubbles: true,
-                clientX: 200,
+                clientX: 250,
                 clientY: 100
             })
             document.dispatchEvent(pointerMoveEvent)
@@ -388,24 +399,16 @@ describe('AnimationTimeline', () => {
 
     describe('frame deletion', () => {
 
-        test('has delete button on frames', () => {
+        test('dispatches framedelete event on Delete key when frame is current', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
-
-            const deleteBtn = timeline.shadowRoot.querySelector('.frame-delete')
-            expect(deleteBtn).not.toBeNull()
-        })
-
-
-        test('dispatches framedelete event on delete button click', () => {
-            const frames = createMockFrames()
-            timeline.setFrames(frames)
+            timeline.setCurrentIndex(1)
 
             const handler = vi.fn()
             timeline.addEventListener('framedelete', handler)
 
-            const deleteBtn = timeline.shadowRoot.querySelectorAll('.frame-delete')[1]
-            deleteBtn.click()
+            const keyEvent = new KeyboardEvent('keydown', {key: 'Delete', bubbles: true})
+            timeline.dispatchEvent(keyEvent)
 
             expect(handler).toHaveBeenCalled()
             expect(handler.mock.calls[0][0].detail.index).toBe(1)

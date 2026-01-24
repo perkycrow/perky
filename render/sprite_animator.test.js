@@ -58,9 +58,11 @@ describe('SpriteAnimator', () => {
 
         test('loads config if provided', () => {
             const config = {
-                idle: {
-                    source: 'testSheet:walk',
-                    fps: 10
+                animations: {
+                    idle: {
+                        source: 'testSheet:walk',
+                        fps: 10
+                    }
                 }
             }
 
@@ -183,8 +185,10 @@ describe('SpriteAnimator', () => {
                 sprite,
                 textureSystem,
                 config: {
-                    idle: {source: 'testSheet:walk', fps: 10},
-                    run: {source: 'testSheet:walk', fps: 20}
+                    animations: {
+                        idle: {source: 'testSheet:walk', fps: 10},
+                        run: {source: 'testSheet:walk', fps: 20}
+                    }
                 }
             })
         })
@@ -226,7 +230,9 @@ describe('SpriteAnimator', () => {
                 sprite,
                 textureSystem,
                 config: {
-                    walk: {source: 'testSheet:walk'}
+                    animations: {
+                        walk: {source: 'testSheet:walk'}
+                    }
                 }
             })
 
@@ -252,7 +258,9 @@ describe('SpriteAnimator', () => {
                 sprite,
                 textureSystem,
                 config: {
-                    walk: {source: 'testSheet:walk', fps: 10}
+                    animations: {
+                        walk: {source: 'testSheet:walk', fps: 10}
+                    }
                 }
             })
 

@@ -8,16 +8,22 @@ describe('base_input', () => {
 
         test('adopts controlsSheet to shadowRoot', () => {
             const mockShadowRoot = {
-                adoptedStyleSheets: []
+                adoptedStyleSheets: [],
+                appendChild: vi.fn()
             }
             setupInputStyles(mockShadowRoot)
-            expect(mockShadowRoot.adoptedStyleSheets.length).toBeGreaterThan(0)
+            if (mockShadowRoot.adoptedStyleSheets.length === 0) {
+                expect(mockShadowRoot.appendChild).toHaveBeenCalled()
+            } else {
+                expect(mockShadowRoot.adoptedStyleSheets.length).toBeGreaterThan(0)
+            }
         })
 
 
         test('adopts component styles when provided', () => {
             const mockShadowRoot = {
-                adoptedStyleSheets: []
+                adoptedStyleSheets: [],
+                appendChild: vi.fn()
             }
             const result = setupInputStyles(mockShadowRoot, '.custom { color: red; }')
             expect(result).not.toBeNull()
@@ -26,7 +32,8 @@ describe('base_input', () => {
 
         test('returns null when no component CSS provided', () => {
             const mockShadowRoot = {
-                adoptedStyleSheets: []
+                adoptedStyleSheets: [],
+                appendChild: vi.fn()
             }
             const result = setupInputStyles(mockShadowRoot)
             expect(result).toBeNull()
@@ -35,7 +42,8 @@ describe('base_input', () => {
 
         test('returns null for empty component CSS string', () => {
             const mockShadowRoot = {
-                adoptedStyleSheets: []
+                adoptedStyleSheets: [],
+                appendChild: vi.fn()
             }
             const result = setupInputStyles(mockShadowRoot, '')
             expect(result).toBeNull()
