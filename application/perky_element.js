@@ -4,7 +4,7 @@ import {createStyleSheet, adoptStyleSheets} from './dom_utils.js'
 const sheetCache = new WeakMap()
 
 
-export default class PerkyComponent extends HTMLElement {
+export default class PerkyElement extends HTMLElement {
 
     #listeners = []
 
@@ -37,7 +37,7 @@ export default class PerkyComponent extends HTMLElement {
         const sheets = []
         let proto = this.constructor
 
-        while (proto && proto !== PerkyComponent && proto !== HTMLElement) {
+        while (proto && proto !== PerkyElement && proto !== HTMLElement) {
             const protoSheets = getOrCreateSheets(proto)
             if (protoSheets.length > 0) {
                 sheets.unshift(...protoSheets)

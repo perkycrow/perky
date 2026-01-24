@@ -1,9 +1,9 @@
 import {describe, test, expect, vi, afterEach} from 'vitest'
-import PerkyComponent from './perky_component.js'
+import PerkyElement from './perky_element.js'
 import {createStyleSheet} from './dom_utils.js'
 
 
-describe('PerkyComponent', () => {
+describe('PerkyElement', () => {
 
     let registeredElements = []
 
@@ -20,7 +20,7 @@ describe('PerkyComponent', () => {
 
 
     test('shadowRoot creates shadowRoot on construction', () => {
-        registerElement('test-shadow', class extends PerkyComponent {})
+        registerElement('test-shadow', class extends PerkyElement {})
         const el = document.createElement('test-shadow')
         expect(el.shadowRoot).toBeTruthy()
         expect(el.shadowRoot.mode).toBe('open')
@@ -28,7 +28,7 @@ describe('PerkyComponent', () => {
 
 
     test('static styles - string converts string styles to CSSStyleSheet', () => {
-        class TestStyles extends PerkyComponent {
+        class TestStyles extends PerkyElement {
             static styles = '.test { color: red; }'
         }
         registerElement('test-string-styles', TestStyles)
@@ -46,7 +46,7 @@ describe('PerkyComponent', () => {
     test('static styles - CSSStyleSheet uses CSSStyleSheet directly', () => {
         const sheet = createStyleSheet('.test { color: blue; }')
 
-        class TestSheet extends PerkyComponent {
+        class TestSheet extends PerkyElement {
             static styles = sheet
         }
         registerElement('test-sheet-styles', TestSheet)
@@ -64,7 +64,7 @@ describe('PerkyComponent', () => {
     describe('static styles - array', () => {
 
         test('supports array of strings', () => {
-            class TestArray extends PerkyComponent {
+            class TestArray extends PerkyElement {
                 static styles = ['.a {}', '.b {}']
             }
             registerElement('test-array-strings', TestArray)
@@ -81,7 +81,7 @@ describe('PerkyComponent', () => {
         test('supports array with mixed types', () => {
             const sharedSheet = createStyleSheet('.shared {}')
 
-            class TestMixed extends PerkyComponent {
+            class TestMixed extends PerkyElement {
                 static styles = [sharedSheet, '.local {}']
             }
             registerElement('test-array-mixed', TestMixed)
@@ -99,11 +99,11 @@ describe('PerkyComponent', () => {
         test('shared sheet is reused across components', () => {
             const sharedSheet = createStyleSheet('.shared {}')
 
-            class CompA extends PerkyComponent {
+            class CompA extends PerkyElement {
                 static styles = [sharedSheet, '.a {}']
             }
 
-            class CompB extends PerkyComponent {
+            class CompB extends PerkyElement {
                 static styles = [sharedSheet, '.b {}']
             }
 
@@ -128,7 +128,7 @@ describe('PerkyComponent', () => {
     describe('style inheritance', () => {
 
         test('accumulates styles from parent to child', () => {
-            class Parent extends PerkyComponent {
+            class Parent extends PerkyElement {
                 static styles = '.parent { color: red; }'
             }
 
@@ -150,7 +150,7 @@ describe('PerkyComponent', () => {
             const parentSheet = createStyleSheet('.parent {}')
             const childSheet = createStyleSheet('.child {}')
 
-            class Parent extends PerkyComponent {
+            class Parent extends PerkyElement {
                 static styles = parentSheet
             }
 
@@ -170,7 +170,7 @@ describe('PerkyComponent', () => {
 
 
         test('skips classes without styles', () => {
-            class Parent extends PerkyComponent {
+            class Parent extends PerkyElement {
                 static styles = '.parent {}'
             }
 
@@ -195,7 +195,7 @@ describe('PerkyComponent', () => {
 
 
     test('sheet caching reuses same sheet between instances', () => {
-        class Cached extends PerkyComponent {
+        class Cached extends PerkyElement {
             static styles = '.cached {}'
         }
         registerElement('test-cache', Cached)
@@ -218,7 +218,7 @@ describe('PerkyComponent', () => {
         test('calls onInit in constructor before connection', () => {
             const spy = vi.fn()
 
-            class TestInit extends PerkyComponent {
+            class TestInit extends PerkyElement {
                 onInit () {
                     spy()
                 }
@@ -234,7 +234,7 @@ describe('PerkyComponent', () => {
         test('onInit has access to shadowRoot', () => {
             let shadowRootInInit = null
 
-            class TestInitShadow extends PerkyComponent {
+            class TestInitShadow extends PerkyElement {
                 onInit () {
                     shadowRootInInit = this.shadowRoot
                 }
@@ -250,7 +250,7 @@ describe('PerkyComponent', () => {
         test('onInit is called before onConnected', () => {
             const order = []
 
-            class TestOrder extends PerkyComponent {
+            class TestOrder extends PerkyElement {
                 onInit () {
                     order.push('init')
                 }
@@ -274,7 +274,7 @@ describe('PerkyComponent', () => {
         test('calls onConnected when connected', () => {
             const spy = vi.fn()
 
-            class TestConnected extends PerkyComponent {
+            class TestConnected extends PerkyElement {
                 onConnected () {
                     spy()
                 }
@@ -294,7 +294,7 @@ describe('PerkyComponent', () => {
         test('calls onDisconnected when disconnected', () => {
             const spy = vi.fn()
 
-            class TestDisconnected extends PerkyComponent {
+            class TestDisconnected extends PerkyElement {
                 onDisconnected () {
                     spy()
                 }
@@ -321,7 +321,7 @@ describe('PerkyComponent', () => {
             }
             const callback = vi.fn()
 
-            class TestListen extends PerkyComponent {}
+            class TestListen extends PerkyElement {}
             registerElement('test-listen', TestListen)
 
             const el = document.createElement('test-listen')
@@ -338,7 +338,7 @@ describe('PerkyComponent', () => {
             }
             const callback = vi.fn()
 
-            class TestCleanup extends PerkyComponent {}
+            class TestCleanup extends PerkyElement {}
             registerElement('test-cleanup', TestCleanup)
 
             const el = document.createElement('test-cleanup')
@@ -355,7 +355,7 @@ describe('PerkyComponent', () => {
             const target1 = {on: vi.fn(), off: vi.fn()}
             const target2 = {on: vi.fn(), off: vi.fn()}
 
-            class TestMulti extends PerkyComponent {}
+            class TestMulti extends PerkyElement {}
             registerElement('test-multi', TestMulti)
 
             const el = document.createElement('test-multi')
@@ -379,7 +379,7 @@ describe('PerkyComponent', () => {
             off: vi.fn()
         }
 
-        class TestManual extends PerkyComponent {}
+        class TestManual extends PerkyElement {}
         registerElement('test-manual', TestManual)
 
         const el = document.createElement('test-manual')
@@ -391,7 +391,7 @@ describe('PerkyComponent', () => {
 
 
     test('no styles works without static styles', () => {
-        class NoStyles extends PerkyComponent {}
+        class NoStyles extends PerkyElement {}
         registerElement('test-no-styles', NoStyles)
 
         const el = document.createElement('test-no-styles')

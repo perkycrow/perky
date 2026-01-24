@@ -1,6 +1,6 @@
 import {describe, test, expect, beforeEach, afterEach} from 'vitest'
 import EditorComponent from './editor_component.js'
-import PerkyComponent from '../application/perky_component.js'
+import PerkyElement from '../application/perky_element.js'
 
 
 class TestEditorComponent extends EditorComponent {}
@@ -29,8 +29,8 @@ describe('EditorComponent', () => {
 
     describe('inheritance', () => {
 
-        test('extends PerkyComponent', () => {
-            expect(component).toBeInstanceOf(PerkyComponent)
+        test('extends PerkyElement', () => {
+            expect(component).toBeInstanceOf(PerkyElement)
         })
 
 
@@ -49,15 +49,17 @@ describe('EditorComponent', () => {
     describe('base styles', () => {
 
         test('has adopted stylesheets', () => {
-            expect(component.shadowRoot.adoptedStyleSheets.length).toBe(1)
+            expect(component.shadowRoot.adoptedStyleSheets.length).toBe(3)
         })
 
 
         test('static styles includes theme and reset', () => {
             const styles = EditorComponent.styles
-            expect(styles).toContain('--bg-primary')
-            expect(styles).toContain('--accent')
-            expect(styles).toContain('box-sizing: border-box')
+            expect(Array.isArray(styles)).toBe(true)
+            const combined = styles.join('\n')
+            expect(combined).toContain('--bg-primary')
+            expect(combined).toContain('--accent')
+            expect(combined).toContain('box-sizing: border-box')
         })
 
     })
@@ -72,8 +74,8 @@ describe('EditorComponent', () => {
         const child = document.createElement('test-child-editor')
         container.appendChild(child)
 
-        // Parent EditorComponent styles + child styles
-        expect(child.shadowRoot.adoptedStyleSheets.length).toBe(2)
+        // Parent EditorComponent styles (3 sheets) + child styles (1 sheet)
+        expect(child.shadowRoot.adoptedStyleSheets.length).toBe(4)
     })
 
 })

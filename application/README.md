@@ -122,7 +122,7 @@ Assets are indexed by type and tags for fast lookups.
 
 ---
 
-### [perky_component.js](perky_component.js)
+### [perky_element.js](perky_element.js)
 
 Base class for UI components. Connects a PerkyModule to a DOM element.
 
