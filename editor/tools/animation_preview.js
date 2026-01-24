@@ -4,6 +4,8 @@ import {ICONS} from '../devtools/devtools_icons.js'
 import WebGLRenderer from '../../render/webgl_renderer.js'
 import Sprite from '../../render/sprite.js'
 import Object2D from '../../render/object_2d.js'
+import Noise from '../../math/noise.js'
+import Color from '../../math/color.js'
 
 
 export default class AnimationPreview extends BaseEditorComponent {
@@ -25,6 +27,7 @@ export default class AnimationPreview extends BaseEditorComponent {
     #sceneryCtx = null
     #motion = null
     #anchor = {x: 0.5, y: 0}
+    #noise = new Noise(42)
 
     connectedCallback () {
         this.#buildDOM()
@@ -413,8 +416,25 @@ export default class AnimationPreview extends BaseEditorComponent {
     }
 
 
+    #getSpriteSize () {
+        const region = this.#animation?.currentFrame?.region
+        if (!region || !this.#canvas) {
+            return {width: 64, height: 64}
+        }
+        const canvasRect = this.#canvas.getBoundingClientRect()
+        const scale = canvasRect.height / region.height
+        return {
+            width: region.width * scale,
+            height: region.height * scale
+        }
+    }
+
+
     #renderSidescroller (ctx, width, height) {
         const groundY = this.#getGroundY(height)
+        const spriteSize = this.#getSpriteSize()
+
+        this.#renderBuildings(ctx, width, groundY, spriteSize)
 
         ctx.fillStyle = 'rgba(100, 120, 140, 0.08)'
         ctx.fillRect(0, groundY, width, height - groundY)
@@ -471,6 +491,57 @@ export default class AnimationPreview extends BaseEditorComponent {
             ctx.moveTo(x, groundY)
             ctx.lineTo(x, groundY - poleHeight)
             ctx.stroke()
+        }
+    }
+
+
+    #renderBuildings (ctx, width, groundY, spriteSize) {
+        const baseHeight = spriteSize.height * 1.2
+        const baseWidth = spriteSize.width * 0.5
+        const gridSize = baseWidth * 0.8
+
+        const buildings = []
+
+        const worldLeft = -this.#sceneryOffset - width
+        const worldRight = -this.#sceneryOffset + width * 2
+
+        const startSlot = Math.floor(worldLeft / gridSize) - 1
+        const endSlot = Math.ceil(worldRight / gridSize) + 1
+
+        for (let slot = startSlot; slot <= endSlot; slot++) {
+            const depthNoise = this.#noise.perlin2d(slot * 1.2, 0)
+            const depth = 0.3 + (depthNoise + 1) * 0.35
+
+            const offsetNoise = this.#noise.perlin2d(slot * 1.7, 100)
+            const baseX = slot * gridSize + offsetNoise * gridSize * 0.4
+
+            const heightNoise = this.#noise.perlin2d(slot * 1.3, 200)
+            const widthNoise = this.#noise.perlin2d(slot * 1.5, 300)
+
+            const scale = 0.5 + depth * 0.5
+            const buildingHeight = baseHeight * (0.4 + (heightNoise + 1) * 0.4) * scale
+            const buildingWidth = baseWidth * (0.3 + (widthNoise + 1) * 0.35) * scale
+
+            const layerOffset = this.#sceneryOffset * depth
+            const screenX = baseX + layerOffset
+
+            if (screenX + buildingWidth / 2 > 0 && screenX - buildingWidth / 2 < width) {
+                const color = new Color('#1a1a1e').lighten(depth * 8)
+
+                buildings.push({screenX, buildingWidth, buildingHeight, color: color.toHex(), depth})
+            }
+        }
+
+        buildings.sort((a, b) => a.depth - b.depth)
+
+        for (const b of buildings) {
+            ctx.fillStyle = b.color
+            ctx.fillRect(
+                b.screenX - b.buildingWidth / 2,
+                groundY - b.buildingHeight,
+                b.buildingWidth,
+                b.buildingHeight
+            )
         }
     }
 
