@@ -11,8 +11,7 @@ export default class RedEnemyAnimator extends SpriteAnimator {
             loop: true,
             motion: {
                 mode: 'sidescroller',
-                direction: 'w',
-                referenceSpeed: 1
+                direction: 'w'
             },
             frames: [
                 {

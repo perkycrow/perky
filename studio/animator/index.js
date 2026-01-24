@@ -64,11 +64,15 @@ async function init () {
         }
 
 
+        const backgroundAsset = manifest.getAsset('background')
+        const backgroundImage = backgroundAsset?.source || null
+
         container.innerHTML = ''
         const animatorView = document.createElement('animator-view')
         animatorView.setContext({
             textureSystem,
-            animators: ANIMATORS
+            animators: ANIMATORS,
+            backgroundImage
         })
         container.appendChild(animatorView)
 

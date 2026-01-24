@@ -68,17 +68,9 @@ export default class RedEnemyView extends EnemyView {
 
     syncAnimationSpeed () {
         const anim = this.animator.current
-        const motion = anim?.motion
-
-        if (!motion?.referenceSpeed) {
-            if (anim) {
-                anim.speed = 1
-            }
-            return
+        if (anim) {
+            anim.speed = 1
         }
-
-        const entitySpeed = this.entity.maxSpeed
-        anim.speed = entitySpeed / motion.referenceSpeed
     }
 
 }

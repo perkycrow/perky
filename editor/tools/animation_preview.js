@@ -23,11 +23,19 @@ export default class AnimationPreview extends BaseEditorComponent {
 
     #sceneryEnabled = false
     #sceneryOffset = 0
+    #spriteOffset = 0
     #sceneryCanvas = null
     #sceneryCtx = null
     #motion = null
     #anchor = {x: 0.5, y: 0}
     #noise = new Noise(42)
+    #moveSpriteMode = true
+
+    #sceneryZoom = 0.5
+    #zoomSliderVisible = false
+    #pinchStartDistance = null
+    #pinchStartZoom = null
+    #backgroundImage = null
 
     connectedCallback () {
         this.#buildDOM()
@@ -103,11 +111,34 @@ export default class AnimationPreview extends BaseEditorComponent {
         controls.appendChild(sceneryBtn)
         container.appendChild(controls)
 
+        const zoomControls = document.createElement('div')
+        zoomControls.className = 'zoom-controls'
+
+        const zoomToggle = document.createElement('button')
+        zoomToggle.className = 'zoom-toggle'
+        zoomToggle.innerHTML = ICONS.zoom
+        zoomToggle.addEventListener('click', () => this.#toggleZoomSlider())
+
+        const zoomSlider = document.createElement('input')
+        zoomSlider.type = 'range'
+        zoomSlider.className = 'zoom-slider'
+        zoomSlider.min = '0.1'
+        zoomSlider.max = '1'
+        zoomSlider.step = '0.05'
+        zoomSlider.value = String(this.#sceneryZoom)
+        zoomSlider.addEventListener('input', (e) => this.#onZoomChange(e))
+
+        zoomControls.appendChild(zoomSlider)
+        zoomControls.appendChild(zoomToggle)
+        container.appendChild(zoomControls)
+
         this.shadowRoot.appendChild(container)
 
         this.#setupRenderer()
         this.#setupResizeObserver()
+        this.#setupPinchZoom()
         this.#syncSceneryState()
+        this.#syncZoomControls()
     }
 
 
@@ -128,6 +159,7 @@ export default class AnimationPreview extends BaseEditorComponent {
 
         this.#sceneryEnabled = !this.#sceneryEnabled
         this.#sceneryOffset = 0
+        this.#spriteOffset = 0
         this.#syncSceneryState()
     }
 
@@ -135,6 +167,7 @@ export default class AnimationPreview extends BaseEditorComponent {
     setMotion (motion) {
         this.#motion = motion
         this.#sceneryOffset = 0
+        this.#spriteOffset = 0
 
         if (!motion?.enabled) {
             this.#sceneryEnabled = false
@@ -158,6 +191,14 @@ export default class AnimationPreview extends BaseEditorComponent {
     }
 
 
+    setBackgroundImage (image) {
+        this.#backgroundImage = image
+        if (this.#sceneryActive) {
+            this.#renderScenery()
+        }
+    }
+
+
     #syncSceneryState () {
         const sceneryBtn = this.shadowRoot.querySelector('.scenery-btn')
         if (sceneryBtn) {
@@ -167,12 +208,101 @@ export default class AnimationPreview extends BaseEditorComponent {
 
         if (this.#sceneryActive) {
             this.#updateSceneryCanvas()
+            this.#centerSprite()
         } else {
             this.#clearSceneryCanvas()
         }
 
+        this.#syncZoomControls()
         this.#fitToContainer(this.#animation?.currentFrame?.region)
         this.#render()
+    }
+
+
+    #getSceneryZoom () {
+        return this.#sceneryZoom
+    }
+
+
+    #toggleZoomSlider () {
+        this.#zoomSliderVisible = !this.#zoomSliderVisible
+        this.#syncZoomControls()
+    }
+
+
+    #onZoomChange (e) {
+        this.#sceneryZoom = parseFloat(e.target.value)
+        this.#fitToContainer(this.#animation?.currentFrame?.region)
+        this.#centerSprite()
+        this.#render()
+    }
+
+
+    #syncZoomControls () {
+        const zoomControls = this.shadowRoot.querySelector('.zoom-controls')
+        if (zoomControls) {
+            zoomControls.classList.toggle('active', this.#sceneryActive)
+            zoomControls.classList.toggle('expanded', this.#zoomSliderVisible)
+        }
+    }
+
+
+    #setupPinchZoom () {
+        this.#previewArea.addEventListener('touchstart', (e) => this.#onTouchStart(e), {passive: false})
+        this.#previewArea.addEventListener('touchmove', (e) => this.#onTouchMove(e), {passive: false})
+        this.#previewArea.addEventListener('touchend', () => this.#onTouchEnd())
+    }
+
+
+    #onTouchStart (e) {
+        if (e.touches.length === 2) {
+            e.preventDefault()
+            this.#pinchStartDistance = getTouchDistance(e.touches)
+            this.#pinchStartZoom = this.#sceneryZoom
+        }
+    }
+
+
+    #onTouchMove (e) {
+        if (e.touches.length === 2 && this.#pinchStartDistance !== null) {
+            e.preventDefault()
+            const currentDistance = getTouchDistance(e.touches)
+            const scale = currentDistance / this.#pinchStartDistance
+            const newZoom = Math.min(1, Math.max(0.1, this.#pinchStartZoom * scale))
+
+            this.#sceneryZoom = newZoom
+            this.#updateZoomSlider()
+            this.#fitToContainer(this.#animation?.currentFrame?.region)
+            this.#centerSprite()
+            this.#render()
+        }
+    }
+
+
+    #onTouchEnd () {
+        this.#pinchStartDistance = null
+        this.#pinchStartZoom = null
+    }
+
+
+
+
+    #updateZoomSlider () {
+        const slider = this.shadowRoot.querySelector('.zoom-slider')
+        if (slider) {
+            slider.value = String(this.#sceneryZoom)
+        }
+    }
+
+
+    #centerSprite () {
+        if (!this.#sceneryCanvas || !this.#moveSpriteMode) {
+            return
+        }
+
+        const width = this.#sceneryCanvas.width
+        const spriteSize = this.#getSpriteSize()
+        this.#spriteOffset = (width - spriteSize.width) / 2
     }
 
 
@@ -253,7 +383,7 @@ export default class AnimationPreview extends BaseEditorComponent {
             return
         }
 
-        const sceneryMargin = this.#sceneryActive ? 0.7 : 1
+        const sceneryMargin = this.#sceneryActive ? this.#getSceneryZoom() : 1
         const scaleX = containerWidth / region.width
         const scaleY = containerHeight / region.height
         const scale = Math.min(scaleX, scaleY, 1) * sceneryMargin
@@ -342,6 +472,7 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.pause()
         this.#animation?.stop()
         this.#sceneryOffset = 0
+        this.#spriteOffset = 0
         this.#updateSprite()
         this.#render()
 
@@ -380,26 +511,51 @@ export default class AnimationPreview extends BaseEditorComponent {
             return
         }
 
-        const speed = (this.#motion.referenceSpeed ?? 1) * 50
-        const direction = this.#getSceneryDirection()
-        this.#sceneryOffset += speed * deltaTime * direction
+        const spriteWidth = this.#getSpriteSize().width
+        const speed = spriteWidth
+        const direction = this.#getSpriteDirection()
+
+        if (this.#moveSpriteMode) {
+            this.#spriteOffset += speed * deltaTime * direction
+            this.#wrapSpritePosition()
+        } else {
+            this.#sceneryOffset += speed * deltaTime * -direction
+        }
+
         this.#renderScenery()
     }
 
 
-    #getSceneryDirection () {
+    #wrapSpritePosition () {
+        if (!this.#sceneryCanvas) {
+            return
+        }
+
+        const width = this.#sceneryCanvas.width
+        const spriteSize = this.#getSpriteSize()
+        const margin = spriteSize.width
+
+        if (this.#spriteOffset > width + margin) {
+            this.#spriteOffset = -margin
+        } else if (this.#spriteOffset < -margin) {
+            this.#spriteOffset = width + margin
+        }
+    }
+
+
+    #getSpriteDirection () {
         const dir = this.#motion?.direction || 'e'
         const directionMap = {
-            e: -1,
-            w: 1,
-            ne: -1,
-            se: -1,
-            nw: 1,
-            sw: 1,
-            n: 1,
-            s: -1
+            e: 1,
+            w: -1,
+            ne: 1,
+            se: 1,
+            nw: -1,
+            sw: -1,
+            n: 0,
+            s: 0
         }
-        return directionMap[dir] || -1
+        return directionMap[dir] ?? 1
     }
 
 
@@ -474,6 +630,11 @@ export default class AnimationPreview extends BaseEditorComponent {
 
 
     #renderSidescroller (ctx, width, height) {
+        if (this.#backgroundImage) {
+            this.#renderBackgroundImage(ctx, width, height)
+            return
+        }
+
         const groundY = this.#getGroundY(height)
         const spriteSize = this.#getSpriteSize()
 
@@ -535,6 +696,31 @@ export default class AnimationPreview extends BaseEditorComponent {
             ctx.lineTo(x, groundY - poleHeight)
             ctx.stroke()
         }
+    }
+
+
+    #renderBackgroundImage (ctx, width, height) {
+        const img = this.#backgroundImage
+        const imgRatio = img.width / img.height
+        const canvasRatio = width / height
+
+        let drawWidth
+        let drawHeight
+
+        if (imgRatio > canvasRatio) {
+            drawHeight = height
+            drawWidth = height * imgRatio
+        } else {
+            drawWidth = width
+            drawHeight = width / imgRatio
+        }
+
+        const offsetX = this.#sceneryOffset % drawWidth
+        const y = height - drawHeight
+
+        ctx.drawImage(img, offsetX, y, drawWidth, drawHeight)
+        ctx.drawImage(img, offsetX - drawWidth, y, drawWidth, drawHeight)
+        ctx.drawImage(img, offsetX + drawWidth, y, drawWidth, drawHeight)
     }
 
 
@@ -646,7 +832,38 @@ export default class AnimationPreview extends BaseEditorComponent {
             return
         }
         this.#renderScenery()
+        this.#updateSpritePosition()
         this.#renderer.render(this.#scene)
+    }
+
+
+    #updateSpritePosition () {
+        if (!this.#canvas) {
+            return
+        }
+
+        if (!this.#sceneryActive || !this.#moveSpriteMode) {
+            this.#canvas.style.position = ''
+            this.#canvas.style.left = ''
+            this.#canvas.style.top = ''
+            return
+        }
+
+        const sceneryRect = this.#sceneryCanvas?.getBoundingClientRect()
+        const previewRect = this.#previewArea?.getBoundingClientRect()
+        const canvasRect = this.#canvas.getBoundingClientRect()
+
+        if (!sceneryRect || !previewRect) {
+            return
+        }
+
+        const sceneryLeft = sceneryRect.left - previewRect.left
+        const sceneryTop = sceneryRect.top - previewRect.top
+        const centerY = sceneryTop + (sceneryRect.height - canvasRect.height) / 2
+
+        this.#canvas.style.position = 'absolute'
+        this.#canvas.style.left = `${sceneryLeft + this.#spriteOffset}px`
+        this.#canvas.style.top = `${centerY}px`
     }
 
 
@@ -674,6 +891,14 @@ export default class AnimationPreview extends BaseEditorComponent {
         }))
     }
 
+}
+
+
+function getTouchDistance (touches) {
+    const [a, b] = touches
+    const dx = a.clientX - b.clientX
+    const dy = a.clientY - b.clientY
+    return Math.sqrt(dx * dx + dy * dy)
 }
 
 
@@ -768,6 +993,89 @@ const STYLES = buildEditorStyles(
     .preview-controls button.disabled {
         opacity: 0.4;
         cursor: not-allowed;
+    }
+
+    .zoom-controls {
+        position: absolute;
+        top: var(--spacing-md);
+        right: var(--spacing-md);
+        display: none;
+        align-items: center;
+        gap: var(--spacing-xs);
+        padding: var(--spacing-xs);
+        background: var(--bg-secondary);
+        border-radius: var(--radius-md);
+        z-index: 10;
+    }
+
+    .zoom-controls.active {
+        display: flex;
+    }
+
+    .zoom-controls .zoom-slider {
+        width: 100px;
+        height: 4px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: var(--bg-tertiary);
+        border-radius: 2px;
+        outline: none;
+        display: none;
+    }
+
+    .zoom-controls.expanded .zoom-slider {
+        display: block;
+    }
+
+    .zoom-controls .zoom-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        background: var(--accent);
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .zoom-controls .zoom-slider::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        background: var(--accent);
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
+    }
+
+    .zoom-controls .zoom-toggle {
+        background: transparent;
+        color: var(--fg-secondary);
+        border: none;
+        border-radius: var(--radius-sm);
+        width: 28px;
+        height: 28px;
+        padding: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.15s, color 0.15s;
+    }
+
+    .zoom-controls .zoom-toggle svg {
+        width: 100%;
+        height: 100%;
+        stroke: currentColor;
+        fill: none;
+    }
+
+    .zoom-controls .zoom-toggle:hover {
+        background: var(--bg-hover);
+        color: var(--fg-primary);
+    }
+
+    .zoom-controls.expanded .zoom-toggle {
+        background: var(--accent);
+        color: var(--bg-primary);
     }
 `
 )

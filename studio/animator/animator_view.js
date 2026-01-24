@@ -467,6 +467,7 @@ export default class AnimatorView extends BaseEditorComponent {
     #headerAnimSelect = null
     #drawerAnimSelect = null
     #anchor = {x: 0.5, y: 0.5}
+    #backgroundImage = null
 
     connectedCallback () {
         this.#buildDOM()
@@ -480,9 +481,10 @@ export default class AnimatorView extends BaseEditorComponent {
     }
 
 
-    setContext ({textureSystem, animators}) {
+    setContext ({textureSystem, animators, backgroundImage}) {
         this.#context = {textureSystem}
         this.#animators = animators || {}
+        this.#backgroundImage = backgroundImage || null
 
         if (this.isConnected) {
             const firstKey = Object.keys(this.#animators)[0]
@@ -591,6 +593,9 @@ export default class AnimatorView extends BaseEditorComponent {
             this.#previewEl.setAnimation(this.#selectedAnimation)
             this.#previewEl.setMotion(this.#selectedAnimation.motion)
             this.#previewEl.setAnchor(this.#anchor)
+        }
+        if (this.#backgroundImage) {
+            this.#previewEl.setBackgroundImage(this.#backgroundImage)
         }
         this.#previewEl.addEventListener('frame', (e) => {
             this.#timelineEl?.setCurrentIndex(e.detail.index)
@@ -1064,57 +1069,6 @@ export default class AnimatorView extends BaseEditorComponent {
         this.#rebuildDirectionPad(directionPad, anim)
         dirSubSection.appendChild(directionPad)
         motionOptions.appendChild(dirSubSection)
-
-        const speedSubSection = document.createElement('div')
-        speedSubSection.className = 'settings-section'
-
-        const speedLabel = document.createElement('div')
-        speedLabel.className = 'settings-label'
-        speedLabel.textContent = 'Reference Speed'
-        speedSubSection.appendChild(speedLabel)
-
-        const speedRow = document.createElement('div')
-        speedRow.className = 'settings-row'
-
-        const speedSlider = document.createElement('slider-input')
-        speedSlider.setAttribute('context', 'studio')
-        speedSlider.setAttribute('no-value', '')
-        speedSlider.setAttribute('no-label', '')
-        speedSlider.setValue(motion.referenceSpeed ?? 1)
-        speedSlider.setMin(0)
-        speedSlider.setMax(10)
-        speedSlider.setStep(0.1)
-
-        const speedInput = document.createElement('number-input')
-        speedInput.setAttribute('context', 'studio')
-        speedInput.setValue(motion.referenceSpeed ?? 1)
-        speedInput.setStep(0.1)
-        speedInput.setPrecision(1)
-        speedInput.setMin(0)
-        speedInput.setMax(100)
-
-        const updateSpeed = (value) => {
-            if (!anim.motion) {
-                anim.motion = {}
-            }
-            anim.motion.referenceSpeed = value
-            this.#previewEl?.updateMotion(anim.motion)
-        }
-
-        speedSlider.addEventListener('change', (e) => {
-            speedInput.setValue(e.detail.value)
-            updateSpeed(e.detail.value)
-        })
-
-        speedInput.addEventListener('change', (e) => {
-            speedSlider.setValue(Math.min(10, Math.max(0, e.detail.value)))
-            updateSpeed(e.detail.value)
-        })
-
-        speedRow.appendChild(speedSlider)
-        speedRow.appendChild(speedInput)
-        speedSubSection.appendChild(speedRow)
-        motionOptions.appendChild(speedSubSection)
 
         motionSection.appendChild(motionOptions)
         container.appendChild(motionSection)
@@ -1600,8 +1554,7 @@ export default class AnimatorView extends BaseEditorComponent {
         if (anim.motion?.enabled) {
             config.motion = {
                 mode: anim.motion.mode || 'sidescroller',
-                direction: anim.motion.direction || 'e',
-                referenceSpeed: anim.motion.referenceSpeed ?? 1
+                direction: anim.motion.direction || 'e'
             }
         }
 
