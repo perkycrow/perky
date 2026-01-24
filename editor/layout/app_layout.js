@@ -1,9 +1,9 @@
 
 
-import {adoptStyles, createSheet} from '../styles/index.js'
+import {adoptStyles, createStyleSheet} from '../styles/index.js'
 
 
-const appLayoutCSS = createSheet(`
+const appLayoutCSS = createStyleSheet(`
     :host {
         display: flex;
         flex-direction: column;

@@ -3,7 +3,7 @@ import {
     createElement,
     setAttributes,
     setStyles,
-    createSheet,
+    createStyleSheet,
     adoptStyleSheets
 } from './dom_utils.js'
 
@@ -149,11 +149,11 @@ describe('dom_utils', () => {
     })
 
 
-    describe('createSheet', () => {
+    describe('createStyleSheet', () => {
 
         test('returns CSSStyleSheet', () => {
             const css = '.test { color: red; }'
-            const sheet = createSheet(css)
+            const sheet = createStyleSheet(css)
             expect(sheet).toBeInstanceOf(CSSStyleSheet)
         })
 
@@ -166,7 +166,7 @@ describe('dom_utils', () => {
             const host = document.createElement('div')
             const shadowRoot = host.attachShadow({mode: 'open'})
 
-            const sheet = createSheet('.test { color: red; }')
+            const sheet = createStyleSheet('.test { color: red; }')
             adoptStyleSheets(shadowRoot, sheet)
 
             expect(shadowRoot.adoptedStyleSheets.length).toBe(1)
@@ -177,7 +177,7 @@ describe('dom_utils', () => {
             const host = document.createElement('div')
             const shadowRoot = host.attachShadow({mode: 'open'})
 
-            const sheet = createSheet('.test { color: red; }')
+            const sheet = createStyleSheet('.test { color: red; }')
             adoptStyleSheets(shadowRoot, null, sheet, undefined)
 
             expect(shadowRoot.adoptedStyleSheets.length).toBe(1)
@@ -188,8 +188,8 @@ describe('dom_utils', () => {
             const host = document.createElement('div')
             const shadowRoot = host.attachShadow({mode: 'open'})
 
-            const sheet1 = createSheet('.a { color: red; }')
-            const sheet2 = createSheet('.b { color: blue; }')
+            const sheet1 = createStyleSheet('.a { color: red; }')
+            const sheet2 = createStyleSheet('.b { color: blue; }')
             adoptStyleSheets(shadowRoot, sheet1, sheet2)
 
             expect(shadowRoot.adoptedStyleSheets.length).toBe(2)

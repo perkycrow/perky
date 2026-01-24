@@ -39,7 +39,7 @@ export function setStyles (element, styles) {
 }
 
 
-export function createSheet (css) {
+export function createStyleSheet (css) {
     const sheet = new CSSStyleSheet()
     if (sheet.replaceSync) {
         sheet.replaceSync(css)

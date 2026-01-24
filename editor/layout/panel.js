@@ -1,9 +1,9 @@
 
 
-import {adoptStyles, createSheet} from '../styles/index.js'
+import {adoptStyles, createStyleSheet} from '../styles/index.js'
 
 
-const panelCSS = createSheet(`
+const panelCSS = createStyleSheet(`
     :host {
         display: block;
         background: var(--bg-secondary);

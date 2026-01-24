@@ -1,11 +1,11 @@
 
 
-import {adoptStyles, createSheet} from '../styles/index.js'
+import {adoptStyles, createStyleSheet} from '../styles/index.js'
 
 
 const SWIPE_THRESHOLD = 50
 
-const drawerCSS = createSheet(`
+const drawerCSS = createStyleSheet(`
     :host {
         position: absolute;
         top: var(--drawer-top, 0);

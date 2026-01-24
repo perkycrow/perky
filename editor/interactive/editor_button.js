@@ -1,9 +1,9 @@
 
 
-import {adoptStyles, controlsSheet, createSheet} from '../styles/index.js'
+import {adoptStyles, controlsSheet, createStyleSheet} from '../styles/index.js'
 
 
-const componentStyles = createSheet(`
+const componentStyles = createStyleSheet(`
     :host {
         display: inline-block;
     }

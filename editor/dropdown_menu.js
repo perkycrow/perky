@@ -1,9 +1,9 @@
 
 
-import {adoptStyles, createSheet} from './styles/index.js'
+import {adoptStyles, createStyleSheet} from './styles/index.js'
 
 
-const dropdownStyles = createSheet(`
+const dropdownStyles = createStyleSheet(`
     :host {
         position: relative;
         display: inline-block;

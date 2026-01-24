@@ -1,5 +1,5 @@
 import BaseEditorComponent from '../base_editor_component.js'
-import {adoptStyles, createSheet} from '../styles/index.js'
+import {adoptStyles, createStyleSheet} from '../styles/index.js'
 import '../number_input.js'
 
 
@@ -832,7 +832,7 @@ function drawFrameThumbnail (canvas, frame) {
 }
 
 
-const timelineStyles = createSheet(`
+const timelineStyles = createStyleSheet(`
     :host {
         display: block;
         height: fit-content;

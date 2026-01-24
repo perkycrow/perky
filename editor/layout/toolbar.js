@@ -1,9 +1,9 @@
 
 
-import {adoptStyles, createSheet} from '../styles/index.js'
+import {adoptStyles, createStyleSheet} from '../styles/index.js'
 
 
-const toolbarCSS = createSheet(`
+const toolbarCSS = createStyleSheet(`
     :host {
         display: flex;
         align-items: center;

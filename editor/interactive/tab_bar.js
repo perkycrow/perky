@@ -1,9 +1,9 @@
 
 
-import {adoptStyles, createSheet} from '../styles/index.js'
+import {adoptStyles, createStyleSheet} from '../styles/index.js'
 
 
-const tabBarCSS = createSheet(`
+const tabBarCSS = createStyleSheet(`
     :host {
         display: inline-flex;
         background: var(--bg-tertiary);

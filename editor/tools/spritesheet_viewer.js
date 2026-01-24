@@ -1,5 +1,5 @@
 import BaseEditorComponent from '../base_editor_component.js'
-import {adoptStyles, createSheet} from '../styles/index.js'
+import {adoptStyles, createStyleSheet} from '../styles/index.js'
 
 
 const ANIMATION_COLORS = [
@@ -462,7 +462,7 @@ function drawFrameThumbnail (canvas, region) {
 }
 
 
-const viewerStyles = createSheet(`
+const viewerStyles = createStyleSheet(`
     :host {
         display: flex;
         flex-direction: column;

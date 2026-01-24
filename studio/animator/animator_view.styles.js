@@ -1,7 +1,7 @@
-import {createSheet} from '../../editor/styles/index.js'
+import {createStyleSheet} from '../../editor/styles/index.js'
 
 
-export const animatorViewStyles = createSheet(`
+export const animatorViewStyles = createStyleSheet(`
     :host {
         display: block;
         height: 100%;
@@ -128,7 +128,7 @@ export const animatorViewStyles = createSheet(`
 `)
 
 
-export const frameEditorStyles = createSheet(`
+export const frameEditorStyles = createStyleSheet(`
     .frame-editor {
         display: flex;
         flex-direction: column;
@@ -300,7 +300,7 @@ export const frameEditorStyles = createSheet(`
 `)
 
 
-export const settingsStyles = createSheet(`
+export const settingsStyles = createStyleSheet(`
     .animation-settings {
         display: flex;
         flex-direction: column;

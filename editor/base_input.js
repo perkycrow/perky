@@ -1,8 +1,8 @@
-import {adoptStyles, createSheet, controlsSheet} from './styles/index.js'
+import {adoptStyles, createStyleSheet, controlsSheet} from './styles/index.js'
 
 
 export function setupInputStyles (shadowRoot, componentCSS = '') {
-    const componentSheet = componentCSS ? createSheet(componentCSS) : null
+    const componentSheet = componentCSS ? createStyleSheet(componentCSS) : null
     if (componentSheet) {
         adoptStyles(shadowRoot, controlsSheet, componentSheet)
     } else {

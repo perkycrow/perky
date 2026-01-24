@@ -1,9 +1,9 @@
 
 
-import {adoptStyles, createSheet} from '../styles/index.js'
+import {adoptStyles, createStyleSheet} from '../styles/index.js'
 
 
-const overlayCSS = createSheet(`
+const overlayCSS = createStyleSheet(`
     :host {
         display: none;
         position: fixed;
