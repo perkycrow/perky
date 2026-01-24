@@ -19,57 +19,45 @@ describe('PerkyComponent', () => {
     })
 
 
-    describe('shadowRoot', () => {
-
-        test('creates shadowRoot on construction', () => {
-            registerElement('test-shadow', class extends PerkyComponent {})
-            const el = document.createElement('test-shadow')
-            expect(el.shadowRoot).toBeTruthy()
-            expect(el.shadowRoot.mode).toBe('open')
-        })
-
+    test('shadowRoot creates shadowRoot on construction', () => {
+        registerElement('test-shadow', class extends PerkyComponent {})
+        const el = document.createElement('test-shadow')
+        expect(el.shadowRoot).toBeTruthy()
+        expect(el.shadowRoot.mode).toBe('open')
     })
 
 
-    describe('static styles - string', () => {
+    test('static styles - string converts string styles to CSSStyleSheet', () => {
+        class TestStyles extends PerkyComponent {
+            static styles = '.test { color: red; }'
+        }
+        registerElement('test-string-styles', TestStyles)
 
-        test('converts string styles to CSSStyleSheet', () => {
-            class TestStyles extends PerkyComponent {
-                static styles = '.test { color: red; }'
-            }
-            registerElement('test-string-styles', TestStyles)
+        const el = document.createElement('test-string-styles')
+        document.body.appendChild(el)
 
-            const el = document.createElement('test-string-styles')
-            document.body.appendChild(el)
+        expect(el.shadowRoot.adoptedStyleSheets.length).toBe(1)
+        expect(el.shadowRoot.adoptedStyleSheets[0]).toBeInstanceOf(CSSStyleSheet)
 
-            expect(el.shadowRoot.adoptedStyleSheets.length).toBe(1)
-            expect(el.shadowRoot.adoptedStyleSheets[0]).toBeInstanceOf(CSSStyleSheet)
-
-            document.body.removeChild(el)
-        })
-
+        document.body.removeChild(el)
     })
 
 
-    describe('static styles - CSSStyleSheet', () => {
+    test('static styles - CSSStyleSheet uses CSSStyleSheet directly', () => {
+        const sheet = createStyleSheet('.test { color: blue; }')
 
-        test('uses CSSStyleSheet directly', () => {
-            const sheet = createStyleSheet('.test { color: blue; }')
+        class TestSheet extends PerkyComponent {
+            static styles = sheet
+        }
+        registerElement('test-sheet-styles', TestSheet)
 
-            class TestSheet extends PerkyComponent {
-                static styles = sheet
-            }
-            registerElement('test-sheet-styles', TestSheet)
+        const el = document.createElement('test-sheet-styles')
+        document.body.appendChild(el)
 
-            const el = document.createElement('test-sheet-styles')
-            document.body.appendChild(el)
+        expect(el.shadowRoot.adoptedStyleSheets.length).toBe(1)
+        expect(el.shadowRoot.adoptedStyleSheets[0]).toBe(sheet)
 
-            expect(el.shadowRoot.adoptedStyleSheets.length).toBe(1)
-            expect(el.shadowRoot.adoptedStyleSheets[0]).toBe(sheet)
-
-            document.body.removeChild(el)
-        })
-
+        document.body.removeChild(el)
     })
 
 
@@ -206,26 +194,22 @@ describe('PerkyComponent', () => {
     })
 
 
-    describe('sheet caching', () => {
+    test('sheet caching reuses same sheet between instances', () => {
+        class Cached extends PerkyComponent {
+            static styles = '.cached {}'
+        }
+        registerElement('test-cache', Cached)
 
-        test('reuses same sheet between instances', () => {
-            class Cached extends PerkyComponent {
-                static styles = '.cached {}'
-            }
-            registerElement('test-cache', Cached)
+        const el1 = document.createElement('test-cache')
+        const el2 = document.createElement('test-cache')
+        document.body.appendChild(el1)
+        document.body.appendChild(el2)
 
-            const el1 = document.createElement('test-cache')
-            const el2 = document.createElement('test-cache')
-            document.body.appendChild(el1)
-            document.body.appendChild(el2)
+        expect(el1.shadowRoot.adoptedStyleSheets[0])
+            .toBe(el2.shadowRoot.adoptedStyleSheets[0])
 
-            expect(el1.shadowRoot.adoptedStyleSheets[0])
-                .toBe(el2.shadowRoot.adoptedStyleSheets[0])
-
-            document.body.removeChild(el1)
-            document.body.removeChild(el2)
-        })
-
+        document.body.removeChild(el1)
+        document.body.removeChild(el2)
     })
 
 
@@ -389,41 +373,33 @@ describe('PerkyComponent', () => {
     })
 
 
-    describe('cleanListeners', () => {
+    test('cleanListeners allows manual cleanup', () => {
+        const mockTarget = {
+            on: vi.fn(),
+            off: vi.fn()
+        }
 
-        test('allows manual cleanup', () => {
-            const mockTarget = {
-                on: vi.fn(),
-                off: vi.fn()
-            }
+        class TestManual extends PerkyComponent {}
+        registerElement('test-manual', TestManual)
 
-            class TestManual extends PerkyComponent {}
-            registerElement('test-manual', TestManual)
+        const el = document.createElement('test-manual')
+        el.listenTo(mockTarget, 'test', () => {})
+        el.cleanListeners()
 
-            const el = document.createElement('test-manual')
-            el.listenTo(mockTarget, 'test', () => {})
-            el.cleanListeners()
-
-            expect(mockTarget.off).toHaveBeenCalled()
-        })
-
+        expect(mockTarget.off).toHaveBeenCalled()
     })
 
 
-    describe('no styles', () => {
+    test('no styles works without static styles', () => {
+        class NoStyles extends PerkyComponent {}
+        registerElement('test-no-styles', NoStyles)
 
-        test('works without static styles', () => {
-            class NoStyles extends PerkyComponent {}
-            registerElement('test-no-styles', NoStyles)
+        const el = document.createElement('test-no-styles')
+        document.body.appendChild(el)
 
-            const el = document.createElement('test-no-styles')
-            document.body.appendChild(el)
+        expect(el.shadowRoot.adoptedStyleSheets.length).toBe(0)
 
-            expect(el.shadowRoot.adoptedStyleSheets.length).toBe(0)
-
-            document.body.removeChild(el)
-        })
-
+        document.body.removeChild(el)
     })
 
 })

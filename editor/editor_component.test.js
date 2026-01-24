@@ -63,21 +63,17 @@ describe('EditorComponent', () => {
     })
 
 
-    describe('style inheritance', () => {
+    test('style inheritance child component gets parent styles plus its own', () => {
+        class ChildComponent extends EditorComponent {
+            static styles = '.child { color: red; }'
+        }
+        customElements.define('test-child-editor', ChildComponent)
 
-        test('child component gets parent styles plus its own', () => {
-            class ChildComponent extends EditorComponent {
-                static styles = '.child { color: red; }'
-            }
-            customElements.define('test-child-editor', ChildComponent)
+        const child = document.createElement('test-child-editor')
+        container.appendChild(child)
 
-            const child = document.createElement('test-child-editor')
-            container.appendChild(child)
-
-            // Parent EditorComponent styles + child styles
-            expect(child.shadowRoot.adoptedStyleSheets.length).toBe(2)
-        })
-
+        // Parent EditorComponent styles + child styles
+        expect(child.shadowRoot.adoptedStyleSheets.length).toBe(2)
     })
 
 })

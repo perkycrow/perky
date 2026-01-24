@@ -1,5 +1,6 @@
 import EditorComponent from './editor_component.js'
 import {editorScrollbarStyles, editorBaseStyles} from './editor_theme.js'
+import {createElement} from '../application/dom_utils.js'
 import logger from '../core/logger.js'
 import {renderLogItem} from './log_renderers/log_renderer_registry.js'
 import './log_renderers/object_log_renderer.js'
@@ -513,30 +514,31 @@ export default class PerkyLogger extends EditorComponent {
 
 
     #buildDOM () {
-        const wrapper = document.createElement('div')
-        wrapper.className = 'logger-wrapper'
+        const wrapper = createElement('div', {class: 'logger-wrapper'})
 
-        this.#controlsEl = document.createElement('div')
-        this.#controlsEl.className = 'logger-controls'
+        this.#controlsEl = createElement('div', {class: 'logger-controls'})
 
-        const clearBtn = document.createElement('button')
-        clearBtn.className = 'logger-btn'
-        clearBtn.innerHTML = CLEAR_ICON
-        clearBtn.title = 'Clear logs'
+        const clearBtn = createElement('button', {
+            class: 'logger-btn',
+            html: CLEAR_ICON,
+            title: 'Clear logs'
+        })
         clearBtn.addEventListener('click', () => this.clear())
         this.#controlsEl.appendChild(clearBtn)
 
-        const copyAllBtn = document.createElement('button')
-        copyAllBtn.className = 'logger-btn'
-        copyAllBtn.innerHTML = COPY_ICON
-        copyAllBtn.title = 'Copy all logs'
+        const copyAllBtn = createElement('button', {
+            class: 'logger-btn',
+            html: COPY_ICON,
+            title: 'Copy all logs'
+        })
         copyAllBtn.addEventListener('click', () => this.#copyAllLogs())
         this.#controlsEl.appendChild(copyAllBtn)
 
-        this.#opacityToggle = document.createElement('button')
-        this.#opacityToggle.className = 'logger-btn pinned'
-        this.#opacityToggle.innerHTML = EYE_ICON
-        this.#opacityToggle.title = 'Toggle opacity'
+        this.#opacityToggle = createElement('button', {
+            class: 'logger-btn pinned',
+            html: EYE_ICON,
+            title: 'Toggle opacity'
+        })
         this.#opacityToggle.addEventListener('click', () => this.#togglePin())
         this.#controlsEl.appendChild(this.#opacityToggle)
 
@@ -676,30 +678,29 @@ export default class PerkyLogger extends EditorComponent {
 
 
     log (message, type = 'info', format = 'text', timestamp = null) {
-        const entry = document.createElement('div')
-        entry.className = `logger-entry log-${type}`
+        const entry = createElement('div', {class: `logger-entry log-${type}`})
 
-        const indicator = document.createElement('span')
-        indicator.className = 'logger-indicator'
+        const indicator = createElement('span', {class: 'logger-indicator'})
         entry.appendChild(indicator)
 
-        const messageElement = document.createElement('span')
-        messageElement.className = 'logger-message'
+        const messageElement = createElement('span', {class: 'logger-message'})
 
         processMessage(messageElement, message, format)
 
         entry.appendChild(messageElement)
 
         const time = timestamp ? new Date(timestamp) : new Date()
-        const timestampEl = document.createElement('span')
-        timestampEl.className = 'logger-timestamp'
-        timestampEl.textContent = time.toLocaleTimeString()
+        const timestampEl = createElement('span', {
+            class: 'logger-timestamp',
+            text: time.toLocaleTimeString()
+        })
         entry.appendChild(timestampEl)
 
-        const copyBtn = document.createElement('button')
-        copyBtn.className = 'logger-copy-btn'
-        copyBtn.innerHTML = COPY_ICON
-        copyBtn.title = 'Copy log entry'
+        const copyBtn = createElement('button', {
+            class: 'logger-copy-btn',
+            html: COPY_ICON,
+            title: 'Copy log entry'
+        })
         copyBtn.addEventListener('click', (e) => {
             e.stopPropagation()
             const text = extractFormattedText(messageElement)
@@ -753,8 +754,7 @@ export default class PerkyLogger extends EditorComponent {
 
 
     spacer () {
-        const entry = document.createElement('div')
-        entry.className = 'logger-entry logger-spacer'
+        const entry = createElement('div', {class: 'logger-entry logger-spacer'})
         this.#entries.push(entry)
 
         if (this.#contentEl) {
@@ -764,9 +764,10 @@ export default class PerkyLogger extends EditorComponent {
 
 
     title (title) {
-        const entry = document.createElement('div')
-        entry.className = 'logger-entry logger-title-entry'
-        entry.textContent = title
+        const entry = createElement('div', {
+            class: 'logger-entry logger-title-entry',
+            text: title
+        })
         this.#entries.push(entry)
 
         if (this.#contentEl) {
@@ -787,9 +788,7 @@ export default class PerkyLogger extends EditorComponent {
 
 
 function createLoggerContent () {
-    const content = document.createElement('div')
-    content.className = 'logger-content'
-    return content
+    return createElement('div', {class: 'logger-content'})
 }
 
 

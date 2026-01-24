@@ -1,5 +1,6 @@
 import BaseTreeNode from './base_tree_node.js'
 import {ICONS} from './devtools/devtools_icons.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 export default class PerkyExplorerNode extends BaseTreeNode {
@@ -159,8 +160,7 @@ export default class PerkyExplorerNode extends BaseTreeNode {
 
         let statusEl = this.contentEl.querySelector('.node-status')
         if (!statusEl) {
-            statusEl = document.createElement('div')
-            statusEl.className = 'node-status'
+            statusEl = createElement('div', {class: 'node-status'})
             this.contentEl.insertBefore(statusEl, this.toggleEl.nextSibling)
         }
 
@@ -177,8 +177,7 @@ export default class PerkyExplorerNode extends BaseTreeNode {
 
         let idEl = this.contentEl.querySelector('.node-id')
         if (!idEl) {
-            idEl = document.createElement('div')
-            idEl.className = 'node-id'
+            idEl = createElement('div', {class: 'node-id'})
             this.contentEl.appendChild(idEl)
         }
 
@@ -194,8 +193,7 @@ export default class PerkyExplorerNode extends BaseTreeNode {
 
         let categoryEl = this.contentEl.querySelector('.node-category')
         if (!categoryEl) {
-            categoryEl = document.createElement('div')
-            categoryEl.className = 'node-category'
+            categoryEl = createElement('div', {class: 'node-category'})
             this.contentEl.appendChild(categoryEl)
         }
 
@@ -214,10 +212,11 @@ export default class PerkyExplorerNode extends BaseTreeNode {
 
         if (this.#isSystemModule) {
             if (!iconEl) {
-                iconEl = document.createElement('span')
-                iconEl.className = 'node-system-icon'
-                iconEl.innerHTML = ICONS.system
-                iconEl.title = 'System module'
+                iconEl = createElement('span', {
+                    class: 'node-system-icon',
+                    html: ICONS.system,
+                    title: 'System module'
+                })
                 this.contentEl.appendChild(iconEl)
             }
         } else if (iconEl) {

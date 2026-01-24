@@ -205,14 +205,10 @@ describe('dom_utils', () => {
     })
 
 
-    describe('createStyleSheet', () => {
-
-        test('returns CSSStyleSheet', () => {
-            const css = '.test { color: red; }'
-            const sheet = createStyleSheet(css)
-            expect(sheet).toBeInstanceOf(CSSStyleSheet)
-        })
-
+    test('createStyleSheet returns CSSStyleSheet', () => {
+        const css = '.test { color: red; }'
+        const sheet = createStyleSheet(css)
+        expect(sheet).toBeInstanceOf(CSSStyleSheet)
     })
 
 

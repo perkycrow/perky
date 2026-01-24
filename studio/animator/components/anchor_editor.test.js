@@ -77,17 +77,13 @@ describe('anchor_editor', () => {
     })
 
 
-    describe('buildAnchorPreview', () => {
+    test('buildAnchorPreview creates wrapper with canvas and handle', () => {
+        const anchor = {x: 0.5, y: 0.5}
+        const {wrapper, canvas, handle} = buildAnchorPreview(null, anchor, () => {})
 
-        test('creates wrapper with canvas and handle', () => {
-            const anchor = {x: 0.5, y: 0.5}
-            const {wrapper, canvas, handle} = buildAnchorPreview(null, anchor, () => {})
-
-            expect(wrapper.className).toBe('anchor-preview-wrapper')
-            expect(canvas.className).toBe('anchor-preview-canvas')
-            expect(handle.className).toBe('anchor-handle')
-        })
-
+        expect(wrapper.className).toBe('anchor-preview-wrapper')
+        expect(canvas.className).toBe('anchor-preview-canvas')
+        expect(handle.className).toBe('anchor-handle')
     })
 
 

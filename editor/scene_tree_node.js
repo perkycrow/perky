@@ -1,5 +1,6 @@
 import BaseTreeNode from './base_tree_node.js'
 import {formatNumber} from '../core/utils.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 export default class SceneTreeNode extends BaseTreeNode {
@@ -107,14 +108,12 @@ export default class SceneTreeNode extends BaseTreeNode {
 
     #ensureContentElements () {
         if (!this.#labelEl) {
-            this.#labelEl = document.createElement('div')
-            this.#labelEl.className = 'node-label'
+            this.#labelEl = createElement('div', {class: 'node-label'})
             this.contentEl.appendChild(this.#labelEl)
         }
 
         if (!this.#propsEl) {
-            this.#propsEl = document.createElement('div')
-            this.#propsEl.className = 'node-props'
+            this.#propsEl = createElement('div', {class: 'node-props'})
             this.#propsEl.addEventListener('click', (e) => {
                 if (this.#object?.$entity) {
                     e.stopPropagation()

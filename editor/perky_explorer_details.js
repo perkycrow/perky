@@ -1,5 +1,6 @@
 import EditorComponent from './editor_component.js'
 import {detailsStyles} from './perky_explorer.styles.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 const inspectorRegistry = new Set()
@@ -54,11 +55,8 @@ export default class PerkyExplorerDetails extends EditorComponent {
 
 
     #buildDOM () {
-        this.#titleEl = document.createElement('div')
-        this.#titleEl.className = 'details-title'
-
-        this.#contentEl = document.createElement('div')
-        this.#contentEl.className = 'details-content'
+        this.#titleEl = createElement('div', {class: 'details-title'})
+        this.#contentEl = createElement('div', {class: 'details-content'})
 
         this.shadowRoot.appendChild(this.#titleEl)
         this.shadowRoot.appendChild(this.#contentEl)
@@ -80,9 +78,10 @@ export default class PerkyExplorerDetails extends EditorComponent {
         this.#titleEl.textContent = ''
         this.#contentEl.innerHTML = ''
 
-        const empty = document.createElement('div')
-        empty.className = 'details-empty'
-        empty.textContent = 'Select a module to inspect'
+        const empty = createElement('div', {
+            class: 'details-empty',
+            text: 'Select a module to inspect'
+        })
         this.#contentEl.appendChild(empty)
     }
 
@@ -90,13 +89,15 @@ export default class PerkyExplorerDetails extends EditorComponent {
     #renderTitle () {
         this.#titleEl.innerHTML = ''
 
-        const statusDot = document.createElement('div')
-        statusDot.className = `details-status ${this.#module.$status}`
+        const statusDot = createElement('div', {
+            class: `details-status ${this.#module.$status}`
+        })
 
-        const focusBtn = document.createElement('button')
-        focusBtn.className = 'details-focus-btn'
-        focusBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>'
-        focusBtn.title = 'Focus on this module'
+        const focusBtn = createElement('button', {
+            class: 'details-focus-btn',
+            html: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>',
+            title: 'Focus on this module'
+        })
         focusBtn.onclick = () => {
             this.dispatchEvent(new CustomEvent('focus:module', {
                 detail: {module: this.#module},
@@ -191,19 +192,19 @@ function findAllInspectors (module) {
 
 
 function createGrid () {
-    const grid = document.createElement('div')
-    grid.className = 'details-grid'
-    return grid
+    return createElement('div', {class: 'details-grid'})
 }
 
 
 function addGridRow (grid, label, value, isAccent = false) {
-    const labelEl = document.createElement('div')
-    labelEl.className = 'details-label'
-    labelEl.textContent = label
+    const labelEl = createElement('div', {
+        class: 'details-label',
+        text: label
+    })
 
-    const valueEl = document.createElement('div')
-    valueEl.className = `details-value ${isAccent ? 'accent' : ''}`
+    const valueEl = createElement('div', {
+        class: `details-value ${isAccent ? 'accent' : ''}`.trim()
+    })
 
     if (value instanceof HTMLElement) {
         valueEl.appendChild(value)
@@ -232,13 +233,13 @@ function formatValue (value) {
 
 
 function formatTags (tags) {
-    const container = document.createElement('div')
-    container.className = 'details-tags'
+    const container = createElement('div', {class: 'details-tags'})
 
     for (const tag of tags) {
-        const tagEl = document.createElement('span')
-        tagEl.className = 'details-tag'
-        tagEl.textContent = tag
+        const tagEl = createElement('span', {
+            class: 'details-tag',
+            text: tag
+        })
         container.appendChild(tagEl)
     }
 

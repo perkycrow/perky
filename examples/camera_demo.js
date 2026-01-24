@@ -2,6 +2,7 @@ import RenderSystem from '/render/render_system.js'
 import Group2D from '/render/group_2d.js'
 import Circle from '/render/circle.js'
 import Rectangle from '/render/rectangle.js'
+import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 const container = document.getElementById('render-container')
@@ -230,8 +231,7 @@ controlPanel.appendChild(followRow)
 container.appendChild(controlPanel)
 
 
-const style = document.createElement('style')
-style.textContent = `
+adoptStyleSheets(document, createStyleSheet(`
     .control-panel {
         position: absolute;
         bottom: 10px;
@@ -280,5 +280,4 @@ style.textContent = `
     .control-panel button:active {
         background: #4a4a5e;
     }
-`
-document.head.appendChild(style)
+`))

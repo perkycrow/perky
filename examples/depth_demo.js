@@ -1,6 +1,7 @@
 import RenderSystem from '/render/render_system.js'
 import Group2D from '/render/group_2d.js'
 import Circle from '/render/circle.js'
+import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 const container = document.getElementById('render-container')
@@ -97,8 +98,7 @@ setInterval(() => {
 }, 100)
 
 
-const style = document.createElement('style')
-style.textContent = `
+adoptStyleSheets(document, createStyleSheet(`
     .info-panel {
         position: absolute;
         top: 10px;
@@ -134,5 +134,4 @@ style.textContent = `
         color: #666;
         line-height: 1.4;
     }
-`
-document.head.appendChild(style)
+`))

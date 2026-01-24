@@ -1,5 +1,6 @@
 import Application from '/application/application.js'
 import AudioSystem from '/audio/audio_system.js'
+import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 const manifest = {
@@ -101,8 +102,7 @@ ui.innerHTML = `
 container.appendChild(ui)
 
 
-const style = document.createElement('style')
-style.textContent = `
+adoptStyleSheets(document, createStyleSheet(`
     .audio-ui {
         padding: 20px;
         font-family: "Source Code Pro", monospace;
@@ -197,8 +197,7 @@ style.textContent = `
         color: #8C8C93;
         margin-bottom: 12px;
     }
-`
-document.head.appendChild(style)
+`))
 
 
 let playbackVolume = 1

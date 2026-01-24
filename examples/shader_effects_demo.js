@@ -3,6 +3,7 @@ import Group2D from '/render/group_2d.js'
 import Sprite from '/render/sprite.js'
 import ShaderEffect from '/render/shaders/shader_effect.js'
 import OutlineEffect from '/render/shaders/builtin/effects/outline_effect.js'
+import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 class ChromaticEffect extends ShaderEffect {
@@ -268,8 +269,7 @@ infoPanel.innerHTML = `
 container.appendChild(infoPanel)
 
 
-const style = document.createElement('style')
-style.textContent = `
+adoptStyleSheets(document, createStyleSheet(`
     .info-panel {
         position: absolute;
         top: 10px;
@@ -330,8 +330,7 @@ style.textContent = `
         color: #666;
         line-height: 1.5;
     }
-`
-document.head.appendChild(style)
+`))
 
 
 document.getElementById('btn-50').onclick = () => createSprites(50)

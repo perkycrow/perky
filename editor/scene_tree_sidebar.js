@@ -2,6 +2,7 @@ import EditorComponent from './editor_component.js'
 import {panelStyles} from './perky_explorer.styles.js'
 import './scene_tree_node.js'
 import Object2DInspector from './inspectors/object_2d_inspector.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 const DEBOUNCE_MS = 100
@@ -147,8 +148,7 @@ export default class SceneTreeSidebar extends EditorComponent {
     #buildDOM () {
         this.#headerEl = this.#createHeader()
         this.#treeEl = this.#createTree()
-        this.#detailsEl = document.createElement('div')
-        this.#detailsEl.className = 'panel-details'
+        this.#detailsEl = createElement('div', {class: 'panel-details'})
 
         this.shadowRoot.appendChild(this.#headerEl)
         this.shadowRoot.appendChild(this.#treeEl)
@@ -157,26 +157,14 @@ export default class SceneTreeSidebar extends EditorComponent {
 
 
     #createHeader () {
-        const header = document.createElement('div')
-        header.className = 'panel-header'
+        const header = createElement('div', {class: 'panel-header'})
+        const title = createElement('div', {class: 'panel-title', html: '<span class="panel-title-icon">🎬</span> Scene Tree'})
+        const buttons = createElement('div', {class: 'panel-buttons'})
 
-        const title = document.createElement('div')
-        title.className = 'panel-title'
-        title.innerHTML = '<span class="panel-title-icon">🎬</span> Scene Tree'
-
-        const buttons = document.createElement('div')
-        buttons.className = 'panel-buttons'
-
-        const refreshBtn = document.createElement('button')
-        refreshBtn.className = 'panel-btn'
-        refreshBtn.textContent = '↻'
-        refreshBtn.title = 'Refresh'
+        const refreshBtn = createElement('button', {class: 'panel-btn', text: '↻', title: 'Refresh'})
         refreshBtn.addEventListener('click', () => this.refresh())
 
-        const closeBtn = document.createElement('button')
-        closeBtn.className = 'panel-btn'
-        closeBtn.textContent = '✕'
-        closeBtn.title = 'Close'
+        const closeBtn = createElement('button', {class: 'panel-btn', text: '✕', title: 'Close'})
         closeBtn.addEventListener('click', () => this.close())
 
         buttons.appendChild(refreshBtn)
@@ -190,11 +178,9 @@ export default class SceneTreeSidebar extends EditorComponent {
 
 
     #createTree () {
-        const tree = document.createElement('div')
-        tree.className = 'panel-tree'
+        const tree = createElement('div', {class: 'panel-tree'})
 
-        this.#rootNode = document.createElement('scene-tree-node')
-        this.#rootNode.style.display = 'none'
+        this.#rootNode = createElement('scene-tree-node', {style: {display: 'none'}})
         this.#rootNode.addEventListener('node:select', (e) => {
             this.#handleNodeSelect(e.detail.object)
         })
@@ -233,9 +219,7 @@ export default class SceneTreeSidebar extends EditorComponent {
             this.#updateInspector()
         } else {
             this.#detailsEl.innerHTML = ''
-            const empty = document.createElement('div')
-            empty.className = 'panel-empty'
-            empty.textContent = 'Select an object to inspect'
+            const empty = createElement('div', {class: 'panel-empty', text: 'Select an object to inspect'})
             this.#detailsEl.appendChild(empty)
         }
     }

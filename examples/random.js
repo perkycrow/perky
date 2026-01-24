@@ -1,5 +1,6 @@
 import Random from '/math/random.js'
 import '/editor/perky_logger.js'
+import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 const container = document.querySelector('.example-content')
@@ -127,8 +128,7 @@ createFolder('State Management', [
 ])
 
 
-const style = document.createElement('style')
-style.textContent = `
+adoptStyleSheets(document, createStyleSheet(`
     .control-panel {
         position: absolute;
         top: 10px;
@@ -175,5 +175,4 @@ style.textContent = `
         background: #45454b;
         color: #BBBCC3;
     }
-`
-document.head.appendChild(style)
+`))

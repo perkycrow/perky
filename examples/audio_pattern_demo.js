@@ -1,5 +1,6 @@
 import AudioSystem from '/audio/audio_system.js'
 import Sequencer from '/audio/patterns/sequencer.js'
+import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 const container = document.getElementById('audio-container')
@@ -122,8 +123,7 @@ ui.innerHTML = `
 container.appendChild(ui)
 
 
-const style = document.createElement('style')
-style.textContent = `
+adoptStyleSheets(document, createStyleSheet(`
     .pattern-ui {
         padding: 20px;
         font-family: "Source Code Pro", monospace;
@@ -345,8 +345,7 @@ style.textContent = `
         border-radius: 3px;
         color: #4fc3f7;
     }
-`
-document.head.appendChild(style)
+`))
 
 
 const sounds = {

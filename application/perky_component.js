@@ -4,31 +4,6 @@ import {createStyleSheet, adoptStyleSheets} from './dom_utils.js'
 const sheetCache = new WeakMap()
 
 
-function toSheet (style) {
-    if (typeof style === 'string') {
-        return createStyleSheet(style)
-    }
-    return style
-}
-
-
-function getOrCreateSheets (ctor) {
-    if (!Object.hasOwn(ctor, 'styles') || !ctor.styles) {
-        return []
-    }
-
-    if (!sheetCache.has(ctor)) {
-        const styles = ctor.styles
-        const sheets = Array.isArray(styles)
-            ? styles.map(s => toSheet(s))
-            : [toSheet(styles)]
-        sheetCache.set(ctor, sheets)
-    }
-
-    return sheetCache.get(ctor)
-}
-
-
 export default class PerkyComponent extends HTMLElement {
 
     #listeners = []
@@ -92,4 +67,29 @@ export default class PerkyComponent extends HTMLElement {
         this.#cleanListeners()
     }
 
+}
+
+
+function toSheet (style) {
+    if (typeof style === 'string') {
+        return createStyleSheet(style)
+    }
+    return style
+}
+
+
+function getOrCreateSheets (ctor) {
+    if (!Object.hasOwn(ctor, 'styles') || !ctor.styles) {
+        return []
+    }
+
+    if (!sheetCache.has(ctor)) {
+        const styles = ctor.styles
+        const sheets = Array.isArray(styles)
+            ? styles.map(s => toSheet(s))
+            : [toSheet(styles)]
+        sheetCache.set(ctor, sheets)
+    }
+
+    return sheetCache.get(ctor)
 }

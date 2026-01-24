@@ -3,6 +3,7 @@ import Group2D from '/render/group_2d.js'
 import Sprite from '/render/sprite.js'
 import Circle from '/render/circle.js'
 import ShadowTransform from '/render/transforms/shadow_transform.js'
+import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 const container = document.getElementById('render-container')
@@ -153,8 +154,7 @@ infoPanel.innerHTML = `
 container.appendChild(infoPanel)
 
 
-const style = document.createElement('style')
-style.textContent = `
+adoptStyleSheets(document, createStyleSheet(`
     .info-panel {
         position: absolute;
         top: 10px;
@@ -189,5 +189,4 @@ style.textContent = `
         color: #666;
         line-height: 1.4;
     }
-`
-document.head.appendChild(style)
+`))

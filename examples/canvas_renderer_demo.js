@@ -2,6 +2,7 @@ import RenderSystem from '/render/render_system.js'
 import Group2D from '/render/group_2d.js'
 import Circle from '/render/circle.js'
 import Rectangle from '/render/rectangle.js'
+import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 const container = document.getElementById('render-container')
@@ -119,8 +120,7 @@ infoPanel.innerHTML = `
 container.appendChild(infoPanel)
 
 
-const style = document.createElement('style')
-style.textContent = `
+adoptStyleSheets(document, createStyleSheet(`
     .info-panel {
         position: absolute;
         top: 10px;
@@ -152,5 +152,4 @@ style.textContent = `
         color: #16c79a;
         font-weight: 500;
     }
-`
-document.head.appendChild(style)
+`))
