@@ -522,8 +522,8 @@ export default class AnimationTimeline extends BaseEditorComponent {
 
         const canvas = document.createElement('canvas')
         canvas.className = 'frame-thumbnail'
-        canvas.width = 72
-        canvas.height = 72
+        canvas.width = 80
+        canvas.height = 80
         drawFrameThumbnail(canvas, frame)
         thumbnailWrapper.appendChild(canvas)
 
@@ -547,7 +547,6 @@ export default class AnimationTimeline extends BaseEditorComponent {
         if (frame.events && frame.events.length > 0) {
             const eventBadge = document.createElement('div')
             eventBadge.className = 'frame-event-badge'
-            eventBadge.textContent = '⚡'
             eventBadge.title = frame.events.join(', ')
             thumbnailWrapper.appendChild(eventBadge)
         }
@@ -761,7 +760,7 @@ const timelineStyles = createSheet(`
     .timeline-wrapper {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: var(--spacing-md);
     }
 
     .timeline-viewport {
@@ -771,20 +770,19 @@ const timelineStyles = createSheet(`
 
     .timeline {
         display: flex;
-        gap: 2px;
-        padding: 4px 0;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-sm) 0;
         position: relative;
         width: fit-content;
         min-width: 100%;
         will-change: transform;
     }
 
-
     .scrubber {
         position: relative;
-        height: 24px;
-        background: var(--bg-secondary);
-        border-radius: 12px;
+        height: 28px;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-lg);
         cursor: pointer;
         touch-action: none;
         flex-shrink: 0;
@@ -796,13 +794,13 @@ const timelineStyles = createSheet(`
 
     .scrubber-thumb {
         position: absolute;
-        top: 2px;
-        bottom: 2px;
-        min-width: 44px;
+        top: 3px;
+        bottom: 3px;
+        min-width: 48px;
         background: var(--bg-hover);
-        border-radius: 10px;
+        border-radius: var(--radius-md);
         cursor: grab;
-        transition: background 0.15s;
+        transition: background 0.2s ease;
     }
 
     .scrubber-thumb:hover,
@@ -816,28 +814,26 @@ const timelineStyles = createSheet(`
 
     .frame {
         position: relative;
-        padding: 4px;
-        background: transparent;
-        border-radius: 4px;
+        padding: var(--spacing-xs);
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
         flex-shrink: 0;
         cursor: grab;
-        transition: opacity 0.15s, transform 0.15s, background 0.15s;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .frame:hover {
-        background: var(--bg-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
     .frame:active {
         cursor: grabbing;
+        transform: scale(0.98);
     }
 
     .frame.active {
         background: var(--bg-selected);
-    }
-
-    .frame.active .frame-thumbnail {
-        box-shadow: 0 0 0 2px var(--accent);
     }
 
     .frame.dragging {
@@ -847,36 +843,29 @@ const timelineStyles = createSheet(`
     }
 
     .frame.just-added {
-        animation: frame-added 0.4s ease-out;
+        animation: frame-added 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     @keyframes frame-added {
         0% {
-            background: var(--accent);
-            transform: scale(0.8);
+            transform: scale(0.5);
             opacity: 0;
         }
-        50% {
-            transform: scale(1.05);
-            opacity: 1;
-        }
         100% {
-            background: transparent;
             transform: scale(1);
+            opacity: 1;
         }
     }
 
     .frame.just-moved {
-        animation: frame-moved 0.35s ease-out;
+        animation: frame-moved 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     @keyframes frame-moved {
         0% {
-            background: var(--accent);
-            transform: scale(1.1);
+            transform: scale(1.15);
         }
         100% {
-            background: transparent;
             transform: scale(1);
         }
     }
@@ -887,7 +876,7 @@ const timelineStyles = createSheet(`
 
     @keyframes pushed-right {
         0% {
-            transform: translateX(-20px);
+            transform: translateX(-16px);
         }
         100% {
             transform: translateX(0);
@@ -896,50 +885,53 @@ const timelineStyles = createSheet(`
 
     .frame-thumbnail-wrapper {
         position: relative;
+        border-radius: var(--radius-sm);
+        overflow: hidden;
     }
 
     .frame-thumbnail {
-        border-radius: 3px;
-        background: var(--bg-secondary);
         display: block;
+        background: var(--bg-secondary);
     }
 
     .frame-index {
         position: absolute;
-        top: 2px;
-        left: 2px;
-        font-size: 9px;
+        top: 4px;
+        left: 4px;
+        font-size: 10px;
+        font-weight: 500;
         color: var(--fg-muted);
-        background: rgba(0, 0, 0, 0.5);
-        padding: 1px 4px;
-        border-radius: 2px;
         line-height: 1;
     }
 
     .frame-duration-badge {
         position: absolute;
-        bottom: 2px;
-        right: 2px;
-        font-size: 9px;
+        bottom: 4px;
+        right: 4px;
+        font-size: 10px;
+        font-weight: 500;
         color: var(--fg-primary);
-        background: rgba(0, 0, 0, 0.6);
-        padding: 1px 4px;
-        border-radius: 2px;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 2px 6px;
+        border-radius: var(--radius-sm);
         line-height: 1;
         cursor: pointer;
-        transition: background 0.15s;
+        transition: background 0.15s, transform 0.15s;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
     }
 
     .frame-duration-badge:hover {
-        background: rgba(0, 0, 0, 0.8);
+        background: var(--accent);
+        transform: scale(1.05);
     }
 
     .duration-editor {
-        width: 32px;
+        width: 36px;
         background: transparent;
         border: none;
         color: var(--fg-primary);
-        font-size: 9px;
+        font-size: 10px;
         font-family: var(--font-mono);
         text-align: center;
         padding: 0;
@@ -955,33 +947,32 @@ const timelineStyles = createSheet(`
 
     .frame-event-badge {
         position: absolute;
-        top: 2px;
-        right: 2px;
-        font-size: 10px;
-        color: var(--status-warning, #ffc107);
-        background: rgba(0, 0, 0, 0.6);
-        padding: 1px 3px;
-        border-radius: 2px;
-        line-height: 1;
+        top: 5px;
+        left: 18px;
+        width: 6px;
+        height: 6px;
+        background: var(--status-warning, #ffc107);
+        border-radius: 50%;
         cursor: help;
     }
 
     .frame-delete {
         position: absolute;
-        top: -6px;
-        right: -6px;
-        width: 16px;
-        height: 16px;
+        top: -8px;
+        right: -8px;
+        width: 22px;
+        height: 22px;
         padding: 0;
         border: none;
         background: var(--bg-secondary);
         color: var(--fg-muted);
-        font-size: 12px;
-        line-height: 16px;
+        font-size: 14px;
+        line-height: 22px;
         border-radius: 50%;
         cursor: pointer;
         opacity: 0;
-        transition: opacity 0.15s, color 0.15s, background 0.15s;
+        transition: opacity 0.15s, color 0.15s, background 0.15s, transform 0.15s;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .frame:hover .frame-delete {
@@ -989,21 +980,23 @@ const timelineStyles = createSheet(`
     }
 
     .frame-delete:hover {
-        background: var(--bg-hover);
-        color: var(--fg-primary);
+        background: var(--status-error);
+        color: white;
+        transform: scale(1.1);
     }
 
     .drop-indicator {
         position: absolute;
-        top: 4px;
-        bottom: 4px;
-        width: 2px;
+        top: var(--spacing-sm);
+        bottom: var(--spacing-sm);
+        width: 3px;
         background: var(--accent);
-        border-radius: 1px;
+        border-radius: 2px;
         opacity: 0;
         pointer-events: none;
-        transition: opacity 0.1s, left 0.1s;
+        transition: opacity 0.15s, left 0.15s;
         z-index: 10;
+        box-shadow: 0 0 8px var(--accent);
     }
 
     .drop-indicator.visible {
@@ -1012,26 +1005,27 @@ const timelineStyles = createSheet(`
 
     .drop-label {
         position: absolute;
-        top: -14px;
+        top: -18px;
         left: 50%;
         transform: translateX(-50%);
         background: var(--accent);
         color: var(--bg-primary);
-        font-size: 9px;
-        font-weight: 500;
-        padding: 1px 5px;
-        border-radius: 3px;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: var(--radius-sm);
         white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .drop-indicator[data-mode="insert"] .drop-label::before {
         content: '+';
-        margin-right: 2px;
+        margin-right: 3px;
     }
 
     .drop-indicator[data-mode="move"] .drop-label::before {
         content: '→';
-        margin-right: 2px;
+        margin-right: 3px;
     }
 
     .hidden {

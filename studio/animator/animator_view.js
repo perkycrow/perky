@@ -125,37 +125,49 @@ const animatorStyles = createSheet(`
     }
 
 
-    .spritesheet-panel {
+    .spritesheet-drawer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 280px;
         background: var(--bg-secondary);
-        border-radius: var(--radius-lg);
-        width: 80vw;
-        max-width: 600px;
-        height: 70vh;
-        max-height: 600px;
+        border-right: 1px solid var(--border);
         display: flex;
         flex-direction: column;
-        overflow: hidden;
-        box-shadow: var(--shadow-lg);
+        transform: translateX(-100%);
+        transition: transform 0.25s ease-out;
+        z-index: 100;
+    }
+
+    .spritesheet-drawer.open {
+        transform: translateX(0);
     }
 
     .spritesheet-header {
         display: flex;
         align-items: center;
-        gap: var(--spacing-lg);
-        padding: var(--spacing-lg) var(--spacing-xl);
+        justify-content: space-between;
+        padding: var(--spacing-md) var(--spacing-lg);
         background: var(--bg-tertiary);
         flex-shrink: 0;
     }
 
+    .spritesheet-title {
+        font-size: var(--font-size-md);
+        font-weight: 500;
+        color: var(--fg-primary);
+    }
+
     .spritesheet-close {
         appearance: none;
-        background: var(--bg-hover);
+        background: transparent;
         border: none;
         color: var(--fg-secondary);
-        width: var(--touch-target);
-        height: var(--touch-target);
+        width: 32px;
+        height: 32px;
         border-radius: var(--radius-md);
-        font-size: 18px;
+        font-size: 16px;
         cursor: pointer;
         transition: background var(--transition-fast), color var(--transition-fast);
         display: flex;
@@ -164,22 +176,16 @@ const animatorStyles = createSheet(`
     }
 
     .spritesheet-close:hover {
-        background: var(--bg-selected);
-        color: var(--fg-primary);
-    }
-
-    .spritesheet-title {
-        font-size: var(--font-size-lg);
-        font-weight: 500;
+        background: var(--bg-hover);
         color: var(--fg-primary);
     }
 
     .spritesheet-content {
         flex: 1;
-        width: 100%;
         min-height: 0;
-        padding: var(--spacing-lg);
+        padding: var(--spacing-md);
         box-sizing: border-box;
+        overflow: hidden;
     }
 `)
 
@@ -197,7 +203,7 @@ export default class AnimatorView extends BaseEditorComponent {
     #containerEl = null
     #previewEl = null
     #timelineEl = null
-    #overlayEl = null
+    #drawerEl = null
     #spritesheetEl = null
 
     connectedCallback () {
@@ -279,22 +285,13 @@ export default class AnimatorView extends BaseEditorComponent {
         this.#containerEl.className = 'animator-container'
         this.#appLayout.appendChild(this.#containerEl)
 
-
-        this.#overlayEl = document.createElement('editor-overlay')
-        this.#overlayEl.setAttribute('slot', 'overlay')
-        this.#appLayout.appendChild(this.#overlayEl)
-
         this.shadowRoot.appendChild(this.#appLayout)
     }
 
 
     #render () {
 
-        this.#appLayout.querySelectorAll('[slot]').forEach(el => {
-            if (el !== this.#overlayEl) {
-                el.remove()
-            }
-        })
+        this.#appLayout.querySelectorAll('[slot]').forEach(el => el.remove())
         this.#containerEl.innerHTML = ''
 
         if (!this.#animator) {
@@ -321,7 +318,7 @@ export default class AnimatorView extends BaseEditorComponent {
         this.#buildFooterControls()
 
 
-        this.#buildSpritesheetOverlay()
+        this.#buildSpritesheetDrawer()
     }
 
 
@@ -436,7 +433,7 @@ export default class AnimatorView extends BaseEditorComponent {
         addBtn.className = 'toolbar-btn toolbar-btn-primary'
         addBtn.innerHTML = '+'
         addBtn.title = 'Add frames from spritesheet'
-        addBtn.addEventListener('click', () => this.#openSpritesheetOverlay())
+        addBtn.addEventListener('click', () => this.#toggleDrawer())
 
         footerStart.appendChild(addBtn)
         this.#appLayout.appendChild(footerStart)
@@ -456,28 +453,24 @@ export default class AnimatorView extends BaseEditorComponent {
     }
 
 
-    #buildSpritesheetOverlay () {
-        this.#overlayEl.innerHTML = ''
-
-        const panel = document.createElement('div')
-        panel.className = 'spritesheet-panel'
-
+    #buildSpritesheetDrawer () {
+        this.#drawerEl = document.createElement('div')
+        this.#drawerEl.className = 'spritesheet-drawer'
 
         const header = document.createElement('div')
         header.className = 'spritesheet-header'
 
+        const title = document.createElement('span')
+        title.className = 'spritesheet-title'
+        title.textContent = 'Frames'
+
         const closeBtn = document.createElement('button')
         closeBtn.className = 'spritesheet-close'
         closeBtn.innerHTML = '✕'
-        closeBtn.addEventListener('click', () => this.#closeSpritesheetOverlay())
+        closeBtn.addEventListener('click', () => this.#closeDrawer())
 
-        const title = document.createElement('span')
-        title.className = 'spritesheet-title'
-        title.textContent = 'Add Frames'
-
-        header.appendChild(closeBtn)
         header.appendChild(title)
-
+        header.appendChild(closeBtn)
 
         this.#spritesheetEl = document.createElement('spritesheet-viewer')
         this.#spritesheetEl.className = 'spritesheet-content'
@@ -485,27 +478,28 @@ export default class AnimatorView extends BaseEditorComponent {
             this.#spritesheetEl.setSpritesheet(this.#spritesheet)
         }
 
-
         this.#spritesheetEl.addEventListener('frameclick', (e) => {
             this.#addFrameToTimeline(e.detail)
         })
 
-        panel.appendChild(header)
-        panel.appendChild(this.#spritesheetEl)
-        this.#overlayEl.appendChild(panel)
-
-
-        this.#overlayEl.addEventListener('close', () => this.#closeSpritesheetOverlay())
+        this.#drawerEl.appendChild(header)
+        this.#drawerEl.appendChild(this.#spritesheetEl)
+        this.#containerEl.appendChild(this.#drawerEl)
     }
 
 
-    #openSpritesheetOverlay () {
-        this.#overlayEl.open()
+    #openDrawer () {
+        this.#drawerEl?.classList.add('open')
     }
 
 
-    #closeSpritesheetOverlay () {
-        this.#overlayEl.close()
+    #closeDrawer () {
+        this.#drawerEl?.classList.remove('open')
+    }
+
+
+    #toggleDrawer () {
+        this.#drawerEl?.classList.toggle('open')
     }
 
 
