@@ -466,7 +466,7 @@ export default class AnimatorView extends BaseEditorComponent {
     #drawerMode = null
     #headerAnimSelect = null
     #drawerAnimSelect = null
-    #anchor = {x: 0.5, y: 0}
+    #anchor = {x: 0.5, y: 0.5}
 
     connectedCallback () {
         this.#buildDOM()
@@ -1080,14 +1080,14 @@ export default class AnimatorView extends BaseEditorComponent {
         speedSlider.setAttribute('context', 'studio')
         speedSlider.setAttribute('no-value', '')
         speedSlider.setAttribute('no-label', '')
-        speedSlider.setValue(motion.speed ?? 1)
+        speedSlider.setValue(motion.referenceSpeed ?? 1)
         speedSlider.setMin(0)
         speedSlider.setMax(10)
         speedSlider.setStep(0.1)
 
         const speedInput = document.createElement('number-input')
         speedInput.setAttribute('context', 'studio')
-        speedInput.setValue(motion.speed ?? 1)
+        speedInput.setValue(motion.referenceSpeed ?? 1)
         speedInput.setStep(0.1)
         speedInput.setPrecision(1)
         speedInput.setMin(0)
@@ -1097,7 +1097,7 @@ export default class AnimatorView extends BaseEditorComponent {
             if (!anim.motion) {
                 anim.motion = {}
             }
-            anim.motion.speed = value
+            anim.motion.referenceSpeed = value
             this.#previewEl?.updateMotion(anim.motion)
         }
 
@@ -1579,11 +1579,8 @@ export default class AnimatorView extends BaseEditorComponent {
 
         const lines = []
 
-        if (this.#anchor.x !== 0.5 || this.#anchor.y !== 0) {
-            lines.push(`static anchor = {x: ${this.#anchor.x}, y: ${this.#anchor.y}}`)
-            lines.push('')
-        }
-
+        lines.push(`static anchor = {x: ${this.#anchor.x}, y: ${this.#anchor.y}}`)
+        lines.push('')
         lines.push(`static animations = ${JSON.stringify(animations, null, 4)}`)
 
         navigator.clipboard.writeText(lines.join('\n'))
@@ -1604,7 +1601,7 @@ export default class AnimatorView extends BaseEditorComponent {
             config.motion = {
                 mode: anim.motion.mode || 'sidescroller',
                 direction: anim.motion.direction || 'e',
-                speed: anim.motion.speed ?? 1
+                referenceSpeed: anim.motion.referenceSpeed ?? 1
             }
         }
 

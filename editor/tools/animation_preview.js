@@ -380,7 +380,7 @@ export default class AnimationPreview extends BaseEditorComponent {
             return
         }
 
-        const speed = (this.#motion.speed ?? 1) * 50
+        const speed = (this.#motion.referenceSpeed ?? 1) * 50
         const direction = this.#getSceneryDirection()
         this.#sceneryOffset += speed * deltaTime * direction
         this.#renderScenery()
