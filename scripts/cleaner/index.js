@@ -3,6 +3,7 @@ import WhitespaceAuditor from './auditors/whitespace.js'
 import ImportsAuditor from './auditors/imports.js'
 import ConsoleAuditor from './auditors/console.js'
 import PrivacyAuditor from './auditors/privacy.js'
+import StyleElementAuditor from './auditors/style_elements.js'
 
 import EslintErrorsAuditor from './auditors/eslint/errors.js'
 import DirectivesAuditor from './auditors/eslint/directives.js'
@@ -33,6 +34,7 @@ const AUDIT_AUDITORS = [
     CommentsAuditor,
     ImportsAuditor,
     ConsoleAuditor,
+    StyleElementAuditor,
     DirectivesAuditor,
     EslintErrorsAuditor,
     DisablesAuditor,
