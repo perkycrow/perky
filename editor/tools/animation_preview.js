@@ -439,7 +439,7 @@ export default class AnimationPreview extends BaseEditorComponent {
         ctx.fillStyle = 'rgba(100, 120, 140, 0.08)'
         ctx.fillRect(0, groundY, width, height - groundY)
 
-        const unitSize = 20
+        const unitSize = spriteSize.width * 0.2
 
         ctx.strokeStyle = 'rgba(150, 170, 190, 0.08)'
         ctx.lineWidth = 1
@@ -474,15 +474,15 @@ export default class AnimationPreview extends BaseEditorComponent {
 
             let poleHeight
             if (unit % 10 === 0) {
-                poleHeight = 40
+                poleHeight = unitSize * 2
                 ctx.strokeStyle = 'rgba(150, 170, 190, 0.2)'
                 ctx.lineWidth = 2
             } else if (unit % 5 === 0) {
-                poleHeight = 25
+                poleHeight = unitSize * 1.25
                 ctx.strokeStyle = 'rgba(150, 170, 190, 0.15)'
                 ctx.lineWidth = 1.5
             } else {
-                poleHeight = 12
+                poleHeight = unitSize * 0.6
                 ctx.strokeStyle = 'rgba(150, 170, 190, 0.1)'
                 ctx.lineWidth = 1
             }
@@ -502,15 +502,18 @@ export default class AnimationPreview extends BaseEditorComponent {
 
         const buildings = []
 
-        const worldLeft = -this.#sceneryOffset - width
-        const worldRight = -this.#sceneryOffset + width * 2
+        const minDepth = 0.3
+        const maxDepth = 1.0
 
-        const startSlot = Math.floor(worldLeft / gridSize) - 1
-        const endSlot = Math.ceil(worldRight / gridSize) + 1
+        const worldLeftSlow = -this.#sceneryOffset * minDepth - width
+        const worldRightFast = -this.#sceneryOffset * maxDepth + width * 2
+
+        const startSlot = Math.floor(Math.min(worldLeftSlow, worldRightFast) / gridSize) - 2
+        const endSlot = Math.ceil(Math.max(worldLeftSlow, worldRightFast) / gridSize) + 2
 
         for (let slot = startSlot; slot <= endSlot; slot++) {
             const depthNoise = this.#noise.perlin2d(slot * 1.2, 0)
-            const depth = 0.3 + (depthNoise + 1) * 0.35
+            const depth = minDepth + (depthNoise + 1) * 0.35
 
             const offsetNoise = this.#noise.perlin2d(slot * 1.7, 100)
             const baseX = slot * gridSize + offsetNoise * gridSize * 0.4
@@ -522,8 +525,7 @@ export default class AnimationPreview extends BaseEditorComponent {
             const buildingHeight = baseHeight * (0.4 + (heightNoise + 1) * 0.4) * scale
             const buildingWidth = baseWidth * (0.3 + (widthNoise + 1) * 0.35) * scale
 
-            const layerOffset = this.#sceneryOffset * depth
-            const screenX = baseX + layerOffset
+            const screenX = baseX + this.#sceneryOffset * depth
 
             if (screenX + buildingWidth / 2 > 0 && screenX - buildingWidth / 2 < width) {
                 const color = new Color('#1a1a1e').lighten(depth * 8)
