@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach} from 'vitest'
+import {describe, test, expect, beforeEach} from 'vitest'
 import './tab_bar.js'
 
 
@@ -12,12 +12,12 @@ describe('TabBar', () => {
     })
 
 
-    it('creates component with shadow DOM', () => {
+    test('creates component with shadow DOM', () => {
         expect(tabBar.shadowRoot).toBeTruthy()
     })
 
 
-    it('sets tabs programmatically', () => {
+    test('sets tabs programmatically', () => {
         tabBar.setTabs([
             {value: 'a', label: 'Tab A'},
             {value: 'b', label: 'Tab B'}
@@ -30,7 +30,7 @@ describe('TabBar', () => {
     })
 
 
-    it('sets value via property', () => {
+    test('sets value via property', () => {
         tabBar.setTabs([
             {value: 'a', label: 'Tab A'},
             {value: 'b', label: 'Tab B'}
@@ -42,7 +42,7 @@ describe('TabBar', () => {
     })
 
 
-    it('sets value via attribute', () => {
+    test('sets value via attribute', () => {
         tabBar.setTabs([
             {value: 'a', label: 'Tab A'},
             {value: 'b', label: 'Tab B'}
@@ -53,7 +53,7 @@ describe('TabBar', () => {
     })
 
 
-    it('marks active tab', () => {
+    test('marks active tab', () => {
         tabBar.setTabs([
             {value: 'a', label: 'Tab A'},
             {value: 'b', label: 'Tab B'}
@@ -66,7 +66,7 @@ describe('TabBar', () => {
     })
 
 
-    it('emits change event when tab is clicked', () => {
+    test('emits change event when tab is clicked', () => {
         tabBar.setTabs([
             {value: 'a', label: 'Tab A'},
             {value: 'b', label: 'Tab B'}
@@ -86,7 +86,7 @@ describe('TabBar', () => {
     })
 
 
-    it('does not emit change when clicking active tab', () => {
+    test('does not emit change when clicking active tab', () => {
         tabBar.setTabs([
             {value: 'a', label: 'Tab A'},
             {value: 'b', label: 'Tab B'}
@@ -105,7 +105,7 @@ describe('TabBar', () => {
     })
 
 
-    it('has slot for custom tab content', () => {
+    test('has slot for custom tab content', () => {
         const slot = tabBar.shadowRoot.querySelector('slot[name="tab"]')
         expect(slot).toBeTruthy()
     })

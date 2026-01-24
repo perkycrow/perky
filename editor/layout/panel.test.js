@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach} from 'vitest'
+import {describe, test, expect, beforeEach} from 'vitest'
 import './panel.js'
 
 
@@ -12,12 +12,12 @@ describe('Panel', () => {
     })
 
 
-    it('creates component with shadow DOM', () => {
+    test('creates component with shadow DOM', () => {
         expect(panel.shadowRoot).toBeTruthy()
     })
 
 
-    it('has header and content elements', () => {
+    test('has header and content elements', () => {
         const header = panel.shadowRoot.querySelector('.panel-header')
         const content = panel.shadowRoot.querySelector('.panel-content')
 
@@ -26,21 +26,21 @@ describe('Panel', () => {
     })
 
 
-    it('sets title via property', () => {
+    test('sets title via property', () => {
         panel.title = 'Test Panel'
         const titleEl = panel.shadowRoot.querySelector('.panel-title')
         expect(titleEl.textContent).toBe('Test Panel')
     })
 
 
-    it('sets title via attribute', () => {
+    test('sets title via attribute', () => {
         panel.setAttribute('title', 'Attribute Title')
         const titleEl = panel.shadowRoot.querySelector('.panel-title')
         expect(titleEl.textContent).toBe('Attribute Title')
     })
 
 
-    it('toggles collapsed state', () => {
+    test('toggles collapsed state', () => {
         expect(panel.collapsed).toBe(false)
 
         panel.toggle()
@@ -53,7 +53,7 @@ describe('Panel', () => {
     })
 
 
-    it('sets collapsed via property', () => {
+    test('sets collapsed via property', () => {
         panel.collapsed = true
         expect(panel.hasAttribute('collapsed')).toBe(true)
 
@@ -62,7 +62,7 @@ describe('Panel', () => {
     })
 
 
-    it('sets floating via property', () => {
+    test('sets floating via property', () => {
         expect(panel.floating).toBe(false)
 
         panel.floating = true
@@ -74,7 +74,7 @@ describe('Panel', () => {
     })
 
 
-    it('emits close event when close button is clicked', () => {
+    test('emits close event when close button is clicked', () => {
         let eventFired = false
         panel.addEventListener('close', () => {
             eventFired = true
@@ -88,7 +88,7 @@ describe('Panel', () => {
     })
 
 
-    it('toggles when collapse button is clicked', () => {
+    test('toggles when collapse button is clicked', () => {
         const collapseBtn = panel.shadowRoot.querySelector('.panel-btn')
         expect(panel.collapsed).toBe(false)
 
@@ -100,7 +100,7 @@ describe('Panel', () => {
     })
 
 
-    it('updates collapse icon based on state', () => {
+    test('updates collapse icon based on state', () => {
         const collapseBtn = panel.shadowRoot.querySelector('.panel-btn')
 
         expect(collapseBtn.innerHTML).toBe('−')
@@ -113,7 +113,7 @@ describe('Panel', () => {
     })
 
 
-    it('has default slot for content', () => {
+    test('has default slot for content', () => {
         const slot = panel.shadowRoot.querySelector('.panel-content slot')
         expect(slot).toBeTruthy()
     })

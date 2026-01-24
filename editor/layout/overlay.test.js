@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach} from 'vitest'
+import {describe, test, expect, beforeEach} from 'vitest'
 import './overlay.js'
 
 
@@ -12,25 +12,25 @@ describe('Overlay', () => {
     })
 
 
-    it('creates component with shadow DOM', () => {
+    test('creates component with shadow DOM', () => {
         expect(overlay.shadowRoot).toBeTruthy()
     })
 
 
-    it('is closed by default', () => {
+    test('is closed by default', () => {
         expect(overlay.isOpen).toBe(false)
         expect(overlay.hasAttribute('open')).toBe(false)
     })
 
 
-    it('opens with open() method', () => {
+    test('opens with open() method', () => {
         overlay.open()
         expect(overlay.isOpen).toBe(true)
         expect(overlay.hasAttribute('open')).toBe(true)
     })
 
 
-    it('closes with close() method', () => {
+    test('closes with close() method', () => {
         overlay.open()
         overlay.close()
         expect(overlay.isOpen).toBe(false)
@@ -38,7 +38,7 @@ describe('Overlay', () => {
     })
 
 
-    it('toggles with toggle() method', () => {
+    test('toggles with toggle() method', () => {
         expect(overlay.isOpen).toBe(false)
 
         overlay.toggle()
@@ -49,7 +49,7 @@ describe('Overlay', () => {
     })
 
 
-    it('emits open event', () => {
+    test('emits open event', () => {
         let eventFired = false
         overlay.addEventListener('open', () => {
             eventFired = true
@@ -60,7 +60,7 @@ describe('Overlay', () => {
     })
 
 
-    it('emits close event', () => {
+    test('emits close event', () => {
         let eventFired = false
         overlay.addEventListener('close', () => {
             eventFired = true
@@ -72,7 +72,7 @@ describe('Overlay', () => {
     })
 
 
-    it('does not emit open event if already open', () => {
+    test('does not emit open event if already open', () => {
         overlay.open()
 
         let eventCount = 0
@@ -85,7 +85,7 @@ describe('Overlay', () => {
     })
 
 
-    it('does not emit close event if already closed', () => {
+    test('does not emit close event if already closed', () => {
         let eventCount = 0
         overlay.addEventListener('close', () => {
             eventCount++
@@ -96,25 +96,25 @@ describe('Overlay', () => {
     })
 
 
-    it('has backdrop element', () => {
+    test('has backdrop element', () => {
         const backdrop = overlay.shadowRoot.querySelector('.backdrop')
         expect(backdrop).toBeTruthy()
     })
 
 
-    it('has container element', () => {
+    test('has container element', () => {
         const container = overlay.shadowRoot.querySelector('.container')
         expect(container).toBeTruthy()
     })
 
 
-    it('has default slot for content', () => {
+    test('has default slot for content', () => {
         const slot = overlay.shadowRoot.querySelector('slot')
         expect(slot).toBeTruthy()
     })
 
 
-    it('closes on backdrop click by default', () => {
+    test('closes on backdrop click by default', () => {
         overlay.open()
 
         const backdrop = overlay.shadowRoot.querySelector('.backdrop')
@@ -124,7 +124,7 @@ describe('Overlay', () => {
     })
 
 
-    it('does not close on backdrop click with no-close-on-backdrop', () => {
+    test('does not close on backdrop click with no-close-on-backdrop', () => {
         overlay.setAttribute('no-close-on-backdrop', '')
         overlay.open()
 

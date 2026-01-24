@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeEach} from 'vitest'
+import {describe, test, expect, beforeEach} from 'vitest'
 import './app_layout.js'
 
 
@@ -12,12 +12,12 @@ describe('AppLayout', () => {
     })
 
 
-    it('creates component with shadow DOM', () => {
+    test('creates component with shadow DOM', () => {
         expect(layout.shadowRoot).toBeTruthy()
     })
 
 
-    it('has default structure with header, content, and footer', () => {
+    test('has default structure with header, content, and footer', () => {
         const header = layout.shadowRoot.querySelector('.header')
         const content = layout.shadowRoot.querySelector('.content')
         const footer = layout.shadowRoot.querySelector('.footer')
@@ -28,21 +28,21 @@ describe('AppLayout', () => {
     })
 
 
-    it('sets title via property', () => {
+    test('sets title via property', () => {
         layout.title = 'Test App'
         const titleEl = layout.shadowRoot.querySelector('.title')
         expect(titleEl.textContent).toBe('Test App')
     })
 
 
-    it('sets title via attribute', () => {
+    test('sets title via attribute', () => {
         layout.setAttribute('title', 'Attribute Title')
         const titleEl = layout.shadowRoot.querySelector('.title')
         expect(titleEl.textContent).toBe('Attribute Title')
     })
 
 
-    it('hides header when no-header attribute is set', () => {
+    test('hides header when no-header attribute is set', () => {
         layout.setAttribute('no-header', '')
         const header = layout.shadowRoot.querySelector('.header')
         const computedDisplay = window.getComputedStyle(header).display
@@ -50,13 +50,13 @@ describe('AppLayout', () => {
     })
 
 
-    it('hides footer when no-footer attribute is set', () => {
+    test('hides footer when no-footer attribute is set', () => {
         layout.setAttribute('no-footer', '')
         expect(layout.hasAttribute('no-footer')).toBe(true)
     })
 
 
-    it('emits menu event when menu button is clicked', () => {
+    test('emits menu event when menu button is clicked', () => {
         let eventFired = false
         layout.addEventListener('menu', () => {
             eventFired = true
@@ -69,7 +69,7 @@ describe('AppLayout', () => {
     })
 
 
-    it('emits close event when close button is clicked', () => {
+    test('emits close event when close button is clicked', () => {
         let eventFired = false
         layout.addEventListener('close', () => {
             eventFired = true
@@ -82,33 +82,33 @@ describe('AppLayout', () => {
     })
 
 
-    it('hides menu button when no-menu attribute is set', () => {
+    test('hides menu button when no-menu attribute is set', () => {
         layout.setAttribute('no-menu', '')
         const menuBtn = layout.shadowRoot.querySelector('.menu-btn')
         expect(menuBtn.classList.contains('hidden')).toBe(true)
     })
 
 
-    it('hides close button when no-close attribute is set', () => {
+    test('hides close button when no-close attribute is set', () => {
         layout.setAttribute('no-close', '')
         const closeBtn = layout.shadowRoot.querySelector('.close-btn')
         expect(closeBtn.classList.contains('hidden')).toBe(true)
     })
 
 
-    it('shows menu button by default', () => {
+    test('shows menu button by default', () => {
         const menuBtn = layout.shadowRoot.querySelector('.menu-btn')
         expect(menuBtn.classList.contains('hidden')).toBe(false)
     })
 
 
-    it('shows close button by default', () => {
+    test('shows close button by default', () => {
         const closeBtn = layout.shadowRoot.querySelector('.close-btn')
         expect(closeBtn.classList.contains('hidden')).toBe(false)
     })
 
 
-    it('has slots for header customization', () => {
+    test('has slots for header customization', () => {
         const headerStart = layout.shadowRoot.querySelector('slot[name="header-start"]')
         const headerCenter = layout.shadowRoot.querySelector('slot[name="header-center"]')
         const headerEnd = layout.shadowRoot.querySelector('slot[name="header-end"]')
@@ -119,7 +119,7 @@ describe('AppLayout', () => {
     })
 
 
-    it('has slots for footer customization', () => {
+    test('has slots for footer customization', () => {
         const footerStart = layout.shadowRoot.querySelector('slot[name="footer-start"]')
         const footerCenter = layout.shadowRoot.querySelector('slot[name="footer-center"]')
         const footerEnd = layout.shadowRoot.querySelector('slot[name="footer-end"]')
@@ -130,25 +130,25 @@ describe('AppLayout', () => {
     })
 
 
-    it('has default slot for main content', () => {
+    test('has default slot for main content', () => {
         const defaultSlot = layout.shadowRoot.querySelector('.content slot:not([name])')
         expect(defaultSlot).toBeTruthy()
     })
 
 
-    it('has overlay slot for modals', () => {
+    test('has overlay slot for modals', () => {
         const overlaySlot = layout.shadowRoot.querySelector('slot[name="overlay"]')
         expect(overlaySlot).toBeTruthy()
     })
 
 
-    it('gets title via getter', () => {
+    test('gets title via getter', () => {
         layout.setAttribute('title', 'My Title')
         expect(layout.title).toBe('My Title')
     })
 
 
-    it('sets title via setTitle method', () => {
+    test('sets title via setTitle method', () => {
         layout.setTitle('Method Title')
         expect(layout.title).toBe('Method Title')
     })
