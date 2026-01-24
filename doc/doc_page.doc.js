@@ -148,7 +148,7 @@ export default doc('Doc Page', {advanced: true}, () => {
 
         text(`
             The component uses Shadow DOM with scoped styles.
-            Styles are defined in doc_page_styles.js.
+            Styles are defined in doc_page.styles.js.
         `)
 
         see('Doc Runtime', {section: 'Container Presets'})

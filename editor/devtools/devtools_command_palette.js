@@ -1,5 +1,5 @@
 import BaseEditorComponent from '../base_editor_component.js'
-import {buildCommandPaletteStyles} from './devtools_styles.js'
+import {buildCommandPaletteStyles} from './devtools.styles.js'
 import {getAllTools} from './devtools_registry.js'
 import {parseCommand} from './command_parser.js'
 import {ICONS} from './devtools_icons.js'

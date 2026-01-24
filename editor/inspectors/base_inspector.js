@@ -1,5 +1,5 @@
 import BaseEditorComponent from '../base_editor_component.js'
-import {cssVariables, inspectorStyles} from '../perky_explorer_styles.js'
+import {cssVariables, inspectorStyles} from '../perky_explorer.styles.js'
 
 
 export default class BaseInspector extends BaseEditorComponent {

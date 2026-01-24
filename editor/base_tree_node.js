@@ -1,5 +1,5 @@
 import BaseEditorComponent from './base_editor_component.js'
-import {nodeStyles, cssVariables} from './perky_explorer_styles.js'
+import {nodeStyles, cssVariables} from './perky_explorer.styles.js'
 
 
 export default class BaseTreeNode extends BaseEditorComponent {

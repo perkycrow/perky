@@ -1,5 +1,5 @@
 import BaseEditorComponent from '../base_editor_component.js'
-import {buildSidebarStyles} from './devtools_styles.js'
+import {buildSidebarStyles} from './devtools.styles.js'
 import {getTool} from './devtools_registry.js'
 import logger from '../../core/logger.js'
 

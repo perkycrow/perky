@@ -1,5 +1,5 @@
 import BaseEditorComponent from './base_editor_component.js'
-import {detailsStyles, cssVariables} from './perky_explorer_styles.js'
+import {detailsStyles, cssVariables} from './perky_explorer.styles.js'
 
 
 const inspectorRegistry = new Set()

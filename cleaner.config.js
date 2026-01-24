@@ -7,7 +7,8 @@ export default {
         ],
         excludeFiles: [
             '**/test_helpers.js',
-            '**/setup_tests.js'
+            '**/setup_tests.js',
+            '*.styles.js'
         ]
     },
     missingDocs: {

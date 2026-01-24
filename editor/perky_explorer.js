@@ -1,5 +1,5 @@
 import BaseEditorComponent from './base_editor_component.js'
-import {explorerStyles} from './perky_explorer_styles.js'
+import {explorerStyles} from './perky_explorer.styles.js'
 import './perky_explorer_node.js'
 import './scene_tree_sidebar.js'
 import './inspectors/index.js'

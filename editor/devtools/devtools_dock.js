@@ -1,5 +1,5 @@
 import BaseEditorComponent from '../base_editor_component.js'
-import {buildDockStyles} from './devtools_styles.js'
+import {buildDockStyles} from './devtools.styles.js'
 import {getSidebarTools} from './devtools_registry.js'
 import {ICONS} from './devtools_icons.js'
 
