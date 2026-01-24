@@ -9,6 +9,7 @@ import Object2D from '../../render/object_2d.js'
 export default class AnimationPreview extends BaseEditorComponent {
 
     #canvas = null
+    #previewArea = null
     #renderer = null
     #scene = null
     #sprite = null
@@ -16,9 +17,15 @@ export default class AnimationPreview extends BaseEditorComponent {
     #animationFrameId = null
     #lastTime = 0
     #isPlaying = false
+    #resizeObserver = null
 
     connectedCallback () {
         this.#buildDOM()
+
+        if (this.#animation) {
+            this.#updateSprite()
+            this.#render()
+        }
     }
 
 
@@ -27,6 +34,10 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#renderer = null
         this.#scene = null
         this.#sprite = null
+        if (this.#resizeObserver) {
+            this.#resizeObserver.disconnect()
+            this.#resizeObserver = null
+        }
     }
 
 
@@ -38,15 +49,15 @@ export default class AnimationPreview extends BaseEditorComponent {
         const container = document.createElement('div')
         container.className = 'preview-container'
 
-        const previewArea = document.createElement('div')
-        previewArea.className = 'preview-area'
+        this.#previewArea = document.createElement('div')
+        this.#previewArea.className = 'preview-area'
 
         this.#canvas = document.createElement('canvas')
         this.#canvas.className = 'preview-canvas'
         this.#canvas.width = 256
         this.#canvas.height = 256
-        previewArea.appendChild(this.#canvas)
-        container.appendChild(previewArea)
+        this.#previewArea.appendChild(this.#canvas)
+        container.appendChild(this.#previewArea)
 
         const controls = document.createElement('div')
         controls.className = 'preview-controls'
@@ -68,6 +79,7 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.shadowRoot.appendChild(container)
 
         this.#setupRenderer()
+        this.#setupResizeObserver()
     }
 
 
@@ -93,6 +105,11 @@ export default class AnimationPreview extends BaseEditorComponent {
     setAnimation (animation) {
         this.stop()
         this.#animation = animation
+
+        if (!this.#renderer && this.#canvas) {
+            this.#setupRenderer()
+        }
+
         this.#updateSprite()
         this.#render()
     }
@@ -106,25 +123,56 @@ export default class AnimationPreview extends BaseEditorComponent {
         const frame = this.#animation.currentFrame
         if (frame?.region) {
             this.#sprite.region = frame.region
-            this.#fitCamera(frame.region)
+            this.#fitToContainer(frame.region)
         }
     }
 
 
-    #fitCamera (region) {
-        if (!region || !this.#renderer) {
+    #setupResizeObserver () {
+        this.#resizeObserver = new ResizeObserver(() => {
+            this.#resizeCanvas()
+        })
+        this.#resizeObserver.observe(this.#previewArea)
+    }
+
+
+    #resizeCanvas () {
+        if (!this.#animation?.currentFrame?.region) {
+            return
+        }
+        this.#fitToContainer(this.#animation.currentFrame.region)
+        this.#render()
+    }
+
+
+    #fitToContainer (region) {
+        if (!region || !this.#renderer || !this.#previewArea) {
             return
         }
 
-        const canvasSize = 256
-        const padding = 16
+        const padding = 32
+        const paddingBottom = 80
+        const containerWidth = this.#previewArea.clientWidth - padding * 2
+        const containerHeight = this.#previewArea.clientHeight - padding - paddingBottom
 
-        const scaleX = (canvasSize - padding * 2) / region.width
-        const scaleY = (canvasSize - padding * 2) / region.height
-        const scale = Math.min(scaleX, scaleY)
+        if (containerWidth <= 0 || containerHeight <= 0) {
+            return
+        }
 
-        const unitsInView = canvasSize / scale
-        this.#renderer.camera.setUnitsInView({width: unitsInView, height: unitsInView})
+        const scaleX = containerWidth / region.width
+        const scaleY = containerHeight / region.height
+        const scale = Math.min(scaleX, scaleY, 1)
+
+        const canvasWidth = Math.max(1, Math.floor(region.width * scale))
+        const canvasHeight = Math.max(1, Math.floor(region.height * scale))
+
+        this.#renderer.displayWidth = canvasWidth
+        this.#renderer.displayHeight = canvasHeight
+        this.#renderer.applyPixelRatio()
+
+        this.#renderer.camera.viewportWidth = canvasWidth
+        this.#renderer.camera.viewportHeight = canvasHeight
+        this.#renderer.camera.setUnitsInView({width: region.width, height: region.height})
     }
 
 
