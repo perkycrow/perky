@@ -6,6 +6,7 @@ import Sprite from '../../render/sprite.js'
 import Object2D from '../../render/object_2d.js'
 import Noise from '../../math/noise.js'
 import Color from '../../math/color.js'
+import AnimatorPreview from '../../studio/animator/animator_preview.js'
 
 
 export default class AnimationPreview extends BaseEditorComponent {
@@ -36,6 +37,11 @@ export default class AnimationPreview extends BaseEditorComponent {
     #pinchStartDistance = null
     #pinchStartZoom = null
     #backgroundImage = null
+    #backgroundRegion = null
+    #unitsInView = null
+    #size = null
+    #gamePreview = null
+    #gamePreviewCanvas = null
 
     connectedCallback () {
         this.#buildDOM()
@@ -52,6 +58,8 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#renderer = null
         this.#scene = null
         this.#sprite = null
+        this.#gamePreview?.dispose()
+        this.#gamePreview = null
         if (this.#resizeObserver) {
             this.#resizeObserver.disconnect()
             this.#resizeObserver = null
@@ -74,6 +82,12 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#sceneryCanvas.className = 'scenery-canvas'
         this.#sceneryCtx = this.#sceneryCanvas.getContext('2d')
         this.#previewArea.appendChild(this.#sceneryCanvas)
+
+        this.#gamePreviewCanvas = document.createElement('canvas')
+        this.#gamePreviewCanvas.className = 'game-preview-canvas'
+        this.#gamePreviewCanvas.width = 256
+        this.#gamePreviewCanvas.height = 256
+        this.#previewArea.appendChild(this.#gamePreviewCanvas)
 
         this.#canvas = document.createElement('canvas')
         this.#canvas.className = 'preview-canvas'
@@ -147,13 +161,18 @@ export default class AnimationPreview extends BaseEditorComponent {
     }
 
 
+    get #hasMotion () {
+        return this.#motion?.enabled || this.#motion?.mode
+    }
+
+
     get #sceneryActive () {
-        return this.#sceneryEnabled && this.#motion?.enabled
+        return this.#sceneryEnabled && this.#hasMotion
     }
 
 
     #toggleScenery () {
-        if (!this.#motion?.enabled) {
+        if (!this.#hasMotion) {
             return
         }
 
@@ -169,22 +188,25 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#sceneryOffset = 0
         this.#spriteOffset = 0
 
-        if (!motion?.enabled) {
+        if (!this.#hasMotion) {
             this.#sceneryEnabled = false
         }
 
+        this.#gamePreview?.setMotion(motion)
         this.#syncSceneryState()
     }
 
 
     updateMotion (motion) {
         this.#motion = motion
+        this.#gamePreview?.setMotion(motion)
         this.#syncSceneryState()
     }
 
 
     setAnchor (anchor) {
         this.#anchor = anchor || {x: 0.5, y: 0}
+        this.#gamePreview?.setAnchor(this.#anchor)
         if (this.#sceneryActive) {
             this.#renderScenery()
         }
@@ -199,11 +221,117 @@ export default class AnimationPreview extends BaseEditorComponent {
     }
 
 
+    setUnitsInView (unitsInView) {
+        this.#unitsInView = unitsInView
+        this.#updateGamePreviewConfig()
+        if (this.#sceneryActive) {
+            this.#fitToContainer(this.#animation?.currentFrame?.region)
+            this.#render()
+        }
+    }
+
+
+    setSize (size) {
+        this.#size = size
+        this.#updateGamePreviewConfig()
+    }
+
+
+    setBackgroundRegion (region) {
+        this.#backgroundRegion = region
+        this.#updateGamePreviewConfig()
+    }
+
+
+    get #useGamePreview () {
+        return this.#sceneryActive && this.#unitsInView && this.#backgroundRegion && this.#size
+    }
+
+
+    #updateGamePreviewConfig () {
+        if (!this.#gamePreviewCanvas) {
+            return
+        }
+
+        if (this.#useGamePreview && !this.#gamePreview) {
+            this.#createGamePreview()
+        }
+
+        if (this.#gamePreview) {
+            if (this.#unitsInView) {
+                this.#gamePreview.setUnitsInView(this.#unitsInView)
+            }
+            if (this.#backgroundRegion) {
+                this.#gamePreview.setBackgroundRegion(this.#backgroundRegion)
+            }
+            if (this.#size) {
+                this.#gamePreview.setSize(this.#size)
+            }
+            if (this.#anchor) {
+                this.#gamePreview.setAnchor(this.#anchor)
+            }
+            if (this.#motion) {
+                this.#gamePreview.setMotion(this.#motion)
+            }
+            if (this.#animation) {
+                this.#gamePreview.setAnimation(this.#animation)
+            }
+            this.#gamePreview.render()
+        }
+
+        this.#syncPreviewVisibility()
+    }
+
+
+    #createGamePreview () {
+        this.#gamePreview = new AnimatorPreview({
+            canvas: this.#gamePreviewCanvas,
+            unitsInView: this.#unitsInView,
+            onFrame: (index) => {
+                this.dispatchEvent(new CustomEvent('frame', {detail: {index}}))
+            },
+            onComplete: () => {
+                this.dispatchEvent(new CustomEvent('stop'))
+                this.#updatePlayButtonIcon(false)
+            }
+        })
+    }
+
+
+    #updatePlayButtonIcon (isPlaying) {
+        const playBtn = this.shadowRoot?.querySelector('.play-btn')
+        if (playBtn) {
+            playBtn.innerHTML = isPlaying ? ICONS.pause : ICONS.start
+        }
+    }
+
+
+    #syncPreviewVisibility () {
+        if (!this.#canvas || !this.#gamePreviewCanvas || !this.#sceneryCanvas) {
+            return
+        }
+
+        const useGame = this.#useGamePreview
+        this.#gamePreviewCanvas.style.display = useGame ? 'block' : 'none'
+        this.#canvas.style.display = useGame ? 'none' : ''
+        this.#sceneryCanvas.style.display = useGame ? 'none' : ''
+    }
+
+
     #syncSceneryState () {
         const sceneryBtn = this.shadowRoot.querySelector('.scenery-btn')
         if (sceneryBtn) {
-            sceneryBtn.classList.toggle('disabled', !this.#motion?.enabled)
+            sceneryBtn.classList.toggle('disabled', !this.#hasMotion)
             sceneryBtn.classList.toggle('active', this.#sceneryActive)
+        }
+
+        this.#updateGamePreviewConfig()
+        this.#syncPreviewVisibility()
+
+        if (this.#useGamePreview) {
+            this.#updateGamePreviewSize()
+            this.#syncZoomControls()
+            return
         }
 
         if (this.#sceneryActive) {
@@ -216,6 +344,23 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#syncZoomControls()
         this.#fitToContainer(this.#animation?.currentFrame?.region)
         this.#render()
+    }
+
+
+    #updateGamePreviewSize () {
+        if (!this.#gamePreviewCanvas || !this.#previewArea || !this.#gamePreview) {
+            return
+        }
+
+        const padding = 32
+        const paddingBottom = 80
+        const width = this.#previewArea.clientWidth - padding * 2
+        const height = this.#previewArea.clientHeight - padding - paddingBottom
+
+        if (width > 0 && height > 0) {
+            this.#gamePreview.resize(width, height)
+            this.#gamePreview.render()
+        }
     }
 
 
@@ -333,6 +478,7 @@ export default class AnimationPreview extends BaseEditorComponent {
             this.#setupRenderer()
         }
 
+        this.#gamePreview?.setAnimation(animation)
         this.#updateSprite()
         this.#render()
     }
@@ -363,6 +509,12 @@ export default class AnimationPreview extends BaseEditorComponent {
         if (!this.#animation?.currentFrame?.region) {
             return
         }
+
+        if (this.#useGamePreview) {
+            this.#updateGamePreviewSize()
+            return
+        }
+
         this.#fitToContainer(this.#animation.currentFrame.region)
         this.#updateSceneryCanvas()
         this.#render()
@@ -380,6 +532,21 @@ export default class AnimationPreview extends BaseEditorComponent {
         const containerHeight = this.#previewArea.clientHeight - padding - paddingBottom
 
         if (containerWidth <= 0 || containerHeight <= 0) {
+            return
+        }
+
+        if (this.#sceneryActive && this.#unitsInView) {
+            const pixelsPerUnit = containerHeight / this.#unitsInView.height
+            const canvasWidth = Math.max(1, Math.floor(region.width * pixelsPerUnit))
+            const canvasHeight = Math.max(1, Math.floor(region.height * pixelsPerUnit))
+
+            this.#renderer.displayWidth = canvasWidth
+            this.#renderer.displayHeight = canvasHeight
+            this.#renderer.applyPixelRatio()
+
+            this.#renderer.camera.viewportWidth = canvasWidth
+            this.#renderer.camera.viewportHeight = canvasHeight
+            this.#renderer.camera.setUnitsInView({width: region.width, height: region.height})
             return
         }
 
@@ -436,21 +603,29 @@ export default class AnimationPreview extends BaseEditorComponent {
             return
         }
 
+        if (this.#useGamePreview && this.#gamePreview) {
+            this.#gamePreview.play()
+            this.#isPlaying = true
+            this.#updatePlayButtonIcon(true)
+            this.dispatchEvent(new CustomEvent('play'))
+            return
+        }
+
         this.#isPlaying = true
         this.#animation.play()
         this.#lastTime = performance.now()
         this.#animationFrameId = requestAnimationFrame((t) => this.#loop(t))
 
-        const playBtn = this.shadowRoot.querySelector('.play-btn')
-        if (playBtn) {
-            playBtn.innerHTML = ICONS.pause
-        }
-
+        this.#updatePlayButtonIcon(true)
         this.dispatchEvent(new CustomEvent('play'))
     }
 
 
     pause () {
+        if (this.#useGamePreview && this.#gamePreview) {
+            this.#gamePreview.pause()
+        }
+
         this.#isPlaying = false
         this.#animation?.pause()
 
@@ -459,16 +634,20 @@ export default class AnimationPreview extends BaseEditorComponent {
             this.#animationFrameId = null
         }
 
-        const playBtn = this.shadowRoot.querySelector('.play-btn')
-        if (playBtn) {
-            playBtn.innerHTML = ICONS.start
-        }
-
+        this.#updatePlayButtonIcon(false)
         this.dispatchEvent(new CustomEvent('pause'))
     }
 
 
     stop () {
+        if (this.#useGamePreview && this.#gamePreview) {
+            this.#gamePreview.stop()
+            this.#isPlaying = false
+            this.#updatePlayButtonIcon(false)
+            this.dispatchEvent(new CustomEvent('stop'))
+            return
+        }
+
         this.pause()
         this.#animation?.stop()
         this.#sceneryOffset = 0
@@ -882,6 +1061,14 @@ export default class AnimationPreview extends BaseEditorComponent {
             return
         }
 
+        if (this.#useGamePreview && this.#gamePreview) {
+            this.#gamePreview.seekToFrame(index)
+            this.dispatchEvent(new CustomEvent('frame', {
+                detail: {index: this.#gamePreview.currentIndex}
+            }))
+            return
+        }
+
         this.#animation.seekToFrame(index)
         this.#updateSprite()
         this.#render()
@@ -932,6 +1119,14 @@ const STYLES = buildEditorStyles(
     .scenery-canvas {
         position: absolute;
         pointer-events: none;
+    }
+
+    .game-preview-canvas {
+        display: none;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        position: relative;
+        z-index: 1;
     }
 
     .preview-canvas {

@@ -11,7 +11,7 @@ const manifest = {
         },
         studio: {
             animator: {
-                unitsInView: {width: 10, height: 10},
+                unitsInView: {width: 7, height: 5},
                 background: 'background'
             }
         }

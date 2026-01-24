@@ -13,6 +13,7 @@ import '../../editor/toggle_input.js'
 import '../../editor/dropdown_menu.js'
 import {ICONS} from '../../editor/devtools/devtools_icons.js'
 import SpriteAnimator from '../../render/sprite_animator.js'
+import TextureRegion from '../../render/textures/texture_region.js'
 
 
 const animatorStyles = createSheet(`
@@ -482,8 +483,8 @@ export default class AnimatorView extends BaseEditorComponent {
     }
 
 
-    setContext ({textureSystem, animators, backgroundImage}) {
-        this.#context = {textureSystem}
+    setContext ({textureSystem, animators, backgroundImage, studioConfig}) {
+        this.#context = {textureSystem, studioConfig}
         this.#animators = animators || {}
         this.#backgroundImage = backgroundImage || null
 
@@ -599,6 +600,16 @@ export default class AnimatorView extends BaseEditorComponent {
         }
         if (this.#backgroundImage) {
             this.#previewEl.setBackgroundImage(this.#backgroundImage)
+            const backgroundRegion = TextureRegion.fromImage(this.#backgroundImage)
+            this.#previewEl.setBackgroundRegion(backgroundRegion)
+        }
+        const unitsInView = this.#context.studioConfig?.unitsInView
+        if (unitsInView) {
+            this.#previewEl.setUnitsInView(unitsInView)
+        }
+        const size = this.#animatorConfig?.size
+        if (size) {
+            this.#previewEl.setSize(size)
         }
         this.#previewEl.addEventListener('frame', (e) => {
             this.#timelineEl?.setCurrentIndex(e.detail.index)
@@ -1020,7 +1031,8 @@ export default class AnimatorView extends BaseEditorComponent {
         }
 
         const motion = anim.motion || {}
-        const currentMode = motion.enabled ? (motion.mode || 'sidescroller') : 'none'
+        const hasMotion = motion.enabled || motion.mode
+        const currentMode = hasMotion ? (motion.mode || 'sidescroller') : 'none'
 
         const motionSection = document.createElement('div')
         motionSection.className = 'settings-section'

@@ -1,6 +1,7 @@
 {
     "spritesheet": "redSpritesheet",
     "anchor": {"x": 0.5, "y": 0.05},
+    "size": {"width": 1, "height": 1},
     "animations": {
         "skip": {
             "fps": 10,
