@@ -1,6 +1,7 @@
 import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
 import Entity from '../../game/entity.js'
+import {createElement} from '../../application/dom_utils.js'
 import '../vec2_input.js'
 
 
@@ -21,8 +22,7 @@ export default class EntityInspector extends BaseInspector {
     buildDOM () {
         super.buildDOM()
 
-        this.#positionInput = document.createElement('vec2-input')
-        this.#positionInput.setAttribute('label', 'Position')
+        this.#positionInput = createElement('vec2-input', {attrs: {label: 'Position'}})
 
         this.shadowRoot.insertBefore(this.#positionInput, this.gridEl)
     }

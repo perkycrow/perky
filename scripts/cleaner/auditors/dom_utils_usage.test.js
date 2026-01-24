@@ -154,6 +154,65 @@ describe('DomUtilsUsageAuditor', () => {
     })
 
 
+    describe('class property assignments', () => {
+
+        test('detects createElement assigned to this.property', () => {
+            const code = `
+                class Foo {
+                    bar() {
+                        this.element = document.createElement('div')
+                        this.element.className = 'container'
+                        this.element.id = 'main'
+                    }
+                }
+            `
+            const issues = analyze(code)
+            expect(issues.length).toBe(1)
+            expect(issues[0]).toContain("createElement('div')")
+            expect(issues[0]).toContain('2 ops')
+        })
+
+
+        test('detects createElement assigned to this.#privateProperty', () => {
+            const code = `
+                class Foo {
+                    #checkbox
+
+                    bar() {
+                        this.#checkbox = document.createElement('input')
+                        this.#checkbox.type = 'checkbox'
+                        this.#checkbox.className = 'my-checkbox'
+                        this.#checkbox.id = 'cb-1'
+                    }
+                }
+            `
+            const issues = analyze(code)
+            expect(issues.length).toBe(1)
+            expect(issues[0]).toContain("createElement('input')")
+            expect(issues[0]).toContain('3 ops')
+        })
+
+
+        test('detects style property on this.#privateProperty', () => {
+            const code = `
+                class Foo {
+                    #el
+
+                    bar() {
+                        this.#el = document.createElement('div')
+                        this.#el.className = 'box'
+                        this.#el.style.left = '10px'
+                    }
+                }
+            `
+            const issues = analyze(code)
+            expect(issues.length).toBe(1)
+            expect(issues[0]).toContain('.style.left')
+        })
+
+    })
+
+
     describe('nested blocks', () => {
 
         test('scans inside if statements', () => {

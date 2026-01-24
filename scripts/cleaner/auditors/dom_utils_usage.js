@@ -6,7 +6,7 @@ import {gray} from '../../format.js'
 const MIN_OPERATIONS = 1
 
 const SUPPORTED_PROPS = new Set([
-    'className', 'id', 'textContent', 'innerHTML',
+    'className', 'id', 'textContent', 'innerHTML', 'style',
     'href', 'src', 'alt', 'title', 'value', 'type', 'name', 'placeholder'
 ])
 const SUPPORTED_METHODS = new Set(['setAttribute'])
@@ -23,11 +23,17 @@ export default class DomUtilsUsageAuditor extends Auditor {
     const el = document.createElement('div')
     el.className = 'container'
     el.id = 'main'
+    el.style.left = '10px'
     el.setAttribute('data-x', '1')
 
     // After
     import {createElement} from 'application/dom_utils.js'
-    const el = createElement('div', {class: 'container', id: 'main', attrs: {'data-x': '1'}})`
+    const el = createElement('div', {
+        class: 'container',
+        id: 'main',
+        style: {left: '10px'},
+        attrs: {'data-x': '1'}
+    })`
 
     analyze (content) { // eslint-disable-line local/class-methods-use-this -- clean
         const ast = parseContent(content)
@@ -170,27 +176,40 @@ function scanIfStatement (node) {
 function checkCreateElementSequence (statements, startIndex) {
     const node = statements[startIndex]
 
-    if (node.type !== 'VariableDeclaration') {
+    let targetName = null
+    let initNode = null
+
+    if (node.type === 'VariableDeclaration') {
+        const declarator = node.declarations[0]
+        if (!declarator || declarator.id.type !== 'Identifier') {
+            return null
+        }
+        if (!isDocumentCreateElement(declarator.init)) {
+            return null
+        }
+        targetName = declarator.id.name
+        initNode = declarator.init
+    } else if (node.type === 'ExpressionStatement' && node.expression.type === 'AssignmentExpression') {
+        const expr = node.expression
+        if (!isDocumentCreateElement(expr.right)) {
+            return null
+        }
+        targetName = getTargetString(expr.left)
+        if (!targetName) {
+            return null
+        }
+        initNode = expr.right
+    } else {
         return null
     }
 
-    const declarator = node.declarations[0]
-    if (!declarator || declarator.id.type !== 'Identifier') {
-        return null
-    }
-
-    if (!isDocumentCreateElement(declarator.init)) {
-        return null
-    }
-
-    const varName = declarator.id.name
     const line = node.loc.start.line
     const supportedOps = []
     let totalOps = 0
 
     for (let j = startIndex + 1; j < statements.length; j++) {
         const nextNode = statements[j]
-        const op = getOperationOnVariable(nextNode, varName)
+        const op = getOperationOnTarget(nextNode, targetName)
 
         if (!op) {
             break
@@ -204,7 +223,7 @@ function checkCreateElementSequence (statements, startIndex) {
 
     if (supportedOps.length >= MIN_OPERATIONS) {
         const opList = supportedOps.join(', ')
-        const issue = `${gray(`L${line}:`)} createElement('${getTagName(declarator.init)}') + ${supportedOps.length} ops: ${opList}`
+        const issue = `${gray(`L${line}:`)} createElement('${getTagName(initNode)}') + ${supportedOps.length} ops: ${opList}`
         return {issue, skip: totalOps}
     }
 
@@ -277,39 +296,51 @@ function getTagName (callNode) {
 }
 
 
-function getOperationOnVariable (node, varName) {
+function getOperationOnTarget (node, targetName) {
     if (node.type !== 'ExpressionStatement') {
         return null
     }
 
     const expr = node.expression
-    return getAssignmentOp(expr, varName) || getCallOp(expr, varName)
+    return getAssignmentOp(expr, targetName) || getCallOp(expr, targetName)
 }
 
 
-function getAssignmentOp (expr, varName) {
+function getAssignmentOp (expr, targetName) {
     if (expr.type !== 'AssignmentExpression' || expr.left.type !== 'MemberExpression') {
         return null
     }
 
     const obj = expr.left.object
-    if (obj.type !== 'Identifier' || obj.name !== varName) {
-        return null
+
+
+    if (getTargetString(obj) === targetName) {
+        const prop = expr.left.property
+        const propName = prop.type === 'Identifier' ? prop.name : '?'
+        return {name: `.${propName}`, supported: SUPPORTED_PROPS.has(propName)}
     }
 
-    const prop = expr.left.property
-    const propName = prop.type === 'Identifier' ? prop.name : '?'
-    return {name: `.${propName}`, supported: SUPPORTED_PROPS.has(propName)}
+
+    if (obj.type === 'MemberExpression' &&
+        getTargetString(obj.object) === targetName &&
+        obj.property.type === 'Identifier' &&
+        obj.property.name === 'style') {
+        const styleProp = expr.left.property
+        const propName = styleProp.type === 'Identifier' ? styleProp.name : '?'
+        return {name: `.style.${propName}`, supported: true}
+    }
+
+    return null
 }
 
 
-function getCallOp (expr, varName) {
+function getCallOp (expr, targetName) {
     if (expr.type !== 'CallExpression' || expr.callee.type !== 'MemberExpression') {
         return null
     }
 
     const obj = expr.callee.object
-    if (obj.type !== 'Identifier' || obj.name !== varName) {
+    if (getTargetString(obj) !== targetName) {
         return null
     }
 
@@ -356,4 +387,23 @@ function getAttributeName (node) {
         return arg.value
     }
     return '?'
+}
+
+
+function getTargetString (node) {
+    if (node.type === 'Identifier') {
+        return node.name
+    }
+
+    if (node.type === 'MemberExpression' && node.object.type === 'ThisExpression') {
+        const prop = node.property
+        if (prop.type === 'PrivateIdentifier') {
+            return `this.#${prop.name}`
+        }
+        if (prop.type === 'Identifier') {
+            return `this.${prop.name}`
+        }
+    }
+
+    return null
 }

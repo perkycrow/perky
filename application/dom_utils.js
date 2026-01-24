@@ -10,7 +10,14 @@ const directAttrs = [
     'value',
     'type',
     'name',
-    'placeholder'
+    'placeholder',
+    'min',
+    'max',
+    'step',
+    'checked',
+    'disabled',
+    'readonly',
+    'selected'
 ]
 
 export function createElement (tag, options = {}) {
@@ -34,6 +41,10 @@ export function createElement (tag, options = {}) {
         el.innerHTML = options.html
     }
 
+    if (options.style) {
+        setStyle(el, options.style)
+    }
+
     if (options.attrs) {
         setAttributes(el, options.attrs)
     }
@@ -50,9 +61,13 @@ export function setAttributes (element, attrs) {
 }
 
 
-export function setStyles (element, styles) {
-    for (const [key, value] of Object.entries(styles)) {
-        element.style[key] = value
+export function setStyle (element, styles) {
+    if (typeof styles === 'string') {
+        element.style.cssText = styles
+    } else {
+        for (const [key, value] of Object.entries(styles)) {
+            element.style[key] = value
+        }
     }
 }
 

@@ -148,10 +148,9 @@ export default class ActionControllerInspector extends BaseInspector {
 
         const nameEl = createElement('span', {class: 'action-name', text: actionName})
 
-        const rightSide = document.createElement('div')
-        rightSide.style.display = 'flex'
-        rightSide.style.alignItems = 'center'
-        rightSide.style.gap = '6px'
+        const rightSide = createElement('div', {
+            style: {display: 'flex', alignItems: 'center', gap: '6px'}
+        })
 
         const isPropagable = this.module.shouldPropagate(actionName)
 

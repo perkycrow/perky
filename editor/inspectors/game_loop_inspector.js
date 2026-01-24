@@ -1,6 +1,7 @@
 import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
 import GameLoop from '../../game/game_loop.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class GameLoopInspector extends BaseInspector {
@@ -95,11 +96,9 @@ export default class GameLoopInspector extends BaseInspector {
         this.#screenFpsValueEl = this.addRow('screen fps', '0')
         this.#statusValueEl = this.addRow('status', 'stopped')
 
-        const controlsEl = document.createElement('div')
-        controlsEl.className = 'fps-controls'
+        const controlsEl = createElement('div', {class: 'fps-controls'})
 
-        const limitRow = document.createElement('div')
-        limitRow.className = 'fps-limit-row'
+        const limitRow = createElement('div', {class: 'fps-limit-row'})
 
         this.#fpsLimitCheckbox = document.createElement('input')
         this.#fpsLimitCheckbox.type = 'checkbox'
@@ -107,16 +106,16 @@ export default class GameLoopInspector extends BaseInspector {
         this.#fpsLimitCheckbox.id = 'fps-limit-checkbox'
         this.#fpsLimitCheckbox.addEventListener('change', () => this.#handleLimitChange())
 
-        const limitLabel = document.createElement('label')
-        limitLabel.className = 'fps-limit-label'
-        limitLabel.htmlFor = 'fps-limit-checkbox'
-        limitLabel.textContent = 'Limit FPS'
+        const limitLabel = createElement('label', {
+            class: 'fps-limit-label',
+            text: 'Limit FPS',
+            attrs: {for: 'fps-limit-checkbox'}
+        })
 
         limitRow.appendChild(this.#fpsLimitCheckbox)
         limitRow.appendChild(limitLabel)
 
-        const sliderRow = document.createElement('div')
-        sliderRow.className = 'fps-slider-row'
+        const sliderRow = createElement('div', {class: 'fps-slider-row'})
 
         this.#fpsSlider = document.createElement('input')
         this.#fpsSlider.type = 'range'

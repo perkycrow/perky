@@ -2,7 +2,7 @@ import {describe, test, expect} from 'vitest'
 import {
     createElement,
     setAttributes,
-    setStyles,
+    setStyle,
     createStyleSheet,
     adoptStyleSheets
 } from './dom_utils.js'
@@ -91,6 +91,20 @@ describe('dom_utils', () => {
         })
 
 
+        test('sets styles via style option with object', () => {
+            const el = createElement('div', {style: {display: 'flex', marginTop: '10px'}})
+            expect(el.style.display).toBe('flex')
+            expect(el.style.marginTop).toBe('10px')
+        })
+
+
+        test('sets styles via style option with string', () => {
+            const el = createElement('div', {style: 'display: block; padding: 5px;'})
+            expect(el.style.display).toBe('block')
+            expect(el.style.padding).toBe('5px')
+        })
+
+
         test('combines multiple options', () => {
             const el = createElement('button', {
                 class: 'btn primary',
@@ -151,18 +165,18 @@ describe('dom_utils', () => {
     })
 
 
-    describe('setStyles', () => {
+    describe('setStyle', () => {
 
         test('sets single style', () => {
             const el = document.createElement('div')
-            setStyles(el, {display: 'flex'})
+            setStyle(el, {display: 'flex'})
             expect(el.style.display).toBe('flex')
         })
 
 
         test('sets multiple styles', () => {
             const el = document.createElement('div')
-            setStyles(el, {
+            setStyle(el, {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center'
@@ -175,9 +189,17 @@ describe('dom_utils', () => {
 
         test('handles pixel values', () => {
             const el = document.createElement('div')
-            setStyles(el, {marginTop: '16px', padding: '8px'})
+            setStyle(el, {marginTop: '16px', padding: '8px'})
             expect(el.style.marginTop).toBe('16px')
             expect(el.style.padding).toBe('8px')
+        })
+
+
+        test('sets styles from string', () => {
+            const el = document.createElement('div')
+            setStyle(el, 'display: flex; justify-content: center;')
+            expect(el.style.display).toBe('flex')
+            expect(el.style.justifyContent).toBe('center')
         })
 
     })
