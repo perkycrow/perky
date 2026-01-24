@@ -1211,42 +1211,11 @@ export default class AnimatorView extends BaseEditorComponent {
         const container = document.createElement('div')
         container.className = 'frame-editor'
 
-        container.appendChild(this.#buildFramePreview(frame))
+        container.appendChild(buildFramePreview(frame))
         container.appendChild(this.#buildDurationSection(frame))
         container.appendChild(this.#buildEventsSection(frame))
 
         this.#editorDrawerEl.appendChild(container)
-    }
-
-
-    #buildFramePreview (frame) {
-        const section = document.createElement('div')
-        section.className = 'frame-editor-preview'
-
-        const canvas = document.createElement('canvas')
-        canvas.width = 120
-        canvas.height = 120
-        canvas.className = 'frame-editor-canvas'
-
-        const region = frame.region
-        if (region?.image) {
-            const ctx = canvas.getContext('2d')
-            const scale = Math.min(120 / region.width, 120 / region.height)
-            const w = region.width * scale
-            const h = region.height * scale
-            const x = (120 - w) / 2
-            const y = (120 - h) / 2
-            ctx.drawImage(region.image, region.x, region.y, region.width, region.height, x, y, w, h)
-        }
-
-        const name = document.createElement('div')
-        name.className = 'frame-editor-name'
-        name.textContent = frame.name || 'Unnamed frame'
-        name.title = frame.name || ''
-
-        section.appendChild(canvas)
-        section.appendChild(name)
-        return section
     }
 
 
@@ -1620,3 +1589,34 @@ export default class AnimatorView extends BaseEditorComponent {
 
 
 customElements.define('animator-view', AnimatorView)
+
+
+function buildFramePreview (frame) {
+    const section = document.createElement('div')
+    section.className = 'frame-editor-preview'
+
+    const canvas = document.createElement('canvas')
+    canvas.width = 120
+    canvas.height = 120
+    canvas.className = 'frame-editor-canvas'
+
+    const region = frame.region
+    if (region?.image) {
+        const ctx = canvas.getContext('2d')
+        const scale = Math.min(120 / region.width, 120 / region.height)
+        const w = region.width * scale
+        const h = region.height * scale
+        const x = (120 - w) / 2
+        const y = (120 - h) / 2
+        ctx.drawImage(region.image, region.x, region.y, region.width, region.height, x, y, w, h)
+    }
+
+    const name = document.createElement('div')
+    name.className = 'frame-editor-name'
+    name.textContent = frame.name || 'Unnamed frame'
+    name.title = frame.name || ''
+
+    section.appendChild(canvas)
+    section.appendChild(name)
+    return section
+}

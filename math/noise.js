@@ -11,7 +11,7 @@ export default class Noise {
 
 
     seed (seed) {
-        const p = this.#buildPermutation(seed)
+        const p = buildPermutation(seed)
         this.#perm = new Array(512)
         this.#gradP = new Array(512)
 
@@ -21,25 +21,6 @@ export default class Noise {
         }
 
         return this
-    }
-
-
-    #buildPermutation (seed) {
-        const p = []
-        for (let i = 0; i < 256; i++) {
-            p[i] = i
-        }
-
-        let n = seed
-        for (let i = 255; i > 0; i--) {
-            n = (n * 16807) % 2147483647
-            const j = n % (i + 1)
-            const tmp = p[i]
-            p[i] = p[j]
-            p[j] = tmp
-        }
-
-        return p
     }
 
 
@@ -138,4 +119,23 @@ function lerp (a, b, t) {
 
 function dot (grad, x, y, z) {
     return grad[0] * x + grad[1] * y + grad[2] * z
+}
+
+
+function buildPermutation (seed) {
+    const p = []
+    for (let i = 0; i < 256; i++) {
+        p[i] = i
+    }
+
+    let n = seed
+    for (let i = 255; i > 0; i--) {
+        n = (n * 16807) % 2147483647
+        const j = n % (i + 1)
+        const tmp = p[i]
+        p[i] = p[j]
+        p[j] = tmp
+    }
+
+    return p
 }
