@@ -12,12 +12,8 @@ describe('EditorButton', () => {
     })
 
 
-    describe('constructor', () => {
-
-        test('creates shadow root', () => {
-            expect(button.shadowRoot).not.toBeNull()
-        })
-
+    test('constructor creates shadow root', () => {
+        expect(button.shadowRoot).not.toBeNull()
     })
 
 
@@ -148,14 +144,10 @@ describe('EditorButton', () => {
     })
 
 
-    describe('icon attribute', () => {
-
-        test('applies icon-only class when icon attribute present', () => {
-            button.setAttribute('icon', '')
-            const btn = button.shadowRoot.querySelector('button')
-            expect(btn.classList.contains('icon-only')).toBe(true)
-        })
-
+    test('icon attribute applies icon-only class', () => {
+        button.setAttribute('icon', '')
+        const btn = button.shadowRoot.querySelector('button')
+        expect(btn.classList.contains('icon-only')).toBe(true)
     })
 
 
@@ -226,15 +218,11 @@ describe('EditorButton', () => {
     })
 
 
-    describe('attributeChangedCallback', () => {
-
-        test('does not update if old and new values are same', () => {
-            const btn = button.shadowRoot.querySelector('button')
-            const initialClass = btn.className
-            button.attributeChangedCallback('variant', 'primary', 'primary')
-            expect(btn.className).toBe(initialClass)
-        })
-
+    test('attributeChangedCallback does not update if values are same', () => {
+        const btn = button.shadowRoot.querySelector('button')
+        const initialClass = btn.className
+        button.attributeChangedCallback('variant', 'primary', 'primary')
+        expect(btn.className).toBe(initialClass)
     })
 
 })

@@ -33,14 +33,10 @@ describe('DropdownMenu', () => {
     })
 
 
-    describe('setIcon', () => {
-
-        test('sets trigger innerHTML', () => {
-            menu.setIcon('<svg></svg>')
-            const trigger = menu.shadowRoot.querySelector('.trigger')
-            expect(trigger.innerHTML).toBe('<svg></svg>')
-        })
-
+    test('setIcon sets trigger innerHTML', () => {
+        menu.setIcon('<svg></svg>')
+        const trigger = menu.shadowRoot.querySelector('.trigger')
+        expect(trigger.innerHTML).toBe('<svg></svg>')
     })
 
 
@@ -95,16 +91,12 @@ describe('DropdownMenu', () => {
     })
 
 
-    describe('trigger click', () => {
-
-        test('toggles menu on click', () => {
-            const trigger = menu.shadowRoot.querySelector('.trigger')
-            trigger.click()
-            expect(menu.hasAttribute('open')).toBe(true)
-            trigger.click()
-            expect(menu.hasAttribute('open')).toBe(false)
-        })
-
+    test('trigger click toggles menu', () => {
+        const trigger = menu.shadowRoot.querySelector('.trigger')
+        trigger.click()
+        expect(menu.hasAttribute('open')).toBe(true)
+        trigger.click()
+        expect(menu.hasAttribute('open')).toBe(false)
     })
 
 
@@ -184,15 +176,11 @@ describe('DropdownMenu', () => {
     })
 
 
-    describe('lifecycle', () => {
-
-        test('removes outside click listener on disconnect', () => {
-            const spy = vi.spyOn(document, 'removeEventListener')
-            menu.disconnectedCallback()
-            expect(spy).toHaveBeenCalledWith('click', expect.any(Function))
-            spy.mockRestore()
-        })
-
+    test('removes outside click listener on disconnect', () => {
+        const spy = vi.spyOn(document, 'removeEventListener')
+        menu.disconnectedCallback()
+        expect(spy).toHaveBeenCalledWith('click', expect.any(Function))
+        spy.mockRestore()
     })
 
 })

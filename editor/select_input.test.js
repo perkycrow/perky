@@ -273,18 +273,14 @@ describe('SelectInput', () => {
     })
 
 
-    describe('disconnectedCallback', () => {
+    test('disconnectedCallback closes dropdown', () => {
+        select.setOptions(['a', 'b'])
+        const button = select.shadowRoot.querySelector('.select-button')
+        button.click()
 
-        test('closes dropdown when disconnected', () => {
-            select.setOptions(['a', 'b'])
-            const button = select.shadowRoot.querySelector('.select-button')
-            button.click()
+        select.disconnectedCallback()
 
-            select.disconnectedCallback()
-
-            expect(button.classList.contains('open')).toBe(false)
-        })
-
+        expect(button.classList.contains('open')).toBe(false)
     })
 
 })

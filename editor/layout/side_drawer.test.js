@@ -39,12 +39,8 @@ describe('SideDrawer', () => {
     })
 
 
-    describe('observedAttributes', () => {
-
-        test('observes open attribute', () => {
-            expect(drawer.constructor.observedAttributes).toContain('open')
-        })
-
+    test('observedAttributes includes open', () => {
+        expect(drawer.constructor.observedAttributes).toContain('open')
     })
 
 
@@ -154,15 +150,11 @@ describe('SideDrawer', () => {
     })
 
 
-    describe('close button', () => {
-
-        test('clicking close button closes drawer', () => {
-            drawer.open()
-            const closeBtn = drawer.shadowRoot.querySelector('.drawer-close')
-            closeBtn.click()
-            expect(drawer.isOpen).toBe(false)
-        })
-
+    test('close button click closes drawer', () => {
+        drawer.open()
+        const closeBtn = drawer.shadowRoot.querySelector('.drawer-close')
+        closeBtn.click()
+        expect(drawer.isOpen).toBe(false)
     })
 
 

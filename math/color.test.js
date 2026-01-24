@@ -297,30 +297,22 @@ describe('Color', () => {
     })
 
 
-    describe('toString', () => {
-
-        test('returns hex string', () => {
-            const color = new Color('#ff0000')
-            expect(color.toString()).toBe('#ff0000')
-        })
-
+    test('toString returns hex string', () => {
+        const color = new Color('#ff0000')
+        expect(color.toString()).toBe('#ff0000')
     })
 
 
-    describe('clone', () => {
-
-        test('creates independent copy', () => {
-            const original = new Color('#ff0000')
-            original.a = 0.5
-            const cloned = original.clone()
-            expect(cloned.r).toBe(original.r)
-            expect(cloned.g).toBe(original.g)
-            expect(cloned.b).toBe(original.b)
-            expect(cloned.a).toBe(original.a)
-            cloned.r = 0
-            expect(original.r).toBeCloseTo(1, 5)
-        })
-
+    test('clone creates independent copy', () => {
+        const original = new Color('#ff0000')
+        original.a = 0.5
+        const cloned = original.clone()
+        expect(cloned.r).toBe(original.r)
+        expect(cloned.g).toBe(original.g)
+        expect(cloned.b).toBe(original.b)
+        expect(cloned.a).toBe(original.a)
+        cloned.r = 0
+        expect(original.r).toBeCloseTo(1, 5)
     })
 
 
