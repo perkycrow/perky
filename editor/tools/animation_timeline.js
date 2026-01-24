@@ -590,10 +590,24 @@ export default class AnimationTimeline extends BaseEditorComponent {
             this.#containerEl.appendChild(frameEl)
         }
 
+        this.#containerEl.appendChild(this.#createAddButton())
+
         this.#updateHighlight()
 
 
         requestAnimationFrame(() => this.#updateScrubberThumb())
+    }
+
+
+    #createAddButton () {
+        const addBtn = document.createElement('button')
+        addBtn.className = 'add-frame-btn'
+        addBtn.innerHTML = '+'
+        addBtn.title = 'Add frames'
+        addBtn.addEventListener('click', () => {
+            this.dispatchEvent(new CustomEvent('addrequest', {bubbles: true}))
+        })
+        return addBtn
     }
 
 
@@ -1017,6 +1031,35 @@ const timelineStyles = createSheet(`
 
     .drop-indicator.visible {
         opacity: 1;
+    }
+
+    .add-frame-btn {
+        appearance: none;
+        background: var(--bg-tertiary);
+        border: 2px dashed var(--border);
+        border-radius: var(--radius-md);
+        color: var(--fg-muted);
+        font-size: 24px;
+        font-weight: 300;
+        width: 80px;
+        height: 80px;
+        margin: var(--spacing-xs);
+        cursor: pointer;
+        transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), transform 0.1s;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .add-frame-btn:hover {
+        background: var(--bg-hover);
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .add-frame-btn:active {
+        transform: scale(0.95);
     }
 
     .hidden {

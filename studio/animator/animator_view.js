@@ -10,6 +10,8 @@ import '../../editor/number_input.js'
 import '../../editor/slider_input.js'
 import '../../editor/select_input.js'
 import '../../editor/toggle_input.js'
+import '../../editor/dropdown_menu.js'
+import {ICONS} from '../../editor/devtools/devtools_icons.js'
 
 
 const animatorStyles = createSheet(`
@@ -57,8 +59,7 @@ const animatorStyles = createSheet(`
     }
 
 
-    .header-controls,
-    .footer-controls {
+    .header-controls {
         display: flex;
         align-items: center;
         gap: var(--spacing-md);
@@ -90,6 +91,16 @@ const animatorStyles = createSheet(`
 
     .toolbar-btn:active {
         transform: scale(0.96);
+    }
+
+    .toolbar-btn svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
     }
 
     .toolbar-btn-primary {
@@ -393,6 +404,7 @@ export default class AnimatorView extends BaseEditorComponent {
         this.#appLayout = document.createElement('app-layout')
         this.#appLayout.setAttribute('no-menu', '')
         this.#appLayout.setAttribute('no-close', '')
+        this.#appLayout.setAttribute('no-footer', '')
 
 
         this.#containerEl = document.createElement('div')
@@ -429,9 +441,6 @@ export default class AnimatorView extends BaseEditorComponent {
         this.#containerEl.appendChild(this.#timelineEl)
 
 
-        this.#buildFooterControls()
-
-
         this.#buildDrawers()
     }
 
@@ -459,6 +468,24 @@ export default class AnimatorView extends BaseEditorComponent {
         const headerStart = document.createElement('div')
         headerStart.className = 'header-controls'
         headerStart.setAttribute('slot', 'header-start')
+
+
+        const backBtn = document.createElement('button')
+        backBtn.className = 'toolbar-btn'
+        backBtn.innerHTML = ICONS.chevronLeft
+        backBtn.title = 'Back to gallery'
+        backBtn.addEventListener('click', () => {
+            this.dispatchEvent(new CustomEvent('close', {bubbles: true}))
+        })
+        headerStart.appendChild(backBtn)
+
+
+        const settingsMenu = document.createElement('dropdown-menu')
+        settingsMenu.setIcon(ICONS.wrench)
+        settingsMenu.setItems([
+            {label: 'Export', action: () => this.#exportToClipboard()}
+        ])
+        headerStart.appendChild(settingsMenu)
 
 
         const animatorSelect = document.createElement('select-input')
@@ -534,36 +561,6 @@ export default class AnimatorView extends BaseEditorComponent {
             headerEnd.appendChild(modeSelect)
             this.#appLayout.appendChild(headerEnd)
         }
-    }
-
-
-    #buildFooterControls () {
-
-        const footerStart = document.createElement('div')
-        footerStart.className = 'footer-controls'
-        footerStart.setAttribute('slot', 'footer-start')
-
-        const addBtn = document.createElement('button')
-        addBtn.className = 'toolbar-btn toolbar-btn-primary'
-        addBtn.innerHTML = '+'
-        addBtn.title = 'Add frames from spritesheet'
-        addBtn.addEventListener('click', () => this.#toggleFramesDrawer())
-
-        footerStart.appendChild(addBtn)
-        this.#appLayout.appendChild(footerStart)
-
-
-        const footerEnd = document.createElement('div')
-        footerEnd.className = 'footer-controls'
-        footerEnd.setAttribute('slot', 'footer-end')
-
-        const exportBtn = document.createElement('button')
-        exportBtn.className = 'toolbar-btn'
-        exportBtn.textContent = 'Export'
-        exportBtn.addEventListener('click', () => this.#exportToClipboard(exportBtn))
-
-        footerEnd.appendChild(exportBtn)
-        this.#appLayout.appendChild(footerEnd)
     }
 
 
@@ -876,6 +873,10 @@ export default class AnimatorView extends BaseEditorComponent {
         this.#timelineEl.addEventListener('frameselect', (e) => {
             this.#handleFrameSelect(e.detail)
         })
+
+        this.#timelineEl.addEventListener('addrequest', () => {
+            this.#toggleFramesDrawer()
+        })
     }
 
 
@@ -965,7 +966,7 @@ export default class AnimatorView extends BaseEditorComponent {
     }
 
 
-    #exportToClipboard (btn) {
+    #exportToClipboard () {
         if (!this.#animator) {
             return
         }
@@ -977,17 +978,7 @@ export default class AnimatorView extends BaseEditorComponent {
 
         const text = `static animations = ${JSON.stringify(config, null, 4)}`
 
-        navigator.clipboard.writeText(text).then(() => {
-            if (btn) {
-                const orig = btn.textContent
-                btn.textContent = 'Copied!'
-                btn.classList.add('success')
-                setTimeout(() => {
-                    btn.textContent = orig
-                    btn.classList.remove('success')
-                }, 1500)
-            }
-        })
+        navigator.clipboard.writeText(text)
     }
 
 
