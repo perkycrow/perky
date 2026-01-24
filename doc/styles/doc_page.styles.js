@@ -1,7 +1,8 @@
 import {buildEditorStyles, editorButtonStyles, editorScrollbarStyles} from '../../editor/editor_theme.js'
+import {createStyleSheet} from '../../application/dom_utils.js'
 
 
-export const DOC_PAGE_STYLES = buildEditorStyles(
+export const docPageStyles = createStyleSheet(buildEditorStyles(
     editorButtonStyles,
     editorScrollbarStyles,
     `
@@ -721,4 +722,4 @@ export const DOC_PAGE_STYLES = buildEditorStyles(
         }
     }
 `
-)
+))

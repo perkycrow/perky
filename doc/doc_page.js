@@ -1,8 +1,9 @@
 import '../editor/perky_code.js'
 import {toKebabCase} from '../core/utils.js'
+import {adoptStyleSheets} from '../application/dom_utils.js'
 import {executeContainer, renderAction} from './runtime.js'
 import {getTabUrl} from './utils/paths.js'
-import {DOC_PAGE_STYLES} from './styles/doc_page.styles.js'
+import {docPageStyles} from './styles/doc_page.styles.js'
 import {renderText, renderDisclaimer, renderCode, renderSee} from './renderers/block_renderers.js'
 import {createDescribeWrapper, addDescribeTocLink, renderTestHook, renderTest} from './renderers/test_renderers.js'
 import {getApiItems, renderApiMember} from './renderers/api_renderers.js'
@@ -140,9 +141,7 @@ export default class DocPage extends HTMLElement {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = DOC_PAGE_STYLES
-        this.shadowRoot.appendChild(style)
+        adoptStyleSheets(this.shadowRoot, docPageStyles)
 
         const container = document.createElement('div')
         container.className = 'doc-page'
