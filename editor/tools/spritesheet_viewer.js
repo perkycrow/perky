@@ -496,6 +496,7 @@ const viewerStyles = createSheet(`
         background-repeat: no-repeat;
         background-position: right 8px center;
         min-height: var(--touch-target);
+        max-width: calc(100% - 40px);
     }
 
     .filter-select:hover {

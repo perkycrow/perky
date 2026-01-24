@@ -3,6 +3,8 @@
 import {adoptStyles, createSheet} from '../styles/index.js'
 
 
+const SWIPE_THRESHOLD = 50
+
 const drawerCSS = createSheet(`
     :host {
         position: absolute;
@@ -14,6 +16,11 @@ const drawerCSS = createSheet(`
         flex-direction: column;
         transition: transform 0.25s ease-out;
         z-index: 100;
+        touch-action: pan-y;
+    }
+
+    :host(.dragging) {
+        transition: none;
     }
 
     :host([position="left"]) {
@@ -33,35 +40,31 @@ const drawerCSS = createSheet(`
         transform: translateX(0);
     }
 
-    .drawer-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: var(--spacing-md) var(--spacing-lg);
-        background: var(--bg-tertiary);
-        flex-shrink: 0;
-    }
-
-    .drawer-title {
-        font-size: var(--font-size-md);
-        font-weight: 500;
-        color: var(--fg-primary);
-    }
-
     .drawer-close {
+        position: absolute;
+        top: var(--spacing-sm);
         appearance: none;
-        background: transparent;
+        background: var(--bg-tertiary);
         border: none;
-        color: var(--fg-secondary);
-        width: 32px;
-        height: 32px;
+        color: var(--fg-muted);
+        width: 28px;
+        height: 28px;
         border-radius: var(--radius-md);
-        font-size: 16px;
+        font-size: 14px;
         cursor: pointer;
         transition: background var(--transition-fast), color var(--transition-fast);
         display: flex;
         align-items: center;
         justify-content: center;
+        z-index: 1;
+    }
+
+    :host([position="left"]) .drawer-close {
+        right: var(--spacing-sm);
+    }
+
+    :host([position="right"]) .drawer-close {
+        left: var(--spacing-sm);
     }
 
     .drawer-close:hover {
@@ -85,9 +88,11 @@ const drawerCSS = createSheet(`
 
 export default class SideDrawer extends HTMLElement {
 
-    #headerEl = null
-    #titleEl = null
+    #closeBtn = null
     #contentEl = null
+    #dragStartX = 0
+    #currentTranslate = 0
+    #isDragging = false
 
     constructor () {
         super()
@@ -98,19 +103,17 @@ export default class SideDrawer extends HTMLElement {
 
 
     static get observedAttributes () {
-        return ['title', 'open']
-    }
-
-
-    attributeChangedCallback (name) {
-        if (name === 'title') {
-            this.#updateTitle()
-        }
+        return ['open']
     }
 
 
     get isOpen () {
         return this.hasAttribute('open')
+    }
+
+
+    get #position () {
+        return this.getAttribute('position') || 'left'
     }
 
 
@@ -140,20 +143,10 @@ export default class SideDrawer extends HTMLElement {
 
 
     #buildDOM () {
-        this.#headerEl = document.createElement('div')
-        this.#headerEl.className = 'drawer-header'
-
-        this.#titleEl = document.createElement('span')
-        this.#titleEl.className = 'drawer-title'
-        this.#updateTitle()
-
-        const closeBtn = document.createElement('button')
-        closeBtn.className = 'drawer-close'
-        closeBtn.innerHTML = '✕'
-        closeBtn.addEventListener('click', () => this.close())
-
-        this.#headerEl.appendChild(this.#titleEl)
-        this.#headerEl.appendChild(closeBtn)
+        this.#closeBtn = document.createElement('button')
+        this.#closeBtn.className = 'drawer-close'
+        this.#closeBtn.innerHTML = '✕'
+        this.#closeBtn.addEventListener('click', () => this.close())
 
         this.#contentEl = document.createElement('div')
         this.#contentEl.className = 'drawer-content'
@@ -161,15 +154,64 @@ export default class SideDrawer extends HTMLElement {
         const slot = document.createElement('slot')
         this.#contentEl.appendChild(slot)
 
-        this.shadowRoot.appendChild(this.#headerEl)
+        this.shadowRoot.appendChild(this.#closeBtn)
         this.shadowRoot.appendChild(this.#contentEl)
+
+        this.#setupSwipeToClose()
     }
 
 
-    #updateTitle () {
-        if (this.#titleEl) {
-            this.#titleEl.textContent = this.getAttribute('title') || ''
+    #setupSwipeToClose () {
+        this.addEventListener('pointerdown', (e) => this.#onPointerDown(e))
+    }
+
+
+    #onPointerDown (e) {
+        if (e.target.closest('button, input, select, textarea')) {
+            return
         }
+
+        this.#isDragging = true
+        this.#dragStartX = e.clientX
+        this.#currentTranslate = 0
+        this.classList.add('dragging')
+        this.setPointerCapture(e.pointerId)
+
+        const onPointerMove = (moveEvent) => {
+            if (!this.#isDragging) {
+                return
+            }
+
+            const deltaX = moveEvent.clientX - this.#dragStartX
+
+            if (this.#position === 'left') {
+                this.#currentTranslate = Math.min(0, deltaX)
+            } else {
+                this.#currentTranslate = Math.max(0, deltaX)
+            }
+
+            this.style.transform = `translateX(${this.#currentTranslate}px)`
+        }
+
+        const onPointerUp = () => {
+            this.#isDragging = false
+            this.classList.remove('dragging')
+            this.style.transform = ''
+
+            const shouldClose = Math.abs(this.#currentTranslate) > SWIPE_THRESHOLD
+
+            if (shouldClose) {
+                this.close()
+            }
+
+            this.removeEventListener('pointermove', onPointerMove)
+            this.removeEventListener('pointerup', onPointerUp)
+            this.removeEventListener('pointercancel', onPointerUp)
+        }
+
+        this.addEventListener('pointermove', onPointerMove)
+        this.addEventListener('pointerup', onPointerUp)
+        this.addEventListener('pointercancel', onPointerUp)
     }
 
 }

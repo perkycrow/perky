@@ -570,7 +570,6 @@ export default class AnimatorView extends BaseEditorComponent {
     #buildDrawers () {
         this.#framesDrawerEl = document.createElement('side-drawer')
         this.#framesDrawerEl.setAttribute('position', 'left')
-        this.#framesDrawerEl.setAttribute('title', 'Frames')
 
         this.#spritesheetEl = document.createElement('spritesheet-viewer')
         if (this.#spritesheet) {
@@ -586,7 +585,6 @@ export default class AnimatorView extends BaseEditorComponent {
 
         this.#editorDrawerEl = document.createElement('side-drawer')
         this.#editorDrawerEl.setAttribute('position', 'right')
-        this.#editorDrawerEl.setAttribute('title', 'Frame')
         this.#previewSectionEl.appendChild(this.#editorDrawerEl)
     }
 
