@@ -8,7 +8,8 @@
             "loop": true,
             "motion": {
                 "mode": "sidescroller",
-                "direction": "w"
+                "direction": "w",
+                "speed": 0.5
             },
             "frames": [
                 {

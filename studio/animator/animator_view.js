@@ -1085,6 +1085,30 @@ export default class AnimatorView extends BaseEditorComponent {
         dirSubSection.appendChild(directionPad)
         motionOptions.appendChild(dirSubSection)
 
+        const speedSubSection = document.createElement('div')
+        speedSubSection.className = 'settings-section'
+
+        const speedLabel = document.createElement('div')
+        speedLabel.className = 'settings-label'
+        speedLabel.textContent = 'Speed'
+        speedSubSection.appendChild(speedLabel)
+
+        const speedInput = document.createElement('slider-input')
+        speedInput.setAttribute('context', 'studio')
+        speedInput.setAttribute('min', '0.05')
+        speedInput.setAttribute('max', '3')
+        speedInput.setAttribute('step', '0.05')
+        speedInput.setValue(motion.speed ?? 1)
+        speedInput.addEventListener('change', (e) => {
+            if (!anim.motion) {
+                anim.motion = {}
+            }
+            anim.motion.speed = e.detail.value
+            this.#previewEl?.updateMotion(anim.motion)
+        })
+        speedSubSection.appendChild(speedInput)
+        motionOptions.appendChild(speedSubSection)
+
         motionSection.appendChild(motionOptions)
         container.appendChild(motionSection)
     }

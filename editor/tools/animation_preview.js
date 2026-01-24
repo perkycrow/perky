@@ -319,11 +319,9 @@ export default class AnimationPreview extends BaseEditorComponent {
 
 
     #syncSceneryState () {
-        const sceneryBtn = this.shadowRoot.querySelector('.scenery-btn')
-        if (sceneryBtn) {
-            sceneryBtn.classList.toggle('disabled', !this.#hasMotion)
-            sceneryBtn.classList.toggle('active', this.#sceneryActive)
-        }
+        this.#updateSceneryButton()
+
+        const wasPlaying = this.#pauseAllPreviews()
 
         this.#updateGamePreviewConfig()
         this.#syncPreviewVisibility()
@@ -331,9 +329,44 @@ export default class AnimationPreview extends BaseEditorComponent {
         if (this.#useGamePreview) {
             requestAnimationFrame(() => this.#updateGamePreviewSize())
             this.#syncZoomControls()
+            if (wasPlaying) {
+                this.play()
+            }
             return
         }
 
+        this.#setupNormalPreview()
+        if (wasPlaying) {
+            this.play()
+        }
+    }
+
+
+    #updateSceneryButton () {
+        const sceneryBtn = this.shadowRoot.querySelector('.scenery-btn')
+        if (sceneryBtn) {
+            sceneryBtn.classList.toggle('disabled', !this.#hasMotion)
+            sceneryBtn.classList.toggle('active', this.#sceneryActive)
+        }
+    }
+
+
+    #pauseAllPreviews () {
+        const wasPlaying = this.#isPlaying || this.#gamePreview?.isPlaying
+
+        this.#gamePreview?.pause()
+
+        if (this.#animationFrameId) {
+            cancelAnimationFrame(this.#animationFrameId)
+            this.#animationFrameId = null
+        }
+        this.#isPlaying = false
+
+        return wasPlaying
+    }
+
+
+    #setupNormalPreview () {
         if (this.#sceneryActive) {
             this.#updateSceneryCanvas()
             this.#centerSprite()
@@ -674,7 +707,8 @@ export default class AnimationPreview extends BaseEditorComponent {
         }
 
         const spriteWidth = this.#getSpriteSize().width
-        const speed = spriteWidth
+        const motionSpeed = this.#motion?.speed ?? 1
+        const speed = spriteWidth * motionSpeed
         const direction = this.#getSpriteDirection()
 
         if (this.#moveSpriteMode) {

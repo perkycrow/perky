@@ -221,7 +221,8 @@ export default class AnimatorPreview {
             return
         }
 
-        const speed = this.#size.width
+        const motionSpeed = this.#motion.speed ?? 1
+        const speed = this.#size.width * motionSpeed
         const direction = this.#getSpriteDirection()
         this.#spriteX += speed * deltaTime * direction
 
