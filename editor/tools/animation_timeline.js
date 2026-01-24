@@ -33,6 +33,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
     #internalDragGhost = null
     #internalDragStartX = 0
     #internalDragStartY = 0
+    #isDragOutside = false
 
     connectedCallback () {
         this.#buildDOM()
@@ -68,7 +69,6 @@ export default class AnimationTimeline extends BaseEditorComponent {
 
         this.#dropIndicator = document.createElement('div')
         this.#dropIndicator.className = 'drop-indicator'
-        this.#dropIndicator.innerHTML = '<div class="drop-label"></div>'
         this.#containerEl.appendChild(this.#dropIndicator)
 
 
@@ -167,14 +167,86 @@ export default class AnimationTimeline extends BaseEditorComponent {
             this.#internalDragActive = true
             this.#createInternalDragGhost(e.clientX, e.clientY)
             this.#markFrameDragging(this.#internalDragIndex, true)
+            this.classList.add('dragging')
         }
 
         if (this.#internalDragActive) {
             e.preventDefault()
             this.#updateInternalDragGhost(e.clientX, e.clientY)
-            this.#containerEl.classList.add('drag-over')
-            this.#dropIndex = this.#calculateDropIndex(e.clientX)
-            this.#updateDropIndicator('move')
+
+            const isOutside = this.#isPointerOutsideTimeline(e.clientX, e.clientY)
+
+            if (isOutside !== this.#isDragOutside) {
+                this.#isDragOutside = isOutside
+                this.#updateDragGhostState(isOutside)
+            }
+
+            if (isOutside) {
+                this.#containerEl.classList.remove('drag-over')
+                this.#hideDropIndicator()
+            } else {
+                this.#containerEl.classList.add('drag-over')
+                this.#dropIndex = this.#calculateDropIndex(e.clientX)
+                this.#updateDropIndicator()
+            }
+        }
+    }
+
+
+    #isPointerOutsideTimeline (clientX, clientY) {
+        const rect = this.#viewportEl.getBoundingClientRect()
+        const margin = 20
+        return (
+            clientY < rect.top - margin ||
+            clientY > rect.bottom + margin ||
+            clientX < rect.left - margin ||
+            clientX > rect.right + margin
+        )
+    }
+
+
+    #updateDragGhostState (isOutside) {
+        if (!this.#internalDragGhost) {
+            return
+        }
+
+        const canvas = this.#internalDragGhost.querySelector('canvas')
+        let deleteHint = this.#internalDragGhost.querySelector('.delete-hint')
+
+        if (isOutside) {
+            if (canvas) {
+                canvas.style.filter = 'grayscale(1) brightness(0.7)'
+                canvas.style.boxShadow = '0 4px 12px rgba(255,59,48,0.5)'
+            }
+            if (!deleteHint) {
+                deleteHint = document.createElement('div')
+                deleteHint.className = 'delete-hint'
+                deleteHint.textContent = 'Release to delete'
+                deleteHint.style.cssText = `
+                    position: absolute;
+                    top: 100%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    margin-top: 8px;
+                    background: rgba(255, 59, 48, 0.9);
+                    color: white;
+                    font-size: 11px;
+                    font-weight: 500;
+                    padding: 4px 10px;
+                    border-radius: 4px;
+                    white-space: nowrap;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                `
+                this.#internalDragGhost.appendChild(deleteHint)
+            }
+        } else {
+            if (canvas) {
+                canvas.style.filter = ''
+                canvas.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4)'
+            }
+            if (deleteHint) {
+                deleteHint.remove()
+            }
         }
     }
 
@@ -186,25 +258,33 @@ export default class AnimationTimeline extends BaseEditorComponent {
 
         if (this.#internalDragActive) {
             const sourceIndex = this.#internalDragIndex
-            const targetIndex = this.#dropIndex
 
-            if (targetIndex >= 0 && sourceIndex !== targetIndex && sourceIndex !== targetIndex - 1) {
-                this.dispatchEvent(new CustomEvent('framemove', {
-                    detail: {
-                        fromIndex: sourceIndex,
-                        toIndex: targetIndex
-                    }
+            if (this.#isDragOutside) {
+                this.dispatchEvent(new CustomEvent('framedelete', {
+                    detail: {index: sourceIndex}
                 }))
+            } else {
+                const targetIndex = this.#dropIndex
+                if (targetIndex >= 0 && sourceIndex !== targetIndex && sourceIndex !== targetIndex - 1) {
+                    this.dispatchEvent(new CustomEvent('framemove', {
+                        detail: {
+                            fromIndex: sourceIndex,
+                            toIndex: targetIndex
+                        }
+                    }))
+                }
             }
 
             this.#markFrameDragging(this.#internalDragIndex, false)
             this.#removeInternalDragGhost()
             this.#containerEl.classList.remove('drag-over')
             this.#hideDropIndicator()
+            this.classList.remove('dragging')
         }
 
         this.#internalDragIndex = -1
         this.#internalDragActive = false
+        this.#isDragOutside = false
     }
 
 
@@ -375,7 +455,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
 
             this.#containerEl.classList.add('drag-over')
             this.#dropIndex = this.#calculateDropIndex(e.clientX)
-            this.#updateDropIndicator('insert')
+            this.#updateDropIndicator()
         }
 
         const handleDragLeave = (e) => {
@@ -439,13 +519,9 @@ export default class AnimationTimeline extends BaseEditorComponent {
     }
 
 
-    #updateDropIndicator (mode) {
+    #updateDropIndicator () {
         const frameEls = this.#containerEl.querySelectorAll('.frame')
         this.#dropIndicator.classList.add('visible')
-        this.#dropIndicator.dataset.mode = mode
-
-        const label = this.#dropIndicator.querySelector('.drop-label')
-        label.textContent = this.#dropIndex
 
         if (frameEls.length === 0 || this.#dropIndex === 0) {
             this.#dropIndicator.style.left = '0px'
@@ -469,7 +545,6 @@ export default class AnimationTimeline extends BaseEditorComponent {
 
     #hideDropIndicator () {
         this.#dropIndicator.classList.remove('visible')
-        delete this.#dropIndicator.dataset.mode
         this.#dropIndex = -1
     }
 
@@ -496,7 +571,6 @@ export default class AnimationTimeline extends BaseEditorComponent {
 
         this.#dropIndicator = document.createElement('div')
         this.#dropIndicator.className = 'drop-indicator'
-        this.#dropIndicator.innerHTML = '<div class="drop-label"></div>'
         this.#containerEl.appendChild(this.#dropIndicator)
 
         for (let i = 0; i < this.#frames.length; i++) {
@@ -532,17 +606,14 @@ export default class AnimationTimeline extends BaseEditorComponent {
         indexEl.textContent = index
         thumbnailWrapper.appendChild(indexEl)
 
-        const durationBadge = document.createElement('div')
-        durationBadge.className = 'frame-duration-badge'
         const duration = frame.duration || 1
-        const displayDuration = Number.isInteger(duration) ? duration : duration.toFixed(1)
-        durationBadge.textContent = `×${displayDuration}`
-        durationBadge.title = 'Click to edit duration'
-        durationBadge.addEventListener('click', (e) => {
-            e.stopPropagation()
-            this.#showDurationEditor(index, durationBadge, duration)
-        })
-        thumbnailWrapper.appendChild(durationBadge)
+        if (duration !== 1) {
+            const durationBadge = document.createElement('div')
+            durationBadge.className = 'frame-duration-badge'
+            const displayDuration = Number.isInteger(duration) ? duration : duration.toFixed(1)
+            durationBadge.textContent = `${displayDuration}×`
+            thumbnailWrapper.appendChild(durationBadge)
+        }
 
         if (frame.events && frame.events.length > 0) {
             const eventBadge = document.createElement('div')
@@ -552,16 +623,6 @@ export default class AnimationTimeline extends BaseEditorComponent {
         }
 
         frameEl.appendChild(thumbnailWrapper)
-
-        const deleteBtn = document.createElement('button')
-        deleteBtn.className = 'frame-delete'
-        deleteBtn.textContent = '×'
-        deleteBtn.title = 'Delete frame'
-        deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation()
-            this.#dispatchDeleteEvent(index)
-        })
-        frameEl.appendChild(deleteBtn)
 
         frameEl.addEventListener('click', () => {
             this.dispatchEvent(new CustomEvent('frameclick', {
@@ -591,45 +652,6 @@ export default class AnimationTimeline extends BaseEditorComponent {
     }
 
 
-    #showDurationEditor (index, badgeEl, currentDuration) {
-        const input = document.createElement('input')
-        input.type = 'number'
-        input.className = 'duration-editor'
-        input.value = currentDuration
-        input.step = '0.1'
-        input.min = '0.1'
-
-        const originalText = badgeEl.textContent
-        badgeEl.textContent = ''
-        badgeEl.appendChild(input)
-        input.focus()
-        input.select()
-
-        const commit = () => {
-            const newDuration = parseFloat(input.value) || 1
-            badgeEl.textContent = originalText
-            if (newDuration !== currentDuration) {
-                const displayDuration = Number.isInteger(newDuration) ? newDuration : newDuration.toFixed(1)
-                badgeEl.textContent = `×${displayDuration}`
-                this.dispatchEvent(new CustomEvent('frameduration', {
-                    detail: {index, duration: newDuration}
-                }))
-            }
-        }
-
-        input.addEventListener('blur', commit)
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault()
-                input.blur()
-            } else if (e.key === 'Escape') {
-                e.preventDefault()
-                badgeEl.textContent = originalText
-            }
-        })
-    }
-
-
     #handleKeydown (e) {
         if (e.key === 'Delete' || e.key === 'Backspace') {
             if (this.#currentIndex >= 0 && this.#currentIndex < this.#frames.length) {
@@ -643,7 +665,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
     handleTouchDragOver (clientX) {
         this.#containerEl.classList.add('drag-over')
         this.#dropIndex = this.#calculateDropIndex(clientX)
-        this.#updateDropIndicator('insert')
+        this.#updateDropIndicator()
     }
 
 
@@ -755,6 +777,10 @@ const timelineStyles = createSheet(`
     :host {
         display: block;
         height: fit-content;
+    }
+
+    :host(.dragging) {
+        user-select: none;
     }
 
     .timeline-wrapper {
@@ -910,79 +936,19 @@ const timelineStyles = createSheet(`
         right: 4px;
         font-size: 10px;
         font-weight: 500;
-        color: var(--fg-primary);
-        background: rgba(0, 0, 0, 0.7);
-        padding: 2px 6px;
-        border-radius: var(--radius-sm);
+        color: var(--fg-muted);
         line-height: 1;
-        cursor: pointer;
-        transition: background 0.15s, transform 0.15s;
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-    }
-
-    .frame-duration-badge:hover {
-        background: var(--accent);
-        transform: scale(1.05);
-    }
-
-    .duration-editor {
-        width: 36px;
-        background: transparent;
-        border: none;
-        color: var(--fg-primary);
-        font-size: 10px;
-        font-family: var(--font-mono);
-        text-align: center;
-        padding: 0;
-        margin: 0;
-        outline: none;
-    }
-
-    .duration-editor::-webkit-inner-spin-button,
-    .duration-editor::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
     }
 
     .frame-event-badge {
         position: absolute;
-        top: 5px;
+        top: 6px;
         left: 18px;
-        width: 6px;
-        height: 6px;
+        width: 5px;
+        height: 5px;
         background: var(--status-warning, #ffc107);
         border-radius: 50%;
         cursor: help;
-    }
-
-    .frame-delete {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        width: 22px;
-        height: 22px;
-        padding: 0;
-        border: none;
-        background: var(--bg-secondary);
-        color: var(--fg-muted);
-        font-size: 14px;
-        line-height: 22px;
-        border-radius: 50%;
-        cursor: pointer;
-        opacity: 0;
-        transition: opacity 0.15s, color 0.15s, background 0.15s, transform 0.15s;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    .frame:hover .frame-delete {
-        opacity: 1;
-    }
-
-    .frame-delete:hover {
-        background: var(--status-error);
-        color: white;
-        transform: scale(1.1);
     }
 
     .drop-indicator {
@@ -1001,31 +967,6 @@ const timelineStyles = createSheet(`
 
     .drop-indicator.visible {
         opacity: 1;
-    }
-
-    .drop-label {
-        position: absolute;
-        top: -18px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: var(--accent);
-        color: var(--bg-primary);
-        font-size: 10px;
-        font-weight: 600;
-        padding: 3px 8px;
-        border-radius: var(--radius-sm);
-        white-space: nowrap;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    .drop-indicator[data-mode="insert"] .drop-label::before {
-        content: '+';
-        margin-right: 3px;
-    }
-
-    .drop-indicator[data-mode="move"] .drop-label::before {
-        content: '→';
-        margin-right: 3px;
     }
 
     .hidden {
