@@ -3,6 +3,7 @@ import {sidebarStyles} from './devtools.styles.js'
 import {editorHeaderStyles, editorButtonStyles, editorScrollbarStyles, editorBaseStyles} from '../editor_theme.js'
 import {getTool} from './devtools_registry.js'
 import logger from '../../core/logger.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class DevToolsSidebar extends EditorComponent {
@@ -69,8 +70,7 @@ export default class DevToolsSidebar extends EditorComponent {
 
 
     #createHeader () {
-        const header = document.createElement('div')
-        header.className = 'sidebar-header'
+        const header = createElement('div', {class: 'sidebar-header'})
 
         this.#titleEl = document.createElement('div')
         this.#titleEl.className = 'sidebar-title'
@@ -111,8 +111,7 @@ export default class DevToolsSidebar extends EditorComponent {
 
         const actions = this.#currentToolEl.getHeaderActions()
         for (const action of actions) {
-            const btn = document.createElement('button')
-            btn.className = 'sidebar-action-btn'
+            const btn = createElement('button', {class: 'sidebar-action-btn'})
             if (action.active) {
                 btn.classList.add('active')
             }
@@ -178,9 +177,7 @@ export default class DevToolsSidebar extends EditorComponent {
 
 
 function createSidebarContent () {
-    const content = document.createElement('div')
-    content.className = 'sidebar-content'
-    return content
+    return createElement('div', {class: 'sidebar-content'})
 }
 
 

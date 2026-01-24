@@ -3,6 +3,7 @@ import {dockStyles} from './devtools.styles.js'
 import {editorBaseStyles} from '../editor_theme.js'
 import {getSidebarTools} from './devtools_registry.js'
 import {ICONS} from './devtools_icons.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class DevToolsDock extends EditorComponent {
@@ -116,8 +117,7 @@ export default class DevToolsDock extends EditorComponent {
         }
 
         if (tools.length > 0) {
-            const separator = document.createElement('div')
-            separator.className = 'dock-separator'
+            const separator = createElement('div', {class: 'dock-separator'})
             this.#dockEl.appendChild(separator)
         }
 
@@ -152,8 +152,7 @@ export default class DevToolsDock extends EditorComponent {
         this.#dockEl.appendChild(docsButton)
 
 
-        const separator2 = document.createElement('div')
-        separator2.className = 'dock-separator'
+        const separator2 = createElement('div', {class: 'dock-separator'})
         this.#dockEl.appendChild(separator2)
 
 
@@ -212,10 +211,7 @@ export default class DevToolsDock extends EditorComponent {
 
 
 function createDockButton (icon, title, onClick) {
-    const button = document.createElement('button')
-    button.className = 'dock-button'
-    button.innerHTML = icon
-    button.title = title
+    const button = createElement('button', {class: 'dock-button', html: icon, title})
     button.addEventListener('click', onClick)
     return button
 }

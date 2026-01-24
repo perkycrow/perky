@@ -181,6 +181,10 @@ function findUntested (exports, testContent) {
             return false
         }
 
+        if (name.startsWith('on') || name.startsWith('setup')) {
+            return false
+        }
+
         const patterns = [
             new RegExp(`\\b${name}\\b`),
             new RegExp(`['"]${name}['"]`),
