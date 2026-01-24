@@ -11,11 +11,16 @@ export default class SpriteAnimator extends PerkyModule {
         this.sprite = sprite
         this.textureSystem = textureSystem
         this.current = null
-        this.anchor = this.constructor.anchor || {x: 0.5, y: 0.5}
 
-        const animationsConfig = config || this.constructor.animations
-        if (animationsConfig) {
-            this.loadConfig(animationsConfig)
+        const resolvedConfig = config || {
+            anchor: this.constructor.anchor,
+            animations: this.constructor.animations
+        }
+
+        this.anchor = resolvedConfig.anchor || {x: 0.5, y: 0.5}
+
+        if (resolvedConfig.animations) {
+            this.loadConfig(resolvedConfig.animations)
         }
     }
 

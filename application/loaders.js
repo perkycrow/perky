@@ -163,5 +163,6 @@ export const loaders = {
     arrayBuffer: loadArrayBuffer,
     audio: loadAudio,
     font: loadFont,
-    spritesheet: loadSpritesheet
+    spritesheet: loadSpritesheet,
+    animator: loadJson
 }

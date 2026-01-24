@@ -4,6 +4,7 @@ import '../../editor/tools/animation_preview.js'
 import '../../editor/tools/animation_timeline.js'
 import '../../editor/tools/spritesheet_viewer.js'
 import '../../editor/number_input.js'
+import SpriteAnimator from '../../render/sprite_animator.js'
 
 
 export default class SpriteAnimatorTool extends BaseFloatingTool {
@@ -19,7 +20,7 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
     #previewEl = null
     #spritesheetViewerEl = null
     #animators = {}
-    #animatorClass = null
+    #animatorConfig = null
     #animator = null
     #spritesheet = null
     #selectedAnimation = null
@@ -48,29 +49,31 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
 
 
     onParamsSet () {
-        const {animator, animatorClass, spritesheet} = this.params
+        const {animator, animatorName, spritesheet} = this.params
 
-        const resolvedClass = animatorClass || this.#getDefaultAnimatorClass()
-        this.#selectAnimatorClass(resolvedClass, {animator, spritesheet})
+        const resolvedName = animatorName || this.#getDefaultAnimatorName()
+        this.#selectAnimator(resolvedName, {animator, spritesheet})
     }
 
 
-    #getDefaultAnimatorClass () {
+    #getDefaultAnimatorName () {
         const animatorNames = Object.keys(this.#animators)
-        return animatorNames.length > 0 ? this.#animators[animatorNames[0]] : null
+        return animatorNames.length > 0 ? animatorNames[0] : null
     }
 
 
-    #selectAnimatorClass (animatorClass, {animator, spritesheet} = {}) {
+    #selectAnimator (name, {animator, spritesheet} = {}) {
         const {textureSystem} = this.params
+        const animatorEntry = name ? this.#animators[name] : null
 
-        this.#animatorClass = animatorClass || null
+        this.#animatorConfig = animatorEntry || null
 
         if (animator) {
             this.#animator = animator
-        } else if (animatorClass && textureSystem) {
-            this.#animator = new animatorClass({
+        } else if (animatorEntry && textureSystem) {
+            this.#animator = new SpriteAnimator({
                 sprite: null,
+                config: animatorEntry.config,
                 textureSystem
             })
         } else {
@@ -79,36 +82,15 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
 
         if (spritesheet) {
             this.#spritesheet = spritesheet
-        } else if (animatorClass && textureSystem) {
-            const spritesheetName = this.#inferSpritesheetName()
-            this.#spritesheet = spritesheetName ? textureSystem.getSpritesheet(spritesheetName) : null
+        } else if (animatorEntry && textureSystem) {
+            const spritesheetId = animatorEntry.spritesheetId
+            this.#spritesheet = spritesheetId ? textureSystem.getSpritesheet(spritesheetId) : null
         } else {
             this.#spritesheet = null
         }
 
         this.#selectedAnimation = null
         this.#render()
-    }
-
-
-    #inferSpritesheetName () {
-        const animations = this.#animatorClass?.animations
-
-        if (!animations) {
-            return null
-        }
-
-        const firstAnim = Object.values(animations)[0]
-
-        if (firstAnim?.source) {
-            return firstAnim.source.split(':')[0]
-        }
-
-        if (firstAnim?.frames?.[0]?.source) {
-            return firstAnim.frames[0].source.split(':')[0]
-        }
-
-        return null
     }
 
 
@@ -182,17 +164,16 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
     #setupAnimatorSelect () {
         const select = this.#contentEl.querySelector('.animator-select')
 
-        for (const [name, AnimatorClass] of Object.entries(this.#animators)) {
+        for (const [name, animatorEntry] of Object.entries(this.#animators)) {
             const option = document.createElement('option')
             option.value = name
             option.textContent = name
-            option.selected = AnimatorClass === this.#animatorClass
+            option.selected = animatorEntry === this.#animatorConfig
             select.appendChild(option)
         }
 
         select.addEventListener('change', (e) => {
-            const AnimatorClass = this.#animators[e.target.value]
-            this.#selectAnimatorClass(AnimatorClass)
+            this.#selectAnimator(e.target.value)
         })
     }
 

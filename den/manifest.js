@@ -8,6 +8,12 @@ const manifest = {
                 ambiance: {muted: true},
                 music: {muted: false}
             }
+        },
+        studio: {
+            animator: {
+                unitsInView: {width: 10, height: 10},
+                background: 'background'
+            }
         }
     },
     assets: {
@@ -32,6 +38,7 @@ const manifest = {
 
 
         redSpritesheet: {type: 'spritesheet', url: './assets/spritesheets/red.json'},
+        redAnimator: {type: 'animator', url: './assets/animators/red_animator.json', spritesheet: 'redSpritesheet'},
 
 
         click: {type: 'audio', url: './assets/audio/click.ogg', tags: ['sfx']},

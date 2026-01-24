@@ -4,7 +4,6 @@ import {PerkyDevTools} from '../editor/devtools/index.js'
 import ToolManager from '../editor/tools/tool_manager.js'
 import FoobarTool from './tools/foobar_tool.js'
 import SpriteAnimatorTool from './tools/sprite_animator_tool.js'
-import RedEnemyAnimator from './animators/red_enemy_animator.js'
 
 
 async function init () {
@@ -23,10 +22,22 @@ async function init () {
     devtools.setModule(app)
     devtools.setAppManager(appManager)
 
+    const animatorConfigs = {}
+    const manifest = app.manifest
+    const animatorAssets = manifest.getAssetsByType('animator')
+    for (const asset of animatorAssets) {
+        if (asset.source) {
+            animatorConfigs[asset.id] = {
+                config: asset.source,
+                spritesheetId: asset.spritesheet
+            }
+        }
+    }
+
     const toolManager = new ToolManager()
     toolManager.register(FoobarTool)
     toolManager.register(SpriteAnimatorTool, {
-        animators: {RedEnemyAnimator}
+        animators: animatorConfigs
     })
     devtools.setToolManager(toolManager)
 

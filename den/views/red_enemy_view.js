@@ -1,5 +1,5 @@
 import EnemyView from './enemy_view.js'
-import RedEnemyAnimator from '../animators/red_enemy_animator.js'
+import SpriteAnimator from '../../render/sprite_animator.js'
 import logger from '../../core/logger.js'
 
 
@@ -8,8 +8,11 @@ export default class RedEnemyView extends EnemyView {
     constructor (entity, context) {
         super(entity, context)
 
-        this.animator = new RedEnemyAnimator({
+        const animatorConfig = context.game.getSource('redAnimator')
+
+        this.animator = new SpriteAnimator({
             sprite: this.root,
+            config: animatorConfig,
             textureSystem: context.game.textureSystem
         })
 

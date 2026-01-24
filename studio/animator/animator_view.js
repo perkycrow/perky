@@ -12,6 +12,7 @@ import '../../editor/select_input.js'
 import '../../editor/toggle_input.js'
 import '../../editor/dropdown_menu.js'
 import {ICONS} from '../../editor/devtools/devtools_icons.js'
+import SpriteAnimator from '../../render/sprite_animator.js'
 
 
 const animatorStyles = createSheet(`
@@ -448,7 +449,7 @@ export default class AnimatorView extends BaseEditorComponent {
 
     #context = null
     #animators = {}
-    #animatorClass = null
+    #animatorConfig = null
     #animator = null
     #spritesheet = null
     #selectedAnimation = null
@@ -496,15 +497,16 @@ export default class AnimatorView extends BaseEditorComponent {
 
 
     #selectAnimator (name) {
-        const AnimatorClass = this.#animators[name]
-        if (!AnimatorClass) {
+        const animatorConfig = this.#animators[name]
+        if (!animatorConfig) {
             return
         }
 
-        this.#animatorClass = AnimatorClass
+        this.#animatorConfig = animatorConfig
 
-        this.#animator = new AnimatorClass({
+        this.#animator = new SpriteAnimator({
             sprite: null,
+            config: animatorConfig,
             textureSystem: this.#context.textureSystem
         })
 
@@ -513,6 +515,7 @@ export default class AnimatorView extends BaseEditorComponent {
             ? this.#context.textureSystem.getSpritesheet(spritesheetName)
             : null
 
+        this.#anchor = animatorConfig.anchor || {x: 0.5, y: 0.5}
         this.#selectedAnimation = this.#animator.children[0] || null
 
         this.#render()
@@ -520,7 +523,7 @@ export default class AnimatorView extends BaseEditorComponent {
 
 
     #inferSpritesheetName () {
-        const animations = this.#animatorClass?.animations
+        const animations = this.#animatorConfig?.animations
         if (!animations) {
             return null
         }
@@ -640,7 +643,7 @@ export default class AnimatorView extends BaseEditorComponent {
         const animatorSelect = document.createElement('select-input')
         animatorSelect.setAttribute('context', 'studio')
         const animatorNames = Object.keys(this.#animators)
-        const currentAnimatorName = animatorNames.find(name => this.#animators[name] === this.#animatorClass)
+        const currentAnimatorName = animatorNames.find(name => this.#animators[name] === this.#animatorConfig)
         animatorSelect.setOptions(animatorNames)
         animatorSelect.setValue(currentAnimatorName)
         animatorSelect.addEventListener('change', (e) => {

@@ -5,16 +5,9 @@ import TextureSystem from '../../render/textures/texture_system.js'
 import {loaders} from '../../application/loaders.js'
 import Registry from '../../core/registry.js'
 
-
 import manifestData from '../../den/manifest.js'
-import RedEnemyAnimator from '../../den/animators/red_enemy_animator.js'
 
 import './animator_view.js'
-
-
-const ANIMATORS = {
-    RedEnemyAnimator
-}
 
 
 const GITHUB_BASE = 'https://raw.githubusercontent.com/perkycrow/perky/main/den/'
@@ -64,15 +57,27 @@ async function init () {
         }
 
 
-        const backgroundAsset = manifest.getAsset('background')
+        const animatorAssets = manifest.getAssetsByType('animator')
+        const animators = {}
+        for (const asset of animatorAssets) {
+            if (asset.source) {
+                animators[asset.id] = asset.source
+            }
+        }
+
+
+        const studioConfig = manifest.getConfig('studio.animator') || {}
+        const backgroundId = studioConfig.background
+        const backgroundAsset = backgroundId ? manifest.getAsset(backgroundId) : null
         const backgroundImage = backgroundAsset?.source || null
 
         container.innerHTML = ''
         const animatorView = document.createElement('animator-view')
         animatorView.setContext({
             textureSystem,
-            animators: ANIMATORS,
-            backgroundImage
+            animators,
+            backgroundImage,
+            studioConfig
         })
         container.appendChild(animatorView)
 
