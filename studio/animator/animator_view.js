@@ -463,7 +463,7 @@ export default class AnimatorView extends BaseEditorComponent {
     #spritesheetSettingsDrawerEl = null
     #spritesheetEl = null
     #selectedFrameIndex = -1
-    #drawerMode = null // 'frame' | 'settings'
+    #drawerMode = null
     #headerAnimSelect = null
     #drawerAnimSelect = null
     #anchor = {x: 0.5, y: 0}

@@ -121,13 +121,11 @@ export default class DropdownMenu extends HTMLElement {
         document.removeEventListener('click', this.#handleOutsideClick)
     }
 
-
     #handleOutsideClick = (e) => {
         if (!this.contains(e.target)) {
             this.close()
         }
     }
-
 
     setIcon (icon) {
         this.#triggerEl.innerHTML = icon

@@ -35,7 +35,7 @@ export function adoptStyles (shadowRoot, ...extraSheets) {
         const sheets = [themeSheet, resetSheet, ...extraSheets].filter(Boolean)
         shadowRoot.adoptedStyleSheets = sheets
     } else {
-        // Fallback for environments without Constructable Stylesheets (jsdom)
+
         const allCSS = [themeCSS, resetCSS]
         extraSheets.forEach(sheet => {
             if (sheet && sheet._css) {
@@ -56,10 +56,9 @@ export function createSheet (css) {
         return sheet
     }
 
-    // Fallback: return object with CSS for later use
+
     return {_css: css}
 }
 
 
-// Re-export raw CSS for components that need string-based styles
 export {themeCSS, resetCSS, controlsCSS}

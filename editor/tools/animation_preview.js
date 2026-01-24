@@ -631,7 +631,6 @@ export default class AnimationPreview extends BaseEditorComponent {
         }))
     }
 
-
 }
 
 

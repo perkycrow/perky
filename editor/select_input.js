@@ -167,31 +167,30 @@ export default class SelectInput extends HTMLElement {
         }
 
         switch (e.key) {
-            case 'Escape':
-                e.preventDefault()
-                this.#close()
-                break
-            case 'ArrowDown':
-                e.preventDefault()
-                this.#moveFocus(1)
-                break
-            case 'ArrowUp':
-                e.preventDefault()
-                this.#moveFocus(-1)
-                break
-            case 'Enter':
-            case ' ':
-                e.preventDefault()
-                if (this.#focusedIndex >= 0) {
-                    this.#selectIndex(this.#focusedIndex)
-                }
-                break
-            case 'Tab':
-                this.#close()
-                break
+        case 'Escape':
+            e.preventDefault()
+            this.#close()
+            break
+        case 'ArrowDown':
+            e.preventDefault()
+            this.#moveFocus(1)
+            break
+        case 'ArrowUp':
+            e.preventDefault()
+            this.#moveFocus(-1)
+            break
+        case 'Enter':
+        case ' ':
+            e.preventDefault()
+            if (this.#focusedIndex >= 0) {
+                this.#selectIndex(this.#focusedIndex)
+            }
+            break
+        case 'Tab':
+            this.#close()
+            break
         }
     }
-
 
     constructor () {
         super()

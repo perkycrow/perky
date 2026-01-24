@@ -337,10 +337,10 @@ export default class Color {
 
     mix (color, ratio = 0.5) {
         const other = color instanceof Color ? color : new Color(color)
-        this.r = this.r + (other.r - this.r) * ratio
-        this.g = this.g + (other.g - this.g) * ratio
-        this.b = this.b + (other.b - this.b) * ratio
-        this.a = this.a + (other.a - this.a) * ratio
+        this.r += (other.r - this.r) * ratio
+        this.g += (other.g - this.g) * ratio
+        this.b += (other.b - this.b) * ratio
+        this.a += (other.a - this.a) * ratio
         return this
     }
 
