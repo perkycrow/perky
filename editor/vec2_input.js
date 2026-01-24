@@ -1,6 +1,7 @@
 import EditorComponent from './editor_component.js'
 import {controlsSheet} from './styles/index.js'
 import {emitChange, handleAttributeChange} from './base_input.js'
+import {createElement} from '../application/dom_utils.js'
 import './number_input.js'
 
 
@@ -113,26 +114,23 @@ export default class Vec2Input extends EditorComponent {
 
 
     #buildDOM () {
-        const container = document.createElement('div')
-        container.className = 'vec2-input-container'
+        const container = createElement('div', {class: 'vec2-input-container'})
 
-        this.#labelEl = document.createElement('span')
-        this.#labelEl.className = 'vec2-input-label'
-        this.#labelEl.textContent = this.#label
+        this.#labelEl = createElement('span', {
+            class: 'vec2-input-label',
+            text: this.#label
+        })
 
-        const inputs = document.createElement('div')
-        inputs.className = 'vec2-inputs'
+        const inputs = createElement('div', {class: 'vec2-inputs'})
 
-        this.#xInput = document.createElement('number-input')
-        this.#xInput.setAttribute('label', 'x')
-        this.#xInput.setAttribute('step', '0.1')
-        this.#xInput.setAttribute('precision', '2')
+        this.#xInput = createElement('number-input', {
+            attrs: {label: 'x', step: '0.1', precision: '2'}
+        })
         this.#xInput.addEventListener('change', (e) => this.#handleChange('x', e.detail.value))
 
-        this.#yInput = document.createElement('number-input')
-        this.#yInput.setAttribute('label', 'y')
-        this.#yInput.setAttribute('step', '0.1')
-        this.#yInput.setAttribute('precision', '2')
+        this.#yInput = createElement('number-input', {
+            attrs: {label: 'y', step: '0.1', precision: '2'}
+        })
         this.#yInput.addEventListener('change', (e) => this.#handleChange('y', e.detail.value))
 
         inputs.appendChild(this.#xInput)

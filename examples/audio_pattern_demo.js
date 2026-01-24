@@ -1,6 +1,6 @@
 import AudioSystem from '/audio/audio_system.js'
 import Sequencer from '/audio/patterns/sequencer.js'
-import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
+import {createElement, createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 const container = document.getElementById('audio-container')
@@ -44,9 +44,9 @@ const presetPatterns = {
 }
 
 
-const ui = document.createElement('div')
-ui.className = 'pattern-ui'
-ui.innerHTML = `
+const ui = createElement('div', {
+    class: 'pattern-ui',
+    html: `
     <div class="pattern-main">
         <div class="pattern-controls">
             <div class="transport">
@@ -119,7 +119,7 @@ ui.innerHTML = `
             </ul>
         </div>
     </div>
-`
+`})
 container.appendChild(ui)
 
 
@@ -386,8 +386,7 @@ function createVisualizer (trackId, pattern) {
     const steps = pattern?.steps || []
 
     for (let i = 0; i < 8; i++) {
-        const step = document.createElement('div')
-        step.className = 'step'
+        const step = createElement('div', {class: 'step'})
         if (steps[i] && steps[i] !== null) {
             step.classList.add('has-note')
             step.textContent = Array.isArray(steps[i]) ? '[...]' : steps[i]

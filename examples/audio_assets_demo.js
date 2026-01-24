@@ -1,6 +1,6 @@
 import Application from '/application/application.js'
 import AudioSystem from '/audio/audio_system.js'
-import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
+import {createElement, createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 const manifest = {
@@ -48,9 +48,9 @@ const app = new AudioAssetsDemo()
 app.mount(container)
 
 
-const ui = document.createElement('div')
-ui.className = 'audio-ui'
-ui.innerHTML = `
+const ui = createElement('div', {
+    class: 'audio-ui',
+    html: `
     <div class="audio-section">
         <h3>Loading</h3>
         <div id="loading-status">Click "Load Assets" to begin</div>
@@ -98,7 +98,7 @@ ui.innerHTML = `
         <h3>Registered Buffers</h3>
         <div id="buffers-list">None</div>
     </div>
-`
+`})
 container.appendChild(ui)
 
 

@@ -1,6 +1,6 @@
 import Random from '/math/random.js'
 import '/editor/perky_logger.js'
-import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
+import {createElement, createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 const container = document.querySelector('.example-content')
@@ -13,25 +13,18 @@ logger.info('Random:', random)
 logger.info('Seed:', random.getSeed())
 
 
-const controlPanel = document.createElement('div')
-controlPanel.className = 'control-panel'
+const controlPanel = createElement('div', {class: 'control-panel'})
 container.appendChild(controlPanel)
 
 
 function createFolder (title, buttons) {
-    const folder = document.createElement('div')
-    folder.className = 'control-folder'
-
-    const header = document.createElement('div')
-    header.className = 'folder-header'
-    header.textContent = title
+    const folder = createElement('div', {class: 'control-folder'})
+    const header = createElement('div', {class: 'folder-header', text: title})
 
     folder.appendChild(header)
 
     buttons.forEach(({title: buttonTitle, action}) => {
-        const button = document.createElement('button')
-        button.className = 'control-button'
-        button.textContent = buttonTitle
+        const button = createElement('button', {class: 'control-button', text: buttonTitle})
         button.addEventListener('click', action)
         folder.appendChild(button)
     })

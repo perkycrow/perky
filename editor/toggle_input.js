@@ -1,6 +1,7 @@
 import EditorComponent from './editor_component.js'
 import {controlsSheet} from './styles/index.js'
 import {emitChange, handleAttributeChange} from './base_input.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 const toggleInputCSS = `
@@ -153,20 +154,18 @@ export default class ToggleInput extends EditorComponent {
 
 
     #buildDOM () {
-        const container = document.createElement('div')
-        container.className = 'toggle-input-container'
+        const container = createElement('div', {class: 'toggle-input-container'})
 
-        this.#toggle = document.createElement('div')
-        this.#toggle.className = 'toggle-input-track'
+        this.#toggle = createElement('div', {class: 'toggle-input-track'})
         this.#toggle.addEventListener('click', () => this.#handleClick())
 
-        const thumb = document.createElement('div')
-        thumb.className = 'toggle-input-thumb'
+        const thumb = createElement('div', {class: 'toggle-input-thumb'})
         this.#toggle.appendChild(thumb)
 
-        this.#labelEl = document.createElement('span')
-        this.#labelEl.className = 'toggle-input-label'
-        this.#labelEl.textContent = this.#label
+        this.#labelEl = createElement('span', {
+            class: 'toggle-input-label',
+            text: this.#label
+        })
         this.#labelEl.addEventListener('click', () => this.#handleClick())
 
         container.appendChild(this.#toggle)

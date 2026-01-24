@@ -1,5 +1,6 @@
 import EditorComponent from '../editor_component.js'
 import '../number_input.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 const DRAG_TYPE_SPRITESHEET = 'application/x-spritesheet-frame'
@@ -287,27 +288,18 @@ export default class AnimationTimeline extends EditorComponent {
 
 
     #buildDOM () {
-        this.#wrapperEl = document.createElement('div')
-        this.#wrapperEl.className = 'timeline-wrapper'
+        this.#wrapperEl = createElement('div', {class: 'timeline-wrapper'})
 
+        this.#viewportEl = createElement('div', {class: 'timeline-viewport'})
 
-        this.#viewportEl = document.createElement('div')
-        this.#viewportEl.className = 'timeline-viewport'
+        this.#containerEl = createElement('div', {class: 'timeline'})
 
-
-        this.#containerEl = document.createElement('div')
-        this.#containerEl.className = 'timeline'
-
-        this.#dropIndicator = document.createElement('div')
-        this.#dropIndicator.className = 'drop-indicator'
+        this.#dropIndicator = createElement('div', {class: 'drop-indicator'})
         this.#containerEl.appendChild(this.#dropIndicator)
 
+        this.#scrubberEl = createElement('div', {class: 'scrubber hidden'})
 
-        this.#scrubberEl = document.createElement('div')
-        this.#scrubberEl.className = 'scrubber hidden'
-
-        this.#scrubberThumbEl = document.createElement('div')
-        this.#scrubberThumbEl.className = 'scrubber-thumb'
+        this.#scrubberThumbEl = createElement('div', {class: 'scrubber-thumb'})
         this.#scrubberEl.appendChild(this.#scrubberThumbEl)
 
         this.#setupDropZone()
@@ -451,24 +443,25 @@ export default class AnimationTimeline extends EditorComponent {
                 canvas.style.boxShadow = '0 4px 12px rgba(255,59,48,0.5)'
             }
             if (!deleteHint) {
-                deleteHint = document.createElement('div')
-                deleteHint.className = 'delete-hint'
-                deleteHint.textContent = 'Release to delete'
-                deleteHint.style.cssText = `
-                    position: absolute;
-                    top: 100%;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    margin-top: 8px;
-                    background: rgba(255, 59, 48, 0.9);
-                    color: white;
-                    font-size: 11px;
-                    font-weight: 500;
-                    padding: 4px 10px;
-                    border-radius: 4px;
-                    white-space: nowrap;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-                `
+                deleteHint = createElement('div', {
+                    class: 'delete-hint',
+                    text: 'Release to delete',
+                    style: `
+                        position: absolute;
+                        top: 100%;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        margin-top: 8px;
+                        background: rgba(255, 59, 48, 0.9);
+                        color: white;
+                        font-size: 11px;
+                        font-weight: 500;
+                        padding: 4px 10px;
+                        border-radius: 4px;
+                        white-space: nowrap;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                    `
+                })
                 this.#internalDragGhost.appendChild(deleteHint)
             }
         } else {
@@ -541,19 +534,21 @@ export default class AnimationTimeline extends EditorComponent {
             return
         }
 
-        this.#internalDragGhost = document.createElement('div')
-        this.#internalDragGhost.style.cssText = `
-            position: fixed;
-            pointer-events: none;
-            z-index: 10000;
-            opacity: 0.8;
-            transform: translate(-50%, -50%) scale(0.9);
-        `
+        this.#internalDragGhost = createElement('div', {
+            style: `
+                position: fixed;
+                pointer-events: none;
+                z-index: 10000;
+                opacity: 0.8;
+                transform: translate(-50%, -50%) scale(0.9);
+            `
+        })
 
-        const clonedCanvas = document.createElement('canvas')
+        const clonedCanvas = createElement('canvas', {
+            style: 'border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);'
+        })
         clonedCanvas.width = canvas.width
         clonedCanvas.height = canvas.height
-        clonedCanvas.style.cssText = 'border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);'
         clonedCanvas.getContext('2d').drawImage(canvas, 0, 0)
 
         this.#internalDragGhost.appendChild(clonedCanvas)
@@ -810,8 +805,7 @@ export default class AnimationTimeline extends EditorComponent {
     #render () {
         this.#containerEl.innerHTML = ''
 
-        this.#dropIndicator = document.createElement('div')
-        this.#dropIndicator.className = 'drop-indicator'
+        this.#dropIndicator = createElement('div', {class: 'drop-indicator'})
         this.#containerEl.appendChild(this.#dropIndicator)
 
         for (let i = 0; i < this.#frames.length; i++) {
@@ -830,10 +824,11 @@ export default class AnimationTimeline extends EditorComponent {
 
 
     #createAddButton () {
-        const addBtn = document.createElement('button')
-        addBtn.className = 'add-frame-btn'
-        addBtn.innerHTML = '+'
-        addBtn.title = 'Add frames'
+        const addBtn = createElement('button', {
+            class: 'add-frame-btn',
+            html: '+',
+            title: 'Add frames'
+        })
         addBtn.addEventListener('click', () => {
             this.dispatchEvent(new CustomEvent('addrequest', {bubbles: true}))
         })
@@ -842,38 +837,35 @@ export default class AnimationTimeline extends EditorComponent {
 
 
     #createFrameElement (frame, index) {
-        const frameEl = document.createElement('div')
-        frameEl.className = 'frame'
+        const frameEl = createElement('div', {class: 'frame'})
         frameEl.dataset.index = index
 
-        const thumbnailWrapper = document.createElement('div')
-        thumbnailWrapper.className = 'frame-thumbnail-wrapper'
+        const thumbnailWrapper = createElement('div', {class: 'frame-thumbnail-wrapper'})
 
-        const canvas = document.createElement('canvas')
-        canvas.className = 'frame-thumbnail'
+        const canvas = createElement('canvas', {class: 'frame-thumbnail'})
         canvas.width = 80
         canvas.height = 80
         drawFrameThumbnail(canvas, frame)
         thumbnailWrapper.appendChild(canvas)
 
-        const indexEl = document.createElement('div')
-        indexEl.className = 'frame-index'
-        indexEl.textContent = index
+        const indexEl = createElement('div', {class: 'frame-index', text: String(index)})
         thumbnailWrapper.appendChild(indexEl)
 
         const duration = frame.duration || 1
         if (duration !== 1) {
-            const durationBadge = document.createElement('div')
-            durationBadge.className = 'frame-duration-badge'
             const displayDuration = Number.isInteger(duration) ? duration : duration.toFixed(1)
-            durationBadge.textContent = `${displayDuration}×`
+            const durationBadge = createElement('div', {
+                class: 'frame-duration-badge',
+                text: `${displayDuration}×`
+            })
             thumbnailWrapper.appendChild(durationBadge)
         }
 
         if (frame.events && frame.events.length > 0) {
-            const eventBadge = document.createElement('div')
-            eventBadge.className = 'frame-event-badge'
-            eventBadge.title = frame.events.join(', ')
+            const eventBadge = createElement('div', {
+                class: 'frame-event-badge',
+                title: frame.events.join(', ')
+            })
             thumbnailWrapper.appendChild(eventBadge)
         }
 

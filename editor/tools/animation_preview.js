@@ -1,5 +1,6 @@
 import EditorComponent from '../editor_component.js'
 import {ICONS} from '../devtools/devtools_icons.js'
+import {createElement} from '../../application/dom_utils.js'
 import WebGLRenderer from '../../render/webgl_renderer.js'
 import Sprite from '../../render/sprite.js'
 import Object2D from '../../render/object_2d.js'
@@ -184,62 +185,45 @@ export default class AnimationPreview extends EditorComponent {
 
 
     #buildDOM () {
-        const container = document.createElement('div')
-        container.className = 'preview-container'
+        const container = createElement('div', {class: 'preview-container'})
 
-        this.#previewArea = document.createElement('div')
-        this.#previewArea.className = 'preview-area'
+        this.#previewArea = createElement('div', {class: 'preview-area'})
 
-        this.#sceneryCanvas = document.createElement('canvas')
-        this.#sceneryCanvas.className = 'scenery-canvas'
+        this.#sceneryCanvas = createElement('canvas', {class: 'scenery-canvas'})
         this.#sceneryCtx = this.#sceneryCanvas.getContext('2d')
         this.#previewArea.appendChild(this.#sceneryCanvas)
 
-        this.#gamePreviewCanvas = document.createElement('canvas')
-        this.#gamePreviewCanvas.className = 'game-preview-canvas'
+        this.#gamePreviewCanvas = createElement('canvas', {class: 'game-preview-canvas'})
         this.#gamePreviewCanvas.width = 256
         this.#gamePreviewCanvas.height = 256
         this.#previewArea.appendChild(this.#gamePreviewCanvas)
 
-        this.#canvas = document.createElement('canvas')
-        this.#canvas.className = 'preview-canvas'
+        this.#canvas = createElement('canvas', {class: 'preview-canvas'})
         this.#canvas.width = 256
         this.#canvas.height = 256
         this.#previewArea.appendChild(this.#canvas)
 
-        this.#gridCanvas = document.createElement('canvas')
-        this.#gridCanvas.className = 'grid-canvas'
+        this.#gridCanvas = createElement('canvas', {class: 'grid-canvas'})
         this.#gridCtx = this.#gridCanvas.getContext('2d')
         this.#previewArea.appendChild(this.#gridCanvas)
 
         container.appendChild(this.#previewArea)
 
-        const controls = document.createElement('div')
-        controls.className = 'preview-controls'
+        const controls = createElement('div', {class: 'preview-controls'})
 
-        const playBtn = document.createElement('button')
-        playBtn.className = 'play-btn'
-        playBtn.innerHTML = ICONS.start
+        const playBtn = createElement('button', {class: 'play-btn', html: ICONS.start})
         playBtn.addEventListener('click', () => this.#togglePlay())
 
-        const stopBtn = document.createElement('button')
-        stopBtn.className = 'stop-btn'
-        stopBtn.innerHTML = ICONS.stop
+        const stopBtn = createElement('button', {class: 'stop-btn', html: ICONS.stop})
         stopBtn.addEventListener('click', () => this.stop())
 
-        const settingsBtn = document.createElement('button')
-        settingsBtn.className = 'settings-btn'
-        settingsBtn.innerHTML = ICONS.wrench
+        const settingsBtn = createElement('button', {class: 'settings-btn', html: ICONS.wrench})
         settingsBtn.addEventListener('click', () => this.#toggleSettings())
 
-        const sceneryBtn = document.createElement('button')
-        sceneryBtn.className = 'scenery-btn'
-        sceneryBtn.innerHTML = ICONS.scenery
+        const sceneryBtn = createElement('button', {class: 'scenery-btn', html: ICONS.scenery})
         sceneryBtn.addEventListener('click', () => this.#toggleScenery())
 
-        const gridBtn = document.createElement('button')
-        gridBtn.className = 'grid-btn'
-        gridBtn.innerHTML = ICONS.grid
+        const gridBtn = createElement('button', {class: 'grid-btn', html: ICONS.grid})
         gridBtn.addEventListener('click', () => this.#toggleGrid())
 
         controls.appendChild(playBtn)

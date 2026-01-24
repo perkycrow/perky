@@ -3,7 +3,7 @@ import Group2D from '/render/group_2d.js'
 import Sprite from '/render/sprite.js'
 import ShaderEffect from '/render/shaders/shader_effect.js'
 import OutlineEffect from '/render/shaders/builtin/effects/outline_effect.js'
-import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
+import {createElement, createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 class ChromaticEffect extends ShaderEffect {
@@ -243,9 +243,9 @@ shroomImage.onload = () => {
 }
 
 
-const infoPanel = document.createElement('div')
-infoPanel.className = 'info-panel'
-infoPanel.innerHTML = `
+const infoPanel = createElement('div', {
+    class: 'info-panel',
+    html: `
     <div class="info-item">
         <span class="info-label">FPS:</span>
         <span class="info-value" id="fps">--</span>
@@ -266,6 +266,7 @@ infoPanel.innerHTML = `
         Sprites are batched by effect combination
     </div>
 `
+})
 container.appendChild(infoPanel)
 
 

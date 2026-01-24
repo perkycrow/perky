@@ -1,5 +1,5 @@
 import AudioSystem from '/audio/audio_system.js'
-import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
+import {createElement, createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 const container = document.getElementById('audio-container')
@@ -116,9 +116,9 @@ function playNoise (duration = 0.2) {
 }
 
 
-const ui = document.createElement('div')
-ui.className = 'audio-ui'
-ui.innerHTML = `
+const ui = createElement('div', {
+    class: 'audio-ui',
+    html: `
     <div class="audio-section">
         <h3>Piano Keys</h3>
         <div class="piano-keys">
@@ -180,7 +180,7 @@ ui.innerHTML = `
         <h3>Status</h3>
         <div id="status">Click any button to start audio</div>
     </div>
-`
+`})
 container.appendChild(ui)
 
 

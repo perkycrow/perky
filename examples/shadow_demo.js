@@ -3,7 +3,7 @@ import Group2D from '/render/group_2d.js'
 import Sprite from '/render/sprite.js'
 import Circle from '/render/circle.js'
 import ShadowTransform from '/render/transforms/shadow_transform.js'
-import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
+import {createElement, createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 const container = document.getElementById('render-container')
@@ -134,9 +134,9 @@ shroomImage.onload = () => {
 }
 
 
-const infoPanel = document.createElement('div')
-infoPanel.className = 'info-panel'
-infoPanel.innerHTML = `
+const infoPanel = createElement('div', {
+    class: 'info-panel',
+    html: `
     <div class="info-item">
         <span class="info-label">Sun Position:</span>
         <span class="info-value" id="sun-pos">(-4.0, 0.0)</span>
@@ -151,6 +151,7 @@ infoPanel.innerHTML = `
     </div>
     <div class="info-hint">Sun moves in an arc like sunrise to sunset</div>
 `
+})
 container.appendChild(infoPanel)
 
 

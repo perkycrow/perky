@@ -1,4 +1,5 @@
 import EditorComponent from '../editor_component.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 const ANIMATION_COLORS = [
@@ -141,18 +142,15 @@ export default class SpritesheetViewer extends EditorComponent {
 
 
     #buildDOM () {
-        this.#containerEl = document.createElement('div')
-        this.#containerEl.className = 'viewer-container'
+        this.#containerEl = createElement('div', {class: 'viewer-container'})
 
-        this.#filterEl = document.createElement('select')
-        this.#filterEl.className = 'filter-select'
+        this.#filterEl = createElement('select', {class: 'filter-select'})
         this.#filterEl.addEventListener('change', (e) => {
             this.#filter = e.target.value || null
             this.#renderGrid()
         })
 
-        this.#gridEl = document.createElement('div')
-        this.#gridEl.className = 'frame-grid'
+        this.#gridEl = createElement('div', {class: 'frame-grid'})
 
         this.#containerEl.appendChild(this.#filterEl)
         this.#containerEl.appendChild(this.#gridEl)
@@ -187,9 +185,7 @@ export default class SpritesheetViewer extends EditorComponent {
     #renderFilter () {
         this.#filterEl.innerHTML = ''
 
-        const allOption = document.createElement('option')
-        allOption.value = ''
-        allOption.textContent = 'All frames'
+        const allOption = createElement('option', {value: '', text: 'All frames'})
         this.#filterEl.appendChild(allOption)
 
         if (!this.#spritesheet) {
@@ -198,9 +194,7 @@ export default class SpritesheetViewer extends EditorComponent {
 
         const animations = this.#spritesheet.listAnimations()
         for (const name of animations) {
-            const option = document.createElement('option')
-            option.value = name
-            option.textContent = name
+            const option = createElement('option', {value: name, text: name})
             this.#filterEl.appendChild(option)
         }
     }
@@ -245,27 +239,24 @@ export default class SpritesheetViewer extends EditorComponent {
 
 
     #createFrameElement (name, frameData) {
-        const frameEl = document.createElement('div')
-        frameEl.className = 'frame'
-        frameEl.dataset.name = name
-        frameEl.draggable = true
-        frameEl.title = name
+        const frameEl = createElement('div', {
+            class: 'frame',
+            title: name,
+            attrs: {'data-name': name, draggable: 'true'}
+        })
 
         const animPrefix = getAnimationPrefix(name)
         if (animPrefix && this.#animationColorMap.has(animPrefix)) {
             frameEl.style.background = this.#animationColorMap.get(animPrefix)
         }
 
-        const canvas = document.createElement('canvas')
-        canvas.className = 'frame-thumbnail'
+        const canvas = createElement('canvas', {class: 'frame-thumbnail'})
         canvas.width = 100
         canvas.height = 100
         drawFrameThumbnail(canvas, frameData.region)
         frameEl.appendChild(canvas)
 
-        const nameEl = document.createElement('div')
-        nameEl.className = 'frame-name'
-        nameEl.textContent = name
+        const nameEl = createElement('div', {class: 'frame-name', text: name})
         frameEl.appendChild(nameEl)
 
         frameEl.addEventListener('click', () => {
@@ -443,20 +434,22 @@ export default class SpritesheetViewer extends EditorComponent {
             return
         }
 
-        this.#dragGhost = document.createElement('div')
-        this.#dragGhost.className = 'drag-ghost'
-        this.#dragGhost.style.cssText = `
-            position: fixed;
-            pointer-events: none;
-            z-index: 10000;
-            opacity: 0.8;
-            transform: translate(-50%, -50%) scale(0.8);
-        `
+        this.#dragGhost = createElement('div', {
+            class: 'drag-ghost',
+            style: `
+                position: fixed;
+                pointer-events: none;
+                z-index: 10000;
+                opacity: 0.8;
+                transform: translate(-50%, -50%) scale(0.8);
+            `
+        })
 
-        const clonedCanvas = document.createElement('canvas')
+        const clonedCanvas = createElement('canvas', {
+            style: 'border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);'
+        })
         clonedCanvas.width = canvas.width
         clonedCanvas.height = canvas.height
-        clonedCanvas.style.cssText = 'border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);'
         clonedCanvas.getContext('2d').drawImage(canvas, 0, 0)
 
         this.#dragGhost.appendChild(clonedCanvas)

@@ -2,7 +2,7 @@ import RenderSystem from '/render/render_system.js'
 import Group2D from '/render/group_2d.js'
 import Circle from '/render/circle.js'
 import Rectangle from '/render/rectangle.js'
-import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
+import {createElement, createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 const container = document.getElementById('render-container')
@@ -125,8 +125,7 @@ function animate (time) {
 requestAnimationFrame(animate)
 
 
-const controlPanel = document.createElement('div')
-controlPanel.className = 'control-panel'
+const controlPanel = createElement('div', {class: 'control-panel'})
 
 const presetButtons = [
     {label: 'Overview', preset: 'overview', easing: 'easeOutQuad'},
@@ -138,13 +137,13 @@ const presetButtons = [
     {label: 'Tilted', preset: 'tilted', easing: 'easeInOutElastic'}
 ]
 
-const transitionRow = document.createElement('div')
-transitionRow.className = 'button-row'
-transitionRow.innerHTML = '<span class="row-label">Transitions:</span>'
+const transitionRow = createElement('div', {
+    class: 'button-row',
+    html: '<span class="row-label">Transitions:</span>'
+})
 
 presetButtons.forEach((btn) => {
-    const button = document.createElement('button')
-    button.textContent = btn.label
+    const button = createElement('button', {text: btn.label})
     button.onclick = () => {
         camera.animateTo(presets[btn.preset], {
             duration: 0.8,
@@ -157,22 +156,20 @@ presetButtons.forEach((btn) => {
 controlPanel.appendChild(transitionRow)
 
 
-const effectRow = document.createElement('div')
-effectRow.className = 'button-row'
-effectRow.innerHTML = '<span class="row-label">Effects:</span>'
+const effectRow = createElement('div', {
+    class: 'button-row',
+    html: '<span class="row-label">Effects:</span>'
+})
 
-const shakeBtn = document.createElement('button')
-shakeBtn.textContent = 'Shake'
+const shakeBtn = createElement('button', {text: 'Shake'})
 shakeBtn.onclick = () => camera.shake({intensity: 0.4, duration: 0.4})
 effectRow.appendChild(shakeBtn)
 
-const heavyShakeBtn = document.createElement('button')
-heavyShakeBtn.textContent = 'Heavy Shake'
+const heavyShakeBtn = createElement('button', {text: 'Heavy Shake'})
 heavyShakeBtn.onclick = () => camera.shake({intensity: 1.0, duration: 0.6})
 effectRow.appendChild(heavyShakeBtn)
 
-const pulseBtn = document.createElement('button')
-pulseBtn.textContent = 'Pulse'
+const pulseBtn = createElement('button', {text: 'Pulse'})
 pulseBtn.onclick = () => {
     camera.animate((dt, elapsed, total) => {
         const progress = elapsed / total
@@ -187,8 +184,7 @@ pulseBtn.onclick = () => {
 }
 effectRow.appendChild(pulseBtn)
 
-const spinBtn = document.createElement('button')
-spinBtn.textContent = 'Spin'
+const spinBtn = createElement('button', {text: 'Spin'})
 spinBtn.onclick = () => {
     camera.animate((dt, elapsed, total) => {
         const progress = elapsed / total
@@ -206,20 +202,19 @@ effectRow.appendChild(spinBtn)
 controlPanel.appendChild(effectRow)
 
 
-const followRow = document.createElement('div')
-followRow.className = 'button-row'
-followRow.innerHTML = '<span class="row-label">Follow:</span>'
+const followRow = createElement('div', {
+    class: 'button-row',
+    html: '<span class="row-label">Follow:</span>'
+})
 
-const followBtn = document.createElement('button')
-followBtn.textContent = 'Follow Player'
+const followBtn = createElement('button', {text: 'Follow Player'})
 followBtn.onclick = () => {
     camera.follow(player, 0.05)
     camera.animateTo({zoom: 2}, {duration: 0.5})
 }
 followRow.appendChild(followBtn)
 
-const stopFollowBtn = document.createElement('button')
-stopFollowBtn.textContent = 'Stop Follow'
+const stopFollowBtn = createElement('button', {text: 'Stop Follow'})
 stopFollowBtn.onclick = () => {
     camera.stopFollow()
     camera.animateTo(presets.overview, {duration: 0.8})

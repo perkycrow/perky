@@ -1,5 +1,5 @@
 import AudioSystem from '/audio/audio_system.js'
-import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
+import {createElement, createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 const container = document.getElementById('audio-container')
@@ -13,9 +13,9 @@ let listenerX = 0
 let listenerY = 0
 
 
-const ui = document.createElement('div')
-ui.className = 'spatial-ui'
-ui.innerHTML = `
+const ui = createElement('div', {
+    class: 'spatial-ui',
+    html: `
     <div class="spatial-world" id="world">
         <div class="listener" id="listener">
             <div class="listener-icon">👂</div>
@@ -76,7 +76,7 @@ ui.innerHTML = `
             <div id="listener-pos">X: 0.0, Y: 0.0</div>
         </div>
     </div>
-`
+`})
 container.appendChild(ui)
 
 
@@ -272,10 +272,13 @@ function createSoundMarker (x, y) {
     const percentX = (x + worldSize / 2) / worldSize
     const percentY = (worldSize / 2 - y) / worldSize
 
-    const marker = document.createElement('div')
-    marker.className = 'sound-marker'
-    marker.style.left = `${percentX * rect.width}px`
-    marker.style.top = `${percentY * rect.height}px`
+    const marker = createElement('div', {
+        class: 'sound-marker',
+        style: {
+            left: `${percentX * rect.width}px`,
+            top: `${percentY * rect.height}px`
+        }
+    })
 
     world.appendChild(marker)
     setTimeout(() => marker.remove(), 500)

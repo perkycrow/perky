@@ -1,7 +1,7 @@
 import RenderSystem from '/render/render_system.js'
 import Group2D from '/render/group_2d.js'
 import Circle from '/render/circle.js'
-import {createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
+import {createElement, createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
 const container = document.getElementById('render-container')
@@ -77,9 +77,9 @@ function animate () {
 animate()
 
 
-const infoPanel = document.createElement('div')
-infoPanel.className = 'info-panel'
-infoPanel.innerHTML = `
+const infoPanel = createElement('div', {
+    class: 'info-panel',
+    html: `
     <div class="info-item">
         <span class="info-label">Planet depth:</span>
         <span class="info-value">0</span>
@@ -90,6 +90,7 @@ infoPanel.innerHTML = `
     </div>
     <div class="info-hint">Moon depth changes automatically based on orbit position</div>
 `
+})
 container.appendChild(infoPanel)
 
 

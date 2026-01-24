@@ -1,4 +1,5 @@
 import Layer from './layer.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 export default class HTMLLayer extends Layer {
@@ -86,13 +87,16 @@ export default class HTMLLayer extends Layer {
 
 
     createWorldElement (content, worldX, worldY, options = {}) { // eslint-disable-line complexity -- clean
-        const el = document.createElement('div')
-        el.innerHTML = content
-        el.style.position = 'absolute'
-        el.style.pointerEvents = options.pointerEvents ?? 'auto'
-        el.style.willChange = 'transform'
-        el.style.left = '0'
-        el.style.top = '0'
+        const el = createElement('div', {
+            html: content,
+            style: {
+                position: 'absolute',
+                pointerEvents: options.pointerEvents ?? 'auto',
+                willChange: 'transform',
+                left: '0',
+                top: '0'
+            }
+        })
 
         const worldEl = {
             element: el,

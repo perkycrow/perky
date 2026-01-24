@@ -1,5 +1,6 @@
 import Application from '../application/application.js'
 import {toPascalCase} from '../core/utils.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 const baseHtml = `
@@ -126,14 +127,15 @@ export default class ExampleIndex extends Application {
 
 
 function createCard (example) {
-    const card = document.createElement('div')
-    card.className = `example-card category-${example.category}`
-    card.dataset.tags = example.tags.join(',')
-    card.dataset.category = example.category.toLowerCase()
-    card.dataset.title = example.title.toLowerCase()
-    card.dataset.description = example.description.toLowerCase()
-
-    card.innerHTML = `
+    const card = createElement('div', {
+        class: `example-card category-${example.category}`,
+        attrs: {
+            'data-tags': example.tags.join(','),
+            'data-category': example.category.toLowerCase(),
+            'data-title': example.title.toLowerCase(),
+            'data-description': example.description.toLowerCase()
+        },
+        html: `
         <div class="card-header">
             <div class="category-badge category-${example.category}">
                 <span>${toPascalCase(example.category)}</span>
@@ -155,6 +157,7 @@ function createCard (example) {
             </div>
         </div>
     `
+    })
 
     return card
 }

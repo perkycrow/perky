@@ -1,6 +1,7 @@
 import EditorComponent from './editor_component.js'
 import {controlsSheet} from './styles/index.js'
 import {emitChange} from './base_input.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 const selectInputCSS = `
@@ -254,24 +255,20 @@ export default class SelectInput extends EditorComponent {
 
 
     #buildDOM () {
-        this.#buttonEl = document.createElement('button')
-        this.#buttonEl.className = 'select-button'
-        this.#buttonEl.type = 'button'
+        this.#buttonEl = createElement('button', {
+            class: 'select-button',
+            type: 'button'
+        })
         this.#buttonEl.addEventListener('click', () => this.#toggle())
         this.#buttonEl.addEventListener('keydown', this.#handleKeyDown)
 
-        this.#labelEl = document.createElement('span')
-        this.#labelEl.className = 'select-label'
-
-        this.#chevronEl = document.createElement('span')
-        this.#chevronEl.className = 'select-chevron'
-        this.#chevronEl.textContent = '▼'
+        this.#labelEl = createElement('span', {class: 'select-label'})
+        this.#chevronEl = createElement('span', {class: 'select-chevron', text: '▼'})
 
         this.#buttonEl.appendChild(this.#labelEl)
         this.#buttonEl.appendChild(this.#chevronEl)
 
-        this.#dropdownEl = document.createElement('div')
-        this.#dropdownEl.className = 'select-dropdown'
+        this.#dropdownEl = createElement('div', {class: 'select-dropdown'})
 
         this.shadowRoot.appendChild(this.#buttonEl)
         this.shadowRoot.appendChild(this.#dropdownEl)
@@ -283,9 +280,10 @@ export default class SelectInput extends EditorComponent {
 
         for (let i = 0; i < this.#options.length; i++) {
             const opt = this.#options[i]
-            const optionEl = document.createElement('div')
-            optionEl.className = 'select-option'
-            optionEl.textContent = opt.label
+            const optionEl = createElement('div', {
+                class: 'select-option',
+                text: opt.label
+            })
             optionEl.dataset.index = i
 
             if (opt.value === this.#value) {

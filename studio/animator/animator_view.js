@@ -1,5 +1,5 @@
 import EditorComponent from '../../editor/editor_component.js'
-import {adoptStyleSheets} from '../../application/dom_utils.js'
+import {createElement, adoptStyleSheets} from '../../application/dom_utils.js'
 import '../../editor/layout/app_layout.js'
 import '../../editor/layout/overlay.js'
 import '../../editor/tools/animation_preview.js'
@@ -104,14 +104,12 @@ export default class AnimatorView extends EditorComponent {
         adoptStyleSheets(this.shadowRoot, animatorViewStyles, frameEditorStyles, settingsStyles)
 
 
-        this.#appLayout = document.createElement('app-layout')
-        this.#appLayout.setAttribute('no-menu', '')
-        this.#appLayout.setAttribute('no-close', '')
-        this.#appLayout.setAttribute('no-footer', '')
+        this.#appLayout = createElement('app-layout', {
+            attrs: {'no-menu': '', 'no-close': '', 'no-footer': ''}
+        })
 
 
-        this.#containerEl = document.createElement('div')
-        this.#containerEl.className = 'animator-container'
+        this.#containerEl = createElement('div', {class: 'animator-container'})
         this.#appLayout.appendChild(this.#containerEl)
 
         this.shadowRoot.appendChild(this.#appLayout)
@@ -135,8 +133,7 @@ export default class AnimatorView extends EditorComponent {
         this.#previewSectionEl = this.#createPreviewSection()
         this.#containerEl.appendChild(this.#previewSectionEl)
 
-        this.#timelineEl = document.createElement('animation-timeline')
-        this.#timelineEl.className = 'timeline-section'
+        this.#timelineEl = createElement('animation-timeline', {class: 'timeline-section'})
         if (this.#selectedAnimation) {
             this.#timelineEl.setFrames(this.#selectedAnimation.frames)
         }
@@ -149,8 +146,7 @@ export default class AnimatorView extends EditorComponent {
 
 
     #createPreviewSection () {
-        const section = document.createElement('div')
-        section.className = 'preview-section'
+        const section = createElement('div', {class: 'preview-section'})
 
         this.#previewEl = document.createElement('animation-preview')
         if (this.#selectedAnimation) {
@@ -186,15 +182,17 @@ export default class AnimatorView extends EditorComponent {
 
     #buildHeaderControls () {
 
-        const headerStart = document.createElement('div')
-        headerStart.className = 'header-controls'
-        headerStart.setAttribute('slot', 'header-start')
+        const headerStart = createElement('div', {
+            class: 'header-controls',
+            attrs: {slot: 'header-start'}
+        })
 
 
-        const backBtn = document.createElement('button')
-        backBtn.className = 'toolbar-btn'
-        backBtn.innerHTML = ICONS.chevronLeft
-        backBtn.title = 'Back to gallery'
+        const backBtn = createElement('button', {
+            class: 'toolbar-btn',
+            html: ICONS.chevronLeft,
+            title: 'Back to gallery'
+        })
         backBtn.addEventListener('click', () => {
             this.dispatchEvent(new CustomEvent('close', {bubbles: true}))
         })
@@ -211,8 +209,7 @@ export default class AnimatorView extends EditorComponent {
         headerStart.appendChild(settingsMenu)
 
 
-        const animatorSelect = document.createElement('select-input')
-        animatorSelect.setAttribute('context', 'studio')
+        const animatorSelect = createElement('select-input', {attrs: {context: 'studio'}})
         const animatorNames = Object.keys(this.#animators)
         const currentAnimatorName = animatorNames.find(name => this.#animators[name] === this.#animatorConfig)
         animatorSelect.setOptions(animatorNames)
@@ -222,8 +219,7 @@ export default class AnimatorView extends EditorComponent {
         })
 
 
-        this.#headerAnimSelect = document.createElement('select-input')
-        this.#headerAnimSelect.setAttribute('context', 'studio')
+        this.#headerAnimSelect = createElement('select-input', {attrs: {context: 'studio'}})
         const animOptions = this.#animator.children.map(anim => ({value: anim.$id, label: anim.$id}))
         this.#headerAnimSelect.setOptions(animOptions)
         this.#headerAnimSelect.setValue(this.#selectedAnimation?.$id)
@@ -239,15 +235,15 @@ export default class AnimatorView extends EditorComponent {
 
 
         if (this.#selectedAnimation) {
-            const headerEnd = document.createElement('div')
-            headerEnd.className = 'header-controls'
-            headerEnd.setAttribute('slot', 'header-end')
+            const headerEnd = createElement('div', {
+                class: 'header-controls',
+                attrs: {slot: 'header-end'}
+            })
 
             const anim = this.#selectedAnimation
 
 
-            const fpsInput = document.createElement('number-input')
-            fpsInput.setAttribute('context', 'studio')
+            const fpsInput = createElement('number-input', {attrs: {context: 'studio'}})
             fpsInput.setLabel('FPS')
             fpsInput.setValue(anim.fps)
             fpsInput.setStep(1)
@@ -259,8 +255,7 @@ export default class AnimatorView extends EditorComponent {
             })
 
 
-            const loopToggle = document.createElement('toggle-input')
-            loopToggle.setAttribute('context', 'studio')
+            const loopToggle = createElement('toggle-input', {attrs: {context: 'studio'}})
             loopToggle.setLabel('Loop')
             loopToggle.setChecked(anim.loop)
             loopToggle.addEventListener('change', (e) => {
@@ -268,8 +263,7 @@ export default class AnimatorView extends EditorComponent {
             })
 
 
-            const modeSelect = document.createElement('select-input')
-            modeSelect.setAttribute('context', 'studio')
+            const modeSelect = createElement('select-input', {attrs: {context: 'studio'}})
             modeSelect.setOptions([
                 {value: 'forward', label: 'Forward'},
                 {value: 'reverse', label: 'Reverse'},
@@ -289,8 +283,7 @@ export default class AnimatorView extends EditorComponent {
 
 
     #buildDrawers () {
-        this.#framesDrawerEl = document.createElement('side-drawer')
-        this.#framesDrawerEl.setAttribute('position', 'left')
+        this.#framesDrawerEl = createElement('side-drawer', {attrs: {position: 'left'}})
 
         this.#spritesheetEl = document.createElement('spritesheet-viewer')
         if (this.#spritesheet) {
@@ -304,12 +297,10 @@ export default class AnimatorView extends EditorComponent {
         this.#framesDrawerEl.appendChild(this.#spritesheetEl)
         this.#previewSectionEl.appendChild(this.#framesDrawerEl)
 
-        this.#editorDrawerEl = document.createElement('side-drawer')
-        this.#editorDrawerEl.setAttribute('position', 'right')
+        this.#editorDrawerEl = createElement('side-drawer', {attrs: {position: 'right'}})
         this.#previewSectionEl.appendChild(this.#editorDrawerEl)
 
-        this.#spritesheetSettingsDrawerEl = document.createElement('side-drawer')
-        this.#spritesheetSettingsDrawerEl.setAttribute('position', 'right')
+        this.#spritesheetSettingsDrawerEl = createElement('side-drawer', {attrs: {position: 'right'}})
         this.#previewSectionEl.appendChild(this.#spritesheetSettingsDrawerEl)
     }
 

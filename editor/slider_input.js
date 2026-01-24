@@ -1,6 +1,7 @@
 import EditorComponent from './editor_component.js'
 import {controlsSheet} from './styles/index.js'
 import {emitChange, handleAttributeChange} from './base_input.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 const sliderInputCSS = `
@@ -216,23 +217,23 @@ export default class SliderInput extends EditorComponent {
 
 
     #buildDOM () {
-        const container = document.createElement('div')
-        container.className = 'slider-input-container'
+        const container = createElement('div', {class: 'slider-input-container'})
 
-        this.#labelEl = document.createElement('span')
-        this.#labelEl.className = 'slider-input-label'
-        this.#labelEl.textContent = this.#label
+        this.#labelEl = createElement('span', {
+            class: 'slider-input-label',
+            text: this.#label
+        })
 
-        this.#slider = document.createElement('input')
-        this.#slider.type = 'range'
-        this.#slider.className = 'slider-input-track'
-        this.#slider.min = this.#min
-        this.#slider.max = this.#max
-        this.#slider.step = this.#step
+        this.#slider = createElement('input', {
+            type: 'range',
+            class: 'slider-input-track',
+            min: this.#min,
+            max: this.#max,
+            step: this.#step
+        })
         this.#slider.addEventListener('input', () => this.#handleInput())
 
-        this.#valueEl = document.createElement('span')
-        this.#valueEl.className = 'slider-input-value'
+        this.#valueEl = createElement('span', {class: 'slider-input-value'})
 
         container.appendChild(this.#labelEl)
         container.appendChild(this.#slider)

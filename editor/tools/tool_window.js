@@ -1,4 +1,5 @@
 import EditorComponent from '../editor_component.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class ToolWindow extends EditorComponent {
@@ -143,37 +144,27 @@ export default class ToolWindow extends EditorComponent {
 
 
     #buildDOM () {
-        const container = document.createElement('div')
-        container.className = 'tool-window'
+        const container = createElement('div', {class: 'tool-window'})
 
-        this.#headerEl = document.createElement('div')
-        this.#headerEl.className = 'tool-window-header'
+        this.#headerEl = createElement('div', {class: 'tool-window-header'})
 
-        const iconEl = document.createElement('span')
-        iconEl.className = 'tool-window-icon'
-        iconEl.innerHTML = this.#icon
+        const iconEl = createElement('span', {class: 'tool-window-icon', html: this.#icon})
         this.#headerEl.appendChild(iconEl)
 
-        const titleEl = document.createElement('span')
-        titleEl.className = 'tool-window-title'
-        titleEl.textContent = this.#title
+        const titleEl = createElement('span', {class: 'tool-window-title', text: this.#title})
         this.#headerEl.appendChild(titleEl)
 
-        const closeBtn = document.createElement('button')
-        closeBtn.className = 'tool-window-close'
-        closeBtn.innerHTML = '×'
+        const closeBtn = createElement('button', {class: 'tool-window-close', html: '×'})
         closeBtn.addEventListener('click', () => this.close())
         this.#headerEl.appendChild(closeBtn)
 
         container.appendChild(this.#headerEl)
 
-        this.#contentEl = document.createElement('div')
-        this.#contentEl.className = 'tool-window-content'
+        this.#contentEl = createElement('div', {class: 'tool-window-content'})
         this.#contentEl.appendChild(document.createElement('slot'))
         container.appendChild(this.#contentEl)
 
-        const resizeHandle = document.createElement('div')
-        resizeHandle.className = 'tool-window-resize'
+        const resizeHandle = createElement('div', {class: 'tool-window-resize'})
         container.appendChild(resizeHandle)
 
         this.shadowRoot.appendChild(container)
