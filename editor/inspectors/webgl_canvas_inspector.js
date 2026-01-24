@@ -2,6 +2,7 @@ import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
 import WebGLRenderer from '../../render/webgl_renderer.js'
 import {passStyles, renderPass} from './inspector_helpers.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class WebGLCanvasInspector extends BaseInspector {
@@ -56,9 +57,10 @@ export default class WebGLCanvasInspector extends BaseInspector {
         this.addRow('passes', passes.length.toString(), true)
 
         if (passes.length === 0) {
-            const noPassesEl = document.createElement('div')
-            noPassesEl.className = 'no-passes'
-            noPassesEl.textContent = 'No post-processing passes'
+            const noPassesEl = createElement('div', {
+                class: 'no-passes',
+                text: 'No post-processing passes'
+            })
             this.gridEl.appendChild(noPassesEl)
             return
         }

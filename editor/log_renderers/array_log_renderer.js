@@ -1,4 +1,5 @@
 import {registerLogRenderer, renderLogItem} from './log_renderer_registry.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 const MAX_PREVIEW_ITEMS = 5
@@ -57,19 +58,10 @@ function createPreview (arr) {
 
 function renderExpandedContent (arr, container) {
     for (let i = 0; i < arr.length; i++) {
-        const row = document.createElement('div')
-        row.className = 'log-array-row'
-
-        const indexEl = document.createElement('span')
-        indexEl.className = 'log-array-index'
-        indexEl.textContent = i
-
-        const separator = document.createElement('span')
-        separator.className = 'log-array-separator'
-        separator.textContent = ': '
-
-        const valueEl = document.createElement('span')
-        valueEl.className = 'log-array-value'
+        const row = createElement('div', {class: 'log-array-row'})
+        const indexEl = createElement('span', {class: 'log-array-index', text: i})
+        const separator = createElement('span', {class: 'log-array-separator', text: ': '})
+        const valueEl = createElement('span', {class: 'log-array-value'})
 
         const customRender = renderLogItem(arr[i])
         if (customRender) {
@@ -84,9 +76,7 @@ function renderExpandedContent (arr, container) {
         container.appendChild(row)
     }
 
-    const lengthRow = document.createElement('div')
-    lengthRow.className = 'log-array-row log-array-length'
-    lengthRow.textContent = `length: ${arr.length}`
+    const lengthRow = createElement('div', {class: 'log-array-row log-array-length', text: `length: ${arr.length}`})
     container.appendChild(lengthRow)
 }
 

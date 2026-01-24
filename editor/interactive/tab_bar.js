@@ -1,4 +1,5 @@
 import EditorComponent from '../editor_component.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class TabBar extends EditorComponent {
@@ -133,11 +134,11 @@ export default class TabBar extends EditorComponent {
 
 
     #buildDOM () {
-        this.#container = document.createElement('div')
-        this.#container.style.cssText = 'display:contents;'
+        this.#container = createElement('div', {
+            style: 'display:contents;'
+        })
 
-        const slot = document.createElement('slot')
-        slot.name = 'tab'
+        const slot = createElement('slot', {name: 'tab'})
         slot.addEventListener('slotchange', () => this.#setupSlottedTabs())
 
         this.shadowRoot.appendChild(this.#container)
@@ -149,9 +150,10 @@ export default class TabBar extends EditorComponent {
         this.#container.innerHTML = ''
 
         for (const tab of this.#tabs) {
-            const btn = document.createElement('button')
-            btn.className = 'tab'
-            btn.textContent = tab.label
+            const btn = createElement('button', {
+                class: 'tab',
+                text: tab.label
+            })
             btn.dataset.value = tab.value
 
             if (tab.value === this.#value) {

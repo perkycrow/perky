@@ -1,4 +1,5 @@
 import EditorComponent from '../editor_component.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class Panel extends EditorComponent {
@@ -214,28 +215,20 @@ export default class Panel extends EditorComponent {
 
     #buildDOM () {
 
-        this.#headerEl = document.createElement('div')
-        this.#headerEl.className = 'panel-header'
+        this.#headerEl = createElement('div', {class: 'panel-header'})
         this.#headerEl.addEventListener('pointerdown', (e) => this.#handleDragStart(e))
 
-        this.#titleEl = document.createElement('span')
-        this.#titleEl.className = 'panel-title'
-        this.#titleEl.textContent = this.title
+        this.#titleEl = createElement('span', {class: 'panel-title', text: this.title})
 
-        const actions = document.createElement('div')
-        actions.className = 'panel-actions'
+        const actions = createElement('div', {class: 'panel-actions'})
 
-        this.#collapseBtn = document.createElement('button')
-        this.#collapseBtn.className = 'panel-btn'
-        this.#collapseBtn.innerHTML = '−'
+        this.#collapseBtn = createElement('button', {class: 'panel-btn', html: '−'})
         this.#collapseBtn.addEventListener('click', (e) => {
             e.stopPropagation()
             this.toggle()
         })
 
-        const closeBtn = document.createElement('button')
-        closeBtn.className = 'panel-btn'
-        closeBtn.innerHTML = '✕'
+        const closeBtn = createElement('button', {class: 'panel-btn', html: '✕'})
         closeBtn.addEventListener('click', (e) => {
             e.stopPropagation()
             this.#emitEvent('close')
@@ -248,8 +241,7 @@ export default class Panel extends EditorComponent {
         this.#headerEl.appendChild(actions)
 
 
-        this.#contentEl = document.createElement('div')
-        this.#contentEl.className = 'panel-content'
+        this.#contentEl = createElement('div', {class: 'panel-content'})
 
         const slot = document.createElement('slot')
         this.#contentEl.appendChild(slot)

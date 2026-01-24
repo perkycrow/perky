@@ -1,4 +1,5 @@
 import EditorComponent from '../editor_component.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class Overlay extends EditorComponent {
@@ -137,16 +138,14 @@ export default class Overlay extends EditorComponent {
 
 
     #buildDOM () {
-        this.#backdrop = document.createElement('div')
-        this.#backdrop.className = 'backdrop'
+        this.#backdrop = createElement('div', {class: 'backdrop'})
         this.#backdrop.addEventListener('click', (e) => {
             if (e.target === this.#backdrop && !this.hasAttribute('no-close-on-backdrop')) {
                 this.close()
             }
         })
 
-        this.#container = document.createElement('div')
-        this.#container.className = 'container'
+        this.#container = createElement('div', {class: 'container'})
 
         const slot = document.createElement('slot')
         this.#container.appendChild(slot)

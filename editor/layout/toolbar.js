@@ -1,4 +1,5 @@
 import EditorComponent from '../editor_component.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class Toolbar extends EditorComponent {
@@ -87,28 +88,19 @@ export default class Toolbar extends EditorComponent {
 
     #buildDOM () {
 
-        const start = document.createElement('div')
-        start.className = 'toolbar-section toolbar-start'
-        const startSlot = document.createElement('slot')
-        startSlot.name = 'start'
+        const start = createElement('div', {class: 'toolbar-section toolbar-start'})
+        const startSlot = createElement('slot', {name: 'start'})
         start.appendChild(startSlot)
 
-
-        const center = document.createElement('div')
-        center.className = 'toolbar-section toolbar-center'
-        const centerSlot = document.createElement('slot')
-        centerSlot.name = 'center'
+        const center = createElement('div', {class: 'toolbar-section toolbar-center'})
+        const centerSlot = createElement('slot', {name: 'center'})
         center.appendChild(centerSlot)
-
 
         const defaultSlot = document.createElement('slot')
         center.appendChild(defaultSlot)
 
-
-        const end = document.createElement('div')
-        end.className = 'toolbar-section toolbar-end'
-        const endSlot = document.createElement('slot')
-        endSlot.name = 'end'
+        const end = createElement('div', {class: 'toolbar-section toolbar-end'})
+        const endSlot = createElement('slot', {name: 'end'})
         end.appendChild(endSlot)
 
         this.shadowRoot.appendChild(start)

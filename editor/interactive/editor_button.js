@@ -1,5 +1,6 @@
 import EditorComponent from '../editor_component.js'
 import {controlsSheet} from '../styles/index.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class EditorButton extends EditorComponent {
@@ -80,9 +81,10 @@ export default class EditorButton extends EditorComponent {
 
 
     #render () {
-        this.#buttonEl = document.createElement('button')
-        this.#buttonEl.setAttribute('type', 'button')
-        this.#buttonEl.innerHTML = '<slot></slot>'
+        this.#buttonEl = createElement('button', {
+            type: 'button',
+            html: '<slot></slot>'
+        })
 
         this.#buttonEl.addEventListener('click', (e) => {
             if (this.disabled) {

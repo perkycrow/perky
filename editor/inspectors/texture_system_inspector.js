@@ -1,6 +1,7 @@
 import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
 import TextureSystem from '../../render/textures/texture_system.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class TextureSystemInspector extends BaseInspector {
@@ -251,7 +252,7 @@ export default class TextureSystemInspector extends BaseInspector {
 
         this.clearContent()
 
-        const container = document.createElement('div')
+        const container = createElement('div')
         this.#mainContainer = container
 
         container.appendChild(this.#createStatsSection())
@@ -263,8 +264,7 @@ export default class TextureSystemInspector extends BaseInspector {
 
 
     #createStatsSection () {
-        const stats = document.createElement('div')
-        stats.className = 'stats-grid'
+        const stats = createElement('div', {class: 'stats-grid'})
 
         const atlases = this.module.atlases
         const regionCount = this.module.regionCount
@@ -293,8 +293,7 @@ export default class TextureSystemInspector extends BaseInspector {
             return section
         }
 
-        const atlasList = document.createElement('div')
-        atlasList.className = 'atlas-list'
+        const atlasList = createElement('div', {class: 'atlas-list'})
 
         atlases.forEach((atlas, index) => {
             atlasList.appendChild(this.#createAtlasCard(atlas, index))
@@ -307,32 +306,26 @@ export default class TextureSystemInspector extends BaseInspector {
 
 
     #createSection (title, key, count = null) {
-        const section = document.createElement('div')
-        section.className = 'section'
-
-        const header = document.createElement('div')
-        header.className = 'section-header'
-
-        const titleEl = document.createElement('div')
-        titleEl.className = 'section-title'
-        titleEl.textContent = title
+        const section = createElement('div', {class: 'section'})
+        const header = createElement('div', {class: 'section-header'})
+        const titleEl = createElement('div', {class: 'section-title', text: title})
 
         if (count !== null) {
-            const countEl = document.createElement('span')
-            countEl.className = 'section-count'
-            countEl.textContent = count
+            const countEl = createElement('span', {class: 'section-count', text: count})
             titleEl.appendChild(countEl)
         }
 
-        const toggle = document.createElement('span')
-        toggle.className = `section-toggle ${this.#sectionsState[key] ? '' : 'collapsed'}`
-        toggle.textContent = '▼'
+        const toggle = createElement('span', {
+            class: `section-toggle ${this.#sectionsState[key] ? '' : 'collapsed'}`,
+            text: '▼'
+        })
 
         header.appendChild(titleEl)
         header.appendChild(toggle)
 
-        const content = document.createElement('div')
-        content.className = `section-content ${this.#sectionsState[key] ? '' : 'collapsed'}`
+        const content = createElement('div', {
+            class: `section-content ${this.#sectionsState[key] ? '' : 'collapsed'}`
+        })
 
         header.addEventListener('click', () => {
             this.#sectionsState[key] = !this.#sectionsState[key]
@@ -348,45 +341,26 @@ export default class TextureSystemInspector extends BaseInspector {
 
 
     #createAtlasCard (atlas, index) {
-        const card = document.createElement('div')
-        card.className = 'atlas-card'
-
-        const header = document.createElement('div')
-        header.className = 'atlas-header'
-
-        const titleContainer = document.createElement('div')
-        titleContainer.className = 'atlas-title'
-
-        const toggle = document.createElement('span')
-        toggle.className = 'atlas-toggle'
-        toggle.textContent = '▼'
-
-        const name = document.createElement('span')
-        name.className = 'atlas-name'
-        name.textContent = `Atlas ${index + 1}`
-
-        const badge = document.createElement('span')
-        badge.className = 'atlas-badge'
-        badge.textContent = `${atlas.width}×${atlas.height}`
+        const card = createElement('div', {class: 'atlas-card'})
+        const header = createElement('div', {class: 'atlas-header'})
+        const titleContainer = createElement('div', {class: 'atlas-title'})
+        const toggle = createElement('span', {class: 'atlas-toggle', text: '▼'})
+        const name = createElement('span', {class: 'atlas-name', text: `Atlas ${index + 1}`})
+        const badge = createElement('span', {class: 'atlas-badge', text: `${atlas.width}×${atlas.height}`})
 
         titleContainer.appendChild(toggle)
         titleContainer.appendChild(name)
 
-        const regionCount = document.createElement('span')
-        regionCount.className = 'atlas-badge'
-        regionCount.textContent = `${atlas.regionCount} regions`
+        const regionCount = createElement('span', {class: 'atlas-badge', text: `${atlas.regionCount} regions`})
 
         header.appendChild(titleContainer)
 
-        const badges = document.createElement('div')
-        badges.style.display = 'flex'
-        badges.style.gap = '4px'
+        const badges = createElement('div', {style: {display: 'flex', gap: '4px'}})
         badges.appendChild(regionCount)
         badges.appendChild(badge)
         header.appendChild(badges)
 
-        const content = document.createElement('div')
-        content.className = 'atlas-content'
+        const content = createElement('div', {class: 'atlas-content'})
 
         const isCollapsed = this.#atlasExpandState[index] === false
         if (isCollapsed) {
@@ -400,14 +374,13 @@ export default class TextureSystemInspector extends BaseInspector {
             content.classList.toggle('collapsed')
         })
 
-        const preview = document.createElement('div')
-        preview.className = 'atlas-preview'
+        const preview = createElement('div', {class: 'atlas-preview'})
 
         const canvas = atlas.canvas
         if (canvas) {
-            const displayCanvas = document.createElement('canvas')
-            displayCanvas.width = canvas.width
-            displayCanvas.height = canvas.height
+            const displayCanvas = createElement('canvas', {
+                attrs: {width: canvas.width, height: canvas.height}
+            })
             const ctx = displayCanvas.getContext('2d')
             ctx.drawImage(canvas, 0, 0)
             preview.appendChild(displayCanvas)
@@ -426,16 +399,9 @@ export default class TextureSystemInspector extends BaseInspector {
 
 
 function createStatCard (value, label) {
-    const card = document.createElement('div')
-    card.className = 'stat-card'
-
-    const valueEl = document.createElement('div')
-    valueEl.className = 'stat-value'
-    valueEl.textContent = value
-
-    const labelEl = document.createElement('div')
-    labelEl.className = 'stat-label'
-    labelEl.textContent = label
+    const card = createElement('div', {class: 'stat-card'})
+    const valueEl = createElement('div', {class: 'stat-value', text: value})
+    const labelEl = createElement('div', {class: 'stat-label', text: label})
 
     card.appendChild(valueEl)
     card.appendChild(labelEl)
@@ -445,28 +411,18 @@ function createStatCard (value, label) {
 
 
 function createRegionsList (atlas) {
-    const section = document.createElement('div')
-    section.className = 'regions-section'
-
-    const header = document.createElement('div')
-    header.className = 'regions-header'
-    header.textContent = 'Regions'
-
-    const list = document.createElement('div')
-    list.className = 'regions-list'
+    const section = createElement('div', {class: 'regions-section'})
+    const header = createElement('div', {class: 'regions-header', text: 'Regions'})
+    const list = createElement('div', {class: 'regions-list'})
 
     const regions = atlas.getAllRegions()
     for (const [id, region] of regions) {
-        const tag = document.createElement('span')
-        tag.className = 'region-tag'
-        tag.title = `${id} (${region.width}×${region.height})`
-
-        const nameSpan = document.createElement('span')
-        nameSpan.textContent = id
-
-        const sizeSpan = document.createElement('span')
-        sizeSpan.className = 'region-size'
-        sizeSpan.textContent = `${region.width}×${region.height}`
+        const tag = createElement('span', {
+            class: 'region-tag',
+            title: `${id} (${region.width}×${region.height})`
+        })
+        const nameSpan = createElement('span', {text: id})
+        const sizeSpan = createElement('span', {class: 'region-size', text: `${region.width}×${region.height}`})
 
         tag.appendChild(nameSpan)
         tag.appendChild(sizeSpan)

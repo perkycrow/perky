@@ -1,4 +1,5 @@
 import {registerLogRenderer, renderLogItem} from './log_renderer_registry.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 const MAX_PREVIEW_KEYS = 5
@@ -79,19 +80,10 @@ function renderExpandedContent (obj, container) {
     }
 
     for (const key of properties) {
-        const row = document.createElement('div')
-        row.className = 'log-object-row'
-
-        const keyEl = document.createElement('span')
-        keyEl.className = 'log-object-key'
-        keyEl.textContent = key
-
-        const separator = document.createElement('span')
-        separator.className = 'log-object-separator'
-        separator.textContent = ': '
-
-        const valueEl = document.createElement('span')
-        valueEl.className = 'log-object-value'
+        const row = createElement('div', {class: 'log-object-row'})
+        const keyEl = createElement('span', {class: 'log-object-key', text: key})
+        const separator = createElement('span', {class: 'log-object-separator', text: ': '})
+        const valueEl = createElement('span', {class: 'log-object-value'})
 
         const customRender = renderLogItem(obj[key])
         if (customRender) {
@@ -107,24 +99,13 @@ function renderExpandedContent (obj, container) {
     }
 
     if (methods.length > 0) {
-        const row = document.createElement('div')
-        row.className = 'log-object-row log-object-methods-row'
-
-        const keyEl = document.createElement('span')
-        keyEl.className = 'log-object-key'
-        keyEl.textContent = 'methods'
-
-        const separator = document.createElement('span')
-        separator.className = 'log-object-separator'
-        separator.textContent = ': '
-
-        const valueEl = document.createElement('span')
-        valueEl.className = 'log-object-value log-object-methods'
+        const row = createElement('div', {class: 'log-object-row log-object-methods-row'})
+        const keyEl = createElement('span', {class: 'log-object-key', text: 'methods'})
+        const separator = createElement('span', {class: 'log-object-separator', text: ': '})
+        const valueEl = createElement('span', {class: 'log-object-value log-object-methods'})
 
         for (let i = 0; i < methods.length; i++) {
-            const methodSpan = document.createElement('span')
-            methodSpan.className = 'log-object-method-name'
-            methodSpan.textContent = methods[i]
+            const methodSpan = createElement('span', {class: 'log-object-method-name', text: methods[i]})
             valueEl.appendChild(methodSpan)
 
             if (i < methods.length - 1) {

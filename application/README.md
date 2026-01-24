@@ -2,8 +2,6 @@
 
 The layer between core modules and actual apps. Takes a PerkyModule and adds everything you need to run something in a browser: DOM handling, asset loading, views.
 
-If [core/](../core/) is the engine, this is the chassis.
-
 ---
 
 ## How it fits together

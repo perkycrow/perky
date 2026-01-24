@@ -1,4 +1,5 @@
 import EditorComponent from '../editor_component.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 const SWIPE_THRESHOLD = 50
@@ -137,13 +138,10 @@ export default class SideDrawer extends EditorComponent {
 
 
     #buildDOM () {
-        this.#closeBtn = document.createElement('button')
-        this.#closeBtn.className = 'drawer-close'
-        this.#closeBtn.innerHTML = '✕'
+        this.#closeBtn = createElement('button', {class: 'drawer-close', html: '✕'})
         this.#closeBtn.addEventListener('click', () => this.close())
 
-        this.#contentEl = document.createElement('div')
-        this.#contentEl.className = 'drawer-content'
+        this.#contentEl = createElement('div', {class: 'drawer-content'})
 
         const slot = document.createElement('slot')
         this.#contentEl.appendChild(slot)
