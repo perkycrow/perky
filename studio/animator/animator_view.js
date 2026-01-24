@@ -15,6 +15,10 @@ import {ICONS} from '../../editor/devtools/devtools_icons.js'
 import SpriteAnimator from '../../render/sprite_animator.js'
 import TextureRegion from '../../render/textures/texture_region.js'
 import {animatorViewStyles, frameEditorStyles, settingsStyles} from './animator_view.styles.js'
+import {inferSpritesheetName, collectEventSuggestions, buildAnimationConfig} from './animator_helpers.js'
+import {buildFrameEditor} from './components/frame_editor.js'
+import {buildAnchorEditor} from './components/anchor_editor.js'
+import {buildAnimationSettings} from './components/animation_settings.js'
 
 
 export default class AnimatorView extends BaseEditorComponent {
@@ -40,8 +44,8 @@ export default class AnimatorView extends BaseEditorComponent {
     #headerAnimSelect = null
     #drawerAnimSelect = null
     #anchor = {x: 0.5, y: 0.5}
-    #anchorXInput = null
-    #anchorYInput = null
+    #anchorEditor = null
+    #animationSettings = null
     #backgroundImage = null
 
     connectedCallback () {
@@ -84,7 +88,7 @@ export default class AnimatorView extends BaseEditorComponent {
             textureSystem: this.#context.textureSystem
         })
 
-        const spritesheetName = this.#inferSpritesheetName()
+        const spritesheetName = inferSpritesheetName(animatorConfig)
         this.#spritesheet = spritesheetName
             ? this.#context.textureSystem.getSpritesheet(spritesheetName)
             : null
@@ -93,23 +97,6 @@ export default class AnimatorView extends BaseEditorComponent {
         this.#selectedAnimation = this.#animator.children[0] || null
 
         this.#render()
-    }
-
-
-    #inferSpritesheetName () {
-        const animations = this.#animatorConfig?.animations
-        if (!animations) {
-            return null
-        }
-
-        const firstAnim = Object.values(animations)[0]
-        if (firstAnim?.source) {
-            return firstAnim.source.split(':')[0]
-        }
-        if (firstAnim?.frames?.[0]?.source) {
-            return firstAnim.frames[0].source.split(':')[0]
-        }
-        return null
     }
 
 
@@ -344,214 +331,15 @@ export default class AnimatorView extends BaseEditorComponent {
     #openSpritesheetSettings () {
         this.#editorDrawerEl.close()
         this.#spritesheetSettingsDrawerEl.innerHTML = ''
-        this.#buildSpritesheetSettings()
+
+        this.#anchorEditor = buildAnchorEditor(this.#spritesheet, this.#anchor, (anchor) => {
+            this.#anchorEditor.syncInputs()
+            this.#anchorEditor.updatePreview()
+            this.#previewEl?.setAnchor(anchor)
+        })
+
+        this.#spritesheetSettingsDrawerEl.appendChild(this.#anchorEditor.container)
         this.#spritesheetSettingsDrawerEl.open()
-    }
-
-
-    #buildSpritesheetSettings () {
-        const container = document.createElement('div')
-        container.className = 'spritesheet-settings'
-
-        const anchorSection = document.createElement('div')
-        anchorSection.className = 'settings-section'
-
-        const anchorLabel = document.createElement('div')
-        anchorLabel.className = 'settings-label'
-        anchorLabel.textContent = 'Anchor'
-        anchorSection.appendChild(anchorLabel)
-
-        const anchorPreview = this.#buildAnchorPreview()
-        anchorSection.appendChild(anchorPreview)
-
-        const anchorInputs = this.#buildAnchorInputs()
-        anchorSection.appendChild(anchorInputs)
-
-        container.appendChild(anchorSection)
-        this.#spritesheetSettingsDrawerEl.appendChild(container)
-    }
-
-
-    #buildAnchorPreview () {
-        const wrapper = document.createElement('div')
-        wrapper.className = 'anchor-preview-wrapper'
-
-        const canvas = document.createElement('canvas')
-        canvas.className = 'anchor-preview-canvas'
-        wrapper.appendChild(canvas)
-
-        const handle = document.createElement('div')
-        handle.className = 'anchor-handle'
-        wrapper.appendChild(handle)
-
-        requestAnimationFrame(() => {
-            const rect = wrapper.getBoundingClientRect()
-            const size = Math.floor(rect.width)
-            canvas.width = size
-            canvas.height = size
-            this.#renderAnchorPreview(canvas, handle)
-        })
-
-        this.#setupAnchorDrag(wrapper, canvas, handle)
-
-        return wrapper
-    }
-
-
-    #renderAnchorPreview (canvas, handle) {
-        const ctx = canvas.getContext('2d')
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-        const frameData = this.#getFirstFrameData()
-        if (!frameData) {
-            return
-        }
-
-        const {image, region} = frameData
-        const scale = Math.min(
-            (canvas.width - 20) / region.width,
-            (canvas.height - 20) / region.height
-        )
-        const drawWidth = region.width * scale
-        const drawHeight = region.height * scale
-        const offsetX = (canvas.width - drawWidth) / 2
-        const offsetY = (canvas.height - drawHeight) / 2
-
-        ctx.imageSmoothingEnabled = false
-        ctx.drawImage(
-            image,
-            region.x, region.y, region.width, region.height,
-            offsetX, offsetY, drawWidth, drawHeight
-        )
-
-        const anchorX = offsetX + this.#anchor.x * drawWidth
-        const anchorY = offsetY + (1 - this.#anchor.y) * drawHeight
-
-        handle.style.left = `${anchorX}px`
-        handle.style.top = `${anchorY}px`
-
-        handle.dataset.offsetX = offsetX
-        handle.dataset.offsetY = offsetY
-        handle.dataset.drawWidth = drawWidth
-        handle.dataset.drawHeight = drawHeight
-    }
-
-
-    #getFirstFrameData () {
-        if (!this.#spritesheet) {
-            return null
-        }
-
-        const frames = this.#spritesheet.getFrames()
-        if (!frames.length) {
-            return null
-        }
-
-        const firstFrame = frames[0]
-        return {
-            image: firstFrame.image,
-            region: firstFrame.region
-        }
-    }
-
-
-    #setupAnchorDrag (wrapper, canvas, handle) {
-        let isDragging = false
-
-        const updateAnchor = (e) => {
-            const rect = canvas.getBoundingClientRect()
-            const offsetX = parseFloat(handle.dataset.offsetX) || 0
-            const offsetY = parseFloat(handle.dataset.offsetY) || 0
-            const drawWidth = parseFloat(handle.dataset.drawWidth) || 1
-            const drawHeight = parseFloat(handle.dataset.drawHeight) || 1
-
-            const x = e.clientX - rect.left
-            const y = e.clientY - rect.top
-
-            const anchorX = Math.max(0, Math.min(1, (x - offsetX) / drawWidth))
-            const anchorY = Math.max(0, Math.min(1, 1 - (y - offsetY) / drawHeight))
-
-            this.#anchor.x = Math.round(anchorX * 100) / 100
-            this.#anchor.y = Math.round(anchorY * 100) / 100
-
-            this.#renderAnchorPreview(canvas, handle)
-            this.#syncAnchorInputs()
-            this.#previewEl?.setAnchor(this.#anchor)
-        }
-
-        handle.addEventListener('pointerdown', (e) => {
-            isDragging = true
-            handle.setPointerCapture(e.pointerId)
-        })
-
-        handle.addEventListener('pointermove', (e) => {
-            if (isDragging) {
-                updateAnchor(e)
-            }
-        })
-
-        handle.addEventListener('pointerup', () => {
-            isDragging = false
-        })
-
-        canvas.addEventListener('click', updateAnchor)
-    }
-
-
-    #buildAnchorInputs () {
-        const row = document.createElement('div')
-        row.className = 'settings-row anchor-inputs'
-
-        const xInput = document.createElement('number-input')
-        xInput.setAttribute('context', 'studio')
-        xInput.setLabel('X')
-        xInput.setValue(this.#anchor.x)
-        xInput.setStep(0.01)
-        xInput.setPrecision(2)
-        xInput.setMin(0)
-        xInput.setMax(1)
-        xInput.addEventListener('change', (e) => {
-            this.#anchor.x = e.detail.value
-            this.#updateAnchorPreview()
-        })
-
-        const yInput = document.createElement('number-input')
-        yInput.setAttribute('context', 'studio')
-        yInput.setLabel('Y')
-        yInput.setValue(this.#anchor.y)
-        yInput.setStep(0.01)
-        yInput.setPrecision(2)
-        yInput.setMin(0)
-        yInput.setMax(1)
-        yInput.addEventListener('change', (e) => {
-            this.#anchor.y = e.detail.value
-            this.#updateAnchorPreview()
-        })
-
-        row.appendChild(xInput)
-        row.appendChild(yInput)
-
-        this.#anchorXInput = xInput
-        this.#anchorYInput = yInput
-
-        return row
-    }
-
-
-    #syncAnchorInputs () {
-        this.#anchorXInput?.setValue(this.#anchor.x)
-        this.#anchorYInput?.setValue(this.#anchor.y)
-    }
-
-
-    #updateAnchorPreview () {
-        const canvas = this.#spritesheetSettingsDrawerEl.querySelector('.anchor-preview-canvas')
-        const handle = this.#spritesheetSettingsDrawerEl.querySelector('.anchor-handle')
-        if (canvas && handle) {
-            this.#renderAnchorPreview(canvas, handle)
-        }
-        this.#previewEl?.setAnchor(this.#anchor)
     }
 
 
@@ -561,196 +349,32 @@ export default class AnimatorView extends BaseEditorComponent {
         this.#timelineEl?.clearSelection()
         this.#drawerMode = 'settings'
         this.#editorDrawerEl.innerHTML = ''
-        this.#buildAnimationSettings()
+
+        this.#animationSettings = buildAnimationSettings(this.#animator, this.#selectedAnimation, {
+            onAnimationChange: (animId) => {
+                this.#selectedAnimation = this.#animator.getChild(animId)
+                this.#updateForSelectedAnimation()
+                this.#headerAnimSelect?.setValue(animId)
+                this.#animationSettings.rebuild(this.#selectedAnimation)
+            },
+            onMotionChange: (motion) => {
+                this.#previewEl?.setMotion(motion)
+            },
+            onMotionUpdate: (motion) => {
+                this.#previewEl?.updateMotion(motion)
+            }
+        })
+
+        this.#drawerAnimSelect = this.#animationSettings.animSelect
+        this.#editorDrawerEl.appendChild(this.#animationSettings.container)
         this.#editorDrawerEl.open()
-    }
-
-
-    #buildAnimationSettings () {
-        const container = document.createElement('div')
-        container.className = 'animation-settings'
-
-        const animSection = document.createElement('div')
-        animSection.className = 'settings-section'
-
-        const animLabel = document.createElement('div')
-        animLabel.className = 'settings-label'
-        animLabel.textContent = 'Animation'
-        animSection.appendChild(animLabel)
-
-        this.#drawerAnimSelect = document.createElement('select-input')
-        this.#drawerAnimSelect.setAttribute('context', 'studio')
-        const animOptions = this.#animator.children.map(anim => ({value: anim.$id, label: anim.$id}))
-        this.#drawerAnimSelect.setOptions(animOptions)
-        this.#drawerAnimSelect.setValue(this.#selectedAnimation?.$id)
-        this.#drawerAnimSelect.addEventListener('change', (e) => {
-            this.#selectedAnimation = this.#animator.getChild(e.detail.value)
-            this.#updateForSelectedAnimation()
-            this.#headerAnimSelect?.setValue(e.detail.value)
-            this.#rebuildAnimationSettingsContent(container)
-        })
-        animSection.appendChild(this.#drawerAnimSelect)
-        container.appendChild(animSection)
-
-        this.#buildAnimationSettingsContent(container)
-        this.#editorDrawerEl.appendChild(container)
-    }
-
-
-    #buildAnimationSettingsContent (container) {
-        const anim = this.#selectedAnimation
-        if (!anim) {
-            return
-        }
-
-        const motion = anim.motion || {}
-        const hasMotion = motion.enabled || motion.mode
-        const currentMode = hasMotion ? (motion.mode || 'sidescroller') : 'none'
-
-        const motionSection = document.createElement('div')
-        motionSection.className = 'settings-section'
-        motionSection.dataset.setting = 'motion'
-
-        const motionLabel = document.createElement('div')
-        motionLabel.className = 'settings-label'
-        motionLabel.textContent = 'Motion'
-        motionSection.appendChild(motionLabel)
-
-        const motionOptions = document.createElement('div')
-        motionOptions.className = 'motion-options'
-        motionOptions.style.display = currentMode === 'none' ? 'none' : 'flex'
-        motionOptions.style.flexDirection = 'column'
-        motionOptions.style.gap = 'var(--spacing-md)'
-        motionOptions.style.marginTop = 'var(--spacing-md)'
-
-        const modeSelect = document.createElement('select-input')
-        modeSelect.setAttribute('context', 'studio')
-        modeSelect.setOptions([
-            {value: 'none', label: 'None'},
-            {value: 'sidescroller', label: 'Sidescroller'},
-            {value: 'topdown', label: 'Top-down'}
-        ])
-        modeSelect.setValue(currentMode)
-        modeSelect.addEventListener('change', (e) => {
-            if (!anim.motion) {
-                anim.motion = {}
-            }
-            const isEnabled = e.detail.value !== 'none'
-            anim.motion.enabled = isEnabled
-            anim.motion.mode = isEnabled ? e.detail.value : anim.motion.mode
-            motionOptions.style.display = isEnabled ? 'flex' : 'none'
-            this.#rebuildDirectionPad(directionPad, anim)
-            this.#previewEl?.setMotion(anim.motion)
-        })
-        motionSection.appendChild(modeSelect)
-
-        const dirSubSection = document.createElement('div')
-        dirSubSection.className = 'settings-section'
-
-        const dirLabel = document.createElement('div')
-        dirLabel.className = 'settings-label'
-        dirLabel.textContent = 'Direction'
-        dirSubSection.appendChild(dirLabel)
-
-        const directionPad = document.createElement('div')
-        directionPad.className = 'direction-pad'
-        this.#rebuildDirectionPad(directionPad, anim)
-        dirSubSection.appendChild(directionPad)
-        motionOptions.appendChild(dirSubSection)
-
-        const speedSubSection = document.createElement('div')
-        speedSubSection.className = 'settings-section'
-
-        const speedLabel = document.createElement('div')
-        speedLabel.className = 'settings-label'
-        speedLabel.textContent = 'Speed'
-        speedSubSection.appendChild(speedLabel)
-
-        const speedInput = document.createElement('slider-input')
-        speedInput.setAttribute('context', 'studio')
-        speedInput.setAttribute('min', '0.01')
-        speedInput.setAttribute('max', '3')
-        speedInput.setAttribute('step', '0.01')
-        speedInput.setValue(motion.speed ?? 1)
-        speedInput.addEventListener('change', (e) => {
-            if (!anim.motion) {
-                anim.motion = {}
-            }
-            anim.motion.speed = e.detail.value
-            this.#previewEl?.updateMotion(anim.motion)
-        })
-        speedSubSection.appendChild(speedInput)
-        motionOptions.appendChild(speedSubSection)
-
-        motionSection.appendChild(motionOptions)
-        container.appendChild(motionSection)
-    }
-
-
-    #rebuildDirectionPad (pad, anim) {
-        pad.innerHTML = ''
-        const motion = anim.motion || {}
-        const mode = motion.mode || 'sidescroller'
-        const direction = motion.direction || 'e'
-
-        const arrows = {
-            nw: '↖',
-            n: '↑',
-            ne: '↗',
-            w: '←',
-            center: '',
-            e: '→',
-            sw: '↙',
-            s: '↓',
-            se: '↘'
-        }
-
-        const sideDirections = ['n', 'e', 's', 'w']
-        const topDownDirections = ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se']
-        const activeDirections = mode === 'topdown' ? topDownDirections : sideDirections
-
-        const layout = ['nw', 'n', 'ne', 'w', 'center', 'e', 'sw', 's', 'se']
-
-        for (const pos of layout) {
-            const btn = document.createElement('button')
-            btn.className = 'direction-btn'
-            if (pos === 'center') {
-                btn.classList.add('center')
-            } else if (activeDirections.includes(pos)) {
-                btn.textContent = arrows[pos]
-                if (direction === pos) {
-                    btn.classList.add('active')
-                }
-                btn.addEventListener('click', () => {
-                    if (!anim.motion) {
-                        anim.motion = {}
-                    }
-                    anim.motion.direction = pos
-                    this.#rebuildDirectionPad(pad, anim)
-                    this.#previewEl?.setMotion(anim.motion)
-                })
-            } else {
-                btn.style.visibility = 'hidden'
-            }
-            pad.appendChild(btn)
-        }
-    }
-
-
-    #rebuildAnimationSettingsContent (container) {
-        const sections = container.querySelectorAll('[data-setting]')
-        sections.forEach(s => s.remove())
-        this.#buildAnimationSettingsContent(container)
     }
 
 
     #syncDrawerAnimSelect () {
         if (this.#drawerAnimSelect && this.#drawerMode === 'settings') {
             this.#drawerAnimSelect.setValue(this.#selectedAnimation?.$id)
-            const container = this.#editorDrawerEl.querySelector('.animation-settings')
-            if (container) {
-                this.#rebuildAnimationSettingsContent(container)
-            }
+            this.#animationSettings?.rebuild(this.#selectedAnimation)
         }
     }
 
@@ -775,189 +399,18 @@ export default class AnimatorView extends BaseEditorComponent {
 
         this.#drawerMode = 'frame'
         this.#editorDrawerEl.innerHTML = ''
-        this.#buildFrameEditor(frame)
+
+        const frameEditor = buildFrameEditor(frame, {
+            onFramesUpdate: () => {
+                this.#timelineEl.setFrames(this.#selectedAnimation.frames)
+            },
+            getSuggestions: (excludeEvents) => {
+                return collectEventSuggestions(this.#animator, excludeEvents)
+            }
+        })
+
+        this.#editorDrawerEl.appendChild(frameEditor)
         this.#editorDrawerEl.open()
-    }
-
-
-    #buildFrameEditor (frame) {
-        const container = document.createElement('div')
-        container.className = 'frame-editor'
-
-        container.appendChild(buildFramePreview(frame))
-        container.appendChild(this.#buildDurationSection(frame))
-        container.appendChild(this.#buildEventsSection(frame))
-
-        this.#editorDrawerEl.appendChild(container)
-    }
-
-
-    #buildDurationSection (frame) {
-        const section = document.createElement('div')
-        section.className = 'frame-editor-section'
-
-        const label = document.createElement('div')
-        label.className = 'frame-editor-label'
-        label.textContent = 'Duration multiplier'
-        section.appendChild(label)
-
-        const controls = document.createElement('div')
-        controls.className = 'frame-editor-duration'
-
-        const slider = document.createElement('slider-input')
-        slider.setAttribute('context', 'studio')
-        slider.setAttribute('no-value', '')
-        slider.setAttribute('no-label', '')
-        slider.setValue(frame.duration || 1)
-        slider.setMin(0.5)
-        slider.setMax(3)
-        slider.setStep(0.1)
-
-        const numberInput = document.createElement('number-input')
-        numberInput.setAttribute('context', 'studio')
-        numberInput.setValue(frame.duration || 1)
-        numberInput.setStep(0.1)
-        numberInput.setPrecision(2)
-        numberInput.setMin(0.1)
-        numberInput.setMax(10)
-
-        const updateDuration = (value) => {
-            frame.duration = value
-            this.#timelineEl.setFrames(this.#selectedAnimation.frames)
-        }
-
-        slider.addEventListener('change', (e) => {
-            numberInput.setValue(e.detail.value)
-            updateDuration(e.detail.value)
-        })
-
-        numberInput.addEventListener('change', (e) => {
-            slider.setValue(Math.min(3, Math.max(0.5, e.detail.value)))
-            updateDuration(e.detail.value)
-        })
-
-        controls.appendChild(slider)
-        controls.appendChild(numberInput)
-        section.appendChild(controls)
-        return section
-    }
-
-
-    #buildEventsSection (frame) {
-        const section = document.createElement('div')
-        section.className = 'frame-editor-section'
-
-        const label = document.createElement('div')
-        label.className = 'frame-editor-label'
-        label.textContent = 'Events'
-        section.appendChild(label)
-
-        const eventsContainer = document.createElement('div')
-        eventsContainer.className = 'frame-editor-events'
-
-        const renderEvents = () => {
-            eventsContainer.innerHTML = ''
-
-            const currentEvents = frame.events || []
-            for (const event of currentEvents) {
-                const chip = document.createElement('div')
-                chip.className = 'event-chip'
-
-                const chipText = document.createElement('span')
-                chipText.textContent = event
-
-                const removeBtn = document.createElement('button')
-                removeBtn.className = 'event-chip-remove'
-                removeBtn.innerHTML = '×'
-                removeBtn.addEventListener('click', () => {
-                    frame.events = currentEvents.filter(e => e !== event)
-                    this.#timelineEl.setFrames(this.#selectedAnimation.frames)
-                    renderEvents()
-                })
-
-                chip.appendChild(chipText)
-                chip.appendChild(removeBtn)
-                eventsContainer.appendChild(chip)
-            }
-
-            const suggestions = this.#collectEventSuggestions(currentEvents)
-            if (suggestions.length > 0) {
-                const suggestionsEl = document.createElement('div')
-                suggestionsEl.className = 'event-suggestions'
-
-                for (const suggestion of suggestions) {
-                    const btn = document.createElement('button')
-                    btn.className = 'event-suggestion'
-                    btn.textContent = suggestion
-                    btn.addEventListener('click', () => {
-                        if (!frame.events) {
-                            frame.events = []
-                        }
-                        frame.events.push(suggestion)
-                        this.#timelineEl.setFrames(this.#selectedAnimation.frames)
-                        renderEvents()
-                    })
-                    suggestionsEl.appendChild(btn)
-                }
-                eventsContainer.appendChild(suggestionsEl)
-            }
-
-            const addRow = document.createElement('div')
-            addRow.className = 'event-add-row'
-
-            const input = document.createElement('input')
-            input.type = 'text'
-            input.className = 'event-input'
-            input.placeholder = 'New event...'
-
-            const addBtn = document.createElement('button')
-            addBtn.className = 'event-add-btn'
-            addBtn.textContent = 'Add'
-            addBtn.addEventListener('click', () => {
-                const value = input.value.trim()
-                if (value) {
-                    if (!frame.events) {
-                        frame.events = []
-                    }
-                    if (!frame.events.includes(value)) {
-                        frame.events.push(value)
-                        this.#timelineEl.setFrames(this.#selectedAnimation.frames)
-                        renderEvents()
-                    }
-                    input.value = ''
-                }
-            })
-
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    addBtn.click()
-                }
-            })
-
-            addRow.appendChild(input)
-            addRow.appendChild(addBtn)
-            eventsContainer.appendChild(addRow)
-        }
-
-        renderEvents()
-        section.appendChild(eventsContainer)
-        return section
-    }
-
-
-    #collectEventSuggestions (excludeEvents) {
-        const allEvents = new Set()
-
-        for (const anim of this.#animator.children) {
-            for (const frame of anim.frames) {
-                const events = frame.events || []
-                events.forEach(event => allEvents.add(event))
-            }
-        }
-
-        excludeEvents.forEach(event => allEvents.delete(event))
-
-        return Array.from(allEvents).slice(0, 6)
     }
 
 
@@ -968,7 +421,6 @@ export default class AnimatorView extends BaseEditorComponent {
 
         this.#selectedAnimation.frames.push({region, name})
         this.#timelineEl.setFrames(this.#selectedAnimation.frames)
-        this.#updateFramesCount()
 
 
         requestAnimationFrame(() => {
@@ -1046,7 +498,6 @@ export default class AnimatorView extends BaseEditorComponent {
 
         this.#selectedAnimation.frames.splice(index, 0, {region, name: frameName})
         this.#timelineEl.setFrames(this.#selectedAnimation.frames)
-        this.#updateFramesCount()
     }
 
 
@@ -1080,7 +531,6 @@ export default class AnimatorView extends BaseEditorComponent {
 
         this.#selectedAnimation.frames.splice(index, 1)
         this.#timelineEl.setFrames(this.#selectedAnimation.frames)
-        this.#updateFramesCount()
     }
 
 
@@ -1097,11 +547,6 @@ export default class AnimatorView extends BaseEditorComponent {
     }
 
 
-    #updateFramesCount () {
-
-    }
-
-
     #exportToClipboard () {
         if (!this.#animator) {
             return
@@ -1109,7 +554,7 @@ export default class AnimatorView extends BaseEditorComponent {
 
         const animations = {}
         for (const anim of this.#animator.children) {
-            animations[anim.$id] = this.#buildAnimationConfig(anim)
+            animations[anim.$id] = buildAnimationConfig(anim, this.#spritesheet)
         }
 
         const lines = []
@@ -1121,75 +566,7 @@ export default class AnimatorView extends BaseEditorComponent {
         navigator.clipboard.writeText(lines.join('\n'))
     }
 
-
-    #buildAnimationConfig (anim) {
-        const config = {
-            fps: anim.fps,
-            loop: anim.loop
-        }
-
-        if (anim.playbackMode !== 'forward') {
-            config.playbackMode = anim.playbackMode
-        }
-
-        if (anim.motion?.enabled) {
-            config.motion = {
-                mode: anim.motion.mode || 'sidescroller',
-                direction: anim.motion.direction || 'e'
-            }
-        }
-
-        config.frames = anim.frames.map(frame => {
-            const fc = {}
-            if (frame.source) {
-                fc.source = frame.source
-            } else if (frame.name) {
-                fc.source = `${this.#spritesheet?.$id || 'spritesheet'}:${frame.name}`
-            }
-            if (frame.duration && frame.duration !== 1) {
-                fc.duration = frame.duration
-            }
-            if (frame.events?.length) {
-                fc.events = [...frame.events]
-            }
-            return fc
-        })
-
-        return config
-    }
-
 }
 
 
 customElements.define('animator-view', AnimatorView)
-
-
-function buildFramePreview (frame) {
-    const section = document.createElement('div')
-    section.className = 'frame-editor-preview'
-
-    const canvas = document.createElement('canvas')
-    canvas.width = 120
-    canvas.height = 120
-    canvas.className = 'frame-editor-canvas'
-
-    const region = frame.region
-    if (region?.image) {
-        const ctx = canvas.getContext('2d')
-        const scale = Math.min(120 / region.width, 120 / region.height)
-        const w = region.width * scale
-        const h = region.height * scale
-        const x = (120 - w) / 2
-        const y = (120 - h) / 2
-        ctx.drawImage(region.image, region.x, region.y, region.width, region.height, x, y, w, h)
-    }
-
-    const name = document.createElement('div')
-    name.className = 'frame-editor-name'
-    name.textContent = frame.name || 'Unnamed frame'
-    name.title = frame.name || ''
-
-    section.appendChild(canvas)
-    section.appendChild(name)
-    return section
-}
