@@ -394,6 +394,53 @@ const animatorStyles = createSheet(`
         border-color: transparent;
         cursor: default;
     }
+
+    .spritesheet-settings {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-lg);
+        padding-top: calc(28px + var(--spacing-sm));
+    }
+
+    .anchor-preview-wrapper {
+        position: relative;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        width: 100%;
+        aspect-ratio: 1;
+    }
+
+    .anchor-preview-canvas {
+        display: block;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+    }
+
+    .anchor-handle {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: var(--accent);
+        border: 2px solid white;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        cursor: grab;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        z-index: 1;
+    }
+
+    .anchor-handle:active {
+        cursor: grabbing;
+    }
+
+    .anchor-inputs {
+        gap: var(--spacing-md);
+    }
+
+    .anchor-inputs number-input {
+        flex: 1;
+    }
 `)
 
 
@@ -413,11 +460,13 @@ export default class AnimatorView extends BaseEditorComponent {
     #timelineEl = null
     #framesDrawerEl = null
     #editorDrawerEl = null
+    #spritesheetSettingsDrawerEl = null
     #spritesheetEl = null
     #selectedFrameIndex = -1
     #drawerMode = null // 'frame' | 'settings'
     #headerAnimSelect = null
     #drawerAnimSelect = null
+    #anchor = {x: 0.5, y: 0}
 
     connectedCallback () {
         this.#buildDOM()
@@ -576,6 +625,7 @@ export default class AnimatorView extends BaseEditorComponent {
         settingsMenu.setIcon(ICONS.wrench)
         settingsMenu.setItems([
             {label: 'Animation Settings', action: () => this.#openAnimationSettings()},
+            {label: 'Anchor Settings', action: () => this.#openSpritesheetSettings()},
             {label: 'Export', action: () => this.#exportToClipboard()}
         ])
         headerStart.appendChild(settingsMenu)
@@ -677,6 +727,10 @@ export default class AnimatorView extends BaseEditorComponent {
         this.#editorDrawerEl = document.createElement('side-drawer')
         this.#editorDrawerEl.setAttribute('position', 'right')
         this.#previewSectionEl.appendChild(this.#editorDrawerEl)
+
+        this.#spritesheetSettingsDrawerEl = document.createElement('side-drawer')
+        this.#spritesheetSettingsDrawerEl.setAttribute('position', 'right')
+        this.#previewSectionEl.appendChild(this.#spritesheetSettingsDrawerEl)
     }
 
 
@@ -694,7 +748,220 @@ export default class AnimatorView extends BaseEditorComponent {
     }
 
 
+    #openSpritesheetSettings () {
+        this.#editorDrawerEl.close()
+        this.#spritesheetSettingsDrawerEl.innerHTML = ''
+        this.#buildSpritesheetSettings()
+        this.#spritesheetSettingsDrawerEl.open()
+    }
+
+
+    #buildSpritesheetSettings () {
+        const container = document.createElement('div')
+        container.className = 'spritesheet-settings'
+
+        const anchorSection = document.createElement('div')
+        anchorSection.className = 'settings-section'
+
+        const anchorLabel = document.createElement('div')
+        anchorLabel.className = 'settings-label'
+        anchorLabel.textContent = 'Anchor'
+        anchorSection.appendChild(anchorLabel)
+
+        const anchorPreview = this.#buildAnchorPreview()
+        anchorSection.appendChild(anchorPreview)
+
+        const anchorInputs = this.#buildAnchorInputs()
+        anchorSection.appendChild(anchorInputs)
+
+        container.appendChild(anchorSection)
+        this.#spritesheetSettingsDrawerEl.appendChild(container)
+    }
+
+
+    #buildAnchorPreview () {
+        const wrapper = document.createElement('div')
+        wrapper.className = 'anchor-preview-wrapper'
+
+        const canvas = document.createElement('canvas')
+        canvas.className = 'anchor-preview-canvas'
+        wrapper.appendChild(canvas)
+
+        const handle = document.createElement('div')
+        handle.className = 'anchor-handle'
+        wrapper.appendChild(handle)
+
+        requestAnimationFrame(() => {
+            const rect = wrapper.getBoundingClientRect()
+            const size = Math.floor(rect.width)
+            canvas.width = size
+            canvas.height = size
+            this.#renderAnchorPreview(canvas, handle)
+        })
+
+        this.#setupAnchorDrag(wrapper, canvas, handle)
+
+        return wrapper
+    }
+
+
+    #renderAnchorPreview (canvas, handle) {
+        const ctx = canvas.getContext('2d')
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+        const frameData = this.#getFirstFrameData()
+        if (!frameData) {
+            return
+        }
+
+        const {image, region} = frameData
+        const scale = Math.min(
+            (canvas.width - 20) / region.width,
+            (canvas.height - 20) / region.height
+        )
+        const drawWidth = region.width * scale
+        const drawHeight = region.height * scale
+        const offsetX = (canvas.width - drawWidth) / 2
+        const offsetY = (canvas.height - drawHeight) / 2
+
+        ctx.imageSmoothingEnabled = false
+        ctx.drawImage(
+            image,
+            region.x, region.y, region.width, region.height,
+            offsetX, offsetY, drawWidth, drawHeight
+        )
+
+        const anchorX = offsetX + this.#anchor.x * drawWidth
+        const anchorY = offsetY + (1 - this.#anchor.y) * drawHeight
+
+        handle.style.left = `${anchorX}px`
+        handle.style.top = `${anchorY}px`
+
+        handle.dataset.offsetX = offsetX
+        handle.dataset.offsetY = offsetY
+        handle.dataset.drawWidth = drawWidth
+        handle.dataset.drawHeight = drawHeight
+    }
+
+
+    #getFirstFrameData () {
+        if (!this.#spritesheet) {
+            return null
+        }
+
+        const frames = this.#spritesheet.getFrames()
+        if (!frames.length) {
+            return null
+        }
+
+        const firstFrame = frames[0]
+        return {
+            image: firstFrame.image,
+            region: firstFrame.region
+        }
+    }
+
+
+    #setupAnchorDrag (wrapper, canvas, handle) {
+        let isDragging = false
+
+        const updateAnchor = (e) => {
+            const rect = canvas.getBoundingClientRect()
+            const offsetX = parseFloat(handle.dataset.offsetX) || 0
+            const offsetY = parseFloat(handle.dataset.offsetY) || 0
+            const drawWidth = parseFloat(handle.dataset.drawWidth) || 1
+            const drawHeight = parseFloat(handle.dataset.drawHeight) || 1
+
+            const x = e.clientX - rect.left
+            const y = e.clientY - rect.top
+
+            const anchorX = Math.max(0, Math.min(1, (x - offsetX) / drawWidth))
+            const anchorY = Math.max(0, Math.min(1, 1 - (y - offsetY) / drawHeight))
+
+            this.#anchor.x = Math.round(anchorX * 100) / 100
+            this.#anchor.y = Math.round(anchorY * 100) / 100
+
+            this.#renderAnchorPreview(canvas, handle)
+            this.#syncAnchorInputs()
+        }
+
+        handle.addEventListener('pointerdown', (e) => {
+            isDragging = true
+            handle.setPointerCapture(e.pointerId)
+        })
+
+        handle.addEventListener('pointermove', (e) => {
+            if (isDragging) {
+                updateAnchor(e)
+            }
+        })
+
+        handle.addEventListener('pointerup', () => {
+            isDragging = false
+        })
+
+        canvas.addEventListener('click', updateAnchor)
+    }
+
+
+    #buildAnchorInputs () {
+        const row = document.createElement('div')
+        row.className = 'settings-row anchor-inputs'
+
+        const xInput = document.createElement('number-input')
+        xInput.setAttribute('context', 'studio')
+        xInput.setLabel('X')
+        xInput.setValue(this.#anchor.x)
+        xInput.setStep(0.01)
+        xInput.setPrecision(2)
+        xInput.setMin(0)
+        xInput.setMax(1)
+        xInput.addEventListener('change', (e) => {
+            this.#anchor.x = e.detail.value
+            this.#updateAnchorPreview()
+        })
+
+        const yInput = document.createElement('number-input')
+        yInput.setAttribute('context', 'studio')
+        yInput.setLabel('Y')
+        yInput.setValue(this.#anchor.y)
+        yInput.setStep(0.01)
+        yInput.setPrecision(2)
+        yInput.setMin(0)
+        yInput.setMax(1)
+        yInput.addEventListener('change', (e) => {
+            this.#anchor.y = e.detail.value
+            this.#updateAnchorPreview()
+        })
+
+        row.appendChild(xInput)
+        row.appendChild(yInput)
+
+        this._anchorXInput = xInput
+        this._anchorYInput = yInput
+
+        return row
+    }
+
+
+    #syncAnchorInputs () {
+        this._anchorXInput?.setValue(this.#anchor.x)
+        this._anchorYInput?.setValue(this.#anchor.y)
+    }
+
+
+    #updateAnchorPreview () {
+        const canvas = this.#spritesheetSettingsDrawerEl.querySelector('.anchor-preview-canvas')
+        const handle = this.#spritesheetSettingsDrawerEl.querySelector('.anchor-handle')
+        if (canvas && handle) {
+            this.#renderAnchorPreview(canvas, handle)
+        }
+    }
+
+
     #openAnimationSettings () {
+        this.#spritesheetSettingsDrawerEl.close()
         this.#selectedFrameIndex = -1
         this.#timelineEl?.clearSelection()
         this.#drawerMode = 'settings'
@@ -1301,14 +1568,21 @@ export default class AnimatorView extends BaseEditorComponent {
             return
         }
 
-        const config = {}
+        const animations = {}
         for (const anim of this.#animator.children) {
-            config[anim.$id] = this.#buildAnimationConfig(anim)
+            animations[anim.$id] = this.#buildAnimationConfig(anim)
         }
 
-        const text = `static animations = ${JSON.stringify(config, null, 4)}`
+        const lines = []
 
-        navigator.clipboard.writeText(text)
+        if (this.#anchor.x !== 0.5 || this.#anchor.y !== 0) {
+            lines.push(`static anchor = {x: ${this.#anchor.x}, y: ${this.#anchor.y}}`)
+            lines.push('')
+        }
+
+        lines.push(`static animations = ${JSON.stringify(animations, null, 4)}`)
+
+        navigator.clipboard.writeText(lines.join('\n'))
     }
 
 

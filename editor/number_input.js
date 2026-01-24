@@ -174,7 +174,7 @@ const numberInputCSS = `
 
     :host([context="studio"]) .number-input-field {
         font-size: var(--font-size-md);
-        width: 24px;
+        width: 36px;
     }
 
     :host([context="studio"]) .number-input-stepper {
