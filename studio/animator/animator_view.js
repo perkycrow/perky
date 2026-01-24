@@ -539,9 +539,13 @@ export default class AnimatorView extends BaseEditorComponent {
         this.#previewEl = document.createElement('animation-preview')
         if (this.#selectedAnimation) {
             this.#previewEl.setAnimation(this.#selectedAnimation)
+            this.#previewEl.setMotion(this.#selectedAnimation.motion)
         }
         this.#previewEl.addEventListener('frame', (e) => {
             this.#timelineEl?.setCurrentIndex(e.detail.index)
+        })
+        this.#previewEl.addEventListener('settingsrequest', () => {
+            this.#toggleAnimationSettings()
         })
 
         section.appendChild(this.#previewEl)
@@ -680,6 +684,15 @@ export default class AnimatorView extends BaseEditorComponent {
     }
 
 
+    #toggleAnimationSettings () {
+        if (this.#editorDrawerEl.isOpen && this.#drawerMode === 'settings') {
+            this.#editorDrawerEl.close()
+        } else {
+            this.#openAnimationSettings()
+        }
+    }
+
+
     #openAnimationSettings () {
         this.#selectedFrameIndex = -1
         this.#timelineEl?.clearSelection()
@@ -728,6 +741,7 @@ export default class AnimatorView extends BaseEditorComponent {
         }
 
         const motion = anim.motion || {}
+        const currentMode = motion.enabled ? (motion.mode || 'sidescroller') : 'none'
 
         const motionSection = document.createElement('div')
         motionSection.className = 'settings-section'
@@ -738,52 +752,33 @@ export default class AnimatorView extends BaseEditorComponent {
         motionLabel.textContent = 'Motion'
         motionSection.appendChild(motionLabel)
 
-        const motionToggle = document.createElement('toggle-input')
-        motionToggle.setAttribute('context', 'studio')
-        motionToggle.setChecked(Boolean(motion.enabled))
-
         const motionOptions = document.createElement('div')
         motionOptions.className = 'motion-options'
-        motionOptions.style.display = motion.enabled ? 'flex' : 'none'
+        motionOptions.style.display = currentMode === 'none' ? 'none' : 'flex'
         motionOptions.style.flexDirection = 'column'
         motionOptions.style.gap = 'var(--spacing-md)'
         motionOptions.style.marginTop = 'var(--spacing-md)'
 
-        motionToggle.addEventListener('change', (e) => {
-            if (!anim.motion) {
-                anim.motion = {}
-            }
-            anim.motion.enabled = e.detail.checked
-            motionOptions.style.display = e.detail.checked ? 'flex' : 'none'
-            this.#previewEl?.setMotion(anim.motion)
-        })
-        motionSection.appendChild(motionToggle)
-
-        const modeSubSection = document.createElement('div')
-        modeSubSection.className = 'settings-section'
-
-        const modeLabel = document.createElement('div')
-        modeLabel.className = 'settings-label'
-        modeLabel.textContent = 'Type'
-        modeSubSection.appendChild(modeLabel)
-
         const modeSelect = document.createElement('select-input')
         modeSelect.setAttribute('context', 'studio')
         modeSelect.setOptions([
+            {value: 'none', label: 'None'},
             {value: 'sidescroller', label: 'Sidescroller'},
             {value: 'topdown', label: 'Top-down'}
         ])
-        modeSelect.setValue(motion.mode || 'sidescroller')
+        modeSelect.setValue(currentMode)
         modeSelect.addEventListener('change', (e) => {
             if (!anim.motion) {
                 anim.motion = {}
             }
-            anim.motion.mode = e.detail.value
+            const isEnabled = e.detail.value !== 'none'
+            anim.motion.enabled = isEnabled
+            anim.motion.mode = isEnabled ? e.detail.value : anim.motion.mode
+            motionOptions.style.display = isEnabled ? 'flex' : 'none'
             this.#rebuildDirectionPad(directionPad, anim)
             this.#previewEl?.setMotion(anim.motion)
         })
-        modeSubSection.appendChild(modeSelect)
-        motionOptions.appendChild(modeSubSection)
+        motionSection.appendChild(modeSelect)
 
         const dirSubSection = document.createElement('div')
         dirSubSection.className = 'settings-section'
@@ -814,14 +809,14 @@ export default class AnimatorView extends BaseEditorComponent {
         speedSlider.setAttribute('context', 'studio')
         speedSlider.setAttribute('no-value', '')
         speedSlider.setAttribute('no-label', '')
-        speedSlider.setValue(motion.speed || 0)
+        speedSlider.setValue(motion.speed ?? 1)
         speedSlider.setMin(0)
         speedSlider.setMax(10)
         speedSlider.setStep(0.1)
 
         const speedInput = document.createElement('number-input')
         speedInput.setAttribute('context', 'studio')
-        speedInput.setValue(motion.speed || 0)
+        speedInput.setValue(motion.speed ?? 1)
         speedInput.setStep(0.1)
         speedInput.setPrecision(1)
         speedInput.setMin(0)
@@ -859,7 +854,7 @@ export default class AnimatorView extends BaseEditorComponent {
         pad.innerHTML = ''
         const motion = anim.motion || {}
         const mode = motion.mode || 'sidescroller'
-        const direction = motion.direction || 'right'
+        const direction = motion.direction || 'e'
 
         const arrows = {
             nw: '↖',
@@ -1330,7 +1325,7 @@ export default class AnimatorView extends BaseEditorComponent {
             config.motion = {
                 mode: anim.motion.mode || 'sidescroller',
                 direction: anim.motion.direction || 'e',
-                speed: anim.motion.speed || 0
+                speed: anim.motion.speed ?? 1
             }
         }
 

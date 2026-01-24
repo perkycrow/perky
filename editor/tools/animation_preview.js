@@ -83,6 +83,11 @@ export default class AnimationPreview extends BaseEditorComponent {
         stopBtn.innerHTML = ICONS.stop
         stopBtn.addEventListener('click', () => this.stop())
 
+        const settingsBtn = document.createElement('button')
+        settingsBtn.className = 'settings-btn'
+        settingsBtn.innerHTML = ICONS.wrench
+        settingsBtn.addEventListener('click', () => this.#toggleSettings())
+
         const sceneryBtn = document.createElement('button')
         sceneryBtn.className = 'scenery-btn'
         sceneryBtn.innerHTML = ICONS.scenery
@@ -90,6 +95,7 @@ export default class AnimationPreview extends BaseEditorComponent {
 
         controls.appendChild(playBtn)
         controls.appendChild(stopBtn)
+        controls.appendChild(settingsBtn)
         controls.appendChild(sceneryBtn)
         container.appendChild(controls)
 
@@ -97,10 +103,20 @@ export default class AnimationPreview extends BaseEditorComponent {
 
         this.#setupRenderer()
         this.#setupResizeObserver()
+        this.#updateSceneryButton()
+    }
+
+
+    #toggleSettings () {
+        this.dispatchEvent(new CustomEvent('settingsrequest'))
     }
 
 
     #toggleScenery () {
+        if (!this.#motion?.enabled) {
+            return
+        }
+
         this.#sceneryEnabled = !this.#sceneryEnabled
         this.#sceneryOffset = 0
 
@@ -117,11 +133,20 @@ export default class AnimationPreview extends BaseEditorComponent {
 
     setMotion (motion) {
         this.#motion = motion
+        this.#updateSceneryButton()
         if (this.#sceneryEnabled) {
             this.#sceneryOffset = 0
             this.#updateSceneryCanvas()
             this.#fitToContainer(this.#animation?.currentFrame?.region)
             this.#renderScenery()
+        }
+    }
+
+
+    #updateSceneryButton () {
+        const sceneryBtn = this.shadowRoot.querySelector('.scenery-btn')
+        if (sceneryBtn) {
+            sceneryBtn.classList.toggle('disabled', !this.#motion?.enabled)
         }
     }
 
@@ -325,7 +350,7 @@ export default class AnimationPreview extends BaseEditorComponent {
             return
         }
 
-        const speed = (this.#motion.speed || 1) * 50
+        const speed = (this.#motion.speed ?? 1) * 50
         const direction = this.#getSceneryDirection()
         this.#sceneryOffset += speed * deltaTime * direction
         this.#renderScenery()
@@ -558,6 +583,11 @@ const STYLES = buildEditorStyles(
     .preview-controls button.active {
         background: var(--accent);
         color: var(--bg-primary);
+    }
+
+    .preview-controls button.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
     }
 `
 )
