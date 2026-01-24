@@ -256,12 +256,12 @@ export default class DocPage extends HTMLElement {
 
     #createTab (label, tab) {
         const isActive = this.#activeTab === tab
-        const link = createElement('a', {
+
+        return createElement('a', {
             class: `doc-tab ${isActive ? 'active' : ''}`,
-            text: label
+            text: label,
+            href: getTabUrl(tab)
         })
-        link.href = getTabUrl(tab)
-        return link
     }
 
 
@@ -279,8 +279,11 @@ export default class DocPage extends HTMLElement {
 
             for (const section of sections) {
                 const sectionId = toKebabCase(section.title)
-                const link = createElement('a', {class: 'doc-toc-link', text: section.title})
-                link.href = `#${sectionId}`
+                const link = createElement('a', {
+                    class: 'doc-toc-link',
+                    text: section.title,
+                    href: `#${sectionId}`
+                })
                 tocList.appendChild(link)
             }
 
@@ -350,8 +353,11 @@ export default class DocPage extends HTMLElement {
 
             this.#contentEl.appendChild(sectionEl)
 
-            const tocLink = createElement('a', {class: 'doc-toc-link', text: cat.title})
-            tocLink.href = `#${sectionId}`
+            const tocLink = createElement('a', {
+                class: 'doc-toc-link',
+                text: cat.title,
+                href: `#${sectionId}`
+            })
             tocList.appendChild(tocLink)
         }
 

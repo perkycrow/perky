@@ -36,6 +36,40 @@ describe('dom_utils', () => {
         })
 
 
+        test('sets direct attributes', () => {
+            const el = createElement('a', {
+                href: 'https://example.com',
+                title: 'Example Link'
+            })
+            expect(el.href).toBe('https://example.com/')
+            expect(el.title).toBe('Example Link')
+        })
+
+
+        test('sets input attributes', () => {
+            const el = createElement('input', {
+                type: 'text',
+                name: 'username',
+                value: 'test',
+                placeholder: 'Enter username'
+            })
+            expect(el.type).toBe('text')
+            expect(el.name).toBe('username')
+            expect(el.value).toBe('test')
+            expect(el.placeholder).toBe('Enter username')
+        })
+
+
+        test('sets image attributes', () => {
+            const el = createElement('img', {
+                src: 'image.png',
+                alt: 'Test image'
+            })
+            expect(el.src).toContain('image.png')
+            expect(el.alt).toBe('Test image')
+        })
+
+
         test('sets textContent with text option', () => {
             const el = createElement('span', {text: 'Hello'})
             expect(el.textContent).toBe('Hello')

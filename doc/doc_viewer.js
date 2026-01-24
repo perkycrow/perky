@@ -3,6 +3,7 @@ import '../editor/perky_logger.js'
 import logger from '../core/logger.js'
 import {getTabUrl, extractBaseName} from './utils/paths.js'
 import {initRegistry} from './doc_registry.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 const docModules = {
@@ -70,14 +71,12 @@ class DocViewer {
     renderNav () {
         this.nav.innerHTML = ''
 
-        const docsSection = document.createElement('div')
-        docsSection.className = 'nav-section'
+        const docsSection = createElement('div', {class: 'nav-section'})
         docsSection.dataset.section = 'docs'
         renderNavItems(docsSection, this.docs, 'doc')
         this.nav.appendChild(docsSection)
 
-        const guidesSection = document.createElement('div')
-        guidesSection.className = 'nav-section'
+        const guidesSection = createElement('div', {class: 'nav-section'})
         guidesSection.dataset.section = 'guides'
         guidesSection.style.display = 'none'
         renderNavItems(guidesSection, this.guides, 'guide')
@@ -386,9 +385,10 @@ function renderNavItems (container, items, type) {
 
     for (const [category, categoryItems] of Object.entries(byCategory)) {
         const allAdvanced = categoryItems.every(item => item.advanced)
-        const categoryEl = document.createElement('div')
-        categoryEl.className = allAdvanced ? 'nav-category hidden' : 'nav-category'
-        categoryEl.textContent = category
+        const categoryEl = createElement('div', {
+            class: allAdvanced ? 'nav-category hidden' : 'nav-category',
+            text: category
+        })
         container.appendChild(categoryEl)
 
         for (const item of categoryItems) {
@@ -420,16 +420,12 @@ function renderSwitcher () {
         return
     }
 
-    const docsBtn = document.createElement('button')
-    docsBtn.className = 'nav-switch active'
+    const docsBtn = createElement('button', {class: 'nav-switch active', text: 'Docs'})
     docsBtn.dataset.section = 'docs'
-    docsBtn.textContent = 'Docs'
     switcherContainer.appendChild(docsBtn)
 
-    const guidesBtn = document.createElement('button')
-    guidesBtn.className = 'nav-switch'
+    const guidesBtn = createElement('button', {class: 'nav-switch', text: 'Guides'})
     guidesBtn.dataset.section = 'guides'
-    guidesBtn.textContent = 'Guides'
     switcherContainer.appendChild(guidesBtn)
 }
 
@@ -560,9 +556,10 @@ function updateMobileTabs (docPage) {
     container.style.display = ''
 
     for (const tab of tabs) {
-        const link = document.createElement('a')
-        link.textContent = tab.charAt(0).toUpperCase() + tab.slice(1)
-        link.className = docPage.activeTab === tab ? 'active' : ''
+        const link = createElement('a', {
+            text: tab.charAt(0).toUpperCase() + tab.slice(1),
+            class: docPage.activeTab === tab ? 'active' : ''
+        })
         link.href = getTabUrl(tab)
         container.appendChild(link)
     }

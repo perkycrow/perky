@@ -5,7 +5,10 @@ import {gray} from '../../format.js'
 
 const MIN_OPERATIONS = 1
 
-const SUPPORTED_PROPS = new Set(['className', 'id', 'textContent', 'innerHTML'])
+const SUPPORTED_PROPS = new Set([
+    'className', 'id', 'textContent', 'innerHTML',
+    'href', 'src', 'alt', 'title', 'value', 'type', 'name', 'placeholder'
+])
 const SUPPORTED_METHODS = new Set(['setAttribute'])
 
 
