@@ -3,10 +3,17 @@ import SpriteAnimator from '../../render/sprite_animator.js'
 
 export default class RedEnemyAnimator extends SpriteAnimator {
 
+    static anchor = {x: 0.5, y: 0.05}
+
     static animations = {
         skip: {
             fps: 10,
             loop: true,
+            motion: {
+                mode: 'sidescroller',
+                direction: 'w',
+                referenceSpeed: 1
+            },
             frames: [
                 {
                     source: 'redSpritesheet:skip/1',

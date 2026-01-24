@@ -13,6 +13,9 @@ export default class RedEnemyView extends EnemyView {
             textureSystem: context.game.textureSystem
         })
 
+        this.root.anchorX = this.animator.anchor.x
+        this.root.anchorY = this.animator.anchor.y
+
         this.animator.get('throw').on('event:release', () => {
             logger.log('throw released')
         })
@@ -30,6 +33,7 @@ export default class RedEnemyView extends EnemyView {
     sync () {
         super.sync()
         this.syncAnimation()
+        this.syncAnimationSpeed()
         this.syncHop()
     }
 
@@ -59,6 +63,22 @@ export default class RedEnemyView extends EnemyView {
         } else if (this.animator.current !== skipAnim) {
             this.animator.play('skip')
         }
+    }
+
+
+    syncAnimationSpeed () {
+        const anim = this.animator.current
+        const motion = anim?.motion
+
+        if (!motion?.referenceSpeed) {
+            if (anim) {
+                anim.speed = 1
+            }
+            return
+        }
+
+        const entitySpeed = this.entity.maxSpeed
+        anim.speed = entitySpeed / motion.referenceSpeed
     }
 
 }

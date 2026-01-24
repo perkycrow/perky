@@ -11,6 +11,7 @@ export default class SpriteAnimator extends PerkyModule {
         this.sprite = sprite
         this.textureSystem = textureSystem
         this.current = null
+        this.anchor = this.constructor.anchor || {x: 0.5, y: 0.5}
 
         const animationsConfig = config || this.constructor.animations
         if (animationsConfig) {
@@ -31,6 +32,10 @@ export default class SpriteAnimator extends PerkyModule {
                 loop: animConfig.loop ?? true,
                 playbackMode: animConfig.playbackMode ?? 'forward'
             })
+
+            if (animConfig.motion) {
+                animation.motion = animConfig.motion
+            }
 
             registerFrameEvents(animation, frames)
         }
