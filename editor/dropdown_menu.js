@@ -105,9 +105,11 @@ export default class DropdownMenu extends EditorComponent {
         this.#buildDOM()
     }
 
+
     onConnected () {
         document.addEventListener('click', this.#handleOutsideClick)
     }
+
 
     onDisconnected () {
         document.removeEventListener('click', this.#handleOutsideClick)

@@ -64,7 +64,6 @@ export default class BaseFloatingTool extends EditorComponent {
     }
 
 
-    // Kept for backwards compatibility - styles are now auto-adopted by EditorComponent
     setupStyles () { }
 
 }

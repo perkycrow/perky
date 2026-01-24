@@ -93,6 +93,7 @@ export default class TabBar extends EditorComponent {
         this.#buildDOM()
     }
 
+
     onConnected () {
         this.#setupSlottedTabs()
     }

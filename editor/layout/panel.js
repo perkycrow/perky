@@ -149,6 +149,7 @@ export default class Panel extends EditorComponent {
         this.#buildDOM()
     }
 
+
     onConnected () {
         this.#updateCollapseIcon()
     }

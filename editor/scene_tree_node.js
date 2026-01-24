@@ -39,7 +39,6 @@ export default class SceneTreeNode extends BaseTreeNode {
     #labelEl = null
     #propsEl = null
 
-
     setObject (object, depth = 0) {
         this.setSelected(false)
         this.#object = object
