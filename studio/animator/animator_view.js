@@ -1490,6 +1490,7 @@ export default class AnimatorView extends BaseEditorComponent {
         if (this.#selectedAnimation) {
             this.#timelineEl?.setFrames(this.#selectedAnimation.frames)
             this.#previewEl?.setAnimation(this.#selectedAnimation)
+            this.#previewEl?.setMotion(this.#selectedAnimation.motion)
         }
 
 

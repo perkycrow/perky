@@ -107,12 +107,17 @@ export default class AnimationPreview extends BaseEditorComponent {
 
         this.#setupRenderer()
         this.#setupResizeObserver()
-        this.#updateSceneryButton()
+        this.#syncSceneryState()
     }
 
 
     #toggleSettings () {
         this.dispatchEvent(new CustomEvent('settingsrequest'))
+    }
+
+
+    get #sceneryActive () {
+        return this.#sceneryEnabled && this.#motion?.enabled
     }
 
 
@@ -123,49 +128,51 @@ export default class AnimationPreview extends BaseEditorComponent {
 
         this.#sceneryEnabled = !this.#sceneryEnabled
         this.#sceneryOffset = 0
-
-        const sceneryBtn = this.shadowRoot.querySelector('.scenery-btn')
-        if (sceneryBtn) {
-            sceneryBtn.classList.toggle('active', this.#sceneryEnabled)
-        }
-
-        this.#updateSceneryCanvas()
-        this.#fitToContainer(this.#animation?.currentFrame?.region)
-        this.#render()
+        this.#syncSceneryState()
     }
 
 
     setMotion (motion) {
         this.#motion = motion
-        this.#updateSceneryButton()
-        if (this.#sceneryEnabled) {
-            this.#sceneryOffset = 0
-            this.#updateSceneryCanvas()
-            this.#fitToContainer(this.#animation?.currentFrame?.region)
-            this.#render()
+        this.#sceneryOffset = 0
+
+        if (!motion?.enabled) {
+            this.#sceneryEnabled = false
         }
+
+        this.#syncSceneryState()
     }
 
 
     updateMotion (motion) {
         this.#motion = motion
-        this.#updateSceneryButton()
+        this.#syncSceneryState()
     }
 
 
     setAnchor (anchor) {
         this.#anchor = anchor || {x: 0.5, y: 0}
-        if (this.#sceneryEnabled) {
+        if (this.#sceneryActive) {
             this.#renderScenery()
         }
     }
 
 
-    #updateSceneryButton () {
+    #syncSceneryState () {
         const sceneryBtn = this.shadowRoot.querySelector('.scenery-btn')
         if (sceneryBtn) {
             sceneryBtn.classList.toggle('disabled', !this.#motion?.enabled)
+            sceneryBtn.classList.toggle('active', this.#sceneryActive)
         }
+
+        if (this.#sceneryActive) {
+            this.#updateSceneryCanvas()
+        } else {
+            this.#clearSceneryCanvas()
+        }
+
+        this.#fitToContainer(this.#animation?.currentFrame?.region)
+        this.#render()
     }
 
 
@@ -246,7 +253,7 @@ export default class AnimationPreview extends BaseEditorComponent {
             return
         }
 
-        const sceneryMargin = this.#sceneryEnabled ? 0.7 : 1
+        const sceneryMargin = this.#sceneryActive ? 0.7 : 1
         const scaleX = containerWidth / region.width
         const scaleY = containerHeight / region.height
         const scale = Math.min(scaleX, scaleY, 1) * sceneryMargin
@@ -359,12 +366,17 @@ export default class AnimationPreview extends BaseEditorComponent {
             detail: {index: this.#animation.currentIndex}
         }))
 
+        if (this.#animation.completed) {
+            this.stop()
+            return
+        }
+
         this.#animationFrameId = requestAnimationFrame((t) => this.#loop(t))
     }
 
 
     #updateScenery (deltaTime) {
-        if (!this.#sceneryEnabled || !this.#motion?.enabled) {
+        if (!this.#sceneryActive) {
             return
         }
 
@@ -391,6 +403,13 @@ export default class AnimationPreview extends BaseEditorComponent {
     }
 
 
+    #clearSceneryCanvas () {
+        if (this.#sceneryCtx && this.#sceneryCanvas) {
+            this.#sceneryCtx.clearRect(0, 0, this.#sceneryCanvas.width, this.#sceneryCanvas.height)
+        }
+    }
+
+
     #renderScenery () {
         if (!this.#sceneryCtx || !this.#sceneryCanvas) {
             return
@@ -402,7 +421,8 @@ export default class AnimationPreview extends BaseEditorComponent {
 
         ctx.clearRect(0, 0, width, height)
 
-        if (!this.#sceneryEnabled || !this.#motion?.enabled) {
+        if (!this.#sceneryActive) {
+            this.#renderSimpleGrid(ctx, width, height)
             return
         }
 
@@ -412,6 +432,29 @@ export default class AnimationPreview extends BaseEditorComponent {
             this.#renderSidescroller(ctx, width, height)
         } else if (mode === 'topdown') {
             this.#renderTopdown(ctx, width, height)
+        }
+    }
+
+
+    #renderSimpleGrid (ctx, width, height) {
+        const spriteSize = this.#getSpriteSize()
+        const gridSize = spriteSize.width * 0.2
+
+        ctx.strokeStyle = 'rgba(150, 170, 190, 0.06)'
+        ctx.lineWidth = 1
+
+        for (let x = gridSize; x < width; x += gridSize) {
+            ctx.beginPath()
+            ctx.moveTo(x, 0)
+            ctx.lineTo(x, height)
+            ctx.stroke()
+        }
+
+        for (let y = gridSize; y < height; y += gridSize) {
+            ctx.beginPath()
+            ctx.moveTo(0, y)
+            ctx.lineTo(width, y)
+            ctx.stroke()
         }
     }
 
