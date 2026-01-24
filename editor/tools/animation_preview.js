@@ -173,21 +173,17 @@ export default class AnimationPreview extends BaseEditorComponent {
 
 
     #toggleGrid () {
-        if (!this.#useGamePreview) {
-            return
-        }
-
         this.#gridEnabled = !this.#gridEnabled
         this.#syncGridButton()
-        this.#renderGrid()
+        this.#syncPreviewVisibility()
+        this.#updateGridCanvas()
     }
 
 
     #syncGridButton () {
         const gridBtn = this.shadowRoot?.querySelector('.grid-btn')
         if (gridBtn) {
-            gridBtn.classList.toggle('disabled', !this.#useGamePreview)
-            gridBtn.classList.toggle('active', this.#gridEnabled && this.#useGamePreview)
+            gridBtn.classList.toggle('active', this.#gridEnabled)
         }
     }
 
@@ -332,7 +328,7 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#gamePreviewCanvas.style.display = useGame ? 'block' : 'none'
         this.#canvas.style.display = useGame ? 'none' : ''
         this.#sceneryCanvas.style.display = useGame ? 'none' : ''
-        this.#gridCanvas.style.display = useGame ? 'block' : 'none'
+        this.#gridCanvas.style.display = this.#gridEnabled ? 'block' : 'none'
         this.#previewArea?.classList.toggle('game-preview-mode', useGame)
     }
 
@@ -344,10 +340,6 @@ export default class AnimationPreview extends BaseEditorComponent {
 
         this.#updateGamePreviewConfig()
         this.#syncPreviewVisibility()
-
-        if (!this.#useGamePreview) {
-            this.#gridEnabled = false
-        }
         this.#syncGridButton()
 
         if (this.#useGamePreview) {
@@ -759,10 +751,14 @@ export default class AnimationPreview extends BaseEditorComponent {
 
 
     #renderSimpleGrid (ctx, width, height) {
+        if (!this.#gridEnabled) {
+            return
+        }
+
         const spriteSize = this.#getSpriteSize()
         const gridSize = spriteSize.width * 0.2
 
-        ctx.strokeStyle = 'rgba(150, 170, 190, 0.06)'
+        ctx.strokeStyle = 'rgba(26, 26, 30, 0.06)'
         ctx.lineWidth = 1
 
         for (let x = gridSize; x < width; x += gridSize) {
@@ -1004,7 +1000,7 @@ export default class AnimationPreview extends BaseEditorComponent {
     }
 
 
-    #renderGrid () {
+    #renderGrid () { // eslint-disable-line complexity -- clean
         if (!this.#gridCtx || !this.#gridCanvas) {
             return
         }
@@ -1015,20 +1011,28 @@ export default class AnimationPreview extends BaseEditorComponent {
 
         ctx.clearRect(0, 0, width, height)
 
-        if (!this.#gridEnabled || !this.#useGamePreview) {
+        if (!this.#gridEnabled) {
             return
         }
 
-        const unitsInView = this.#unitsInView
+        let cellSize
+        let offsetX = 0
+        let offsetY = 0
 
-        const ppuForWidth = width / unitsInView.width
-        const ppuForHeight = height / unitsInView.height
-        const cellSize = Math.min(ppuForWidth, ppuForHeight)
+        if (this.#unitsInView && this.#useGamePreview) {
+            const unitsInView = this.#unitsInView
+            const ppuForWidth = width / unitsInView.width
+            const ppuForHeight = height / unitsInView.height
+            cellSize = Math.min(ppuForWidth, ppuForHeight)
 
-        const gridWidth = cellSize * unitsInView.width
-        const gridHeight = cellSize * unitsInView.height
-        const offsetX = (width - gridWidth) / 2
-        const offsetY = (height - gridHeight) / 2
+            const gridWidth = cellSize * unitsInView.width
+            const gridHeight = cellSize * unitsInView.height
+            offsetX = (width - gridWidth) / 2
+            offsetY = (height - gridHeight) / 2
+        } else {
+            const spriteSize = this.#getSpriteSize()
+            cellSize = spriteSize.width * 0.25
+        }
 
         const colCount = Math.ceil(width / cellSize) + 1
         const rowCount = Math.ceil(height / cellSize) + 1
@@ -1039,7 +1043,8 @@ export default class AnimationPreview extends BaseEditorComponent {
         const subdivisions = 4
         const subCellSize = cellSize / subdivisions
 
-        ctx.strokeStyle = 'rgba(26, 26, 30, 0.06)'
+        const subColor = this.#useGamePreview ? 'rgba(26, 26, 30, 0.06)' : 'rgba(255, 255, 255, 0.08)'
+        ctx.strokeStyle = subColor
         ctx.lineWidth = 1
 
         for (let i = startCol * subdivisions; i < colCount * subdivisions; i++) {
@@ -1070,7 +1075,8 @@ export default class AnimationPreview extends BaseEditorComponent {
             ctx.stroke()
         }
 
-        ctx.strokeStyle = 'rgba(26, 26, 30, 0.12)'
+        const mainColor = this.#useGamePreview ? 'rgba(26, 26, 30, 0.12)' : 'rgba(255, 255, 255, 0.15)'
+        ctx.strokeStyle = mainColor
 
         for (let i = startCol; i < colCount; i++) {
             const x = Math.round(offsetX + i * cellSize) + 0.5

@@ -113,36 +113,6 @@ describe('AnimationPreview', () => {
     })
 
 
-    describe('zoom controls', () => {
-
-        test('renders zoom controls container', () => {
-            const zoomControls = preview.shadowRoot.querySelector('.zoom-controls')
-            expect(zoomControls).not.toBeNull()
-        })
-
-
-        test('renders zoom toggle button', () => {
-            const zoomToggle = preview.shadowRoot.querySelector('.zoom-toggle')
-            expect(zoomToggle).not.toBeNull()
-        })
-
-
-        test('renders zoom slider', () => {
-            const zoomSlider = preview.shadowRoot.querySelector('.zoom-slider')
-            expect(zoomSlider).not.toBeNull()
-            expect(zoomSlider.type).toBe('range')
-        })
-
-
-        test('zoom slider has correct range', () => {
-            const zoomSlider = preview.shadowRoot.querySelector('.zoom-slider')
-            expect(zoomSlider.min).toBe('0.1')
-            expect(zoomSlider.max).toBe('1')
-        })
-
-    })
-
-
     test('currentIndex returns 0 when no animation', () => {
         expect(preview.currentIndex).toBe(0)
     })

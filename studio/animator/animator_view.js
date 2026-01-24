@@ -135,7 +135,6 @@ const animatorStyles = createSheet(`
     .timeline-section {
         flex-shrink: 0;
         background: var(--bg-secondary);
-        border-top: 1px solid var(--border);
         padding: var(--spacing-md) var(--spacing-lg);
         min-height: 120px;
         overflow: hidden;

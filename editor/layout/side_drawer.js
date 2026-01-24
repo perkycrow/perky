@@ -25,13 +25,11 @@ const drawerCSS = createSheet(`
 
     :host([position="left"]) {
         left: 0;
-        border-right: 1px solid var(--border);
         transform: translateX(-100%);
     }
 
     :host([position="right"]) {
         right: 0;
-        border-left: 1px solid var(--border);
         transform: translateX(100%);
     }
 

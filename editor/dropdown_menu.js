@@ -52,7 +52,6 @@ const dropdownStyles = createSheet(`
         left: 0;
         margin-top: var(--spacing-xs);
         background: var(--bg-secondary);
-        border: 1px solid var(--border);
         border-radius: var(--radius-md);
         box-shadow: var(--shadow-lg);
         min-width: 160px;

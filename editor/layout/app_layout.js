@@ -23,7 +23,6 @@ const appLayoutCSS = createSheet(`
         min-height: var(--touch-target);
         padding: 0 var(--spacing-md);
         background: var(--bg-secondary);
-        border-bottom: 1px solid var(--border);
         flex-shrink: 0;
         gap: var(--spacing-md);
     }
