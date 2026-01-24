@@ -128,10 +128,10 @@ const animatorStyles = createSheet(`
     .spritesheet-panel {
         background: var(--bg-secondary);
         border-radius: var(--radius-lg);
-        width: 90%;
-        max-width: 900px;
-        height: 80%;
-        max-height: 700px;
+        width: 80vw;
+        max-width: 600px;
+        height: 70vh;
+        max-height: 600px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -176,8 +176,10 @@ const animatorStyles = createSheet(`
 
     .spritesheet-content {
         flex: 1;
+        width: 100%;
+        min-height: 0;
         padding: var(--spacing-lg);
-        overflow: auto;
+        box-sizing: border-box;
     }
 `)
 

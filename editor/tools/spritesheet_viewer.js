@@ -464,48 +464,62 @@ function drawFrameThumbnail (canvas, region) {
 
 const viewerStyles = createSheet(`
     :host {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
         overflow: hidden;
     }
 
     .viewer-container {
         display: flex;
         flex-direction: column;
-        height: 100%;
-        gap: 8px;
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        gap: var(--spacing-md);
     }
 
     .filter-select {
-        background: var(--bg-secondary);
-        color: var(--fg-secondary);
+        appearance: none;
+        background: var(--bg-tertiary);
+        color: var(--fg-primary);
         border: none;
-        border-radius: 4px;
-        padding: 6px 10px;
+        border-radius: var(--radius-md);
+        padding: var(--spacing-sm) var(--spacing-lg) var(--spacing-sm) var(--spacing-md);
         font-family: var(--font-mono);
-        font-size: 11px;
+        font-size: var(--font-size-sm);
         flex-shrink: 0;
         cursor: pointer;
         transition: background 0.15s, color 0.15s;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239898a0' d='M3 4.5L6 8l3-3.5H3z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        min-height: var(--touch-target);
     }
 
     .filter-select:hover {
-        background: var(--bg-hover);
-        color: var(--fg-primary);
+        background-color: var(--bg-hover);
     }
 
     .filter-select:focus {
         outline: none;
-        background: var(--bg-hover);
+        background-color: var(--bg-hover);
     }
 
     .frame-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, 100px);
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
         overflow-y: auto;
+        width: 100%;
         flex: 1;
+        min-height: 0;
         align-content: flex-start;
-        background: var(--bg-secondary);
-        border-radius: 6px;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-md);
+        gap: var(--spacing-sm);
+        box-sizing: border-box;
     }
 
     .frame {

@@ -40,13 +40,14 @@ const overlayCSS = createSheet(`
 
     .container {
         position: relative;
+        display: flex;
         background: var(--bg-secondary);
         border: 1px solid var(--border);
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-lg);
         max-width: 90vw;
         max-height: 90vh;
-        overflow: auto;
+        overflow: hidden;
         animation: overlay-enter 0.15s ease-out;
     }
 
