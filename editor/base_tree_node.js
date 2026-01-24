@@ -1,5 +1,6 @@
 import EditorComponent from './editor_component.js'
 import {nodeStyles} from './perky_explorer.styles.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 export default class BaseTreeNode extends EditorComponent {
@@ -224,11 +225,9 @@ export default class BaseTreeNode extends EditorComponent {
 
 
     #buildDOM () {
-        this.#contentEl = document.createElement('div')
-        this.#contentEl.className = 'node-content'
+        this.#contentEl = createElement('div', {class: 'node-content'})
 
-        this.#toggleEl = document.createElement('div')
-        this.#toggleEl.className = 'node-toggle'
+        this.#toggleEl = createElement('div', {class: 'node-toggle'})
         this.#toggleEl.addEventListener('click', (e) => {
             e.stopPropagation()
             this.#handleToggleClick()
@@ -238,8 +237,7 @@ export default class BaseTreeNode extends EditorComponent {
         this.#contentEl.addEventListener('click', () => this.#handleNodeClick())
         this.#contentEl.addEventListener('contextmenu', (e) => this.#handleContextMenu(e))
 
-        this.#childrenEl = document.createElement('div')
-        this.#childrenEl.className = 'node-children'
+        this.#childrenEl = createElement('div', {class: 'node-children'})
 
         this.shadowRoot.appendChild(this.#contentEl)
         this.shadowRoot.appendChild(this.#childrenEl)

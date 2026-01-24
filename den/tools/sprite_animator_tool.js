@@ -202,8 +202,7 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
 
 
     #buildDOM () {
-        this.#contentEl = document.createElement('div')
-        this.#contentEl.className = 'animator-content'
+        this.#contentEl = createElement('div', {class: 'animator-content'})
         this.shadowRoot.appendChild(this.#contentEl)
 
         this.#render()

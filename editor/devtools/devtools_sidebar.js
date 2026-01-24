@@ -56,8 +56,7 @@ export default class DevToolsSidebar extends EditorComponent {
 
 
     #buildDOM () {
-        this.#sidebarEl = document.createElement('div')
-        this.#sidebarEl.className = 'devtools-sidebar hidden'
+        this.#sidebarEl = createElement('div', {class: 'devtools-sidebar hidden'})
 
         this.#headerEl = this.#createHeader()
         this.#contentEl = createSidebarContent()
@@ -72,24 +71,22 @@ export default class DevToolsSidebar extends EditorComponent {
     #createHeader () {
         const header = createElement('div', {class: 'sidebar-header'})
 
-        this.#titleEl = document.createElement('div')
-        this.#titleEl.className = 'sidebar-title'
+        this.#titleEl = createElement('div', {class: 'sidebar-title'})
 
-        this.#titleIconEl = document.createElement('span')
-        this.#titleIconEl.className = 'sidebar-title-icon'
+        this.#titleIconEl = createElement('span', {class: 'sidebar-title-icon'})
 
-        this.#titleTextEl = document.createElement('span')
+        this.#titleTextEl = createElement('span')
 
         this.#titleEl.appendChild(this.#titleIconEl)
         this.#titleEl.appendChild(this.#titleTextEl)
 
-        this.#actionsEl = document.createElement('div')
-        this.#actionsEl.className = 'sidebar-actions'
+        this.#actionsEl = createElement('div', {class: 'sidebar-actions'})
 
-        this.#closeBtn = document.createElement('button')
-        this.#closeBtn.className = 'sidebar-close'
-        this.#closeBtn.textContent = '\u00D7'
-        this.#closeBtn.title = 'Close'
+        this.#closeBtn = createElement('button', {
+            class: 'sidebar-close',
+            text: '\u00D7',
+            attrs: {title: 'Close'}
+        })
         this.#closeBtn.addEventListener('click', () => {
             this.#state?.closeSidebar()
         })

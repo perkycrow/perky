@@ -57,33 +57,30 @@ export default class DevToolsCommandPalette extends EditorComponent {
 
 
     #buildDOM () {
-        this.#overlayEl = document.createElement('div')
-        this.#overlayEl.className = 'command-palette-overlay hidden'
+        this.#overlayEl = createElement('div', {class: 'command-palette-overlay hidden'})
         this.#overlayEl.addEventListener('click', (e) => {
             if (e.target === this.#overlayEl) {
                 this.#state?.closeCommandPalette()
             }
         })
 
-        this.#containerEl = document.createElement('div')
-        this.#containerEl.className = 'command-palette-container'
+        this.#containerEl = createElement('div', {class: 'command-palette-container'})
 
         const inputWrapper = createElement('div', {class: 'command-palette-input-wrapper'})
 
         const icon = createElement('span', {class: 'command-palette-icon', text: '>_'})
 
-        this.#inputEl = document.createElement('input')
-        this.#inputEl.className = 'command-palette-input'
-        this.#inputEl.type = 'text'
-        this.#inputEl.placeholder = 'Type a command...'
+        this.#inputEl = createElement('input', {
+            class: 'command-palette-input',
+            attrs: {type: 'text', placeholder: 'Type a command...'}
+        })
         this.#inputEl.addEventListener('input', () => this.#onInput())
         this.#inputEl.addEventListener('keydown', (e) => this.#onKeydown(e))
 
         inputWrapper.appendChild(icon)
         inputWrapper.appendChild(this.#inputEl)
 
-        this.#resultsEl = document.createElement('div')
-        this.#resultsEl.className = 'command-palette-results'
+        this.#resultsEl = createElement('div', {class: 'command-palette-results'})
 
         this.#containerEl.appendChild(inputWrapper)
         this.#containerEl.appendChild(this.#resultsEl)

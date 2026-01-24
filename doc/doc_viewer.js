@@ -534,9 +534,7 @@ function closeMobileMenu () {
 function getMobileTabsContainer () {
     let container = document.getElementById('mobile-tabs')
     if (!container) {
-        container = document.createElement('div')
-        container.id = 'mobile-tabs'
-        container.className = 'mobile-tabs'
+        container = createElement('div', {id: 'mobile-tabs', class: 'mobile-tabs'})
         document.body.appendChild(container)
     }
     return container

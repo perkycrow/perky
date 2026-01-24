@@ -12,9 +12,9 @@ export default class WaveProgressBar extends PerkyModule {
         this.game = options.game
         this.currentDay = 0
 
-        this.root = document.createElement('div')
-        this.root.className = 'wave-progress'
-        this.root.innerHTML = `
+        this.root = createElement('div', {
+            class: 'wave-progress',
+            html: `
             <div class="wave-progress-label"><span class="wave-name">Dawn</span> - <span class="day-label">Day 1</span></div>
             <div class="wave-progress-track">
                 <div class="wave-progress-fill"></div>
@@ -23,6 +23,7 @@ export default class WaveProgressBar extends PerkyModule {
                 <span class="day-number">Day 1</span>
             </div>
         `
+        })
 
         this.nameEl = this.root.querySelector('.wave-name')
         this.dayLabelEl = this.root.querySelector('.day-label')

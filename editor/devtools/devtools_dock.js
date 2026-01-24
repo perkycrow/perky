@@ -55,8 +55,7 @@ export default class DevToolsDock extends EditorComponent {
 
 
     #buildDOM () {
-        this.#dockEl = document.createElement('div')
-        this.#dockEl.className = 'devtools-dock'
+        this.#dockEl = createElement('div', {class: 'devtools-dock'})
 
         this.#render()
 

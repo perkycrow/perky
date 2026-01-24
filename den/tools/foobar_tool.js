@@ -1,6 +1,7 @@
 import BaseFloatingTool from '../../editor/tools/base_floating_tool.js'
 import {ICONS} from '../../editor/devtools/devtools_icons.js'
 import logger from '../../core/logger.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class FoobarTool extends BaseFloatingTool {
@@ -62,8 +63,7 @@ export default class FoobarTool extends BaseFloatingTool {
 
 
     #buildDOM () {
-        this.#contentEl = document.createElement('div')
-        this.#contentEl.className = 'foobar-content'
+        this.#contentEl = createElement('div', {class: 'foobar-content'})
         this.shadowRoot.appendChild(this.#contentEl)
 
         this.#render()
