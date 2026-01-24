@@ -14,10 +14,17 @@ export default class DomUtilsUsageAuditor extends Auditor {
     static $name = 'DOM Utils Usage'
     static $category = 'dom_utils_usage'
     static $canFix = false
-    static $hint = `Consider using dom_utils.js helpers:
+    static $hint = `Refactor with dom_utils.js:
 
-    createElement(tag, {class, id, text, html, attrs})
-    setAttributes(element, {attr1: value1, attr2: value2})`
+    // Before
+    const el = document.createElement('div')
+    el.className = 'container'
+    el.id = 'main'
+    el.setAttribute('data-x', '1')
+
+    // After
+    import {createElement} from 'application/dom_utils.js'
+    const el = createElement('div', {class: 'container', id: 'main', attrs: {'data-x': '1'}})`
 
     analyze (content) { // eslint-disable-line local/class-methods-use-this -- clean
         const ast = parseContent(content)
