@@ -1,4 +1,5 @@
 import EditorComponent from '../editor_component.js'
+import {createElement} from '../../application/dom_utils.js'
 import {commandPaletteStyles} from './devtools.styles.js'
 import {editorScrollbarStyles, editorBaseStyles} from '../editor_theme.js'
 import {getAllTools} from './devtools_registry.js'
@@ -67,12 +68,9 @@ export default class DevToolsCommandPalette extends EditorComponent {
         this.#containerEl = document.createElement('div')
         this.#containerEl.className = 'command-palette-container'
 
-        const inputWrapper = document.createElement('div')
-        inputWrapper.className = 'command-palette-input-wrapper'
+        const inputWrapper = createElement('div', {class: 'command-palette-input-wrapper'})
 
-        const icon = document.createElement('span')
-        icon.className = 'command-palette-icon'
-        icon.textContent = '>_'
+        const icon = createElement('span', {class: 'command-palette-icon', text: '>_'})
 
         this.#inputEl = document.createElement('input')
         this.#inputEl.className = 'command-palette-input'
@@ -305,14 +303,10 @@ export default class DevToolsCommandPalette extends EditorComponent {
         if (this.#filteredCommands.length === 0) {
             const query = this.#inputEl.value.trim()
             if (query) {
-                const empty = document.createElement('div')
-                empty.className = 'command-palette-empty'
-                empty.textContent = 'No results found'
+                const empty = createElement('div', {class: 'command-palette-empty', text: 'No results found'})
                 this.#resultsEl.appendChild(empty)
             } else {
-                const hint = document.createElement('div')
-                hint.className = 'command-palette-hint'
-                hint.textContent = 'Type to search actions, / for commands'
+                const hint = createElement('div', {class: 'command-palette-hint', text: 'Type to search actions, / for commands'})
                 this.#resultsEl.appendChild(hint)
             }
             return
@@ -321,9 +315,7 @@ export default class DevToolsCommandPalette extends EditorComponent {
         const groups = this.#groupCommands()
 
         for (const [subtitle, commands] of Object.entries(groups)) {
-            const sectionTitle = document.createElement('div')
-            sectionTitle.className = 'command-palette-section-title'
-            sectionTitle.textContent = subtitle
+            const sectionTitle = createElement('div', {class: 'command-palette-section-title', text: subtitle})
             this.#resultsEl.appendChild(sectionTitle)
 
             for (const cmd of commands) {
@@ -351,25 +343,16 @@ export default class DevToolsCommandPalette extends EditorComponent {
 
 
     #createResultItem (cmd) {
-        const result = document.createElement('div')
-        result.className = 'command-palette-result'
-        result.dataset.id = cmd.id
+        const result = createElement('div', {class: 'command-palette-result', attrs: {'data-id': cmd.id}})
 
-        const icon = document.createElement('span')
-        icon.className = 'command-palette-result-icon'
-        icon.innerHTML = cmd.icon
+        const icon = createElement('span', {class: 'command-palette-result-icon', html: cmd.icon})
 
-        const text = document.createElement('div')
-        text.className = 'command-palette-result-text'
+        const text = createElement('div', {class: 'command-palette-result-text'})
 
-        const title = document.createElement('div')
-        title.className = 'command-palette-result-title'
-        title.textContent = cmd.title
+        const title = createElement('div', {class: 'command-palette-result-title', text: cmd.title})
 
         if (cmd.placeholder) {
-            const placeholder = document.createElement('span')
-            placeholder.className = 'command-palette-placeholder'
-            placeholder.textContent = ` ${cmd.placeholder}`
+            const placeholder = createElement('span', {class: 'command-palette-placeholder', text: ` ${cmd.placeholder}`})
             title.appendChild(placeholder)
         }
 
