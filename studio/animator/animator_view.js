@@ -315,6 +315,7 @@ const animatorStyles = createSheet(`
         display: flex;
         flex-direction: column;
         gap: var(--spacing-lg);
+        padding-top: calc(28px + var(--spacing-sm));
     }
 
     .settings-section {
