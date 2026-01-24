@@ -22,6 +22,7 @@ import StaleFilesAuditor from './auditors/coverage/stale_files.js'
 import MissingCoverageAuditor from './auditors/coverage/missing_coverage.js'
 import MissingDocsAuditor from './auditors/coverage/missing_docs.js'
 import ImportUsageAuditor from './auditors/coverage/import_usage.js'
+import DomUtilsUsageAuditor from './auditors/dom_utils_usage.js'
 
 import BrokenLinksAuditor from './auditors/docs/broken_links.js'
 import FileScoreAuditor from './auditors/filescore/file_score.js'
@@ -261,7 +262,8 @@ const COVERAGE_AUDITORS = [
     StaleFilesAuditor,
     MissingCoverageAuditor,
     MissingDocsAuditor,
-    ImportUsageAuditor
+    ImportUsageAuditor,
+    DomUtilsUsageAuditor
 ]
 
 
