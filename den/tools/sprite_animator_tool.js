@@ -64,16 +64,16 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
 
     #selectAnimator (name, {animator, spritesheet} = {}) {
         const {textureSystem} = this.params
-        const animatorEntry = name ? this.#animators[name] : null
+        const animatorConfig = name ? this.#animators[name] : null
 
-        this.#animatorConfig = animatorEntry || null
+        this.#animatorConfig = animatorConfig || null
 
         if (animator) {
             this.#animator = animator
-        } else if (animatorEntry && textureSystem) {
+        } else if (animatorConfig && textureSystem) {
             this.#animator = new SpriteAnimator({
                 sprite: null,
-                config: animatorEntry.config,
+                config: animatorConfig,
                 textureSystem
             })
         } else {
@@ -82,8 +82,8 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
 
         if (spritesheet) {
             this.#spritesheet = spritesheet
-        } else if (animatorEntry && textureSystem) {
-            const spritesheetId = animatorEntry.spritesheetId
+        } else if (animatorConfig && textureSystem) {
+            const spritesheetId = animatorConfig.spritesheet
             this.#spritesheet = spritesheetId ? textureSystem.getSpritesheet(spritesheetId) : null
         } else {
             this.#spritesheet = null

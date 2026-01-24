@@ -27,10 +27,7 @@ async function init () {
     const animatorAssets = manifest.getAssetsByType('animator')
     for (const asset of animatorAssets) {
         if (asset.source) {
-            animatorConfigs[asset.id] = {
-                config: asset.source,
-                spritesheetId: asset.spritesheet
-            }
+            animatorConfigs[asset.id] = asset.source
         }
     }
 

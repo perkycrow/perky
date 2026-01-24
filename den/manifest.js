@@ -38,7 +38,7 @@ const manifest = {
 
 
         redSpritesheet: {type: 'spritesheet', url: './assets/spritesheets/red.json'},
-        redAnimator: {type: 'animator', url: './assets/animators/red_animator.json', spritesheet: 'redSpritesheet'},
+        redAnimator: {type: 'animator', url: './assets/animators/red_animator.json'},
 
 
         click: {type: 'audio', url: './assets/audio/click.ogg', tags: ['sfx']},

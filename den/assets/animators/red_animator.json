@@ -1,4 +1,5 @@
 {
+    "spritesheet": "redSpritesheet",
     "anchor": {"x": 0.5, "y": 0.05},
     "animations": {
         "skip": {
