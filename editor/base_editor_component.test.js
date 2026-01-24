@@ -29,12 +29,12 @@ describe('BaseEditorComponent', () => {
 
     describe('initialization', () => {
 
-        test('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(component).toBeInstanceOf(HTMLElement)
         })
 
 
-        test('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(component.shadowRoot).not.toBeNull()
         })
 
@@ -43,7 +43,7 @@ describe('BaseEditorComponent', () => {
 
     describe('listenTo', () => {
 
-        test('should register listener on target', () => {
+        test('registers listener on target', () => {
             const target = new Notifier()
             const callback = vi.fn()
 
@@ -54,7 +54,7 @@ describe('BaseEditorComponent', () => {
         })
 
 
-        test('should track multiple listeners', () => {
+        test('tracks multiple listeners', () => {
             const target1 = new Notifier()
             const target2 = new Notifier()
             const callback1 = vi.fn()
@@ -75,7 +75,7 @@ describe('BaseEditorComponent', () => {
 
     describe('cleanListeners', () => {
 
-        test('should remove all registered listeners', () => {
+        test('removes all registered listeners', () => {
             const target = new Notifier()
             const callback = vi.fn()
 
@@ -87,7 +87,7 @@ describe('BaseEditorComponent', () => {
         })
 
 
-        test('should handle multiple listeners from multiple targets', () => {
+        test('handles multiple listeners from multiple targets', () => {
             const target1 = new Notifier()
             const target2 = new Notifier()
             const callback1 = vi.fn()

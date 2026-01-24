@@ -79,27 +79,27 @@ describe('BaseTreeNode', () => {
 
     describe('initialization', () => {
 
-        test('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(node).toBeInstanceOf(HTMLElement)
         })
 
 
-        test('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(node.shadowRoot).not.toBeNull()
         })
 
 
-        test('should have content element', () => {
+        test('has content element', () => {
             expect(node.contentEl).not.toBeNull()
         })
 
 
-        test('should have toggle element', () => {
+        test('has toggle element', () => {
             expect(node.toggleEl).not.toBeNull()
         })
 
 
-        test('should have children container element', () => {
+        test('has children container element', () => {
             expect(node.childrenEl).not.toBeNull()
         })
 
@@ -108,12 +108,12 @@ describe('BaseTreeNode', () => {
 
     describe('depth', () => {
 
-        test('should default to 0', () => {
+        test('defaults to 0', () => {
             expect(node.depth).toBe(0)
         })
 
 
-        test('should be settable via setDepth', () => {
+        test('setDepth sets depth', () => {
             node.setDepth(3)
             expect(node.depth).toBe(3)
         })
@@ -123,31 +123,31 @@ describe('BaseTreeNode', () => {
 
     describe('expand/collapse', () => {
 
-        test('should default to collapsed', () => {
+        test('defaults to collapsed', () => {
             expect(node.expanded).toBe(false)
         })
 
 
-        test('should expand via setExpanded(true)', () => {
+        test('setExpanded(true) expands', () => {
             node.setExpanded(true)
             expect(node.expanded).toBe(true)
         })
 
 
-        test('should collapse via setExpanded(false)', () => {
+        test('setExpanded(false) collapses', () => {
             node.setExpanded(true)
             node.setExpanded(false)
             expect(node.expanded).toBe(false)
         })
 
 
-        test('should have expand() shortcut', () => {
+        test('expand() expands node', () => {
             node.expand()
             expect(node.expanded).toBe(true)
         })
 
 
-        test('should have collapse() shortcut', () => {
+        test('collapse() collapses node', () => {
             node.expand()
             node.collapse()
             expect(node.expanded).toBe(false)
@@ -158,24 +158,24 @@ describe('BaseTreeNode', () => {
 
     describe('selection', () => {
 
-        test('should default to not selected', () => {
+        test('defaults to not selected', () => {
             expect(node.selected).toBe(false)
         })
 
 
-        test('should be settable via setSelected', () => {
+        test('setSelected sets selection', () => {
             node.setSelected(true)
             expect(node.selected).toBe(true)
         })
 
 
-        test('should add selected class to content', () => {
+        test('adds selected class to content', () => {
             node.setSelected(true)
             expect(node.contentEl.classList.contains('selected')).toBe(true)
         })
 
 
-        test('should remove selected class when deselected', () => {
+        test('removes selected class when deselected', () => {
             node.setSelected(true)
             node.setSelected(false)
             expect(node.contentEl.classList.contains('selected')).toBe(false)
@@ -186,7 +186,7 @@ describe('BaseTreeNode', () => {
 
     describe('events', () => {
 
-        test('should emit node:select when node is clicked', () => {
+        test('emits node:select when node is clicked', () => {
             const handler = vi.fn()
             node.addEventListener('node:select', handler)
 
@@ -197,7 +197,7 @@ describe('BaseTreeNode', () => {
         })
 
 
-        test('should emit node:toggle when toggle is clicked', () => {
+        test('emits node:toggle when toggle is clicked', () => {
             const handler = vi.fn()
             node.setItem({name: 'Test', children: [{name: 'Child'}]})
             node.addEventListener('node:toggle', handler)
@@ -233,7 +233,7 @@ describe('BaseTreeNode', () => {
 
     describe('findNode', () => {
 
-        test('should find node matching predicate', () => {
+        test('finds node matching predicate', () => {
             const item = {
                 name: 'Root',
                 children: [
@@ -251,7 +251,7 @@ describe('BaseTreeNode', () => {
         })
 
 
-        test('should return null if no match', () => {
+        test('returns null if no match', () => {
             const item = {name: 'Root', children: []}
             node.setItem(item)
 

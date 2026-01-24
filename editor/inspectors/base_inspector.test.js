@@ -43,22 +43,22 @@ describe('BaseInspector', () => {
 
     describe('initialization', () => {
 
-        test('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(inspector).toBeInstanceOf(HTMLElement)
         })
 
 
-        test('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(inspector.shadowRoot).not.toBeNull()
         })
 
 
-        test('should have grid element after buildDOM', () => {
+        test('has grid element after buildDOM', () => {
             expect(inspector.gridEl).not.toBeNull()
         })
 
 
-        test('should have actions element after buildDOM', () => {
+        test('has actions element after buildDOM', () => {
             expect(inspector.actionsEl).not.toBeNull()
         })
 
@@ -67,14 +67,14 @@ describe('BaseInspector', () => {
 
     describe('setModule', () => {
 
-        test('should store the module', () => {
+        test('stores the module', () => {
             const module = {name: 'test'}
             inspector.setModule(module)
             expect(inspector.getModule()).toBe(module)
         })
 
 
-        test('should call onModuleSet hook', () => {
+        test('calls onModuleSet hook', () => {
             const module = {name: 'test'}
             inspector.setModule(module)
 
@@ -83,14 +83,14 @@ describe('BaseInspector', () => {
         })
 
 
-        test('should expose module via module getter', () => {
+        test('exposes module via module getter', () => {
             const module = {name: 'test'}
             inspector.setModule(module)
             expect(inspector.module).toBe(module)
         })
 
 
-        test('should clean listeners when setting new module', () => {
+        test('cleans listeners when setting new module', () => {
             const target = new Notifier()
             const callback = vi.fn()
 
@@ -106,7 +106,7 @@ describe('BaseInspector', () => {
 
     describe('addRow', () => {
 
-        test('should create label and value elements', () => {
+        test('creates label and value elements', () => {
             inspector.addRow('Label', 'Value')
 
             const label = inspector.gridEl.querySelector('.inspector-label')
@@ -117,19 +117,19 @@ describe('BaseInspector', () => {
         })
 
 
-        test('should return the value element', () => {
+        test('returns the value element', () => {
             const valueEl = inspector.addRow('Label', 'Value')
             expect(valueEl.textContent).toBe('Value')
         })
 
 
-        test('should add accent class when isAccent is true', () => {
+        test('adds accent class when isAccent is true', () => {
             const valueEl = inspector.addRow('Label', 'Value', true)
             expect(valueEl.classList.contains('accent')).toBe(true)
         })
 
 
-        test('should support function as value', () => {
+        test('supports function as value', () => {
             const valueEl = inspector.addRow('Label', () => 'computed')
             expect(valueEl.textContent).toBe('computed')
         })
@@ -147,7 +147,7 @@ describe('BaseInspector', () => {
 
     describe('createButton', () => {
 
-        test('should create button element', () => {
+        test('creates button element', () => {
             const btn = inspector.createButton('🔥', 'Fire', () => { })
 
             expect(btn.tagName).toBe('BUTTON')
@@ -156,7 +156,7 @@ describe('BaseInspector', () => {
         })
 
 
-        test('should call onClick when clicked', () => {
+        test('calls onClick when clicked', () => {
             const onClick = vi.fn()
             const btn = inspector.createButton('', 'Click', onClick)
 

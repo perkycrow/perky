@@ -24,17 +24,17 @@ describe('NumberInput', () => {
 
     describe('initialization', () => {
 
-        test('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(input).toBeInstanceOf(HTMLElement)
         })
 
 
-        test('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(input.shadowRoot).not.toBeNull()
         })
 
 
-        test('should have default value of 0', () => {
+        test('has default value of 0', () => {
             expect(input.value).toBe(0)
         })
 
@@ -43,19 +43,19 @@ describe('NumberInput', () => {
 
     describe('value property', () => {
 
-        test('should get and set value', () => {
+        test('gets and sets value', () => {
             input.value = 42
             expect(input.value).toBe(42)
         })
 
 
-        test('should parse string values', () => {
+        test('parses string values', () => {
             input.value = '3.14'
             expect(input.value).toBe(3.14)
         })
 
 
-        test('should default invalid values to 0', () => {
+        test('defaults invalid values to 0', () => {
             input.value = 'invalid'
             expect(input.value).toBe(0)
         })
@@ -91,14 +91,14 @@ describe('NumberInput', () => {
 
     describe('min/max constraints', () => {
 
-        test('should clamp value to min', () => {
+        test('clamps value to min', () => {
             input.setMin(0)
             input.value = -10
             expect(input.value).toBe(0)
         })
 
 
-        test('should clamp value to max', () => {
+        test('clamps value to max', () => {
             input.setMax(100)
             input.value = 200
             expect(input.value).toBe(100)
@@ -132,13 +132,13 @@ describe('NumberInput', () => {
 
     describe('setCompact', () => {
 
-        test('should add compact attribute when true', () => {
+        test('adds compact attribute when true', () => {
             input.setCompact(true)
             expect(input.hasAttribute('compact')).toBe(true)
         })
 
 
-        test('should remove compact attribute when false', () => {
+        test('removes compact attribute when false', () => {
             input.setCompact(true)
             input.setCompact(false)
             expect(input.hasAttribute('compact')).toBe(false)

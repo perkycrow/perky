@@ -15,12 +15,12 @@ describe('editor_theme', () => {
 
     describe('editorThemeVariables', () => {
 
-        test('should be a string', () => {
+        test('is a string', () => {
             expect(typeof editorThemeVariables).toBe('string')
         })
 
 
-        test('should contain background variables', () => {
+        test('contains background variables', () => {
             expect(editorThemeVariables).toContain('--bg-primary')
             expect(editorThemeVariables).toContain('--bg-secondary')
             expect(editorThemeVariables).toContain('--bg-hover')
@@ -28,19 +28,19 @@ describe('editor_theme', () => {
         })
 
 
-        test('should contain foreground variables', () => {
+        test('contains foreground variables', () => {
             expect(editorThemeVariables).toContain('--fg-primary')
             expect(editorThemeVariables).toContain('--fg-secondary')
             expect(editorThemeVariables).toContain('--fg-muted')
         })
 
 
-        test('should contain accent variable', () => {
+        test('contains accent variable', () => {
             expect(editorThemeVariables).toContain('--accent')
         })
 
 
-        test('should contain status variables', () => {
+        test('contains status variables', () => {
             expect(editorThemeVariables).toContain('--status-success')
             expect(editorThemeVariables).toContain('--status-error')
             expect(editorThemeVariables).toContain('--status-warning')
@@ -48,7 +48,7 @@ describe('editor_theme', () => {
         })
 
 
-        test('should contain highlight variables', () => {
+        test('contains highlight variables', () => {
             expect(editorThemeVariables).toContain('--hl-keyword')
             expect(editorThemeVariables).toContain('--hl-string')
             expect(editorThemeVariables).toContain('--hl-comment')
@@ -56,12 +56,12 @@ describe('editor_theme', () => {
         })
 
 
-        test('should contain border variable', () => {
+        test('contains border variable', () => {
             expect(editorThemeVariables).toContain('--border')
         })
 
 
-        test('should contain font-mono variable', () => {
+        test('contains font-mono variable', () => {
             expect(editorThemeVariables).toContain('--font-mono')
         })
 
@@ -70,12 +70,12 @@ describe('editor_theme', () => {
 
     describe('editorThemeVariablesLight', () => {
 
-        test('should be a string', () => {
+        test('is a string', () => {
             expect(typeof editorThemeVariablesLight).toBe('string')
         })
 
 
-        test('should contain all the same variables as dark theme', () => {
+        test('contains all the same variables as dark theme', () => {
             expect(editorThemeVariablesLight).toContain('--bg-primary')
             expect(editorThemeVariablesLight).toContain('--fg-primary')
             expect(editorThemeVariablesLight).toContain('--accent')
@@ -87,12 +87,12 @@ describe('editor_theme', () => {
 
     describe('editorBaseStyles', () => {
 
-        test('should be a string', () => {
+        test('is a string', () => {
             expect(typeof editorBaseStyles).toBe('string')
         })
 
 
-        test('should contain hidden class', () => {
+        test('contains hidden class', () => {
             expect(editorBaseStyles).toContain('.hidden')
         })
 
@@ -101,12 +101,12 @@ describe('editor_theme', () => {
 
     describe('editorScrollbarStyles', () => {
 
-        test('should be a string', () => {
+        test('is a string', () => {
             expect(typeof editorScrollbarStyles).toBe('string')
         })
 
 
-        test('should contain webkit-scrollbar styles', () => {
+        test('contains webkit-scrollbar styles', () => {
             expect(editorScrollbarStyles).toContain('::-webkit-scrollbar')
             expect(editorScrollbarStyles).toContain('::-webkit-scrollbar-track')
             expect(editorScrollbarStyles).toContain('::-webkit-scrollbar-thumb')
@@ -117,23 +117,23 @@ describe('editor_theme', () => {
 
     describe('editorButtonStyles', () => {
 
-        test('should be a string', () => {
+        test('is a string', () => {
             expect(typeof editorButtonStyles).toBe('string')
         })
 
 
-        test('should contain editor-btn class', () => {
+        test('contains editor-btn class', () => {
             expect(editorButtonStyles).toContain('.editor-btn')
         })
 
 
-        test('should contain button variants', () => {
+        test('contains button variants', () => {
             expect(editorButtonStyles).toContain('.editor-btn.primary')
             expect(editorButtonStyles).toContain('.editor-btn.success')
         })
 
 
-        test('should contain hover state', () => {
+        test('contains hover state', () => {
             expect(editorButtonStyles).toContain('.editor-btn:hover')
         })
 
@@ -142,22 +142,22 @@ describe('editor_theme', () => {
 
     describe('editorHeaderStyles', () => {
 
-        test('should be a string', () => {
+        test('is a string', () => {
             expect(typeof editorHeaderStyles).toBe('string')
         })
 
 
-        test('should contain editor-header class', () => {
+        test('contains editor-header class', () => {
             expect(editorHeaderStyles).toContain('.editor-header')
         })
 
 
-        test('should contain editor-header-title class', () => {
+        test('contains editor-header-title class', () => {
             expect(editorHeaderStyles).toContain('.editor-header-title')
         })
 
 
-        test('should contain editor-header-buttons class', () => {
+        test('contains editor-header-buttons class', () => {
             expect(editorHeaderStyles).toContain('.editor-header-buttons')
         })
 
@@ -166,38 +166,38 @@ describe('editor_theme', () => {
 
     describe('getThemeStyles', () => {
 
-        test('should return a string', () => {
+        test('returns a string', () => {
             const result = getThemeStyles()
             expect(typeof result).toBe('string')
         })
 
 
-        test('should contain :host selector', () => {
+        test('contains :host selector', () => {
             const result = getThemeStyles()
             expect(result).toContain(':host')
         })
 
 
-        test('should include color scheme media query by default', () => {
+        test('includes color scheme media query by default', () => {
             const result = getThemeStyles()
             expect(result).toContain('prefers-color-scheme: light')
         })
 
 
-        test('should include theme attribute selectors by default', () => {
+        test('includes theme attribute selectors by default', () => {
             const result = getThemeStyles()
             expect(result).toContain(':host([theme="dark"])')
             expect(result).toContain(':host([theme="light"])')
         })
 
 
-        test('should exclude color scheme when supportColorScheme is false', () => {
+        test('excludes color scheme when supportColorScheme is false', () => {
             const result = getThemeStyles({supportColorScheme: false})
             expect(result).not.toContain('prefers-color-scheme')
         })
 
 
-        test('should exclude theme attributes when supportThemeAttribute is false', () => {
+        test('excludes theme attributes when supportThemeAttribute is false', () => {
             const result = getThemeStyles({supportThemeAttribute: false})
             expect(result).not.toContain(':host([theme=')
         })
@@ -207,31 +207,31 @@ describe('editor_theme', () => {
 
     describe('buildEditorStyles', () => {
 
-        test('should return a string', () => {
+        test('returns a string', () => {
             const result = buildEditorStyles()
             expect(typeof result).toBe('string')
         })
 
 
-        test('should include theme styles', () => {
+        test('includes theme styles', () => {
             const result = buildEditorStyles()
             expect(result).toContain(':host')
         })
 
 
-        test('should include base styles', () => {
+        test('includes base styles', () => {
             const result = buildEditorStyles()
             expect(result).toContain('.hidden')
         })
 
 
-        test('should include additional style parts', () => {
+        test('includes additional style parts', () => {
             const result = buildEditorStyles('.custom { color: red; }')
             expect(result).toContain('.custom { color: red; }')
         })
 
 
-        test('should include multiple style parts', () => {
+        test('includes multiple style parts', () => {
             const result = buildEditorStyles('.part1 {}', '.part2 {}')
             expect(result).toContain('.part1')
             expect(result).toContain('.part2')

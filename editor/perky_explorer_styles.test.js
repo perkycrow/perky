@@ -13,13 +13,13 @@ describe('perky_explorer_styles', () => {
 
     describe('cssVariables', () => {
 
-        test('should be a non-empty string', () => {
+        test('is a non-empty string', () => {
             expect(typeof cssVariables).toBe('string')
             expect(cssVariables.length).toBeGreaterThan(0)
         })
 
 
-        test('should contain color variables', () => {
+        test('contains color variables', () => {
             expect(cssVariables).toContain('--bg-primary')
             expect(cssVariables).toContain('--bg-secondary')
             expect(cssVariables).toContain('--fg-primary')
@@ -28,14 +28,14 @@ describe('perky_explorer_styles', () => {
         })
 
 
-        test('should contain status variables', () => {
+        test('contains status variables', () => {
             expect(cssVariables).toContain('--status-started')
             expect(cssVariables).toContain('--status-stopped')
             expect(cssVariables).toContain('--status-disposed')
         })
 
 
-        test('should contain font variable', () => {
+        test('contains font variable', () => {
             expect(cssVariables).toContain('--font-mono')
         })
 
@@ -44,20 +44,20 @@ describe('perky_explorer_styles', () => {
 
     describe('explorerStyles', () => {
 
-        test('should be a non-empty string', () => {
+        test('is a non-empty string', () => {
             expect(typeof explorerStyles).toBe('string')
             expect(explorerStyles.length).toBeGreaterThan(0)
         })
 
 
-        test('should contain explorer class styles', () => {
+        test('contains explorer class styles', () => {
             expect(explorerStyles).toContain('.explorer')
             expect(explorerStyles).toContain('.explorer-header')
             expect(explorerStyles).toContain('.explorer-tree')
         })
 
 
-        test('should contain button styles', () => {
+        test('contains button styles', () => {
             expect(explorerStyles).toContain('.explorer-btn')
         })
 
@@ -66,13 +66,13 @@ describe('perky_explorer_styles', () => {
 
     describe('nodeStyles', () => {
 
-        test('should be a non-empty string', () => {
+        test('is a non-empty string', () => {
             expect(typeof nodeStyles).toBe('string')
             expect(nodeStyles.length).toBeGreaterThan(0)
         })
 
 
-        test('should contain node class styles', () => {
+        test('contains node class styles', () => {
             expect(nodeStyles).toContain('.node-content')
             expect(nodeStyles).toContain('.node-toggle')
             expect(nodeStyles).toContain('.node-status')
@@ -91,13 +91,13 @@ describe('perky_explorer_styles', () => {
 
     describe('detailsStyles', () => {
 
-        test('should be a non-empty string', () => {
+        test('is a non-empty string', () => {
             expect(typeof detailsStyles).toBe('string')
             expect(detailsStyles.length).toBeGreaterThan(0)
         })
 
 
-        test('should contain details class styles', () => {
+        test('contains details class styles', () => {
             expect(detailsStyles).toContain('.details-title')
             expect(detailsStyles).toContain('.details-grid')
             expect(detailsStyles).toContain('.details-label')
@@ -110,7 +110,7 @@ describe('perky_explorer_styles', () => {
         })
 
 
-        test('should contain tag styles', () => {
+        test('contains tag styles', () => {
             expect(detailsStyles).toContain('.details-tags')
             expect(detailsStyles).toContain('.details-tag')
         })
@@ -120,26 +120,26 @@ describe('perky_explorer_styles', () => {
 
     describe('inspectorStyles', () => {
 
-        test('should be a non-empty string', () => {
+        test('is a non-empty string', () => {
             expect(typeof inspectorStyles).toBe('string')
             expect(inspectorStyles.length).toBeGreaterThan(0)
         })
 
 
-        test('should contain inspector class styles', () => {
+        test('contains inspector class styles', () => {
             expect(inspectorStyles).toContain('.inspector-grid')
             expect(inspectorStyles).toContain('.inspector-label')
             expect(inspectorStyles).toContain('.inspector-value')
         })
 
 
-        test('should contain button styles', () => {
+        test('contains button styles', () => {
             expect(inspectorStyles).toContain('.inspector-btn')
             expect(inspectorStyles).toContain('.inspector-btn.primary')
         })
 
 
-        test('should contain action styles', () => {
+        test('contains action styles', () => {
             expect(inspectorStyles).toContain('.inspector-actions')
         })
 
@@ -148,13 +148,13 @@ describe('perky_explorer_styles', () => {
 
     describe('panelStyles', () => {
 
-        test('should be a non-empty string', () => {
+        test('is a non-empty string', () => {
             expect(typeof panelStyles).toBe('string')
             expect(panelStyles.length).toBeGreaterThan(0)
         })
 
 
-        test('should contain panel class styles', () => {
+        test('contains panel class styles', () => {
             expect(panelStyles).toContain('.panel-header')
             expect(panelStyles).toContain('.panel-title')
             expect(panelStyles).toContain('.panel-buttons')
@@ -162,7 +162,7 @@ describe('perky_explorer_styles', () => {
         })
 
 
-        test('should contain tree styles', () => {
+        test('contains tree styles', () => {
             expect(panelStyles).toContain('.panel-tree')
         })
 

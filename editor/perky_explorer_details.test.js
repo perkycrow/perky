@@ -25,17 +25,17 @@ describe('PerkyExplorerDetails', () => {
 
     describe('initialization', () => {
 
-        test('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(details).toBeInstanceOf(HTMLElement)
         })
 
 
-        test('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(details.shadowRoot).not.toBeNull()
         })
 
 
-        test('should show empty state when no module', () => {
+        test('shows empty state when no module', () => {
             details.clear()
             const empty = details.shadowRoot.querySelector('.details-empty')
             expect(empty).not.toBeNull()
@@ -47,14 +47,14 @@ describe('PerkyExplorerDetails', () => {
 
     describe('setModule', () => {
 
-        test('should set the module', () => {
+        test('sets the module', () => {
             const module = createMockModule()
             details.setModule(module)
             expect(details.getModule()).toBe(module)
         })
 
 
-        test('should display module id in title', () => {
+        test('displays module id in title', () => {
             const module = createMockModule({$id: 'player'})
             details.setModule(module)
 
@@ -63,7 +63,7 @@ describe('PerkyExplorerDetails', () => {
         })
 
 
-        test('should display status indicator', () => {
+        test('displays status indicator', () => {
             const module = createMockModule({$status: 'started'})
             details.setModule(module)
 
@@ -76,12 +76,12 @@ describe('PerkyExplorerDetails', () => {
 
     describe('getModule', () => {
 
-        test('should return null when no module set', () => {
+        test('returns null when no module set', () => {
             expect(details.getModule()).toBeNull()
         })
 
 
-        test('should return the set module', () => {
+        test('returns the set module', () => {
             const module = createMockModule()
             details.setModule(module)
             expect(details.getModule()).toBe(module)
@@ -92,7 +92,7 @@ describe('PerkyExplorerDetails', () => {
 
     describe('clear', () => {
 
-        test('should clear the module', () => {
+        test('clears the module', () => {
             const module = createMockModule()
             details.setModule(module)
             details.clear()
@@ -100,7 +100,7 @@ describe('PerkyExplorerDetails', () => {
         })
 
 
-        test('should show empty state after clear', () => {
+        test('shows empty state after clear', () => {
             details.setModule(createMockModule())
             details.clear()
 

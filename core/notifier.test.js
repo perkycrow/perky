@@ -124,7 +124,7 @@ describe(Notifier, () => {
 
 
     describe('listenTo', () => {
-        test('should register listener on target and track it', () => {
+        test('registers listener on target', () => {
             const target = new Notifier()
             const listener = vi.fn()
 
@@ -134,7 +134,7 @@ describe(Notifier, () => {
             expect(listener).toHaveBeenCalledWith(1, 2, 3)
         })
 
-        test('should track multiple listeners on same target', () => {
+        test('tracks multiple listeners on same target', () => {
             const target = new Notifier()
             const listener1 = vi.fn()
             const listener2 = vi.fn()
@@ -149,7 +149,7 @@ describe(Notifier, () => {
             expect(listener2).toHaveBeenCalledWith('b')
         })
 
-        test('should track listeners on multiple targets', () => {
+        test('tracks listeners on multiple targets', () => {
             const target1 = new Notifier()
             const target2 = new Notifier()
             const listener1 = vi.fn()
@@ -168,7 +168,7 @@ describe(Notifier, () => {
 
 
     describe('listenToOnce', () => {
-        test('should register one-time listener on target', () => {
+        test('registers one-time listener on target', () => {
             const target = new Notifier()
             const listener = vi.fn()
 
@@ -183,7 +183,7 @@ describe(Notifier, () => {
             expect(listener).toHaveBeenCalledTimes(1)
         })
 
-        test('should remove from tracking after execution', () => {
+        test('removes from tracking after execution', () => {
             const target = new Notifier()
             const listener = vi.fn()
 
@@ -194,7 +194,7 @@ describe(Notifier, () => {
             expect(() => notifier.cleanExternalListeners()).not.toThrow()
         })
 
-        test('should work with multiple one-time listeners', () => {
+        test('works with multiple one-time listeners', () => {
             const target = new Notifier()
             const listener1 = vi.fn()
             const listener2 = vi.fn()
@@ -214,7 +214,7 @@ describe(Notifier, () => {
 
 
     describe('cleanExternalListeners', () => {
-        test('should remove all tracked listeners', () => {
+        test('removes all tracked listeners', () => {
             const target = new Notifier()
             const listener1 = vi.fn()
             const listener2 = vi.fn()
@@ -232,7 +232,7 @@ describe(Notifier, () => {
             expect(listener2).not.toHaveBeenCalled()
         })
 
-        test('should remove listeners from multiple targets', () => {
+        test('removes listeners from multiple targets', () => {
             const target1 = new Notifier()
             const target2 = new Notifier()
             const listener1 = vi.fn()
@@ -250,11 +250,11 @@ describe(Notifier, () => {
             expect(listener2).not.toHaveBeenCalled()
         })
 
-        test('should handle empty listener list', () => {
+        test('handles empty listener list', () => {
             expect(() => notifier.cleanExternalListeners()).not.toThrow()
         })
 
-        test('should allow reusing notifier after cleanup', () => {
+        test('allows reusing notifier after cleanup', () => {
             const target = new Notifier()
             const listener1 = vi.fn()
             const listener2 = vi.fn()
@@ -269,7 +269,7 @@ describe(Notifier, () => {
             expect(listener2).toHaveBeenCalledWith('data')
         })
 
-        test('should cleanup mix of listenTo and listenToOnce', () => {
+        test('cleans up mix of listenTo and listenToOnce', () => {
             const target = new Notifier()
             const listener1 = vi.fn()
             const listener2 = vi.fn()
@@ -289,7 +289,7 @@ describe(Notifier, () => {
 
 
     describe('emitter', () => {
-        test('should return a function that emits the given event', () => {
+        test('returns a function that emits the given event', () => {
             const listener = vi.fn()
             notifier.on('test', listener)
 
@@ -299,7 +299,7 @@ describe(Notifier, () => {
             expect(listener).toHaveBeenCalledWith(1, 2, 3)
         })
 
-        test('should pass all arguments to emit', () => {
+        test('passes all arguments to emit', () => {
             const listener = vi.fn()
             notifier.on('foo', listener)
 
@@ -309,7 +309,7 @@ describe(Notifier, () => {
             expect(listener).toHaveBeenCalledWith('a', 'b', 'c', 'd')
         })
 
-        test('should work with no arguments', () => {
+        test('works with no arguments', () => {
             const listener = vi.fn()
             notifier.on('bar', listener)
 
@@ -319,7 +319,7 @@ describe(Notifier, () => {
             expect(listener).toHaveBeenCalledWith()
         })
 
-        test('should create different emitters for different events', () => {
+        test('creates different emitters for different events', () => {
             const listener1 = vi.fn()
             const listener2 = vi.fn()
             notifier.on('event1', listener1)
@@ -338,7 +338,7 @@ describe(Notifier, () => {
 
 
     describe('delegateEvents', () => {
-        test('should delegate events from target without namespace', () => {
+        test('delegates events without namespace', () => {
             const target = new Notifier()
             const listener = vi.fn()
 
@@ -349,7 +349,7 @@ describe(Notifier, () => {
             expect(listener).toHaveBeenCalledWith(1, 2, 3)
         })
 
-        test('should delegate events with namespace prefix', () => {
+        test('delegates events with namespace prefix', () => {
             const target = new Notifier()
             const listener = vi.fn()
 
@@ -360,7 +360,7 @@ describe(Notifier, () => {
             expect(listener).toHaveBeenCalledWith('data')
         })
 
-        test('should handle multiple events from array', () => {
+        test('handles multiple events from array', () => {
             const target = new Notifier()
             const listener1 = vi.fn()
             const listener2 = vi.fn()
@@ -376,7 +376,7 @@ describe(Notifier, () => {
             expect(listener2).toHaveBeenCalledWith('b')
         })
 
-        test('should handle events object', () => {
+        test('handles events object', () => {
             const target = new Notifier()
             const listener1 = vi.fn()
             const listener2 = vi.fn()
@@ -392,7 +392,7 @@ describe(Notifier, () => {
             expect(listener2).toHaveBeenCalledWith(2)
         })
 
-        test('should combine namespace with events object', () => {
+        test('combines namespace with events object', () => {
             const target = new Notifier()
             const listener1 = vi.fn()
             const listener2 = vi.fn()
@@ -408,21 +408,21 @@ describe(Notifier, () => {
             expect(listener2).toHaveBeenCalledWith('y')
         })
 
-        test('should return early if target is null', () => {
+        test('returns early if target is null', () => {
             expect(() => notifier.delegateEvents(null, ['test'])).not.toThrow()
         })
 
-        test('should return early if target is undefined', () => {
+        test('returns early if target is undefined', () => {
             expect(() => notifier.delegateEvents(undefined, ['test'])).not.toThrow()
         })
 
-        test('should return early if events is not array or object', () => {
+        test('returns early if events is not array or object', () => {
             const target = new Notifier()
             expect(() => notifier.delegateEvents(target, 'string')).not.toThrow()
             expect(() => notifier.delegateEvents(target, 123)).not.toThrow()
         })
 
-        test('should cleanup delegated listeners', () => {
+        test('cleans up delegated listeners', () => {
             const target = new Notifier()
             const listener = vi.fn()
 

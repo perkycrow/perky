@@ -24,17 +24,17 @@ describe('ExplorerContextMenu', () => {
 
     describe('initialization', () => {
 
-        test('should be a custom element', () => {
+        test('is a custom element', () => {
             expect(menu).toBeInstanceOf(HTMLElement)
         })
 
 
-        test('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(menu.shadowRoot).not.toBeNull()
         })
 
 
-        test('should be hidden by default', () => {
+        test('is hidden by default', () => {
             expect(menu.style.display).toBe('none')
         })
 
@@ -43,7 +43,7 @@ describe('ExplorerContextMenu', () => {
 
     describe('show', () => {
 
-        test('should display the menu', () => {
+        test('displays the menu', () => {
             const actions = [{label: 'Test', icon: '🔍', action: vi.fn()}]
 
             menu.show(actions, {}, {x: 100, y: 100})
@@ -52,7 +52,7 @@ describe('ExplorerContextMenu', () => {
         })
 
 
-        test('should render actions', () => {
+        test('renders actions', () => {
             const actions = [
                 {label: 'Action 1', icon: '🔍', action: vi.fn()},
                 {label: 'Action 2', icon: '⚙', action: vi.fn()}
@@ -67,7 +67,7 @@ describe('ExplorerContextMenu', () => {
         })
 
 
-        test('should render separators', () => {
+        test('renders separators', () => {
             const actions = [
                 {label: 'Action 1', icon: '🔍', action: vi.fn()},
                 {separator: true},
@@ -81,7 +81,7 @@ describe('ExplorerContextMenu', () => {
         })
 
 
-        test('should mark disabled actions', () => {
+        test('marks disabled actions', () => {
             const actions = [
                 {label: 'Disabled', icon: '⚙', action: vi.fn(), disabled: true}
             ]
@@ -93,7 +93,7 @@ describe('ExplorerContextMenu', () => {
         })
 
 
-        test('should mark danger actions', () => {
+        test('marks danger actions', () => {
             const actions = [
                 {label: 'Delete', icon: '🗑', action: vi.fn(), danger: true}
             ]
@@ -109,7 +109,7 @@ describe('ExplorerContextMenu', () => {
 
     describe('action execution', () => {
 
-        test('should call action when clicking item', () => {
+        test('calls action when clicking item', () => {
             const actionFn = vi.fn()
             const module = {$id: 'test'}
             const actions = [{label: 'Test', icon: '🔍', action: actionFn}]
@@ -123,7 +123,7 @@ describe('ExplorerContextMenu', () => {
         })
 
 
-        test('should hide menu after action is executed', () => {
+        test('hides menu after action is executed', () => {
             const actions = [{label: 'Test', icon: '🔍', action: vi.fn()}]
 
             menu.show(actions, {}, {x: 100, y: 100})
@@ -135,7 +135,7 @@ describe('ExplorerContextMenu', () => {
         })
 
 
-        test('should not call action for disabled items', () => {
+        test('does not call action for disabled items', () => {
             const actionFn = vi.fn()
             const actions = [{label: 'Test', icon: '🔍', action: actionFn, disabled: true}]
 

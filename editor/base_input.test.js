@@ -6,7 +6,7 @@ describe('base_input', () => {
 
     describe('setupInputStyles', () => {
 
-        test('should adopt controlsSheet to shadowRoot', () => {
+        test('adopts controlsSheet to shadowRoot', () => {
             const mockShadowRoot = {
                 adoptedStyleSheets: []
             }
@@ -15,7 +15,7 @@ describe('base_input', () => {
         })
 
 
-        test('should adopt component styles when provided', () => {
+        test('adopts component styles when provided', () => {
             const mockShadowRoot = {
                 adoptedStyleSheets: []
             }
@@ -24,7 +24,7 @@ describe('base_input', () => {
         })
 
 
-        test('should return null when no component CSS provided', () => {
+        test('returns null when no component CSS provided', () => {
             const mockShadowRoot = {
                 adoptedStyleSheets: []
             }
@@ -33,7 +33,7 @@ describe('base_input', () => {
         })
 
 
-        test('should return null for empty component CSS string', () => {
+        test('returns null for empty component CSS string', () => {
             const mockShadowRoot = {
                 adoptedStyleSheets: []
             }
@@ -46,13 +46,13 @@ describe('base_input', () => {
 
     describe('createInputStyles', () => {
 
-        test('should return the input string (passthrough for backwards compat)', () => {
+        test('returns the input string (passthrough for backwards compat)', () => {
             const styles = createInputStyles('.foo { color: red; }')
             expect(styles).toBe('.foo { color: red; }')
         })
 
 
-        test('should include custom styles', () => {
+        test('includes custom styles', () => {
             const customStyles = '.custom { color: red; }'
             const styles = createInputStyles(customStyles)
             expect(styles).toContain('.custom { color: red; }')
@@ -63,7 +63,7 @@ describe('base_input', () => {
 
     describe('emitChange', () => {
 
-        test('should dispatch a CustomEvent with detail', () => {
+        test('dispatches CustomEvent with detail', () => {
             const element = document.createElement('div')
             const handler = vi.fn()
             element.addEventListener('change', handler)
@@ -75,7 +75,7 @@ describe('base_input', () => {
         })
 
 
-        test('should bubble', () => {
+        test('bubbles', () => {
             const parent = document.createElement('div')
             const child = document.createElement('div')
             parent.appendChild(child)
@@ -92,14 +92,14 @@ describe('base_input', () => {
 
     describe('handleAttributeChange', () => {
 
-        test('should return false if old and new values are the same', () => {
+        test('returns false if old and new values are the same', () => {
             const component = {}
             const result = handleAttributeChange(component, 'value', '10', '10')
             expect(result).toBe(false)
         })
 
 
-        test('should call setValue for value attribute', () => {
+        test('calls setValue for value attribute', () => {
             const component = {setValue: vi.fn()}
             const result = handleAttributeChange(component, 'value', null, '42')
             expect(result).toBe(true)
@@ -107,7 +107,7 @@ describe('base_input', () => {
         })
 
 
-        test('should call setMin for min attribute', () => {
+        test('calls setMin for min attribute', () => {
             const component = {setMin: vi.fn()}
             const result = handleAttributeChange(component, 'min', null, '5')
             expect(result).toBe(true)
@@ -115,7 +115,7 @@ describe('base_input', () => {
         })
 
 
-        test('should call setMax for max attribute', () => {
+        test('calls setMax for max attribute', () => {
             const component = {setMax: vi.fn()}
             const result = handleAttributeChange(component, 'max', null, '100')
             expect(result).toBe(true)
@@ -123,7 +123,7 @@ describe('base_input', () => {
         })
 
 
-        test('should call setStep for step attribute', () => {
+        test('calls setStep for step attribute', () => {
             const component = {setStep: vi.fn()}
             const result = handleAttributeChange(component, 'step', null, '0.5')
             expect(result).toBe(true)
@@ -131,7 +131,7 @@ describe('base_input', () => {
         })
 
 
-        test('should call setLabel for label attribute', () => {
+        test('calls setLabel for label attribute', () => {
             const component = {setLabel: vi.fn()}
             const result = handleAttributeChange(component, 'label', null, 'x')
             expect(result).toBe(true)
@@ -139,7 +139,7 @@ describe('base_input', () => {
         })
 
 
-        test('should call setPrecision for precision attribute', () => {
+        test('calls setPrecision for precision attribute', () => {
             const component = {setPrecision: vi.fn()}
             const result = handleAttributeChange(component, 'precision', null, '3')
             expect(result).toBe(true)
@@ -147,7 +147,7 @@ describe('base_input', () => {
         })
 
 
-        test('should call setChecked for checked attribute', () => {
+        test('calls setChecked for checked attribute', () => {
             const component = {setChecked: vi.fn()}
             const result = handleAttributeChange(component, 'checked', null, '')
             expect(result).toBe(true)
@@ -155,7 +155,7 @@ describe('base_input', () => {
         })
 
 
-        test('should call setChecked with false when checked is removed', () => {
+        test('calls setChecked with false when checked is removed', () => {
             const component = {setChecked: vi.fn()}
             const result = handleAttributeChange(component, 'checked', '', null)
             expect(result).toBe(true)
@@ -163,28 +163,28 @@ describe('base_input', () => {
         })
 
 
-        test('should return false for unknown attributes', () => {
+        test('returns false for unknown attributes', () => {
             const component = {}
             const result = handleAttributeChange(component, 'unknown', null, 'value')
             expect(result).toBe(false)
         })
 
 
-        test('should use default value 0 for invalid number in value', () => {
+        test('uses default value 0 for invalid number in value', () => {
             const component = {setValue: vi.fn()}
             handleAttributeChange(component, 'value', null, 'invalid')
             expect(component.setValue).toHaveBeenCalledWith(0)
         })
 
 
-        test('should use default value 100 for invalid max', () => {
+        test('uses default value 100 for invalid max', () => {
             const component = {setMax: vi.fn()}
             handleAttributeChange(component, 'max', null, 'invalid')
             expect(component.setMax).toHaveBeenCalledWith(100)
         })
 
 
-        test('should use empty string for null label', () => {
+        test('uses empty string for null label', () => {
             const component = {setLabel: vi.fn()}
             handleAttributeChange(component, 'label', 'old', null)
             expect(component.setLabel).toHaveBeenCalledWith('')
