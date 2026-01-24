@@ -4,6 +4,31 @@ import {createStyleSheet, adoptStyleSheets} from './dom_utils.js'
 const sheetCache = new WeakMap()
 
 
+function toSheet (style) {
+    if (typeof style === 'string') {
+        return createStyleSheet(style)
+    }
+    return style
+}
+
+
+function getOrCreateSheets (ctor) {
+    if (!Object.hasOwn(ctor, 'styles') || !ctor.styles) {
+        return []
+    }
+
+    if (!sheetCache.has(ctor)) {
+        const styles = ctor.styles
+        const sheets = Array.isArray(styles)
+            ? styles.map(s => toSheet(s))
+            : [toSheet(styles)]
+        sheetCache.set(ctor, sheets)
+    }
+
+    return sheetCache.get(ctor)
+}
+
+
 export default class PerkyComponent extends HTMLElement {
 
     #listeners = []
@@ -38,7 +63,7 @@ export default class PerkyComponent extends HTMLElement {
         let proto = this.constructor
 
         while (proto && proto !== PerkyComponent && proto !== HTMLElement) {
-            const protoSheets = this.#getOrCreateSheets(proto)
+            const protoSheets = getOrCreateSheets(proto)
             if (protoSheets.length > 0) {
                 sheets.unshift(...protoSheets)
             }
@@ -46,31 +71,6 @@ export default class PerkyComponent extends HTMLElement {
         }
 
         return sheets
-    }
-
-
-    #getOrCreateSheets (ctor) {
-        if (!Object.hasOwn(ctor, 'styles') || !ctor.styles) {
-            return []
-        }
-
-        if (!sheetCache.has(ctor)) {
-            const styles = ctor.styles
-            const sheets = Array.isArray(styles)
-                ? styles.map(s => this.#toSheet(s))
-                : [this.#toSheet(styles)]
-            sheetCache.set(ctor, sheets)
-        }
-
-        return sheetCache.get(ctor)
-    }
-
-
-    #toSheet (style) {
-        if (typeof style === 'string') {
-            return createStyleSheet(style)
-        }
-        return style
     }
 
 

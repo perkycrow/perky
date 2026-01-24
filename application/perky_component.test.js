@@ -1,4 +1,4 @@
-import {describe, test, expect, vi, beforeEach, afterEach} from 'vitest'
+import {describe, test, expect, vi, afterEach} from 'vitest'
 import PerkyComponent from './perky_component.js'
 import {createStyleSheet} from './dom_utils.js'
 
