@@ -15,6 +15,171 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
     static defaultWidth = 600
     static defaultHeight = 450
 
+    static styles = this.buildStyleSheet(`
+        .animator-content {
+            color: var(--fg-primary);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 12px;
+        }
+
+        .no-animator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--fg-muted);
+            gap: 8px;
+        }
+
+        .no-animator .hint {
+            font-size: 10px;
+            color: var(--fg-muted);
+        }
+
+        .animator-topbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--bg-hover);
+        }
+
+        .animator-topbar .animator-select {
+            flex: 1;
+        }
+
+        .export-all-btn {
+            width: 100px;
+            background: var(--bg-hover);
+            color: var(--fg-secondary);
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-family: inherit;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .export-all-btn:hover {
+            background: var(--bg-selected);
+            color: var(--fg-primary);
+        }
+
+        .animator-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .animator-select,
+        .animation-select {
+            background: var(--bg-secondary);
+            color: var(--fg-primary);
+            border: none;
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .animator-select:hover,
+        .animation-select:hover {
+            background: var(--bg-hover);
+        }
+
+        .animator-select:focus,
+        .animation-select:focus {
+            outline: none;
+            background: var(--bg-hover);
+        }
+
+        .animation-info {
+            display: flex;
+            gap: 16px;
+            color: var(--fg-secondary);
+            font-size: 11px;
+            flex: 1;
+            align-items: center;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--fg-muted);
+        }
+
+        .info-item input[type="checkbox"] {
+            accent-color: var(--accent);
+        }
+
+        .info-item select {
+            background: transparent;
+            color: var(--fg-secondary);
+            border: none;
+            padding: 2px 4px;
+            font-family: inherit;
+            font-size: 11px;
+            cursor: pointer;
+            transition: color 0.15s;
+        }
+
+        .info-item select:hover {
+            color: var(--fg-primary);
+        }
+
+        .info-item select:focus {
+            outline: none;
+            color: var(--fg-primary);
+        }
+
+        .fps-input {
+            width: 90px;
+        }
+
+        .frames-count {
+            margin-left: auto;
+        }
+
+        .animator-main {
+            display: flex;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .animator-left {
+            flex-shrink: 0;
+        }
+
+        .animator-right {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        animation-timeline {
+            flex-shrink: 0;
+        }
+
+        spritesheet-viewer {
+            flex: 1;
+            min-height: 80px;
+        }
+    `)
+
     #contentEl = null
     #timelineEl = null
     #previewEl = null
@@ -36,9 +201,7 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = STYLES
-        this.shadowRoot.appendChild(style)
+        this.setupStyles()
 
         this.#contentEl = document.createElement('div')
         this.#contentEl.className = 'animator-content'
@@ -452,172 +615,6 @@ function setupAnimationInfoListeners (infoEl, anim) {
         anim.setPlaybackMode(e.target.value)
     })
 }
-
-
-const STYLES = SpriteAnimatorTool.buildStyles(`
-    .animator-content {
-        color: var(--fg-primary);
-        font-family: var(--font-mono);
-        font-size: 12px;
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        gap: 12px;
-    }
-
-    .no-animator {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        color: var(--fg-muted);
-        gap: 8px;
-    }
-
-    .no-animator .hint {
-        font-size: 10px;
-        color: var(--fg-muted);
-    }
-
-    .animator-topbar {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-shrink: 0;
-        padding-bottom: 8px;
-        border-bottom: 1px solid var(--bg-hover);
-    }
-
-    .animator-topbar .animator-select {
-        flex: 1;
-    }
-
-    .export-all-btn {
-        width: 100px;
-        background: var(--bg-hover);
-        color: var(--fg-secondary);
-        border: none;
-        border-radius: 4px;
-        padding: 6px 12px;
-        font-family: inherit;
-        font-size: 11px;
-        cursor: pointer;
-        transition: background 0.15s, color 0.15s;
-    }
-
-    .export-all-btn:hover {
-        background: var(--bg-selected);
-        color: var(--fg-primary);
-    }
-
-    .animator-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-shrink: 0;
-    }
-
-    .animator-select,
-    .animation-select {
-        background: var(--bg-secondary);
-        color: var(--fg-primary);
-        border: none;
-        border-radius: 4px;
-        padding: 6px 10px;
-        font-family: inherit;
-        font-size: 12px;
-        cursor: pointer;
-        transition: background 0.15s;
-    }
-
-    .animator-select:hover,
-    .animation-select:hover {
-        background: var(--bg-hover);
-    }
-
-    .animator-select:focus,
-    .animation-select:focus {
-        outline: none;
-        background: var(--bg-hover);
-    }
-
-    .animation-info {
-        display: flex;
-        gap: 16px;
-        color: var(--fg-secondary);
-        font-size: 11px;
-        flex: 1;
-        align-items: center;
-    }
-
-    .info-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        color: var(--fg-muted);
-    }
-
-    .info-item input[type="checkbox"] {
-        accent-color: var(--accent);
-    }
-
-    .info-item select {
-        background: transparent;
-        color: var(--fg-secondary);
-        border: none;
-        padding: 2px 4px;
-        font-family: inherit;
-        font-size: 11px;
-        cursor: pointer;
-        transition: color 0.15s;
-    }
-
-    .info-item select:hover {
-        color: var(--fg-primary);
-    }
-
-    .info-item select:focus {
-        outline: none;
-        color: var(--fg-primary);
-    }
-
-    .fps-input {
-        width: 90px;
-    }
-
-    .frames-count {
-        margin-left: auto;
-    }
-
-    .animator-main {
-        display: flex;
-        gap: 12px;
-        flex: 1;
-        min-height: 0;
-    }
-
-    .animator-left {
-        flex-shrink: 0;
-    }
-
-    .animator-right {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        flex: 1;
-        min-width: 0;
-    }
-
-    animation-timeline {
-        flex-shrink: 0;
-    }
-
-    spritesheet-viewer {
-        flex: 1;
-        min-height: 80px;
-    }
-`)
 
 
 customElements.define('sprite-animator-tool', SpriteAnimatorTool)

@@ -1,5 +1,6 @@
 import BaseEditorComponent from '../base_editor_component.js'
 import {buildEditorStyles, editorBaseStyles, editorScrollbarStyles} from '../editor_theme.js'
+import {createStyleSheet, adoptStyleSheets} from '../../application/dom_utils.js'
 import {ICONS} from '../devtools/devtools_icons.js'
 
 
@@ -55,6 +56,16 @@ export default class BaseFloatingTool extends BaseEditorComponent {
             editorScrollbarStyles,
             ...customStyles
         )
+    }
+
+
+    static buildStyleSheet (...customStyles) {
+        return createStyleSheet(this.buildStyles(...customStyles))
+    }
+
+
+    setupStyles () {
+        adoptStyleSheets(this.shadowRoot, this.constructor.styles)
     }
 
 }
