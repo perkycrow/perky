@@ -56,11 +56,11 @@ afterEach(() => {
 
 
 describe('isAudioUnlocked', () => {
-    test('should return false initially', () => {
+    test('returns false initially', () => {
         expect(module.isAudioUnlocked()).toBe(false)
     })
 
-    test('should return true after unlock event', () => {
+    test('returns true after unlock event', () => {
         const clickListeners = documentListeners.click
         expect(clickListeners).toBeDefined()
         expect(clickListeners.length).toBeGreaterThan(0)
@@ -74,7 +74,7 @@ describe('isAudioUnlocked', () => {
 
 
 describe('onAudioUnlock', () => {
-    test('should queue callback when audio is locked', () => {
+    test('queues callback when audio is locked', () => {
         const callback = vi.fn()
 
         module.onAudioUnlock(callback)
@@ -82,7 +82,7 @@ describe('onAudioUnlock', () => {
         expect(callback).not.toHaveBeenCalled()
     })
 
-    test('should execute callback immediately when audio is already unlocked', () => {
+    test('executes immediately when already unlocked', () => {
         const callback = vi.fn()
 
         // Trigger unlock
@@ -95,7 +95,7 @@ describe('onAudioUnlock', () => {
         expect(callback).toHaveBeenCalledTimes(1)
     })
 
-    test('should execute queued callbacks on unlock', () => {
+    test('executes queued callbacks on unlock', () => {
         const callback1 = vi.fn()
         const callback2 = vi.fn()
         const callback3 = vi.fn()
@@ -118,7 +118,7 @@ describe('onAudioUnlock', () => {
         expect(callback3).toHaveBeenCalledTimes(1)
     })
 
-    test('should execute callbacks in the order they were registered', () => {
+    test('executes callbacks in registration order', () => {
         const callOrder = []
         const callback1 = vi.fn(() => callOrder.push('callback1'))
         const callback2 = vi.fn(() => callOrder.push('callback2'))
@@ -139,7 +139,7 @@ describe('onAudioUnlock', () => {
 
 
 describe('unlock events', () => {
-    test('should unlock audio on click event', () => {
+    test('click unlocks audio', () => {
         const callback = vi.fn()
         module.onAudioUnlock(callback)
 
@@ -151,7 +151,7 @@ describe('unlock events', () => {
         expect(module.isAudioUnlocked()).toBe(true)
     })
 
-    test('should unlock audio on touchstart event', () => {
+    test('touchstart unlocks audio', () => {
         const callback = vi.fn()
         module.onAudioUnlock(callback)
 
@@ -163,7 +163,7 @@ describe('unlock events', () => {
         expect(module.isAudioUnlocked()).toBe(true)
     })
 
-    test('should unlock audio on keydown event', () => {
+    test('keydown unlocks audio', () => {
         const callback = vi.fn()
         module.onAudioUnlock(callback)
 
@@ -175,7 +175,7 @@ describe('unlock events', () => {
         expect(module.isAudioUnlocked()).toBe(true)
     })
 
-    test('should unlock audio on gamepadconnected event', () => {
+    test('gamepadconnected unlocks audio', () => {
         const callback = vi.fn()
         module.onAudioUnlock(callback)
 
@@ -187,7 +187,7 @@ describe('unlock events', () => {
         expect(module.isAudioUnlocked()).toBe(true)
     })
 
-    test('should only unlock once even with multiple events', () => {
+    test('unlocks only once with multiple events', () => {
         const callback = vi.fn()
         module.onAudioUnlock(callback)
 
@@ -207,7 +207,7 @@ describe('unlock events', () => {
 
 
 describe('event cleanup', () => {
-    test('should remove all event listeners after unlock', () => {
+    test('removes all event listeners after unlock', () => {
         // Trigger unlock
         const clickListeners = documentListeners.click
         const handleUnlock = clickListeners[0].handler
@@ -219,7 +219,7 @@ describe('event cleanup', () => {
         expect(mockWindow.removeEventListener).toHaveBeenCalledWith('gamepadconnected', handleUnlock)
     })
 
-    test('should not add callbacks to queue after unlock and cleanup', () => {
+    test('callbacks after unlock execute immediately', () => {
         const callback1 = vi.fn()
         const callback2 = vi.fn()
 
@@ -241,7 +241,7 @@ describe('event cleanup', () => {
 
 
 describe('edge cases', () => {
-    test('should handle callback throwing error', () => {
+    test('handles callback throwing error', () => {
         const errorCallback = vi.fn(() => {
             throw new Error('Callback error')
         })
@@ -260,7 +260,7 @@ describe('edge cases', () => {
         expect(errorCallback).toHaveBeenCalledTimes(1)
     })
 
-    test('should handle multiple onAudioUnlock calls after unlock', () => {
+    test('handles multiple calls after unlock', () => {
         // Trigger unlock first
         const clickListeners = documentListeners.click
         const handleUnlock = clickListeners[0].handler

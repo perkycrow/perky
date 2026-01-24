@@ -21,70 +21,33 @@ export default class ItUsageAuditor extends Auditor {
         }
 
         this.printHeader()
-        hint('PROBLEM: These test files use BDD-style naming instead of unit test philosophy.')
-        hint('')
-        hint('BDD (Behavior-Driven Development) uses "should" to describe behavior from user perspective:')
-        hint('  it(\'should return true when value is valid\')')
-        hint('  test(\'should emit event when clicked\')  ← WRONG: This is just it() renamed to test()')
-        hint('')
-        hint('Unit tests describe WHAT is being tested, not behavior. They are direct and method-focused:')
-        hint('  test(\'validate\')  ← Simple: just the method name')
-        hint('  test(\'validate returns true for valid input\')  ← With context if needed')
-        hint('  test(\'emit calls callback\')  ← Action + result, no "should"')
-        hint('')
-        hint('WHY THIS MATTERS:')
-        hint('- "should" is redundant - tests are expectations by definition')
-        hint('- Unit tests focus on the code structure (methods, functions)')
-        hint('- BDD focuses on user stories and behavior specifications')
-        hint('- Mixing styles creates inconsistency and confusion')
-        hint('')
-        hint('HOW TO FIX:')
-        hint('1. Remove "should" from test names - it adds no value')
-        hint('2. Start with the method/function name being tested')
-        hint('3. Describe what happens, not what "should" happen')
-        hint('4. Keep it short and direct')
-        hint('')
-        hint('EXAMPLES OF CONVERSION:')
-        hint('  BAD:  test(\'should return null when input is empty\')')
-        hint('  GOOD: test(\'getValue returns null for empty input\')')
-        hint('')
-        hint('  BAD:  test(\'should emit change event\')')
-        hint('  GOOD: test(\'setValue emits change event\')')
-        hint('')
-        hint('  BAD:  test(\'should throw error for invalid data\')')
-        hint('  GOOD: test(\'parse throws on invalid data\')')
-        hint('')
-        hint('  BAD:  test(\'should be defined\')')
-        hint('  GOOD: test(\'constructor\')')
-        hint('')
-        hint('  BAD:  test(\'should call the callback with correct arguments\')')
-        hint('  GOOD: test(\'execute passes args to callback\')')
-        hint('')
-        hint('  BAD:  test(\'should not throw when value is null\')')
-        hint('  GOOD: test(\'process handles null\')')
-        hint('')
-        hint('NAMING PATTERNS:')
-        hint('- Simple method test: test(\'methodName\')')
-        hint('- With context: test(\'methodName does X\')')
-        hint('- Edge case: test(\'methodName handles null\')')
-        hint('- Error case: test(\'methodName throws on invalid input\')')
-        hint('- Return value: test(\'methodName returns X for Y\')')
-        hint('')
-        hint('Run "yarn test" after changes to ensure nothing breaks.')
-        divider()
-
-        if (itIssues.length > 0) {
-            hint('Files using it():')
-            for (const {file} of itIssues) {
-                listItem(file)
-            }
+        if (!this.silent) {
+            hint('Replace it() with test() AND remove "should" - start with method name instead.')
+            hint('')
+            hint('EXAMPLES:')
+            hint('  test(\'should return null when empty\')  → test(\'getValue returns null for empty input\')')
+            hint('  test(\'should emit change event\')       → test(\'setValue emits change\')')
+            hint('  test(\'should throw error\')             → test(\'parse throws on invalid data\')')
+            hint('  test(\'should be defined\')              → test(\'constructor\')')
+            hint('  test(\'should call callback\')           → test(\'execute passes args to callback\')')
+            hint('  test(\'should not throw when null\')     → test(\'process handles null\')')
+            hint('')
+            hint('PATTERNS: test(\'methodName\'), test(\'methodName does X\'), test(\'methodName handles Y\')')
             divider()
-        }
 
-        if (shouldIssues.length > 0) {
-            hint('Files using test(\'should ...\') - BDD disguised as unit test:')
-            for (const {file, count} of shouldIssues) {
-                listItem(`${file} (${count} occurrences)`)
+            if (itIssues.length > 0) {
+                hint('Files using it():')
+                for (const {file} of itIssues) {
+                    listItem(file)
+                }
+                divider()
+            }
+
+            if (shouldIssues.length > 0) {
+                hint('Files using test(\'should ...\') - BDD disguised as unit test:')
+                for (const {file, count} of shouldIssues) {
+                    listItem(`${file} (${count} occurrences)`)
+                }
             }
         }
 
