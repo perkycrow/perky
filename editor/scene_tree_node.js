@@ -2,7 +2,11 @@ import BaseTreeNode from './base_tree_node.js'
 import {formatNumber} from '../core/utils.js'
 
 
-const sceneTreeNodeStyles = `
+export default class SceneTreeNode extends BaseTreeNode {
+
+    static childNodeTag = 'scene-tree-node'
+
+    static styles = `
     .node-label {
         color: var(--fg-primary);
         font-weight: 500;
@@ -28,21 +32,12 @@ const sceneTreeNodeStyles = `
     .node-props.has-entity:hover {
         text-decoration: underline;
     }
-`
-
-
-export default class SceneTreeNode extends BaseTreeNode {
-
-    static childNodeTag = 'scene-tree-node'
+    `
 
     #object = null
     #childNodes = []
     #labelEl = null
     #propsEl = null
-
-    constructor () {
-        super(sceneTreeNodeStyles)
-    }
 
 
     setObject (object, depth = 0) {

@@ -1,24 +1,20 @@
-import BaseEditorComponent from '../base_editor_component.js'
+import EditorComponent from '../editor_component.js'
 import {cssVariables, inspectorStyles} from '../perky_explorer.styles.js'
 
 
-export default class BaseInspector extends BaseEditorComponent {
+export default class BaseInspector extends EditorComponent {
+
+    static styles = `
+    :host {
+        ${cssVariables}
+        display: block;
+    }
+    ${inspectorStyles}
+    `
 
     #module = null
     #gridEl = null
     #actionsEl = null
-    #customStyles = ''
-
-    constructor (customStyles = '') {
-        super()
-        this.#customStyles = customStyles
-    }
-
-
-    disconnectedCallback () {
-        super.disconnectedCallback()
-    }
-
 
     setModule (module) {
         this.cleanListeners()
@@ -48,10 +44,6 @@ export default class BaseInspector extends BaseEditorComponent {
 
 
     buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = this.#getStyles()
-        this.shadowRoot.appendChild(style)
-
         this.#gridEl = document.createElement('div')
         this.#gridEl.className = 'inspector-grid'
 
@@ -60,18 +52,6 @@ export default class BaseInspector extends BaseEditorComponent {
 
         this.shadowRoot.appendChild(this.#gridEl)
         this.shadowRoot.appendChild(this.#actionsEl)
-    }
-
-
-    #getStyles () {
-        return `
-            :host {
-                ${cssVariables}
-                display: block;
-            }
-            ${inspectorStyles}
-            ${this.#customStyles}
-        `
     }
 
 

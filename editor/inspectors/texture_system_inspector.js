@@ -3,7 +3,13 @@ import PerkyExplorerDetails from '../perky_explorer_details.js'
 import TextureSystem from '../../render/textures/texture_system.js'
 
 
-const customStyles = `
+export default class TextureSystemInspector extends BaseInspector {
+
+    static matches (module) {
+        return module instanceof TextureSystem
+    }
+
+    static styles = `
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -212,14 +218,7 @@ const customStyles = `
     .section-content.collapsed {
         display: none;
     }
-`
-
-
-export default class TextureSystemInspector extends BaseInspector {
-
-    static matches (module) {
-        return module instanceof TextureSystem
-    }
+    `
 
     #sectionsState = {
         atlases: true
@@ -229,7 +228,7 @@ export default class TextureSystemInspector extends BaseInspector {
     #mainContainer = null
 
     constructor () {
-        super(customStyles)
+        super()
         this.buildDOM()
     }
 

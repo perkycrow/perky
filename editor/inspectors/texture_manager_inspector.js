@@ -5,7 +5,13 @@ import {formatBytes} from '../../core/utils.js'
 import logger from '../../core/logger.js'
 
 
-const customStyles = `
+export default class TextureManagerInspector extends BaseInspector {
+
+    static matches (module) {
+        return module instanceof WebGLTextureManager
+    }
+
+    static styles = `
     .inspector-stats {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -126,14 +132,7 @@ const customStyles = `
     .info-value.disabled {
         color: var(--fg-muted);
     }
-`
-
-
-export default class TextureManagerInspector extends BaseInspector {
-
-    static matches (module) {
-        return module instanceof WebGLTextureManager
-    }
+    `
 
     #activeCountEl = null
     #activeSizeEl = null
@@ -146,7 +145,7 @@ export default class TextureManagerInspector extends BaseInspector {
     #maxSizeEl = null
 
     constructor () {
-        super(customStyles)
+        super()
         this.buildDOM()
     }
 

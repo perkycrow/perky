@@ -3,7 +3,13 @@ import PerkyExplorerDetails from '../perky_explorer_details.js'
 import GameLoop from '../../game/game_loop.js'
 
 
-const customStyles = `
+export default class GameLoopInspector extends BaseInspector {
+
+    static matches (module) {
+        return module instanceof GameLoop
+    }
+
+    static styles = `
     .fps-controls {
         grid-column: 1 / -1;
         display: flex;
@@ -58,14 +64,7 @@ const customStyles = `
         font-size: 11px;
         text-align: right;
     }
-`
-
-
-export default class GameLoopInspector extends BaseInspector {
-
-    static matches (module) {
-        return module instanceof GameLoop
-    }
+    `
 
     #fpsValueEl = null
     #screenFpsValueEl = null
@@ -76,7 +75,7 @@ export default class GameLoopInspector extends BaseInspector {
     #fpsSliderValue = null
 
     constructor () {
-        super(customStyles)
+        super()
         this.buildDOM()
     }
 

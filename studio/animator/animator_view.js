@@ -1,5 +1,5 @@
-import BaseEditorComponent from '../../editor/base_editor_component.js'
-import {adoptStyles} from '../../editor/styles/index.js'
+import EditorComponent from '../../editor/editor_component.js'
+import {adoptStyleSheets} from '../../application/dom_utils.js'
 import '../../editor/layout/app_layout.js'
 import '../../editor/layout/overlay.js'
 import '../../editor/tools/animation_preview.js'
@@ -21,7 +21,7 @@ import {buildAnchorEditor} from './components/anchor_editor.js'
 import {buildAnimationSettings} from './components/animation_settings.js'
 
 
-export default class AnimatorView extends BaseEditorComponent {
+export default class AnimatorView extends EditorComponent {
 
     #context = null
     #animators = {}
@@ -48,7 +48,7 @@ export default class AnimatorView extends BaseEditorComponent {
     #animationSettings = null
     #backgroundImage = null
 
-    connectedCallback () {
+    onConnected () {
         this.#buildDOM()
 
         if (this.#context) {
@@ -101,7 +101,7 @@ export default class AnimatorView extends BaseEditorComponent {
 
 
     #buildDOM () {
-        adoptStyles(this.shadowRoot, animatorViewStyles, frameEditorStyles, settingsStyles)
+        adoptStyleSheets(this.shadowRoot, animatorViewStyles, frameEditorStyles, settingsStyles)
 
 
         this.#appLayout = document.createElement('app-layout')

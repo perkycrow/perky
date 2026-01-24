@@ -1,5 +1,4 @@
-import BaseEditorComponent from '../base_editor_component.js'
-import {buildEditorStyles, editorBaseStyles} from '../editor_theme.js'
+import EditorComponent from '../editor_component.js'
 import {ICONS} from '../devtools/devtools_icons.js'
 import WebGLRenderer from '../../render/webgl_renderer.js'
 import Sprite from '../../render/sprite.js'
@@ -9,7 +8,124 @@ import Color from '../../math/color.js'
 import AnimatorPreview from '../../studio/animator/animator_preview.js'
 
 
-export default class AnimationPreview extends BaseEditorComponent {
+export default class AnimationPreview extends EditorComponent {
+
+    static styles = `
+    :host {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    .preview-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+
+    .preview-area {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-lg);
+        background-color: var(--bg-tertiary);
+        position: relative;
+    }
+
+    .preview-area.game-preview-mode {
+        padding: 0;
+    }
+
+    .scenery-canvas {
+        position: absolute;
+        pointer-events: none;
+    }
+
+    .game-preview-canvas {
+        display: none;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+    }
+
+    .grid-canvas {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .preview-canvas {
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        position: relative;
+        z-index: 1;
+    }
+
+    .preview-controls {
+        position: absolute;
+        bottom: var(--spacing-md);
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: var(--spacing-xs);
+        padding: var(--spacing-xs);
+        background: var(--bg-secondary);
+        border-radius: var(--radius-md);
+        z-index: 10;
+    }
+
+    .preview-controls button {
+        background: transparent;
+        color: var(--fg-secondary);
+        border: none;
+        border-radius: var(--radius-sm);
+        width: 36px;
+        height: 36px;
+        padding: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.15s, color 0.15s;
+    }
+
+    .preview-controls button svg {
+        width: 100%;
+        height: 100%;
+        fill: currentColor;
+    }
+
+    .preview-controls button:hover {
+        background: var(--bg-hover);
+        color: var(--fg-primary);
+    }
+
+    .preview-controls button:active {
+        background: var(--accent);
+        color: var(--bg-primary);
+    }
+
+    .preview-controls button.active {
+        background: var(--accent);
+        color: var(--bg-primary);
+    }
+
+    .preview-controls button.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+    `
 
     #canvas = null
     #previewArea = null
@@ -43,7 +159,7 @@ export default class AnimationPreview extends BaseEditorComponent {
     #gamePreview = null
     #gamePreviewCanvas = null
 
-    connectedCallback () {
+    onConnected () {
         this.#buildDOM()
 
         if (this.#animation) {
@@ -53,7 +169,7 @@ export default class AnimationPreview extends BaseEditorComponent {
     }
 
 
-    disconnectedCallback () {
+    onDisconnected () {
         this.stop()
         this.#renderer = null
         this.#scene = null
@@ -68,10 +184,6 @@ export default class AnimationPreview extends BaseEditorComponent {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = STYLES
-        this.shadowRoot.appendChild(style)
-
         const container = document.createElement('div')
         container.className = 'preview-container'
 
@@ -1166,131 +1278,6 @@ export default class AnimationPreview extends BaseEditorComponent {
 
 }
 
-
-
-
-
-const STYLES = buildEditorStyles(
-    editorBaseStyles,
-    `
-    :host {
-        display: block;
-        width: 100%;
-        height: 100%;
-    }
-
-    .preview-container {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        height: 100%;
-        position: relative;
-    }
-
-    .preview-area {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: var(--spacing-lg);
-        background-color: var(--bg-tertiary);
-        position: relative;
-    }
-
-    .preview-area.game-preview-mode {
-        padding: 0;
-    }
-
-    .scenery-canvas {
-        position: absolute;
-        pointer-events: none;
-    }
-
-    .game-preview-canvas {
-        display: none;
-        image-rendering: pixelated;
-        image-rendering: crisp-edges;
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 1;
-    }
-
-    .grid-canvas {
-        display: none;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 2;
-    }
-
-    .preview-canvas {
-        image-rendering: pixelated;
-        image-rendering: crisp-edges;
-        position: relative;
-        z-index: 1;
-    }
-
-    .preview-controls {
-        position: absolute;
-        bottom: var(--spacing-md);
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        gap: var(--spacing-xs);
-        padding: var(--spacing-xs);
-        background: var(--bg-secondary);
-        border-radius: var(--radius-md);
-        z-index: 10;
-    }
-
-    .preview-controls button {
-        background: transparent;
-        color: var(--fg-secondary);
-        border: none;
-        border-radius: var(--radius-sm);
-        width: 36px;
-        height: 36px;
-        padding: 8px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.15s, color 0.15s;
-    }
-
-    .preview-controls button svg {
-        width: 100%;
-        height: 100%;
-        fill: currentColor;
-    }
-
-    .preview-controls button:hover {
-        background: var(--bg-hover);
-        color: var(--fg-primary);
-    }
-
-    .preview-controls button:active {
-        background: var(--accent);
-        color: var(--bg-primary);
-    }
-
-    .preview-controls button.active {
-        background: var(--accent);
-        color: var(--bg-primary);
-    }
-
-    .preview-controls button.disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-
-
-`
-)
 
 
 customElements.define('animation-preview', AnimationPreview)

@@ -1,9 +1,9 @@
+import EditorComponent from '../editor_component.js'
 
 
-import {adoptStyles, createStyleSheet} from '../styles/index.js'
+export default class AppLayout extends EditorComponent {
 
-
-const appLayoutCSS = createStyleSheet(`
+    static styles = `
     :host {
         display: flex;
         flex-direction: column;
@@ -159,10 +159,7 @@ const appLayoutCSS = createStyleSheet(`
     .overlay-container ::slotted(*) {
         pointer-events: auto;
     }
-`)
-
-
-export default class AppLayout extends HTMLElement {
+    `
 
     #headerEl = null
     #titleEl = null
@@ -171,15 +168,8 @@ export default class AppLayout extends HTMLElement {
     #contentEl = null
     #footerEl = null
 
-    constructor () {
-        super()
-        this.attachShadow({mode: 'open'})
-        adoptStyles(this.shadowRoot, appLayoutCSS)
+    onConnected () {
         this.#buildDOM()
-    }
-
-
-    connectedCallback () {
         this.#updateButtonVisibility()
     }
 

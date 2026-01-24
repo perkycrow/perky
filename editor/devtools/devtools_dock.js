@@ -1,10 +1,16 @@
-import BaseEditorComponent from '../base_editor_component.js'
-import {buildDockStyles} from './devtools.styles.js'
+import EditorComponent from '../editor_component.js'
+import {dockStyles} from './devtools.styles.js'
+import {editorBaseStyles} from '../editor_theme.js'
 import {getSidebarTools} from './devtools_registry.js'
 import {ICONS} from './devtools_icons.js'
 
 
-export default class DevToolsDock extends BaseEditorComponent {
+export default class DevToolsDock extends EditorComponent {
+
+    static styles = `
+    ${editorBaseStyles}
+    ${dockStyles}
+    `
 
     #state = null
     #dockEl = null
@@ -15,7 +21,7 @@ export default class DevToolsDock extends BaseEditorComponent {
 
     #minimized = true
 
-    connectedCallback () {
+    onConnected () {
         this.#buildDOM()
     }
 
@@ -48,10 +54,6 @@ export default class DevToolsDock extends BaseEditorComponent {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = STYLES
-        this.shadowRoot.appendChild(style)
-
         this.#dockEl = document.createElement('div')
         this.#dockEl.className = 'devtools-dock'
 
@@ -217,9 +219,6 @@ function createDockButton (icon, title, onClick) {
     button.addEventListener('click', onClick)
     return button
 }
-
-
-const STYLES = buildDockStyles()
 
 
 customElements.define('devtools-dock', DevToolsDock)

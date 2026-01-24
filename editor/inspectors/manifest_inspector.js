@@ -3,7 +3,13 @@ import PerkyExplorerDetails from '../perky_explorer_details.js'
 import Manifest from '../../application/manifest.js'
 
 
-const customStyles = `
+export default class ManifestInspector extends BaseInspector {
+
+    static matches (module) {
+        return module instanceof Manifest
+    }
+
+    static styles = `
     .filters-container {
         margin-bottom: 12px;
         display: flex;
@@ -332,14 +338,7 @@ const customStyles = `
         text-transform: uppercase;
         margin-bottom: 4px;
     }
-`
-
-
-export default class ManifestInspector extends BaseInspector {
-
-    static matches (module) {
-        return module instanceof Manifest
-    }
+    `
 
     #sectionsState = {
         config: true,
@@ -355,7 +354,7 @@ export default class ManifestInspector extends BaseInspector {
     #assetsListContainer = null
 
     constructor () {
-        super(customStyles)
+        super()
         this.buildDOM()
     }
 

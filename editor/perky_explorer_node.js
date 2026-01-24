@@ -10,13 +10,7 @@ export default class PerkyExplorerNode extends BaseTreeNode {
     #childNodes = new Map()
     #isSystemModule = false
 
-    constructor () {
-        super()
-    }
-
-
-    disconnectedCallback () {
-        super.disconnectedCallback()
+    onDisconnected () {
         this.#clearChildNodes()
     }
 

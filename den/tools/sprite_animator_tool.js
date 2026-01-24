@@ -190,7 +190,7 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
     #spritesheet = null
     #selectedAnimation = null
 
-    connectedCallback () {
+    onConnected () {
         this.#buildDOM()
     }
 
@@ -201,8 +201,6 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
 
 
     #buildDOM () {
-        this.setupStyles()
-
         this.#contentEl = document.createElement('div')
         this.#contentEl.className = 'animator-content'
         this.shadowRoot.appendChild(this.#contentEl)

@@ -4,7 +4,13 @@ import ActionController from '../../core/action_controller.js'
 import {pluralize} from '../../core/utils.js'
 
 
-const customStyles = `
+export default class ActionControllerInspector extends BaseInspector {
+
+    static matches (module) {
+        return module instanceof ActionController
+    }
+
+    static styles = `
     .actions-header {
         display: flex;
         align-items: center;
@@ -81,19 +87,12 @@ const customStyles = `
         text-align: center;
         padding: 16px;
     }
-`
-
-
-export default class ActionControllerInspector extends BaseInspector {
-
-    static matches (module) {
-        return module instanceof ActionController
-    }
+    `
 
     #containerEl = null
 
     constructor () {
-        super(customStyles)
+        super()
         this.buildDOM()
     }
 

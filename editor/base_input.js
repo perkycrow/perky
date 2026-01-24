@@ -1,22 +1,3 @@
-import {adoptStyles, createStyleSheet, controlsSheet} from './styles/index.js'
-
-
-export function setupInputStyles (shadowRoot, componentCSS = '') {
-    const componentSheet = componentCSS ? createStyleSheet(componentCSS) : null
-    if (componentSheet) {
-        adoptStyles(shadowRoot, controlsSheet, componentSheet)
-    } else {
-        adoptStyles(shadowRoot, controlsSheet)
-    }
-    return componentSheet
-}
-
-
-export function createInputStyles (customStyles) {
-    return customStyles
-}
-
-
 export function emitChange (element, detail) {
     element.dispatchEvent(new CustomEvent('change', {
         detail,

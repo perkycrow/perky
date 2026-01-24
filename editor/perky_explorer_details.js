@@ -1,17 +1,39 @@
-import BaseEditorComponent from './base_editor_component.js'
+import EditorComponent from './editor_component.js'
 import {detailsStyles, cssVariables} from './perky_explorer.styles.js'
 
 
 const inspectorRegistry = new Set()
 
 
-export default class PerkyExplorerDetails extends BaseEditorComponent {
+export default class PerkyExplorerDetails extends EditorComponent {
+
+    static styles = `
+    :host { ${cssVariables} }
+
+    ${detailsStyles}
+
+    .details-focus-btn {
+        background: none;
+        border: none;
+        color: var(--fg-secondary);
+        cursor: pointer;
+        font-size: 14px;
+        margin-left: auto;
+        opacity: 0.5;
+        padding: 4px;
+        transition: opacity 0.2s, color 0.2s;
+    }
+    .details-focus-btn:hover {
+        opacity: 1;
+        color: var(--fg-primary);
+    }
+    `
 
     #module = null
     #titleEl = null
     #contentEl = null
 
-    connectedCallback () {
+    onConnected () {
         this.#buildDOM()
     }
 
@@ -34,26 +56,6 @@ export default class PerkyExplorerDetails extends BaseEditorComponent {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = `:host { ${cssVariables} } ${detailsStyles}
-        .details-focus-btn {
-            background: none;
-            border: none;
-            color: var(--fg-secondary);
-            cursor: pointer;
-            font-size: 14px;
-            margin-left: auto;
-            opacity: 0.5;
-            padding: 4px;
-            transition: opacity 0.2s, color 0.2s;
-        }
-        .details-focus-btn:hover {
-            opacity: 1;
-            color: var(--fg-primary);
-        }
-        `
-        this.shadowRoot.appendChild(style)
-
         this.#titleEl = document.createElement('div')
         this.#titleEl.className = 'details-title'
 

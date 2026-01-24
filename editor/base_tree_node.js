@@ -1,10 +1,12 @@
-import BaseEditorComponent from './base_editor_component.js'
+import EditorComponent from './editor_component.js'
 import {nodeStyles, cssVariables} from './perky_explorer.styles.js'
 
 
-export default class BaseTreeNode extends BaseEditorComponent {
+export default class BaseTreeNode extends EditorComponent {
 
     static childNodeTag = null
+
+    static styles = `:host { ${cssVariables} } ${nodeStyles}`
 
     #depth = 0
     #expanded = false
@@ -13,12 +15,18 @@ export default class BaseTreeNode extends BaseEditorComponent {
     #contentEl = null
     #toggleEl = null
     #childrenEl = null
+    #domBuilt = false
 
-    #customStyles = ''
+    onConnected () {
+        this.#ensureDOM()
+    }
 
-    constructor (customStyles = '') {
-        super()
-        this.#customStyles = customStyles
+
+    #ensureDOM () {
+        if (this.#domBuilt) {
+            return
+        }
+        this.#domBuilt = true
         this.#buildDOM()
     }
 
@@ -80,12 +88,14 @@ export default class BaseTreeNode extends BaseEditorComponent {
 
     setDepth (depth) {
         this.#depth = depth
+        this.#ensureDOM()
         this.#updateDepth()
     }
 
 
     setExpanded (expanded) {
         this.#expanded = expanded
+        this.#ensureDOM()
         this.#updateChildrenVisibility()
         this.#updateToggle()
     }
@@ -93,6 +103,7 @@ export default class BaseTreeNode extends BaseEditorComponent {
 
     setSelected (selected) {
         this.#selected = selected
+        this.#ensureDOM()
         this.#updateSelectedState()
     }
 
@@ -108,6 +119,7 @@ export default class BaseTreeNode extends BaseEditorComponent {
 
 
     updateAll () {
+        this.#ensureDOM()
         this.#updateDepth()
         this.renderNodeContent()
         this.#updateToggle()
@@ -117,6 +129,7 @@ export default class BaseTreeNode extends BaseEditorComponent {
 
 
     updateChildren () {
+        this.#ensureDOM()
         this.clearChildNodes()
 
         const children = this.getChildren()
@@ -211,10 +224,6 @@ export default class BaseTreeNode extends BaseEditorComponent {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = `:host { ${cssVariables} } ${nodeStyles} ${this.#customStyles}`
-        this.shadowRoot.appendChild(style)
-
         this.#contentEl = document.createElement('div')
         this.#contentEl.className = 'node-content'
 

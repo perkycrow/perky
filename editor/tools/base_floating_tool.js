@@ -1,10 +1,10 @@
-import BaseEditorComponent from '../base_editor_component.js'
-import {buildEditorStyles, editorBaseStyles, editorScrollbarStyles} from '../editor_theme.js'
-import {createStyleSheet, adoptStyleSheets} from '../../application/dom_utils.js'
+import EditorComponent from '../editor_component.js'
+import {editorBaseStyles, editorScrollbarStyles} from '../editor_theme.js'
+import {createStyleSheet} from '../../application/dom_utils.js'
 import {ICONS} from '../devtools/devtools_icons.js'
 
 
-export default class BaseFloatingTool extends BaseEditorComponent {
+export default class BaseFloatingTool extends EditorComponent {
 
     static toolId = 'baseFloating'
     static toolName = 'Base Tool'
@@ -51,11 +51,11 @@ export default class BaseFloatingTool extends BaseEditorComponent {
 
 
     static buildStyles (...customStyles) {
-        return buildEditorStyles(
-            editorBaseStyles,
-            editorScrollbarStyles,
-            ...customStyles
-        )
+        return `
+            ${editorBaseStyles}
+            ${editorScrollbarStyles}
+            ${customStyles.join('\n')}
+        `
     }
 
 
@@ -64,8 +64,7 @@ export default class BaseFloatingTool extends BaseEditorComponent {
     }
 
 
-    setupStyles () {
-        adoptStyleSheets(this.shadowRoot, this.constructor.styles)
-    }
+    // Kept for backwards compatibility - styles are now auto-adopted by EditorComponent
+    setupStyles () { }
 
 }

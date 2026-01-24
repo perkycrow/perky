@@ -1,4 +1,4 @@
-import BaseEditorComponent from './base_editor_component.js'
+import EditorComponent from './editor_component.js'
 import {cssVariables, panelStyles} from './perky_explorer.styles.js'
 import './scene_tree_node.js'
 import Object2DInspector from './inspectors/object_2d_inspector.js'
@@ -7,7 +7,13 @@ import Object2DInspector from './inspectors/object_2d_inspector.js'
 const DEBOUNCE_MS = 100
 
 
-const sidebarExtraStyles = `
+export default class SceneTreeSidebar extends EditorComponent {
+
+    static styles = `
+    :host { ${cssVariables} }
+
+    ${panelStyles}
+
     :host {
         display: block;
         width: 320px;
@@ -34,10 +40,7 @@ const sidebarExtraStyles = `
         color: var(--fg-muted);
         font-style: italic;
     }
-`
-
-
-export default class SceneTreeSidebar extends BaseEditorComponent {
+    `
 
     #content = null
     #worldRenderer = null
@@ -48,15 +51,13 @@ export default class SceneTreeSidebar extends BaseEditorComponent {
     #selectedObject = null
     #refreshTimeout = null
 
-    constructor () {
-        super()
+    onConnected () {
         this.#buildDOM()
     }
 
 
-    disconnectedCallback () {
+    onDisconnected () {
         this.#clearRefreshTimeout()
-        super.disconnectedCallback()
     }
 
 
@@ -146,10 +147,6 @@ export default class SceneTreeSidebar extends BaseEditorComponent {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = `:host { ${cssVariables} } ${panelStyles} ${sidebarExtraStyles}`
-        this.shadowRoot.appendChild(style)
-
         this.#headerEl = this.#createHeader()
         this.#treeEl = this.#createTree()
         this.#detailsEl = document.createElement('div')

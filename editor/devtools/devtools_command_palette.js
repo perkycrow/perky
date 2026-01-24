@@ -1,12 +1,19 @@
-import BaseEditorComponent from '../base_editor_component.js'
-import {buildCommandPaletteStyles} from './devtools.styles.js'
+import EditorComponent from '../editor_component.js'
+import {commandPaletteStyles} from './devtools.styles.js'
+import {editorScrollbarStyles, editorBaseStyles} from '../editor_theme.js'
 import {getAllTools} from './devtools_registry.js'
 import {parseCommand} from './command_parser.js'
 import {ICONS} from './devtools_icons.js'
 import logger from '../../core/logger.js'
 
 
-export default class DevToolsCommandPalette extends BaseEditorComponent {
+export default class DevToolsCommandPalette extends EditorComponent {
+
+    static styles = `
+    ${editorScrollbarStyles}
+    ${editorBaseStyles}
+    ${commandPaletteStyles}
+    `
 
     #state = null
     #overlayEl = null
@@ -20,7 +27,7 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
     #history = []
     #maxHistory = 20
 
-    connectedCallback () {
+    onConnected () {
         this.#buildDOM()
         this.#rebuildAll()
     }
@@ -49,10 +56,6 @@ export default class DevToolsCommandPalette extends BaseEditorComponent {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = STYLES
-        this.shadowRoot.appendChild(style)
-
         this.#overlayEl = document.createElement('div')
         this.#overlayEl.className = 'command-palette-overlay hidden'
         this.#overlayEl.addEventListener('click', (e) => {
@@ -806,9 +809,6 @@ function fuzzyScore (query, target) {
 
     return score
 }
-
-
-const STYLES = buildCommandPaletteStyles()
 
 
 customElements.define('devtools-command-palette', DevToolsCommandPalette)

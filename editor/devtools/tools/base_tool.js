@@ -1,9 +1,9 @@
-import BaseEditorComponent from '../../base_editor_component.js'
+import EditorComponent from '../../editor_component.js'
 import {registerTool} from '../devtools_registry.js'
 import {ICONS} from '../devtools_icons.js'
 
 
-export default class BaseTool extends BaseEditorComponent {
+export default class BaseTool extends EditorComponent {
 
     static toolId = 'base'
     static toolName = 'Base Tool'

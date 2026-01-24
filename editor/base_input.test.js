@@ -1,73 +1,8 @@
 import {describe, test, expect, vi} from 'vitest'
-import {createInputStyles, emitChange, handleAttributeChange, setupInputStyles} from './base_input.js'
+import {emitChange, handleAttributeChange} from './base_input.js'
 
 
 describe('base_input', () => {
-
-    describe('setupInputStyles', () => {
-
-        test('adopts controlsSheet to shadowRoot', () => {
-            const mockShadowRoot = {
-                adoptedStyleSheets: [],
-                appendChild: vi.fn()
-            }
-            setupInputStyles(mockShadowRoot)
-            if (mockShadowRoot.adoptedStyleSheets.length === 0) {
-                expect(mockShadowRoot.appendChild).toHaveBeenCalled()
-            } else {
-                expect(mockShadowRoot.adoptedStyleSheets.length).toBeGreaterThan(0)
-            }
-        })
-
-
-        test('adopts component styles when provided', () => {
-            const mockShadowRoot = {
-                adoptedStyleSheets: [],
-                appendChild: vi.fn()
-            }
-            const result = setupInputStyles(mockShadowRoot, '.custom { color: red; }')
-            expect(result).not.toBeNull()
-        })
-
-
-        test('returns null when no component CSS provided', () => {
-            const mockShadowRoot = {
-                adoptedStyleSheets: [],
-                appendChild: vi.fn()
-            }
-            const result = setupInputStyles(mockShadowRoot)
-            expect(result).toBeNull()
-        })
-
-
-        test('returns null for empty component CSS string', () => {
-            const mockShadowRoot = {
-                adoptedStyleSheets: [],
-                appendChild: vi.fn()
-            }
-            const result = setupInputStyles(mockShadowRoot, '')
-            expect(result).toBeNull()
-        })
-
-    })
-
-
-    describe('createInputStyles', () => {
-
-        test('returns the input string (passthrough for backwards compat)', () => {
-            const styles = createInputStyles('.foo { color: red; }')
-            expect(styles).toBe('.foo { color: red; }')
-        })
-
-
-        test('includes custom styles', () => {
-            const customStyles = '.custom { color: red; }'
-            const styles = createInputStyles(customStyles)
-            expect(styles).toContain('.custom { color: red; }')
-        })
-
-    })
-
 
     describe('emitChange', () => {
 

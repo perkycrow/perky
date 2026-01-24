@@ -11,9 +11,34 @@ export default class ExplorerTool extends BaseTool {
     static location = 'sidebar'
     static order = 10
 
+    static styles = `
+    :host {
+        display: block;
+        height: 100%;
+        overflow: auto;
+    }
+
+    :host::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    :host::-webkit-scrollbar-track {
+        background: #1a1a1e;
+    }
+
+    :host::-webkit-scrollbar-thumb {
+        background: #38383e;
+        border-radius: 3px;
+    }
+
+    perky-explorer {
+        height: auto;
+    }
+    `
+
     #explorerEl = null
 
-    connectedCallback () {
+    onConnected () {
         this.#buildDOM()
     }
 
@@ -55,10 +80,6 @@ export default class ExplorerTool extends BaseTool {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = STYLES
-        this.shadowRoot.appendChild(style)
-
         this.#explorerEl = document.createElement('perky-explorer')
         this.#explorerEl.embedded = true
         this.#explorerEl.addEventListener('inspect', () => this.state?.openLogger())
@@ -74,32 +95,6 @@ export default class ExplorerTool extends BaseTool {
     }
 
 }
-
-
-const STYLES = `
-    :host {
-        display: block;
-        height: 100%;
-        overflow: auto;
-    }
-
-    :host::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    :host::-webkit-scrollbar-track {
-        background: #1a1a1e;
-    }
-
-    :host::-webkit-scrollbar-thumb {
-        background: #38383e;
-        border-radius: 3px;
-    }
-
-    perky-explorer {
-        height: auto;
-    }
-`
 
 
 ExplorerTool.register()

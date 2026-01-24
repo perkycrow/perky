@@ -56,14 +56,12 @@ export default class FoobarTool extends BaseFloatingTool {
 
     #contentEl = null
 
-    connectedCallback () {
+    onConnected () {
         this.#buildDOM()
     }
 
 
     #buildDOM () {
-        this.setupStyles()
-
         this.#contentEl = document.createElement('div')
         this.#contentEl.className = 'foobar-content'
         this.shadowRoot.appendChild(this.#contentEl)

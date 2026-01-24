@@ -1,10 +1,82 @@
-import {buildEditorStyles, editorHeaderStyles, editorButtonStyles, editorScrollbarStyles} from './editor_theme.js'
+import EditorComponent from './editor_component.js'
+import {editorHeaderStyles, editorButtonStyles, editorScrollbarStyles} from './editor_theme.js'
 import logger from '../core/logger.js'
 
 
-export default class PerkyCode extends HTMLElement {
+export default class PerkyCode extends EditorComponent {
 
     static observedAttributes = ['src', 'code', 'title', 'theme', 'no-header']
+
+    static styles = `
+    ${editorHeaderStyles}
+    ${editorButtonStyles}
+    ${editorScrollbarStyles}
+
+    :host {
+        display: block;
+        margin-top: 1.5em;
+        margin-bottom: 1.5em;
+        border-radius: 6px;
+        overflow: hidden;
+        font-family: var(--font-mono);
+        border: 1px solid var(--border);
+    }
+
+    .code-display {
+        background: var(--bg-primary);
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .code-content {
+        background: var(--bg-primary);
+        color: var(--fg-primary);
+        overflow: auto;
+        padding: 16px;
+    }
+
+    .code-content pre {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 1.5;
+        margin: 0;
+        white-space: pre;
+        word-break: normal;
+    }
+
+    .line-number {
+        display: inline-block;
+        width: 2.5em;
+        text-align: right;
+        color: var(--fg-muted);
+        user-select: none;
+        margin-right: 0.8em;
+        border-right: 1px solid var(--border);
+        padding-right: 0.4em;
+    }
+
+    .hl-keyword { color: var(--hl-keyword); }
+    .hl-string { color: var(--hl-string); }
+    .hl-comment { color: var(--hl-comment); }
+    .hl-constant { color: var(--hl-constant); }
+
+    .code-loading {
+        padding: 2rem;
+        text-align: center;
+        color: var(--fg-muted);
+        background: var(--bg-primary);
+    }
+
+    .code-error {
+        padding: 2rem;
+        text-align: center;
+        color: var(--status-error);
+        background: var(--bg-primary);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+    }
+    `
 
     #src = ''
     #code = ''
@@ -21,13 +93,7 @@ export default class PerkyCode extends HTMLElement {
     #titleEl = null
     #copyTimeoutId = null
 
-    constructor () {
-        super()
-        this.attachShadow({mode: 'open'})
-    }
-
-
-    connectedCallback () {
+    onConnected () {
         this.#buildDOM()
 
         if (this.#src) {
@@ -40,7 +106,7 @@ export default class PerkyCode extends HTMLElement {
     }
 
 
-    disconnectedCallback () {
+    onDisconnected () {
         if (this.#copyTimeoutId) {
             clearTimeout(this.#copyTimeoutId)
             this.#copyTimeoutId = null
@@ -196,10 +262,6 @@ export default class PerkyCode extends HTMLElement {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = STYLES
-        this.shadowRoot.appendChild(style)
-
         this.#containerEl = document.createElement('div')
         this.#containerEl.className = 'code-display'
 
@@ -415,79 +477,6 @@ export default class PerkyCode extends HTMLElement {
     }
 
 }
-
-
-const STYLES = buildEditorStyles(
-    editorHeaderStyles,
-    editorButtonStyles,
-    editorScrollbarStyles,
-    `
-    :host {
-        display: block;
-        margin-top: 1.5em;
-        margin-bottom: 1.5em;
-        border-radius: 6px;
-        overflow: hidden;
-        font-family: var(--font-mono);
-        border: 1px solid var(--border);
-    }
-
-    .code-display {
-        background: var(--bg-primary);
-        border-radius: 6px;
-        overflow: hidden;
-    }
-
-    .code-content {
-        background: var(--bg-primary);
-        color: var(--fg-primary);
-        overflow: auto;
-        padding: 16px;
-    }
-
-    .code-content pre {
-        font-family: var(--font-mono);
-        font-size: 12px;
-        font-weight: 400;
-        line-height: 1.5;
-        margin: 0;
-        white-space: pre;
-        word-break: normal;
-    }
-
-    .line-number {
-        display: inline-block;
-        width: 2.5em;
-        text-align: right;
-        color: var(--fg-muted);
-        user-select: none;
-        margin-right: 0.8em;
-        border-right: 1px solid var(--border);
-        padding-right: 0.4em;
-    }
-
-    .hl-keyword { color: var(--hl-keyword); }
-    .hl-string { color: var(--hl-string); }
-    .hl-comment { color: var(--hl-comment); }
-    .hl-constant { color: var(--hl-constant); }
-
-    .code-loading {
-        padding: 2rem;
-        text-align: center;
-        color: var(--fg-muted);
-        background: var(--bg-primary);
-    }
-
-    .code-error {
-        padding: 2rem;
-        text-align: center;
-        color: var(--status-error);
-        background: var(--bg-primary);
-        border: 1px solid var(--border);
-        border-radius: 6px;
-    }
-`
-)
 
 
 customElements.define('perky-code', PerkyCode)

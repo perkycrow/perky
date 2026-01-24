@@ -4,7 +4,13 @@ import InputBinder from '../../input/input_binder.js'
 import CompositeBinding from '../../input/composite_binding.js'
 
 
-const customStyles = `
+export default class InputBinderInspector extends BaseInspector {
+
+    static matches (module) {
+        return module instanceof InputBinder
+    }
+
+    static styles = `
     .bindings-header {
         display: flex;
         align-items: center;
@@ -199,20 +205,13 @@ const customStyles = `
         text-align: center;
         padding: 16px;
     }
-`
-
-
-export default class InputBinderInspector extends BaseInspector {
-
-    static matches (module) {
-        return module instanceof InputBinder
-    }
+    `
 
     #viewMode = 'action'
     #containerEl = null
 
     constructor () {
-        super(customStyles)
+        super()
         this.buildDOM()
     }
 

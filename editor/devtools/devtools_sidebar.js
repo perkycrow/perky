@@ -1,10 +1,19 @@
-import BaseEditorComponent from '../base_editor_component.js'
-import {buildSidebarStyles} from './devtools.styles.js'
+import EditorComponent from '../editor_component.js'
+import {sidebarStyles} from './devtools.styles.js'
+import {editorHeaderStyles, editorButtonStyles, editorScrollbarStyles, editorBaseStyles} from '../editor_theme.js'
 import {getTool} from './devtools_registry.js'
 import logger from '../../core/logger.js'
 
 
-export default class DevToolsSidebar extends BaseEditorComponent {
+export default class DevToolsSidebar extends EditorComponent {
+
+    static styles = `
+    ${editorHeaderStyles}
+    ${editorButtonStyles}
+    ${editorScrollbarStyles}
+    ${editorBaseStyles}
+    ${sidebarStyles}
+    `
 
     #state = null
     #sidebarEl = null
@@ -18,7 +27,7 @@ export default class DevToolsSidebar extends BaseEditorComponent {
     #currentToolEl = null
     #currentToolId = null
 
-    connectedCallback () {
+    onConnected () {
         this.#buildDOM()
     }
 
@@ -46,10 +55,6 @@ export default class DevToolsSidebar extends BaseEditorComponent {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = STYLES
-        this.shadowRoot.appendChild(style)
-
         this.#sidebarEl = document.createElement('div')
         this.#sidebarEl.className = 'devtools-sidebar hidden'
 
@@ -177,9 +182,6 @@ function createSidebarContent () {
     content.className = 'sidebar-content'
     return content
 }
-
-
-const STYLES = buildSidebarStyles()
 
 
 customElements.define('devtools-sidebar', DevToolsSidebar)

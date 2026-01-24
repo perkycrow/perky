@@ -1,4 +1,4 @@
-import BaseEditorComponent from './base_editor_component.js'
+import EditorComponent from './editor_component.js'
 import {explorerStyles} from './perky_explorer.styles.js'
 import './perky_explorer_node.js'
 import './scene_tree_sidebar.js'
@@ -21,9 +21,49 @@ const DEFAULT_SYSTEM_CATEGORIES = [
 ]
 
 
-export default class PerkyExplorer extends BaseEditorComponent {
+const containerStyles = `
+    .explorer-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+    }
+
+    :host([embedded]) {
+        position: static;
+        width: 100%;
+        max-height: none;
+        right: auto;
+        top: auto;
+    }
+
+    :host([embedded]) .explorer-container {
+        align-items: stretch;
+    }
+
+    :host([embedded]) .explorer {
+        max-height: none;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        width: 100%;
+    }
+
+    :host([embedded]) .explorer-header {
+        display: none;
+    }
+
+    :host([embedded]) .explorer-tree {
+        max-height: none;
+    }
+`
+
+
+export default class PerkyExplorer extends EditorComponent {
 
     static observedAttributes = ['embedded']
+
+    static styles = `${explorerStyles} ${containerStyles}`
 
     #module = null
     #isMinimized = false
@@ -50,12 +90,12 @@ export default class PerkyExplorer extends BaseEditorComponent {
     #rootModule = null
     #contextMenuEl = null
 
-    connectedCallback () {
+    onConnected () {
         this.#buildDOM()
     }
 
 
-    disconnectedCallback () {
+    onDisconnected () {
         if (this.#contextMenuEl && this.#contextMenuEl.parentNode) {
             this.#contextMenuEl.parentNode.removeChild(this.#contextMenuEl)
         }
@@ -146,10 +186,6 @@ export default class PerkyExplorer extends BaseEditorComponent {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = explorerStyles + containerStyles
-        this.shadowRoot.appendChild(style)
-
         this.#containerEl = document.createElement('div')
         this.#containerEl.className = 'explorer-container'
 
@@ -585,44 +621,6 @@ export default class PerkyExplorer extends BaseEditorComponent {
     }
 
 }
-
-
-const containerStyles = `
-    .explorer-container {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 10px;
-    }
-
-    :host([embedded]) {
-        position: static;
-        width: 100%;
-        max-height: none;
-        right: auto;
-        top: auto;
-    }
-
-    :host([embedded]) .explorer-container {
-        align-items: stretch;
-    }
-
-    :host([embedded]) .explorer {
-        max-height: none;
-        border: none;
-        border-radius: 0;
-        box-shadow: none;
-        width: 100%;
-    }
-
-    :host([embedded]) .explorer-header {
-        display: none;
-    }
-
-    :host([embedded]) .explorer-tree {
-        max-height: none;
-    }
-`
 
 
 PerkyExplorer.registerActionProvider = registerActionProvider

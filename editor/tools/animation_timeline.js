@@ -1,12 +1,245 @@
-import BaseEditorComponent from '../base_editor_component.js'
-import {adoptStyles, createStyleSheet} from '../styles/index.js'
+import EditorComponent from '../editor_component.js'
 import '../number_input.js'
 
 
 const DRAG_TYPE_SPRITESHEET = 'application/x-spritesheet-frame'
 
 
-export default class AnimationTimeline extends BaseEditorComponent {
+export default class AnimationTimeline extends EditorComponent {
+
+    static styles = `
+    :host {
+        display: block;
+        height: fit-content;
+    }
+
+    :host(.dragging) {
+        user-select: none;
+    }
+
+    .timeline-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .timeline-viewport {
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .timeline {
+        display: flex;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-sm) 0;
+        position: relative;
+        width: fit-content;
+        min-width: 100%;
+        will-change: transform;
+    }
+
+    .scrubber {
+        position: relative;
+        height: 28px;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-lg);
+        cursor: pointer;
+        touch-action: none;
+        flex-shrink: 0;
+    }
+
+    .scrubber.hidden {
+        display: none !important;
+    }
+
+    .scrubber-thumb {
+        position: absolute;
+        top: 3px;
+        bottom: 3px;
+        min-width: 48px;
+        background: var(--bg-hover);
+        border-radius: var(--radius-md);
+        cursor: grab;
+        transition: background 0.2s ease;
+    }
+
+    .scrubber-thumb:hover,
+    .scrubber.dragging .scrubber-thumb {
+        background: var(--accent);
+    }
+
+    .scrubber.dragging .scrubber-thumb {
+        cursor: grabbing;
+    }
+
+    .frame {
+        position: relative;
+        padding: var(--spacing-xs);
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        flex-shrink: 0;
+        cursor: grab;
+    }
+
+    .frame:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .frame:active {
+        cursor: grabbing;
+        transform: scale(0.98);
+    }
+
+    .frame.current {
+        background: var(--bg-selected);
+    }
+
+    .frame.selected {
+        outline: 2px solid var(--fg-primary);
+        outline-offset: -2px;
+    }
+
+    .frame.dragging {
+        opacity: 0.4;
+        transform: scale(0.95);
+        pointer-events: none;
+    }
+
+    .frame.just-added {
+        animation: frame-added 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes frame-added {
+        0% {
+            transform: scale(0.5);
+            opacity: 0;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .frame.just-moved {
+        animation: frame-moved 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes frame-moved {
+        0% {
+            transform: scale(1.15);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .frame.pushed-right {
+        animation: pushed-right 0.3s ease-out;
+    }
+
+    @keyframes pushed-right {
+        0% {
+            transform: translateX(-16px);
+        }
+        100% {
+            transform: translateX(0);
+        }
+    }
+
+    .frame-thumbnail-wrapper {
+        position: relative;
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+    }
+
+    .frame-thumbnail {
+        display: block;
+        background: var(--bg-secondary);
+    }
+
+    .frame-index {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--fg-muted);
+        line-height: 1;
+    }
+
+    .frame-duration-badge {
+        position: absolute;
+        bottom: 4px;
+        right: 4px;
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--fg-muted);
+        line-height: 1;
+    }
+
+    .frame-event-badge {
+        position: absolute;
+        top: 6px;
+        left: 18px;
+        width: 5px;
+        height: 5px;
+        background: var(--status-warning, #ffc107);
+        border-radius: 50%;
+        cursor: help;
+    }
+
+    .drop-indicator {
+        position: absolute;
+        top: var(--spacing-sm);
+        bottom: var(--spacing-sm);
+        width: 3px;
+        background: var(--accent);
+        border-radius: 2px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s, left 0.15s;
+        z-index: 10;
+        box-shadow: 0 0 8px var(--accent);
+    }
+
+    .drop-indicator.visible {
+        opacity: 1;
+    }
+
+    .add-frame-btn {
+        appearance: none;
+        background: var(--bg-tertiary);
+        border: 2px dashed var(--border);
+        border-radius: var(--radius-md);
+        color: var(--fg-muted);
+        font-size: 24px;
+        font-weight: 300;
+        width: 80px;
+        height: 80px;
+        margin: var(--spacing-xs);
+        cursor: pointer;
+        transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), transform 0.1s;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .add-frame-btn:hover {
+        background: var(--bg-hover);
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .add-frame-btn:active {
+        transform: scale(0.95);
+    }
+
+    .hidden {
+        display: none !important;
+    }
+    `
 
     #wrapperEl = null
     #viewportEl = null
@@ -36,7 +269,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
     #internalDragStartY = 0
     #isDragOutside = false
 
-    connectedCallback () {
+    onConnected () {
         this.#buildDOM()
         this.tabIndex = 0
         this.addEventListener('keydown', (e) => this.#handleKeydown(e))
@@ -47,16 +280,13 @@ export default class AnimationTimeline extends BaseEditorComponent {
     }
 
 
-    disconnectedCallback () {
+    onDisconnected () {
         this.#cleanupScrubberEvents()
         this.#cleanupInternalDrag()
     }
 
 
     #buildDOM () {
-        adoptStyles(this.shadowRoot, timelineStyles)
-
-
         this.#wrapperEl = document.createElement('div')
         this.#wrapperEl.className = 'timeline-wrapper'
 
@@ -830,241 +1060,6 @@ function drawFrameThumbnail (canvas, frame) {
         x, y, w, h
     )
 }
-
-
-const timelineStyles = createStyleSheet(`
-    :host {
-        display: block;
-        height: fit-content;
-    }
-
-    :host(.dragging) {
-        user-select: none;
-    }
-
-    .timeline-wrapper {
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-md);
-    }
-
-    .timeline-viewport {
-        overflow: hidden;
-        flex-shrink: 0;
-    }
-
-    .timeline {
-        display: flex;
-        gap: var(--spacing-sm);
-        padding: var(--spacing-sm) 0;
-        position: relative;
-        width: fit-content;
-        min-width: 100%;
-        will-change: transform;
-    }
-
-    .scrubber {
-        position: relative;
-        height: 28px;
-        background: var(--bg-tertiary);
-        border-radius: var(--radius-lg);
-        cursor: pointer;
-        touch-action: none;
-        flex-shrink: 0;
-    }
-
-    .scrubber.hidden {
-        display: none !important;
-    }
-
-    .scrubber-thumb {
-        position: absolute;
-        top: 3px;
-        bottom: 3px;
-        min-width: 48px;
-        background: var(--bg-hover);
-        border-radius: var(--radius-md);
-        cursor: grab;
-        transition: background 0.2s ease;
-    }
-
-    .scrubber-thumb:hover,
-    .scrubber.dragging .scrubber-thumb {
-        background: var(--accent);
-    }
-
-    .scrubber.dragging .scrubber-thumb {
-        cursor: grabbing;
-    }
-
-    .frame {
-        position: relative;
-        padding: var(--spacing-xs);
-        background: var(--bg-tertiary);
-        border-radius: var(--radius-md);
-        flex-shrink: 0;
-        cursor: grab;
-    }
-
-    .frame:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    .frame:active {
-        cursor: grabbing;
-        transform: scale(0.98);
-    }
-
-    .frame.current {
-        background: var(--bg-selected);
-    }
-
-    .frame.selected {
-        outline: 2px solid var(--fg-primary);
-        outline-offset: -2px;
-    }
-
-    .frame.dragging {
-        opacity: 0.4;
-        transform: scale(0.95);
-        pointer-events: none;
-    }
-
-    .frame.just-added {
-        animation: frame-added 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    @keyframes frame-added {
-        0% {
-            transform: scale(0.5);
-            opacity: 0;
-        }
-        100% {
-            transform: scale(1);
-            opacity: 1;
-        }
-    }
-
-    .frame.just-moved {
-        animation: frame-moved 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    @keyframes frame-moved {
-        0% {
-            transform: scale(1.15);
-        }
-        100% {
-            transform: scale(1);
-        }
-    }
-
-    .frame.pushed-right {
-        animation: pushed-right 0.3s ease-out;
-    }
-
-    @keyframes pushed-right {
-        0% {
-            transform: translateX(-16px);
-        }
-        100% {
-            transform: translateX(0);
-        }
-    }
-
-    .frame-thumbnail-wrapper {
-        position: relative;
-        border-radius: var(--radius-sm);
-        overflow: hidden;
-    }
-
-    .frame-thumbnail {
-        display: block;
-        background: var(--bg-secondary);
-    }
-
-    .frame-index {
-        position: absolute;
-        top: 4px;
-        left: 4px;
-        font-size: 10px;
-        font-weight: 500;
-        color: var(--fg-muted);
-        line-height: 1;
-    }
-
-    .frame-duration-badge {
-        position: absolute;
-        bottom: 4px;
-        right: 4px;
-        font-size: 10px;
-        font-weight: 500;
-        color: var(--fg-muted);
-        line-height: 1;
-    }
-
-    .frame-event-badge {
-        position: absolute;
-        top: 6px;
-        left: 18px;
-        width: 5px;
-        height: 5px;
-        background: var(--status-warning, #ffc107);
-        border-radius: 50%;
-        cursor: help;
-    }
-
-    .drop-indicator {
-        position: absolute;
-        top: var(--spacing-sm);
-        bottom: var(--spacing-sm);
-        width: 3px;
-        background: var(--accent);
-        border-radius: 2px;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.15s, left 0.15s;
-        z-index: 10;
-        box-shadow: 0 0 8px var(--accent);
-    }
-
-    .drop-indicator.visible {
-        opacity: 1;
-    }
-
-    .add-frame-btn {
-        appearance: none;
-        background: var(--bg-tertiary);
-        border: 2px dashed var(--border);
-        border-radius: var(--radius-md);
-        color: var(--fg-muted);
-        font-size: 24px;
-        font-weight: 300;
-        width: 80px;
-        height: 80px;
-        margin: var(--spacing-xs);
-        cursor: pointer;
-        transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), transform 0.1s;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .add-frame-btn:hover {
-        background: var(--bg-hover);
-        border-color: var(--accent);
-        color: var(--accent);
-    }
-
-    .add-frame-btn:active {
-        transform: scale(0.95);
-    }
-
-    .hidden {
-        display: none !important;
-    }
-`)
 
 
 customElements.define('animation-timeline', AnimationTimeline)

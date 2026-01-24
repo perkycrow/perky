@@ -1,5 +1,5 @@
 import BaseTool from './base_tool.js'
-import {buildEditorStyles, editorScrollbarStyles, editorButtonStyles, editorBaseStyles} from '../../editor_theme.js'
+import {editorScrollbarStyles, editorButtonStyles, editorBaseStyles} from '../../editor_theme.js'
 import {ICONS} from '../devtools_icons.js'
 
 
@@ -11,12 +11,121 @@ export default class AppsTool extends BaseTool {
     static location = 'sidebar'
     static order = 20
 
+    static styles = `
+    ${editorScrollbarStyles}
+    ${editorButtonStyles}
+    ${editorBaseStyles}
+
+    :host {
+        display: block;
+        height: 100%;
+        overflow: auto;
+    }
+
+    .apps-container {
+        padding: 12px;
+    }
+
+    .apps-section {
+        margin-bottom: 16px;
+    }
+
+    .apps-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .apps-section-header {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--fg-muted);
+        margin-bottom: 8px;
+        padding-bottom: 4px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .apps-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .apps-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 10px;
+        background: var(--bg-secondary);
+        border-radius: 4px;
+        gap: 8px;
+    }
+
+    .apps-item:hover {
+        background: var(--bg-hover);
+    }
+
+    .apps-item-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .apps-item-status {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .apps-item-status.started {
+        background: var(--status-success);
+        box-shadow: 0 0 4px var(--status-success);
+    }
+
+    .apps-item-status.stopped {
+        background: var(--status-error);
+    }
+
+    .apps-item-status.disposed {
+        background: var(--status-muted);
+    }
+
+    .apps-item-name {
+        color: var(--fg-primary);
+        font-size: 12px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .apps-item-type {
+        color: var(--fg-muted);
+        font-size: 10px;
+        flex-shrink: 0;
+    }
+
+    .apps-item-actions {
+        display: flex;
+        gap: 4px;
+        flex-shrink: 0;
+    }
+
+    .apps-empty {
+        color: var(--fg-muted);
+        font-size: 11px;
+        font-style: italic;
+        padding: 8px 0;
+    }
+    `
+
     #containerEl = null
     #registeredListEl = null
     #runningListEl = null
     #appManager = null
 
-    connectedCallback () {
+    onConnected () {
         this.#buildDOM()
     }
 
@@ -38,10 +147,6 @@ export default class AppsTool extends BaseTool {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = STYLES
-        this.shadowRoot.appendChild(style)
-
         this.#containerEl = document.createElement('div')
         this.#containerEl.className = 'apps-container'
 
@@ -249,117 +354,6 @@ function getStatusClass (app) {
     }
     return ''
 }
-
-
-const STYLES = buildEditorStyles(
-    editorScrollbarStyles,
-    editorButtonStyles,
-    editorBaseStyles,
-    `
-    :host {
-        display: block;
-        height: 100%;
-        overflow: auto;
-    }
-
-    .apps-container {
-        padding: 12px;
-    }
-
-    .apps-section {
-        margin-bottom: 16px;
-    }
-
-    .apps-section:last-child {
-        margin-bottom: 0;
-    }
-
-    .apps-section-header {
-        font-size: 10px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: var(--fg-muted);
-        margin-bottom: 8px;
-        padding-bottom: 4px;
-        border-bottom: 1px solid var(--border);
-    }
-
-    .apps-list {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .apps-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 8px 10px;
-        background: var(--bg-secondary);
-        border-radius: 4px;
-        gap: 8px;
-    }
-
-    .apps-item:hover {
-        background: var(--bg-hover);
-    }
-
-    .apps-item-info {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex: 1;
-        min-width: 0;
-    }
-
-    .apps-item-status {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-
-    .apps-item-status.started {
-        background: var(--status-success);
-        box-shadow: 0 0 4px var(--status-success);
-    }
-
-    .apps-item-status.stopped {
-        background: var(--status-error);
-    }
-
-    .apps-item-status.disposed {
-        background: var(--status-muted);
-    }
-
-    .apps-item-name {
-        color: var(--fg-primary);
-        font-size: 12px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .apps-item-type {
-        color: var(--fg-muted);
-        font-size: 10px;
-        flex-shrink: 0;
-    }
-
-    .apps-item-actions {
-        display: flex;
-        gap: 4px;
-        flex-shrink: 0;
-    }
-
-    .apps-empty {
-        color: var(--fg-muted);
-        font-size: 11px;
-        font-style: italic;
-        padding: 8px 0;
-    }
-`
-)
 
 
 AppsTool.register()

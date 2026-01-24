@@ -1,8 +1,112 @@
-import BaseEditorComponent from '../base_editor_component.js'
-import {buildEditorStyles, editorBaseStyles} from '../editor_theme.js'
+import EditorComponent from '../editor_component.js'
 
 
-export default class ToolWindow extends BaseEditorComponent {
+export default class ToolWindow extends EditorComponent {
+
+    static styles = `
+    :host {
+        position: fixed;
+        z-index: 1000;
+        display: block;
+    }
+
+    .tool-window {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        background: var(--bg-primary);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+    }
+
+    .tool-window-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border);
+        cursor: grab;
+        user-select: none;
+    }
+
+    .tool-window-header:active {
+        cursor: grabbing;
+    }
+
+    .tool-window-icon {
+        width: 14px;
+        height: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--fg-muted);
+    }
+
+    .tool-window-icon:empty {
+        display: none;
+    }
+
+    .tool-window-icon svg {
+        width: 100%;
+        height: 100%;
+    }
+
+    .tool-window-title {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--fg-primary);
+    }
+
+    .tool-window-close {
+        width: 20px;
+        height: 20px;
+        margin-left: auto;
+        border: none;
+        background: transparent;
+        color: var(--fg-muted);
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .tool-window-close:hover {
+        background: var(--bg-hover);
+        color: var(--fg-primary);
+    }
+
+    .tool-window-content {
+        flex: 1;
+        overflow: auto;
+        padding: 8px;
+    }
+
+    .tool-window-resize {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 16px;
+        height: 16px;
+        cursor: se-resize;
+    }
+
+    .tool-window-resize::before {
+        content: '';
+        position: absolute;
+        bottom: 4px;
+        right: 4px;
+        width: 8px;
+        height: 8px;
+        border-right: 2px solid var(--fg-muted);
+        border-bottom: 2px solid var(--fg-muted);
+        opacity: 0.5;
+    }
+    `
 
     static observedAttributes = ['title', 'width', 'height', 'x', 'y']
 
@@ -25,7 +129,7 @@ export default class ToolWindow extends BaseEditorComponent {
     #title = 'Tool'
     #icon = ''
 
-    connectedCallback () {
+    onConnected () {
         this.#buildDOM()
         this.#setupDrag()
         this.#setupResize()
@@ -33,16 +137,12 @@ export default class ToolWindow extends BaseEditorComponent {
     }
 
 
-    disconnectedCallback () {
+    onDisconnected () {
         this.#cleanupWindowListeners()
     }
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = STYLES
-        this.shadowRoot.appendChild(style)
-
         const container = document.createElement('div')
         container.className = 'tool-window'
 
@@ -212,115 +312,6 @@ export default class ToolWindow extends BaseEditorComponent {
     }
 
 }
-
-
-const STYLES = buildEditorStyles(
-    editorBaseStyles,
-    `
-    :host {
-        position: fixed;
-        z-index: 1000;
-        display: block;
-    }
-
-    .tool-window {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        background: var(--bg-primary);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-        overflow: hidden;
-    }
-
-    .tool-window-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        background: var(--bg-secondary);
-        border-bottom: 1px solid var(--border);
-        cursor: grab;
-        user-select: none;
-    }
-
-    .tool-window-header:active {
-        cursor: grabbing;
-    }
-
-    .tool-window-icon {
-        width: 14px;
-        height: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--fg-muted);
-    }
-
-    .tool-window-icon:empty {
-        display: none;
-    }
-
-    .tool-window-icon svg {
-        width: 100%;
-        height: 100%;
-    }
-
-    .tool-window-title {
-        font-size: 12px;
-        font-weight: 500;
-        color: var(--fg-primary);
-    }
-
-    .tool-window-close {
-        width: 20px;
-        height: 20px;
-        margin-left: auto;
-        border: none;
-        background: transparent;
-        color: var(--fg-muted);
-        font-size: 16px;
-        cursor: pointer;
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .tool-window-close:hover {
-        background: var(--bg-hover);
-        color: var(--fg-primary);
-    }
-
-    .tool-window-content {
-        flex: 1;
-        overflow: auto;
-        padding: 8px;
-    }
-
-    .tool-window-resize {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        width: 16px;
-        height: 16px;
-        cursor: se-resize;
-    }
-
-    .tool-window-resize::before {
-        content: '';
-        position: absolute;
-        bottom: 4px;
-        right: 4px;
-        width: 8px;
-        height: 8px;
-        border-right: 2px solid var(--fg-muted);
-        border-bottom: 2px solid var(--fg-muted);
-        opacity: 0.5;
-    }
-`
-)
 
 
 customElements.define('tool-window', ToolWindow)

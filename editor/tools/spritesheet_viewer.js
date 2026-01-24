@@ -1,5 +1,4 @@
-import BaseEditorComponent from '../base_editor_component.js'
-import {adoptStyles, createStyleSheet} from '../styles/index.js'
+import EditorComponent from '../editor_component.js'
 
 
 const ANIMATION_COLORS = [
@@ -14,7 +13,104 @@ const ANIMATION_COLORS = [
 ]
 
 
-export default class SpritesheetViewer extends BaseEditorComponent {
+export default class SpritesheetViewer extends EditorComponent {
+
+    static styles = `
+    :host {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .viewer-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        gap: var(--spacing-md);
+    }
+
+    .filter-select {
+        appearance: none;
+        background: var(--bg-tertiary);
+        color: var(--fg-primary);
+        border: none;
+        border-radius: var(--radius-md);
+        padding: var(--spacing-sm) var(--spacing-lg) var(--spacing-sm) var(--spacing-md);
+        font-family: var(--font-mono);
+        font-size: var(--font-size-sm);
+        flex-shrink: 0;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239898a0' d='M3 4.5L6 8l3-3.5H3z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        min-height: var(--touch-target);
+        max-width: calc(100% - 40px);
+    }
+
+    .filter-select:hover {
+        background-color: var(--bg-hover);
+    }
+
+    .filter-select:focus {
+        outline: none;
+        background-color: var(--bg-hover);
+    }
+
+    .frame-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        overflow-y: auto;
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        align-content: flex-start;
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-md);
+        gap: var(--spacing-sm);
+        box-sizing: border-box;
+    }
+
+    .frame {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2px;
+        cursor: grab;
+        transition: filter 0.15s;
+    }
+
+    .frame:hover {
+        filter: brightness(1.2);
+    }
+
+    .frame:active {
+        cursor: grabbing;
+    }
+
+    .frame.dragging {
+        opacity: 0.5;
+    }
+
+    .frame-thumbnail {
+        display: block;
+    }
+
+    .frame-name {
+        font-size: 8px;
+        color: var(--fg-muted);
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: center;
+    }
+    `
 
     #containerEl = null
     #filterEl = null
@@ -29,7 +125,7 @@ export default class SpritesheetViewer extends BaseEditorComponent {
     #dragStartEl = null
     #lastTimeline = null
 
-    connectedCallback () {
+    onConnected () {
         this.#buildDOM()
         this.#setupPointerDrag()
         if (this.#spritesheet) {
@@ -39,14 +135,12 @@ export default class SpritesheetViewer extends BaseEditorComponent {
     }
 
 
-    disconnectedCallback () {
+    onDisconnected () {
         this.#cleanupPointerDrag()
     }
 
 
     #buildDOM () {
-        adoptStyles(this.shadowRoot, viewerStyles)
-
         this.#containerEl = document.createElement('div')
         this.#containerEl.className = 'viewer-container'
 
@@ -460,104 +554,6 @@ function drawFrameThumbnail (canvas, region) {
         x, y, w, h
     )
 }
-
-
-const viewerStyles = createStyleSheet(`
-    :host {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-    }
-
-    .viewer-container {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        flex: 1;
-        min-height: 0;
-        gap: var(--spacing-md);
-    }
-
-    .filter-select {
-        appearance: none;
-        background: var(--bg-tertiary);
-        color: var(--fg-primary);
-        border: none;
-        border-radius: var(--radius-md);
-        padding: var(--spacing-sm) var(--spacing-lg) var(--spacing-sm) var(--spacing-md);
-        font-family: var(--font-mono);
-        font-size: var(--font-size-sm);
-        flex-shrink: 0;
-        cursor: pointer;
-        transition: background 0.15s, color 0.15s;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239898a0' d='M3 4.5L6 8l3-3.5H3z'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 8px center;
-        min-height: var(--touch-target);
-        max-width: calc(100% - 40px);
-    }
-
-    .filter-select:hover {
-        background-color: var(--bg-hover);
-    }
-
-    .filter-select:focus {
-        outline: none;
-        background-color: var(--bg-hover);
-    }
-
-    .frame-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        overflow-y: auto;
-        width: 100%;
-        flex: 1;
-        min-height: 0;
-        align-content: flex-start;
-        background: var(--bg-tertiary);
-        border-radius: var(--radius-md);
-        padding: var(--spacing-md);
-        gap: var(--spacing-sm);
-        box-sizing: border-box;
-    }
-
-    .frame {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 2px;
-        cursor: grab;
-        transition: filter 0.15s;
-    }
-
-    .frame:hover {
-        filter: brightness(1.2);
-    }
-
-    .frame:active {
-        cursor: grabbing;
-    }
-
-    .frame.dragging {
-        opacity: 0.5;
-    }
-
-    .frame-thumbnail {
-        display: block;
-    }
-
-    .frame-name {
-        font-size: 8px;
-        color: var(--fg-muted);
-        max-width: 100px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        text-align: center;
-    }
-`)
 
 
 customElements.define('spritesheet-viewer', SpritesheetViewer)

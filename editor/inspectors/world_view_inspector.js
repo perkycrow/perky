@@ -3,7 +3,13 @@ import PerkyExplorerDetails from '../perky_explorer_details.js'
 import WorldView from '../../game/world_view.js'
 
 
-const customStyles = `
+export default class WorldViewInspector extends BaseInspector {
+
+    static matches (module) {
+        return module instanceof WorldView
+    }
+
+    static styles = `
     .view-list {
         margin-top: 8px;
         padding-top: 8px;
@@ -30,18 +36,10 @@ const customStyles = `
         color: var(--fg-muted);
         font-size: 10px;
     }
-`
-
-
-export default class WorldViewInspector extends BaseInspector {
-
-    static matches (module) {
-        return module instanceof WorldView
-    }
-
+    `
 
     constructor () {
-        super(customStyles)
+        super()
         this.buildDOM()
     }
 

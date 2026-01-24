@@ -1,11 +1,34 @@
-import BaseEditorComponent from '../base_editor_component.js'
+import EditorComponent from '../editor_component.js'
 import DevToolsState from './devtools_state.js'
 import './devtools_dock.js'
 import './devtools_sidebar.js'
 import '../perky_logger.js'
 
 
-export default class PerkyDevTools extends BaseEditorComponent {
+export default class PerkyDevTools extends EditorComponent {
+
+    static styles = `
+    :host {
+        display: contents;
+    }
+
+    .devtools-logger {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 9997;
+        transition: right 0.2s ease;
+    }
+
+    .devtools-logger.sidebar-open {
+        right: 330px;
+    }
+
+    .devtools-logger.hidden {
+        display: none;
+    }
+    `
 
     #state = new DevToolsState()
     #dockEl = null
@@ -24,14 +47,13 @@ export default class PerkyDevTools extends BaseEditorComponent {
     }
 
 
-    connectedCallback () {
+    onConnected () {
         this.#buildDOM()
         this.#setupKeyboard()
     }
 
 
-    disconnectedCallback () {
-        super.disconnectedCallback()
+    onDisconnected () {
         this.#cleanupKeyboard()
     }
 
@@ -72,10 +94,6 @@ export default class PerkyDevTools extends BaseEditorComponent {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = STYLES
-        this.shadowRoot.appendChild(style)
-
         this.#dockEl = document.createElement('devtools-dock')
         this.#dockEl.setState(this.#state)
 
@@ -165,30 +183,6 @@ export default class PerkyDevTools extends BaseEditorComponent {
     }
 
 }
-
-
-const STYLES = `
-    :host {
-        display: contents;
-    }
-
-    .devtools-logger {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 9997;
-        transition: right 0.2s ease;
-    }
-
-    .devtools-logger.sidebar-open {
-        right: 330px;
-    }
-
-    .devtools-logger.hidden {
-        display: none;
-    }
-`
 
 
 customElements.define('perky-devtools', PerkyDevTools)

@@ -5,7 +5,13 @@ import {ICONS} from '../devtools/devtools_icons.js'
 import '../slider_input.js'
 
 
-const customStyles = `
+export default class AudioChannelInspector extends BaseInspector {
+
+    static matches (module) {
+        return module instanceof AudioChannel
+    }
+
+    static styles = `
     .volume-controls {
         grid-column: 1 / -1;
         display: flex;
@@ -23,14 +29,7 @@ const customStyles = `
         vertical-align: middle;
         margin-right: 4px;
     }
-`
-
-
-export default class AudioChannelInspector extends BaseInspector {
-
-    static matches (module) {
-        return module instanceof AudioChannel
-    }
+    `
 
     #mutedValueEl = null
     #sourcesValueEl = null
@@ -38,7 +37,7 @@ export default class AudioChannelInspector extends BaseInspector {
     #muteBtn = null
 
     constructor () {
-        super(customStyles)
+        super()
         this.buildDOM()
     }
 

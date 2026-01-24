@@ -1,15 +1,84 @@
-import BaseEditorComponent from './base_editor_component.js'
+import EditorComponent from './editor_component.js'
 import {cssVariables} from './perky_explorer.styles.js'
 
 
-export default class ExplorerContextMenu extends BaseEditorComponent {
+const menuStyles = `
+    :host {
+        ${cssVariables}
+        position: fixed;
+        z-index: 10000;
+    }
+
+    .context-menu {
+        background: var(--bg-primary);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+        min-width: 140px;
+        padding: 3px 0;
+        font-family: var(--font-mono);
+        font-size: 11px;
+    }
+
+    .context-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        color: var(--fg-primary);
+        cursor: pointer;
+        transition: background 0.1s;
+    }
+
+    .context-menu-item:hover {
+        background: var(--bg-hover);
+    }
+
+    .context-menu-item.disabled {
+        color: var(--fg-muted);
+        cursor: not-allowed;
+    }
+
+    .context-menu-item.disabled:hover {
+        background: transparent;
+    }
+
+    .context-menu-item.danger {
+        color: var(--status-stopped);
+    }
+
+    .context-menu-item.danger:hover {
+        background: rgba(248, 113, 113, 0.15);
+    }
+
+    .context-menu-icon {
+        width: 14px;
+        text-align: center;
+        flex-shrink: 0;
+        font-size: 10px;
+    }
+
+    .context-menu-label {
+        flex: 1;
+    }
+
+    .context-menu-separator {
+        height: 1px;
+        background: var(--border);
+        margin: 3px 6px;
+    }
+`
+
+
+export default class ExplorerContextMenu extends EditorComponent {
+
+    static styles = menuStyles
 
     #menuEl = null
     #actions = []
     #module = null
 
-    constructor () {
-        super()
+    onConnected () {
         this.#buildDOM()
     }
 
@@ -39,10 +108,6 @@ export default class ExplorerContextMenu extends BaseEditorComponent {
 
 
     #buildDOM () {
-        const style = document.createElement('style')
-        style.textContent = menuStyles
-        this.shadowRoot.appendChild(style)
-
         this.#menuEl = document.createElement('div')
         this.#menuEl.className = 'context-menu'
         this.#menuEl.addEventListener('contextmenu', (e) => {
@@ -141,74 +206,6 @@ export default class ExplorerContextMenu extends BaseEditorComponent {
     }
 
 }
-
-
-const menuStyles = `
-    :host {
-        ${cssVariables}
-        position: fixed;
-        z-index: 10000;
-    }
-
-    .context-menu {
-        background: var(--bg-primary);
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
-        min-width: 140px;
-        padding: 3px 0;
-        font-family: var(--font-mono);
-        font-size: 11px;
-    }
-
-    .context-menu-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 5px 10px;
-        color: var(--fg-primary);
-        cursor: pointer;
-        transition: background 0.1s;
-    }
-
-    .context-menu-item:hover {
-        background: var(--bg-hover);
-    }
-
-    .context-menu-item.disabled {
-        color: var(--fg-muted);
-        cursor: not-allowed;
-    }
-
-    .context-menu-item.disabled:hover {
-        background: transparent;
-    }
-
-    .context-menu-item.danger {
-        color: var(--status-stopped);
-    }
-
-    .context-menu-item.danger:hover {
-        background: rgba(248, 113, 113, 0.15);
-    }
-
-    .context-menu-icon {
-        width: 14px;
-        text-align: center;
-        flex-shrink: 0;
-        font-size: 10px;
-    }
-
-    .context-menu-label {
-        flex: 1;
-    }
-
-    .context-menu-separator {
-        height: 1px;
-        background: var(--border);
-        margin: 3px 6px;
-    }
-`
 
 
 customElements.define('explorer-context-menu', ExplorerContextMenu)

@@ -5,7 +5,13 @@ import {pluralize} from '../../core/utils.js'
 import '../toggle_input.js'
 
 
-const customStyles = `
+export default class ActionDispatcherInspector extends BaseInspector {
+
+    static matches (module) {
+        return module instanceof ActionDispatcher
+    }
+
+    static styles = `
     .actions-header {
         display: flex;
         align-items: center;
@@ -99,19 +105,12 @@ const customStyles = `
         text-align: center;
         padding: 16px;
     }
-`
-
-
-export default class ActionDispatcherInspector extends BaseInspector {
-
-    static matches (module) {
-        return module instanceof ActionDispatcher
-    }
+    `
 
     #containerEl = null
 
     constructor () {
-        super(customStyles)
+        super()
         this.buildDOM()
     }
 
