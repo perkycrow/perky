@@ -1,103 +1,100 @@
+import EditorComponent from './editor_component.js'
 
 
-import {adoptStyles, createStyleSheet} from './styles/index.js'
+export default class DropdownMenu extends EditorComponent {
 
+    static styles = `
+        :host {
+            position: relative;
+            display: inline-block;
+        }
 
-const dropdownStyles = createStyleSheet(`
-    :host {
-        position: relative;
-        display: inline-block;
-    }
+        .trigger {
+            appearance: none;
+            background: var(--bg-tertiary);
+            color: var(--fg-secondary);
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 10px;
+            font-family: inherit;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background var(--transition-fast), color var(--transition-fast);
+            min-height: var(--touch-target);
+            min-width: var(--touch-target);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-    .trigger {
-        appearance: none;
-        background: var(--bg-tertiary);
-        color: var(--fg-secondary);
-        border: none;
-        border-radius: var(--radius-md);
-        padding: 10px;
-        font-family: inherit;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background var(--transition-fast), color var(--transition-fast);
-        min-height: var(--touch-target);
-        min-width: var(--touch-target);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+        .trigger:hover {
+            background: var(--bg-hover);
+            color: var(--fg-primary);
+        }
 
-    .trigger:hover {
-        background: var(--bg-hover);
-        color: var(--fg-primary);
-    }
+        .trigger:active {
+            transform: scale(0.96);
+        }
 
-    .trigger:active {
-        transform: scale(0.96);
-    }
+        .trigger svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
 
-    .trigger svg {
-        width: 18px;
-        height: 18px;
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-    }
+        .menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: var(--spacing-xs);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            min-width: 160px;
+            padding: var(--spacing-xs);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-8px);
+            pointer-events: none;
+            transition: opacity 0.15s, transform 0.15s;
+        }
 
-    .menu {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        margin-top: var(--spacing-xs);
-        background: var(--bg-secondary);
-        border-radius: var(--radius-md);
-        box-shadow: var(--shadow-lg);
-        min-width: 160px;
-        padding: var(--spacing-xs);
-        z-index: 1000;
-        opacity: 0;
-        transform: translateY(-8px);
-        pointer-events: none;
-        transition: opacity 0.15s, transform 0.15s;
-    }
+        :host([open]) .menu {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
 
-    :host([open]) .menu {
-        opacity: 1;
-        transform: translateY(0);
-        pointer-events: auto;
-    }
+        .menu-item {
+            appearance: none;
+            background: transparent;
+            border: none;
+            color: var(--fg-primary);
+            font-family: inherit;
+            font-size: var(--font-size-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: background var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
 
-    .menu-item {
-        appearance: none;
-        background: transparent;
-        border: none;
-        color: var(--fg-primary);
-        font-family: inherit;
-        font-size: var(--font-size-sm);
-        padding: var(--spacing-sm) var(--spacing-md);
-        width: 100%;
-        text-align: left;
-        cursor: pointer;
-        border-radius: var(--radius-sm);
-        transition: background var(--transition-fast);
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-    }
+        .menu-item:hover {
+            background: var(--bg-hover);
+        }
 
-    .menu-item:hover {
-        background: var(--bg-hover);
-    }
-
-    .menu-item:active {
-        background: var(--bg-selected);
-    }
-`)
-
-
-export default class DropdownMenu extends HTMLElement {
+        .menu-item:active {
+            background: var(--bg-selected);
+        }
+    `
 
     #triggerEl = null
     #menuEl = null
@@ -105,18 +102,14 @@ export default class DropdownMenu extends HTMLElement {
 
     constructor () {
         super()
-        this.attachShadow({mode: 'open'})
-        adoptStyles(this.shadowRoot, dropdownStyles)
         this.#buildDOM()
     }
 
-
-    connectedCallback () {
+    onConnected () {
         document.addEventListener('click', this.#handleOutsideClick)
     }
 
-
-    disconnectedCallback () {
+    onDisconnected () {
         document.removeEventListener('click', this.#handleOutsideClick)
     }
 

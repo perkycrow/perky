@@ -1,91 +1,88 @@
+import EditorComponent from '../editor_component.js'
 
 
-import {adoptStyles, createStyleSheet} from '../styles/index.js'
+export default class TabBar extends EditorComponent {
+
+    static styles = `
+        :host {
+            display: inline-flex;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            padding: 2px;
+            gap: 2px;
+            font-family: var(--font-mono);
+        }
+
+        .tab {
+            appearance: none;
+            background: transparent;
+            border: none;
+            color: var(--fg-muted);
+            font-size: var(--font-size-sm);
+            font-family: inherit;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background var(--transition-fast), color var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            color: var(--fg-secondary);
+        }
+
+        .tab.active {
+            background: var(--bg-primary);
+            color: var(--fg-primary);
+            box-shadow: var(--shadow-sm);
+        }
 
 
-const tabBarCSS = createStyleSheet(`
-    :host {
-        display: inline-flex;
-        background: var(--bg-tertiary);
-        border-radius: var(--radius-md);
-        padding: 2px;
-        gap: 2px;
-        font-family: var(--font-mono);
-    }
+        ::slotted(button) {
+            appearance: none;
+            background: transparent;
+            border: none;
+            color: var(--fg-muted);
+            font-size: var(--font-size-sm);
+            font-family: var(--font-mono);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background var(--transition-fast), color var(--transition-fast);
+            white-space: nowrap;
+        }
 
-    .tab {
-        appearance: none;
-        background: transparent;
-        border: none;
-        color: var(--fg-muted);
-        font-size: var(--font-size-sm);
-        font-family: inherit;
-        padding: var(--spacing-xs) var(--spacing-sm);
-        border-radius: var(--radius-sm);
-        cursor: pointer;
-        transition: background var(--transition-fast), color var(--transition-fast);
-        white-space: nowrap;
-    }
+        ::slotted(button:hover) {
+            color: var(--fg-secondary);
+        }
 
-    .tab:hover {
-        color: var(--fg-secondary);
-    }
-
-    .tab.active {
-        background: var(--bg-primary);
-        color: var(--fg-primary);
-        box-shadow: var(--shadow-sm);
-    }
+        ::slotted(button[aria-selected="true"]) {
+            background: var(--bg-primary);
+            color: var(--fg-primary);
+            box-shadow: var(--shadow-sm);
+        }
 
 
-    ::slotted(button) {
-        appearance: none;
-        background: transparent;
-        border: none;
-        color: var(--fg-muted);
-        font-size: var(--font-size-sm);
-        font-family: var(--font-mono);
-        padding: var(--spacing-xs) var(--spacing-sm);
-        border-radius: var(--radius-sm);
-        cursor: pointer;
-        transition: background var(--transition-fast), color var(--transition-fast);
-        white-space: nowrap;
-    }
+        :host([context="studio"]) {
+            padding: 4px;
+            gap: 4px;
+            border-radius: var(--radius-lg);
+        }
 
-    ::slotted(button:hover) {
-        color: var(--fg-secondary);
-    }
+        :host([context="studio"]) .tab {
+            font-size: var(--font-size-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            min-height: var(--touch-target);
+            border-radius: var(--radius-md);
+        }
 
-    ::slotted(button[aria-selected="true"]) {
-        background: var(--bg-primary);
-        color: var(--fg-primary);
-        box-shadow: var(--shadow-sm);
-    }
-
-
-    :host([context="studio"]) {
-        padding: 4px;
-        gap: 4px;
-        border-radius: var(--radius-lg);
-    }
-
-    :host([context="studio"]) .tab {
-        font-size: var(--font-size-md);
-        padding: var(--spacing-sm) var(--spacing-md);
-        min-height: var(--touch-target);
-        border-radius: var(--radius-md);
-    }
-
-    :host([context="studio"]) ::slotted(button) {
-        font-size: var(--font-size-md);
-        padding: var(--spacing-sm) var(--spacing-md);
-        min-height: var(--touch-target);
-        border-radius: var(--radius-md);
-    }
-`)
-
-
-export default class TabBar extends HTMLElement {
+        :host([context="studio"]) ::slotted(button) {
+            font-size: var(--font-size-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            min-height: var(--touch-target);
+            border-radius: var(--radius-md);
+        }
+    `
 
     #container = null
     #value = null
@@ -93,13 +90,10 @@ export default class TabBar extends HTMLElement {
 
     constructor () {
         super()
-        this.attachShadow({mode: 'open'})
-        adoptStyles(this.shadowRoot, tabBarCSS)
         this.#buildDOM()
     }
 
-
-    connectedCallback () {
+    onConnected () {
         this.#setupSlottedTabs()
     }
 

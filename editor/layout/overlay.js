@@ -1,107 +1,102 @@
+import EditorComponent from '../editor_component.js'
 
 
-import {adoptStyles, createStyleSheet} from '../styles/index.js'
+export default class Overlay extends EditorComponent {
 
-
-const overlayCSS = createStyleSheet(`
-    :host {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 1000;
-        font-family: var(--font-mono);
-    }
-
-    :host([open]) {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .backdrop {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-    }
-
-    :host([no-backdrop]) .backdrop {
-        background: transparent;
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-    }
-
-    .container {
-        position: relative;
-        display: flex;
-        background: var(--bg-secondary);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-lg);
-        max-width: 90vw;
-        max-height: 90vh;
-        overflow: hidden;
-        animation: overlay-enter 0.15s ease-out;
-    }
-
-    @keyframes overlay-enter {
-        from {
-            opacity: 0;
-            transform: scale(0.95);
+    static styles = `
+        :host {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            font-family: var(--font-mono);
         }
-        to {
-            opacity: 1;
-            transform: scale(1);
+
+        :host([open]) {
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-    }
 
-    :host([position="top"]) {
-        align-items: flex-start;
-        padding-top: 10vh;
-    }
+        .backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
 
-    :host([position="bottom"]) {
-        align-items: flex-end;
-        padding-bottom: 10vh;
-    }
+        :host([no-backdrop]) .backdrop {
+            background: transparent;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+
+        .container {
+            position: relative;
+            display: flex;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: hidden;
+            animation: overlay-enter 0.15s ease-out;
+        }
+
+        @keyframes overlay-enter {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        :host([position="top"]) {
+            align-items: flex-start;
+            padding-top: 10vh;
+        }
+
+        :host([position="bottom"]) {
+            align-items: flex-end;
+            padding-bottom: 10vh;
+        }
 
 
-    :host([fullscreen]) .container {
-        width: 100%;
-        height: 100%;
-        max-width: 100vw;
-        max-height: 100vh;
-        border-radius: 0;
-        border: none;
-    }
+        :host([fullscreen]) .container {
+            width: 100%;
+            height: 100%;
+            max-width: 100vw;
+            max-height: 100vh;
+            border-radius: 0;
+            border: none;
+        }
 
 
-    :host([context="studio"]) .container {
-        border-radius: var(--radius-xl);
-    }
+        :host([context="studio"]) .container {
+            border-radius: var(--radius-xl);
+        }
 
-    :host([context="studio"][fullscreen]) .container {
-        border-radius: 0;
-    }
-`)
-
-
-export default class Overlay extends HTMLElement {
+        :host([context="studio"][fullscreen]) .container {
+            border-radius: 0;
+        }
+    `
 
     #backdrop = null
     #container = null
 
     constructor () {
         super()
-        this.attachShadow({mode: 'open'})
-        adoptStyles(this.shadowRoot, overlayCSS)
         this.#buildDOM()
     }
 

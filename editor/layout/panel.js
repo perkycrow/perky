@@ -1,140 +1,137 @@
+import EditorComponent from '../editor_component.js'
 
 
-import {adoptStyles, createStyleSheet} from '../styles/index.js'
+export default class Panel extends EditorComponent {
+
+    static styles = `
+        :host {
+            display: block;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            font-family: var(--font-mono);
+            box-shadow: var(--shadow-md);
+        }
+
+        :host([floating]) {
+            position: absolute;
+            min-width: 200px;
+            min-height: 100px;
+            resize: both;
+            overflow: auto;
+        }
+
+        :host([collapsed]) {
+            height: auto !important;
+            min-height: 0;
+            resize: none;
+        }
+
+        :host([collapsed]) .panel-content {
+            display: none;
+        }
 
 
-const panelCSS = createStyleSheet(`
-    :host {
-        display: block;
-        background: var(--bg-secondary);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        font-family: var(--font-mono);
-        box-shadow: var(--shadow-md);
-    }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 32px;
+            padding: 0 var(--spacing-sm);
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+            cursor: default;
+            user-select: none;
+            -webkit-user-select: none;
+            gap: var(--spacing-xs);
+        }
 
-    :host([floating]) {
-        position: absolute;
-        min-width: 200px;
-        min-height: 100px;
-        resize: both;
-        overflow: auto;
-    }
+        :host([floating]) .panel-header {
+            cursor: grab;
+        }
 
-    :host([collapsed]) {
-        height: auto !important;
-        min-height: 0;
-        resize: none;
-    }
+        :host([floating]) .panel-header:active {
+            cursor: grabbing;
+        }
 
-    :host([collapsed]) .panel-content {
-        display: none;
-    }
+        .panel-title {
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--fg-primary);
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
+        .panel-actions {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
 
-    .panel-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        height: 32px;
-        padding: 0 var(--spacing-sm);
-        background: var(--bg-tertiary);
-        border-bottom: 1px solid var(--border);
-        cursor: default;
-        user-select: none;
-        -webkit-user-select: none;
-        gap: var(--spacing-xs);
-    }
+        .panel-btn {
+            appearance: none;
+            background: transparent;
+            border: none;
+            color: var(--fg-muted);
+            font-size: 12px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: background var(--transition-fast), color var(--transition-fast);
+            padding: 0;
+        }
 
-    :host([floating]) .panel-header {
-        cursor: grab;
-    }
+        .panel-btn:hover {
+            background: var(--bg-hover);
+            color: var(--fg-primary);
+        }
 
-    :host([floating]) .panel-header:active {
-        cursor: grabbing;
-    }
-
-    .panel-title {
-        font-size: var(--font-size-sm);
-        font-weight: 500;
-        color: var(--fg-primary);
-        flex: 1;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .panel-actions {
-        display: flex;
-        align-items: center;
-        gap: 2px;
-    }
-
-    .panel-btn {
-        appearance: none;
-        background: transparent;
-        border: none;
-        color: var(--fg-muted);
-        font-size: 12px;
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        border-radius: var(--radius-sm);
-        transition: background var(--transition-fast), color var(--transition-fast);
-        padding: 0;
-    }
-
-    .panel-btn:hover {
-        background: var(--bg-hover);
-        color: var(--fg-primary);
-    }
-
-    .panel-btn:active {
-        background: var(--bg-selected);
-    }
+        .panel-btn:active {
+            background: var(--bg-selected);
+        }
 
 
-    .panel-content {
-        padding: var(--spacing-sm);
-        overflow: auto;
-        max-height: 400px;
-    }
+        .panel-content {
+            padding: var(--spacing-sm);
+            overflow: auto;
+            max-height: 400px;
+        }
 
-    :host([no-padding]) .panel-content {
-        padding: 0;
-    }
-
-
-    :host([context="studio"]) .panel-header {
-        height: var(--touch-target);
-        padding: 0 var(--spacing-md);
-    }
-
-    :host([context="studio"]) .panel-title {
-        font-size: var(--font-size-md);
-    }
-
-    :host([context="studio"]) .panel-btn {
-        width: var(--touch-target);
-        height: var(--touch-target);
-        font-size: 16px;
-    }
-
-    :host([context="studio"]) .panel-content {
-        padding: var(--spacing-md);
-    }
-
-    :host([context="studio"][no-padding]) .panel-content {
-        padding: 0;
-    }
-`)
+        :host([no-padding]) .panel-content {
+            padding: 0;
+        }
 
 
-export default class Panel extends HTMLElement {
+        :host([context="studio"]) .panel-header {
+            height: var(--touch-target);
+            padding: 0 var(--spacing-md);
+        }
+
+        :host([context="studio"]) .panel-title {
+            font-size: var(--font-size-md);
+        }
+
+        :host([context="studio"]) .panel-btn {
+            width: var(--touch-target);
+            height: var(--touch-target);
+            font-size: 16px;
+        }
+
+        :host([context="studio"]) .panel-content {
+            padding: var(--spacing-md);
+        }
+
+        :host([context="studio"][no-padding]) .panel-content {
+            padding: 0;
+        }
+    `
 
     #headerEl = null
     #titleEl = null
@@ -149,13 +146,10 @@ export default class Panel extends HTMLElement {
 
     constructor () {
         super()
-        this.attachShadow({mode: 'open'})
-        adoptStyles(this.shadowRoot, panelCSS)
         this.#buildDOM()
     }
 
-
-    connectedCallback () {
+    onConnected () {
         this.#updateCollapseIcon()
     }
 

@@ -1,86 +1,81 @@
+import EditorComponent from '../editor_component.js'
 
 
-import {adoptStyles, createStyleSheet} from '../styles/index.js'
+export default class Toolbar extends EditorComponent {
+
+    static styles = `
+        :host {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 36px;
+            padding: 0 var(--spacing-sm);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            gap: var(--spacing-sm);
+            font-family: var(--font-mono);
+        }
+
+        :host([variant="compact"]) {
+            height: 28px;
+            padding: 0 var(--spacing-xs);
+        }
+
+        :host([variant="footer"]) {
+            border-bottom: none;
+            border-top: 1px solid var(--border);
+        }
+
+        :host([no-border]) {
+            border: none;
+        }
+
+        .toolbar-section {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .toolbar-start {
+            justify-content: flex-start;
+        }
+
+        .toolbar-center {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .toolbar-end {
+            justify-content: flex-end;
+        }
 
 
-const toolbarCSS = createStyleSheet(`
-    :host {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        height: 36px;
-        padding: 0 var(--spacing-sm);
-        background: var(--bg-secondary);
-        border-bottom: 1px solid var(--border);
-        gap: var(--spacing-sm);
-        font-family: var(--font-mono);
-    }
-
-    :host([variant="compact"]) {
-        height: 28px;
-        padding: 0 var(--spacing-xs);
-    }
-
-    :host([variant="footer"]) {
-        border-bottom: none;
-        border-top: 1px solid var(--border);
-    }
-
-    :host([no-border]) {
-        border: none;
-    }
-
-    .toolbar-section {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-xs);
-    }
-
-    .toolbar-start {
-        justify-content: flex-start;
-    }
-
-    .toolbar-center {
-        flex: 1;
-        justify-content: center;
-    }
-
-    .toolbar-end {
-        justify-content: flex-end;
-    }
+        .toolbar-separator {
+            width: 1px;
+            height: 16px;
+            background: var(--border);
+            margin: 0 var(--spacing-xs);
+        }
 
 
-    .toolbar-separator {
-        width: 1px;
-        height: 16px;
-        background: var(--border);
-        margin: 0 var(--spacing-xs);
-    }
+        :host([context="studio"]) {
+            height: var(--touch-target);
+            padding: 0 var(--spacing-md);
+            gap: var(--spacing-md);
+        }
 
+        :host([context="studio"]) .toolbar-section {
+            gap: var(--spacing-sm);
+        }
 
-    :host([context="studio"]) {
-        height: var(--touch-target);
-        padding: 0 var(--spacing-md);
-        gap: var(--spacing-md);
-    }
-
-    :host([context="studio"]) .toolbar-section {
-        gap: var(--spacing-sm);
-    }
-
-    :host([context="studio"]) .toolbar-separator {
-        height: 24px;
-        margin: 0 var(--spacing-sm);
-    }
-`)
-
-
-export default class Toolbar extends HTMLElement {
+        :host([context="studio"]) .toolbar-separator {
+            height: 24px;
+            margin: 0 var(--spacing-sm);
+        }
+    `
 
     constructor () {
         super()
-        this.attachShadow({mode: 'open'})
-        adoptStyles(this.shadowRoot, toolbarCSS)
         this.#buildDOM()
     }
 

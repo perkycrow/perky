@@ -1,41 +1,34 @@
+import EditorComponent from '../editor_component.js'
+import {controlsSheet} from '../styles/index.js'
 
 
-import {adoptStyles, controlsSheet, createStyleSheet} from '../styles/index.js'
+export default class EditorButton extends EditorComponent {
 
-
-const componentStyles = createStyleSheet(`
-    :host {
-        display: inline-block;
-    }
-
-    button {
-        width: 100%;
-    }
-
-
-    @media (pointer: coarse) {
-        button {
-            min-height: var(--touch-target);
-            min-width: var(--touch-target);
+    static styles = [
+        controlsSheet,
+        `
+        :host {
+            display: inline-block;
         }
-    }
-`)
 
+        button {
+            width: 100%;
+        }
 
-export default class EditorButton extends HTMLElement {
+        @media (pointer: coarse) {
+            button {
+                min-height: var(--touch-target);
+                min-width: var(--touch-target);
+            }
+        }
+        `
+    ]
 
     static observedAttributes = ['variant', 'icon', 'disabled', 'active']
 
     #buttonEl = null
 
-    constructor () {
-        super()
-        this.attachShadow({mode: 'open'})
-        adoptStyles(this.shadowRoot, controlsSheet, componentStyles)
-    }
-
-
-    connectedCallback () {
+    onConnected () {
         this.#render()
     }
 

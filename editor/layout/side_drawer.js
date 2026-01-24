@@ -1,90 +1,88 @@
-
-
-import {adoptStyles, createStyleSheet} from '../styles/index.js'
+import EditorComponent from '../editor_component.js'
 
 
 const SWIPE_THRESHOLD = 50
 
-const drawerCSS = createStyleSheet(`
-    :host {
-        position: absolute;
-        top: var(--drawer-top, 0);
-        bottom: var(--drawer-bottom, 0);
-        width: 280px;
-        background: var(--bg-secondary);
-        display: flex;
-        flex-direction: column;
-        transition: transform 0.25s ease-out;
-        z-index: 100;
-        touch-action: pan-y;
-    }
 
-    :host(.dragging) {
-        transition: none;
-    }
+export default class SideDrawer extends EditorComponent {
 
-    :host([position="left"]) {
-        left: 0;
-        transform: translateX(-100%);
-    }
+    static styles = `
+        :host {
+            position: absolute;
+            top: var(--drawer-top, 0);
+            bottom: var(--drawer-bottom, 0);
+            width: 280px;
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.25s ease-out;
+            z-index: 100;
+            touch-action: pan-y;
+        }
 
-    :host([position="right"]) {
-        right: 0;
-        transform: translateX(100%);
-    }
+        :host(.dragging) {
+            transition: none;
+        }
 
-    :host([open][position="left"]),
-    :host([open][position="right"]) {
-        transform: translateX(0);
-    }
+        :host([position="left"]) {
+            left: 0;
+            transform: translateX(-100%);
+        }
 
-    .drawer-close {
-        position: absolute;
-        top: var(--spacing-sm);
-        appearance: none;
-        background: var(--bg-tertiary);
-        border: none;
-        color: var(--fg-muted);
-        width: 28px;
-        height: 28px;
-        border-radius: var(--radius-md);
-        font-size: 14px;
-        cursor: pointer;
-        transition: background var(--transition-fast), color var(--transition-fast);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1;
-    }
+        :host([position="right"]) {
+            right: 0;
+            transform: translateX(100%);
+        }
 
-    :host([position="left"]) .drawer-close {
-        right: var(--spacing-sm);
-    }
+        :host([open][position="left"]),
+        :host([open][position="right"]) {
+            transform: translateX(0);
+        }
 
-    :host([position="right"]) .drawer-close {
-        left: var(--spacing-sm);
-    }
+        .drawer-close {
+            position: absolute;
+            top: var(--spacing-sm);
+            appearance: none;
+            background: var(--bg-tertiary);
+            border: none;
+            color: var(--fg-muted);
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            cursor: pointer;
+            transition: background var(--transition-fast), color var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
 
-    .drawer-close:hover {
-        background: var(--bg-hover);
-        color: var(--fg-primary);
-    }
+        :host([position="left"]) .drawer-close {
+            right: var(--spacing-sm);
+        }
 
-    .drawer-content {
-        flex: 1;
-        min-height: 0;
-        padding: var(--spacing-md);
-        box-sizing: border-box;
-        overflow: hidden;
-    }
+        :host([position="right"]) .drawer-close {
+            left: var(--spacing-sm);
+        }
 
-    :host([no-padding]) .drawer-content {
-        padding: 0;
-    }
-`)
+        .drawer-close:hover {
+            background: var(--bg-hover);
+            color: var(--fg-primary);
+        }
 
+        .drawer-content {
+            flex: 1;
+            min-height: 0;
+            padding: var(--spacing-md);
+            box-sizing: border-box;
+            overflow: hidden;
+        }
 
-export default class SideDrawer extends HTMLElement {
+        :host([no-padding]) .drawer-content {
+            padding: 0;
+        }
+    `
 
     #closeBtn = null
     #contentEl = null
@@ -94,8 +92,6 @@ export default class SideDrawer extends HTMLElement {
 
     constructor () {
         super()
-        this.attachShadow({mode: 'open'})
-        adoptStyles(this.shadowRoot, drawerCSS)
         this.#buildDOM()
     }
 
