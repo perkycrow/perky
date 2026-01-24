@@ -35,10 +35,7 @@ export default class AnimationPreview extends BaseEditorComponent {
     #noise = new Noise(42)
     #moveSpriteMode = true
 
-    #sceneryZoom = 0.5
-    #zoomSliderVisible = false
-    #pinchStartDistance = null
-    #pinchStartZoom = null
+
     #backgroundImage = null
     #backgroundRegion = null
     #unitsInView = null
@@ -140,34 +137,11 @@ export default class AnimationPreview extends BaseEditorComponent {
         controls.appendChild(gridBtn)
         container.appendChild(controls)
 
-        const zoomControls = document.createElement('div')
-        zoomControls.className = 'zoom-controls'
-
-        const zoomToggle = document.createElement('button')
-        zoomToggle.className = 'zoom-toggle'
-        zoomToggle.innerHTML = ICONS.zoom
-        zoomToggle.addEventListener('click', () => this.#toggleZoomSlider())
-
-        const zoomSlider = document.createElement('input')
-        zoomSlider.type = 'range'
-        zoomSlider.className = 'zoom-slider'
-        zoomSlider.min = '0.1'
-        zoomSlider.max = '1'
-        zoomSlider.step = '0.05'
-        zoomSlider.value = String(this.#sceneryZoom)
-        zoomSlider.addEventListener('input', (e) => this.#onZoomChange(e))
-
-        zoomControls.appendChild(zoomSlider)
-        zoomControls.appendChild(zoomToggle)
-        container.appendChild(zoomControls)
-
         this.shadowRoot.appendChild(container)
 
         this.#setupRenderer()
         this.#setupResizeObserver()
-        this.#setupPinchZoom()
         this.#syncSceneryState()
-        this.#syncZoomControls()
     }
 
 
@@ -381,7 +355,7 @@ export default class AnimationPreview extends BaseEditorComponent {
                 this.#updateGamePreviewSize()
                 this.#updateGridCanvas()
             })
-            this.#syncZoomControls()
+
             if (wasPlaying) {
                 this.play()
             }
@@ -427,7 +401,7 @@ export default class AnimationPreview extends BaseEditorComponent {
             this.#clearSceneryCanvas()
         }
 
-        this.#syncZoomControls()
+
         this.#fitToContainer(this.#animation?.currentFrame?.region)
         this.#render()
     }
@@ -446,80 +420,6 @@ export default class AnimationPreview extends BaseEditorComponent {
             this.#updateGridCanvas()
         }
         this.#gamePreview.render()
-    }
-
-
-    #getSceneryZoom () {
-        return this.#sceneryZoom
-    }
-
-
-    #toggleZoomSlider () {
-        this.#zoomSliderVisible = !this.#zoomSliderVisible
-        this.#syncZoomControls()
-    }
-
-
-    #onZoomChange (e) {
-        this.#sceneryZoom = parseFloat(e.target.value)
-        this.#fitToContainer(this.#animation?.currentFrame?.region)
-        this.#centerSprite()
-        this.#render()
-    }
-
-
-    #syncZoomControls () {
-        const zoomControls = this.shadowRoot.querySelector('.zoom-controls')
-        if (zoomControls) {
-            zoomControls.classList.toggle('active', this.#sceneryActive)
-            zoomControls.classList.toggle('expanded', this.#zoomSliderVisible)
-        }
-    }
-
-
-    #setupPinchZoom () {
-        this.#previewArea.addEventListener('touchstart', (e) => this.#onTouchStart(e), {passive: false})
-        this.#previewArea.addEventListener('touchmove', (e) => this.#onTouchMove(e), {passive: false})
-        this.#previewArea.addEventListener('touchend', () => this.#onTouchEnd())
-    }
-
-
-    #onTouchStart (e) {
-        if (e.touches.length === 2) {
-            e.preventDefault()
-            this.#pinchStartDistance = getTouchDistance(e.touches)
-            this.#pinchStartZoom = this.#sceneryZoom
-        }
-    }
-
-
-    #onTouchMove (e) {
-        if (e.touches.length === 2 && this.#pinchStartDistance !== null) {
-            e.preventDefault()
-            const currentDistance = getTouchDistance(e.touches)
-            const scale = currentDistance / this.#pinchStartDistance
-            const newZoom = Math.min(1, Math.max(0.1, this.#pinchStartZoom * scale))
-
-            this.#sceneryZoom = newZoom
-            this.#updateZoomSlider()
-            this.#fitToContainer(this.#animation?.currentFrame?.region)
-            this.#centerSprite()
-            this.#render()
-        }
-    }
-
-
-    #onTouchEnd () {
-        this.#pinchStartDistance = null
-        this.#pinchStartZoom = null
-    }
-
-
-    #updateZoomSlider () {
-        const slider = this.shadowRoot.querySelector('.zoom-slider')
-        if (slider) {
-            slider.value = String(this.#sceneryZoom)
-        }
     }
 
 
@@ -618,7 +518,7 @@ export default class AnimationPreview extends BaseEditorComponent {
             return
         }
 
-        const sceneryMargin = this.#sceneryActive ? this.#getSceneryZoom() : 1
+        const sceneryMargin = this.#sceneryActive ? 0.5 : 1
         const scaleX = containerWidth / region.width
         const scaleY = containerHeight / region.height
         const scale = Math.min(scaleX, scaleY, 1) * sceneryMargin
@@ -1121,31 +1021,78 @@ export default class AnimationPreview extends BaseEditorComponent {
 
         const unitsInView = this.#unitsInView
 
-        const unitWidth = width / unitsInView.width
-        const unitHeight = height / unitsInView.height
+        const ppuForWidth = width / unitsInView.width
+        const ppuForHeight = height / unitsInView.height
+        const cellSize = Math.min(ppuForWidth, ppuForHeight)
 
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
+        const gridWidth = cellSize * unitsInView.width
+        const gridHeight = cellSize * unitsInView.height
+        const offsetX = (width - gridWidth) / 2
+        const offsetY = (height - gridHeight) / 2
+
+        const colCount = Math.ceil(width / cellSize) + 1
+        const rowCount = Math.ceil(height / cellSize) + 1
+
+        const startCol = -Math.ceil(offsetX / cellSize)
+        const startRow = -Math.ceil(offsetY / cellSize)
+
+        const subdivisions = 4
+        const subCellSize = cellSize / subdivisions
+
+        ctx.strokeStyle = 'rgba(26, 26, 30, 0.06)'
         ctx.lineWidth = 1
 
-        for (let i = 1; i < unitsInView.width; i++) {
-            const x = i * unitWidth
+        for (let i = startCol * subdivisions; i < colCount * subdivisions; i++) {
+            if (i % subdivisions === 0) {
+                continue
+            }
+            const x = Math.round(offsetX + i * subCellSize) + 0.5
+            if (x < 0 || x > width) {
+                continue
+            }
             ctx.beginPath()
             ctx.moveTo(x, 0)
             ctx.lineTo(x, height)
             ctx.stroke()
         }
 
-        for (let i = 1; i < unitsInView.height; i++) {
-            const y = i * unitHeight
+        for (let i = startRow * subdivisions; i < rowCount * subdivisions; i++) {
+            if (i % subdivisions === 0) {
+                continue
+            }
+            const y = Math.round(offsetY + i * subCellSize) + 0.5
+            if (y < 0 || y > height) {
+                continue
+            }
             ctx.beginPath()
             ctx.moveTo(0, y)
             ctx.lineTo(width, y)
             ctx.stroke()
         }
 
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
-        ctx.lineWidth = 2
-        ctx.strokeRect(0, 0, width, height)
+        ctx.strokeStyle = 'rgba(26, 26, 30, 0.12)'
+
+        for (let i = startCol; i < colCount; i++) {
+            const x = Math.round(offsetX + i * cellSize) + 0.5
+            if (x < 0 || x > width) {
+                continue
+            }
+            ctx.beginPath()
+            ctx.moveTo(x, 0)
+            ctx.lineTo(x, height)
+            ctx.stroke()
+        }
+
+        for (let i = startRow; i < rowCount; i++) {
+            const y = Math.round(offsetY + i * cellSize) + 0.5
+            if (y < 0 || y > height) {
+                continue
+            }
+            ctx.beginPath()
+            ctx.moveTo(0, y)
+            ctx.lineTo(width, y)
+            ctx.stroke()
+        }
     }
 
 
@@ -1214,12 +1161,7 @@ export default class AnimationPreview extends BaseEditorComponent {
 }
 
 
-function getTouchDistance (touches) {
-    const [a, b] = touches
-    const dx = a.clientX - b.clientX
-    const dy = a.clientY - b.clientY
-    return Math.sqrt(dx * dx + dy * dy)
-}
+
 
 
 const STYLES = buildEditorStyles(
@@ -1340,88 +1282,7 @@ const STYLES = buildEditorStyles(
         cursor: not-allowed;
     }
 
-    .zoom-controls {
-        position: absolute;
-        top: var(--spacing-md);
-        right: var(--spacing-md);
-        display: none;
-        align-items: center;
-        gap: var(--spacing-xs);
-        padding: var(--spacing-xs);
-        background: var(--bg-secondary);
-        border-radius: var(--radius-md);
-        z-index: 10;
-    }
 
-    .zoom-controls.active {
-        display: flex;
-    }
-
-    .zoom-controls .zoom-slider {
-        width: 100px;
-        height: 4px;
-        -webkit-appearance: none;
-        appearance: none;
-        background: var(--bg-tertiary);
-        border-radius: 2px;
-        outline: none;
-        display: none;
-    }
-
-    .zoom-controls.expanded .zoom-slider {
-        display: block;
-    }
-
-    .zoom-controls .zoom-slider::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 14px;
-        height: 14px;
-        background: var(--accent);
-        border-radius: 50%;
-        cursor: pointer;
-    }
-
-    .zoom-controls .zoom-slider::-moz-range-thumb {
-        width: 14px;
-        height: 14px;
-        background: var(--accent);
-        border-radius: 50%;
-        cursor: pointer;
-        border: none;
-    }
-
-    .zoom-controls .zoom-toggle {
-        background: transparent;
-        color: var(--fg-secondary);
-        border: none;
-        border-radius: var(--radius-sm);
-        width: 28px;
-        height: 28px;
-        padding: 6px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.15s, color 0.15s;
-    }
-
-    .zoom-controls .zoom-toggle svg {
-        width: 100%;
-        height: 100%;
-        stroke: currentColor;
-        fill: none;
-    }
-
-    .zoom-controls .zoom-toggle:hover {
-        background: var(--bg-hover);
-        color: var(--fg-primary);
-    }
-
-    .zoom-controls.expanded .zoom-toggle {
-        background: var(--accent);
-        color: var(--bg-primary);
-    }
 `
 )
 
