@@ -1,5 +1,5 @@
 import EditorComponent from './editor_component.js'
-import {detailsStyles, cssVariables} from './perky_explorer.styles.js'
+import {detailsStyles} from './perky_explorer.styles.js'
 
 
 const inspectorRegistry = new Set()
@@ -8,8 +8,6 @@ const inspectorRegistry = new Set()
 export default class PerkyExplorerDetails extends EditorComponent {
 
     static styles = `
-    :host { ${cssVariables} }
-
     ${detailsStyles}
 
     .details-focus-btn {

@@ -1,12 +1,11 @@
 import EditorComponent from '../editor_component.js'
-import {cssVariables, inspectorStyles} from '../perky_explorer.styles.js'
+import {inspectorStyles} from '../perky_explorer.styles.js'
 
 
 export default class BaseInspector extends EditorComponent {
 
     static styles = `
     :host {
-        ${cssVariables}
         display: block;
     }
     ${inspectorStyles}

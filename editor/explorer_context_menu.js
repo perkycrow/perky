@@ -1,10 +1,8 @@
 import EditorComponent from './editor_component.js'
-import {cssVariables} from './perky_explorer.styles.js'
 
 
 const menuStyles = `
     :host {
-        ${cssVariables}
         position: fixed;
         z-index: 10000;
     }

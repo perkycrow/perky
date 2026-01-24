@@ -1,12 +1,12 @@
 import EditorComponent from './editor_component.js'
-import {nodeStyles, cssVariables} from './perky_explorer.styles.js'
+import {nodeStyles} from './perky_explorer.styles.js'
 
 
 export default class BaseTreeNode extends EditorComponent {
 
     static childNodeTag = null
 
-    static styles = `:host { ${cssVariables} } ${nodeStyles}`
+    static styles = nodeStyles
 
     #depth = 0
     #expanded = false

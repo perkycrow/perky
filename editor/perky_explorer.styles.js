@@ -1,28 +1,9 @@
-export const cssVariables = `
-    --bg-primary: #1a1a1e;
-    --bg-secondary: #24242a;
-    --bg-hover: #2e2e36;
-    --bg-selected: #3a3a44;
-    --fg-primary: #e4e4e8;
-    --fg-secondary: #9898a0;
-    --fg-muted: #6a6a72;
-    --accent: #6b9fff;
-    --status-started: #4ade80;
-    --status-stopped: #f87171;
-    --status-warning: #f59e0b;
-    --status-disposed: #6b7280;
-    --border: #38383e;
-    --font-mono: "Source Code Pro", "SF Mono", "Monaco", monospace;
-`
-
-
 export const explorerStyles = `
     *, *::before, *::after {
         box-sizing: border-box;
     }
 
     :host {
-        ${cssVariables}
         display: block;
         font-family: var(--font-mono);
         font-size: 12px;

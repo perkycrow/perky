@@ -1,5 +1,5 @@
 import EditorComponent from './editor_component.js'
-import {cssVariables, panelStyles} from './perky_explorer.styles.js'
+import {panelStyles} from './perky_explorer.styles.js'
 import './scene_tree_node.js'
 import Object2DInspector from './inspectors/object_2d_inspector.js'
 
@@ -10,8 +10,6 @@ const DEBOUNCE_MS = 100
 export default class SceneTreeSidebar extends EditorComponent {
 
     static styles = `
-    :host { ${cssVariables} }
-
     ${panelStyles}
 
     :host {

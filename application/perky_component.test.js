@@ -231,6 +231,62 @@ describe('PerkyComponent', () => {
 
     describe('lifecycle hooks', () => {
 
+        test('calls onInit in constructor before connection', () => {
+            const spy = vi.fn()
+
+            class TestInit extends PerkyComponent {
+                onInit () {
+                    spy()
+                }
+            }
+            registerElement('test-init', TestInit)
+
+            const el = document.createElement('test-init')
+            expect(spy).toHaveBeenCalledOnce()
+            expect(el.isConnected).toBe(false)
+        })
+
+
+        test('onInit has access to shadowRoot', () => {
+            let shadowRootInInit = null
+
+            class TestInitShadow extends PerkyComponent {
+                onInit () {
+                    shadowRootInInit = this.shadowRoot
+                }
+            }
+            registerElement('test-init-shadow', TestInitShadow)
+
+            document.createElement('test-init-shadow')
+            expect(shadowRootInInit).toBeTruthy()
+            expect(shadowRootInInit.mode).toBe('open')
+        })
+
+
+        test('onInit is called before onConnected', () => {
+            const order = []
+
+            class TestOrder extends PerkyComponent {
+                onInit () {
+                    order.push('init')
+                }
+
+                onConnected () {
+                    order.push('connected')
+                }
+            }
+            registerElement('test-init-order', TestOrder)
+
+            const el = document.createElement('test-init-order')
+            expect(order).toEqual(['init'])
+
+            document.body.appendChild(el)
+            expect(order).toEqual(['init', 'connected'])
+
+            document.body.removeChild(el)
+        })
+
+
         test('calls onConnected when connected', () => {
             const spy = vi.fn()
 
