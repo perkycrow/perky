@@ -16,6 +16,11 @@ export default {
             'den/',
             'ghast/',
             'examples/'
+        ],
+        excludeFiles: [
+            '**/test_helpers.js',
+            '**/setup_tests.js',
+            '*.styles.js'
         ]
     },
     multipleClasses: {
@@ -30,11 +35,13 @@ export default {
             'ghast/',
             'examples/',
             'editor/',
-            'doc/'
+            'doc/',
+            'studio/'
         ],
         excludeFiles: [
             '**/setup_tests.js',
             '**/test_helpers.js',
+            '*.styles.js',
             'eslint/index.js'
         ]
     }

@@ -542,4 +542,66 @@ describe('AnimationTimeline', () => {
 
     })
 
+
+    describe('selection', () => {
+
+        test('getSelectedIndex returns -1 initially', () => {
+            expect(timeline.getSelectedIndex()).toBe(-1)
+        })
+
+
+        test('getSelectedIndex returns selected frame index after click', () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            const frameEl = timeline.shadowRoot.querySelectorAll('.frame')[2]
+            frameEl.click()
+
+            expect(timeline.getSelectedIndex()).toBe(2)
+        })
+
+
+        test('clearSelection resets selected index to -1', () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            const frameEl = timeline.shadowRoot.querySelectorAll('.frame')[1]
+            frameEl.click()
+            expect(timeline.getSelectedIndex()).toBe(1)
+
+            timeline.clearSelection()
+
+            expect(timeline.getSelectedIndex()).toBe(-1)
+        })
+
+
+        test('clearSelection dispatches frameselect event with index -1', () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            const frameEl = timeline.shadowRoot.querySelectorAll('.frame')[1]
+            frameEl.click()
+
+            const handler = vi.fn()
+            timeline.addEventListener('frameselect', handler)
+
+            timeline.clearSelection()
+
+            expect(handler).toHaveBeenCalled()
+            expect(handler.mock.calls[0][0].detail.index).toBe(-1)
+            expect(handler.mock.calls[0][0].detail.frame).toBeNull()
+        })
+
+
+        test('clearSelection does nothing if already unselected', () => {
+            const handler = vi.fn()
+            timeline.addEventListener('frameselect', handler)
+
+            timeline.clearSelection()
+
+            expect(handler).not.toHaveBeenCalled()
+        })
+
+    })
+
 })

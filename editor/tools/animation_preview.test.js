@@ -143,21 +143,13 @@ describe('AnimationPreview', () => {
     })
 
 
-    describe('currentIndex', () => {
-
-        test('returns 0 when no animation', () => {
-            expect(preview.currentIndex).toBe(0)
-        })
-
+    test('currentIndex returns 0 when no animation', () => {
+        expect(preview.currentIndex).toBe(0)
     })
 
 
-    describe('isPlaying', () => {
-
-        test('returns false initially', () => {
-            expect(preview.isPlaying).toBe(false)
-        })
-
+    test('isPlaying returns false initially', () => {
+        expect(preview.isPlaying).toBe(false)
     })
 
 
@@ -175,12 +167,8 @@ describe('AnimationPreview', () => {
     })
 
 
-    describe('updateMotion', () => {
-
-        test('accepts motion updates', () => {
-            expect(() => preview.updateMotion({speed: 2})).not.toThrow()
-        })
-
+    test('updateMotion accepts motion updates', () => {
+        expect(() => preview.updateMotion({speed: 2})).not.toThrow()
     })
 
 
@@ -198,30 +186,29 @@ describe('AnimationPreview', () => {
     })
 
 
-    describe('setUnitsInView', () => {
-
-        test('accepts units config', () => {
-            expect(() => preview.setUnitsInView({width: 10, height: 8})).not.toThrow()
-        })
-
+    test('setUnitsInView accepts units config', () => {
+        expect(() => preview.setUnitsInView({width: 10, height: 8})).not.toThrow()
     })
 
 
-    describe('setSize', () => {
-
-        test('accepts size config', () => {
-            expect(() => preview.setSize({width: 32, height: 48})).not.toThrow()
-        })
-
+    test('setSize accepts size config', () => {
+        expect(() => preview.setSize({width: 32, height: 48})).not.toThrow()
     })
 
 
-    describe('setBackgroundRegion', () => {
+    test('setBackgroundRegion accepts region config', () => {
+        expect(() => preview.setBackgroundRegion({x: 0, y: 0, width: 256, height: 256})).not.toThrow()
+    })
 
-        test('accepts region config', () => {
-            expect(() => preview.setBackgroundRegion({x: 0, y: 0, width: 256, height: 256})).not.toThrow()
-        })
 
+    test('setBackgroundImage accepts image', () => {
+        const mockImage = new Image()
+        expect(() => preview.setBackgroundImage(mockImage)).not.toThrow()
+    })
+
+
+    test('setBackgroundImage accepts null', () => {
+        expect(() => preview.setBackgroundImage(null)).not.toThrow()
     })
 
 
@@ -251,48 +238,28 @@ describe('AnimationPreview', () => {
     })
 
 
-    describe('play', () => {
-
-        test('does not throw without animation', () => {
-            expect(() => preview.play()).not.toThrow()
-        })
-
+    test('play does not throw without animation', () => {
+        expect(() => preview.play()).not.toThrow()
     })
 
 
-    describe('pause', () => {
-
-        test('does not throw without animation', () => {
-            expect(() => preview.pause()).not.toThrow()
-        })
-
+    test('pause does not throw without animation', () => {
+        expect(() => preview.pause()).not.toThrow()
     })
 
 
-    describe('stop', () => {
-
-        test('does not throw without animation', () => {
-            expect(() => preview.stop()).not.toThrow()
-        })
-
+    test('stop does not throw without animation', () => {
+        expect(() => preview.stop()).not.toThrow()
     })
 
 
-    describe('setAnimation', () => {
-
-        test('accepts null animation', () => {
-            expect(() => preview.setAnimation(null)).not.toThrow()
-        })
-
+    test('setAnimation accepts null animation', () => {
+        expect(() => preview.setAnimation(null)).not.toThrow()
     })
 
 
-    describe('setCurrentIndex', () => {
-
-        test('does not throw without animation', () => {
-            expect(() => preview.setCurrentIndex(0)).not.toThrow()
-        })
-
+    test('setCurrentIndex does not throw without animation', () => {
+        expect(() => preview.setCurrentIndex(0)).not.toThrow()
     })
 
 })
