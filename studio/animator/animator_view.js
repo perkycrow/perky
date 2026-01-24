@@ -5,6 +5,7 @@ import '../../editor/layout/overlay.js'
 import '../../editor/tools/animation_preview.js'
 import '../../editor/tools/animation_timeline.js'
 import '../../editor/tools/spritesheet_viewer.js'
+import '../../editor/layout/side_drawer.js'
 import '../../editor/number_input.js'
 import '../../editor/select_input.js'
 import '../../editor/toggle_input.js'
@@ -123,70 +124,6 @@ const animatorStyles = createSheet(`
         overflow: hidden;
         max-width: 100%;
     }
-
-
-    .spritesheet-drawer {
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        width: 280px;
-        background: var(--bg-secondary);
-        border-right: 1px solid var(--border);
-        display: flex;
-        flex-direction: column;
-        transform: translateX(-100%);
-        transition: transform 0.25s ease-out;
-        z-index: 100;
-    }
-
-    .spritesheet-drawer.open {
-        transform: translateX(0);
-    }
-
-    .spritesheet-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: var(--spacing-md) var(--spacing-lg);
-        background: var(--bg-tertiary);
-        flex-shrink: 0;
-    }
-
-    .spritesheet-title {
-        font-size: var(--font-size-md);
-        font-weight: 500;
-        color: var(--fg-primary);
-    }
-
-    .spritesheet-close {
-        appearance: none;
-        background: transparent;
-        border: none;
-        color: var(--fg-secondary);
-        width: 32px;
-        height: 32px;
-        border-radius: var(--radius-md);
-        font-size: 16px;
-        cursor: pointer;
-        transition: background var(--transition-fast), color var(--transition-fast);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .spritesheet-close:hover {
-        background: var(--bg-hover);
-        color: var(--fg-primary);
-    }
-
-    .spritesheet-content {
-        flex: 1;
-        min-height: 0;
-        padding: var(--spacing-md);
-        box-sizing: border-box;
-        overflow: hidden;
-    }
 `)
 
 
@@ -203,8 +140,10 @@ export default class AnimatorView extends BaseEditorComponent {
     #containerEl = null
     #previewEl = null
     #timelineEl = null
-    #drawerEl = null
+    #framesDrawerEl = null
+    #editorDrawerEl = null
     #spritesheetEl = null
+    #selectedFrameIndex = -1
 
     connectedCallback () {
         this.#buildDOM()
@@ -318,7 +257,7 @@ export default class AnimatorView extends BaseEditorComponent {
         this.#buildFooterControls()
 
 
-        this.#buildSpritesheetDrawer()
+        this.#buildDrawers()
     }
 
 
@@ -433,7 +372,7 @@ export default class AnimatorView extends BaseEditorComponent {
         addBtn.className = 'toolbar-btn toolbar-btn-primary'
         addBtn.innerHTML = '+'
         addBtn.title = 'Add frames from spritesheet'
-        addBtn.addEventListener('click', () => this.#toggleDrawer())
+        addBtn.addEventListener('click', () => this.#toggleFramesDrawer())
 
         footerStart.appendChild(addBtn)
         this.#appLayout.appendChild(footerStart)
@@ -453,27 +392,12 @@ export default class AnimatorView extends BaseEditorComponent {
     }
 
 
-    #buildSpritesheetDrawer () {
-        this.#drawerEl = document.createElement('div')
-        this.#drawerEl.className = 'spritesheet-drawer'
-
-        const header = document.createElement('div')
-        header.className = 'spritesheet-header'
-
-        const title = document.createElement('span')
-        title.className = 'spritesheet-title'
-        title.textContent = 'Frames'
-
-        const closeBtn = document.createElement('button')
-        closeBtn.className = 'spritesheet-close'
-        closeBtn.innerHTML = '✕'
-        closeBtn.addEventListener('click', () => this.#closeDrawer())
-
-        header.appendChild(title)
-        header.appendChild(closeBtn)
+    #buildDrawers () {
+        this.#framesDrawerEl = document.createElement('side-drawer')
+        this.#framesDrawerEl.setAttribute('position', 'left')
+        this.#framesDrawerEl.setAttribute('title', 'Frames')
 
         this.#spritesheetEl = document.createElement('spritesheet-viewer')
-        this.#spritesheetEl.className = 'spritesheet-content'
         if (this.#spritesheet) {
             this.#spritesheetEl.setSpritesheet(this.#spritesheet)
         }
@@ -482,24 +406,58 @@ export default class AnimatorView extends BaseEditorComponent {
             this.#addFrameToTimeline(e.detail)
         })
 
-        this.#drawerEl.appendChild(header)
-        this.#drawerEl.appendChild(this.#spritesheetEl)
-        this.#containerEl.appendChild(this.#drawerEl)
+        this.#framesDrawerEl.appendChild(this.#spritesheetEl)
+        this.#containerEl.appendChild(this.#framesDrawerEl)
+
+        this.#editorDrawerEl = document.createElement('side-drawer')
+        this.#editorDrawerEl.setAttribute('position', 'right')
+        this.#editorDrawerEl.setAttribute('title', 'Frame')
+        this.#containerEl.appendChild(this.#editorDrawerEl)
     }
 
 
-    #openDrawer () {
-        this.#drawerEl?.classList.add('open')
+    #toggleFramesDrawer () {
+        this.#framesDrawerEl?.toggle()
     }
 
 
-    #closeDrawer () {
-        this.#drawerEl?.classList.remove('open')
+    #updateEditorDrawer () {
+        if (this.#selectedFrameIndex < 0) {
+            this.#editorDrawerEl?.close()
+            return
+        }
+
+        const frame = this.#selectedAnimation?.frames[this.#selectedFrameIndex]
+        if (!frame) {
+            this.#editorDrawerEl?.close()
+            return
+        }
+
+        this.#editorDrawerEl.innerHTML = ''
+        this.#buildFrameEditor(frame)
+        this.#editorDrawerEl.open()
     }
 
 
-    #toggleDrawer () {
-        this.#drawerEl?.classList.toggle('open')
+    #buildFrameEditor (frame) {
+        const container = document.createElement('div')
+        container.style.cssText = 'display: flex; flex-direction: column; gap: var(--spacing-md);'
+
+        const durationInput = document.createElement('number-input')
+        durationInput.setAttribute('context', 'studio')
+        durationInput.setLabel('Duration')
+        durationInput.setValue(frame.duration || 1)
+        durationInput.setStep(0.1)
+        durationInput.setPrecision(1)
+        durationInput.setMin(0.1)
+        durationInput.setMax(10)
+        durationInput.addEventListener('change', (e) => {
+            frame.duration = e.detail.value
+            this.#timelineEl.setFrames(this.#selectedAnimation.frames)
+        })
+
+        container.appendChild(durationInput)
+        this.#editorDrawerEl.appendChild(container)
     }
 
 
@@ -546,6 +504,16 @@ export default class AnimatorView extends BaseEditorComponent {
         this.#timelineEl.addEventListener('frameduration', (e) => {
             this.#handleFrameDuration(e.detail)
         })
+
+        this.#timelineEl.addEventListener('frameselect', (e) => {
+            this.#handleFrameSelect(e.detail)
+        })
+    }
+
+
+    #handleFrameSelect ({index}) {
+        this.#selectedFrameIndex = index
+        this.#updateEditorDrawer()
     }
 
 
@@ -595,6 +563,14 @@ export default class AnimatorView extends BaseEditorComponent {
     #handleFrameDelete ({index}) {
         if (!this.#selectedAnimation) {
             return
+        }
+
+        if (this.#selectedFrameIndex === index) {
+            this.#selectedFrameIndex = -1
+            this.#timelineEl.clearSelection()
+            this.#updateEditorDrawer()
+        } else if (this.#selectedFrameIndex > index) {
+            this.#selectedFrameIndex--
         }
 
         this.#selectedAnimation.frames.splice(index, 1)

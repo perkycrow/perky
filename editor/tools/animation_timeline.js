@@ -16,6 +16,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
     #dropIndicator = null
     #frames = []
     #currentIndex = 0
+    #selectedIndex = -1
     #dropIndex = -1
 
 
@@ -81,6 +82,7 @@ export default class AnimationTimeline extends BaseEditorComponent {
 
         this.#setupDropZone()
         this.#setupScrubber()
+        this.#setupDeselect()
 
         this.#viewportEl.appendChild(this.#containerEl)
         this.#wrapperEl.appendChild(this.#viewportEl)
@@ -443,6 +445,15 @@ export default class AnimationTimeline extends BaseEditorComponent {
     }
 
 
+    #setupDeselect () {
+        this.#containerEl.addEventListener('click', (e) => {
+            if (e.target === this.#containerEl) {
+                this.clearSelection()
+            }
+        })
+    }
+
+
     #setupDropZone () {
         // Handle drops from spritesheet viewer (HTML5 drag and drop)
         const handleDragOver = (e) => {
@@ -625,9 +636,10 @@ export default class AnimationTimeline extends BaseEditorComponent {
         frameEl.appendChild(thumbnailWrapper)
 
         frameEl.addEventListener('click', () => {
-            this.dispatchEvent(new CustomEvent('frameclick', {
-                detail: {index}
-            }))
+            if (this.#internalDragActive) {
+                return
+            }
+            this.#handleFrameTap(index)
         })
 
         frameEl.addEventListener('pointerdown', (e) => this.#onInternalDragStart(e, index))
@@ -640,8 +652,41 @@ export default class AnimationTimeline extends BaseEditorComponent {
         const frameEls = this.#containerEl.querySelectorAll('.frame')
 
         frameEls.forEach((el, i) => {
-            el.classList.toggle('active', i === this.#currentIndex)
+            el.classList.toggle('current', i === this.#currentIndex)
+            el.classList.toggle('selected', i === this.#selectedIndex)
         })
+    }
+
+
+    #handleFrameTap (index) {
+        if (this.#selectedIndex === index) {
+            this.#selectedIndex = -1
+        } else {
+            this.#selectedIndex = index
+        }
+        this.#updateHighlight()
+        this.dispatchEvent(new CustomEvent('frameselect', {
+            detail: {
+                index: this.#selectedIndex,
+                frame: this.#selectedIndex >= 0 ? this.#frames[this.#selectedIndex] : null
+            }
+        }))
+    }
+
+
+    clearSelection () {
+        if (this.#selectedIndex !== -1) {
+            this.#selectedIndex = -1
+            this.#updateHighlight()
+            this.dispatchEvent(new CustomEvent('frameselect', {
+                detail: {index: -1, frame: null}
+            }))
+        }
+    }
+
+
+    getSelectedIndex () {
+        return this.#selectedIndex
     }
 
 
@@ -858,8 +903,13 @@ const timelineStyles = createSheet(`
         transform: scale(0.98);
     }
 
-    .frame.active {
+    .frame.current {
         background: var(--bg-selected);
+    }
+
+    .frame.selected {
+        outline: 2px solid var(--fg-primary);
+        outline-offset: -2px;
     }
 
     .frame.dragging {
