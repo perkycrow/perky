@@ -153,15 +153,13 @@ export default class DropdownMenu extends EditorComponent {
 
 
     #buildDOM () {
-        this.#triggerEl = document.createElement('button')
-        this.#triggerEl.className = 'trigger'
+        this.#triggerEl = createElement('button', {class: 'trigger'})
         this.#triggerEl.addEventListener('click', (e) => {
             e.stopPropagation()
             this.toggle()
         })
 
-        this.#menuEl = document.createElement('div')
-        this.#menuEl.className = 'menu'
+        this.#menuEl = createElement('div', {class: 'menu'})
 
         this.shadowRoot.appendChild(this.#triggerEl)
         this.shadowRoot.appendChild(this.#menuEl)

@@ -2,6 +2,7 @@ import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
 import InputBinder from '../../input/input_binder.js'
 import CompositeBinding from '../../input/composite_binding.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class InputBinderInspector extends BaseInspector {
@@ -245,15 +246,12 @@ export default class InputBinderInspector extends BaseInspector {
         this.#containerEl.appendChild(header)
 
         if (bindings.length === 0) {
-            const empty = document.createElement('div')
-            empty.className = 'empty-message'
-            empty.textContent = 'No input bindings defined'
+            const empty = createElement('div', {class: 'empty-message', text: 'No input bindings defined'})
             this.#containerEl.appendChild(empty)
             return
         }
 
-        const list = document.createElement('div')
-        list.className = 'bindings-list'
+        const list = createElement('div', {class: 'bindings-list'})
 
         if (this.#viewMode === 'action') {
             renderByAction(list, bindings)
@@ -266,27 +264,28 @@ export default class InputBinderInspector extends BaseInspector {
 
 
     #createHeader (count) {
-        const header = document.createElement('div')
-        header.className = 'bindings-header'
+        const header = createElement('div', {class: 'bindings-header'})
 
-        const countEl = document.createElement('div')
-        countEl.className = 'bindings-count'
-        countEl.innerHTML = `<strong>${count}</strong> binding${count === 1 ? '' : 's'}`
+        const countEl = createElement('div', {
+            class: 'bindings-count',
+            html: `<strong>${count}</strong> binding${count === 1 ? '' : 's'}`
+        })
 
-        const toggle = document.createElement('div')
-        toggle.className = 'view-toggle'
+        const toggle = createElement('div', {class: 'view-toggle'})
 
-        const actionBtn = document.createElement('button')
-        actionBtn.className = `view-btn ${this.#viewMode === 'action' ? 'active' : ''}`
-        actionBtn.textContent = 'By Action'
+        const actionBtn = createElement('button', {
+            class: `view-btn ${this.#viewMode === 'action' ? 'active' : ''}`,
+            text: 'By Action'
+        })
         actionBtn.addEventListener('click', () => {
             this.#viewMode = 'action'
             this.#update()
         })
 
-        const deviceBtn = document.createElement('button')
-        deviceBtn.className = `view-btn ${this.#viewMode === 'device' ? 'active' : ''}`
-        deviceBtn.textContent = 'By Device'
+        const deviceBtn = createElement('button', {
+            class: `view-btn ${this.#viewMode === 'device' ? 'active' : ''}`,
+            text: 'By Device'
+        })
         deviceBtn.addEventListener('click', () => {
             this.#viewMode = 'device'
             this.#update()
@@ -341,19 +340,13 @@ function renderByDevice (container, bindings) {
 
 
 function createGroup (name, bindings) {
-    const group = document.createElement('div')
-    group.className = 'binding-group'
+    const group = createElement('div', {class: 'binding-group'})
 
-    const header = document.createElement('div')
-    header.className = 'group-header'
+    const header = createElement('div', {class: 'group-header'})
 
-    const nameEl = document.createElement('span')
-    nameEl.className = 'group-name'
-    nameEl.textContent = name
+    const nameEl = createElement('span', {class: 'group-name', text: name})
 
-    const count = document.createElement('span')
-    count.className = 'group-count'
-    count.textContent = bindings.length
+    const count = createElement('span', {class: 'group-count', text: bindings.length})
 
     header.appendChild(nameEl)
     header.appendChild(count)
@@ -368,58 +361,40 @@ function createGroup (name, bindings) {
 
 
 function createBindingCard (binding) {
-    const card = document.createElement('div')
-    card.className = 'binding-card'
+    const card = createElement('div', {class: 'binding-card'})
 
     const isComposite = binding instanceof CompositeBinding
 
-    const row = document.createElement('div')
-    row.className = 'binding-row'
+    const row = createElement('div', {class: 'binding-row'})
 
-    const input = document.createElement('div')
-    input.className = 'binding-input'
+    const input = createElement('div', {class: 'binding-input'})
 
     if (isComposite) {
-        const comboLabel = document.createElement('span')
-        comboLabel.className = 'control-name'
-        comboLabel.textContent = 'Combo'
+        const comboLabel = createElement('span', {class: 'control-name', text: 'Combo'})
         input.appendChild(comboLabel)
     } else {
-        const device = document.createElement('span')
-        device.className = 'device-badge'
-        device.textContent = binding.deviceName
+        const device = createElement('span', {class: 'device-badge', text: binding.deviceName})
 
-        const control = document.createElement('span')
-        control.className = 'control-name'
-        control.textContent = binding.controlName
+        const control = createElement('span', {class: 'control-name', text: binding.controlName})
 
         input.appendChild(device)
         input.appendChild(control)
     }
 
-    const arrow = document.createElement('span')
-    arrow.className = 'binding-arrow'
-    arrow.textContent = '→'
+    const arrow = createElement('span', {class: 'binding-arrow', text: '→'})
 
-    const action = document.createElement('div')
-    action.className = 'binding-action'
+    const action = createElement('div', {class: 'binding-action'})
 
-    const actionName = document.createElement('span')
-    actionName.className = 'action-name'
-    actionName.textContent = binding.actionName
+    const actionName = createElement('span', {class: 'action-name', text: binding.actionName})
 
     action.appendChild(actionName)
 
     if (binding.controllerName) {
-        const controller = document.createElement('span')
-        controller.className = 'controller-badge'
-        controller.textContent = binding.controllerName
+        const controller = createElement('span', {class: 'controller-badge', text: binding.controllerName})
         action.appendChild(controller)
     }
 
-    const eventBadge = document.createElement('span')
-    eventBadge.className = `event-badge ${binding.eventType}`
-    eventBadge.textContent = binding.eventType
+    const eventBadge = createElement('span', {class: `event-badge ${binding.eventType}`, text: binding.eventType})
     action.appendChild(eventBadge)
 
     row.appendChild(input)
@@ -428,27 +403,19 @@ function createBindingCard (binding) {
     card.appendChild(row)
 
     if (isComposite && binding.controls) {
-        const comboControls = document.createElement('div')
-        comboControls.className = 'combo-controls'
+        const comboControls = createElement('div', {class: 'combo-controls'})
 
         binding.controls.forEach((ctrl, index) => {
             if (index > 0) {
-                const plus = document.createElement('span')
-                plus.className = 'combo-plus'
-                plus.textContent = '+'
+                const plus = createElement('span', {class: 'combo-plus', text: '+'})
                 comboControls.appendChild(plus)
             }
 
-            const control = document.createElement('div')
-            control.className = 'combo-control'
+            const control = createElement('div', {class: 'combo-control'})
 
-            const device = document.createElement('span')
-            device.className = 'device-badge'
-            device.textContent = ctrl.deviceName
+            const device = createElement('span', {class: 'device-badge', text: ctrl.deviceName})
 
-            const name = document.createElement('span')
-            name.className = 'control-name'
-            name.textContent = ctrl.controlName
+            const name = createElement('span', {class: 'control-name', text: ctrl.controlName})
 
             control.appendChild(device)
             control.appendChild(name)

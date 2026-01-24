@@ -107,8 +107,7 @@ export default class ExplorerContextMenu extends EditorComponent {
 
 
     #buildDOM () {
-        this.#menuEl = document.createElement('div')
-        this.#menuEl.className = 'context-menu'
+        this.#menuEl = createElement('div', {class: 'context-menu'})
         this.#menuEl.addEventListener('contextmenu', (e) => {
             e.preventDefault()
             e.stopPropagation()

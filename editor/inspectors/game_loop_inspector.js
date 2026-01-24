@@ -100,10 +100,11 @@ export default class GameLoopInspector extends BaseInspector {
 
         const limitRow = createElement('div', {class: 'fps-limit-row'})
 
-        this.#fpsLimitCheckbox = document.createElement('input')
-        this.#fpsLimitCheckbox.type = 'checkbox'
-        this.#fpsLimitCheckbox.className = 'fps-limit-checkbox'
-        this.#fpsLimitCheckbox.id = 'fps-limit-checkbox'
+        this.#fpsLimitCheckbox = createElement('input', {
+            type: 'checkbox',
+            class: 'fps-limit-checkbox',
+            id: 'fps-limit-checkbox'
+        })
         this.#fpsLimitCheckbox.addEventListener('change', () => this.#handleLimitChange())
 
         const limitLabel = createElement('label', {
@@ -117,17 +118,16 @@ export default class GameLoopInspector extends BaseInspector {
 
         const sliderRow = createElement('div', {class: 'fps-slider-row'})
 
-        this.#fpsSlider = document.createElement('input')
-        this.#fpsSlider.type = 'range'
-        this.#fpsSlider.className = 'fps-slider'
-        this.#fpsSlider.min = '15'
-        this.#fpsSlider.max = '144'
-        this.#fpsSlider.value = '60'
+        this.#fpsSlider = createElement('input', {
+            type: 'range',
+            class: 'fps-slider',
+            min: '15',
+            max: '144',
+            value: '60'
+        })
         this.#fpsSlider.addEventListener('input', () => this.#handleSliderChange())
 
-        this.#fpsSliderValue = document.createElement('span')
-        this.#fpsSliderValue.className = 'fps-slider-value'
-        this.#fpsSliderValue.textContent = '60'
+        this.#fpsSliderValue = createElement('span', {class: 'fps-slider-value', text: '60'})
 
         sliderRow.appendChild(this.#fpsSlider)
         sliderRow.appendChild(this.#fpsSliderValue)
