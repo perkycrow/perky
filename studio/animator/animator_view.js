@@ -7,6 +7,7 @@ import '../../editor/tools/animation_timeline.js'
 import '../../editor/tools/spritesheet_viewer.js'
 import '../../editor/layout/side_drawer.js'
 import '../../editor/number_input.js'
+import '../../editor/slider_input.js'
 import '../../editor/select_input.js'
 import '../../editor/toggle_input.js'
 
@@ -123,6 +124,175 @@ const animatorStyles = createSheet(`
         min-height: 120px;
         overflow: hidden;
         max-width: 100%;
+    }
+
+
+    .frame-editor {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-lg);
+    }
+
+    .frame-editor-preview {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .frame-editor-canvas {
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+    }
+
+    .frame-editor-name {
+        font-size: var(--font-size-sm);
+        color: var(--fg-muted);
+        text-align: center;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .frame-editor-section {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .frame-editor-label {
+        font-size: var(--font-size-sm);
+        font-weight: 500;
+        color: var(--fg-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .frame-editor-duration {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .frame-editor-duration slider-input {
+        width: 100%;
+    }
+
+    .frame-editor-duration number-input {
+        align-self: flex-end;
+    }
+
+    .frame-editor-events {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .event-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        background: var(--bg-tertiary);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: var(--font-size-sm);
+        color: var(--fg-primary);
+    }
+
+    .event-chip-remove {
+        appearance: none;
+        background: transparent;
+        border: none;
+        color: var(--fg-muted);
+        font-size: 14px;
+        width: 20px;
+        height: 20px;
+        padding: 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-sm);
+        transition: background var(--transition-fast), color var(--transition-fast);
+    }
+
+    .event-chip-remove:hover {
+        background: var(--status-error);
+        color: white;
+    }
+
+    .event-suggestions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-xs);
+    }
+
+    .event-suggestion {
+        appearance: none;
+        background: transparent;
+        border: 1px dashed var(--border);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: var(--font-size-sm);
+        font-family: var(--font-mono);
+        color: var(--fg-muted);
+        cursor: pointer;
+        transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .event-suggestion:hover {
+        background: var(--bg-hover);
+        border-color: var(--fg-muted);
+        color: var(--fg-primary);
+    }
+
+    .event-add-row {
+        display: flex;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-xs);
+    }
+
+    .event-input {
+        flex: 1;
+        background: var(--bg-tertiary);
+        border: none;
+        border-radius: var(--radius-md);
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: var(--font-size-sm);
+        font-family: var(--font-mono);
+        color: var(--fg-primary);
+        min-height: var(--touch-target);
+    }
+
+    .event-input:focus {
+        outline: 1px solid var(--accent);
+    }
+
+    .event-input::placeholder {
+        color: var(--fg-muted);
+    }
+
+    .event-add-btn {
+        appearance: none;
+        background: var(--accent);
+        border: none;
+        border-radius: var(--radius-md);
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: var(--font-size-sm);
+        font-family: var(--font-mono);
+        font-weight: 500;
+        color: var(--bg-primary);
+        cursor: pointer;
+        min-height: var(--touch-target);
+        min-width: var(--touch-target);
+        transition: background var(--transition-fast);
+    }
+
+    .event-add-btn:hover {
+        background: var(--accent-hover);
     }
 `)
 
@@ -441,23 +611,216 @@ export default class AnimatorView extends BaseEditorComponent {
 
     #buildFrameEditor (frame) {
         const container = document.createElement('div')
-        container.style.cssText = 'display: flex; flex-direction: column; gap: var(--spacing-md);'
+        container.className = 'frame-editor'
 
-        const durationInput = document.createElement('number-input')
-        durationInput.setAttribute('context', 'studio')
-        durationInput.setLabel('Duration')
-        durationInput.setValue(frame.duration || 1)
-        durationInput.setStep(0.1)
-        durationInput.setPrecision(1)
-        durationInput.setMin(0.1)
-        durationInput.setMax(10)
-        durationInput.addEventListener('change', (e) => {
-            frame.duration = e.detail.value
+        container.appendChild(this.#buildFramePreview(frame))
+        container.appendChild(this.#buildDurationSection(frame))
+        container.appendChild(this.#buildEventsSection(frame))
+
+        this.#editorDrawerEl.appendChild(container)
+    }
+
+
+    #buildFramePreview (frame) {
+        const section = document.createElement('div')
+        section.className = 'frame-editor-preview'
+
+        const canvas = document.createElement('canvas')
+        canvas.width = 120
+        canvas.height = 120
+        canvas.className = 'frame-editor-canvas'
+
+        const region = frame.region
+        if (region?.image) {
+            const ctx = canvas.getContext('2d')
+            const scale = Math.min(120 / region.width, 120 / region.height)
+            const w = region.width * scale
+            const h = region.height * scale
+            const x = (120 - w) / 2
+            const y = (120 - h) / 2
+            ctx.drawImage(region.image, region.x, region.y, region.width, region.height, x, y, w, h)
+        }
+
+        const name = document.createElement('div')
+        name.className = 'frame-editor-name'
+        name.textContent = frame.name || 'Unnamed frame'
+        name.title = frame.name || ''
+
+        section.appendChild(canvas)
+        section.appendChild(name)
+        return section
+    }
+
+
+    #buildDurationSection (frame) {
+        const section = document.createElement('div')
+        section.className = 'frame-editor-section'
+
+        const label = document.createElement('div')
+        label.className = 'frame-editor-label'
+        label.textContent = 'Duration'
+        section.appendChild(label)
+
+        const controls = document.createElement('div')
+        controls.className = 'frame-editor-duration'
+
+        const slider = document.createElement('slider-input')
+        slider.setAttribute('context', 'studio')
+        slider.setValue(frame.duration || 1)
+        slider.setMin(0.5)
+        slider.setMax(3)
+        slider.setStep(0.1)
+
+        const numberInput = document.createElement('number-input')
+        numberInput.setAttribute('context', 'studio')
+        numberInput.setValue(frame.duration || 1)
+        numberInput.setStep(0.05)
+        numberInput.setPrecision(2)
+        numberInput.setMin(0.1)
+        numberInput.setMax(10)
+
+        const updateDuration = (value) => {
+            frame.duration = value
             this.#timelineEl.setFrames(this.#selectedAnimation.frames)
+        }
+
+        slider.addEventListener('change', (e) => {
+            numberInput.setValue(e.detail.value)
+            updateDuration(e.detail.value)
         })
 
-        container.appendChild(durationInput)
-        this.#editorDrawerEl.appendChild(container)
+        numberInput.addEventListener('change', (e) => {
+            slider.setValue(Math.min(3, Math.max(0.5, e.detail.value)))
+            updateDuration(e.detail.value)
+        })
+
+        controls.appendChild(slider)
+        controls.appendChild(numberInput)
+        section.appendChild(controls)
+        return section
+    }
+
+
+    #buildEventsSection (frame) {
+        const section = document.createElement('div')
+        section.className = 'frame-editor-section'
+
+        const label = document.createElement('div')
+        label.className = 'frame-editor-label'
+        label.textContent = 'Events'
+        section.appendChild(label)
+
+        const eventsContainer = document.createElement('div')
+        eventsContainer.className = 'frame-editor-events'
+
+        const renderEvents = () => {
+            eventsContainer.innerHTML = ''
+
+            const currentEvents = frame.events || []
+            for (const event of currentEvents) {
+                const chip = document.createElement('div')
+                chip.className = 'event-chip'
+
+                const chipText = document.createElement('span')
+                chipText.textContent = event
+
+                const removeBtn = document.createElement('button')
+                removeBtn.className = 'event-chip-remove'
+                removeBtn.innerHTML = '×'
+                removeBtn.addEventListener('click', () => {
+                    frame.events = currentEvents.filter(e => e !== event)
+                    this.#timelineEl.setFrames(this.#selectedAnimation.frames)
+                    renderEvents()
+                })
+
+                chip.appendChild(chipText)
+                chip.appendChild(removeBtn)
+                eventsContainer.appendChild(chip)
+            }
+
+            const suggestions = this.#collectEventSuggestions(currentEvents)
+            if (suggestions.length > 0) {
+                const suggestionsEl = document.createElement('div')
+                suggestionsEl.className = 'event-suggestions'
+
+                for (const suggestion of suggestions) {
+                    const btn = document.createElement('button')
+                    btn.className = 'event-suggestion'
+                    btn.textContent = suggestion
+                    btn.addEventListener('click', () => {
+                        if (!frame.events) {
+                            frame.events = []
+                        }
+                        frame.events.push(suggestion)
+                        this.#timelineEl.setFrames(this.#selectedAnimation.frames)
+                        renderEvents()
+                    })
+                    suggestionsEl.appendChild(btn)
+                }
+                eventsContainer.appendChild(suggestionsEl)
+            }
+
+            const addRow = document.createElement('div')
+            addRow.className = 'event-add-row'
+
+            const input = document.createElement('input')
+            input.type = 'text'
+            input.className = 'event-input'
+            input.placeholder = 'New event...'
+
+            const addBtn = document.createElement('button')
+            addBtn.className = 'event-add-btn'
+            addBtn.textContent = 'Add'
+            addBtn.addEventListener('click', () => {
+                const value = input.value.trim()
+                if (value) {
+                    if (!frame.events) {
+                        frame.events = []
+                    }
+                    if (!frame.events.includes(value)) {
+                        frame.events.push(value)
+                        this.#timelineEl.setFrames(this.#selectedAnimation.frames)
+                        renderEvents()
+                    }
+                    input.value = ''
+                }
+            })
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    addBtn.click()
+                }
+            })
+
+            addRow.appendChild(input)
+            addRow.appendChild(addBtn)
+            eventsContainer.appendChild(addRow)
+        }
+
+        renderEvents()
+        section.appendChild(eventsContainer)
+        return section
+    }
+
+
+    #collectEventSuggestions (excludeEvents) {
+        const allEvents = new Set()
+
+        for (const anim of this.#animator.children) {
+            for (const frame of anim.frames) {
+                if (frame.events) {
+                    for (const event of frame.events) {
+                        allEvents.add(event)
+                    }
+                }
+            }
+        }
+
+        for (const event of excludeEvents) {
+            allEvents.delete(event)
+        }
+
+        return Array.from(allEvents).slice(0, 6)
     }
 
 
