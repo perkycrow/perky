@@ -469,6 +469,8 @@ export default class AnimatorView extends BaseEditorComponent {
     #headerAnimSelect = null
     #drawerAnimSelect = null
     #anchor = {x: 0.5, y: 0.5}
+    #anchorXInput = null
+    #anchorYInput = null
     #backgroundImage = null
 
     connectedCallback () {
@@ -959,16 +961,16 @@ export default class AnimatorView extends BaseEditorComponent {
         row.appendChild(xInput)
         row.appendChild(yInput)
 
-        this._anchorXInput = xInput
-        this._anchorYInput = yInput
+        this.#anchorXInput = xInput
+        this.#anchorYInput = yInput
 
         return row
     }
 
 
     #syncAnchorInputs () {
-        this._anchorXInput?.setValue(this.#anchor.x)
-        this._anchorYInput?.setValue(this.#anchor.y)
+        this.#anchorXInput?.setValue(this.#anchor.x)
+        this.#anchorYInput?.setValue(this.#anchor.y)
     }
 
 
