@@ -27,6 +27,9 @@ export default class AnimationPreview extends BaseEditorComponent {
     #spriteOffset = 0
     #sceneryCanvas = null
     #sceneryCtx = null
+    #gridCanvas = null
+    #gridCtx = null
+    #gridEnabled = false
     #motion = null
     #anchor = {x: 0.5, y: 0}
     #noise = new Noise(42)
@@ -94,6 +97,12 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#canvas.width = 256
         this.#canvas.height = 256
         this.#previewArea.appendChild(this.#canvas)
+
+        this.#gridCanvas = document.createElement('canvas')
+        this.#gridCanvas.className = 'grid-canvas'
+        this.#gridCtx = this.#gridCanvas.getContext('2d')
+        this.#previewArea.appendChild(this.#gridCanvas)
+
         container.appendChild(this.#previewArea)
 
         const controls = document.createElement('div')
@@ -119,10 +128,16 @@ export default class AnimationPreview extends BaseEditorComponent {
         sceneryBtn.innerHTML = ICONS.scenery
         sceneryBtn.addEventListener('click', () => this.#toggleScenery())
 
+        const gridBtn = document.createElement('button')
+        gridBtn.className = 'grid-btn'
+        gridBtn.innerHTML = ICONS.grid
+        gridBtn.addEventListener('click', () => this.#toggleGrid())
+
         controls.appendChild(playBtn)
         controls.appendChild(stopBtn)
         controls.appendChild(settingsBtn)
         controls.appendChild(sceneryBtn)
+        controls.appendChild(gridBtn)
         container.appendChild(controls)
 
         const zoomControls = document.createElement('div')
@@ -180,6 +195,26 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#sceneryOffset = 0
         this.#spriteOffset = 0
         this.#syncSceneryState()
+    }
+
+
+    #toggleGrid () {
+        if (!this.#useGamePreview) {
+            return
+        }
+
+        this.#gridEnabled = !this.#gridEnabled
+        this.#syncGridButton()
+        this.#renderGrid()
+    }
+
+
+    #syncGridButton () {
+        const gridBtn = this.shadowRoot?.querySelector('.grid-btn')
+        if (gridBtn) {
+            gridBtn.classList.toggle('disabled', !this.#useGamePreview)
+            gridBtn.classList.toggle('active', this.#gridEnabled && this.#useGamePreview)
+        }
     }
 
 
@@ -318,6 +353,7 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#gamePreviewCanvas.style.display = useGame ? 'block' : 'none'
         this.#canvas.style.display = useGame ? 'none' : ''
         this.#sceneryCanvas.style.display = useGame ? 'none' : ''
+        this.#gridCanvas.style.display = useGame ? 'block' : 'none'
         this.#previewArea?.classList.toggle('game-preview-mode', useGame)
     }
 
@@ -330,8 +366,16 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#updateGamePreviewConfig()
         this.#syncPreviewVisibility()
 
+        if (!this.#useGamePreview) {
+            this.#gridEnabled = false
+        }
+        this.#syncGridButton()
+
         if (this.#useGamePreview) {
-            requestAnimationFrame(() => this.#updateGamePreviewSize())
+            requestAnimationFrame(() => {
+                this.#updateGamePreviewSize()
+                this.#updateGridCanvas()
+            })
             this.#syncZoomControls()
             if (wasPlaying) {
                 this.play()
@@ -394,6 +438,7 @@ export default class AnimationPreview extends BaseEditorComponent {
 
         if (width > 0 && height > 0) {
             this.#gamePreview.resize(width, height)
+            this.#updateGridCanvas()
         }
         this.#gamePreview.render()
     }
@@ -606,6 +651,24 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#sceneryCanvas.height = height
         this.#sceneryCanvas.style.width = `${width}px`
         this.#sceneryCanvas.style.height = `${height}px`
+    }
+
+
+    #updateGridCanvas () {
+        if (!this.#gridCanvas || !this.#previewArea) {
+            return
+        }
+
+        const width = this.#previewArea.clientWidth
+        const height = this.#previewArea.clientHeight
+
+        if (width <= 0 || height <= 0) {
+            return
+        }
+
+        this.#gridCanvas.width = width
+        this.#gridCanvas.height = height
+        this.#renderGrid()
     }
 
 
@@ -1032,8 +1095,54 @@ export default class AnimationPreview extends BaseEditorComponent {
             return
         }
         this.#renderScenery()
+        this.#renderGrid()
         this.#updateSpritePosition()
         this.#renderer.render(this.#scene)
+    }
+
+
+    #renderGrid () {
+        if (!this.#gridCtx || !this.#gridCanvas) {
+            return
+        }
+
+        const ctx = this.#gridCtx
+        const width = this.#gridCanvas.width
+        const height = this.#gridCanvas.height
+
+        ctx.clearRect(0, 0, width, height)
+
+        if (!this.#gridEnabled || !this.#useGamePreview) {
+            return
+        }
+
+        const unitsInView = this.#unitsInView
+
+        const unitWidth = width / unitsInView.width
+        const unitHeight = height / unitsInView.height
+
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
+        ctx.lineWidth = 1
+
+        for (let i = 1; i < unitsInView.width; i++) {
+            const x = i * unitWidth
+            ctx.beginPath()
+            ctx.moveTo(x, 0)
+            ctx.lineTo(x, height)
+            ctx.stroke()
+        }
+
+        for (let i = 1; i < unitsInView.height; i++) {
+            const y = i * unitHeight
+            ctx.beginPath()
+            ctx.moveTo(0, y)
+            ctx.lineTo(width, y)
+            ctx.stroke()
+        }
+
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
+        ctx.lineWidth = 2
+        ctx.strokeRect(0, 0, width, height)
     }
 
 
@@ -1154,6 +1263,17 @@ const STYLES = buildEditorStyles(
         top: 0;
         left: 0;
         z-index: 1;
+    }
+
+    .grid-canvas {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 2;
     }
 
     .preview-canvas {
