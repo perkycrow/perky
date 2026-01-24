@@ -590,6 +590,7 @@ export default class AnimatorView extends BaseEditorComponent {
         if (this.#selectedAnimation) {
             this.#previewEl.setAnimation(this.#selectedAnimation)
             this.#previewEl.setMotion(this.#selectedAnimation.motion)
+            this.#previewEl.setAnchor(this.#anchor)
         }
         this.#previewEl.addEventListener('frame', (e) => {
             this.#timelineEl?.setCurrentIndex(e.detail.index)
@@ -884,6 +885,7 @@ export default class AnimatorView extends BaseEditorComponent {
 
             this.#renderAnchorPreview(canvas, handle)
             this.#syncAnchorInputs()
+            this.#previewEl?.setAnchor(this.#anchor)
         }
 
         handle.addEventListener('pointerdown', (e) => {
@@ -957,6 +959,7 @@ export default class AnimatorView extends BaseEditorComponent {
         if (canvas && handle) {
             this.#renderAnchorPreview(canvas, handle)
         }
+        this.#previewEl?.setAnchor(this.#anchor)
     }
 
 

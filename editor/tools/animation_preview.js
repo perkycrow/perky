@@ -24,6 +24,7 @@ export default class AnimationPreview extends BaseEditorComponent {
     #sceneryCanvas = null
     #sceneryCtx = null
     #motion = null
+    #anchor = {x: 0.5, y: 0}
 
     connectedCallback () {
         this.#buildDOM()
@@ -138,6 +139,14 @@ export default class AnimationPreview extends BaseEditorComponent {
             this.#sceneryOffset = 0
             this.#updateSceneryCanvas()
             this.#fitToContainer(this.#animation?.currentFrame?.region)
+            this.#renderScenery()
+        }
+    }
+
+
+    setAnchor (anchor) {
+        this.#anchor = anchor || {x: 0.5, y: 0}
+        if (this.#sceneryEnabled) {
             this.#renderScenery()
         }
     }
@@ -399,7 +408,7 @@ export default class AnimationPreview extends BaseEditorComponent {
 
 
     #renderSidescroller (ctx, width, height) {
-        const groundY = height - 20
+        const groundY = this.#getGroundY(height)
 
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
         ctx.lineWidth = 2
@@ -425,6 +434,24 @@ export default class AnimationPreview extends BaseEditorComponent {
             ctx.arc(x, groundY - poleHeight - 5, 5, 0, Math.PI * 2)
             ctx.stroke()
         }
+    }
+
+
+    #getGroundY (sceneryHeight) {
+        if (!this.#canvas) {
+            return sceneryHeight - 20
+        }
+
+        const canvasRect = this.#canvas.getBoundingClientRect()
+        const sceneryRect = this.#sceneryCanvas.getBoundingClientRect()
+
+        const canvasTop = canvasRect.top - sceneryRect.top
+        const canvasHeight = canvasRect.height
+
+        const anchorY = this.#anchor.y
+        const groundY = canvasTop + canvasHeight * (1 - anchorY)
+
+        return groundY
     }
 
 
