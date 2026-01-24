@@ -16,8 +16,10 @@ export default class Noise {
         this.#gradP = new Array(512)
 
         for (let i = 0; i < 256; i++) {
-            this.#perm[i] = this.#perm[i + 256] = p[i]
-            this.#gradP[i] = this.#gradP[i + 256] = GRAD3[p[i] % 12]
+            this.#perm[i] = p[i]
+            this.#perm[i + 256] = p[i]
+            this.#gradP[i] = GRAD3[p[i] % 12]
+            this.#gradP[i + 256] = GRAD3[p[i] % 12]
         }
 
         return this
@@ -81,7 +83,7 @@ export default class Noise {
     }
 
 
-    fbm (x, y, octaves = 4, lacunarity = 2, persistence = 0.5) {
+    fbm (x, y, {octaves = 4, lacunarity = 2, persistence = 0.5} = {}) {
         let value = 0
         let amplitude = 1
         let frequency = 1

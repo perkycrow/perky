@@ -170,30 +170,35 @@ export default class SelectInput extends HTMLElement {
     }
 
     #handleOpenKeyDown (e) {
-        switch (e.key) {
-        case 'Escape':
-            e.preventDefault()
-            this.#close()
-            break
-        case 'ArrowDown':
-            e.preventDefault()
-            this.#moveFocus(1)
-            break
-        case 'ArrowUp':
-            e.preventDefault()
-            this.#moveFocus(-1)
-            break
-        case 'Enter':
-        case ' ':
-            e.preventDefault()
-            if (this.#focusedIndex >= 0) {
-                this.#selectIndex(this.#focusedIndex)
-            }
-            break
-        case 'Tab':
-            this.#close()
-            break
+        const keyHandlers = {
+            Escape: () => {
+                e.preventDefault()
+                this.#close()
+            },
+            ArrowDown: () => {
+                e.preventDefault()
+                this.#moveFocus(1)
+            },
+            ArrowUp: () => {
+                e.preventDefault()
+                this.#moveFocus(-1)
+            },
+            Enter: () => {
+                e.preventDefault()
+                if (this.#focusedIndex >= 0) {
+                    this.#selectIndex(this.#focusedIndex)
+                }
+            },
+            ' ': () => {
+                e.preventDefault()
+                if (this.#focusedIndex >= 0) {
+                    this.#selectIndex(this.#focusedIndex)
+                }
+            },
+            Tab: () => this.#close()
         }
+
+        keyHandlers[e.key]?.()
     }
 
 

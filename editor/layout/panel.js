@@ -165,7 +165,7 @@ export default class Panel extends HTMLElement {
     }
 
 
-    attributeChangedCallback (name, oldValue, newValue) {
+    attributeChangedCallback (name) {
         if (name === 'title') {
             this.#updateTitle()
         } else if (name === 'collapsed') {
