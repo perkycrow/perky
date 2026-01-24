@@ -74,6 +74,10 @@ const sliderInputCSS = `
         font-variant-numeric: tabular-nums;
     }
 
+    :host([no-value]) .slider-input-value {
+        display: none;
+    }
+
 
     :host([context="studio"]) .slider-input-container {
         gap: var(--spacing-md);

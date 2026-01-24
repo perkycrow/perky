@@ -20,6 +20,7 @@ const animatorStyles = createSheet(`
         color: var(--fg-primary);
         font-family: var(--font-mono);
         font-size: 12px;
+        position: relative;
     }
 
     app-layout {
@@ -31,6 +32,7 @@ const animatorStyles = createSheet(`
         flex-direction: column;
         height: 100%;
         overflow: hidden;
+        position: relative;
     }
 
     .empty {
@@ -46,6 +48,7 @@ const animatorStyles = createSheet(`
         flex: 1;
         min-height: 200px;
         overflow: hidden;
+        position: relative;
     }
 
     .preview-section animation-preview {
@@ -173,16 +176,17 @@ const animatorStyles = createSheet(`
 
     .frame-editor-duration {
         display: flex;
-        flex-direction: column;
-        gap: var(--spacing-sm);
+        align-items: center;
+        gap: var(--spacing-md);
     }
 
     .frame-editor-duration slider-input {
-        width: 100%;
+        flex: 1;
+        min-width: 0;
     }
 
     .frame-editor-duration number-input {
-        align-self: flex-end;
+        flex-shrink: 0;
     }
 
     .frame-editor-events {
@@ -308,6 +312,7 @@ export default class AnimatorView extends BaseEditorComponent {
 
     #appLayout = null
     #containerEl = null
+    #previewSectionEl = null
     #previewEl = null
     #timelineEl = null
     #framesDrawerEl = null
@@ -412,8 +417,8 @@ export default class AnimatorView extends BaseEditorComponent {
         this.#buildHeaderControls()
 
 
-        const previewSection = this.#createPreviewSection()
-        this.#containerEl.appendChild(previewSection)
+        this.#previewSectionEl = this.#createPreviewSection()
+        this.#containerEl.appendChild(this.#previewSectionEl)
 
         this.#timelineEl = document.createElement('animation-timeline')
         this.#timelineEl.className = 'timeline-section'
@@ -577,12 +582,12 @@ export default class AnimatorView extends BaseEditorComponent {
         })
 
         this.#framesDrawerEl.appendChild(this.#spritesheetEl)
-        this.#containerEl.appendChild(this.#framesDrawerEl)
+        this.#previewSectionEl.appendChild(this.#framesDrawerEl)
 
         this.#editorDrawerEl = document.createElement('side-drawer')
         this.#editorDrawerEl.setAttribute('position', 'right')
         this.#editorDrawerEl.setAttribute('title', 'Frame')
-        this.#containerEl.appendChild(this.#editorDrawerEl)
+        this.#previewSectionEl.appendChild(this.#editorDrawerEl)
     }
 
 
@@ -666,6 +671,7 @@ export default class AnimatorView extends BaseEditorComponent {
 
         const slider = document.createElement('slider-input')
         slider.setAttribute('context', 'studio')
+        slider.setAttribute('no-value', '')
         slider.setValue(frame.duration || 1)
         slider.setMin(0.5)
         slider.setMax(3)
@@ -673,6 +679,7 @@ export default class AnimatorView extends BaseEditorComponent {
 
         const numberInput = document.createElement('number-input')
         numberInput.setAttribute('context', 'studio')
+        numberInput.setLabel('×')
         numberInput.setValue(frame.duration || 1)
         numberInput.setStep(0.05)
         numberInput.setPrecision(2)

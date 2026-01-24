@@ -6,8 +6,8 @@ import {adoptStyles, createSheet} from '../styles/index.js'
 const drawerCSS = createSheet(`
     :host {
         position: absolute;
-        top: 0;
-        bottom: 0;
+        top: var(--drawer-top, 0);
+        bottom: var(--drawer-bottom, 0);
         width: 280px;
         background: var(--bg-secondary);
         display: flex;
