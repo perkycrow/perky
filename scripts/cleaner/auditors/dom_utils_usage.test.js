@@ -39,11 +39,23 @@ describe('DomUtilsUsageAuditor', () => {
         })
 
 
-        test('ignores createElement with single operation', () => {
+        test('detects createElement with single supported operation', () => {
             const code = `
                 const btn = document.createElement('button')
                 btn.className = 'foo'
                 someOtherCode()
+            `
+            const issues = analyze(code)
+            expect(issues.length).toBe(1)
+            expect(issues[0]).toContain('1 ops')
+        })
+
+
+        test('ignores createElement with only unsupported operations', () => {
+            const code = `
+                const btn = document.createElement('button')
+                btn.addEventListener('click', handler)
+                btn.appendChild(child)
             `
             const issues = analyze(code)
             expect(issues.length).toBe(0)
@@ -94,7 +106,7 @@ describe('DomUtilsUsageAuditor', () => {
         })
 
 
-        test('ignores single setAttribute call', () => {
+        test('detects single setAttribute call', () => {
             const code = `
                 function setup() {
                     el.setAttribute('disabled', '')
@@ -102,7 +114,7 @@ describe('DomUtilsUsageAuditor', () => {
                 }
             `
             const issues = analyze(code)
-            expect(issues.length).toBe(0)
+            expect(issues.length).toBe(1)
         })
 
     })

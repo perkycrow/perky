@@ -3,7 +3,10 @@ import Auditor from '../auditor.js'
 import {gray} from '../../format.js'
 
 
-const MIN_OPERATIONS = 2
+const MIN_OPERATIONS = 1
+
+const SUPPORTED_PROPS = new Set(['className', 'id', 'textContent', 'innerHTML'])
+const SUPPORTED_METHODS = new Set(['setAttribute'])
 
 
 export default class DomUtilsUsageAuditor extends Auditor {
@@ -172,23 +175,27 @@ function checkCreateElementSequence (statements, startIndex) {
 
     const varName = declarator.id.name
     const line = node.loc.start.line
-    const operations = []
+    const supportedOps = []
+    let totalOps = 0
 
     for (let j = startIndex + 1; j < statements.length; j++) {
         const nextNode = statements[j]
         const op = getOperationOnVariable(nextNode, varName)
 
-        if (op) {
-            operations.push(op)
-        } else {
+        if (!op) {
             break
+        }
+
+        totalOps++
+        if (op.supported) {
+            supportedOps.push(op.name)
         }
     }
 
-    if (operations.length >= MIN_OPERATIONS) {
-        const opList = operations.join(', ')
-        const issue = `${gray(`L${line}:`)} createElement('${getTagName(declarator.init)}') + ${operations.length} ops: ${opList}`
-        return {issue, skip: operations.length}
+    if (supportedOps.length >= MIN_OPERATIONS) {
+        const opList = supportedOps.join(', ')
+        const issue = `${gray(`L${line}:`)} createElement('${getTagName(declarator.init)}') + ${supportedOps.length} ops: ${opList}`
+        return {issue, skip: totalOps}
     }
 
     return null
@@ -282,7 +289,7 @@ function getAssignmentOp (expr, varName) {
 
     const prop = expr.left.property
     const propName = prop.type === 'Identifier' ? prop.name : '?'
-    return `.${propName}`
+    return {name: `.${propName}`, supported: SUPPORTED_PROPS.has(propName)}
 }
 
 
@@ -298,7 +305,7 @@ function getCallOp (expr, varName) {
 
     const prop = expr.callee.property
     const methodName = prop.type === 'Identifier' ? prop.name : '?'
-    return `.${methodName}()`
+    return {name: `.${methodName}()`, supported: SUPPORTED_METHODS.has(methodName)}
 }
 
 
