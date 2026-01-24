@@ -1,4 +1,6 @@
-import {setupInputStyles, emitChange, handleAttributeChange} from './base_input.js'
+import EditorComponent from './editor_component.js'
+import {controlsSheet} from './styles/index.js'
+import {emitChange, handleAttributeChange} from './base_input.js'
 
 
 const SHIFT_MULTIPLIER = 10
@@ -185,7 +187,9 @@ const numberInputCSS = `
 `
 
 
-export default class NumberInput extends HTMLElement {
+export default class NumberInput extends EditorComponent {
+
+    static styles = [controlsSheet, numberInputCSS]
 
     #value = 0
     #step = 0.1
@@ -238,18 +242,16 @@ export default class NumberInput extends HTMLElement {
 
     constructor () {
         super()
-        this.attachShadow({mode: 'open'})
-        setupInputStyles(this.shadowRoot, numberInputCSS)
         this.#buildDOM()
     }
 
 
-    connectedCallback () {
+    onConnected () {
         this.#updateDisplay()
     }
 
 
-    disconnectedCallback () {
+    onDisconnected () {
         if (this.#isDragging) {
             this.#onDragEnd()
         }

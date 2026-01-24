@@ -1,4 +1,6 @@
-import {setupInputStyles, emitChange, handleAttributeChange} from './base_input.js'
+import EditorComponent from './editor_component.js'
+import {controlsSheet} from './styles/index.js'
+import {emitChange, handleAttributeChange} from './base_input.js'
 
 
 const toggleInputCSS = `
@@ -91,7 +93,9 @@ const toggleInputCSS = `
 `
 
 
-export default class ToggleInput extends HTMLElement {
+export default class ToggleInput extends EditorComponent {
+
+    static styles = [controlsSheet, toggleInputCSS]
 
     #checked = false
     #label = ''
@@ -106,13 +110,11 @@ export default class ToggleInput extends HTMLElement {
 
     constructor () {
         super()
-        this.attachShadow({mode: 'open'})
-        setupInputStyles(this.shadowRoot, toggleInputCSS)
         this.#buildDOM()
     }
 
 
-    connectedCallback () {
+    onConnected () {
         this.#updateDisplay()
     }
 

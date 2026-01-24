@@ -1,4 +1,6 @@
-import {setupInputStyles, emitChange, handleAttributeChange} from './base_input.js'
+import EditorComponent from './editor_component.js'
+import {controlsSheet} from './styles/index.js'
+import {emitChange, handleAttributeChange} from './base_input.js'
 import './number_input.js'
 
 
@@ -56,7 +58,9 @@ const vec2InputCSS = `
 `
 
 
-export default class Vec2Input extends HTMLElement {
+export default class Vec2Input extends EditorComponent {
+
+    static styles = [controlsSheet, vec2InputCSS]
 
     #vec2 = null
     #xInput = null
@@ -71,13 +75,11 @@ export default class Vec2Input extends HTMLElement {
 
     constructor () {
         super()
-        this.attachShadow({mode: 'open'})
-        setupInputStyles(this.shadowRoot, vec2InputCSS)
         this.#buildDOM()
     }
 
 
-    connectedCallback () {
+    onConnected () {
         this.#updateDisplay()
         this.#syncContext()
     }

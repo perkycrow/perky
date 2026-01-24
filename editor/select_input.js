@@ -1,4 +1,6 @@
-import {setupInputStyles, emitChange} from './base_input.js'
+import EditorComponent from './editor_component.js'
+import {controlsSheet} from './styles/index.js'
+import {emitChange} from './base_input.js'
 
 
 const selectInputCSS = `
@@ -138,7 +140,9 @@ const selectInputCSS = `
 `
 
 
-export default class SelectInput extends HTMLElement {
+export default class SelectInput extends EditorComponent {
+
+    static styles = [controlsSheet, selectInputCSS]
 
     #value = null
     #options = []
@@ -204,18 +208,16 @@ export default class SelectInput extends HTMLElement {
 
     constructor () {
         super()
-        this.attachShadow({mode: 'open'})
-        setupInputStyles(this.shadowRoot, selectInputCSS)
         this.#buildDOM()
     }
 
 
-    connectedCallback () {
+    onConnected () {
         this.#updateDisplay()
     }
 
 
-    disconnectedCallback () {
+    onDisconnected () {
         this.#close()
     }
 

@@ -1,4 +1,6 @@
-import {setupInputStyles, emitChange, handleAttributeChange} from './base_input.js'
+import EditorComponent from './editor_component.js'
+import {controlsSheet} from './styles/index.js'
+import {emitChange, handleAttributeChange} from './base_input.js'
 
 
 const sliderInputCSS = `
@@ -126,7 +128,9 @@ const sliderInputCSS = `
 `
 
 
-export default class SliderInput extends HTMLElement {
+export default class SliderInput extends EditorComponent {
+
+    static styles = [controlsSheet, sliderInputCSS]
 
     #value = 0
     #min = 0
@@ -145,13 +149,11 @@ export default class SliderInput extends HTMLElement {
 
     constructor () {
         super()
-        this.attachShadow({mode: 'open'})
-        setupInputStyles(this.shadowRoot, sliderInputCSS)
         this.#buildDOM()
     }
 
 
-    connectedCallback () {
+    onConnected () {
         this.#updateDisplay()
     }
 
