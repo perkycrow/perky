@@ -2,6 +2,7 @@ import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
 import WebGLTextureManager from '../../render/webgl_texture_manager.js'
 import {formatBytes} from '../../core/utils.js'
+import {createElement} from '../../application/dom_utils.js'
 import logger from '../../core/logger.js'
 
 
@@ -161,8 +162,7 @@ export default class TextureManagerInspector extends BaseInspector {
     buildDOM () {
         super.buildDOM()
 
-        const stats = document.createElement('div')
-        stats.className = 'inspector-stats'
+        const stats = createElement('div', {class: 'inspector-stats'})
 
         const activeCard = createStatCard('Active', '0', '0 B', 'active')
         this.#activeCountEl = activeCard.querySelector('.stat-value')
@@ -175,36 +175,33 @@ export default class TextureManagerInspector extends BaseInspector {
         stats.appendChild(activeCard)
         stats.appendChild(zombieCard)
 
-        const progressSection = document.createElement('div')
-        progressSection.className = 'progress-section'
+        const progressSection = createElement('div', {class: 'progress-section'})
+        const progressHeader = createElement('div', {class: 'progress-header'})
+        const progressLabel = createElement('span', {
+            class: 'progress-label',
+            text: 'Zombie pool usage'
+        })
 
-        const progressHeader = document.createElement('div')
-        progressHeader.className = 'progress-header'
-
-        const progressLabel = document.createElement('span')
-        progressLabel.className = 'progress-label'
-        progressLabel.textContent = 'Zombie pool usage'
-
-        this.#progressValueEl = document.createElement('span')
-        this.#progressValueEl.className = 'progress-value'
-        this.#progressValueEl.textContent = '0%'
+        this.#progressValueEl = createElement('span', {
+            class: 'progress-value',
+            text: '0%'
+        })
 
         progressHeader.appendChild(progressLabel)
         progressHeader.appendChild(this.#progressValueEl)
 
-        const progressBarContainer = document.createElement('div')
-        progressBarContainer.className = 'progress-bar-container'
+        const progressBarContainer = createElement('div', {class: 'progress-bar-container'})
 
-        this.#progressBarEl = document.createElement('div')
-        this.#progressBarEl.className = 'progress-bar low'
-        this.#progressBarEl.style.width = '0%'
+        this.#progressBarEl = createElement('div', {
+            class: 'progress-bar low',
+            style: {width: '0%'}
+        })
 
         progressBarContainer.appendChild(this.#progressBarEl)
         progressSection.appendChild(progressHeader)
         progressSection.appendChild(progressBarContainer)
 
-        const divider = document.createElement('div')
-        divider.className = 'divider'
+        const divider = createElement('div', {class: 'divider'})
 
         const infoSection = document.createElement('div')
 
@@ -315,20 +312,13 @@ export default class TextureManagerInspector extends BaseInspector {
 
 
 function createStatCard (label, value, sub, className = '') {
-    const card = document.createElement('div')
-    card.className = 'stat-card'
-
-    const labelEl = document.createElement('div')
-    labelEl.className = 'stat-label'
-    labelEl.textContent = label
-
-    const valueEl = document.createElement('div')
-    valueEl.className = `stat-value ${className}`
-    valueEl.textContent = value
-
-    const subEl = document.createElement('div')
-    subEl.className = 'stat-sub'
-    subEl.textContent = sub
+    const card = createElement('div', {class: 'stat-card'})
+    const labelEl = createElement('div', {class: 'stat-label', text: label})
+    const valueEl = createElement('div', {
+        class: `stat-value ${className}`,
+        text: value
+    })
+    const subEl = createElement('div', {class: 'stat-sub', text: sub})
 
     card.appendChild(labelEl)
     card.appendChild(valueEl)
@@ -339,15 +329,9 @@ function createStatCard (label, value, sub, className = '') {
 
 
 function createInfoRow (label) {
-    const row = document.createElement('div')
-    row.className = 'info-row'
-
-    const labelEl = document.createElement('span')
-    labelEl.className = 'info-label'
-    labelEl.textContent = label
-
-    const valueEl = document.createElement('span')
-    valueEl.className = 'info-value'
+    const row = createElement('div', {class: 'info-row'})
+    const labelEl = createElement('span', {class: 'info-label', text: label})
+    const valueEl = createElement('span', {class: 'info-value'})
 
     row.appendChild(labelEl)
     row.appendChild(valueEl)

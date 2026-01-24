@@ -1,6 +1,7 @@
 import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
 import RenderGroup from '../../render/render_group.js'
+import {createElement} from '../../application/dom_utils.js'
 import {
     createToggle,
     createSlider,
@@ -84,22 +85,20 @@ export default class RenderGroupInspector extends BaseInspector {
 
 
     #renderBlendModeSelector (group) {
-        const row = document.createElement('div')
-        row.className = 'inspector-row'
-
-        const label = document.createElement('span')
-        label.className = 'inspector-row-label'
-        label.textContent = 'blendMode'
-
-        const select = document.createElement('select')
-        select.className = 'inspector-select'
+        const row = createElement('div', {class: 'inspector-row'})
+        const label = createElement('span', {
+            class: 'inspector-row-label',
+            text: 'blendMode'
+        })
+        const select = createElement('select', {class: 'inspector-select'})
         const modes = ['normal', 'additive', 'multiply']
 
         for (const mode of modes) {
-            const option = document.createElement('option')
-            option.value = mode
-            option.textContent = mode
-            option.selected = group.blendMode === mode
+            const option = createElement('option', {
+                value: mode,
+                text: mode,
+                selected: group.blendMode === mode
+            })
             select.appendChild(option)
         }
 
@@ -118,9 +117,10 @@ export default class RenderGroupInspector extends BaseInspector {
         this.addRow('post-passes', passes.length.toString(), true)
 
         if (passes.length === 0) {
-            const noPassesEl = document.createElement('div')
-            noPassesEl.className = 'no-passes'
-            noPassesEl.textContent = 'No post-processing passes'
+            const noPassesEl = createElement('div', {
+                class: 'no-passes',
+                text: 'No post-processing passes'
+            })
             this.gridEl.appendChild(noPassesEl)
             return
         }

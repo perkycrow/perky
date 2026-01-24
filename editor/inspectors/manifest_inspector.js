@@ -950,10 +950,12 @@ function createAudioPreview (asset) {
     }
 
     const preview = createElement('div', {class: 'asset-preview'})
-    const audio = createElement('audio', {src: audioSrc})
+    const audio = createElement('audio', {
+        src: audioSrc,
+        attrs: {controlsList: 'nodownload'}
+    })
     audio.controls = true
     audio.preload = 'metadata'
-    audio.setAttribute('controlsList', 'nodownload')
 
     preview.appendChild(audio)
 
