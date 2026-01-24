@@ -198,9 +198,13 @@ export default class AnimationPreview extends BaseEditorComponent {
 
 
     updateMotion (motion) {
+        const modeChanged = this.#motion?.mode !== motion?.mode
         this.#motion = motion
         this.#gamePreview?.setMotion(motion)
-        this.#syncSceneryState()
+
+        if (modeChanged) {
+            this.#syncSceneryState()
+        }
     }
 
 

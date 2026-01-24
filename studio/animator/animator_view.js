@@ -1095,9 +1095,9 @@ export default class AnimatorView extends BaseEditorComponent {
 
         const speedInput = document.createElement('slider-input')
         speedInput.setAttribute('context', 'studio')
-        speedInput.setAttribute('min', '0.05')
+        speedInput.setAttribute('min', '0.01')
         speedInput.setAttribute('max', '3')
-        speedInput.setAttribute('step', '0.05')
+        speedInput.setAttribute('step', '0.01')
         speedInput.setValue(motion.speed ?? 1)
         speedInput.addEventListener('change', (e) => {
             if (!anim.motion) {

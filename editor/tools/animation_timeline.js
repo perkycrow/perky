@@ -904,7 +904,6 @@ const timelineStyles = createSheet(`
         border-radius: var(--radius-md);
         flex-shrink: 0;
         cursor: grab;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .frame:hover {

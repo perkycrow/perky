@@ -14,22 +14,19 @@
             "frames": [
                 {
                     "source": "redSpritesheet:skip/1",
-                    "duration": 0.8,
                     "events": ["hop"]
                 },
                 {
                     "source": "redSpritesheet:skip/2"
                 },
                 {
-                    "source": "redSpritesheet:skip/3",
-                    "duration": 2
+                    "source": "redSpritesheet:skip/3"
                 },
                 {
                     "source": "redSpritesheet:skip/4"
                 },
                 {
                     "source": "redSpritesheet:skip/5",
-                    "duration": 0.8,
                     "events": ["hop"]
                 },
                 {
@@ -37,7 +34,6 @@
                 },
                 {
                     "source": "redSpritesheet:skip/7",
-                    "duration": 2
                 },
                 {
                     "source": "redSpritesheet:skip/8"
