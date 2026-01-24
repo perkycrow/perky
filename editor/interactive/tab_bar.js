@@ -1,5 +1,5 @@
 import EditorComponent from '../editor_component.js'
-import {createElement} from '../../application/dom_utils.js'
+import {createElement, setAttributes} from '../../application/dom_utils.js'
 
 
 export default class TabBar extends EditorComponent {
@@ -171,7 +171,9 @@ export default class TabBar extends EditorComponent {
         const slottedButtons = slot.assignedElements()
 
         for (const btn of slottedButtons) {
-            btn.setAttribute('aria-selected', btn.dataset.value === this.#value ? 'true' : 'false')
+            btn.setAttributes({
+                'aria-selected': btn.dataset.value === this.#value ? 'true' : 'false'
+            })
 
             if (!btn.dataset.tabListenerAttached) {
                 btn.addEventListener('click', () => this.#selectTab(btn.dataset.value))
@@ -187,7 +189,7 @@ export default class TabBar extends EditorComponent {
         }
 
         this.#value = value
-        this.setAttribute('value', value)
+        setAttributes(this, {value})
         this.#updateActiveState()
 
         this.dispatchEvent(new CustomEvent('change', {
@@ -208,7 +210,9 @@ export default class TabBar extends EditorComponent {
         const slot = this.shadowRoot.querySelector('slot[name="tab"]')
         const slottedButtons = slot.assignedElements()
         for (const btn of slottedButtons) {
-            btn.setAttribute('aria-selected', btn.dataset.value === this.#value ? 'true' : 'false')
+            setAttributes(btn, {
+                'aria-selected': btn.dataset.value === this.#value ? 'true' : 'false'
+            })
         }
     }
 
