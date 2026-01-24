@@ -658,7 +658,7 @@ export default class AnimatorView extends BaseEditorComponent {
 
         const label = document.createElement('div')
         label.className = 'frame-editor-label'
-        label.textContent = 'Duration'
+        label.textContent = 'Duration multiplier'
         section.appendChild(label)
 
         const controls = document.createElement('div')
@@ -667,6 +667,7 @@ export default class AnimatorView extends BaseEditorComponent {
         const slider = document.createElement('slider-input')
         slider.setAttribute('context', 'studio')
         slider.setAttribute('no-value', '')
+        slider.setAttribute('no-label', '')
         slider.setValue(frame.duration || 1)
         slider.setMin(0.5)
         slider.setMax(3)
@@ -674,9 +675,8 @@ export default class AnimatorView extends BaseEditorComponent {
 
         const numberInput = document.createElement('number-input')
         numberInput.setAttribute('context', 'studio')
-        numberInput.setLabel('×')
         numberInput.setValue(frame.duration || 1)
-        numberInput.setStep(0.05)
+        numberInput.setStep(0.1)
         numberInput.setPrecision(2)
         numberInput.setMin(0.1)
         numberInput.setMax(10)

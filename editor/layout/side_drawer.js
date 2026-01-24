@@ -167,7 +167,8 @@ export default class SideDrawer extends HTMLElement {
 
 
     #onPointerDown (e) {
-        if (e.target.closest('button, input, select, textarea')) {
+        const interactive = 'button, input, select, textarea, slider-input, number-input, toggle-input, select-input'
+        if (e.target.closest(interactive)) {
             return
         }
 

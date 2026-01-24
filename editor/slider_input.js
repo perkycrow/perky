@@ -16,6 +16,12 @@ const sliderInputCSS = `
 
     .slider-input-label:empty {
         display: none;
+        min-width: 0;
+    }
+
+    :host([no-label]) .slider-input-label {
+        display: none !important;
+        min-width: 0;
     }
 
     .slider-input-track {
