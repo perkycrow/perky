@@ -128,7 +128,7 @@ export default class AnimationPreview extends BaseEditorComponent {
 
         this.#updateSceneryCanvas()
         this.#fitToContainer(this.#animation?.currentFrame?.region)
-        this.#renderScenery()
+        this.#render()
     }
 
 
@@ -139,8 +139,14 @@ export default class AnimationPreview extends BaseEditorComponent {
             this.#sceneryOffset = 0
             this.#updateSceneryCanvas()
             this.#fitToContainer(this.#animation?.currentFrame?.region)
-            this.#renderScenery()
+            this.#render()
         }
+    }
+
+
+    updateMotion (motion) {
+        this.#motion = motion
+        this.#updateSceneryButton()
     }
 
 
@@ -369,16 +375,16 @@ export default class AnimationPreview extends BaseEditorComponent {
     #getSceneryDirection () {
         const dir = this.#motion?.direction || 'e'
         const directionMap = {
-            e: 1,
-            w: -1,
-            ne: 1,
-            se: 1,
-            nw: -1,
-            sw: -1,
-            n: -1,
-            s: 1
+            e: -1,
+            w: 1,
+            ne: -1,
+            se: -1,
+            nw: 1,
+            sw: 1,
+            n: 1,
+            s: -1
         }
-        return directionMap[dir] || 1
+        return directionMap[dir] || -1
     }
 
 
@@ -410,28 +416,60 @@ export default class AnimationPreview extends BaseEditorComponent {
     #renderSidescroller (ctx, width, height) {
         const groundY = this.#getGroundY(height)
 
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
-        ctx.lineWidth = 2
+        ctx.fillStyle = 'rgba(100, 120, 140, 0.08)'
+        ctx.fillRect(0, groundY, width, height - groundY)
+
+        const unitSize = 20
+
+        ctx.strokeStyle = 'rgba(150, 170, 190, 0.08)'
+        ctx.lineWidth = 1
+
+        const startX = (this.#sceneryOffset % unitSize) - unitSize
+        for (let x = startX; x < width + unitSize; x += unitSize) {
+            ctx.beginPath()
+            ctx.moveTo(x, groundY)
+            ctx.lineTo(x, height)
+            ctx.stroke()
+        }
+
+        for (let y = groundY + unitSize; y < height; y += unitSize) {
+            ctx.beginPath()
+            ctx.moveTo(0, y)
+            ctx.lineTo(width, y)
+            ctx.stroke()
+        }
+
+        ctx.strokeStyle = 'rgba(150, 170, 190, 0.25)'
+        ctx.lineWidth = 1
         ctx.beginPath()
         ctx.moveTo(0, groundY)
         ctx.lineTo(width, groundY)
         ctx.stroke()
 
-        const poleSpacing = 80
-        const poleHeight = 60
-        const offset = ((this.#sceneryOffset % poleSpacing) + poleSpacing) % poleSpacing
+        const firstUnit = Math.floor(-this.#sceneryOffset / unitSize)
 
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'
-        ctx.lineWidth = 3
+        for (let i = -1; i < Math.ceil(width / unitSize) + 2; i++) {
+            const unit = firstUnit + i
+            const x = (this.#sceneryOffset % unitSize) + i * unitSize
 
-        for (let x = -offset; x < width + poleSpacing; x += poleSpacing) {
+            let poleHeight
+            if (unit % 10 === 0) {
+                poleHeight = 40
+                ctx.strokeStyle = 'rgba(150, 170, 190, 0.2)'
+                ctx.lineWidth = 2
+            } else if (unit % 5 === 0) {
+                poleHeight = 25
+                ctx.strokeStyle = 'rgba(150, 170, 190, 0.15)'
+                ctx.lineWidth = 1.5
+            } else {
+                poleHeight = 12
+                ctx.strokeStyle = 'rgba(150, 170, 190, 0.1)'
+                ctx.lineWidth = 1
+            }
+
             ctx.beginPath()
             ctx.moveTo(x, groundY)
             ctx.lineTo(x, groundY - poleHeight)
-            ctx.stroke()
-
-            ctx.beginPath()
-            ctx.arc(x, groundY - poleHeight - 5, 5, 0, Math.PI * 2)
             ctx.stroke()
         }
     }

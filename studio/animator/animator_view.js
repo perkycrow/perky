@@ -1098,7 +1098,7 @@ export default class AnimatorView extends BaseEditorComponent {
                 anim.motion = {}
             }
             anim.motion.speed = value
-            this.#previewEl?.setMotion(anim.motion)
+            this.#previewEl?.updateMotion(anim.motion)
         }
 
         speedSlider.addEventListener('change', (e) => {
