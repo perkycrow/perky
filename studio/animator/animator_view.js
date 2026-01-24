@@ -309,6 +309,90 @@ const animatorStyles = createSheet(`
     .event-add-btn:hover {
         background: var(--accent-hover);
     }
+
+
+    .animation-settings {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-lg);
+    }
+
+    .settings-section {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .settings-label {
+        font-size: var(--font-size-sm);
+        font-weight: 500;
+        color: var(--fg-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .settings-row {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .settings-row slider-input {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .settings-row number-input {
+        flex-shrink: 0;
+    }
+
+    .direction-pad {
+        display: grid;
+        grid-template-columns: repeat(3, 36px);
+        grid-template-rows: repeat(3, 36px);
+        gap: 2px;
+        justify-content: start;
+    }
+
+    .direction-btn {
+        appearance: none;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--fg-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .direction-btn:hover {
+        background: var(--bg-hover);
+        color: var(--fg-primary);
+    }
+
+    .direction-btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--bg-primary);
+    }
+
+    .direction-btn svg {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .direction-btn.center {
+        background: transparent;
+        border-color: transparent;
+        cursor: default;
+    }
 `)
 
 
@@ -330,6 +414,9 @@ export default class AnimatorView extends BaseEditorComponent {
     #editorDrawerEl = null
     #spritesheetEl = null
     #selectedFrameIndex = -1
+    #drawerMode = null // 'frame' | 'settings'
+    #headerAnimSelect = null
+    #drawerAnimSelect = null
 
     connectedCallback () {
         this.#buildDOM()
@@ -483,6 +570,7 @@ export default class AnimatorView extends BaseEditorComponent {
         const settingsMenu = document.createElement('dropdown-menu')
         settingsMenu.setIcon(ICONS.wrench)
         settingsMenu.setItems([
+            {label: 'Animation Settings', action: () => this.#openAnimationSettings()},
             {label: 'Export', action: () => this.#exportToClipboard()}
         ])
         headerStart.appendChild(settingsMenu)
@@ -499,18 +587,19 @@ export default class AnimatorView extends BaseEditorComponent {
         })
 
 
-        const animSelect = document.createElement('select-input')
-        animSelect.setAttribute('context', 'studio')
+        this.#headerAnimSelect = document.createElement('select-input')
+        this.#headerAnimSelect.setAttribute('context', 'studio')
         const animOptions = this.#animator.children.map(anim => ({value: anim.$id, label: anim.$id}))
-        animSelect.setOptions(animOptions)
-        animSelect.setValue(this.#selectedAnimation?.$id)
-        animSelect.addEventListener('change', (e) => {
+        this.#headerAnimSelect.setOptions(animOptions)
+        this.#headerAnimSelect.setValue(this.#selectedAnimation?.$id)
+        this.#headerAnimSelect.addEventListener('change', (e) => {
             this.#selectedAnimation = this.#animator.getChild(e.detail.value)
             this.#updateForSelectedAnimation()
+            this.#syncDrawerAnimSelect()
         })
 
         headerStart.appendChild(animatorSelect)
-        headerStart.appendChild(animSelect)
+        headerStart.appendChild(this.#headerAnimSelect)
         this.#appLayout.appendChild(headerStart)
 
 
@@ -591,18 +680,268 @@ export default class AnimatorView extends BaseEditorComponent {
     }
 
 
+    #openAnimationSettings () {
+        this.#selectedFrameIndex = -1
+        this.#timelineEl?.clearSelection()
+        this.#drawerMode = 'settings'
+        this.#editorDrawerEl.innerHTML = ''
+        this.#buildAnimationSettings()
+        this.#editorDrawerEl.open()
+    }
+
+
+    #buildAnimationSettings () {
+        const container = document.createElement('div')
+        container.className = 'animation-settings'
+
+        const animSection = document.createElement('div')
+        animSection.className = 'settings-section'
+
+        const animLabel = document.createElement('div')
+        animLabel.className = 'settings-label'
+        animLabel.textContent = 'Animation'
+        animSection.appendChild(animLabel)
+
+        this.#drawerAnimSelect = document.createElement('select-input')
+        this.#drawerAnimSelect.setAttribute('context', 'studio')
+        const animOptions = this.#animator.children.map(anim => ({value: anim.$id, label: anim.$id}))
+        this.#drawerAnimSelect.setOptions(animOptions)
+        this.#drawerAnimSelect.setValue(this.#selectedAnimation?.$id)
+        this.#drawerAnimSelect.addEventListener('change', (e) => {
+            this.#selectedAnimation = this.#animator.getChild(e.detail.value)
+            this.#updateForSelectedAnimation()
+            this.#headerAnimSelect?.setValue(e.detail.value)
+            this.#rebuildAnimationSettingsContent(container)
+        })
+        animSection.appendChild(this.#drawerAnimSelect)
+        container.appendChild(animSection)
+
+        this.#buildAnimationSettingsContent(container)
+        this.#editorDrawerEl.appendChild(container)
+    }
+
+
+    #buildAnimationSettingsContent (container) {
+        const anim = this.#selectedAnimation
+        if (!anim) {
+            return
+        }
+
+        const motion = anim.motion || {}
+
+        const motionSection = document.createElement('div')
+        motionSection.className = 'settings-section'
+        motionSection.dataset.setting = 'motion'
+
+        const motionLabel = document.createElement('div')
+        motionLabel.className = 'settings-label'
+        motionLabel.textContent = 'Motion'
+        motionSection.appendChild(motionLabel)
+
+        const motionToggle = document.createElement('toggle-input')
+        motionToggle.setAttribute('context', 'studio')
+        motionToggle.setChecked(Boolean(motion.enabled))
+
+        const motionOptions = document.createElement('div')
+        motionOptions.className = 'motion-options'
+        motionOptions.style.display = motion.enabled ? 'flex' : 'none'
+        motionOptions.style.flexDirection = 'column'
+        motionOptions.style.gap = 'var(--spacing-md)'
+        motionOptions.style.marginTop = 'var(--spacing-md)'
+
+        motionToggle.addEventListener('change', (e) => {
+            if (!anim.motion) {
+                anim.motion = {}
+            }
+            anim.motion.enabled = e.detail.checked
+            motionOptions.style.display = e.detail.checked ? 'flex' : 'none'
+            this.#previewEl?.setMotion(anim.motion)
+        })
+        motionSection.appendChild(motionToggle)
+
+        const modeSubSection = document.createElement('div')
+        modeSubSection.className = 'settings-section'
+
+        const modeLabel = document.createElement('div')
+        modeLabel.className = 'settings-label'
+        modeLabel.textContent = 'Type'
+        modeSubSection.appendChild(modeLabel)
+
+        const modeSelect = document.createElement('select-input')
+        modeSelect.setAttribute('context', 'studio')
+        modeSelect.setOptions([
+            {value: 'sidescroller', label: 'Sidescroller'},
+            {value: 'topdown', label: 'Top-down'}
+        ])
+        modeSelect.setValue(motion.mode || 'sidescroller')
+        modeSelect.addEventListener('change', (e) => {
+            if (!anim.motion) {
+                anim.motion = {}
+            }
+            anim.motion.mode = e.detail.value
+            this.#rebuildDirectionPad(directionPad, anim)
+            this.#previewEl?.setMotion(anim.motion)
+        })
+        modeSubSection.appendChild(modeSelect)
+        motionOptions.appendChild(modeSubSection)
+
+        const dirSubSection = document.createElement('div')
+        dirSubSection.className = 'settings-section'
+
+        const dirLabel = document.createElement('div')
+        dirLabel.className = 'settings-label'
+        dirLabel.textContent = 'Direction'
+        dirSubSection.appendChild(dirLabel)
+
+        const directionPad = document.createElement('div')
+        directionPad.className = 'direction-pad'
+        this.#rebuildDirectionPad(directionPad, anim)
+        dirSubSection.appendChild(directionPad)
+        motionOptions.appendChild(dirSubSection)
+
+        const speedSubSection = document.createElement('div')
+        speedSubSection.className = 'settings-section'
+
+        const speedLabel = document.createElement('div')
+        speedLabel.className = 'settings-label'
+        speedLabel.textContent = 'Reference Speed'
+        speedSubSection.appendChild(speedLabel)
+
+        const speedRow = document.createElement('div')
+        speedRow.className = 'settings-row'
+
+        const speedSlider = document.createElement('slider-input')
+        speedSlider.setAttribute('context', 'studio')
+        speedSlider.setAttribute('no-value', '')
+        speedSlider.setAttribute('no-label', '')
+        speedSlider.setValue(motion.speed || 0)
+        speedSlider.setMin(0)
+        speedSlider.setMax(10)
+        speedSlider.setStep(0.1)
+
+        const speedInput = document.createElement('number-input')
+        speedInput.setAttribute('context', 'studio')
+        speedInput.setValue(motion.speed || 0)
+        speedInput.setStep(0.1)
+        speedInput.setPrecision(1)
+        speedInput.setMin(0)
+        speedInput.setMax(100)
+
+        const updateSpeed = (value) => {
+            if (!anim.motion) {
+                anim.motion = {}
+            }
+            anim.motion.speed = value
+            this.#previewEl?.setMotion(anim.motion)
+        }
+
+        speedSlider.addEventListener('change', (e) => {
+            speedInput.setValue(e.detail.value)
+            updateSpeed(e.detail.value)
+        })
+
+        speedInput.addEventListener('change', (e) => {
+            speedSlider.setValue(Math.min(10, Math.max(0, e.detail.value)))
+            updateSpeed(e.detail.value)
+        })
+
+        speedRow.appendChild(speedSlider)
+        speedRow.appendChild(speedInput)
+        speedSubSection.appendChild(speedRow)
+        motionOptions.appendChild(speedSubSection)
+
+        motionSection.appendChild(motionOptions)
+        container.appendChild(motionSection)
+    }
+
+
+    #rebuildDirectionPad (pad, anim) {
+        pad.innerHTML = ''
+        const motion = anim.motion || {}
+        const mode = motion.mode || 'sidescroller'
+        const direction = motion.direction || 'right'
+
+        const arrows = {
+            nw: '↖',
+            n: '↑',
+            ne: '↗',
+            w: '←',
+            center: '',
+            e: '→',
+            sw: '↙',
+            s: '↓',
+            se: '↘'
+        }
+
+        const sideDirections = ['n', 'e', 's', 'w']
+        const topDownDirections = ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se']
+        const activeDirections = mode === 'topdown' ? topDownDirections : sideDirections
+
+        const layout = ['nw', 'n', 'ne', 'w', 'center', 'e', 'sw', 's', 'se']
+
+        for (const pos of layout) {
+            const btn = document.createElement('button')
+            btn.className = 'direction-btn'
+            if (pos === 'center') {
+                btn.classList.add('center')
+            } else if (activeDirections.includes(pos)) {
+                btn.textContent = arrows[pos]
+                if (direction === pos) {
+                    btn.classList.add('active')
+                }
+                btn.addEventListener('click', () => {
+                    if (!anim.motion) {
+                        anim.motion = {}
+                    }
+                    anim.motion.direction = pos
+                    this.#rebuildDirectionPad(pad, anim)
+                    this.#previewEl?.setMotion(anim.motion)
+                })
+            } else {
+                btn.style.visibility = 'hidden'
+            }
+            pad.appendChild(btn)
+        }
+    }
+
+
+    #rebuildAnimationSettingsContent (container) {
+        const sections = container.querySelectorAll('[data-setting]')
+        sections.forEach(s => s.remove())
+        this.#buildAnimationSettingsContent(container)
+    }
+
+
+    #syncDrawerAnimSelect () {
+        if (this.#drawerAnimSelect && this.#drawerMode === 'settings') {
+            this.#drawerAnimSelect.setValue(this.#selectedAnimation?.$id)
+            const container = this.#editorDrawerEl.querySelector('.animation-settings')
+            if (container) {
+                this.#rebuildAnimationSettingsContent(container)
+            }
+        }
+    }
+
+
     #updateEditorDrawer () {
         if (this.#selectedFrameIndex < 0) {
-            this.#editorDrawerEl?.close()
+            if (this.#drawerMode === 'frame') {
+                this.#editorDrawerEl?.close()
+                this.#drawerMode = null
+            }
             return
         }
 
         const frame = this.#selectedAnimation?.frames[this.#selectedFrameIndex]
         if (!frame) {
-            this.#editorDrawerEl?.close()
+            if (this.#drawerMode === 'frame') {
+                this.#editorDrawerEl?.close()
+                this.#drawerMode = null
+            }
             return
         }
 
+        this.#drawerMode = 'frame'
         this.#editorDrawerEl.innerHTML = ''
         this.#buildFrameEditor(frame)
         this.#editorDrawerEl.open()
@@ -810,17 +1149,12 @@ export default class AnimatorView extends BaseEditorComponent {
 
         for (const anim of this.#animator.children) {
             for (const frame of anim.frames) {
-                if (frame.events) {
-                    for (const event of frame.events) {
-                        allEvents.add(event)
-                    }
-                }
+                const events = frame.events || []
+                events.forEach(event => allEvents.add(event))
             }
         }
 
-        for (const event of excludeEvents) {
-            allEvents.delete(event)
-        }
+        excludeEvents.forEach(event => allEvents.delete(event))
 
         return Array.from(allEvents).slice(0, 6)
     }
@@ -990,6 +1324,14 @@ export default class AnimatorView extends BaseEditorComponent {
 
         if (anim.playbackMode !== 'forward') {
             config.playbackMode = anim.playbackMode
+        }
+
+        if (anim.motion?.enabled) {
+            config.motion = {
+                mode: anim.motion.mode || 'sidescroller',
+                direction: anim.motion.direction || 'e',
+                speed: anim.motion.speed || 0
+            }
         }
 
         config.frames = anim.frames.map(frame => {

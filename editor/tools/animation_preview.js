@@ -19,6 +19,12 @@ export default class AnimationPreview extends BaseEditorComponent {
     #isPlaying = false
     #resizeObserver = null
 
+    #sceneryEnabled = false
+    #sceneryOffset = 0
+    #sceneryCanvas = null
+    #sceneryCtx = null
+    #motion = null
+
     connectedCallback () {
         this.#buildDOM()
 
@@ -52,6 +58,11 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#previewArea = document.createElement('div')
         this.#previewArea.className = 'preview-area'
 
+        this.#sceneryCanvas = document.createElement('canvas')
+        this.#sceneryCanvas.className = 'scenery-canvas'
+        this.#sceneryCtx = this.#sceneryCanvas.getContext('2d')
+        this.#previewArea.appendChild(this.#sceneryCanvas)
+
         this.#canvas = document.createElement('canvas')
         this.#canvas.className = 'preview-canvas'
         this.#canvas.width = 256
@@ -72,14 +83,46 @@ export default class AnimationPreview extends BaseEditorComponent {
         stopBtn.innerHTML = ICONS.stop
         stopBtn.addEventListener('click', () => this.stop())
 
+        const sceneryBtn = document.createElement('button')
+        sceneryBtn.className = 'scenery-btn'
+        sceneryBtn.innerHTML = ICONS.scenery
+        sceneryBtn.addEventListener('click', () => this.#toggleScenery())
+
         controls.appendChild(playBtn)
         controls.appendChild(stopBtn)
+        controls.appendChild(sceneryBtn)
         container.appendChild(controls)
 
         this.shadowRoot.appendChild(container)
 
         this.#setupRenderer()
         this.#setupResizeObserver()
+    }
+
+
+    #toggleScenery () {
+        this.#sceneryEnabled = !this.#sceneryEnabled
+        this.#sceneryOffset = 0
+
+        const sceneryBtn = this.shadowRoot.querySelector('.scenery-btn')
+        if (sceneryBtn) {
+            sceneryBtn.classList.toggle('active', this.#sceneryEnabled)
+        }
+
+        this.#updateSceneryCanvas()
+        this.#fitToContainer(this.#animation?.currentFrame?.region)
+        this.#renderScenery()
+    }
+
+
+    setMotion (motion) {
+        this.#motion = motion
+        if (this.#sceneryEnabled) {
+            this.#sceneryOffset = 0
+            this.#updateSceneryCanvas()
+            this.#fitToContainer(this.#animation?.currentFrame?.region)
+            this.#renderScenery()
+        }
     }
 
 
@@ -141,6 +184,7 @@ export default class AnimationPreview extends BaseEditorComponent {
             return
         }
         this.#fitToContainer(this.#animation.currentFrame.region)
+        this.#updateSceneryCanvas()
         this.#render()
     }
 
@@ -159,9 +203,10 @@ export default class AnimationPreview extends BaseEditorComponent {
             return
         }
 
+        const sceneryMargin = this.#sceneryEnabled ? 0.7 : 1
         const scaleX = containerWidth / region.width
         const scaleY = containerHeight / region.height
-        const scale = Math.min(scaleX, scaleY, 1)
+        const scale = Math.min(scaleX, scaleY, 1) * sceneryMargin
 
         const canvasWidth = Math.max(1, Math.floor(region.width * scale))
         const canvasHeight = Math.max(1, Math.floor(region.height * scale))
@@ -173,6 +218,27 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#renderer.camera.viewportWidth = canvasWidth
         this.#renderer.camera.viewportHeight = canvasHeight
         this.#renderer.camera.setUnitsInView({width: region.width, height: region.height})
+    }
+
+
+    #updateSceneryCanvas () {
+        if (!this.#sceneryCanvas || !this.#previewArea) {
+            return
+        }
+
+        const padding = 32
+        const paddingBottom = 80
+        const width = this.#previewArea.clientWidth - padding * 2
+        const height = this.#previewArea.clientHeight - padding - paddingBottom
+
+        if (width <= 0 || height <= 0) {
+            return
+        }
+
+        this.#sceneryCanvas.width = width
+        this.#sceneryCanvas.height = height
+        this.#sceneryCanvas.style.width = `${width}px`
+        this.#sceneryCanvas.style.height = `${height}px`
     }
 
 
@@ -225,6 +291,7 @@ export default class AnimationPreview extends BaseEditorComponent {
     stop () {
         this.pause()
         this.#animation?.stop()
+        this.#sceneryOffset = 0
         this.#updateSprite()
         this.#render()
 
@@ -241,6 +308,7 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#lastTime = currentTime
 
         this.#animation.update(deltaTime)
+        this.#updateScenery(deltaTime)
         this.#updateSprite()
         this.#render()
 
@@ -252,10 +320,126 @@ export default class AnimationPreview extends BaseEditorComponent {
     }
 
 
+    #updateScenery (deltaTime) {
+        if (!this.#sceneryEnabled || !this.#motion?.enabled) {
+            return
+        }
+
+        const speed = (this.#motion.speed || 1) * 50
+        const direction = this.#getSceneryDirection()
+        this.#sceneryOffset += speed * deltaTime * direction
+        this.#renderScenery()
+    }
+
+
+    #getSceneryDirection () {
+        const dir = this.#motion?.direction || 'e'
+        const directionMap = {
+            e: 1,
+            w: -1,
+            ne: 1,
+            se: 1,
+            nw: -1,
+            sw: -1,
+            n: -1,
+            s: 1
+        }
+        return directionMap[dir] || 1
+    }
+
+
+    #renderScenery () {
+        if (!this.#sceneryCtx || !this.#sceneryCanvas) {
+            return
+        }
+
+        const ctx = this.#sceneryCtx
+        const width = this.#sceneryCanvas.width
+        const height = this.#sceneryCanvas.height
+
+        ctx.clearRect(0, 0, width, height)
+
+        if (!this.#sceneryEnabled || !this.#motion?.enabled) {
+            return
+        }
+
+        const mode = this.#motion.mode || 'sidescroller'
+
+        if (mode === 'sidescroller') {
+            this.#renderSidescroller(ctx, width, height)
+        } else if (mode === 'topdown') {
+            this.#renderTopdown(ctx, width, height)
+        }
+    }
+
+
+    #renderSidescroller (ctx, width, height) {
+        const groundY = height - 20
+
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.moveTo(0, groundY)
+        ctx.lineTo(width, groundY)
+        ctx.stroke()
+
+        const poleSpacing = 80
+        const poleHeight = 60
+        const offset = ((this.#sceneryOffset % poleSpacing) + poleSpacing) % poleSpacing
+
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'
+        ctx.lineWidth = 3
+
+        for (let x = -offset; x < width + poleSpacing; x += poleSpacing) {
+            ctx.beginPath()
+            ctx.moveTo(x, groundY)
+            ctx.lineTo(x, groundY - poleHeight)
+            ctx.stroke()
+
+            ctx.beginPath()
+            ctx.arc(x, groundY - poleHeight - 5, 5, 0, Math.PI * 2)
+            ctx.stroke()
+        }
+    }
+
+
+    #renderTopdown (ctx, width, height) {
+        const lineSpacing = 40
+        const dir = this.#motion?.direction || 'e'
+        const offset = Math.abs(this.#sceneryOffset % lineSpacing)
+
+        const horizontal = ['e', 'w', 'ne', 'nw', 'se', 'sw'].includes(dir)
+        const vertical = ['n', 's', 'ne', 'nw', 'se', 'sw'].includes(dir)
+        const dirX = ['w', 'nw', 'sw'].includes(dir) ? -1 : 1
+        const dirY = ['n', 'ne', 'nw'].includes(dir) ? -1 : 1
+
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
+        ctx.lineWidth = 1
+
+        const offsetX = horizontal ? offset * dirX : 0
+        const offsetY = vertical ? offset * dirY : 0
+
+        for (let y = -lineSpacing + offsetY; y < height + lineSpacing; y += lineSpacing) {
+            ctx.beginPath()
+            ctx.moveTo(0, y)
+            ctx.lineTo(width, y)
+            ctx.stroke()
+        }
+
+        for (let x = -lineSpacing + offsetX; x < width + lineSpacing; x += lineSpacing) {
+            ctx.beginPath()
+            ctx.moveTo(x, 0)
+            ctx.lineTo(x, height)
+            ctx.stroke()
+        }
+    }
+
+
     #render () {
         if (!this.#renderer || !this.#scene) {
             return
         }
+        this.#renderScenery()
         this.#renderer.render(this.#scene)
     }
 
@@ -284,6 +468,7 @@ export default class AnimationPreview extends BaseEditorComponent {
         }))
     }
 
+
 }
 
 
@@ -310,16 +495,20 @@ const STYLES = buildEditorStyles(
         align-items: center;
         justify-content: center;
         padding: var(--spacing-lg);
-        background-image:
-            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-        background-size: 32px 32px;
         background-color: var(--bg-tertiary);
+        position: relative;
+    }
+
+    .scenery-canvas {
+        position: absolute;
+        pointer-events: none;
     }
 
     .preview-canvas {
         image-rendering: pixelated;
         image-rendering: crisp-edges;
+        position: relative;
+        z-index: 1;
     }
 
     .preview-controls {
@@ -332,6 +521,7 @@ const STYLES = buildEditorStyles(
         padding: var(--spacing-xs);
         background: var(--bg-secondary);
         border-radius: var(--radius-md);
+        z-index: 10;
     }
 
     .preview-controls button {
@@ -361,6 +551,11 @@ const STYLES = buildEditorStyles(
     }
 
     .preview-controls button:active {
+        background: var(--accent);
+        color: var(--bg-primary);
+    }
+
+    .preview-controls button.active {
         background: var(--accent);
         color: var(--bg-primary);
     }
