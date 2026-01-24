@@ -297,27 +297,32 @@ export default class AnimationPreview extends BaseEditorComponent {
         }
 
         if (this.#gamePreview) {
-            if (this.#unitsInView) {
-                this.#gamePreview.setUnitsInView(this.#unitsInView)
-            }
-            if (this.#backgroundRegion) {
-                this.#gamePreview.setBackgroundRegion(this.#backgroundRegion)
-            }
-            if (this.#size) {
-                this.#gamePreview.setSize(this.#size)
-            }
-            if (this.#anchor) {
-                this.#gamePreview.setAnchor(this.#anchor)
-            }
-            if (this.#motion) {
-                this.#gamePreview.setMotion(this.#motion)
-            }
-            if (this.#animation) {
-                this.#gamePreview.setAnimation(this.#animation)
-            }
+            this.#applyGamePreviewSettings()
         }
 
         this.#syncPreviewVisibility()
+    }
+
+
+    #applyGamePreviewSettings () {
+        if (this.#unitsInView) {
+            this.#gamePreview.setUnitsInView(this.#unitsInView)
+        }
+        if (this.#backgroundRegion) {
+            this.#gamePreview.setBackgroundRegion(this.#backgroundRegion)
+        }
+        if (this.#size) {
+            this.#gamePreview.setSize(this.#size)
+        }
+        if (this.#anchor) {
+            this.#gamePreview.setAnchor(this.#anchor)
+        }
+        if (this.#motion) {
+            this.#gamePreview.setMotion(this.#motion)
+        }
+        if (this.#animation) {
+            this.#gamePreview.setAnimation(this.#animation)
+        }
     }
 
 
@@ -508,8 +513,6 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#pinchStartDistance = null
         this.#pinchStartZoom = null
     }
-
-
 
 
     #updateZoomSlider () {

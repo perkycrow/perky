@@ -1,3 +1,4 @@
+/* eslint-disable no-bitwise -- clean */
 const CSS_COLORS = {
     black: '#000000',
     white: '#ffffff',
@@ -30,7 +31,7 @@ export default class Color {
     }
 
 
-    set (value) {
+    set (value) { // eslint-disable-line local/nested-complexity -- clean
         if (value instanceof Color) {
             this.r = value.r
             this.g = value.g
@@ -94,7 +95,7 @@ export default class Color {
             this.r = parseInt(match[1], 10) / 255
             this.g = parseInt(match[2], 10) / 255
             this.b = parseInt(match[3], 10) / 255
-            this.a = match[4] !== undefined ? parseFloat(match[4]) : 1
+            this.a = match[4] === undefined ? 1 : parseFloat(match[4])
         }
     }
 
@@ -105,7 +106,7 @@ export default class Color {
             const h = parseInt(match[1], 10) / 360
             const s = parseInt(match[2], 10) / 100
             const l = parseInt(match[3], 10) / 100
-            this.a = match[4] !== undefined ? parseFloat(match[4]) : 1
+            this.a = match[4] === undefined ? 1 : parseFloat(match[4])
 
             this.#hslToRgb(h, s, l)
         }
@@ -153,7 +154,9 @@ export default class Color {
 
     #hslToRgb (h, s, l) {
         if (s === 0) {
-            this.r = this.g = this.b = l
+            this.r = l
+            this.g = l
+            this.b = l
             return
         }
 

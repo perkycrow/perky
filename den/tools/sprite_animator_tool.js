@@ -63,34 +63,45 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
 
 
     #selectAnimator (name, {animator, spritesheet} = {}) {
-        const {textureSystem} = this.params
         const animatorConfig = name ? this.#animators[name] : null
-
         this.#animatorConfig = animatorConfig || null
+        this.#animator = this.#resolveAnimator(animator, animatorConfig)
+        this.#spritesheet = this.#resolveSpritesheet(spritesheet, animatorConfig)
+        this.#selectedAnimation = null
+        this.#render()
+    }
 
+
+    #resolveAnimator (animator, animatorConfig) {
         if (animator) {
-            this.#animator = animator
-        } else if (animatorConfig && textureSystem) {
-            this.#animator = new SpriteAnimator({
+            return animator
+        }
+
+        const {textureSystem} = this.params
+        if (animatorConfig && textureSystem) {
+            return new SpriteAnimator({
                 sprite: null,
                 config: animatorConfig,
                 textureSystem
             })
-        } else {
-            this.#animator = null
         }
 
+        return null
+    }
+
+
+    #resolveSpritesheet (spritesheet, animatorConfig) {
         if (spritesheet) {
-            this.#spritesheet = spritesheet
-        } else if (animatorConfig && textureSystem) {
-            const spritesheetId = animatorConfig.spritesheet
-            this.#spritesheet = spritesheetId ? textureSystem.getSpritesheet(spritesheetId) : null
-        } else {
-            this.#spritesheet = null
+            return spritesheet
         }
 
-        this.#selectedAnimation = null
-        this.#render()
+        const {textureSystem} = this.params
+        if (animatorConfig && textureSystem) {
+            const spritesheetId = animatorConfig.spritesheet
+            return spritesheetId ? textureSystem.getSpritesheet(spritesheetId) : null
+        }
+
+        return null
     }
 
 

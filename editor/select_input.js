@@ -166,6 +166,10 @@ export default class SelectInput extends HTMLElement {
             return
         }
 
+        this.#handleOpenKeyDown(e)
+    }
+
+    #handleOpenKeyDown (e) {
         switch (e.key) {
         case 'Escape':
             e.preventDefault()
@@ -191,6 +195,7 @@ export default class SelectInput extends HTMLElement {
             break
         }
     }
+
 
     constructor () {
         super()
