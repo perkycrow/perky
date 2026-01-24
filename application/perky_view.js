@@ -1,5 +1,6 @@
 import {uniqueId} from '../core/utils.js'
 import PerkyModule from '../core/perky_module.js'
+import {createElement} from './dom_utils.js'
 
 
 export default class PerkyView extends PerkyModule {
@@ -156,11 +157,10 @@ export default class PerkyView extends PerkyModule {
 
 
     static defaultElement (params) {
-        const element = document.createElement('div')
-
-        element.id = params.id || uniqueId('perky_view', 'perky_view')
-
-        element.className = params.className || 'perky-view'
+        const element = createElement('div', {
+            id: params.id || uniqueId('perky_view', 'perky_view'),
+            class: params.className || 'perky-view'
+        })
 
         const styles = {
             display: 'block',

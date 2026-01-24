@@ -1,6 +1,6 @@
 import '../editor/perky_code.js'
 import {toKebabCase} from '../core/utils.js'
-import {adoptStyleSheets} from '../application/dom_utils.js'
+import {adoptStyleSheets, createElement} from '../application/dom_utils.js'
 import {executeContainer, renderAction} from './runtime.js'
 import {getTabUrl} from './utils/paths.js'
 import {docPageStyles} from './styles/doc_page.styles.js'
@@ -143,8 +143,7 @@ export default class DocPage extends HTMLElement {
     #buildDOM () {
         adoptStyleSheets(this.shadowRoot, docPageStyles)
 
-        const container = document.createElement('div')
-        container.className = 'doc-page'
+        const container = createElement('div', {class: 'doc-page'})
         this.shadowRoot.appendChild(container)
 
         if (this.#doc) {
@@ -172,22 +171,17 @@ export default class DocPage extends HTMLElement {
 
 
     #createLayout () {
-        const layout = document.createElement('div')
-        layout.className = 'doc-layout'
-
-        const main = document.createElement('div')
-        main.className = 'doc-main'
+        const layout = createElement('div', {class: 'doc-layout'})
+        const main = createElement('div', {class: 'doc-main'})
 
         main.appendChild(this.#createHeader())
 
-        this.#contentEl = document.createElement('div')
-        this.#contentEl.className = 'doc-content'
+        this.#contentEl = createElement('div', {class: 'doc-content'})
         main.appendChild(this.#contentEl)
 
         layout.appendChild(main)
 
-        this.#tocEl = document.createElement('aside')
-        this.#tocEl.className = 'doc-toc'
+        this.#tocEl = createElement('aside', {class: 'doc-toc'})
         layout.appendChild(this.#tocEl)
 
         return layout
@@ -195,8 +189,7 @@ export default class DocPage extends HTMLElement {
 
 
     #createHeader () {
-        const header = document.createElement('header')
-        header.className = 'doc-header'
+        const header = createElement('header', {class: 'doc-header'})
 
         header.appendChild(this.#createTitleRow())
 
@@ -209,11 +202,8 @@ export default class DocPage extends HTMLElement {
 
 
     #createTitleRow () {
-        const titleRow = document.createElement('div')
-        titleRow.className = 'doc-title-row'
-
-        const title = document.createElement('h1')
-        title.textContent = this.#doc.title
+        const titleRow = createElement('div', {class: 'doc-title-row'})
+        const title = createElement('h1', {text: this.#doc.title})
         titleRow.appendChild(title)
 
         return titleRow
@@ -221,8 +211,7 @@ export default class DocPage extends HTMLElement {
 
 
     #createTabs () {
-        const tabs = document.createElement('div')
-        tabs.className = 'doc-tabs'
+        const tabs = createElement('div', {class: 'doc-tabs'})
 
         tabs.appendChild(this.#createTab('Doc', 'doc'))
 
@@ -267,9 +256,10 @@ export default class DocPage extends HTMLElement {
 
     #createTab (label, tab) {
         const isActive = this.#activeTab === tab
-        const link = document.createElement('a')
-        link.className = `doc-tab ${isActive ? 'active' : ''}`
-        link.textContent = label
+        const link = createElement('a', {
+            class: `doc-tab ${isActive ? 'active' : ''}`,
+            text: label
+        })
         link.href = getTabUrl(tab)
         return link
     }
@@ -282,19 +272,14 @@ export default class DocPage extends HTMLElement {
 
         const sections = this.#doc.blocks.filter(b => b.type === 'section')
         if (sections.length > 1) {
-            const tocTitle = document.createElement('div')
-            tocTitle.className = 'doc-toc-title'
-            tocTitle.textContent = 'Sections'
+            const tocTitle = createElement('div', {class: 'doc-toc-title', text: 'Sections'})
             this.#tocEl.appendChild(tocTitle)
 
-            const tocList = document.createElement('nav')
-            tocList.className = 'doc-toc-list'
+            const tocList = createElement('nav', {class: 'doc-toc-list'})
 
             for (const section of sections) {
                 const sectionId = toKebabCase(section.title)
-                const link = document.createElement('a')
-                link.className = 'doc-toc-link'
-                link.textContent = section.title
+                const link = createElement('a', {class: 'doc-toc-link', text: section.title})
                 link.href = `#${sectionId}`
                 tocList.appendChild(link)
             }
@@ -319,16 +304,15 @@ export default class DocPage extends HTMLElement {
         const api = this.#api
 
         if (api.extends) {
-            const extendsEl = document.createElement('div')
-            extendsEl.className = 'api-extends'
-            extendsEl.innerHTML = `extends <code>${api.extends}</code>`
+            const extendsEl = createElement('div', {
+                class: 'api-extends',
+                html: `extends <code>${api.extends}</code>`
+            })
             this.#contentEl.appendChild(extendsEl)
         }
 
         if (api.file) {
-            const fileEl = document.createElement('div')
-            fileEl.className = 'api-file'
-            fileEl.textContent = api.file
+            const fileEl = createElement('div', {class: 'api-file', text: api.file})
             this.#contentEl.appendChild(fileEl)
         }
 
@@ -342,13 +326,10 @@ export default class DocPage extends HTMLElement {
                 {key: 'setters', title: 'Setters'}
             ]
 
-        const tocTitle = document.createElement('div')
-        tocTitle.className = 'doc-toc-title'
-        tocTitle.textContent = 'API'
+        const tocTitle = createElement('div', {class: 'doc-toc-title', text: 'API'})
         this.#tocEl.appendChild(tocTitle)
 
-        const tocList = document.createElement('nav')
-        tocList.className = 'doc-toc-list'
+        const tocList = createElement('nav', {class: 'doc-toc-list'})
 
         for (const cat of categories) {
             const items = getApiItems(api, cat)
@@ -358,13 +339,9 @@ export default class DocPage extends HTMLElement {
             }
 
             const sectionId = toKebabCase(cat.title)
-            const sectionEl = document.createElement('div')
-            sectionEl.className = 'api-section'
-            sectionEl.id = sectionId
+            const sectionEl = createElement('div', {class: 'api-section', id: sectionId})
 
-            const sectionTitle = document.createElement('h2')
-            sectionTitle.className = 'api-section-title'
-            sectionTitle.textContent = cat.title
+            const sectionTitle = createElement('h2', {class: 'api-section-title', text: cat.title})
             sectionEl.appendChild(sectionTitle)
 
             for (const item of items) {
@@ -373,9 +350,7 @@ export default class DocPage extends HTMLElement {
 
             this.#contentEl.appendChild(sectionEl)
 
-            const tocLink = document.createElement('a')
-            tocLink.className = 'doc-toc-link'
-            tocLink.textContent = cat.title
+            const tocLink = createElement('a', {class: 'doc-toc-link', text: cat.title})
             tocLink.href = `#${sectionId}`
             tocList.appendChild(tocLink)
         }
@@ -392,13 +367,10 @@ export default class DocPage extends HTMLElement {
             return
         }
 
-        const tocTitle = document.createElement('div')
-        tocTitle.className = 'doc-toc-title'
-        tocTitle.textContent = 'Tests'
+        const tocTitle = createElement('div', {class: 'doc-toc-title', text: 'Tests'})
         this.#tocEl.appendChild(tocTitle)
 
-        const tocList = document.createElement('nav')
-        tocList.className = 'doc-toc-list'
+        const tocList = createElement('nav', {class: 'doc-toc-list'})
 
         for (const describe of this.#tests.describes) {
             this.#contentEl.appendChild(this.#renderDescribe(describe, tocList))
@@ -481,31 +453,25 @@ export default class DocPage extends HTMLElement {
 
 
     #renderContainer (block, setup = null) {
-        const wrapper = document.createElement('div')
-        wrapper.className = 'doc-container-block'
+        const wrapper = createElement('div', {class: 'doc-container-block'})
 
         if (block.title) {
-            const titleEl = document.createElement('div')
-            titleEl.className = 'doc-container-title'
-            titleEl.textContent = block.title
+            const titleEl = createElement('div', {class: 'doc-container-title', text: block.title})
             wrapper.appendChild(titleEl)
         }
 
-        const container = document.createElement('div')
-        container.className = 'doc-container-element'
+        const container = createElement('div', {class: 'doc-container-element'})
         if (block.width) {
             container.style.width = `${block.width}px`
         }
         container.style.height = `${block.height}px`
 
-        const button = document.createElement('button')
-        button.className = 'doc-action-btn'
-        button.innerHTML = `
+        const button = createElement('button', {class: 'doc-action-btn', html: `
             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8 5v14l11-7z"/>
             </svg>
             Run
-        `
+        `})
 
         const setResetState = () => {
             button.classList.add('doc-action-btn--reset')
@@ -517,13 +483,11 @@ export default class DocPage extends HTMLElement {
             `
         }
 
-        const overlayBtn = document.createElement('button')
-        overlayBtn.className = 'doc-container-run-overlay'
-        overlayBtn.innerHTML = `
+        const overlayBtn = createElement('button', {class: 'doc-container-run-overlay', html: `
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8 5v14l11-7z"/>
             </svg>
-        `
+        `})
         overlayBtn.addEventListener('click', () => {
             overlayBtn.remove()
             executeContainer(block, container, setup)
@@ -535,11 +499,9 @@ export default class DocPage extends HTMLElement {
 
         this.#containers.push(container)
 
-        const codeWrapper = document.createElement('div')
-        codeWrapper.className = 'doc-container-code'
+        const codeWrapper = createElement('div', {class: 'doc-container-code'})
 
-        const codeEl = document.createElement('perky-code')
-        codeEl.setAttribute('title', block.title || 'Container')
+        const codeEl = createElement('perky-code', {attrs: {title: block.title || 'Container'}})
         codeEl.code = this.#getSourceFor(block) || block.source
         codeWrapper.appendChild(codeEl)
 
@@ -560,21 +522,15 @@ export default class DocPage extends HTMLElement {
 
     #renderSection (block) {
         const sectionId = toKebabCase(block.title)
-        const wrapper = document.createElement('div')
-        wrapper.className = 'doc-section'
-        wrapper.id = sectionId
+        const wrapper = createElement('div', {class: 'doc-section', id: sectionId})
 
-        const header = document.createElement('h2')
-        header.className = 'doc-section-title'
-        header.textContent = block.title
+        const header = createElement('h2', {class: 'doc-section-title', text: block.title})
         wrapper.appendChild(header)
 
         if (block.setup) {
-            const setupEl = document.createElement('div')
-            setupEl.className = 'doc-setup-block'
+            const setupEl = createElement('div', {class: 'doc-setup-block'})
 
-            const codeEl = document.createElement('perky-code')
-            codeEl.setAttribute('title', 'Setup')
+            const codeEl = createElement('perky-code', {attrs: {title: 'Setup'}})
             codeEl.code = this.#getSetupSource(block.setup)
             setupEl.appendChild(codeEl)
 
@@ -582,8 +538,7 @@ export default class DocPage extends HTMLElement {
             this.#setupIndex++
         }
 
-        const content = document.createElement('div')
-        content.className = 'doc-section-content'
+        const content = createElement('div', {class: 'doc-section-content'})
 
         for (const childBlock of block.blocks) {
             content.appendChild(this.#renderBlock(childBlock, block.setup))

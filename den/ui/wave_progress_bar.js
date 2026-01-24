@@ -1,4 +1,5 @@
 import PerkyModule from '../../core/perky_module.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class WaveProgressBar extends PerkyModule {
@@ -103,8 +104,7 @@ export default class WaveProgressBar extends PerkyModule {
 
 
     #applyStyles () {
-        const style = document.createElement('style')
-        style.textContent = `
+        const style = createElement('style', {text: `
             .wave-progress {
                 position: absolute;
                 bottom: 7%;
@@ -162,7 +162,7 @@ export default class WaveProgressBar extends PerkyModule {
                 letter-spacing: 4px;
                 text-transform: uppercase;
             }
-        `
+        `})
         this.root.appendChild(style)
     }
 

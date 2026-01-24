@@ -5,6 +5,7 @@ import '../../editor/tools/animation_timeline.js'
 import '../../editor/tools/spritesheet_viewer.js'
 import '../../editor/number_input.js'
 import SpriteAnimator from '../../render/sprite_animator.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class SpriteAnimatorTool extends BaseFloatingTool {
@@ -337,9 +338,7 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
         const select = this.#contentEl.querySelector('.animator-select')
 
         for (const [name, animatorEntry] of Object.entries(this.#animators)) {
-            const option = document.createElement('option')
-            option.value = name
-            option.textContent = name
+            const option = createElement('option', {text: name, attrs: {value: name}})
             option.selected = animatorEntry === this.#animatorConfig
             select.appendChild(option)
         }
@@ -424,9 +423,7 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
         const select = this.#contentEl.querySelector('.animation-select')
 
         for (const anim of animations) {
-            const option = document.createElement('option')
-            option.value = anim.$id
-            option.textContent = anim.$id
+            const option = createElement('option', {text: anim.$id, attrs: {value: anim.$id}})
             option.selected = anim === this.#selectedAnimation
             select.appendChild(option)
         }
@@ -463,8 +460,7 @@ export default class SpriteAnimatorTool extends BaseFloatingTool {
             <span class="info-item frames-count">frames: ${anim.totalFrames}</span>
         `
 
-        const fpsInput = document.createElement('number-input')
-        fpsInput.className = 'fps-input'
+        const fpsInput = createElement('number-input', {class: 'fps-input'})
         fpsInput.setLabel('fps')
         fpsInput.setValue(anim.fps)
         fpsInput.setStep(1)
