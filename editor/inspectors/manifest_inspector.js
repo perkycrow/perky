@@ -1,6 +1,7 @@
 import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
 import Manifest from '../../application/manifest.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class ManifestInspector extends BaseInspector {
@@ -384,7 +385,7 @@ export default class ManifestInspector extends BaseInspector {
 
         this.clearContent()
 
-        const container = document.createElement('div')
+        const container = createElement('div')
         this.#mainContainer = container
 
         container.appendChild(this.#createConfigSection())
@@ -431,32 +432,26 @@ export default class ManifestInspector extends BaseInspector {
 
 
     #createSection (title, key, count = null) {
-        const section = document.createElement('div')
-        section.className = 'section'
-
-        const header = document.createElement('div')
-        header.className = 'section-header'
-
-        const titleEl = document.createElement('div')
-        titleEl.className = 'section-title'
-        titleEl.textContent = title
+        const section = createElement('div', {class: 'section'})
+        const header = createElement('div', {class: 'section-header'})
+        const titleEl = createElement('div', {class: 'section-title', text: title})
 
         if (count !== null) {
-            const countEl = document.createElement('span')
-            countEl.className = 'section-count'
-            countEl.textContent = count
+            const countEl = createElement('span', {class: 'section-count', text: count})
             titleEl.appendChild(countEl)
         }
 
-        const toggle = document.createElement('span')
-        toggle.className = `section-toggle ${this.#sectionsState[key] ? '' : 'collapsed'}`
-        toggle.textContent = '▼'
+        const toggle = createElement('span', {
+            class: `section-toggle ${this.#sectionsState[key] ? '' : 'collapsed'}`,
+            text: '▼'
+        })
 
         header.appendChild(titleEl)
         header.appendChild(toggle)
 
-        const content = document.createElement('div')
-        content.className = `section-content ${this.#sectionsState[key] ? '' : 'collapsed'}`
+        const content = createElement('div', {
+            class: `section-content ${this.#sectionsState[key] ? '' : 'collapsed'}`
+        })
 
         header.addEventListener('click', () => {
             this.#sectionsState[key] = !this.#sectionsState[key]
@@ -489,20 +484,15 @@ export default class ManifestInspector extends BaseInspector {
 
 
     #createDataGrid (data, depth = 0) {
-        const grid = document.createElement('div')
-        grid.className = 'data-grid'
+        const grid = createElement('div', {class: 'data-grid'})
 
         if (depth > 0) {
             grid.style.marginLeft = `${depth * 12}px`
         }
 
         for (const [key, value] of Object.entries(data)) {
-            const keyEl = document.createElement('div')
-            keyEl.className = 'data-key'
-            keyEl.textContent = key
-
-            const valueEl = document.createElement('div')
-            valueEl.className = 'data-value'
+            const keyEl = createElement('div', {class: 'data-key', text: key})
+            const valueEl = createElement('div', {class: 'data-value'})
 
             if (value && typeof value === 'object' && !Array.isArray(value)) {
                 valueEl.appendChild(this.#createDataGrid(value, depth + 1))
@@ -521,28 +511,25 @@ export default class ManifestInspector extends BaseInspector {
 
 
     #createFiltersBar (allAssets) {
-        const container = document.createElement('div')
-        container.className = 'filters-container'
+        const container = createElement('div', {class: 'filters-container'})
 
-
-        const searchContainer = document.createElement('div')
-        searchContainer.className = 'search-container'
+        const searchContainer = createElement('div', {class: 'search-container'})
         if (this.#filterState.searchQuery) {
             searchContainer.classList.add('has-value')
         }
 
+        const searchBar = createElement('input', {
+            type: 'text',
+            class: 'search-bar',
+            placeholder: 'Search by name, id, type or tag...',
+            value: this.#filterState.searchQuery
+        })
 
-        const searchBar = document.createElement('input')
-        searchBar.type = 'text'
-        searchBar.className = 'search-bar'
-        searchBar.placeholder = 'Search by name, id, type or tag...'
-        searchBar.value = this.#filterState.searchQuery
-
-
-        const clearButton = document.createElement('div')
-        clearButton.className = 'search-clear'
-        clearButton.textContent = '×'
-        clearButton.title = 'Clear search'
+        const clearButton = createElement('div', {
+            class: 'search-clear',
+            text: '×',
+            title: 'Clear search'
+        })
 
         const updateSearch = (value) => {
             searchBar.value = value
@@ -575,8 +562,7 @@ export default class ManifestInspector extends BaseInspector {
         container.appendChild(searchContainer)
 
 
-        const quickFilters = document.createElement('div')
-        quickFilters.className = 'filter-buttons'
+        const quickFilters = createElement('div', {class: 'filter-buttons'})
 
         const typeStats = getTypeStats(allAssets)
         for (const [type, count] of Object.entries(typeStats)) {
@@ -619,7 +605,7 @@ export default class ManifestInspector extends BaseInspector {
         content.appendChild(this.#createFiltersBar(allAssets))
 
 
-        const assetsListContainer = document.createElement('div')
+        const assetsListContainer = createElement('div')
         this.#assetsListContainer = assetsListContainer
         content.appendChild(assetsListContainer)
 
@@ -643,18 +629,19 @@ export default class ManifestInspector extends BaseInspector {
 
 
     #createTypeGroup (type, assets, hasActiveSearch) {
-        const group = document.createElement('div')
-        group.className = 'asset-type-group'
+        const group = createElement('div', {class: 'asset-type-group'})
 
-        const typeHeader = document.createElement('div')
-        typeHeader.className = 'asset-type-header'
-        typeHeader.style.cursor = 'pointer'
-        typeHeader.textContent = `${type} (${assets.length})`
+        const typeHeader = createElement('div', {
+            class: 'asset-type-header',
+            style: {cursor: 'pointer'},
+            text: `${type} (${assets.length})`
+        })
 
         const isCollapsed = this.#typeGroupsState[type] === false
 
-        const typeContent = document.createElement('div')
-        typeContent.style.display = isCollapsed ? 'none' : 'block'
+        const typeContent = createElement('div', {
+            style: {display: isCollapsed ? 'none' : 'block'}
+        })
 
         typeHeader.addEventListener('click', () => {
             this.#typeGroupsState[type] = typeContent.style.display === 'none'
@@ -738,29 +725,20 @@ function getTagStats (assets) {
 
 
 function createFilterChip (label, count, onClick) {
-    const chip = document.createElement('div')
-    chip.className = 'filter-button'
-    chip.innerHTML = `${label}<span class="count">${count}</span>`
+    const chip = createElement('div', {
+        class: 'filter-button',
+        html: `${label}<span class="count">${count}</span>`
+    })
     chip.addEventListener('click', onClick)
     return chip
 }
 
 
 function createAssetHeader (asset) {
-    const header = document.createElement('div')
-    header.className = 'asset-header'
-
-    const icon = document.createElement('span')
-    icon.className = 'asset-icon'
-    icon.innerHTML = getAssetIcon(asset)
-
-    const name = document.createElement('span')
-    name.className = 'asset-name'
-    name.textContent = asset.name || asset.id
-
-    const typeBadge = document.createElement('span')
-    typeBadge.className = 'asset-type-badge'
-    typeBadge.textContent = asset.type
+    const header = createElement('div', {class: 'asset-header'})
+    const icon = createElement('span', {class: 'asset-icon', html: getAssetIcon(asset)})
+    const name = createElement('span', {class: 'asset-name', text: asset.name || asset.id})
+    const typeBadge = createElement('span', {class: 'asset-type-badge', text: asset.type})
 
     header.appendChild(icon)
     header.appendChild(name)
@@ -771,17 +749,17 @@ function createAssetHeader (asset) {
 
 
 function createAssetDetails (asset) {
-    const details = document.createElement('div')
-    details.className = 'asset-details'
+    const details = createElement('div', {class: 'asset-details'})
 
     addAssetRow(details, 'id', asset.id)
 
     if (asset.url) {
-        const urlValue = document.createElement('a')
-        urlValue.className = 'asset-link'
-        urlValue.href = asset.url
-        urlValue.target = '_blank'
-        urlValue.textContent = asset.url
+        const urlValue = createElement('a', {
+            class: 'asset-link',
+            href: asset.url,
+            text: asset.url,
+            attrs: {target: '_blank'}
+        })
         addAssetRowElement(details, 'url', urlValue)
     }
 
@@ -798,13 +776,10 @@ function createAssetTags (asset) {
         return null
     }
 
-    const tagsContainer = document.createElement('div')
-    tagsContainer.className = 'asset-tags'
+    const tagsContainer = createElement('div', {class: 'asset-tags'})
 
     for (const tag of asset.tags) {
-        const tagEl = document.createElement('span')
-        tagEl.className = 'asset-tag'
-        tagEl.textContent = tag
+        const tagEl = createElement('span', {class: 'asset-tag', text: tag})
         tagsContainer.appendChild(tagEl)
     }
 
@@ -817,14 +792,9 @@ function createAssetConfig (asset, createDataGrid) {
         return null
     }
 
-    const configSection = document.createElement('div')
-    configSection.className = 'asset-config'
-
-    const configTitle = document.createElement('div')
-    configTitle.className = 'config-title'
-    configTitle.textContent = 'Config'
+    const configSection = createElement('div', {class: 'asset-config'})
+    const configTitle = createElement('div', {class: 'config-title', text: 'Config'})
     configSection.appendChild(configTitle)
-
     configSection.appendChild(createDataGrid(asset.config))
 
     return configSection
@@ -832,15 +802,15 @@ function createAssetConfig (asset, createDataGrid) {
 
 
 function createAssetCard (asset, createDataGrid, hasActiveSearch = false) {
-    const card = document.createElement('div')
-    card.className = 'asset-card'
+    const card = createElement('div', {class: 'asset-card'})
 
     const header = createAssetHeader(asset)
     card.appendChild(header)
 
-    const detailsContainer = document.createElement('div')
     const isCollapsed = !hasActiveSearch
-    detailsContainer.style.display = hasActiveSearch ? 'block' : 'none'
+    const detailsContainer = createElement('div', {
+        style: {display: hasActiveSearch ? 'block' : 'none'}
+    })
 
     if (isCollapsed) {
         header.classList.add('collapsed')
@@ -880,13 +850,8 @@ function createAssetCard (asset, createDataGrid, hasActiveSearch = false) {
 
 
 function addAssetRow (container, label, value) {
-    const labelEl = document.createElement('div')
-    labelEl.className = 'asset-label'
-    labelEl.textContent = label
-
-    const valueEl = document.createElement('div')
-    valueEl.className = 'asset-value'
-    valueEl.textContent = value
+    const labelEl = createElement('div', {class: 'asset-label', text: label})
+    const valueEl = createElement('div', {class: 'asset-value', text: value})
 
     container.appendChild(labelEl)
     container.appendChild(valueEl)
@@ -894,12 +859,8 @@ function addAssetRow (container, label, value) {
 
 
 function addAssetRowElement (container, label, element) {
-    const labelEl = document.createElement('div')
-    labelEl.className = 'asset-label'
-    labelEl.textContent = label
-
-    const valueEl = document.createElement('div')
-    valueEl.className = 'asset-value'
+    const labelEl = createElement('div', {class: 'asset-label', text: label})
+    const valueEl = createElement('div', {class: 'asset-value'})
     valueEl.appendChild(element)
 
     container.appendChild(labelEl)
@@ -965,12 +926,8 @@ function createSourcePreview (asset) {
         return null
     }
 
-    const preview = document.createElement('div')
-    preview.className = 'asset-preview'
-
-    const img = document.createElement('img')
-    img.src = src
-    img.alt = asset.name || asset.id
+    const preview = createElement('div', {class: 'asset-preview'})
+    const img = createElement('img', {src, alt: asset.name || asset.id})
     preview.appendChild(img)
 
     return preview
@@ -992,14 +949,10 @@ function createAudioPreview (asset) {
         return null
     }
 
-    const preview = document.createElement('div')
-    preview.className = 'asset-preview'
-
-    const audio = document.createElement('audio')
+    const preview = createElement('div', {class: 'asset-preview'})
+    const audio = createElement('audio', {src: audioSrc})
     audio.controls = true
     audio.preload = 'metadata'
-    audio.src = audioSrc
-
     audio.setAttribute('controlsList', 'nodownload')
 
     preview.appendChild(audio)
