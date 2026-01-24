@@ -33,28 +33,28 @@ describe('BaseFloatingTool', () => {
 
     describe('initialization', () => {
 
-        test('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(tool).toBeInstanceOf(HTMLElement)
         })
 
 
-        test('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(tool.shadowRoot).not.toBeNull()
         })
 
 
-        test('should have static toolName', () => {
+        test('has static toolName', () => {
             expect(TestFloatingTool.toolName).toBe('Test Tool')
         })
 
 
-        test('should have default dimensions', () => {
+        test('has default dimensions', () => {
             expect(BaseFloatingTool.defaultWidth).toBe(400)
             expect(BaseFloatingTool.defaultHeight).toBe(250)
         })
 
 
-        test('should be resizable by default', () => {
+        test('is resizable by default', () => {
             expect(BaseFloatingTool.resizable).toBe(true)
         })
 
@@ -63,19 +63,19 @@ describe('BaseFloatingTool', () => {
 
     describe('params', () => {
 
-        test('should have empty params by default', () => {
+        test('has empty params by default', () => {
             expect(tool.params).toEqual({})
         })
 
 
-        test('should set params via setParams', () => {
+        test('sets params via setParams', () => {
             const params = {foo: 'bar', num: 42}
             tool.setParams(params)
             expect(tool.params).toEqual(params)
         })
 
 
-        test('should call onParamsSet when params are set', () => {
+        test('calls onParamsSet when params are set', () => {
             const onParamsSetSpy = vi.spyOn(tool, 'onParamsSet')
             const params = {key: 'value'}
             tool.setParams(params)
@@ -87,19 +87,19 @@ describe('BaseFloatingTool', () => {
 
     describe('options', () => {
 
-        test('should have empty options by default', () => {
+        test('has empty options by default', () => {
             expect(tool.options).toEqual({})
         })
 
 
-        test('should set options via setOptions', () => {
+        test('sets options via setOptions', () => {
             const options = {theme: 'dark', enabled: true}
             tool.setOptions(options)
             expect(tool.options).toEqual(options)
         })
 
 
-        test('should call onOptionsSet when options are set', () => {
+        test('calls onOptionsSet when options are set', () => {
             const onOptionsSetSpy = vi.spyOn(tool, 'onOptionsSet')
             const options = {setting: 'value'}
             tool.setOptions(options)
@@ -111,22 +111,22 @@ describe('BaseFloatingTool', () => {
 
     describe('lifecycle hooks', () => {
 
-        test('onParamsSet should be callable', () => {
+        test('onParamsSet is callable', () => {
             expect(() => tool.onParamsSet()).not.toThrow()
         })
 
 
-        test('onOptionsSet should be callable', () => {
+        test('onOptionsSet is callable', () => {
             expect(() => tool.onOptionsSet()).not.toThrow()
         })
 
 
-        test('onOpen should be callable', () => {
+        test('onOpen is callable', () => {
             expect(() => tool.onOpen()).not.toThrow()
         })
 
 
-        test('onClose should be callable', () => {
+        test('onClose is callable', () => {
             expect(() => tool.onClose()).not.toThrow()
         })
 
@@ -135,13 +135,13 @@ describe('BaseFloatingTool', () => {
 
     describe('buildStyles', () => {
 
-        test('should return a string', () => {
+        test('returns a string', () => {
             const styles = BaseFloatingTool.buildStyles('.custom { color: red; }')
             expect(typeof styles).toBe('string')
         })
 
 
-        test('should include custom styles', () => {
+        test('includes custom styles', () => {
             const customStyle = '.my-class { display: flex; }'
             const styles = BaseFloatingTool.buildStyles(customStyle)
             expect(styles).toContain(customStyle)

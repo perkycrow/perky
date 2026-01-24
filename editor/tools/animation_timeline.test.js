@@ -59,23 +59,23 @@ describe('AnimationTimeline', () => {
 
     describe('initialization', () => {
 
-        test('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(timeline).toBeInstanceOf(HTMLElement)
         })
 
 
-        test('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(timeline.shadowRoot).not.toBeNull()
         })
 
 
-        test('should render timeline container', () => {
+        test('renders timeline container', () => {
             const timelineEl = timeline.shadowRoot.querySelector('.timeline')
             expect(timelineEl).not.toBeNull()
         })
 
 
-        test('should be empty initially', () => {
+        test('is empty initially', () => {
             const frames = timeline.shadowRoot.querySelectorAll('.frame')
             expect(frames.length).toBe(0)
         })
@@ -85,7 +85,7 @@ describe('AnimationTimeline', () => {
 
     describe('setFrames', () => {
 
-        test('should render frames', () => {
+        test('renders frames', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -94,7 +94,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should render frame indices', () => {
+        test('renders frame indices', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -106,7 +106,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should render frame thumbnails', () => {
+        test('renders frame thumbnails', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -117,7 +117,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should render events when present', () => {
+        test('renders events when present', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -128,7 +128,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should render duration inputs for all frames', () => {
+        test('renders duration inputs for all frames', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -137,7 +137,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should clear previous frames when setting new ones', () => {
+        test('clears previous frames when setting new ones', () => {
             timeline.setFrames([{region: null}, {region: null}])
             expect(timeline.shadowRoot.querySelectorAll('.frame').length).toBe(2)
 
@@ -150,7 +150,7 @@ describe('AnimationTimeline', () => {
 
     describe('setCurrentIndex', () => {
 
-        test('should highlight active frame', () => {
+        test('highlights active frame', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -164,7 +164,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should update highlight when index changes', () => {
+        test('updates highlight when index changes', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -177,7 +177,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should not update if index is the same', () => {
+        test('does not update if index is the same', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -194,7 +194,7 @@ describe('AnimationTimeline', () => {
 
     describe('events', () => {
 
-        test('should dispatch frameclick event on frame click', () => {
+        test('dispatches frameclick event on frame click', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -209,7 +209,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should dispatch correct index for each frame', () => {
+        test('dispatches correct index for each frame', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -229,7 +229,7 @@ describe('AnimationTimeline', () => {
     })
 
 
-    test('should set data-index on frames', () => {
+    test('sets data-index on frames', () => {
         const frames = createMockFrames()
         timeline.setFrames(frames)
 
@@ -243,13 +243,13 @@ describe('AnimationTimeline', () => {
 
     describe('drop zone', () => {
 
-        test('should have drop indicator element', () => {
+        test('has drop indicator element', () => {
             const dropIndicator = timeline.shadowRoot.querySelector('.drop-indicator')
             expect(dropIndicator).not.toBeNull()
         })
 
 
-        test('should dispatch framedrop event on spritesheet drop', () => {
+        test('dispatches framedrop event on spritesheet drop', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -279,7 +279,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should add drag-over class during dragover', () => {
+        test('adds drag-over class during dragover', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -300,7 +300,7 @@ describe('AnimationTimeline', () => {
 
     describe('frame reordering', () => {
 
-        test('should have frames that can be dragged', () => {
+        test('has frames that can be dragged', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -310,7 +310,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should add dragging class after pointer drag threshold', () => {
+        test('adds dragging class after pointer drag threshold', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -340,7 +340,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should dispatch framemove event after drag and drop', () => {
+        test('dispatches framemove event after drag and drop', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -388,7 +388,7 @@ describe('AnimationTimeline', () => {
 
     describe('frame deletion', () => {
 
-        test('should have delete button on frames', () => {
+        test('has delete button on frames', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -397,7 +397,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should dispatch framedelete event on delete button click', () => {
+        test('dispatches framedelete event on delete button click', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -412,7 +412,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should dispatch framedelete event on Delete key', () => {
+        test('dispatches framedelete event on Delete key', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
             timeline.setCurrentIndex(2)
@@ -428,7 +428,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should dispatch framedelete event on Backspace key', () => {
+        test('dispatches framedelete event on Backspace key', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
             timeline.setCurrentIndex(1)
@@ -448,7 +448,7 @@ describe('AnimationTimeline', () => {
 
     describe('touch drag handlers', () => {
 
-        test('handleTouchDragOver should add drag-over class and update drop indicator', () => {
+        test('handleTouchDragOver adds drag-over class and updates drop indicator', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -462,7 +462,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('handleTouchDrop should dispatch framedrop event and remove drag-over class', () => {
+        test('handleTouchDrop dispatches framedrop event and removes drag-over class', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -483,7 +483,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('handleTouchDragLeave should remove drag-over class and hide drop indicator', () => {
+        test('handleTouchDragLeave removes drag-over class and hides drop indicator', () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -505,7 +505,7 @@ describe('AnimationTimeline', () => {
 
     describe('flashMovedFrame', () => {
 
-        test('should add just-moved class to frame at specified index', async () => {
+        test('adds just-moved class to frame at specified index', async () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -519,7 +519,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should not throw if index is out of bounds', async () => {
+        test('does not throw if index is out of bounds', async () => {
             const frames = createMockFrames()
             timeline.setFrames(frames)
 
@@ -530,7 +530,7 @@ describe('AnimationTimeline', () => {
         })
 
 
-        test('should not throw if no frames exist', async () => {
+        test('does not throw if no frames exist', async () => {
             expect(() => timeline.flashMovedFrame(0)).not.toThrow()
 
             // Wait for requestAnimationFrame

@@ -36,35 +36,35 @@ describe('ToolWindow', () => {
 
     describe('initialization', () => {
 
-        test('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(toolWindow).toBeInstanceOf(HTMLElement)
         })
 
 
-        test('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(toolWindow.shadowRoot).not.toBeNull()
         })
 
 
-        test('should have header element', () => {
+        test('has header element', () => {
             const header = toolWindow.shadowRoot.querySelector('.tool-window-header')
             expect(header).not.toBeNull()
         })
 
 
-        test('should have content element', () => {
+        test('has content element', () => {
             const content = toolWindow.shadowRoot.querySelector('.tool-window-content')
             expect(content).not.toBeNull()
         })
 
 
-        test('should have close button', () => {
+        test('has close button', () => {
             const closeBtn = toolWindow.shadowRoot.querySelector('.tool-window-close')
             expect(closeBtn).not.toBeNull()
         })
 
 
-        test('should have resize handle', () => {
+        test('has resize handle', () => {
             const handle = toolWindow.shadowRoot.querySelector('.tool-window-resize')
             expect(handle).not.toBeNull()
         })
@@ -72,7 +72,7 @@ describe('ToolWindow', () => {
     })
 
 
-    test('setTitle should update the title text', () => {
+    test('setTitle updates the title text', () => {
         toolWindow.setTitle('My Tool')
         const titleEl = toolWindow.shadowRoot.querySelector('.tool-window-title')
         expect(titleEl.textContent).toBe('My Tool')
@@ -81,7 +81,7 @@ describe('ToolWindow', () => {
 
     describe('setIcon', () => {
 
-        test('should update the icon innerHTML', () => {
+        test('updates the icon innerHTML', () => {
             const svgIcon = '<svg><path d="M0 0"/></svg>'
             toolWindow.setIcon(svgIcon)
             const iconEl = toolWindow.shadowRoot.querySelector('.tool-window-icon')
@@ -90,14 +90,14 @@ describe('ToolWindow', () => {
         })
 
 
-        test('should set empty string when called with null', () => {
+        test('sets empty string when called with null', () => {
             toolWindow.setIcon(null)
             const iconEl = toolWindow.shadowRoot.querySelector('.tool-window-icon')
             expect(iconEl.innerHTML).toBe('')
         })
 
 
-        test('should set empty string when called with undefined', () => {
+        test('sets empty string when called with undefined', () => {
             toolWindow.setIcon(undefined)
             const iconEl = toolWindow.shadowRoot.querySelector('.tool-window-icon')
             expect(iconEl.innerHTML).toBe('')
@@ -106,14 +106,14 @@ describe('ToolWindow', () => {
     })
 
 
-    test('setPosition should update left and top styles', () => {
+    test('setPosition updates left and top styles', () => {
         toolWindow.setPosition(100, 200)
         expect(toolWindow.style.left).toBe('100px')
         expect(toolWindow.style.top).toBe('200px')
     })
 
 
-    test('setSize should update width and height styles', () => {
+    test('setSize updates width and height styles', () => {
         toolWindow.setSize(500, 400)
         expect(toolWindow.style.width).toBe('500px')
         expect(toolWindow.style.height).toBe('400px')
@@ -122,14 +122,14 @@ describe('ToolWindow', () => {
 
     describe('setResizable', () => {
 
-        test('should show resize handle when true', () => {
+        test('shows resize handle when true', () => {
             toolWindow.setResizable(true)
             const handle = toolWindow.shadowRoot.querySelector('.tool-window-resize')
             expect(handle.style.display).not.toBe('none')
         })
 
 
-        test('should hide resize handle when false', () => {
+        test('hides resize handle when false', () => {
             toolWindow.setResizable(false)
             const handle = toolWindow.shadowRoot.querySelector('.tool-window-resize')
             expect(handle.style.display).toBe('none')
@@ -140,7 +140,7 @@ describe('ToolWindow', () => {
 
     describe('close', () => {
 
-        test('should dispatch close event', () => {
+        test('dispatches close event', () => {
             const closeSpy = vi.fn()
             toolWindow.addEventListener('close', closeSpy)
             toolWindow.close()
@@ -148,7 +148,7 @@ describe('ToolWindow', () => {
         })
 
 
-        test('should remove element from DOM', () => {
+        test('removes element from DOM', () => {
             toolWindow.close()
             expect(toolWindow.parentElement).toBeNull()
         })
@@ -156,7 +156,7 @@ describe('ToolWindow', () => {
     })
 
 
-    test('bringToFront should dispatch focus event', () => {
+    test('bringToFront dispatches focus event', () => {
         const focusSpy = vi.fn()
         toolWindow.addEventListener('focus', focusSpy)
         toolWindow.bringToFront()
@@ -164,7 +164,7 @@ describe('ToolWindow', () => {
     })
 
 
-    test('close button should close window when clicked', () => {
+    test('close button closes window when clicked', () => {
         const closeSpy = vi.fn()
         toolWindow.addEventListener('close', closeSpy)
         const closeBtn = toolWindow.shadowRoot.querySelector('.tool-window-close')
@@ -173,7 +173,7 @@ describe('ToolWindow', () => {
     })
 
 
-    test('dragging should update position on drag', () => {
+    test('dragging updates position on drag', () => {
         toolWindow.setPosition(20, 20)
         const header = toolWindow.shadowRoot.querySelector('.tool-window-header')
 
@@ -196,7 +196,7 @@ describe('ToolWindow', () => {
     })
 
 
-    test('disconnectedCallback should clean up window event listeners', () => {
+    test('disconnectedCallback cleans up window event listeners', () => {
         const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener')
         toolWindow.remove()
         expect(removeEventListenerSpy).toHaveBeenCalledWith('pointermove', expect.any(Function))

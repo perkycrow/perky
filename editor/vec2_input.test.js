@@ -24,31 +24,31 @@ describe('Vec2Input', () => {
 
     describe('initialization', () => {
 
-        test('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(vec2Input).toBeInstanceOf(HTMLElement)
         })
 
 
-        test('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(vec2Input.shadowRoot).not.toBeNull()
         })
 
 
-        test('should have null default value', () => {
+        test('has null default value', () => {
             expect(vec2Input.value).toBeNull()
         })
 
     })
 
 
-    test('value property should get and set value', () => {
+    test('value property gets and sets value', () => {
         const vec = {x: 10, y: 20}
         vec2Input.value = vec
         expect(vec2Input.value).toBe(vec)
     })
 
 
-    test('setLabel should set label text', () => {
+    test('setLabel sets label text', () => {
         vec2Input.setLabel('Position')
         const label = vec2Input.shadowRoot.querySelector('.vec2-input-label')
         expect(label.textContent).toBe('Position')

@@ -47,17 +47,17 @@ describe('AnimationPreview', () => {
 
     describe('initialization', () => {
 
-        test('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(preview).toBeInstanceOf(HTMLElement)
         })
 
 
-        test('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(preview.shadowRoot).not.toBeNull()
         })
 
 
-        test('should render canvas', () => {
+        test('renders canvas', () => {
             const canvas = preview.shadowRoot.querySelector('.preview-canvas')
             expect(canvas).not.toBeNull()
             expect(canvas.width).toBe(128)
@@ -65,13 +65,13 @@ describe('AnimationPreview', () => {
         })
 
 
-        test('should render play button', () => {
+        test('renders play button', () => {
             const playBtn = preview.shadowRoot.querySelector('.play-btn')
             expect(playBtn).not.toBeNull()
         })
 
 
-        test('should render stop button', () => {
+        test('renders stop button', () => {
             const stopBtn = preview.shadowRoot.querySelector('.stop-btn')
             expect(stopBtn).not.toBeNull()
         })
@@ -81,13 +81,13 @@ describe('AnimationPreview', () => {
 
     describe('setAnimation', () => {
 
-        test('should accept an animation', () => {
+        test('accepts an animation', () => {
             const animation = createMockAnimation()
             expect(() => preview.setAnimation(animation)).not.toThrow()
         })
 
 
-        test('should stop current animation when setting new one', () => {
+        test('stops current animation when setting new one', () => {
             const animation1 = createMockAnimation()
             const animation2 = createMockAnimation()
 
@@ -103,12 +103,12 @@ describe('AnimationPreview', () => {
 
     describe('playback controls', () => {
 
-        test('isPlaying should be false by default', () => {
+        test('isPlaying is false by default', () => {
             expect(preview.isPlaying).toBe(false)
         })
 
 
-        test('play should start animation', () => {
+        test('play starts animation', () => {
             const animation = createMockAnimation()
             preview.setAnimation(animation)
             preview.play()
@@ -120,7 +120,7 @@ describe('AnimationPreview', () => {
 
 
 
-        test('pause should stop playback', () => {
+        test('pause stops playback', () => {
             const animation = createMockAnimation()
             preview.setAnimation(animation)
             preview.play()
@@ -133,7 +133,7 @@ describe('AnimationPreview', () => {
 
 
 
-        test('stop should reset animation', () => {
+        test('stop resets animation', () => {
             const animation = createMockAnimation()
             preview.setAnimation(animation)
             preview.play()
@@ -144,7 +144,7 @@ describe('AnimationPreview', () => {
         })
 
 
-        test('play button click should toggle playback', () => {
+        test('play button click toggles playback', () => {
             const animation = createMockAnimation()
             preview.setAnimation(animation)
 
@@ -158,7 +158,7 @@ describe('AnimationPreview', () => {
         })
 
 
-        test('stop button click should stop playback', () => {
+        test('stop button click stops playback', () => {
             const animation = createMockAnimation()
             preview.setAnimation(animation)
             preview.play()
@@ -174,7 +174,7 @@ describe('AnimationPreview', () => {
 
     describe('events', () => {
 
-        test('should dispatch play event', () => {
+        test('dispatches play event', () => {
             const animation = createMockAnimation()
             preview.setAnimation(animation)
 
@@ -186,7 +186,7 @@ describe('AnimationPreview', () => {
         })
 
 
-        test('should dispatch pause event', () => {
+        test('dispatches pause event', () => {
             const animation = createMockAnimation()
             preview.setAnimation(animation)
             preview.play()
@@ -199,7 +199,7 @@ describe('AnimationPreview', () => {
         })
 
 
-        test('should dispatch stop event', () => {
+        test('dispatches stop event', () => {
             const animation = createMockAnimation()
             preview.setAnimation(animation)
 
@@ -215,12 +215,12 @@ describe('AnimationPreview', () => {
 
     describe('currentIndex', () => {
 
-        test('should return 0 when no animation', () => {
+        test('returns 0 when no animation', () => {
             expect(preview.currentIndex).toBe(0)
         })
 
 
-        test('should return animation currentIndex', () => {
+        test('returns animation currentIndex', () => {
             const animation = createMockAnimation()
             animation.currentIndex = 3
             preview.setAnimation(animation)
@@ -231,7 +231,7 @@ describe('AnimationPreview', () => {
     })
 
 
-    test('should stop playback on disconnect', () => {
+    test('stops playback on disconnect', () => {
         const animation = createMockAnimation()
         preview.setAnimation(animation)
         preview.play()
@@ -244,7 +244,7 @@ describe('AnimationPreview', () => {
 
     describe('setCurrentIndex', () => {
 
-        test('should seek animation to frame', () => {
+        test('seeks animation to frame', () => {
             const animation = createMockAnimation()
             preview.setAnimation(animation)
 
@@ -254,7 +254,7 @@ describe('AnimationPreview', () => {
         })
 
 
-        test('should dispatch frame event', () => {
+        test('dispatches frame event', () => {
             const animation = createMockAnimation()
             preview.setAnimation(animation)
 
@@ -268,7 +268,7 @@ describe('AnimationPreview', () => {
         })
 
 
-        test('should do nothing when no animation', () => {
+        test('does nothing when no animation', () => {
             expect(() => preview.setCurrentIndex(2)).not.toThrow()
         })
 

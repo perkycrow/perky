@@ -61,29 +61,29 @@ describe('SpritesheetViewer', () => {
 
     describe('initialization', () => {
 
-        test('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(viewer).toBeInstanceOf(HTMLElement)
         })
 
 
-        test('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(viewer.shadowRoot).not.toBeNull()
         })
 
 
-        test('should render filter select', () => {
+        test('renders filter select', () => {
             const select = viewer.shadowRoot.querySelector('.filter-select')
             expect(select).not.toBeNull()
         })
 
 
-        test('should render frame grid', () => {
+        test('renders frame grid', () => {
             const grid = viewer.shadowRoot.querySelector('.frame-grid')
             expect(grid).not.toBeNull()
         })
 
 
-        test('should be empty initially', () => {
+        test('is empty initially', () => {
             const frames = viewer.shadowRoot.querySelectorAll('.frame')
             expect(frames.length).toBe(0)
         })
@@ -93,7 +93,7 @@ describe('SpritesheetViewer', () => {
 
     describe('setSpritesheet', () => {
 
-        test('should render all frames', () => {
+        test('renders all frames', () => {
             const spritesheet = createMockSpritesheet()
             viewer.setSpritesheet(spritesheet)
 
@@ -102,7 +102,7 @@ describe('SpritesheetViewer', () => {
         })
 
 
-        test('should populate filter with animations', () => {
+        test('populates filter with animations', () => {
             const spritesheet = createMockSpritesheet()
             viewer.setSpritesheet(spritesheet)
 
@@ -114,7 +114,7 @@ describe('SpritesheetViewer', () => {
         })
 
 
-        test('should render frame thumbnails', () => {
+        test('renders frame thumbnails', () => {
             const spritesheet = createMockSpritesheet()
             viewer.setSpritesheet(spritesheet)
 
@@ -125,7 +125,7 @@ describe('SpritesheetViewer', () => {
         })
 
 
-        test('should render full frame names', () => {
+        test('renders full frame names', () => {
             const spritesheet = createMockSpritesheet()
             viewer.setSpritesheet(spritesheet)
 
@@ -135,7 +135,7 @@ describe('SpritesheetViewer', () => {
         })
 
 
-        test('should set full name as title on frame element', () => {
+        test('sets full name as title on frame element', () => {
             const spritesheet = createMockSpritesheet()
             viewer.setSpritesheet(spritesheet)
 
@@ -148,7 +148,7 @@ describe('SpritesheetViewer', () => {
 
     describe('filtering', () => {
 
-        test('should filter frames by animation', () => {
+        test('filters frames by animation', () => {
             const spritesheet = createMockSpritesheet()
             viewer.setSpritesheet(spritesheet)
 
@@ -163,7 +163,7 @@ describe('SpritesheetViewer', () => {
         })
 
 
-        test('should show all frames when filter cleared', () => {
+        test('shows all frames when filter cleared', () => {
             const spritesheet = createMockSpritesheet()
             viewer.setSpritesheet(spritesheet)
 
@@ -181,7 +181,7 @@ describe('SpritesheetViewer', () => {
     })
 
 
-    test('should dispatch frameclick event on frame click', () => {
+    test('dispatches frameclick event on frame click', () => {
         const spritesheet = createMockSpritesheet()
         viewer.setSpritesheet(spritesheet)
 
@@ -197,7 +197,7 @@ describe('SpritesheetViewer', () => {
     })
 
 
-    test('should set data-name on frames', () => {
+    test('sets data-name on frames', () => {
         const spritesheet = createMockSpritesheet()
         viewer.setSpritesheet(spritesheet)
 
@@ -209,7 +209,7 @@ describe('SpritesheetViewer', () => {
 
     describe('drag and drop', () => {
 
-        test('should make frames draggable', () => {
+        test('makes frames draggable', () => {
             const spritesheet = createMockSpritesheet()
             viewer.setSpritesheet(spritesheet)
 
@@ -218,7 +218,7 @@ describe('SpritesheetViewer', () => {
         })
 
 
-        test('should add dragging class on dragstart', () => {
+        test('adds dragging class on dragstart', () => {
             const spritesheet = createMockSpritesheet()
             viewer.setSpritesheet(spritesheet)
 
@@ -232,7 +232,7 @@ describe('SpritesheetViewer', () => {
         })
 
 
-        test('should remove dragging class on dragend', () => {
+        test('removes dragging class on dragend', () => {
             const spritesheet = createMockSpritesheet()
             viewer.setSpritesheet(spritesheet)
 

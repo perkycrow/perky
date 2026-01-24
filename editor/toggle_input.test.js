@@ -24,17 +24,17 @@ describe('ToggleInput', () => {
 
     describe('initialization', () => {
 
-        test('should extend HTMLElement', () => {
+        test('extends HTMLElement', () => {
             expect(toggle).toBeInstanceOf(HTMLElement)
         })
 
 
-        test('should have shadow DOM', () => {
+        test('has shadow DOM', () => {
             expect(toggle.shadowRoot).not.toBeNull()
         })
 
 
-        test('should have default checked of false', () => {
+        test('has default checked of false', () => {
             expect(toggle.checked).toBe(false)
         })
 
@@ -43,13 +43,13 @@ describe('ToggleInput', () => {
 
     describe('checked property', () => {
 
-        test('should get and set checked', () => {
+        test('gets and sets checked', () => {
             toggle.checked = true
             expect(toggle.checked).toBe(true)
         })
 
 
-        test('should coerce to boolean', () => {
+        test('coerces to boolean', () => {
             toggle.checked = 1
             expect(toggle.checked).toBe(true)
 
@@ -60,20 +60,20 @@ describe('ToggleInput', () => {
     })
 
 
-    test('setChecked should set checked directly', () => {
+    test('setChecked sets checked directly', () => {
         toggle.setChecked(true)
         expect(toggle.checked).toBe(true)
     })
 
 
-    test('setLabel should set label text', () => {
+    test('setLabel sets label text', () => {
         toggle.setLabel('Enabled')
         const label = toggle.shadowRoot.querySelector('.toggle-input-label')
         expect(label.textContent).toBe('Enabled')
     })
 
 
-    test('observedAttributes should include expected attributes', () => {
+    test('observedAttributes includes expected attributes', () => {
         const observed = toggle.constructor.observedAttributes
         expect(observed).toContain('checked')
         expect(observed).toContain('label')
@@ -82,14 +82,14 @@ describe('ToggleInput', () => {
 
     describe('visual state', () => {
 
-        test('should add checked class when checked', () => {
+        test('adds checked class when checked', () => {
             toggle.setChecked(true)
             const track = toggle.shadowRoot.querySelector('.toggle-input-track')
             expect(track.classList.contains('checked')).toBe(true)
         })
 
 
-        test('should remove checked class when unchecked', () => {
+        test('removes checked class when unchecked', () => {
             toggle.setChecked(true)
             toggle.setChecked(false)
             const track = toggle.shadowRoot.querySelector('.toggle-input-track')
@@ -101,7 +101,7 @@ describe('ToggleInput', () => {
 
     describe('click behavior', () => {
 
-        test('should toggle when track clicked', () => {
+        test('toggles when track clicked', () => {
             const track = toggle.shadowRoot.querySelector('.toggle-input-track')
             track.click()
             expect(toggle.checked).toBe(true)
@@ -111,7 +111,7 @@ describe('ToggleInput', () => {
         })
 
 
-        test('should toggle when label clicked', () => {
+        test('toggles when label clicked', () => {
             toggle.setLabel('Test')
             const label = toggle.shadowRoot.querySelector('.toggle-input-label')
             label.click()
@@ -123,7 +123,7 @@ describe('ToggleInput', () => {
 
     describe('change event', () => {
 
-        test('should emit change event when toggled', () => {
+        test('emits change event when toggled', () => {
             const handler = vi.fn()
             toggle.addEventListener('change', handler)
 
@@ -135,7 +135,7 @@ describe('ToggleInput', () => {
         })
 
 
-        test('should emit correct state in change event', () => {
+        test('emits correct state in change event', () => {
             toggle.setChecked(true)
 
             const handler = vi.fn()

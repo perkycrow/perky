@@ -45,13 +45,13 @@ describe('ToolManager', () => {
 
     describe('register', () => {
 
-        test('should register a tool class', () => {
+        test('registers a tool class', () => {
             manager.register(MockTool)
             expect(manager.has('mockTool')).toBe(true)
         })
 
 
-        test('should throw if tool has no toolId', () => {
+        test('throws if tool has no toolId', () => {
             class InvalidTool extends BaseFloatingTool {
                 static toolId = null
             }
@@ -61,7 +61,7 @@ describe('ToolManager', () => {
     })
 
 
-    test('unregister should unregister a tool', () => {
+    test('unregister unregisters a tool', () => {
         manager.register(MockTool)
         manager.unregister('mockTool')
         expect(manager.has('mockTool')).toBe(false)
@@ -70,7 +70,7 @@ describe('ToolManager', () => {
 
     describe('open', () => {
 
-        test('should return null for unregistered tool', () => {
+        test('returns null for unregistered tool', () => {
             const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
             const result = manager.open('nonexistent')
             expect(result).toBeNull()
@@ -78,14 +78,14 @@ describe('ToolManager', () => {
         })
 
 
-        test('should open a registered tool and return instance id', () => {
+        test('opens a registered tool and returns instance id', () => {
             manager.register(MockTool)
             const instanceId = manager.open('mockTool')
             expect(instanceId).toMatch(/^mockTool-\d+$/)
         })
 
 
-        test('should append tool window to container', () => {
+        test('appends tool window to container', () => {
             manager.register(MockTool)
             manager.open('mockTool')
             const window = container.querySelector('tool-window')
@@ -93,7 +93,7 @@ describe('ToolManager', () => {
         })
 
 
-        test('should pass params to tool', () => {
+        test('passes params to tool', () => {
             manager.register(MockTool)
             const instanceId = manager.open('mockTool', {foo: 'bar'})
             const tool = manager.get(instanceId)
@@ -101,7 +101,7 @@ describe('ToolManager', () => {
         })
 
 
-        test('should call onOpen on the tool', () => {
+        test('calls onOpen on the tool', () => {
             manager.register(MockTool)
             const onOpenSpy = vi.spyOn(MockTool.prototype, 'onOpen')
             manager.open('mockTool')
@@ -110,7 +110,7 @@ describe('ToolManager', () => {
         })
 
 
-        test('should create unique instance ids for multiple opens', () => {
+        test('creates unique instance ids for multiple opens', () => {
             manager.register(MockTool)
             const id1 = manager.open('mockTool')
             const id2 = manager.open('mockTool')
@@ -122,7 +122,7 @@ describe('ToolManager', () => {
 
     describe('close', () => {
 
-        test('should close an open tool', () => {
+        test('closes an open tool', () => {
             manager.register(MockTool)
             const instanceId = manager.open('mockTool')
             manager.close(instanceId)
@@ -130,7 +130,7 @@ describe('ToolManager', () => {
         })
 
 
-        test('should call onClose on the tool', () => {
+        test('calls onClose on the tool', () => {
             manager.register(MockTool)
             const onCloseSpy = vi.spyOn(MockTool.prototype, 'onClose')
             const instanceId = manager.open('mockTool')
@@ -140,7 +140,7 @@ describe('ToolManager', () => {
         })
 
 
-        test('should do nothing for non-existent instance', () => {
+        test('does nothing for non-existent instance', () => {
             expect(() => manager.close('nonexistent-1')).not.toThrow()
         })
 
@@ -149,7 +149,7 @@ describe('ToolManager', () => {
 
     describe('closeAll', () => {
 
-        test('should close all tool instances', () => {
+        test('closes all tool instances', () => {
             manager.register(MockTool)
             manager.register(AnotherMockTool)
             const id1 = manager.open('mockTool')
@@ -160,7 +160,7 @@ describe('ToolManager', () => {
         })
 
 
-        test('should close only instances of specified tool', () => {
+        test('closes only instances of specified tool', () => {
             manager.register(MockTool)
             manager.register(AnotherMockTool)
             const mockId = manager.open('mockTool')
@@ -175,7 +175,7 @@ describe('ToolManager', () => {
 
     describe('get', () => {
 
-        test('should return tool instance by id', () => {
+        test('returns tool instance by id', () => {
             manager.register(MockTool)
             const instanceId = manager.open('mockTool')
             const tool = manager.get(instanceId)
@@ -183,7 +183,7 @@ describe('ToolManager', () => {
         })
 
 
-        test('should return null for non-existent instance', () => {
+        test('returns null for non-existent instance', () => {
             expect(manager.get('nonexistent-1')).toBeNull()
         })
 
@@ -192,12 +192,12 @@ describe('ToolManager', () => {
 
     describe('listTools', () => {
 
-        test('should return empty array when no tools registered', () => {
+        test('returns empty array when no tools registered', () => {
             expect(manager.listTools()).toEqual([])
         })
 
 
-        test('should return list of registered tools', () => {
+        test('returns list of registered tools', () => {
             manager.register(MockTool)
             manager.register(AnotherMockTool)
             const tools = manager.listTools()
@@ -211,12 +211,12 @@ describe('ToolManager', () => {
 
     describe('listInstances', () => {
 
-        test('should return empty array when no instances open', () => {
+        test('returns empty array when no instances open', () => {
             expect(manager.listInstances()).toEqual([])
         })
 
 
-        test('should return list of open instance ids', () => {
+        test('returns list of open instance ids', () => {
             manager.register(MockTool)
             const id1 = manager.open('mockTool')
             const id2 = manager.open('mockTool')
@@ -230,12 +230,12 @@ describe('ToolManager', () => {
 
     describe('has', () => {
 
-        test('should return false for unregistered tool', () => {
+        test('returns false for unregistered tool', () => {
             expect(manager.has('nonexistent')).toBe(false)
         })
 
 
-        test('should return true for registered tool', () => {
+        test('returns true for registered tool', () => {
             manager.register(MockTool)
             expect(manager.has('mockTool')).toBe(true)
         })
@@ -245,12 +245,12 @@ describe('ToolManager', () => {
 
     describe('isOpen', () => {
 
-        test('should return false for non-existent instance', () => {
+        test('returns false for non-existent instance', () => {
             expect(manager.isOpen('nonexistent-1')).toBe(false)
         })
 
 
-        test('should return true for open instance', () => {
+        test('returns true for open instance', () => {
             manager.register(MockTool)
             const instanceId = manager.open('mockTool')
             expect(manager.isOpen(instanceId)).toBe(true)
