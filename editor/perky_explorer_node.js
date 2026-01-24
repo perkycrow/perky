@@ -208,6 +208,9 @@ export default class PerkyExplorerNode extends BaseTreeNode {
 
 
     #updateSystemClass () {
+        if (!this.contentEl) {
+            return
+        }
         let iconEl = this.contentEl.querySelector('.node-system-icon')
 
         if (this.#isSystemModule) {

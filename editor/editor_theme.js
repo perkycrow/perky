@@ -15,6 +15,10 @@ export const editorThemeVariables = `
     --status-warning: #f59e0b;
     --status-muted: #6b7280;
 
+    --status-started: #4ade80;
+    --status-stopped: #6b7280;
+    --status-disposed: #f87171;
+
     --hl-keyword: #6b9fff;
     --hl-string: #4ade80;
     --hl-comment: #6a6a72;
@@ -41,6 +45,10 @@ export const editorThemeVariablesLight = `
     --status-error: #dc2626;
     --status-warning: #d97706;
     --status-muted: #9ca3af;
+
+    --status-started: #16a34a;
+    --status-stopped: #9ca3af;
+    --status-disposed: #dc2626;
 
     --hl-keyword: #0066cc;
     --hl-string: #16a34a;

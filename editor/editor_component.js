@@ -5,6 +5,6 @@ import {resetCSS} from './styles/reset.styles.js'
 
 export default class EditorComponent extends PerkyComponent {
 
-    static styles = themeCSS + '\n' + resetCSS
+    static styles = [...themeCSS, resetCSS]
 
 }
