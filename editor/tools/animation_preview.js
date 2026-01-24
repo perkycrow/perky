@@ -276,7 +276,6 @@ export default class AnimationPreview extends BaseEditorComponent {
             if (this.#animation) {
                 this.#gamePreview.setAnimation(this.#animation)
             }
-            this.#gamePreview.render()
         }
 
         this.#syncPreviewVisibility()
@@ -315,6 +314,7 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#gamePreviewCanvas.style.display = useGame ? 'block' : 'none'
         this.#canvas.style.display = useGame ? 'none' : ''
         this.#sceneryCanvas.style.display = useGame ? 'none' : ''
+        this.#previewArea?.classList.toggle('game-preview-mode', useGame)
     }
 
 
@@ -329,7 +329,7 @@ export default class AnimationPreview extends BaseEditorComponent {
         this.#syncPreviewVisibility()
 
         if (this.#useGamePreview) {
-            this.#updateGamePreviewSize()
+            requestAnimationFrame(() => this.#updateGamePreviewSize())
             this.#syncZoomControls()
             return
         }
@@ -352,15 +352,13 @@ export default class AnimationPreview extends BaseEditorComponent {
             return
         }
 
-        const padding = 32
-        const paddingBottom = 80
-        const width = this.#previewArea.clientWidth - padding * 2
-        const height = this.#previewArea.clientHeight - padding - paddingBottom
+        const width = this.#previewArea.clientWidth
+        const height = this.#previewArea.clientHeight
 
         if (width > 0 && height > 0) {
             this.#gamePreview.resize(width, height)
-            this.#gamePreview.render()
         }
+        this.#gamePreview.render()
     }
 
 
@@ -532,21 +530,6 @@ export default class AnimationPreview extends BaseEditorComponent {
         const containerHeight = this.#previewArea.clientHeight - padding - paddingBottom
 
         if (containerWidth <= 0 || containerHeight <= 0) {
-            return
-        }
-
-        if (this.#sceneryActive && this.#unitsInView) {
-            const pixelsPerUnit = containerHeight / this.#unitsInView.height
-            const canvasWidth = Math.max(1, Math.floor(region.width * pixelsPerUnit))
-            const canvasHeight = Math.max(1, Math.floor(region.height * pixelsPerUnit))
-
-            this.#renderer.displayWidth = canvasWidth
-            this.#renderer.displayHeight = canvasHeight
-            this.#renderer.applyPixelRatio()
-
-            this.#renderer.camera.viewportWidth = canvasWidth
-            this.#renderer.camera.viewportHeight = canvasHeight
-            this.#renderer.camera.setUnitsInView({width: region.width, height: region.height})
             return
         }
 
@@ -1116,6 +1099,10 @@ const STYLES = buildEditorStyles(
         position: relative;
     }
 
+    .preview-area.game-preview-mode {
+        padding: 0;
+    }
+
     .scenery-canvas {
         position: absolute;
         pointer-events: none;
@@ -1125,7 +1112,9 @@ const STYLES = buildEditorStyles(
         display: none;
         image-rendering: pixelated;
         image-rendering: crisp-edges;
-        position: relative;
+        position: absolute;
+        top: 0;
+        left: 0;
         z-index: 1;
     }
 

@@ -139,9 +139,8 @@ export default class AnimatorPreview {
         this.#animatorSprite.anchorY = this.#anchor.y
         this.#animatorSprite.visible = true
 
-        const groundY = -this.#unitsInView.height / 2
         this.#animatorSprite.x = this.#spriteX
-        this.#animatorSprite.y = groundY
+        this.#animatorSprite.y = 0
     }
 
 
