@@ -2,6 +2,7 @@ import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
 import ActionDispatcher from '../../core/action_dispatcher.js'
 import {pluralize} from '../../core/utils.js'
+import {createElement} from '../../application/dom_utils.js'
 import '../toggle_input.js'
 
 
@@ -149,9 +150,7 @@ export default class ActionDispatcherInspector extends BaseInspector {
         this.#containerEl.appendChild(header)
 
         if (actionsMap.size === 0) {
-            const empty = document.createElement('div')
-            empty.className = 'empty-message'
-            empty.textContent = 'No controllers registered'
+            const empty = createElement('div', {class: 'empty-message', text: 'No controllers registered'})
             this.#containerEl.appendChild(empty)
             return
         }
@@ -166,15 +165,9 @@ export default class ActionDispatcherInspector extends BaseInspector {
     #createControllerGroup (controllerName, actions) {
         const isActive = this.module.getActive().includes(controllerName)
 
-        const group = document.createElement('div')
-        group.className = isActive ? 'controller-group' : 'controller-group group-inactive'
-
-        const header = document.createElement('div')
-        header.className = 'group-header'
-
-        const nameEl = document.createElement('span')
-        nameEl.className = 'group-name'
-        nameEl.textContent = controllerName
+        const group = createElement('div', {class: isActive ? 'controller-group' : 'controller-group group-inactive'})
+        const header = createElement('div', {class: 'group-header'})
+        const nameEl = createElement('span', {class: 'group-name', text: controllerName})
 
         const toggle = document.createElement('toggle-input')
         toggle.setChecked(isActive)
@@ -187,13 +180,10 @@ export default class ActionDispatcherInspector extends BaseInspector {
         group.appendChild(header)
 
         if (actions.length === 0) {
-            const empty = document.createElement('div')
-            empty.className = 'empty-message'
-            empty.textContent = 'No actions'
+            const empty = createElement('div', {class: 'empty-message', text: 'No actions'})
             group.appendChild(empty)
         } else {
-            const list = document.createElement('div')
-            list.className = 'actions-list'
+            const list = createElement('div', {class: 'actions-list'})
 
             for (const action of actions) {
                 const card = createActionCard(action.name, controllerName, this.module)
@@ -225,12 +215,11 @@ export default class ActionDispatcherInspector extends BaseInspector {
 
 
 function createHeader (totalActions, controllerCount) {
-    const header = document.createElement('div')
-    header.className = 'actions-header'
-
-    const countEl = document.createElement('div')
-    countEl.className = 'actions-count'
-    countEl.innerHTML = `<strong>${totalActions}</strong> ${pluralize('action', totalActions)} in <strong>${controllerCount}</strong> ${pluralize('controller', controllerCount)}`
+    const header = createElement('div', {class: 'actions-header'})
+    const countEl = createElement('div', {
+        class: 'actions-count',
+        html: `<strong>${totalActions}</strong> ${pluralize('action', totalActions)} in <strong>${controllerCount}</strong> ${pluralize('controller', controllerCount)}`
+    })
 
     header.appendChild(countEl)
 
@@ -239,16 +228,9 @@ function createHeader (totalActions, controllerCount) {
 
 
 function createActionCard (actionName, controllerName, dispatcher) {
-    const card = document.createElement('div')
-    card.className = 'action-card'
-
-    const nameEl = document.createElement('span')
-    nameEl.className = 'action-name'
-    nameEl.textContent = actionName
-
-    const executeBtn = document.createElement('button')
-    executeBtn.className = 'execute-btn'
-    executeBtn.textContent = '▶ Run'
+    const card = createElement('div', {class: 'action-card'})
+    const nameEl = createElement('span', {class: 'action-name', text: actionName})
+    const executeBtn = createElement('button', {class: 'execute-btn', text: '▶ Run'})
     executeBtn.addEventListener('click', () => {
         dispatcher.executeTo(controllerName, actionName)
     })

@@ -2,6 +2,7 @@ import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
 import AudioSystem from '../../audio/audio_system.js'
 import {ICONS} from '../devtools/devtools_icons.js'
+import {createElement} from '../../application/dom_utils.js'
 import '../slider_input.js'
 
 
@@ -56,15 +57,11 @@ export default class AudioSystemInspector extends BaseInspector {
         this.#unlockedValueEl = this.addRow('unlocked', 'false')
         this.#channelsValueEl = this.addRow('channels', '0')
 
-        const controlsEl = document.createElement('div')
-        controlsEl.className = 'volume-controls'
+        const controlsEl = createElement('div', {class: 'volume-controls'})
 
-        this.#volumeInput = document.createElement('slider-input')
-        this.#volumeInput.setAttribute('label', 'Master Volume')
-        this.#volumeInput.setAttribute('min', '0')
-        this.#volumeInput.setAttribute('max', '1')
-        this.#volumeInput.setAttribute('step', '0.01')
-        this.#volumeInput.setAttribute('value', '1')
+        this.#volumeInput = createElement('slider-input', {
+            attrs: {label: 'Master Volume', min: '0', max: '1', step: '0.01', value: '1'}
+        })
         this.#volumeInput.addEventListener('change', (e) => this.#handleVolumeChange(e))
 
         controlsEl.appendChild(this.#volumeInput)

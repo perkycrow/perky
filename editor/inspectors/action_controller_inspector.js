@@ -2,6 +2,7 @@ import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
 import ActionController from '../../core/action_controller.js'
 import {pluralize} from '../../core/utils.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class ActionControllerInspector extends BaseInspector {
@@ -126,15 +127,12 @@ export default class ActionControllerInspector extends BaseInspector {
         this.#containerEl.appendChild(header)
 
         if (actions.length === 0) {
-            const empty = document.createElement('div')
-            empty.className = 'empty-message'
-            empty.textContent = 'No actions defined'
+            const empty = createElement('div', {class: 'empty-message', text: 'No actions defined'})
             this.#containerEl.appendChild(empty)
             return
         }
 
-        const list = document.createElement('div')
-        list.className = 'actions-list'
+        const list = createElement('div', {class: 'actions-list'})
 
         for (const actionName of actions) {
             const card = this.#createActionCard(actionName)
@@ -146,12 +144,9 @@ export default class ActionControllerInspector extends BaseInspector {
 
 
     #createActionCard (actionName) {
-        const card = document.createElement('div')
-        card.className = 'action-card'
+        const card = createElement('div', {class: 'action-card'})
 
-        const nameEl = document.createElement('span')
-        nameEl.className = 'action-name'
-        nameEl.textContent = actionName
+        const nameEl = createElement('span', {class: 'action-name', text: actionName})
 
         const rightSide = document.createElement('div')
         rightSide.style.display = 'flex'
@@ -161,15 +156,11 @@ export default class ActionControllerInspector extends BaseInspector {
         const isPropagable = this.module.shouldPropagate(actionName)
 
         if (isPropagable) {
-            const badge = document.createElement('span')
-            badge.className = 'action-badge propagable'
-            badge.textContent = 'propagable'
+            const badge = createElement('span', {class: 'action-badge propagable', text: 'propagable'})
             rightSide.appendChild(badge)
         }
 
-        const executeBtn = document.createElement('button')
-        executeBtn.className = 'execute-btn'
-        executeBtn.textContent = '▶ Run'
+        const executeBtn = createElement('button', {class: 'execute-btn', text: '▶ Run'})
         executeBtn.addEventListener('click', () => {
             this.module.execute(actionName)
         })
@@ -185,12 +176,12 @@ export default class ActionControllerInspector extends BaseInspector {
 
 
 function createHeader (count) {
-    const header = document.createElement('div')
-    header.className = 'actions-header'
+    const header = createElement('div', {class: 'actions-header'})
 
-    const countEl = document.createElement('div')
-    countEl.className = 'actions-count'
-    countEl.innerHTML = `<strong>${count}</strong> ${pluralize('action', count)}`
+    const countEl = createElement('div', {
+        class: 'actions-count',
+        html: `<strong>${count}</strong> ${pluralize('action', count)}`
+    })
 
     header.appendChild(countEl)
 

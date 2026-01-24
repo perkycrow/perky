@@ -1,4 +1,5 @@
 import EditorComponent from './editor_component.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 const menuStyles = `
@@ -123,14 +124,12 @@ export default class ExplorerContextMenu extends EditorComponent {
 
         for (const action of this.#actions) {
             if (action.separator) {
-                const separator = document.createElement('div')
-                separator.className = 'context-menu-separator'
+                const separator = createElement('div', {class: 'context-menu-separator'})
                 this.#menuEl.appendChild(separator)
                 continue
             }
 
-            const item = document.createElement('div')
-            item.className = 'context-menu-item'
+            const item = createElement('div', {class: 'context-menu-item'})
 
             if (action.disabled) {
                 item.classList.add('disabled')
@@ -140,17 +139,14 @@ export default class ExplorerContextMenu extends EditorComponent {
                 item.classList.add('danger')
             }
 
-            const icon = document.createElement('span')
-            icon.className = 'context-menu-icon'
+            const icon = createElement('span', {class: 'context-menu-icon'})
             if (action.iconSvg) {
                 icon.innerHTML = action.iconSvg
             } else {
                 icon.textContent = action.icon || ''
             }
 
-            const label = document.createElement('span')
-            label.className = 'context-menu-label'
-            label.textContent = action.label
+            const label = createElement('span', {class: 'context-menu-label', text: action.label})
 
             item.appendChild(icon)
             item.appendChild(label)

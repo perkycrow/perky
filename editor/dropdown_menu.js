@@ -1,4 +1,5 @@
 import EditorComponent from './editor_component.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 export default class DropdownMenu extends EditorComponent {
@@ -171,9 +172,7 @@ export default class DropdownMenu extends EditorComponent {
         this.#menuEl.innerHTML = ''
 
         for (const item of this.#items) {
-            const btn = document.createElement('button')
-            btn.className = 'menu-item'
-            btn.textContent = item.label
+            const btn = createElement('button', {class: 'menu-item', text: item.label})
             btn.addEventListener('click', () => {
                 this.close()
                 this.dispatchEvent(new CustomEvent('select', {

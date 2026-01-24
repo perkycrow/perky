@@ -1,6 +1,7 @@
 import BaseTool from './base_tool.js'
 import {editorScrollbarStyles, editorButtonStyles, editorBaseStyles} from '../../editor_theme.js'
 import {ICONS} from '../devtools_icons.js'
+import {createElement} from '../../../application/dom_utils.js'
 
 
 export default class AppsTool extends BaseTool {
@@ -147,8 +148,7 @@ export default class AppsTool extends BaseTool {
 
 
     #buildDOM () {
-        this.#containerEl = document.createElement('div')
-        this.#containerEl.className = 'apps-container'
+        this.#containerEl = createElement('div', {class: 'apps-container'})
 
         const registeredSection = createSection('Registered Apps', 'registered')
         this.#registeredListEl = registeredSection.querySelector('.apps-list')
@@ -222,47 +222,29 @@ export default class AppsTool extends BaseTool {
 
 
     #createRunningItem (app) {
-        const item = document.createElement('div')
-        item.className = 'apps-item'
-
-        const info = document.createElement('div')
-        info.className = 'apps-item-info'
-
-        const status = document.createElement('span')
-        status.className = `apps-item-status ${getStatusClass(app)}`
-
-        const nameEl = document.createElement('span')
-        nameEl.className = 'apps-item-name'
-        nameEl.textContent = app.$id
-
-        const typeEl = document.createElement('span')
-        typeEl.className = 'apps-item-type'
-        typeEl.textContent = app.constructor.name
+        const item = createElement('div', {class: 'apps-item'})
+        const info = createElement('div', {class: 'apps-item-info'})
+        const status = createElement('span', {class: `apps-item-status ${getStatusClass(app)}`})
+        const nameEl = createElement('span', {class: 'apps-item-name', text: app.$id})
+        const typeEl = createElement('span', {class: 'apps-item-type', text: app.constructor.name})
 
         info.appendChild(status)
         info.appendChild(nameEl)
         info.appendChild(typeEl)
 
-        const actions = document.createElement('div')
-        actions.className = 'apps-item-actions'
+        const actions = createElement('div', {class: 'apps-item-actions'})
 
         if (app.$status === 'started') {
-            const stopBtn = document.createElement('button')
-            stopBtn.className = 'editor-btn'
-            stopBtn.textContent = 'Stop'
+            const stopBtn = createElement('button', {class: 'editor-btn', text: 'Stop'})
             stopBtn.addEventListener('click', () => this.#stopApp(app.$id))
             actions.appendChild(stopBtn)
         } else if (app.$status === 'stopped') {
-            const startBtn = document.createElement('button')
-            startBtn.className = 'editor-btn'
-            startBtn.textContent = 'Start'
+            const startBtn = createElement('button', {class: 'editor-btn', text: 'Start'})
             startBtn.addEventListener('click', () => this.#startApp(app.$id))
             actions.appendChild(startBtn)
         }
 
-        const disposeBtn = document.createElement('button')
-        disposeBtn.className = 'editor-btn'
-        disposeBtn.textContent = 'Dispose'
+        const disposeBtn = createElement('button', {class: 'editor-btn', text: 'Dispose'})
         disposeBtn.addEventListener('click', () => this.#disposeApp(app.$id))
         actions.appendChild(disposeBtn)
 
@@ -306,16 +288,9 @@ export default class AppsTool extends BaseTool {
 
 
 function createSection (title, type) {
-    const section = document.createElement('div')
-    section.className = 'apps-section'
-
-    const header = document.createElement('div')
-    header.className = 'apps-section-header'
-    header.textContent = title
-
-    const list = document.createElement('div')
-    list.className = 'apps-list'
-    list.dataset.type = type
+    const section = createElement('div', {class: 'apps-section'})
+    const header = createElement('div', {class: 'apps-section-header', text: title})
+    const list = createElement('div', {class: 'apps-list', attrs: {'data-type': type}})
 
     section.appendChild(header)
     section.appendChild(list)
@@ -325,15 +300,9 @@ function createSection (title, type) {
 
 
 function createRegisteredItem (name) {
-    const item = document.createElement('div')
-    item.className = 'apps-item'
-
-    const info = document.createElement('div')
-    info.className = 'apps-item-info'
-
-    const nameEl = document.createElement('span')
-    nameEl.className = 'apps-item-name'
-    nameEl.textContent = name
+    const item = createElement('div', {class: 'apps-item'})
+    const info = createElement('div', {class: 'apps-item-info'})
+    const nameEl = createElement('span', {class: 'apps-item-name', text: name})
 
     info.appendChild(nameEl)
     item.appendChild(info)
