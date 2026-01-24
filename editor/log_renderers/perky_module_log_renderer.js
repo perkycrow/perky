@@ -1,4 +1,5 @@
 import {registerLogRenderer, renderLogItem} from './log_renderer_registry.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 const IGNORED_KEYS = new Set([
@@ -12,21 +13,17 @@ function createCompactLabel (module, container) {
     const category = module.$category || ''
     const id = module.$id || ''
 
-    const nameSpan = document.createElement('span')
-    nameSpan.className = 'log-module-name'
-
-    if (name === id) {
-        nameSpan.textContent = name
-    } else {
-        nameSpan.textContent = `${name} #${id}`
-    }
-
+    const nameSpan = createElement('span', {
+        class: 'log-module-name',
+        text: name === id ? name : `${name} #${id}`
+    })
     container.appendChild(nameSpan)
 
     if (category && category !== name && category !== id) {
-        const categorySpan = document.createElement('span')
-        categorySpan.className = 'log-module-category'
-        categorySpan.textContent = ` (${category})`
+        const categorySpan = createElement('span', {
+            class: 'log-module-category',
+            text: ` (${category})`
+        })
         container.appendChild(categorySpan)
     }
 }
@@ -94,19 +91,10 @@ function formatValue (value) {
 
 
 function createRow (className, keyText, valueContent) {
-    const row = document.createElement('div')
-    row.className = className
-
-    const keyEl = document.createElement('span')
-    keyEl.className = 'log-module-key'
-    keyEl.textContent = keyText
-
-    const separator = document.createElement('span')
-    separator.className = 'log-module-separator'
-    separator.textContent = ': '
-
-    const valueEl = document.createElement('span')
-    valueEl.className = 'log-module-value'
+    const row = createElement('div', {class: className})
+    const keyEl = createElement('span', {class: 'log-module-key', text: keyText})
+    const separator = createElement('span', {class: 'log-module-separator', text: ': '})
+    const valueEl = createElement('span', {class: 'log-module-value'})
 
     if (typeof valueContent === 'string') {
         valueEl.textContent = valueContent
@@ -123,8 +111,7 @@ function createRow (className, keyText, valueContent) {
 
 
 function renderMetaSection (module) {
-    const metaSection = document.createElement('div')
-    metaSection.className = 'log-module-meta'
+    const metaSection = createElement('div', {class: 'log-module-meta'})
 
     const metaItems = [
         {label: '$id', value: module.$id},
@@ -146,8 +133,7 @@ function renderMetaSection (module) {
 
 
 function renderPropsSection (module, properties) {
-    const propsSection = document.createElement('div')
-    propsSection.className = 'log-module-props'
+    const propsSection = createElement('div', {class: 'log-module-props'})
 
     for (const key of properties) {
         const customRender = renderLogItem(module[key])
@@ -166,15 +152,15 @@ function renderPropsSection (module, properties) {
 
 
 function renderMethodsSection (methods) {
-    const methodsSection = document.createElement('div')
-    methodsSection.className = 'log-module-methods'
+    const methodsSection = createElement('div', {class: 'log-module-methods'})
 
     const {row, valueEl} = createRow('log-module-row log-module-methods-row', 'methods', '')
 
     for (let i = 0; i < methods.length; i++) {
-        const methodSpan = document.createElement('span')
-        methodSpan.className = 'log-module-method-name'
-        methodSpan.textContent = methods[i]
+        const methodSpan = createElement('span', {
+            class: 'log-module-method-name',
+            text: methods[i]
+        })
         valueEl.appendChild(methodSpan)
 
         if (i < methods.length - 1) {

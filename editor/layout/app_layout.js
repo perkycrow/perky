@@ -1,4 +1,5 @@
 import EditorComponent from '../editor_component.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 export default class AppLayout extends EditorComponent {
@@ -205,43 +206,31 @@ export default class AppLayout extends EditorComponent {
 
     #buildDOM () {
 
-        this.#headerEl = document.createElement('header')
-        this.#headerEl.className = 'header'
+        this.#headerEl = createElement('header', {class: 'header'})
 
-        const headerStart = document.createElement('div')
-        headerStart.className = 'header-start'
+        const headerStart = createElement('div', {class: 'header-start'})
 
-        this.#menuBtn = document.createElement('button')
-        this.#menuBtn.className = 'header-btn menu-btn'
-        this.#menuBtn.innerHTML = '≡'
+        this.#menuBtn = createElement('button', {class: 'header-btn menu-btn', html: '≡'})
         this.#menuBtn.addEventListener('click', () => this.#emitEvent('menu'))
         headerStart.appendChild(this.#menuBtn)
 
-        const headerStartSlot = document.createElement('slot')
-        headerStartSlot.name = 'header-start'
+        const headerStartSlot = createElement('slot', {name: 'header-start'})
         headerStart.appendChild(headerStartSlot)
 
-        const headerCenter = document.createElement('div')
-        headerCenter.className = 'header-center'
+        const headerCenter = createElement('div', {class: 'header-center'})
 
-        this.#titleEl = document.createElement('span')
-        this.#titleEl.className = 'title'
+        this.#titleEl = createElement('span', {class: 'title'})
         headerCenter.appendChild(this.#titleEl)
 
-        const headerCenterSlot = document.createElement('slot')
-        headerCenterSlot.name = 'header-center'
+        const headerCenterSlot = createElement('slot', {name: 'header-center'})
         headerCenter.appendChild(headerCenterSlot)
 
-        const headerEnd = document.createElement('div')
-        headerEnd.className = 'header-end'
+        const headerEnd = createElement('div', {class: 'header-end'})
 
-        const headerEndSlot = document.createElement('slot')
-        headerEndSlot.name = 'header-end'
+        const headerEndSlot = createElement('slot', {name: 'header-end'})
         headerEnd.appendChild(headerEndSlot)
 
-        this.#closeBtn = document.createElement('button')
-        this.#closeBtn.className = 'header-btn close-btn'
-        this.#closeBtn.innerHTML = '✕'
+        this.#closeBtn = createElement('button', {class: 'header-btn close-btn', html: '✕'})
         this.#closeBtn.addEventListener('click', () => this.#emitEvent('close'))
         headerEnd.appendChild(this.#closeBtn)
 
@@ -250,40 +239,30 @@ export default class AppLayout extends EditorComponent {
         this.#headerEl.appendChild(headerEnd)
 
 
-        this.#contentEl = document.createElement('main')
-        this.#contentEl.className = 'content'
+        this.#contentEl = createElement('main', {class: 'content'})
 
-        const contentSlot = document.createElement('slot')
+        const contentSlot = createElement('slot')
         this.#contentEl.appendChild(contentSlot)
 
 
-        const overlayContainer = document.createElement('div')
-        overlayContainer.className = 'overlay-container'
-        const overlaySlot = document.createElement('slot')
-        overlaySlot.name = 'overlay'
+        const overlayContainer = createElement('div', {class: 'overlay-container'})
+        const overlaySlot = createElement('slot', {name: 'overlay'})
         overlayContainer.appendChild(overlaySlot)
         this.#contentEl.appendChild(overlayContainer)
 
 
-        this.#footerEl = document.createElement('footer')
-        this.#footerEl.className = 'footer'
+        this.#footerEl = createElement('footer', {class: 'footer'})
 
-        const footerStart = document.createElement('div')
-        footerStart.className = 'footer-start'
-        const footerStartSlot = document.createElement('slot')
-        footerStartSlot.name = 'footer-start'
+        const footerStart = createElement('div', {class: 'footer-start'})
+        const footerStartSlot = createElement('slot', {name: 'footer-start'})
         footerStart.appendChild(footerStartSlot)
 
-        const footerCenter = document.createElement('div')
-        footerCenter.className = 'footer-center'
-        const footerCenterSlot = document.createElement('slot')
-        footerCenterSlot.name = 'footer-center'
+        const footerCenter = createElement('div', {class: 'footer-center'})
+        const footerCenterSlot = createElement('slot', {name: 'footer-center'})
         footerCenter.appendChild(footerCenterSlot)
 
-        const footerEnd = document.createElement('div')
-        footerEnd.className = 'footer-end'
-        const footerEndSlot = document.createElement('slot')
-        footerEndSlot.name = 'footer-end'
+        const footerEnd = createElement('div', {class: 'footer-end'})
+        const footerEndSlot = createElement('slot', {name: 'footer-end'})
         footerEnd.appendChild(footerEndSlot)
 
         this.#footerEl.appendChild(footerStart)

@@ -1,6 +1,7 @@
 import EditorComponent from './editor_component.js'
 import {controlsSheet} from './styles/index.js'
 import {emitChange, handleAttributeChange} from './base_input.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 const SHIFT_MULTIPLIER = 10
@@ -322,35 +323,28 @@ export default class NumberInput extends EditorComponent {
 
 
     #buildDOM () {
-        const container = document.createElement('div')
-        container.className = 'number-input-container'
+        const container = createElement('div', {class: 'number-input-container'})
 
-        this.#labelEl = document.createElement('span')
-        this.#labelEl.className = 'number-input-label'
-        this.#labelEl.textContent = this.#label
+        this.#labelEl = createElement('span', {class: 'number-input-label', text: this.#label})
         this.#labelEl.addEventListener('pointerdown', (e) => this.#startDrag(e))
 
-        this.#input = document.createElement('input')
-        this.#input.className = 'number-input-field'
-        this.#input.type = 'text'
-        this.#input.inputMode = 'decimal'
+        this.#input = createElement('input', {
+            class: 'number-input-field',
+            type: 'text',
+            attrs: {inputmode: 'decimal'}
+        })
         this.#input.addEventListener('input', () => this.#handleInputChange())
         this.#input.addEventListener('keydown', (e) => this.#handleKeyDown(e))
         this.#input.addEventListener('blur', () => this.#handleBlur())
         this.#input.addEventListener('focus', () => this.#input.select())
 
-        const stepperContainer = document.createElement('div')
-        stepperContainer.className = 'number-input-steppers'
+        const stepperContainer = createElement('div', {class: 'number-input-steppers'})
 
-        this.#decrementBtn = document.createElement('button')
-        this.#decrementBtn.className = 'number-input-stepper'
-        this.#decrementBtn.innerHTML = '◀'
+        this.#decrementBtn = createElement('button', {class: 'number-input-stepper', html: '◀'})
         this.#decrementBtn.tabIndex = -1
         this.#decrementBtn.addEventListener('click', (e) => this.#handleStep(-1, e))
 
-        this.#incrementBtn = document.createElement('button')
-        this.#incrementBtn.className = 'number-input-stepper'
-        this.#incrementBtn.innerHTML = '▶'
+        this.#incrementBtn = createElement('button', {class: 'number-input-stepper', html: '▶'})
         this.#incrementBtn.tabIndex = -1
         this.#incrementBtn.addEventListener('click', (e) => this.#handleStep(1, e))
 
