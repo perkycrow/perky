@@ -1,5 +1,6 @@
 import EditorComponent from './editor_component.js'
 import {editorHeaderStyles, editorButtonStyles, editorScrollbarStyles} from './editor_theme.js'
+import {createElement} from '../application/dom_utils.js'
 import logger from '../core/logger.js'
 
 
@@ -262,8 +263,7 @@ export default class PerkyCode extends EditorComponent {
 
 
     #buildDOM () {
-        this.#containerEl = document.createElement('div')
-        this.#containerEl.className = 'code-display'
+        this.#containerEl = createElement('div', {class: 'code-display'})
 
         const header = this.#createHeader()
         const content = this.#createContent()
@@ -277,16 +277,17 @@ export default class PerkyCode extends EditorComponent {
 
 
     #createHeader () {
-        const header = document.createElement('div')
-        header.className = 'editor-header'
+        const header = createElement('div', {class: 'editor-header'})
 
-        this.#titleEl = document.createElement('span')
-        this.#titleEl.className = 'editor-header-title'
-        this.#titleEl.textContent = this.#title
+        this.#titleEl = createElement('span', {
+            class: 'editor-header-title',
+            text: this.#title
+        })
 
-        this.#copyBtnEl = document.createElement('button')
-        this.#copyBtnEl.className = 'editor-btn'
-        this.#copyBtnEl.textContent = 'Copy'
+        this.#copyBtnEl = createElement('button', {
+            class: 'editor-btn',
+            text: 'Copy'
+        })
         this.#copyBtnEl.addEventListener('click', () => this.copyToClipboard())
 
         header.appendChild(this.#titleEl)
@@ -297,8 +298,7 @@ export default class PerkyCode extends EditorComponent {
 
 
     #createContent () {
-        const content = document.createElement('div')
-        content.className = 'code-content'
+        const content = createElement('div', {class: 'code-content'})
 
         this.#preEl = document.createElement('pre')
         content.appendChild(this.#preEl)
@@ -314,18 +314,20 @@ export default class PerkyCode extends EditorComponent {
 
         if (this.#loading) {
             this.#containerEl.innerHTML = ''
-            const loadingEl = document.createElement('div')
-            loadingEl.className = 'code-loading'
-            loadingEl.textContent = 'Loading code...'
+            const loadingEl = createElement('div', {
+                class: 'code-loading',
+                text: 'Loading code...'
+            })
             this.#containerEl.appendChild(loadingEl)
             return
         }
 
         if (this.#error) {
             this.#containerEl.innerHTML = ''
-            const errorEl = document.createElement('div')
-            errorEl.className = 'code-error'
-            errorEl.textContent = `Error loading code: ${this.#error}`
+            const errorEl = createElement('div', {
+                class: 'code-error',
+                text: `Error loading code: ${this.#error}`
+            })
             this.#containerEl.appendChild(errorEl)
             return
         }

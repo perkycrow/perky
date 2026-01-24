@@ -6,6 +6,7 @@ import './inspectors/index.js'
 import ExplorerContextMenu from './explorer_context_menu.js'
 import {getActionsForModule, registerActionProvider} from './context_menu_actions.js'
 import {ICONS} from './devtools/devtools_icons.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 const DEFAULT_SYSTEM_CATEGORIES = [
@@ -186,8 +187,7 @@ export default class PerkyExplorer extends EditorComponent {
 
 
     #buildDOM () {
-        this.#containerEl = document.createElement('div')
-        this.#containerEl.className = 'explorer-container'
+        this.#containerEl = createElement('div', {class: 'explorer-container'})
 
         this.#minimizedEl = this.#createMinimizedView()
         this.#explorerEl = this.#createExpandedView()
@@ -205,12 +205,12 @@ export default class PerkyExplorer extends EditorComponent {
 
 
     #createMinimizedView () {
-        const container = document.createElement('div')
-        container.className = 'explorer-minimized'
+        const container = createElement('div', {class: 'explorer-minimized'})
 
-        const backButton = document.createElement('span')
-        backButton.className = 'explorer-back-button'
-        backButton.textContent = '←'
+        const backButton = createElement('span', {
+            class: 'explorer-back-button',
+            text: '←'
+        })
 
         container.appendChild(backButton)
 
@@ -229,8 +229,7 @@ export default class PerkyExplorer extends EditorComponent {
 
 
     #createExpandedView () {
-        const explorer = document.createElement('div')
-        explorer.className = 'explorer'
+        const explorer = createElement('div', {class: 'explorer'})
 
         this.#headerEl = this.#createHeader()
         this.#treeEl = this.#createTree()
@@ -264,48 +263,51 @@ export default class PerkyExplorer extends EditorComponent {
 
 
     #createHeader () {
-        const header = document.createElement('div')
-        header.className = 'explorer-header'
+        const header = createElement('div', {class: 'explorer-header'})
 
-        const title = document.createElement('div')
-        title.className = 'explorer-title'
-        title.innerHTML = '<span class="explorer-title-icon">📦</span> Perky Explorer'
+        const title = createElement('div', {
+            class: 'explorer-title',
+            html: '<span class="explorer-title-icon">📦</span> Perky Explorer'
+        })
 
-        const buttons = document.createElement('div')
-        buttons.className = 'explorer-buttons'
+        const buttons = createElement('div', {class: 'explorer-buttons'})
 
-        const refreshBtn = document.createElement('button')
-        refreshBtn.className = 'explorer-btn'
-        refreshBtn.textContent = '↻'
-        refreshBtn.title = 'Refresh'
+        const refreshBtn = createElement('button', {
+            class: 'explorer-btn',
+            text: '↻',
+            title: 'Refresh'
+        })
         refreshBtn.addEventListener('click', (e) => {
             e.stopPropagation()
             this.#refresh()
         })
 
-        this.#collapseBtnEl = document.createElement('button')
-        this.#collapseBtnEl.className = 'explorer-btn'
-        this.#collapseBtnEl.textContent = '−'
-        this.#collapseBtnEl.title = 'Collapse'
+        this.#collapseBtnEl = createElement('button', {
+            class: 'explorer-btn',
+            text: '−',
+            title: 'Collapse'
+        })
         this.#collapseBtnEl.addEventListener('click', (e) => {
             e.stopPropagation()
             this.#toggleCollapse()
         })
 
-        this.#minimizeBtnEl = document.createElement('button')
-        this.#minimizeBtnEl.className = 'explorer-btn'
-        this.#minimizeBtnEl.textContent = '◻'
-        this.#minimizeBtnEl.title = 'Minimize'
+        this.#minimizeBtnEl = createElement('button', {
+            class: 'explorer-btn',
+            text: '◻',
+            title: 'Minimize'
+        })
         this.#minimizeBtnEl.addEventListener('click', (e) => {
             e.stopPropagation()
             this.#isMinimized = true
             this.#updateViewState()
         })
 
-        this.#layersBtnEl = document.createElement('button')
-        this.#layersBtnEl.className = 'explorer-btn explorer-btn-icon'
-        this.#layersBtnEl.innerHTML = ICONS.layers
-        this.#layersBtnEl.title = 'Show system modules'
+        this.#layersBtnEl = createElement('button', {
+            class: 'explorer-btn explorer-btn-icon',
+            html: ICONS.layers,
+            title: 'Show system modules'
+        })
         this.#layersBtnEl.addEventListener('click', (e) => {
             e.stopPropagation()
             this.showSystemModules = !this.#showSystemModules
@@ -326,8 +328,7 @@ export default class PerkyExplorer extends EditorComponent {
 
 
     #createTree () {
-        const tree = document.createElement('div')
-        tree.className = 'explorer-tree'
+        const tree = createElement('div', {class: 'explorer-tree'})
 
         this.#rootNode = document.createElement('perky-explorer-node')
         this.#rootNode.addEventListener('node:select', (e) => {
@@ -473,9 +474,10 @@ export default class PerkyExplorer extends EditorComponent {
             return
         }
 
-        const empty = document.createElement('div')
-        empty.className = 'explorer-empty'
-        empty.textContent = 'No module attached. Use setModule() to explore.'
+        const empty = createElement('div', {
+            class: 'explorer-empty',
+            text: 'No module attached. Use setModule() to explore.'
+        })
         this.#treeEl.appendChild(empty)
 
         this.#rootNode.style.display = 'none'

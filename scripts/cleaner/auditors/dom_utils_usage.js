@@ -175,35 +175,69 @@ function scanIfStatement (node) {
 
 function checkCreateElementSequence (statements, startIndex) {
     const node = statements[startIndex]
+    const createInfo = extractCreateElementInfo(node)
 
-    let targetName = null
-    let initNode = null
-
-    if (node.type === 'VariableDeclaration') {
-        const declarator = node.declarations[0]
-        if (!declarator || declarator.id.type !== 'Identifier') {
-            return null
-        }
-        if (!isDocumentCreateElement(declarator.init)) {
-            return null
-        }
-        targetName = declarator.id.name
-        initNode = declarator.init
-    } else if (node.type === 'ExpressionStatement' && node.expression.type === 'AssignmentExpression') {
-        const expr = node.expression
-        if (!isDocumentCreateElement(expr.right)) {
-            return null
-        }
-        targetName = getTargetString(expr.left)
-        if (!targetName) {
-            return null
-        }
-        initNode = expr.right
-    } else {
+    if (!createInfo) {
         return null
     }
 
-    const line = node.loc.start.line
+    const {targetName, initNode} = createInfo
+    const {supportedOps, totalOps} = collectOperations(statements, startIndex, targetName)
+
+    if (supportedOps.length >= MIN_OPERATIONS) {
+        const line = node.loc.start.line
+        const opList = supportedOps.join(', ')
+        const issue = `${gray(`L${line}:`)} createElement('${getTagName(initNode)}') + ${supportedOps.length} ops: ${opList}`
+        return {issue, skip: totalOps}
+    }
+
+    return null
+}
+
+
+function extractCreateElementInfo (node) {
+    if (node.type === 'VariableDeclaration') {
+        return extractFromVariableDeclaration(node)
+    }
+
+    if (node.type === 'ExpressionStatement' && node.expression.type === 'AssignmentExpression') {
+        return extractFromAssignment(node.expression)
+    }
+
+    return null
+}
+
+
+function extractFromVariableDeclaration (node) {
+    const declarator = node.declarations[0]
+
+    if (!declarator || declarator.id.type !== 'Identifier') {
+        return null
+    }
+
+    if (!isDocumentCreateElement(declarator.init)) {
+        return null
+    }
+
+    return {targetName: declarator.id.name, initNode: declarator.init}
+}
+
+
+function extractFromAssignment (expr) {
+    if (!isDocumentCreateElement(expr.right)) {
+        return null
+    }
+
+    const targetName = getTargetString(expr.left)
+    if (!targetName) {
+        return null
+    }
+
+    return {targetName, initNode: expr.right}
+}
+
+
+function collectOperations (statements, startIndex, targetName) {
     const supportedOps = []
     let totalOps = 0
 
@@ -221,13 +255,7 @@ function checkCreateElementSequence (statements, startIndex) {
         }
     }
 
-    if (supportedOps.length >= MIN_OPERATIONS) {
-        const opList = supportedOps.join(', ')
-        const issue = `${gray(`L${line}:`)} createElement('${getTagName(initNode)}') + ${supportedOps.length} ops: ${opList}`
-        return {issue, skip: totalOps}
-    }
-
-    return null
+    return {supportedOps, totalOps}
 }
 
 

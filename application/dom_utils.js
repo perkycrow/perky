@@ -22,7 +22,26 @@ const directAttrs = [
 
 export function createElement (tag, options = {}) {
     const el = document.createElement(tag)
+    applyElementOptions(el, options)
+    return el
+}
 
+
+function applyElementOptions (el, options) {
+    applyDirectAttributes(el, options)
+    applyContent(el, options)
+
+    if (options.style) {
+        setStyle(el, options.style)
+    }
+
+    if (options.attrs) {
+        setAttributes(el, options.attrs)
+    }
+}
+
+
+function applyDirectAttributes (el, options) {
     for (const attr of directAttrs) {
         if (attr in options) {
             el[attr] = options[attr]
@@ -32,7 +51,10 @@ export function createElement (tag, options = {}) {
     if (options.class || options.className) {
         el.className = options.class || options.className
     }
+}
 
+
+function applyContent (el, options) {
     if (options.text) {
         el.textContent = options.text
     }
@@ -40,16 +62,6 @@ export function createElement (tag, options = {}) {
     if (options.html) {
         el.innerHTML = options.html
     }
-
-    if (options.style) {
-        setStyle(el, options.style)
-    }
-
-    if (options.attrs) {
-        setAttributes(el, options.attrs)
-    }
-
-    return el
 }
 
 

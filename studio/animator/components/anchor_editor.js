@@ -58,7 +58,7 @@ export function buildAnchorPreview (spritesheet, anchor, onChange) {
         renderAnchorPreview(canvas, handle, anchor, getFirstFrameData(spritesheet))
     })
 
-    setupAnchorDrag(wrapper, canvas, handle, anchor, onChange)
+    setupAnchorDrag({canvas, handle, anchor, onChange})
 
     return {wrapper, canvas, handle}
 }
@@ -121,7 +121,7 @@ export function getFirstFrameData (spritesheet) {
 }
 
 
-export function setupAnchorDrag (wrapper, canvas, handle, anchor, onChange) {
+export function setupAnchorDrag ({canvas, handle, anchor, onChange}) {
     let isDragging = false
 
     const updateAnchor = (e) => {
