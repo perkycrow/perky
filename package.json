@@ -17,6 +17,7 @@
     "den:deploy": "vite build --config vite.den.config.js && rm -rf ../perkycrow_com/public/den && cp -r dist/den ../perkycrow_com/public/den",
     "den:preview": "vite preview --config vite.den.config.js",
     "den:serve": "vite build --config vite.den.config.js && vite preview --config vite.den.config.js",
+    "den:game": "vite build --config vite.den.config.js --mode game",
     "ghast": "vite serve ghast --port 3001",
     "ghast:build": "vite build --config vite.ghast.config.js",
     "ghast:preview": "vite preview --config vite.ghast.config.js",

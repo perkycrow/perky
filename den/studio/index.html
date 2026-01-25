@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mistbrewer Studio">
+    <link rel="icon" type="image/png" href="../assets/images/red.png">
+    <link rel="apple-touch-icon" href="../assets/images/red.png">
+    <title>Mistbrewer Studio</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+        }
+        h1 { font-size: 2rem; font-weight: 300; }
+        .tools { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+        .tool-card {
+            background: #252542;
+            border-radius: 12px;
+            padding: 24px 32px;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .tool-card:hover { background: #2d2d4a; transform: scale(1.02); }
+        .tool-card h2 { font-size: 1.2rem; margin-bottom: 8px; }
+        .tool-card p { font-size: 0.9rem; color: #888; }
+    </style>
+</head>
+<body>
+    <h1>Mistbrewer Studio</h1>
+    <div class="tools">
+        <a href="./animator.html" class="tool-card">
+            <h2>Sprite Animator</h2>
+            <p>Edit sprite animations</p>
+        </a>
+    </div>
+</body>
+</html>
