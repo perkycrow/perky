@@ -174,7 +174,7 @@ async function convertPsd (psd) {
         animations[animName] = groupFrames.map(f => f.filename)
     }
 
-    frames = await resizeFrames(frames, psd.width, psd.height, resize.width, resize.height, nearest)
+    frames = await resizeFrames(frames, {psdWidth: psd.width, psdHeight: psd.height, targetWidth: resize.width, targetHeight: resize.height, nearest})
 
     const atlases = packFramesIntoAtlases(frames, MAX_ATLAS_SIZE)
 

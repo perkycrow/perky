@@ -125,7 +125,7 @@ export async function exportPsd (psdPath, options = {}) {
     }
 
     if (needsResize) {
-        frames = await resizeFrames(frames, psd.width, psd.height, resize.width, resize.height, options.nearest)
+        frames = await resizeFrames(frames, {psdWidth: psd.width, psdHeight: psd.height, targetWidth: resize.width, targetHeight: resize.height, nearest: options.nearest})
     }
 
     console.log(`\n${dim('Packing')} ${frames.length} frames...`)

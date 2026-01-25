@@ -75,21 +75,21 @@ if (args.length < 2) {
 const outputIndex = args.indexOf('-o')
 const unpackIndex = args.indexOf('-u')
 
-if (unpackIndex !== -1) {
+if (unpackIndex === -1 && outputIndex === -1) {
+    console.error('Missing -o option')
+    process.exit(1)
+} else if (unpackIndex >= 0) {
     const inputPath = args[unpackIndex + 1]
-    const outputDir = outputIndex !== -1 ? args[outputIndex + 1] : '.'
+    const outputDir = outputIndex >= 0 ? args[outputIndex + 1] : '.'
     unpackFile(inputPath, outputDir).catch(err => {
         console.error('Error:', err.message)
         process.exit(1)
     })
-} else if (outputIndex !== -1) {
+} else {
     const outputPath = args[outputIndex + 1]
     const inputFiles = args.slice(0, outputIndex)
     packFiles(inputFiles, outputPath).catch(err => {
         console.error('Error:', err.message)
         process.exit(1)
     })
-} else {
-    console.error('Missing -o option')
-    process.exit(1)
 }

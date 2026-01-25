@@ -119,7 +119,7 @@ export async function resizeFrame (frameData, targetWidth, targetHeight, nearest
 }
 
 
-export async function resizeFrames (frames, psdWidth, psdHeight, targetWidth, targetHeight, nearest) {
+export async function resizeFrames (frames, {psdWidth, psdHeight, targetWidth, targetHeight, nearest}) {
     const resize = calculateResizeDimensions(psdWidth, psdHeight, targetWidth, targetHeight)
     const needsResize = resize.width !== psdWidth || resize.height !== psdHeight
 
