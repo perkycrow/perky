@@ -1,14 +1,17 @@
-import {parsePsd, layerToRGBA} from 'perky/io/psd.js'
-import {createCanvas, canvasToBlob, putPixels, calculateResizeDimensions, resizeCanvas} from 'perky/io/canvas.js'
-import ShelfPacker from 'perky/render/textures/shelf_packer.js'
-import {toCamelCase} from 'perky/core/utils.js'
-
-
-const ANIM_GROUP_PATTERN = /^anim[\s-]+(.+)$/i
-
-
-const MAX_ATLAS_SIZE = 4096
-const PADDING = 1
+import {parsePsd} from 'perky/io/psd.js'
+import {canvasToBlob, calculateResizeDimensions} from 'perky/io/canvas.js'
+import {
+    findAnimationGroups,
+    parseAnimationName,
+    countFrames,
+    extractFramesFromGroup,
+    resizeFrames,
+    packFramesIntoAtlases,
+    compositeAtlas,
+    nextPowerOfTwo,
+    buildJsonData,
+    MAX_ATLAS_SIZE
+} from 'perky/io/spritesheet.js'
 
 
 let currentPsd = null
@@ -127,53 +130,10 @@ function displayPsdInfo (psd) {
 }
 
 
-function isAnimationGroup (name) {
-    return ANIM_GROUP_PATTERN.test(name)
-}
-
-
-function findAnimationGroups (tree) {
-    const groups = []
-
-    function traverse (nodes) {
-        for (const node of nodes) {
-            if (node.type === 'group') {
-                if (isAnimationGroup(node.name)) {
-                    groups.push(node)
-                } else {
-                    traverse(node.children)
-                }
-            }
-        }
-    }
-
-    traverse(tree)
-    return groups
-}
-
-
-function parseAnimationName (groupName) {
-    const match = groupName.match(ANIM_GROUP_PATTERN)
-    if (!match) return groupName
-
-    const rawName = match[1].trim().toLowerCase()
-    return toCamelCase(rawName)
-}
-
-
-function parseFrameNumber (layerName) {
-    const match = layerName.match(/^(\d+)/)
-    return match ? match[1] : null
-}
-
-
-function countFrames (group) {
-    return group.children.filter(c => c.type === 'layer' && parseFrameNumber(c.name)).length
-}
-
-
 async function handleConvert () {
-    if (!currentPsd) return
+    if (!currentPsd) {
+        return
+    }
 
     elements.convertBtn.disabled = true
     elements.convertBtn.textContent = 'Converting...'
@@ -201,67 +161,24 @@ async function convertPsd (psd) {
     const nearest = elements.resizeMode.value === 'nearest'
 
     const resize = calculateResizeDimensions(psd.width, psd.height, targetWidth, targetHeight)
-    const needsResize = resize.width !== psd.width || resize.height !== psd.height
 
     const animGroups = findAnimationGroups(psd.tree)
-    const frames = []
+    let frames = []
     const animations = {}
 
     for (const group of animGroups) {
         const animName = parseAnimationName(group.name)
-        animations[animName] = []
+        const groupFrames = extractFramesFromGroup(group, psd.width, psd.height)
 
-        const layersWithFrameNumbers = []
-
-        for (const child of group.children) {
-            if (child.type !== 'layer') continue
-
-            const frameNumber = parseFrameNumber(child.name)
-            if (!frameNumber) continue
-
-            layersWithFrameNumbers.push({
-                layer: child.layer,
-                name: child.name,
-                frameNumber: parseInt(frameNumber, 10)
-            })
-        }
-
-        layersWithFrameNumbers.sort((a, b) => a.frameNumber - b.frameNumber)
-
-        for (const {layer, frameNumber} of layersWithFrameNumbers) {
-            const filename = `${animName}/${frameNumber}`
-
-            const rgba = layerToRGBA(layer, psd.width, psd.height)
-            if (!rgba) continue
-
-            let finalPixels = rgba.pixels
-            let finalWidth = rgba.width
-            let finalHeight = rgba.height
-
-            if (needsResize) {
-                const resized = await resizeFrame(rgba, resize.width, resize.height, nearest)
-                finalPixels = resized.pixels
-                finalWidth = resized.width
-                finalHeight = resized.height
-            }
-
-            frames.push({
-                filename,
-                pixels: finalPixels,
-                width: finalWidth,
-                height: finalHeight,
-                animName,
-                frameNumber
-            })
-
-            animations[animName].push(filename)
-        }
+        frames = frames.concat(groupFrames)
+        animations[animName] = groupFrames.map(f => f.filename)
     }
+
+    frames = await resizeFrames(frames, psd.width, psd.height, resize.width, resize.height, nearest)
 
     const atlases = packFramesIntoAtlases(frames, MAX_ATLAS_SIZE)
 
-    for (let i = 0; i < atlases.length; i++) {
-        const atlas = atlases[i]
+    for (const atlas of atlases) {
         const usedHeight = atlas.packer.currentY
         atlas.finalHeight = nextPowerOfTwo(usedHeight)
         atlas.canvas = await compositeAtlas(atlas.frames, MAX_ATLAS_SIZE, atlas.finalHeight)
@@ -274,129 +191,6 @@ async function convertPsd (psd) {
         jsonData,
         filename: psd.filename
     }
-}
-
-
-async function resizeFrame (frameData, targetWidth, targetHeight, nearest) {
-    const srcCanvas = await createCanvas(frameData.width, frameData.height)
-    const srcCtx = srcCanvas.getContext('2d')
-    putPixels(srcCtx, frameData.pixels, frameData.width, frameData.height)
-
-    const resizedCanvas = await resizeCanvas(srcCanvas, targetWidth, targetHeight, nearest)
-    const resizedCtx = resizedCanvas.getContext('2d')
-    const imageData = resizedCtx.getImageData(0, 0, targetWidth, targetHeight)
-
-    return {
-        pixels: new Uint8Array(imageData.data.buffer),
-        width: targetWidth,
-        height: targetHeight
-    }
-}
-
-
-function packFramesIntoAtlases (frames, atlasSize) {
-    const atlases = []
-    let currentAtlas = {
-        packer: new ShelfPacker(atlasSize, atlasSize, PADDING),
-        frames: []
-    }
-    atlases.push(currentAtlas)
-
-    for (const frame of frames) {
-        let slot = currentAtlas.packer.pack(frame.width, frame.height)
-
-        if (!slot) {
-            currentAtlas = {
-                packer: new ShelfPacker(atlasSize, atlasSize, PADDING),
-                frames: []
-            }
-            atlases.push(currentAtlas)
-            slot = currentAtlas.packer.pack(frame.width, frame.height)
-
-            if (!slot) {
-                console.warn(`Frame too large: ${frame.filename}`)
-                continue
-            }
-        }
-
-        currentAtlas.frames.push({
-            ...frame,
-            x: slot.x,
-            y: slot.y,
-            atlasIndex: atlases.length - 1
-        })
-    }
-
-    return atlases
-}
-
-
-async function compositeAtlas (packedFrames, atlasWidth, atlasHeight) {
-    const canvas = await createCanvas(atlasWidth, atlasHeight)
-    const ctx = canvas.getContext('2d')
-
-    for (const frame of packedFrames) {
-        putPixels(ctx, frame.pixels, frame.width, frame.height, frame.x, frame.y)
-    }
-
-    return canvas
-}
-
-
-function buildJsonData (atlases, animations, psdName) {
-    const allFrames = []
-    const images = []
-
-    for (let i = 0; i < atlases.length; i++) {
-        const atlas = atlases[i]
-        const imageName = atlases.length === 1
-            ? `${psdName}.png`
-            : `${psdName}_${i}.png`
-
-        images.push({
-            filename: imageName,
-            size: {
-                w: MAX_ATLAS_SIZE,
-                h: atlas.finalHeight
-            }
-        })
-
-        for (const frame of atlas.frames) {
-            allFrames.push({
-                filename: frame.filename,
-                frame: {
-                    x: frame.x,
-                    y: frame.y,
-                    w: frame.width,
-                    h: frame.height
-                },
-                sourceSize: {
-                    w: frame.width,
-                    h: frame.height
-                },
-                atlas: i
-            })
-        }
-    }
-
-    return {
-        frames: allFrames,
-        animations,
-        meta: {
-            app: 'perky-spritesheet',
-            version: '1.0',
-            images
-        }
-    }
-}
-
-
-function nextPowerOfTwo (n) {
-    const powers = [16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
-    for (const p of powers) {
-        if (p >= n) return p
-    }
-    return 4096
 }
 
 
@@ -413,7 +207,9 @@ function displayPreview (result) {
 
 
 async function downloadPng () {
-    if (!currentResult) return
+    if (!currentResult) {
+        return
+    }
 
     for (let i = 0; i < currentResult.atlases.length; i++) {
         const atlas = currentResult.atlases[i]
@@ -427,7 +223,9 @@ async function downloadPng () {
 
 
 function downloadJson () {
-    if (!currentResult) return
+    if (!currentResult) {
+        return
+    }
 
     const json = JSON.stringify(currentResult.jsonData, null, 2)
     const blob = new Blob([json], {type: 'application/json'})

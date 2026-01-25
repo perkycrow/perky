@@ -1,13 +1,20 @@
 import {readFile, mkdir, writeFile} from 'fs/promises'
 import {basename, dirname, join} from 'path'
 import {bold, cyan, dim, green, yellow} from '../format.js'
-import ShelfPacker from '../../render/textures/shelf_packer.js'
-import {parsePsd as parseRawPsd, layerToRGBA} from '../../io/psd.js'
-import {createCanvas, canvasToBuffer, putPixels, calculateResizeDimensions, resizeCanvas} from '../../io/canvas.js'
-
-
-const MAX_ATLAS_SIZE = 4096
-const PADDING = 1
+import {parsePsd as parseRawPsd} from '../../io/psd.js'
+import {calculateResizeDimensions, canvasToBuffer} from '../../io/canvas.js'
+import {
+    findAnimationGroups,
+    parseAnimationName,
+    parseFrameNumber,
+    extractFramesFromGroup,
+    resizeFrames,
+    packFramesIntoAtlases,
+    compositeAtlas,
+    nextPowerOfTwo,
+    buildJsonData,
+    MAX_ATLAS_SIZE
+} from '../../io/spritesheet.js'
 
 
 export function printBanner () {
@@ -26,160 +33,59 @@ export async function parsePsd (psdPath) {
 }
 
 
-export function findAnimationGroups (tree) {
-    const groups = []
+function logPsdInfo (psd, resize, needsResize, nearest) {
+    console.log(`Color profile: ${psd.colorProfile.name}`)
+    if (psd.colorProfile.isP3) {
+        console.log(yellow('⚠ WARNING: Display P3 detected, colors may differ from sRGB'))
+    }
+    console.log(`Source size: ${psd.width}x${psd.height}`)
+    if (needsResize) {
+        const mode = nearest ? 'nearest' : 'smooth'
+        console.log(`Output size: ${resize.width}x${resize.height} (${mode})`)
+    }
+}
 
-    function traverse (nodes) {
-        for (const node of nodes) {
-            if (node.type === 'group') {
-                if (node.name.startsWith('anim - ')) {
-                    groups.push(node)
-                } else {
-                    traverse(node.children)
-                }
-            }
+
+function processAnimationGroup (group, psdWidth, psdHeight) {
+    const animName = parseAnimationName(group.name)
+    console.log(`\nProcessing: ${group.name}`)
+
+    const groupFrames = extractFramesFromGroup(group, psdWidth, psdHeight)
+
+    for (const child of group.children) {
+        if (child.type === 'layer' && !parseFrameNumber(child.name)) {
+            console.log(`  ${yellow('⚠')} Skipping "${child.name}" (no frame number)`)
         }
     }
 
-    traverse(tree)
-    return groups
-}
-
-
-export function parseAnimationName (groupName) {
-    return groupName.replace('anim - ', '')
-}
-
-
-export function parseFrameNumber (layerName) {
-    const match = layerName.match(/^(\d+)\s*-/)
-    return match ? match[1] : null
-}
-
-
-function extractFrameData (layer, psdWidth, psdHeight) {
-    const rgba = layerToRGBA(layer, psdWidth, psdHeight)
-    if (!rgba) return null
-
-    return {
-        pixels: rgba.pixels,
-        width: rgba.width,
-        height: rgba.height
-    }
-}
-
-
-async function resizeFrame (frameData, targetWidth, targetHeight, nearest) {
-    const srcCanvas = await createCanvas(frameData.width, frameData.height)
-    const srcCtx = srcCanvas.getContext('2d')
-    putPixels(srcCtx, frameData.pixels, frameData.width, frameData.height)
-
-    const resizedCanvas = await resizeCanvas(srcCanvas, targetWidth, targetHeight, nearest)
-    const resizedCtx = resizedCanvas.getContext('2d')
-    const imageData = resizedCtx.getImageData(0, 0, targetWidth, targetHeight)
-
-    return {
-        pixels: new Uint8Array(imageData.data.buffer),
-        width: targetWidth,
-        height: targetHeight
-    }
-}
-
-
-function packFramesIntoAtlases (frames, atlasSize) {
-    const atlases = []
-    let currentAtlas = {
-        packer: new ShelfPacker(atlasSize, atlasSize, PADDING),
-        frames: []
-    }
-    atlases.push(currentAtlas)
-
-    for (const frame of frames) {
-        let slot = currentAtlas.packer.pack(frame.width, frame.height)
-
-        if (!slot) {
-            currentAtlas = {
-                packer: new ShelfPacker(atlasSize, atlasSize, PADDING),
-                frames: []
-            }
-            atlases.push(currentAtlas)
-            slot = currentAtlas.packer.pack(frame.width, frame.height)
-
-            if (!slot) {
-                console.log(yellow(`  ⚠ Frame too large: ${frame.filename}`))
-                continue
-            }
-        }
-
-        currentAtlas.frames.push({
-            ...frame,
-            x: slot.x,
-            y: slot.y,
-            atlasIndex: atlases.length - 1
-        })
+    for (const frame of groupFrames) {
+        console.log(`  ${dim('extracting')} ${frame.filename}`)
     }
 
-    return atlases
+    return {animName, groupFrames}
 }
 
 
-async function compositeAtlas (packedFrames, atlasWidth, atlasHeight) {
-    const canvas = await createCanvas(atlasWidth, atlasHeight)
-    const ctx = canvas.getContext('2d')
-
-    for (const frame of packedFrames) {
-        putPixels(ctx, frame.pixels, frame.width, frame.height, frame.x, frame.y)
-    }
-
-    return canvasToBuffer(canvas)
-}
-
-
-function buildJsonData (atlases, animations, psdName) {
-    const allFrames = []
-    const images = []
+async function writeAtlases (atlases, psdName, outputDir) {
+    let totalFrames = 0
 
     for (let i = 0; i < atlases.length; i++) {
         const atlas = atlases[i]
+        atlas.finalHeight = nextPowerOfTwo(atlas.packer.currentY)
+
         const imageName = atlases.length === 1
             ? `${psdName}.png`
             : `${psdName}_${i}.png`
 
-        images.push({
-            filename: imageName,
-            size: {
-                w: MAX_ATLAS_SIZE,
-                h: atlas.finalHeight
-            }
-        })
+        const atlasCanvas = await compositeAtlas(atlas.frames, MAX_ATLAS_SIZE, atlas.finalHeight)
+        const atlasBuffer = await canvasToBuffer(atlasCanvas)
+        await writeFile(join(outputDir, imageName), atlasBuffer)
 
-        for (const frame of atlas.frames) {
-            allFrames.push({
-                filename: frame.filename,
-                frame: {
-                    x: frame.x,
-                    y: frame.y,
-                    w: frame.width,
-                    h: frame.height
-                },
-                sourceSize: {
-                    w: frame.width,
-                    h: frame.height
-                },
-                atlas: i
-            })
-        }
+        console.log(`  ${green('✓')} ${imageName} (${MAX_ATLAS_SIZE}x${atlas.finalHeight}, ${atlas.frames.length} frames)`)
+        totalFrames += atlas.frames.length
     }
 
-    return {
-        frames: allFrames,
-        animations,
-        meta: {
-            app: 'perky-psd-exporter',
-            version: '2.0',
-            images
-        }
-    }
+    return totalFrames
 }
 
 
@@ -188,96 +94,29 @@ export async function exportPsd (psdPath, options = {}) {
 
     const psd = await parsePsd(psdPath)
     const psdName = basename(psdPath, '.psd')
-    const psdDir = dirname(psdPath)
-    const outputDir = join(psdDir, psdName)
+    const outputDir = join(dirname(psdPath), psdName)
 
     await mkdir(outputDir, {recursive: true})
 
     const animGroups = findAnimationGroups(psd.tree)
-
     if (animGroups.length === 0) {
-        console.log('No animation groups found (looking for "anim - " prefix)')
+        console.log('No animation groups found (looking for "anim" prefix)')
         return
     }
 
     const resize = calculateResizeDimensions(psd.width, psd.height, options.width, options.height)
     const needsResize = resize.width !== psd.width || resize.height !== psd.height
 
-    console.log(`Color profile: ${psd.colorProfile.name}`)
-    if (psd.colorProfile.isP3) {
-        console.log(yellow('⚠ WARNING: Display P3 detected, colors may differ from sRGB'))
-    }
-    console.log(`Source size: ${psd.width}x${psd.height}`)
-    if (needsResize) {
-        const mode = options.nearest ? 'nearest' : 'smooth'
-        console.log(`Output size: ${resize.width}x${resize.height} (${mode})`)
-    }
+    logPsdInfo(psd, resize, needsResize, options.nearest)
     console.log(`Found ${animGroups.length} animation group(s)`)
 
-    const frames = []
+    let frames = []
     const animations = {}
 
     for (const group of animGroups) {
-        const animName = parseAnimationName(group.name)
-        console.log(`\nProcessing: ${group.name}`)
-
-        animations[animName] = []
-
-        const layersWithFrameNumbers = []
-
-        for (const child of group.children) {
-            if (child.type !== 'layer') {
-                continue
-            }
-
-            const frameNumber = parseFrameNumber(child.name)
-            if (!frameNumber) {
-                console.log(`  ${yellow('⚠')} Skipping "${child.name}" (no frame number)`)
-                continue
-            }
-
-            layersWithFrameNumbers.push({
-                layer: child.layer,
-                name: child.name,
-                frameNumber: parseInt(frameNumber, 10)
-            })
-        }
-
-        layersWithFrameNumbers.sort((a, b) => a.frameNumber - b.frameNumber)
-
-        for (const {layer, frameNumber} of layersWithFrameNumbers) {
-            const filename = `${animName}/${frameNumber}`
-
-            console.log(`  ${dim('extracting')} ${filename}`)
-
-            const frameData = extractFrameData(layer, psd.width, psd.height)
-            if (!frameData) {
-                console.log(`  ${yellow('⚠')} Empty frame: ${filename}`)
-                continue
-            }
-
-            let finalPixels = frameData.pixels
-            let finalWidth = frameData.width
-            let finalHeight = frameData.height
-
-            if (needsResize) {
-                const resized = await resizeFrame(frameData, resize.width, resize.height, options.nearest)
-                finalPixels = resized.pixels
-                finalWidth = resized.width
-                finalHeight = resized.height
-            }
-
-            frames.push({
-                filename,
-                pixels: finalPixels,
-                width: finalWidth,
-                height: finalHeight,
-                animName,
-                frameNumber
-            })
-
-            animations[animName].push(filename)
-        }
+        const {animName, groupFrames} = processAnimationGroup(group, psd.width, psd.height)
+        frames = frames.concat(groupFrames)
+        animations[animName] = groupFrames.map(f => f.filename)
     }
 
     if (frames.length === 0) {
@@ -285,49 +124,23 @@ export async function exportPsd (psdPath, options = {}) {
         return
     }
 
-    console.log(`\n${dim('Packing')} ${frames.length} frames...`)
+    if (needsResize) {
+        frames = await resizeFrames(frames, psd.width, psd.height, resize.width, resize.height, options.nearest)
+    }
 
+    console.log(`\n${dim('Packing')} ${frames.length} frames...`)
     const atlases = packFramesIntoAtlases(frames, MAX_ATLAS_SIZE)
     console.log(`  Created ${atlases.length} atlas(es)`)
 
     console.log(`\n${dim('Compositing...')}`)
+    const totalFrames = await writeAtlases(atlases, psdName, outputDir)
 
-    let totalFrames = 0
-
-    for (let i = 0; i < atlases.length; i++) {
-        const atlas = atlases[i]
-        const usedHeight = atlas.packer.currentY
-        atlas.finalHeight = nextPowerOfTwo(usedHeight)
-
-        const imageName = atlases.length === 1
-            ? `${psdName}.png`
-            : `${psdName}_${i}.png`
-
-        const atlasBuffer = await compositeAtlas(atlas.frames, MAX_ATLAS_SIZE, atlas.finalHeight)
-        await writeFile(join(outputDir, imageName), atlasBuffer)
-
-        console.log(`  ${green('✓')} ${imageName} (${MAX_ATLAS_SIZE}x${atlas.finalHeight}, ${atlas.frames.length} frames)`)
-        totalFrames += atlas.frames.length
-    }
-
-    const jsonName = `${psdName}.json`
-    const jsonData = buildJsonData(atlases, animations, psdName)
-    await writeFile(join(outputDir, jsonName), JSON.stringify(jsonData, null, 2))
-    console.log(`  ${green('✓')} ${jsonName}`)
+    const jsonData = buildJsonData(atlases, animations, psdName, 'perky-psd-exporter')
+    await writeFile(join(outputDir, `${psdName}.json`), JSON.stringify(jsonData, null, 2))
+    console.log(`  ${green('✓')} ${psdName}.json`)
 
     console.log('')
     console.log(green('✓') + bold(` Done! Exported ${totalFrames} frames in ${atlases.length} atlas(es)`))
     console.log(dim(`  ${outputDir}/`))
     console.log('')
-}
-
-
-function nextPowerOfTwo (n) {
-    const powers = [16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
-    for (const p of powers) {
-        if (p >= n) {
-            return p
-        }
-    }
-    return 4096
 }

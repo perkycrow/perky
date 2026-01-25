@@ -38,7 +38,7 @@ async function main () {
     console.log(`  Color mode: ${psd.colorMode}`)
     console.log(`  Color profile: ${psd.colorProfile.name}`)
     if (psd.colorProfile.isP3) {
-        console.log(`  ⚠ WARNING: Display P3 detected, colors may differ from sRGB`)
+        console.log('  ⚠ WARNING: Display P3 detected, colors may differ from sRGB')
     }
     console.log(`  Layers: ${psd.layers.length}`)
 
@@ -53,7 +53,7 @@ async function main () {
         }
     }
 
-    // Export all animation frames as PNG
+
     const outputDir = 'psd/output'
     mkdirSync(outputDir, {recursive: true})
 
@@ -62,7 +62,9 @@ async function main () {
     for (const [animName, frames] of Object.entries(psd.animations)) {
         for (const frame of frames) {
             const rgba = layerToRGBA(frame, psd.width, psd.height)
-            if (!rgba) continue
+            if (!rgba) {
+                continue
+            }
 
             const filename = `${animName}_${frame.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`
             const outputPath = `${outputDir}/${filename}`

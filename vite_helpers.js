@@ -26,7 +26,7 @@ function generateAnimatorFiles (options, baseDir) {
     const outDir = path.resolve(baseDir, game, 'studio')
     mkdirSync(outDir, {recursive: true})
 
-    // Generate HTML
+
     const templatePath = path.resolve(baseDir, ANIMATOR_TEMPLATE)
     let html = readFileSync(templatePath, 'utf-8')
 
@@ -43,7 +43,7 @@ function generateAnimatorFiles (options, baseDir) {
     html = `<!-- GENERATED FILE - Do not edit! Modify studio/animator/index.html instead -->\n${html}`
     writeFileSync(path.resolve(outDir, 'animator.html'), html)
 
-    // Generate JS
+
     const js = `// GENERATED FILE - Do not edit! Modify studio/animator/ instead
 
 import {launchAnimatorStudio} from '../../studio/animator/launcher.js'
@@ -87,7 +87,7 @@ function generateSpritesheetFiles (options, baseDir) {
     html = `<!-- GENERATED FILE - Do not edit! Modify studio/spritesheet/index.html instead -->\n${html}`
     writeFileSync(path.resolve(outDir, 'spritesheet.html'), html)
 
-    // Copy JS (it uses perky alias, works directly)
+
     const jsTemplatePath = path.resolve(baseDir, SPRITESHEET_JS_TEMPLATE)
     const jsContent = readFileSync(jsTemplatePath, 'utf-8')
     const js = `// GENERATED FILE - Do not edit! Modify studio/spritesheet/index.js instead\n\n${jsContent}`
