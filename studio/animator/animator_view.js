@@ -194,7 +194,7 @@ export default class AnimatorView extends EditorComponent {
             title: 'Back to gallery'
         })
         backBtn.addEventListener('click', () => {
-            this.dispatchEvent(new CustomEvent('close', {bubbles: true}))
+            window.location.href = 'index.html'
         })
         headerStart.appendChild(backBtn)
 

@@ -3,6 +3,7 @@ import path from 'path'
 
 
 const ANIMATOR_TEMPLATE = 'studio/animator/index.html'
+const ANIMATOR_JS_TEMPLATE = 'studio/animator/index.js'
 const SPRITESHEET_TEMPLATE = 'studio/spritesheet/index.html'
 const SPRITESHEET_JS_TEMPLATE = 'studio/spritesheet/index.js'
 const HUB_TEMPLATE = 'studio/index.html'
@@ -44,24 +45,12 @@ function generateAnimatorFiles (options, baseDir) {
     writeFileSync(path.resolve(outDir, 'animator.html'), html)
 
 
-    const js = `// GENERATED FILE - Do not edit! Modify studio/animator/ instead
-
-import {launchAnimatorStudio} from '../../studio/animator/launcher.js'
-import manifestData from '../manifest.js'
-
-
-async function init () {
-    const container = document.getElementById('app')
-    await launchAnimatorStudio(manifestData, container, {basePath: '../'})
-}
-
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init)
-} else {
-    init()
-}
-`
+    const jsTemplatePath = path.resolve(baseDir, ANIMATOR_JS_TEMPLATE)
+    let js = readFileSync(jsTemplatePath, 'utf-8')
+    js = js.replace("'./launcher.js'", "'../../studio/animator/launcher.js'")
+    js = js.replace("'../../den/manifest.json'", "'../manifest.json'")
+    js = js.replace("{basePath: '../../den/'}", "{basePath: '../'}")
+    js = `// GENERATED FILE - Do not edit! Modify studio/animator/index.js instead\n\n${js}`
     writeFileSync(path.resolve(outDir, 'animator.js'), js)
 }
 
