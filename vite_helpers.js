@@ -7,19 +7,7 @@ const ANIMATOR_JS_TEMPLATE = 'studio/animator/index.js'
 const SPRITESHEET_TEMPLATE = 'studio/spritesheet/index.html'
 const SPRITESHEET_JS_TEMPLATE = 'studio/spritesheet/index.js'
 const HUB_TEMPLATE = 'studio/index.html'
-
-const TOOL_DEFINITIONS = {
-    animator: {
-        title: 'Sprite Animator',
-        description: 'Edit sprite animations',
-        href: './animator.html'
-    },
-    spritesheet: {
-        title: 'Spritesheet Exporter',
-        description: 'Convert PSD to spritesheet',
-        href: './spritesheet.html'
-    }
-}
+const HUB_JS_TEMPLATE = 'studio/index.js'
 
 
 function generateAnimatorFiles (options, baseDir) {
@@ -48,8 +36,8 @@ function generateAnimatorFiles (options, baseDir) {
     const jsTemplatePath = path.resolve(baseDir, ANIMATOR_JS_TEMPLATE)
     let js = readFileSync(jsTemplatePath, 'utf-8')
     js = js.replace("'./launcher.js'", "'../../studio/animator/launcher.js'")
-    js = js.replace("'../../den/manifest.json'", "'../manifest.json'")
-    js = js.replace("{basePath: '../../den/'}", "{basePath: '../'}")
+    js = js.replace(/from '\.\.\/\.\.\/[^']+\/manifest\.json'/g, "from '../manifest.json'")
+    js = js.replace(/basePath: '\.\.\/\.\.\/[^']+\/'/g, "basePath: '../'")
     js = `// GENERATED FILE - Do not edit! Modify studio/animator/index.js instead\n\n${js}`
     writeFileSync(path.resolve(outDir, 'animator.js'), js)
 }
@@ -84,38 +72,36 @@ function generateSpritesheetFiles (options, baseDir) {
 }
 
 
-function generateHubHtml (options, baseDir) {
-    const {game, title, icon, tools = ['animator']} = options
+function generateHubFiles (options, baseDir) {
+    const {game, title, icon} = options
+    const outDir = path.resolve(baseDir, game, 'studio')
+    mkdirSync(outDir, {recursive: true})
 
-    const templatePath = path.resolve(baseDir, HUB_TEMPLATE)
-    let html = readFileSync(templatePath, 'utf-8')
+
+    const htmlTemplatePath = path.resolve(baseDir, HUB_TEMPLATE)
+    let html = readFileSync(htmlTemplatePath, 'utf-8')
 
     if (title) {
         html = html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`)
         html = html.replace(/content="Perky Studio"/, `content="${title}"`)
-        html = html.replace(/<h1>Perky Studio<\/h1>/, `<h1>${title}</h1>`)
     }
 
     if (icon) {
         html = html.replace(/href="\.\/assets\/images\/studio\.png"/g, `href="${icon}"`)
     }
 
-    const toolsHtml = tools.map(toolId => {
-        const tool = TOOL_DEFINITIONS[toolId]
-        return `        <a href="${tool.href}" class="tool-card">
-            <h2>${tool.title}</h2>
-            <p>${tool.description}</p>
-        </a>`
-    }).join('\n')
-
-    html = html.replace(/<div class="tools">[\s\S]*?<\/div>/, `<div class="tools">\n${toolsHtml}\n    </div>`)
     html = `<!-- GENERATED FILE - Do not edit! Modify studio/index.html instead -->\n${html}`
+    writeFileSync(path.resolve(outDir, 'index.html'), html)
 
-    const outDir = path.resolve(baseDir, game, 'studio')
-    const outPath = path.resolve(outDir, 'index.html')
 
-    mkdirSync(outDir, {recursive: true})
-    writeFileSync(outPath, html)
+    const jsTemplatePath = path.resolve(baseDir, HUB_JS_TEMPLATE)
+    let js = readFileSync(jsTemplatePath, 'utf-8')
+    js = js.replace("'./launcher.js'", "'../../studio/launcher.js'")
+    js = js.replace("'./hub_view.js'", "'../../studio/hub_view.js'")
+    js = js.replace(/from '\.\.\/[^']+\/manifest\.json'/g, "from '../manifest.json'")
+    js = js.replace(/, '\.\.\/[^']+\/'\)/g, ", '../')")
+    js = `// GENERATED FILE - Do not edit! Modify studio/index.js instead\n\n${js}`
+    writeFileSync(path.resolve(outDir, 'index.js'), js)
 }
 
 
@@ -130,13 +116,13 @@ export function createStudioPlugin (options) {
         },
 
         buildStart () {
-            generateHubHtml(options, baseDir)
+            generateHubFiles(options, baseDir)
             generateAnimatorFiles(options, baseDir)
             generateSpritesheetFiles(options, baseDir)
         },
 
         configureServer () {
-            generateHubHtml(options, baseDir)
+            generateHubFiles(options, baseDir)
             generateAnimatorFiles(options, baseDir)
             generateSpritesheetFiles(options, baseDir)
         }

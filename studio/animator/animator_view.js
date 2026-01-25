@@ -24,7 +24,7 @@ import {buildAnimationSettings} from './components/animation_settings.js'
 export default class AnimatorView extends EditorComponent {
 
     #context = null
-    #animators = {}
+    #animatorName = null
     #animatorConfig = null
     #animator = null
     #spritesheet = null
@@ -51,49 +51,41 @@ export default class AnimatorView extends EditorComponent {
     onConnected () {
         this.#buildDOM()
 
-        if (this.#context) {
-            const firstKey = Object.keys(this.#animators)[0]
-            if (firstKey) {
-                this.#selectAnimator(firstKey)
-            }
+        if (this.#context && this.#animatorConfig) {
+            this.#initAnimator()
         }
     }
 
 
-    setContext ({textureSystem, animators, backgroundImage, studioConfig}) {
+    setContext ({textureSystem, animatorConfig, animatorName, backgroundImage, studioConfig}) {
         this.#context = {textureSystem, studioConfig}
-        this.#animators = animators || {}
+        this.#animatorConfig = animatorConfig
+        this.#animatorName = animatorName || 'animator'
         this.#backgroundImage = backgroundImage || null
 
-        if (this.isConnected) {
-            const firstKey = Object.keys(this.#animators)[0]
-            if (firstKey) {
-                this.#selectAnimator(firstKey)
-            }
+        if (this.isConnected && this.#animatorConfig) {
+            this.#initAnimator()
         }
     }
 
 
-    #selectAnimator (name) {
-        const animatorConfig = this.#animators[name]
-        if (!animatorConfig) {
+    #initAnimator () {
+        if (!this.#animatorConfig) {
             return
         }
 
-        this.#animatorConfig = animatorConfig
-
         this.#animator = new SpriteAnimator({
             sprite: null,
-            config: animatorConfig,
+            config: this.#animatorConfig,
             textureSystem: this.#context.textureSystem
         })
 
-        const spritesheetName = inferSpritesheetName(animatorConfig)
+        const spritesheetName = inferSpritesheetName(this.#animatorConfig)
         this.#spritesheet = spritesheetName
             ? this.#context.textureSystem.getSpritesheet(spritesheetName)
             : null
 
-        this.#anchor = animatorConfig.anchor || {x: 0.5, y: 0.5}
+        this.#anchor = this.#animatorConfig.anchor || {x: 0.5, y: 0.5}
         this.#selectedAnimation = this.#animator.children[0] || null
 
         this.#render()
@@ -209,16 +201,6 @@ export default class AnimatorView extends EditorComponent {
         headerStart.appendChild(settingsMenu)
 
 
-        const animatorSelect = createElement('select-input', {attrs: {context: 'studio'}})
-        const animatorNames = Object.keys(this.#animators)
-        const currentAnimatorName = animatorNames.find(name => this.#animators[name] === this.#animatorConfig)
-        animatorSelect.setOptions(animatorNames)
-        animatorSelect.setValue(currentAnimatorName)
-        animatorSelect.addEventListener('change', (e) => {
-            this.#selectAnimator(e.detail.value)
-        })
-
-
         this.#headerAnimSelect = createElement('select-input', {attrs: {context: 'studio'}})
         const animOptions = this.#animator.children.map(anim => ({value: anim.$id, label: anim.$id}))
         this.#headerAnimSelect.setOptions(animOptions)
@@ -229,7 +211,6 @@ export default class AnimatorView extends EditorComponent {
             this.#syncDrawerAnimSelect()
         })
 
-        headerStart.appendChild(animatorSelect)
         headerStart.appendChild(this.#headerAnimSelect)
         this.#appLayout.appendChild(headerStart)
 

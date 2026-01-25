@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Perky Studio">
@@ -11,39 +11,27 @@
     <title>Perky Studio</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        html, body {
+            height: 100%;
+            overflow: hidden;
             background: #1a1a2e;
-            color: #eee;
-            min-height: 100vh;
+            touch-action: none;
+        }
+        #app { height: 100%; }
+        .loading {
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 24px;
+            height: 100%;
+            color: #888;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
         }
-        h1 { font-size: 2rem; font-weight: 300; }
-        .tools { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
-        .tool-card {
-            background: #252542;
-            border-radius: 12px;
-            padding: 24px 32px;
-            text-decoration: none;
-            color: inherit;
-            transition: transform 0.2s, background 0.2s;
-        }
-        .tool-card:hover { background: #2d2d4a; transform: scale(1.02); }
-        .tool-card h2 { font-size: 1.2rem; margin-bottom: 8px; }
-        .tool-card p { font-size: 0.9rem; color: #888; }
     </style>
 </head>
 <body>
-    <h1>Perky Studio</h1>
-    <div class="tools">
-        <a href="./animator/" class="tool-card">
-            <h2>Sprite Animator</h2>
-            <p>Edit sprite animations</p>
-        </a>
+    <div id="app">
+        <div class="loading">Loading...</div>
     </div>
+    <script type="module" src="./index.js"></script>
 </body>
 </html>
