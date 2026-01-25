@@ -26,6 +26,7 @@ export default defineConfig(({mode}) => {
     if (!gameOnly) {
         input.studio = path.resolve(__dirname, 'den/studio/index.html')
         input.animator = path.resolve(__dirname, 'den/studio/animator.html')
+        input.spritesheet = path.resolve(__dirname, 'den/studio/spritesheet.html')
 
         plugins.unshift(createStudioPlugin({
             game: 'den',
