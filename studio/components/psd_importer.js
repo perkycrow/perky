@@ -386,7 +386,6 @@ export default class PsdImporter extends EditorComponent {
 
     #elements = {}
 
-
     onConnected () {
         adoptStyleSheets(this.shadowRoot, styles)
         this.#converter.on('progress', ({stage, percent}) => this.#onProgress(stage, percent))
@@ -486,7 +485,7 @@ export default class PsdImporter extends EditorComponent {
         dropZone.appendChild(hint)
 
         dropZone.addEventListener('click', () => this.#fileInput.click())
-        dropZone.addEventListener('dragover', (e) => this.#handleDragOver(e, dropZone))
+        dropZone.addEventListener('dragover', (e) => handleDragOver(e, dropZone))
         dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'))
         dropZone.addEventListener('drop', (e) => this.#handleDrop(e, dropZone))
 
@@ -655,18 +654,20 @@ export default class PsdImporter extends EditorComponent {
 
     #updateHeader () {
         switch (this.#step) {
-            case 'drop':
-                this.#elements.backBtn.innerHTML = '← Cancel'
-                this.#elements.title.textContent = 'Import PSD'
-                break
-            case 'preview':
-                this.#elements.backBtn.innerHTML = '← Back'
-                this.#elements.title.textContent = this.#psd?.filename || 'Preview'
-                break
-            case 'progress':
-                this.#elements.backBtn.classList.add('hidden')
-                this.#elements.title.textContent = 'Creating...'
-                break
+        case 'drop':
+            this.#elements.backBtn.innerHTML = '← Cancel'
+            this.#elements.title.textContent = 'Import PSD'
+            break
+        case 'preview':
+            this.#elements.backBtn.innerHTML = '← Back'
+            this.#elements.title.textContent = this.#psd?.filename || 'Preview'
+            break
+        case 'progress':
+            this.#elements.backBtn.classList.add('hidden')
+            this.#elements.title.textContent = 'Creating...'
+            break
+        default:
+            break
         }
 
         if (this.#step !== 'progress') {
@@ -677,23 +678,17 @@ export default class PsdImporter extends EditorComponent {
 
     #handleBack () {
         switch (this.#step) {
-            case 'drop':
-                this.close()
-                break
-            case 'preview':
-                this.#step = 'drop'
-                this.#psd = null
-                break
+        case 'drop':
+            this.close()
+            break
+        case 'preview':
+            this.#step = 'drop'
+            this.#psd = null
+            break
+        default:
+            break
         }
         this.#updateStep()
-    }
-
-
-
-
-    #handleDragOver (e, dropZone) {
-        e.preventDefault()
-        dropZone.classList.add('dragover')
     }
 
 
@@ -779,7 +774,7 @@ export default class PsdImporter extends EditorComponent {
 
 
     #validateName () {
-        const name = this.#sanitizeName(this.#elements.nameInput.value)
+        const name = sanitizeName(this.#elements.nameInput.value)
         const animatorName = `${name}Animator`.toLowerCase()
         const isDuplicate = this.#existingNames.has(animatorName)
         const isValid = name.length > 0 && !isDuplicate
@@ -801,11 +796,6 @@ export default class PsdImporter extends EditorComponent {
     }
 
 
-    #sanitizeName (name) {
-        return name.replace(/[^a-zA-Z0-9_]/g, '').replace(/^[0-9]/, '')
-    }
-
-
     #onProgress (stage, percent) {
         const messages = {
             extracting: 'Extracting frames...',
@@ -821,7 +811,7 @@ export default class PsdImporter extends EditorComponent {
 
 
     async #handleCreate () {
-        const name = this.#sanitizeName(this.#elements.nameInput.value)
+        const name = sanitizeName(this.#elements.nameInput.value)
         if (!name) {
             return
         }
@@ -864,3 +854,14 @@ export default class PsdImporter extends EditorComponent {
 
 
 customElements.define('psd-importer', PsdImporter)
+
+
+function handleDragOver (e, dropZone) {
+    e.preventDefault()
+    dropZone.classList.add('dragover')
+}
+
+
+function sanitizeName (name) {
+    return name.replace(/[^a-zA-Z0-9_]/g, '').replace(/^[0-9]/, '')
+}

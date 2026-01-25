@@ -17,18 +17,19 @@ import {
 
 export default class PsdConverter extends Notifier {
 
-    parse (buffer) {
-        return parsePsd(new Uint8Array(buffer))
+
+    parse (buffer) { // eslint-disable-line local/class-methods-use-this -- clean
+        return parse(buffer)
     }
 
 
-    getAnimationGroups (psd) {
-        return findAnimationGroups(psd.tree)
+    getAnimationGroups (psd) { // eslint-disable-line local/class-methods-use-this -- clean
+        return getAnimationGroups(psd)
     }
 
 
-    getAnimationInfo (psd) {
-        const groups = this.getAnimationGroups(psd)
+    getAnimationInfo (psd) { // eslint-disable-line local/class-methods-use-this -- clean
+        const groups = getAnimationGroups(psd)
         return groups.map(group => ({
             name: parseAnimationName(group.name),
             frameCount: countFrames(group)
@@ -53,7 +54,7 @@ export default class PsdConverter extends Notifier {
             targetHeight
         )
 
-        const animGroups = this.getAnimationGroups(psd)
+        const animGroups = getAnimationGroups(psd)
         let frames = []
         const animations = {}
 
@@ -94,7 +95,7 @@ export default class PsdConverter extends Notifier {
 
         const spritesheetName = `${name}Spritesheet`
         const spritesheetJson = buildJsonData(atlases, animations, name)
-        const animatorConfig = this.buildAnimatorConfig(spritesheetName, animations)
+        const animatorConfig = buildAnimatorConfig(spritesheetName, animations)
 
         this.emit('progress', {stage: 'complete', percent: 100})
 
@@ -108,24 +109,39 @@ export default class PsdConverter extends Notifier {
     }
 
 
-    buildAnimatorConfig (spritesheetName, animations) {
-        const config = {
-            spritesheet: spritesheetName,
-            anchor: {x: 0.5, y: 0.5},
-            animations: {}
-        }
-
-        for (const [animName, frameNames] of Object.entries(animations)) {
-            config.animations[animName] = {
-                fps: 10,
-                loop: true,
-                frames: frameNames.map(frameName => ({
-                    source: `${spritesheetName}:${frameName}`
-                }))
-            }
-        }
-
-        return config
+    buildAnimatorConfig (spritesheetName, animations) { // eslint-disable-line local/class-methods-use-this -- clean
+        return buildAnimatorConfig(spritesheetName, animations)
     }
 
+}
+
+
+function parse (buffer) {
+    return parsePsd(new Uint8Array(buffer))
+}
+
+
+function getAnimationGroups (psd) {
+    return findAnimationGroups(psd.tree)
+}
+
+
+function buildAnimatorConfig (spritesheetName, animations) {
+    const config = {
+        spritesheet: spritesheetName,
+        anchor: {x: 0.5, y: 0.5},
+        animations: {}
+    }
+
+    for (const [animName, frameNames] of Object.entries(animations)) {
+        config.animations[animName] = {
+            fps: 10,
+            loop: true,
+            frames: frameNames.map(frameName => ({
+                source: `${spritesheetName}:${frameName}`
+            }))
+        }
+    }
+
+    return config
 }

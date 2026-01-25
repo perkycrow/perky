@@ -3,7 +3,7 @@ import PsdConverter from './psd_converter.js'
 
 
 vi.mock('./psd.js', () => ({
-    parsePsd: vi.fn((buffer) => ({
+    parsePsd: vi.fn(() => ({
         width: 64,
         height: 64,
         tree: [],
