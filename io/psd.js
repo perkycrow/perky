@@ -13,6 +13,83 @@ const COLOR_MODES = {
 }
 
 
+function readUtf16String (reader, byteLength) {
+    const chars = []
+    const charCount = byteLength / 2
+    for (let i = 0; i < charCount; i++) {
+        const charCode = reader.readUint16()
+        if (charCode > 0) {
+            chars.push(String.fromCharCode(charCode))
+        }
+    }
+    return chars.join('')
+}
+
+
+function readProfileName (reader, startOffset, descOffset) {
+    if (descOffset <= 0) {
+        return 'Unknown'
+    }
+
+    reader.seek(startOffset + descOffset)
+    const descType = reader.readString(4)
+
+    if (descType === 'desc') {
+        reader.skip(4)
+        const strLength = reader.readUint32()
+        return reader.readString(strLength - 1)
+    }
+
+    if (descType !== 'mluc') {
+        return 'Unknown'
+    }
+
+    reader.skip(4)
+    const recordCount = reader.readUint32()
+    reader.skip(4)
+
+    if (recordCount <= 0) {
+        return 'Unknown'
+    }
+
+    reader.skip(4)
+    const strLength = reader.readUint32()
+    const strOffset = reader.readUint32()
+    reader.seek(startOffset + descOffset + strOffset)
+
+    return readUtf16String(reader, strLength)
+}
+
+
+function processRlePacket (reader, ctx) {
+    const header = reader.readInt8()
+
+    if (header >= 0) {
+        const count = header + 1
+        for (let i = 0; i < count && ctx.offset < ctx.rowEnd; i++) {
+            ctx.output[ctx.offset++] = reader.readUint8()
+        }
+        return
+    }
+
+    if (header > -128) {
+        const count = -header + 1
+        const value = reader.readUint8()
+        for (let i = 0; i < count && ctx.offset < ctx.rowEnd; i++) {
+            ctx.output[ctx.offset++] = value
+        }
+    }
+}
+
+
+function copyPixelToRgba (rgba, dstIdx, channels, srcIdx) {
+    rgba[dstIdx * 4] = channels.red ? channels.red[srcIdx] : 0
+    rgba[dstIdx * 4 + 1] = channels.green ? channels.green[srcIdx] : 0
+    rgba[dstIdx * 4 + 2] = channels.blue ? channels.blue[srcIdx] : 0
+    rgba[dstIdx * 4 + 3] = channels.alpha ? channels.alpha[srcIdx] : 255
+}
+
+
 export function parsePsd (buffer) {
     const reader = new BinaryReader(buffer)
 
@@ -130,38 +207,7 @@ function parseICCProfile (reader, length) {
         }
     }
 
-    let profileName = 'Unknown'
-
-    if (descOffset > 0) {
-        reader.seek(startOffset + descOffset)
-        const descType = reader.readString(4)
-
-        if (descType === 'desc') {
-            reader.skip(4)
-            const strLength = reader.readUint32()
-            profileName = reader.readString(strLength - 1)
-        } else if (descType === 'mluc') {
-            reader.skip(4)
-            const recordCount = reader.readUint32()
-            reader.skip(4)
-
-            if (recordCount > 0) {
-                reader.skip(4)
-                const strLength = reader.readUint32()
-                const strOffset = reader.readUint32()
-                reader.seek(startOffset + descOffset + strOffset)
-
-                const chars = []
-                for (let i = 0; i < strLength / 2; i++) {
-                    const charCode = reader.readUint16()
-                    if (charCode > 0) {
-                        chars.push(String.fromCharCode(charCode))
-                    }
-                }
-                profileName = chars.join('')
-            }
-        }
-    }
+    const profileName = readProfileName(reader, startOffset, descOffset)
 
     reader.seek(startOffset + length)
 
@@ -329,31 +375,17 @@ function parseChannelData (reader, layer) {
 
 
 function decodeRLE (reader, width, height) {
-    const rowLengths = []
     for (let y = 0; y < height; y++) {
-        rowLengths.push(reader.readUint16())
+        reader.readUint16()
     }
 
     const output = new Uint8Array(width * height)
-    let outOffset = 0
+    const ctx = {output, offset: 0, rowEnd: 0}
 
     for (let y = 0; y < height; y++) {
-        const rowEnd = outOffset + width
-        while (outOffset < rowEnd) {
-            const header = reader.readInt8()
-
-            if (header >= 0) {
-                const count = header + 1
-                for (let i = 0; i < count && outOffset < rowEnd; i++) {
-                    output[outOffset++] = reader.readUint8()
-                }
-            } else if (header > -128) {
-                const count = -header + 1
-                const value = reader.readUint8()
-                for (let i = 0; i < count && outOffset < rowEnd; i++) {
-                    output[outOffset++] = value
-                }
-            }
+        ctx.rowEnd = ctx.offset + width
+        while (ctx.offset < ctx.rowEnd) {
+            processRlePacket(reader, ctx)
         }
     }
 
@@ -435,45 +467,60 @@ export function layerToRGBA (layer, psdWidth, psdHeight, options = {}) {
         return null
     }
 
-    const red = channelData[0]
-    const green = channelData[1]
-    const blue = channelData[2]
-    const alpha = channelData[-1]
+    const channels = {
+        red: channelData[0],
+        green: channelData[1],
+        blue: channelData[2],
+        alpha: channelData[-1]
+    }
 
     if (trim) {
-        const rgba = new Uint8Array(width * height * 4)
-        for (let i = 0; i < width * height; i++) {
-            rgba[i * 4] = red ? red[i] : 0
-            rgba[i * 4 + 1] = green ? green[i] : 0
-            rgba[i * 4 + 2] = blue ? blue[i] : 0
-            rgba[i * 4 + 3] = alpha ? alpha[i] : 255
-        }
-        return {pixels: rgba, width, height, left, top}
+        return createTrimmedRgba(channels, {width, height, left, top})
     }
 
+    return createFullRgba(channels, layer, psdWidth, psdHeight)
+}
+
+
+function createTrimmedRgba (channels, bounds) {
+    const {width, height, left, top} = bounds
+    const rgba = new Uint8Array(width * height * 4)
+    for (let i = 0; i < width * height; i++) {
+        copyPixelToRgba(rgba, i, channels, i)
+    }
+    return {pixels: rgba, width, height, left, top}
+}
+
+
+function createFullRgba (channels, layer, psdWidth, psdHeight) {
     const rgba = new Uint8Array(psdWidth * psdHeight * 4)
+    const ctx = {rgba, channels, layer, psdWidth, psdHeight}
 
-    for (let ly = 0; ly < height; ly++) {
-        for (let lx = 0; lx < width; lx++) {
-            const srcIdx = ly * width + lx
-            const dstX = left + lx
-            const dstY = top + ly
-
-            if (dstX >= 0 && dstX < psdWidth && dstY >= 0 && dstY < psdHeight) {
-                const dstIdx = dstY * psdWidth + dstX
-                rgba[dstIdx * 4] = red ? red[srcIdx] : 0
-                rgba[dstIdx * 4 + 1] = green ? green[srcIdx] : 0
-                rgba[dstIdx * 4 + 2] = blue ? blue[srcIdx] : 0
-                rgba[dstIdx * 4 + 3] = alpha ? alpha[srcIdx] : 255
-            }
-        }
+    for (let ly = 0; ly < layer.height; ly++) {
+        copyRowToRgba(ctx, ly)
     }
 
-    return {
-        pixels: rgba,
-        width: psdWidth,
-        height: psdHeight,
-        left: 0,
-        top: 0
+    return {pixels: rgba, width: psdWidth, height: psdHeight, left: 0, top: 0}
+}
+
+
+function copyRowToRgba (ctx, ly) {
+    const {rgba, channels, layer, psdWidth, psdHeight} = ctx
+    const {width, left, top} = layer
+    const dstY = top + ly
+
+    if (dstY < 0 || dstY >= psdHeight) {
+        return
+    }
+
+    for (let lx = 0; lx < width; lx++) {
+        const dstX = left + lx
+        if (dstX < 0 || dstX >= psdWidth) {
+            continue
+        }
+
+        const srcIdx = ly * width + lx
+        const dstIdx = dstY * psdWidth + dstX
+        copyPixelToRgba(rgba, dstIdx, channels, srcIdx)
     }
 }
