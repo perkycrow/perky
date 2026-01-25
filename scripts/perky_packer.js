@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import {pack, unpack} from '../core/pack.js'
+import {pack, unpack} from '../io/pack.js'
 import {readFileSync, writeFileSync, mkdirSync} from 'fs'
 import path from 'path'
 
