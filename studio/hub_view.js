@@ -1,6 +1,33 @@
 import EditorComponent from '../editor/editor_component.js'
 import {createElement, adoptStyleSheets, createStyleSheet} from '../application/dom_utils.js'
+import Inflector from '../core/inflector.js'
 import '../editor/layout/app_layout.js'
+
+
+const inflector = new Inflector()
+
+
+function getFirstAnimation (config) {
+    const firstKey = Object.keys(config.animations)[0]
+    return config.animations[firstKey]
+}
+
+
+function getFrameSource (frame) {
+    return typeof frame === 'string' ? frame : frame.source
+}
+
+
+function createEmptyStateElement () {
+    const empty = createElement('div', {class: 'empty-state'})
+    empty.appendChild(createElement('div', {class: 'empty-state-icon', text: '🎬'}))
+    empty.appendChild(createElement('div', {text: 'No animators found'}))
+    empty.appendChild(createElement('div', {
+        class: 'card-meta',
+        text: 'Add animator assets to your manifest.json'
+    }))
+    return empty
+}
 
 
 const hubViewStyles = createStyleSheet(`
@@ -12,7 +39,6 @@ const hubViewStyles = createStyleSheet(`
 
     .hub-content {
         padding: var(--spacing-xl);
-        height: 100%;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
     }
@@ -187,7 +213,7 @@ export default class HubView extends EditorComponent {
         const animCount = config.animations ? Object.keys(config.animations).length : 0
         info.appendChild(createElement('div', {
             class: 'card-meta',
-            text: `${animCount} animation${animCount !== 1 ? 's' : ''}`
+            text: inflector.pluralize('animation', animCount, true)
         }))
 
         card.appendChild(preview)
@@ -202,29 +228,7 @@ export default class HubView extends EditorComponent {
 
 
     #createThumbnail (config) {
-        if (!config.animations || !this.#textureSystem) {
-            return createElement('div', {class: 'placeholder'})
-        }
-
-        const firstAnimKey = Object.keys(config.animations)[0]
-        const firstAnim = config.animations[firstAnimKey]
-        if (!firstAnim?.frames?.length) {
-            return createElement('div', {class: 'placeholder'})
-        }
-
-        const firstFrame = firstAnim.frames[0]
-        const frameName = typeof firstFrame === 'string' ? firstFrame : firstFrame.frame
-
-        const spritesheetName = config.spritesheet
-        const spritesheet = spritesheetName
-            ? this.#textureSystem.getSpritesheet(spritesheetName)
-            : null
-
-        if (!spritesheet) {
-            return createElement('div', {class: 'placeholder'})
-        }
-
-        const region = spritesheet.getRegion(frameName)
+        const region = this.#getFirstFrameRegion(config)
         if (!region) {
             return createElement('div', {class: 'placeholder'})
         }
@@ -235,7 +239,7 @@ export default class HubView extends EditorComponent {
 
         const ctx = canvas.getContext('2d')
         ctx.drawImage(
-            region.texture.image,
+            region.image,
             region.x, region.y, region.width, region.height,
             0, 0, region.width, region.height
         )
@@ -244,19 +248,42 @@ export default class HubView extends EditorComponent {
     }
 
 
+    #getFirstFrameRegion (config) {
+        if (!config.animations || !this.#textureSystem) {
+            return null
+        }
+
+        const firstAnim = getFirstAnimation(config)
+        if (!firstAnim?.frames?.length) {
+            return null
+        }
+
+        const source = getFrameSource(firstAnim.frames[0])
+        if (!source) {
+            return null
+        }
+
+        return this.#resolveRegion(source, config.spritesheet)
+    }
+
+
+    #resolveRegion (source, defaultSpritesheet) {
+        const [spritesheetName, frameName] = source.includes(':')
+            ? source.split(':')
+            : [defaultSpritesheet, source]
+
+        const spritesheet = this.#textureSystem.getSpritesheet(spritesheetName)
+        return spritesheet?.getRegion(frameName) || null
+    }
+
+
     #createEmptyState () {
-        const empty = createElement('div', {class: 'empty-state'})
-        empty.appendChild(createElement('div', {class: 'empty-state-icon', text: '🎬'}))
-        empty.appendChild(createElement('div', {text: 'No animators found'}))
-        empty.appendChild(createElement('div', {
-            class: 'card-meta',
-            text: 'Add animator assets to your manifest.json'
-        }))
-        return empty
+        return this.shadowRoot && createEmptyStateElement()
     }
 
 
     #openAnimator (name) {
+        this.dispatchEvent(new CustomEvent('navigate', {detail: {name}}))
         window.location.href = `animator.html?id=${encodeURIComponent(name)}`
     }
 
