@@ -36,6 +36,10 @@ async function main () {
     console.log(`  Size: ${psd.width}x${psd.height}`)
     console.log(`  Depth: ${psd.depth}-bit`)
     console.log(`  Color mode: ${psd.colorMode}`)
+    console.log(`  Color profile: ${psd.colorProfile.name}`)
+    if (psd.colorProfile.isP3) {
+        console.log(`  ⚠ WARNING: Display P3 detected, colors may differ from sRGB`)
+    }
     console.log(`  Layers: ${psd.layers.length}`)
 
     console.log('\n=== Layer Tree ===')

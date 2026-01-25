@@ -18,7 +18,7 @@ export function parsePsd (buffer) {
 
     const header = parseHeader(reader)
     skipColorModeData(reader)
-    skipImageResources(reader)
+    const colorProfile = parseImageResources(reader)
     const layers = parseLayerSection(reader)
     const tree = buildLayerTree(layers)
     const animations = findAnimations(tree)
@@ -28,6 +28,7 @@ export function parsePsd (buffer) {
         height: header.height,
         depth: header.depth,
         colorMode: header.colorMode,
+        colorProfile,
         layers,
         tree,
         animations
@@ -71,9 +72,109 @@ function skipColorModeData (reader) {
 }
 
 
-function skipImageResources (reader) {
+function parseImageResources (reader) {
     const length = reader.readUint32()
-    reader.skip(length)
+    const endOffset = reader.offset + length
+
+    let colorProfile = null
+
+    while (reader.offset < endOffset) {
+        const signature = reader.readString(4)
+        if (signature !== '8BIM') {
+            break
+        }
+
+        const resourceId = reader.readUint16()
+        const nameLength = reader.readUint8()
+        const namePadding = (nameLength + 1) % 2 === 0 ? 0 : 1
+        reader.skip(nameLength + namePadding)
+
+        const dataLength = reader.readUint32()
+        const dataPadding = dataLength % 2 === 0 ? 0 : 1
+
+        if (resourceId === 1039) {
+            colorProfile = parseICCProfile(reader, dataLength)
+            reader.skip(dataPadding)
+        } else {
+            reader.skip(dataLength + dataPadding)
+        }
+    }
+
+    reader.seek(endOffset)
+    return colorProfile || {name: 'sRGB', isP3: false}
+}
+
+
+function parseICCProfile (reader, length) {
+    const startOffset = reader.offset
+
+    reader.skip(4)
+    reader.skip(4)
+    reader.skip(4)
+    reader.skip(4)
+    const colorSpace = reader.readString(4).trim()
+
+    reader.seek(startOffset + 128)
+
+    const tagCount = reader.readUint32()
+    let descOffset = 0
+
+    for (let i = 0; i < tagCount; i++) {
+        const tagSig = reader.readString(4)
+        const tagOffset = reader.readUint32()
+        reader.skip(4)
+
+        if (tagSig === 'desc') {
+            descOffset = tagOffset
+            break
+        }
+    }
+
+    let profileName = 'Unknown'
+
+    if (descOffset > 0) {
+        reader.seek(startOffset + descOffset)
+        const descType = reader.readString(4)
+
+        if (descType === 'desc') {
+            reader.skip(4)
+            const strLength = reader.readUint32()
+            profileName = reader.readString(strLength - 1)
+        } else if (descType === 'mluc') {
+            reader.skip(4)
+            const recordCount = reader.readUint32()
+            reader.skip(4)
+
+            if (recordCount > 0) {
+                reader.skip(4)
+                const strLength = reader.readUint32()
+                const strOffset = reader.readUint32()
+                reader.seek(startOffset + descOffset + strOffset)
+
+                const chars = []
+                for (let i = 0; i < strLength / 2; i++) {
+                    const charCode = reader.readUint16()
+                    if (charCode > 0) {
+                        chars.push(String.fromCharCode(charCode))
+                    }
+                }
+                profileName = chars.join('')
+            }
+        }
+    }
+
+    reader.seek(startOffset + length)
+
+    const nameLower = profileName.toLowerCase()
+    const isP3 = nameLower.includes('p3') || nameLower.includes('display p3')
+    const isSRGB = nameLower.includes('srgb')
+
+    return {
+        name: profileName,
+        colorSpace,
+        isP3,
+        isSRGB
+    }
 }
 
 

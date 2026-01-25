@@ -66,3 +66,38 @@ export function putPixels (ctx, pixels, width, height, x = 0, y = 0) {
     imageData.data.set(new Uint8ClampedArray(pixels.buffer, pixels.byteOffset, pixels.byteLength))
     ctx.putImageData(imageData, x, y)
 }
+
+
+export function calculateResizeDimensions (srcWidth, srcHeight, targetWidth, targetHeight) {
+    if (targetWidth && targetHeight) {
+        return {width: targetWidth, height: targetHeight}
+    }
+
+    if (targetWidth) {
+        const scale = targetWidth / srcWidth
+        return {width: targetWidth, height: Math.round(srcHeight * scale)}
+    }
+
+    if (targetHeight) {
+        const scale = targetHeight / srcHeight
+        return {width: Math.round(srcWidth * scale), height: targetHeight}
+    }
+
+    return {width: srcWidth, height: srcHeight}
+}
+
+
+export async function resizeCanvas (sourceCanvas, targetWidth, targetHeight, nearest = false) {
+    const destCanvas = await createCanvas(targetWidth, targetHeight)
+    const ctx = destCanvas.getContext('2d')
+
+    if (nearest) {
+        ctx.imageSmoothingEnabled = false
+    } else {
+        ctx.imageSmoothingEnabled = true
+        ctx.imageSmoothingQuality = 'high'
+    }
+
+    ctx.drawImage(sourceCanvas, 0, 0, targetWidth, targetHeight)
+    return destCanvas
+}

@@ -3,7 +3,7 @@ import {basename, dirname, join} from 'path'
 import {bold, cyan, dim, green, yellow} from '../format.js'
 import ShelfPacker from '../../render/textures/shelf_packer.js'
 import {parsePsd as parseRawPsd, layerToRGBA} from '../../io/psd.js'
-import {createCanvas, canvasToBuffer, putPixels} from '../../io/canvas.js'
+import {createCanvas, canvasToBuffer, putPixels, calculateResizeDimensions, resizeCanvas} from '../../io/canvas.js'
 
 
 const MAX_ATLAS_SIZE = 4096
@@ -65,6 +65,23 @@ function extractFrameData (layer, psdWidth, psdHeight) {
         pixels: rgba.pixels,
         width: rgba.width,
         height: rgba.height
+    }
+}
+
+
+async function resizeFrame (frameData, targetWidth, targetHeight, nearest) {
+    const srcCanvas = await createCanvas(frameData.width, frameData.height)
+    const srcCtx = srcCanvas.getContext('2d')
+    putPixels(srcCtx, frameData.pixels, frameData.width, frameData.height)
+
+    const resizedCanvas = await resizeCanvas(srcCanvas, targetWidth, targetHeight, nearest)
+    const resizedCtx = resizedCanvas.getContext('2d')
+    const imageData = resizedCtx.getImageData(0, 0, targetWidth, targetHeight)
+
+    return {
+        pixels: new Uint8Array(imageData.data.buffer),
+        width: targetWidth,
+        height: targetHeight
     }
 }
 
@@ -166,7 +183,7 @@ function buildJsonData (atlases, animations, psdName) {
 }
 
 
-export async function exportPsd (psdPath) {
+export async function exportPsd (psdPath, options = {}) {
     printBanner()
 
     const psd = await parsePsd(psdPath)
@@ -183,6 +200,18 @@ export async function exportPsd (psdPath) {
         return
     }
 
+    const resize = calculateResizeDimensions(psd.width, psd.height, options.width, options.height)
+    const needsResize = resize.width !== psd.width || resize.height !== psd.height
+
+    console.log(`Color profile: ${psd.colorProfile.name}`)
+    if (psd.colorProfile.isP3) {
+        console.log(yellow('⚠ WARNING: Display P3 detected, colors may differ from sRGB'))
+    }
+    console.log(`Source size: ${psd.width}x${psd.height}`)
+    if (needsResize) {
+        const mode = options.nearest ? 'nearest' : 'smooth'
+        console.log(`Output size: ${resize.width}x${resize.height} (${mode})`)
+    }
     console.log(`Found ${animGroups.length} animation group(s)`)
 
     const frames = []
@@ -227,11 +256,22 @@ export async function exportPsd (psdPath) {
                 continue
             }
 
+            let finalPixels = frameData.pixels
+            let finalWidth = frameData.width
+            let finalHeight = frameData.height
+
+            if (needsResize) {
+                const resized = await resizeFrame(frameData, resize.width, resize.height, options.nearest)
+                finalPixels = resized.pixels
+                finalWidth = resized.width
+                finalHeight = resized.height
+            }
+
             frames.push({
                 filename,
-                pixels: frameData.pixels,
-                width: frameData.width,
-                height: frameData.height,
+                pixels: finalPixels,
+                width: finalWidth,
+                height: finalHeight,
                 animName,
                 frameNumber
             })
