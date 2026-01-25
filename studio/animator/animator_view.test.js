@@ -45,28 +45,28 @@ describe('AnimatorView', () => {
             expect(() => {
                 view.setContext({
                     textureSystem: mockTextureSystem,
-                    animators: {}
+                    animatorConfig: null,
+                    animatorName: null
                 })
             }).not.toThrow()
         })
 
 
-        test('handles animators configuration', () => {
+        test('handles animator configuration', () => {
             const mockTextureSystem = {
                 getSpritesheet: vi.fn(() => null)
             }
 
-            const mockAnimators = {
-                player: {
-                    animations: {},
-                    anchor: {x: 0.5, y: 0.5}
-                }
+            const mockAnimatorConfig = {
+                animations: {},
+                anchor: {x: 0.5, y: 0.5}
             }
 
             expect(() => {
                 view.setContext({
                     textureSystem: mockTextureSystem,
-                    animators: mockAnimators
+                    animatorConfig: mockAnimatorConfig,
+                    animatorName: 'player'
                 })
             }).not.toThrow()
         })
@@ -82,7 +82,7 @@ describe('AnimatorView', () => {
             expect(() => {
                 view.setContext({
                     textureSystem: mockTextureSystem,
-                    animators: {},
+                    animatorConfig: null,
                     backgroundImage: mockImage
                 })
             }).not.toThrow()
@@ -97,7 +97,7 @@ describe('AnimatorView', () => {
             expect(() => {
                 view.setContext({
                     textureSystem: mockTextureSystem,
-                    animators: {},
+                    animatorConfig: null,
                     studioConfig: {unitsInView: {width: 10, height: 8}}
                 })
             }).not.toThrow()
@@ -106,25 +106,27 @@ describe('AnimatorView', () => {
     })
 
 
-    test('dispatches close event when back button is clicked', () => {
+    test('back button navigates to index.html', () => {
         const mockTextureSystem = {
             getSpritesheet: vi.fn(() => null)
         }
 
         view.setContext({
             textureSystem: mockTextureSystem,
-            animators: {
-                test: {animations: {}}
-            }
+            animatorConfig: {animations: {}},
+            animatorName: 'test'
         })
 
-        const handler = vi.fn()
-        view.addEventListener('close', handler)
+        const originalLocation = window.location
+        delete window.location
+        window.location = {href: ''}
 
         const backBtn = view.shadowRoot.querySelector('.toolbar-btn')
         backBtn?.click()
 
-        expect(handler).toHaveBeenCalled()
+        expect(window.location.href).toBe('index.html')
+
+        window.location = originalLocation
     })
 
 })

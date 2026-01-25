@@ -1,3 +1,4 @@
+import logger from '../core/logger.js'
 import {loadManifest, buildTextureSystem, collectAnimators} from './launcher.js'
 import './hub_view.js'
 import manifestData from '../den/manifest.json' with { type: 'json' }
@@ -18,7 +19,7 @@ async function init () {
 
     } catch (error) {
         container.innerHTML = `<div class="loading" style="color: #f66;">Error: ${error.message}</div>`
-        console.error(error)
+        logger.error(error)
     }
 }
 

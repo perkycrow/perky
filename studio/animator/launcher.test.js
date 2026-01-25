@@ -10,12 +10,16 @@ vi.mock('../../core/logger.js', () => ({
 
 vi.mock('../../application/manifest.js', () => ({
     default: class MockManifest {
-        constructor () {
+        constructor ({data} = {}) {
+            this.data = data || {}
             this.assets = {}
+            for (const [id, asset] of Object.entries(this.data.assets || {})) {
+                this.assets[id] = {...asset, id, source: asset}
+            }
         }
 
         getAssetsByType (type) {
-            return this.assets[type] || []
+            return Object.values(this.assets).filter(asset => asset.type === type)
         }
 
         getConfig () {
@@ -91,16 +95,34 @@ describe('launchAnimatorStudio', () => {
     })
 
 
-    test('creates animator-view element', async () => {
-        await launchAnimatorStudio({assets: {}}, container)
+    test('creates animator-view element when animator exists', async () => {
+        const manifestData = {
+            assets: {
+                player: {
+                    type: 'animator',
+                    animations: {idle: {frames: []}}
+                }
+            }
+        }
+
+        await launchAnimatorStudio(manifestData, container)
 
         const animatorView = container.querySelector('animator-view')
         expect(animatorView).not.toBeNull()
     })
 
 
-    test('appends animator-view to container', async () => {
-        await launchAnimatorStudio({assets: {}}, container)
+    test('appends animator-view to container when animator exists', async () => {
+        const manifestData = {
+            assets: {
+                player: {
+                    type: 'animator',
+                    animations: {idle: {frames: []}}
+                }
+            }
+        }
+
+        await launchAnimatorStudio(manifestData, container)
 
         expect(container.children).toHaveLength(1)
         expect(container.children[0].tagName.toLowerCase()).toBe('animator-view')
@@ -110,7 +132,11 @@ describe('launchAnimatorStudio', () => {
     test('works with basePath option', async () => {
         const manifestData = {
             assets: {
-                sprite: {url: './sprite.png'}
+                player: {
+                    type: 'animator',
+                    url: './player.json',
+                    animations: {idle: {frames: []}}
+                }
             }
         }
 
@@ -121,11 +147,10 @@ describe('launchAnimatorStudio', () => {
     })
 
 
-    test('works with empty manifest', async () => {
+    test('shows error message with empty manifest', async () => {
         await launchAnimatorStudio({}, container)
 
-        const animatorView = container.querySelector('animator-view')
-        expect(animatorView).not.toBeNull()
+        expect(container.innerHTML).toContain('No animator found')
     })
 
 })

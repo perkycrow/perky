@@ -1,33 +1,7 @@
 import EditorComponent from '../editor/editor_component.js'
 import {createElement, adoptStyleSheets, createStyleSheet} from '../application/dom_utils.js'
-import Inflector from '../core/inflector.js'
+import {pluralize} from '../core/utils.js'
 import '../editor/layout/app_layout.js'
-
-
-const inflector = new Inflector()
-
-
-function getFirstAnimation (config) {
-    const firstKey = Object.keys(config.animations)[0]
-    return config.animations[firstKey]
-}
-
-
-function getFrameSource (frame) {
-    return typeof frame === 'string' ? frame : frame.source
-}
-
-
-function createEmptyStateElement () {
-    const empty = createElement('div', {class: 'empty-state'})
-    empty.appendChild(createElement('div', {class: 'empty-state-icon', text: '🎬'}))
-    empty.appendChild(createElement('div', {text: 'No animators found'}))
-    empty.appendChild(createElement('div', {
-        class: 'card-meta',
-        text: 'Add animator assets to your manifest.json'
-    }))
-    return empty
-}
 
 
 const hubViewStyles = createStyleSheet(`
@@ -213,7 +187,7 @@ export default class HubView extends EditorComponent {
         const animCount = config.animations ? Object.keys(config.animations).length : 0
         info.appendChild(createElement('div', {
             class: 'card-meta',
-            text: inflector.pluralize('animation', animCount, true)
+            text: pluralize('animation', animCount, true)
         }))
 
         card.appendChild(preview)
@@ -291,3 +265,26 @@ export default class HubView extends EditorComponent {
 
 
 customElements.define('hub-view', HubView)
+
+
+function getFirstAnimation (config) {
+    const firstKey = Object.keys(config.animations)[0]
+    return config.animations[firstKey]
+}
+
+
+function getFrameSource (frame) {
+    return typeof frame === 'string' ? frame : frame.source
+}
+
+
+function createEmptyStateElement () {
+    const empty = createElement('div', {class: 'empty-state'})
+    empty.appendChild(createElement('div', {class: 'empty-state-icon', text: '🎬'}))
+    empty.appendChild(createElement('div', {text: 'No animators found'}))
+    empty.appendChild(createElement('div', {
+        class: 'card-meta',
+        text: 'Add animator assets to your manifest.json'
+    }))
+    return empty
+}

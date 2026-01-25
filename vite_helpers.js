@@ -48,7 +48,7 @@ function generateSpritesheetFiles (options, baseDir) {
     const outDir = path.resolve(baseDir, game, 'studio')
     mkdirSync(outDir, {recursive: true})
 
-    // Generate HTML
+
     const htmlTemplatePath = path.resolve(baseDir, SPRITESHEET_TEMPLATE)
     let html = readFileSync(htmlTemplatePath, 'utf-8')
 

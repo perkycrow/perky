@@ -34,6 +34,7 @@ import DayNightPass from './postprocessing/day_night_pass.js'
 
 import manifest from './manifest.json' with { type: 'json' }
 
+
 export default class DefendTheDen extends Game {
 
     static $name = 'defendTheDen'
