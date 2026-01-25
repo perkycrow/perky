@@ -3,7 +3,7 @@ let nodeCanvas = null
 
 async function getNodeCanvas () {
     if (!nodeCanvas) {
-        nodeCanvas = await import('canvas')
+        nodeCanvas = await import(/* @vite-ignore */ 'canvas')
     }
     return nodeCanvas
 }
