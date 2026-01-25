@@ -3,6 +3,8 @@ import path from 'path'
 
 
 const ANIMATOR_TEMPLATE = 'studio/animator/index.html'
+const SPRITESHEET_TEMPLATE = 'studio/spritesheet/index.html'
+const SPRITESHEET_JS_TEMPLATE = 'studio/spritesheet/index.js'
 const HUB_TEMPLATE = 'studio/index.html'
 
 const TOOL_DEFINITIONS = {
@@ -38,10 +40,13 @@ function generateAnimatorFiles (options, baseDir) {
     }
 
     html = html.replace(/src="\.\/index\.js"/, 'src="./animator.js"')
+    html = `<!-- GENERATED FILE - Do not edit! Modify studio/animator/index.html instead -->\n${html}`
     writeFileSync(path.resolve(outDir, 'animator.html'), html)
 
     // Generate JS
-    const js = `import {launchAnimatorStudio} from '../../studio/animator/launcher.js'
+    const js = `// GENERATED FILE - Do not edit! Modify studio/animator/ instead
+
+import {launchAnimatorStudio} from '../../studio/animator/launcher.js'
 import manifestData from '../manifest.js'
 
 
@@ -58,6 +63,35 @@ if (document.readyState === 'loading') {
 }
 `
     writeFileSync(path.resolve(outDir, 'animator.js'), js)
+}
+
+
+function generateSpritesheetFiles (options, baseDir) {
+    const {game, title, icon} = options
+    const outDir = path.resolve(baseDir, game, 'studio')
+    mkdirSync(outDir, {recursive: true})
+
+    // Generate HTML
+    const htmlTemplatePath = path.resolve(baseDir, SPRITESHEET_TEMPLATE)
+    let html = readFileSync(htmlTemplatePath, 'utf-8')
+
+    if (title) {
+        html = html.replace(/<title>.*?<\/title>/, `<title>Spritesheet - ${title}</title>`)
+    }
+
+    if (icon) {
+        html = html.replace(/href="\.\.\/assets\/images\/studio\.png"/g, `href="${icon}"`)
+    }
+
+    html = html.replace(/src="\.\/index\.js"/, 'src="./spritesheet.js"')
+    html = `<!-- GENERATED FILE - Do not edit! Modify studio/spritesheet/index.html instead -->\n${html}`
+    writeFileSync(path.resolve(outDir, 'spritesheet.html'), html)
+
+    // Copy JS (it uses perky alias, works directly)
+    const jsTemplatePath = path.resolve(baseDir, SPRITESHEET_JS_TEMPLATE)
+    const jsContent = readFileSync(jsTemplatePath, 'utf-8')
+    const js = `// GENERATED FILE - Do not edit! Modify studio/spritesheet/index.js instead\n\n${jsContent}`
+    writeFileSync(path.resolve(outDir, 'spritesheet.js'), js)
 }
 
 
@@ -86,6 +120,7 @@ function generateHubHtml (options, baseDir) {
     }).join('\n')
 
     html = html.replace(/<div class="tools">[\s\S]*?<\/div>/, `<div class="tools">\n${toolsHtml}\n    </div>`)
+    html = `<!-- GENERATED FILE - Do not edit! Modify studio/index.html instead -->\n${html}`
 
     const outDir = path.resolve(baseDir, game, 'studio')
     const outPath = path.resolve(outDir, 'index.html')
@@ -108,11 +143,13 @@ export function createStudioPlugin (options) {
         buildStart () {
             generateHubHtml(options, baseDir)
             generateAnimatorFiles(options, baseDir)
+            generateSpritesheetFiles(options, baseDir)
         },
 
         configureServer () {
             generateHubHtml(options, baseDir)
             generateAnimatorFiles(options, baseDir)
+            generateSpritesheetFiles(options, baseDir)
         }
     }
 }

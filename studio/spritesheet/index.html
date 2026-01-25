@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../assets/images/studio.png">
+    <title>Spritesheet Exporter</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            height: 100%;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        h1 {
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #888;
+            margin-bottom: 32px;
+        }
+        .panel {
+            background: #252542;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+        .file-drop {
+            border: 2px dashed #444;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .file-drop:hover, .file-drop.dragover {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.1);
+        }
+        .file-drop input {
+            display: none;
+        }
+        .file-drop-text {
+            color: #888;
+        }
+        .file-drop-text strong {
+            color: #6366f1;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .info-item {
+            background: #1a1a2e;
+            padding: 12px;
+            border-radius: 6px;
+        }
+        .info-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .info-value {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .warning {
+            background: rgba(234, 179, 8, 0.1);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            color: #eab308;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+        .form-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .form-group {
+            flex: 1;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 6px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-primary {
+            background: #6366f1;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #5558e3;
+        }
+        .btn-primary:disabled {
+            background: #444;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: #333;
+            color: #fff;
+        }
+        .btn-secondary:hover {
+            background: #444;
+        }
+        .preview-container {
+            background: #1a1a2e;
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .preview-container img {
+            max-width: 100%;
+            max-height: 400px;
+            image-rendering: pixelated;
+        }
+        .preview-placeholder {
+            color: #555;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .download-section {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .animations-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .animation-tag {
+            background: #1a1a2e;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .animation-tag span {
+            color: #888;
+            margin-left: 4px;
+        }
+        .back-link {
+            display: inline-block;
+            color: #6366f1;
+            text-decoration: none;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="./index.html" class="back-link">&larr; Back to Studio</a>
+        <h1>Spritesheet Exporter</h1>
+        <p class="subtitle">Convert PSD animations to spritesheet atlas</p>
+
+        <div class="panel">
+            <div class="panel-title">Source File</div>
+            <div class="file-drop" id="file-drop">
+                <input type="file" id="file-input" accept=".psd,image/vnd.adobe.photoshop,application/x-photoshop,image/psd,*/*">
+                <p class="file-drop-text">
+                    <strong>Click to browse</strong> or drag and drop a PSD file
+                </p>
+            </div>
+        </div>
+
+        <div class="panel hidden" id="info-panel">
+            <div class="panel-title">PSD Info</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Dimensions</div>
+                    <div class="info-value" id="info-dimensions">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Color Profile</div>
+                    <div class="info-value" id="info-profile">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Layers</div>
+                    <div class="info-value" id="info-layers">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Animations</div>
+                    <div class="info-value" id="info-animations">-</div>
+                </div>
+            </div>
+            <div class="warning hidden" id="p3-warning">
+                Display P3 color profile detected. Colors may differ from sRGB.
+            </div>
+            <div class="animations-list" id="animations-list"></div>
+        </div>
+
+        <div class="panel hidden" id="settings-panel">
+            <div class="panel-title">Export Settings</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="output-width">Output Width</label>
+                    <input type="number" id="output-width" placeholder="Original">
+                </div>
+                <div class="form-group">
+                    <label for="output-height">Output Height</label>
+                    <input type="number" id="output-height" placeholder="Original">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="resize-mode">Resize Mode</label>
+                    <select id="resize-mode">
+                        <option value="smooth">Smooth (Bilinear)</option>
+                        <option value="nearest">Nearest Neighbor (Pixel Art)</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="convert-btn">Convert to Spritesheet</button>
+        </div>
+
+        <div class="panel hidden" id="preview-panel">
+            <div class="panel-title">Preview</div>
+            <div class="preview-container" id="preview-container">
+                <p class="preview-placeholder">Converting...</p>
+            </div>
+            <div class="download-section">
+                <button class="btn btn-primary" id="download-png">Download PNG</button>
+                <button class="btn btn-secondary" id="download-json">Download JSON</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./index.js"></script>
+</body>
+</html>
