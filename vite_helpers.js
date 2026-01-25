@@ -5,10 +5,21 @@ import path from 'path'
 const ANIMATOR_TEMPLATE = 'studio/animator/index.html'
 const HUB_TEMPLATE = 'studio/index.html'
 
+const TOOL_DEFINITIONS = {
+    animator: {
+        title: 'Sprite Animator',
+        description: 'Edit sprite animations',
+        href: './animator.html'
+    }
+}
 
-function generateAnimatorHtml (options, baseDir) {
-    const {game, title, icon, script} = options
 
+function generateAnimatorFiles (options, baseDir) {
+    const {game, title, icon} = options
+    const outDir = path.resolve(baseDir, game, 'studio')
+    mkdirSync(outDir, {recursive: true})
+
+    // Generate HTML
     const templatePath = path.resolve(baseDir, ANIMATOR_TEMPLATE)
     let html = readFileSync(templatePath, 'utf-8')
 
@@ -21,20 +32,32 @@ function generateAnimatorHtml (options, baseDir) {
         html = html.replace(/href="\.\.\/assets\/images\/studio\.png"/g, `href="${icon}"`)
     }
 
-    if (script) {
-        html = html.replace(/src="\.\/index\.js"/, `src="${script}"`)
-    }
+    html = html.replace(/src="\.\/index\.js"/, 'src="./animator.js"')
+    writeFileSync(path.resolve(outDir, 'animator.html'), html)
 
-    const outDir = path.resolve(baseDir, game, 'studio')
-    const outPath = path.resolve(outDir, 'animator.html')
+    // Generate JS
+    const js = `import {launchAnimatorStudio} from '../../studio/animator/launcher.js'
+import manifestData from '../manifest.js'
 
-    mkdirSync(outDir, {recursive: true})
-    writeFileSync(outPath, html)
+
+async function init () {
+    const container = document.getElementById('app')
+    await launchAnimatorStudio(manifestData, container, {basePath: '../'})
+}
+
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init)
+} else {
+    init()
+}
+`
+    writeFileSync(path.resolve(outDir, 'animator.js'), js)
 }
 
 
 function generateHubHtml (options, baseDir) {
-    const {game, title, icon} = options
+    const {game, title, icon, tools = ['animator']} = options
 
     const templatePath = path.resolve(baseDir, HUB_TEMPLATE)
     let html = readFileSync(templatePath, 'utf-8')
@@ -49,7 +72,15 @@ function generateHubHtml (options, baseDir) {
         html = html.replace(/href="\.\/assets\/images\/studio\.png"/g, `href="${icon}"`)
     }
 
-    html = html.replace(/href="\.\/animator\/"/g, 'href="./animator.html"')
+    const toolsHtml = tools.map(toolId => {
+        const tool = TOOL_DEFINITIONS[toolId]
+        return `        <a href="${tool.href}" class="tool-card">
+            <h2>${tool.title}</h2>
+            <p>${tool.description}</p>
+        </a>`
+    }).join('\n')
+
+    html = html.replace(/<div class="tools">[\s\S]*?<\/div>/, `<div class="tools">\n${toolsHtml}\n    </div>`)
 
     const outDir = path.resolve(baseDir, game, 'studio')
     const outPath = path.resolve(outDir, 'index.html')
@@ -71,12 +102,12 @@ export function createStudioPlugin (options) {
 
         buildStart () {
             generateHubHtml(options, baseDir)
-            generateAnimatorHtml(options, baseDir)
+            generateAnimatorFiles(options, baseDir)
         },
 
         configureServer () {
             generateHubHtml(options, baseDir)
-            generateAnimatorHtml(options, baseDir)
+            generateAnimatorFiles(options, baseDir)
         }
     }
 }

@@ -8,6 +8,5 @@ doc/api.json
 doc/tests.json
 psd/
 
-# Generated studio HTML files
-*/studio/index.html
-*/studio/animator.html
+# Generated studio files
+*/studio/

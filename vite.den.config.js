@@ -2,6 +2,7 @@ import {defineConfig} from 'vite'
 import path from 'path'
 import {cpSync} from 'fs'
 import {createStudioPlugin} from './vite_helpers.js'
+import studioConfig from './den/studio.config.js'
 
 
 export default defineConfig(({mode}) => {
@@ -28,9 +29,7 @@ export default defineConfig(({mode}) => {
 
         plugins.unshift(createStudioPlugin({
             game: 'den',
-            title: 'Den Studio',
-            icon: '../assets/images/red.png',
-            script: './animator.js'
+            ...studioConfig
         }))
     }
 
