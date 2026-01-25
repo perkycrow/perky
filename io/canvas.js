@@ -16,8 +16,8 @@ function isNode () {
 
 export async function createCanvas (width, height) {
     if (isNode()) {
-        const {createCanvas} = await getNodeCanvas()
-        return createCanvas(width, height)
+        const {createCanvas: nodeCreateCanvas} = await getNodeCanvas()
+        return nodeCreateCanvas(width, height)
     }
     const canvas = document.createElement('canvas')
     canvas.width = width
@@ -61,7 +61,7 @@ export async function canvasToBlob (canvas) {
 }
 
 
-export function putPixels (ctx, pixels, width, height, x = 0, y = 0) {
+export function putPixels (ctx, {pixels, width, height, x = 0, y = 0}) {
     const imageData = ctx.createImageData(width, height)
     imageData.data.set(new Uint8ClampedArray(pixels.buffer, pixels.byteOffset, pixels.byteLength))
     ctx.putImageData(imageData, x, y)

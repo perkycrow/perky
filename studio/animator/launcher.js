@@ -23,51 +23,67 @@ function rewriteUrls (data, basePath) {
 }
 
 
+async function loadManifest (manifestData, basePath) {
+    const data = rewriteUrls(manifestData, basePath)
+    const manifest = new Manifest({data})
+
+    const sourceManager = new SourceManager({
+        loaders: new Registry(loaders),
+        manifest
+    })
+
+    await sourceManager.loadAll()
+    return manifest
+}
+
+
+function buildTextureSystem (manifest) {
+    const textureSystem = new TextureSystem()
+
+    const imageAssets = manifest.getAssetsByType('image')
+    textureSystem.buildFromAssets(imageAssets)
+
+    const spritesheetAssets = manifest.getAssetsByType('spritesheet')
+    for (const asset of spritesheetAssets) {
+        if (asset.source) {
+            textureSystem.registerSpritesheet(asset.id, asset.source)
+        }
+    }
+
+    return textureSystem
+}
+
+
+function collectAnimators (manifest) {
+    const animatorAssets = manifest.getAssetsByType('animator')
+    const animators = {}
+    for (const asset of animatorAssets) {
+        if (asset.source) {
+            animators[asset.id] = asset.source
+        }
+    }
+    return animators
+}
+
+
+function getBackgroundImage (manifest, studioConfig) {
+    const backgroundId = studioConfig.background
+    const backgroundAsset = backgroundId ? manifest.getAsset(backgroundId) : null
+    return backgroundAsset?.source || null
+}
+
+
 export async function launchAnimatorStudio (manifestData, container, options = {}) {
     try {
-        const data = rewriteUrls(manifestData, options.basePath)
-        const manifest = new Manifest({data})
-
-        const sourceManager = new SourceManager({
-            loaders: new Registry(loaders),
-            manifest
-        })
-
-        await sourceManager.loadAll()
-
-        const textureSystem = new TextureSystem()
-
-        const imageAssets = manifest.getAssetsByType('image')
-        textureSystem.buildFromAssets(imageAssets)
-
-        const spritesheetAssets = manifest.getAssetsByType('spritesheet')
-        for (const asset of spritesheetAssets) {
-            if (asset.source) {
-                textureSystem.registerSpritesheet(asset.id, asset.source)
-            }
-        }
-
-        const animatorAssets = manifest.getAssetsByType('animator')
-        const animators = {}
-        for (const asset of animatorAssets) {
-            if (asset.source) {
-                animators[asset.id] = asset.source
-            }
-        }
-
+        const manifest = await loadManifest(manifestData, options.basePath)
+        const textureSystem = buildTextureSystem(manifest)
+        const animators = collectAnimators(manifest)
         const studioConfig = manifest.getConfig('studio.animator') || {}
-        const backgroundId = studioConfig.background
-        const backgroundAsset = backgroundId ? manifest.getAsset(backgroundId) : null
-        const backgroundImage = backgroundAsset?.source || null
+        const backgroundImage = getBackgroundImage(manifest, studioConfig)
 
         container.innerHTML = ''
         const animatorView = document.createElement('animator-view')
-        animatorView.setContext({
-            textureSystem,
-            animators,
-            backgroundImage,
-            studioConfig
-        })
+        animatorView.setContext({textureSystem, animators, backgroundImage, studioConfig})
         container.appendChild(animatorView)
 
     } catch (error) {

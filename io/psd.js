@@ -331,7 +331,7 @@ function parseLayerRecord (reader) {
         blendMode,
         isGroup,
         isGroupEnd,
-        visible: (flags & 2) === 0
+        visible: (flags & 2) === 0 // eslint-disable-line no-bitwise -- clean
     }
 }
 

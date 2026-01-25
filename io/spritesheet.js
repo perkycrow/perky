@@ -105,7 +105,7 @@ export function extractFramesFromGroup (group, psdWidth, psdHeight) {
 export async function resizeFrame (frameData, targetWidth, targetHeight, nearest) {
     const srcCanvas = await createCanvas(frameData.width, frameData.height)
     const srcCtx = srcCanvas.getContext('2d')
-    putPixels(srcCtx, frameData.pixels, frameData.width, frameData.height)
+    putPixels(srcCtx, {pixels: frameData.pixels, width: frameData.width, height: frameData.height})
 
     const resizedCanvas = await resizeCanvas(srcCanvas, targetWidth, targetHeight, nearest)
     const resizedCtx = resizedCanvas.getContext('2d')
@@ -183,7 +183,7 @@ export async function compositeAtlas (packedFrames, atlasWidth, atlasHeight) {
     const ctx = canvas.getContext('2d')
 
     for (const frame of packedFrames) {
-        putPixels(ctx, frame.pixels, frame.width, frame.height, frame.x, frame.y)
+        putPixels(ctx, {pixels: frame.pixels, width: frame.width, height: frame.height, x: frame.x, y: frame.y})
     }
 
     return canvas

@@ -71,7 +71,7 @@ async function main () {
 
             const canvas = await createCanvas(rgba.width, rgba.height)
             const ctx = canvas.getContext('2d')
-            putPixels(ctx, rgba.pixels, rgba.width, rgba.height)
+            putPixels(ctx, {pixels: rgba.pixels, width: rgba.width, height: rgba.height})
 
             const pngBuffer = await canvasToBuffer(canvas)
             writeFileSync(outputPath, pngBuffer)
