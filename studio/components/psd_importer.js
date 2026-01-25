@@ -382,6 +382,7 @@ export default class PsdImporter extends EditorComponent {
     #fileInput = null
     #aspectRatioLocked = true
     #aspectRatio = 1
+    #existingNames = new Set()
 
     #elements = {}
 
@@ -401,6 +402,11 @@ export default class PsdImporter extends EditorComponent {
 
     close () {
         this.#overlay.close()
+    }
+
+
+    setExistingNames (names) {
+        this.#existingNames = new Set(names.map(n => n.toLowerCase()))
     }
 
 
@@ -440,15 +446,12 @@ export default class PsdImporter extends EditorComponent {
 
         this.#elements.title = createElement('span', {class: 'header-title', text: 'Import PSD'})
 
-        this.#elements.nextBtn = createElement('button', {
-            class: 'header-btn primary',
-            text: 'Next →'
-        })
-        this.#elements.nextBtn.addEventListener('click', () => this.#handleNext())
+        const spacer = createElement('div', {class: 'header-btn'})
+        spacer.style.visibility = 'hidden'
 
         header.appendChild(this.#elements.backBtn)
         header.appendChild(this.#elements.title)
-        header.appendChild(this.#elements.nextBtn)
+        header.appendChild(spacer)
 
         return header
     }
@@ -459,7 +462,6 @@ export default class PsdImporter extends EditorComponent {
 
         body.appendChild(this.#buildDropStep())
         body.appendChild(this.#buildPreviewStep())
-        body.appendChild(this.#buildNameStep())
         body.appendChild(this.#buildProgressStep())
 
         return body
@@ -550,31 +552,20 @@ export default class PsdImporter extends EditorComponent {
         resizeRow.appendChild(resizeInput)
         section.appendChild(resizeRow)
 
-        this.#elements.errorMessage = createElement('div', {class: 'error-message hidden'})
-        section.appendChild(this.#elements.errorMessage)
-
-        step.appendChild(section)
-
-        return step
-    }
-
-
-    #buildNameStep () {
-        const step = createElement('div', {class: 'step', attrs: {'data-step': 'name'}})
-
-        const section = createElement('div', {class: 'name-section'})
-
         section.appendChild(createElement('div', {class: 'section-title', text: 'Animator Name'}))
 
         this.#elements.nameInput = createElement('input', {
             class: 'name-input',
             attrs: {type: 'text', placeholder: 'Enter name...'}
         })
-        this.#elements.nameInput.addEventListener('input', () => this.#updateOutputInfo())
+        this.#elements.nameInput.addEventListener('input', () => this.#validateName())
         section.appendChild(this.#elements.nameInput)
 
         this.#elements.outputInfo = createElement('div', {class: 'output-info'})
         section.appendChild(this.#elements.outputInfo)
+
+        this.#elements.errorMessage = createElement('div', {class: 'error-message hidden'})
+        section.appendChild(this.#elements.errorMessage)
 
         this.#elements.createBtn = createElement('button', {
             class: 'create-btn',
@@ -622,25 +613,29 @@ export default class PsdImporter extends EditorComponent {
 
 
     #handleWidthChange () {
-        if (!this.#aspectRatioLocked || !this.#psd) {
-            return
-        }
-        const width = parseInt(this.#elements.widthInput.value, 10)
-        if (width > 0) {
-            const height = Math.round(width / this.#aspectRatio)
-            this.#elements.heightInput.value = height
-        }
+        this.#syncDimension('width')
     }
 
 
     #handleHeightChange () {
+        this.#syncDimension('height')
+    }
+
+
+    #syncDimension (source) {
         if (!this.#aspectRatioLocked || !this.#psd) {
             return
         }
-        const height = parseInt(this.#elements.heightInput.value, 10)
-        if (height > 0) {
-            const width = Math.round(height * this.#aspectRatio)
-            this.#elements.widthInput.value = width
+
+        const sourceInput = source === 'width' ? this.#elements.widthInput : this.#elements.heightInput
+        const targetInput = source === 'width' ? this.#elements.heightInput : this.#elements.widthInput
+        const value = parseInt(sourceInput.value, 10)
+
+        if (value > 0) {
+            const computed = source === 'width'
+                ? Math.round(value / this.#aspectRatio)
+                : Math.round(value * this.#aspectRatio)
+            targetInput.value = computed
         }
     }
 
@@ -663,23 +658,14 @@ export default class PsdImporter extends EditorComponent {
             case 'drop':
                 this.#elements.backBtn.innerHTML = '← Cancel'
                 this.#elements.title.textContent = 'Import PSD'
-                this.#elements.nextBtn.classList.add('hidden')
                 break
             case 'preview':
                 this.#elements.backBtn.innerHTML = '← Back'
                 this.#elements.title.textContent = this.#psd?.filename || 'Preview'
-                this.#elements.nextBtn.classList.remove('hidden')
-                this.#elements.nextBtn.textContent = 'Next →'
-                break
-            case 'name':
-                this.#elements.backBtn.innerHTML = '← Back'
-                this.#elements.title.textContent = 'Name'
-                this.#elements.nextBtn.classList.add('hidden')
                 break
             case 'progress':
                 this.#elements.backBtn.classList.add('hidden')
                 this.#elements.title.textContent = 'Creating...'
-                this.#elements.nextBtn.classList.add('hidden')
                 break
         }
 
@@ -698,24 +684,11 @@ export default class PsdImporter extends EditorComponent {
                 this.#step = 'drop'
                 this.#psd = null
                 break
-            case 'name':
-                this.#step = 'preview'
-                break
         }
         this.#updateStep()
     }
 
 
-    #handleNext () {
-        switch (this.#step) {
-            case 'preview':
-                this.#step = 'name'
-                this.#elements.nameInput.value = this.#psd?.filename || ''
-                this.#updateOutputInfo()
-                break
-        }
-        this.#updateStep()
-    }
 
 
     #handleDragOver (e, dropZone) {
@@ -799,19 +772,30 @@ export default class PsdImporter extends EditorComponent {
             this.#elements.animationTags.appendChild(tag)
         }
 
+        this.#elements.nameInput.value = psd.filename || ''
         this.#elements.errorMessage.classList.add('hidden')
+        this.#validateName()
     }
 
 
-    #updateOutputInfo () {
+    #validateName () {
         const name = this.#sanitizeName(this.#elements.nameInput.value)
-        const isValid = name.length > 0
+        const animatorName = `${name}Animator`.toLowerCase()
+        const isDuplicate = this.#existingNames.has(animatorName)
+        const isValid = name.length > 0 && !isDuplicate
 
         this.#elements.outputInfo.innerHTML = `
             <div class="output-info-title">This will create:</div>
             <div class="output-item"><span class="output-item-icon">${ICONS.image}</span> ${name || '...'}Spritesheet</div>
             <div class="output-item"><span class="output-item-icon">${ICONS.film}</span> ${name || '...'}Animator</div>
         `
+
+        if (isDuplicate) {
+            this.#elements.errorMessage.textContent = `"${name}Animator" already exists`
+            this.#elements.errorMessage.classList.remove('hidden')
+        } else {
+            this.#elements.errorMessage.classList.add('hidden')
+        }
 
         this.#elements.createBtn.disabled = !isValid
     }

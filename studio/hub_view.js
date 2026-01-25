@@ -125,6 +125,7 @@ export default class HubView extends EditorComponent {
     #textureSystem = null
     #appLayout = null
     #psdImporter = null
+    #thumbnails = new Map()
 
     onConnected () {
         adoptStyleSheets(this.shadowRoot, hubViewStyles)
@@ -158,33 +159,18 @@ export default class HubView extends EditorComponent {
     #render () {
         const content = createElement('div', {class: 'hub-content'})
 
-        const animatorNames = Object.keys(this.#animators)
+        const section = createElement('div', {class: 'section'})
+        section.appendChild(createElement('h2', {class: 'section-title', text: 'Animators'}))
 
-        if (animatorNames.length === 0) {
-            const section = createElement('div', {class: 'section'})
-            section.appendChild(createElement('h2', {class: 'section-title', text: 'Animators'}))
+        const grid = createElement('div', {class: 'animator-grid'})
 
-            const grid = createElement('div', {class: 'animator-grid'})
-            grid.appendChild(this.#createNewAnimatorCard())
-            section.appendChild(grid)
-
-            content.appendChild(section)
-        } else {
-            const section = createElement('div', {class: 'section'})
-            section.appendChild(createElement('h2', {class: 'section-title', text: 'Animators'}))
-
-            const grid = createElement('div', {class: 'animator-grid'})
-
-            for (const name of animatorNames) {
-                const config = this.#animators[name]
-                const card = this.#createAnimatorCard(name, config)
-                grid.appendChild(card)
-            }
-
-            grid.appendChild(this.#createNewAnimatorCard())
-            section.appendChild(grid)
-            content.appendChild(section)
+        for (const [name, config] of Object.entries(this.#animators)) {
+            grid.appendChild(this.#createAnimatorCard(name, config))
         }
+
+        grid.appendChild(this.#createNewAnimatorCard())
+        section.appendChild(grid)
+        content.appendChild(section)
 
         this.#appLayout.innerHTML = ''
         this.#appLayout.appendChild(content)
@@ -195,7 +181,7 @@ export default class HubView extends EditorComponent {
         const card = createElement('div', {class: 'animator-card'})
 
         const preview = createElement('div', {class: 'card-preview'})
-        const thumbnail = this.#createThumbnail(config)
+        const thumbnail = this.#createThumbnail(name, config)
         preview.appendChild(thumbnail)
 
         const info = createElement('div', {class: 'card-info'})
@@ -243,15 +229,33 @@ export default class HubView extends EditorComponent {
             this.#psdImporter.addEventListener('complete', (e) => this.#handleImportComplete(e))
             this.shadowRoot.appendChild(this.#psdImporter)
         }
+        this.#psdImporter.setExistingNames(Object.keys(this.#animators))
         this.#psdImporter.open()
     }
 
 
     #handleImportComplete (e) {
-        const {name, animatorConfig} = e.detail
+        const {name, animatorConfig, atlases} = e.detail
         const animatorName = `${name}Animator`
 
         this.#animators[animatorName] = animatorConfig
+
+        if (atlases?.length > 0 && atlases[0].canvas && atlases[0].frames?.length > 0) {
+            const atlas = atlases[0]
+            const firstFrame = atlas.frames[0]
+
+            const thumbCanvas = document.createElement('canvas')
+            thumbCanvas.width = firstFrame.width
+            thumbCanvas.height = firstFrame.height
+            const ctx = thumbCanvas.getContext('2d')
+            ctx.drawImage(
+                atlas.canvas,
+                firstFrame.x, firstFrame.y, firstFrame.width, firstFrame.height,
+                0, 0, firstFrame.width, firstFrame.height
+            )
+            this.#thumbnails.set(animatorName, thumbCanvas)
+        }
+
         this.#render()
 
         this.dispatchEvent(new CustomEvent('animatorcreated', {
@@ -261,7 +265,17 @@ export default class HubView extends EditorComponent {
     }
 
 
-    #createThumbnail (config) {
+    #createThumbnail (name, config) {
+        const cached = this.#thumbnails.get(name)
+        if (cached) {
+            const canvas = document.createElement('canvas')
+            canvas.width = cached.width
+            canvas.height = cached.height
+            const ctx = canvas.getContext('2d')
+            ctx.drawImage(cached, 0, 0)
+            return canvas
+        }
+
         const region = this.#getFirstFrameRegion(config)
         if (!region) {
             return createElement('div', {class: 'placeholder'})
