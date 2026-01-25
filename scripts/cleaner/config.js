@@ -14,7 +14,8 @@ export const PROTECTED_COMMENT_PATTERNS = [
     /@ts-/,
     /@vite-ignore/,
     /@vitest-environment/,
-    /^\s*=+\s+.+\s+=+\s*$/
+    /^\s*=+\s+.+\s+=+\s*$/,
+    /^\s*GENERATED/
 ]
 
 export const EXCLUDED_FILES = []

@@ -1,10 +1,60 @@
-import {describe, test, expect, vi, beforeEach} from 'vitest'
+import {describe, test, expect, vi} from 'vitest'
 import {
+    loadManifest,
     buildTextureSystem,
     collectAnimators,
     getStudioConfig,
     getBackgroundImage
 } from './launcher.js'
+
+
+vi.mock('../application/source_manager.js', () => ({
+    default: vi.fn().mockImplementation(() => ({
+        loadAll: vi.fn().mockResolvedValue()
+    }))
+}))
+
+
+describe('loadManifest', () => {
+
+    test('returns a manifest', async () => {
+        const manifestData = {assets: {}}
+
+        const result = await loadManifest(manifestData)
+
+        expect(result).toBeDefined()
+        expect(typeof result.getAsset).toBe('function')
+    })
+
+
+    test('rewrites asset urls with basePath', async () => {
+        const manifestData = {
+            assets: {
+                sprite: {type: 'image', url: './sprite.png'}
+            }
+        }
+
+        const result = await loadManifest(manifestData, '/game/')
+
+        const asset = result.getAsset('sprite')
+        expect(asset.url).toBe('/game/sprite.png')
+    })
+
+
+    test('preserves urls when no basePath', async () => {
+        const manifestData = {
+            assets: {
+                sprite: {type: 'image', url: './sprite.png'}
+            }
+        }
+
+        const result = await loadManifest(manifestData)
+
+        const asset = result.getAsset('sprite')
+        expect(asset.url).toBe('./sprite.png')
+    })
+
+})
 
 
 describe('buildTextureSystem', () => {

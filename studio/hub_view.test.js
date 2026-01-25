@@ -153,37 +153,33 @@ describe('HubView', () => {
     })
 
 
-    describe('navigation', () => {
+    test('dispatches navigate event on card click', () => {
+        const mockTextureSystem = {
+            getSpritesheet: vi.fn(() => null)
+        }
 
-        test('dispatches navigate event on card click', () => {
-            const mockTextureSystem = {
-                getSpritesheet: vi.fn(() => null)
-            }
-
-            view.setContext({
-                manifest: {},
-                animators: {
-                    player: {animations: {}}
-                },
-                textureSystem: mockTextureSystem
-            })
-
-            const handler = vi.fn()
-            view.addEventListener('navigate', handler)
-
-            const originalLocation = window.location
-            delete window.location
-            window.location = {href: ''}
-
-            const card = view.shadowRoot.querySelector('.animator-card')
-            card.click()
-
-            expect(handler).toHaveBeenCalled()
-            expect(handler.mock.calls[0][0].detail.name).toBe('player')
-
-            window.location = originalLocation
+        view.setContext({
+            manifest: {},
+            animators: {
+                player: {animations: {}}
+            },
+            textureSystem: mockTextureSystem
         })
 
+        const handler = vi.fn()
+        view.addEventListener('navigate', handler)
+
+        const originalLocation = window.location
+        delete window.location
+        window.location = {href: ''}
+
+        const card = view.shadowRoot.querySelector('.animator-card')
+        card.click()
+
+        expect(handler).toHaveBeenCalled()
+        expect(handler.mock.calls[0][0].detail.name).toBe('player')
+
+        window.location = originalLocation
     })
 
 })

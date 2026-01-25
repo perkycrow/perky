@@ -96,6 +96,7 @@ function generateHubFiles (options, baseDir) {
 
     const jsTemplatePath = path.resolve(baseDir, HUB_JS_TEMPLATE)
     let js = readFileSync(jsTemplatePath, 'utf-8')
+    js = js.replace("'../core/logger.js'", "'../../core/logger.js'")
     js = js.replace("'./launcher.js'", "'../../studio/launcher.js'")
     js = js.replace("'./hub_view.js'", "'../../studio/hub_view.js'")
     js = js.replace(/from '\.\.\/[^']+\/manifest\.json'/g, "from '../manifest.json'")
