@@ -32,8 +32,7 @@ import WaveSystem from './wave_system.js'
 import VignettePass from '../render/postprocessing/passes/vignette_pass.js'
 import DayNightPass from './postprocessing/day_night_pass.js'
 
-import manifest from './manifest.js'
-
+import manifest from './manifest.json' with { type: 'json' }
 
 export default class DefendTheDen extends Game {
 

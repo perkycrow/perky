@@ -15,7 +15,7 @@ export default defineConfig([globalIgnores(['node_modules/*', 'dist/*']), {
             WeakRef: true
         },
 
-        ecmaVersion: 2022,
+        ecmaVersion: 2025,
         sourceType: 'module'
     },
 
