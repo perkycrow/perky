@@ -58,7 +58,7 @@ describe('HubView', () => {
         })
 
 
-        test('renders animator cards', () => {
+        test('renders animator cards plus create card', () => {
             const mockTextureSystem = {
                 getSpritesheet: vi.fn(() => null)
             }
@@ -73,11 +73,14 @@ describe('HubView', () => {
             })
 
             const cards = view.shadowRoot.querySelectorAll('.animator-card')
-            expect(cards.length).toBe(2)
+            expect(cards.length).toBe(3)
+
+            const createCard = view.shadowRoot.querySelector('.create-card')
+            expect(createCard).not.toBeNull()
         })
 
 
-        test('shows empty state when no animators', () => {
+        test('shows create card when no animators', () => {
             const mockTextureSystem = {
                 getSpritesheet: vi.fn(() => null)
             }
@@ -88,8 +91,8 @@ describe('HubView', () => {
                 textureSystem: mockTextureSystem
             })
 
-            const emptyState = view.shadowRoot.querySelector('.empty-state')
-            expect(emptyState).not.toBeNull()
+            const createCard = view.shadowRoot.querySelector('.create-card')
+            expect(createCard).not.toBeNull()
         })
 
     })

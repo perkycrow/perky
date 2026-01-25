@@ -2,6 +2,7 @@ import EditorComponent from '../editor/editor_component.js'
 import {createElement, adoptStyleSheets, createStyleSheet} from '../application/dom_utils.js'
 import {pluralize} from '../core/utils.js'
 import '../editor/layout/app_layout.js'
+import './components/psd_importer.js'
 
 
 const hubViewStyles = createStyleSheet(`
@@ -92,20 +93,27 @@ const hubViewStyles = createStyleSheet(`
         margin-top: 2px;
     }
 
-    .empty-state {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 200px;
-        color: var(--fg-muted);
-        text-align: center;
-        gap: var(--spacing-md);
+    .create-card {
+        border: 2px dashed var(--border);
+        background: transparent;
     }
 
-    .empty-state-icon {
-        font-size: 48px;
-        opacity: 0.5;
+    .create-card:hover {
+        border-color: var(--accent);
+        background: var(--bg-hover);
+    }
+
+    .create-card .card-preview {
+        background: transparent;
+    }
+
+    .create-icon {
+        font-size: 32px;
+        color: var(--fg-muted);
+    }
+
+    .create-card:hover .create-icon {
+        color: var(--accent);
     }
 `)
 
@@ -116,6 +124,7 @@ export default class HubView extends EditorComponent {
     #animators = {}
     #textureSystem = null
     #appLayout = null
+    #psdImporter = null
 
     onConnected () {
         adoptStyleSheets(this.shadowRoot, hubViewStyles)
@@ -152,7 +161,14 @@ export default class HubView extends EditorComponent {
         const animatorNames = Object.keys(this.#animators)
 
         if (animatorNames.length === 0) {
-            content.appendChild(this.#createEmptyState())
+            const section = createElement('div', {class: 'section'})
+            section.appendChild(createElement('h2', {class: 'section-title', text: 'Animators'}))
+
+            const grid = createElement('div', {class: 'animator-grid'})
+            grid.appendChild(this.#createNewAnimatorCard())
+            section.appendChild(grid)
+
+            content.appendChild(section)
         } else {
             const section = createElement('div', {class: 'section'})
             section.appendChild(createElement('h2', {class: 'section-title', text: 'Animators'}))
@@ -165,6 +181,7 @@ export default class HubView extends EditorComponent {
                 grid.appendChild(card)
             }
 
+            grid.appendChild(this.#createNewAnimatorCard())
             section.appendChild(grid)
             content.appendChild(section)
         }
@@ -198,6 +215,49 @@ export default class HubView extends EditorComponent {
         })
 
         return card
+    }
+
+
+    #createNewAnimatorCard () {
+        const card = createElement('div', {class: 'animator-card create-card'})
+
+        const preview = createElement('div', {class: 'card-preview'})
+        preview.appendChild(createElement('div', {class: 'create-icon', text: '+'}))
+
+        const info = createElement('div', {class: 'card-info'})
+        info.appendChild(createElement('div', {class: 'card-title', text: 'New Animator'}))
+        info.appendChild(createElement('div', {class: 'card-meta', text: 'Import from PSD'}))
+
+        card.appendChild(preview)
+        card.appendChild(info)
+
+        card.addEventListener('click', () => this.#openPsdImporter())
+
+        return card
+    }
+
+
+    #openPsdImporter () {
+        if (!this.#psdImporter) {
+            this.#psdImporter = document.createElement('psd-importer')
+            this.#psdImporter.addEventListener('complete', (e) => this.#handleImportComplete(e))
+            this.shadowRoot.appendChild(this.#psdImporter)
+        }
+        this.#psdImporter.open()
+    }
+
+
+    #handleImportComplete (e) {
+        const {name, animatorConfig} = e.detail
+        const animatorName = `${name}Animator`
+
+        this.#animators[animatorName] = animatorConfig
+        this.#render()
+
+        this.dispatchEvent(new CustomEvent('animatorcreated', {
+            bubbles: true,
+            detail: e.detail
+        }))
     }
 
 
@@ -251,11 +311,6 @@ export default class HubView extends EditorComponent {
     }
 
 
-    #createEmptyState () {
-        return this.shadowRoot && createEmptyStateElement()
-    }
-
-
     #openAnimator (name) {
         this.dispatchEvent(new CustomEvent('navigate', {detail: {name}}))
         window.location.href = `animator.html?id=${encodeURIComponent(name)}`
@@ -275,16 +330,4 @@ function getFirstAnimation (config) {
 
 function getFrameSource (frame) {
     return typeof frame === 'string' ? frame : frame.source
-}
-
-
-function createEmptyStateElement () {
-    const empty = createElement('div', {class: 'empty-state'})
-    empty.appendChild(createElement('div', {class: 'empty-state-icon', text: '🎬'}))
-    empty.appendChild(createElement('div', {text: 'No animators found'}))
-    empty.appendChild(createElement('div', {
-        class: 'card-meta',
-        text: 'Add animator assets to your manifest.json'
-    }))
-    return empty
 }
