@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import {readFileSync, mkdirSync} from 'fs'
+import {readFileSync, mkdirSync, writeFileSync} from 'fs'
 import {parsePsd, layerToRGBA} from '../io/psd.js'
-import sharp from 'sharp'
+import {createCanvas, canvasToBuffer, putPixels} from '../io/canvas.js'
 
 
 function printTree (nodes, indent = 0) {
@@ -63,15 +63,12 @@ async function main () {
             const filename = `${animName}_${frame.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`
             const outputPath = `${outputDir}/${filename}`
 
-            await sharp(Buffer.from(rgba.pixels), {
-                raw: {
-                    width: rgba.width,
-                    height: rgba.height,
-                    channels: 4
-                }
-            })
-                .png()
-                .toFile(outputPath)
+            const canvas = await createCanvas(rgba.width, rgba.height)
+            const ctx = canvas.getContext('2d')
+            putPixels(ctx, rgba.pixels, rgba.width, rgba.height)
+
+            const pngBuffer = await canvasToBuffer(canvas)
+            writeFileSync(outputPath, pngBuffer)
 
             console.log(`  ✓ ${filename} (${rgba.width}x${rgba.height})`)
         }

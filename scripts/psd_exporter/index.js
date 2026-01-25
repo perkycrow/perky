@@ -1,9 +1,9 @@
 import {readFile, mkdir, writeFile} from 'fs/promises'
 import {basename, dirname, join} from 'path'
-import Psd from '@webtoon/psd'
-import sharp from 'sharp'
 import {bold, cyan, dim, green, yellow} from '../format.js'
 import ShelfPacker from '../../render/textures/shelf_packer.js'
+import {parsePsd as parseRawPsd, layerToRGBA} from '../../io/psd.js'
+import {createCanvas, canvasToBuffer, putPixels} from '../../io/canvas.js'
 
 
 const MAX_ATLAS_SIZE = 4096
@@ -22,14 +22,27 @@ export function printBanner () {
 
 export async function parsePsd (psdPath) {
     const buffer = await readFile(psdPath)
-    return Psd.parse(buffer.buffer)
+    return parseRawPsd(buffer)
 }
 
 
-export function findAnimationGroups (psd) {
-    return psd.children.filter(child => {
-        return child.type === 'Group' && child.name.startsWith('anim - ')
-    })
+export function findAnimationGroups (tree) {
+    const groups = []
+
+    function traverse (nodes) {
+        for (const node of nodes) {
+            if (node.type === 'group') {
+                if (node.name.startsWith('anim - ')) {
+                    groups.push(node)
+                } else {
+                    traverse(node.children)
+                }
+            }
+        }
+    }
+
+    traverse(tree)
+    return groups
 }
 
 
@@ -44,33 +57,14 @@ export function parseFrameNumber (layerName) {
 }
 
 
-async function extractFrameData (layer, psd) {
-    const pixels = await layer.composite(false)
-    const layerWidth = layer.width
-    const layerHeight = layer.height
-
-    const buffer = await sharp(Buffer.from(pixels.buffer), {
-        raw: {
-            width: layerWidth,
-            height: layerHeight,
-            channels: 4
-        }
-    })
-        .extend({
-            top: layer.top,
-            left: layer.left,
-            bottom: psd.height - layer.top - layerHeight,
-            right: psd.width - layer.left - layerWidth,
-            background: {r: 0, g: 0, b: 0, alpha: 0}
-        })
-        .toColorspace('srgb')
-        .raw()
-        .toBuffer()
+function extractFrameData (layer, psdWidth, psdHeight) {
+    const rgba = layerToRGBA(layer, psdWidth, psdHeight)
+    if (!rgba) return null
 
     return {
-        buffer,
-        width: psd.width,
-        height: psd.height
+        pixels: rgba.pixels,
+        width: rgba.width,
+        height: rgba.height
     }
 }
 
@@ -113,30 +107,14 @@ function packFramesIntoAtlases (frames, atlasSize) {
 
 
 async function compositeAtlas (packedFrames, atlasWidth, atlasHeight) {
-    const compositeOperations = packedFrames.map(frame => ({
-        input: frame.buffer,
-        raw: {
-            width: frame.width,
-            height: frame.height,
-            channels: 4
-        },
-        left: frame.x,
-        top: frame.y
-    }))
+    const canvas = await createCanvas(atlasWidth, atlasHeight)
+    const ctx = canvas.getContext('2d')
 
-    const atlas = await sharp({
-        create: {
-            width: atlasWidth,
-            height: atlasHeight,
-            channels: 4,
-            background: {r: 0, g: 0, b: 0, alpha: 0}
-        }
-    })
-        .composite(compositeOperations)
-        .png()
-        .toBuffer()
+    for (const frame of packedFrames) {
+        putPixels(ctx, frame.pixels, frame.width, frame.height, frame.x, frame.y)
+    }
 
-    return atlas
+    return canvasToBuffer(canvas)
 }
 
 
@@ -181,7 +159,7 @@ function buildJsonData (atlases, animations, psdName) {
         animations,
         meta: {
             app: 'perky-psd-exporter',
-            version: '1.0',
+            version: '2.0',
             images
         }
     }
@@ -198,7 +176,7 @@ export async function exportPsd (psdPath) {
 
     await mkdir(outputDir, {recursive: true})
 
-    const animGroups = findAnimationGroups(psd)
+    const animGroups = findAnimationGroups(psd.tree)
 
     if (animGroups.length === 0) {
         console.log('No animation groups found (looking for "anim - " prefix)')
@@ -218,19 +196,20 @@ export async function exportPsd (psdPath) {
 
         const layersWithFrameNumbers = []
 
-        for (const layer of group.children) {
-            if (layer.type !== 'Layer') {
+        for (const child of group.children) {
+            if (child.type !== 'layer') {
                 continue
             }
 
-            const frameNumber = parseFrameNumber(layer.name)
+            const frameNumber = parseFrameNumber(child.name)
             if (!frameNumber) {
-                console.log(`  ${yellow('⚠')} Skipping "${layer.name}" (no frame number)`)
+                console.log(`  ${yellow('⚠')} Skipping "${child.name}" (no frame number)`)
                 continue
             }
 
             layersWithFrameNumbers.push({
-                layer,
+                layer: child.layer,
+                name: child.name,
                 frameNumber: parseInt(frameNumber, 10)
             })
         }
@@ -242,11 +221,15 @@ export async function exportPsd (psdPath) {
 
             console.log(`  ${dim('extracting')} ${filename}`)
 
-            const frameData = await extractFrameData(layer, psd)
+            const frameData = extractFrameData(layer, psd.width, psd.height)
+            if (!frameData) {
+                console.log(`  ${yellow('⚠')} Empty frame: ${filename}`)
+                continue
+            }
 
             frames.push({
                 filename,
-                buffer: frameData.buffer,
+                pixels: frameData.pixels,
                 width: frameData.width,
                 height: frameData.height,
                 animName,
