@@ -1,6 +1,6 @@
 const manifest = {
     config: {
-        name: 'Mistbrewer',
+        name: 'Den',
         audio: {
             masterVolume: 0.5,
             channels: {
