@@ -10,6 +10,11 @@ const TOOL_DEFINITIONS = {
         title: 'Sprite Animator',
         description: 'Edit sprite animations',
         href: './animator.html'
+    },
+    spritesheet: {
+        title: 'Spritesheet Exporter',
+        description: 'Convert PSD to spritesheet',
+        href: './spritesheet.html'
     }
 }
 
