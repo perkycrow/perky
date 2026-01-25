@@ -17,7 +17,6 @@ import {
 
 export default class PsdConverter extends Notifier {
 
-
     parse (buffer) { // eslint-disable-line local/class-methods-use-this -- clean
         return parse(buffer)
     }

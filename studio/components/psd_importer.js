@@ -653,40 +653,37 @@ export default class PsdImporter extends EditorComponent {
 
 
     #updateHeader () {
-        switch (this.#step) {
-        case 'drop':
-            this.#elements.backBtn.innerHTML = '← Cancel'
-            this.#elements.title.textContent = 'Import PSD'
-            break
-        case 'preview':
-            this.#elements.backBtn.innerHTML = '← Back'
-            this.#elements.title.textContent = this.#psd?.filename || 'Preview'
-            break
-        case 'progress':
-            this.#elements.backBtn.classList.add('hidden')
-            this.#elements.title.textContent = 'Creating...'
-            break
-        default:
-            break
+        const headers = {
+            drop: {backText: '← Cancel', title: 'Import PSD'},
+            preview: {backText: '← Back', title: this.#psd?.filename || 'Preview'},
+            progress: {backText: null, title: 'Creating...'}
         }
 
-        if (this.#step !== 'progress') {
-            this.#elements.backBtn.classList.remove('hidden')
+        const config = headers[this.#step]
+        if (config) {
+            if (config.backText) {
+                this.#elements.backBtn.innerHTML = config.backText
+                this.#elements.backBtn.classList.remove('hidden')
+            } else {
+                this.#elements.backBtn.classList.add('hidden')
+            }
+            this.#elements.title.textContent = config.title
         }
     }
 
 
     #handleBack () {
-        switch (this.#step) {
-        case 'drop':
-            this.close()
-            break
-        case 'preview':
-            this.#step = 'drop'
-            this.#psd = null
-            break
-        default:
-            break
+        const actions = {
+            drop: () => this.close(),
+            preview: () => {
+                this.#step = 'drop'
+                this.#psd = null
+            }
+        }
+
+        const action = actions[this.#step]
+        if (action) {
+            action()
         }
         this.#updateStep()
     }
@@ -743,8 +740,7 @@ export default class PsdImporter extends EditorComponent {
             const frames = extractFramesFromGroup(firstGroup, psd.width, psd.height)
             if (frames.length > 0) {
                 const frame = frames[0]
-                const canvas = document.createElement('canvas')
-                canvas.className = 'preview-canvas'
+                const canvas = createElement('canvas', {class: 'preview-canvas'})
                 canvas.width = frame.width
                 canvas.height = frame.height
                 const ctx = canvas.getContext('2d')
