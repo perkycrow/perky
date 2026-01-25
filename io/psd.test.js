@@ -1,3 +1,5 @@
+/* eslint-disable no-bitwise -- clean */
+
 import {parsePsd, layerToRGBA} from './psd.js'
 
 

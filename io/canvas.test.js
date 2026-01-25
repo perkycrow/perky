@@ -1,5 +1,6 @@
 import {
     createCanvas,
+    canvasToBuffer,
     canvasToBlob,
     putPixels,
     calculateResizeDimensions,
@@ -123,15 +124,30 @@ describe('resizeCanvas', () => {
 })
 
 
-describe('canvasToBlob', () => {
+test('canvasToBlob converts canvas to blob', async () => {
+    const canvas = await createCanvas(10, 10)
+    const blob = await canvasToBlob(canvas)
+    expect(blob).toBeInstanceOf(Blob)
+    expect(blob.type).toBe('image/png')
+})
 
-    test('converts canvas to blob', async () => {
-        const canvas = await createCanvas(10, 10)
-        const blob = await canvasToBlob(canvas)
-        expect(blob).toBeInstanceOf(Blob)
-        expect(blob.type).toBe('image/png')
-    })
 
+test('canvasToBuffer converts canvas to buffer', async () => {
+    const originalArrayBuffer = Blob.prototype.arrayBuffer
+    Blob.prototype.arrayBuffer = async function () {
+        return new Promise((resolve) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(reader.result)
+            reader.readAsArrayBuffer(this)
+        })
+    }
+
+    const canvas = await createCanvas(10, 10)
+    const buffer = await canvasToBuffer(canvas)
+    expect(Buffer.isBuffer(buffer)).toBe(true)
+    expect(buffer.length).toBeGreaterThan(0)
+
+    Blob.prototype.arrayBuffer = originalArrayBuffer
 })
 
 

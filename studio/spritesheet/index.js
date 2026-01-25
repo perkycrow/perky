@@ -1,3 +1,4 @@
+import {createElement} from 'perky/application/dom_utils.js'
 import {parsePsd} from 'perky/io/psd.js'
 import {canvasToBlob, calculateResizeDimensions} from 'perky/io/canvas.js'
 import {
@@ -111,11 +112,9 @@ function displayPsdInfo (psd) {
 
     elements.animationsList.innerHTML = ''
     for (const group of animGroups) {
-        const tag = document.createElement('div')
-        tag.className = 'animation-tag'
         const name = parseAnimationName(group.name)
         const frameCount = countFrames(group)
-        tag.innerHTML = `${name}<span>${frameCount}f</span>`
+        const tag = createElement('div', {class: 'animation-tag', html: `${name}<span>${frameCount}f</span>`})
         elements.animationsList.appendChild(tag)
     }
 
@@ -198,9 +197,7 @@ function displayPreview (result) {
     elements.previewContainer.innerHTML = ''
 
     for (const atlas of result.atlases) {
-        const img = document.createElement('img')
-        img.src = atlas.canvas.toDataURL('image/png')
-        img.alt = 'Atlas preview'
+        const img = createElement('img', {src: atlas.canvas.toDataURL('image/png'), alt: 'Atlas preview'})
         elements.previewContainer.appendChild(img)
     }
 }
@@ -235,9 +232,7 @@ function downloadJson () {
 
 function downloadBlob (blob, filename) {
     const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
+    const a = createElement('a', {href: url, attrs: {download: filename}})
     a.click()
     URL.revokeObjectURL(url)
 }

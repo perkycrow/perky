@@ -7,7 +7,10 @@ import {
     parseFrameNumber,
     countFrames,
     extractFramesFromGroup,
+    resizeFrame,
+    resizeFrames,
     packFramesIntoAtlases,
+    compositeAtlas,
     nextPowerOfTwo,
     buildJsonData
 } from './spritesheet.js'
@@ -325,6 +328,143 @@ describe('packFramesIntoAtlases', () => {
         const atlases = packFramesIntoAtlases(frames, 128, 0)
 
         expect(atlases[0].frames[0].atlasIndex).toBe(0)
+    })
+
+})
+
+
+describe('resizeFrame', () => {
+
+    test('resizes frame to target dimensions', async () => {
+        const pixels = new Uint8Array(4 * 4 * 4)
+        pixels.fill(255)
+
+        const result = await resizeFrame({pixels, width: 4, height: 4}, 2, 2, false)
+
+        expect(result.width).toBe(2)
+        expect(result.height).toBe(2)
+        expect(result.pixels).toBeInstanceOf(Uint8Array)
+        expect(result.pixels.length).toBe(2 * 2 * 4)
+    })
+
+    test('uses nearest neighbor when specified', async () => {
+        const pixels = new Uint8Array(4 * 4 * 4)
+        pixels.fill(255)
+
+        const result = await resizeFrame({pixels, width: 4, height: 4}, 8, 8, true)
+
+        expect(result.width).toBe(8)
+        expect(result.height).toBe(8)
+    })
+
+})
+
+
+describe('resizeFrames', () => {
+
+    test('returns original frames when no resize needed', async () => {
+        const frames = [
+            {filename: 'test/1', width: 10, height: 10, pixels: new Uint8Array(10 * 10 * 4)}
+        ]
+
+        const result = await resizeFrames(frames, {
+            psdWidth: 100,
+            psdHeight: 100,
+            targetWidth: 100,
+            targetHeight: 100
+        })
+
+        expect(result).toBe(frames)
+    })
+
+    test('resizes all frames when dimensions differ', async () => {
+        const pixels = new Uint8Array(10 * 10 * 4)
+        pixels.fill(255)
+
+        const frames = [
+            {filename: 'test/1', width: 10, height: 10, pixels},
+            {filename: 'test/2', width: 10, height: 10, pixels}
+        ]
+
+        const result = await resizeFrames(frames, {
+            psdWidth: 100,
+            psdHeight: 100,
+            targetWidth: 50,
+            targetHeight: 50
+        })
+
+        expect(result).toHaveLength(2)
+        expect(result[0].width).toBe(50)
+        expect(result[0].height).toBe(50)
+        expect(result[0].filename).toBe('test/1')
+    })
+
+    test('preserves frame metadata after resize', async () => {
+        const pixels = new Uint8Array(4 * 4 * 4)
+
+        const frames = [
+            {filename: 'walk/1', width: 4, height: 4, pixels, animName: 'walk', frameNumber: 1}
+        ]
+
+        const result = await resizeFrames(frames, {
+            psdWidth: 100,
+            psdHeight: 100,
+            targetWidth: 50,
+            targetHeight: 50
+        })
+
+        expect(result[0].animName).toBe('walk')
+        expect(result[0].frameNumber).toBe(1)
+    })
+
+})
+
+
+describe('compositeAtlas', () => {
+
+    test('creates canvas with specified dimensions', async () => {
+        const canvas = await compositeAtlas([], 128, 256)
+
+        expect(canvas.width).toBe(128)
+        expect(canvas.height).toBe(256)
+    })
+
+    test('composites frames onto canvas', async () => {
+        const pixels = new Uint8Array([255, 0, 0, 255])
+
+        const frames = [
+            {pixels, width: 1, height: 1, x: 0, y: 0}
+        ]
+
+        const canvas = await compositeAtlas(frames, 4, 4)
+        const ctx = canvas.getContext('2d')
+        const imageData = ctx.getImageData(0, 0, 1, 1)
+
+        expect(imageData.data[0]).toBe(255)
+        expect(imageData.data[1]).toBe(0)
+        expect(imageData.data[2]).toBe(0)
+        expect(imageData.data[3]).toBe(255)
+    })
+
+    test('places frames at correct positions', async () => {
+        const redPixel = new Uint8Array([255, 0, 0, 255])
+        const greenPixel = new Uint8Array([0, 255, 0, 255])
+
+        const frames = [
+            {pixels: redPixel, width: 1, height: 1, x: 0, y: 0},
+            {pixels: greenPixel, width: 1, height: 1, x: 2, y: 2}
+        ]
+
+        const canvas = await compositeAtlas(frames, 4, 4)
+        const ctx = canvas.getContext('2d')
+
+        const redData = ctx.getImageData(0, 0, 1, 1)
+        expect(redData.data[0]).toBe(255)
+        expect(redData.data[1]).toBe(0)
+
+        const greenData = ctx.getImageData(2, 2, 1, 1)
+        expect(greenData.data[0]).toBe(0)
+        expect(greenData.data[1]).toBe(255)
     })
 
 })

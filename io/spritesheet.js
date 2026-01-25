@@ -1,4 +1,5 @@
 import {toCamelCase} from '../core/utils.js'
+import logger from '../core/logger.js'
 import ShelfPacker from '../render/textures/shelf_packer.js'
 import {createCanvas, putPixels, calculateResizeDimensions, resizeCanvas} from './canvas.js'
 import {layerToRGBA} from './psd.js'
@@ -161,7 +162,7 @@ export function packFramesIntoAtlases (frames, atlasSize = MAX_ATLAS_SIZE, paddi
             slot = currentAtlas.packer.pack(frame.width, frame.height)
 
             if (!slot) {
-                console.warn(`Frame too large: ${frame.filename}`)
+                logger.warn(`Frame too large: ${frame.filename}`)
                 continue
             }
         }
