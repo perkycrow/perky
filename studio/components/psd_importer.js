@@ -2,6 +2,7 @@ import EditorComponent from '../../editor/editor_component.js'
 import {createElement, adoptStyleSheets, createStyleSheet} from '../../application/dom_utils.js'
 import '../../editor/layout/overlay.js'
 import PsdConverter from '../../io/psd_converter.js'
+import PerkyStore from '../../io/perky_store.js'
 import {ICONS} from '../../editor/devtools/devtools_icons.js'
 import {extractFramesFromGroup, findAnimationGroups} from '../../io/spritesheet.js'
 import {putPixels} from '../../io/canvas.js'
@@ -379,6 +380,7 @@ export default class PsdImporter extends EditorComponent {
     #step = 'drop'
     #psd = null
     #converter = new PsdConverter()
+    #store = new PerkyStore()
     #fileInput = null
     #aspectRatioLocked = true
     #aspectRatio = 1
@@ -827,14 +829,23 @@ export default class PsdImporter extends EditorComponent {
                 name
             })
 
+            const files = await buildPerkyFiles(result)
+            const animatorId = `${name}Animator`
+
+            await this.#store.save(animatorId, {
+                type: 'animator',
+                name,
+                files
+            })
+
             this.dispatchEvent(new CustomEvent('complete', {
                 bubbles: true,
-                detail: result
+                detail: {...result, id: animatorId}
             }))
 
             this.close()
         } catch (error) {
-            this.#step = 'name'
+            this.#step = 'preview'
             this.#updateStep()
             this.#showError(`Conversion failed: ${error.message}`)
         }
@@ -860,4 +871,38 @@ function handleDragOver (e, dropZone) {
 
 function sanitizeName (name) {
     return name.replace(/[^a-zA-Z0-9_]/g, '').replace(/^[0-9]/, '')
+}
+
+
+function canvasToBlob (canvas) {
+    return new Promise((resolve) => {
+        canvas.toBlob(resolve, 'image/png')
+    })
+}
+
+
+async function buildPerkyFiles (result) {
+    const {name, spritesheetName, spritesheetJson, animatorConfig, atlases} = result
+    const files = []
+
+    files.push({
+        name: `${name}Animator.json`,
+        blob: new Blob([JSON.stringify(animatorConfig)], {type: 'application/json'})
+    })
+
+    files.push({
+        name: `${spritesheetName}.json`,
+        blob: new Blob([JSON.stringify(spritesheetJson)], {type: 'application/json'})
+    })
+
+    for (let i = 0; i < atlases.length; i++) {
+        const atlas = atlases[i]
+        const pngBlob = await canvasToBlob(atlas.canvas)
+        files.push({
+            name: `${spritesheetName}_${i}.png`,
+            blob: pngBlob
+        })
+    }
+
+    return files
 }

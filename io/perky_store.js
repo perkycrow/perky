@@ -1,7 +1,7 @@
 import {pack, unpack} from './pack.js'
 
 
-const DB_NAME = 'perky-studio'
+const DB_PREFIX = 'perky-'
 const STORE_NAME = 'resources'
 const DB_VERSION = 1
 const META_FILENAME = 'meta.json'
@@ -10,6 +10,12 @@ const META_FILENAME = 'meta.json'
 export default class PerkyStore {
 
     #db = null
+    #dbName
+
+
+    constructor (dbName = 'studio') {
+        this.#dbName = `${DB_PREFIX}${dbName}`
+    }
 
 
     async open () {
@@ -18,7 +24,7 @@ export default class PerkyStore {
         }
 
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, DB_VERSION)
+            const request = indexedDB.open(this.#dbName, DB_VERSION)
 
             request.onupgradeneeded = (event) => {
                 const db = event.target.result
