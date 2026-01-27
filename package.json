@@ -34,7 +34,7 @@
     "doc:build": "yarn doc:update && vite build --config vite.doc.config.js && node doc/generate_pages.js",
     "doc:serve": "yarn doc:build && vite preview --config vite.doc.config.js",
     "doc:deploy": "yarn doc:build && rm -rf ../perkycrow_com/public/doc && cp -r dist/doc ../perkycrow_com/public/doc",
-    "perky-update": "node scripts/perky_update.js"
+    "perky-import": "node scripts/perky_import.js"
   },
   "keywords": [
     "javascript",

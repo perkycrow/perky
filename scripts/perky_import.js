@@ -137,19 +137,19 @@ async function extractSpritesheet (name, files, paths) {
 
 
 function printUsage () {
-    console.log(`Usage: yarn perky-update <target> <file.perky>
+    console.log(`Usage: yarn perky-import <target> <file.perky>
 
 Arguments:
   target        Target game (den, ghast)
   file.perky    Path to the .perky file to import
 
 Example:
-  yarn perky-update den blue.perky
+  yarn perky-import den blue.perky
 
 This will extract the animator/spritesheet files to:
   den/assets/animators/blue_animator.json
   den/assets/spritesheets/blue.json
-  den/assets/spritesheets/blue_0.png`)
+  den/assets/spritesheets/blue.png`)
 }
 
 
