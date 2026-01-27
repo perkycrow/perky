@@ -2,7 +2,7 @@ import {defineConfig} from 'vite'
 import path from 'path'
 import {cpSync} from 'fs'
 import {createStudioPlugin} from './vite_helpers.js'
-import studioConfig from './den/studio.config.js'
+import perkyConfig from './den/perky.config.js'
 
 
 export default defineConfig(({mode}) => {
@@ -30,7 +30,7 @@ export default defineConfig(({mode}) => {
 
         plugins.unshift(createStudioPlugin({
             game: 'den',
-            ...studioConfig
+            ...perkyConfig.studio
         }))
     }
 

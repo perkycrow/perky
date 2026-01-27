@@ -3,20 +3,7 @@
 import {unpack} from '../io/pack.js'
 import {readFileSync, writeFileSync, mkdirSync, existsSync} from 'fs'
 import path from 'path'
-
-
-const TARGETS = {
-    den: {
-        root: './den/assets',
-        animators: './den/assets/animators',
-        spritesheets: './den/assets/spritesheets'
-    },
-    ghast: {
-        root: './ghast/assets',
-        animators: './ghast/assets/animators',
-        spritesheets: './ghast/assets/spritesheets'
-    }
-}
+import {pathToFileURL} from 'url'
 
 
 async function main () {
@@ -30,23 +17,40 @@ async function main () {
     const target = args[0]
     const filePath = args[1]
 
-    if (!TARGETS[target]) {
-        console.error(`Unknown target: ${target}`)
-        console.error(`Available targets: ${Object.keys(TARGETS).join(', ')}`)
-        process.exit(1)
-    }
-
     if (!existsSync(filePath)) {
         console.error(`File not found: ${filePath}`)
         process.exit(1)
     }
 
-    await updateFromPerky(target, filePath)
+    const config = await loadConfig(target)
+    if (!config) {
+        process.exit(1)
+    }
+
+    await importPerky(target, filePath, config)
 }
 
 
-async function updateFromPerky (target, filePath) {
-    const targetPaths = TARGETS[target]
+async function loadConfig (target) {
+    const configPath = `./${target}/perky.config.js`
+
+    if (!existsSync(configPath)) {
+        console.error(`Config not found: ${configPath}`)
+        console.error('Create a perky.config.js in your project folder.')
+        return null
+    }
+
+    const configUrl = pathToFileURL(path.resolve(configPath))
+    const module = await import(configUrl.href)
+    return module.default
+}
+
+
+async function importPerky (target, filePath, config) {
+    const assetPaths = {
+        animators: path.join(target, config.assets.animators),
+        spritesheets: path.join(target, config.assets.spritesheets)
+    }
 
     console.log(`Importing ${path.basename(filePath)} to ${target}...`)
     console.log('')
@@ -70,9 +74,9 @@ async function updateFromPerky (target, filePath) {
     const resourceFiles = files.filter(f => f.name !== 'meta.json')
 
     if (meta.type === 'animator') {
-        await extractAnimator(meta.name, resourceFiles, targetPaths)
+        await extractAnimator(meta.name, resourceFiles, assetPaths)
     } else if (meta.type === 'spritesheet') {
-        await extractSpritesheet(meta.name, resourceFiles, targetPaths)
+        await extractSpritesheet(meta.name, resourceFiles, assetPaths)
     } else {
         console.error(`Unknown resource type: ${meta.type}`)
         process.exit(1)
@@ -80,6 +84,21 @@ async function updateFromPerky (target, filePath) {
 
     console.log('')
     console.log('Done! Remember to update manifest.json if needed.')
+}
+
+
+function writeAsset (buffer, outPath) {
+    writeFileSync(outPath, buffer)
+    console.log(`  → ${outPath}`)
+}
+
+
+function getPngSuffix (fileName, singleAtlas) {
+    if (singleAtlas) {
+        return ''
+    }
+    const match = fileName.match(/_(\d+)\.png$/)
+    return match ? `_${match[1]}` : ''
 }
 
 
@@ -94,19 +113,12 @@ async function extractAnimator (name, files, paths) {
         const buffer = Buffer.from(await file.blob.arrayBuffer())
 
         if (file.name.endsWith('Animator.json')) {
-            const outPath = path.join(paths.animators, `${name}_animator.json`)
-            writeFileSync(outPath, buffer)
-            console.log(`  → ${outPath}`)
+            writeAsset(buffer, path.join(paths.animators, `${name}_animator.json`))
         } else if (file.name.endsWith('Spritesheet.json')) {
-            const outPath = path.join(paths.spritesheets, `${name}.json`)
-            writeFileSync(outPath, buffer)
-            console.log(`  → ${outPath}`)
+            writeAsset(buffer, path.join(paths.spritesheets, `${name}.json`))
         } else if (file.name.endsWith('.png')) {
-            const match = file.name.match(/_(\d+)\.png$/)
-            const suffix = (singleAtlas || !match) ? '' : `_${match[1]}`
-            const outPath = path.join(paths.spritesheets, `${name}${suffix}.png`)
-            writeFileSync(outPath, buffer)
-            console.log(`  → ${outPath}`)
+            const suffix = getPngSuffix(file.name, singleAtlas)
+            writeAsset(buffer, path.join(paths.spritesheets, `${name}${suffix}.png`))
         }
     }
 }
@@ -122,15 +134,10 @@ async function extractSpritesheet (name, files, paths) {
         const buffer = Buffer.from(await file.blob.arrayBuffer())
 
         if (file.name.endsWith('.json')) {
-            const outPath = path.join(paths.spritesheets, `${name}.json`)
-            writeFileSync(outPath, buffer)
-            console.log(`  → ${outPath}`)
+            writeAsset(buffer, path.join(paths.spritesheets, `${name}.json`))
         } else if (file.name.endsWith('.png')) {
-            const match = file.name.match(/_(\d+)\.png$/)
-            const suffix = (singleAtlas || !match) ? '' : `_${match[1]}`
-            const outPath = path.join(paths.spritesheets, `${name}${suffix}.png`)
-            writeFileSync(outPath, buffer)
-            console.log(`  → ${outPath}`)
+            const suffix = getPngSuffix(file.name, singleAtlas)
+            writeAsset(buffer, path.join(paths.spritesheets, `${name}${suffix}.png`))
         }
     }
 }
@@ -140,16 +147,13 @@ function printUsage () {
     console.log(`Usage: yarn perky-import <target> <file.perky>
 
 Arguments:
-  target        Target game (den, ghast)
+  target        Project folder containing perky.config.js (e.g., den, ghast)
   file.perky    Path to the .perky file to import
 
 Example:
   yarn perky-import den blue.perky
 
-This will extract the animator/spritesheet files to:
-  den/assets/animators/blue_animator.json
-  den/assets/spritesheets/blue.json
-  den/assets/spritesheets/blue.png`)
+The script reads <target>/perky.config.js to determine asset paths.`)
 }
 
 
