@@ -133,6 +133,51 @@ const hubViewStyles = createStyleSheet(`
     .card-preview {
         position: relative;
     }
+
+    .card-checkbox {
+        position: absolute;
+        top: var(--spacing-sm);
+        right: var(--spacing-sm);
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 2px solid var(--fg-muted);
+        background: var(--bg-secondary);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--transition-fast);
+    }
+
+    :host([selection-mode]) .card-checkbox {
+        display: flex;
+    }
+
+    :host([selection-mode]) .card-badge {
+        display: none;
+    }
+
+    .card-checkbox.selected {
+        background: var(--accent);
+        border-color: var(--accent);
+    }
+
+    .card-checkbox.selected::after {
+        content: '';
+        width: 8px;
+        height: 8px;
+        background: var(--bg-primary);
+        border-radius: 50%;
+    }
+
+    :host([selection-mode]) .animator-card:not(.selectable) {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    :host([selection-mode]) .create-card {
+        display: none;
+    }
 `)
 
 
@@ -143,9 +188,15 @@ export default class HubView extends EditorComponent {
     #customAnimators = {}
     #textureSystem = null
     #appLayout = null
+    #contentEl = null
     #psdImporter = null
     #thumbnails = new Map()
     #store = new PerkyStore()
+    #selectionMode = false
+    #selectedItems = new Set()
+    #selectBtn = null
+    #exportBtn = null
+    #deleteBtn = null
 
     onConnected () {
         adoptStyleSheets(this.shadowRoot, hubViewStyles)
@@ -171,15 +222,59 @@ export default class HubView extends EditorComponent {
 
         this.#appLayout.setTitle('Studio')
 
+        const headerActions = this.#buildHeaderActions()
+        headerActions.setAttribute('slot', 'header-end')
+        this.#appLayout.appendChild(headerActions)
+
+        this.#contentEl = createElement('div', {class: 'hub-content'})
+        this.#appLayout.appendChild(this.#contentEl)
+
         this.shadowRoot.appendChild(this.#appLayout)
         this.#render()
+    }
+
+
+    #buildHeaderActions () {
+        const container = createElement('div')
+        container.style.cssText = 'display: flex; gap: 8px;'
+
+        const btnStyle = `
+            padding: 8px 12px;
+            background: transparent;
+            border: none;
+            color: var(--accent);
+            font-size: var(--font-size-md);
+            font-family: var(--font-mono);
+            cursor: pointer;
+            border-radius: var(--radius-md);
+            min-height: 44px;
+        `
+
+        this.#exportBtn = createElement('button', {text: 'Export'})
+        this.#exportBtn.style.cssText = btnStyle + 'display: none;'
+        this.#exportBtn.addEventListener('click', () => this.#exportSelected())
+
+        this.#deleteBtn = createElement('button', {text: 'Delete'})
+        this.#deleteBtn.style.cssText = btnStyle + 'display: none; color: #f66;'
+        this.#deleteBtn.addEventListener('click', () => this.#deleteSelected())
+
+        this.#selectBtn = createElement('button', {text: 'Select'})
+        this.#selectBtn.style.cssText = btnStyle
+        this.#selectBtn.addEventListener('click', () => this.#toggleSelectionMode())
+
+        container.appendChild(this.#exportBtn)
+        container.appendChild(this.#deleteBtn)
+        container.appendChild(this.#selectBtn)
+
+        return container
     }
 
 
     async #render () {
         await this.#loadCustomAnimators()
 
-        const content = createElement('div', {class: 'hub-content'})
+        const hasCustoms = Object.keys(this.#customAnimators).length > 0
+        this.#selectBtn.style.display = hasCustoms ? 'block' : 'none'
 
         const section = createElement('div', {class: 'section'})
         section.appendChild(createElement('h2', {class: 'section-title', text: 'Animators'}))
@@ -196,10 +291,9 @@ export default class HubView extends EditorComponent {
 
         grid.appendChild(this.#createNewAnimatorCard())
         section.appendChild(grid)
-        content.appendChild(section)
 
-        this.#appLayout.innerHTML = ''
-        this.#appLayout.appendChild(content)
+        this.#contentEl.innerHTML = ''
+        this.#contentEl.appendChild(section)
     }
 
 
@@ -239,12 +333,20 @@ export default class HubView extends EditorComponent {
     #createAnimatorCard (name, config, isCustom = false) {
         const card = createElement('div', {class: 'animator-card'})
 
+        if (isCustom) {
+            card.classList.add('selectable')
+            card.dataset.name = name
+        }
+
         const preview = createElement('div', {class: 'card-preview'})
         const thumbnail = this.#createThumbnail(name, config)
         preview.appendChild(thumbnail)
 
         if (isCustom) {
             preview.appendChild(createElement('div', {class: 'card-badge', text: 'Custom'}))
+            const checkbox = createElement('div', {class: 'card-checkbox'})
+            checkbox.dataset.name = name
+            preview.appendChild(checkbox)
         }
 
         const info = createElement('div', {class: 'card-info'})
@@ -260,7 +362,13 @@ export default class HubView extends EditorComponent {
         card.appendChild(info)
 
         card.addEventListener('click', () => {
-            this.#openAnimator(name, isCustom)
+            if (this.#selectionMode && isCustom) {
+                const checkbox = card.querySelector('.card-checkbox')
+                checkbox.classList.toggle('selected')
+                this.#toggleItemSelection(name)
+            } else if (!this.#selectionMode) {
+                this.#openAnimator(name, isCustom)
+            }
         })
 
         return card
@@ -398,6 +506,72 @@ export default class HubView extends EditorComponent {
             ? `animator.html?id=${encodeURIComponent(name)}&custom=1`
             : `animator.html?id=${encodeURIComponent(name)}`
         window.location.href = url
+    }
+
+
+    #toggleSelectionMode () {
+        this.#selectionMode = !this.#selectionMode
+        this.#selectedItems.clear()
+
+        if (this.#selectionMode) {
+            this.setAttribute('selection-mode', '')
+            this.#selectBtn.textContent = 'Done'
+            this.#exportBtn.style.display = 'block'
+            this.#deleteBtn.style.display = 'block'
+        } else {
+            this.removeAttribute('selection-mode')
+            this.#selectBtn.textContent = 'Select'
+            this.#exportBtn.style.display = 'none'
+            this.#deleteBtn.style.display = 'none'
+        }
+
+        this.#updateActionButtons()
+    }
+
+
+    #toggleItemSelection (name) {
+        if (this.#selectedItems.has(name)) {
+            this.#selectedItems.delete(name)
+        } else {
+            this.#selectedItems.add(name)
+        }
+        this.#updateActionButtons()
+    }
+
+
+    #updateActionButtons () {
+        const hasSelection = this.#selectedItems.size > 0
+        this.#exportBtn.disabled = !hasSelection
+        this.#deleteBtn.disabled = !hasSelection
+    }
+
+
+    async #exportSelected () {
+        for (const name of this.#selectedItems) {
+            await this.#store.export(name)
+        }
+    }
+
+
+    async #deleteSelected () {
+        const count = this.#selectedItems.size
+        const message = count === 1
+            ? `Delete "${[...this.#selectedItems][0]}"?`
+            : `Delete ${count} animators?`
+
+        if (!confirm(message)) {
+            return
+        }
+
+        for (const name of this.#selectedItems) {
+            await this.#store.delete(name)
+            delete this.#customAnimators[name]
+            this.#thumbnails.delete(name)
+        }
+
+        this.#selectedItems.clear()
+        this.#toggleSelectionMode()
+        this.#render()
     }
 
 }
