@@ -14,6 +14,7 @@ import '../../editor/dropdown_menu.js'
 import {ICONS} from '../../editor/devtools/devtools_icons.js'
 import SpriteAnimator from '../../render/sprite_animator.js'
 import TextureRegion from '../../render/textures/texture_region.js'
+import PerkyStore from '../../io/perky_store.js'
 import {animatorViewStyles, frameEditorStyles, settingsStyles} from './animator_view.styles.js'
 import {inferSpritesheetName, collectEventSuggestions, buildAnimationConfig} from './animator_helpers.js'
 import {buildFrameEditor} from './components/frame_editor.js'
@@ -29,6 +30,8 @@ export default class AnimatorView extends EditorComponent {
     #animator = null
     #spritesheet = null
     #selectedAnimation = null
+    #isCustom = false
+    #store = new PerkyStore()
 
     #appLayout = null
     #containerEl = null
@@ -57,11 +60,12 @@ export default class AnimatorView extends EditorComponent {
     }
 
 
-    setContext ({textureSystem, animatorConfig, animatorName, backgroundImage, studioConfig}) {
+    setContext ({textureSystem, animatorConfig, animatorName, backgroundImage, studioConfig, isCustom}) {
         this.#context = {textureSystem, studioConfig}
         this.#animatorConfig = animatorConfig
         this.#animatorName = animatorName || 'animator'
         this.#backgroundImage = backgroundImage || null
+        this.#isCustom = isCustom || false
 
         if (this.isConnected && this.#animatorConfig) {
             this.#initAnimator()
@@ -193,11 +197,16 @@ export default class AnimatorView extends EditorComponent {
 
         const settingsMenu = document.createElement('dropdown-menu')
         settingsMenu.setIcon(ICONS.wrench)
-        settingsMenu.setItems([
+        const menuItems = [
             {label: 'Animation Settings', action: () => this.#openAnimationSettings()},
             {label: 'Anchor Settings', action: () => this.#openSpritesheetSettings()},
-            {label: 'Export', action: () => this.#exportToClipboard()}
-        ])
+            {label: 'Copy to Clipboard', action: () => this.#exportToClipboard()}
+        ]
+        if (this.#isCustom) {
+            menuItems.push({label: 'Save', action: () => this.#saveCustomAnimator()})
+            menuItems.push({label: 'Export .perky', action: () => this.#exportPerkyFile()})
+        }
+        settingsMenu.setItems(menuItems)
         headerStart.appendChild(settingsMenu)
 
 
@@ -536,6 +545,55 @@ export default class AnimatorView extends EditorComponent {
         lines.push(`static animations = ${JSON.stringify(animations, null, 4)}`)
 
         navigator.clipboard.writeText(lines.join('\n'))
+    }
+
+
+    async #saveCustomAnimator () {
+        if (!this.#isCustom || !this.#animator) {
+            return
+        }
+
+        const animatorConfig = this.#buildAnimatorConfig()
+        const resource = await this.#store.get(this.#animatorName)
+        if (!resource) {
+            return
+        }
+
+        const configFile = resource.files.find(f => f.name.endsWith('Animator.json'))
+        if (configFile) {
+            configFile.blob = new Blob([JSON.stringify(animatorConfig)], {type: 'application/json'})
+        }
+
+        await this.#store.save(this.#animatorName, {
+            type: 'animator',
+            name: resource.name,
+            files: resource.files
+        })
+    }
+
+
+    async #exportPerkyFile () {
+        if (!this.#isCustom) {
+            return
+        }
+
+        await this.#store.export(this.#animatorName)
+    }
+
+
+    #buildAnimatorConfig () {
+        const spritesheetName = inferSpritesheetName(this.#animatorConfig)
+        const animations = {}
+
+        for (const anim of this.#animator.children) {
+            animations[anim.$id] = buildAnimationConfig(anim, this.#spritesheet)
+        }
+
+        return {
+            spritesheet: spritesheetName,
+            anchor: {...this.#anchor},
+            animations
+        }
     }
 
 }
