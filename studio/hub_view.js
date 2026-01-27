@@ -1,6 +1,7 @@
 import EditorComponent from '../editor/editor_component.js'
 import {createElement, adoptStyleSheets, createStyleSheet} from '../application/dom_utils.js'
 import {pluralize} from '../core/utils.js'
+import PerkyStore from '../io/perky_store.js'
 import '../editor/layout/app_layout.js'
 import './components/psd_importer.js'
 
@@ -115,6 +116,23 @@ const hubViewStyles = createStyleSheet(`
     .create-card:hover .create-icon {
         color: var(--accent);
     }
+
+    .card-badge {
+        position: absolute;
+        top: var(--spacing-sm);
+        right: var(--spacing-sm);
+        padding: 2px 6px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        background: var(--accent);
+        color: var(--bg-primary);
+        border-radius: var(--radius-sm);
+    }
+
+    .card-preview {
+        position: relative;
+    }
 `)
 
 
@@ -122,10 +140,12 @@ export default class HubView extends EditorComponent {
 
     #manifest = null
     #animators = {}
+    #customAnimators = {}
     #textureSystem = null
     #appLayout = null
     #psdImporter = null
     #thumbnails = new Map()
+    #store = new PerkyStore()
 
     onConnected () {
         adoptStyleSheets(this.shadowRoot, hubViewStyles)
@@ -156,7 +176,9 @@ export default class HubView extends EditorComponent {
     }
 
 
-    #render () {
+    async #render () {
+        await this.#loadCustomAnimators()
+
         const content = createElement('div', {class: 'hub-content'})
 
         const section = createElement('div', {class: 'section'})
@@ -165,7 +187,11 @@ export default class HubView extends EditorComponent {
         const grid = createElement('div', {class: 'animator-grid'})
 
         for (const [name, config] of Object.entries(this.#animators)) {
-            grid.appendChild(this.#createAnimatorCard(name, config))
+            grid.appendChild(this.#createAnimatorCard(name, config, false))
+        }
+
+        for (const [name, config] of Object.entries(this.#customAnimators)) {
+            grid.appendChild(this.#createAnimatorCard(name, config, true))
         }
 
         grid.appendChild(this.#createNewAnimatorCard())
@@ -177,12 +203,49 @@ export default class HubView extends EditorComponent {
     }
 
 
-    #createAnimatorCard (name, config) {
+    async #loadCustomAnimators () {
+        const resources = await this.#store.list('animator')
+
+        for (const resource of resources) {
+            if (this.#customAnimators[resource.id]) {
+                continue
+            }
+
+            const full = await this.#store.get(resource.id)
+            if (!full) {
+                continue
+            }
+
+            const configFile = full.files.find(f => f.name.endsWith('Animator.json'))
+            if (!configFile) {
+                continue
+            }
+
+            const configText = await blobToText(configFile.blob)
+            const config = JSON.parse(configText)
+
+            this.#customAnimators[resource.id] = config
+
+            if (!this.#thumbnails.has(resource.id)) {
+                const thumbnail = await extractThumbnailFromPerky(full.files)
+                if (thumbnail) {
+                    this.#thumbnails.set(resource.id, thumbnail)
+                }
+            }
+        }
+    }
+
+
+    #createAnimatorCard (name, config, isCustom = false) {
         const card = createElement('div', {class: 'animator-card'})
 
         const preview = createElement('div', {class: 'card-preview'})
         const thumbnail = this.#createThumbnail(name, config)
         preview.appendChild(thumbnail)
+
+        if (isCustom) {
+            preview.appendChild(createElement('div', {class: 'card-badge', text: 'Custom'}))
+        }
 
         const info = createElement('div', {class: 'card-info'})
         info.appendChild(createElement('div', {class: 'card-title', text: name}))
@@ -197,7 +260,7 @@ export default class HubView extends EditorComponent {
         card.appendChild(info)
 
         card.addEventListener('click', () => {
-            this.#openAnimator(name)
+            this.#openAnimator(name, isCustom)
         })
 
         return card
@@ -229,7 +292,11 @@ export default class HubView extends EditorComponent {
             this.#psdImporter.addEventListener('complete', (e) => this.#handleImportComplete(e))
             this.shadowRoot.appendChild(this.#psdImporter)
         }
-        this.#psdImporter.setExistingNames(Object.keys(this.#animators))
+        const existingNames = [
+            ...Object.keys(this.#animators),
+            ...Object.keys(this.#customAnimators)
+        ]
+        this.#psdImporter.setExistingNames(existingNames)
         this.#psdImporter.open()
     }
 
@@ -238,7 +305,7 @@ export default class HubView extends EditorComponent {
         const {name, animatorConfig, atlases} = e.detail
         const animatorName = `${name}Animator`
 
-        this.#animators[animatorName] = animatorConfig
+        this.#customAnimators[animatorName] = animatorConfig
 
         if (atlases?.length > 0 && atlases[0].canvas && atlases[0].frames?.length > 0) {
             const atlas = atlases[0]
@@ -325,9 +392,12 @@ export default class HubView extends EditorComponent {
     }
 
 
-    #openAnimator (name) {
-        this.dispatchEvent(new CustomEvent('navigate', {detail: {name}}))
-        window.location.href = `animator.html?id=${encodeURIComponent(name)}`
+    #openAnimator (name, isCustom = false) {
+        this.dispatchEvent(new CustomEvent('navigate', {detail: {name, isCustom}}))
+        const url = isCustom
+            ? `animator.html?id=${encodeURIComponent(name)}&custom=1`
+            : `animator.html?id=${encodeURIComponent(name)}`
+        window.location.href = url
     }
 
 }
@@ -344,4 +414,69 @@ function getFirstAnimation (config) {
 
 function getFrameSource (frame) {
     return typeof frame === 'string' ? frame : frame.source
+}
+
+
+function blobToText (blob) {
+    if (typeof blob.text === 'function') {
+        return blob.text()
+    }
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result)
+        reader.onerror = reject
+        reader.readAsText(blob)
+    })
+}
+
+
+function blobToImage (blob) {
+    return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(blob)
+        const img = new Image()
+        img.onload = () => {
+            URL.revokeObjectURL(url)
+            resolve(img)
+        }
+        img.onerror = () => {
+            URL.revokeObjectURL(url)
+            reject(new Error('Failed to load image'))
+        }
+        img.src = url
+    })
+}
+
+
+async function extractThumbnailFromPerky (files) {
+    const spritesheetJsonFile = files.find(f => f.name.endsWith('Spritesheet.json'))
+    if (!spritesheetJsonFile) {
+        return null
+    }
+
+    const spritesheetJson = JSON.parse(await blobToText(spritesheetJsonFile.blob))
+
+    const firstFrameName = Object.keys(spritesheetJson.frames)[0]
+    if (!firstFrameName) {
+        return null
+    }
+
+    const frame = spritesheetJson.frames[firstFrameName]
+    const pngFile = files.find(f => f.name.endsWith('_0.png'))
+    if (!pngFile) {
+        return null
+    }
+
+    const image = await blobToImage(pngFile.blob)
+
+    const canvas = document.createElement('canvas')
+    canvas.width = frame.frame.w
+    canvas.height = frame.frame.h
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(
+        image,
+        frame.frame.x, frame.frame.y, frame.frame.w, frame.frame.h,
+        0, 0, frame.frame.w, frame.frame.h
+    )
+
+    return canvas
 }
