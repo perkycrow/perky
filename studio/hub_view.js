@@ -4,6 +4,7 @@ import {pluralize} from '../core/utils.js'
 import PerkyStore from '../io/perky_store.js'
 import '../editor/layout/app_layout.js'
 import './components/psd_importer.js'
+import './components/conflict_resolver.js'
 
 
 const hubViewStyles = createStyleSheet(`
@@ -130,6 +131,10 @@ const hubViewStyles = createStyleSheet(`
         border-radius: var(--radius-sm);
     }
 
+    .card-badge.modified {
+        background: var(--warning, #f90);
+    }
+
     .card-preview {
         position: relative;
     }
@@ -191,12 +196,15 @@ export default class HubView extends EditorComponent {
     #contentEl = null
     #psdImporter = null
     #thumbnails = new Map()
+    #customMeta = new Map()
     #store = new PerkyStore()
+    #conflictResolver = null
     #selectionMode = false
     #selectedItems = new Set()
     #selectBtn = null
     #exportBtn = null
     #deleteBtn = null
+    #revertBtn = null
 
     onConnected () {
         adoptStyleSheets(this.shadowRoot, hubViewStyles)
@@ -254,6 +262,10 @@ export default class HubView extends EditorComponent {
         this.#exportBtn.style.cssText = btnStyle + 'display: none;'
         this.#exportBtn.addEventListener('click', () => this.#exportSelected())
 
+        this.#revertBtn = createElement('button', {text: 'Revert'})
+        this.#revertBtn.style.cssText = btnStyle + 'display: none; color: var(--warning, #f90);'
+        this.#revertBtn.addEventListener('click', () => this.#revertSelected())
+
         this.#deleteBtn = createElement('button', {text: 'Delete'})
         this.#deleteBtn.style.cssText = btnStyle + 'display: none; color: #f66;'
         this.#deleteBtn.addEventListener('click', () => this.#deleteSelected())
@@ -263,6 +275,7 @@ export default class HubView extends EditorComponent {
         this.#selectBtn.addEventListener('click', () => this.#toggleSelectionMode())
 
         container.appendChild(this.#exportBtn)
+        container.appendChild(this.#revertBtn)
         container.appendChild(this.#deleteBtn)
         container.appendChild(this.#selectBtn)
 
@@ -272,6 +285,7 @@ export default class HubView extends EditorComponent {
 
     async #render () {
         await this.#loadCustomAnimators()
+        await this.#reconcile()
 
         const hasCustoms = Object.keys(this.#customAnimators).length > 0
         this.#selectBtn.style.display = hasCustoms ? 'block' : 'none'
@@ -280,13 +294,21 @@ export default class HubView extends EditorComponent {
         section.appendChild(createElement('h2', {class: 'section-title', text: 'Animators'}))
 
         const grid = createElement('div', {class: 'animator-grid'})
+        const renderedCustoms = new Set()
 
         for (const [name, config] of Object.entries(this.#animators)) {
-            grid.appendChild(this.#createAnimatorCard(name, config, false))
+            if (this.#customAnimators[name]) {
+                grid.appendChild(this.#createAnimatorCard(name, this.#customAnimators[name], 'modified'))
+                renderedCustoms.add(name)
+            } else {
+                grid.appendChild(this.#createAnimatorCard(name, config, 'game'))
+            }
         }
 
         for (const [name, config] of Object.entries(this.#customAnimators)) {
-            grid.appendChild(this.#createAnimatorCard(name, config, true))
+            if (!renderedCustoms.has(name)) {
+                grid.appendChild(this.#createAnimatorCard(name, config, 'custom'))
+            }
         }
 
         grid.appendChild(this.#createNewAnimatorCard())
@@ -319,6 +341,7 @@ export default class HubView extends EditorComponent {
             const config = JSON.parse(configText)
 
             this.#customAnimators[resource.id] = config
+            this.#customMeta.set(resource.id, {updatedAt: resource.updatedAt || 0})
 
             if (!this.#thumbnails.has(resource.id)) {
                 const thumbnail = await extractThumbnailFromPerky(full.files)
@@ -330,8 +353,85 @@ export default class HubView extends EditorComponent {
     }
 
 
-    #createAnimatorCard (name, config, isCustom = false) {
+    async #reconcile () {
+        const synced = []
+        const conflicts = []
+
+        for (const id of Object.keys(this.#customAnimators)) {
+            const state = this.#compareVersions(id)
+            if (state === 'synced') {
+                synced.push(id)
+            } else if (state === 'conflict') {
+                conflicts.push(id)
+            }
+        }
+
+        for (const id of synced) {
+            await this.#deleteCustom(id)
+        }
+
+        if (conflicts.length > 0) {
+            await this.#resolveConflicts(conflicts)
+        }
+    }
+
+
+    #compareVersions (id) {
+        if (!this.#animators[id]) {
+            return 'custom-only'
+        }
+        const gameUpdatedAt = this.#manifest?.getAsset?.(id)?.updatedAt || 0
+        const customUpdatedAt = this.#customMeta.get(id)?.updatedAt || 0
+
+        if (gameUpdatedAt >= customUpdatedAt) {
+            return 'synced'
+        }
+
+        const lastSeen = getLastSeenGameUpdate(id)
+        if (lastSeen >= gameUpdatedAt) {
+            return 'modified'
+        }
+        return 'conflict'
+    }
+
+
+    async #resolveConflicts (ids) {
+        if (!this.#conflictResolver) {
+            this.#conflictResolver = document.createElement('conflict-resolver')
+            this.shadowRoot.appendChild(this.#conflictResolver)
+        }
+
+        const conflicts = ids.map(id => ({
+            id,
+            name: id,
+            customDate: this.#customMeta.get(id)?.updatedAt || 0,
+            gameDate: this.#manifest?.getAsset?.(id)?.updatedAt || 0
+        }))
+        const choices = await this.#conflictResolver.resolve(conflicts)
+
+        for (const {id, choice} of choices) {
+            if (choice === 'game') {
+                await this.#deleteCustom(id)
+            } else {
+                const gameUpdatedAt = this.#manifest?.getAsset?.(id)?.updatedAt || 0
+                setLastSeenGameUpdate(id, gameUpdatedAt)
+            }
+        }
+    }
+
+
+    async #deleteCustom (id) {
+        await this.#store.delete(id)
+        delete this.#customAnimators[id]
+        this.#customMeta.delete(id)
+        this.#thumbnails.delete(id)
+        localStorage.removeItem(`${SEEN_KEY_PREFIX}${id}`)
+    }
+
+
+    #createAnimatorCard (name, config, state = 'game') {
         const card = createElement('div', {class: 'animator-card'})
+        const isCustom = state === 'custom' || state === 'modified'
 
         if (isCustom) {
             card.classList.add('selectable')
@@ -342,8 +442,13 @@ export default class HubView extends EditorComponent {
         const thumbnail = this.#createThumbnail(name, config)
         preview.appendChild(thumbnail)
 
-        if (isCustom) {
+        if (state === 'custom') {
             preview.appendChild(createElement('div', {class: 'card-badge', text: 'Custom'}))
+        } else if (state === 'modified') {
+            preview.appendChild(createElement('div', {class: 'card-badge modified', text: 'Modified'}))
+        }
+
+        if (isCustom) {
             const checkbox = createElement('div', {class: 'card-checkbox'})
             checkbox.dataset.name = name
             preview.appendChild(checkbox)
@@ -517,11 +622,13 @@ export default class HubView extends EditorComponent {
             this.setAttribute('selection-mode', '')
             this.#selectBtn.textContent = 'Done'
             this.#exportBtn.style.display = 'block'
+            this.#revertBtn.style.display = 'block'
             this.#deleteBtn.style.display = 'block'
         } else {
             this.removeAttribute('selection-mode')
             this.#selectBtn.textContent = 'Select'
             this.#exportBtn.style.display = 'none'
+            this.#revertBtn.style.display = 'none'
             this.#deleteBtn.style.display = 'none'
         }
 
@@ -543,6 +650,9 @@ export default class HubView extends EditorComponent {
         const hasSelection = this.#selectedItems.size > 0
         this.#exportBtn.disabled = !hasSelection
         this.#deleteBtn.disabled = !hasSelection
+
+        const hasModified = [...this.#selectedItems].some(id => this.#animators[id])
+        this.#revertBtn.disabled = !hasModified
     }
 
 
@@ -550,6 +660,30 @@ export default class HubView extends EditorComponent {
         for (const name of this.#selectedItems) {
             await this.#store.export(name)
         }
+    }
+
+
+    async #revertSelected () {
+        const revertable = [...this.#selectedItems].filter(id => this.#animators[id])
+        if (revertable.length === 0) {
+            return
+        }
+
+        const message = revertable.length === 1
+            ? `Revert "${revertable[0]}" to native version?`
+            : `Revert ${revertable.length} animators to native version?`
+
+        if (!confirm(message)) {
+            return
+        }
+
+        for (const id of revertable) {
+            await this.#deleteCustom(id)
+        }
+
+        this.#selectedItems.clear()
+        this.#toggleSelectionMode()
+        this.#render()
     }
 
 
@@ -653,4 +787,17 @@ async function extractThumbnailFromPerky (files) {
     )
 
     return canvas
+}
+
+
+const SEEN_KEY_PREFIX = 'perky-seen-game-'
+
+
+function getLastSeenGameUpdate (id) {
+    return Number(localStorage.getItem(`${SEEN_KEY_PREFIX}${id}`)) || 0
+}
+
+
+function setLastSeenGameUpdate (id, timestamp) {
+    localStorage.setItem(`${SEEN_KEY_PREFIX}${id}`, String(timestamp))
 }

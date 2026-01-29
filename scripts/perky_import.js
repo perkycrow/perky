@@ -82,8 +82,10 @@ async function importPerky (target, filePath, config) {
         process.exit(1)
     }
 
+    updateManifest(target, meta, config)
+
     console.log('')
-    console.log('Done! Remember to update manifest.json if needed.')
+    console.log('Done!')
 }
 
 
@@ -140,6 +142,60 @@ async function extractSpritesheet (name, files, paths) {
             writeAsset(buffer, path.join(paths.spritesheets, `${name}${suffix}.png`))
         }
     }
+}
+
+
+function updateManifest (target, meta, config) {
+    const manifestPath = path.join(target, 'manifest.json')
+
+    if (!existsSync(manifestPath)) {
+        console.log('  (manifest.json not found, skipping)')
+        return
+    }
+
+    const manifestText = readFileSync(manifestPath, 'utf-8')
+    const manifest = JSON.parse(manifestText)
+
+    if (!manifest.assets) {
+        manifest.assets = {}
+    }
+
+    const name = meta.name
+    const updatedAt = meta.updatedAt || Date.now()
+
+    if (meta.type === 'animator') {
+        const animatorKey = `${name}Animator`
+        const spritesheetKey = `${name}Spritesheet`
+
+        manifest.assets[spritesheetKey] = {
+            ...manifest.assets[spritesheetKey],
+            type: 'spritesheet',
+            url: `${config.assets.spritesheets}/${name}.json`,
+            updatedAt
+        }
+
+        manifest.assets[animatorKey] = {
+            ...manifest.assets[animatorKey],
+            type: 'animator',
+            url: `${config.assets.animators}/${name}_animator.json`,
+            updatedAt
+        }
+
+        console.log(`  Manifest: ${animatorKey}, ${spritesheetKey}`)
+    } else if (meta.type === 'spritesheet') {
+        const spritesheetKey = `${name}Spritesheet`
+
+        manifest.assets[spritesheetKey] = {
+            ...manifest.assets[spritesheetKey],
+            type: 'spritesheet',
+            url: `${config.assets.spritesheets}/${name}.json`,
+            updatedAt
+        }
+
+        console.log(`  Manifest: ${spritesheetKey}`)
+    }
+
+    writeFileSync(manifestPath, JSON.stringify(manifest, null, 4) + '\n')
 }
 
 

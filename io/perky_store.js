@@ -117,10 +117,13 @@ export default class PerkyStore {
             throw new Error('Resource type is required')
         }
 
+        const now = Date.now()
+
         const meta = {
             type,
             name: name || id,
-            version: 1
+            version: 1,
+            updatedAt: now
         }
 
         const allFiles = [
@@ -129,7 +132,6 @@ export default class PerkyStore {
         ]
 
         const blob = await pack(allFiles)
-        const now = Date.now()
 
         return new Promise((resolve, reject) => {
             const transaction = db.transaction(STORE_NAME, 'readwrite')

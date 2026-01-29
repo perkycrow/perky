@@ -9,10 +9,11 @@ export default class Asset {
         this.id      = params.id || guessId(params)
         this.name ??= this.id
 
-        this.url     = params.url || params.path
-        this.source  = params.source
-        this.tags    = params.tags  || []
-        this.config  = params.config || {}
+        this.url       = params.url || params.path
+        this.source    = params.source
+        this.tags      = params.tags  || []
+        this.config    = params.config || {}
+        this.updatedAt = params.updatedAt || 0
     }
 
 

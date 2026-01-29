@@ -62,7 +62,7 @@ function loadGameAnimator (manifest, animatorId) {
     const textureSystem = buildTextureSystem(manifest)
     const animators = collectAnimators(manifest)
 
-    const result = {textureSystem, animatorConfig: null, animatorName: null, isCustom: false}
+    const result = {textureSystem, animatorConfig: null, animatorName: null, isCustom: false, manifest}
 
     if (animatorId && animators[animatorId]) {
         result.animatorConfig = animators[animatorId]

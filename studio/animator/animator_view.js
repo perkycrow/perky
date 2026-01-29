@@ -15,6 +15,8 @@ import {ICONS} from '../../editor/devtools/devtools_icons.js'
 import SpriteAnimator from '../../render/sprite_animator.js'
 import TextureRegion from '../../render/textures/texture_region.js'
 import PerkyStore from '../../io/perky_store.js'
+import PsdConverter from '../../io/psd_converter.js'
+import {canvasToBlob} from '../../io/canvas.js'
 import {animatorViewStyles, frameEditorStyles, settingsStyles} from './animator_view.styles.js'
 import {inferSpritesheetName, collectEventSuggestions, buildAnimationConfig} from './animator_helpers.js'
 import {buildFrameEditor} from './components/frame_editor.js'
@@ -60,8 +62,8 @@ export default class AnimatorView extends EditorComponent {
     }
 
 
-    setContext ({textureSystem, animatorConfig, animatorName, backgroundImage, studioConfig, isCustom}) {
-        this.#context = {textureSystem, studioConfig}
+    setContext ({textureSystem, animatorConfig, animatorName, backgroundImage, studioConfig, isCustom, manifest}) {
+        this.#context = {textureSystem, studioConfig, manifest}
         this.#animatorConfig = animatorConfig
         this.#animatorName = animatorName || 'animator'
         this.#backgroundImage = backgroundImage || null
@@ -200,11 +202,12 @@ export default class AnimatorView extends EditorComponent {
         const menuItems = [
             {label: 'Animation Settings', action: () => this.#openAnimationSettings()},
             {label: 'Anchor Settings', action: () => this.#openSpritesheetSettings()},
-            {label: 'Copy to Clipboard', action: () => this.#exportToClipboard()}
+            {label: 'Copy to Clipboard', action: () => this.#exportToClipboard()},
+            {label: 'Save', action: () => this.#saveAnimator()},
+            {label: 'Export .perky', action: () => this.#exportPerkyFile()}
         ]
         if (this.#isCustom) {
-            menuItems.push({label: 'Save', action: () => this.#saveCustomAnimator()})
-            menuItems.push({label: 'Export .perky', action: () => this.#exportPerkyFile()})
+            menuItems.push({label: 'Replace Spritesheet', action: () => this.#replaceSpritesheet()})
         }
         settingsMenu.setItems(menuItems)
         headerStart.appendChild(settingsMenu)
@@ -548,11 +551,20 @@ export default class AnimatorView extends EditorComponent {
     }
 
 
-    async #saveCustomAnimator () {
-        if (!this.#isCustom || !this.#animator) {
+    async #saveAnimator () {
+        if (!this.#animator) {
             return
         }
 
+        if (this.#isCustom) {
+            await this.#saveCustomAnimator()
+        } else {
+            await this.#forkAndSave()
+        }
+    }
+
+
+    async #saveCustomAnimator () {
         const animatorConfig = this.#buildAnimatorConfig()
         const resource = await this.#store.get(this.#animatorName)
         if (!resource) {
@@ -572,9 +584,35 @@ export default class AnimatorView extends EditorComponent {
     }
 
 
+    async #forkAndSave () {
+        const manifest = this.#context.manifest
+        if (!manifest) {
+            return
+        }
+
+        const spritesheetId = inferSpritesheetName(this.#animatorConfig)
+        const spritesheetAsset = manifest.getAsset(spritesheetId)
+        if (!spritesheetAsset?.source) {
+            return
+        }
+
+        const name = this.#animatorName.replace(/Animator$/, '')
+        const animatorConfig = this.#buildAnimatorConfig()
+        const files = await buildForkFiles(name, spritesheetId, animatorConfig, spritesheetAsset.source)
+
+        await this.#store.save(this.#animatorName, {
+            type: 'animator',
+            name,
+            files
+        })
+
+        this.#isCustom = true
+    }
+
+
     async #exportPerkyFile () {
         if (!this.#isCustom) {
-            return
+            await this.#forkAndSave()
         }
 
         await this.#store.export(this.#animatorName)
@@ -596,7 +634,111 @@ export default class AnimatorView extends EditorComponent {
         }
     }
 
+
+    async #replaceSpritesheet () {
+        if (!this.#isCustom || !this.#animator) {
+            return
+        }
+
+        const file = await pickFile('.psd')
+        if (!file) {
+            return
+        }
+
+        const name = this.#animatorName.replace(/Animator$/, '')
+        const spritesheetName = `${name}Spritesheet`
+
+        const buffer = new Uint8Array(await file.arrayBuffer())
+        const converter = new PsdConverter()
+        const psd = converter.parse(buffer)
+        const result = await converter.convert(psd, {name})
+
+        const animatorConfig = this.#buildAnimatorConfig()
+        cleanAnimatorConfig(animatorConfig, result.spritesheetJson)
+
+        const files = [
+            {name: `${name}Animator.json`, blob: new Blob([JSON.stringify(animatorConfig)], {type: 'application/json'})},
+            {name: `${spritesheetName}.json`, blob: new Blob([JSON.stringify(result.spritesheetJson)], {type: 'application/json'})}
+        ]
+
+        for (let i = 0; i < result.atlases.length; i++) {
+            files.push({
+                name: `${spritesheetName}_${i}.png`,
+                blob: await canvasToBlob(result.atlases[i].canvas)
+            })
+        }
+
+        await this.#store.save(this.#animatorName, {
+            type: 'animator',
+            name,
+            files
+        })
+
+        window.location.href = `animator.html?id=${encodeURIComponent(this.#animatorName)}&custom=1`
+    }
+
 }
 
 
 customElements.define('animator-view', AnimatorView)
+
+
+async function buildForkFiles (name, spritesheetId, animatorConfig, spritesheetSource) {
+    const {data, images} = spritesheetSource
+    const files = []
+
+    files.push({
+        name: `${name}Animator.json`,
+        blob: new Blob([JSON.stringify(animatorConfig)], {type: 'application/json'})
+    })
+
+    files.push({
+        name: `${spritesheetId}.json`,
+        blob: new Blob([JSON.stringify(data)], {type: 'application/json'})
+    })
+
+    for (let i = 0; i < images.length; i++) {
+        files.push({
+            name: `${spritesheetId}_${i}.png`,
+            blob: await imageToBlob(images[i])
+        })
+    }
+
+    return files
+}
+
+
+function imageToBlob (image) {
+    const canvas = document.createElement('canvas')
+    canvas.width = image.naturalWidth || image.width
+    canvas.height = image.naturalHeight || image.height
+    canvas.getContext('2d').drawImage(image, 0, 0)
+    return new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
+}
+
+
+function cleanAnimatorConfig (config, spritesheetJson) {
+    const frameNames = new Set(spritesheetJson.frames.map(f => f.filename))
+
+    for (const anim of Object.values(config.animations)) {
+        if (!anim.frames) {
+            continue
+        }
+        anim.frames = anim.frames.filter(frame => {
+            const source = frame.source || ''
+            const name = source.includes(':') ? source.split(':')[1] : source
+            return frameNames.has(name)
+        })
+    }
+}
+
+
+function pickFile (accept) {
+    return new Promise(resolve => {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = accept
+        input.addEventListener('change', () => resolve(input.files[0] || null))
+        input.click()
+    })
+}

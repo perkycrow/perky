@@ -107,7 +107,7 @@ describe('PsdImporter', () => {
         test('has hidden file input', () => {
             const input = importer.shadowRoot.querySelector('input[type="file"]')
             expect(input).not.toBeNull()
-            expect(input.accept).toBe('.psd')
+            expect(input.accept).contains('.psd')
         })
 
 
