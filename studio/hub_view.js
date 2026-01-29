@@ -5,6 +5,7 @@ import PerkyStore from '../io/perky_store.js'
 import '../editor/layout/app_layout.js'
 import './components/psd_importer.js'
 import './components/conflict_resolver.js'
+import './components/storage_info.js'
 
 
 const hubViewStyles = createStyleSheet(`
@@ -228,7 +229,9 @@ export default class HubView extends EditorComponent {
             attrs: {'no-menu': '', 'no-close': '', 'no-footer': ''}
         })
 
-        this.#appLayout.setTitle('Studio')
+        const storageInfo = document.createElement('storage-info')
+        storageInfo.setAttribute('slot', 'header-center')
+        this.#appLayout.appendChild(storageInfo)
 
         const headerActions = this.#buildHeaderActions()
         headerActions.setAttribute('slot', 'header-end')

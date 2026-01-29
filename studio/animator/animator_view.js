@@ -34,6 +34,8 @@ export default class AnimatorView extends EditorComponent {
     #selectedAnimation = null
     #isCustom = false
     #store = new PerkyStore()
+    #dirty = false
+    #autoSaveTimer = null
 
     #appLayout = null
     #containerEl = null
@@ -59,6 +61,11 @@ export default class AnimatorView extends EditorComponent {
         if (this.#context && this.#animatorConfig) {
             this.#initAnimator()
         }
+    }
+
+
+    onDisconnected () {
+        clearTimeout(this.#autoSaveTimer)
     }
 
 
@@ -203,7 +210,6 @@ export default class AnimatorView extends EditorComponent {
             {label: 'Animation Settings', action: () => this.#openAnimationSettings()},
             {label: 'Anchor Settings', action: () => this.#openSpritesheetSettings()},
             {label: 'Copy to Clipboard', action: () => this.#exportToClipboard()},
-            {label: 'Save', action: () => this.#saveAnimator()},
             {label: 'Export .perky', action: () => this.#exportPerkyFile()}
         ]
         if (this.#isCustom) {
@@ -245,6 +251,7 @@ export default class AnimatorView extends EditorComponent {
             fpsInput.setMax(60)
             fpsInput.addEventListener('change', (e) => {
                 anim.setFps(e.detail.value)
+                this.#markDirty()
             })
 
 
@@ -253,6 +260,7 @@ export default class AnimatorView extends EditorComponent {
             loopToggle.setChecked(anim.loop)
             loopToggle.addEventListener('change', (e) => {
                 anim.setLoop(e.detail.checked)
+                this.#markDirty()
             })
 
 
@@ -265,6 +273,7 @@ export default class AnimatorView extends EditorComponent {
             modeSelect.setValue(anim.playbackMode)
             modeSelect.addEventListener('change', (e) => {
                 anim.setPlaybackMode(e.detail.value)
+                this.#markDirty()
             })
 
             headerEnd.appendChild(fpsInput)
@@ -320,6 +329,7 @@ export default class AnimatorView extends EditorComponent {
             this.#anchorEditor.syncInputs()
             this.#anchorEditor.updatePreview()
             this.#previewEl?.setAnchor(anchor)
+            this.#markDirty()
         })
 
         this.#spritesheetSettingsDrawerEl.appendChild(this.#anchorEditor.container)
@@ -343,9 +353,11 @@ export default class AnimatorView extends EditorComponent {
             },
             onMotionChange: (motion) => {
                 this.#previewEl?.setMotion(motion)
+                this.#markDirty()
             },
             onMotionUpdate: (motion) => {
                 this.#previewEl?.updateMotion(motion)
+                this.#markDirty()
             }
         })
 
@@ -387,6 +399,7 @@ export default class AnimatorView extends EditorComponent {
         const frameEditor = buildFrameEditor(frame, {
             onFramesUpdate: () => {
                 this.#timelineEl.setFrames(this.#selectedAnimation.frames)
+                this.#markDirty()
             },
             getSuggestions: (excludeEvents) => {
                 return collectEventSuggestions(this.#animator, excludeEvents)
@@ -405,6 +418,7 @@ export default class AnimatorView extends EditorComponent {
 
         this.#selectedAnimation.frames.push({region, name})
         this.#timelineEl.setFrames(this.#selectedAnimation.frames)
+        this.#markDirty()
 
 
         requestAnimationFrame(() => {
@@ -482,6 +496,7 @@ export default class AnimatorView extends EditorComponent {
 
         this.#selectedAnimation.frames.splice(index, 0, {region, name: frameName})
         this.#timelineEl.setFrames(this.#selectedAnimation.frames)
+        this.#markDirty()
     }
 
 
@@ -497,6 +512,7 @@ export default class AnimatorView extends EditorComponent {
 
         this.#timelineEl.setFrames(frames)
         this.#timelineEl.flashMovedFrame(insertIndex)
+        this.#markDirty()
     }
 
 
@@ -515,6 +531,7 @@ export default class AnimatorView extends EditorComponent {
 
         this.#selectedAnimation.frames.splice(index, 1)
         this.#timelineEl.setFrames(this.#selectedAnimation.frames)
+        this.#markDirty()
     }
 
 
@@ -527,6 +544,7 @@ export default class AnimatorView extends EditorComponent {
         if (frame) {
             frame.duration = duration
             this.#timelineEl.setFrames(this.#selectedAnimation.frames)
+            this.#markDirty()
         }
     }
 
@@ -551,10 +569,19 @@ export default class AnimatorView extends EditorComponent {
     }
 
 
-    async #saveAnimator () {
-        if (!this.#animator) {
+    #markDirty () {
+        this.#dirty = true
+        clearTimeout(this.#autoSaveTimer)
+        this.#autoSaveTimer = setTimeout(() => this.#autoSave(), 2000)
+    }
+
+
+    async #autoSave () {
+        if (!this.#dirty || !this.#animator) {
             return
         }
+
+        this.#dirty = false
 
         if (this.#isCustom) {
             await this.#saveCustomAnimator()
