@@ -195,7 +195,17 @@ function updateManifest (target, meta, config) {
         console.log(`  Manifest: ${spritesheetKey}`)
     }
 
+    manifest.version = bumpPatch(manifest.version || '0.0.0')
+    console.log(`  Version: ${manifest.version}`)
+
     writeFileSync(manifestPath, JSON.stringify(manifest, null, 4) + '\n')
+}
+
+
+function bumpPatch (version) {
+    const parts = version.split('.').map(Number)
+    parts[2] = (parts[2] || 0) + 1
+    return parts.join('.')
 }
 
 

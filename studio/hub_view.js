@@ -206,6 +206,7 @@ export default class HubView extends EditorComponent {
     #exportBtn = null
     #deleteBtn = null
     #revertBtn = null
+    #playBtn = null
 
     onConnected () {
         adoptStyleSheets(this.shadowRoot, hubViewStyles)
@@ -277,6 +278,13 @@ export default class HubView extends EditorComponent {
         this.#selectBtn.style.cssText = btnStyle
         this.#selectBtn.addEventListener('click', () => this.#toggleSelectionMode())
 
+        this.#playBtn = createElement('button', {text: '\u25B6 Play'})
+        this.#playBtn.style.cssText = btnStyle + 'background: var(--accent); color: var(--bg-primary); font-weight: 600;'
+        this.#playBtn.addEventListener('click', () => {
+            window.location.href = '../den/index.html?studio'
+        })
+
+        container.appendChild(this.#playBtn)
         container.appendChild(this.#exportBtn)
         container.appendChild(this.#revertBtn)
         container.appendChild(this.#deleteBtn)

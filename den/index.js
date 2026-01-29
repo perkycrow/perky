@@ -4,6 +4,8 @@ import {PerkyDevTools} from '../editor/devtools/index.js'
 import ToolManager from '../editor/tools/tool_manager.js'
 import FoobarTool from './tools/foobar_tool.js'
 import SpriteAnimatorTool from './tools/sprite_animator_tool.js'
+import manifestData from './manifest.json' with { type: 'json' }
+import {applyOverrides, loadStudioOverrides} from '../io/manifest_patcher.js'
 
 
 async function init () {
@@ -12,10 +14,17 @@ async function init () {
     appManager.start()
 
     const container = document.getElementById('den')
-    const app = await appManager.spawn('defendTheDen', {
-        container,
-        preload: 'all'
-    })
+    const spawnOptions = {container, preload: 'all'}
+
+    const params = new URLSearchParams(window.location.search)
+    if (params.has('studio')) {
+        const overrides = await loadStudioOverrides()
+        if (overrides.length > 0) {
+            spawnOptions.manifest = applyOverrides(manifestData, overrides)
+        }
+    }
+
+    const app = await appManager.spawn('defendTheDen', spawnOptions)
 
     const devtools = new PerkyDevTools()
     document.body.appendChild(devtools)
