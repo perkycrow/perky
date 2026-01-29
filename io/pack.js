@@ -1,16 +1,45 @@
+function blobToArrayBuffer (blob) {
+    if (typeof blob.arrayBuffer === 'function') {
+        return blob.arrayBuffer()
+    }
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result)
+        reader.onerror = reject
+        reader.readAsArrayBuffer(blob)
+    })
+}
+
+
 async function compress (blob) {
+    if (typeof CompressionStream === 'undefined') {
+        return blob
+    }
+    if (typeof blob.stream !== 'function') {
+        const buffer = await blobToArrayBuffer(blob)
+        const stream = new Response(buffer).body.pipeThrough(new CompressionStream('gzip'))
+        return new Response(stream).blob()
+    }
     const stream = blob.stream().pipeThrough(new CompressionStream('gzip'))
     return new Response(stream).blob()
 }
 
 
 async function decompress (blob) {
+    if (typeof DecompressionStream === 'undefined') {
+        return blob
+    }
+    if (typeof blob.stream !== 'function') {
+        const buffer = await blobToArrayBuffer(blob)
+        const stream = new Response(buffer).body.pipeThrough(new DecompressionStream('gzip'))
+        return new Response(stream).blob()
+    }
     const stream = blob.stream().pipeThrough(new DecompressionStream('gzip'))
     return new Response(stream).blob()
 }
 
 
-export async function pack (files, { compress: shouldCompress = true } = {}) {
+export async function pack (files, {compress: shouldCompress = true} = {}) {
     const header = {
         files: files.map(f => ({
             name: f.name,
@@ -28,20 +57,7 @@ export async function pack (files, { compress: shouldCompress = true } = {}) {
 }
 
 
-function blobToArrayBuffer (blob) {
-    if (typeof blob.arrayBuffer === 'function') {
-        return blob.arrayBuffer()
-    }
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(reader.result)
-        reader.onerror = reject
-        reader.readAsArrayBuffer(blob)
-    })
-}
-
-
-export async function unpack (blob, { compressed = true } = {}) {
+export async function unpack (blob, {compressed = true} = {}) {
     const data = compressed ? await decompress(blob) : blob
     const buffer = await blobToArrayBuffer(data)
     const headerSize = new Uint32Array(buffer, 0, 1)[0]

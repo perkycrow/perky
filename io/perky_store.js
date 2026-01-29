@@ -12,7 +12,6 @@ export default class PerkyStore {
     #db = null
     #dbName
 
-
     constructor (dbName = 'studio') {
         this.#dbName = `${DB_PREFIX}${dbName}`
     }

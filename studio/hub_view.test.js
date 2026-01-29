@@ -1,5 +1,33 @@
 import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
+
+vi.mock('../io/perky_store.js', () => {
+    return {
+        default: class MockPerkyStore {
+            list () {
+                return Promise.resolve([])
+            }
+            get () {
+                return Promise.resolve(null)
+            }
+            save () {
+                return Promise.resolve()
+            }
+            delete () {
+                return Promise.resolve()
+            }
+            export () {
+                return Promise.resolve()
+            }
+        }
+    }
+})
+
 import './hub_view.js'
+
+
+function flushPromises () {
+    return new Promise(resolve => setTimeout(resolve, 0))
+}
 
 
 describe('HubView', () => {
@@ -7,12 +35,14 @@ describe('HubView', () => {
     let view
     let container
 
-    beforeEach(() => {
+    beforeEach(async () => {
         container = document.createElement('div')
         document.body.appendChild(container)
 
         view = document.createElement('hub-view')
         container.appendChild(view)
+
+        await flushPromises()
     })
 
 
@@ -58,7 +88,7 @@ describe('HubView', () => {
         })
 
 
-        test('renders animator cards plus create card', () => {
+        test('renders animator cards plus create card', async () => {
             const mockTextureSystem = {
                 getSpritesheet: vi.fn(() => null)
             }
@@ -72,6 +102,8 @@ describe('HubView', () => {
                 textureSystem: mockTextureSystem
             })
 
+            await flushPromises()
+
             const cards = view.shadowRoot.querySelectorAll('.animator-card')
             expect(cards.length).toBe(3)
 
@@ -80,7 +112,7 @@ describe('HubView', () => {
         })
 
 
-        test('shows create card when no animators', () => {
+        test('shows create card when no animators', async () => {
             const mockTextureSystem = {
                 getSpritesheet: vi.fn(() => null)
             }
@@ -91,6 +123,8 @@ describe('HubView', () => {
                 textureSystem: mockTextureSystem
             })
 
+            await flushPromises()
+
             const createCard = view.shadowRoot.querySelector('.create-card')
             expect(createCard).not.toBeNull()
         })
@@ -100,7 +134,7 @@ describe('HubView', () => {
 
     describe('animator cards', () => {
 
-        test('displays animator name', () => {
+        test('displays animator name', async () => {
             const mockTextureSystem = {
                 getSpritesheet: vi.fn(() => null)
             }
@@ -113,12 +147,14 @@ describe('HubView', () => {
                 textureSystem: mockTextureSystem
             })
 
+            await flushPromises()
+
             const title = view.shadowRoot.querySelector('.card-title')
             expect(title.textContent).toBe('player')
         })
 
 
-        test('displays animation count', () => {
+        test('displays animation count', async () => {
             const mockTextureSystem = {
                 getSpritesheet: vi.fn(() => null)
             }
@@ -131,12 +167,14 @@ describe('HubView', () => {
                 textureSystem: mockTextureSystem
             })
 
+            await flushPromises()
+
             const meta = view.shadowRoot.querySelector('.card-meta')
             expect(meta.textContent).toBe('3 animations')
         })
 
 
-        test('displays singular animation count', () => {
+        test('displays singular animation count', async () => {
             const mockTextureSystem = {
                 getSpritesheet: vi.fn(() => null)
             }
@@ -149,6 +187,8 @@ describe('HubView', () => {
                 textureSystem: mockTextureSystem
             })
 
+            await flushPromises()
+
             const meta = view.shadowRoot.querySelector('.card-meta')
             expect(meta.textContent).toBe('1 animation')
         })
@@ -156,7 +196,7 @@ describe('HubView', () => {
     })
 
 
-    test('dispatches navigate event on card click', () => {
+    test('dispatches navigate event on card click', async () => {
         const mockTextureSystem = {
             getSpritesheet: vi.fn(() => null)
         }
@@ -168,6 +208,8 @@ describe('HubView', () => {
             },
             textureSystem: mockTextureSystem
         })
+
+        await flushPromises()
 
         const handler = vi.fn()
         view.addEventListener('navigate', handler)

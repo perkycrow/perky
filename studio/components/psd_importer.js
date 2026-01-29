@@ -473,7 +473,7 @@ export default class PsdImporter extends EditorComponent {
         const step = createElement('div', {class: 'step', attrs: {'data-step': 'drop'}})
 
         this.#fileInput = createElement('input', {
-            attrs: {type: 'file', accept: '.psd'}
+            attrs: {type: 'file', accept: '.psd,image/vnd.adobe.photoshop,image/x-photoshop,application/x-photoshop,application/photoshop'}
         })
         this.#fileInput.style.display = 'none'
         this.#fileInput.addEventListener('change', (e) => this.#handleFileSelect(e))
