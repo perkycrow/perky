@@ -192,19 +192,26 @@ export default class PerkyStore {
             const store = transaction.objectStore(STORE_NAME)
             const request = store.get(id)
 
-            request.onsuccess = () => {
+            request.onsuccess = async () => {
                 const item = request.result
                 if (!item) {
                     reject(new Error('Resource not found'))
                     return
                 }
 
-                const url = URL.createObjectURL(item.blob)
-                const a = document.createElement('a')
-                a.href = url
-                a.download = `${item.name}.perky`
-                a.click()
-                URL.revokeObjectURL(url)
+                const filename = `${item.name}.perky`
+                const file = new File([item.blob], filename)
+
+                if (navigator.canShare?.({files: [file]})) {
+                    await navigator.share({files: [file]})
+                } else {
+                    const url = URL.createObjectURL(item.blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = filename
+                    a.click()
+                    URL.revokeObjectURL(url)
+                }
 
                 resolve()
             }
