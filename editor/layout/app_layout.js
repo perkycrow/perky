@@ -100,10 +100,6 @@ export default class AppLayout extends EditorComponent {
         position: relative;
     }
 
-    ::slotted(*) {
-        height: 100%;
-    }
-
 
     .footer {
         display: flex;

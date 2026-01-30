@@ -185,9 +185,52 @@ const hubViewStyles = createStyleSheet(`
         display: none;
     }
 
-    button:disabled {
+    .header-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .header-actions button {
+        padding: 8px 12px;
+        background: transparent;
+        border: none;
+        color: var(--accent);
+        font-size: var(--font-size-md);
+        font-family: var(--font-mono);
+        cursor: pointer;
+        border-radius: var(--radius-md);
+        min-height: 44px;
+    }
+
+    .header-actions button:disabled {
         opacity: 0.3;
         cursor: default;
+    }
+
+    .header-actions .danger {
+        color: #f66;
+    }
+
+    .header-actions .warning {
+        color: var(--warning, #f90);
+    }
+
+    .default-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .selection-actions {
+        display: none;
+    }
+
+    :host([selection-mode]) .default-actions {
+        display: none;
+    }
+
+    :host([selection-mode]) .selection-actions {
+        display: flex;
+        gap: 8px;
     }
 `)
 
@@ -211,7 +254,6 @@ export default class HubView extends EditorComponent {
     #exportBtn = null
     #deleteBtn = null
     #revertBtn = null
-    #playBtn = null
 
     onConnected () {
         adoptStyleSheets(this.shadowRoot, hubViewStyles)
@@ -236,7 +278,7 @@ export default class HubView extends EditorComponent {
         })
 
         const storageInfo = document.createElement('storage-info')
-        storageInfo.setAttribute('slot', 'header-center')
+        storageInfo.setAttribute('slot', 'header-start')
         this.#appLayout.appendChild(storageInfo)
 
         const headerActions = this.#buildHeaderActions()
@@ -252,47 +294,34 @@ export default class HubView extends EditorComponent {
 
 
     #buildHeaderActions () {
-        const container = createElement('div')
-        container.style.cssText = 'display: flex; gap: 8px;'
+        const container = createElement('div', {class: 'header-actions'})
 
-        const btnStyle = `
-            padding: 8px 12px;
-            background: transparent;
-            border: none;
-            color: var(--accent);
-            font-size: var(--font-size-md);
-            font-family: var(--font-mono);
-            cursor: pointer;
-            border-radius: var(--radius-md);
-            min-height: 44px;
-        `
-
-        this.#exportBtn = createElement('button', {text: 'Export'})
-        this.#exportBtn.style.cssText = btnStyle + 'display: none;'
-        this.#exportBtn.addEventListener('click', () => this.#exportSelected())
-
-        this.#revertBtn = createElement('button', {text: 'Revert'})
-        this.#revertBtn.style.cssText = btnStyle + 'display: none; color: var(--warning, #f90);'
-        this.#revertBtn.addEventListener('click', () => this.#revertSelected())
-
-        this.#deleteBtn = createElement('button', {text: 'Delete'})
-        this.#deleteBtn.style.cssText = btnStyle + 'display: none; color: #f66;'
-        this.#deleteBtn.addEventListener('click', () => this.#deleteSelected())
-
-        this.#selectBtn = createElement('button', {text: 'Select'})
-        this.#selectBtn.style.cssText = btnStyle
-        this.#selectBtn.addEventListener('click', () => this.#toggleSelectionMode())
-
-        this.#playBtn = createElement('button', {text: '\u25B6 Preview'})
-        this.#playBtn.style.cssText = btnStyle
-        this.#playBtn.addEventListener('click', () => {
+        const defaultActions = createElement('div', {class: 'default-actions'})
+        const previewBtn = createElement('button', {text: '\u25B6 Preview'})
+        previewBtn.addEventListener('click', () => {
             window.location.href = '../index.html?studio'
         })
+        const importBtn = createElement('button', {text: 'Import'})
+        importBtn.addEventListener('click', () => this.#importFile())
+        defaultActions.appendChild(previewBtn)
+        defaultActions.appendChild(importBtn)
 
-        container.appendChild(this.#playBtn)
-        container.appendChild(this.#exportBtn)
-        container.appendChild(this.#revertBtn)
-        container.appendChild(this.#deleteBtn)
+        const selectionActions = createElement('div', {class: 'selection-actions'})
+        this.#exportBtn = createElement('button', {text: 'Export'})
+        this.#exportBtn.addEventListener('click', () => this.#exportSelected())
+        this.#revertBtn = createElement('button', {text: 'Revert', class: 'warning'})
+        this.#revertBtn.addEventListener('click', () => this.#revertSelected())
+        this.#deleteBtn = createElement('button', {text: 'Delete', class: 'danger'})
+        this.#deleteBtn.addEventListener('click', () => this.#deleteSelected())
+        selectionActions.appendChild(this.#exportBtn)
+        selectionActions.appendChild(this.#revertBtn)
+        selectionActions.appendChild(this.#deleteBtn)
+
+        this.#selectBtn = createElement('button', {text: 'Select'})
+        this.#selectBtn.addEventListener('click', () => this.#toggleSelectionMode())
+
+        container.appendChild(defaultActions)
+        container.appendChild(selectionActions)
         container.appendChild(this.#selectBtn)
 
         return container
@@ -637,17 +666,9 @@ export default class HubView extends EditorComponent {
         if (this.#selectionMode) {
             this.setAttribute('selection-mode', '')
             this.#selectBtn.textContent = 'Done'
-            this.#playBtn.style.display = 'none'
-            this.#exportBtn.style.display = 'block'
-            this.#revertBtn.style.display = 'block'
-            this.#deleteBtn.style.display = 'block'
         } else {
             this.removeAttribute('selection-mode')
             this.#selectBtn.textContent = 'Select'
-            this.#playBtn.style.display = 'block'
-            this.#exportBtn.style.display = 'none'
-            this.#revertBtn.style.display = 'none'
-            this.#deleteBtn.style.display = 'none'
         }
 
         this.#updateActionButtons()
@@ -671,6 +692,22 @@ export default class HubView extends EditorComponent {
 
         const hasModified = [...this.#selectedItems].some(id => this.#animators[id])
         this.#revertBtn.disabled = !hasModified
+    }
+
+
+    async #importFile () {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = '.perky'
+        input.addEventListener('change', async () => {
+            const file = input.files[0]
+            if (!file) {
+                return
+            }
+            await this.#store.import(file)
+            this.#render()
+        })
+        input.click()
     }
 
 

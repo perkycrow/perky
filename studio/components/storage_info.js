@@ -34,8 +34,7 @@ const styles = createStyleSheet(`
     .popover {
         position: absolute;
         top: 100%;
-        left: 50%;
-        transform: translateX(-50%);
+        left: 0;
         margin-top: var(--spacing-sm);
         background: var(--bg-secondary);
         border: 1px solid var(--border, #333);
