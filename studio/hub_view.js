@@ -184,6 +184,11 @@ const hubViewStyles = createStyleSheet(`
     :host([selection-mode]) .create-card {
         display: none;
     }
+
+    button:disabled {
+        opacity: 0.3;
+        cursor: default;
+    }
 `)
 
 
@@ -279,7 +284,7 @@ export default class HubView extends EditorComponent {
         this.#selectBtn.addEventListener('click', () => this.#toggleSelectionMode())
 
         this.#playBtn = createElement('button', {text: '\u25B6 Preview'})
-        this.#playBtn.style.cssText = btnStyle + 'background: var(--accent); color: var(--bg-primary); font-weight: 600;'
+        this.#playBtn.style.cssText = btnStyle
         this.#playBtn.addEventListener('click', () => {
             window.location.href = '../index.html?studio'
         })
@@ -454,7 +459,7 @@ export default class HubView extends EditorComponent {
         preview.appendChild(thumbnail)
 
         if (state === 'custom') {
-            preview.appendChild(createElement('div', {class: 'card-badge', text: 'Custom'}))
+            preview.appendChild(createElement('div', {class: 'card-badge', text: 'New'}))
         } else if (state === 'modified') {
             preview.appendChild(createElement('div', {class: 'card-badge modified', text: 'Modified'}))
         }
@@ -632,12 +637,14 @@ export default class HubView extends EditorComponent {
         if (this.#selectionMode) {
             this.setAttribute('selection-mode', '')
             this.#selectBtn.textContent = 'Done'
+            this.#playBtn.style.display = 'none'
             this.#exportBtn.style.display = 'block'
             this.#revertBtn.style.display = 'block'
             this.#deleteBtn.style.display = 'block'
         } else {
             this.removeAttribute('selection-mode')
             this.#selectBtn.textContent = 'Select'
+            this.#playBtn.style.display = 'block'
             this.#exportBtn.style.display = 'none'
             this.#revertBtn.style.display = 'none'
             this.#deleteBtn.style.display = 'none'
