@@ -278,10 +278,10 @@ export default class HubView extends EditorComponent {
         this.#selectBtn.style.cssText = btnStyle
         this.#selectBtn.addEventListener('click', () => this.#toggleSelectionMode())
 
-        this.#playBtn = createElement('button', {text: '\u25B6 Play'})
+        this.#playBtn = createElement('button', {text: '\u25B6 Preview'})
         this.#playBtn.style.cssText = btnStyle + 'background: var(--accent); color: var(--bg-primary); font-weight: 600;'
         this.#playBtn.addEventListener('click', () => {
-            window.location.href = '../den/index.html?studio'
+            window.location.href = '../index.html?studio'
         })
 
         container.appendChild(this.#playBtn)

@@ -141,6 +141,16 @@ export default class DevToolsDock extends EditorComponent {
         this.#dockEl.appendChild(this.#commandPaletteButton)
 
 
+        const studioButton = createDockButton(
+            ICONS.clapperboard,
+            'Open Studio',
+            () => {
+                window.location.href = 'studio/index.html'
+            }
+        )
+        this.#dockEl.appendChild(studioButton)
+
+
         const docsButton = createDockButton(
             ICONS.book,
             'Open Documentation',
