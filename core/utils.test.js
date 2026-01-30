@@ -231,6 +231,23 @@ describe('Object Utils', () => {
     })
 
 
+    test('deepMerge preserves class instances by reference', () => {
+        class Custom {
+            constructor (value) {
+                this.value = value
+            }
+        }
+
+        const instance = new Custom(42)
+        const result = deepMerge({}, {a: instance, b: {nested: instance}})
+
+        expect(result.a).toBe(instance)
+        expect(result.a).toBeInstanceOf(Custom)
+        expect(result.a.value).toBe(42)
+        expect(result.b.nested).toBe(instance)
+    })
+
+
     test('deepMerge handles circular references', () => {
         const circular = {a: 1}
         circular.self = circular

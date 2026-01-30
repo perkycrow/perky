@@ -59,11 +59,5 @@ export async function loadStudioOverrides () {
 
 
 function loadImageFromBlob (blob) {
-    const url = URL.createObjectURL(blob)
-    return new Promise((resolve, reject) => {
-        const img = new Image()
-        img.onload = () => { URL.revokeObjectURL(url); resolve(img) }
-        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Failed to load image')) }
-        img.src = url
-    })
+    return createImageBitmap(blob)
 }
