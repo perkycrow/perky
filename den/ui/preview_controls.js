@@ -155,7 +155,7 @@ export default class PreviewControls extends PerkyModule {
 
             .slider-panel {
                 position: absolute;
-                bottom: 5%;
+                bottom: 10%;
                 left: 50%;
                 transform: translateX(-50%);
                 width: 40%;
