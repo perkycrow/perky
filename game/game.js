@@ -3,15 +3,11 @@ import GameLoop from './game_loop.js'
 import RenderSystem from '../render/render_system.js'
 import TextureSystem from '../render/textures/texture_system.js'
 import AudioSystem from '../audio/audio_system.js'
-import World from './world.js'
-import WorldView from './world_view.js'
 import GameController from './game_controller.js'
 
 
 export default class Game extends Application {
 
-    static World = World
-    static WorldView = WorldView
     static ActionController = GameController
     static RenderSystem = RenderSystem
     static AudioSystem = AudioSystem
@@ -32,53 +28,43 @@ export default class Game extends Application {
             ...params.textureSystem
         })
 
+        this.camera = this.renderSystem?.getCamera('main')
+
         this.on('update', this.#onUpdate)
         this.on('render', this.#onRender)
-
-        this.#createWorld()
-        this.#createWorldView()
 
         this.configureGame?.(params)
     }
 
 
-    #createWorld () {
-        const WorldClass = this.constructor.World
-        if (WorldClass) {
-            this.world = this.create(WorldClass)
+    setStage (StageClass, options = {}) {
+        if (this.stage) {
+            this.removeChild(this.stage.$id)
+            this.world = null
+            this.worldView = null
         }
-    }
 
+        this.create(StageClass, {$bind: 'stage', game: this, ...options})
 
-    #createWorldView () {
-        this.camera = this.renderSystem.getCamera('main')
+        if (this.stage.world) {
+            this.world = this.stage.world
+        }
 
-        const WorldViewClass = this.constructor.WorldView
-        if (WorldViewClass) {
-            this.create(WorldViewClass, {
-                $bind: 'worldView',
-                world: this.world,
-                game: this
-            })
+        if (this.stage.worldView) {
+            this.worldView = this.stage.worldView
         }
     }
 
 
     #onUpdate (deltaTime) {
         this.#updateActiveControllers(deltaTime)
+        this.stage?.update(deltaTime)
         this.update(deltaTime)
-
-        for (const worldView of this.childrenByCategory('worldView')) {
-            worldView.update(deltaTime)
-        }
     }
 
 
     #onRender () {
-        for (const worldView of this.childrenByCategory('worldView')) {
-            worldView.sync()
-        }
-
+        this.stage?.render()
         this.render()
         this.renderSystem?.render()
     }

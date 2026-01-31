@@ -5,7 +5,13 @@ import PerkyModule from '../../core/perky_module.js'
 
 function createMockGame () {
     return {
-        execute: vi.fn(),
+        execute: vi.fn()
+    }
+}
+
+
+function createMockStage () {
+    return {
         dayNightPass: {setProgress: vi.fn()},
         updateShadows: vi.fn()
     }
@@ -16,11 +22,13 @@ describe('PreviewControls', () => {
 
     let controls
     let game
+    let stage
 
 
     beforeEach(() => {
         game = createMockGame()
-        controls = new PreviewControls({game})
+        stage = createMockStage()
+        controls = new PreviewControls({game, stage})
     })
 
 
@@ -37,6 +45,11 @@ describe('PreviewControls', () => {
 
     test('constructor stores game reference', () => {
         expect(controls.game).toBe(game)
+    })
+
+
+    test('constructor stores stage reference', () => {
+        expect(controls.stage).toBe(stage)
     })
 
 
@@ -87,20 +100,20 @@ describe('PreviewControls', () => {
     })
 
 
-    test('slider input updates day/night', () => {
+    test('slider input updates day/night via stage', () => {
         controls.slider.value = '0.5'
         controls.slider.dispatchEvent(new Event('input'))
-        expect(game.dayNightPass.setProgress).toHaveBeenCalledWith(0.5)
-        expect(game.updateShadows).toHaveBeenCalledWith(0.5)
+        expect(stage.dayNightPass.setProgress).toHaveBeenCalledWith(0.5)
+        expect(stage.updateShadows).toHaveBeenCalledWith(0.5)
     })
 
 
-    test('phase label click updates slider and day/night', () => {
+    test('phase label click updates slider and day/night via stage', () => {
         const labels = controls.root.querySelectorAll('.phase-label')
         labels[2].click()
         expect(controls.slider.value).toBe('0.5')
-        expect(game.dayNightPass.setProgress).toHaveBeenCalledWith(0.5)
-        expect(game.updateShadows).toHaveBeenCalledWith(0.5)
+        expect(stage.dayNightPass.setProgress).toHaveBeenCalledWith(0.5)
+        expect(stage.updateShadows).toHaveBeenCalledWith(0.5)
     })
 
 
@@ -126,11 +139,11 @@ describe('PreviewControls', () => {
     })
 
 
-    test('handles missing dayNightPass', () => {
-        game.dayNightPass = null
+    test('handles missing dayNightPass on stage', () => {
+        stage.dayNightPass = null
         controls.slider.value = '0.25'
         controls.slider.dispatchEvent(new Event('input'))
-        expect(game.updateShadows).toHaveBeenCalledWith(0.25)
+        expect(stage.updateShadows).toHaveBeenCalledWith(0.25)
     })
 
 })

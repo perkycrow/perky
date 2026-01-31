@@ -26,6 +26,7 @@ export default class PreviewControls extends PerkyModule {
         super(options)
 
         this.game = options.game
+        this.stage = options.stage
 
         this.root = createElement('div', {class: 'preview-controls'})
         this.#buildSpawnPanel()
@@ -108,8 +109,8 @@ export default class PreviewControls extends PerkyModule {
 
 
     #setTimeOfDay (value) {
-        this.game.dayNightPass?.setProgress(value)
-        this.game.updateShadows(value)
+        this.stage?.dayNightPass?.setProgress(value)
+        this.stage?.updateShadows(value)
     }
 
 

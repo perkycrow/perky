@@ -1,34 +1,12 @@
 import Game from '../game/game.js'
-import Group2D from '../render/group_2d.js'
-import Sprite from '../render/sprite.js'
-import ShadowTransform from '../render/transforms/shadow_transform.js'
-
-import DenWorld from './den_world.js'
 import DenController from './controllers/den_controller.js'
-
-import Player from './player.js'
-import PigEnemy from './pig_enemy.js'
-import RedEnemy from './red_enemy.js'
-import GrannyEnemy from './granny_enemy.js'
-import AmalgamEnemy from './amalgam_enemy.js'
-import Projectile from './projectile.js'
-
-import PlayerView from './views/player_view.js'
-import PigEnemyView from './views/pig_enemy_view.js'
-import RedEnemyView from './views/red_enemy_view.js'
-import GrannyEnemyView from './views/granny_enemy_view.js'
-import AmalgamEnemyView from './views/amalgam_enemy_view.js'
-import ProjectileView from './views/projectile_view.js'
-import ImpactParticles from './impact_particles.js'
 
 import ChromaticEffect from './effects/chromatic_effect.js'
 import OutlineEffect from '../render/shaders/builtin/effects/outline_effect.js'
 import WaveEffect from './effects/wave_effect.js'
 
-import HitboxDebug from './hitbox_debug.js'
-import WaveProgressBar from './ui/wave_progress_bar.js'
-import PreviewControls from './ui/preview_controls.js'
-import WaveSystem from './wave_system.js'
+import GameplayStage from './stages/gameplay_stage.js'
+import PreviewStage from './stages/preview_stage.js'
 
 import VignettePass from '../render/postprocessing/passes/vignette_pass.js'
 import DayNightPass from './postprocessing/day_night_pass.js'
@@ -40,7 +18,6 @@ export default class DefendTheDen extends Game {
 
     static $name = 'defendTheDen'
     static manifest = manifest
-    static World = DenWorld
     static ActionController = DenController
 
     static camera = {unitsInView: {width: 7, height: 5}}
@@ -62,219 +39,19 @@ export default class DefendTheDen extends Game {
     ]
     static postPasses = [DayNightPass, VignettePass]
 
-    get dayNightPass () {
-        return this.getRenderer('game')?.getPass('dayNightPass')
-    }
-
-
     configureGame (params = {}) {
-        this.previewMode = Boolean(params.preview)
-
         const gameRenderer = this.getRenderer('game')
-
-        this.worldView
-            .register(Player, PlayerView)
-            .register(PigEnemy, PigEnemyView, {image: 'pig', width: 1, height: 1})
-            .register(RedEnemy, RedEnemyView, {image: 'red', width: 1, height: 1})
-            .register(GrannyEnemy, GrannyEnemyView, {image: 'granny', width: 1, height: 1})
-            .register(AmalgamEnemy, AmalgamEnemyView, {image: 'amalgam', width: 1.2, height: 1.2})
-            .register(Projectile, ProjectileView)
-
         gameRenderer.registerShaderEffect(ChromaticEffect)
         gameRenderer.registerShaderEffect(OutlineEffect)
         gameRenderer.registerShaderEffect(WaveEffect)
 
-        this.impactParticles = this.create(ImpactParticles, {
-            count: 8,
-            minSpeed: 3,
-            maxSpeed: 6,
-            lifetime: 0.35
-        })
-
-        this.hitboxDebug = new HitboxDebug(this.world)
-
-        this.waveSystem = this.create(WaveSystem, {$bind: 'waveSystem'})
-
-        if (!this.previewMode) {
-            this.waveSystem.on('tick', ({wave, day, progress, timeOfDay, isSpawning}) => {
-                this.dayNightPass?.setProgress(timeOfDay)
-                this.updateShadows(timeOfDay)
-
-                const denController = this.getController('den')
-                denController.setSpawning(isSpawning)
-
-                this.emit('wave:tick', {wave, progress, dayNumber: day, timeOfDay, isSpawning})
-            })
-
-            this.waveSystem.on('wave:start', ({wave, day}) => {
-                const denController = this.getController('den')
-                denController.onWaveStart(wave, day)
-                this.emit('wave:start', {wave, dayNumber: day})
-            })
-
-            this.waveSystem.on('day:start', ({day}) => {
-                this.emit('day:start', {dayNumber: day})
-            })
-
-            this.waveSystem.on('day:announce', ({day}) => {
-                const denController = this.getController('den')
-                denController.setSpawning(false)
-                this.emit('day:announce', {dayNumber: day})
-            })
-
-            this.waveSystem.on('spawning:end', () => {
-                const denController = this.getController('den')
-                denController.setSpawning(false)
-            })
-        }
-
-        this.on('update', (delta) => {
-            if (!this.previewMode) {
-                this.waveSystem.update(delta)
-            }
-            this.impactParticles.update(delta)
-            if (!this.previewMode) {
-                const enemyCount = this.world.childrenByTags('enemy').length
-                this.waveSystem.checkClear(enemyCount)
-            }
-        })
-
-        const uiLayer = this.getHTML('ui')
-
-        if (this.previewMode) {
-            const previewControls = this.create(PreviewControls, {
-                $id: 'previewControls',
-                game: this
-            })
-            previewControls.mount(uiLayer)
-        } else {
-            const waveProgressBar = this.create(WaveProgressBar, {
-                $id: 'waveProgress',
-                game: this
-            })
-            waveProgressBar.mount(uiLayer)
-
-            this.on('day:announce', () => {
-                this.playSound('howl', {channel: 'sfx', volume: 0.6})
-            })
-        }
-
-        this.world.on('enemy:hit', ({x, y, direction}) => {
-            this.playSoundAt('wound', x, y, {volume: 0.4})
-            this.impactParticles.spawn(x, y, direction)
-        })
-
-        this.world.on('enemy:destroyed', ({x, y}) => {
-            this.playSoundAt('wound', x, y, {volume: 0.3})
-        })
-
-        this.world.on('player:hit', ({x, y}) => {
-            this.playSoundAt('wound', x, y, {volume: 0.4})
-        })
-    }
-
-
-    setupRenderGroups () {
-        const gameRenderer = this.getRenderer('game')
-
-        this.backgroundGroup = new Group2D()
-        this.entitiesGroup = new Group2D()
-
-        this.shadowTransform = new ShadowTransform({
-            skewX: 0.1,
-            scaleY: -0.5,
-            offsetY: 0.0,
-            color: [0, 0, 0, 0.3]
-        })
-
-        this.entitiesGroup.addChild(this.worldView.rootGroup)
-        this.entitiesGroup.addChild(this.impactParticles.particleGroup)
-
-        gameRenderer.setRenderGroups([
-            {
-                $name: 'background',
-                content: this.backgroundGroup
-            },
-            {
-                $name: 'shadows',
-                content: this.entitiesGroup,
-                renderTransform: this.shadowTransform
-            },
-            {
-                $name: 'entities',
-                content: this.entitiesGroup
-            },
-            {
-                $name: 'hitboxDebug',
-                content: this.hitboxDebug.group
-            }
-        ])
-    }
-
-
-    buildBackground () {
-        const backgroundRegion = this.getRegion('background')
-        const backgroundHeight = 5
-        const backgroundWidth = (backgroundRegion.width / backgroundRegion.height) * backgroundHeight
-
-        const background = new Sprite({
-            region: backgroundRegion,
-            x: 0,
-            y: 0,
-            width: backgroundWidth,
-            height: backgroundHeight
-        })
-
-        this.backgroundGroup.addChild(background)
+        const StageClass = params.preview ? PreviewStage : GameplayStage
+        this.setStage(StageClass, params)
     }
 
 
     onStart () {
         super.onStart()
-
-        this.setupRenderGroups()
-        this.buildBackground()
-
-        this.execute('spawnPlayer', {x: -2.5})
-
-        if (!this.previewMode) {
-            this.emit('wave:start', {wave: 0, dayNumber: 0})
-            this.emit('day:start', {dayNumber: 0})
-        }
-    }
-
-
-    render () {
-        this.worldView.syncViews()
-        this.hitboxDebug.update()
-
-        const gameLayer = this.getLayer('game')
-        this.getRenderer('game').setUniform('uTime', performance.now() / 1000)
-        this.dayNightPass?.setUniform('uAspectRatio', gameLayer.canvas.width / gameLayer.canvas.height)
-        this.dayNightPass?.setUniform('uTime', performance.now() / 1000)
-    }
-
-
-    setHitboxDebug (enabled) {
-        this.hitboxDebug.setEnabled(enabled)
-    }
-
-
-    toggleHitboxDebug () {
-        return this.hitboxDebug.toggle()
-    }
-
-
-    updateShadows (timeOfDay) {
-        if (!this.shadowTransform) {
-            return
-        }
-
-        const shadowParams = DayNightPass.getShadowParams(timeOfDay)
-        this.shadowTransform.skewX = shadowParams.skewX
-        this.shadowTransform.scaleY = shadowParams.scaleY
-        this.shadowTransform.offsetY = shadowParams.offsetY
-        this.shadowTransform.color = shadowParams.color
     }
 
 }

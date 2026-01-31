@@ -4,6 +4,9 @@ import Application from '../application/application.js'
 import GameLoop from './game_loop.js'
 import ActionController from '../core/action_controller.js'
 import RenderSystem from '../render/render_system.js'
+import Stage from './stage.js'
+import World from './world.js'
+import WorldView from './world_view.js'
 
 
 
@@ -184,5 +187,136 @@ describe('Game', () => {
         expect(layer.$id).toBe('game')
     })
 
+
+    test('setStage creates stage as child', () => {
+        class TestStage extends Stage {
+            static World = World
+        }
+
+        game.setStage(TestStage)
+
+        expect(game.stage).toBeInstanceOf(TestStage)
+    })
+
+
+    test('setStage delegates world from stage', () => {
+        class TestStage extends Stage {
+            static World = World
+        }
+
+        game.setStage(TestStage)
+
+        expect(game.world).toBeInstanceOf(World)
+        expect(game.world).toBe(game.stage.world)
+    })
+
+
+    test('setStage delegates worldView from stage', () => {
+        class TestStage extends Stage {
+            static World = World
+        }
+
+        game.setStage(TestStage)
+
+        expect(game.worldView).toBeInstanceOf(WorldView)
+        expect(game.worldView).toBe(game.stage.worldView)
+    })
+
+
+    test('setStage passes game to stage', () => {
+        class TestStage extends Stage {
+            static World = World
+        }
+
+        game.setStage(TestStage)
+
+        expect(game.stage.game).toBe(game)
+    })
+
+
+    test('setStage passes options to stage', () => {
+        class TestStage extends Stage {
+            static World = World
+        }
+
+        game.setStage(TestStage, {foo: 'bar'})
+
+        expect(game.stage.options.foo).toBe('bar')
+    })
+
+
+    test('setStage disposes previous stage', () => {
+        class StageA extends Stage {
+            static World = World
+        }
+        class StageB extends Stage {
+            static World = World
+        }
+
+        game.setStage(StageA)
+        const stageA = game.stage
+        const worldA = game.world
+
+        game.setStage(StageB)
+
+        expect(stageA.disposed).toBe(true)
+        expect(worldA.disposed).toBe(true)
+        expect(game.stage).toBeInstanceOf(StageB)
+    })
+
+
+    test('setStage clears world and worldView when switching', () => {
+        class StageWithWorld extends Stage {
+            static World = World
+        }
+        class StageWithoutWorld extends Stage {}
+
+        game.setStage(StageWithWorld)
+        expect(game.world).toBeInstanceOf(World)
+
+        game.setStage(StageWithoutWorld)
+        expect(game.world).toBeNull()
+        expect(game.worldView).toBeNull()
+    })
+
+
+    test('stage update is called on game loop update', () => {
+        class TestStage extends Stage {
+            update = vi.fn()
+        }
+
+        game.setStage(TestStage)
+
+        game.gameLoop.emit('update', 0.016)
+
+        expect(game.stage.update).toHaveBeenCalledWith(0.016)
+    })
+
+
+    test('stage render is called on game loop render', () => {
+        class TestStage extends Stage {
+            render = vi.fn()
+        }
+
+        game.setStage(TestStage)
+
+        game.gameLoop.emit('render')
+
+        expect(game.stage.render).toHaveBeenCalled()
+    })
+
+
+    test('no error when no stage is set during update', () => {
+        expect(() => {
+            game.gameLoop.emit('update', 0.016)
+        }).not.toThrow()
+    })
+
+
+    test('no error when no stage is set during render', () => {
+        expect(() => {
+            game.gameLoop.emit('render')
+        }).not.toThrow()
+    })
 
 })
