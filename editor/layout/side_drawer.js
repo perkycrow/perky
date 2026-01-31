@@ -160,7 +160,7 @@ export default class SideDrawer extends EditorComponent {
 
     #onPointerDown (e) {
         const interactive = 'button, input, select, textarea, slider-input, number-input, toggle-input, select-input'
-        if (e.target.closest(interactive)) {
+        if (e.composedPath().some(el => el.matches?.(interactive))) {
             return
         }
 
