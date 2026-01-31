@@ -26,6 +26,7 @@ import DomUtilsUsageAuditor from './auditors/dom_utils_usage.js'
 
 import BrokenLinksAuditor from './auditors/docs/broken_links.js'
 import FileScoreAuditor from './auditors/filescore/file_score.js'
+import FileLengthAuditor from './auditors/file_length.js'
 
 import {bold, cyan, dim, green, yellow, gray} from '../format.js'
 
@@ -311,5 +312,11 @@ export function runFilescore (rootDir, options = {}) {
 
 export function runImports (rootDir, options = {}) {
     const auditor = new ImportUsageAuditor(rootDir, options)
+    return auditor.audit()
+}
+
+
+export function runFileLength (rootDir, options = {}) {
+    const auditor = new FileLengthAuditor(rootDir, options)
     return auditor.audit()
 }

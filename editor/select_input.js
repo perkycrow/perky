@@ -65,7 +65,7 @@ const selectInputCSS = `
         position: absolute;
         top: 100%;
         left: 0;
-        right: 0;
+        min-width: 100%;
         margin-top: 4px;
         background: var(--bg-secondary);
         border: none;
@@ -96,6 +96,7 @@ const selectInputCSS = `
         cursor: pointer;
         transition: background var(--transition-fast);
         -webkit-tap-highlight-color: transparent;
+        white-space: nowrap;
     }
 
     .select-option:first-child {
@@ -137,6 +138,16 @@ const selectInputCSS = `
 
     :host([context="studio"]) .select-chevron {
         font-size: 12px;
+    }
+
+    .select-separator {
+        height: 1px;
+        background: var(--border);
+        margin: var(--spacing-xs) 0;
+    }
+
+    .select-action {
+        color: var(--accent);
     }
 `
 
@@ -280,19 +291,33 @@ export default class SelectInput extends EditorComponent {
 
         for (let i = 0; i < this.#options.length; i++) {
             const opt = this.#options[i]
+
+            if (opt.separator) {
+                this.#dropdownEl.appendChild(createElement('div', {class: 'select-separator'}))
+                continue
+            }
+
             const optionEl = createElement('div', {
-                class: 'select-option',
+                class: 'select-option' + (opt.action ? ' select-action' : ''),
                 text: opt.label
             })
             optionEl.dataset.index = i
 
-            if (opt.value === this.#value) {
+            if (!opt.action && opt.value === this.#value) {
                 optionEl.classList.add('selected')
             }
 
             optionEl.addEventListener('click', (e) => {
                 e.stopPropagation()
-                this.#selectIndex(i)
+                if (opt.action) {
+                    this.#close()
+                    this.dispatchEvent(new CustomEvent('action', {
+                        detail: {value: opt.value},
+                        bubbles: true
+                    }))
+                } else {
+                    this.#selectIndex(i)
+                }
             })
 
             this.#dropdownEl.appendChild(optionEl)
@@ -301,12 +326,14 @@ export default class SelectInput extends EditorComponent {
 
 
     #updateDisplay () {
-        const selected = this.#options.find(opt => opt.value === this.#value)
+        const selected = this.#options.find(opt => !opt.separator && !opt.action && opt.value === this.#value)
         this.#labelEl.textContent = selected ? selected.label : ''
 
         const optionEls = this.#dropdownEl.querySelectorAll('.select-option')
-        optionEls.forEach((el, i) => {
-            el.classList.toggle('selected', this.#options[i]?.value === this.#value)
+        optionEls.forEach((el) => {
+            const idx = parseInt(el.dataset.index, 10)
+            const opt = this.#options[idx]
+            el.classList.toggle('selected', !opt?.action && opt?.value === this.#value)
         })
     }
 
@@ -373,7 +400,16 @@ export default class SelectInput extends EditorComponent {
 
     #selectIndex (index) {
         const opt = this.#options[index]
-        if (!opt) {
+        if (!opt || opt.separator) {
+            return
+        }
+
+        if (opt.action) {
+            this.#close()
+            this.dispatchEvent(new CustomEvent('action', {
+                detail: {value: opt.value},
+                bubbles: true
+            }))
             return
         }
 
@@ -390,7 +426,10 @@ export default class SelectInput extends EditorComponent {
 
 
     #moveFocus (direction) {
-        const newIndex = this.#focusedIndex + direction
+        let newIndex = this.#focusedIndex + direction
+        while (newIndex >= 0 && newIndex < this.#options.length && this.#options[newIndex].separator) {
+            newIndex += direction
+        }
         if (newIndex >= 0 && newIndex < this.#options.length) {
             this.#focusedIndex = newIndex
             this.#updateFocusedOption()

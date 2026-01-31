@@ -29,6 +29,11 @@ export default {
             'examples/'
         ]
     },
+    fileLength: {
+        excludeFiles: [
+            '*.styles.js'
+        ]
+    },
     filescore: {
         excludeDirs: [
             'den/',

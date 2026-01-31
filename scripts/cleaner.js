@@ -3,7 +3,7 @@
 import fs from 'fs'
 import path from 'path'
 import {fileURLToPath} from 'url'
-import {runAudit, runFix, runAll, runCoverage, runFilescore, runImports} from './cleaner/index.js'
+import {runAudit, runFix, runAll, runCoverage, runFilescore, runImports, runFileLength} from './cleaner/index.js'
 
 
 const __filename = fileURLToPath(import.meta.url)
@@ -22,6 +22,7 @@ const filescoreMode = hasFlag('--filescore')
 const flopMode = hasFlag('--flop')
 const verboseMode = hasFlag('--verbose')
 const importsMode = hasFlag('--imports')
+const fileLengthMode = hasFlag('--filelength')
 
 
 const targetPath = args.find(arg => !arg.startsWith('--'))
@@ -67,6 +68,7 @@ function printHelp () {
     console.log('  --flop      Show 10 worst files (use with --filescore)')
     console.log('  --verbose   Show detailed breakdown (with --filescore)')
     console.log('  --imports   Show files ranked by import count')
+    console.log('  --filelength Sort files by line count')
     console.log('  --dry-run   Preview fixes without applying\n')
     console.log('Arguments:')
     console.log('  path        Optional path to specific file or directory to clean')
@@ -80,7 +82,9 @@ function printHelp () {
 
 const validatedPath = validateTargetPath(targetPath)
 
-if (importsMode) {
+if (fileLengthMode) {
+    await runFileLength(rootDir, {targetPath: validatedPath})
+} else if (importsMode) {
     runImports(rootDir, {targetPath: validatedPath})
 } else if (filescoreMode || flopMode) {
     runFilescore(rootDir, {targetPath: validatedPath, verbose: verboseMode, flop: flopMode})
