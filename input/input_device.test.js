@@ -299,7 +299,8 @@ describe(InputDevice, () => {
 
 
     test('preventDefault when shouldPreventDefaultFor returns true', () => {
-        const event = {preventDefault: vi.fn(), stopPropagation: vi.fn()}
+        const target = document.createElement('div')
+        const event = {preventDefault: vi.fn(), stopPropagation: vi.fn(), target}
         const control = {name: 'test'}
 
         device.shouldPreventDefault = true
@@ -334,7 +335,8 @@ describe(InputDevice, () => {
 
 
     test('preventDefault with function condition', () => {
-        const event = {preventDefault: vi.fn(), stopPropagation: vi.fn(), ctrlKey: true}
+        const target = document.createElement('div')
+        const event = {preventDefault: vi.fn(), stopPropagation: vi.fn(), ctrlKey: true, target}
         const control = {name: 'KeyR'}
 
         device.shouldPreventDefault = (evt, ctrl) => ctrl.name === 'KeyR' && evt.ctrlKey
@@ -342,6 +344,61 @@ describe(InputDevice, () => {
 
         expect(event.preventDefault).toHaveBeenCalledTimes(1)
         expect(event.stopPropagation).toHaveBeenCalledTimes(1)
+    })
+
+
+    test('preventDefault skips interactive button target', () => {
+        const target = document.createElement('button')
+        const event = {preventDefault: vi.fn(), stopPropagation: vi.fn(), target}
+        const control = {name: 'test'}
+
+        device.shouldPreventDefault = true
+        device.preventDefault(event, control)
+
+        expect(event.preventDefault).not.toHaveBeenCalled()
+        expect(event.stopPropagation).not.toHaveBeenCalled()
+    })
+
+
+    test('preventDefault skips interactive input target', () => {
+        const target = document.createElement('input')
+        const event = {preventDefault: vi.fn(), stopPropagation: vi.fn(), target}
+        const control = {name: 'test'}
+
+        device.shouldPreventDefault = true
+        device.preventDefault(event, control)
+
+        expect(event.preventDefault).not.toHaveBeenCalled()
+        expect(event.stopPropagation).not.toHaveBeenCalled()
+    })
+
+
+    test('preventDefault skips element with interactive class', () => {
+        const target = document.createElement('div')
+        target.classList.add('interactive')
+        const event = {preventDefault: vi.fn(), stopPropagation: vi.fn(), target}
+        const control = {name: 'test'}
+
+        device.shouldPreventDefault = true
+        device.preventDefault(event, control)
+
+        expect(event.preventDefault).not.toHaveBeenCalled()
+        expect(event.stopPropagation).not.toHaveBeenCalled()
+    })
+
+
+    test('preventDefault skips child of interactive element', () => {
+        const button = document.createElement('button')
+        const span = document.createElement('span')
+        button.appendChild(span)
+        const event = {preventDefault: vi.fn(), stopPropagation: vi.fn(), target: span}
+        const control = {name: 'test'}
+
+        device.shouldPreventDefault = true
+        device.preventDefault(event, control)
+
+        expect(event.preventDefault).not.toHaveBeenCalled()
+        expect(event.stopPropagation).not.toHaveBeenCalled()
     })
 
 

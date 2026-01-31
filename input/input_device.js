@@ -109,6 +109,9 @@ export default class InputDevice extends PerkyModule {
 
     preventDefault (event, control) {
         if (control && event && this.shouldPreventDefaultFor(event, control)) {
+            if (isInteractiveTarget(event.target)) {
+                return
+            }
             if (typeof event.preventDefault === 'function') {
                 event.preventDefault()
             }
@@ -168,4 +171,20 @@ export default class InputDevice extends PerkyModule {
         })
     }
 
+}
+
+
+const INTERACTIVE_TAGS = new Set(['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA', 'A'])
+
+
+function isInteractiveTarget (target) {
+    if (!target || typeof target.closest !== 'function') {
+        return false
+    }
+
+    if (INTERACTIVE_TAGS.has(target.tagName)) {
+        return true
+    }
+
+    return target.closest('button, input, select, textarea, a, [contenteditable], .interactive') !== null
 }
