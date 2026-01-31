@@ -62,19 +62,4 @@ export default doc('Foreword', () => {
         `)
     })
 
-    disclaimer(`
-        Let's address the elephant in the room: yes, parts of this codebase were written
-        with AI assistance. I'm not going to pretend otherwise.
-
-        But here's the thing - I see AI as a facilitator, not a replacement. The architecture,
-        the concepts, the decisions - those are mine. Every line of generated code has been
-        read, understood, modified, refactored, deleted, and rewritten multiple times.
-        The result reflects *my* code, as if I had written it myself from scratch.
-        Because at this point, I basically have.
-
-        One important note: all graphical assets used by Perky - sprites, illustrations,
-        and artwork - are *not* AI-generated. They're hand-drawn by PerkyCrow's in-house
-        artist.
-    `)
-
 })
