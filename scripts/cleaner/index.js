@@ -336,7 +336,11 @@ export async function runCoverage (rootDir, options = {}) {
     }
 
     if (options.json) {
-        console.log(JSON.stringify(results, null, 2))
+        const output = {}
+        for (const [key, result] of Object.entries(results)) {
+            output[key] = {...result, hint: hints[key] || null}
+        }
+        console.log(JSON.stringify(output, null, 2))
     } else {
         printCoverageBanner()
         printSummary(results, hints)
