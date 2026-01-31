@@ -283,7 +283,6 @@ export default class HubView extends EditorComponent {
         this.#appLayout.appendChild(storageInfo)
 
         const headerActions = this.#buildHeaderActions()
-        headerActions.setAttribute('slot', 'header-end')
         this.#appLayout.appendChild(headerActions)
 
         this.#contentEl = createElement('div', {class: 'hub-content'})
@@ -295,7 +294,10 @@ export default class HubView extends EditorComponent {
 
 
     #buildHeaderActions () {
-        const container = createElement('div', {class: 'header-actions'})
+        const container = createElement('div', {
+            class: 'header-actions',
+            attrs: {slot: 'header-end'}
+        })
 
         const defaultActions = createElement('div', {class: 'default-actions'})
         const previewBtn = createElement('button', {text: '\u25B6 Preview'})
