@@ -19,6 +19,7 @@ import MultipleClassesAuditor from './auditors/multiple_classes.js'
 import FunctionOrderAuditor from './auditors/function_order.js'
 
 import StaleFilesAuditor from './auditors/coverage/stale_files.js'
+import StaleReadmeAuditor from './auditors/coverage/stale_readme.js'
 import MissingCoverageAuditor from './auditors/coverage/missing_coverage.js'
 import MissingDocsAuditor from './auditors/coverage/missing_docs.js'
 import ImportUsageAuditor from './auditors/coverage/import_usage.js'
@@ -298,6 +299,7 @@ export async function runInstructions (rootDir, options = {}) {
 
 const COVERAGE_AUDITORS = [
     StaleFilesAuditor,
+    StaleReadmeAuditor,
     MissingCoverageAuditor,
     MissingDocsAuditor,
     ImportUsageAuditor,
