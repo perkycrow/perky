@@ -140,16 +140,14 @@ describe('frame_editor', () => {
         })
 
 
-        test('adds event from input when Add clicked', () => {
+        test('adds event from input when Enter pressed', () => {
             const frame = {}
             const onFramesUpdate = vi.fn()
             const section = buildEventsSection(frame, {onFramesUpdate})
 
             const input = section.querySelector('.event-input')
-            const addBtn = section.querySelector('.event-add-btn')
-
             input.value = 'custom_event'
-            addBtn.click()
+            input.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}))
 
             expect(frame.events).toContain('custom_event')
             expect(onFramesUpdate).toHaveBeenCalled()
@@ -175,10 +173,8 @@ describe('frame_editor', () => {
             const section = buildEventsSection(frame, {onFramesUpdate})
 
             const input = section.querySelector('.event-input')
-            const addBtn = section.querySelector('.event-add-btn')
-
             input.value = 'footstep'
-            addBtn.click()
+            input.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}))
 
             expect(frame.events.length).toBe(1)
         })
@@ -190,10 +186,8 @@ describe('frame_editor', () => {
             const section = buildEventsSection(frame, {onFramesUpdate})
 
             const input = section.querySelector('.event-input')
-            const addBtn = section.querySelector('.event-add-btn')
-
             input.value = '   '
-            addBtn.click()
+            input.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}))
 
             expect(frame.events).toBeUndefined()
             expect(onFramesUpdate).not.toHaveBeenCalled()

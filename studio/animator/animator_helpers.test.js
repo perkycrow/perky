@@ -218,8 +218,7 @@ describe('animator_helpers', () => {
                     {name: 'idle_1'}
                 ]
             }
-            const spritesheet = {$id: 'player'}
-            const config = buildAnimationConfig(anim, spritesheet)
+            const config = buildAnimationConfig(anim, 'player')
             expect(config.frames).toEqual([
                 {source: 'player:idle_0'},
                 {source: 'player:idle_1'}

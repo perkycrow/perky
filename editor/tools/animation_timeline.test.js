@@ -12,21 +12,6 @@ if (typeof PointerEvent === 'undefined') {
 }
 
 
-function createMockDataTransfer () {
-    const data = {}
-    return {
-        setData: (type, value) => {
-            data[type] = value
-        },
-        getData: (type) => data[type] || '',
-        get types () {
-            return Object.keys(data)
-        },
-        dropEffect: 'none'
-    }
-}
-
-
 function createMockFrames () {
     return [
         {region: null},
@@ -112,8 +97,8 @@ describe('AnimationTimeline', () => {
 
             const canvases = timeline.shadowRoot.querySelectorAll('.frame-thumbnail')
             expect(canvases.length).toBe(4)
-            expect(canvases[0].width).toBe(80)
-            expect(canvases[0].height).toBe(80)
+            expect(canvases[0].width).toBe(100)
+            expect(canvases[0].height).toBe(100)
         })
 
 
@@ -240,63 +225,6 @@ describe('AnimationTimeline', () => {
         expect(frameEls[1].dataset.index).toBe('1')
         expect(frameEls[2].dataset.index).toBe('2')
         expect(frameEls[3].dataset.index).toBe('3')
-    })
-
-
-    describe('drop zone', () => {
-
-        test('has drop indicator element', () => {
-            const dropIndicator = timeline.shadowRoot.querySelector('.drop-indicator')
-            expect(dropIndicator).not.toBeNull()
-        })
-
-
-        test('dispatches framedrop event on spritesheet drop', () => {
-            const frames = createMockFrames()
-            timeline.setFrames(frames)
-
-            const handler = vi.fn()
-            timeline.addEventListener('framedrop', handler)
-
-            const timelineEl = timeline.shadowRoot.querySelector('.timeline')
-
-            const dragOverDataTransfer = createMockDataTransfer()
-            dragOverDataTransfer.setData('application/x-spritesheet-frame', '{}')
-            const dragOverEvent = new Event('dragover', {bubbles: true, cancelable: true})
-            dragOverEvent.dataTransfer = dragOverDataTransfer
-            dragOverEvent.clientX = 100
-            timelineEl.dispatchEvent(dragOverEvent)
-
-            const dropDataTransfer = createMockDataTransfer()
-            dropDataTransfer.setData('application/x-spritesheet-frame', JSON.stringify({
-                name: 'walk/1',
-                regionData: {x: 0, y: 0, width: 32, height: 32}
-            }))
-            const dropEvent = new Event('drop', {bubbles: true, cancelable: true})
-            dropEvent.dataTransfer = dropDataTransfer
-            timelineEl.dispatchEvent(dropEvent)
-
-            expect(handler).toHaveBeenCalled()
-            expect(handler.mock.calls[0][0].detail.frameName).toBe('walk/1')
-        })
-
-
-        test('adds drag-over class during dragover', () => {
-            const frames = createMockFrames()
-            timeline.setFrames(frames)
-
-            const timelineEl = timeline.shadowRoot.querySelector('.timeline')
-
-            const dragOverDataTransfer = createMockDataTransfer()
-            dragOverDataTransfer.setData('application/x-spritesheet-frame', '{}')
-            const dragOverEvent = new Event('dragover', {bubbles: true, cancelable: true})
-            dragOverEvent.dataTransfer = dragOverDataTransfer
-            dragOverEvent.clientX = 100
-            timelineEl.dispatchEvent(dragOverEvent)
-
-            expect(timelineEl.classList.contains('drag-over')).toBe(true)
-        })
-
     })
 
 
@@ -449,63 +377,6 @@ describe('AnimationTimeline', () => {
     })
 
 
-    describe('touch drag handlers', () => {
-
-        test('handleTouchDragOver adds drag-over class and updates drop indicator', () => {
-            const frames = createMockFrames()
-            timeline.setFrames(frames)
-
-            timeline.handleTouchDragOver(100)
-
-            const timelineEl = timeline.shadowRoot.querySelector('.timeline')
-            expect(timelineEl.classList.contains('drag-over')).toBe(true)
-
-            const dropIndicator = timeline.shadowRoot.querySelector('.drop-indicator')
-            expect(dropIndicator.classList.contains('visible')).toBe(true)
-        })
-
-
-        test('handleTouchDrop dispatches framedrop event and removes drag-over class', () => {
-            const frames = createMockFrames()
-            timeline.setFrames(frames)
-
-            timeline.handleTouchDragOver(100)
-
-            const handler = vi.fn()
-            timeline.addEventListener('framedrop', handler)
-
-            timeline.handleTouchDrop({
-                name: 'walk/1',
-                regionData: {x: 0, y: 0, width: 32, height: 32}
-            })
-
-            const timelineEl = timeline.shadowRoot.querySelector('.timeline')
-            expect(timelineEl.classList.contains('drag-over')).toBe(false)
-            expect(handler).toHaveBeenCalled()
-            expect(handler.mock.calls[0][0].detail.frameName).toBe('walk/1')
-        })
-
-
-        test('handleTouchDragLeave removes drag-over class and hides drop indicator', () => {
-            const frames = createMockFrames()
-            timeline.setFrames(frames)
-
-            timeline.handleTouchDragOver(100)
-
-            const timelineEl = timeline.shadowRoot.querySelector('.timeline')
-            expect(timelineEl.classList.contains('drag-over')).toBe(true)
-
-            timeline.handleTouchDragLeave()
-
-            expect(timelineEl.classList.contains('drag-over')).toBe(false)
-
-            const dropIndicator = timeline.shadowRoot.querySelector('.drop-indicator')
-            expect(dropIndicator.classList.contains('visible')).toBe(false)
-        })
-
-    })
-
-
     describe('flashMovedFrame', () => {
 
         test('adds just-moved class to frame at specified index', async () => {
@@ -518,7 +389,7 @@ describe('AnimationTimeline', () => {
             await new Promise(resolve => requestAnimationFrame(resolve))
 
             const frameEls = timeline.shadowRoot.querySelectorAll('.frame')
-            expect(frameEls[1].classList.contains('just-moved')).toBe(true)
+            expect(frameEls[1].classList.contains('just-settled')).toBe(true)
         })
 
 

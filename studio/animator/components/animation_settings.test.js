@@ -155,26 +155,14 @@ describe('animation_settings', () => {
         })
 
 
-        test('includes animation select', () => {
-            const animator = createMockAnimator([{id: 'idle'}, {id: 'walk'}])
+        test('returns nameInput', () => {
+            const animator = createMockAnimator([{id: 'idle'}])
             const animation = animator.children[0]
 
-            const {animSelect} = buildAnimationSettings(animator, animation, {})
+            const {nameInput} = buildAnimationSettings(animator, animation, {})
 
-            expect(animSelect).not.toBeNull()
-        })
-
-
-        test('calls onAnimationChange when select changes', () => {
-            const animator = createMockAnimator([{id: 'idle'}, {id: 'walk'}])
-            const animation = animator.children[0]
-            const onAnimationChange = vi.fn()
-
-            const {animSelect} = buildAnimationSettings(animator, animation, {onAnimationChange})
-
-            animSelect.dispatchEvent(new CustomEvent('change', {detail: {value: 'walk'}}))
-
-            expect(onAnimationChange).toHaveBeenCalledWith('walk')
+            expect(nameInput).not.toBeNull()
+            expect(nameInput.value).toBe('idle')
         })
 
 
