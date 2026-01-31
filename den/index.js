@@ -24,6 +24,10 @@ async function init () {
         }
     }
 
+    if (params.has('preview')) {
+        spawnOptions.preview = true
+    }
+
     const app = await appManager.spawn('defendTheDen', spawnOptions)
 
     const devtools = new PerkyDevTools()

@@ -27,6 +27,7 @@ import WaveEffect from './effects/wave_effect.js'
 
 import HitboxDebug from './hitbox_debug.js'
 import WaveProgressBar from './ui/wave_progress_bar.js'
+import PreviewControls from './ui/preview_controls.js'
 import WaveSystem from './wave_system.js'
 
 import VignettePass from '../render/postprocessing/passes/vignette_pass.js'
@@ -66,9 +67,10 @@ export default class DefendTheDen extends Game {
     }
 
 
-    configureGame () {
+    configureGame (params = {}) {
+        this.previewMode = Boolean(params.preview)
+
         const gameRenderer = this.getRenderer('game')
-        const gameLayer = this.getLayer('game')
 
         this.worldView
             .register(Player, PlayerView)
@@ -93,56 +95,69 @@ export default class DefendTheDen extends Game {
 
         this.waveSystem = this.create(WaveSystem, {$bind: 'waveSystem'})
 
-        this.waveSystem.on('tick', ({wave, day, progress, timeOfDay, isSpawning}) => {
-            this.dayNightPass?.setUniform('uAspectRatio', gameLayer.canvas.width / gameLayer.canvas.height)
-            this.dayNightPass?.setUniform('uTime', performance.now() / 1000)
-            this.dayNightPass?.setProgress(timeOfDay)
-            this.updateShadows(timeOfDay)
+        if (!this.previewMode) {
+            this.waveSystem.on('tick', ({wave, day, progress, timeOfDay, isSpawning}) => {
+                this.dayNightPass?.setProgress(timeOfDay)
+                this.updateShadows(timeOfDay)
 
-            const denController = this.getController('den')
-            denController.setSpawning(isSpawning)
+                const denController = this.getController('den')
+                denController.setSpawning(isSpawning)
 
-            this.emit('wave:tick', {wave, progress, dayNumber: day, timeOfDay, isSpawning})
-        })
+                this.emit('wave:tick', {wave, progress, dayNumber: day, timeOfDay, isSpawning})
+            })
 
-        this.waveSystem.on('wave:start', ({wave, day}) => {
-            const denController = this.getController('den')
-            denController.onWaveStart(wave, day)
-            this.emit('wave:start', {wave, dayNumber: day})
-        })
+            this.waveSystem.on('wave:start', ({wave, day}) => {
+                const denController = this.getController('den')
+                denController.onWaveStart(wave, day)
+                this.emit('wave:start', {wave, dayNumber: day})
+            })
 
-        this.waveSystem.on('day:start', ({day}) => {
-            this.emit('day:start', {dayNumber: day})
-        })
+            this.waveSystem.on('day:start', ({day}) => {
+                this.emit('day:start', {dayNumber: day})
+            })
 
-        this.waveSystem.on('day:announce', ({day}) => {
-            const denController = this.getController('den')
-            denController.setSpawning(false)
-            this.emit('day:announce', {dayNumber: day})
-        })
+            this.waveSystem.on('day:announce', ({day}) => {
+                const denController = this.getController('den')
+                denController.setSpawning(false)
+                this.emit('day:announce', {dayNumber: day})
+            })
 
-        this.waveSystem.on('spawning:end', () => {
-            const denController = this.getController('den')
-            denController.setSpawning(false)
-        })
+            this.waveSystem.on('spawning:end', () => {
+                const denController = this.getController('den')
+                denController.setSpawning(false)
+            })
+        }
 
         this.on('update', (delta) => {
-            this.waveSystem.update(delta)
+            if (!this.previewMode) {
+                this.waveSystem.update(delta)
+            }
             this.impactParticles.update(delta)
-            const enemyCount = this.world.childrenByTags('enemy').length
-            this.waveSystem.checkClear(enemyCount)
+            if (!this.previewMode) {
+                const enemyCount = this.world.childrenByTags('enemy').length
+                this.waveSystem.checkClear(enemyCount)
+            }
         })
 
         const uiLayer = this.getHTML('ui')
-        const waveProgressBar = this.create(WaveProgressBar, {
-            $id: 'waveProgress',
-            game: this
-        })
-        waveProgressBar.mount(uiLayer)
 
-        this.on('day:announce', () => {
-            this.playSound('howl', {channel: 'sfx', volume: 0.6})
-        })
+        if (this.previewMode) {
+            const previewControls = this.create(PreviewControls, {
+                $id: 'previewControls',
+                game: this
+            })
+            previewControls.mount(uiLayer)
+        } else {
+            const waveProgressBar = this.create(WaveProgressBar, {
+                $id: 'waveProgress',
+                game: this
+            })
+            waveProgressBar.mount(uiLayer)
+
+            this.on('day:announce', () => {
+                this.playSound('howl', {channel: 'sfx', volume: 0.6})
+            })
+        }
 
         this.world.on('enemy:hit', ({x, y, direction}) => {
             this.playSoundAt('wound', x, y, {volume: 0.4})
@@ -222,8 +237,10 @@ export default class DefendTheDen extends Game {
 
         this.execute('spawnPlayer', {x: -2.5})
 
-        this.emit('wave:start', {wave: 0, dayNumber: 0})
-        this.emit('day:start', {dayNumber: 0})
+        if (!this.previewMode) {
+            this.emit('wave:start', {wave: 0, dayNumber: 0})
+            this.emit('day:start', {dayNumber: 0})
+        }
     }
 
 
@@ -231,7 +248,10 @@ export default class DefendTheDen extends Game {
         this.worldView.syncViews()
         this.hitboxDebug.update()
 
+        const gameLayer = this.getLayer('game')
         this.getRenderer('game').setUniform('uTime', performance.now() / 1000)
+        this.dayNightPass?.setUniform('uAspectRatio', gameLayer.canvas.width / gameLayer.canvas.height)
+        this.dayNightPass?.setUniform('uTime', performance.now() / 1000)
     }
 
 

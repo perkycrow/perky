@@ -299,7 +299,7 @@ export default class HubView extends EditorComponent {
         const defaultActions = createElement('div', {class: 'default-actions'})
         const previewBtn = createElement('button', {text: '\u25B6 Preview'})
         previewBtn.addEventListener('click', () => {
-            window.location.href = '../index.html?studio'
+            window.location.href = '../index.html?studio&preview'
         })
         const importBtn = createElement('button', {text: 'Import'})
         importBtn.addEventListener('click', () => this.#importFile())
