@@ -82,7 +82,7 @@ export default class SpritesheetViewer extends EditorComponent {
         flex-direction: column;
         align-items: center;
         padding: 2px;
-        cursor: grab;
+        cursor: pointer;
         transition: filter 0.15s;
     }
 
@@ -91,11 +91,7 @@ export default class SpritesheetViewer extends EditorComponent {
     }
 
     .frame:active {
-        cursor: grabbing;
-    }
-
-    .frame.dragging {
-        opacity: 0.5;
+        transform: scale(0.95);
     }
 
     .frame-thumbnail {
@@ -120,24 +116,12 @@ export default class SpritesheetViewer extends EditorComponent {
     #filter = null
     #animationColorMap = new Map()
 
-    #dragData = null
-    #dragGhost = null
-    #dragStartPos = null
-    #dragStartEl = null
-    #lastTimeline = null
-
     onConnected () {
         this.#buildDOM()
-        this.#setupPointerDrag()
         if (this.#spritesheet) {
             this.#renderFilter()
             this.#renderGrid()
         }
-    }
-
-
-    onDisconnected () {
-        this.#cleanupPointerDrag()
     }
 
 
@@ -242,7 +226,7 @@ export default class SpritesheetViewer extends EditorComponent {
         const frameEl = createElement('div', {
             class: 'frame',
             title: name,
-            attrs: {'data-name': name, draggable: 'true'}
+            attrs: {'data-name': name}
         })
 
         const animPrefix = getAnimationPrefix(name)
@@ -265,221 +249,9 @@ export default class SpritesheetViewer extends EditorComponent {
             }))
         })
 
-        frameEl.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('application/x-spritesheet-frame', JSON.stringify({
-                name,
-                regionData: {
-                    x: frameData.region?.x,
-                    y: frameData.region?.y,
-                    width: frameData.region?.width,
-                    height: frameData.region?.height
-                }
-            }))
-            e.dataTransfer.effectAllowed = 'copy'
-            frameEl.classList.add('dragging')
-        })
-
-        frameEl.addEventListener('dragend', () => {
-            frameEl.classList.remove('dragging')
-        })
-
         return frameEl
     }
 
-
-    #setupPointerDrag () {
-        this.addEventListener('pointerdown', (e) => this.#onPointerStart(e))
-        this.#boundPointerMove = (e) => this.#onPointerMove(e)
-        this.#boundPointerEnd = (e) => this.#onPointerEnd(e)
-        document.addEventListener('pointermove', this.#boundPointerMove)
-        document.addEventListener('pointerup', this.#boundPointerEnd)
-        document.addEventListener('pointercancel', this.#boundPointerEnd)
-    }
-
-    #boundPointerMove = null
-    #boundPointerEnd = null
-
-    #cleanupPointerDrag () {
-        if (this.#boundPointerMove) {
-            document.removeEventListener('pointermove', this.#boundPointerMove)
-        }
-        if (this.#boundPointerEnd) {
-            document.removeEventListener('pointerup', this.#boundPointerEnd)
-            document.removeEventListener('pointercancel', this.#boundPointerEnd)
-        }
-        this.#removeDragGhost()
-    }
-
-
-    #onPointerStart (e) {
-
-        if (e.pointerType === 'mouse') {
-            return
-        }
-
-        const target = e.composedPath()[0]
-        const frameEl = target.closest?.('.frame') || this.#findFrameFromPoint(e.clientX, e.clientY)
-
-        if (!frameEl) {
-            return
-        }
-
-        this.#dragStartPos = {x: e.clientX, y: e.clientY}
-        this.#dragStartEl = frameEl
-        this.#dragData = null
-    }
-
-
-    #findFrameFromPoint (x, y) {
-        const elements = this.shadowRoot.elementsFromPoint(x, y)
-        for (const el of elements) {
-            if (el.classList?.contains('frame')) {
-                return el
-            }
-        }
-        return null
-    }
-
-
-    #onPointerMove (e) {
-        if (!this.#dragStartEl) {
-            return
-        }
-
-        if (e.pointerType === 'mouse') {
-            return
-        }
-
-        const dx = e.clientX - this.#dragStartPos.x
-        const dy = e.clientY - this.#dragStartPos.y
-        const distance = Math.sqrt(dx * dx + dy * dy)
-
-        if (!this.#dragData && distance > 10) {
-            e.preventDefault()
-            this.#startDrag(e.clientX, e.clientY)
-        }
-
-        if (this.#dragData) {
-            e.preventDefault()
-            this.#updateDragGhost(e.clientX, e.clientY)
-
-            const timeline = findTimeline(e.clientX, e.clientY)
-            if (timeline) {
-                timeline.handleTouchDragOver(e.clientX)
-            } else if (this.#lastTimeline) {
-                this.#lastTimeline.handleTouchDragLeave()
-                this.#lastTimeline = null
-            }
-            this.#lastTimeline = timeline
-        }
-    }
-
-
-    #onPointerEnd (e) {
-        if (!this.#dragStartEl) {
-            return
-        }
-
-        if (e.pointerType === 'mouse') {
-            return
-        }
-
-        if (this.#dragData) {
-            const timeline = findTimeline(e.clientX, e.clientY)
-
-            if (timeline) {
-                timeline.handleTouchDrop(this.#dragData)
-            } else if (this.#lastTimeline) {
-                this.#lastTimeline.handleTouchDragLeave()
-            }
-
-            this.#dragStartEl?.classList.remove('dragging')
-            this.#removeDragGhost()
-        }
-
-        this.#dragStartPos = null
-        this.#dragStartEl = null
-        this.#dragData = null
-        this.#lastTimeline = null
-    }
-
-
-    #startDrag (x, y) {
-        const frameEl = this.#dragStartEl
-        const name = frameEl.dataset.name
-        const frameData = this.#spritesheet?.framesMap.get(name)
-
-        if (!frameData) {
-            return
-        }
-
-        this.#dragData = {
-            name,
-            regionData: {
-                x: frameData.region?.x,
-                y: frameData.region?.y,
-                width: frameData.region?.width,
-                height: frameData.region?.height
-            }
-        }
-
-        frameEl.classList.add('dragging')
-        this.#createDragGhost(frameEl, x, y)
-    }
-
-
-    #createDragGhost (frameEl, x, y) {
-        const canvas = frameEl.querySelector('canvas')
-        if (!canvas) {
-            return
-        }
-
-        this.#dragGhost = createElement('div', {
-            class: 'drag-ghost',
-            style: `
-                position: fixed;
-                pointer-events: none;
-                z-index: 10000;
-                opacity: 0.8;
-                transform: translate(-50%, -50%) scale(0.8);
-            `
-        })
-
-        const clonedCanvas = createElement('canvas', {
-            style: 'border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);'
-        })
-        clonedCanvas.width = canvas.width
-        clonedCanvas.height = canvas.height
-        clonedCanvas.getContext('2d').drawImage(canvas, 0, 0)
-
-        this.#dragGhost.appendChild(clonedCanvas)
-        document.body.appendChild(this.#dragGhost)
-
-        this.#updateDragGhost(x, y)
-    }
-
-
-    #updateDragGhost (x, y) {
-        if (this.#dragGhost) {
-            this.#dragGhost.style.left = `${x}px`
-            this.#dragGhost.style.top = `${y}px`
-        }
-    }
-
-
-    #removeDragGhost () {
-        if (this.#dragGhost) {
-            this.#dragGhost.remove()
-            this.#dragGhost = null
-        }
-    }
-
-}
-
-
-function findTimeline (x, y) {
-    const visited = new Set()
-    return findElementInShadowDom({root: document, x, y, tagName: 'animation-timeline', visited})
 }
 
 
@@ -489,31 +261,6 @@ function getAnimationPrefix (frameName) {
         return null
     }
     return frameName.substring(0, slashIndex)
-}
-
-
-function findElementInShadowDom ({root, x, y, tagName, visited}) {
-    const elements = root.elementsFromPoint(x, y)
-
-    for (const el of elements) {
-        if (visited.has(el)) {
-            continue
-        }
-        visited.add(el)
-
-        if (el.tagName?.toLowerCase() === tagName) {
-            return el
-        }
-
-        if (el.shadowRoot) {
-            const found = findElementInShadowDom({root: el.shadowRoot, x, y, tagName, visited})
-            if (found) {
-                return found
-            }
-        }
-    }
-
-    return null
 }
 
 

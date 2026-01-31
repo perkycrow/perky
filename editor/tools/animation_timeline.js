@@ -3,9 +3,6 @@ import '../number_input.js'
 import {createElement} from '../../application/dom_utils.js'
 
 
-const DRAG_TYPE_SPRITESHEET = 'application/x-spritesheet-frame'
-
-
 export default class AnimationTimeline extends EditorComponent {
 
     static styles = `
@@ -80,6 +77,9 @@ export default class AnimationTimeline extends EditorComponent {
         border-radius: var(--radius-md);
         flex-shrink: 0;
         cursor: grab;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
     }
 
     .frame:hover {
@@ -101,9 +101,18 @@ export default class AnimationTimeline extends EditorComponent {
     }
 
     .frame.dragging {
-        opacity: 0.4;
-        transform: scale(0.95);
+        opacity: 0;
         pointer-events: none;
+    }
+
+    .frame.drag-placeholder {
+        opacity: 0.3 !important;
+        outline: 2px dashed var(--accent);
+        outline-offset: -2px;
+    }
+
+    .timeline.gap-active .frame {
+        transition: transform 0.15s ease-out;
     }
 
     .frame.just-added {
@@ -121,16 +130,18 @@ export default class AnimationTimeline extends EditorComponent {
         }
     }
 
-    .frame.just-moved {
-        animation: frame-moved 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    .frame.just-settled {
+        animation: frame-settle 0.4s ease-out;
     }
 
-    @keyframes frame-moved {
+    @keyframes frame-settle {
         0% {
-            transform: scale(1.15);
+            transform: scale(1.05);
+            box-shadow: 0 0 0 2px var(--accent), 0 0 12px rgba(99, 102, 241, 0.4);
         }
         100% {
             transform: scale(1);
+            box-shadow: none;
         }
     }
 
@@ -189,24 +200,6 @@ export default class AnimationTimeline extends EditorComponent {
         cursor: help;
     }
 
-    .drop-indicator {
-        position: absolute;
-        top: var(--spacing-sm);
-        bottom: var(--spacing-sm);
-        width: 3px;
-        background: var(--accent);
-        border-radius: 2px;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.15s, left 0.15s;
-        z-index: 10;
-        box-shadow: 0 0 8px var(--accent);
-    }
-
-    .drop-indicator.visible {
-        opacity: 1;
-    }
-
     .add-frame-btn {
         appearance: none;
         background: var(--bg-tertiary);
@@ -246,7 +239,6 @@ export default class AnimationTimeline extends EditorComponent {
     #containerEl = null
     #scrubberEl = null
     #scrubberThumbEl = null
-    #dropIndicator = null
     #frames = []
     #currentIndex = 0
     #selectedIndex = -1
@@ -268,6 +260,7 @@ export default class AnimationTimeline extends EditorComponent {
     #internalDragStartX = 0
     #internalDragStartY = 0
     #isDragOutside = false
+    #dragFrameStep = 0
 
     onConnected () {
         this.#buildDOM()
@@ -293,21 +286,17 @@ export default class AnimationTimeline extends EditorComponent {
 
         this.#containerEl = createElement('div', {class: 'timeline'})
 
-        this.#dropIndicator = createElement('div', {class: 'drop-indicator'})
-        this.#containerEl.appendChild(this.#dropIndicator)
-
         this.#scrubberEl = createElement('div', {class: 'scrubber hidden'})
 
         this.#scrubberThumbEl = createElement('div', {class: 'scrubber-thumb'})
         this.#scrubberEl.appendChild(this.#scrubberThumbEl)
 
-        this.#setupDropZone()
         this.#setupScrubber()
         this.#setupDeselect()
 
         this.#viewportEl.appendChild(this.#containerEl)
-        this.#wrapperEl.appendChild(this.#viewportEl)
         this.#wrapperEl.appendChild(this.#scrubberEl)
+        this.#wrapperEl.appendChild(this.#viewportEl)
         this.shadowRoot.appendChild(this.#wrapperEl)
     }
 
@@ -388,9 +377,18 @@ export default class AnimationTimeline extends EditorComponent {
 
         if (!this.#internalDragActive && distance > 10) {
             this.#internalDragActive = true
+
+            const frameEls = this.#containerEl.querySelectorAll('.frame')
+            if (frameEls.length > 1) {
+                this.#dragFrameStep = frameEls[1].getBoundingClientRect().left - frameEls[0].getBoundingClientRect().left
+            } else if (frameEls.length > 0) {
+                this.#dragFrameStep = frameEls[0].offsetWidth
+            }
+
             this.#createInternalDragGhost(e.clientX, e.clientY)
             this.#markFrameDragging(this.#internalDragIndex, true)
             this.classList.add('dragging')
+            this.#containerEl.classList.add('gap-active')
         }
 
         if (this.#internalDragActive) {
@@ -406,11 +404,11 @@ export default class AnimationTimeline extends EditorComponent {
 
             if (isOutside) {
                 this.#containerEl.classList.remove('drag-over')
-                this.#hideDropIndicator()
+                this.#clearFrameGaps()
             } else {
                 this.#containerEl.classList.add('drag-over')
                 this.#dropIndex = this.#calculateDropIndex(e.clientX)
-                this.#updateDropIndicator()
+                this.#updateFrameGaps()
             }
         }
     }
@@ -501,14 +499,63 @@ export default class AnimationTimeline extends EditorComponent {
 
             this.#markFrameDragging(this.#internalDragIndex, false)
             this.#removeInternalDragGhost()
-            this.#containerEl.classList.remove('drag-over')
-            this.#hideDropIndicator()
+            this.#clearFrameGaps()
+            this.#containerEl.classList.remove('drag-over', 'gap-active')
             this.classList.remove('dragging')
         }
 
         this.#internalDragIndex = -1
         this.#internalDragActive = false
         this.#isDragOutside = false
+    }
+
+
+    #updateFrameGaps () {
+        const frameEls = this.#containerEl.querySelectorAll('.frame')
+        if (frameEls.length === 0) {
+            return
+        }
+
+        const S = this.#internalDragIndex
+        const D = this.#dropIndex
+        const noMove = D < 0 || D === S || D === S + 1
+        const step = this.#dragFrameStep
+
+        const sourceShift = S < D ? (D - S - 1) * step : (D - S) * step
+        this.#applySourceGap(frameEls[S], noMove, sourceShift)
+
+        frameEls.forEach((el, i) => {
+            if (i === S) {
+                return
+            }
+
+            if (noMove) {
+                el.style.transform = ''
+                return
+            }
+
+            el.style.transform = computeFrameShift(i, S, D, step)
+        })
+    }
+
+
+    #applySourceGap (el, noMove, shift) {
+        if (noMove) {
+            el.style.transform = ''
+            el.classList.remove('drag-placeholder')
+        } else {
+            el.style.transform = `translateX(${shift}px)`
+            el.classList.add('drag-placeholder')
+        }
+    }
+
+
+    #clearFrameGaps () {
+        const frameEls = this.#containerEl.querySelectorAll('.frame')
+        frameEls.forEach(el => {
+            el.style.transform = ''
+            el.classList.remove('drag-placeholder')
+        })
     }
 
 
@@ -678,63 +725,6 @@ export default class AnimationTimeline extends EditorComponent {
     }
 
 
-    #setupDropZone () {
-        // Handle drops from spritesheet viewer (HTML5 drag and drop)
-        const handleDragOver = (e) => {
-            if (!e.dataTransfer.types.includes(DRAG_TYPE_SPRITESHEET)) {
-                return
-            }
-
-            e.preventDefault()
-            e.dataTransfer.dropEffect = 'copy'
-
-            this.#containerEl.classList.add('drag-over')
-            this.#dropIndex = this.#calculateDropIndex(e.clientX)
-            this.#updateDropIndicator()
-        }
-
-        const handleDragLeave = (e) => {
-            const rect = this.#viewportEl.getBoundingClientRect()
-            if (e.clientX < rect.left || e.clientX > rect.right ||
-                e.clientY < rect.top || e.clientY > rect.bottom) {
-                this.#containerEl.classList.remove('drag-over')
-                this.#hideDropIndicator()
-            }
-        }
-
-        const handleDrop = (e) => {
-            e.preventDefault()
-            this.#containerEl.classList.remove('drag-over')
-
-            const spritesheetData = e.dataTransfer.getData(DRAG_TYPE_SPRITESHEET)
-            if (spritesheetData) {
-                this.#handleSpritesheetDrop(spritesheetData)
-            }
-            this.#hideDropIndicator()
-        }
-
-        this.#viewportEl.addEventListener('dragover', handleDragOver)
-        this.#viewportEl.addEventListener('dragleave', handleDragLeave)
-        this.#viewportEl.addEventListener('drop', handleDrop)
-    }
-
-
-    #handleSpritesheetDrop (data) {
-        try {
-            const frameData = JSON.parse(data)
-            this.dispatchEvent(new CustomEvent('framedrop', {
-                detail: {
-                    index: this.#dropIndex,
-                    frameName: frameData.name,
-                    regionData: frameData.regionData
-                }
-            }))
-        } catch {
-
-        }
-    }
-
-
     #calculateDropIndex (clientX) {
         const frameEls = this.#containerEl.querySelectorAll('.frame')
         if (frameEls.length === 0) {
@@ -751,36 +741,6 @@ export default class AnimationTimeline extends EditorComponent {
         }
 
         return frameEls.length
-    }
-
-
-    #updateDropIndicator () {
-        const frameEls = this.#containerEl.querySelectorAll('.frame')
-        this.#dropIndicator.classList.add('visible')
-
-        if (frameEls.length === 0 || this.#dropIndex === 0) {
-            this.#dropIndicator.style.left = '0px'
-            return
-        }
-
-        if (this.#dropIndex >= frameEls.length) {
-            const lastFrame = frameEls[frameEls.length - 1]
-            const containerRect = this.#containerEl.getBoundingClientRect()
-            const frameRect = lastFrame.getBoundingClientRect()
-            this.#dropIndicator.style.left = `${frameRect.right - containerRect.left + this.#scrollLeft + 2}px`
-            return
-        }
-
-        const targetFrame = frameEls[this.#dropIndex]
-        const containerRect = this.#containerEl.getBoundingClientRect()
-        const frameRect = targetFrame.getBoundingClientRect()
-        this.#dropIndicator.style.left = `${frameRect.left - containerRect.left + this.#scrollLeft - 2}px`
-    }
-
-
-    #hideDropIndicator () {
-        this.#dropIndicator.classList.remove('visible')
-        this.#dropIndex = -1
     }
 
 
@@ -803,9 +763,6 @@ export default class AnimationTimeline extends EditorComponent {
 
     #render () {
         this.#containerEl.innerHTML = ''
-
-        this.#dropIndicator = createElement('div', {class: 'drop-indicator'})
-        this.#containerEl.appendChild(this.#dropIndicator)
 
         for (let i = 0; i < this.#frames.length; i++) {
             const frame = this.#frames[i]
@@ -942,50 +899,28 @@ export default class AnimationTimeline extends EditorComponent {
     }
 
 
-    handleTouchDragOver (clientX) {
-        this.#containerEl.classList.add('drag-over')
-        this.#dropIndex = this.#calculateDropIndex(clientX)
-        this.#updateDropIndicator()
-    }
+    flashAddedFrame (index) {
+        requestAnimationFrame(() => {
+            const frameEls = this.#containerEl.querySelectorAll('.frame')
+            const frameEl = frameEls[index]
 
+            if (!frameEl) {
+                return
+            }
 
-    handleTouchDrop (frameData) {
-        this.#containerEl.classList.remove('drag-over')
-        const insertIndex = this.#dropIndex
-        if (insertIndex >= 0) {
-            this.#handleSpritesheetDrop(JSON.stringify(frameData))
-            requestAnimationFrame(() => this.#flashFrameAt(insertIndex))
-        }
-        this.#hideDropIndicator()
-    }
-
-
-    #flashFrameAt (index) {
-        const frameEls = this.#containerEl.querySelectorAll('.frame')
-        const frameEl = frameEls[index]
-
-        if (!frameEl) {
-            return
-        }
-
-        frameEl.classList.add('just-added')
-        frameEl.addEventListener('animationend', () => {
-            frameEl.classList.remove('just-added')
-        }, {once: true})
-
-        for (let i = index + 1; i < frameEls.length; i++) {
-            const el = frameEls[i]
-            el.classList.add('pushed-right')
-            el.addEventListener('animationend', () => {
-                el.classList.remove('pushed-right')
+            frameEl.classList.add('just-added')
+            frameEl.addEventListener('animationend', () => {
+                frameEl.classList.remove('just-added')
             }, {once: true})
-        }
-    }
 
-
-    handleTouchDragLeave () {
-        this.#containerEl.classList.remove('drag-over')
-        this.#hideDropIndicator()
+            for (let i = index + 1; i < frameEls.length; i++) {
+                const el = frameEls[i]
+                el.classList.add('pushed-right')
+                el.addEventListener('animationend', () => {
+                    el.classList.remove('pushed-right')
+                }, {once: true})
+            }
+        })
     }
 
 
@@ -998,13 +933,24 @@ export default class AnimationTimeline extends EditorComponent {
                 return
             }
 
-            frameEl.classList.add('just-moved')
+            frameEl.classList.add('just-settled')
             frameEl.addEventListener('animationend', () => {
-                frameEl.classList.remove('just-moved')
+                frameEl.classList.remove('just-settled')
             }, {once: true})
         })
     }
 
+}
+
+
+function computeFrameShift (i, S, D, step) {
+    if (S < D && i > S && i < D) {
+        return `translateX(${-step}px)`
+    }
+    if (S > D && i >= D && i < S) {
+        return `translateX(${step}px)`
+    }
+    return ''
 }
 
 

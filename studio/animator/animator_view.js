@@ -416,31 +416,26 @@ export default class AnimatorView extends EditorComponent {
             return
         }
 
-        this.#selectedAnimation.frames.push({region, name})
-        this.#timelineEl.setFrames(this.#selectedAnimation.frames)
+        const frames = this.#selectedAnimation.frames
+        let insertIndex
+
+        if (this.#selectedFrameIndex >= 0) {
+            insertIndex = this.#selectedFrameIndex + 1
+            frames.splice(insertIndex, 0, {region, name})
+        } else {
+            frames.push({region, name})
+            insertIndex = frames.length - 1
+        }
+
+        this.#timelineEl.setFrames(frames)
+        this.#timelineEl.flashAddedFrame(insertIndex)
         this.#markDirty()
-
-
-        requestAnimationFrame(() => {
-            const frames = this.#timelineEl.shadowRoot?.querySelectorAll('.frame')
-            const lastFrame = frames?.[frames.length - 1]
-            if (lastFrame) {
-                lastFrame.classList.add('just-added')
-                lastFrame.addEventListener('animationend', () => {
-                    lastFrame.classList.remove('just-added')
-                }, {once: true})
-            }
-        })
     }
 
 
     #setupTimelineEvents () {
         this.#timelineEl.addEventListener('frameclick', (e) => {
             this.#previewEl?.setCurrentIndex(e.detail.index)
-        })
-
-        this.#timelineEl.addEventListener('framedrop', (e) => {
-            this.#handleFrameDrop(e.detail)
         })
 
         this.#timelineEl.addEventListener('framemove', (e) => {
@@ -481,22 +476,6 @@ export default class AnimatorView extends EditorComponent {
 
         this.#appLayout.querySelectorAll('[slot^="header"]').forEach(el => el.remove())
         this.#buildHeaderControls()
-    }
-
-
-    #handleFrameDrop ({index, frameName}) {
-        if (!this.#selectedAnimation || !this.#spritesheet) {
-            return
-        }
-
-        const region = this.#spritesheet.getRegion(frameName)
-        if (!region) {
-            return
-        }
-
-        this.#selectedAnimation.frames.splice(index, 0, {region, name: frameName})
-        this.#timelineEl.setFrames(this.#selectedAnimation.frames)
-        this.#markDirty()
     }
 
 
