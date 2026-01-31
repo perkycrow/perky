@@ -77,7 +77,7 @@ export default class SideDrawer extends EditorComponent {
             min-height: 0;
             padding: var(--spacing-md);
             box-sizing: border-box;
-            overflow: hidden;
+            overflow: auto;
         }
 
         :host([no-padding]) .drawer-content {

@@ -190,6 +190,82 @@ describe('animation_settings', () => {
             expect(motionOptions.style.display).not.toBe('none')
         })
 
+
+        test('shows delete button', () => {
+            const animator = createMockAnimator([{id: 'idle'}])
+            const animation = animator.children[0]
+
+            const {container} = buildAnimationSettings(animator, animation, {})
+
+            const deleteBtn = container.querySelector('.settings-delete-btn')
+            expect(deleteBtn).not.toBeNull()
+            expect(deleteBtn.textContent).toBe('Delete Animation')
+        })
+
+
+        test('first click shows confirm state', () => {
+            const animator = createMockAnimator([{id: 'idle'}, {id: 'walk'}])
+            const animation = animator.children[0]
+
+            const {container} = buildAnimationSettings(animator, animation, {})
+
+            const deleteBtn = container.querySelector('.settings-delete-btn')
+            deleteBtn.click()
+
+            expect(deleteBtn.textContent).toBe('Confirm?')
+            expect(deleteBtn.classList.contains('confirming')).toBe(true)
+        })
+
+
+        test('second click calls onDelete', () => {
+            const animator = createMockAnimator([{id: 'idle'}, {id: 'walk'}])
+            const animation = animator.children[0]
+            const onDelete = vi.fn()
+
+            const {container} = buildAnimationSettings(animator, animation, {onDelete})
+
+            const deleteBtn = container.querySelector('.settings-delete-btn')
+            deleteBtn.click()
+            deleteBtn.click()
+
+            expect(onDelete).toHaveBeenCalledOnce()
+        })
+
+
+        test('confirm resets after timeout', () => {
+            vi.useFakeTimers()
+            const animator = createMockAnimator([{id: 'idle'}, {id: 'walk'}])
+            const animation = animator.children[0]
+
+            const {container} = buildAnimationSettings(animator, animation, {})
+
+            const deleteBtn = container.querySelector('.settings-delete-btn')
+            deleteBtn.click()
+
+            expect(deleteBtn.textContent).toBe('Confirm?')
+
+            vi.advanceTimersByTime(3000)
+
+            expect(deleteBtn.textContent).toBe('Delete Animation')
+            expect(deleteBtn.classList.contains('confirming')).toBe(false)
+            vi.useRealTimers()
+        })
+
+
+        test('rebuild preserves delete button', () => {
+            const animator = createMockAnimator([
+                {id: 'idle', motion: {enabled: false}},
+                {id: 'walk', motion: {enabled: true, mode: 'sidescroller'}}
+            ])
+
+            const {container, rebuild} = buildAnimationSettings(animator, animator.children[0], {})
+
+            rebuild(animator.children[1])
+
+            const deleteBtn = container.querySelector('.settings-delete-btn')
+            expect(deleteBtn).not.toBeNull()
+        })
+
     })
 
 })

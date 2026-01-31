@@ -63,6 +63,7 @@ export function buildAnimationSettings (animator, selectedAnimation, callbacks) 
     container.appendChild(nameSection)
 
     buildAnimationSettingsContent(container, selectedAnimation, callbacks)
+    buildDeleteSection(container, callbacks)
 
     return {
         container,
@@ -72,6 +73,7 @@ export function buildAnimationSettings (animator, selectedAnimation, callbacks) 
             const sections = container.querySelectorAll('[data-setting]')
             sections.forEach(s => s.remove())
             buildAnimationSettingsContent(container, animation, callbacks)
+            buildDeleteSection(container, callbacks)
         }
     }
 }
@@ -213,4 +215,36 @@ export function rebuildDirectionPad (pad, animation, callbacks) {
         }
         pad.appendChild(btn)
     }
+}
+
+
+function buildDeleteSection (container, callbacks) {
+    const section = document.createElement('div')
+    section.className = 'settings-section'
+    section.style.marginTop = 'auto'
+    section.dataset.setting = 'delete'
+
+    const btn = document.createElement('button')
+    btn.className = 'settings-delete-btn'
+    btn.textContent = 'Delete Animation'
+
+    let confirmTimer = null
+
+    btn.addEventListener('click', () => {
+        if (btn.classList.contains('confirming')) {
+            clearTimeout(confirmTimer)
+            callbacks.onDelete?.()
+            return
+        }
+
+        btn.textContent = 'Confirm?'
+        btn.classList.add('confirming')
+        confirmTimer = setTimeout(() => {
+            btn.textContent = 'Delete Animation'
+            btn.classList.remove('confirming')
+        }, 3000)
+    })
+
+    section.appendChild(btn)
+    container.appendChild(section)
 }

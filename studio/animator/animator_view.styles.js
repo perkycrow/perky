@@ -284,6 +284,8 @@ export const settingsStyles = createStyleSheet(`
         flex-direction: column;
         gap: var(--spacing-lg);
         padding-top: calc(28px + var(--spacing-sm));
+        min-height: 100%;
+        box-sizing: border-box;
     }
 
     .settings-section {
@@ -408,5 +410,30 @@ export const settingsStyles = createStyleSheet(`
 
     .anchor-inputs number-input {
         flex: 1;
+    }
+
+    .settings-delete-btn {
+        appearance: none;
+        background: transparent;
+        border: none;
+        border-radius: var(--radius-md);
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: var(--font-size-sm);
+        font-family: var(--font-mono);
+        color: var(--status-error);
+        cursor: pointer;
+        width: 100%;
+        min-height: var(--touch-target);
+        transition: background var(--transition-fast), color var(--transition-fast);
+    }
+
+    .settings-delete-btn:hover {
+        background: var(--status-error);
+        color: white;
+    }
+
+    .settings-delete-btn.confirming {
+        background: var(--status-error);
+        color: white;
     }
 `)

@@ -373,11 +373,29 @@ export default class AnimatorView extends EditorComponent {
             onMotionUpdate: (motion) => {
                 this.#previewEl?.updateMotion(motion)
                 this.#markDirty()
+            },
+            onDelete: () => {
+                this.#deleteSelectedAnimation()
             }
         })
 
         this.#editorDrawerEl.appendChild(this.#animationSettings.container)
         this.#editorDrawerEl.open()
+    }
+
+
+    #deleteSelectedAnimation () {
+        if (!this.#selectedAnimation) {
+            return
+        }
+
+        const id = this.#selectedAnimation.$id
+        this.#animator.removeChild(id)
+        this.#selectedAnimation = this.#animator.children[0] || null
+        this.#editorDrawerEl.close()
+        this.#drawerMode = null
+        this.#render()
+        this.#markDirty()
     }
 
 
