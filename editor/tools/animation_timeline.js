@@ -32,7 +32,7 @@ export default class AnimationTimeline extends EditorComponent {
     .timeline {
         display: flex;
         gap: var(--spacing-sm);
-        padding: var(--spacing-sm) 0;
+        padding: 0;
         position: relative;
         width: fit-content;
         min-width: 100%;
@@ -83,7 +83,6 @@ export default class AnimationTimeline extends EditorComponent {
     }
 
     .frame:hover {
-        transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
@@ -216,8 +215,8 @@ export default class AnimationTimeline extends EditorComponent {
         color: var(--fg-muted);
         font-size: 24px;
         font-weight: 300;
-        width: 80px;
-        height: 80px;
+        width: 100px;
+        height: 100px;
         margin: var(--spacing-xs);
         cursor: pointer;
         transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), transform 0.1s;
@@ -843,8 +842,8 @@ export default class AnimationTimeline extends EditorComponent {
         const thumbnailWrapper = createElement('div', {class: 'frame-thumbnail-wrapper'})
 
         const canvas = createElement('canvas', {class: 'frame-thumbnail'})
-        canvas.width = 80
-        canvas.height = 80
+        canvas.width = 100
+        canvas.height = 100
         drawFrameThumbnail(canvas, frame)
         thumbnailWrapper.appendChild(canvas)
 

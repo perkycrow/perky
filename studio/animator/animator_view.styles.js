@@ -120,8 +120,7 @@ export const animatorViewStyles = createStyleSheet(`
     .timeline-section {
         flex-shrink: 0;
         background: var(--bg-secondary);
-        padding: var(--spacing-md) var(--spacing-lg);
-        min-height: 120px;
+        padding: var(--spacing-sm) var(--spacing-lg);
         overflow: hidden;
         max-width: 100%;
     }
