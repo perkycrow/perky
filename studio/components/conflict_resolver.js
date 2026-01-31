@@ -206,21 +206,23 @@ export default class ConflictResolver extends EditorComponent {
 
         const columns = createElement('div', {class: 'conflict-columns'})
 
-        const customCard = this.#createVersionCard(
-            conflict.id, 'custom',
-            'My version',
-            'Local changes',
-            conflict.customDate,
-            true
-        )
+        const customCard = this.#createVersionCard({
+            conflictId: conflict.id,
+            value: 'custom',
+            label: 'My version',
+            detail: 'Local changes',
+            date: conflict.customDate,
+            selected: true
+        })
 
-        const gameCard = this.#createVersionCard(
-            conflict.id, 'game',
-            'Native version',
-            'Game update',
-            conflict.gameDate,
-            false
-        )
+        const gameCard = this.#createVersionCard({
+            conflictId: conflict.id,
+            value: 'game',
+            label: 'Native version',
+            detail: 'Game update',
+            date: conflict.gameDate,
+            selected: false
+        })
 
         columns.appendChild(customCard)
         columns.appendChild(gameCard)
@@ -229,7 +231,7 @@ export default class ConflictResolver extends EditorComponent {
     }
 
 
-    #createVersionCard (conflictId, value, label, detail, date, selected) {
+    #createVersionCard ({conflictId, value, label, detail, date, selected}) {
         const card = createElement('div', {class: 'version-card'})
         if (selected) {
             card.classList.add('selected')

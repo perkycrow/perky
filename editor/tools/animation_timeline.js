@@ -522,7 +522,7 @@ export default class AnimationTimeline extends EditorComponent {
         const step = this.#dragFrameStep
 
         const sourceShift = S < D ? (D - S - 1) * step : (D - S) * step
-        this.#applySourceGap(frameEls[S], noMove, sourceShift)
+        applySourceGap(frameEls[S], noMove, sourceShift)
 
         frameEls.forEach((el, i) => {
             if (i === S) {
@@ -536,17 +536,6 @@ export default class AnimationTimeline extends EditorComponent {
 
             el.style.transform = computeFrameShift(i, S, D, step)
         })
-    }
-
-
-    #applySourceGap (el, noMove, shift) {
-        if (noMove) {
-            el.style.transform = ''
-            el.classList.remove('drag-placeholder')
-        } else {
-            el.style.transform = `translateX(${shift}px)`
-            el.classList.add('drag-placeholder')
-        }
     }
 
 
@@ -940,6 +929,17 @@ export default class AnimationTimeline extends EditorComponent {
         })
     }
 
+}
+
+
+function applySourceGap (el, noMove, shift) {
+    if (noMove) {
+        el.style.transform = ''
+        el.classList.remove('drag-placeholder')
+    } else {
+        el.style.transform = `translateX(${shift}px)`
+        el.classList.add('drag-placeholder')
+    }
 }
 
 

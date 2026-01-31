@@ -22,33 +22,11 @@ export function buildAnimationSettings (animator, selectedAnimation, callbacks) 
     nameInput.value = selectedAnimation?.$id || ''
 
     const commitRename = () => {
-        const raw = nameInput.value.trim()
-        if (!raw) {
-            nameInput.value = selectedAnimation?.$id || ''
-            return
+        const result = resolveAnimationName(nameInput.value, animator, selectedAnimation)
+        nameInput.value = result.displayName
+        if (result.renamed) {
+            callbacks.onRename?.(result.displayName)
         }
-
-        let newName = toCamelCase(raw)
-        if (!newName) {
-            nameInput.value = selectedAnimation?.$id || ''
-            return
-        }
-
-        if (newName === selectedAnimation?.$id) {
-            nameInput.value = newName
-            return
-        }
-
-        if (animator.hasChild(newName)) {
-            let counter = 2
-            while (animator.hasChild(`${newName}${counter}`)) {
-                counter++
-            }
-            newName = `${newName}${counter}`
-        }
-
-        nameInput.value = newName
-        callbacks.onRename?.(newName)
     }
 
     nameInput.addEventListener('blur', commitRename)
@@ -215,6 +193,35 @@ export function rebuildDirectionPad (pad, animation, callbacks) {
         }
         pad.appendChild(btn)
     }
+}
+
+
+function resolveAnimationName (rawValue, animator, selectedAnimation) {
+    const currentId = selectedAnimation?.$id || ''
+    const trimmed = rawValue.trim()
+
+    if (!trimmed) {
+        return {displayName: currentId, renamed: false}
+    }
+
+    let newName = toCamelCase(trimmed)
+    if (!newName) {
+        return {displayName: currentId, renamed: false}
+    }
+
+    if (newName === currentId) {
+        return {displayName: newName, renamed: false}
+    }
+
+    if (animator.hasChild(newName)) {
+        let counter = 2
+        while (animator.hasChild(`${newName}${counter}`)) {
+            counter++
+        }
+        newName = `${newName}${counter}`
+    }
+
+    return {displayName: newName, renamed: true}
 }
 
 
