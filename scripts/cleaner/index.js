@@ -318,8 +318,6 @@ function printCoverageBanner () {
 
 
 export async function runCoverage (rootDir, options = {}) {
-    printCoverageBanner()
-
     const auditorOptions = {compact: true, silent: true, ...options}
     const results = {}
     const hints = {}
@@ -337,7 +335,12 @@ export async function runCoverage (rootDir, options = {}) {
         hints[key] = auditor.getHint()
     }
 
-    printSummary(results, hints)
+    if (options.json) {
+        console.log(JSON.stringify(results, null, 2))
+    } else {
+        printCoverageBanner()
+        printSummary(results, hints)
+    }
 
     return results
 }

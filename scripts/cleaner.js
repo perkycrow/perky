@@ -24,6 +24,7 @@ const verboseMode = hasFlag('--verbose')
 const importsMode = hasFlag('--imports')
 const fileLengthMode = hasFlag('--filelength')
 const instructionsMode = hasFlag('--instructions')
+const jsonMode = hasFlag('--json')
 
 
 const targetPath = args.find(arg => !arg.startsWith('--'))
@@ -71,6 +72,7 @@ function printHelp () {
     console.log('  --imports   Show files ranked by import count')
     console.log('  --filelength Sort files by line count')
     console.log('  --instructions Fix, audit, and output only the detailed instructions')
+    console.log('  --json      Output results as JSON (use with --coverage)')
     console.log('  --dry-run   Preview fixes without applying\n')
     console.log('Arguments:')
     console.log('  path        Optional path to specific file or directory to clean')
@@ -93,7 +95,7 @@ if (instructionsMode) {
 } else if (filescoreMode || flopMode) {
     runFilescore(rootDir, {targetPath: validatedPath, verbose: verboseMode, flop: flopMode})
 } else if (coverageMode) {
-    await runCoverage(rootDir, {targetPath: validatedPath})
+    await runCoverage(rootDir, {targetPath: validatedPath, json: jsonMode})
 } else if (auditMode && fixMode) {
     await runAll(rootDir, {targetPath: validatedPath})
 } else if (auditMode) {
