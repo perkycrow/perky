@@ -125,41 +125,29 @@ export function buildEventsSection (frame, {onFramesUpdate, getSuggestions}) {
             eventsContainer.appendChild(suggestionsEl)
         }
 
-        const addRow = document.createElement('div')
-        addRow.className = 'event-add-row'
-
         const input = document.createElement('input')
         input.type = 'text'
         input.className = 'event-input'
         input.placeholder = 'New event...'
 
-        const addBtn = document.createElement('button')
-        addBtn.className = 'event-add-btn'
-        addBtn.textContent = 'Add'
-        addBtn.addEventListener('click', () => {
-            const value = input.value.trim()
-            if (value) {
-                if (!frame.events) {
-                    frame.events = []
-                }
-                if (!frame.events.includes(value)) {
-                    frame.events.push(value)
-                    onFramesUpdate?.()
-                    renderEvents()
-                }
-                input.value = ''
-            }
-        })
-
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
-                addBtn.click()
+                const value = input.value.trim()
+                if (value) {
+                    if (!frame.events) {
+                        frame.events = []
+                    }
+                    if (!frame.events.includes(value)) {
+                        frame.events.push(value)
+                        onFramesUpdate?.()
+                        renderEvents()
+                    }
+                    input.value = ''
+                }
             }
         })
 
-        addRow.appendChild(input)
-        addRow.appendChild(addBtn)
-        eventsContainer.appendChild(addRow)
+        eventsContainer.appendChild(input)
     }
 
     renderEvents()

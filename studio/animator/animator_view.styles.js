@@ -191,18 +191,22 @@ export const frameEditorStyles = createStyleSheet(`
     .frame-editor-events {
         display: flex;
         flex-direction: column;
-        gap: var(--spacing-sm);
+        gap: var(--spacing-xs);
     }
 
     .event-chip {
-        display: inline-flex;
+        display: flex;
         align-items: center;
-        gap: var(--spacing-xs);
+        gap: var(--spacing-sm);
         background: var(--bg-tertiary);
         border-radius: var(--radius-md);
-        padding: var(--spacing-xs) var(--spacing-sm);
+        padding: var(--spacing-xs) var(--spacing-xs) var(--spacing-xs) var(--spacing-md);
         font-size: var(--font-size-sm);
         color: var(--fg-primary);
+    }
+
+    .event-chip span {
+        flex: 1;
     }
 
     .event-chip-remove {
@@ -210,15 +214,16 @@ export const frameEditorStyles = createStyleSheet(`
         background: transparent;
         border: none;
         color: var(--fg-muted);
-        font-size: 14px;
-        width: 20px;
-        height: 20px;
+        font-size: 16px;
+        width: 32px;
+        height: 32px;
         padding: 0;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: var(--radius-sm);
+        flex-shrink: 0;
         transition: background var(--transition-fast), color var(--transition-fast);
     }
 
@@ -252,50 +257,24 @@ export const frameEditorStyles = createStyleSheet(`
         color: var(--fg-primary);
     }
 
-    .event-add-row {
-        display: flex;
-        gap: var(--spacing-sm);
-        margin-top: var(--spacing-xs);
-    }
-
     .event-input {
-        flex: 1;
         background: var(--bg-tertiary);
-        border: none;
+        border: 1px solid var(--border);
         border-radius: var(--radius-md);
         padding: var(--spacing-sm) var(--spacing-md);
         font-size: var(--font-size-sm);
         font-family: var(--font-mono);
         color: var(--fg-primary);
-        min-height: var(--touch-target);
+        margin-top: var(--spacing-xs);
     }
 
     .event-input:focus {
-        outline: 1px solid var(--accent);
+        outline: none;
+        border-color: var(--accent);
     }
 
     .event-input::placeholder {
         color: var(--fg-muted);
-    }
-
-    .event-add-btn {
-        appearance: none;
-        background: var(--accent);
-        border: none;
-        border-radius: var(--radius-md);
-        padding: var(--spacing-sm) var(--spacing-md);
-        font-size: var(--font-size-sm);
-        font-family: var(--font-mono);
-        font-weight: 500;
-        color: var(--bg-primary);
-        cursor: pointer;
-        min-height: var(--touch-target);
-        min-width: var(--touch-target);
-        transition: background var(--transition-fast);
-    }
-
-    .event-add-btn:hover {
-        background: var(--accent-hover);
     }
 `)
 
