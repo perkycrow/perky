@@ -85,6 +85,10 @@ export default class SpriteAnimator extends PerkyModule {
             }
         }
 
+        if (!frameConfig.source) {
+            return {region: null}
+        }
+
         const [spritesheetName, frameName] = frameConfig.source.split(':')
         const spritesheet = this.textureSystem?.getSpritesheet(spritesheetName)
 

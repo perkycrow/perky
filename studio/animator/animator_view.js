@@ -37,6 +37,7 @@ export default class AnimatorView extends EditorComponent {
     #store = new PerkyStore()
     #dirty = false
     #autoSaveTimer = null
+    #boundBeforeUnload = null
 
     #appLayout = null
     #containerEl = null
@@ -61,11 +62,16 @@ export default class AnimatorView extends EditorComponent {
         if (this.#context && this.#animatorConfig) {
             this.#initAnimator()
         }
+
+        this.#boundBeforeUnload = () => this.#flushSave()
+        window.addEventListener('beforeunload', this.#boundBeforeUnload)
     }
 
 
     onDisconnected () {
         clearTimeout(this.#autoSaveTimer)
+        this.#flushSave()
+        window.removeEventListener('beforeunload', this.#boundBeforeUnload)
     }
 
 
@@ -572,9 +578,10 @@ export default class AnimatorView extends EditorComponent {
             return
         }
 
+        const spritesheetName = inferSpritesheetName(this.#animatorConfig)
         const animations = {}
         for (const anim of this.#animator.children) {
-            animations[anim.$id] = buildAnimationConfig(anim, this.#spritesheet)
+            animations[anim.$id] = buildAnimationConfig(anim, spritesheetName)
         }
 
         const lines = []
@@ -591,6 +598,14 @@ export default class AnimatorView extends EditorComponent {
         this.#dirty = true
         clearTimeout(this.#autoSaveTimer)
         this.#autoSaveTimer = setTimeout(() => this.#autoSave(), 2000)
+    }
+
+
+    #flushSave () {
+        if (this.#dirty) {
+            clearTimeout(this.#autoSaveTimer)
+            this.#autoSave()
+        }
     }
 
 
@@ -669,7 +684,7 @@ export default class AnimatorView extends EditorComponent {
         const animations = {}
 
         for (const anim of this.#animator.children) {
-            animations[anim.$id] = buildAnimationConfig(anim, this.#spritesheet)
+            animations[anim.$id] = buildAnimationConfig(anim, spritesheetName)
         }
 
         return {

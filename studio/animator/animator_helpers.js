@@ -31,7 +31,7 @@ export function collectEventSuggestions (animator, excludeEvents) {
 }
 
 
-export function buildAnimationConfig (anim, spritesheet) {
+export function buildAnimationConfig (anim, spritesheetName) {
     const config = {
         fps: anim.fps,
         loop: anim.loop
@@ -53,7 +53,7 @@ export function buildAnimationConfig (anim, spritesheet) {
         if (frame.source) {
             fc.source = frame.source
         } else if (frame.name) {
-            fc.source = `${spritesheet?.$id || 'spritesheet'}:${frame.name}`
+            fc.source = `${spritesheetName || 'spritesheet'}:${frame.name}`
         }
         if (frame.duration && frame.duration !== 1) {
             fc.duration = frame.duration
