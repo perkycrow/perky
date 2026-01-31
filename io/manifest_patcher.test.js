@@ -1,5 +1,14 @@
-import {describe, test, expect} from 'vitest'
-import {applyOverrides} from './manifest_patcher.js'
+import {describe, test, expect, vi} from 'vitest'
+import {applyOverrides, loadStudioOverrides} from './manifest_patcher.js'
+import PerkyStore from './perky_store.js'
+
+
+vi.mock('./perky_store.js', () => {
+    const MockPerkyStore = vi.fn()
+    MockPerkyStore.prototype.list = vi.fn()
+    MockPerkyStore.prototype.get = vi.fn()
+    return {default: MockPerkyStore}
+})
 
 
 describe('applyOverrides', () => {
@@ -98,6 +107,114 @@ describe('applyOverrides', () => {
         const result = applyOverrides(manifestData, [])
 
         expect(result.assets.redAnimator).toEqual({type: 'animator', url: './red.json'})
+    })
+
+})
+
+
+function createBlob (data) {
+    const json = JSON.stringify(data)
+    return {text: () => Promise.resolve(json)}
+}
+
+
+function createPngBlob () {
+    return {text: () => Promise.resolve('')}
+}
+
+
+describe('loadStudioOverrides', () => {
+
+    test('returns empty array when no resources', async () => {
+        PerkyStore.prototype.list.mockResolvedValue([])
+
+        const result = await loadStudioOverrides()
+
+        expect(result).toEqual([])
+    })
+
+
+    test('loads animator config from store', async () => {
+        const animatorConfig = {spritesheet: 'redSpritesheet', animations: {idle: {}}}
+
+        PerkyStore.prototype.list.mockResolvedValue([{id: 'redAnimator'}])
+        PerkyStore.prototype.get.mockResolvedValue({
+            id: 'redAnimator',
+            files: [
+                {name: 'redAnimator.json', blob: createBlob(animatorConfig)}
+            ]
+        })
+
+        const result = await loadStudioOverrides()
+
+        expect(result.length).toBeGreaterThanOrEqual(1)
+        expect(result[0]).toEqual({id: 'redAnimator', source: animatorConfig})
+    })
+
+
+    test('skips resource when store.get returns null', async () => {
+        PerkyStore.prototype.list.mockResolvedValue([{id: 'missingAnimator'}])
+        PerkyStore.prototype.get.mockResolvedValue(null)
+
+        const result = await loadStudioOverrides()
+
+        expect(result).toEqual([])
+    })
+
+
+    test('skips resource when no Animator.json file found', async () => {
+        PerkyStore.prototype.list.mockResolvedValue([{id: 'noConfig'}])
+        PerkyStore.prototype.get.mockResolvedValue({
+            id: 'noConfig',
+            files: [{name: 'other.json', blob: createBlob({})}]
+        })
+
+        const result = await loadStudioOverrides()
+
+        expect(result).toEqual([])
+    })
+
+
+    test('includes spritesheet override when spritesheet config exists', async () => {
+        const animatorConfig = {spritesheet: 'heroSpritesheet', animations: {run: {}}}
+        const spritesheetData = {frames: {frame0: {}}, meta: {}}
+
+        globalThis.createImageBitmap = vi.fn().mockResolvedValue({width: 64, height: 64})
+
+        PerkyStore.prototype.list.mockResolvedValue([{id: 'heroAnimator'}])
+        PerkyStore.prototype.get.mockResolvedValue({
+            id: 'heroAnimator',
+            files: [
+                {name: 'heroAnimator.json', blob: createBlob(animatorConfig)},
+                {name: 'heroSpritesheet.json', blob: createBlob(spritesheetData)},
+                {name: 'hero_0.png', blob: createPngBlob()}
+            ]
+        })
+
+        const result = await loadStudioOverrides()
+
+        expect(result.length).toBe(2)
+        expect(result[0]).toEqual({id: 'heroAnimator', source: animatorConfig})
+        expect(result[1].id).toBe('heroSpritesheet')
+        expect(result[1].source.data).toEqual(spritesheetData)
+        expect(result[1].source.images).toHaveLength(1)
+    })
+
+
+    test('skips spritesheet when no spritesheet name in config', async () => {
+        const animatorConfig = {animations: {idle: {}}}
+
+        PerkyStore.prototype.list.mockResolvedValue([{id: 'simpleAnimator'}])
+        PerkyStore.prototype.get.mockResolvedValue({
+            id: 'simpleAnimator',
+            files: [
+                {name: 'simpleAnimator.json', blob: createBlob(animatorConfig)}
+            ]
+        })
+
+        const result = await loadStudioOverrides()
+
+        expect(result).toEqual([{id: 'simpleAnimator', source: animatorConfig}])
     })
 
 })

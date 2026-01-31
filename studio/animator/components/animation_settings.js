@@ -1,6 +1,7 @@
 import '../../../editor/select_input.js'
 import '../../../editor/slider_input.js'
 import {toCamelCase} from '../../../core/utils.js'
+import {createElement} from '../../../application/dom_utils.js'
 
 
 export function buildAnimationSettings (animator, selectedAnimation, callbacks) {
@@ -226,14 +227,16 @@ function resolveAnimationName (rawValue, animator, selectedAnimation) {
 
 
 function buildDeleteSection (container, callbacks) {
-    const section = document.createElement('div')
-    section.className = 'settings-section'
-    section.style.marginTop = 'auto'
+    const section = createElement('div', {
+        class: 'settings-section',
+        style: {marginTop: 'auto'}
+    })
     section.dataset.setting = 'delete'
 
-    const btn = document.createElement('button')
-    btn.className = 'settings-delete-btn'
-    btn.textContent = 'Delete Animation'
+    const btn = createElement('button', {
+        class: 'settings-delete-btn',
+        text: 'Delete Animation'
+    })
 
     let confirmTimer = null
 

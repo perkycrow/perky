@@ -7,9 +7,5 @@ doc/docs.json
 doc/api.json
 doc/tests.json
 psd/
-
-# Polish (automated Claude cleanup)
-.polish/
-
-# Generated studio files
+.perky/
 */studio/

@@ -277,8 +277,9 @@ export default class HubView extends EditorComponent {
             attrs: {'no-menu': '', 'no-close': '', 'no-footer': ''}
         })
 
-        const storageInfo = document.createElement('storage-info')
-        storageInfo.setAttribute('slot', 'header-start')
+        const storageInfo = createElement('storage-info', {
+            attrs: {slot: 'header-start'}
+        })
         this.#appLayout.appendChild(storageInfo)
 
         const headerActions = this.#buildHeaderActions()
@@ -696,8 +697,7 @@ export default class HubView extends EditorComponent {
 
 
     async #importFile () {
-        const input = document.createElement('input')
-        input.type = 'file'
+        const input = createElement('input', {type: 'file'})
         input.accept = '.perky'
         input.addEventListener('change', async () => {
             const file = input.files[0]

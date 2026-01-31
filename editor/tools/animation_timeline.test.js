@@ -414,6 +414,56 @@ describe('AnimationTimeline', () => {
     })
 
 
+    describe('flashAddedFrame', () => {
+
+        test('adds just-added class to frame at specified index', async () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            timeline.flashAddedFrame(1)
+
+            await new Promise(resolve => requestAnimationFrame(resolve))
+
+            const frameEls = timeline.shadowRoot.querySelectorAll('.frame')
+            expect(frameEls[1].classList.contains('just-added')).toBe(true)
+        })
+
+
+        test('adds pushed-right class to frames after the added index', async () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            timeline.flashAddedFrame(1)
+
+            await new Promise(resolve => requestAnimationFrame(resolve))
+
+            const frameEls = timeline.shadowRoot.querySelectorAll('.frame')
+            expect(frameEls[0].classList.contains('pushed-right')).toBe(false)
+            expect(frameEls[1].classList.contains('pushed-right')).toBe(false)
+            expect(frameEls[2].classList.contains('pushed-right')).toBe(true)
+            expect(frameEls[3].classList.contains('pushed-right')).toBe(true)
+        })
+
+
+        test('does not throw if index is out of bounds', async () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            expect(() => timeline.flashAddedFrame(100)).not.toThrow()
+
+            await new Promise(resolve => requestAnimationFrame(resolve))
+        })
+
+
+        test('does not throw if no frames exist', async () => {
+            expect(() => timeline.flashAddedFrame(0)).not.toThrow()
+
+            await new Promise(resolve => requestAnimationFrame(resolve))
+        })
+
+    })
+
+
     describe('selection', () => {
 
         test('getSelectedIndex returns -1 initially', () => {
