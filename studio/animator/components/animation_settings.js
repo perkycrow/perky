@@ -1,36 +1,74 @@
 import '../../../editor/select_input.js'
 import '../../../editor/slider_input.js'
+import {toCamelCase} from '../../../core/utils.js'
 
 
 export function buildAnimationSettings (animator, selectedAnimation, callbacks) {
     const container = document.createElement('div')
     container.className = 'animation-settings'
 
-    const animSection = document.createElement('div')
-    animSection.className = 'settings-section'
+    const nameSection = document.createElement('div')
+    nameSection.className = 'settings-section'
 
-    const animLabel = document.createElement('div')
-    animLabel.className = 'settings-label'
-    animLabel.textContent = 'Animation'
-    animSection.appendChild(animLabel)
+    const nameLabel = document.createElement('div')
+    nameLabel.className = 'settings-label'
+    nameLabel.textContent = 'Name'
+    nameSection.appendChild(nameLabel)
 
-    const animSelect = document.createElement('select-input')
-    animSelect.setAttribute('context', 'studio')
-    const animOptions = animator.children.map(anim => ({value: anim.$id, label: anim.$id}))
-    animSelect.setOptions(animOptions)
-    animSelect.setValue(selectedAnimation?.$id)
-    animSelect.addEventListener('change', (e) => {
-        callbacks.onAnimationChange?.(e.detail.value)
+    const nameInput = document.createElement('input')
+    nameInput.className = 'event-input'
+    nameInput.type = 'text'
+    nameInput.spellcheck = false
+    nameInput.value = selectedAnimation?.$id || ''
+
+    const commitRename = () => {
+        const raw = nameInput.value.trim()
+        if (!raw) {
+            nameInput.value = selectedAnimation?.$id || ''
+            return
+        }
+
+        let newName = toCamelCase(raw)
+        if (!newName) {
+            nameInput.value = selectedAnimation?.$id || ''
+            return
+        }
+
+        if (newName === selectedAnimation?.$id) {
+            nameInput.value = newName
+            return
+        }
+
+        if (animator.hasChild(newName)) {
+            let counter = 2
+            while (animator.hasChild(`${newName}${counter}`)) {
+                counter++
+            }
+            newName = `${newName}${counter}`
+        }
+
+        nameInput.value = newName
+        callbacks.onRename?.(newName)
+    }
+
+    nameInput.addEventListener('blur', commitRename)
+    nameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            nameInput.blur()
+        }
     })
-    animSection.appendChild(animSelect)
-    container.appendChild(animSection)
+
+    nameSection.appendChild(nameInput)
+    container.appendChild(nameSection)
 
     buildAnimationSettingsContent(container, selectedAnimation, callbacks)
 
     return {
         container,
-        animSelect,
+        nameInput,
         rebuild: (animation) => {
+            nameInput.value = animation?.$id || ''
             const sections = container.querySelectorAll('[data-setting]')
             sections.forEach(s => s.remove())
             buildAnimationSettingsContent(container, animation, callbacks)

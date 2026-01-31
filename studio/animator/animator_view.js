@@ -13,6 +13,7 @@ import '../../editor/toggle_input.js'
 import '../../editor/dropdown_menu.js'
 import {ICONS} from '../../editor/devtools/devtools_icons.js'
 import SpriteAnimator from '../../render/sprite_animator.js'
+import SpriteAnimation from '../../render/sprite_animation.js'
 import TextureRegion from '../../render/textures/texture_region.js'
 import PerkyStore from '../../io/perky_store.js'
 import PsdConverter from '../../io/psd_converter.js'
@@ -49,7 +50,6 @@ export default class AnimatorView extends EditorComponent {
     #selectedFrameIndex = -1
     #drawerMode = null
     #headerAnimSelect = null
-    #drawerAnimSelect = null
     #anchor = {x: 0.5, y: 0.5}
     #anchorEditor = null
     #animationSettings = null
@@ -221,12 +221,19 @@ export default class AnimatorView extends EditorComponent {
 
         this.#headerAnimSelect = createElement('select-input', {attrs: {context: 'studio'}})
         const animOptions = this.#animator.children.map(anim => ({value: anim.$id, label: anim.$id}))
+        animOptions.push({separator: true})
+        animOptions.push({action: true, value: '__new__', label: '+ New Animation'})
         this.#headerAnimSelect.setOptions(animOptions)
         this.#headerAnimSelect.setValue(this.#selectedAnimation?.$id)
         this.#headerAnimSelect.addEventListener('change', (e) => {
             this.#selectedAnimation = this.#animator.getChild(e.detail.value)
             this.#updateForSelectedAnimation()
             this.#syncDrawerAnimSelect()
+        })
+        this.#headerAnimSelect.addEventListener('action', (e) => {
+            if (e.detail.value === '__new__') {
+                this.#createNewAnimation()
+            }
         })
 
         headerStart.appendChild(this.#headerAnimSelect)
@@ -345,11 +352,13 @@ export default class AnimatorView extends EditorComponent {
         this.#editorDrawerEl.innerHTML = ''
 
         this.#animationSettings = buildAnimationSettings(this.#animator, this.#selectedAnimation, {
-            onAnimationChange: (animId) => {
-                this.#selectedAnimation = this.#animator.getChild(animId)
+            onRename: (newName) => {
+                if (!this.#selectedAnimation) {
+                    return
+                }
+                this.#selectedAnimation.$id = newName
                 this.#updateForSelectedAnimation()
-                this.#headerAnimSelect?.setValue(animId)
-                this.#animationSettings.rebuild(this.#selectedAnimation)
+                this.#markDirty()
             },
             onMotionChange: (motion) => {
                 this.#previewEl?.setMotion(motion)
@@ -361,17 +370,47 @@ export default class AnimatorView extends EditorComponent {
             }
         })
 
-        this.#drawerAnimSelect = this.#animationSettings.animSelect
         this.#editorDrawerEl.appendChild(this.#animationSettings.container)
         this.#editorDrawerEl.open()
     }
 
 
     #syncDrawerAnimSelect () {
-        if (this.#drawerAnimSelect && this.#drawerMode === 'settings') {
-            this.#drawerAnimSelect.setValue(this.#selectedAnimation?.$id)
-            this.#animationSettings?.rebuild(this.#selectedAnimation)
+        if (this.#animationSettings && this.#drawerMode === 'settings') {
+            this.#animationSettings.rebuild(this.#selectedAnimation)
         }
+    }
+
+
+    #createNewAnimation () {
+        const name = this.#generateUniqueName('untitled')
+
+        this.#animator.create(SpriteAnimation, {
+            $id: name,
+            sprite: null,
+            frames: [],
+            fps: 12,
+            loop: true,
+            playbackMode: 'forward'
+        })
+
+        this.#selectedAnimation = this.#animator.getChild(name)
+        this.#updateForSelectedAnimation()
+        this.#openAnimationSettings()
+        this.#markDirty()
+    }
+
+
+    #generateUniqueName (base) {
+        if (!this.#animator.hasChild(base)) {
+            return base
+        }
+
+        let counter = 2
+        while (this.#animator.hasChild(`${base}${counter}`)) {
+            counter++
+        }
+        return `${base}${counter}`
     }
 
 
