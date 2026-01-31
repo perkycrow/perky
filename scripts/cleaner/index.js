@@ -228,7 +228,9 @@ export async function runAudit (rootDir, options = {}) {
         hints[key] = auditor.getHint()
     }
 
-    printSummary(results, hints)
+    if (!options.skipSummary) {
+        printSummary(results, hints)
+    }
 
     return results
 }
@@ -256,6 +258,41 @@ export async function runAll (rootDir, options = {}) {
     printBanner()
     runFix(rootDir, options)
     await runAudit(rootDir, {showBanner: false, ...options})
+}
+
+
+export async function runInstructions (rootDir, options = {}) {
+    const buffer = []
+    const originalLog = console.log
+    console.log = (...args) => buffer.push(args)
+
+    let results
+
+    try {
+        runFix(rootDir, {compact: true, ...options})
+        buffer.length = 0
+
+        results = await runAudit(rootDir, {
+            showBanner: false,
+            skipSummary: true,
+            compact: true,
+            ...options
+        })
+    } finally {
+        console.log = originalLog
+    }
+
+    const allClean = Object.values(results).every(isClean)
+
+    if (allClean) {
+        console.log(green('✓') + bold(' All clean!'))
+    } else {
+        for (const line of buffer) {
+            console.log(...line)
+        }
+    }
+
+    return results
 }
 
 
