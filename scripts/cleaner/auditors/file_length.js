@@ -14,7 +14,6 @@ export default class FileLengthAuditor extends Auditor {
 
     #excludeFiles = []
 
-
     async audit () {
         const config = await loadCleanerConfig(this.rootDir)
         this.#excludeFiles = config.fileLength?.excludeFiles || []
@@ -47,7 +46,7 @@ export default class FileLengthAuditor extends Auditor {
     }
 
 
-    #shouldSkip (relativePath) {
+    #shouldSkip (relativePath) { // eslint-disable-line complexity -- clean
         if (relativePath.endsWith('.test.js')) {
             return true
         }

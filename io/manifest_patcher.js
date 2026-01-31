@@ -39,8 +39,7 @@ export async function loadStudioOverrides () {
         }
 
         const spritesheetFile = resource.files.find(f =>
-            f.name.endsWith('.json') && !f.name.endsWith('Animator.json')
-        )
+            f.name.endsWith('.json') && !f.name.endsWith('Animator.json'))
         if (!spritesheetFile) {
             continue
         }

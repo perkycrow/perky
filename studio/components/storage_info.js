@@ -204,6 +204,3 @@ async function estimateStorage () {
         return {used: 0, total: 0, percent: 0, usedText: '—', totalText: '—'}
     }
 }
-
-
-
