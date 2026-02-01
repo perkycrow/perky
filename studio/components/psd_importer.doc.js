@@ -1,7 +1,7 @@
 import {doc, section, text, code} from '../../doc/runtime.js'
 
 
-export default doc('PSD Importer', {advanced: true}, () => {
+export default doc('PsdImporter', {advanced: true}, () => {
 
     text(`
         A multi-step wizard for importing Photoshop files into the animator

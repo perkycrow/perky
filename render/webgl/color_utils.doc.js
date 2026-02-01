@@ -2,7 +2,7 @@ import {doc, section, text, action, logger} from '../../doc/runtime.js'
 import {parseColor} from './color_utils.js'
 
 
-export default doc('Color Utils', {advanced: true}, () => {
+export default doc('ColorUtils', {advanced: true}, () => {
 
     text(`
         Utility for parsing color strings into normalized RGBA objects.

@@ -1,7 +1,7 @@
 import {doc, section, text} from '../../doc/runtime.js'
 
 
-export default doc('Storage Info', {advanced: true}, () => {
+export default doc('StorageInfo', {advanced: true}, () => {
 
     text(`
         A small popover widget that displays IndexedDB storage usage.

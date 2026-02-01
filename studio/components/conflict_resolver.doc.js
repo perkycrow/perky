@@ -1,7 +1,7 @@
 import {doc, section, text, code} from '../../doc/runtime.js'
 
 
-export default doc('Conflict Resolver', {advanced: true}, () => {
+export default doc('ConflictResolver', {advanced: true}, () => {
 
     text(`
         A dialog component for resolving version conflicts between game

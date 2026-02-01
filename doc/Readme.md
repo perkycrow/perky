@@ -111,6 +111,73 @@ Lightweight markdown parser for doc content. Handles bold, italic, inline code, 
 
 ---
 
+## Cross-references
+
+Two ways to link to other documentation pages: `see()` blocks and `[[...]]` inline links.
+
+### `see()` block
+
+A standalone, visible reference block. Rendered with an icon and a "See ..." label.
+
+```js
+// Link to a doc page
+see('Logger')
+
+// Link to a specific section within a doc
+see('Logger', {section: 'Events'})
+
+// Link to the API tab
+see('Logger', {type: 'api'})
+
+// Link to the test tab
+see('Logger', {type: 'test'})
+
+// Provide a category for URL fallback (when the doc isn't in the registry yet)
+see('Application', {category: 'application'})
+
+// Combine options
+see('Application', {type: 'api', section: 'Methods', category: 'application'})
+```
+
+### `[[...]]` inline links
+
+Inline cross-references inside `text()` and `disclaimer()` blocks. They get converted to clickable links within the rendered markdown.
+
+```js
+text('Creates a new [[Logger]] instance.')
+// → link to the Logger doc page
+
+text('See the [[Logger#Events]] section for details.')
+// → link to the Events section of the Logger doc
+
+text('Check the [[Logger:api]] for the full method list.')
+// → link to the Logger API tab
+
+text('Extends [[PerkyModule@core]].')
+// → link with a category hint for URL fallback
+
+text('Uses the [[ShaderEffect:api#compile@render/shaders]] pipeline.')
+// → combines page type, section, and category
+```
+
+**Syntax breakdown:** `[[Name:pageType#section@category]]`
+
+| Part | Required | Default | Example |
+|---|---|---|---|
+| `Name` | yes | — | `Logger` |
+| `:pageType` | no | `doc` | `:api`, `:test` |
+| `#section` | no | none | `#Events` |
+| `@category` | no | none | `@core`, `@render/shaders` |
+
+### When to use which
+
+- **`see()`** for explicit "see also" references at the end of a section or doc. They stand out visually as dedicated blocks.
+- **`[[...]]`** for references woven into explanatory text, where a full block would break the reading flow.
+
+Both resolve URLs the same way: registry lookup first (case-insensitive), fallback to a conventional path if the target isn't registered yet.
+
+---
+
 ## Subfolders
 
 ### [guides/](guides/)

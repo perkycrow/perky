@@ -1,7 +1,7 @@
 import {doc, section, text, code} from '../../doc/runtime.js'
 
 
-export default doc('Animator View', {advanced: true}, () => {
+export default doc('AnimatorView', {advanced: true}, () => {
 
     text(`
         The main animation editor view. A Web Component that provides a full

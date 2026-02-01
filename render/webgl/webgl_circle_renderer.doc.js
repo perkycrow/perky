@@ -20,7 +20,7 @@ export default doc('WebGLCircleRenderer', {advanced: true}, () => {
             Each circle is drawn as a triangle fan. The center vertex sits at
             the anchor-adjusted origin, and 32 perimeter vertices are transformed
             through the object's world matrix. Color is parsed from the circle's
-            CSS color string into normalized RGBA via [[parseColor@render/webgl/color_utils]].
+            CSS color string into normalized RGBA via [[ColorUtils@render/webgl]].
         `)
 
         code('How circles are drawn', () => {
