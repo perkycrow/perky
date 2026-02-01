@@ -39,6 +39,7 @@ export default class Game extends Application {
 
     setStage (StageClass, options = {}) {
         if (this.stage) {
+            this.#unregisterStageController()
             this.removeChild(this.stage.$id)
             this.world = null
             this.worldView = null
@@ -53,6 +54,27 @@ export default class Game extends Application {
         if (this.stage.worldView) {
             this.worldView = this.stage.worldView
         }
+
+        this.#registerStageController()
+    }
+
+
+    #registerStageController () {
+        const ControllerClass = this.stage?.constructor.ActionController
+        if (!ControllerClass) {
+            return
+        }
+        const controller = this.registerController(ControllerClass)
+        this.stage._controllerName = controller.$id
+        this.setActiveControllers(controller.$id)
+    }
+
+
+    #unregisterStageController () {
+        if (!this.stage?._controllerName) {
+            return
+        }
+        this.unregisterController(this.stage._controllerName)
     }
 
 

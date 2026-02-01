@@ -97,8 +97,21 @@ describe('DenStage', () => {
     })
 
 
+    test('update calls world.update with game as context', () => {
+        const game = {name: 'testGame'}
+        const stage = new DenStage({game})
+        stage.world.update = vi.fn()
+        stage.impactParticles = {update: vi.fn()}
+
+        stage.update(0.016)
+
+        expect(stage.world.update).toHaveBeenCalledWith(0.016, game)
+    })
+
+
     test('update calls impactParticles.update', () => {
         const stage = new DenStage({game: {}})
+        stage.world.update = vi.fn()
         stage.impactParticles = {update: vi.fn()}
 
         stage.update(0.016)

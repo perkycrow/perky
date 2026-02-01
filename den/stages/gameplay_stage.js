@@ -1,9 +1,12 @@
 import DenStage from './den_stage.js'
+import DenController from '../controllers/den_controller.js'
 import WaveSystem from '../wave_system.js'
 import WaveProgressBar from '../ui/wave_progress_bar.js'
 
 
 export default class GameplayStage extends DenStage {
+
+    static ActionController = DenController
 
     onStart () {
         super.onStart()
@@ -29,7 +32,10 @@ export default class GameplayStage extends DenStage {
 
 
     #createWaveSystem () {
-        this.waveSystem = this.create(WaveSystem, {$bind: 'waveSystem'})
+        this.waveSystem = this.create(WaveSystem, {
+            $bind: 'waveSystem',
+            world: this.world
+        })
     }
 
 
@@ -37,16 +43,10 @@ export default class GameplayStage extends DenStage {
         this.waveSystem.on('tick', ({wave, day, progress, timeOfDay, isSpawning}) => {
             this.dayNightPass?.setProgress(timeOfDay)
             this.updateShadows(timeOfDay)
-
-            const denController = this.game.getController('den')
-            denController.setSpawning(isSpawning)
-
             this.game.emit('wave:tick', {wave, progress, dayNumber: day, timeOfDay, isSpawning})
         })
 
         this.waveSystem.on('wave:start', ({wave, day}) => {
-            const denController = this.game.getController('den')
-            denController.onWaveStart(wave, day)
             this.game.emit('wave:start', {wave, dayNumber: day})
         })
 
@@ -55,14 +55,7 @@ export default class GameplayStage extends DenStage {
         })
 
         this.waveSystem.on('day:announce', ({day}) => {
-            const denController = this.game.getController('den')
-            denController.setSpawning(false)
             this.game.emit('day:announce', {dayNumber: day})
-        })
-
-        this.waveSystem.on('spawning:end', () => {
-            const denController = this.game.getController('den')
-            denController.setSpawning(false)
         })
     }
 

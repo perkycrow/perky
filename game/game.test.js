@@ -319,4 +319,57 @@ describe('Game', () => {
         }).not.toThrow()
     })
 
+
+    test('setStage registers stage controller', () => {
+        class FooController extends ActionController {}
+        class TestStage extends Stage {
+            static ActionController = FooController
+        }
+
+        game.setStage(TestStage)
+
+        expect(game.getController('foo')).toBeDefined()
+    })
+
+
+    test('setStage activates stage controller', () => {
+        class FooController extends ActionController {}
+        class TestStage extends Stage {
+            static ActionController = FooController
+        }
+
+        game.setStage(TestStage)
+
+        const active = game.getActiveControllers()
+        expect(active).toContain('foo')
+    })
+
+
+    test('setStage unregisters previous stage controller', () => {
+        class FooController extends ActionController {}
+        class BarController extends ActionController {}
+        class StageA extends Stage {
+            static ActionController = FooController
+        }
+        class StageB extends Stage {
+            static ActionController = BarController
+        }
+
+        game.setStage(StageA)
+        expect(game.getController('foo')).toBeDefined()
+
+        game.setStage(StageB)
+        expect(game.getController('foo')).toBeNull()
+        expect(game.getController('bar')).toBeDefined()
+    })
+
+
+    test('setStage works without stage controller', () => {
+        class TestStage extends Stage {}
+
+        game.setStage(TestStage)
+
+        expect(game.stage).toBeInstanceOf(TestStage)
+    })
+
 })

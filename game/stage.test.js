@@ -42,6 +42,11 @@ describe('Stage', () => {
     })
 
 
+    test('has null ActionController by default', () => {
+        expect(Stage.ActionController).toBe(null)
+    })
+
+
     test('does not create world when World is null', () => {
         expect(stage.world).toBeUndefined()
     })

@@ -1,6 +1,7 @@
 import {describe, test, expect, vi} from 'vitest'
 import GameplayStage from './gameplay_stage.js'
 import DenStage from './den_stage.js'
+import DenController from '../controllers/den_controller.js'
 import WaveSystem from '../wave_system.js'
 
 
@@ -14,10 +15,6 @@ function createMockGame () {
         })),
         getLayer: vi.fn(() => ({canvas: {width: 800, height: 600}})),
         getHTML: vi.fn(() => ({div: document.createElement('div')})),
-        getController: vi.fn(() => ({
-            setSpawning: vi.fn(),
-            onWaveStart: vi.fn()
-        })),
         getRegion: vi.fn(() => ({width: 800, height: 600})),
         emit: vi.fn(),
         on: vi.fn(),
@@ -37,6 +34,11 @@ describe('GameplayStage', () => {
     })
 
 
+    test('declares DenController as ActionController', () => {
+        expect(GameplayStage.ActionController).toBe(DenController)
+    })
+
+
     test('creates WaveSystem on start', () => {
         const game = createMockGame()
         const stage = new GameplayStage({game})
@@ -44,6 +46,16 @@ describe('GameplayStage', () => {
         stage.start()
 
         expect(stage.waveSystem).toBeInstanceOf(WaveSystem)
+    })
+
+
+    test('WaveSystem receives world', () => {
+        const game = createMockGame()
+        const stage = new GameplayStage({game})
+
+        stage.start()
+
+        expect(stage.waveSystem.world).toBe(stage.world)
     })
 
 
@@ -60,9 +72,9 @@ describe('GameplayStage', () => {
 
     test('update calls super.update', () => {
         const stage = new GameplayStage({game: {}})
+        stage.world = {childrenByTags: vi.fn(() => []), update: vi.fn()}
         stage.impactParticles = {update: vi.fn()}
         stage.waveSystem = {update: vi.fn(), checkClear: vi.fn()}
-        stage.world = {childrenByTags: vi.fn(() => [])}
 
         stage.update(0.016)
 
@@ -72,9 +84,9 @@ describe('GameplayStage', () => {
 
     test('update calls waveSystem.update', () => {
         const stage = new GameplayStage({game: {}})
+        stage.world = {childrenByTags: vi.fn(() => []), update: vi.fn()}
         stage.impactParticles = {update: vi.fn()}
         stage.waveSystem = {update: vi.fn(), checkClear: vi.fn()}
-        stage.world = {childrenByTags: vi.fn(() => [])}
 
         stage.update(0.016)
 
@@ -84,33 +96,13 @@ describe('GameplayStage', () => {
 
     test('update calls waveSystem.checkClear with enemy count', () => {
         const stage = new GameplayStage({game: {}})
+        stage.world = {childrenByTags: vi.fn(() => [{}, {}, {}]), update: vi.fn()}
         stage.impactParticles = {update: vi.fn()}
         stage.waveSystem = {update: vi.fn(), checkClear: vi.fn()}
-        stage.world = {childrenByTags: vi.fn(() => [{}, {}, {}])}
 
         stage.update(0.016)
 
         expect(stage.waveSystem.checkClear).toHaveBeenCalledWith(3)
-    })
-
-
-    test('waveSystem tick event updates controller spawning', () => {
-        const mockController = {setSpawning: vi.fn(), onWaveStart: vi.fn()}
-        const game = createMockGame()
-        game.getController = vi.fn(() => mockController)
-
-        const stage = new GameplayStage({game})
-        stage.start()
-
-        stage.waveSystem.emit('tick', {
-            wave: 1,
-            day: 0,
-            progress: 0.5,
-            timeOfDay: 0.25,
-            isSpawning: true
-        })
-
-        expect(mockController.setSpawning).toHaveBeenCalledWith(true)
     })
 
 

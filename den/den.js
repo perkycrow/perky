@@ -1,5 +1,4 @@
 import Game from '../game/game.js'
-import DenController from './controllers/den_controller.js'
 
 import ChromaticEffect from './effects/chromatic_effect.js'
 import OutlineEffect from '../render/shaders/builtin/effects/outline_effect.js'
@@ -18,7 +17,7 @@ export default class DefendTheDen extends Game {
 
     static $name = 'defendTheDen'
     static manifest = manifest
-    static ActionController = DenController
+    static ActionController = null
 
     static camera = {unitsInView: {width: 7, height: 5}}
     static layers = [
@@ -46,7 +45,7 @@ export default class DefendTheDen extends Game {
         gameRenderer.registerShaderEffect(WaveEffect)
 
         const StageClass = params.preview ? PreviewStage : GameplayStage
-        this.setStage(StageClass, params)
+        this.setStage(StageClass)
     }
 
 

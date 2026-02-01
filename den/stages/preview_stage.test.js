@@ -1,6 +1,7 @@
 import {describe, test, expect, vi} from 'vitest'
 import PreviewStage from './preview_stage.js'
 import DenStage from './den_stage.js'
+import DenController from '../controllers/den_controller.js'
 
 
 function createMockGame () {
@@ -26,6 +27,11 @@ describe('PreviewStage', () => {
         const stage = new PreviewStage({game: {}})
 
         expect(stage).toBeInstanceOf(DenStage)
+    })
+
+
+    test('declares DenController as ActionController', () => {
+        expect(PreviewStage.ActionController).toBe(DenController)
     })
 
 
@@ -63,6 +69,7 @@ describe('PreviewStage', () => {
 
     test('update only runs base DenStage logic', () => {
         const stage = new PreviewStage({game: {}})
+        stage.world.update = vi.fn()
         stage.impactParticles = {update: vi.fn()}
 
         stage.update(0.016)

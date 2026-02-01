@@ -1,8 +1,11 @@
 import DenStage from './den_stage.js'
+import DenController from '../controllers/den_controller.js'
 import PreviewControls from '../ui/preview_controls.js'
 
 
 export default class PreviewStage extends DenStage {
+
+    static ActionController = DenController
 
     onStart () {
         super.onStart()

@@ -7,6 +7,7 @@ export default class Stage extends PerkyModule {
     static $category = 'stage'
     static World = null
     static WorldView = WorldView
+    static ActionController = null
 
     constructor (options = {}) {
         super(options)
