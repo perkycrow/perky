@@ -10,3 +10,5 @@ psd/
 .perky/
 */studio/
 .log
+integration/*-snapshots/
+test-results/

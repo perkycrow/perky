@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; background: #111; display: flex; gap: 20px; padding: 20px; }
+        canvas { border: 1px solid #333; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas2d" width="400" height="300"></canvas>
+    <canvas id="webgl" width="400" height="300"></canvas>
+
+    <script type="module">
+        import CanvasRenderer from '/render/canvas_renderer.js'
+        import WebGLRenderer from '/render/webgl_renderer.js'
+        import Group2D from '/render/group_2d.js'
+        import Circle from '/render/circle.js'
+        import Rectangle from '/render/rectangle.js'
+
+        function buildScene () {
+            const scene = new Group2D()
+
+            scene.addChild(
+                new Rectangle({x: 0, y: 0, width: 4, height: 3, color: '#2255AA'}),
+                new Circle({x: -2, y: 1, radius: 1.2, color: '#DD4444'}),
+                new Circle({x: 3, y: -2, radius: 0.8, color: '#44BB44'}),
+                new Rectangle({x: -3, y: -3, width: 2, height: 2, color: '#DDAA22', rotation: 0.3})
+            )
+
+            return scene
+        }
+
+        const canvasRenderer = new CanvasRenderer({
+            canvas: document.getElementById('canvas2d'),
+            backgroundColor: '#1a1a2e'
+        })
+
+        const webglRenderer = new WebGLRenderer({
+            canvas: document.getElementById('webgl'),
+            backgroundColor: '#1a1a2e'
+        })
+
+        canvasRenderer.render(buildScene())
+        webglRenderer.render(buildScene())
+
+        document.body.dataset.ready = 'true'
+    </script>
+</body>
+</html>
