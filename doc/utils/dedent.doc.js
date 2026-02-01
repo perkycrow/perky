@@ -1,4 +1,4 @@
-import {doc, section, text, code, action, logger} from '../../runtime.js'
+import {doc, section, text, code, action, logger} from '../runtime.js'
 import {dedent, dedentSource} from './dedent.js'
 
 

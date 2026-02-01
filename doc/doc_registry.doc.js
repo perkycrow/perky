@@ -59,7 +59,7 @@ export default doc('Doc Registry', {advanced: true}, () => {
     section('isRegistryInitialized', () => {
 
         text(`
-            Returns true if [[initRegistry]] has been called at least once.
+            Returns true if \`initRegistry\` has been called at least once.
             Useful for guarding lookups during early startup.
         `)
 

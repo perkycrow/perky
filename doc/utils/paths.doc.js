@@ -1,4 +1,4 @@
-import {doc, section, text, code} from '../../runtime.js'
+import {doc, section, text, code} from '../runtime.js'
 
 
 export default doc('Paths', {advanced: true}, () => {
