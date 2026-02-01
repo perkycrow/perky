@@ -162,6 +162,49 @@ describe('BrokenLinksAuditor', () => {
     })
 
 
+    test('detects broken inline link with nested category', async () => {
+        fs.existsSync.mockReturnValue(true)
+        fs.readFileSync.mockImplementation((filePath) => {
+            if (filePath.endsWith('docs.json')) {
+                return JSON.stringify({
+                    docs: [{title: 'ActionController', id: 'action_controller'}],
+                    guides: []
+                })
+            }
+            return 'text(`Used by [[AnimatorView@studio/animator]]`)'
+        })
+
+        const auditor = new BrokenLinksAuditor('/root', {silent: true})
+        vi.spyOn(auditor, 'scanFiles').mockReturnValue(['/root/test.doc.js'])
+
+        const result = await auditor.audit()
+
+        expect(result.brokenLinks).toBe(1)
+        expect(result.issues[0].issues[0]).toContain('AnimatorView')
+    })
+
+
+    test('accepts valid inline link with nested category', async () => {
+        fs.existsSync.mockReturnValue(true)
+        fs.readFileSync.mockImplementation((filePath) => {
+            if (filePath.endsWith('docs.json')) {
+                return JSON.stringify({
+                    docs: [{title: 'AnimatorView', id: 'animator_view'}],
+                    guides: []
+                })
+            }
+            return 'text(`Used by [[AnimatorView@studio/animator]]`)'
+        })
+
+        const auditor = new BrokenLinksAuditor('/root', {silent: true})
+        vi.spyOn(auditor, 'scanFiles').mockReturnValue(['/root/test.doc.js'])
+
+        const result = await auditor.audit()
+
+        expect(result.brokenLinks).toBe(0)
+    })
+
+
     test('ignores JS array syntax like [[a, 1]]', async () => {
         fs.existsSync.mockReturnValue(true)
         fs.readFileSync.mockImplementation((filePath) => {

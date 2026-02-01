@@ -141,7 +141,7 @@ function extractLinks (content) {
     }
 
 
-    const inlineRegex = /\[\[([A-Za-z][A-Za-z0-9]*(?:@[a-z]+)?(?::[a-z]+)?(?:#[A-Za-z][A-Za-z0-9]*)?)\]\]/g
+    const inlineRegex = /\[\[([A-Za-z][A-Za-z0-9]*(?:@[a-z][a-z_/]*)?(?::[a-z]+)?(?:#[A-Za-z][A-Za-z0-9]*)?)\]\]/g
 
     while ((match = inlineRegex.exec(content)) !== null) {
         const ref = match[1]
