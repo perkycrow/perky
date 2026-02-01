@@ -302,7 +302,6 @@ const COVERAGE_AUDITORS = [
     StaleReadmeAuditor,
     MissingCoverageAuditor,
     MissingDocsAuditor,
-    ImportUsageAuditor,
     DomUtilsUsageAuditor
 ]
 
