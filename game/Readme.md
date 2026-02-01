@@ -10,14 +10,15 @@ The top-level class for making games. Takes an Application and adds a game loop,
 Application (application/)
     |
 Game ──┬── GameLoop (update/render cycle)
-       ├── World (entity container)
-       ├── WorldView (entity → visual mapping)
+       ├── Stage (game phase)
+       │     ├── World (entity container)
+       │     └── WorldView (entity → visual mapping)
        ├── RenderSystem (from render/)
        ├── TextureSystem (from render/textures/)
        └── AudioSystem (from audio/)
 ```
 
-Game wires all of this together. The loop ticks, entities update in the world, the world view syncs their visuals, and the render system draws everything. Most of these systems delegate their methods to the Game instance, so you call `game.pause()`, `game.spawn()`, etc. directly.
+Game wires all of this together. The loop ticks, the active stage updates its world, the world view syncs entity visuals, and the render system draws everything. Most of these systems delegate their methods to the Game instance, so you call `game.pause()`, `game.setStage()`, etc. directly.
 
 ---
 
@@ -25,7 +26,7 @@ Game wires all of this together. The loop ticks, entities update in the world, t
 
 ### [game.js](game.js)
 
-The main entry point. Extends Application with a game loop, rendering, audio, textures, and a world.
+The main entry point. Extends Application with a game loop, rendering, audio, and textures. Uses stages to organize worlds and views.
 
 ```js
 class MyGame extends Game {
@@ -53,7 +54,7 @@ game.mount(document.getElementById('app'))
 game.start()
 ```
 
-Override `static World`, `static WorldView`, `static RenderSystem`, `static AudioSystem` to swap in your own implementations.
+Override `static RenderSystem`, `static AudioSystem` to swap in your own implementations. Use `game.setStage(MyStage)` to activate a stage with its own world and view.
 
 ---
 
@@ -72,6 +73,27 @@ game.setFpsLimited(true)
 ```
 
 When FPS-limited, uses a fixed timestep with accumulator. Otherwise runs unlocked.
+
+---
+
+### [stage.js](stage.js)
+
+A distinct phase of your game — a level, a menu, a cutscene. Each stage owns a World and WorldView pair.
+
+```js
+class BattleStage extends Stage {
+    static World = BattleWorld
+    static WorldView = BattleWorldView
+
+    update (deltaTime) {
+        this.world.update(deltaTime, {})
+    }
+}
+
+game.setStage(BattleStage)
+```
+
+Override `static World` and `static WorldView` on the stage to provide your own implementations.
 
 ---
 
