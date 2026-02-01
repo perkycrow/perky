@@ -192,7 +192,7 @@ describe('doc_page', () => {
                 title: 'Test',
                 blocks: [{
                     type: 'text',
-                    content: 'Read [[philosophy:guide]] for the overview.'
+                    content: 'Read [[foreword:guide]] for the overview.'
                 }]
             }
         })

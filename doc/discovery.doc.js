@@ -43,7 +43,7 @@ export default doc('Discovery', {advanced: true}, () => {
                 guides: {
                     categories: ['prologue'],
                     items: {
-                        prologue: ['foreword', 'philosophy']
+                        prologue: ['foreword']
                     }
                 }
             }

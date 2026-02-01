@@ -182,7 +182,7 @@ Both resolve URLs the same way: registry lookup first (case-insensitive), fallba
 
 ### [guides/](guides/)
 
-Tutorial-style documentation. Contains the prologue (`foreword`, `philosophy`), coding conventions, and the PerkyModule walkthrough. Guides use the same DSL as docs.
+Contains the prologue (`foreword`), coding conventions, and the PerkyModule walkthrough. Guides use the same DSL as docs.
 
 ### [renderers/](renderers/)
 

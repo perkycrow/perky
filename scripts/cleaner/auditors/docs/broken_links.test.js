@@ -147,10 +147,10 @@ describe('BrokenLinksAuditor', () => {
             if (filePath.endsWith('docs.json')) {
                 return JSON.stringify({
                     docs: [],
-                    guides: [{title: 'Philosophy', id: 'philosophy'}]
+                    guides: [{title: 'Foreword', id: 'foreword'}]
                 })
             }
-            return 'see(\'philosophy\', {type: \'guide\'})'
+            return 'see(\'foreword\', {type: \'guide\'})'
         })
 
         const auditor = new BrokenLinksAuditor('/root', {silent: true})
