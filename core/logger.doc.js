@@ -5,7 +5,7 @@ export default doc('Logger', () => {
 
     text(`
         Centralized logging system with history and event emission.
-        Singleton instance with multiple log levels and logger output control.
+        Singleton instance with multiple log levels and console output control.
     `)
 
 
@@ -179,14 +179,14 @@ export default doc('Logger', () => {
             // History automatically trims when limit is reached
         })
 
-        code('loggerOutput', () => {
-            // Disable logger output (logs still recorded in history)
-            logger.loggerOutput = false
+        code('consoleOutput', () => {
+            // Disable console output (logs still recorded in history)
+            logger.consoleOutput = false
 
             logger.log('This is silent but recorded')
 
             // Re-enable
-            logger.loggerOutput = true
+            logger.consoleOutput = true
         })
 
     })
@@ -194,14 +194,14 @@ export default doc('Logger', () => {
 
     section('Log Levels', () => {
 
-        text('Different log levels map to logger methods.')
+        text('Different log levels map to console methods.')
 
-        code('Logger method mapping', () => {
-            logger.info('Uses logger.info')
-            logger.warn('Uses logger.warn')
-            logger.error('Uses logger.error')
-            logger.notice('Uses logger.log')
-            logger.success('Uses logger.log')
+        code('Console method mapping', () => {
+            logger.info('Uses console.info')
+            logger.warn('Uses console.warn')
+            logger.error('Uses console.error')
+            logger.notice('Uses console.log')
+            logger.success('Uses console.log')
         })
 
     })

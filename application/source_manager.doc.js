@@ -76,8 +76,8 @@ export default doc('SourceManager', {advanced: true}, () => {
         `)
 
         code('Event handling', () => {
-            app.on('loader:progress', ({loaded, total, asset}) => {
-                const percent = Math.round((loaded / total) * 100)
+            app.on('loader:progress', (progress, {asset}) => {
+                const percent = Math.round(progress * 100)
                 logger.log(`Loading: ${percent}% - ${asset.id}`)
             })
 
@@ -85,7 +85,7 @@ export default doc('SourceManager', {advanced: true}, () => {
                 logger.log(`Loaded ${assets.length} assets`)
             })
 
-            app.on('loader:error', ({asset, error}) => {
+            app.on('loader:error', (asset, error) => {
                 logger.error(`Failed to load ${asset.id}:`, error)
             })
         })
@@ -167,6 +167,7 @@ export default doc('SourceManager', {advanced: true}, () => {
             // - loader:progress  -> progress during loading
             // - loader:complete  -> all requested assets loaded
             // - loader:error     -> asset failed to load
+            // - asset:loaded     -> individual asset finished loading
         })
 
     })

@@ -112,15 +112,15 @@ export default doc('Application', {featured: true}, () => {
         code('Loading events', () => {
             const app = new Application({$id: 'demo'})
 
-            app.on('loader:progress', ({loaded, total}) => {
-                logger.log(`Loading: ${loaded}/${total}`)
+            app.on('loader:progress', (progress, {asset}) => {
+                logger.log(`Loading: ${Math.round(progress * 100)}% - ${asset.id}`)
             })
 
             app.on('loader:complete', () => {
                 logger.log('All assets loaded')
             })
 
-            app.on('loader:error', ({asset, error}) => {
+            app.on('loader:error', (asset, error) => {
                 logger.error(`Failed to load ${asset.id}:`, error)
             })
         })

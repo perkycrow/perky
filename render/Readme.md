@@ -90,9 +90,9 @@ obj.setVisible(false)
 Textured object with animation and effects support.
 
 ```js
-const sprite = new Sprite({texture: region, width: 64, height: 64})
+const sprite = new Sprite({region: region, width: 64, height: 64})
 sprite.addAnimation('walk', walkAnimation)
-sprite.playAnimation('walk')
+sprite.play('walk')
 ```
 
 Effects can be stacked (outline, color shifts, etc.) — see [sprite_effects/](sprite_effects/).

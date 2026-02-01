@@ -28,13 +28,13 @@ No hierarchy here. Each file is standalone except Pathfinder, which operates on 
 
 ### [vec2.js](vec2.js) + [vec3.js](vec3.js) + [vec4.js](vec4.js)
 
-Vector classes with the usual operations: add, subtract, scale, normalize, dot, distance, lerp, clone. All methods return `this` for chaining. Constructors accept `(x, y)`, `{x, y}`, or `[x, y]`.
+Vector classes with the usual operations: add, subtract, multiply, normalize, dot, distance, lerp, clone. All methods return `this` for chaining. Constructors accept `(x, y)`, `{x, y}`, or `[x, y]`.
 
 ```js
 const v = new Vec2(3, 4)
 v.length()          // 5
 v.normalize()       // {x: 0.6, y: 0.8}
-v.add(new Vec2(1, 0)).scale(2)
+v.add(new Vec2(1, 0)).multiplyScalar(2)
 
 new Vec3({x: 1, y: 2, z: 3})
 new Vec4([1, 0, 0, 1])  // w defaults to 1
@@ -183,4 +183,4 @@ Worker-ready wrapper around Grid + Pathfinder. Manages a grid, caches results, e
 
 ## Going further
 
-Each file has its `.test.js` with tests. `random.js` and `vec2.js` also have `.doc.js` files with interactive examples.
+Each file has its `.test.js` with tests and a `.doc.js` with interactive examples.

@@ -16,6 +16,7 @@ InputSystem
                               │
                         InputControl ──┬── ButtonControl
                                        ├── Vec2Control
+                                       ├── Vec3Control
                                        └── NavigationControl
 ```
 
@@ -118,6 +119,13 @@ button.isPressed  // true if value >= threshold
 ```js
 vec2.setValue({x: 100, y: 200}, event)
 vec2.value  // Vec2 instance
+```
+
+**Vec3Control** - 3D position or value (e.g. accelerometer, gyroscope).
+
+```js
+vec3.setValue({x: 1, y: 2, z: 3}, event)
+vec3.value  // Vec3 instance
 ```
 
 **NavigationControl** - Mouse wheel scrolling.

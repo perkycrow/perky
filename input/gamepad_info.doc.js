@@ -78,7 +78,8 @@ export default doc('GamepadInfo', {advanced: true}, () => {
     section('Edge Cases', () => {
 
         text(`
-            Invalid or missing IDs produce an \`unknown\` type.
+            Missing or invalid IDs produce an \`unknown\` type.
+            Unrecognized strings fall back to \`generic\`.
         `)
 
         action('Invalid input', () => {

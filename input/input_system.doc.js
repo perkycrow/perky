@@ -80,22 +80,22 @@ export default doc('InputSystem', {featured: true}, () => {
         code('Query methods', () => {
             // Check specific key/button
             app.isKeyPressed('Space')
-            app.isMousePressed('left')
-            app.isTouchPressed('touch0')
+            app.isMousePressed('leftButton')
+            app.isTouchPressed('tap')
 
             // Check across all devices
             app.isPressedAny('Space')
 
             // Get control value (0 or 1 for buttons)
             app.getKeyValue('KeyW')
-            app.getMouseValue('left')
+            app.getMouseValue('leftButton')
         })
 
         code('Device methods', () => {
             // Check specific device
             inputSystem.isPressed('keyboard', 'Space')
-            inputSystem.isPressed('mouse', 'left')
-            inputSystem.isPressed('touch', 'touch0')
+            inputSystem.isPressed('mouse', 'leftButton')
+            inputSystem.isPressed('touch', 'tap')
 
             // Get control value (0 or 1 for buttons)
             inputSystem.getValueFor('keyboard', 'KeyW')
@@ -152,7 +152,7 @@ export default doc('InputSystem', {featured: true}, () => {
             }
 
             // Check if binding exists
-            app.hasBinding('jump') // true
+            app.hasBinding({actionName: 'jump'}) // true
         })
 
         code('Binding options', () => {
@@ -166,7 +166,7 @@ export default doc('InputSystem', {featured: true}, () => {
             // With device name (defaults to 'keyboard')
             inputSystem.bindInput({
                 deviceName: 'mouse',
-                controlName: 'left',
+                controlName: 'leftButton',
                 actionName: 'shoot',
                 eventType: 'pressed'
             })
@@ -273,15 +273,15 @@ export default doc('InputSystem', {featured: true}, () => {
             app.bindInput({controlName: 'Space', actionName: 'jump'})
             app.bindInput({controlName: 'KeyW', actionName: 'moveUp'})
 
-            app.hasBinding('jump')           // true
-            app.getAllBindings()             // [binding1, binding2]
-            app.getBindingsForAction('jump') // [binding1]
-            app.getBindingsForInput({deviceName: 'keyboard', controlName: 'Space'})
+            app.hasBinding({actionName: 'jump'})  // true
+            app.getAllBindings()                    // [binding1, binding2]
+            app.getBindingsForAction('jump')        // [binding1]
+            app.getBindingsForInput({deviceName: 'keyboard', controlName: 'Space', eventType: 'pressed'})
         })
 
         code('Unbind / clear', () => {
             // Remove specific binding
-            inputSystem.unbind('jump')
+            inputSystem.unbind({actionName: 'jump'})
 
             // Clear all bindings
             inputSystem.clearBindings()
@@ -306,8 +306,8 @@ export default doc('InputSystem', {featured: true}, () => {
             inputSystem.isPressed('gamepad', 'button0')
         })
 
-        code('Unregister device', () => {
-            inputSystem.unregisterDevice('gamepad')
+        code('Remove device', () => {
+            inputSystem.removeChild('gamepad')
         })
 
     })
