@@ -12,3 +12,4 @@ psd/
 .log
 integration/*-snapshots/
 test-results/
+.crow/
