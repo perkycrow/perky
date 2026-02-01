@@ -144,6 +144,33 @@ describe('DenController', () => {
     })
 
 
+    test('setFps sets fps limiting on game', () => {
+        const controller = new DenController()
+        controller.engine = {
+            setFpsLimited: vi.fn(),
+            setFps: vi.fn()
+        }
+
+        controller.setFps(30)
+
+        expect(controller.engine.setFpsLimited).toHaveBeenCalledWith(true)
+        expect(controller.engine.setFps).toHaveBeenCalledWith(30)
+    })
+
+
+    test('setFps defaults to 60', () => {
+        const controller = new DenController()
+        controller.engine = {
+            setFpsLimited: vi.fn(),
+            setFps: vi.fn()
+        }
+
+        controller.setFps()
+
+        expect(controller.engine.setFps).toHaveBeenCalledWith(60)
+    })
+
+
     test('toggleHitboxDebug delegates to stage', () => {
         const controller = new DenController()
         controller.engine = {stage: {toggleHitboxDebug: vi.fn(() => true)}}
