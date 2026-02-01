@@ -1,0 +1,1 @@
+{"spritesheet":"pigSpritesheet","anchor":{"x":0.5,"y":0.5},"animations":{"walk":{"fps":10,"loop":true,"frames":[{"source":"pigSpritesheet:walk/1"},{"source":"pigSpritesheet:walk/2"},{"source":"pigSpritesheet:walk/3"},{"source":"pigSpritesheet:walk/4"},{"source":"pigSpritesheet:walk/5"},{"source":"pigSpritesheet:walk/6"},{"source":"pigSpritesheet:walk/7"}]}}}
