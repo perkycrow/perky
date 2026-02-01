@@ -45,8 +45,8 @@ export default class Stage extends PerkyModule {
     }
 
 
-    update () {
-
+    update (deltaTime) {
+        this.worldView?.updateViews(deltaTime)
     }
 
 

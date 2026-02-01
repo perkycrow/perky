@@ -101,6 +101,7 @@ describe('DenStage', () => {
         const game = {name: 'testGame'}
         const stage = new DenStage({game})
         stage.world.update = vi.fn()
+        stage.worldView.updateViews = vi.fn()
         stage.impactParticles = {update: vi.fn()}
 
         stage.update(0.016)
@@ -112,11 +113,24 @@ describe('DenStage', () => {
     test('update calls impactParticles.update', () => {
         const stage = new DenStage({game: {}})
         stage.world.update = vi.fn()
+        stage.worldView.updateViews = vi.fn()
         stage.impactParticles = {update: vi.fn()}
 
         stage.update(0.016)
 
         expect(stage.impactParticles.update).toHaveBeenCalledWith(0.016)
+    })
+
+
+    test('update calls worldView.updateViews via super', () => {
+        const stage = new DenStage({game: {}})
+        stage.world.update = vi.fn()
+        stage.worldView.updateViews = vi.fn()
+        stage.impactParticles = {update: vi.fn()}
+
+        stage.update(0.016)
+
+        expect(stage.worldView.updateViews).toHaveBeenCalledWith(0.016)
     })
 
 

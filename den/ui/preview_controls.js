@@ -4,7 +4,7 @@ import {createElement} from '../../application/dom_utils.js'
 
 const SPAWN_BUTTONS = [
     {label: 'Pig', action: 'spawnPigEnemy', maxSpeed: 0.4},
-    {label: 'Red', action: 'spawnRedEnemy', maxSpeed: 0.6},
+    {label: 'Red', action: 'spawnRedEnemy'},
     {label: 'Granny', action: 'spawnGrannyEnemy', maxSpeed: 0.3},
     {label: 'Amalgam', action: 'spawnAmalgamEnemy', maxSpeed: 0.5}
 ]

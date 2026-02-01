@@ -45,6 +45,7 @@ export default class DenStage extends Stage {
 
 
     update (deltaTime) {
+        super.update(deltaTime)
         this.world.update(deltaTime, this.game)
         this.impactParticles.update(deltaTime)
     }

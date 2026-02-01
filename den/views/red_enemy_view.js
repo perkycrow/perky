@@ -22,8 +22,6 @@ export default class RedEnemyView extends EnemyView {
         this.animator.get('throw').on('event:release', () => {
             logger.log('throw released')
         })
-
-        this.hopHeight = 0.06
     }
 
 
@@ -37,20 +35,6 @@ export default class RedEnemyView extends EnemyView {
         super.sync()
         this.syncAnimation()
         this.syncAnimationSpeed()
-        this.syncHop()
-    }
-
-
-    syncHop () {
-        const skipAnim = this.animator.get('skip')
-
-        if (this.animator.current !== skipAnim) {
-            return
-        }
-
-        const t = skipAnim.getSegmentProgress('hop')
-        const hop = 4 * t * (1 - t)
-        this.root.y += hop * this.hopHeight
     }
 
 

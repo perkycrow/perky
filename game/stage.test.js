@@ -128,7 +128,21 @@ describe('Stage', () => {
     })
 
 
-    test('update is a no-op by default', () => {
+    test('update calls worldView.updateViews when worldView exists', () => {
+        class TestStage extends Stage {
+            static World = World
+        }
+
+        const s = new TestStage({game: {}})
+        s.worldView.updateViews = vi.fn()
+
+        s.update(0.016)
+
+        expect(s.worldView.updateViews).toHaveBeenCalledWith(0.016)
+    })
+
+
+    test('update does not throw when no worldView', () => {
         expect(() => stage.update(0.016)).not.toThrow()
     })
 

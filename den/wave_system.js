@@ -137,8 +137,7 @@ export default class WaveSystem extends PerkyModule {
         } else if (roll < config.ratios.granny + config.ratios.red) {
             this.world.spawnRedEnemy({
                 x: 3.5,
-                y: randomY,
-                maxSpeed: config.enemySpeed * 1.5
+                y: randomY
             })
         } else {
             this.world.spawnPigEnemy({

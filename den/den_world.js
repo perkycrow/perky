@@ -95,8 +95,7 @@ export default class DenWorld extends World {
     spawnRedEnemy (options = {}) {
         const enemy = this.create(RedEnemy, {
             x: options.x || 0,
-            y: options.y || 0,
-            maxSpeed: options.maxSpeed || 0.5
+            y: options.y || 0
         })
 
         enemy.on('throw:pie', ({x, y, sprite}) => {
