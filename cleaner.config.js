@@ -3,7 +3,8 @@ export default {
         excludeDirs: [
             'den/',
             'ghast/',
-            'examples/'
+            'examples/',
+            'integration/'
         ],
         excludeFiles: [
             '**/test_helpers.js',
@@ -15,7 +16,8 @@ export default {
         excludeDirs: [
             'den/',
             'ghast/',
-            'examples/'
+            'examples/',
+            'integration/'
         ],
         excludeFiles: [
             '**/test_helpers.js',
@@ -41,7 +43,8 @@ export default {
             'examples/',
             'editor/',
             'doc/',
-            'studio/'
+            'studio/',
+            'integration/'
         ],
         excludeFiles: [
             '**/setup_tests.js',
