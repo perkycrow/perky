@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; background: #111; color: #eee; font-family: monospace; padding: 20px; }
+        #status { margin-bottom: 10px; }
+        #assets { display: flex; gap: 10px; }
+        #assets img { border: 1px solid #333; background: #222; }
+    </style>
+</head>
+<body>
+    <div id="status">Loading...</div>
+    <div id="assets"></div>
+
+    <script type="module">
+        import Application from '/application/application.js'
+
+        const app = new Application({
+            $id: 'testApp',
+            manifest: {
+                assets: {
+                    logo: {type: 'image', url: '/doc/assets/images/logo.png', tags: ['preload']},
+                    pig: {type: 'image', url: '/den/assets/images/pig.png', tags: ['preload']}
+                }
+            }
+        })
+
+        app.on('loader:complete', () => {
+            const logo = app.getSource('logo')
+            const pig = app.getSource('pig')
+
+            const container = document.getElementById('assets')
+            container.appendChild(logo)
+            container.appendChild(pig)
+
+            const status = document.getElementById('status')
+            status.textContent = `Loaded ${app.getAssets().length} assets`
+
+            document.body.dataset.ready = 'true'
+            document.body.dataset.assetCount = app.getAssets().length
+            document.body.dataset.logoLoaded = String(logo instanceof HTMLImageElement && logo.naturalWidth > 0)
+            document.body.dataset.pigLoaded = String(pig instanceof HTMLImageElement && pig.naturalWidth > 0)
+        })
+
+        app.on('loader:error', (error) => {
+            document.getElementById('status').textContent = `Error: ${error.message}`
+            document.body.dataset.ready = 'true'
+            document.body.dataset.error = error.message
+        })
+
+        app.start()
+        app.preload()
+    </script>
+</body>
+</html>
