@@ -1,5 +1,5 @@
 import Enemy from './enemy.js'
-import {CircleHitbox} from './collision_shapes.js'
+import {CircleHitbox} from '../collision_shapes.js'
 
 
 export default class GrannyEnemy extends Enemy {

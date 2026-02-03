@@ -1,5 +1,5 @@
-import Entity from '../game/entity.js'
-import {CapsuleHitbox} from './collision_shapes.js'
+import Entity from '../../game/entity.js'
+import {CapsuleHitbox} from '../collision_shapes.js'
 
 
 export default class Player extends Entity {

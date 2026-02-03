@@ -1,4 +1,4 @@
-import Entity from '../game/entity.js'
+import Entity from '../../game/entity.js'
 
 
 export default class Enemy extends Entity {

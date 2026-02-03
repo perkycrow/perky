@@ -1,6 +1,6 @@
 import Enemy from './enemy.js'
-import Easing from '../math/easing.js'
-import {CapsuleHitbox} from './collision_shapes.js'
+import Easing from '../../math/easing.js'
+import {CapsuleHitbox} from '../collision_shapes.js'
 
 
 export default class PigEnemy extends Enemy {

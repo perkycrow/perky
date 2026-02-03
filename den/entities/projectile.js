@@ -1,5 +1,5 @@
-import Entity from '../game/entity.js'
-import {CircleHitbox} from './collision_shapes.js'
+import Entity from '../../game/entity.js'
+import {CircleHitbox} from '../collision_shapes.js'
 
 
 export default class Projectile extends Entity {

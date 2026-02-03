@@ -1,5 +1,5 @@
 import Enemy from './enemy.js'
-import {CapsuleHitbox} from './collision_shapes.js'
+import {CapsuleHitbox} from '../collision_shapes.js'
 
 
 export default class AmalgamEnemy extends Enemy {

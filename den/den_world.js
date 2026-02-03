@@ -1,10 +1,10 @@
 import World from '../game/world.js'
-import Player from './player.js'
-import Projectile from './projectile.js'
-import PigEnemy from './pig_enemy.js'
-import RedEnemy from './red_enemy.js'
-import GrannyEnemy from './granny_enemy.js'
-import AmalgamEnemy from './amalgam_enemy.js'
+import Player from './entities/player.js'
+import Projectile from './entities/projectile.js'
+import PigEnemy from './entities/pig_enemy.js'
+import RedEnemy from './entities/red_enemy.js'
+import GrannyEnemy from './entities/granny_enemy.js'
+import AmalgamEnemy from './entities/amalgam_enemy.js'
 import {testHitbox} from './collision_shapes.js'
 
 
