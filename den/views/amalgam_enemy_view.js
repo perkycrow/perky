@@ -3,6 +3,8 @@ import EnemyView from './enemy_view.js'
 
 export default class AmalgamEnemyView extends EnemyView {
 
+    static config = {image: 'amalgam', width: 1.2, height: 1.2}
+
     constructor (entity, context) {
         super(entity, context)
         this.eyeGlow = 0

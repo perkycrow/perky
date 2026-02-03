@@ -90,10 +90,10 @@ export default class GameStage extends Stage {
     #registerViews () {
         this.worldView
             .register(Player, PlayerView)
-            .register(PigEnemy, PigEnemyView, {image: 'pig', width: 1, height: 1})
-            .register(RedEnemy, RedEnemyView, {image: 'red', width: 1, height: 1})
-            .register(GrannyEnemy, GrannyEnemyView, {image: 'granny', width: 1, height: 1})
-            .register(AmalgamEnemy, AmalgamEnemyView, {image: 'amalgam', width: 1.2, height: 1.2})
+            .register(PigEnemy, PigEnemyView)
+            .register(RedEnemy, RedEnemyView)
+            .register(GrannyEnemy, GrannyEnemyView)
+            .register(AmalgamEnemy, AmalgamEnemyView)
             .register(Projectile, ProjectileView)
     }
 

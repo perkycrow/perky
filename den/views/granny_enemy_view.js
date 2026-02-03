@@ -3,6 +3,8 @@ import EnemyView from './enemy_view.js'
 
 export default class GrannyEnemyView extends EnemyView {
 
+    static config = {image: 'granny', width: 1, height: 1}
+
     constructor (entity, context) {
         super(entity, context)
         this.baseY = 0

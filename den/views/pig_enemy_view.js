@@ -4,6 +4,8 @@ import WaveEffect from '../effects/wave_effect.js'
 
 export default class PigEnemyView extends EnemyView {
 
+    static config = {image: 'pig', width: 1, height: 1}
+
     constructor (entity, context) {
         super(entity, context)
 

@@ -143,11 +143,12 @@ export default class WorldView extends PerkyModule {
         const views = []
 
         for (const {View, config, ObjectClass} of registrations) {
+            const mergedConfig = {...View.config, ...config}
             const context = {
                 game: this.game,
                 world: this.world,
                 group: this.rootGroup,
-                config,
+                config: mergedConfig,
                 ObjectClass
             }
 

@@ -5,6 +5,8 @@ import logger from '../../core/logger.js'
 
 export default class RedEnemyView extends EnemyView {
 
+    static config = {image: 'red', width: 1, height: 1}
+
     constructor (entity, context) {
         super(entity, context)
 
