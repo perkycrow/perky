@@ -5,7 +5,7 @@ import ShadowTransform from '../../render/transforms/shadow_transform.js'
 
 import DenWorld from '../den_world.js'
 import DenController from '../controllers/den_controller.js'
-import {autoRegisterViews} from '../registry.js'
+import {autoRegisterViews} from '../wiring.js'
 
 import ImpactParticles from '../impact_particles.js'
 import HitboxDebug from '../hitbox_debug.js'
