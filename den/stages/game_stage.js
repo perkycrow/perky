@@ -4,6 +4,7 @@ import Sprite from '../../render/sprite.js'
 import ShadowTransform from '../../render/transforms/shadow_transform.js'
 
 import DenWorld from '../den_world.js'
+import DenController from '../controllers/den_controller.js'
 
 import Player from '../player.js'
 import PigEnemy from '../pig_enemy.js'
@@ -24,9 +25,10 @@ import HitboxDebug from '../hitbox_debug.js'
 import DayNightPass from '../postprocessing/day_night_pass.js'
 
 
-export default class DenStage extends Stage {
+export default class GameStage extends Stage {
 
     static World = DenWorld
+    static ActionController = DenController
 
     get dayNightPass () {
         return this.game.getRenderer('game')?.getPass('dayNightPass')

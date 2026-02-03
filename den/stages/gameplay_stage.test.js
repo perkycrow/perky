@@ -1,6 +1,6 @@
 import {describe, test, expect, vi} from 'vitest'
 import GameplayStage from './gameplay_stage.js'
-import DenStage from './den_stage.js'
+import GameStage from './game_stage.js'
 import DenController from '../controllers/den_controller.js'
 import WaveSystem from '../wave_system.js'
 
@@ -27,14 +27,14 @@ function createMockGame () {
 
 describe('GameplayStage', () => {
 
-    test('extends DenStage', () => {
+    test('extends GameStage', () => {
         const stage = new GameplayStage({game: {}})
 
-        expect(stage).toBeInstanceOf(DenStage)
+        expect(stage).toBeInstanceOf(GameStage)
     })
 
 
-    test('declares DenController as ActionController', () => {
+    test('inherits DenController from GameStage', () => {
         expect(GameplayStage.ActionController).toBe(DenController)
     })
 

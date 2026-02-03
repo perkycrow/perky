@@ -37,6 +37,10 @@ export default class DefendTheDen extends Game {
         }
     ]
     static postPasses = [DayNightPass, VignettePass]
+    static stages = {
+        gameplay: GameplayStage,
+        preview: PreviewStage
+    }
 
     configureGame (params = {}) {
         const gameRenderer = this.getRenderer('game')
@@ -44,8 +48,8 @@ export default class DefendTheDen extends Game {
         gameRenderer.registerShaderEffect(OutlineEffect)
         gameRenderer.registerShaderEffect(WaveEffect)
 
-        const StageClass = params.preview ? PreviewStage : GameplayStage
-        this.setStage(StageClass)
+        const stageName = params.preview ? 'preview' : 'gameplay'
+        this.setStage(stageName)
     }
 
 

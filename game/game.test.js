@@ -372,4 +372,151 @@ describe('Game', () => {
         expect(game.stage).toBeInstanceOf(TestStage)
     })
 
+
+    test('registerStage registers a stage class by name', () => {
+        class TestStage extends Stage {}
+
+        game.registerStage('test', TestStage)
+
+        expect(game.getStageClass('test')).toBe(TestStage)
+    })
+
+
+    test('registerStage deduces name from class name', () => {
+        class PreviewStage extends Stage {}
+
+        game.registerStage(PreviewStage)
+
+        expect(game.getStageClass('preview')).toBe(PreviewStage)
+    })
+
+
+    test('registerStage deduces name from static $name', () => {
+        class TestStage extends Stage {
+            static $name = 'custom'
+        }
+
+        game.registerStage(TestStage)
+
+        expect(game.getStageClass('custom')).toBe(TestStage)
+    })
+
+
+    test('registerStage returns the resolved name', () => {
+        class GameplayStage extends Stage {}
+
+        const name = game.registerStage(GameplayStage)
+
+        expect(name).toBe('gameplay')
+    })
+
+
+    test('stages getter returns array of registered stage names', () => {
+        class StageA extends Stage {}
+        class StageB extends Stage {}
+
+        game.registerStage('a', StageA)
+        game.registerStage('b', StageB)
+
+        expect(game.stages).toContain('a')
+        expect(game.stages).toContain('b')
+    })
+
+
+    test('getStageClass returns null for unregistered stage', () => {
+        expect(game.getStageClass('nonexistent')).toBeNull()
+    })
+
+
+    test('setStage accepts stage name string', () => {
+        class TestStage extends Stage {}
+
+        game.registerStage('test', TestStage)
+        game.setStage('test')
+
+        expect(game.stage).toBeInstanceOf(TestStage)
+    })
+
+
+    test('setStage throws for unregistered stage name', () => {
+        expect(() => game.setStage('nonexistent')).toThrow("Stage 'nonexistent' not registered")
+    })
+
+
+    test('setStage passes options when using stage name', () => {
+        class TestStage extends Stage {}
+
+        game.registerStage('test', TestStage)
+        game.setStage('test', {foo: 'bar'})
+
+        expect(game.stage.options.foo).toBe('bar')
+    })
+
+
+    test('currentStageName returns the current stage name', () => {
+        class TestStage extends Stage {}
+
+        game.registerStage('test', TestStage)
+        game.setStage('test')
+
+        expect(game.currentStageName).toBe('test')
+    })
+
+
+    test('currentStageName updates when switching stages', () => {
+        class StageA extends Stage {}
+        class StageB extends Stage {}
+
+        game.registerStage('a', StageA)
+        game.registerStage('b', StageB)
+
+        game.setStage('a')
+        expect(game.currentStageName).toBe('a')
+
+        game.setStage('b')
+        expect(game.currentStageName).toBe('b')
+    })
+
+
+    test('currentStageName is set when using class directly', () => {
+        class GameplayStage extends Stage {}
+
+        game.setStage(GameplayStage)
+
+        expect(game.currentStageName).toBe('gameplay')
+    })
+
+
+    test('static stages object registers stages automatically', () => {
+        class StageA extends Stage {}
+        class StageB extends Stage {}
+
+        class GameWithStages extends Game {
+            static stages = {
+                alpha: StageA,
+                beta: StageB
+            }
+        }
+
+        const gameWithStages = new GameWithStages()
+
+        expect(gameWithStages.getStageClass('alpha')).toBe(StageA)
+        expect(gameWithStages.getStageClass('beta')).toBe(StageB)
+    })
+
+
+    test('static stages array registers stages with deduced names', () => {
+        class PreviewStage extends Stage {}
+        class GameplayStage extends Stage {}
+
+        class GameWithStages extends Game {
+            static stages = [PreviewStage, GameplayStage]
+        }
+
+        const gameWithStages = new GameWithStages()
+
+        expect(gameWithStages.getStageClass('preview')).toBe(PreviewStage)
+        expect(gameWithStages.getStageClass('gameplay')).toBe(GameplayStage)
+    })
+
 })

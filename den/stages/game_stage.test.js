@@ -1,33 +1,33 @@
 import {describe, test, expect, vi} from 'vitest'
-import DenStage from './den_stage.js'
+import GameStage from './game_stage.js'
 import Stage from '../../game/stage.js'
 import DenWorld from '../den_world.js'
 import WorldView from '../../game/world_view.js'
 
 
-describe('DenStage', () => {
+describe('GameStage', () => {
 
     test('extends Stage', () => {
-        const stage = new DenStage({game: {}})
+        const stage = new GameStage({game: {}})
 
         expect(stage).toBeInstanceOf(Stage)
     })
 
 
     test('uses DenWorld', () => {
-        expect(DenStage.World).toBe(DenWorld)
+        expect(GameStage.World).toBe(DenWorld)
     })
 
 
     test('creates world as DenWorld', () => {
-        const stage = new DenStage({game: {}})
+        const stage = new GameStage({game: {}})
 
         expect(stage.world).toBeInstanceOf(DenWorld)
     })
 
 
     test('creates worldView', () => {
-        const stage = new DenStage({game: {}})
+        const stage = new GameStage({game: {}})
 
         expect(stage.worldView).toBeInstanceOf(WorldView)
     })
@@ -41,7 +41,7 @@ describe('DenStage', () => {
             }))
         }
 
-        const stage = new DenStage({game})
+        const stage = new GameStage({game})
 
         expect(stage.dayNightPass).toBe(mockPass)
     })
@@ -52,21 +52,21 @@ describe('DenStage', () => {
             getRenderer: vi.fn(() => null)
         }
 
-        const stage = new DenStage({game})
+        const stage = new GameStage({game})
 
         expect(stage.dayNightPass).toBeUndefined()
     })
 
 
     test('updateShadows does nothing without shadowTransform', () => {
-        const stage = new DenStage({game: {}})
+        const stage = new GameStage({game: {}})
 
         expect(() => stage.updateShadows(0.5)).not.toThrow()
     })
 
 
     test('updateShadows modifies shadowTransform', () => {
-        const stage = new DenStage({game: {}})
+        const stage = new GameStage({game: {}})
         stage.shadowTransform = {skewX: 0, scaleY: 0, offsetY: 0, color: [0, 0, 0, 0]}
 
         stage.updateShadows(0.5)
@@ -77,7 +77,7 @@ describe('DenStage', () => {
 
 
     test('setHitboxDebug delegates to hitboxDebug', () => {
-        const stage = new DenStage({game: {}})
+        const stage = new GameStage({game: {}})
         stage.hitboxDebug = {setEnabled: vi.fn()}
 
         stage.setHitboxDebug(true)
@@ -87,7 +87,7 @@ describe('DenStage', () => {
 
 
     test('toggleHitboxDebug delegates to hitboxDebug', () => {
-        const stage = new DenStage({game: {}})
+        const stage = new GameStage({game: {}})
         stage.hitboxDebug = {toggle: vi.fn(() => true)}
 
         const result = stage.toggleHitboxDebug()
@@ -99,7 +99,7 @@ describe('DenStage', () => {
 
     test('update calls world.update with game as context', () => {
         const game = {name: 'testGame'}
-        const stage = new DenStage({game})
+        const stage = new GameStage({game})
         stage.world.update = vi.fn()
         stage.worldView.updateViews = vi.fn()
         stage.impactParticles = {update: vi.fn()}
@@ -111,7 +111,7 @@ describe('DenStage', () => {
 
 
     test('update calls impactParticles.update', () => {
-        const stage = new DenStage({game: {}})
+        const stage = new GameStage({game: {}})
         stage.world.update = vi.fn()
         stage.worldView.updateViews = vi.fn()
         stage.impactParticles = {update: vi.fn()}
@@ -123,7 +123,7 @@ describe('DenStage', () => {
 
 
     test('update calls worldView.updateViews via super', () => {
-        const stage = new DenStage({game: {}})
+        const stage = new GameStage({game: {}})
         stage.world.update = vi.fn()
         stage.worldView.updateViews = vi.fn()
         stage.impactParticles = {update: vi.fn()}
@@ -135,7 +135,7 @@ describe('DenStage', () => {
 
 
     test('render calls worldView.syncViews', () => {
-        const stage = new DenStage({game: {}})
+        const stage = new GameStage({game: {}})
         stage.worldView.syncViews = vi.fn()
         stage.hitboxDebug = {update: vi.fn()}
 
@@ -152,7 +152,7 @@ describe('DenStage', () => {
 
 
     test('render calls hitboxDebug.update', () => {
-        const stage = new DenStage({game: {}})
+        const stage = new GameStage({game: {}})
         stage.worldView.syncViews = vi.fn()
         stage.hitboxDebug = {update: vi.fn()}
 

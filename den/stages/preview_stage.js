@@ -1,11 +1,10 @@
-import DenStage from './den_stage.js'
-import DenController from '../controllers/den_controller.js'
+import GameStage from './game_stage.js'
 import PreviewControls from '../ui/preview_controls.js'
 
 
-export default class PreviewStage extends DenStage {
+export default class PreviewStage extends GameStage {
 
-    static ActionController = DenController
+    static $name = 'preview'
 
     onStart () {
         super.onStart()

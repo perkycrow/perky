@@ -15,6 +15,10 @@ export default class Game extends Application {
     static camera = {unitsInView: {width: 10, height: 10}}
     static layer = {type: 'webgl'}
     static postPasses = []
+    static stages = null
+
+    #stageRegistry = new Map()
+    #currentStageName = null
 
     constructor (params = {}) {
         super(params)
@@ -33,11 +37,44 @@ export default class Game extends Application {
         this.on('update', this.#onUpdate)
         this.on('render', this.#onRender)
 
+        this.#registerStaticStages()
         this.configureGame?.(params)
     }
 
 
-    setStage (StageClass, options = {}) {
+    registerStage (nameOrClass, StageClass) {
+        let name
+        let Class
+
+        if (typeof nameOrClass === 'string') {
+            name = nameOrClass
+            Class = StageClass
+        } else {
+            Class = nameOrClass
+            name = resolveStageName(Class)
+        }
+
+        this.#stageRegistry.set(name, Class)
+        return name
+    }
+
+
+    getStageClass (name) {
+        return this.#stageRegistry.get(name) || null
+    }
+
+
+    get stages () {
+        return Array.from(this.#stageRegistry.keys())
+    }
+
+
+    get currentStageName () {
+        return this.#currentStageName
+    }
+
+
+    setStage (nameOrClass, options = {}) {
         if (this.stage) {
             this.#unregisterStageController()
             this.removeChild(this.stage.$id)
@@ -45,6 +82,21 @@ export default class Game extends Application {
             this.worldView = null
         }
 
+        let StageClass
+        let stageName
+
+        if (typeof nameOrClass === 'string') {
+            stageName = nameOrClass
+            StageClass = this.#stageRegistry.get(stageName)
+            if (!StageClass) {
+                throw new Error(`Stage '${stageName}' not registered`)
+            }
+        } else {
+            StageClass = nameOrClass
+            stageName = resolveStageName(StageClass)
+        }
+
+        this.#currentStageName = stageName
         this.create(StageClass, {$bind: 'stage', game: this, ...options})
 
         if (this.stage.world) {
@@ -75,6 +127,24 @@ export default class Game extends Application {
             return
         }
         this.unregisterController(this.stage._controllerName)
+    }
+
+
+    #registerStaticStages () {
+        const stages = this.constructor.stages
+        if (!stages) {
+            return
+        }
+
+        if (Array.isArray(stages)) {
+            for (const StageClass of stages) {
+                this.registerStage(StageClass)
+            }
+        } else {
+            for (const [name, StageClass] of Object.entries(stages)) {
+                this.registerStage(name, StageClass)
+            }
+        }
     }
 
 
@@ -232,4 +302,12 @@ export default class Game extends Application {
         })
     }
 
+}
+
+
+function resolveStageName (StageClass) {
+    if (StageClass.$name && StageClass.$name !== 'stage') {
+        return StageClass.$name
+    }
+    return StageClass.name.replace(/Stage$/, '').toLowerCase()
 }

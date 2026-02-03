@@ -1,12 +1,11 @@
-import DenStage from './den_stage.js'
-import DenController from '../controllers/den_controller.js'
+import GameStage from './game_stage.js'
 import WaveSystem from '../wave_system.js'
 import WaveProgressBar from '../ui/wave_progress_bar.js'
 
 
-export default class GameplayStage extends DenStage {
+export default class GameplayStage extends GameStage {
 
-    static ActionController = DenController
+    static $name = 'gameplay'
 
     onStart () {
         super.onStart()
