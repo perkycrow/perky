@@ -5,20 +5,7 @@ import ShadowTransform from '../../render/transforms/shadow_transform.js'
 
 import DenWorld from '../den_world.js'
 import DenController from '../controllers/den_controller.js'
-
-import Player from '../entities/player.js'
-import PigEnemy from '../entities/pig_enemy.js'
-import RedEnemy from '../entities/red_enemy.js'
-import GrannyEnemy from '../entities/granny_enemy.js'
-import AmalgamEnemy from '../entities/amalgam_enemy.js'
-import Projectile from '../entities/projectile.js'
-
-import PlayerView from '../views/player_view.js'
-import PigEnemyView from '../views/pig_enemy_view.js'
-import RedEnemyView from '../views/red_enemy_view.js'
-import GrannyEnemyView from '../views/granny_enemy_view.js'
-import AmalgamEnemyView from '../views/amalgam_enemy_view.js'
-import ProjectileView from '../views/projectile_view.js'
+import {autoRegisterViews} from '../registry.js'
 
 import ImpactParticles from '../impact_particles.js'
 import HitboxDebug from '../hitbox_debug.js'
@@ -88,13 +75,7 @@ export default class GameStage extends Stage {
 
 
     #registerViews () {
-        this.worldView
-            .register(Player, PlayerView)
-            .register(PigEnemy, PigEnemyView)
-            .register(RedEnemy, RedEnemyView)
-            .register(GrannyEnemy, GrannyEnemyView)
-            .register(AmalgamEnemy, AmalgamEnemyView)
-            .register(Projectile, ProjectileView)
+        autoRegisterViews(this.worldView)
     }
 
 
