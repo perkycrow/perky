@@ -335,9 +335,6 @@ export default class HubView extends EditorComponent {
         await this.#loadCustomAnimators()
         await this.#reconcile()
 
-        const hasCustoms = Object.keys(this.#customAnimators).length > 0
-        this.#selectBtn.style.display = hasCustoms ? 'block' : 'none'
-
         const section = createElement('div', {class: 'section'})
         section.appendChild(createElement('h2', {class: 'section-title', text: 'Animators'}))
 
