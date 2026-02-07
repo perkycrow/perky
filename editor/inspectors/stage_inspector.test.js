@@ -1,9 +1,9 @@
 import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
-import WorldViewInspector from './world_view_inspector.js'
-import WorldView from '../../game/world_view.js'
+import StageInspector from './stage_inspector.js'
+import Stage from '../../game/stage.js'
 
 
-class MockWorldView extends WorldView {
+class MockStage extends Stage {
 
     constructor (options = {}) {
         super(options)
@@ -14,7 +14,7 @@ class MockWorldView extends WorldView {
 }
 
 
-describe('WorldViewInspector', () => {
+describe('StageInspector', () => {
 
     let inspector
     let container
@@ -24,7 +24,7 @@ describe('WorldViewInspector', () => {
         container = document.createElement('div')
         document.body.appendChild(container)
 
-        inspector = document.createElement('world-view-inspector')
+        inspector = document.createElement('stage-inspector')
         container.appendChild(inspector)
     })
 
@@ -62,16 +62,16 @@ describe('WorldViewInspector', () => {
 
     describe('static matches', () => {
 
-        test('matches WorldView instance', () => {
-            const worldView = new MockWorldView()
-            expect(WorldViewInspector.matches(worldView)).toBe(true)
+        test('matches Stage instance', () => {
+            const stage = new MockStage({game: {}})
+            expect(StageInspector.matches(stage)).toBe(true)
         })
 
 
-        test('does not match non-WorldView', () => {
-            expect(WorldViewInspector.matches({})).toBe(false)
-            expect(WorldViewInspector.matches(null)).toBe(false)
-            expect(WorldViewInspector.matches('string')).toBe(false)
+        test('does not match non-Stage', () => {
+            expect(StageInspector.matches({})).toBe(false)
+            expect(StageInspector.matches(null)).toBe(false)
+            expect(StageInspector.matches('string')).toBe(false)
         })
 
     })
@@ -80,18 +80,18 @@ describe('WorldViewInspector', () => {
     describe('setModule', () => {
 
         test('stores the module', () => {
-            const worldView = new MockWorldView()
-            inspector.setModule(worldView)
-            expect(inspector.getModule()).toBe(worldView)
+            const stage = new MockStage({game: {}})
+            inspector.setModule(stage)
+            expect(inspector.getModule()).toBe(stage)
         })
 
 
         test('displays world info', () => {
-            const worldView = new MockWorldView({
+            const stage = new MockStage({
                 world: {$id: 'test-world'},
                 game: {$id: 'test-game'}
             })
-            inspector.setModule(worldView)
+            inspector.setModule(stage)
 
             const grid = inspector.shadowRoot.querySelector('.inspector-grid')
             expect(grid.textContent).toContain('world')
@@ -100,11 +100,11 @@ describe('WorldViewInspector', () => {
 
 
         test('displays game info', () => {
-            const worldView = new MockWorldView({
+            const stage = new MockStage({
                 world: {$id: 'test-world'},
                 game: {$id: 'test-game'}
             })
-            inspector.setModule(worldView)
+            inspector.setModule(stage)
 
             const grid = inspector.shadowRoot.querySelector('.inspector-grid')
             expect(grid.textContent).toContain('game')
@@ -113,21 +113,21 @@ describe('WorldViewInspector', () => {
 
 
         test('displays (none) when world is missing', () => {
-            const worldView = new MockWorldView()
-            inspector.setModule(worldView)
+            const stage = new MockStage({game: {}})
+            inspector.setModule(stage)
 
             const grid = inspector.shadowRoot.querySelector('.inspector-grid')
             expect(grid.textContent).toContain('(none)')
         })
 
 
-        test('displays entity count', () => {
-            const worldView = new MockWorldView()
-            worldView.rootGroup = {children: [{}, {}, {}]}
-            inspector.setModule(worldView)
+        test('displays view count', () => {
+            const stage = new MockStage({game: {}})
+            stage.viewsGroup.children = [{}, {}, {}]
+            inspector.setModule(stage)
 
             const grid = inspector.shadowRoot.querySelector('.inspector-grid')
-            expect(grid.textContent).toContain('entities')
+            expect(grid.textContent).toContain('views')
             expect(grid.textContent).toContain('3')
         })
 
@@ -136,10 +136,10 @@ describe('WorldViewInspector', () => {
 
     describe('scene tree button', () => {
 
-        test('shows scene tree button when entities exist', () => {
-            const worldView = new MockWorldView()
-            worldView.rootGroup = {children: [{}]}
-            inspector.setModule(worldView)
+        test('shows scene tree button when views exist', () => {
+            const stage = new MockStage({game: {}})
+            stage.viewsGroup.children = [{}]
+            inspector.setModule(stage)
 
             const actions = inspector.shadowRoot.querySelector('.inspector-actions')
             const button = actions.querySelector('button')
@@ -148,10 +148,10 @@ describe('WorldViewInspector', () => {
         })
 
 
-        test('does not show scene tree button when no entities', () => {
-            const worldView = new MockWorldView()
-            worldView.rootGroup = {children: []}
-            inspector.setModule(worldView)
+        test('does not show scene tree button when no views', () => {
+            const stage = new MockStage({game: {}})
+            stage.viewsGroup.children = []
+            inspector.setModule(stage)
 
             const actions = inspector.shadowRoot.querySelector('.inspector-actions')
             const button = actions.querySelector('button')
@@ -160,9 +160,9 @@ describe('WorldViewInspector', () => {
 
 
         test('dispatches open:scene-tree event on button click', () => {
-            const worldView = new MockWorldView()
-            worldView.rootGroup = {children: [{}]}
-            inspector.setModule(worldView)
+            const stage = new MockStage({game: {}})
+            stage.viewsGroup.children = [{}]
+            inspector.setModule(stage)
 
             const eventSpy = vi.fn()
             inspector.addEventListener('open:scene-tree', eventSpy)
@@ -171,21 +171,21 @@ describe('WorldViewInspector', () => {
             button.click()
 
             expect(eventSpy).toHaveBeenCalledTimes(1)
-            expect(eventSpy.mock.calls[0][0].detail.worldView).toBe(worldView)
-            expect(eventSpy.mock.calls[0][0].detail.content).toBe(worldView.rootGroup)
+            expect(eventSpy.mock.calls[0][0].detail.stage).toBe(stage)
+            expect(eventSpy.mock.calls[0][0].detail.content).toBe(stage.viewsGroup)
         })
 
     })
 
 
     test('clears content when module changes', () => {
-        const worldView1 = new MockWorldView({world: {$id: 'world-1'}})
-        worldView1.rootGroup = {children: []}
-        inspector.setModule(worldView1)
+        const stage1 = new MockStage({world: {$id: 'world-1'}, game: {}})
+        stage1.viewsGroup.children = []
+        inspector.setModule(stage1)
 
-        const worldView2 = new MockWorldView({world: {$id: 'world-2'}})
-        worldView2.rootGroup = {children: []}
-        inspector.setModule(worldView2)
+        const stage2 = new MockStage({world: {$id: 'world-2'}, game: {}})
+        stage2.viewsGroup.children = []
+        inspector.setModule(stage2)
 
         const grid = inspector.shadowRoot.querySelector('.inspector-grid')
         expect(grid.textContent).toContain('world-2')

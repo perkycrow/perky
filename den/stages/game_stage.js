@@ -29,6 +29,8 @@ export default class GameStage extends Stage {
         this.#setupRenderGroups()
         this.#buildBackground()
 
+        super.onStart()
+
         this.game.execute('spawnPlayer', {x: -2.5})
     }
 
@@ -41,7 +43,7 @@ export default class GameStage extends Stage {
 
 
     render () {
-        this.worldView.syncViews()
+        this.syncViews()
         this.hitboxDebug.update()
 
         const gameLayer = this.game.getLayer('game')
@@ -75,7 +77,7 @@ export default class GameStage extends Stage {
 
 
     #registerViews () {
-        autoRegisterViews(this.worldView)
+        autoRegisterViews(this)
     }
 
 
@@ -107,7 +109,7 @@ export default class GameStage extends Stage {
             color: [0, 0, 0, 0.3]
         })
 
-        this.entitiesGroup.addChild(this.worldView.rootGroup)
+        this.entitiesGroup.addChild(this.viewsGroup)
         this.entitiesGroup.addChild(this.impactParticles.particleGroup)
 
         gameRenderer.setRenderGroups([

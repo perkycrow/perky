@@ -79,7 +79,6 @@ export default class Game extends Application {
             this.#unregisterStageController()
             this.removeChild(this.stage.$id)
             this.world = null
-            this.worldView = null
         }
 
         let StageClass
@@ -101,10 +100,6 @@ export default class Game extends Application {
 
         if (this.stage.world) {
             this.world = this.stage.world
-        }
-
-        if (this.stage.worldView) {
-            this.worldView = this.stage.worldView
         }
 
         this.#registerStageController()

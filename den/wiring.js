@@ -26,12 +26,12 @@ export function getViewFor (Entity) {
 }
 
 
-export function autoRegisterViews (worldView, overrides = {}) {
+export function autoRegisterViews (stage, overrides = {}) {
     for (const [name, Entity] of Object.entries(entities)) {
         const View = getViewFor(Entity)
         if (View) {
             const config = {...View.config, ...overrides[name]}
-            worldView.register(Entity, View, config)
+            stage.register(Entity, View, config)
         }
     }
 }

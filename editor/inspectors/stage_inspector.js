@@ -1,12 +1,12 @@
 import BaseInspector from './base_inspector.js'
 import PerkyExplorerDetails from '../perky_explorer_details.js'
-import WorldView from '../../game/world_view.js'
+import Stage from '../../game/stage.js'
 
 
-export default class WorldViewInspector extends BaseInspector {
+export default class StageInspector extends BaseInspector {
 
     static matches (module) {
-        return module instanceof WorldView
+        return module instanceof Stage
     }
 
     static styles = `
@@ -58,15 +58,15 @@ export default class WorldViewInspector extends BaseInspector {
 
         this.clearContent()
 
-        const worldView = this.module
+        const stage = this.module
 
-        this.addRow('world', worldView.world?.$id || '(none)')
-        this.addRow('game', worldView.game?.$id || '(none)')
+        this.addRow('world', stage.world?.$id || '(none)')
+        this.addRow('game', stage.game?.$id || '(none)')
 
-        const entityCount = worldView.rootGroup?.children?.length ?? 0
-        this.addRow('entities', entityCount, true)
+        const entityCount = stage.viewsGroup?.children?.length ?? 0
+        this.addRow('views', entityCount, true)
 
-        if (worldView.rootGroup && entityCount > 0) {
+        if (stage.viewsGroup && entityCount > 0) {
             const sceneTreeBtn = this.createButton('🎬', 'Scene Tree', () => this.#openSceneTree())
             sceneTreeBtn.classList.add('primary')
             this.actionsEl.appendChild(sceneTreeBtn)
@@ -75,7 +75,7 @@ export default class WorldViewInspector extends BaseInspector {
 
 
     #openSceneTree () {
-        if (!this.module?.rootGroup) {
+        if (!this.module?.viewsGroup) {
             return
         }
 
@@ -83,8 +83,8 @@ export default class WorldViewInspector extends BaseInspector {
             bubbles: true,
             composed: true,
             detail: {
-                content: this.module.rootGroup,
-                worldView: this.module
+                content: this.module.viewsGroup,
+                stage: this.module
             }
         }))
     }
@@ -92,6 +92,6 @@ export default class WorldViewInspector extends BaseInspector {
 }
 
 
-customElements.define('world-view-inspector', WorldViewInspector)
+customElements.define('stage-inspector', StageInspector)
 
-PerkyExplorerDetails.registerInspector(WorldViewInspector)
+PerkyExplorerDetails.registerInspector(StageInspector)

@@ -6,7 +6,6 @@ import ActionController from '../core/action_controller.js'
 import RenderSystem from '../render/render_system.js'
 import Stage from './stage.js'
 import World from './world.js'
-import WorldView from './world_view.js'
 
 
 
@@ -211,18 +210,6 @@ describe('Game', () => {
     })
 
 
-    test('setStage delegates worldView from stage', () => {
-        class TestStage extends Stage {
-            static World = World
-        }
-
-        game.setStage(TestStage)
-
-        expect(game.worldView).toBeInstanceOf(WorldView)
-        expect(game.worldView).toBe(game.stage.worldView)
-    })
-
-
     test('setStage passes game to stage', () => {
         class TestStage extends Stage {
             static World = World
@@ -265,7 +252,7 @@ describe('Game', () => {
     })
 
 
-    test('setStage clears world and worldView when switching', () => {
+    test('setStage clears world when switching', () => {
         class StageWithWorld extends Stage {
             static World = World
         }
@@ -276,7 +263,6 @@ describe('Game', () => {
 
         game.setStage(StageWithoutWorld)
         expect(game.world).toBeNull()
-        expect(game.worldView).toBeNull()
     })
 
 

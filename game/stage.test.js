@@ -1,8 +1,10 @@
 import {describe, test, expect, beforeEach, vi} from 'vitest'
 import Stage from './stage.js'
 import World from './world.js'
-import WorldView from './world_view.js'
+import Entity from './entity.js'
+import EntityView from './entity_view.js'
 import PerkyModule from '../core/perky_module.js'
+import Group2D from '../render/group_2d.js'
 
 
 describe('Stage', () => {
@@ -37,11 +39,6 @@ describe('Stage', () => {
     })
 
 
-    test('has WorldView by default', () => {
-        expect(Stage.WorldView).toBe(WorldView)
-    })
-
-
     test('has null ActionController by default', () => {
         expect(Stage.ActionController).toBe(null)
     })
@@ -49,11 +46,6 @@ describe('Stage', () => {
 
     test('does not create world when World is null', () => {
         expect(stage.world).toBeUndefined()
-    })
-
-
-    test('does not create worldView when no world', () => {
-        expect(stage.worldView).toBeUndefined()
     })
 
 
@@ -68,44 +60,6 @@ describe('Stage', () => {
     })
 
 
-    test('creates worldView when World is defined', () => {
-        class TestStage extends Stage {
-            static World = World
-        }
-
-        const game = {}
-        const s = new TestStage({game})
-
-        expect(s.worldView).toBeInstanceOf(WorldView)
-    })
-
-
-    test('worldView receives world and game', () => {
-        class TestStage extends Stage {
-            static World = World
-        }
-
-        const game = {}
-        const s = new TestStage({game})
-
-        expect(s.worldView.world).toBe(s.world)
-        expect(s.worldView.game).toBe(game)
-    })
-
-
-    test('does not create worldView when WorldView is null', () => {
-        class TestStage extends Stage {
-            static World = World
-            static WorldView = null
-        }
-
-        const s = new TestStage({game: {}})
-
-        expect(s.world).toBeInstanceOf(World)
-        expect(s.worldView).toBeUndefined()
-    })
-
-
     test('world is child of stage', () => {
         class TestStage extends Stage {
             static World = World
@@ -117,32 +71,21 @@ describe('Stage', () => {
     })
 
 
-    test('worldView is child of stage', () => {
-        class TestStage extends Stage {
-            static World = World
-        }
-
-        const s = new TestStage({game: {}})
-
-        expect(s.getChild('worldView')).toBe(s.worldView)
+    test('has viewsGroup', () => {
+        expect(stage.viewsGroup).toBeInstanceOf(Group2D)
     })
 
 
-    test('update calls worldView.updateViews when worldView exists', () => {
-        class TestStage extends Stage {
-            static World = World
-        }
+    test('update calls updateViews', () => {
+        const spy = vi.spyOn(stage, 'updateViews')
 
-        const s = new TestStage({game: {}})
-        s.worldView.updateViews = vi.fn()
+        stage.update(0.016)
 
-        s.update(0.016)
-
-        expect(s.worldView.updateViews).toHaveBeenCalledWith(0.016)
+        expect(spy).toHaveBeenCalledWith(0.016)
     })
 
 
-    test('update does not throw when no worldView', () => {
+    test('update does not throw when no world', () => {
         expect(() => stage.update(0.016)).not.toThrow()
     })
 
@@ -184,19 +127,202 @@ describe('Stage', () => {
     })
 
 
-    test('disposing stage disposes world and worldView', () => {
+    test('disposing stage disposes world', () => {
         class TestStage extends Stage {
             static World = World
         }
 
         const s = new TestStage({game: {}})
         const world = s.world
-        const worldView = s.worldView
 
         s.dispose()
 
         expect(world.disposed).toBe(true)
-        expect(worldView.disposed).toBe(true)
+    })
+
+
+    describe('view registration', () => {
+
+        class TestEntity extends Entity {}
+        class TestView extends EntityView {}
+
+
+        test('register adds class to registry', () => {
+            stage.register(TestEntity, TestView)
+
+            expect(stage.unregister(TestEntity)).toBe(true)
+        })
+
+
+        test('register returns stage for chaining', () => {
+            const result = stage.register(TestEntity, TestView)
+
+            expect(result).toBe(stage)
+        })
+
+
+        test('register supports matcher function', () => {
+            const matcher = (entity) => entity.type === 'enemy'
+
+            stage.register(matcher, TestView)
+
+            expect(stage.unregister(matcher)).toBe(true)
+        })
+
+
+        test('unregister removes class from registry', () => {
+            stage.register(TestEntity, TestView)
+            stage.unregister(TestEntity)
+
+            expect(stage.unregister(TestEntity)).toBe(false)
+        })
+
+
+        test('unregister returns false for non-existent class', () => {
+            expect(stage.unregister(TestEntity)).toBe(false)
+        })
+
+
+        test('clearRegistry removes all registrations', () => {
+            stage.register(TestEntity, TestView)
+            stage.clearRegistry()
+
+            expect(stage.unregister(TestEntity)).toBe(false)
+        })
+
+
+        test('clearRegistry returns stage for chaining', () => {
+            const result = stage.clearRegistry()
+
+            expect(result).toBe(stage)
+        })
+
+
+        test('getViews returns empty array for unknown entity', () => {
+            expect(stage.getViews('unknown')).toEqual([])
+        })
+
+    })
+
+
+    describe('view lifecycle', () => {
+
+        class TestWorld extends World {}
+        class TestEntity extends Entity {}
+        class TestView extends EntityView {}
+
+
+        test('creates view when entity is added to world', () => {
+            class TestStage extends Stage {
+                static World = TestWorld
+            }
+
+            const s = new TestStage({game: {}})
+            s.register(TestEntity, TestView)
+            s.start()
+
+            const entity = s.world.create(TestEntity, {$id: 'test-entity'})
+
+            const views = s.getViews('test-entity')
+            expect(views.length).toBe(1)
+            expect(views[0]).toBeInstanceOf(TestView)
+        })
+
+
+        test('removes view when entity is removed from world', () => {
+            class TestStage extends Stage {
+                static World = TestWorld
+            }
+
+            const s = new TestStage({game: {}})
+            s.register(TestEntity, TestView)
+            s.start()
+
+            s.world.create(TestEntity, {$id: 'test-entity'})
+            expect(s.getViews('test-entity').length).toBe(1)
+
+            s.world.removeChild('test-entity')
+            expect(s.getViews('test-entity').length).toBe(0)
+        })
+
+
+        test('syncViews calls sync on all views', () => {
+            class TestStage extends Stage {
+                static World = TestWorld
+            }
+
+            const s = new TestStage({game: {}})
+            s.register(TestEntity, TestView)
+            s.start()
+
+            s.world.create(TestEntity, {$id: 'test-entity'})
+
+            const views = s.getViews('test-entity')
+            const syncSpy = vi.spyOn(views[0], 'sync')
+
+            s.syncViews()
+
+            expect(syncSpy).toHaveBeenCalled()
+        })
+
+
+        test('updateViews calls update on all views', () => {
+            class TestStage extends Stage {
+                static World = TestWorld
+            }
+
+            const s = new TestStage({game: {}})
+            s.register(TestEntity, TestView)
+            s.start()
+
+            s.world.create(TestEntity, {$id: 'test-entity'})
+
+            const views = s.getViews('test-entity')
+            views[0].update = vi.fn()
+
+            s.updateViews(0.016)
+
+            expect(views[0].update).toHaveBeenCalledWith(0.016)
+        })
+
+
+        test('emits view:added when view is created', () => {
+            class TestStage extends Stage {
+                static World = TestWorld
+            }
+
+            const s = new TestStage({game: {}})
+            s.register(TestEntity, TestView)
+            s.start()
+
+            const spy = vi.fn()
+            s.on('view:added', spy)
+
+            s.world.create(TestEntity, {$id: 'test-entity'})
+
+            expect(spy).toHaveBeenCalledWith('test-entity', expect.any(Array))
+        })
+
+
+        test('emits view:removed when view is destroyed', () => {
+            class TestStage extends Stage {
+                static World = TestWorld
+            }
+
+            const s = new TestStage({game: {}})
+            s.register(TestEntity, TestView)
+            s.start()
+
+            s.world.create(TestEntity, {$id: 'test-entity'})
+
+            const spy = vi.fn()
+            s.on('view:removed', spy)
+
+            s.world.removeChild('test-entity')
+
+            expect(spy).toHaveBeenCalledWith('test-entity', expect.any(Array))
+        })
+
     })
 
 })
