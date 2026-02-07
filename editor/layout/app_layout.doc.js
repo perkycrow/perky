@@ -117,9 +117,27 @@ export default doc('AppLayout', {advanced: true}, () => {
     })
 
 
-    section('No Header/Footer', () => {
+    section('Hiding Elements', () => {
 
-        text('Use `no-header` or `no-footer` attributes to hide those areas.')
+        text(`
+            Use attributes to hide layout elements:
+            - \`no-header\` / \`no-footer\` - Hide entire areas
+            - \`no-menu\` / \`no-close\` - Hide individual header buttons
+        `)
+
+        container({title: 'No menu button', height: 200, preset: 'inspector'}, ctx => {
+            const layout = document.createElement('app-layout')
+            layout.title = 'Settings'
+            layout.setAttribute('no-menu', '')
+            layout.style.height = '100%'
+
+            const content = document.createElement('div')
+            content.style.cssText = 'display:flex;align-items:center;justify-content:center;height:100%;color:#888;'
+            content.textContent = 'Menu button hidden'
+            layout.appendChild(content)
+
+            ctx.container.appendChild(layout)
+        })
 
         container({title: 'Content only', height: 200, preset: 'inspector'}, ctx => {
             const layout = document.createElement('app-layout')

@@ -10,8 +10,12 @@ export default doc('ServiceWorker', () => {
     `)
 
 
-    code('How it works', () => {
-        const client = ServiceClient.fromWorker('./my_service.js')
+    code('Message format', () => {
+        worker.postMessage({
+            type: 'init-service',
+            servicePath: './my_service.js',
+            config: {}
+        })
     })
 
 })

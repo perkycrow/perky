@@ -156,6 +156,8 @@ export default doc('TextureSystem', {advanced: true}, () => {
             // - addRegion
             // - addRegions
             // - registerManualAtlas
+            // - getSpritesheet
+            // - registerSpritesheet
 
             // After installation, you can call them directly on the host
             host.addRegion('sprite', image)

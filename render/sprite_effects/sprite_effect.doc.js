@@ -56,7 +56,7 @@ export default doc('SpriteEffect', () => {
             Override these methods to create a custom effect:
 
             - \`getHints()\` — return an object with effect parameters for the shader.
-            - \`update()\` — called each frame to animate effect properties.
+            - \`update(deltaTime)\` — called each frame to animate effect properties.
             - \`dispose()\` — clean up resources.
         `)
 
@@ -69,7 +69,7 @@ export default doc('SpriteEffect', () => {
                     return {intensity: 0.5}
                 }
 
-                update () {
+                update (deltaTime) {
                     // Animate properties per frame
                 }
 

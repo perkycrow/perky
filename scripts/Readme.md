@@ -41,6 +41,7 @@ yarn cleaner --filescore    # score files by health
 yarn cleaner --flop         # 10 worst-scored files
 yarn cleaner --imports      # rank files by import count
 yarn cleaner --filelength   # sort files by line count
+yarn cleaner --instructions # fix, audit, and output detailed instructions
 yarn cleaner --help         # full usage
 ```
 

@@ -143,35 +143,29 @@ export default doc('EditorButton', {advanced: true}, () => {
     })
 
 
-    section('Context Adaptation', () => {
+    section('Touch Adaptation', () => {
 
         text(`
-            Buttons adapt their size based on the \`context\` attribute.
-            Studio context uses larger touch targets (44px).
+            Buttons automatically adapt for touch devices via CSS media queries.
+            On touch devices (pointer: coarse), buttons use larger touch targets.
         `)
 
-        container({title: 'Context comparison', height: 160, preset: 'centered'}, ctx => {
-            const col = ctx.column({gap: 16})
+        container({title: 'Touch-friendly sizing', height: 120, preset: 'centered'}, ctx => {
+            const row = ctx.row({gap: 12})
 
-            const row1 = ctx.row({gap: 12, parent: col})
-            ctx.label('Editor (compact):', {parent: row1})
             const btn1 = document.createElement('editor-button')
-            btn1.setAttribute('context', 'editor')
             btn1.textContent = 'Save'
-            row1.appendChild(btn1)
+            row.appendChild(btn1)
 
-            const row2 = ctx.row({gap: 12, parent: col})
-            ctx.label('Default:', {parent: row2})
             const btn2 = document.createElement('editor-button')
-            btn2.textContent = 'Save'
-            row2.appendChild(btn2)
+            btn2.variant = 'primary'
+            btn2.textContent = 'Submit'
+            row.appendChild(btn2)
 
-            const row3 = ctx.row({gap: 12, parent: col})
-            ctx.label('Studio (touch):', {parent: row3})
             const btn3 = document.createElement('editor-button')
-            btn3.setAttribute('context', 'studio')
-            btn3.textContent = 'Save'
-            row3.appendChild(btn3)
+            btn3.setAttribute('icon', '')
+            btn3.textContent = '+'
+            row.appendChild(btn3)
         })
 
     })

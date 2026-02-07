@@ -121,9 +121,13 @@ export default doc('Overlay', {advanced: true}, () => {
     })
 
 
-    section('No Backdrop Close', () => {
+    section('Close Behavior', () => {
 
-        text('Use `no-close-on-backdrop` to prevent closing when clicking backdrop.')
+        text(`
+            Control how the overlay can be closed:
+            - \`no-close-on-backdrop\` - Prevent closing when clicking backdrop
+            - \`no-close-on-escape\` - Prevent closing when pressing Escape
+        `)
 
         container({title: 'Must use button to close', height: 150, preset: 'centered'}, ctx => {
             const btn = document.createElement('editor-button')
@@ -132,10 +136,11 @@ export default doc('Overlay', {advanced: true}, () => {
 
             const overlay = document.createElement('editor-overlay')
             overlay.setAttribute('no-close-on-backdrop', '')
+            overlay.setAttribute('no-close-on-escape', '')
 
             const content = document.createElement('div')
             content.style.cssText = 'padding:24px;text-align:center;'
-            content.innerHTML = '<p style="margin:0 0 16px;color:#888;">Backdrop click disabled</p>'
+            content.innerHTML = '<p style="margin:0 0 16px;color:#888;">Backdrop and Escape disabled</p>'
 
             const closeBtn = document.createElement('editor-button')
             closeBtn.textContent = 'Close'
