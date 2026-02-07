@@ -63,10 +63,10 @@ export default doc('Doc Page', {advanced: true}, () => {
 
         code('sources', () => {
             // Extracted source code for actions/containers
-            docPage.sources = {
-                'action-0': 'logger.log("hello")',
-                'container-1': 'ctx.hint("demo")'
-            }
+            docPage.sources = [
+                {type: 'action', title: 'Log message', source: 'logger.log("hello")'},
+                {type: 'container', title: 'Demo', source: 'ctx.hint("demo")'}
+            ]
         })
 
         code('initialTab', () => {

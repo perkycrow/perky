@@ -1,4 +1,4 @@
-import {doc, section, text, code, action, container, disclaimer, see, logger} from './runtime.js'
+import {doc, section, text, code, action, container, disclaimer, see, setup, logger} from './runtime.js'
 
 
 export default doc('Doc Runtime', {advanced: true}, () => {
