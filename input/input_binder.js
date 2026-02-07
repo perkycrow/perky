@@ -38,6 +38,10 @@ export default class InputBinder extends PerkyModule {
             return `${binding.actionName}:${binding.eventType}`
         })
 
+        this.#bindings.addIndex('controller', (binding) => {
+            return binding.controllerName || ''
+        })
+
         if (inputBinder) {
             this.import(inputBinder)
         }
@@ -55,7 +59,8 @@ export default class InputBinder extends PerkyModule {
             'getBindingsForAction',
             'getAllBindings',
             'clearBindings',
-            'bindCombo'
+            'bindCombo',
+            'unbindForController'
         ])
     }
 
@@ -177,6 +182,23 @@ export default class InputBinder extends PerkyModule {
 
     clearBindings () {
         this.#bindings.clear()
+    }
+
+
+    unbindForController (controllerName) {
+        const bindings = this.#bindings.lookup('controller', controllerName || '')
+        const removed = []
+
+        for (const binding of [...bindings]) {
+            this.#bindings.delete(binding.key)
+            removed.push(binding)
+        }
+
+        if (removed.length > 0) {
+            this.emit('bindings:removed', removed, controllerName)
+        }
+
+        return removed
     }
 
 

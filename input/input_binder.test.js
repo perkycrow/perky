@@ -837,4 +837,127 @@ describe(InputBinder, () => {
         expect(binder.hasBinding({actionName: 'fire'})).toBe(true)
     })
 
+
+    test('unbindForController - removes all bindings for a controller', () => {
+        binder.bindInput({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump',
+            controllerName: 'player1'
+        })
+
+        binder.bindInput({
+            deviceName: 'keyboard',
+            controlName: 'KeyW',
+            actionName: 'moveUp',
+            controllerName: 'player1'
+        })
+
+        binder.bindInput({
+            deviceName: 'keyboard',
+            controlName: 'Enter',
+            actionName: 'select',
+            controllerName: 'player2'
+        })
+
+        expect(binder.getAllBindings()).toHaveLength(3)
+
+        const removed = binder.unbindForController('player1')
+
+        expect(removed).toHaveLength(2)
+        expect(binder.getAllBindings()).toHaveLength(1)
+        expect(binder.hasBinding({actionName: 'select', controllerName: 'player2'})).toBe(true)
+        expect(binder.hasBinding({actionName: 'jump', controllerName: 'player1'})).toBe(false)
+    })
+
+
+    test('unbindForController - handles empty controller name', () => {
+        binder.bindInput({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump'
+        })
+
+        binder.bindInput({
+            deviceName: 'keyboard',
+            controlName: 'KeyW',
+            actionName: 'moveUp',
+            controllerName: 'player1'
+        })
+
+        const removed = binder.unbindForController(null)
+
+        expect(removed).toHaveLength(1)
+        expect(removed[0].actionName).toBe('jump')
+        expect(binder.getAllBindings()).toHaveLength(1)
+        expect(binder.hasBinding({actionName: 'moveUp', controllerName: 'player1'})).toBe(true)
+    })
+
+
+    test('unbindForController - returns empty array when no bindings found', () => {
+        binder.bindInput({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump',
+            controllerName: 'player1'
+        })
+
+        const removed = binder.unbindForController('nonexistent')
+
+        expect(removed).toHaveLength(0)
+        expect(binder.getAllBindings()).toHaveLength(1)
+    })
+
+
+    test('unbindForController - updates indexes correctly', () => {
+        binder.bindInput({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump',
+            controllerName: 'player1'
+        })
+
+        binder.bindInput({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'select',
+            controllerName: 'player2'
+        })
+
+        binder.unbindForController('player1')
+
+        const inputBindings = binder.getBindingsForInput({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            eventType: 'pressed'
+        })
+
+        expect(inputBindings).toHaveLength(1)
+        expect(inputBindings[0].actionName).toBe('select')
+
+        const actionBindings = binder.getBindingsForAction('jump', 'player1')
+        expect(actionBindings).toHaveLength(0)
+    })
+
+
+    test('unbindForController - emits bindings:removed event', () => {
+        binder.bindInput({
+            deviceName: 'keyboard',
+            controlName: 'Space',
+            actionName: 'jump',
+            controllerName: 'player1'
+        })
+
+        let emittedData = null
+        binder.on('bindings:removed', (bindings, controllerName) => {
+            emittedData = {bindings, controllerName}
+        })
+
+        binder.unbindForController('player1')
+
+        expect(emittedData).not.toBeNull()
+        expect(emittedData.bindings).toHaveLength(1)
+        expect(emittedData.controllerName).toBe('player1')
+    })
+
 })

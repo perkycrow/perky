@@ -67,7 +67,8 @@ export default class InputSystem extends PerkyModule {
             'getBindingsForAction',
             'getAllBindings',
             'clearBindings',
-            'bindCombo'
+            'bindCombo',
+            'unbindForController'
         ])
 
         this.delegateTo(host, [

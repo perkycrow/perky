@@ -107,7 +107,13 @@ export default class ActionDispatcher extends PerkyModule {
             this.#activeControllers.splice(stackIndex, 1)
         }
 
-        return this.removeChild(name)
+        const removed = this.removeChild(name)
+
+        if (removed) {
+            this.emit('controller:unregistered', name, controller)
+        }
+
+        return removed
     }
 
 

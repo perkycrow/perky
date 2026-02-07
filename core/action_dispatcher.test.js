@@ -84,6 +84,34 @@ describe(ActionDispatcher, () => {
     })
 
 
+    test('unregister emits controller:unregistered event', () => {
+        const controller = dispatcher.register('main', ActionController)
+
+        let emittedData = null
+        dispatcher.on('controller:unregistered', (name, ctrl) => {
+            emittedData = {name, controller: ctrl}
+        })
+
+        dispatcher.unregister('main')
+
+        expect(emittedData).not.toBeNull()
+        expect(emittedData.name).toBe('main')
+        expect(emittedData.controller).toBe(controller)
+    })
+
+
+    test('unregister does not emit event for non-existent controller', () => {
+        let emitted = false
+        dispatcher.on('controller:unregistered', () => {
+            emitted = true
+        })
+
+        dispatcher.unregister('nonExistent')
+
+        expect(emitted).toBe(false)
+    })
+
+
     test('getController', () => {
         const controller = dispatcher.register('main', ActionController)
 

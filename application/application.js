@@ -17,6 +17,8 @@ export default class Application extends PerkyModule {
 
     static ActionController = ActionController
 
+    #controllerBindings = new Map()
+
     constructor (options = {}) {
         super(options)
 
@@ -48,6 +50,7 @@ export default class Application extends PerkyModule {
         })
 
         this.actionDispatcher.on('controller:set', this.#autoRegisterBindings.bind(this))
+        this.actionDispatcher.on('controller:unregistered', this.#cleanupControllerBindings.bind(this))
 
         this.#createMainController()
 
@@ -72,15 +75,51 @@ export default class Application extends PerkyModule {
     #autoRegisterBindings (controllerName, controller) {
         const Controller = controller.constructor
         const bindings = Controller.normalizeBindings?.(controllerName) || []
+        const bindingKeys = []
 
         for (const binding of bindings) {
-            this.bindInput({
+            const inputBinding = this.bindInput({
                 controlName: binding.key,
                 actionName: binding.action,
                 controllerName: binding.controllerName,
                 eventType: binding.eventType
             })
+
+            if (inputBinding) {
+                bindingKeys.push(inputBinding.key)
+            }
+        }
+
+        if (bindingKeys.length > 0) {
+            this.#controllerBindings.set(controllerName, bindingKeys)
         }
     }
 
+
+    #cleanupControllerBindings (controllerName) {
+        const bindingKeys = this.#controllerBindings.get(controllerName)
+
+        if (!bindingKeys) {
+            return
+        }
+
+        for (const key of bindingKeys) {
+            const allBindings = this.getAllBindings()
+            const binding = allBindings.find(b => b.key === key)
+
+            if (binding) {
+                this.unbind({
+                    deviceName: binding.deviceName,
+                    controlName: binding.controlName,
+                    actionName: binding.actionName,
+                    controllerName: binding.controllerName,
+                    eventType: binding.eventType
+                })
+            }
+        }
+
+        this.#controllerBindings.delete(controllerName)
+    }
+
 }
+
