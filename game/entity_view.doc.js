@@ -11,7 +11,7 @@ export default doc('EntityView', () => {
     text(`
         Base class for visual representations of entities.
         Subclass EntityView when you need custom rendering logic or complex visuals.
-        For simple cases, use [[WorldView@game]] auto-registration with Object2D classes instead.
+        For simple cases, use [[Stage@game]] auto-registration with Object2D classes instead.
     `)
 
 

@@ -14,11 +14,11 @@ export default doc('CollisionBoxView', () => {
     section('Usage', () => {
 
         text(`
-            Register CollisionBoxView in a [[WorldView@game]] to show collision boxes
+            Register CollisionBoxView in a [[Stage@game]] to show collision boxes
             for specific entities.
         `)
 
-        code('Register with WorldView', () => {
+        code('Register with Stage', () => {
             // worldView.register(
             //     (entity) => entity.hasTag('collidable'),
             //     CollisionBoxView,

@@ -8,7 +8,7 @@ import Rectangle from '../render/rectangle.js'
 export default doc('AutoView', () => {
 
     text(`
-        Used internally by [[WorldView@game]] when you register an Object2D class
+        Used internally by [[Stage@game]] when you register an Object2D class
         directly instead of a custom [[EntityView@game]].
         Creates the render object and syncs properties based on a config.
     `)
@@ -17,12 +17,12 @@ export default doc('AutoView', () => {
     section('How It Works', () => {
 
         text(`
-            When you register an entity class with an Object2D class in WorldView,
+            When you register an entity class with an Object2D class in Stage,
             AutoView is used behind the scenes. It creates the render object and
             applies sync bindings each frame.
         `)
 
-        code('WorldView registration', () => {
+        code('Stage registration', () => {
             // worldView.register(Player, Sprite, {
             //     texture: 'hero',
             //     sync: {

@@ -221,7 +221,7 @@ describe('Stage', () => {
             s.register(TestEntity, TestView)
             s.start()
 
-            const entity = s.world.create(TestEntity, {$id: 'test-entity'})
+            s.world.create(TestEntity, {$id: 'test-entity'})
 
             const views = s.getViews('test-entity')
             expect(views.length).toBe(1)

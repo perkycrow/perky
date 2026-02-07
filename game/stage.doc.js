@@ -1,17 +1,17 @@
 import {doc, section, text, code, action, logger} from '../doc/runtime.js'
 import Stage from './stage.js'
 import World from './world.js'
-import WorldView from './world_view.js'
 import Entity from './entity.js'
-import PerkyModule from '../core/perky_module.js'
+import EntityView from './entity_view.js'
+import Circle from '../render/circle.js'
 
 
 export default doc('Stage', () => {
 
     text(`
         A stage represents a distinct phase of your game — a level, a menu, a cutscene.
-        Subclass Stage to define a World and WorldView pair, and override update/render
-        for stage-specific logic.
+        Subclass Stage to define a World, register entity-view mappings, and override
+        update/render for stage-specific logic.
     `)
 
 
@@ -19,7 +19,7 @@ export default doc('Stage', () => {
 
         text(`
             Extend Stage and set a static \`World\` class. The stage automatically
-            creates the world and its view on construction.
+            creates the world on construction.
         `)
 
         code('Defining a stage', () => {
@@ -44,44 +44,42 @@ export default doc('Stage', () => {
             const stage = new LevelStage({game: {}})
 
             logger.log('has world:', stage.world !== undefined)
-            logger.log('has worldView:', stage.worldView !== undefined)
         })
 
     })
 
 
-    section('World and WorldView', () => {
+    section('View Registration', () => {
 
         text(`
-            Stage creates a [[World@game]] and [[WorldView@game]] from the static class properties.
-            If \`World\` is null (default), no world or view is created.
-            If \`WorldView\` is null, a world is created without a view.
+            Stage manages the mapping between entities and their visual representations.
+            Use \`register()\` to associate entity classes with view classes.
         `)
 
-        action('No world by default', () => {
-            const stage = new Stage({game: {}})
-
-            logger.log('world:', stage.world)
-            logger.log('worldView:', stage.worldView)
-        })
-
-        action('Custom WorldView', () => {
-            class MyWorldView extends WorldView {
-                onStart () {
-                    super.onStart()
-                    logger.log('Custom world view started')
+        action('Register entity views', () => {
+            class Player extends Entity {}
+            class PlayerView extends EntityView {
+                constructor (entity, context) {
+                    super(entity, context)
+                    this.root = new Circle({radius: 1, color: '#4a9eff'})
                 }
             }
 
-            class MyStage extends Stage {
+            class GameStage extends Stage {
                 static World = World
-                static WorldView = MyWorldView
+
+                onStart () {
+                    super.onStart()
+                    this.register(Player, PlayerView)
+                }
             }
 
-            const app = new PerkyModule()
-            const stage = app.create(MyStage, {game: {}})
+            const stage = new GameStage({game: {}})
+            stage.start()
+            stage.world.create(Player, {$id: 'player'})
 
-            logger.log('worldView type:', stage.worldView.constructor.name)
+            const views = stage.getViews('player')
+            logger.log('views created:', views.length)
         })
 
     })
@@ -100,12 +98,11 @@ export default doc('Stage', () => {
 
                 update (deltaTime) {
                     this.world.update(deltaTime, {})
+                    this.updateViews(deltaTime)
                 }
 
                 render () {
-                    if (this.worldView) {
-                        this.worldView.sync()
-                    }
+                    this.syncViews()
                 }
             }
         })
@@ -117,17 +114,22 @@ export default doc('Stage', () => {
 
         code('Static properties', () => {
             // Stage.World - World class to instantiate (default: null)
-            // Stage.WorldView - WorldView class to instantiate (default: WorldView)
             // Stage.$category - 'stage'
         })
 
         code('Properties', () => {
             // stage.game - Reference to the game instance
             // stage.world - The World instance (if World class is set)
-            // stage.worldView - The WorldView instance (if both World and WorldView are set)
+            // stage.viewsGroup - Group2D containing all entity views
         })
 
         code('Methods', () => {
+            // register(classOrMatcher, View, config) - Register entity-view mapping
+            // unregister(classOrMatcher) - Remove a registration
+            // clearRegistry() - Remove all registrations
+            // getViews(entityId) - Get views for an entity
+            // updateViews(deltaTime) - Call update() on all views
+            // syncViews() - Call sync() on all views
             // update(deltaTime) - Override for stage update logic
             // render() - Override for stage render logic
         })
