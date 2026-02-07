@@ -21,6 +21,7 @@ export default class ActionDispatcher extends PerkyModule {
             getActive: 'getActiveControllers',
             pushActive: 'pushActiveController',
             popActive: 'popActiveController',
+            removeActive: 'removeActiveController',
             clearActive: 'clearActiveControllers',
             execute: 'execute',
             executeTo: 'executeTo',
@@ -164,6 +165,20 @@ export default class ActionDispatcher extends PerkyModule {
         this.emit('controller:popped', popped, this.#activeControllers.length)
 
         return popped
+    }
+
+
+    removeActive (name) {
+        const index = this.#activeControllers.indexOf(name)
+
+        if (index === -1) {
+            return false
+        }
+
+        this.#activeControllers.splice(index, 1)
+        this.emit('controller:removed', name, this.#activeControllers.length)
+
+        return true
     }
 
 

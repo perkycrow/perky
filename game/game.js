@@ -19,6 +19,7 @@ export default class Game extends Application {
 
     #stageRegistry = new Map()
     #currentStageName = null
+    #stageControllerName = null
 
     constructor (params = {}) {
         super(params)
@@ -112,16 +113,18 @@ export default class Game extends Application {
             return
         }
         const controller = this.registerController(ControllerClass)
-        this.stage._controllerName = controller.$id
-        this.setActiveControllers(controller.$id)
+        this.#stageControllerName = controller.$id
+        this.pushActiveController(controller.$id)
     }
 
 
     #unregisterStageController () {
-        if (!this.stage?._controllerName) {
+        if (!this.#stageControllerName) {
             return
         }
-        this.unregisterController(this.stage._controllerName)
+        this.removeActiveController(this.#stageControllerName)
+        this.unregisterController(this.#stageControllerName)
+        this.#stageControllerName = null
     }
 
 

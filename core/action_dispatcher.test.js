@@ -328,6 +328,42 @@ describe(ActionDispatcher, () => {
     })
 
 
+    test('removeActive', () => {
+        dispatcher.register('main', ActionController)
+        dispatcher.register('pause', ActionController)
+
+        dispatcher.pushActive('main')
+        dispatcher.pushActive('pause')
+
+        const result = dispatcher.removeActive('main')
+
+        expect(result).toBe(true)
+        expect(dispatcher.getActive()).toEqual(['pause'])
+    })
+
+
+    test('removeActive - non-existent returns false', () => {
+        const result = dispatcher.removeActive('nonExistent')
+
+        expect(result).toBe(false)
+    })
+
+
+    test('removeActive - from middle of stack', () => {
+        dispatcher.register('game', ActionController)
+        dispatcher.register('pause', ActionController)
+        dispatcher.register('dialog', ActionController)
+
+        dispatcher.pushActive('game')
+        dispatcher.pushActive('pause')
+        dispatcher.pushActive('dialog')
+
+        dispatcher.removeActive('pause')
+
+        expect(dispatcher.getActive()).toEqual(['game', 'dialog'])
+    })
+
+
     test('getActive - returns copy', () => {
         dispatcher.register('main', ActionController)
 
