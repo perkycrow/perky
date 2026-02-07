@@ -10,12 +10,14 @@ import {autoRegisterViews} from '../wiring.js'
 import ImpactParticles from '../impact_particles.js'
 import HitboxDebug from '../hitbox_debug.js'
 import DayNightPass from '../postprocessing/day_night_pass.js'
+import VignettePass from '../../render/postprocessing/passes/vignette_pass.js'
 
 
 export default class GameStage extends Stage {
 
     static World = DenWorld
     static ActionController = DenController
+    static postPasses = [DayNightPass, VignettePass]
 
     get dayNightPass () {
         return this.game.getRenderer('game')?.getPass('dayNightPass')

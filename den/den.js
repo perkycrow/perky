@@ -7,9 +7,6 @@ import WaveEffect from './effects/wave_effect.js'
 import GameplayStage from './stages/gameplay_stage.js'
 import PreviewStage from './stages/preview_stage.js'
 
-import VignettePass from '../render/postprocessing/passes/vignette_pass.js'
-import DayNightPass from './postprocessing/day_night_pass.js'
-
 import manifest from './manifest.json' with { type: 'json' }
 
 
@@ -36,7 +33,6 @@ export default class DefendTheDen extends Game {
             pointerEvents: 'none'
         }
     ]
-    static postPasses = [DayNightPass, VignettePass]
     static stages = {
         gameplay: GameplayStage,
         preview: PreviewStage
