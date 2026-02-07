@@ -1,5 +1,6 @@
 const entityModules = import.meta.glob(['./entities/*.js', '!./entities/*.test.js'], {eager: true})
 const viewModules = import.meta.glob('./views/*_view.js', {eager: true})
+const effectModules = import.meta.glob('./effects/*_effect.js', {eager: true})
 
 
 export const entities = {}
@@ -33,5 +34,21 @@ export function autoRegisterViews (stage, overrides = {}) {
             const config = {...View.config, ...overrides[name]}
             stage.register(Entity, View, config)
         }
+    }
+}
+
+
+export const effects = {}
+for (const module of Object.values(effectModules)) {
+    const Class = module.default
+    if (Class?.name) {
+        effects[Class.name] = Class
+    }
+}
+
+
+export function autoRegisterEffects (renderer) {
+    for (const Effect of Object.values(effects)) {
+        renderer.registerShaderEffect(Effect)
     }
 }

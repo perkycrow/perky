@@ -1,13 +1,12 @@
 import Game from '../game/game.js'
 
-import ChromaticEffect from './effects/chromatic_effect.js'
 import OutlineEffect from '../render/shaders/builtin/effects/outline_effect.js'
-import WaveEffect from './effects/wave_effect.js'
 
 import GameplayStage from './stages/gameplay_stage.js'
 import PreviewStage from './stages/preview_stage.js'
 
 import manifest from './manifest.json' with { type: 'json' }
+import {autoRegisterEffects} from './wiring.js'
 
 
 export default class DefendTheDen extends Game {
@@ -40,9 +39,8 @@ export default class DefendTheDen extends Game {
 
     configureGame (params = {}) {
         const gameRenderer = this.getRenderer('game')
-        gameRenderer.registerShaderEffect(ChromaticEffect)
+        autoRegisterEffects(gameRenderer)
         gameRenderer.registerShaderEffect(OutlineEffect)
-        gameRenderer.registerShaderEffect(WaveEffect)
 
         const stageName = params.preview ? 'preview' : 'gameplay'
         this.setStage(stageName)
