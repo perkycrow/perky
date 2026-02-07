@@ -1014,6 +1014,67 @@ describe(Application, () => {
     })
 
 
+    test('preload calls loadTag with preload', async () => {
+        vi.spyOn(application, 'loadTag').mockResolvedValue([])
+
+        await application.preload()
+
+        expect(application.loadTag).toHaveBeenCalledWith('preload')
+    })
+
+
+    describe('static ActionController', () => {
+
+        test('creates default ActionController as main controller', () => {
+            vi.restoreAllMocks()
+
+            const app = new Application()
+            const activeControllers = app.getActiveControllers()
+
+            expect(activeControllers).toHaveLength(1)
+            expect(activeControllers[0]).toBe('action')
+            expect(app.getController('action')).toBeDefined()
+        })
+
+
+        test('allows subclasses to override ActionController class', () => {
+            vi.restoreAllMocks()
+
+            class CustomController extends PerkyModule {
+                customMethod = vi.fn()
+            }
+
+            class CustomApp extends Application {
+                static ActionController = CustomController
+            }
+
+            const app = new CustomApp()
+            const activeControllers = app.getActiveControllers()
+
+            expect(activeControllers).toHaveLength(1)
+            expect(activeControllers[0]).toBe('custom')
+
+            const controller = app.getController('custom')
+            expect(controller).toBeInstanceOf(CustomController)
+        })
+
+
+        test('does not create main controller when ActionController is null', () => {
+            vi.restoreAllMocks()
+
+            class NoControllerApp extends Application {
+                static ActionController = null
+            }
+
+            const app = new NoControllerApp()
+            const activeControllers = app.getActiveControllers()
+
+            expect(activeControllers).toHaveLength(0)
+        })
+
+    })
+
+
     describe('controller bindings auto-registration', () => {
 
         test('registers simple bindings when controller is registered', () => {
@@ -1163,6 +1224,67 @@ describe(Application, () => {
 
             expect(menuBinding).toBeDefined()
             expect(menuBinding.actionName).toBe('navigate')
+        })
+
+
+        test('cleans up bindings when controller is unregistered', () => {
+            class TestController extends PerkyModule {
+                static bindings = {
+                    shoot: {keys: 'Space', scoped: true},
+                    jump: {keys: 'KeyJ', scoped: true}
+                }
+
+                static normalizeBindings (controllerName) {
+                    return [
+                        {action: 'shoot', key: 'Space', scoped: true, eventType: 'pressed', controllerName},
+                        {action: 'jump', key: 'KeyJ', scoped: true, eventType: 'pressed', controllerName}
+                    ]
+                }
+            }
+
+            application.registerController('game', TestController)
+
+            const bindingsBefore = application.getAllBindings()
+            const gameBindingsBefore = bindingsBefore.filter(b => b.controllerName === 'game')
+            expect(gameBindingsBefore).toHaveLength(2)
+
+            application.unregisterController('game')
+
+            const bindingsAfter = application.getAllBindings()
+            const gameBindingsAfter = bindingsAfter.filter(b => b.controllerName === 'game')
+            expect(gameBindingsAfter).toHaveLength(0)
+        })
+
+
+        test('does not affect other controller bindings when one is unregistered', () => {
+            class GameController extends PerkyModule {
+                static normalizeBindings (controllerName) {
+                    return [
+                        {action: 'shoot', key: 'Space', scoped: true, eventType: 'pressed', controllerName}
+                    ]
+                }
+            }
+
+            class MenuController extends PerkyModule {
+                static normalizeBindings (controllerName) {
+                    return [
+                        {action: 'select', key: 'Enter', scoped: true, eventType: 'pressed', controllerName}
+                    ]
+                }
+            }
+
+            application.registerController('game', GameController)
+            application.registerController('menu', MenuController)
+
+            const bindingsBefore = application.getAllBindings()
+            expect(bindingsBefore.some(b => b.controllerName === 'game')).toBe(true)
+            expect(bindingsBefore.some(b => b.controllerName === 'menu')).toBe(true)
+
+            application.unregisterController('game')
+
+            const bindingsAfter = application.getAllBindings()
+            expect(bindingsAfter.some(b => b.controllerName === 'game')).toBe(false)
+            expect(bindingsAfter.some(b => b.controllerName === 'menu')).toBe(true)
         })
 
     })
