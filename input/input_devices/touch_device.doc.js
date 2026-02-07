@@ -71,12 +71,14 @@ export default doc('TouchDevice', {advanced: true}, () => {
     section('Controls', () => {
 
         text(`
-            TouchDevice creates five controls:
+            TouchDevice creates seven controls:
 
             - \`position\` - [[Vec2Control]] with current touch coordinates
             - \`delta\` - [[Vec2Control]] with movement since last update
             - \`swipeUp\` - [[ButtonControl@input]] triggered on upward swipe
             - \`swipeDown\` - [[ButtonControl@input]] triggered on downward swipe
+            - \`swipeLeft\` - [[ButtonControl@input]] triggered on leftward swipe
+            - \`swipeRight\` - [[ButtonControl@input]] triggered on rightward swipe
             - \`tap\` - [[ButtonControl@input]] triggered on quick tap
         `)
 
