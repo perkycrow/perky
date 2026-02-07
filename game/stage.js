@@ -9,10 +9,13 @@ export default class Stage extends PerkyModule {
     static $category = 'stage'
     static World = null
     static ActionController = null
+    static camera = null
+    static postPasses = null
 
     #viewClassRegistry = new Map()
     #viewMatcherRegistry = []
     #entityViews = new Map()
+    #runtimePostPasses = []
 
     constructor (options = {}) {
         super(options)
@@ -21,6 +24,7 @@ export default class Stage extends PerkyModule {
         this.viewsGroup = new Group2D()
 
         this.#createWorld()
+        this.on('stop', this.#cleanupRuntimePostPasses)
     }
 
 
@@ -192,6 +196,35 @@ export default class Stage extends PerkyModule {
             }
         }
         this.#entityViews.clear()
+    }
+
+
+    addPostPass (PassClass) {
+        const renderer = this.game?.getRenderer('game')
+        const pass = renderer?.addPostPass(PassClass)
+        if (pass) {
+            this.#runtimePostPasses.push(pass)
+        }
+        return pass
+    }
+
+
+    removePostPass (pass) {
+        const renderer = this.game?.getRenderer('game')
+        renderer?.removePostPass(pass)
+        const index = this.#runtimePostPasses.indexOf(pass)
+        if (index !== -1) {
+            this.#runtimePostPasses.splice(index, 1)
+        }
+    }
+
+
+    #cleanupRuntimePostPasses () {
+        const renderer = this.game?.getRenderer('game')
+        for (const pass of this.#runtimePostPasses) {
+            renderer?.removePostPass(pass)
+        }
+        this.#runtimePostPasses = []
     }
 
 

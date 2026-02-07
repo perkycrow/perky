@@ -44,6 +44,16 @@ describe('Stage', () => {
     })
 
 
+    test('has null camera by default', () => {
+        expect(Stage.camera).toBe(null)
+    })
+
+
+    test('has null postPasses by default', () => {
+        expect(Stage.postPasses).toBe(null)
+    })
+
+
     test('does not create world when World is null', () => {
         expect(stage.world).toBeUndefined()
     })
@@ -321,6 +331,107 @@ describe('Stage', () => {
             s.world.removeChild('test-entity')
 
             expect(spy).toHaveBeenCalledWith('test-entity', expect.any(Array))
+        })
+
+    })
+
+
+    describe('runtime postPasses', () => {
+
+        test('addPostPass adds pass via game renderer', () => {
+            const mockPass = {$id: 'testPass'}
+            const mockRenderer = {
+                addPostPass: vi.fn(() => mockPass),
+                removePostPass: vi.fn()
+            }
+            const mockGame = {
+                getRenderer: vi.fn(() => mockRenderer)
+            }
+
+            const s = new Stage({game: mockGame})
+            const result = s.addPostPass('TestPass')
+
+            expect(mockGame.getRenderer).toHaveBeenCalledWith('game')
+            expect(mockRenderer.addPostPass).toHaveBeenCalledWith('TestPass')
+            expect(result).toBe(mockPass)
+        })
+
+
+        test('addPostPass returns undefined when no renderer', () => {
+            const mockGame = {
+                getRenderer: vi.fn(() => null)
+            }
+
+            const s = new Stage({game: mockGame})
+            const result = s.addPostPass('TestPass')
+
+            expect(result).toBeUndefined()
+        })
+
+
+        test('removePostPass removes pass via game renderer', () => {
+            const mockPass = {$id: 'testPass'}
+            const mockRenderer = {
+                addPostPass: vi.fn(() => mockPass),
+                removePostPass: vi.fn()
+            }
+            const mockGame = {
+                getRenderer: vi.fn(() => mockRenderer)
+            }
+
+            const s = new Stage({game: mockGame})
+            s.addPostPass('TestPass')
+            s.removePostPass(mockPass)
+
+            expect(mockRenderer.removePostPass).toHaveBeenCalledWith(mockPass)
+        })
+
+
+        test('runtime postPasses are cleaned up on stop', () => {
+            const mockPass1 = {$id: 'pass1'}
+            const mockPass2 = {$id: 'pass2'}
+            let callCount = 0
+            const mockRenderer = {
+                addPostPass: vi.fn(() => {
+                    callCount++
+                    return callCount === 1 ? mockPass1 : mockPass2
+                }),
+                removePostPass: vi.fn()
+            }
+            const mockGame = {
+                getRenderer: vi.fn(() => mockRenderer)
+            }
+
+            const s = new Stage({game: mockGame})
+            s.addPostPass('Pass1')
+            s.addPostPass('Pass2')
+
+            s.start()
+            s.stop()
+
+            expect(mockRenderer.removePostPass).toHaveBeenCalledWith(mockPass1)
+            expect(mockRenderer.removePostPass).toHaveBeenCalledWith(mockPass2)
+        })
+
+
+        test('manually removed postPasses are not cleaned up twice', () => {
+            const mockPass = {$id: 'testPass'}
+            const mockRenderer = {
+                addPostPass: vi.fn(() => mockPass),
+                removePostPass: vi.fn()
+            }
+            const mockGame = {
+                getRenderer: vi.fn(() => mockRenderer)
+            }
+
+            const s = new Stage({game: mockGame})
+            s.addPostPass('TestPass')
+            s.removePostPass(mockPass)
+
+            s.start()
+            s.stop()
+
+            expect(mockRenderer.removePostPass).toHaveBeenCalledTimes(1)
         })
 
     })

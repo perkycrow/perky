@@ -20,6 +20,8 @@ export default class Game extends Application {
     #stageRegistry = new Map()
     #currentStageName = null
     #stageControllerName = null
+    #gamePostPasses = []
+    #stagePostPasses = []
 
     constructor (params = {}) {
         super(params)
@@ -97,6 +99,7 @@ export default class Game extends Application {
         }
 
         this.#currentStageName = stageName
+        this.#applyStageRenderConfig(StageClass)
         this.create(StageClass, {$bind: 'stage', game: this, ...options})
 
         if (this.stage.world) {
@@ -190,7 +193,55 @@ export default class Game extends Application {
         }
 
         for (const PassClass of postPasses) {
-            renderer.addPostPass(PassClass)
+            const pass = renderer.addPostPass(PassClass)
+            this.#gamePostPasses.push(pass)
+        }
+    }
+
+
+    #applyStageRenderConfig (StageClass) {
+        this.#clearStagePostPasses()
+        this.#applyStageCameraConfig(StageClass)
+        this.#applyStagePostPasses(StageClass)
+    }
+
+
+    #applyStageCameraConfig (StageClass) {
+        const stageCamera = StageClass.camera
+        const effectiveConfig = stageCamera || this.constructor.camera
+        if (effectiveConfig?.unitsInView) {
+            this.camera?.setUnitsInView(effectiveConfig.unitsInView)
+        }
+    }
+
+
+    #clearStagePostPasses () {
+        const renderer = this.getRenderer('game')
+        if (!renderer?.removePostPass) {
+            return
+        }
+
+        for (const pass of this.#stagePostPasses) {
+            renderer.removePostPass(pass)
+        }
+        this.#stagePostPasses = []
+    }
+
+
+    #applyStagePostPasses (StageClass) {
+        const postPasses = StageClass.postPasses
+        if (!postPasses || postPasses.length === 0) {
+            return
+        }
+
+        const renderer = this.getRenderer('game')
+        if (!renderer?.addPostPass) {
+            return
+        }
+
+        for (const PassClass of postPasses) {
+            const pass = renderer.addPostPass(PassClass)
+            this.#stagePostPasses.push(pass)
         }
     }
 

@@ -505,4 +505,99 @@ describe('Game', () => {
         expect(gameWithStages.getStageClass('gameplay')).toBe(GameplayStage)
     })
 
+
+    describe('stage render config', () => {
+
+        test('applies stage camera config on setStage', () => {
+            class TestStage extends Stage {
+                static camera = {unitsInView: {width: 16, height: 9}}
+            }
+
+            game.setStage(TestStage)
+
+            expect(game.camera.unitsInView).toEqual({width: 16, height: 9})
+        })
+
+
+        test('falls back to game camera when stage camera is null', () => {
+            class TestStage extends Stage {
+                static camera = null
+            }
+
+            game.setStage(TestStage)
+
+            expect(game.camera.unitsInView).toEqual({width: 10, height: 10})
+        })
+
+
+        test('applies stage postPasses on setStage', () => {
+            const container = document.createElement('div')
+            game.mount(container)
+            game.start()
+
+            const renderer = game.getRenderer('game')
+            const mockPass = {$id: 'mockPass'}
+            const addPostPassSpy = vi.spyOn(renderer, 'addPostPass').mockReturnValue(mockPass)
+
+            class MockPass {}
+            class TestStage extends Stage {
+                static postPasses = [MockPass]
+            }
+
+            game.setStage(TestStage)
+
+            expect(addPostPassSpy).toHaveBeenCalledWith(MockPass)
+        })
+
+
+        test('clears stage postPasses on stage change', () => {
+            const container = document.createElement('div')
+            game.mount(container)
+            game.start()
+
+            const renderer = game.getRenderer('game')
+            const mockPassA = {$id: 'mockPassA'}
+            const mockPassB = {$id: 'mockPassB'}
+            let callCount = 0
+            vi.spyOn(renderer, 'addPostPass').mockImplementation(() => {
+                callCount++
+                return callCount === 1 ? mockPassA : mockPassB
+            })
+            const removePostPassSpy = vi.spyOn(renderer, 'removePostPass')
+
+            class MockPassA {}
+            class MockPassB {}
+            class StageA extends Stage {
+                static postPasses = [MockPassA]
+            }
+            class StageB extends Stage {
+                static postPasses = [MockPassB]
+            }
+
+            game.setStage(StageA)
+            game.setStage(StageB)
+
+            expect(removePostPassSpy).toHaveBeenCalledWith(mockPassA)
+        })
+
+
+        test('camera config is applied before stage onStart', () => {
+            let cameraConfigInOnStart = null
+
+            class TestStage extends Stage {
+                static camera = {unitsInView: {width: 20, height: 15}}
+
+                onStart () {
+                    cameraConfigInOnStart = this.game.camera.unitsInView
+                }
+            }
+
+            game.start()
+            game.setStage(TestStage)
+
+            expect(cameraConfigInOnStart).toEqual({width: 20, height: 15})
+        })
+
+    })
+
 })

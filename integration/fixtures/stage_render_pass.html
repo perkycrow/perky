@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; background: #111; padding: 20px; }
+    </style>
+</head>
+<body>
+    <div id="game-container" style="width: 800px; height: 600px;"></div>
+
+    <script type="module">
+        import Game from '/game/game.js'
+        import Stage from '/game/stage.js'
+        import Rectangle from '/render/rectangle.js'
+        import RenderPass from '/render/postprocessing/render_pass.js'
+
+const INVERT_VERTEX = `#version 300 es
+in vec2 aPosition;
+in vec2 aTexCoord;
+out vec2 vTexCoord;
+void main() {
+    gl_Position = vec4(aPosition, 0.0, 1.0);
+    vTexCoord = aTexCoord;
+}`
+
+const INVERT_FRAGMENT = `#version 300 es
+precision highp float;
+uniform sampler2D uTexture;
+in vec2 vTexCoord;
+out vec4 fragColor;
+void main() {
+    vec4 color = texture(uTexture, vTexCoord);
+    fragColor = vec4(1.0 - color.rgb, color.a);
+}`
+
+const GREEN_FRAGMENT = `#version 300 es
+precision highp float;
+uniform sampler2D uTexture;
+in vec2 vTexCoord;
+out vec4 fragColor;
+void main() {
+    vec4 color = texture(uTexture, vTexCoord);
+    float brightness = max(color.r, max(color.g, color.b));
+    fragColor = vec4(0.0, brightness, 0.0, color.a);
+}`
+
+        class GreenPass extends RenderPass {
+            static $name = 'greenPass'
+            static shaderDefinition = {
+                vertex: INVERT_VERTEX,
+                fragment: GREEN_FRAGMENT,
+                uniforms: ['uTexture'],
+                attributes: ['aPosition', 'aTexCoord']
+            }
+        }
+
+        class InvertPass extends RenderPass {
+            static $name = 'invertPass'
+            static shaderDefinition = {
+                vertex: INVERT_VERTEX,
+                fragment: INVERT_FRAGMENT,
+                uniforms: ['uTexture'],
+                attributes: ['aPosition', 'aTexCoord']
+            }
+        }
+
+        class NormalStage extends Stage {
+            static camera = {unitsInView: {width: 10, height: 10}}
+
+            onStart () {
+                super.onStart()
+                this.viewsGroup.addChild(new Rectangle({
+                    x: 0,
+                    y: 0,
+                    width: 4,
+                    height: 4,
+                    color: '#FF0000'
+                }))
+            }
+        }
+
+        class InvertedStage extends Stage {
+            static camera = {unitsInView: {width: 10, height: 10}}
+            static postPasses = [InvertPass]
+
+            onStart () {
+                super.onStart()
+                this.viewsGroup.addChild(new Rectangle({
+                    x: 0,
+                    y: 0,
+                    width: 4,
+                    height: 4,
+                    color: '#FF0000'
+                }))
+            }
+        }
+
+        class TestGame extends Game {
+            static camera = {unitsInView: {width: 10, height: 10}}
+            static stages = {normal: NormalStage, inverted: InvertedStage}
+
+            render () {
+                const renderer = this.getRenderer('game')
+                if (renderer && this.stage) {
+                    renderer.render(this.stage.viewsGroup)
+                }
+            }
+        }
+
+        try {
+            const container = document.getElementById('game-container')
+            const game = new TestGame()
+            game.mount(container)
+            game.start()
+            game.setStage('normal')
+            game.gameLoop.emit('render')
+
+            window.testGame = game
+            window.setStage = (name) => {
+                game.setStage(name)
+                game.gameLoop.emit('render')
+            }
+            window.getPixelColor = (x, y) => {
+                const layer = game.getLayer('game')
+                const canvas = layer.renderer.canvas
+                const gl = layer.renderer.gl
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+                const pixel = new Uint8Array(4)
+                gl.readPixels(x, canvas.height - y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel)
+                return {r: pixel[0], g: pixel[1], b: pixel[2], a: pixel[3], w: canvas.width, h: canvas.height}
+            }
+            window.getPostPassCount = () => {
+                const renderer = game.getRenderer('game')
+                return renderer.postPasses.length
+            }
+            window.addGamePostPass = () => {
+                const renderer = game.getRenderer('game')
+                return renderer.addPostPass(GreenPass)
+            }
+            window.removeGamePostPass = (pass) => {
+                const renderer = game.getRenderer('game')
+                renderer.removePostPass(pass)
+            }
+            window.getCameraUnitsInView = () => {
+                return game.camera.unitsInView
+            }
+
+            document.body.dataset.ready = 'true'
+        } catch (e) {
+            document.body.dataset.error = e.message
+            document.body.dataset.ready = 'true'
+        }
+    </script>
+</body>
+</html>
