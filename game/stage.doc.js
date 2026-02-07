@@ -114,6 +114,9 @@ export default doc('Stage', () => {
 
         code('Static properties', () => {
             // Stage.World - World class to instantiate (default: null)
+            // Stage.ActionController - ActionController class (default: null)
+            // Stage.camera - Camera configuration (default: null)
+            // Stage.postPasses - Post-processing passes (default: null)
             // Stage.$category - 'stage'
         })
 
@@ -132,6 +135,13 @@ export default doc('Stage', () => {
             // syncViews() - Call sync() on all views
             // update(deltaTime) - Override for stage update logic
             // render() - Override for stage render logic
+            // addPostPass(PassClass) - Add a post-processing pass to the renderer
+            // removePostPass(pass) - Remove a post-processing pass
+        })
+
+        code('Events', () => {
+            // view:added (entityId, views) - Emitted when views are created for an entity
+            // view:removed (entityId, views) - Emitted when views are disposed for an entity
         })
 
     })
