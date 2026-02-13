@@ -1,6 +1,5 @@
-import {doc, section, text, code, action, logger} from '../doc/runtime.js'
+import {doc, section, text, code} from '../doc/runtime.js'
 import {parsePsd, layerToRGBA} from './psd.js'
-import BinaryReader from './binary_reader.js'
 
 
 export default doc('PSD Parser', {advanced: true}, () => {

@@ -92,4 +92,23 @@ export default doc('Paths', {advanced: true}, () => {
 
     })
 
+
+    section('guideIdToHtml', () => {
+
+        text(`
+            Converts a guide ID to an HTML filename.
+        `)
+
+        code('Usage', () => {
+            guideIdToHtml('foreword')
+
+            // → "guide_foreword.html"
+
+            guideIdToHtml('conventions')
+
+            // → "guide_conventions.html"
+        })
+
+    })
+
 })

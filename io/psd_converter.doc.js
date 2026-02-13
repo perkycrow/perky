@@ -62,7 +62,7 @@ export default doc('PsdConverter', {advanced: true}, () => {
             const converter = new PsdConverter()
 
             converter.on('progress', ({stage, percent}) => {
-                // 'extracting' -> 'resizing' -> 'packing' -> 'compositing' -> 'complete'
+                // 'extracting' -> 'resizing' -> 'packing' -> 'compositing' -> 'finalizing' -> 'complete'
             })
 
             const result = await converter.convert(psd, {
