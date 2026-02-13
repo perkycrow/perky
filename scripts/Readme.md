@@ -92,6 +92,16 @@ node scripts/psd_exporter.js pixel_art.psd -w 128 --nearest
 
 ---
 
+### [psd_parser_test.js](psd_parser_test.js)
+
+Debug tool for inspecting PSD structure. Prints layer tree, animations, and exports frames to PNG.
+
+```sh
+node scripts/psd_parser_test.js character.psd
+```
+
+---
+
 ## Subfolders
 
 ### [cleaner/](cleaner/)

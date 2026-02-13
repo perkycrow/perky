@@ -21,16 +21,19 @@ export default doc('CollisionResolver', () => {
         action('Separate overlapping boxes', () => {
             const resolver = new CollisionResolver()
 
-            const a = new BoxShape({width: 40, height: 40, x: 0, y: 0})
-            const b = new BoxShape({width: 40, height: 40, x: 30, y: 0})
+            const shapeA = new BoxShape({width: 40, height: 40, x: 0, y: 0})
+            const shapeB = new BoxShape({width: 40, height: 40, x: 30, y: 0})
 
-            const collision = detectCollision(a, b)
-            logger.log('before A:', a.position.x, a.position.y)
-            logger.log('before B:', b.position.x, b.position.y)
+            const bodyA = {position: {x: 0, y: 0}, collisionShape: shapeA}
+            const bodyB = {position: {x: 30, y: 0}, collisionShape: shapeB}
 
-            resolver.resolve(a, b, collision)
-            logger.log('after A:', a.position.x, a.position.y)
-            logger.log('after B:', b.position.x, b.position.y)
+            const collision = detectCollision(shapeA, shapeB)
+            logger.log('before A:', bodyA.position.x, bodyA.position.y)
+            logger.log('before B:', bodyB.position.x, bodyB.position.y)
+
+            resolver.resolve(bodyA, bodyB, collision)
+            logger.log('after A:', bodyA.position.x, bodyA.position.y)
+            logger.log('after B:', bodyB.position.x, bodyB.position.y)
         })
 
     })
@@ -45,19 +48,27 @@ export default doc('CollisionResolver', () => {
         })
 
         action('Bouncing bodies', ctx => {
-            const a = new BoxShape({width: 40, height: 40, x: 0, y: 0})
-            a.userData = {velocity: {x: 5, y: 0}, mass: 1}
+            const shapeA = new BoxShape({width: 40, height: 40, x: 0, y: 0})
+            const shapeB = new BoxShape({width: 40, height: 40, x: 30, y: 0})
 
-            const b = new BoxShape({width: 40, height: 40, x: 30, y: 0})
-            b.userData = {velocity: {x: -3, y: 0}, mass: 2}
+            const bodyA = {
+                position: {x: 0, y: 0},
+                collisionShape: shapeA,
+                userData: {velocity: {x: 5, y: 0}, mass: 1}
+            }
+            const bodyB = {
+                position: {x: 30, y: 0},
+                collisionShape: shapeB,
+                userData: {velocity: {x: -3, y: 0}, mass: 2}
+            }
 
-            const collision = detectCollision(a, b)
-            logger.log('before A vel:', a.userData.velocity.x, a.userData.velocity.y)
-            logger.log('before B vel:', b.userData.velocity.x, b.userData.velocity.y)
+            const collision = detectCollision(shapeA, shapeB)
+            logger.log('before A vel:', bodyA.userData.velocity.x, bodyA.userData.velocity.y)
+            logger.log('before B vel:', bodyB.userData.velocity.x, bodyB.userData.velocity.y)
 
-            ctx.resolver.resolve(a, b, collision)
-            logger.log('after A vel:', a.userData.velocity.x.toFixed(2), a.userData.velocity.y.toFixed(2))
-            logger.log('after B vel:', b.userData.velocity.x.toFixed(2), b.userData.velocity.y.toFixed(2))
+            ctx.resolver.resolve(bodyA, bodyB, collision)
+            logger.log('after A vel:', bodyA.userData.velocity.x.toFixed(2), bodyA.userData.velocity.y.toFixed(2))
+            logger.log('after B vel:', bodyB.userData.velocity.x.toFixed(2), bodyB.userData.velocity.y.toFixed(2))
         })
 
     })
@@ -70,13 +81,21 @@ export default doc('CollisionResolver', () => {
         action('Ball hitting a wall', () => {
             const resolver = new CollisionResolver({restitution: 1})
 
-            const ball = new CircleShape({radius: 20, x: 0, y: 0})
-            ball.userData = {velocity: {x: 10, y: 0}, mass: 1}
+            const ballShape = new CircleShape({radius: 20, x: 0, y: 0})
+            const wallShape = new BoxShape({width: 100, height: 100, x: 25, y: 0})
 
-            const wall = new BoxShape({width: 100, height: 100, x: 25, y: 0})
-            wall.userData = {isStatic: true, velocity: {x: 0, y: 0}, mass: 999}
+            const ball = {
+                position: {x: 0, y: 0},
+                collisionShape: ballShape,
+                userData: {velocity: {x: 10, y: 0}, mass: 1}
+            }
+            const wall = {
+                position: {x: 25, y: 0},
+                collisionShape: wallShape,
+                userData: {isStatic: true, velocity: {x: 0, y: 0}, mass: 999}
+            }
 
-            const collision = detectCollision(ball, wall)
+            const collision = detectCollision(ballShape, wallShape)
             resolver.resolve(ball, wall, collision)
 
             logger.log('ball vel:', ball.userData.velocity.x.toFixed(2), ball.userData.velocity.y.toFixed(2))

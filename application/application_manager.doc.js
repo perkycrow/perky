@@ -42,6 +42,17 @@ export default doc('ApplicationManager', {advanced: true}, () => {
             logger.log('children:', manager.children.length)
         })
 
+        code('spawn', async () => {
+            const manager = new ApplicationManager({$id: 'manager'})
+            manager.register('demo', Application)
+
+            const app = await manager.spawn('demo', {
+                $id: 'myApp',
+                container: document.getElementById('game'),
+                preload: true  // or 'all' to load everything
+            })
+        })
+
     })
 
 

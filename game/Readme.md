@@ -10,15 +10,14 @@ The top-level class for making games. Takes an Application and adds a game loop,
 Application (application/)
     |
 Game ──┬── GameLoop (update/render cycle)
-       ├── Stage (game phase)
-       │     ├── World (entity container)
-       │     └── WorldView (entity → visual mapping)
+       ├── Stage (game phase, entity → visual mapping)
+       │     └── World (entity container)
        ├── RenderSystem (from render/)
        ├── TextureSystem (from render/textures/)
        └── AudioSystem (from audio/)
 ```
 
-Game wires all of this together. The loop ticks, the active stage updates its world, the world view syncs entity visuals, and the render system draws everything. Most of these systems delegate their methods to the Game instance, so you call `game.pause()`, `game.setStage()`, etc. directly.
+Game wires all of this together. The loop ticks, the active stage updates its world and syncs entity visuals, and the render system draws everything. Most of these systems delegate their methods to the Game instance, so you call `game.pause()`, `game.setStage()`, etc. directly.
 
 ---
 
@@ -78,12 +77,16 @@ When FPS-limited, uses a fixed timestep with accumulator. Otherwise runs unlocke
 
 ### [stage.js](stage.js)
 
-A distinct phase of your game — a level, a menu, a cutscene. Each stage owns a World and WorldView pair.
+A distinct phase of your game — a level, a menu, a cutscene. Each stage owns a World and manages entity-view mappings.
 
 ```js
 class BattleStage extends Stage {
     static World = BattleWorld
-    static WorldView = BattleWorldView
+
+    onStart () {
+        super.onStart()
+        this.register(Player, PlayerView)
+    }
 
     update (deltaTime) {
         this.world.update(deltaTime, {})
@@ -93,7 +96,7 @@ class BattleStage extends Stage {
 game.setStage(BattleStage)
 ```
 
-Override `static World` and `static WorldView` on the stage to provide your own implementations.
+Override `static World` to provide your own world implementation. Use `register()` to map entities to views.
 
 ---
 
@@ -132,35 +135,6 @@ player.position   // Vec2
 
 ---
 
-### [world_view.js](world_view.js)
-
-Maps entities to their visual representations. When an entity is added to the world, the view creates the matching visual. When removed, the visual is cleaned up.
-
-```js
-class MyWorldView extends WorldView {
-    onStart () {
-        super.onStart()
-        this.setupRenderGroups()
-
-        // Map an Entity class to a render object
-        this.register(Player, Sprite, {
-            texture: 'hero',
-            sync: {rotation: 'angle'}
-        })
-
-        // Or use a matcher function
-        this.register(
-            (entity) => entity.hasTag('enemy'),
-            EnemyView
-        )
-    }
-}
-```
-
-Register views by class or by matcher function. Pass an Object2D subclass (like Sprite) and it gets wrapped in an AutoView automatically.
-
----
-
 ### [entity_view.js](entity_view.js)
 
 Base class for entity views. Syncs `root.x`/`root.y` with the entity's position each frame. Extend this for custom visual behavior.
@@ -183,10 +157,10 @@ class BossView extends EntityView {
 
 ### [auto_view.js](auto_view.js)
 
-Used internally by WorldView when you register an Object2D class directly. Creates the render object and syncs properties based on a config.
+Used internally by Stage when you register an Object2D class directly. Creates the render object and syncs properties based on a config.
 
 ```js
-worldView.register(Player, Sprite, {
+stage.register(Player, Sprite, {
     texture: 'hero',
     sync: {
         rotation: 'angle',              // string: entity.angle → root.rotation
@@ -202,7 +176,7 @@ worldView.register(Player, Sprite, {
 Debug view that draws a rectangle outline around an entity. Useful for visualizing collision boundaries.
 
 ```js
-worldView.register(
+stage.register(
     (entity) => entity.hasTag('collidable'),
     CollisionBoxView,
     {width: 1, height: 1, strokeColor: '#ff0000'}

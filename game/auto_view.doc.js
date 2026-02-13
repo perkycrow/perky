@@ -23,7 +23,7 @@ export default doc('AutoView', () => {
         `)
 
         code('Stage registration', () => {
-            // worldView.register(Player, Sprite, {
+            // stage.register(Player, Sprite, {
             //     texture: 'hero',
             //     sync: {
             //         rotation: 'angle',

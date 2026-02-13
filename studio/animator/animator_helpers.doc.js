@@ -1,5 +1,5 @@
 import {doc, section, text, code} from '../../doc/runtime.js'
-import {inferSpritesheetName, collectEventSuggestions, buildAnimationConfig} from './animator_helpers.js'
+import {inferSpritesheetName, buildAnimationConfig} from './animator_helpers.js'
 
 
 export default doc('Animator Helpers', {advanced: true}, () => {

@@ -4,6 +4,7 @@ import {
     toPascalCase,
     toSnakeCase,
     toKebabCase,
+    toHumanCase,
     uniqueId,
     resetUniqueId,
     singularize,
@@ -59,6 +60,13 @@ export default doc('Utils', {featured: true}, () => {
             logger.log('camelCase:', toKebabCase('camelCase'))
             logger.log('PascalCase:', toKebabCase('PascalCase'))
             logger.log('snake_case:', toKebabCase('snake_case'))
+        })
+
+        action('toHumanCase', () => {
+            logger.log('camelCase:', toHumanCase('camelCase'))
+            logger.log('PascalCase:', toHumanCase('PascalCase'))
+            logger.log('snake_case:', toHumanCase('snake_case'))
+            logger.log('kebab-case:', toHumanCase('kebab-case'))
         })
 
     })

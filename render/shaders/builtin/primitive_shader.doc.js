@@ -48,12 +48,7 @@ export default doc('Primitive Shader', {advanced: true}, () => {
         `)
 
         code('Using the definition', () => {
-            const program = shaderRegistry.createProgram(
-                PRIMITIVE_SHADER_DEF.vertex,
-                PRIMITIVE_SHADER_DEF.fragment,
-                PRIMITIVE_SHADER_DEF.uniforms,
-                PRIMITIVE_SHADER_DEF.attributes
-            )
+            const program = shaderRegistry.register('primitive', PRIMITIVE_SHADER_DEF)
         })
 
     })

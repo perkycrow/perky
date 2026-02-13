@@ -24,13 +24,13 @@ export default doc('Sprite', () => {
         })
 
         code('With frame', () => {
-            // Frame from a spritesheet (e.g., from TexturePacker JSON)
+            // Frame from a spritesheet (includes image reference)
             const frame = {
+                image: spritesheet,
                 frame: {x: 0, y: 0, w: 32, h: 32}
             }
 
             const sprite = new Sprite({
-                image: spritesheet,
                 frame: frame,
                 x: 100,
                 y: 100
@@ -70,11 +70,11 @@ export default doc('Sprite', () => {
         })
 
         code('Frame structure', () => {
-            // Typical frame object from spritesheet JSON
+            // Frame object from Spritesheet.getFrame()
+            // includes image reference for use with setFrame()
             const frame = {
-                frame: {x: 64, y: 0, w: 32, h: 48},
-                sourceSize: {w: 32, h: 48},
-                spriteSourceSize: {x: 0, y: 0, w: 32, h: 48}
+                image: spritesheet,
+                frame: {x: 64, y: 0, w: 32, h: 48}
             }
         })
 
@@ -151,7 +151,6 @@ export default doc('Sprite', () => {
 
             // Both null = use frame dimensions
             const sprite3 = new Sprite({
-                image: myImage,
                 frame: frame
             })
         })
@@ -165,10 +164,7 @@ export default doc('Sprite', () => {
 
         action('With frame', () => {
             const frame = {frame: {x: 0, y: 0, w: 64, h: 48}}
-            const sprite = new Sprite({
-                image: null,
-                frame: frame
-            })
+            const sprite = new Sprite({frame: frame})
             const bounds = sprite.getBounds()
             logger.log('width:', bounds.width)
             logger.log('height:', bounds.height)
@@ -176,11 +172,7 @@ export default doc('Sprite', () => {
 
         action('With explicit width', () => {
             const frame = {frame: {x: 0, y: 0, w: 64, h: 48}}
-            const sprite = new Sprite({
-                image: null,
-                frame: frame,
-                width: 128
-            })
+            const sprite = new Sprite({frame: frame, width: 128})
             const bounds = sprite.getBounds()
             logger.log('width:', bounds.width)
             logger.log('height:', bounds.height, '(scaled proportionally)')

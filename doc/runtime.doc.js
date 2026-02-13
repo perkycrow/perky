@@ -201,6 +201,33 @@ export default doc('Doc Runtime', {advanced: true}, () => {
             })
         })
 
+        code('ctx.box() / ctx.marker()', () => {
+            container(ctx => {
+                ctx.box({size: 40, color: '#4a9eff'})
+                ctx.marker(100, 50, {size: 20, color: '#ff4a9e'})
+            })
+        })
+
+        code('ctx.column() / ctx.row()', () => {
+            container(ctx => {
+                const col = ctx.column({gap: 8})
+                ctx.row({gap: 4, parent: col})
+            })
+        })
+
+        code('ctx.label()', () => {
+            container(ctx => {
+                ctx.label('Status', {overlay: true})
+            })
+        })
+
+        code('ctx.canvas() / ctx.checkerBoard()', () => {
+            container(ctx => {
+                ctx.checkerBoard({width: 100, height: 100})
+                const {element, canvas, update} = ctx.canvas(sourceCanvas, {maxWidth: 200})
+            })
+        })
+
     })
 
 

@@ -138,7 +138,7 @@ export default doc('EntityView', () => {
 
         code('Constructor', () => {
             // entity: The Entity instance to visualize
-            // context: Object containing { group, worldView }
+            // context: Object containing { game, world, group, config }
             const view = new EntityView(entity, context)
 
             // Set this.root to your render object
@@ -147,7 +147,7 @@ export default doc('EntityView', () => {
 
         code('Properties', () => {
             // view.entity - The linked Entity
-            // view.context - Context object from WorldView
+            // view.context - Context object from Stage
             // view.root - The root Object2D node (you must set this)
         })
 

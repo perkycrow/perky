@@ -1,8 +1,6 @@
 import {doc, section, text, code, action, logger} from '../doc/runtime.js'
 import ServiceHost from './service_host.js'
 import ServiceTransport from './service_transport.js'
-import ServiceRequest from './service_request.js'
-import ActionController from '../core/action_controller.js'
 
 
 export default doc('ServiceHost', () => {

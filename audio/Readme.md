@@ -167,4 +167,4 @@ seq.update(deltaTime)
 
 ## Going further
 
-Each file has its `.test.js` with tests. `audio_system.js` also has a `.doc.js` with interactive examples.
+Each file has its `.test.js` with tests and `.doc.js` with interactive examples.

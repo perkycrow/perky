@@ -1,7 +1,6 @@
 import {doc, section, text, code, action, logger} from '../doc/runtime.js'
 import ServiceClient from './service_client.js'
 import ServiceHost from './service_host.js'
-import ServiceTransport from './service_transport.js'
 
 
 export default doc('ServiceClient', () => {

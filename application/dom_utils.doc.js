@@ -1,5 +1,5 @@
 import {doc, section, text, code, action, logger} from '../doc/runtime.js'
-import {createElement, setStyle, setAttributes} from './dom_utils.js'
+import {createElement, setStyle, setAttributes, createStyleSheet, adoptStyleSheets} from './dom_utils.js'
 
 
 export default doc('DOM Utils', () => {
@@ -67,6 +67,31 @@ export default doc('DOM Utils', () => {
             setAttributes(el, {dataValue: '42', ariaHidden: 'true'})
             logger.log('data-value:', el.getAttribute('data-value'))
             logger.log('aria-hidden:', el.getAttribute('aria-hidden'))
+        })
+
+    })
+
+
+    section('Style Sheets', () => {
+
+        text(`
+            Helpers for creating and adopting CSS stylesheets.
+            Useful for Web Components with shadow DOM.
+        `)
+
+        code('createStyleSheet', () => {
+            const sheet = createStyleSheet(`
+                .panel { background: #1a1a2e; }
+                .btn { color: white; }
+            `)
+        })
+
+        code('adoptStyleSheets', () => {
+            const sheet = createStyleSheet('.panel { padding: 12px; }')
+
+            const el = document.createElement('div')
+            const shadow = el.attachShadow({mode: 'open'})
+            adoptStyleSheets(shadow, sheet)
         })
 
     })

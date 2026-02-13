@@ -19,7 +19,7 @@ export default doc('CollisionBoxView', () => {
         `)
 
         code('Register with Stage', () => {
-            // worldView.register(
+            // stage.register(
             //     (entity) => entity.hasTag('collidable'),
             //     CollisionBoxView,
             //     {width: 1, height: 1, strokeColor: '#ff0000'}
