@@ -205,6 +205,8 @@ const hubViewStyles = createStyleSheet(`
     .header-actions button:disabled {
         opacity: 0.3;
         cursor: default;
+        pointer-events: none;
+        color: var(--fg-muted);
     }
 
     .header-actions .danger {
@@ -661,6 +663,7 @@ export default class HubView extends EditorComponent {
     #toggleSelectionMode () {
         this.#selectionMode = !this.#selectionMode
         this.#selectedItems.clear()
+        this.#clearCheckboxes()
 
         if (this.#selectionMode) {
             this.setAttribute('selection-mode', '')
@@ -671,6 +674,14 @@ export default class HubView extends EditorComponent {
         }
 
         this.#updateActionButtons()
+    }
+
+
+    #clearCheckboxes () {
+        const checkboxes = this.shadowRoot.querySelectorAll('.card-checkbox.selected')
+        for (const cb of checkboxes) {
+            cb.classList.remove('selected')
+        }
     }
 
 
@@ -733,6 +744,10 @@ export default class HubView extends EditorComponent {
 
 
     async #exportSelected () {
+        if (this.#selectedItems.size === 0) {
+            return
+        }
+
         for (const name of this.#selectedItems) {
             await this.#store.export(name)
         }
@@ -764,6 +779,10 @@ export default class HubView extends EditorComponent {
 
 
     async #deleteSelected () {
+        if (this.#selectedItems.size === 0) {
+            return
+        }
+
         const count = this.#selectedItems.size
         const message = count === 1
             ? `Delete "${[...this.#selectedItems][0]}"?`
