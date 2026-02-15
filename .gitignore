@@ -13,3 +13,4 @@ psd/
 integration/*-snapshots/
 test-results/
 .crow/
+mist_old/
