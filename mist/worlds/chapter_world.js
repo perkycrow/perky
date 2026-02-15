@@ -59,16 +59,21 @@ export default class ChapterWorld extends World {
 
             let entity = this._boardEntities.get(reagent)
 
+            const screenX = reagent.x + BOARD_OFFSET_X + 0.5
+            const screenY = reagent.y + BOARD_OFFSET_Y + 0.5
+
             if (!entity) {
                 entity = this.create(ReagentEntity, {
+                    x: screenX,
+                    y: screenY,
                     reagentName: reagent.name,
                     color: colorFor(reagent.name)
                 })
                 this._boardEntities.set(reagent, entity)
             }
 
-            entity.x = reagent.x + BOARD_OFFSET_X + 0.5
-            entity.y = reagent.y + BOARD_OFFSET_Y + 0.5
+            entity.x = screenX
+            entity.y = screenY
             entity.color = colorFor(reagent.name)
             entity.reagentName = reagent.name
         }
