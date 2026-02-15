@@ -3,10 +3,10 @@ import {createElement} from '../../application/dom_utils.js'
 
 
 const SPAWN_BUTTONS = [
-    {label: 'Pig', action: 'spawnPigEnemy', maxSpeed: 0.4},
-    {label: 'Red', action: 'spawnRedEnemy'},
-    {label: 'Granny', action: 'spawnGrannyEnemy', maxSpeed: 0.3},
-    {label: 'Amalgam', action: 'spawnAmalgamEnemy', maxSpeed: 0.5}
+    {label: 'Pig', action: 'spawnPig', maxSpeed: 0.4},
+    {label: 'Red', action: 'spawnRed'},
+    {label: 'Granny', action: 'spawnGranny', maxSpeed: 0.3},
+    {label: 'Amalgam', action: 'spawnAmalgam', maxSpeed: 0.5}
 ]
 
 const SPAWN_Y = {min: -1.9, max: 0.6}

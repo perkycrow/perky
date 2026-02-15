@@ -100,46 +100,46 @@ describe('DenController', () => {
     })
 
 
-    test('spawnPigEnemy delegates to world', () => {
+    test('spawnPig delegates to world', () => {
         const controller = new DenController()
-        controller.world = {spawnPigEnemy: vi.fn(() => 'enemy')}
+        controller.world = {spawnPig: vi.fn(() => 'enemy')}
 
-        const result = controller.spawnPigEnemy({x: 3})
+        const result = controller.spawnPig({x: 3})
 
-        expect(controller.world.spawnPigEnemy).toHaveBeenCalledWith({x: 3})
+        expect(controller.world.spawnPig).toHaveBeenCalledWith({x: 3})
         expect(result).toBe('enemy')
     })
 
 
-    test('spawnRedEnemy delegates to world', () => {
+    test('spawnRed delegates to world', () => {
         const controller = new DenController()
-        controller.world = {spawnRedEnemy: vi.fn(() => 'enemy')}
+        controller.world = {spawnRed: vi.fn(() => 'enemy')}
 
-        const result = controller.spawnRedEnemy({x: 3})
+        const result = controller.spawnRed({x: 3})
 
-        expect(controller.world.spawnRedEnemy).toHaveBeenCalledWith({x: 3})
+        expect(controller.world.spawnRed).toHaveBeenCalledWith({x: 3})
         expect(result).toBe('enemy')
     })
 
 
-    test('spawnGrannyEnemy delegates to world', () => {
+    test('spawnGranny delegates to world', () => {
         const controller = new DenController()
-        controller.world = {spawnGrannyEnemy: vi.fn(() => 'enemy')}
+        controller.world = {spawnGranny: vi.fn(() => 'enemy')}
 
-        const result = controller.spawnGrannyEnemy({x: 3})
+        const result = controller.spawnGranny({x: 3})
 
-        expect(controller.world.spawnGrannyEnemy).toHaveBeenCalledWith({x: 3})
+        expect(controller.world.spawnGranny).toHaveBeenCalledWith({x: 3})
         expect(result).toBe('enemy')
     })
 
 
-    test('spawnAmalgamEnemy delegates to world', () => {
+    test('spawnAmalgam delegates to world', () => {
         const controller = new DenController()
-        controller.world = {spawnAmalgamEnemy: vi.fn(() => 'enemy')}
+        controller.world = {spawnAmalgam: vi.fn(() => 'enemy')}
 
-        const result = controller.spawnAmalgamEnemy({x: 3})
+        const result = controller.spawnAmalgam({x: 3})
 
-        expect(controller.world.spawnAmalgamEnemy).toHaveBeenCalledWith({x: 3})
+        expect(controller.world.spawnAmalgam).toHaveBeenCalledWith({x: 3})
         expect(result).toBe('enemy')
     })
 

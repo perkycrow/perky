@@ -2,7 +2,7 @@ import EnemyView from './enemy_view.js'
 import WaveEffect from '../effects/wave_effect.js'
 
 
-export default class PigEnemyView extends EnemyView {
+export default class PigView extends EnemyView {
 
     static config = {image: 'pig', width: 1, height: 1}
 

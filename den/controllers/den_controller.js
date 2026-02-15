@@ -35,23 +35,23 @@ export default class DenController extends GameController {
     }
 
 
-    spawnPigEnemy (options = {}) {
-        return this.world.spawnPigEnemy(options)
+    spawnPig (options = {}) {
+        return this.world.spawnPig(options)
     }
 
 
-    spawnRedEnemy (options = {}) {
-        return this.world.spawnRedEnemy(options)
+    spawnRed (options = {}) {
+        return this.world.spawnRed(options)
     }
 
 
-    spawnGrannyEnemy (options = {}) {
-        return this.world.spawnGrannyEnemy(options)
+    spawnGranny (options = {}) {
+        return this.world.spawnGranny(options)
     }
 
 
-    spawnAmalgamEnemy (options = {}) {
-        return this.world.spawnAmalgamEnemy(options)
+    spawnAmalgam (options = {}) {
+        return this.world.spawnAmalgam(options)
     }
 
 

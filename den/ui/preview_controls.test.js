@@ -85,7 +85,7 @@ describe('PreviewControls', () => {
         const buttons = controls.root.querySelectorAll('.spawn-btn')
         buttons[0].click()
         expect(game.execute).toHaveBeenCalledWith(
-            'spawnPigEnemy',
+            'spawnPig',
             expect.objectContaining({x: 3.5, maxSpeed: 0.4})
         )
     })

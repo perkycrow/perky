@@ -129,18 +129,18 @@ export default class WaveSystem extends PerkyModule {
         const roll = Math.random()
 
         if (roll < config.ratios.granny) {
-            this.world.spawnGrannyEnemy({
+            this.world.spawnGranny({
                 x: 3.5,
                 y: randomY,
                 maxSpeed: config.enemySpeed * 0.6
             })
         } else if (roll < config.ratios.granny + config.ratios.red) {
-            this.world.spawnRedEnemy({
+            this.world.spawnRed({
                 x: 3.5,
                 y: randomY
             })
         } else {
-            this.world.spawnPigEnemy({
+            this.world.spawnPig({
                 x: 3.5,
                 y: randomY,
                 maxSpeed: config.enemySpeed
@@ -180,7 +180,7 @@ export default class WaveSystem extends PerkyModule {
         this.nextSpawnTime = this.#getNextSpawnTime()
 
         if (this.wave === 3 && this.world) {
-            this.world.spawnAmalgamEnemy({x: 3.5, y: 0, maxSpeed: 0.4})
+            this.world.spawnAmalgam({x: 3.5, y: 0, maxSpeed: 0.4})
         }
     }
 

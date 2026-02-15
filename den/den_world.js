@@ -1,10 +1,10 @@
 import World from '../game/world.js'
 import Player from './entities/player.js'
 import Projectile from './entities/projectile.js'
-import PigEnemy from './entities/pig_enemy.js'
-import RedEnemy from './entities/red_enemy.js'
-import GrannyEnemy from './entities/granny_enemy.js'
-import AmalgamEnemy from './entities/amalgam_enemy.js'
+import Pig from './entities/pig.js'
+import Red from './entities/red.js'
+import Granny from './entities/granny.js'
+import Amalgam from './entities/amalgam.js'
 import {testHitbox} from './collision_shapes.js'
 
 
@@ -83,8 +83,8 @@ export default class DenWorld extends World {
     }
 
 
-    spawnPigEnemy (options = {}) {
-        return this.create(PigEnemy, {
+    spawnPig (options = {}) {
+        return this.create(Pig, {
             x: options.x || 0,
             y: options.y || 0,
             maxSpeed: options.maxSpeed || 0.5
@@ -92,8 +92,8 @@ export default class DenWorld extends World {
     }
 
 
-    spawnRedEnemy (options = {}) {
-        const enemy = this.create(RedEnemy, {
+    spawnRed (options = {}) {
+        const enemy = this.create(Red, {
             x: options.x || 0,
             y: options.y || 0
         })
@@ -106,8 +106,8 @@ export default class DenWorld extends World {
     }
 
 
-    spawnGrannyEnemy (options = {}) {
-        const enemy = this.create(GrannyEnemy, {
+    spawnGranny (options = {}) {
+        const enemy = this.create(Granny, {
             x: options.x || 0,
             y: options.y || 0,
             maxSpeed: options.maxSpeed || 0.3
@@ -129,8 +129,8 @@ export default class DenWorld extends World {
     }
 
 
-    spawnAmalgamEnemy (options = {}) {
-        const enemy = this.create(AmalgamEnemy, {
+    spawnAmalgam (options = {}) {
+        const enemy = this.create(Amalgam, {
             x: options.x || 0,
             y: options.y || 0,
             maxSpeed: options.maxSpeed || 0.5

@@ -2,7 +2,7 @@ import Enemy from './enemy.js'
 import {CapsuleHitbox} from '../collision_shapes.js'
 
 
-export default class RedEnemy extends Enemy {
+export default class Red extends Enemy {
 
     static $tags = ['enemy', 'red']
 

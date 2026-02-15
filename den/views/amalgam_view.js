@@ -1,7 +1,7 @@
 import EnemyView from './enemy_view.js'
 
 
-export default class AmalgamEnemyView extends EnemyView {
+export default class AmalgamView extends EnemyView {
 
     static config = {image: 'amalgam', width: 1.2, height: 1.2}
 

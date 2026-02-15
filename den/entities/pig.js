@@ -3,7 +3,7 @@ import Easing from '../../math/easing.js'
 import {CapsuleHitbox} from '../collision_shapes.js'
 
 
-export default class PigEnemy extends Enemy {
+export default class Pig extends Enemy {
 
     static $tags = ['enemy', 'pig']
 

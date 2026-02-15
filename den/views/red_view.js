@@ -3,7 +3,7 @@ import SpriteAnimator from '../../render/sprite_animator.js'
 import logger from '../../core/logger.js'
 
 
-export default class RedEnemyView extends EnemyView {
+export default class RedView extends EnemyView {
 
     static config = {image: 'red', width: 1, height: 1}
 

@@ -2,7 +2,7 @@ import Enemy from './enemy.js'
 import {CircleHitbox} from '../collision_shapes.js'
 
 
-export default class GrannyEnemy extends Enemy {
+export default class Granny extends Enemy {
 
     static $tags = ['enemy', 'granny']
 

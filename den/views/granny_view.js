@@ -1,7 +1,7 @@
 import EnemyView from './enemy_view.js'
 
 
-export default class GrannyEnemyView extends EnemyView {
+export default class GrannyView extends EnemyView {
 
     static config = {image: 'granny', width: 1, height: 1}
 
