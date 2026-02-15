@@ -47,7 +47,7 @@ const viewModules = import.meta.glob('./views/*_view.js', {eager: true})
 
 - Scan automatique des fichiers au build time
 - Pattern négatif `!*.test.js` pour exclure les tests
-- Convention de nommage : `PigEnemy` → `PigEnemyView`
+- Convention de nommage : `Pig` → `PigView`
 
 **Évolution future** : Plugin Vite pour abstraire complètement les globs (le dev ne verrait que l'API)
 
