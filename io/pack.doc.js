@@ -57,6 +57,17 @@ export default doc('Pack', {advanced: true}, () => {
             }
         })
 
+        action('Unpack without decompression', async () => {
+            const files = [
+                {name: 'data.json', blob: new Blob(['{"key":"value"}'], {type: 'application/json'})}
+            ]
+
+            const packed = await pack(files, {compress: false})
+            const extracted = await unpack(packed, {compressed: false})
+            const content = await extracted[0].blob.text()
+            logger.log('content:', content)
+        })
+
     })
 
 

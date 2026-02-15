@@ -107,7 +107,7 @@ Wraps sprite atlas data. Maps frame names to texture regions, exposes animation 
 const sheet = new Spritesheet({data, images})
 sheet.getRegion('idle_0')
 sheet.getAnimation('walk')
-sheet.frames  // all frame names
+sheet.listFrames()  // all frame names
 ```
 
 ---
