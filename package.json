@@ -18,6 +18,7 @@
     "den:preview": "vite preview --config vite.den.config.js",
     "den:serve": "vite build --config vite.den.config.js && vite preview --config vite.den.config.js",
     "den:game": "vite build --config vite.den.config.js --mode game",
+    "mist": "vite serve mist --port 3002",
     "ghast": "vite serve ghast --port 3001",
     "ghast:build": "vite build --config vite.ghast.config.js",
     "ghast:preview": "vite preview --config vite.ghast.config.js",

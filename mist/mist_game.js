@@ -1,0 +1,19 @@
+import Game from '../game/game.js'
+import ChapterStage from './stages/chapter_stage.js'
+import manifest from './manifest.js'
+
+
+export default class MistGame extends Game {
+
+    static $name = 'mistGame'
+    static manifest = manifest
+
+    static camera = {unitsInView: {width: 8, height: 12}}
+    static layer = {type: 'webgl', backgroundColor: '#1a1a2e', pixelRatio: 1}
+    static stages = {chapter: ChapterStage}
+
+    configureGame () {
+        this.setStage('chapter')
+    }
+
+}
