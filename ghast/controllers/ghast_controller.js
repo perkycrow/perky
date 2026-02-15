@@ -10,11 +10,6 @@ export default class GhastController extends GameController {
         moveRight: ['KeyD', 'ArrowRight', 'swipeRight']
     }
 
-    update (game, deltaTime) {
-        this.world.update(deltaTime, game)
-    }
-
-
     spawnPlayer (options = {}) {
         return this.world.spawnPlayer(options)
     }
