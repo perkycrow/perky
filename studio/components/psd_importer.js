@@ -385,6 +385,7 @@ export default class PsdImporter extends EditorComponent {
     #aspectRatioLocked = true
     #aspectRatio = 1
     #existingNames = new Set()
+    #targetName = null
 
     #elements = {}
 
@@ -396,7 +397,9 @@ export default class PsdImporter extends EditorComponent {
 
 
     open () {
+        const targetName = this.#targetName
         this.#reset()
+        this.#targetName = targetName
         this.#overlay.open()
     }
 
@@ -411,10 +414,16 @@ export default class PsdImporter extends EditorComponent {
     }
 
 
+    setTargetName (animatorName) {
+        this.#targetName = animatorName.replace(/Animator$/i, '')
+    }
+
+
     #reset () {
         this.#step = 'drop'
         this.#psd = null
         this.#aspectRatioLocked = true
+        this.#targetName = null
         this.#updateStep()
     }
 
@@ -655,10 +664,11 @@ export default class PsdImporter extends EditorComponent {
 
 
     #updateHeader () {
+        const isUpdate = !!this.#targetName
         const headers = {
-            drop: {backText: '← Cancel', title: 'Import PSD'},
+            drop: {backText: '← Cancel', title: isUpdate ? 'Update PSD' : 'Import PSD'},
             preview: {backText: '← Back', title: this.#psd?.filename || 'Preview'},
-            progress: {backText: null, title: 'Creating...'}
+            progress: {backText: null, title: isUpdate ? 'Updating...' : 'Creating...'}
         }
 
         const config = headers[this.#step]
@@ -765,7 +775,13 @@ export default class PsdImporter extends EditorComponent {
             this.#elements.animationTags.appendChild(tag)
         }
 
-        this.#elements.nameInput.value = psd.filename || ''
+        if (this.#targetName) {
+            this.#elements.nameInput.value = this.#targetName
+            this.#elements.nameInput.disabled = true
+        } else {
+            this.#elements.nameInput.value = psd.filename || ''
+            this.#elements.nameInput.disabled = false
+        }
         this.#elements.errorMessage.classList.add('hidden')
         this.#validateName()
     }
@@ -774,11 +790,13 @@ export default class PsdImporter extends EditorComponent {
     #validateName () {
         const name = sanitizeName(this.#elements.nameInput.value)
         const animatorName = `${name}Animator`.toLowerCase()
-        const isDuplicate = this.#existingNames.has(animatorName)
+        const isUpdate = !!this.#targetName
+        const isDuplicate = !isUpdate && this.#existingNames.has(animatorName)
         const isValid = name.length > 0 && !isDuplicate
 
+        const actionLabel = isUpdate ? 'update' : 'create'
         this.#elements.outputInfo.innerHTML = `
-            <div class="output-info-title">This will create:</div>
+            <div class="output-info-title">This will ${actionLabel}:</div>
             <div class="output-item"><span class="output-item-icon">${ICONS.image}</span> ${name || '...'}Spritesheet</div>
             <div class="output-item"><span class="output-item-icon">${ICONS.film}</span> ${name || '...'}Animator</div>
         `
@@ -790,6 +808,7 @@ export default class PsdImporter extends EditorComponent {
             this.#elements.errorMessage.classList.add('hidden')
         }
 
+        this.#elements.createBtn.textContent = isUpdate ? 'Update Animator' : 'Create Animator'
         this.#elements.createBtn.disabled = !isValid
     }
 

@@ -254,6 +254,7 @@ export default class HubView extends EditorComponent {
     #exportBtn = null
     #deleteBtn = null
     #revertBtn = null
+    #updateBtn = null
 
     onConnected () {
         adoptStyleSheets(this.shadowRoot, hubViewStyles)
@@ -310,12 +311,15 @@ export default class HubView extends EditorComponent {
         defaultActions.appendChild(importBtn)
 
         const selectionActions = createElement('div', {class: 'selection-actions'})
+        this.#updateBtn = createElement('button', {text: 'Update'})
+        this.#updateBtn.addEventListener('click', () => this.#updateSelected())
         this.#exportBtn = createElement('button', {text: 'Export'})
         this.#exportBtn.addEventListener('click', () => this.#exportSelected())
         this.#revertBtn = createElement('button', {text: 'Revert', class: 'warning'})
         this.#revertBtn.addEventListener('click', () => this.#revertSelected())
         this.#deleteBtn = createElement('button', {text: 'Delete', class: 'danger'})
         this.#deleteBtn.addEventListener('click', () => this.#deleteSelected())
+        selectionActions.appendChild(this.#updateBtn)
         selectionActions.appendChild(this.#exportBtn)
         selectionActions.appendChild(this.#revertBtn)
         selectionActions.appendChild(this.#deleteBtn)
@@ -475,13 +479,9 @@ export default class HubView extends EditorComponent {
 
 
     #createAnimatorCard (name, config, state = 'game') {
-        const card = createElement('div', {class: 'animator-card'})
+        const card = createElement('div', {class: 'animator-card selectable'})
         const isCustom = state === 'custom' || state === 'modified'
-
-        if (isCustom) {
-            card.classList.add('selectable')
-            card.dataset.name = name
-        }
+        card.dataset.name = name
 
         const preview = createElement('div', {class: 'card-preview'})
         const thumbnail = this.#createThumbnail(name, config)
@@ -493,11 +493,9 @@ export default class HubView extends EditorComponent {
             preview.appendChild(createElement('div', {class: 'card-badge modified', text: 'Modified'}))
         }
 
-        if (isCustom) {
-            const checkbox = createElement('div', {class: 'card-checkbox'})
-            checkbox.dataset.name = name
-            preview.appendChild(checkbox)
-        }
+        const checkbox = createElement('div', {class: 'card-checkbox'})
+        checkbox.dataset.name = name
+        preview.appendChild(checkbox)
 
         const info = createElement('div', {class: 'card-info'})
         info.appendChild(createElement('div', {class: 'card-title', text: name}))
@@ -512,11 +510,11 @@ export default class HubView extends EditorComponent {
         card.appendChild(info)
 
         card.addEventListener('click', () => {
-            if (this.#selectionMode && isCustom) {
+            if (this.#selectionMode) {
                 const checkbox = card.querySelector('.card-checkbox')
                 checkbox.classList.toggle('selected')
                 this.#toggleItemSelection(name)
-            } else if (!this.#selectionMode) {
+            } else {
                 this.#openAnimator(name, isCustom)
             }
         })
@@ -564,6 +562,7 @@ export default class HubView extends EditorComponent {
         const animatorName = `${name}Animator`
 
         this.#customAnimators[animatorName] = animatorConfig
+        this.#customMeta.set(animatorName, {updatedAt: Date.now()})
 
         if (atlases?.length > 0 && atlases[0].canvas && atlases[0].frames?.length > 0) {
             const atlas = atlases[0]
@@ -689,6 +688,7 @@ export default class HubView extends EditorComponent {
         const hasSelection = this.#selectedItems.size > 0
         this.#exportBtn.disabled = !hasSelection
         this.#deleteBtn.disabled = !hasSelection
+        this.#updateBtn.disabled = this.#selectedItems.size !== 1
 
         const hasModified = [...this.#selectedItems].some(id => this.#animators[id])
         this.#revertBtn.disabled = !hasModified
@@ -707,6 +707,28 @@ export default class HubView extends EditorComponent {
             this.#render()
         })
         input.click()
+    }
+
+
+    #updateSelected () {
+        if (this.#selectedItems.size !== 1) {
+            return
+        }
+
+        const name = [...this.#selectedItems][0]
+        this.#toggleSelectionMode()
+        this.#openPsdImporterForUpdate(name)
+    }
+
+
+    #openPsdImporterForUpdate (name) {
+        if (!this.#psdImporter) {
+            this.#psdImporter = document.createElement('psd-importer')
+            this.#psdImporter.addEventListener('complete', (e) => this.#handleImportComplete(e))
+            this.shadowRoot.appendChild(this.#psdImporter)
+        }
+        this.#psdImporter.setTargetName(name)
+        this.#psdImporter.open()
     }
 
 

@@ -205,6 +205,18 @@ describe('PsdImporter', () => {
             }).not.toThrow()
         })
 
+
+        test('has setTargetName method', () => {
+            expect(typeof importer.setTargetName).toBe('function')
+        })
+
+
+        test('setTargetName accepts animator name', () => {
+            expect(() => {
+                importer.setTargetName('playerAnimator')
+            }).not.toThrow()
+        })
+
     })
 
 

@@ -227,4 +227,57 @@ describe('HubView', () => {
         window.location = originalLocation
     })
 
+
+    describe('selection mode', () => {
+
+        test('all animator cards are selectable', async () => {
+            const mockTextureSystem = {
+                getSpritesheet: vi.fn(() => null)
+            }
+
+            view.setContext({
+                manifest: {},
+                animators: {
+                    player: {animations: {}},
+                    enemy: {animations: {}}
+                },
+                textureSystem: mockTextureSystem
+            })
+
+            await flushPromises()
+
+            const selectableCards = view.shadowRoot.querySelectorAll('.animator-card.selectable')
+            expect(selectableCards.length).toBe(2)
+        })
+
+
+        test('all animator cards have checkboxes', async () => {
+            const mockTextureSystem = {
+                getSpritesheet: vi.fn(() => null)
+            }
+
+            view.setContext({
+                manifest: {},
+                animators: {
+                    player: {animations: {}}
+                },
+                textureSystem: mockTextureSystem
+            })
+
+            await flushPromises()
+
+            const card = view.shadowRoot.querySelector('.animator-card')
+            const checkbox = card.querySelector('.card-checkbox')
+            expect(checkbox).not.toBeNull()
+        })
+
+
+        test('has update button in selection actions', () => {
+            const buttons = view.shadowRoot.querySelectorAll('.selection-actions button')
+            const updateBtn = [...buttons].find(b => b.textContent === 'Update')
+            expect(updateBtn).not.toBeNull()
+        })
+
+    })
+
 })
