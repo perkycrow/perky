@@ -89,11 +89,9 @@ export default class ChapterWorld extends World {
 
     syncClusterEntities (workshop, board) {
         const cluster = workshop?.currentCluster
-        const clusterReagents = cluster?.reagents.length
-            ? cluster.forBoard(board)
-            : []
-
+        const clusterReagents = cluster?.reagents || []
         const entities = [this.#clusterEntity0, this.#clusterEntity1]
+        const yOffset = cluster && board ? board.height - cluster.height : 0
 
         for (let i = 0; i < entities.length; i++) {
             const entity = entities[i]
@@ -101,7 +99,7 @@ export default class ChapterWorld extends World {
 
             if (reagent) {
                 entity.x = reagent.x + BOARD_OFFSET_X + 0.5
-                entity.y = reagent.y + BOARD_OFFSET_Y + 0.5
+                entity.y = (yOffset + reagent.y) + BOARD_OFFSET_Y + 0.5
                 entity.reagentName = reagent.name
                 entity.color = colorFor(reagent.name)
                 entity.active = true
