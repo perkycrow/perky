@@ -100,5 +100,5 @@ function reset (adventure, {
 
 
 function camelize (string) {
-    return string.replace(/[-_\s]+(.)?/g, (_, c) => c ? c.toUpperCase() : '')
+    return string.replace(/[-_\s]+(.)?/g, (_, c) => (c ? c.toUpperCase() : ''))
 }

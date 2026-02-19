@@ -28,7 +28,9 @@ export default class ReagentView extends EntityView {
 
 
     update (deltaTime) {
-        if (!this.root || !this.entity) return
+        if (!this.root || !this.entity) {
+            return
+        }
 
         const t = Math.min(1, LERP_SPEED * deltaTime)
         this.root.x += (this.entity.x - this.root.x) * t
@@ -45,7 +47,9 @@ export default class ReagentView extends EntityView {
 
 
     sync () {
-        if (!this.root || !this.entity) return
+        if (!this.root || !this.entity) {
+            return
+        }
 
         const wasVisible = this.root.visible
         this.root.visible = this.entity.active

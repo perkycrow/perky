@@ -35,6 +35,7 @@ export default class ContagionSkill extends Skill {
 
         return true
     }
+
 }
 
 

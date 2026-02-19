@@ -1,5 +1,6 @@
 import Chapter from '../core/chapter.js'
 
+
 export default class Chapter8 extends Chapter {
 
     static reagentsCount = 24

@@ -1,6 +1,8 @@
 import Interlude from '../core/interlude.js'
 
+
 export default class Interlude1 extends Interlude {
+
     static visual = 'madnessVisual'
 
     static content = {
@@ -12,4 +14,5 @@ export default class Interlude1 extends Interlude {
         type:  'skill',
         id:    'madness'
     }]
+
 }

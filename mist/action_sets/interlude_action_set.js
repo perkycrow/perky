@@ -2,11 +2,13 @@ import ActionSet from '../libs/action_set.js'
 
 
 export default class InterludeActionSet extends ActionSet {
+
     constructor (interlude) {
         super()
 
         initActions(interlude, this)
     }
+
 }
 
 

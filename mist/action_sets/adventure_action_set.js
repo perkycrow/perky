@@ -2,11 +2,13 @@ import ActionSet from '../libs/action_set.js'
 
 
 export default class AdventureActionSet extends ActionSet {
+
     constructor (adventure) {
         super()
 
         initActions(adventure, this)
     }
+
 }
 
 

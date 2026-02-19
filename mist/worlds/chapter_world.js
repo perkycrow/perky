@@ -17,7 +17,9 @@ const PALETTE = [
 
 function colorFor (name) {
     const index = reagents.indexOf(name)
-    if (index < 0) return '#95a5a6'
+    if (index < 0) {
+        return '#95a5a6'
+    }
     return PALETTE[index % PALETTE.length]
 }
 
@@ -44,7 +46,9 @@ export default class ChapterWorld extends World {
 
     syncBoard () {
         const game = this.chapter?.game
-        if (!game || !game.started) return
+        if (!game || !game.started) {
+            return
+        }
 
         this.syncBoardEntities(game.board)
         this.syncClusterEntities(game.workshop, game.board)
@@ -53,6 +57,7 @@ export default class ChapterWorld extends World {
 
     syncBoardEntities (board) {
         const seen = new Set()
+        const spawnY = board.height + BOARD_OFFSET_Y + 0.5
 
         for (const reagent of board.toArray()) {
             seen.add(reagent)
@@ -65,7 +70,7 @@ export default class ChapterWorld extends World {
             if (!entity) {
                 entity = this.create(ReagentEntity, {
                     x: screenX,
-                    y: screenY,
+                    y: spawnY,
                     reagentName: reagent.name,
                     color: colorFor(reagent.name)
                 })

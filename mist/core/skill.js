@@ -20,7 +20,6 @@ export default class Skill {
         en: 'Charge gauge description'
     }
 
-
     constructor (params) {
         this.restore(params)
     }

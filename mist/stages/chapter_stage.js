@@ -10,7 +10,6 @@ export default class ChapterStage extends Stage {
     static World = ChapterWorld
     static ActionController = ChapterController
 
-
     onStart () {
         super.onStart()
         this.register(ReagentEntity, ReagentView)

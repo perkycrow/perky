@@ -2,6 +2,7 @@ import Skill from '../core/skill.js'
 
 
 export default class RuinSkill extends Skill {
+
     static cost = 8
 
     static title = {
@@ -31,4 +32,5 @@ export default class RuinSkill extends Skill {
 
         return true
     }
+
 }

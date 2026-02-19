@@ -8,7 +8,6 @@ export default class Interlude {
     static choices  = []
     static content = {}
 
-
     constructor (params, {skillFactory, artifactFactory} = {}) {
         this.type = 'interlude'
         this.artifactFactory = artifactFactory || this.constructor.artifactFactory
@@ -38,6 +37,7 @@ export default class Interlude {
             currentChoice: this.currentChoice
         }
     }
+
 
     restore (params) {
         reset(this, params)

@@ -664,7 +664,7 @@ export default class PsdImporter extends EditorComponent {
 
 
     #updateHeader () {
-        const isUpdate = !!this.#targetName
+        const isUpdate = Boolean(this.#targetName)
         const headers = {
             drop: {backText: '← Cancel', title: isUpdate ? 'Update PSD' : 'Import PSD'},
             preview: {backText: '← Back', title: this.#psd?.filename || 'Preview'},
@@ -790,7 +790,7 @@ export default class PsdImporter extends EditorComponent {
     #validateName () {
         const name = sanitizeName(this.#elements.nameInput.value)
         const animatorName = `${name}Animator`.toLowerCase()
-        const isUpdate = !!this.#targetName
+        const isUpdate = Boolean(this.#targetName)
         const isDuplicate = !isUpdate && this.#existingNames.has(animatorName)
         const isValid = name.length > 0 && !isDuplicate
 

@@ -17,6 +17,7 @@ import Chapter9         from '../chapters/story_9_chapter.js'
 import Chapter10        from '../chapters/story_10_chapter.js'
 import CutScene1        from '../cut_scenes/story_1_cut_scene.js'
 
+
 export default class StoryAdventure extends Adventure {
 
     static skillFactory    = skillFactory

@@ -10,7 +10,6 @@ export default class ChapterController extends GameController {
         dropCluster:   ['ArrowDown', 'KeyS']
     }
 
-
     moveLeft () {
         this.world.gameAction('moveCluster', 'left')
     }

@@ -14,7 +14,6 @@ export default class Artifact {
         en: 'Description'
     }
 
-
     constructor (params) {
         this.restore(params)
     }

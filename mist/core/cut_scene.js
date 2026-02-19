@@ -12,15 +12,18 @@ export default class CutScene {
         this.actionSet = new CutSceneActionSet(this)
     }
 
+
     async triggerAction (name, ...args) {
         return this.actionSet.trigger(name, ...args)
     }
+
 
     export () {
         return {
             visual: this.visual
         }
     }
+
 
     restore (params) {
         reset(this, params)

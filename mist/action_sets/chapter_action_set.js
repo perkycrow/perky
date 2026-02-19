@@ -3,11 +3,13 @@ import Game from '../core/game.js'
 
 
 export default class ChapterActionSet extends ActionSet {
+
     constructor (chapter) {
         super()
 
         initActions(chapter, this)
     }
+
 }
 
 

@@ -8,7 +8,6 @@ export default class Chapter {
     static unlockedCount = 3
     static startsAt      = 0
 
-
     constructor (params, {artifactFactory, skillFactory, arsenal, vault} = {}) {
         this.type            = 'chapter'
         this.artifactFactory = artifactFactory || this.constructor.artifactFactory

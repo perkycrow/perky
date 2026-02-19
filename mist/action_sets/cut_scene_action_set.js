@@ -2,11 +2,13 @@ import ActionSet from '../libs/action_set.js'
 
 
 export default class CutSceneActionSet extends ActionSet {
+
     constructor (cutScene) {
         super()
 
         initActions(cutScene, this)
     }
+
 }
 
 
