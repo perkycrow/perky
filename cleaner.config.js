@@ -4,7 +4,8 @@ export default {
             'den/',
             'ghast/',
             'examples/',
-            'integration/'
+            'integration/',
+            'mist_old/'
         ],
         excludeFiles: [
             '**/test_helpers.js',
@@ -17,7 +18,8 @@ export default {
             'den/',
             'ghast/',
             'examples/',
-            'integration/'
+            'integration/',
+            'mist_old/'
         ],
         excludeFiles: [
             '**/test_helpers.js',
@@ -28,7 +30,8 @@ export default {
     multipleClasses: {
         excludeDirs: [
             'den/',
-            'examples/'
+            'examples/',
+            'mist_old/'
         ]
     },
     fileLength: {
@@ -44,7 +47,8 @@ export default {
             'editor/',
             'doc/',
             'studio/',
-            'integration/'
+            'integration/',
+            'mist_old/'
         ],
         excludeFiles: [
             '**/setup_tests.js',

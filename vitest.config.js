@@ -16,6 +16,7 @@ export default defineConfig({
         environment: 'jsdom',
         setupFiles: ['./setup_tests.js'],
         include: ['**/*.test.js', '**/*.spec.js'],
+        exclude: ['mist_old/**', 'node_modules/**'],
         onConsoleLog (log) {
             return !ignoredMessages.some(message => log.includes(message))
         }
