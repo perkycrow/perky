@@ -131,19 +131,30 @@ export default class Stage extends PerkyModule {
             return
         }
 
-        this.listenTo(this.world, 'entity:set', (id, entity) => this.#handleEntitySet(entity))
-        this.listenTo(this.world, 'entity:delete', (id) => this.#handleEntityDelete(id))
+        this.#bindEntitySource(this.world, this.viewsGroup)
+    }
 
-        for (const entity of this.world.entities) {
-            this.#handleEntitySet(entity)
+
+    #bindEntitySource (source, parentGroup) {
+        this.listenTo(source, 'entity:set', (id, entity) => {
+            this.#handleEntitySet(entity, parentGroup)
+        })
+
+        this.listenTo(source, 'entity:delete', (id) => {
+            this.#handleEntityDelete(id)
+        })
+
+        for (const entity of source.childrenByCategory('entity')) {
+            this.#handleEntitySet(entity, parentGroup)
         }
     }
 
 
-    #handleEntitySet (entity) {
+    #handleEntitySet (entity, parentGroup) {
         const registrations = this.#resolveViews(entity)
 
         if (registrations.length === 0) {
+            this.#bindEntitySource(entity, parentGroup)
             return
         }
 
@@ -154,7 +165,7 @@ export default class Stage extends PerkyModule {
             const context = {
                 game: this.game,
                 world: this.world,
-                group: this.viewsGroup,
+                group: parentGroup,
                 config: mergedConfig,
                 ObjectClass
             }
@@ -165,7 +176,7 @@ export default class Stage extends PerkyModule {
                 view.root.$entity = entity
                 view.root.$view = view
                 view.root.$viewName = ObjectClass ? ObjectClass.name : View.name
-                this.viewsGroup.addChild(view.root)
+                parentGroup.addChild(view.root)
             }
 
             views.push(view)
@@ -173,6 +184,9 @@ export default class Stage extends PerkyModule {
 
         this.#entityViews.set(entity.$id, views)
         this.emit('view:added', entity.$id, views)
+
+        const childGroup = views[0]?.root || parentGroup
+        this.#bindEntitySource(entity, childGroup)
     }
 
 

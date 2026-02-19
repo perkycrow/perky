@@ -336,6 +336,181 @@ describe('Stage', () => {
     })
 
 
+    describe('nested entity views', () => {
+
+        class TestWorld extends World {}
+        class ParentEntity extends Entity {}
+        class ChildEntity extends Entity {}
+
+        class ParentView extends EntityView {
+
+            constructor (entity, context) {
+                super(entity, context)
+                this.root = new Group2D({x: entity.x, y: entity.y})
+            }
+
+        }
+
+        class ChildView extends EntityView {
+
+            constructor (entity, context) {
+                super(entity, context)
+                this.root = new Group2D({x: entity.x, y: entity.y})
+            }
+
+        }
+
+
+        test('child entity view is added to parent view root', () => {
+            class TestStage extends Stage {
+                static World = TestWorld
+            }
+
+            const s = new TestStage({game: {}})
+            s.register(ParentEntity, ParentView)
+            s.register(ChildEntity, ChildView)
+            s.start()
+
+            const parent = s.world.create(ParentEntity, {$id: 'parent'})
+            parent.create(ChildEntity, {$id: 'child'})
+
+            const parentViews = s.getViews('parent')
+            const childViews = s.getViews('child')
+
+            expect(parentViews[0].root.children).toContain(childViews[0].root)
+        })
+
+
+        test('child view is not added to viewsGroup directly', () => {
+            class TestStage extends Stage {
+                static World = TestWorld
+            }
+
+            const s = new TestStage({game: {}})
+            s.register(ParentEntity, ParentView)
+            s.register(ChildEntity, ChildView)
+            s.start()
+
+            const parent = s.world.create(ParentEntity, {$id: 'parent'})
+            parent.create(ChildEntity, {$id: 'child'})
+
+            const childViews = s.getViews('child')
+
+            expect(s.viewsGroup.children).not.toContain(childViews[0].root)
+        })
+
+
+        test('parent view root is added to viewsGroup', () => {
+            class TestStage extends Stage {
+                static World = TestWorld
+            }
+
+            const s = new TestStage({game: {}})
+            s.register(ParentEntity, ParentView)
+            s.start()
+
+            s.world.create(ParentEntity, {$id: 'parent'})
+
+            const parentViews = s.getViews('parent')
+
+            expect(s.viewsGroup.children).toContain(parentViews[0].root)
+        })
+
+
+        test('removing parent entity removes child views', () => {
+            class TestStage extends Stage {
+                static World = TestWorld
+            }
+
+            const s = new TestStage({game: {}})
+            s.register(ParentEntity, ParentView)
+            s.register(ChildEntity, ChildView)
+            s.start()
+
+            const parent = s.world.create(ParentEntity, {$id: 'parent'})
+            parent.create(ChildEntity, {$id: 'child'})
+
+            s.world.removeChild('parent')
+
+            expect(s.getViews('parent').length).toBe(0)
+            expect(s.getViews('child').length).toBe(0)
+        })
+
+
+        test('child view context.group points to parent view root', () => {
+            class TestStage extends Stage {
+                static World = TestWorld
+            }
+
+            const s = new TestStage({game: {}})
+            s.register(ParentEntity, ParentView)
+            s.register(ChildEntity, ChildView)
+            s.start()
+
+            const parent = s.world.create(ParentEntity, {$id: 'parent'})
+            parent.create(ChildEntity, {$id: 'child'})
+
+            const parentViews = s.getViews('parent')
+            const childViews = s.getViews('child')
+
+            expect(childViews[0].context.group).toBe(parentViews[0].root)
+        })
+
+
+        test('unregistered parent entity passes group to children', () => {
+            class TestStage extends Stage {
+                static World = TestWorld
+            }
+
+            const s = new TestStage({game: {}})
+            s.register(ChildEntity, ChildView)
+            s.start()
+
+            const parent = s.world.create(ParentEntity, {$id: 'parent'})
+            parent.create(ChildEntity, {$id: 'child'})
+
+            const childViews = s.getViews('child')
+
+            expect(s.viewsGroup.children).toContain(childViews[0].root)
+        })
+
+
+        test('deeply nested entities', () => {
+            class GrandchildEntity extends Entity {}
+            class GrandchildView extends EntityView {
+
+                constructor (entity, context) {
+                    super(entity, context)
+                    this.root = new Group2D()
+                }
+
+            }
+
+            class TestStage extends Stage {
+                static World = TestWorld
+            }
+
+            const s = new TestStage({game: {}})
+            s.register(ParentEntity, ParentView)
+            s.register(ChildEntity, ChildView)
+            s.register(GrandchildEntity, GrandchildView)
+            s.start()
+
+            const parent = s.world.create(ParentEntity, {$id: 'parent'})
+            const child = parent.create(ChildEntity, {$id: 'child'})
+            child.create(GrandchildEntity, {$id: 'grandchild'})
+
+            const parentRoot = s.getViews('parent')[0].root
+            const childRoot = s.getViews('child')[0].root
+            const grandchildRoot = s.getViews('grandchild')[0].root
+
+            expect(parentRoot.children).toContain(childRoot)
+            expect(childRoot.children).toContain(grandchildRoot)
+        })
+
+    })
+
+
     describe('runtime postPasses', () => {
 
         test('addPostPass adds pass via game renderer', () => {

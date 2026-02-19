@@ -1,9 +1,7 @@
 import Stage from '../../game/stage.js'
-import Sprite from '../../render/sprite.js'
 import ChapterWorld from '../worlds/chapter_world.js'
 import ChapterController from '../controllers/chapter_controller.js'
-import ReagentEntity from '../entities/reagent_entity.js'
-import ReagentView from '../views/reagent_view.js'
+import {autoRegisterViews} from '../wiring.js'
 
 
 export default class ChapterStage extends Stage {
@@ -13,18 +11,7 @@ export default class ChapterStage extends Stage {
 
     onStart () {
         super.onStart()
-        this.register(ReagentEntity, ReagentView)
-
-        const frameImage = this.game.getSource('boardFrame')
-
-        if (frameImage) {
-            this.viewsGroup.addChild(new Sprite({
-                image: frameImage,
-                y: 0,
-                width: 8,
-                depth: -1
-            }))
-        }
+        autoRegisterViews(this)
 
         this.game.getLayer('game').setContent(this.viewsGroup)
         this.world.init()

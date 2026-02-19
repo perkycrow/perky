@@ -1,22 +1,21 @@
 import World from '../../game/world.js'
 import Chapter1 from '../chapters/story_1_chapter.js'
-import ReagentEntity from '../entities/reagent_entity.js'
-
-
-const BOARD_OFFSET_X = -3
-const BOARD_OFFSET_Y = -4.5
+import Board from '../entities/board.js'
+import Reagent from '../entities/reagent.js'
 
 
 export default class ChapterWorld extends World {
 
+    #board = null
     #boardEntities = null
-    #clusterEntity0 = null
-    #clusterEntity1 = null
+    #clusterReagent0 = null
+    #clusterReagent1 = null
 
     init () {
         this.#boardEntities = new Map()
-        this.#clusterEntity0 = this.create(ReagentEntity, {active: false})
-        this.#clusterEntity1 = this.create(ReagentEntity, {active: false})
+        this.#board = this.create(Board, {x: -3, y: -4.5})
+        this.#clusterReagent0 = this.#board.create(Reagent, {active: false})
+        this.#clusterReagent1 = this.#board.create(Reagent, {active: false})
 
         this.chapter = new Chapter1()
         this.chapter.triggerAction('start')
@@ -44,33 +43,33 @@ export default class ChapterWorld extends World {
 
     syncBoardEntities (board) {
         const seen = new Set()
-        const spawnY = board.height + BOARD_OFFSET_Y + 0.5
+        const spawnY = board.height + 0.5
 
         for (const reagent of board.toArray()) {
             seen.add(reagent)
 
             let entity = this.#boardEntities.get(reagent)
 
-            const screenX = reagent.x + BOARD_OFFSET_X + 0.5
-            const screenY = reagent.y + BOARD_OFFSET_Y + 0.5
+            const localX = reagent.x + 0.5
+            const localY = reagent.y + 0.5
 
             if (!entity) {
-                entity = this.create(ReagentEntity, {
-                    x: screenX,
+                entity = this.#board.create(Reagent, {
+                    x: localX,
                     y: spawnY,
                     reagentName: reagent.name
                 })
                 this.#boardEntities.set(reagent, entity)
             }
 
-            entity.x = screenX
-            entity.y = screenY
+            entity.x = localX
+            entity.y = localY
             entity.reagentName = reagent.name
         }
 
         for (const [reagent, entity] of this.#boardEntities) {
             if (!seen.has(reagent)) {
-                this.removeChild(entity.$id)
+                this.#board.removeChild(entity.$id)
                 this.#boardEntities.delete(reagent)
             }
         }
@@ -80,7 +79,7 @@ export default class ChapterWorld extends World {
     syncClusterEntities (workshop, board) {
         const cluster = workshop?.currentCluster
         const clusterReagents = cluster?.reagents || []
-        const entities = [this.#clusterEntity0, this.#clusterEntity1]
+        const entities = [this.#clusterReagent0, this.#clusterReagent1]
         const yOffset = cluster && board ? board.height - cluster.height : 0
 
         for (let i = 0; i < entities.length; i++) {
@@ -88,8 +87,8 @@ export default class ChapterWorld extends World {
             const reagent = clusterReagents[i]
 
             if (reagent) {
-                entity.x = reagent.x + BOARD_OFFSET_X + 0.5
-                entity.y = (yOffset + reagent.y) + BOARD_OFFSET_Y + 0.5
+                entity.x = reagent.x + 0.5
+                entity.y = (yOffset + reagent.y) + 0.5
                 entity.reagentName = reagent.name
                 entity.active = true
             } else {
