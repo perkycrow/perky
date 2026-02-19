@@ -508,6 +508,61 @@ describe('Stage', () => {
             expect(childRoot.children).toContain(grandchildRoot)
         })
 
+
+        test('entities with same $id under different parents get separate views', () => {
+            class ContainerEntity extends Entity {}
+
+            class TestStage extends Stage {
+                static World = TestWorld
+            }
+
+            const s = new TestStage({game: {}})
+            s.register(ChildEntity, ChildView)
+            s.start()
+
+            const containerA = s.world.create(ContainerEntity, {$id: 'containerA'})
+            const containerB = s.world.create(ContainerEntity, {$id: 'containerB'})
+
+            const childA = containerA.create(ChildEntity, {$id: 'child'})
+            const childB = containerB.create(ChildEntity, {$id: 'child'})
+
+            const viewsA = s.getViews(childA)
+            const viewsB = s.getViews(childB)
+
+            expect(viewsA.length).toBe(1)
+            expect(viewsB.length).toBe(1)
+            expect(viewsA[0]).not.toBe(viewsB[0])
+        })
+
+
+        test('updateViews calls update on all views even with $id collisions', () => {
+            class ContainerEntity extends Entity {}
+
+            class TestStage extends Stage {
+                static World = TestWorld
+            }
+
+            const s = new TestStage({game: {}})
+            s.register(ChildEntity, ChildView)
+            s.start()
+
+            const containerA = s.world.create(ContainerEntity, {$id: 'containerA'})
+            const containerB = s.world.create(ContainerEntity, {$id: 'containerB'})
+
+            const childA = containerA.create(ChildEntity, {$id: 'child'})
+            const childB = containerB.create(ChildEntity, {$id: 'child'})
+
+            const viewA = s.getViews(childA)[0]
+            const viewB = s.getViews(childB)[0]
+            viewA.update = vi.fn()
+            viewB.update = vi.fn()
+
+            s.updateViews(0.016)
+
+            expect(viewA.update).toHaveBeenCalledWith(0.016)
+            expect(viewB.update).toHaveBeenCalledWith(0.016)
+        })
+
     })
 
 

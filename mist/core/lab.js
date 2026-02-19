@@ -1,10 +1,15 @@
+import PerkyModule from '../../core/perky_module.js'
 import allReagents from '../data/reagents.js'
 
 
-export default class Lab {
+export default class Lab extends PerkyModule {
 
-    constructor (params) {
-        this.restore(params)
+    static $name = 'lab'
+    static $bind = true
+
+    constructor (options = {}) {
+        super(options)
+        this.restore(options)
     }
 
 

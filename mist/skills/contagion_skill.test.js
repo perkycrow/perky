@@ -1,6 +1,6 @@
 import {test, expect} from 'vitest'
 import ContagionSkill from './contagion_skill.js'
-import Board from '../core/board.js'
+import Board from '../entities/board.js'
 
 
 test('static properties', () => {

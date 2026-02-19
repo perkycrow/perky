@@ -1,11 +1,16 @@
+import PerkyModule from '../../core/perky_module.js'
 import Factory from '../libs/factory.js'
 
 
-export default class Arsenal {
+export default class Arsenal extends PerkyModule {
 
-    constructor (params, skillFactory) {
-        this.skillFactory = skillFactory || new Factory('Skill')
-        this.restore(params)
+    static $name = 'arsenal'
+    static $bind = true
+
+    constructor (options = {}) {
+        super(options)
+        this.skillFactory = options.skillFactory || new Factory('Skill')
+        this.restore(options)
     }
 
 

@@ -16,7 +16,7 @@ let vault
 
 beforeEach(() => {
     factory = new Factory('Artifact', [CustomArtifact, OtherArtifact])
-    vault = new Vault({}, factory)
+    vault = new Vault({artifactFactory: factory})
 })
 
 

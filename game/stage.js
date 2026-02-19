@@ -93,8 +93,18 @@ export default class Stage extends PerkyModule {
     }
 
 
-    getViews (entityId) {
-        return this.#entityViews.get(entityId) || []
+    getViews (entityOrId) {
+        if (typeof entityOrId === 'object') {
+            return this.#entityViews.get(entityOrId) || []
+        }
+
+        for (const [entity, views] of this.#entityViews) {
+            if (entity.$id === entityOrId) {
+                return views
+            }
+        }
+
+        return []
     }
 
 
@@ -140,8 +150,8 @@ export default class Stage extends PerkyModule {
             this.#handleEntitySet(entity, parentGroup)
         })
 
-        this.listenTo(source, 'entity:delete', (id) => {
-            this.#handleEntityDelete(id)
+        this.listenTo(source, 'entity:delete', (_id, entity) => {
+            this.#handleEntityDelete(entity)
         })
 
         for (const entity of source.childrenByCategory('entity')) {
@@ -182,7 +192,7 @@ export default class Stage extends PerkyModule {
             views.push(view)
         }
 
-        this.#entityViews.set(entity.$id, views)
+        this.#entityViews.set(entity, views)
         this.emit('view:added', entity.$id, views)
 
         const childGroup = views[0]?.root || parentGroup
@@ -190,15 +200,15 @@ export default class Stage extends PerkyModule {
     }
 
 
-    #handleEntityDelete (entityId) {
-        const views = this.#entityViews.get(entityId)
+    #handleEntityDelete (entity) {
+        const views = this.#entityViews.get(entity)
 
         if (views) {
-            this.emit('view:removed', entityId, views)
+            this.emit('view:removed', entity.$id, views)
             for (const view of views) {
                 view.dispose()
             }
-            this.#entityViews.delete(entityId)
+            this.#entityViews.delete(entity)
         }
     }
 

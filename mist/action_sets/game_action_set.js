@@ -1,21 +1,21 @@
 import ActionSet from '../libs/action_set.js'
 
 
-export default function (game) {
+export default function (board) {
 
-    const {board, workshop, lab, arsenal, vault, random} = game
+    const {workshop, lab, arsenal, vault, random} = board
     const actionSet = new ActionSet()
     const api = actionSet.getApi()
     const {set} = api
 
 
     set('start', (flow) => {
-        if (!game.started) {
+        if (!board.playing) {
 
-            game.started = true
-            if (['win', 'lose'].includes(game.ended)) {
-                flow.enqueue(game.ended)
-            } else if (!game.saved) {
+            board.playing = true
+            if (['win', 'lose'].includes(board.ended)) {
+                flow.enqueue(board.ended)
+            } else if (!board.saved) {
                 flow.enqueue('addCluster')
                 flow.enqueue('addCluster')
             }
@@ -28,11 +28,11 @@ export default function (game) {
 
 
     set('addCluster', (flow, params) => {
-        if (game.ended) {
+        if (board.ended) {
             return false
         }
 
-        const build = lab.buildCluster(params, game)
+        const build = lab.buildCluster(params, board)
 
         return workshop.addCluster(build)
     })
@@ -116,7 +116,7 @@ export default function (game) {
 
 
     set('lose', (flow) => {
-        game.lost = true
+        board.lost = true
         flow.enqueue('end')
 
         return true
@@ -124,7 +124,7 @@ export default function (game) {
 
 
     set('win', (flow) => {
-        game.won = true
+        board.won = true
         flow.enqueue('end')
 
         return true
@@ -133,7 +133,7 @@ export default function (game) {
 
     set('end', async (flow) => {
         await flow.triggerHooks('beforeEnd')
-        game.ended = game.won ? 'win' : 'lose'
+        board.ended = board.won ? 'win' : 'lose'
 
         return true
     })
@@ -293,7 +293,7 @@ export default function (game) {
 
 
     set('digestAction', async (flow, {actionName}) => {
-        const gameDigest = game.digest
+        const gameDigest = board.digest
         const digest = flow.digest
 
         const {merges = []} = digest
@@ -325,7 +325,7 @@ export default function (game) {
         digest.action = actionName
         flow.enqueue('checkObjective')
 
-        game.saved = true
+        board.saved = true
 
         return digest
     })
@@ -349,7 +349,7 @@ export default function (game) {
 
     arsenal.skills.forEach((skill) => {
         set(skill.id, async (flow) => {
-            const result = await skill.trigger(flow, game)
+            const result = await skill.trigger(flow, board)
 
             if (result) {
                 const artifacts = vault.getArtifacts({
@@ -367,7 +367,7 @@ export default function (game) {
 
     vault.artifacts.forEach((artifact) => {
         set(artifact.id, async (flow) => {
-            await artifact.trigger(flow, game)
+            await artifact.trigger(flow, board)
         })
     })
 

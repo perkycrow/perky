@@ -1,5 +1,5 @@
 import ActionSet from '../libs/action_set.js'
-import Game from '../core/game.js'
+import Board from '../entities/board.js'
 
 
 export default class ChapterActionSet extends ActionSet {
@@ -41,14 +41,17 @@ function initActions (chapter, actionSet) {
 
     set('initGame', async () => {
         if (!chapter.game) {
-            chapter.game = new Game(chapter.currentGameState, {
+            const board = new Board()
+            board.initGame(chapter.currentGameState, {
                 artifactFactory: chapter.artifactFactory,
                 skillFactory:    chapter.skillFactory
             })
 
-            initGameHooks(chapter, chapter.game)
+            chapter.game = board
 
-            return chapter.game
+            initGameHooks(chapter, board)
+
+            return board
         }
 
         return false
@@ -71,13 +74,13 @@ function initActions (chapter, actionSet) {
     })
 
 
-    set('gameWon', async (flow, game) => {
-        return game
+    set('gameWon', async (flow, board) => {
+        return board
     })
 
 
-    set('gameLost', async (flow, game) => {
-        return game
+    set('gameLost', async (flow, board) => {
+        return board
     })
 
 
@@ -96,15 +99,15 @@ function initActions (chapter, actionSet) {
 }
 
 
-function initGameHooks (chapter, game) {
-    const {hook} = game.actionSet.getApi()
+function initGameHooks (chapter, board) {
+    const {hook} = board.actionSet.getApi()
 
     hook('win', async () => {
-        await chapter.triggerAction('gameWon', game)
+        await chapter.triggerAction('gameWon', board)
     })
 
     hook('lose', async () => {
-        await chapter.triggerAction('gameLost', game)
+        await chapter.triggerAction('gameLost', board)
     })
 
     hook('digestAction', () => {

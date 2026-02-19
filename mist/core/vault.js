@@ -1,11 +1,16 @@
+import PerkyModule from '../../core/perky_module.js'
 import Factory from '../libs/factory.js'
 
 
-export default class Vault {
+export default class Vault extends PerkyModule {
 
-    constructor (params, artifactFactory) {
-        this.artifactFactory = artifactFactory || new Factory('Artifact')
-        this.restore(params)
+    static $name = 'vault'
+    static $bind = true
+
+    constructor (options = {}) {
+        super(options)
+        this.artifactFactory = options.artifactFactory || new Factory('Artifact')
+        this.restore(options)
     }
 
 

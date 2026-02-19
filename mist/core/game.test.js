@@ -1,5 +1,5 @@
 import {test, expect} from 'vitest'
-import Game from './game.js'
+import Board from '../entities/board.js'
 import {simplifyReagents} from '../libs/test_utils.js'
 
 const availableReagents = 'ABCDEF'.split('')
@@ -10,9 +10,9 @@ const gameActions = [
 ]
 
 
-function recordActions (game) {
+function recordActions (board) {
     const triggered = []
-    const {actionSet} = game
+    const {actionSet} = board
 
     gameActions.forEach(name => {
         actionSet.hook(name, () => triggered.push(name))
@@ -23,39 +23,38 @@ function recordActions (game) {
 
 
 test('integration', async () => {
-    const game = new Game({
+    const board = new Board()
+    board.initGame({
         seed: 'hello',
-        board: {},
         lab: {
             unlockedCount: 4,
             activeCount:   4,
             clearedCount:  0,
             reagents:      availableReagents
-        },
-        workshop: {}
+        }
     })
 
-    const {lab, workshop, board} = game
+    const {lab, workshop} = board
 
-    const triggered = recordActions(game)
+    const triggered = recordActions(board)
 
     expect(lab.unlocked).toEqual(['A', 'B', 'C', 'D'])
     expect(lab.active).toEqual(['A', 'B', 'C', 'D'])
 
 
-    expect(game.started).toBeFalsy()
-    await game.triggerUserAction('start')
-    expect(game.started).toBeTruthy()
+    expect(board.playing).toBeFalsy()
+    await board.triggerUserAction('start')
+    expect(board.playing).toBeTruthy()
 
     expect(triggered).toEqual(['start'])
 
-    await game.triggerUserAction('dropCluster')
+    await board.triggerUserAction('dropCluster')
 
     expect(simplifyReagents(board.reagents)).toEqual(['D(2,0)', 'B(3,0)'])
     expect(simplifyReagents(workshop.currentCluster.reagents)).toEqual(['C(2,0)', 'C(3,0)'])
 
-    await game.triggerUserAction('rotateCluster')
-    await game.triggerUserAction('dropCluster')
+    await board.triggerUserAction('rotateCluster')
+    await board.triggerUserAction('dropCluster')
 
     expect(simplifyReagents(board.reagents)).toEqual(['D(2,0)', 'B(3,0)', 'C(2,1)', 'C(2,2)'])
 
@@ -67,24 +66,24 @@ test('integration', async () => {
     ])
 
 
-    await game.triggerUserAction('dropCluster')
-    await game.triggerUserAction('rotateCluster')
-    await game.triggerUserAction('rotateCluster')
-    await game.triggerUserAction('dropCluster')
+    await board.triggerUserAction('dropCluster')
+    await board.triggerUserAction('rotateCluster')
+    await board.triggerUserAction('rotateCluster')
+    await board.triggerUserAction('dropCluster')
 
-    await game.triggerUserAction('dropCluster')
+    await board.triggerUserAction('dropCluster')
 
-    await game.triggerUserAction('moveCluster', 'right')
-    await game.triggerUserAction('moveCluster', 'right')
+    await board.triggerUserAction('moveCluster', 'right')
+    await board.triggerUserAction('moveCluster', 'right')
 
-    await game.triggerUserAction('dropCluster')
-    await game.triggerUserAction('rotateCluster')
-    await game.triggerUserAction('moveCluster', 'right')
-    await game.triggerUserAction('moveCluster', 'right')
-    await game.triggerUserAction('moveCluster', 'right')
-    await game.triggerUserAction('dropCluster')
-    await game.triggerUserAction('moveCluster', 'right')
-    const flow = await game.triggerUserAction('dropCluster')
+    await board.triggerUserAction('dropCluster')
+    await board.triggerUserAction('rotateCluster')
+    await board.triggerUserAction('moveCluster', 'right')
+    await board.triggerUserAction('moveCluster', 'right')
+    await board.triggerUserAction('moveCluster', 'right')
+    await board.triggerUserAction('dropCluster')
+    await board.triggerUserAction('moveCluster', 'right')
+    const flow = await board.triggerUserAction('dropCluster')
 
 
     expect(flow.actionsHistory).toEqual([
@@ -114,7 +113,7 @@ test('integration', async () => {
     })
 
 
-    expect(game.digest).toEqual({
+    expect(board.digest).toEqual({
         mergesCount: 5,
         chainsCount: 2,
         score: 1620,

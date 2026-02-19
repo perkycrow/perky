@@ -1,7 +1,14 @@
 import World from '../../game/world.js'
+import skillFactory from '../factories/main_skill_factory.js'
+import artifactFactory from '../factories/main_artifact_factory.js'
 import Chapter1 from '../chapters/story_1_chapter.js'
 import Board from '../entities/board.js'
 import Reagent from '../entities/reagent.js'
+
+
+const GRAVITY_DELAY = 200
+const DEPOP_DELAY = 380
+const POP_DELAY = 330
 
 
 export default class ChapterWorld extends World {
@@ -13,35 +20,43 @@ export default class ChapterWorld extends World {
 
     init () {
         this.#boardEntities = new Map()
-        this.#board = this.create(Board, {x: -3, y: -4.5})
-        this.#clusterReagent0 = this.#board.create(Reagent, {active: false})
-        this.#clusterReagent1 = this.#board.create(Reagent, {active: false})
 
-        this.chapter = new Chapter1()
-        this.chapter.triggerAction('start')
+        this.#board = this.create(Board, {x: -3, y: -4.5})
+        this.#board.initGame({
+            lab: {
+                reagentsCount: Chapter1.reagentsCount,
+                unlockedCount: Chapter1.unlockedCount,
+                startsAt: Chapter1.startsAt
+            }
+        }, {skillFactory, artifactFactory})
+
+        this.#clusterReagent0 = this.#board.workshop.create(Reagent, {active: false})
+        this.#clusterReagent1 = this.#board.workshop.create(Reagent, {active: false})
+
+        this.#initAnimationHooks()
+        this.#board.actionSet.trigger('start')
     }
 
 
     async gameAction (name, ...args) {
-        const game = this.chapter?.game
-        if (game) {
-            await game.triggerUserAction(name, ...args)
-        }
+        return this.#board.triggerUserAction(name, ...args)
     }
 
 
     syncBoard () {
-        const game = this.chapter?.game
-        if (!game || !game.started) {
+        const board = this.#board
+
+        if (!board || !board.playing) {
             return
         }
 
-        this.syncBoardEntities(game.board)
-        this.syncClusterEntities(game.workshop, game.board)
+        this.syncBoardEntities()
+        this.syncClusterEntities()
     }
 
 
-    syncBoardEntities (board) {
+    syncBoardEntities () {
+        const board = this.#board
         const seen = new Set()
         const spawnY = board.height + 0.5
 
@@ -57,14 +72,16 @@ export default class ChapterWorld extends World {
                 entity = this.#board.create(Reagent, {
                     x: localX,
                     y: spawnY,
-                    reagentName: reagent.name
+                    name: reagent.name
                 })
                 this.#boardEntities.set(reagent, entity)
             }
 
-            entity.x = localX
-            entity.y = localY
-            entity.reagentName = reagent.name
+            if (!entity.merging) {
+                entity.x = localX
+                entity.y = localY
+                entity.name = reagent.name
+            }
         }
 
         for (const [reagent, entity] of this.#boardEntities) {
@@ -76,11 +93,13 @@ export default class ChapterWorld extends World {
     }
 
 
-    syncClusterEntities (workshop, board) {
-        const cluster = workshop?.currentCluster
+    syncClusterEntities () {
+        const board = this.#board
+        const workshop = board.workshop
+        const cluster = workshop.currentCluster
         const clusterReagents = cluster?.reagents || []
         const entities = [this.#clusterReagent0, this.#clusterReagent1]
-        const yOffset = cluster && board ? board.height - cluster.height : 0
+        const yOffset = cluster ? board.height - cluster.height : 0
 
         for (let i = 0; i < entities.length; i++) {
             const entity = entities[i]
@@ -89,7 +108,7 @@ export default class ChapterWorld extends World {
             if (reagent) {
                 entity.x = reagent.x + 0.5
                 entity.y = (yOffset + reagent.y) + 0.5
-                entity.reagentName = reagent.name
+                entity.name = reagent.name
                 entity.active = true
             } else {
                 entity.active = false
@@ -97,4 +116,46 @@ export default class ChapterWorld extends World {
         }
     }
 
+
+    #initAnimationHooks () {
+        const board = this.#board
+
+        board.actionSet.hook('applyGravity', async () => {
+            await delay(GRAVITY_DELAY)
+        })
+
+        board.actionSet.hook('mergeReagents', async (flow, merge) => {
+            this.syncBoardEntities()
+
+            const {reagents, first} = merge
+            const targetX = first.x + 0.5
+            const targetY = first.y + 0.5
+
+            const firstEntity = this.#boardEntities.get(first)
+            if (firstEntity) {
+                firstEntity.absorbing = true
+            }
+
+            for (const reagent of reagents) {
+                const entity = this.#boardEntities.get(reagent)
+                if (entity) {
+                    entity.merging = true
+                    entity.x = targetX
+                    entity.y = targetY
+                }
+            }
+
+            await delay(DEPOP_DELAY)
+        })
+
+        board.actionSet.hook('evolveReagents', async () => {
+            await delay(POP_DELAY)
+        })
+    }
+
+}
+
+
+function delay (ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
 }

@@ -1,6 +1,6 @@
 import {test, expect} from 'vitest'
 import RuinSkill from './ruin_skill.js'
-import Board from '../core/board.js'
+import Board from '../entities/board.js'
 import Random from '../../math/random.js'
 
 

@@ -19,7 +19,7 @@ let arsenal
 
 beforeEach(() => {
     skillFactory = new Factory('Skill', [RuinSkill, MadnessSkill])
-    arsenal = new Arsenal({}, skillFactory)
+    arsenal = new Arsenal({skillFactory})
 })
 
 
