@@ -22,6 +22,7 @@ export default class Auditor {
             compact: false,
             silent: false,
             targetPath: null,
+            globalExcludeDirs: [],
             ...options
         }
     }
@@ -187,7 +188,17 @@ export default class Auditor {
 
 
     #scanFiles () {
-        return findJsFiles(this.#rootDir, [], this.targetPath)
+        const files = findJsFiles(this.#rootDir, [], this.targetPath)
+        const globalExcludeDirs = this.#options.globalExcludeDirs
+
+        if (globalExcludeDirs.length === 0) {
+            return files
+        }
+
+        return files.filter(filePath => {
+            const relativePath = path.relative(this.#rootDir, filePath)
+            return !globalExcludeDirs.some(dir => relativePath.startsWith(dir))
+        })
     }
 
 

@@ -91,9 +91,9 @@ if (instructionsMode) {
 } else if (fileLengthMode) {
     await runFileLength(rootDir, {targetPath: validatedPath})
 } else if (importsMode) {
-    runImports(rootDir, {targetPath: validatedPath})
+    await runImports(rootDir, {targetPath: validatedPath})
 } else if (filescoreMode || flopMode) {
-    runFilescore(rootDir, {targetPath: validatedPath, verbose: verboseMode, flop: flopMode})
+    await runFilescore(rootDir, {targetPath: validatedPath, verbose: verboseMode, flop: flopMode})
 } else if (coverageMode) {
     await runCoverage(rootDir, {targetPath: validatedPath, json: jsonMode})
 } else if (auditMode && fixMode) {
@@ -101,7 +101,7 @@ if (instructionsMode) {
 } else if (auditMode) {
     await runAudit(rootDir, {targetPath: validatedPath})
 } else if (fixMode) {
-    runFix(rootDir, {dryRun, targetPath: validatedPath})
+    await runFix(rootDir, {dryRun, targetPath: validatedPath})
 } else {
     printHelp()
 }

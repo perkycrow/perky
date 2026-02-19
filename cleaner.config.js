@@ -1,11 +1,14 @@
 export default {
+    excludeDirs: [
+        'mist_old/'
+    ],
     missingTests: {
         excludeDirs: [
             'den/',
             'ghast/',
+            'mist/',
             'examples/',
-            'integration/',
-            'mist_old/'
+            'integration/'
         ],
         excludeFiles: [
             '**/test_helpers.js',
@@ -17,9 +20,9 @@ export default {
         excludeDirs: [
             'den/',
             'ghast/',
+            'mist/',
             'examples/',
-            'integration/',
-            'mist_old/'
+            'integration/'
         ],
         excludeFiles: [
             '**/test_helpers.js',
@@ -30,8 +33,8 @@ export default {
     multipleClasses: {
         excludeDirs: [
             'den/',
-            'examples/',
-            'mist_old/'
+            'mist/',
+            'examples/'
         ]
     },
     fileLength: {
@@ -43,12 +46,12 @@ export default {
         excludeDirs: [
             'den/',
             'ghast/',
+            'mist/',
             'examples/',
             'editor/',
             'doc/',
             'studio/',
-            'integration/',
-            'mist_old/'
+            'integration/'
         ],
         excludeFiles: [
             '**/setup_tests.js',

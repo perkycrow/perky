@@ -30,6 +30,7 @@ import FileScoreAuditor from './auditors/filescore/file_score.js'
 import FileLengthAuditor from './auditors/file_length.js'
 
 import {bold, cyan, dim, green, yellow, gray} from '../format.js'
+import {loadCleanerConfig} from './utils.js'
 
 
 const AUDIT_AUDITORS = [
@@ -212,7 +213,8 @@ export async function runAudit (rootDir, options = {}) {
         printBanner()
     }
 
-    const auditorOptions = {compact: true, ...options}
+    const config = await loadCleanerConfig(rootDir)
+    const auditorOptions = {compact: true, globalExcludeDirs: config.excludeDirs || [], ...options}
     const results = {}
     const hints = {}
 
@@ -237,8 +239,9 @@ export async function runAudit (rootDir, options = {}) {
 }
 
 
-export function runFix (rootDir, options = {}) {
-    const auditorOptions = {compact: true, ...options}
+export async function runFix (rootDir, options = {}) {
+    const config = await loadCleanerConfig(rootDir)
+    const auditorOptions = {compact: true, globalExcludeDirs: config.excludeDirs || [], ...options}
     const results = {}
 
     for (const AuditorClass of FIX_AUDITORS) {
@@ -257,7 +260,7 @@ export function runFix (rootDir, options = {}) {
 
 export async function runAll (rootDir, options = {}) {
     printBanner()
-    runFix(rootDir, options)
+    await runFix(rootDir, options)
     await runAudit(rootDir, {showBanner: false, ...options})
 }
 
@@ -270,7 +273,7 @@ export async function runInstructions (rootDir, options = {}) {
     let results
 
     try {
-        runFix(rootDir, {compact: true, ...options})
+        await runFix(rootDir, {compact: true, ...options})
         buffer.length = 0
 
         results = await runAudit(rootDir, {
@@ -317,7 +320,8 @@ function printCoverageBanner () {
 
 
 export async function runCoverage (rootDir, options = {}) {
-    const auditorOptions = {compact: true, silent: true, ...options}
+    const config = await loadCleanerConfig(rootDir)
+    const auditorOptions = {compact: true, silent: true, globalExcludeDirs: config.excludeDirs || [], ...options}
     const results = {}
     const hints = {}
 
@@ -349,19 +353,22 @@ export async function runCoverage (rootDir, options = {}) {
 }
 
 
-export function runFilescore (rootDir, options = {}) {
-    const auditor = new FileScoreAuditor(rootDir, options)
+export async function runFilescore (rootDir, options = {}) {
+    const config = await loadCleanerConfig(rootDir)
+    const auditor = new FileScoreAuditor(rootDir, {globalExcludeDirs: config.excludeDirs || [], ...options})
     return auditor.audit()
 }
 
 
-export function runImports (rootDir, options = {}) {
-    const auditor = new ImportUsageAuditor(rootDir, options)
+export async function runImports (rootDir, options = {}) {
+    const config = await loadCleanerConfig(rootDir)
+    const auditor = new ImportUsageAuditor(rootDir, {globalExcludeDirs: config.excludeDirs || [], ...options})
     return auditor.audit()
 }
 
 
-export function runFileLength (rootDir, options = {}) {
-    const auditor = new FileLengthAuditor(rootDir, options)
+export async function runFileLength (rootDir, options = {}) {
+    const config = await loadCleanerConfig(rootDir)
+    const auditor = new FileLengthAuditor(rootDir, {globalExcludeDirs: config.excludeDirs || [], ...options})
     return auditor.audit()
 }
