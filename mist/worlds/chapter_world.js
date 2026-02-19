@@ -15,21 +15,16 @@ const PALETTE = [
 ]
 
 
-function colorFor (name) {
-    const index = reagents.indexOf(name)
-    if (index < 0) {
-        return '#95a5a6'
-    }
-    return PALETTE[index % PALETTE.length]
-}
-
-
 export default class ChapterWorld extends World {
 
+    #boardEntities = null
+    #clusterEntity0 = null
+    #clusterEntity1 = null
+
     init () {
-        this._boardEntities = new Map()
-        this._clusterEntity0 = this.create(ReagentEntity, {active: false})
-        this._clusterEntity1 = this.create(ReagentEntity, {active: false})
+        this.#boardEntities = new Map()
+        this.#clusterEntity0 = this.create(ReagentEntity, {active: false})
+        this.#clusterEntity1 = this.create(ReagentEntity, {active: false})
 
         this.chapter = new Chapter1()
         this.chapter.triggerAction('start')
@@ -62,7 +57,7 @@ export default class ChapterWorld extends World {
         for (const reagent of board.toArray()) {
             seen.add(reagent)
 
-            let entity = this._boardEntities.get(reagent)
+            let entity = this.#boardEntities.get(reagent)
 
             const screenX = reagent.x + BOARD_OFFSET_X + 0.5
             const screenY = reagent.y + BOARD_OFFSET_Y + 0.5
@@ -74,7 +69,7 @@ export default class ChapterWorld extends World {
                     reagentName: reagent.name,
                     color: colorFor(reagent.name)
                 })
-                this._boardEntities.set(reagent, entity)
+                this.#boardEntities.set(reagent, entity)
             }
 
             entity.x = screenX
@@ -83,10 +78,10 @@ export default class ChapterWorld extends World {
             entity.reagentName = reagent.name
         }
 
-        for (const [reagent, entity] of this._boardEntities) {
+        for (const [reagent, entity] of this.#boardEntities) {
             if (!seen.has(reagent)) {
-                this.removeChild(entity)
-                this._boardEntities.delete(reagent)
+                this.removeChild(entity.$id)
+                this.#boardEntities.delete(reagent)
             }
         }
     }
@@ -98,7 +93,7 @@ export default class ChapterWorld extends World {
             ? cluster.forBoard(board)
             : []
 
-        const entities = [this._clusterEntity0, this._clusterEntity1]
+        const entities = [this.#clusterEntity0, this.#clusterEntity1]
 
         for (let i = 0; i < entities.length; i++) {
             const entity = entities[i]
@@ -116,4 +111,13 @@ export default class ChapterWorld extends World {
         }
     }
 
+}
+
+
+function colorFor (name) {
+    const index = reagents.indexOf(name)
+    if (index < 0) {
+        return '#95a5a6'
+    }
+    return PALETTE[index % PALETTE.length]
 }

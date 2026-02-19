@@ -7,12 +7,15 @@ const LERP_SPEED = 12
 
 export default class ReagentView extends EntityView {
 
+    #currentName = null
+    #popTimer = 0
+
     constructor (entity, context) {
         super(entity, context)
 
         this.spritesheet = context.game.getSpritesheet('reagents')
-        this._currentName = entity.reagentName
-        this._popTimer = 0
+        this.#currentName = entity.reagentName
+        this.#popTimer = 0
 
         const region = this.spritesheet?.getRegion(entity.reagentName)
 
@@ -36,9 +39,9 @@ export default class ReagentView extends EntityView {
         this.root.x += (this.entity.x - this.root.x) * t
         this.root.y += (this.entity.y - this.root.y) * t
 
-        if (this._popTimer > 0) {
-            this._popTimer -= deltaTime
-            const p = Math.max(0, this._popTimer / 0.15)
+        if (this.#popTimer > 0) {
+            this.#popTimer -= deltaTime
+            const p = Math.max(0, this.#popTimer / 0.15)
             const s = 1 + p * 0.3
             this.root.scaleX = s
             this.root.scaleY = s
@@ -59,10 +62,10 @@ export default class ReagentView extends EntityView {
             this.root.y = this.entity.y
         }
 
-        if (this._currentName !== this.entity.reagentName) {
-            this._currentName = this.entity.reagentName
-            this.root.region = this.spritesheet?.getRegion(this._currentName)
-            this._popTimer = 0.15
+        if (this.#currentName !== this.entity.reagentName) {
+            this.#currentName = this.entity.reagentName
+            this.root.region = this.spritesheet?.getRegion(this.#currentName)
+            this.#popTimer = 0.15
         }
     }
 
