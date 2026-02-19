@@ -20,8 +20,8 @@ export default class ChapterStage extends Stage {
         if (frameImage) {
             this.viewsGroup.addChild(new Sprite({
                 image: frameImage,
-                y: -0.5,
-                width: 7,
+                y: 0,
+                width: 8,
                 depth: -1
             }))
         }

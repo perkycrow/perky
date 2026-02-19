@@ -4,7 +4,7 @@ import ReagentEntity from '../entities/reagent_entity.js'
 
 
 const BOARD_OFFSET_X = -3
-const BOARD_OFFSET_Y = -5
+const BOARD_OFFSET_Y = -4.5
 
 
 export default class ChapterWorld extends World {

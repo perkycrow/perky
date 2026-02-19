@@ -8,7 +8,7 @@ export default class MistGame extends Game {
     static $name = 'mistGame'
     static manifest = manifest
 
-    static camera = {unitsInView: {width: 8, height: 12}}
+    static camera = {unitsInView: {width: 8, height: 14}}
     static layer = {type: 'webgl', backgroundColor: 'transparent', pixelRatio: 1}
     static stages = {chapter: ChapterStage}
 
