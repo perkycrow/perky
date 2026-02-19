@@ -9,7 +9,7 @@ export default class MistGame extends Game {
     static manifest = manifest
 
     static camera = {unitsInView: {width: 8, height: 12}}
-    static layer = {type: 'webgl', backgroundColor: '#1a1a2e', pixelRatio: 1}
+    static layer = {type: 'webgl', backgroundColor: 'transparent', pixelRatio: 1}
     static stages = {chapter: ChapterStage}
 
     configureGame () {

@@ -1,4 +1,5 @@
 import Stage from '../../game/stage.js'
+import Sprite from '../../render/sprite.js'
 import ChapterWorld from '../worlds/chapter_world.js'
 import ChapterController from '../controllers/chapter_controller.js'
 import ReagentEntity from '../entities/reagent_entity.js'
@@ -13,6 +14,18 @@ export default class ChapterStage extends Stage {
     onStart () {
         super.onStart()
         this.register(ReagentEntity, ReagentView)
+
+        const frameImage = this.game.getSource('boardFrame')
+
+        if (frameImage) {
+            this.viewsGroup.addChild(new Sprite({
+                image: frameImage,
+                y: -0.5,
+                width: 7,
+                depth: -1
+            }))
+        }
+
         this.game.getLayer('game').setContent(this.viewsGroup)
         this.world.init()
     }
