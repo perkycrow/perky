@@ -1,0 +1,54 @@
+{
+  "frames": [
+    {
+      "filename": "notebook1",
+      "frame": {"x": 0, "y": 0, "w": 1000, "h": 1000},
+      "sourceSize": {"w": 1000, "h": 1000},
+      "atlas": 0
+    },
+    {
+      "filename": "notebook2",
+      "frame": {"x": 1000, "y": 0, "w": 1000, "h": 1000},
+      "sourceSize": {"w": 1000, "h": 1000},
+      "atlas": 0
+    },
+    {
+      "filename": "notebook3",
+      "frame": {"x": 0, "y": 1000, "w": 1000, "h": 1000},
+      "sourceSize": {"w": 1000, "h": 1000},
+      "atlas": 0
+    },
+    {
+      "filename": "notebook4",
+      "frame": {"x": 1000, "y": 1000, "w": 1000, "h": 1000},
+      "sourceSize": {"w": 1000, "h": 1000},
+      "atlas": 0
+    },
+    {
+      "filename": "notebook5",
+      "frame": {"x": 0, "y": 0, "w": 1000, "h": 1000},
+      "sourceSize": {"w": 1000, "h": 1000},
+      "atlas": 1
+    },
+    {
+      "filename": "notebook6",
+      "frame": {"x": 1000, "y": 0, "w": 1000, "h": 1000},
+      "sourceSize": {"w": 1000, "h": 1000},
+      "atlas": 1
+    }
+  ],
+  "meta": {
+    "app": "perky-spritesheet",
+    "version": "1.0",
+    "images": [
+      {
+        "filename": "notebook-0.png",
+        "size": {"w": 2000, "h": 2000}
+      },
+      {
+        "filename": "notebook-1.png",
+        "size": {"w": 2000, "h": 1000}
+      }
+    ]
+  }
+}

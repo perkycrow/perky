@@ -5,11 +5,22 @@ import Chapter1 from '../chapters/story_1_chapter.js'
 import Board from '../entities/board.js'
 import Reagent from '../entities/reagent.js'
 import LabPanel from '../entities/lab_panel.js'
+import ArsenalPanel from '../entities/arsenal_panel.js'
+import Notebook from '../entities/notebook.js'
 
 
 const GRAVITY_DELAY = 200
 const DEPOP_DELAY = 380
 const POP_DELAY = 330
+
+const ARSENAL_OFFSET_X = -3
+const ARSENAL_OFFSET_Y = -3
+
+const SKILL_HITBOX_WIDTH = 1.5
+const SKILL_HITBOX_HEIGHT = 1.5
+const SKILL_OFFSET_X = -1.4
+const SKILL_OFFSET_Y = 1.25
+const SKILL_SPACING = 1.5
 
 
 export default class ChapterWorld extends World {
@@ -19,6 +30,9 @@ export default class ChapterWorld extends World {
     #clusterReagent0 = null
     #clusterReagent1 = null
     #labPanel = null
+    #arsenalPanel = null
+    #notebook = null
+    #hoveredSkillIndex = -1
 
     init () {
         this.#boardEntities = new Map()
@@ -29,6 +43,13 @@ export default class ChapterWorld extends World {
                 reagentsCount: Chapter1.reagentsCount,
                 unlockedCount: Chapter1.unlockedCount,
                 startsAt: Chapter1.startsAt
+            },
+            arsenal: {
+                skills: [
+                    {id: 'madness'},
+                    {id: 'ruin'},
+                    {id: 'contagion'}
+                ]
             }
         }, {skillFactory, artifactFactory})
 
@@ -43,6 +64,21 @@ export default class ChapterWorld extends World {
             unlockedCount: lab.unlockedCount
         })
 
+        const skills = this.#board.arsenal?.skills || []
+
+        if (skills.length > 0) {
+            this.#arsenalPanel = this.create(ArsenalPanel, {
+                x: ARSENAL_OFFSET_X,
+                y: ARSENAL_OFFSET_Y,
+                skills
+            })
+
+            this.#notebook = this.create(Notebook, {
+                x: -9,
+                y: -2
+            })
+        }
+
         this.#initAnimationHooks()
         this.#board.actionSet.trigger('start')
     }
@@ -50,6 +86,11 @@ export default class ChapterWorld extends World {
 
     async gameAction (name, ...args) {
         return this.#board.triggerUserAction(name, ...args)
+    }
+
+
+    get skills () {
+        return this.#board?.arsenal?.skills || []
     }
 
 
@@ -63,6 +104,61 @@ export default class ChapterWorld extends World {
         this.syncBoardEntities()
         this.syncClusterEntities()
         this.syncLabPanel()
+    }
+
+
+    getSkillIndexAt (worldX, worldY) {
+        const skills = this.skills
+
+        if (skills.length === 0 || !this.#arsenalPanel) {
+            return -1
+        }
+
+        const localX = worldX - ARSENAL_OFFSET_X
+        const localY = worldY - ARSENAL_OFFSET_Y
+
+        for (let i = 0; i < skills.length; i++) {
+            const skillX = SKILL_OFFSET_X
+            const skillY = -i * SKILL_SPACING + SKILL_OFFSET_Y
+            const halfW = SKILL_HITBOX_WIDTH / 2
+            const halfH = SKILL_HITBOX_HEIGHT / 2
+
+            if (localX >= skillX - halfW && localX <= skillX + halfW &&
+                localY >= skillY - halfH && localY <= skillY + halfH) {
+                return i
+            }
+        }
+
+        return -1
+    }
+
+
+    skillMouseIn (skillIndex) {
+        if (this.#hoveredSkillIndex === skillIndex) {
+            return
+        }
+
+        this.#hoveredSkillIndex = skillIndex
+        const skills = this.skills
+
+        if (this.#notebook && skillIndex >= 0 && skillIndex < skills.length) {
+            this.#notebook.currentSkill = skills[skillIndex]
+            this.#notebook.opened = true
+        }
+    }
+
+
+    skillMouseOut () {
+        if (this.#hoveredSkillIndex === -1) {
+            return
+        }
+
+        this.#hoveredSkillIndex = -1
+
+        if (this.#notebook) {
+            this.#notebook.opened = false
+            this.#notebook.currentSkill = null
+        }
     }
 
 
