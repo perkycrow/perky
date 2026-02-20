@@ -67,7 +67,7 @@ export default class AudioSystem extends PerkyModule {
             'audio:play',
             'audio:stop',
             'audio:unlocked'
-        ], 'audio')
+        ])
 
         if (host.sourceManager) {
             this.listenTo(host.sourceManager, 'loader:progress', (_progress, {asset, source}) => {

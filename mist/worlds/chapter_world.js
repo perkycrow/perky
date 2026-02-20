@@ -85,7 +85,11 @@ export default class ChapterWorld extends World {
         this.#initSoundHooks()
         this.#board.actionSet.trigger('start')
 
-        this.#game?.playSound('chapterMusic', {channel: 'music', loop: true, volume: 0.5})
+        if (this.#game) {
+            this.#game.on('audio:unlocked', () => {
+                this.#game.playSound('chapterMusic', {channel: 'music', loop: true, volume: 0.5})
+            })
+        }
     }
 
 
