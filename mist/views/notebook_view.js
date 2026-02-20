@@ -16,7 +16,9 @@ export default class NotebookView extends EntityView {
     #bookSprite = null
     #visualSprite = null
     #contentElement = null
+    #infoElement = null
     #lastSkill = null
+    #lastScore = -1
 
     constructor (entity, context) {
         super(entity, context)
@@ -38,6 +40,8 @@ export default class NotebookView extends EntityView {
         if (this.entity.currentSkill !== this.#lastSkill) {
             this.#lastSkill = this.entity.currentSkill
         }
+
+        this.#syncInfo()
     }
 
 
@@ -66,6 +70,7 @@ export default class NotebookView extends EntityView {
 
     dispose () {
         this.#removeContent()
+        this.#hideInfo()
         super.dispose()
     }
 
@@ -167,6 +172,79 @@ export default class NotebookView extends EntityView {
         }
     }
 
+
+    #syncInfo () {
+        const entity = this.entity
+        const closed = !entity.opened
+
+        if (closed && (entity.score > 0 || entity.chapterTitle)) {
+            this.#showInfo(entity.score, entity.chapterTitle)
+        } else {
+            this.#hideInfo()
+        }
+    }
+
+
+    #showInfo (score, chapterTitle) {
+        if (!this.htmlLayer) {
+            return
+        }
+
+        if (!this.#infoElement) {
+            const worldX = this.entity.x - 0.5
+            const worldY = this.entity.y + 0.25
+
+            this.#infoElement = this.htmlLayer.createWorldElement(
+                buildInfoHTML(score, chapterTitle),
+                worldX,
+                worldY,
+                {
+                    pointerEvents: 'none',
+                    autoCenter: true
+                }
+            )
+            this.#lastScore = score
+        } else if (score !== this.#lastScore) {
+            this.#infoElement.innerHTML = buildInfoHTML(score, chapterTitle)
+            this.#lastScore = score
+        }
+    }
+
+
+    #hideInfo () {
+        if (this.#infoElement && this.htmlLayer) {
+            this.htmlLayer.removeWorldElement(this.#infoElement)
+            this.#infoElement = null
+            this.#lastScore = -1
+        }
+    }
+
+}
+
+
+function buildInfoHTML (score, chapterTitle) {
+    const scoreText = formatNumber(score)
+
+    return `
+        <div style="
+            font-family: serif;
+            color: #292621;
+            text-align: center;
+            width: 140px;
+        ">
+            <div style="font-size: 13px; letter-spacing: 1px;">
+                ${chapterTitle}
+            </div>
+            <div style="font-size: 16px; font-weight: bold; margin-top: 4px;">
+                ${scoreText}
+            </div>
+        </div>
+    `
+}
+
+
+function formatNumber (n) {
+    return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 
 

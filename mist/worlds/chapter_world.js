@@ -7,6 +7,7 @@ import Reagent from '../entities/reagent.js'
 import LabPanel from '../entities/lab_panel.js'
 import ArsenalPanel from '../entities/arsenal_panel.js'
 import Notebook from '../entities/notebook.js'
+import EndPanel from '../entities/end_panel.js'
 
 
 const GRAVITY_DELAY = 200
@@ -33,6 +34,7 @@ export default class ChapterWorld extends World {
     #labPanel = null
     #arsenalPanel = null
     #notebook = null
+    #endPanel = null
     #hoveredSkillIndex = -1
 
     init (game) {
@@ -77,12 +79,16 @@ export default class ChapterWorld extends World {
 
             this.#notebook = this.create(Notebook, {
                 x: -9,
-                y: -2
+                y: -2,
+                chapterTitle: 'Chapter I'
             })
         }
 
+        this.#endPanel = this.create(EndPanel, {x: 7.5, y: -3, active: false})
+
         this.#initAnimationHooks()
         this.#initSoundHooks()
+        this.#initEndHook()
         this.#board.actionSet.trigger('start')
 
         if (this.#game) {
@@ -106,7 +112,13 @@ export default class ChapterWorld extends World {
     syncBoard () {
         const board = this.#board
 
-        if (!board || !board.playing) {
+        if (!board) {
+            return
+        }
+
+        this.syncNotebook()
+
+        if (!board.playing) {
             return
         }
 
@@ -218,6 +230,13 @@ export default class ChapterWorld extends World {
     }
 
 
+    syncNotebook () {
+        if (this.#notebook && this.#board.digest) {
+            this.#notebook.score = this.#board.digest.score
+        }
+    }
+
+
     syncClusterEntities () {
         const board = this.#board
         const workshop = board.workshop
@@ -312,6 +331,22 @@ export default class ChapterWorld extends World {
         board.actionSet.hook('activateSkill', (_flow, skill) => {
             if (skill) {
                 game.playSound(skill.id + 'Trigger')
+            }
+        })
+    }
+
+
+    #initEndHook () {
+        const board = this.#board
+
+        board.actionSet.hook('end', () => {
+            if (this.#endPanel) {
+                this.#endPanel.state = board.ended
+                this.#endPanel.active = true
+            }
+
+            if (board.won) {
+                this.#game?.playSound('fill')
             }
         })
     }

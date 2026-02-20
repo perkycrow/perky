@@ -7,6 +7,8 @@ export default class Notebook extends Entity {
         super(options)
         this.opened = false
         this.currentSkill = null
+        this.score = options.score ?? 0
+        this.chapterTitle = options.chapterTitle ?? ''
     }
 
 }

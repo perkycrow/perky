@@ -59,6 +59,30 @@ const manifest = {
             type: 'image',
             url: './assets/images/icon_contagion_skill.png'
         },
+        winBg: {
+            type: 'image',
+            url: './assets/images/win_flask_background.png'
+        },
+        winFilling: {
+            type: 'image',
+            url: './assets/images/win_flask_filling.png'
+        },
+        winLine: {
+            type: 'image',
+            url: './assets/images/win_flask_line.png'
+        },
+        nextButton: {
+            type: 'image',
+            url: './assets/images/next.png'
+        },
+        loseVisual: {
+            type: 'image',
+            url: './assets/images/lose_visual.png'
+        },
+        restartButton: {
+            type: 'image',
+            url: './assets/images/restart.png'
+        },
         plant: {
             type: 'audio',
             url: './assets/sounds/plant.mp3',
@@ -117,6 +141,11 @@ const manifest = {
         contagionTrigger: {
             type: 'audio',
             url: './assets/sounds/contagion_trigger.mp3',
+            tags: ['sfx']
+        },
+        fill: {
+            type: 'audio',
+            url: './assets/sounds/fill.mp3',
             tags: ['sfx']
         },
         chapterMusic: {
