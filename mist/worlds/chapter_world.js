@@ -4,6 +4,7 @@ import artifactFactory from '../factories/main_artifact_factory.js'
 import Chapter1 from '../chapters/story_1_chapter.js'
 import Board from '../entities/board.js'
 import Reagent from '../entities/reagent.js'
+import LabPanel from '../entities/lab_panel.js'
 
 
 const GRAVITY_DELAY = 200
@@ -17,11 +18,12 @@ export default class ChapterWorld extends World {
     #boardEntities = null
     #clusterReagent0 = null
     #clusterReagent1 = null
+    #labPanel = null
 
     init () {
         this.#boardEntities = new Map()
 
-        this.#board = this.create(Board, {x: -3, y: -4.5})
+        this.#board = this.create(Board, {x: -3, y: -3.5})
         this.#board.initGame({
             lab: {
                 reagentsCount: Chapter1.reagentsCount,
@@ -32,6 +34,14 @@ export default class ChapterWorld extends World {
 
         this.#clusterReagent0 = this.#board.workshop.create(Reagent, {active: false})
         this.#clusterReagent1 = this.#board.workshop.create(Reagent, {active: false})
+
+        const lab = this.#board.lab
+        this.#labPanel = this.create(LabPanel, {
+            x: 7.5,
+            y: 5,
+            reagentNames: lab.reagents,
+            unlockedCount: lab.unlockedCount
+        })
 
         this.#initAnimationHooks()
         this.#board.actionSet.trigger('start')
@@ -52,6 +62,7 @@ export default class ChapterWorld extends World {
 
         this.syncBoardEntities()
         this.syncClusterEntities()
+        this.syncLabPanel()
     }
 
 
@@ -89,6 +100,13 @@ export default class ChapterWorld extends World {
                 this.#board.removeChild(entity.$id)
                 this.#boardEntities.delete(reagent)
             }
+        }
+    }
+
+
+    syncLabPanel () {
+        if (this.#labPanel && this.#board.lab) {
+            this.#labPanel.unlockedCount = this.#board.lab.unlockedCount
         }
     }
 

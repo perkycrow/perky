@@ -10,6 +10,10 @@ const manifest = {
         boardFrame: {
             type: 'image',
             url: './assets/images/board_frame.png'
+        },
+        labFrame: {
+            type: 'image',
+            url: './assets/images/lab_frame.png'
         }
     }
 }
