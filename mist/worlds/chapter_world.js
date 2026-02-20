@@ -25,6 +25,7 @@ const SKILL_SPACING = 1.5
 
 export default class ChapterWorld extends World {
 
+    #game = null
     #board = null
     #boardEntities = null
     #clusterReagent0 = null
@@ -34,7 +35,8 @@ export default class ChapterWorld extends World {
     #notebook = null
     #hoveredSkillIndex = -1
 
-    init () {
+    init (game) {
+        this.#game = game
         this.#boardEntities = new Map()
 
         this.#board = this.create(Board, {x: -3, y: -3.5})
@@ -80,7 +82,10 @@ export default class ChapterWorld extends World {
         }
 
         this.#initAnimationHooks()
+        this.#initSoundHooks()
         this.#board.actionSet.trigger('start')
+
+        this.#game?.playSound('chapterMusic', {channel: 'music', loop: true, volume: 0.5})
     }
 
 
@@ -144,6 +149,7 @@ export default class ChapterWorld extends World {
         if (this.#notebook && skillIndex >= 0 && skillIndex < skills.length) {
             this.#notebook.currentSkill = skills[skillIndex]
             this.#notebook.opened = true
+            this.#game?.playSound('bookOpen')
         }
     }
 
@@ -158,6 +164,7 @@ export default class ChapterWorld extends World {
         if (this.#notebook) {
             this.#notebook.opened = false
             this.#notebook.currentSkill = null
+            this.#game?.playSound('bookClose')
         }
     }
 
@@ -264,6 +271,44 @@ export default class ChapterWorld extends World {
 
         board.actionSet.hook('evolveReagents', async () => {
             await delay(POP_DELAY)
+        })
+    }
+
+
+    #initSoundHooks () {
+        const board = this.#board
+        const game = this.#game
+
+        if (!game) {
+            return
+        }
+
+        board.actionSet.hook('dropCluster', () => {
+            game.playSound('plant')
+        })
+
+        board.actionSet.hook('mergeReagents', () => {
+            game.playSound('merge')
+        })
+
+        board.actionSet.hook('clearReagents', () => {
+            game.playSound('clear')
+        })
+
+        board.actionSet.hook('evolveReagents', () => {
+            game.playSound('crac')
+        })
+
+        board.actionSet.hook('chargeSkill', (_flow, skill) => {
+            if (skill && skill.ready) {
+                game.playSound(skill.id + 'Call')
+            }
+        })
+
+        board.actionSet.hook('activateSkill', (_flow, skill) => {
+            if (skill) {
+                game.playSound(skill.id + 'Trigger')
+            }
         })
     }
 

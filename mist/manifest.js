@@ -58,6 +58,71 @@ const manifest = {
         contagionVisual: {
             type: 'image',
             url: './assets/images/icon_contagion_skill.png'
+        },
+        plant: {
+            type: 'audio',
+            url: './assets/sounds/plant.mp3',
+            tags: ['sfx']
+        },
+        merge: {
+            type: 'audio',
+            url: './assets/sounds/merge.mp3',
+            tags: ['sfx']
+        },
+        clear: {
+            type: 'audio',
+            url: './assets/sounds/clear.wav',
+            tags: ['sfx']
+        },
+        crac: {
+            type: 'audio',
+            url: './assets/sounds/crac.mp3',
+            tags: ['sfx']
+        },
+        bookOpen: {
+            type: 'audio',
+            url: './assets/sounds/bookopen.mp3',
+            tags: ['sfx']
+        },
+        bookClose: {
+            type: 'audio',
+            url: './assets/sounds/bookclose.mp3',
+            tags: ['sfx']
+        },
+        madnessCall: {
+            type: 'audio',
+            url: './assets/sounds/madness_call.mp3',
+            tags: ['sfx']
+        },
+        madnessTrigger: {
+            type: 'audio',
+            url: './assets/sounds/madness_trigger.mp3',
+            tags: ['sfx']
+        },
+        ruinCall: {
+            type: 'audio',
+            url: './assets/sounds/ruin_call.mp3',
+            tags: ['sfx']
+        },
+        ruinTrigger: {
+            type: 'audio',
+            url: './assets/sounds/ruin_trigger.mp3',
+            tags: ['sfx']
+        },
+        contagionCall: {
+            type: 'audio',
+            url: './assets/sounds/contagion_call.mp3',
+            tags: ['sfx']
+        },
+        contagionTrigger: {
+            type: 'audio',
+            url: './assets/sounds/contagion_trigger.mp3',
+            tags: ['sfx']
+        },
+        chapterMusic: {
+            type: 'audio',
+            url: './assets/sounds/mist_02.mp3',
+            tags: ['music']
         }
     }
 }
