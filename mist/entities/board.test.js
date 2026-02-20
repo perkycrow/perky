@@ -350,3 +350,170 @@ test('has', () => {
     expect(board.has('z')).toBeTruthy()
     expect(board.has('a')).toBeFalsy()
 })
+
+
+test('fourNeighboursOf', () => {
+    debugImport(board, [
+        [null, 'a', null],
+        ['b', 'x', 'c'],
+        [null, 'd', null]
+    ])
+
+    const neighbours = board.fourNeighboursOf({x: 1, y: 1})
+
+    expect(neighbours.length).toEqual(4)
+    expect(neighbours).toContainEqual(board.getReagent({x: 1, y: 2}))
+    expect(neighbours).toContainEqual(board.getReagent({x: 2, y: 1}))
+    expect(neighbours).toContainEqual(board.getReagent({x: 1, y: 0}))
+    expect(neighbours).toContainEqual(board.getReagent({x: 0, y: 1}))
+})
+
+
+test('fourNeighboursOf - corner', () => {
+    debugImport(board, [
+        ['x', 'a', null],
+        ['b', null, null]
+    ])
+
+    const neighbours = board.fourNeighboursOf({x: 0, y: 0})
+
+    expect(neighbours.length).toEqual(1)
+    expect(neighbours).toContainEqual(board.getReagent({x: 0, y: 1}))
+})
+
+
+test('evolveReagent', () => {
+    board.setReagent(reagent)
+    const originalOrder = reagent.order
+
+    expect(board.evolveReagent(reagent, 'water')).toBe(true)
+    expect(reagent.name).toEqual('water')
+    expect(reagent.order).toBeGreaterThan(originalOrder)
+
+    expect(board.evolveReagent(reagent, null)).toBe(false)
+    expect(reagent.name).toEqual('water')
+})
+
+
+test('swapReagents', () => {
+    const reagentA = createReagent(0, 0, 'A')
+    const reagentB = createReagent(2, 1, 'B')
+
+    board.setReagent(reagentA)
+    board.setReagent(reagentB)
+
+    board.swapReagents(reagentA, reagentB)
+
+    expect(reagentA.x).toEqual(2)
+    expect(reagentA.y).toEqual(1)
+    expect(reagentB.x).toEqual(0)
+    expect(reagentB.y).toEqual(0)
+    expect(board.getReagent({x: 0, y: 0})).toEqual(reagentB)
+    expect(board.getReagent({x: 2, y: 1})).toEqual(reagentA)
+})
+
+
+test('moveEverythingRight', () => {
+    debugImport(board, [
+        ['a', 'b', null, null, null, 'c']
+    ])
+
+    board.moveEverythingRight()
+
+    expect(board.getReagent({x: 0, y: 0}).name).toEqual('c')
+    expect(board.getReagent({x: 1, y: 0}).name).toEqual('a')
+    expect(board.getReagent({x: 2, y: 0}).name).toEqual('b')
+})
+
+
+test('toArray', () => {
+    const reagentA = createReagent(0, 0, 'A')
+    const reagentB = createReagent(1, 0, 'B')
+
+    board.setReagent(reagentB)
+    board.setReagent(reagentA)
+
+    const array = board.toArray()
+
+    expect(array.length).toEqual(2)
+    expect(array[0]).toEqual(reagentB)
+    expect(array[1]).toEqual(reagentA)
+})
+
+
+test('getRow', () => {
+    debugImport(board, [
+        ['a', null, 'b'],
+        ['c', 'd', 'e']
+    ])
+
+    const row0 = board.getRow(0)
+    const row1 = board.getRow(1)
+
+    expect(row0.length).toEqual(3)
+    expect(row0.map(r => r.name)).toEqual(['c', 'd', 'e'])
+    expect(row1.length).toEqual(2)
+    expect(row1.map(r => r.name)).toEqual(['a', 'b'])
+})
+
+
+test('getCol', () => {
+    debugImport(board, [
+        ['a', null, 'b'],
+        ['c', 'd', 'e']
+    ])
+
+    const col0 = board.getCol(0)
+    const col2 = board.getCol(2)
+
+    expect(col0.length).toEqual(2)
+    expect(col0.map(r => r.name)).toEqual(['c', 'a'])
+    expect(col2.length).toEqual(2)
+    expect(col2.map(r => r.name)).toEqual(['e', 'b'])
+})
+
+
+test('initGame', () => {
+    board.initGame({seed: 'test-seed'})
+
+    expect(board.gameId).toBeDefined()
+    expect(board.seed).toEqual('test-seed')
+    expect(board.random).toBeDefined()
+    expect(board.workshop).toBeDefined()
+    expect(board.lab).toBeDefined()
+    expect(board.arsenal).toBeDefined()
+    expect(board.vault).toBeDefined()
+    expect(board.ended).toBe(false)
+    expect(board.playing).toBe(false)
+})
+
+
+test('weightedChoice', () => {
+    board.initGame({seed: 'fixed-seed'})
+
+    const choices = [
+        {value: 'a', weight: 100},
+        {value: 'b', weight: 0}
+    ]
+
+    const result = board.weightedChoice(choices)
+    expect(result).toEqual('a')
+})
+
+
+test('exportGame', () => {
+    board.initGame({seed: 'export-test'})
+
+    const exported = board.exportGame()
+
+    expect(exported.id).toBeDefined()
+    expect(exported.seed).toEqual('export-test')
+    expect(exported.randomState).toBeDefined()
+    expect(exported.board).toBeDefined()
+    expect(exported.lab).toBeDefined()
+    expect(exported.workshop).toBeDefined()
+    expect(exported.arsenal).toBeDefined()
+    expect(exported.vault).toBeDefined()
+    expect(exported.ended).toBe(false)
+    expect(exported.digest).toEqual({})
+})

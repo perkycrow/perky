@@ -73,3 +73,40 @@ test('export', () => {
         ]
     })
 })
+
+
+test('provideArtifact', () => {
+    class NewArtifact extends Artifact {
+        static id = 'newArtifact'
+    }
+
+    const freshVault = new Vault()
+    freshVault.provideArtifact(NewArtifact)
+
+    const artifact = freshVault.addArtifact({id: 'newArtifact'})
+    expect(artifact).toBeInstanceOf(NewArtifact)
+})
+
+
+test('createArtifact', () => {
+    const artifact = vault.createArtifact({id: 'custom', stack: 5})
+
+    expect(artifact).toBeInstanceOf(CustomArtifact)
+    expect(artifact.stack).toEqual(5)
+})
+
+
+test('restore', () => {
+    vault.addArtifact({id: 'custom', stack: 2})
+    vault.addArtifact({id: 'other', stack: 3})
+
+    expect(vault.artifacts.length).toEqual(2)
+
+    vault.restore({
+        artifacts: [{id: 'custom', stack: 10}]
+    })
+
+    expect(vault.artifacts.length).toEqual(1)
+    expect(vault.artifacts[0].id).toEqual('custom')
+    expect(vault.artifacts[0].stack).toEqual(10)
+})

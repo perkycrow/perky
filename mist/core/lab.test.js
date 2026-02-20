@@ -266,3 +266,62 @@ test('buildCluster', () => {
         expect(cluster.reagents.length).toEqual(1)
     }
 })
+
+
+test('has', () => {
+    const lab = createLab({unlockedCount: 7, activeCount: 2, clearedCount: 1})
+    expect(lab.has('branch')).toBeTruthy()
+    expect(lab.has('water')).toBeTruthy()
+    expect(lab.has('unknownReagent')).toBeFalsy()
+})
+
+
+test('isPlayable', () => {
+    const lab = createLab({unlockedCount: 7, activeCount: 2, clearedCount: 1})
+    expect(lab.isPlayable('match')).toBeTruthy()
+    expect(lab.isPlayable('waterDrop')).toBeTruthy()
+    expect(lab.isPlayable('branch')).toBeFalsy()
+    expect(lab.isPlayable('water')).toBeFalsy()
+})
+
+
+test('evolutionFor', () => {
+    const lab = createLab({unlockedCount: 7, activeCount: 2, clearedCount: 1})
+    expect(lab.evolutionFor('branch')).toBe('match')
+    expect(lab.evolutionFor('match')).toBe('fireBranch')
+    expect(lab.evolutionFor('skull')).toBeUndefined()
+})
+
+
+test('pickOne', () => {
+    const lab = createLab({unlockedCount: 4, activeCount: 4})
+    const reagent = lab.pickOne(game)
+    expect(lab.playable.includes(reagent)).toBeTruthy()
+})
+
+
+test('pickMany', () => {
+    const lab = createLab({unlockedCount: 4, activeCount: 4})
+    {
+        const reagents = lab.pickMany(game)
+        expect(reagents.length).toBe(2)
+        expect(reagents.every(r => lab.playable.includes(r))).toBeTruthy()
+    }
+    {
+        const reagents = lab.pickMany(game, {count: 3})
+        expect(reagents.length).toBe(3)
+    }
+    {
+        const reagents = lab.pickMany(game, {pairs: true})
+        expect(reagents[0]).toBe(reagents[1])
+    }
+})
+
+
+test('indexFor', () => {
+    const lab = createLab({unlockedCount: 7, activeCount: 2, clearedCount: 1})
+    expect(lab.indexFor('branch')).toBe(0)
+    expect(lab.indexFor('match')).toBe(1)
+    expect(lab.indexFor('water')).toBe(7)
+    expect(lab.indexFor('unknownReagent')).toBe(-1)
+})

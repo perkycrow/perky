@@ -23,6 +23,24 @@ beforeEach(() => {
 })
 
 
+test('provideSkill', () => {
+    const emptyArsenal = new Arsenal()
+    emptyArsenal.provideSkill(RuinSkill)
+
+    const skill = emptyArsenal.addSkill('ruin')
+    expect(skill.id).toBe('ruin')
+    expect(skill).toBeInstanceOf(RuinSkill)
+})
+
+
+test('createSkill', () => {
+    const skill = arsenal.createSkill({id: 'ruin'})
+
+    expect(skill.id).toBe('ruin')
+    expect(skill).toBeInstanceOf(RuinSkill)
+})
+
+
 test('addSkill', () => {
     {
         const skill = arsenal.addSkill('madness')

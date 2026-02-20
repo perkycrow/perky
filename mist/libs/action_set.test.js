@@ -314,3 +314,54 @@ test('digestAction', async () => {
     await trigger('actionA')
     expect(digest).toEqual({actionName: 'actionA', result: true})
 })
+
+
+test('remove', () => {
+    const actionSet = new ActionSet()
+    const {set, get, remove} = actionSet.getApi()
+
+    set('actionA', () => true)
+    expect(get('actionA')).toBeDefined()
+
+    const removed = remove('actionA')
+    expect(removed).toBe(true)
+    expect(get('actionA')).toBeUndefined()
+
+    const removedAgain = remove('actionA')
+    expect(removedAgain).toBe(false)
+})
+
+
+test('updateSteps', async () => {
+    const actionSet = new ActionSet()
+    const {set, steps, trigger} = actionSet.getApi()
+    const history = []
+
+    set('actionA', () => {
+        history.push('actionA')
+        return true
+    })
+
+    set('actionB', () => {
+        history.push('actionB')
+        return true
+    })
+
+    steps([{
+        name: 'actionA',
+        hook: () => {
+            history.push('stepA')
+            steps([{
+                name: 'actionB',
+                hook: () => history.push('stepB')
+            }])
+        }
+    }])
+
+    await trigger('actionA')
+    expect(history).toEqual(['actionA', 'stepA'])
+
+    history.length = 0
+    await trigger('actionB')
+    expect(history).toEqual(['actionB', 'stepB'])
+})

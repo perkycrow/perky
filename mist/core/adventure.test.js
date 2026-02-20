@@ -41,3 +41,27 @@ test('export', () => {
         }
     })
 })
+
+
+test('triggerAction', async () => {
+    const flow = await adventure.triggerAction('start')
+
+    expect(flow.history[0].actionName).toBe('start')
+    expect(adventure.started).toBe(true)
+})
+
+
+test('restore', () => {
+    adventure.currentStepIndex = 1
+    adventure.id = 'custom-id'
+
+    adventure.restore({
+        currentStepIndex: 0,
+        currentStepState: {foo: 'bar'},
+        id: 'restored-id'
+    })
+
+    expect(adventure.currentStepIndex).toBe(0)
+    expect(adventure.currentStepState).toEqual({foo: 'bar'})
+    expect(adventure.id).toBe('restored-id')
+})

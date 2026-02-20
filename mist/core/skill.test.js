@@ -120,3 +120,63 @@ test('activate', () => {
     skill.charge()
     expect(skill.activate()).toBeTruthy()
 })
+
+
+test('translate', () => {
+    const skill = new Skill()
+    expect(skill.translate('title', 'en')).toEqual('Skill')
+    expect(skill.translate('title', 'fr')).toEqual('Competence')
+    expect(skill.translate('description', 'en')).toEqual('Description')
+})
+
+
+test('trigger', () => {
+    const skill = new Skill()
+    expect(skill.trigger()).toBeTruthy()
+})
+
+
+test('restore', () => {
+    const skill = new Skill({
+        cost: 5,
+        charges: 3,
+        additionalCost: 2,
+        overload: 1
+    })
+
+    expect(skill.cost).toEqual(5)
+    expect(skill.charges).toEqual(3)
+
+    skill.restore({
+        cost: 10,
+        charges: 0,
+        additionalCost: 0,
+        overload: 0
+    })
+
+    expect(skill.cost).toEqual(10)
+    expect(skill.charges).toEqual(0)
+    expect(skill.additionalCost).toEqual(0)
+    expect(skill.overload).toEqual(0)
+})
+
+
+test('export', () => {
+    const skill = new Skill({
+        id: 'testSkill',
+        cost: 5,
+        charges: 3,
+        additionalCost: 2,
+        overload: 1
+    })
+
+    const exported = skill.export()
+
+    expect(exported).toEqual({
+        id: 'testSkill',
+        cost: 5,
+        charges: 3,
+        additionalCost: 2,
+        overload: 1
+    })
+})

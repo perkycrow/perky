@@ -137,3 +137,69 @@ test('restore', () => {
 
     expect(cluster.export()).toEqual(state)
 })
+
+
+test('moveLeft', () => {
+    const cluster = new Cluster({reagents: reagents})
+    expect(cluster.x).toEqual(2)
+
+    cluster.moveLeft()
+    expect(cluster.x).toEqual(1)
+
+    cluster.moveLeft()
+    expect(cluster.x).toEqual(0)
+
+    cluster.moveLeft()
+    expect(cluster.x).toEqual(0)
+})
+
+
+test('moveRight', () => {
+    const cluster = new Cluster({reagents: reagents})
+    expect(cluster.x).toEqual(2)
+
+    cluster.moveRight()
+    expect(cluster.x).toEqual(3)
+
+    cluster.moveRight()
+    expect(cluster.x).toEqual(4)
+
+    cluster.moveRight()
+    expect(cluster.x).toEqual(4)
+})
+
+
+test('forBoard', () => {
+    const cluster = new Cluster({reagents: reagents, width: 6, height: 2})
+    const board = {height: 12}
+
+    const result = cluster.forBoard(board)
+
+    expect(result).toEqual([
+        {name: 'A', x: 2, y: 10},
+        {name: 'B', x: 3, y: 10}
+    ])
+})
+
+
+test('forBoard with rotated cluster', () => {
+    const cluster = new Cluster({reagents: reagents})
+    cluster.rotate()
+    const board = {height: 12}
+
+    const result = cluster.forBoard(board)
+
+    expect(result).toEqual([
+        {name: 'B', x: 2, y: 10},
+        {name: 'A', x: 2, y: 11}
+    ])
+})
+
+
+test('clear', () => {
+    const cluster = new Cluster({reagents: reagents})
+    expect(cluster.reagents.length).toEqual(2)
+
+    cluster.clear()
+    expect(cluster.reagents.length).toEqual(0)
+})
