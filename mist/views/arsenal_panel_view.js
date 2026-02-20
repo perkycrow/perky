@@ -21,7 +21,7 @@ export default class ArsenalPanelView extends EntityView {
     constructor (entity, context) {
         super(entity, context)
 
-        this.root = new Group2D({x: entity.x, y: entity.y})
+        this.root = new Group2D({x: entity.x, y: entity.y, depth: -10})
 
         this.#buildFrame(context)
         this.#buildSkills(context)
@@ -128,10 +128,29 @@ export default class ArsenalPanelView extends EntityView {
     #updateFilling (index, progress) {
         const filling = this.#fillingSprites[index]
 
-        if (filling) {
-            filling.scaleY = progress
-            filling.opacity = progress >= 1 ? 1 : 0.65
+        if (!filling) {
+            return
         }
+
+        if (progress <= 0) {
+            filling.visible = false
+            return
+        }
+
+        filling.visible = true
+        const region = filling.region
+
+        if (region?.image) {
+            const imgH = region.image.height
+            const cropH = Math.round(imgH * progress)
+            region.y = imgH - cropH
+            region.height = cropH
+        }
+
+        const baseHeight = 2
+        filling.height = baseHeight * progress
+        filling.y = -(baseHeight * (1 - progress)) / 2
+        filling.opacity = progress >= 1 ? 1 : 0.65
     }
 
 }

@@ -11,11 +11,8 @@ const FRAME_COUNT = 6
 export default class NotebookView extends EntityView {
 
     #frames = []
+    #progress = 0
     #currentFrame = 0
-    #animating = false
-    #opening = false
-    #elapsedTime = 0
-    #duration = CLOSE_DURATION
     #bookSprite = null
     #visualSprite = null
     #contentElement = null
@@ -38,42 +35,30 @@ export default class NotebookView extends EntityView {
             return
         }
 
-        if (this.entity.opened && this.#currentFrame === 0) {
-            this.#startOpen()
-        } else if (!this.entity.opened && this.#currentFrame > 0 && !this.#animating) {
-            this.#startClose()
-        }
-
         if (this.entity.currentSkill !== this.#lastSkill) {
             this.#lastSkill = this.entity.currentSkill
-
-            if (this.entity.currentSkill && this.entity.opened) {
-                this.#startOpen()
-            }
         }
     }
 
 
     update (deltaTime) {
-        if (!this.#animating) {
+        if (!this.entity) {
             return
         }
 
-        this.#elapsedTime += deltaTime
+        const target = this.entity.opened ? 1 : 0
 
-        if (this.#elapsedTime >= this.#duration) {
-            this.#elapsedTime = this.#duration
-            this.#animating = false
+        if (this.#progress === target) {
+            return
         }
 
-        const progress = this.#elapsedTime / this.#duration
-
-        if (this.#opening) {
-            this.#currentFrame = Math.min(Math.floor(progress * FRAME_COUNT), FRAME_COUNT - 1)
+        if (this.#progress < target) {
+            this.#progress = Math.min(this.#progress + deltaTime / OPEN_DURATION, 1)
         } else {
-            this.#currentFrame = Math.max(FRAME_COUNT - 1 - Math.floor(progress * FRAME_COUNT), 0)
+            this.#progress = Math.max(this.#progress - deltaTime / CLOSE_DURATION, 0)
         }
 
+        this.#currentFrame = Math.min(Math.floor(this.#progress * FRAME_COUNT), FRAME_COUNT - 1)
         this.#updateBookFrame()
         this.#updateContent()
     }
@@ -116,23 +101,6 @@ export default class NotebookView extends EntityView {
             visible: false
         })
         this.root.addChild(this.#visualSprite)
-    }
-
-
-    #startOpen () {
-        this.#duration = OPEN_DURATION
-        this.#opening = true
-        this.#animating = true
-        this.#elapsedTime = 0
-    }
-
-
-    #startClose () {
-        this.#duration = CLOSE_DURATION
-        this.#opening = false
-        this.#animating = true
-        this.#elapsedTime = 0
-        this.#removeContent()
     }
 
 
