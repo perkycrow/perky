@@ -18,7 +18,10 @@ export default class ChapterStage extends Stage {
             camera: this.game.camera,
             pointerEvents: 'none'
         })
-        this.world.init(this.game)
+        this.world.init(this.game, {
+            chapter: this.options.chapter,
+            adventure: this.options.adventure
+        })
     }
 
 

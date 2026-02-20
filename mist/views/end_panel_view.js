@@ -13,6 +13,7 @@ const BUTTON_SIZE = 1.5
 
 export default class EndPanelView extends EntityView {
 
+    #game = null
     #winGroup = null
     #loseGroup = null
     #fillingSprite = null
@@ -24,6 +25,7 @@ export default class EndPanelView extends EntityView {
         super(entity, context)
 
         this.root = new Group2D({x: entity.x, y: entity.y, visible: false, depth: 10})
+        this.#game = context.game
         this.htmlLayer = context.game.getLayer('chapterUI') || null
 
         this.#buildWinGroup(context)
@@ -233,13 +235,12 @@ export default class EndPanelView extends EntityView {
 
 
     #onNext () {
-        // For now, just reload
-        window.location.reload()
+        this.#game?.nextStep()
     }
 
 
     #onRestart () {
-        window.location.reload()
+        this.#game?.restartChapter()
     }
 
 }

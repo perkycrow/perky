@@ -1,7 +1,6 @@
 import World from '../../game/world.js'
 import skillFactory from '../factories/main_skill_factory.js'
 import artifactFactory from '../factories/main_artifact_factory.js'
-import Chapter1 from '../chapters/story_1_chapter.js'
 import Board from '../entities/board.js'
 import Reagent from '../entities/reagent.js'
 import LabPanel from '../entities/lab_panel.js'
@@ -37,25 +36,16 @@ export default class ChapterWorld extends World {
     #endPanel = null
     #hoveredSkillIndex = -1
 
-    init (game) {
+    init (game, {chapter, adventure} = {}) {
         this.#game = game
         this.#boardEntities = new Map()
 
+        const gameState = chapter?.currentGameState || {
+            lab: {reagentsCount: 7, unlockedCount: 3, startsAt: 0}
+        }
+
         this.#board = this.create(Board, {x: -3, y: -3.5})
-        this.#board.initGame({
-            lab: {
-                reagentsCount: Chapter1.reagentsCount,
-                unlockedCount: Chapter1.unlockedCount,
-                startsAt: Chapter1.startsAt
-            },
-            arsenal: {
-                skills: [
-                    {id: 'madness'},
-                    {id: 'ruin'},
-                    {id: 'contagion'}
-                ]
-            }
-        }, {skillFactory, artifactFactory})
+        this.#board.initGame(gameState, {skillFactory, artifactFactory})
 
         this.#clusterReagent0 = this.#board.workshop.create(Reagent, {active: false})
         this.#clusterReagent1 = this.#board.workshop.create(Reagent, {active: false})
@@ -76,13 +66,13 @@ export default class ChapterWorld extends World {
                 y: ARSENAL_OFFSET_Y,
                 skills
             })
-
-            this.#notebook = this.create(Notebook, {
-                x: -9,
-                y: -2,
-                chapterTitle: 'Chapter I'
-            })
         }
+
+        this.#notebook = this.create(Notebook, {
+            x: -9,
+            y: -2,
+            chapterTitle: getChapterTitle(adventure)
+        })
 
         this.#endPanel = this.create(EndPanel, {x: 7.5, y: -3, active: false})
 
@@ -356,4 +346,24 @@ export default class ChapterWorld extends World {
 
 function delay (ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']
+
+function getChapterTitle (adventure) {
+    if (!adventure) {
+        return ''
+    }
+
+    const steps = adventure.steps
+    let num = 0
+
+    for (let i = 0; i <= adventure.currentStepIndex; i++) {
+        if (steps[i] && /Chapter/.test(steps[i].name)) {
+            num++
+        }
+    }
+
+    return num > 0 ? 'Chapter ' + (ROMAN[num - 1] || num) : ''
 }
