@@ -3,6 +3,18 @@ const manifest = {
         name: 'The Mistbrewer'
     },
     assets: {
+        title: {
+            type: 'image',
+            url: './assets/images/title.png'
+        },
+        menuIcon: {
+            type: 'image',
+            url: './assets/images/menu_icon.png'
+        },
+        clouds: {
+            type: 'spritesheet',
+            url: './assets/spritesheets/clouds-0.json'
+        },
         reagents: {
             type: 'spritesheet',
             url: './assets/spritesheets/reagents-md-0.json'

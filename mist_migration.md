@@ -20,9 +20,10 @@ Migrating from `mist_old/` (toxilibs/Vue/jQuery) to `mist/` (Perky framework).
 | 9c | Entity hierarchy: Reagent unified, Grid + Workshop entities | DONE |
 | 9d | Game class eliminated → createGame factory + direct ChapterWorld | DONE |
 | 9e | Framework fix: Stage entityViews uses entity instances as keys | DONE |
-| 10 | Audio | TODO |
-| 11 | UI (HTMLLayer + DOM) — score, skills, progression | TODO |
-| 12 | Stage navigation (menu, adventure, interludes) | TODO |
+| 10 | Audio | DONE |
+| 11 | UI (HTMLLayer + DOM) — score, skills, progression | DONE |
+| 12 | Stage navigation (menu, adventure, interludes) | DONE |
+| 12b | Menu polish — title image, fog clouds, styled text, fonts | DONE |
 | 13 | Visual polish (particles, transitions) | TODO |
 | 14 | Save (localStorage) + finitions | TODO |
 

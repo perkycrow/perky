@@ -1,0 +1,31 @@
+{
+  "frames": [
+    {"filename": "cloud1", "frame": {"x": 0, "y": 0, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud2", "frame": {"x": 500, "y": 0, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud3", "frame": {"x": 1000, "y": 0, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud4", "frame": {"x": 1500, "y": 0, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud5", "frame": {"x": 0, "y": 250, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud6", "frame": {"x": 500, "y": 250, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud7", "frame": {"x": 1000, "y": 250, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud8", "frame": {"x": 1500, "y": 250, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud9", "frame": {"x": 0, "y": 500, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud10", "frame": {"x": 500, "y": 500, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud11", "frame": {"x": 1000, "y": 500, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud12", "frame": {"x": 1500, "y": 500, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud13", "frame": {"x": 0, "y": 750, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud14", "frame": {"x": 500, "y": 750, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud15", "frame": {"x": 1000, "y": 750, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud16", "frame": {"x": 1500, "y": 750, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud17", "frame": {"x": 0, "y": 1000, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud18", "frame": {"x": 500, "y": 1000, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud19", "frame": {"x": 1000, "y": 1000, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0},
+    {"filename": "cloud20", "frame": {"x": 1500, "y": 1000, "w": 500, "h": 250}, "sourceSize": {"w": 500, "h": 250}, "atlas": 0}
+  ],
+  "meta": {
+    "app": "perky-spritesheet",
+    "version": "1.0",
+    "images": [
+      {"filename": "clouds-0.png", "size": {"w": 2000, "h": 1250}}
+    ]
+  }
+}
