@@ -24,6 +24,7 @@ Migrating from `mist_old/` (toxilibs/Vue/jQuery) to `mist/` (Perky framework).
 | 11 | UI (HTMLLayer + DOM) — score, skills, progression | DONE |
 | 12 | Stage navigation (menu, adventure, interludes) | DONE |
 | 12b | Menu polish — title image, fog clouds, styled text, fonts | DONE |
+| 12c | Settings screen — sound sliders, keybinds, navigation | DONE |
 | 13 | Visual polish (particles, transitions) | TODO |
 | 14 | Save (localStorage) + finitions | TODO |
 

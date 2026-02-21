@@ -2,6 +2,7 @@ import Game from '../game/game.js'
 import MenuStage from './stages/menu_stage.js'
 import ChapterStage from './stages/chapter_stage.js'
 import InterludeStage from './stages/interlude_stage.js'
+import SettingsStage from './stages/settings_stage.js'
 import StoryAdventure from './adventures/story_adventure.js'
 import manifest from './manifest.js'
 
@@ -16,7 +17,8 @@ export default class MistGame extends Game {
     static stages = {
         menu: MenuStage,
         chapter: ChapterStage,
-        interlude: InterludeStage
+        interlude: InterludeStage,
+        settings: SettingsStage
     }
 
     adventure = null

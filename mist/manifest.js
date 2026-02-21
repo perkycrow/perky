@@ -15,6 +15,10 @@ const manifest = {
             type: 'spritesheet',
             url: './assets/spritesheets/clouds-0.json'
         },
+        backArrow: {
+            type: 'image',
+            url: './assets/images/back_arrow.png'
+        },
         reagents: {
             type: 'spritesheet',
             url: './assets/spritesheets/reagents-md-0.json'

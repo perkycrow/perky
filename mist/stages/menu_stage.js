@@ -139,6 +139,14 @@ export default class MenuStage extends Stage {
                 this.game.startAdventure()
             })
         }
+
+        const settingsButton = this.#htmlLayer.div.querySelector('[data-action="settings"]')
+
+        if (settingsButton) {
+            settingsButton.addEventListener('click', () => {
+                this.game.setStage('settings')
+            })
+        }
     }
 
 }
@@ -211,7 +219,7 @@ function buildMenuHTML (iconSrc) {
             >Roadmap</div>
         </div>
 
-        <div style="
+        <div data-action="settings" style="
             position: absolute;
             bottom: 20px;
             right: 20px;
