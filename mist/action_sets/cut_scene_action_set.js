@@ -16,7 +16,7 @@ function initActions (cutScene, actionSet) {
 
     const {set} = actionSet.getApi()
 
-    set('start', (flow) => {
+    set('start', () => {
         if (!cutScene.started) {
             cutScene.started = true
 

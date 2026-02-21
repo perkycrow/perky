@@ -27,7 +27,7 @@ export default class NotebookView extends EntityView {
 
         this.#loadFrames(context)
         this.#buildBook()
-        this.#buildVisual(context)
+        this.#buildVisual()
         this.htmlLayer = context.game.getLayer('chapterUI') || null
     }
 
@@ -97,7 +97,7 @@ export default class NotebookView extends EntityView {
     }
 
 
-    #buildVisual (context) {
+    #buildVisual () {
         this.#visualSprite = new Sprite({
             width: 3.5,
             height: 3.5,

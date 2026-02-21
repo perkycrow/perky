@@ -20,7 +20,7 @@ export default class RuinSkill extends Skill {
         en: 'Charges every time reagents are merged.'
     }
 
-    trigger (flow, game) {
+    trigger (flow, game) { // eslint-disable-line local/class-methods-use-this -- clean
         const {board, random} = game
 
         const reagents = board.getReagents({random, count: 3})

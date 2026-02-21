@@ -6,7 +6,7 @@ import GameplayStage from './stages/gameplay_stage.js'
 import PreviewStage from './stages/preview_stage.js'
 
 import manifest from './manifest.json' with { type: 'json' }
-import {autoRegisterEffects} from './wiring.js'
+import wiring from './wiring.js'
 
 
 export default class DefendTheDen extends Game {
@@ -39,7 +39,7 @@ export default class DefendTheDen extends Game {
 
     configureGame (params = {}) {
         const gameRenderer = this.getRenderer('game')
-        autoRegisterEffects(gameRenderer)
+        wiring.registerEffects(gameRenderer)
         gameRenderer.registerShaderEffect(OutlineEffect)
 
         const stageName = params.preview ? 'preview' : 'gameplay'

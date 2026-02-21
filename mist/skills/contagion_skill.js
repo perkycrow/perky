@@ -20,7 +20,7 @@ export default class ContagionSkill extends Skill {
         en: 'Charges when a reagent triggers cascade combinations.'
     }
 
-    trigger (flow, game) {
+    trigger (flow, game) { // eslint-disable-line local/class-methods-use-this -- clean
         const {board, lab} = game
 
         const reagents = board.getReagents({

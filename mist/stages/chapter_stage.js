@@ -1,7 +1,7 @@
 import Stage from '../../game/stage.js'
 import ChapterWorld from '../worlds/chapter_world.js'
 import ChapterController from '../controllers/chapter_controller.js'
-import {autoRegisterViews} from '../wiring.js'
+import wiring from '../wiring.js'
 
 
 export default class ChapterStage extends Stage {
@@ -11,7 +11,7 @@ export default class ChapterStage extends Stage {
 
     onStart () {
         super.onStart()
-        autoRegisterViews(this)
+        wiring.registerViews(this)
 
         this.game.getLayer('game').setContent(this.viewsGroup)
         this.game.createLayer('chapterUI', 'html', {

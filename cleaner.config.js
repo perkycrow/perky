@@ -33,7 +33,7 @@ export default {
     multipleClasses: {
         excludeDirs: [
             'den/',
-            'mist/',
+            'mist_old/',
             'examples/'
         ]
     },
@@ -46,7 +46,7 @@ export default {
         excludeDirs: [
             'den/',
             'ghast/',
-            'mist/',
+            'mist_old/',
             'examples/',
             'editor/',
             'doc/',

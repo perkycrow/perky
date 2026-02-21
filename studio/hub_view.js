@@ -513,8 +513,8 @@ export default class HubView extends EditorComponent {
 
         card.addEventListener('click', () => {
             if (this.#selectionMode) {
-                const checkbox = card.querySelector('.card-checkbox')
-                checkbox.classList.toggle('selected')
+                const cardCheckbox = card.querySelector('.card-checkbox')
+                cardCheckbox.classList.toggle('selected')
                 this.#toggleItemSelection(name)
             } else {
                 this.#openAnimator(name, isCustom)

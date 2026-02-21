@@ -55,7 +55,7 @@ export default class Skill {
     }
 
 
-    trigger () {
+    trigger () { // eslint-disable-line local/class-methods-use-this -- clean
         return true
     }
 

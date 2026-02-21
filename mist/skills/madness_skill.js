@@ -20,7 +20,7 @@ export default class MadnessSkill extends Skill {
         en: 'Charges every time the pending reagents are added to the mixture.'
     }
 
-    trigger (flow) {
+    trigger (flow) { // eslint-disable-line local/class-methods-use-this -- clean
         flow.enqueue('addCluster')
 
         return true

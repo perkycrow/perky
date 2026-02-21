@@ -1,6 +1,5 @@
 import {test, expect, beforeEach} from 'vitest'
 import Board from './board.js'
-import Random from '../../math/random.js'
 
 
 function createReagent (x = 0, y = 0, name = 'flask') {
