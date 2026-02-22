@@ -138,7 +138,8 @@ export default class WebGLRenderer extends BaseRenderer {
             spriteProgram: this.spriteProgram,
             primitiveProgram: this.primitiveProgram,
             textureManager: this.textureManager,
-            shaderEffectRegistry: this.#shaderEffectRegistry
+            shaderEffectRegistry: this.#shaderEffectRegistry,
+            shaderRegistry: this.#shaderRegistry
         }
 
         renderer.init(context)
