@@ -46,6 +46,7 @@ Ajout progressif d'un pipeline 3D au framework Perky.
 | 38 | Light data textures | `render/light_data_texture.js`, shader, renderer | 8 | Done |
 | 39 | Radius culling | `render/light_data_texture.js`, renderer | 3 | Done |
 | 40 | Spotlights | `render/light_3d.js`, `render/light_data_texture.js`, shader | 5 | Done |
+| 41 | Skybox | `render/skybox.js`, `render/shaders/builtin/skybox_shader.js`, `render/webgl/webgl_skybox_renderer.js` | 32 | Done |
 
 ## Architecture actuelle
 
@@ -60,6 +61,7 @@ Ajout progressif d'un pipeline 3D au framework Perky.
 - Blinn-Phong specular (half-vector) pour directionnelle + point lights
 - Textures tilees (REPEAT wrapping) avec UV scale par material
 - Fog lineaire (near/far/color)
+- Skybox procedural (gradient sky/horizon/ground) ou cubemap, rendu apres les meshes avec depth LEQUAL + xyww trick
 - Tint overlay
 
 ### Shadow Mapping
@@ -106,10 +108,10 @@ Fichiers : `render/light_tile_grid.js` (nouveau), `render/services/light_tile_se
 - **OBJ loader** : import de modeles externes
 
 ### Batch 9 — Effets visuels
+- **Skybox cubemap** : loader 6 faces (`TEXTURE_CUBE_MAP`), binding dans `WebGLSkyboxRenderer.flush()`. Le shader et le flag `uHasCubemap` sont deja prets. Sources gratuites : Poly Haven (polyhaven.com/hdris), ambientCG, Humus (humus.name/Textures)
 - **CSG (Constructive Solid Geometry)** : operations booleennes sur meshes (union, subtract, intersect)
 - **Decals** : quads projetes sur les surfaces
 - **Textures animees** : scrolling UV, frame-by-frame
-- **Skybox** : cubemap rendu derriere la scene
 
 ## Pistes futures (par ordre de complexite)
 

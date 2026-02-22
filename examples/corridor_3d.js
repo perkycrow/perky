@@ -1,6 +1,7 @@
 import RenderSystem from '/render/render_system.js'
 import WebGLMeshRenderer from '/render/webgl/webgl_mesh_renderer.js'
 import WebGLBillboardRenderer from '/render/webgl/webgl_billboard_renderer.js'
+import WebGLSkyboxRenderer from '/render/webgl/webgl_skybox_renderer.js'
 import Camera3D from '/render/camera_3d.js'
 import Geometry from '/render/geometry.js'
 import Mesh from '/render/mesh.js'
@@ -9,6 +10,7 @@ import Billboard from '/render/billboard.js'
 import Material3D from '/render/material_3d.js'
 import Light3D from '/render/light_3d.js'
 import Object3D from '/render/object_3d.js'
+import Skybox from '/render/skybox.js'
 import ShadowMap from '/render/shadow_map.js'
 import generateNormalMap from '/render/textures/generate_normal_map.js'
 import {loadImage} from '/application/loaders.js'
@@ -64,9 +66,18 @@ renderSystem.on('resize', ({width, height}) => {
 meshRenderer.lightDirection = [0.2, 0.9, 0.4]
 meshRenderer.ambient = 0.08
 meshRenderer.fogNear = 8
-meshRenderer.fogFar = 28
+meshRenderer.fogFar = 45
 meshRenderer.fogColor = [0.04, 0.04, 0.07]
 meshRenderer.shadowMap = new ShadowMap(renderer.gl, {resolution: 1024})
+
+const skyboxRenderer = new WebGLSkyboxRenderer()
+renderer.registerRenderer(skyboxRenderer)
+skyboxRenderer.camera3d = camera3d
+skyboxRenderer.skybox = new Skybox({
+    skyColor: [0.01, 0.02, 0.06],
+    horizonColor: [0.04, 0.04, 0.07],
+    groundColor: [0.03, 0.03, 0.02]
+})
 
 const billboardRenderer = new WebGLBillboardRenderer()
 renderer.registerRenderer(billboardRenderer)
@@ -259,8 +270,13 @@ function buildScene (textures) {
 
     meshRenderer.lights = lights
 
-    addBox(0, halfH, -CORRIDOR_LENGTH - 0.05, CORRIDOR_WIDTH, CORRIDOR_HEIGHT, 0.1, wallMat).castShadow = false
     addBox(0, halfH, 0.05, CORRIDOR_WIDTH, CORRIDOR_HEIGHT, 0.1, wallMat).castShadow = false
+
+    addBox(0, -0.05, -CORRIDOR_LENGTH - 5, 12, 0.1, 10, floorMat).castShadow = false
+
+    addBox(-halfW, halfH, -CORRIDOR_LENGTH - 0.5, WALL_THICKNESS, CORRIDOR_HEIGHT, 1, wallMat).castShadow = false
+    addBox(halfW, halfH, -CORRIDOR_LENGTH - 0.5, WALL_THICKNESS, CORRIDOR_HEIGHT, 1, wallMat).castShadow = false
+    addBox(0, CORRIDOR_HEIGHT + 0.05, -CORRIDOR_LENGTH - 0.5, CORRIDOR_WIDTH, 0.1, 1, ceilingMat).castShadow = false
 
     spawnDust(lights)
 
@@ -384,8 +400,14 @@ function animate () {
         dz *= speed
     }
 
-    const nx = clamp(camera3d.position.x + dx, -halfW + MARGIN, halfW - MARGIN)
-    const nz = clamp(camera3d.position.z + dz, -CORRIDOR_LENGTH + MARGIN, -MARGIN)
+    let nx = camera3d.position.x + dx
+    let nz = clamp(camera3d.position.z + dz, -CORRIDOR_LENGTH - 9.7, -MARGIN)
+
+    if (nz > -CORRIDOR_LENGTH) {
+        nx = clamp(nx, -halfW + MARGIN, halfW - MARGIN)
+    } else {
+        nx = clamp(nx, -5.7, 5.7)
+    }
 
     camera3d.position.set(nx, EYE_HEIGHT, nz)
     camera3d.rotation.setFromEuler(pitch, yaw, 0, 'YXZ')
