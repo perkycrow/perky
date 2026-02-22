@@ -151,7 +151,7 @@ void main() {
         color = mix(color, uTintColor.rgb, uTintColor.a);
     }
 
-    float dist = length(vWorldPosition);
+    float dist = length(vWorldPosition - uCameraPosition);
     float fogFactor = clamp((uFogFar - dist) / (uFogFar - uFogNear), 0.0, 1.0);
     color = mix(uFogColor, color, fogFactor);
 
