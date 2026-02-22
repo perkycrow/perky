@@ -8,14 +8,34 @@ export default class MeshInstance extends Object3D {
         this.mesh = options.mesh ?? null
         this.texture = options.texture ?? null
         this.tint = options.tint ?? null
+        this.material = options.material ?? null
+    }
+
+
+    get activeTexture () {
+        if (this.material) {
+            return this.material.texture
+        }
+        return this.texture
     }
 
 
     get renderHints () {
-        if (!this.tint) {
+        if (!this.tint && !this.material) {
             return null
         }
-        return {tint: this.tint}
+
+        const hints = {}
+
+        if (this.tint) {
+            hints.tint = this.tint
+        }
+
+        if (this.material) {
+            hints.material = this.material
+        }
+
+        return hints
     }
 
 }

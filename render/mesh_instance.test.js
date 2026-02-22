@@ -1,5 +1,6 @@
 import MeshInstance from './mesh_instance.js'
 import Object3D from './object_3d.js'
+import Material3D from './material_3d.js'
 
 
 describe('MeshInstance', () => {
@@ -15,6 +16,7 @@ describe('MeshInstance', () => {
         expect(mi.mesh).toBe(null)
         expect(mi.texture).toBe(null)
         expect(mi.tint).toBe(null)
+        expect(mi.material).toBe(null)
     })
 
 
@@ -38,20 +40,74 @@ describe('MeshInstance', () => {
     })
 
 
-    describe('renderHints', () => {
-
-        test('returns null when no tint', () => {
-            const mi = new MeshInstance()
-            expect(mi.renderHints).toBe(null)
-        })
-
-        test('returns tint when set', () => {
-            const mi = new MeshInstance({tint: '#ff0000'})
-            expect(mi.renderHints).toEqual({tint: '#ff0000'})
-        })
-
+    test('with material option', () => {
+        const mat = new Material3D({color: [0.5, 0.5, 0.5]})
+        const mi = new MeshInstance({material: mat})
+        expect(mi.material).toBe(mat)
     })
 
+})
+
+
+describe('activeTexture', () => {
+
+    test('returns texture when no material', () => {
+        const tex = {id: 'tex'}
+        const mi = new MeshInstance({texture: tex})
+        expect(mi.activeTexture).toBe(tex)
+    })
+
+
+    test('returns material texture when material is set', () => {
+        const matTex = {id: 'matTex'}
+        const directTex = {id: 'directTex'}
+        const mat = new Material3D({texture: matTex})
+        const mi = new MeshInstance({texture: directTex, material: mat})
+        expect(mi.activeTexture).toBe(matTex)
+    })
+
+
+    test('returns null when neither is set', () => {
+        const mi = new MeshInstance()
+        expect(mi.activeTexture).toBe(null)
+    })
+
+})
+
+
+describe('renderHints', () => {
+
+    test('returns null when no tint and no material', () => {
+        const mi = new MeshInstance()
+        expect(mi.renderHints).toBe(null)
+    })
+
+
+    test('returns tint when set', () => {
+        const mi = new MeshInstance({tint: '#ff0000'})
+        expect(mi.renderHints).toEqual({tint: '#ff0000'})
+    })
+
+
+    test('returns material when set', () => {
+        const mat = new Material3D({color: [0.5, 0.5, 0.5]})
+        const mi = new MeshInstance({material: mat})
+        expect(mi.renderHints).toEqual({material: mat})
+    })
+
+
+    test('returns both tint and material when both set', () => {
+        const mat = new Material3D()
+        const mi = new MeshInstance({tint: '#ff0000', material: mat})
+        const hints = mi.renderHints
+        expect(hints.tint).toBe('#ff0000')
+        expect(hints.material).toBe(mat)
+    })
+
+})
+
+
+describe('transform', () => {
 
     test('inherits Object3D transform', () => {
         const mi = new MeshInstance({x: 1, y: 2, z: 3})

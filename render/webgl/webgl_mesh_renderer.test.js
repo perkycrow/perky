@@ -1,6 +1,8 @@
 import WebGLMeshRenderer from './webgl_mesh_renderer.js'
 import WebGLObjectRenderer from './webgl_object_renderer.js'
 import MeshInstance from '../mesh_instance.js'
+import Material3D from '../material_3d.js'
+import Light3D from '../light_3d.js'
 import Camera3D from '../camera_3d.js'
 
 
@@ -34,11 +36,17 @@ function createMockGL () {
         uniform3fv (loc, data) {
             calls.push({fn: 'uniform3fv', args: [loc, data]})
         },
+        uniform3f (...args) {
+            calls.push({fn: 'uniform3f', args})
+        },
         uniform4f (...args) {
             calls.push({fn: 'uniform4f', args})
         },
         uniform1f (loc, val) {
             calls.push({fn: 'uniform1f', args: [loc, val]})
+        },
+        uniform1fv (loc, data) {
+            calls.push({fn: 'uniform1fv', args: [loc, data]})
         },
         uniform1i (loc, val) {
             calls.push({fn: 'uniform1i', args: [loc, val]})
@@ -66,7 +74,16 @@ function createMockShaderRegistry () {
             uTintColor: 6,
             uFogNear: 7,
             uFogFar: 8,
-            uFogColor: 9
+            uFogColor: 9,
+            uMaterialColor: 10,
+            uMaterialEmissive: 11,
+            uMaterialOpacity: 12,
+            uUnlit: 13,
+            uNumLights: 14,
+            uLightPositions: 15,
+            uLightColors: 16,
+            uLightIntensities: 17,
+            uLightRadii: 18
         },
         attributes: {
             aPosition: 0,
@@ -102,6 +119,16 @@ function createMockTextureManager () {
 }
 
 
+function createRenderer () {
+    const gl = createMockGL()
+    const shaderRegistry = createMockShaderRegistry()
+    const textureManager = createMockTextureManager()
+    const renderer = new WebGLMeshRenderer()
+    renderer.init({gl, shaderRegistry, textureManager})
+    return {renderer, gl, shaderRegistry}
+}
+
+
 describe('WebGLMeshRenderer', () => {
 
     test('extends WebGLObjectRenderer', () => {
@@ -116,94 +143,7 @@ describe('WebGLMeshRenderer', () => {
 
 
     test('init registers mesh shader', () => {
-        const renderer = new WebGLMeshRenderer()
-        const gl = createMockGL()
-        const shaderRegistry = createMockShaderRegistry()
-        const textureManager = createMockTextureManager()
-
-        renderer.init({gl, shaderRegistry, textureManager})
-    })
-
-
-    test('flush with no collected items does nothing', () => {
-        const renderer = new WebGLMeshRenderer()
-        const gl = createMockGL()
-        const shaderRegistry = createMockShaderRegistry()
-        const textureManager = createMockTextureManager()
-
-        renderer.init({gl, shaderRegistry, textureManager})
-        renderer.flush()
-
-        expect(gl.calls.filter(c => c.fn === 'enable').length).toBe(0)
-    })
-
-
-    test('flush with no camera does nothing', () => {
-        const renderer = new WebGLMeshRenderer()
-        const gl = createMockGL()
-        const shaderRegistry = createMockShaderRegistry()
-        const textureManager = createMockTextureManager()
-
-        renderer.init({gl, shaderRegistry, textureManager})
-
-        const mi = new MeshInstance({mesh: {draw () {}}, texture: null})
-        mi.updateWorldMatrix()
-        renderer.collect(mi, 1)
-
-        renderer.flush()
-        expect(gl.calls.filter(c => c.fn === 'enable').length).toBe(0)
-    })
-
-
-    test('flush enables and disables depth test', () => {
-        const renderer = new WebGLMeshRenderer()
-        const gl = createMockGL()
-        const shaderRegistry = createMockShaderRegistry()
-        const textureManager = createMockTextureManager()
-
-        renderer.init({gl, shaderRegistry, textureManager})
-
-        const cam = new Camera3D({z: 5})
-        renderer.camera3d = cam
-
-        const mi = new MeshInstance({mesh: {draw () {}}, texture: null})
-        mi.updateWorldMatrix()
-        renderer.collect(mi, 1)
-
-        gl.calls.length = 0
-        renderer.flush()
-
-        const enableCalls = gl.calls.filter(c => c.fn === 'enable')
-        expect(enableCalls.length).toBe(1)
-        expect(enableCalls[0].args[0]).toBe(gl.DEPTH_TEST)
-
-        const disableCalls = gl.calls.filter(c => c.fn === 'disable')
-        expect(disableCalls.length).toBe(1)
-        expect(disableCalls[0].args[0]).toBe(gl.DEPTH_TEST)
-    })
-
-
-    test('flush draws collected mesh instances', () => {
-        const renderer = new WebGLMeshRenderer()
-        const gl = createMockGL()
-        const shaderRegistry = createMockShaderRegistry()
-        const textureManager = createMockTextureManager()
-
-        renderer.init({gl, shaderRegistry, textureManager})
-
-        const cam = new Camera3D({z: 5})
-        renderer.camera3d = cam
-
-        let drawCalled = false
-        const fakeMesh = {draw () {
-            drawCalled = true
-        }}
-        const mi = new MeshInstance({mesh: fakeMesh, texture: null})
-        mi.updateWorldMatrix()
-        renderer.collect(mi, 1)
-
-        renderer.flush()
-        expect(drawCalled).toBe(true)
+        createRenderer()
     })
 
 
@@ -241,16 +181,145 @@ describe('WebGLMeshRenderer', () => {
     })
 
 
-    test('dispose cleans up', () => {
+    test('lights getter/setter', () => {
         const renderer = new WebGLMeshRenderer()
-        const gl = createMockGL()
-        const shaderRegistry = createMockShaderRegistry()
-        const textureManager = createMockTextureManager()
-
-        renderer.init({gl, shaderRegistry, textureManager})
-        renderer.camera3d = {}
-        renderer.dispose()
-        expect(renderer.camera3d).toBe(null)
+        expect(renderer.lights).toEqual([])
+        const lights = [new Light3D({x: 1})]
+        renderer.lights = lights
+        expect(renderer.lights).toBe(lights)
     })
 
+})
+
+
+describe('flush', () => {
+
+    test('with no collected items does nothing', () => {
+        const {renderer, gl} = createRenderer()
+        renderer.flush()
+        expect(gl.calls.filter(c => c.fn === 'enable').length).toBe(0)
+    })
+
+
+    test('with no camera does nothing', () => {
+        const {renderer, gl} = createRenderer()
+
+        const mi = new MeshInstance({mesh: {draw () {}}, texture: null})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1)
+
+        renderer.flush()
+        expect(gl.calls.filter(c => c.fn === 'enable').length).toBe(0)
+    })
+
+
+    test('enables and disables depth test', () => {
+        const {renderer, gl} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+
+        const mi = new MeshInstance({mesh: {draw () {}}, texture: null})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1)
+
+        gl.calls.length = 0
+        renderer.flush()
+
+        const enableCalls = gl.calls.filter(c => c.fn === 'enable')
+        expect(enableCalls.length).toBe(1)
+        expect(enableCalls[0].args[0]).toBe(gl.DEPTH_TEST)
+
+        const disableCalls = gl.calls.filter(c => c.fn === 'disable')
+        expect(disableCalls.length).toBe(1)
+        expect(disableCalls[0].args[0]).toBe(gl.DEPTH_TEST)
+    })
+
+
+    test('draws collected mesh instances', () => {
+        const {renderer} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+
+        let drawCalled = false
+        const fakeMesh = {draw () {
+            drawCalled = true
+        }}
+        const mi = new MeshInstance({mesh: fakeMesh, texture: null})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1)
+
+        renderer.flush()
+        expect(drawCalled).toBe(true)
+    })
+
+
+    test('uploads material uniforms when material is set', () => {
+        const {renderer, gl} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+
+        const mat = new Material3D({color: [0.5, 0.3, 0.1], emissive: [1, 0, 0], opacity: 0.8, unlit: true})
+        const mi = new MeshInstance({mesh: {draw () {}}, texture: null, material: mat})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1, mi.renderHints)
+
+        gl.calls.length = 0
+        renderer.flush()
+
+        const colorCalls = gl.calls.filter(c => c.fn === 'uniform3fv' && c.args[0] === 10)
+        expect(colorCalls.length).toBeGreaterThanOrEqual(1)
+        expect(colorCalls[0].args[1]).toEqual([0.5, 0.3, 0.1])
+    })
+
+
+    test('uploads light uniforms when lights are set', () => {
+        const {renderer, gl} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+        renderer.lights = [
+            new Light3D({x: 1, y: 2, z: 3, color: [1, 0.9, 0.7], intensity: 1.5, radius: 8})
+        ]
+
+        const mi = new MeshInstance({mesh: {draw () {}}, texture: null})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1)
+
+        gl.calls.length = 0
+        renderer.flush()
+
+        const numLightCalls = gl.calls.filter(c => c.fn === 'uniform1i' && c.args[0] === 14)
+        expect(numLightCalls.length).toBe(1)
+        expect(numLightCalls[0].args[1]).toBe(1)
+
+        const posCalls = gl.calls.filter(c => c.fn === 'uniform3fv' && c.args[0] === 15)
+        expect(posCalls.length).toBe(1)
+        expect(posCalls[0].args[1][0]).toBe(1)
+        expect(posCalls[0].args[1][1]).toBe(2)
+        expect(posCalls[0].args[1][2]).toBe(3)
+    })
+
+
+    test('uses activeTexture from mesh instance', () => {
+        const {renderer, gl} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+
+        const matTex = {id: 'matTex'}
+        const mat = new Material3D({texture: matTex})
+        const mi = new MeshInstance({mesh: {draw () {}}, material: mat})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1)
+
+        gl.calls.length = 0
+        renderer.flush()
+
+        const bindCalls = gl.calls.filter(c => c.fn === 'bindTexture')
+        expect(bindCalls.length).toBe(1)
+    })
+
+})
+
+
+test('dispose cleans up', () => {
+    const {renderer} = createRenderer()
+    renderer.camera3d = {}
+    renderer.lights = [new Light3D()]
+    renderer.dispose()
+    expect(renderer.camera3d).toBe(null)
+    expect(renderer.lights).toEqual([])
 })

@@ -25,6 +25,8 @@ void main() {
 export const MESH_FRAGMENT = `#version 300 es
 precision mediump float;
 
+const int MAX_LIGHTS = 8;
+
 uniform sampler2D uTexture;
 uniform vec3 uLightDirection;
 uniform float uAmbient;
@@ -32,6 +34,17 @@ uniform vec4 uTintColor;
 uniform float uFogNear;
 uniform float uFogFar;
 uniform vec3 uFogColor;
+
+uniform vec3 uMaterialColor;
+uniform vec3 uMaterialEmissive;
+uniform float uMaterialOpacity;
+uniform float uUnlit;
+
+uniform int uNumLights;
+uniform vec3 uLightPositions[MAX_LIGHTS];
+uniform vec3 uLightColors[MAX_LIGHTS];
+uniform float uLightIntensities[MAX_LIGHTS];
+uniform float uLightRadii[MAX_LIGHTS];
 
 in vec2 vTexCoord;
 in vec3 vNormal;
@@ -41,12 +54,29 @@ out vec4 fragColor;
 
 void main() {
     vec4 texColor = texture(uTexture, vTexCoord);
-
+    vec3 baseColor = texColor.rgb * uMaterialColor;
     vec3 normal = normalize(vNormal);
-    float diffuse = max(dot(normal, normalize(uLightDirection)), 0.0);
-    float lighting = uAmbient + (1.0 - uAmbient) * diffuse;
 
-    vec3 color = texColor.rgb * lighting;
+    vec3 lit;
+
+    if (uUnlit > 0.5) {
+        lit = baseColor;
+    } else {
+        float diffuse = max(dot(normal, normalize(uLightDirection)), 0.0);
+        float lighting = uAmbient + (1.0 - uAmbient) * diffuse;
+        lit = baseColor * lighting;
+
+        for (int i = 0; i < MAX_LIGHTS; i++) {
+            if (i >= uNumLights) break;
+            vec3 toLight = uLightPositions[i] - vWorldPosition;
+            float dist = length(toLight);
+            float attenuation = 1.0 - smoothstep(0.0, uLightRadii[i], dist);
+            float nDotL = max(dot(normal, normalize(toLight)), 0.0);
+            lit += baseColor * uLightColors[i] * uLightIntensities[i] * nDotL * attenuation;
+        }
+    }
+
+    vec3 color = lit + uMaterialEmissive;
 
     if (uTintColor.a > 0.0) {
         color = mix(color, uTintColor.rgb, uTintColor.a);
@@ -56,7 +86,7 @@ void main() {
     float fogFactor = clamp((uFogFar - dist) / (uFogFar - uFogNear), 0.0, 1.0);
     color = mix(uFogColor, color, fogFactor);
 
-    fragColor = vec4(color, texColor.a);
+    fragColor = vec4(color, texColor.a * uMaterialOpacity);
 }
 `
 
@@ -74,7 +104,16 @@ export const MESH_SHADER_DEF = {
         'uTintColor',
         'uFogNear',
         'uFogFar',
-        'uFogColor'
+        'uFogColor',
+        'uMaterialColor',
+        'uMaterialEmissive',
+        'uMaterialOpacity',
+        'uUnlit',
+        'uNumLights',
+        'uLightPositions',
+        'uLightColors',
+        'uLightIntensities',
+        'uLightRadii'
     ],
     attributes: ['aPosition', 'aNormal', 'aTexCoord']
 }

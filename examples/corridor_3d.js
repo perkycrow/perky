@@ -4,8 +4,9 @@ import Camera3D from '/render/camera_3d.js'
 import Geometry from '/render/geometry.js'
 import Mesh from '/render/mesh.js'
 import MeshInstance from '/render/mesh_instance.js'
+import Material3D from '/render/material_3d.js'
+import Light3D from '/render/light_3d.js'
 import Object3D from '/render/object_3d.js'
-import Vec3 from '/math/vec3.js'
 import {createElement, createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
@@ -18,7 +19,7 @@ const DOOR_HEIGHT = 2.5
 const DOOR_POSITIONS = [-7, -15, -23, -31]
 const EYE_HEIGHT = 1.6
 const MOVE_SPEED = 4
-const MOUSE_SENSITIVITY = 0.002
+const MOUSE_SENSITIVITY = 0.001
 const MARGIN = 0.3
 
 
@@ -40,7 +41,9 @@ const meshRenderer = new WebGLMeshRenderer()
 renderer.registerRenderer(meshRenderer)
 
 const camera3d = new Camera3D({
-    x: 0, y: EYE_HEIGHT, z: 0,
+    x: 0,
+    y: EYE_HEIGHT,
+    z: 0,
     fov: Math.PI / 3,
     aspect: container.clientWidth / container.clientHeight,
     near: 0.05,
@@ -54,22 +57,29 @@ renderSystem.on('resize', ({width, height}) => {
 })
 
 meshRenderer.lightDirection = [0.2, 0.9, 0.4]
-meshRenderer.ambient = 0.15
-meshRenderer.fogNear = 6
-meshRenderer.fogFar = 25
+meshRenderer.ambient = 0.08
+meshRenderer.fogNear = 8
+meshRenderer.fogFar = 28
 meshRenderer.fogColor = [0.04, 0.04, 0.07]
 
 
 const boxGeo = Geometry.createBox(1, 1, 1)
 const boxMesh = new Mesh(renderer.gl, boxGeo)
 
-const floorTex = createColorTexture('#4a4a42')
-const ceilingTex = createColorTexture('#3a3a38')
-const wallTex = createColorTexture('#5a5a50')
-const doorTex = createColorTexture('#6b4226')
-const frameTex = createColorTexture('#3a3a35')
-const lightTex = createColorTexture('#ffe8a0')
-const trimTex = createColorTexture('#4a4a40')
+const whiteTex = createColorTexture('#ffffff')
+
+const floorMat = new Material3D({texture: whiteTex, color: [0.29, 0.29, 0.26]})
+const ceilingMat = new Material3D({texture: whiteTex, color: [0.23, 0.23, 0.22]})
+const wallMat = new Material3D({texture: whiteTex, color: [0.35, 0.35, 0.31]})
+const doorMat = new Material3D({texture: whiteTex, color: [0.42, 0.26, 0.15]})
+const frameMat = new Material3D({texture: whiteTex, color: [0.23, 0.23, 0.21]})
+const trimMat = new Material3D({texture: whiteTex, color: [0.29, 0.29, 0.25]})
+const lightMat = new Material3D({
+    texture: whiteTex,
+    color: [1.0, 0.91, 0.63],
+    emissive: [0.8, 0.7, 0.4],
+    unlit: true
+})
 
 
 const scene = new Object3D()
@@ -78,28 +88,40 @@ const halfW = CORRIDOR_WIDTH / 2
 const halfL = CORRIDOR_LENGTH / 2
 const halfH = CORRIDOR_HEIGHT / 2
 
-addBox(0, -0.05, -halfL, CORRIDOR_WIDTH, 0.1, CORRIDOR_LENGTH, floorTex)
-addBox(0, CORRIDOR_HEIGHT + 0.05, -halfL, CORRIDOR_WIDTH, 0.1, CORRIDOR_LENGTH, ceilingTex)
+addBox(0, -0.05, -halfL, CORRIDOR_WIDTH, 0.1, CORRIDOR_LENGTH, floorMat)
+addBox(0, CORRIDOR_HEIGHT + 0.05, -halfL, CORRIDOR_WIDTH, 0.1, CORRIDOR_LENGTH, ceilingMat)
 
-addBox(-halfW, halfH, -halfL, WALL_THICKNESS, CORRIDOR_HEIGHT, CORRIDOR_LENGTH, wallTex)
+addBox(-halfW, halfH, -halfL, WALL_THICKNESS, CORRIDOR_HEIGHT, CORRIDOR_LENGTH, wallMat)
 
 buildWallWithDoors(halfW, DOOR_POSITIONS)
 
 for (const dz of DOOR_POSITIONS) {
-    addBox(halfW - WALL_THICKNESS / 2 - 0.02, DOOR_HEIGHT / 2, dz, 0.06, DOOR_HEIGHT - 0.1, DOOR_WIDTH - 0.15, doorTex)
-    addBox(halfW, DOOR_HEIGHT + 0.05, dz, WALL_THICKNESS + 0.04, 0.1, DOOR_WIDTH + 0.15, frameTex)
-    addBox(halfW, DOOR_HEIGHT / 2, dz - DOOR_WIDTH / 2 - 0.05, WALL_THICKNESS + 0.04, DOOR_HEIGHT, 0.1, frameTex)
-    addBox(halfW, DOOR_HEIGHT / 2, dz + DOOR_WIDTH / 2 + 0.05, WALL_THICKNESS + 0.04, DOOR_HEIGHT, 0.1, frameTex)
+    addBox(halfW - WALL_THICKNESS / 2 - 0.02, DOOR_HEIGHT / 2, dz, 0.06, DOOR_HEIGHT - 0.1, DOOR_WIDTH - 0.15, doorMat)
+    addBox(halfW, DOOR_HEIGHT + 0.05, dz, WALL_THICKNESS + 0.04, 0.1, DOOR_WIDTH + 0.15, frameMat)
+    addBox(halfW, DOOR_HEIGHT / 2, dz - DOOR_WIDTH / 2 - 0.05, WALL_THICKNESS + 0.04, DOOR_HEIGHT, 0.1, frameMat)
+    addBox(halfW, DOOR_HEIGHT / 2, dz + DOOR_WIDTH / 2 + 0.05, WALL_THICKNESS + 0.04, DOOR_HEIGHT, 0.1, frameMat)
 }
 
-addBox(0, 0.05, -halfL, CORRIDOR_WIDTH - 0.4, 0.02, CORRIDOR_LENGTH, trimTex)
+addBox(0, 0.05, -halfL, CORRIDOR_WIDTH - 0.4, 0.02, CORRIDOR_LENGTH, trimMat)
+
+const lights = []
 
 for (let z = -3; z > -CORRIDOR_LENGTH; z -= 4) {
-    addBox(0, CORRIDOR_HEIGHT - 0.02, z, 0.6, 0.04, 0.15, lightTex)
+    addBox(0, CORRIDOR_HEIGHT - 0.02, z, 0.6, 0.04, 0.15, lightMat)
+    lights.push(new Light3D({
+        x: 0,
+        y: CORRIDOR_HEIGHT - 0.1,
+        z,
+        color: [1.0, 0.9, 0.7],
+        intensity: 1.2,
+        radius: 6
+    }))
 }
 
-addBox(0, halfH, -CORRIDOR_LENGTH - 0.05, CORRIDOR_WIDTH, CORRIDOR_HEIGHT, 0.1, wallTex)
-addBox(0, halfH, 0.05, CORRIDOR_WIDTH, CORRIDOR_HEIGHT, 0.1, wallTex)
+meshRenderer.lights = lights
+
+addBox(0, halfH, -CORRIDOR_LENGTH - 0.05, CORRIDOR_WIDTH, CORRIDOR_HEIGHT, 0.1, wallMat)
+addBox(0, halfH, 0.05, CORRIDOR_WIDTH, CORRIDOR_HEIGHT, 0.1, wallMat)
 
 
 layer.setContent(scene)
@@ -240,8 +262,8 @@ adoptStyleSheets(document, createStyleSheet(`
 `))
 
 
-function addBox (x, y, z, sx, sy, sz, texture) {
-    const inst = new MeshInstance({mesh: boxMesh, texture})
+function addBox (x, y, z, sx, sy, sz, material) { // eslint-disable-line max-params -- clean
+    const inst = new MeshInstance({mesh: boxMesh, material})
     inst.position.set(x, y, z)
     inst.scale.set(sx, sy, sz)
     scene.addChild(inst)
@@ -260,11 +282,11 @@ function buildWallWithDoors (wallX, doorPositions) {
         if (segStart > gapStart + 0.01) {
             const segLen = segStart - gapStart
             const segCenter = gapStart + segLen / 2
-            addBox(wallX, halfH, segCenter, WALL_THICKNESS, CORRIDOR_HEIGHT, segLen, wallTex)
+            addBox(wallX, halfH, segCenter, WALL_THICKNESS, CORRIDOR_HEIGHT, segLen, wallMat)
         }
 
         addBox(wallX, DOOR_HEIGHT + (CORRIDOR_HEIGHT - DOOR_HEIGHT) / 2, dz,
-            WALL_THICKNESS, CORRIDOR_HEIGHT - DOOR_HEIGHT, DOOR_WIDTH, wallTex)
+            WALL_THICKNESS, CORRIDOR_HEIGHT - DOOR_HEIGHT, DOOR_WIDTH, wallMat)
 
         segStart = gapEnd
     }
@@ -272,19 +294,19 @@ function buildWallWithDoors (wallX, doorPositions) {
     if (segStart > -CORRIDOR_LENGTH + 0.01) {
         const segLen = segStart - (-CORRIDOR_LENGTH)
         const segCenter = -CORRIDOR_LENGTH + segLen / 2
-        addBox(wallX, halfH, segCenter, WALL_THICKNESS, CORRIDOR_HEIGHT, segLen, wallTex)
+        addBox(wallX, halfH, segCenter, WALL_THICKNESS, CORRIDOR_HEIGHT, segLen, wallMat)
     }
 }
 
 
 function createColorTexture (color) {
-    const canvas = document.createElement('canvas')
-    canvas.width = 2
-    canvas.height = 2
-    const ctx = canvas.getContext('2d')
+    const cvs = document.createElement('canvas')
+    cvs.width = 2
+    cvs.height = 2
+    const ctx = cvs.getContext('2d')
     ctx.fillStyle = color
     ctx.fillRect(0, 0, 2, 2)
-    return canvas
+    return cvs
 }
 
 

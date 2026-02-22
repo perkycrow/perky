@@ -72,6 +72,25 @@ describe('MESH_FRAGMENT', () => {
         expect(MESH_FRAGMENT).toContain('uniform vec3 uFogColor')
     })
 
+    test('declares material uniforms', () => {
+        expect(MESH_FRAGMENT).toContain('uniform vec3 uMaterialColor')
+        expect(MESH_FRAGMENT).toContain('uniform vec3 uMaterialEmissive')
+        expect(MESH_FRAGMENT).toContain('uniform float uMaterialOpacity')
+        expect(MESH_FRAGMENT).toContain('uniform float uUnlit')
+    })
+
+    test('declares light uniforms', () => {
+        expect(MESH_FRAGMENT).toContain('uniform int uNumLights')
+        expect(MESH_FRAGMENT).toContain('uniform vec3 uLightPositions[MAX_LIGHTS]')
+        expect(MESH_FRAGMENT).toContain('uniform vec3 uLightColors[MAX_LIGHTS]')
+        expect(MESH_FRAGMENT).toContain('uniform float uLightIntensities[MAX_LIGHTS]')
+        expect(MESH_FRAGMENT).toContain('uniform float uLightRadii[MAX_LIGHTS]')
+    })
+
+    test('contains point light loop', () => {
+        expect(MESH_FRAGMENT).toContain('for (int i = 0; i < MAX_LIGHTS; i++)')
+    })
+
     test('declares fragColor output', () => {
         expect(MESH_FRAGMENT).toContain('out vec4 fragColor')
     })
@@ -100,7 +119,16 @@ describe('MESH_SHADER_DEF', () => {
             'uTintColor',
             'uFogNear',
             'uFogFar',
-            'uFogColor'
+            'uFogColor',
+            'uMaterialColor',
+            'uMaterialEmissive',
+            'uMaterialOpacity',
+            'uUnlit',
+            'uNumLights',
+            'uLightPositions',
+            'uLightColors',
+            'uLightIntensities',
+            'uLightRadii'
         ])
     })
 
