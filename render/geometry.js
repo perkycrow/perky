@@ -136,6 +136,155 @@ export default class Geometry {
         }).computeTangents()
     }
 
+
+    static createSphere (radius = 0.5, widthSegments = 16, heightSegments = 12) {
+        const positions = []
+        const normals = []
+        const uvs = []
+        const indices = []
+
+        for (let iy = 0; iy <= heightSegments; iy++) {
+            const v = iy / heightSegments
+            const phi = v * Math.PI
+            const sinPhi = Math.sin(phi)
+            const cosPhi = Math.cos(phi)
+
+            for (let ix = 0; ix <= widthSegments; ix++) {
+                const u = ix / widthSegments
+                const theta = u * 2 * Math.PI
+                const sinTheta = Math.sin(theta)
+                const cosTheta = Math.cos(theta)
+
+                const nx = cosTheta * sinPhi
+                const ny = cosPhi
+                const nz = sinTheta * sinPhi
+
+                positions.push(nx * radius, ny * radius, nz * radius)
+                normals.push(nx, ny, nz)
+                uvs.push(u, v)
+            }
+        }
+
+        for (let iy = 0; iy < heightSegments; iy++) {
+            for (let ix = 0; ix < widthSegments; ix++) {
+                const a = ix + (widthSegments + 1) * iy
+                const b = ix + (widthSegments + 1) * (iy + 1)
+                const c = (ix + 1) + (widthSegments + 1) * (iy + 1)
+                const d = (ix + 1) + (widthSegments + 1) * iy
+
+                indices.push(a, b, c)
+                indices.push(a, c, d)
+            }
+        }
+
+        return new Geometry({
+            positions,
+            normals,
+            uvs,
+            indices
+        }).computeTangents()
+    }
+
+
+    static createCylinder (options = {}) {
+        return buildCylinder(options)
+    }
+
+}
+
+
+function buildCylinder (options) {
+    const radiusTop = options.radiusTop ?? 0.5
+    const radiusBottom = options.radiusBottom ?? 0.5
+    const height = options.height ?? 1
+    const radialSegments = options.radialSegments ?? 16
+    const openEnded = options.openEnded ?? false
+
+    const positions = []
+    const normals = []
+    const uvs = []
+    const indices = []
+
+    const halfHeight = height / 2
+    const slope = (radiusBottom - radiusTop) / height
+
+    for (let iy = 0; iy <= 1; iy++) {
+        const y = iy === 0 ? -halfHeight : halfHeight
+        const radius = iy === 0 ? radiusBottom : radiusTop
+
+        for (let ix = 0; ix <= radialSegments; ix++) {
+            const u = ix / radialSegments
+            const theta = u * 2 * Math.PI
+            const cosT = Math.cos(theta)
+            const sinT = Math.sin(theta)
+
+            positions.push(cosT * radius, y, sinT * radius)
+
+            const ny = slope
+            const len = Math.sqrt(1 + ny * ny)
+            normals.push(cosT / len, ny / len, sinT / len)
+
+            uvs.push(u, iy)
+        }
+    }
+
+    const stride = radialSegments + 1
+
+    for (let ix = 0; ix < radialSegments; ix++) {
+        const a = ix
+        const b = ix + stride
+        const c = ix + 1 + stride
+        const d = ix + 1
+
+        indices.push(a, b, c)
+        indices.push(a, c, d)
+    }
+
+    if (!openEnded) {
+        if (radiusBottom > 0) {
+            buildCap(positions, normals, uvs, indices, radiusBottom, -halfHeight, -1, radialSegments)
+        }
+        if (radiusTop > 0) {
+            buildCap(positions, normals, uvs, indices, radiusTop, halfHeight, 1, radialSegments)
+        }
+    }
+
+    return new Geometry({
+        positions,
+        normals,
+        uvs,
+        indices
+    }).computeTangents()
+}
+
+
+function buildCap (positions, normals, uvs, indices, radius, y, sign, segments) { // eslint-disable-line max-params -- clean
+    const centerIndex = positions.length / 3
+
+    positions.push(0, y, 0)
+    normals.push(0, sign, 0)
+    uvs.push(0.5, 0.5)
+
+    for (let ix = 0; ix <= segments; ix++) {
+        const theta = (ix / segments) * 2 * Math.PI
+        const cosT = Math.cos(theta)
+        const sinT = Math.sin(theta)
+
+        positions.push(cosT * radius, y, sinT * radius)
+        normals.push(0, sign, 0)
+        uvs.push(cosT * 0.5 + 0.5, sinT * 0.5 + 0.5)
+    }
+
+    for (let ix = 0; ix < segments; ix++) {
+        const current = centerIndex + 1 + ix
+        const next = centerIndex + 1 + ix + 1
+
+        if (sign > 0) {
+            indices.push(centerIndex, current, next)
+        } else {
+            indices.push(centerIndex, next, current)
+        }
+    }
 }
 
 

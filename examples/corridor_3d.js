@@ -67,6 +67,12 @@ meshRenderer.fogColor = [0.04, 0.04, 0.07]
 
 const boxGeo = Geometry.createBox(1, 1, 1)
 const boxMesh = new Mesh(renderer.gl, boxGeo)
+const cylinderGeo = Geometry.createCylinder({radialSegments: 12})
+const cylinderMesh = new Mesh(renderer.gl, cylinderGeo)
+const coneGeo = Geometry.createCylinder({radiusTop: 0, radialSegments: 12})
+const coneMesh = new Mesh(renderer.gl, coneGeo)
+const sphereGeo = Geometry.createSphere(0.5, 12, 8)
+const sphereMesh = new Mesh(renderer.gl, sphereGeo)
 
 const scene = new Object3D()
 const halfW = CORRIDOR_WIDTH / 2
@@ -147,10 +153,46 @@ function buildScene (textures) {
         specular: 0.3
     })
 
-    const lightMat = new Material3D({
+    const ceilingLightMat = new Material3D({
         color: [1.0, 0.91, 0.63],
         emissive: [0.8, 0.7, 0.4],
         unlit: true
+    })
+
+    const woodMat = new Material3D({
+        texture: textures.trimTex,
+        color: [0.35, 0.22, 0.12],
+        uvScale: [2, 2],
+        roughness: 0.8,
+        specular: 0.15
+    })
+
+    const darkMetalMat = new Material3D({
+        texture: textures.trimTex,
+        color: [0.25, 0.25, 0.28],
+        uvScale: [1, 1],
+        roughness: 0.3,
+        specular: 0.6
+    })
+
+    const shadeMat = new Material3D({
+        color: [1.0, 0.85, 0.55],
+        emissive: [0.6, 0.45, 0.2],
+        unlit: true
+    })
+
+    const drawerMat = new Material3D({
+        texture: textures.trimTex,
+        color: [0.4, 0.28, 0.16],
+        uvScale: [1, 1],
+        roughness: 0.7,
+        specular: 0.2
+    })
+
+    const knobMat = new Material3D({
+        color: [0.6, 0.55, 0.45],
+        roughness: 0.3,
+        specular: 0.7
     })
 
     addBox(0, -0.05, -halfL, CORRIDOR_WIDTH, 0.1, CORRIDOR_LENGTH, floorMat)
@@ -171,17 +213,35 @@ function buildScene (textures) {
 
     const lights = []
 
-    for (let z = -3; z > -CORRIDOR_LENGTH; z -= 4) {
-        addBox(0, CORRIDOR_HEIGHT - 0.02, z, 0.6, 0.04, 0.15, lightMat)
+    for (let z = -5; z > -CORRIDOR_LENGTH; z -= 10) {
+        addBox(0, CORRIDOR_HEIGHT - 0.02, z, 0.6, 0.04, 0.15, ceilingLightMat)
         lights.push(new Light3D({
             x: 0,
             y: CORRIDOR_HEIGHT - 0.1,
             z,
             color: [1.0, 0.9, 0.7],
-            intensity: 1.2,
-            radius: 6
+            intensity: 0.8,
+            radius: 8
         }))
     }
+
+    const cabinetMats = {wood: woodMat, drawer: drawerMat, knob: knobMat}
+    const lampMats = {metal: darkMetalMat, shade: shadeMat}
+
+    buildTable(-halfW + 0.55, -4, woodMat, darkMetalMat)
+    buildLamp(-halfW + 0.45, -4, lights, lampMats)
+
+    buildCabinet(-halfW + 0.4, -11, cabinetMats)
+    buildLamp(-halfW + 0.45, -12.2, lights, lampMats)
+
+    buildTable(-halfW + 0.55, -19, woodMat, darkMetalMat)
+    buildLamp(-halfW + 0.45, -19, lights, lampMats)
+
+    buildCabinet(-halfW + 0.4, -27, cabinetMats)
+    buildLamp(-halfW + 0.45, -28.2, lights, lampMats)
+
+    buildTable(-halfW + 0.55, -35, woodMat, darkMetalMat)
+    buildLamp(-halfW + 0.45, -35, lights, lampMats)
 
     meshRenderer.lights = lights
 
@@ -336,6 +396,101 @@ function addBox (x, y, z, sx, sy, sz, material) { // eslint-disable-line max-par
     inst.scale.set(sx, sy, sz)
     scene.addChild(inst)
     return inst
+}
+
+
+function addCylinder (x, y, z, sx, sy, sz, material) { // eslint-disable-line max-params -- clean
+    const inst = new MeshInstance({mesh: cylinderMesh, material})
+    inst.position.set(x, y, z)
+    inst.scale.set(sx, sy, sz)
+    scene.addChild(inst)
+    return inst
+}
+
+
+function addCone (x, y, z, sx, sy, sz, material) { // eslint-disable-line max-params -- clean
+    const inst = new MeshInstance({mesh: coneMesh, material})
+    inst.position.set(x, y, z)
+    inst.scale.set(sx, sy, sz)
+    scene.addChild(inst)
+    return inst
+}
+
+
+function addSphere (x, y, z, r, material) { // eslint-disable-line max-params -- clean
+    const inst = new MeshInstance({mesh: sphereMesh, material})
+    inst.position.set(x, y, z)
+    inst.scale.set(r * 2, r * 2, r * 2)
+    scene.addChild(inst)
+    return inst
+}
+
+
+function buildTable (x, z, woodMat, metalMat) {
+    const tableH = 0.75
+    const topW = 0.8
+    const topD = 0.5
+    const topThick = 0.04
+    const legR = 0.02
+    const legH = tableH - topThick
+
+    addBox(x, tableH - topThick / 2, z, topW, topThick, topD, woodMat)
+
+    const legInsetX = topW / 2 - 0.06
+    const legInsetZ = topD / 2 - 0.06
+    for (const ox of [-legInsetX, legInsetX]) {
+        for (const oz of [-legInsetZ, legInsetZ]) {
+            addCylinder(x + ox, legH / 2, z + oz, legR * 2, legH, legR * 2, metalMat)
+        }
+    }
+}
+
+
+function buildCabinet (x, z, materials) {
+    const cabinetH = 0.9
+    const cabinetW = 0.6
+    const cabinetD = 0.4
+
+    addBox(x, cabinetH / 2, z, cabinetW, cabinetH, cabinetD, materials.wood)
+
+    const drawerH = 0.18
+    const drawerGap = 0.04
+    const drawerW = cabinetW - 0.06
+    const drawerD = 0.02
+    const frontZ = z + cabinetD / 2 + 0.005
+
+    for (let i = 0; i < 3; i++) {
+        const dy = 0.12 + i * (drawerH + drawerGap)
+        addBox(x, dy + drawerH / 2, frontZ, drawerW, drawerH, drawerD, materials.drawer)
+        addSphere(x, dy + drawerH / 2, frontZ + 0.02, 0.015, materials.knob)
+    }
+}
+
+
+function buildLamp (x, z, lights, materials) {
+    const baseH = 0.02
+    const stemH = 0.35
+    const shadeH = 0.18
+    const tableTop = 0.75
+
+    const baseY = tableTop + baseH / 2
+    addCylinder(x, baseY, z, 0.08, baseH, 0.08, materials.metal)
+
+    const stemY = tableTop + baseH + stemH / 2
+    addCylinder(x, stemY, z, 0.02, stemH, 0.02, materials.metal)
+
+    const shadeY = tableTop + baseH + stemH + shadeH / 2
+    addCone(x, shadeY, z, 0.22, shadeH, 0.22, materials.shade)
+
+    const lightY = tableTop + baseH + stemH + shadeH * 0.3
+    lights.push(new Light3D({
+        x,
+        y: lightY,
+        z,
+        color: [1.0, 0.85, 0.55],
+        intensity: 0.7,
+        radius: 4
+    }))
 }
 
 

@@ -235,4 +235,122 @@ describe('Geometry', () => {
 
     })
 
+
+    describe('createSphere', () => {
+
+        test('produces correct vertex and index counts', () => {
+            const sphere = Geometry.createSphere(1, 16, 12)
+            expect(sphere.vertexCount).toBe(17 * 13)
+            expect(sphere.indexCount).toBe(16 * 12 * 6)
+        })
+
+        test('normals are unit length', () => {
+            const sphere = Geometry.createSphere(1, 8, 6)
+            for (let i = 0; i < sphere.normals.length; i += 3) {
+                const nx = sphere.normals[i]
+                const ny = sphere.normals[i + 1]
+                const nz = sphere.normals[i + 2]
+                const len = Math.sqrt(nx * nx + ny * ny + nz * nz)
+                expect(Math.abs(len - 1)).toBeLessThan(1e-5)
+            }
+        })
+
+        test('positions are at radius distance from center', () => {
+            const sphere = Geometry.createSphere(2, 8, 6)
+            for (let i = 0; i < sphere.positions.length; i += 3) {
+                const x = sphere.positions[i]
+                const y = sphere.positions[i + 1]
+                const z = sphere.positions[i + 2]
+                const dist = Math.sqrt(x * x + y * y + z * z)
+                expect(Math.abs(dist - 2)).toBeLessThan(1e-5)
+            }
+        })
+
+        test('indices are in range', () => {
+            const sphere = Geometry.createSphere(1, 8, 6)
+            for (let i = 0; i < sphere.indices.length; i++) {
+                expect(sphere.indices[i]).toBeGreaterThanOrEqual(0)
+                expect(sphere.indices[i]).toBeLessThan(sphere.vertexCount)
+            }
+        })
+
+        test('has tangents computed', () => {
+            const sphere = Geometry.createSphere(1, 8, 6)
+            expect(sphere.tangents).toBeInstanceOf(Float32Array)
+            expect(sphere.tangents.length).toBe(sphere.vertexCount * 3)
+        })
+
+        test('default radius is 0.5', () => {
+            const sphere = Geometry.createSphere()
+            let maxDist = 0
+            for (let i = 0; i < sphere.positions.length; i += 3) {
+                const x = sphere.positions[i]
+                const y = sphere.positions[i + 1]
+                const z = sphere.positions[i + 2]
+                maxDist = Math.max(maxDist, Math.sqrt(x * x + y * y + z * z))
+            }
+            expect(Math.abs(maxDist - 0.5)).toBeLessThan(1e-5)
+        })
+
+    })
+
+
+    describe('createCylinder', () => {
+
+        test('produces correct vertex and index counts', () => {
+            const cyl = Geometry.createCylinder({radialSegments: 8})
+            const tubeVerts = (8 + 1) * 2
+            const capVerts = (8 + 1 + 1) * 2
+            expect(cyl.vertexCount).toBe(tubeVerts + capVerts)
+            const tubeIndices = 8 * 6
+            const capIndices = 8 * 3 * 2
+            expect(cyl.indexCount).toBe(tubeIndices + capIndices)
+        })
+
+        test('open ended has no cap vertices', () => {
+            const cyl = Geometry.createCylinder({radialSegments: 8, openEnded: true})
+            expect(cyl.vertexCount).toBe((8 + 1) * 2)
+            expect(cyl.indexCount).toBe(8 * 6)
+        })
+
+        test('cone has no top cap', () => {
+            const cone = Geometry.createCylinder({radiusTop: 0, radialSegments: 8})
+            const tubeVerts = (8 + 1) * 2
+            const bottomCapVerts = 8 + 1 + 1
+            expect(cone.vertexCount).toBe(tubeVerts + bottomCapVerts)
+        })
+
+        test('normals are unit length', () => {
+            const cyl = Geometry.createCylinder({radialSegments: 8})
+            for (let i = 0; i < cyl.normals.length; i += 3) {
+                const nx = cyl.normals[i]
+                const ny = cyl.normals[i + 1]
+                const nz = cyl.normals[i + 2]
+                const len = Math.sqrt(nx * nx + ny * ny + nz * nz)
+                expect(Math.abs(len - 1)).toBeLessThan(1e-5)
+            }
+        })
+
+        test('indices are in range', () => {
+            const cyl = Geometry.createCylinder({radialSegments: 8})
+            for (let i = 0; i < cyl.indices.length; i++) {
+                expect(cyl.indices[i]).toBeGreaterThanOrEqual(0)
+                expect(cyl.indices[i]).toBeLessThan(cyl.vertexCount)
+            }
+        })
+
+        test('has tangents computed', () => {
+            const cyl = Geometry.createCylinder({radialSegments: 8})
+            expect(cyl.tangents).toBeInstanceOf(Float32Array)
+            expect(cyl.tangents.length).toBe(cyl.vertexCount * 3)
+        })
+
+        test('default values produce valid geometry', () => {
+            const cyl = Geometry.createCylinder()
+            expect(cyl.vertexCount).toBeGreaterThan(0)
+            expect(cyl.indexCount).toBeGreaterThan(0)
+        })
+
+    })
+
 })
