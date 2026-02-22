@@ -12,6 +12,7 @@ import Light3D from '/render/light_3d.js'
 import Object3D from '/render/object_3d.js'
 import Skybox from '/render/skybox.js'
 import ShadowMap from '/render/shadow_map.js'
+import CSG from '/render/csg/csg.js'
 import generateNormalMap from '/render/textures/generate_normal_map.js'
 import {loadImage} from '/application/loaders.js'
 import {createElement, createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
@@ -277,6 +278,8 @@ function buildScene (textures) {
     addBox(-halfW, halfH, -CORRIDOR_LENGTH - 0.5, WALL_THICKNESS, CORRIDOR_HEIGHT, 1, wallMat).castShadow = false
     addBox(halfW, halfH, -CORRIDOR_LENGTH - 0.5, WALL_THICKNESS, CORRIDOR_HEIGHT, 1, wallMat).castShadow = false
     addBox(0, CORRIDOR_HEIGHT + 0.05, -CORRIDOR_LENGTH - 0.5, CORRIDOR_WIDTH, 0.1, 1, ceilingMat).castShadow = false
+
+    buildCSGDecoration(0, -CORRIDOR_LENGTH - 4, wallMat)
 
     spawnDust(lights)
 
@@ -608,6 +611,24 @@ function buildWallWithDoors (wallX, doorPositions) {
         const segCenter = -CORRIDOR_LENGTH + segLen / 2
         addBox(wallX, halfH, segCenter, WALL_THICKNESS, CORRIDOR_HEIGHT, segLen, wallMat).castShadow = false
     }
+}
+
+
+function buildCSGDecoration (x, z, material) {
+    const boxCSG = CSG.fromGeometry(Geometry.createBox(1, 1, 1))
+    const sphereCSG = CSG.fromGeometry(Geometry.createSphere(0.65, 16, 12))
+    const result = boxCSG.subtract(sphereCSG)
+    const geo = result.toGeometry()
+    const mesh = new Mesh(renderer.gl, geo)
+
+    const pedestal = addBox(x, 0.5, z, 0.6, 1, 0.6, material)
+    pedestal.castShadow = true
+
+    const piece = new MeshInstance({mesh, material})
+    piece.position.set(x, 1.5, z)
+    piece.scale.set(0.8, 0.8, 0.8)
+    piece.rotation.setFromEuler(Math.PI / 6, Math.PI / 4, 0, 'YXZ')
+    scene.addChild(piece)
 }
 
 

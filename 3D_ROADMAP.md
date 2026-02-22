@@ -47,6 +47,8 @@ Ajout progressif d'un pipeline 3D au framework Perky.
 | 39 | Radius culling | `render/light_data_texture.js`, renderer | 3 | Done |
 | 40 | Spotlights | `render/light_3d.js`, `render/light_data_texture.js`, shader | 5 | Done |
 | 41 | Skybox | `render/skybox.js`, `render/shaders/builtin/skybox_shader.js`, `render/webgl/webgl_skybox_renderer.js` | 32 | Done |
+| 42 | CSG Phase 1 | `render/csg/csg_vertex.js`, `csg_polygon.js`, `csg_plane.js`, `csg_node.js`, `csg.js` | 43 | Done |
+| 43 | Corridor CSG demo | `examples/corridor_3d.js` | - | Done |
 
 ## Architecture actuelle
 
