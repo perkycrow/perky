@@ -15,7 +15,7 @@ export default class World extends PerkyModule {
             return
         }
 
-        this.preUpdate(deltaTime, context)
+        this.preUpdate?.(deltaTime, context)
 
         for (const entity of this.entities) {
             if (entity.started) {
@@ -23,17 +23,7 @@ export default class World extends PerkyModule {
             }
         }
 
-        this.postUpdate(deltaTime, context)
-    }
-
-
-    preUpdate () {
-
-    }
-
-
-    postUpdate () {
-
+        this.postUpdate?.(deltaTime, context)
     }
 
 }
