@@ -44,12 +44,14 @@ Ajout progressif d'un pipeline 3D au framework Perky.
 | 36 | Corridor shadows | `examples/corridor_3d.js` | - | Done |
 | 37 | castShadow property | `render/mesh_instance.js`, renderer | 2 | Done |
 | 38 | Light data textures | `render/light_data_texture.js`, shader, renderer | 8 | Done |
+| 39 | Radius culling | `render/light_data_texture.js`, renderer | 3 | Done |
+| 40 | Spotlights | `render/light_3d.js`, `render/light_data_texture.js`, shader | 5 | Done |
 
 ## Architecture actuelle
 
 ### Rendering (Forward)
 - 1 lumiere directionnelle globale (`lightDirection` + `ambient`)
-- Jusqu'a ~256 point lights (`Light3D`) via texture de donnees `RGBA32F`, triees par distance a la camera
+- Jusqu'a ~256 point lights et spotlights (`Light3D`) via texture de donnees `RGBA32F` (4 texels/light), triees par distance a la camera, culling par radius+fogFar
 - Shadow mapping directionnel avec PCF 3x3 (bias dynamique base sur l'angle surface/lumiere)
 - Materials (`Material3D`) : color, emissive, opacity, unlit, uvScale, roughness, specular, normalMap, normalStrength
 - Normal mapping auto-genere via filtre Sobel (`generateNormalMap`)
@@ -77,7 +79,7 @@ Ajout progressif d'un pipeline 3D au framework Perky.
 
 ### Gestion des lights
 
-Les lights sont stockees dans une texture `RGBA32F` (2 texels par light : position+intensity, color+radius) lue avec `texelFetch`. Capacite par defaut ~256 lights. Le renderer trie les lights par distance a la camera avant upload. Le shader boucle sur `uNumLights` sans borne constante. Les lights lointaines sont masquees par le fog en pratique.
+Les lights sont stockees dans une texture `RGBA32F` (4 texels par light : position+intensity, color+radius, direction+coneCos, penumbraCos) lue avec `texelFetch`. Capacite par defaut ~256 lights. Le renderer trie les lights par distance a la camera et filtre par `distance - radius > fogFar` avant upload. Le shader boucle sur `uNumLights` sans borne constante. Les spotlights utilisent `smoothstep(coneCos, penumbraCos, dot(-lightDir, spotDir))` pour le cone ; les point lights (`coneCos = -1`) sautent ce calcul.
 
 ## Prochaines etapes
 
@@ -101,8 +103,6 @@ Seulement si > 100 lights visibles simultanement. Grille 2D screen space (ex: 16
 Fichiers : `render/light_tile_grid.js` (nouveau), `render/services/light_tile_service.js` (nouveau, optionnel), shader, renderer.
 
 ### Batch 8 — Ameliorations immediates
-- **Spotlights** : extension de Light3D avec direction + cone angle + penumbra
-- **Radius culling** : avant le tri par distance, eliminer les lights dont `distance > radius`
 - **OBJ loader** : import de modeles externes
 
 ### Batch 9 — Effets visuels

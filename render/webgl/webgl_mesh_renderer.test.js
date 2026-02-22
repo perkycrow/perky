@@ -362,6 +362,7 @@ describe('flush', () => {
     test('uploads light data via texture', () => {
         const {renderer, gl} = createRenderer()
         renderer.camera3d = new Camera3D({x: 0, y: 0, z: 0})
+        renderer.fogFar = 200
         renderer.lights = [
             new Light3D({x: 0, y: 0, z: -100}),
             new Light3D({x: 0, y: 0, z: -1}),
@@ -379,8 +380,8 @@ describe('flush', () => {
         expect(subCalls.length).toBe(1)
         const data = subCalls[0].args[8]
         expect(data[2]).toBe(-1)
-        expect(data[10]).toBe(-50)
-        expect(data[18]).toBe(-100)
+        expect(data[18]).toBe(-50)
+        expect(data[34]).toBe(-100)
     })
 
 

@@ -231,8 +231,11 @@ function buildScene (textures) {
             y: CORRIDOR_HEIGHT - 0.1,
             z,
             color: [1.0, 0.9, 0.7],
-            intensity: 0.8,
-            radius: 8
+            intensity: 1.0,
+            radius: 10,
+            direction: [0, -1, 0],
+            angle: 45,
+            penumbra: 0.3
         }))
     }
 
@@ -273,6 +276,7 @@ const dustMat = new Material3D({
 })
 
 const dustParticles = []
+const tableLamps = []
 let time = 0
 
 
@@ -388,6 +392,13 @@ function animate () {
     camera3d.markDirty()
 
     time += dt
+    for (const lamp of tableLamps) {
+        const phase = lamp.position.z * 3.7
+        const flicker = Math.sin(time * 6 + phase)
+            + Math.sin(time * 14.3 + phase * 1.3) * 0.5
+            + Math.sin(time * 31 + phase * 0.7) * 0.3
+        lamp.intensity = 0.7 + flicker * 0.12
+    }
     updateDust(dt)
 
     layer.render()
@@ -537,14 +548,16 @@ function buildLamp (x, z, lights, materials) {
     addCone(x, shadeY, z, 0.22, shadeH, 0.22, materials.shade)
 
     const lightY = tableTop + baseH + stemH + shadeH * 0.3
-    lights.push(new Light3D({
+    const lamp = new Light3D({
         x,
         y: lightY,
         z,
         color: [1.0, 0.85, 0.55],
         intensity: 0.7,
         radius: 4
-    }))
+    })
+    lights.push(lamp)
+    tableLamps.push(lamp)
 }
 
 

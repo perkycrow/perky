@@ -50,7 +50,7 @@ describe('LightDataTexture', () => {
         const texCalls = gl.calls.filter(c => c.fn === 'texImage2D')
         expect(texCalls.length).toBe(1)
         expect(texCalls[0].args[2]).toBe(gl.RGBA32F)
-        expect(texCalls[0].args[3]).toBe(2)
+        expect(texCalls[0].args[3]).toBe(4)
         expect(texCalls[0].args[4]).toBe(256)
     })
 
@@ -90,7 +90,7 @@ describe('update', () => {
     })
 
 
-    test('packs light data and uploads to texture', () => {
+    test('packs point light data with 16 floats per light', () => {
         const gl = createMockGL()
         const ldt = new LightDataTexture(gl)
         const lights = [
@@ -111,6 +111,52 @@ describe('update', () => {
         expect(data[5]).toBe(0.5)
         expect(data[6]).toBe(0)
         expect(data[7]).toBe(8)
+        expect(data[8]).toBe(0)
+        expect(data[9]).toBe(0)
+        expect(data[10]).toBe(0)
+        expect(data[11]).toBe(-1)
+        expect(data[12]).toBe(0)
+    })
+
+
+    test('packs spotlight data with direction and cone angles', () => {
+        const gl = createMockGL()
+        const ldt = new LightDataTexture(gl)
+        const lights = [
+            new Light3D({
+                x: 0,
+                y: 5,
+                z: 0,
+                direction: [0, -1, 0],
+                angle: 30,
+                penumbra: 0.15
+            })
+        ]
+        gl.calls.length = 0
+        ldt.update(lights, new Vec3(0, 0, 0))
+
+        const data = gl.calls.find(c => c.fn === 'texSubImage2D').args[8]
+        expect(data[8]).toBeCloseTo(0)
+        expect(data[9]).toBeCloseTo(-1)
+        expect(data[10]).toBeCloseTo(0)
+        expect(data[11]).toBeCloseTo(Math.cos(30 * Math.PI / 180))
+        expect(data[12]).toBeCloseTo(Math.cos(30 * 0.85 * Math.PI / 180))
+    })
+
+
+    test('normalizes spotlight direction', () => {
+        const gl = createMockGL()
+        const ldt = new LightDataTexture(gl)
+        const lights = [
+            new Light3D({direction: [0, -2, 0]})
+        ]
+        gl.calls.length = 0
+        ldt.update(lights, new Vec3(0, 0, 0))
+
+        const data = gl.calls.find(c => c.fn === 'texSubImage2D').args[8]
+        expect(data[8]).toBeCloseTo(0)
+        expect(data[9]).toBeCloseTo(-1)
+        expect(data[10]).toBeCloseTo(0)
     })
 
 
@@ -127,8 +173,8 @@ describe('update', () => {
 
         const data = gl.calls.find(c => c.fn === 'texSubImage2D').args[8]
         expect(data[3]).toBe(2)
-        expect(data[11]).toBe(3)
-        expect(data[19]).toBe(1)
+        expect(data[19]).toBe(3)
+        expect(data[35]).toBe(1)
     })
 
 
@@ -156,8 +202,45 @@ describe('update', () => {
         const sub = gl.calls.find(c => c.fn === 'texSubImage2D')
         expect(sub.args[2]).toBe(0)
         expect(sub.args[3]).toBe(0)
-        expect(sub.args[4]).toBe(2)
+        expect(sub.args[4]).toBe(4)
         expect(sub.args[5]).toBe(2)
+    })
+
+
+    test('culls lights beyond fogFar + radius', () => {
+        const gl = createMockGL()
+        const ldt = new LightDataTexture(gl)
+        const lights = [
+            new Light3D({x: 0, y: 0, z: -5, radius: 3}),
+            new Light3D({x: 0, y: 0, z: -100, radius: 5})
+        ]
+        gl.calls.length = 0
+        const count = ldt.update(lights, new Vec3(0, 0, 0), 20)
+        expect(count).toBe(1)
+    })
+
+
+    test('keeps light within fogFar when radius reaches', () => {
+        const gl = createMockGL()
+        const ldt = new LightDataTexture(gl)
+        const lights = [
+            new Light3D({x: 0, y: 0, z: -25, radius: 10})
+        ]
+        gl.calls.length = 0
+        const count = ldt.update(lights, new Vec3(0, 0, 0), 20)
+        expect(count).toBe(1)
+    })
+
+
+    test('no culling when fogFar is 0', () => {
+        const gl = createMockGL()
+        const ldt = new LightDataTexture(gl)
+        const lights = [
+            new Light3D({x: 0, y: 0, z: -1000, radius: 1})
+        ]
+        gl.calls.length = 0
+        const count = ldt.update(lights, new Vec3(0, 0, 0), 0)
+        expect(count).toBe(1)
     })
 
 })

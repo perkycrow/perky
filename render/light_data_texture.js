@@ -1,3 +1,6 @@
+const DEG2RAD = Math.PI / 180
+
+
 export default class LightDataTexture {
 
     #gl = null
@@ -8,7 +11,7 @@ export default class LightDataTexture {
     constructor (gl, options = {}) {
         this.#gl = gl
         this.#capacity = options.capacity ?? 256
-        this.#buffer = new Float32Array(this.#capacity * 8)
+        this.#buffer = new Float32Array(this.#capacity * 16)
         this.#createTexture()
     }
 
@@ -23,19 +26,24 @@ export default class LightDataTexture {
     }
 
 
-    update (lights, cameraPosition) {
-        const count = Math.min(lights.length, this.#capacity)
+    update (lights, cameraPosition, fogFar) {
+        const sorted = sortByDistance(lights, cameraPosition)
+
+        const visible = fogFar > 0
+            ? sorted.filter(entry => Math.sqrt(entry.dist) - entry.light.radius <= fogFar)
+            : sorted
+
+        const count = Math.min(visible.length, this.#capacity)
 
         if (count === 0) {
             return 0
         }
 
-        const sorted = sortByDistance(lights, cameraPosition)
         const buffer = this.#buffer
 
         for (let i = 0; i < count; i++) {
-            const light = sorted[i].light
-            const offset = i * 8
+            const light = visible[i].light
+            const offset = i * 16
             buffer[offset] = light.position.x
             buffer[offset + 1] = light.position.y
             buffer[offset + 2] = light.position.z
@@ -44,15 +52,37 @@ export default class LightDataTexture {
             buffer[offset + 5] = light.color[1]
             buffer[offset + 6] = light.color[2]
             buffer[offset + 7] = light.radius
+
+            if (light.direction) {
+                const dx = light.direction.x
+                const dy = light.direction.y
+                const dz = light.direction.z
+                const len = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1
+                buffer[offset + 8] = dx / len
+                buffer[offset + 9] = dy / len
+                buffer[offset + 10] = dz / len
+                buffer[offset + 11] = Math.cos(light.angle * DEG2RAD)
+                buffer[offset + 12] = Math.cos(light.angle * (1 - light.penumbra) * DEG2RAD)
+            } else {
+                buffer[offset + 8] = 0
+                buffer[offset + 9] = 0
+                buffer[offset + 10] = 0
+                buffer[offset + 11] = -1
+                buffer[offset + 12] = 0
+            }
+
+            buffer[offset + 13] = 0
+            buffer[offset + 14] = 0
+            buffer[offset + 15] = 0
         }
 
         const gl = this.#gl
         gl.bindTexture(gl.TEXTURE_2D, this.#texture)
         gl.texSubImage2D(
             gl.TEXTURE_2D, 0, 0, 0,
-            2, count,
+            4, count,
             gl.RGBA, gl.FLOAT,
-            buffer.subarray(0, count * 8)
+            buffer.subarray(0, count * 16)
         )
         gl.bindTexture(gl.TEXTURE_2D, null)
 
@@ -78,7 +108,7 @@ export default class LightDataTexture {
         gl.bindTexture(gl.TEXTURE_2D, this.#texture)
         gl.texImage2D(
             gl.TEXTURE_2D, 0, gl.RGBA32F,
-            2, this.#capacity, 0,
+            4, this.#capacity, 0,
             gl.RGBA, gl.FLOAT, null
         )
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)

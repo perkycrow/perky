@@ -146,6 +146,14 @@ describe('MESH_FRAGMENT', () => {
     test('reads lights with texelFetch', () => {
         expect(MESH_FRAGMENT).toContain('texelFetch(uLightData, ivec2(0, i), 0)')
         expect(MESH_FRAGMENT).toContain('texelFetch(uLightData, ivec2(1, i), 0)')
+        expect(MESH_FRAGMENT).toContain('texelFetch(uLightData, ivec2(2, i), 0)')
+        expect(MESH_FRAGMENT).toContain('texelFetch(uLightData, ivec2(3, i), 0)')
+    })
+
+
+    test('contains spotlight cone calculation', () => {
+        expect(MESH_FRAGMENT).toContain('spotDir.w > -1.0')
+        expect(MESH_FRAGMENT).toContain('dot(-lightDir, normalize(spotDir.xyz))')
     })
 
     test('loops over uNumLights directly', () => {

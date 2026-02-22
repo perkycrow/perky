@@ -122,10 +122,18 @@ void main() {
         for (int i = 0; i < uNumLights; i++) {
             vec4 posInt = texelFetch(uLightData, ivec2(0, i), 0);
             vec4 colRad = texelFetch(uLightData, ivec2(1, i), 0);
+            vec4 spotDir = texelFetch(uLightData, ivec2(2, i), 0);
+            vec4 spotExtra = texelFetch(uLightData, ivec2(3, i), 0);
             vec3 toLight = posInt.xyz - vWorldPosition;
             float dist = length(toLight);
             float attenuation = 1.0 - smoothstep(0.0, colRad.w, dist);
             vec3 lightDir = normalize(toLight);
+
+            if (spotDir.w > -1.0) {
+                float cosTheta = dot(-lightDir, normalize(spotDir.xyz));
+                attenuation *= smoothstep(spotDir.w, spotExtra.x, cosTheta);
+            }
+
             float nDotL = max(dot(normal, lightDir), 0.0);
             lit += baseColor * colRad.xyz * posInt.w * nDotL * attenuation;
 

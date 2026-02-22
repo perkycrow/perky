@@ -128,7 +128,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
         gl.clear(gl.DEPTH_BUFFER_BIT)
 
-        const numLights = this.#lightDataTexture.update(this.#lights, this.#camera3d.position)
+        const numLights = this.#lightDataTexture.update(this.#lights, this.#camera3d.position, this.#fogFar)
         this.#setupUniforms(gl, numLights)
 
         for (const {object, hints} of this.collected) {

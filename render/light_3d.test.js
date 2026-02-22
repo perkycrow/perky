@@ -13,6 +13,9 @@ describe('Light3D', () => {
         expect(light.color).toEqual([1, 1, 1])
         expect(light.intensity).toBe(1)
         expect(light.radius).toBe(10)
+        expect(light.direction).toBe(null)
+        expect(light.angle).toBe(30)
+        expect(light.penumbra).toBe(0.15)
     })
 
 
@@ -41,6 +44,38 @@ describe('Light3D', () => {
         expect(light.color).toEqual([1, 1, 1])
         expect(light.intensity).toBe(0.5)
         expect(light.radius).toBe(10)
+    })
+
+})
+
+
+describe('spotlight', () => {
+
+    test('creates spotlight with direction', () => {
+        const light = new Light3D({direction: [0, -1, 0]})
+        expect(light.direction).toBeInstanceOf(Vec3)
+        expect(light.direction.x).toBe(0)
+        expect(light.direction.y).toBe(-1)
+        expect(light.direction.z).toBe(0)
+    })
+
+
+    test('custom angle and penumbra', () => {
+        const light = new Light3D({
+            direction: [1, 0, 0],
+            angle: 45,
+            penumbra: 0.3
+        })
+        expect(light.angle).toBe(45)
+        expect(light.penumbra).toBe(0.3)
+    })
+
+
+    test('direction defaults components to 0 except y to -1', () => {
+        const light = new Light3D({direction: [0]})
+        expect(light.direction.x).toBe(0)
+        expect(light.direction.y).toBe(-1)
+        expect(light.direction.z).toBe(0)
     })
 
 })
