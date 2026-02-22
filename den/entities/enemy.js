@@ -102,7 +102,7 @@ export default class Enemy extends Entity {
             return
         }
 
-        this.position.add(this.velocity.clone().multiplyScalar(deltaTime))
+        this.applyVelocity(deltaTime)
     }
 
 

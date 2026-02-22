@@ -49,7 +49,7 @@ export default class Projectile extends Entity {
             this.velocity.x -= (this.velocity.x / speed) * dragForce * 0.3
         }
 
-        this.position.add(this.velocity.clone().multiplyScalar(deltaTime))
+        this.applyVelocity(deltaTime)
 
         this.time += deltaTime
 

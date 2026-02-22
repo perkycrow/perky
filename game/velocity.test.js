@@ -65,4 +65,36 @@ describe('Velocity', () => {
         expect(entity.velocity).toBeUndefined()
     })
 
+
+    test('applyVelocity adds velocity * deltaTime to position', () => {
+        const entity = new Entity({x: 0, y: 0})
+
+        entity.create(Velocity, {x: 10, y: 5})
+        entity.applyVelocity(0.5)
+
+        expect(entity.x).toBe(5)
+        expect(entity.y).toBe(2.5)
+    })
+
+
+    test('clampVelocity caps to maxSpeed', () => {
+        const entity = new Entity()
+
+        entity.create(Velocity, {x: 100, y: 0})
+        entity.clampVelocity(5)
+
+        expect(entity.velocity.length()).toBeCloseTo(5)
+    })
+
+
+    test('clampVelocity zeroes out near-zero velocity', () => {
+        const entity = new Entity()
+
+        entity.create(Velocity, {x: 0.005, y: 0.003})
+        entity.clampVelocity(10)
+
+        expect(entity.velocity.x).toBe(0)
+        expect(entity.velocity.y).toBe(0)
+    })
+
 })

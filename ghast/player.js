@@ -23,8 +23,8 @@ export default class Player extends Entity {
 
     update (deltaTime) {
         applyMovement(this, deltaTime)
-        clampVelocity(this)
-        applyVelocity(this, deltaTime)
+        this.clampVelocity(this.maxSpeed)
+        this.applyVelocity(deltaTime)
     }
 
 }
@@ -37,20 +37,4 @@ function applyMovement (player, deltaTime) {
     } else {
         player.velocity.multiplyScalar(Math.pow(0.01, deltaTime * 60))
     }
-}
-
-
-function clampVelocity (player) {
-    if (player.velocity.length() > player.maxSpeed) {
-        player.velocity.normalize().multiplyScalar(player.maxSpeed)
-    }
-
-    if (player.velocity.length() < 0.01) {
-        player.velocity.set(0, 0)
-    }
-}
-
-
-function applyVelocity (player, deltaTime) {
-    player.position.add(player.velocity.clone().multiplyScalar(deltaTime))
 }
