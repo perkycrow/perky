@@ -2,7 +2,7 @@ import WebGLObjectRenderer from './webgl_object_renderer.js'
 import MeshInstance from '../mesh_instance.js'
 import {MESH_SHADER_DEF} from '../shaders/builtin/mesh_shader.js'
 import {DEPTH_SHADER_DEF} from '../shaders/builtin/depth_shader.js'
-import {MAX_LIGHTS} from '../light_3d.js'
+import LightDataTexture from '../light_data_texture.js'
 
 
 export default class WebGLMeshRenderer extends WebGLObjectRenderer {
@@ -17,10 +17,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #fogFar = 80
     #fogColor = [0.0, 0.0, 0.0]
     #lights = []
-    #lightPositions = new Float32Array(MAX_LIGHTS * 3)
-    #lightColors = new Float32Array(MAX_LIGHTS * 3)
-    #lightIntensities = new Float32Array(MAX_LIGHTS)
-    #lightRadii = new Float32Array(MAX_LIGHTS)
+    #lightDataTexture = null
 
     static get handles () {
         return [MeshInstance]
@@ -111,6 +108,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         super.init(context)
         this.#meshProgram = context.shaderRegistry.register('mesh', MESH_SHADER_DEF)
         this.#depthProgram = context.shaderRegistry.register('depth', DEPTH_SHADER_DEF)
+        this.#lightDataTexture = new LightDataTexture(context.gl)
     }
 
 
@@ -130,8 +128,8 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
         gl.clear(gl.DEPTH_BUFFER_BIT)
 
-        this.#packLightUniforms()
-        this.#setupUniforms(gl)
+        const numLights = this.#lightDataTexture.update(this.#lights, this.#camera3d.position)
+        this.#setupUniforms(gl, numLights)
 
         for (const {object, hints} of this.collected) {
             this.#drawItem(gl, object, hints)
@@ -147,6 +145,10 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#camera3d = null
         this.#shadowMap = null
         this.#lights = []
+        if (this.#lightDataTexture) {
+            this.#lightDataTexture.dispose()
+            this.#lightDataTexture = null
+        }
         super.dispose()
     }
 
@@ -178,35 +180,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-    #packLightUniforms () {
-        const camPos = this.#camera3d.position
-        const sorted = this.#lights
-            .map(light => ({
-                light,
-                dist: (light.position.x - camPos.x) ** 2
-                    + (light.position.y - camPos.y) ** 2
-                    + (light.position.z - camPos.z) ** 2
-            }))
-            .sort((a, b) => a.dist - b.dist)
-
-        const count = Math.min(sorted.length, MAX_LIGHTS)
-
-        for (let i = 0; i < count; i++) {
-            const light = sorted[i].light
-            const offset = i * 3
-            this.#lightPositions[offset] = light.position.x
-            this.#lightPositions[offset + 1] = light.position.y
-            this.#lightPositions[offset + 2] = light.position.z
-            this.#lightColors[offset] = light.color[0]
-            this.#lightColors[offset + 1] = light.color[1]
-            this.#lightColors[offset + 2] = light.color[2]
-            this.#lightIntensities[i] = light.intensity
-            this.#lightRadii[i] = light.radius
-        }
-    }
-
-
-    #setupUniforms (gl) {
+    #setupUniforms (gl, numLights) {
         const program = this.#meshProgram
 
         gl.useProgram(program.program)
@@ -235,15 +209,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             this.#camera3d.position.z
         )
 
-        const numLights = Math.min(this.#lights.length, MAX_LIGHTS)
         gl.uniform1i(program.uniforms.uNumLights, numLights)
-
-        if (numLights > 0) {
-            gl.uniform3fv(program.uniforms.uLightPositions, this.#lightPositions)
-            gl.uniform3fv(program.uniforms.uLightColors, this.#lightColors)
-            gl.uniform1fv(program.uniforms.uLightIntensities, this.#lightIntensities)
-            gl.uniform1fv(program.uniforms.uLightRadii, this.#lightRadii)
-        }
 
         gl.activeTexture(gl.TEXTURE0)
         gl.uniform1i(program.uniforms.uTexture, 0)
@@ -262,6 +228,10 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         } else {
             gl.uniform1f(program.uniforms.uHasShadowMap, 0)
         }
+
+        gl.activeTexture(gl.TEXTURE3)
+        gl.bindTexture(gl.TEXTURE_2D, this.#lightDataTexture.texture)
+        gl.uniform1i(program.uniforms.uLightData, 3)
     }
 
 

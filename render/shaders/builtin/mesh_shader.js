@@ -32,8 +32,6 @@ void main() {
 export const MESH_FRAGMENT = `#version 300 es
 precision mediump float;
 
-const int MAX_LIGHTS = 16;
-
 uniform sampler2D uTexture;
 uniform vec3 uLightDirection;
 uniform float uAmbient;
@@ -57,10 +55,7 @@ uniform float uHasNormalMap;
 uniform float uNormalStrength;
 
 uniform int uNumLights;
-uniform vec3 uLightPositions[MAX_LIGHTS];
-uniform vec3 uLightColors[MAX_LIGHTS];
-uniform float uLightIntensities[MAX_LIGHTS];
-uniform float uLightRadii[MAX_LIGHTS];
+uniform highp sampler2D uLightData;
 
 uniform highp sampler2DShadow uShadowMap;
 uniform float uHasShadowMap;
@@ -124,19 +119,20 @@ void main() {
             lit += vec3(uSpecular * pow(specAngle, shininess)) * shadow;
         }
 
-        for (int i = 0; i < MAX_LIGHTS; i++) {
-            if (i >= uNumLights) break;
-            vec3 toLight = uLightPositions[i] - vWorldPosition;
+        for (int i = 0; i < uNumLights; i++) {
+            vec4 posInt = texelFetch(uLightData, ivec2(0, i), 0);
+            vec4 colRad = texelFetch(uLightData, ivec2(1, i), 0);
+            vec3 toLight = posInt.xyz - vWorldPosition;
             float dist = length(toLight);
-            float attenuation = 1.0 - smoothstep(0.0, uLightRadii[i], dist);
+            float attenuation = 1.0 - smoothstep(0.0, colRad.w, dist);
             vec3 lightDir = normalize(toLight);
             float nDotL = max(dot(normal, lightDir), 0.0);
-            lit += baseColor * uLightColors[i] * uLightIntensities[i] * nDotL * attenuation;
+            lit += baseColor * colRad.xyz * posInt.w * nDotL * attenuation;
 
             if (uSpecular > 0.0 && nDotL > 0.0) {
                 vec3 halfVec = normalize(lightDir + viewDir);
                 float specAngle = max(dot(normal, halfVec), 0.0);
-                lit += uLightColors[i] * uLightIntensities[i] * uSpecular * pow(specAngle, shininess) * attenuation;
+                lit += colRad.xyz * posInt.w * uSpecular * pow(specAngle, shininess) * attenuation;
             }
         }
     }
@@ -176,10 +172,7 @@ export const MESH_SHADER_DEF = {
         'uUnlit',
         'uHasTexture',
         'uNumLights',
-        'uLightPositions',
-        'uLightColors',
-        'uLightIntensities',
-        'uLightRadii',
+        'uLightData',
         'uUVScale',
         'uRoughness',
         'uSpecular',

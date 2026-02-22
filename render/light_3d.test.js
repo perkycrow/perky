@@ -1,4 +1,4 @@
-import Light3D, {MAX_LIGHTS} from './light_3d.js'
+import Light3D from './light_3d.js'
 import Vec3 from '../math/vec3.js'
 
 
@@ -43,9 +43,4 @@ describe('Light3D', () => {
         expect(light.radius).toBe(10)
     })
 
-})
-
-
-test('MAX_LIGHTS is 16', () => {
-    expect(MAX_LIGHTS).toBe(16)
 })

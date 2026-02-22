@@ -16,12 +16,29 @@ function createMockGL () {
         TEXTURE0: 0x84C0,
         TEXTURE1: 0x84C1,
         TEXTURE2: 0x84C2,
+        TEXTURE3: 0x84C3,
         TEXTURE_2D: 0x0DE1,
         FRAMEBUFFER: 0x8D40,
         CULL_FACE: 0x0B44,
         FRONT: 0x0404,
+        RGBA32F: 0x8814,
+        RGBA: 0x1908,
+        FLOAT: 0x1406,
+        NEAREST: 0x2600,
+        CLAMP_TO_EDGE: 0x812F,
+        TEXTURE_MIN_FILTER: 0x2801,
+        TEXTURE_MAG_FILTER: 0x2800,
+        TEXTURE_WRAP_S: 0x2802,
+        TEXTURE_WRAP_T: 0x2803,
         canvas: {width: 800, height: 600},
         calls,
+        createTexture () {
+            calls.push({fn: 'createTexture'})
+            return 'lightDataTex'
+        },
+        deleteTexture (tex) {
+            calls.push({fn: 'deleteTexture', args: [tex]})
+        },
         enable (cap) {
             calls.push({fn: 'enable', args: [cap]})
         },
@@ -75,6 +92,15 @@ function createMockGL () {
         },
         cullFace (mode) {
             calls.push({fn: 'cullFace', args: [mode]})
+        },
+        texImage2D (...args) {
+            calls.push({fn: 'texImage2D', args})
+        },
+        texSubImage2D (...args) {
+            calls.push({fn: 'texSubImage2D', args})
+        },
+        texParameteri (...args) {
+            calls.push({fn: 'texParameteri', args})
         }
     }
 }
@@ -100,20 +126,17 @@ function createMockShaderRegistry () {
             uUnlit: 13,
             uHasTexture: 14,
             uNumLights: 15,
-            uLightPositions: 16,
-            uLightColors: 17,
-            uLightIntensities: 18,
-            uLightRadii: 19,
-            uUVScale: 20,
-            uRoughness: 21,
-            uSpecular: 22,
-            uCameraPosition: 23,
-            uNormalMap: 24,
-            uHasNormalMap: 25,
-            uNormalStrength: 26,
-            uLightMatrix: 27,
-            uShadowMap: 28,
-            uHasShadowMap: 29
+            uLightData: 16,
+            uUVScale: 17,
+            uRoughness: 18,
+            uSpecular: 19,
+            uCameraPosition: 20,
+            uNormalMap: 21,
+            uHasNormalMap: 22,
+            uNormalStrength: 23,
+            uLightMatrix: 24,
+            uShadowMap: 25,
+            uHasShadowMap: 26
         },
         attributes: {
             aPosition: 0,
@@ -309,7 +332,7 @@ describe('flush', () => {
     })
 
 
-    test('uploads light uniforms when lights are set', () => {
+    test('uploads light count and binds light data texture', () => {
         const {renderer, gl} = createRenderer()
         renderer.camera3d = new Camera3D({z: 5})
         renderer.lights = [
@@ -327,15 +350,16 @@ describe('flush', () => {
         expect(numLightCalls.length).toBe(1)
         expect(numLightCalls[0].args[1]).toBe(1)
 
-        const posCalls = gl.calls.filter(c => c.fn === 'uniform3fv' && c.args[0] === 16)
-        expect(posCalls.length).toBe(1)
-        expect(posCalls[0].args[1][0]).toBe(1)
-        expect(posCalls[0].args[1][1]).toBe(2)
-        expect(posCalls[0].args[1][2]).toBe(3)
+        const activeCalls = gl.calls.filter(c => c.fn === 'activeTexture' && c.args[0] === gl.TEXTURE3)
+        expect(activeCalls.length).toBe(1)
+
+        const lightDataCalls = gl.calls.filter(c => c.fn === 'uniform1i' && c.args[0] === 16)
+        expect(lightDataCalls.length).toBe(1)
+        expect(lightDataCalls[0].args[1]).toBe(3)
     })
 
 
-    test('sorts lights by distance to camera', () => {
+    test('uploads light data via texture', () => {
         const {renderer, gl} = createRenderer()
         renderer.camera3d = new Camera3D({x: 0, y: 0, z: 0})
         renderer.lights = [
@@ -351,12 +375,12 @@ describe('flush', () => {
         gl.calls.length = 0
         renderer.flush()
 
-        const posCalls = gl.calls.filter(c => c.fn === 'uniform3fv' && c.args[0] === 16)
-        expect(posCalls.length).toBe(1)
-        const positions = posCalls[0].args[1]
-        expect(positions[2]).toBe(-1)
-        expect(positions[5]).toBe(-50)
-        expect(positions[8]).toBe(-100)
+        const subCalls = gl.calls.filter(c => c.fn === 'texSubImage2D')
+        expect(subCalls.length).toBe(1)
+        const data = subCalls[0].args[8]
+        expect(data[2]).toBe(-1)
+        expect(data[10]).toBe(-50)
+        expect(data[18]).toBe(-100)
     })
 
 
@@ -371,7 +395,7 @@ describe('flush', () => {
         gl.calls.length = 0
         renderer.flush()
 
-        const camCalls = gl.calls.filter(c => c.fn === 'uniform3f' && c.args[0] === 23)
+        const camCalls = gl.calls.filter(c => c.fn === 'uniform3f' && c.args[0] === 20)
         expect(camCalls.length).toBeGreaterThanOrEqual(1)
         expect(camCalls[0].args[1]).toBe(2)
         expect(camCalls[0].args[2]).toBe(3)
@@ -391,7 +415,7 @@ describe('flush', () => {
         gl.calls.length = 0
         renderer.flush()
 
-        const scaleCalls = gl.calls.filter(c => c.fn === 'uniform2f' && c.args[0] === 20)
+        const scaleCalls = gl.calls.filter(c => c.fn === 'uniform2f' && c.args[0] === 17)
         expect(scaleCalls.length).toBeGreaterThanOrEqual(2)
         const applyCalls = scaleCalls.filter(c => c.args[1] === 4 && c.args[2] === 2)
         expect(applyCalls.length).toBe(1)
@@ -410,10 +434,10 @@ describe('flush', () => {
         gl.calls.length = 0
         renderer.flush()
 
-        const roughCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 21 && c.args[1] === 0.8)
+        const roughCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 18 && c.args[1] === 0.8)
         expect(roughCalls.length).toBe(1)
 
-        const specCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 22 && c.args[1] === 0.3)
+        const specCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 19 && c.args[1] === 0.3)
         expect(specCalls.length).toBe(1)
     })
 
@@ -434,10 +458,10 @@ describe('flush', () => {
         const activeCalls = gl.calls.filter(c => c.fn === 'activeTexture' && c.args[0] === gl.TEXTURE1)
         expect(activeCalls.length).toBeGreaterThanOrEqual(1)
 
-        const hasNormalCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 25 && c.args[1] === 1)
+        const hasNormalCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 22 && c.args[1] === 1)
         expect(hasNormalCalls.length).toBe(1)
 
-        const strengthCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 26 && c.args[1] === 0.6)
+        const strengthCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 23 && c.args[1] === 0.6)
         expect(strengthCalls.length).toBe(1)
     })
 
@@ -455,8 +479,10 @@ describe('flush', () => {
         gl.calls.length = 0
         renderer.flush()
 
-        const bindCalls = gl.calls.filter(c => c.fn === 'bindTexture')
-        expect(bindCalls.length).toBe(1)
+        const diffuseBind = gl.calls.filter(
+            c => c.fn === 'bindTexture' && c.args[1] === 'glTexture'
+        )
+        expect(diffuseBind.length).toBe(1)
     })
 
 
@@ -558,7 +584,7 @@ describe('flush', () => {
         const activeCalls = gl.calls.filter(c => c.fn === 'activeTexture' && c.args[0] === gl.TEXTURE2)
         expect(activeCalls.length).toBe(1)
 
-        const hasShadowCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 29 && c.args[1] === 1)
+        const hasShadowCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 26 && c.args[1] === 1)
         expect(hasShadowCalls.length).toBe(1)
     })
 
@@ -574,7 +600,7 @@ describe('flush', () => {
         gl.calls.length = 0
         renderer.flush()
 
-        const hasShadowCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 29 && c.args[1] === 0)
+        const hasShadowCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 26 && c.args[1] === 0)
         expect(hasShadowCalls.length).toBe(1)
     })
 
@@ -582,10 +608,13 @@ describe('flush', () => {
 
 
 test('dispose cleans up', () => {
-    const {renderer} = createRenderer()
+    const {renderer, gl} = createRenderer()
     renderer.camera3d = {}
     renderer.lights = [new Light3D()]
+    gl.calls.length = 0
     renderer.dispose()
     expect(renderer.camera3d).toBe(null)
     expect(renderer.lights).toEqual([])
+    const deleteCalls = gl.calls.filter(c => c.fn === 'deleteTexture')
+    expect(deleteCalls.length).toBe(1)
 })

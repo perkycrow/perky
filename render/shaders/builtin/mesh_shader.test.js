@@ -138,16 +138,18 @@ describe('MESH_FRAGMENT', () => {
         expect(MESH_FRAGMENT).toContain('halfVec')
     })
 
-    test('declares light uniforms', () => {
+    test('declares light data texture uniform', () => {
         expect(MESH_FRAGMENT).toContain('uniform int uNumLights')
-        expect(MESH_FRAGMENT).toContain('uniform vec3 uLightPositions[MAX_LIGHTS]')
-        expect(MESH_FRAGMENT).toContain('uniform vec3 uLightColors[MAX_LIGHTS]')
-        expect(MESH_FRAGMENT).toContain('uniform float uLightIntensities[MAX_LIGHTS]')
-        expect(MESH_FRAGMENT).toContain('uniform float uLightRadii[MAX_LIGHTS]')
+        expect(MESH_FRAGMENT).toContain('uniform highp sampler2D uLightData')
     })
 
-    test('contains point light loop', () => {
-        expect(MESH_FRAGMENT).toContain('for (int i = 0; i < MAX_LIGHTS; i++)')
+    test('reads lights with texelFetch', () => {
+        expect(MESH_FRAGMENT).toContain('texelFetch(uLightData, ivec2(0, i), 0)')
+        expect(MESH_FRAGMENT).toContain('texelFetch(uLightData, ivec2(1, i), 0)')
+    })
+
+    test('loops over uNumLights directly', () => {
+        expect(MESH_FRAGMENT).toContain('for (int i = 0; i < uNumLights; i++)')
     })
 
     test('declares fragColor output', () => {
@@ -185,10 +187,7 @@ describe('MESH_SHADER_DEF', () => {
             'uUnlit',
             'uHasTexture',
             'uNumLights',
-            'uLightPositions',
-            'uLightColors',
-            'uLightIntensities',
-            'uLightRadii',
+            'uLightData',
             'uUVScale',
             'uRoughness',
             'uSpecular',

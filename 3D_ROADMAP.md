@@ -42,12 +42,14 @@ Ajout progressif d'un pipeline 3D au framework Perky.
 | 34 | Shadow sampling (PCF 3x3) | `render/shaders/builtin/mesh_shader.js` | 2 | Done |
 | 35 | Renderer shadow pass | `render/webgl/webgl_mesh_renderer.js` | 3 | Done |
 | 36 | Corridor shadows | `examples/corridor_3d.js` | - | Done |
+| 37 | castShadow property | `render/mesh_instance.js`, renderer | 2 | Done |
+| 38 | Light data textures | `render/light_data_texture.js`, shader, renderer | 8 | Done |
 
 ## Architecture actuelle
 
 ### Rendering (Forward)
 - 1 lumiere directionnelle globale (`lightDirection` + `ambient`)
-- Jusqu'a 16 point lights (`Light3D`) par frame, triees par distance a la camera
+- Jusqu'a ~256 point lights (`Light3D`) via texture de donnees `RGBA32F`, triees par distance a la camera
 - Shadow mapping directionnel avec PCF 3x3 (bias dynamique base sur l'angle surface/lumiere)
 - Materials (`Material3D`) : color, emissive, opacity, unlit, uvScale, roughness, specular, normalMap, normalStrength
 - Normal mapping auto-genere via filtre Sobel (`generateNormalMap`)
@@ -75,16 +77,35 @@ Ajout progressif d'un pipeline 3D au framework Perky.
 
 ### Gestion des lights
 
-`MAX_LIGHTS = 16`. Le renderer trie les lights par distance a la camera et envoie les 16 plus proches au shader. Les lights au-dela sont ignorees mais masquees par le fog en pratique.
+Les lights sont stockees dans une texture `RGBA32F` (2 texels par light : position+intensity, color+radius) lue avec `texelFetch`. Capacite par defaut ~256 lights. Le renderer trie les lights par distance a la camera avant upload. Le shader boucle sur `uNumLights` sans borne constante. Les lights lointaines sont masquees par le fog en pratique.
 
 ## Prochaines etapes
 
-### Batch 7 — Ameliorations immediates
+### Batch 7 — Scaling des lights (approche hybride)
+
+Objectif : passer de 16 a 256+ lights sans refonte majeure.
+
+**Etape 1 — Light data textures (~200 lignes)**
+Stocker les lights dans une texture `RGBA32F` au lieu d'uniforms. Le shader lit avec `texelFetch` dans une boucle `for (i < uNumLights)`. Supprime la constante `MAX_LIGHTS` dans le shader. Limite pratique ~256 lights (taille texture). Aucune complexite algorithmique, juste un changement de transport de donnees uniforms → texture.
+
+Fichiers : `render/light_data_texture.js` (nouveau), shader, renderer.
+
+**Etape 2 — Radius culling CPU (~30 lignes)**
+Avant d'envoyer les lights au GPU, filtrer celles dont `distance_to_camera - radius > fogFar`. Les lights invisibles ne sont meme pas dans la texture. Combine avec le tri par distance existant.
+
+Fichiers : renderer uniquement.
+
+**Etape 3 — Tile-based light culling (si besoin, ~400 lignes)**
+Seulement si > 100 lights visibles simultanement. Grille 2D screen space (ex: 16x9 = 144 tiles). Projeter chaque light en screen space (sphere → cercle 2D), tester intersection cercle/rectangle par tile. Encoder les light indices par tile dans une texture. Le shader lookup sa tile via `gl_FragCoord` et ne boucle que sur ses lights (~3-8 au lieu de 100+). Plus simple que le clustered 3D (pas de slicing en profondeur), suffisant pour des scenes de jeu typiques. Peut etre offloade dans un Web Worker via le service system existant (`ServiceHost`/`ServiceClient`).
+
+Fichiers : `render/light_tile_grid.js` (nouveau), `render/services/light_tile_service.js` (nouveau, optionnel), shader, renderer.
+
+### Batch 8 — Ameliorations immediates
 - **Spotlights** : extension de Light3D avec direction + cone angle + penumbra
-- **Tri + culling par radius** : avant le tri par distance, eliminer les lights dont `distance > radius`
+- **Radius culling** : avant le tri par distance, eliminer les lights dont `distance > radius`
 - **OBJ loader** : import de modeles externes
 
-### Batch 8 — Effets visuels
+### Batch 9 — Effets visuels
 - **CSG (Constructive Solid Geometry)** : operations booleennes sur meshes (union, subtract, intersect)
 - **Decals** : quads projetes sur les surfaces
 - **Textures animees** : scrolling UV, frame-by-frame
@@ -98,8 +119,8 @@ Diviser le frustum camera en 4 cascades, chacune avec sa propre shadow map. Plus
 ### Point Light Shadows
 Cubemap 6 passes par light — rendre la scene 6 fois (une par face du cube) depuis la position de la point light. Tres couteux : a limiter a 1-2 lights clefs (ex: lampe de bureau). Utilise par Three.js et Babylon.js.
 
-### Clustered Forward Rendering
-Decouper le frustum camera en clusters 3D (ex: 16x9x24 ≈ 3500 clusters). Pour chaque cluster, pre-calculer quelles lights l'affectent via intersection sphere/AABB. Le shader ne boucle que sur les lights de son cluster. Complexite O(meshes + lights) au lieu de O(meshes × lights). Supporte des milliers de lights dynamiques. Utilise par Doom 2016, Fortnite, Detroit: Become Human. Necessite un compute pass et des structures de donnees GPU.
+### Clustered Forward Rendering (3D)
+Version avancee du tile-based culling. Decouper le frustum camera en clusters 3D (ex: 16x9x24 ≈ 3500 clusters) avec slicing logarithmique en profondeur. Pour chaque cluster, pre-calculer quelles lights l'affectent via intersection sphere/AABB. Le shader ne boucle que sur les lights de son cluster. Complexite O(meshes + lights) au lieu de O(meshes × lights). Supporte des milliers de lights dynamiques. Utilise par Doom 2016, Fortnite, Detroit: Become Human. En WebGL 2, necessite des textures de donnees (pas de compute shaders ni SSBOs). Le light assignment CPU (~350K tests sphere/AABB pour 100 lights × 3500 clusters) peut etre offloade dans un Web Worker.
 
 ### Shadow PCF/PCSS avance
 PCSS (Percentage-Closer Soft Shadows) : ombres plus floues quand la surface est loin de l'occulteur (contact hardening). Necessite un blocker search pass + filtre variable. Plus realiste que le PCF fixe actuel.
@@ -109,3 +130,26 @@ Pass 1 : rendre les objets dans un G-Buffer (position, normal, albedo, roughness
 
 ### Voxel Global Illumination (style Roblox)
 Grille de voxels (ex: 4x4x4 unites) pour la propagation de lumiere indirecte. Chaque light "verse" sa luminosite dans les voxels environnants, qui se propagent de proche en proche. Mise a jour incrementale sur CPU (seuls les voxels affectes sont recalcules). Pas de limite de lights — approche spatiale, pas par shader. Gere le skylight, l'ambient, et l'illumination indirecte. Combine avec shadow maps pour les ombres nettes. Reference : Roblox "Future Is Bright".
+
+## WebGL 2 vs WebGPU
+
+Le pipeline actuel est en **WebGL 2** (~96% support navigateur).
+
+### Pourquoi rester en WebGL 2 pour l'instant
+- Support quasi-universel (96%) vs WebGPU (~78%, pas Linux par defaut, pas iOS < 26)
+- Le pipeline 3D est jeune — mieux vaut iterer vite que tout reecrire
+- Les limites actuelles (lights, particles) se contournent avec des textures de donnees
+- Three.js utilise cette approche depuis des annees en WebGL 2
+
+### Ce que WebGPU apporterait
+- **Compute shaders** : clustered lighting natif, GPU particles, GPU skinning
+- **Storage buffers** : plus de limite uniforms, buffer de lights dynamique
+- **Render passes explicites** : shadow maps multiples sans overhead
+- **WGSL** au lieu de GLSL ES 3.0
+
+### Strategie de migration (moyen/long terme)
+1. Abstraire le backend rendering derriere une interface (`RenderBackend`)
+2. Implementer `WebGPURenderBackend` en parallele de `WebGLRenderBackend`
+3. Le code applicatif (scenes, materials, entities) ne change pas
+4. Basculer quand WebGPU atteint ~95% de support et que les features manquantes (compute, SSBO) deviennent bloquantes
+5. Garder le fallback WebGL 2 pour la compatibilite
