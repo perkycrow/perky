@@ -1,6 +1,6 @@
 # 3D Rendering Roadmap
 
-Ajout progressif d'un pipeline 3D (style Quake 1 / Half-Life 1) au framework Perky.
+Ajout progressif d'un pipeline 3D au framework Perky.
 
 ## Progression
 
@@ -13,39 +13,72 @@ Ajout progressif d'un pipeline 3D (style Quake 1 / Half-Life 1) au framework Per
 | 5 | Mesh Shader | `render/shaders/builtin/mesh_shader.js` | 19 | Done |
 | 6 | Camera3D | `render/camera_3d.js` | 14 | Done |
 | 7 | Object3D | `render/object_3d.js` | 17 | Done |
-| 8 | MeshInstance | `render/mesh_instance.js` | 7 | Done |
-| 9 | WebGLMeshRenderer | `render/webgl/webgl_mesh_renderer.js` | 12 | Done |
-| 10 | Integration | Branchement dans le pipeline existant | - | En cours |
+| 8 | MeshInstance | `render/mesh_instance.js` | 13 | Done |
+| 9 | WebGLMeshRenderer | `render/webgl/webgl_mesh_renderer.js` | 16 | Done |
+| 10 | Integration + Examples | `examples/cube_3d.js`, `examples/corridor_3d.js` | - | Done |
+| 11 | Material3D | `render/material_3d.js` | 3 | Done |
+| 12 | Light3D | `render/light_3d.js` | 4 | Done |
+| 13 | Multi-light shader | `render/shaders/builtin/mesh_shader.js` | - | Done |
+| 14 | MeshInstance + material | `render/mesh_instance.js` | - | Done |
+| 15 | Renderer lights + materials | `render/webgl/webgl_mesh_renderer.js` | - | Done |
+| 16 | Corridor with lights | `examples/corridor_3d.js` | - | Done |
 
-## Details
+## Architecture actuelle
 
-### Etape 1-2 : Math (Matrix4 + Quaternion)
-- Matrix4 : Float32Array(16), column-major, chainable API
-- Quaternion : rotation, slerp, euler conversion, axis-angle
-- Fonctions : perspective, lookAt, compose/decompose, transformPoint
+### Rendering (Forward)
+- 1 lumiere directionnelle globale (`lightDirection` + `ambient`)
+- Jusqu'a 8 point lights (`Light3D`) par frame
+- Materials (`Material3D`) : color, emissive, opacity, unlit
+- Fog lineaire (near/far/color)
+- Tint overlay
 
-### Etape 3-4 : Geometry + Mesh
-- Geometry : donnees brutes (positions, normals, uvs, indices)
-- Factories : `createBox(w,h,d)`, `createPlane(w,h,segW,segH)`
-- Mesh : VAO + VBO + IBO, layout (pos=0, normal=1, uv=2)
+### Limite : 8 lights max
 
-### Etape 5 : Mesh Shader
-- GLSL 300 es, vertex + fragment
-- Diffuse lighting directionnel + ambient
-- Fog distance (near/far/color)
-- Tint color
+Le shader GLSL boucle sur un tableau de taille fixe (`MAX_LIGHTS = 8`).
+Le renderer pack les 8 premieres lights du tableau `meshRenderer.lights` dans des Float32Array pre-alloues.
+Au-dela de 8, les lights sont ignorees.
 
-### Etape 6-8 : Scene Graph 3D
-- Camera3D : perspective projection, lookAt, lazy evaluation
-- Object3D : position/rotation/scale, parent-child, dirty flag, world matrix
-- MeshInstance : Object3D + mesh + texture + tint
+**Probleme concret** : le corridor a ~10 lampes (une tous les 4m sur 40m). Les 2 dernieres sont ignorees. En pratique c'est masque par le fog, mais ce n'est pas une solution propre.
 
-### Etape 9 : WebGLMeshRenderer
-- Extends WebGLObjectRenderer, handles MeshInstance
-- Depth test enable/disable (cohabitation 2D/3D)
-- Setup uniforms + draw loop
+**Pistes pour resoudre** :
 
-### Etape 10 : Integration
-- `webgl_renderer.js` modifie pour passer `shaderRegistry` au context
-- Object3D a `opacity` pour compatibilite avec traverse.js
-- Prochain : exemple visuel (cube texture + camera perspective)
+1. **Tri par distance a la camera** (simple, immediat)
+   - Dans `#packLightUniforms()`, trier les lights par distance a `camera3d.position`
+   - Envoyer les 8 plus proches au shader
+   - Cout : un sort de N elements par frame (negligeable pour N < 100)
+   - Suffisant pour la plupart des scenes de jeu
+
+2. **Hybrid : tri + culling par radius** (moyen)
+   - Avant le tri, eliminer les lights dont `distance > radius` (elles n'eclairent rien)
+   - Reduit le nombre de candidates avant le tri
+   - Utile si on a beaucoup de lights (50+)
+
+3. **Deferred Rendering** (complexe, gros chantier)
+   - Pass 1 : rendre les objets dans un G-Buffer (position, normal, albedo, roughness)
+   - Pass 2 : pour chaque light, dessiner un volume (sphere pour point light) qui lit le G-Buffer
+   - Le cout depend du nombre de pixels, pas de `objets x lights`
+   - Supporte des centaines/milliers de lights
+   - Necessite : Multiple Render Targets, G-Buffer management, refonte du pipeline
+   - C'est ce que font Unity/Unreal par defaut
+
+4. **Clustered Forward** (complexe, meilleur compromis)
+   - Decouper l'espace en clusters 3D (ou l'ecran en tuiles 2D)
+   - Pour chaque cluster, pre-calculer quelles lights l'affectent
+   - Le shader ne boucle que sur les lights du cluster courant
+   - Meilleur des deux mondes : simple comme forward, scalable comme deferred
+   - Utilise par Doom 2016, Fortnite
+
+**Recommandation** : commencer par la piste 1 (tri par distance). C'est 5 lignes dans le renderer et ca couvre 95% des cas. Si un jour on a besoin de 100+ lights, passer au clustered forward.
+
+## Prochaines etapes possibles
+
+- **Tri des lights par distance** (quick win)
+- **Decals** : quads projetes sur les surfaces (bullet holes, scorch marks)
+- **Skybox** : cubemap rendu derriere la scene
+- **Transparence** : tri back-to-front + blend modes (glass, water)
+- **Sprites 3D / Particles** : billboards avec blending additif
+- **Textures animees** : scrolling, frame-by-frame
+- **Spotlights** : extension de Light3D avec direction + cone
+- **Normal mapping** : 2e texture pour les details de surface
+- **Shadow mapping** : depth pass + projection
+- **Deferred / Clustered** : si besoin de beaucoup de lights

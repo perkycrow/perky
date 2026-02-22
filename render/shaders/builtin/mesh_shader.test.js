@@ -77,6 +77,7 @@ describe('MESH_FRAGMENT', () => {
         expect(MESH_FRAGMENT).toContain('uniform vec3 uMaterialEmissive')
         expect(MESH_FRAGMENT).toContain('uniform float uMaterialOpacity')
         expect(MESH_FRAGMENT).toContain('uniform float uUnlit')
+        expect(MESH_FRAGMENT).toContain('uniform float uHasTexture')
     })
 
     test('declares light uniforms', () => {
@@ -124,6 +125,7 @@ describe('MESH_SHADER_DEF', () => {
             'uMaterialEmissive',
             'uMaterialOpacity',
             'uUnlit',
+            'uHasTexture',
             'uNumLights',
             'uLightPositions',
             'uLightColors',

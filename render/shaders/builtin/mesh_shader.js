@@ -39,6 +39,7 @@ uniform vec3 uMaterialColor;
 uniform vec3 uMaterialEmissive;
 uniform float uMaterialOpacity;
 uniform float uUnlit;
+uniform float uHasTexture;
 
 uniform int uNumLights;
 uniform vec3 uLightPositions[MAX_LIGHTS];
@@ -53,7 +54,7 @@ in vec3 vWorldPosition;
 out vec4 fragColor;
 
 void main() {
-    vec4 texColor = texture(uTexture, vTexCoord);
+    vec4 texColor = uHasTexture > 0.5 ? texture(uTexture, vTexCoord) : vec4(1.0);
     vec3 baseColor = texColor.rgb * uMaterialColor;
     vec3 normal = normalize(vNormal);
 
@@ -109,6 +110,7 @@ export const MESH_SHADER_DEF = {
         'uMaterialEmissive',
         'uMaterialOpacity',
         'uUnlit',
+        'uHasTexture',
         'uNumLights',
         'uLightPositions',
         'uLightColors',

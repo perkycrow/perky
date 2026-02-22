@@ -166,6 +166,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform3f(program.uniforms.uMaterialEmissive, 0, 0, 0)
         gl.uniform1f(program.uniforms.uMaterialOpacity, 1)
         gl.uniform1f(program.uniforms.uUnlit, 0)
+        gl.uniform1f(program.uniforms.uHasTexture, 1)
 
         const numLights = Math.min(this.#lights.length, MAX_LIGHTS)
         gl.uniform1i(program.uniforms.uNumLights, numLights)
@@ -201,12 +202,16 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         const texture = object.activeTexture
         if (texture) {
             gl.bindTexture(gl.TEXTURE_2D, this.context.textureManager.acquire(texture))
+        } else {
+            gl.uniform1f(this.#meshProgram.uniforms.uHasTexture, 0)
         }
 
         object.mesh.draw()
 
         if (texture) {
             this.context.textureManager.release(texture)
+        } else {
+            gl.uniform1f(this.#meshProgram.uniforms.uHasTexture, 1)
         }
 
         if (hints?.material) {

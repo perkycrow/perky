@@ -79,11 +79,12 @@ function createMockShaderRegistry () {
             uMaterialEmissive: 11,
             uMaterialOpacity: 12,
             uUnlit: 13,
-            uNumLights: 14,
-            uLightPositions: 15,
-            uLightColors: 16,
-            uLightIntensities: 17,
-            uLightRadii: 18
+            uHasTexture: 14,
+            uNumLights: 15,
+            uLightPositions: 16,
+            uLightColors: 17,
+            uLightIntensities: 18,
+            uLightRadii: 19
         },
         attributes: {
             aPosition: 0,
@@ -283,11 +284,11 @@ describe('flush', () => {
         gl.calls.length = 0
         renderer.flush()
 
-        const numLightCalls = gl.calls.filter(c => c.fn === 'uniform1i' && c.args[0] === 14)
+        const numLightCalls = gl.calls.filter(c => c.fn === 'uniform1i' && c.args[0] === 15)
         expect(numLightCalls.length).toBe(1)
         expect(numLightCalls[0].args[1]).toBe(1)
 
-        const posCalls = gl.calls.filter(c => c.fn === 'uniform3fv' && c.args[0] === 15)
+        const posCalls = gl.calls.filter(c => c.fn === 'uniform3fv' && c.args[0] === 16)
         expect(posCalls.length).toBe(1)
         expect(posCalls[0].args[1][0]).toBe(1)
         expect(posCalls[0].args[1][1]).toBe(2)

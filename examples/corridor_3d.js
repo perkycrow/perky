@@ -66,16 +66,13 @@ meshRenderer.fogColor = [0.04, 0.04, 0.07]
 const boxGeo = Geometry.createBox(1, 1, 1)
 const boxMesh = new Mesh(renderer.gl, boxGeo)
 
-const whiteTex = createColorTexture('#ffffff')
-
-const floorMat = new Material3D({texture: whiteTex, color: [0.29, 0.29, 0.26]})
-const ceilingMat = new Material3D({texture: whiteTex, color: [0.23, 0.23, 0.22]})
-const wallMat = new Material3D({texture: whiteTex, color: [0.35, 0.35, 0.31]})
-const doorMat = new Material3D({texture: whiteTex, color: [0.42, 0.26, 0.15]})
-const frameMat = new Material3D({texture: whiteTex, color: [0.23, 0.23, 0.21]})
-const trimMat = new Material3D({texture: whiteTex, color: [0.29, 0.29, 0.25]})
+const floorMat = new Material3D({color: [0.29, 0.29, 0.26]})
+const ceilingMat = new Material3D({color: [0.23, 0.23, 0.22]})
+const wallMat = new Material3D({color: [0.35, 0.35, 0.31]})
+const doorMat = new Material3D({color: [0.42, 0.26, 0.15]})
+const frameMat = new Material3D({color: [0.23, 0.23, 0.21]})
+const trimMat = new Material3D({color: [0.29, 0.29, 0.25]})
 const lightMat = new Material3D({
-    texture: whiteTex,
     color: [1.0, 0.91, 0.63],
     emissive: [0.8, 0.7, 0.4],
     unlit: true
@@ -298,16 +295,6 @@ function buildWallWithDoors (wallX, doorPositions) {
     }
 }
 
-
-function createColorTexture (color) {
-    const cvs = document.createElement('canvas')
-    cvs.width = 2
-    cvs.height = 2
-    const ctx = cvs.getContext('2d')
-    ctx.fillStyle = color
-    ctx.fillRect(0, 0, 2, 2)
-    return cvs
-}
 
 
 function clamp (value, min, max) {
