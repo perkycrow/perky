@@ -2,11 +2,13 @@ import RenderSystem from '/render/render_system.js'
 import WebGLMeshRenderer from '/render/webgl/webgl_mesh_renderer.js'
 import WebGLBillboardRenderer from '/render/webgl/webgl_billboard_renderer.js'
 import WebGLSkyboxRenderer from '/render/webgl/webgl_skybox_renderer.js'
+import WebGLDecalRenderer from '/render/webgl/webgl_decal_renderer.js'
 import Camera3D from '/render/camera_3d.js'
 import Geometry from '/render/geometry.js'
 import Mesh from '/render/mesh.js'
 import MeshInstance from '/render/mesh_instance.js'
 import Billboard from '/render/billboard.js'
+import Decal from '/render/decal.js'
 import Material3D from '/render/material_3d.js'
 import Light3D from '/render/light_3d.js'
 import Object3D from '/render/object_3d.js'
@@ -81,6 +83,13 @@ skyboxRenderer.skybox = new Skybox({
     groundColor: [0.03, 0.03, 0.02]
 })
 
+const decalRenderer = new WebGLDecalRenderer()
+renderer.registerRenderer(decalRenderer)
+decalRenderer.camera3d = camera3d
+decalRenderer.fogNear = meshRenderer.fogNear
+decalRenderer.fogFar = meshRenderer.fogFar
+decalRenderer.fogColor = meshRenderer.fogColor
+
 const billboardRenderer = new WebGLBillboardRenderer()
 renderer.registerRenderer(billboardRenderer)
 billboardRenderer.camera3d = camera3d
@@ -107,14 +116,16 @@ let wallMat = null
 
 
 async function loadTextures () {
-    const [wallTex, floorTex, ceilTex, doorTex, trimTex] = await Promise.all([
+    const [wallTex, floorTex, ceilTex, doorTex, trimTex, lightDecalTex, signDecalTex] = await Promise.all([
         loadImage('assets/textures/base_wall/atech1_e.jpg'),
         loadImage('assets/textures/base_floor/clang_floor.jpg'),
         loadImage('assets/textures/base_ceiling/metceil1d.jpg'),
         loadImage('assets/textures/base_door/kcdm18talldoormetal.jpg'),
-        loadImage('assets/textures/base_trim/basemetalsupport.jpg')
+        loadImage('assets/textures/base_trim/basemetalsupport.jpg'),
+        loadImage('assets/textures/gothic_light/gothic_light2.jpg'),
+        loadImage('assets/textures/base_support/flat1_1.jpg')
     ])
-    return {wallTex, floorTex, ceilTex, doorTex, trimTex}
+    return {wallTex, floorTex, ceilTex, doorTex, trimTex, lightDecalTex, signDecalTex}
 }
 
 
@@ -281,6 +292,8 @@ function buildScene (textures) {
     addBox(0, CORRIDOR_HEIGHT + 0.05, -CORRIDOR_LENGTH - 0.5, CORRIDOR_WIDTH, 0.1, 1, ceilingMat).castShadow = false
 
     buildCSGDecoration(0, -CORRIDOR_LENGTH - 4, wallMat, lights, ceilingLightMat)
+
+    buildDecals(textures)
 
     spawnDust(lights)
 
@@ -644,6 +657,47 @@ function buildCSGDecoration (x, z, material, lights, lightMat) { // eslint-disab
         angle: 35,
         penumbra: 0.4
     }))
+}
+
+
+function buildDecals (textures) {
+    const lightMat = new Material3D({
+        texture: textures.lightDecalTex,
+        emissive: [0.3, 0.2, 0.05],
+        opacity: 0.9
+    })
+
+    const signMat = new Material3D({
+        texture: textures.signDecalTex,
+        color: [0.6, 0.6, 0.55],
+        opacity: 0.8
+    })
+
+    for (const z of [-5, -15, -25, -35]) {
+        const d = new Decal({
+            x: 0,
+            y: CORRIDOR_HEIGHT - 0.01,
+            z,
+            width: 1.2,
+            height: 1.2,
+            material: lightMat
+        })
+        d.rotation.setFromEuler(-Math.PI / 2, 0, 0, 'YXZ')
+        scene.addChild(d)
+    }
+
+    for (const z of [-10, -20, -30]) {
+        const d = new Decal({
+            x: 0,
+            y: CORRIDOR_HEIGHT - 0.01,
+            z,
+            width: 0.8,
+            height: 0.8,
+            material: signMat
+        })
+        d.rotation.setFromEuler(-Math.PI / 2, 0, 0, 'YXZ')
+        scene.addChild(d)
+    }
 }
 
 

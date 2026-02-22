@@ -57,6 +57,7 @@ Ajout progressif d'un pipeline 3D au framework Perky.
 | 49 | BrushHistory | `render/csg/brush_history.js` | 9 | Done |
 | 50 | Corridor brush demo | `examples/corridor_3d.js` | - | Done |
 | 51 | Camera-relative fog fix | `render/shaders/builtin/mesh_shader.js` | - | Done |
+| 52 | Decals | `render/decal.js`, `render/shaders/builtin/decal_shader.js`, `render/webgl/webgl_decal_renderer.js` | 37 | Done |
 
 ## Architecture actuelle
 
@@ -72,6 +73,7 @@ Ajout progressif d'un pipeline 3D au framework Perky.
 - Textures tilees (REPEAT wrapping) avec UV scale par material
 - Fog lineaire (near/far/color)
 - Skybox procedural (gradient sky/horizon/ground) ou cubemap, rendu apres les meshes avec depth LEQUAL + xyww trick
+- Decals (quads surface-aligned) avec polygon offset anti-z-fighting, alpha blending, back-to-front sort
 - Tint overlay
 
 ### Shadow Mapping
@@ -120,7 +122,6 @@ Fichiers : `render/light_tile_grid.js` (nouveau), `render/services/light_tile_se
 ### Batch 9 — Effets visuels
 - **Skybox cubemap** : loader 6 faces (`TEXTURE_CUBE_MAP`), binding dans `WebGLSkyboxRenderer.flush()`. Le shader et le flag `uHasCubemap` sont deja prets. Sources gratuites : Poly Haven (polyhaven.com/hdris), ambientCG, Humus (humus.name/Textures)
 - **CSG (Constructive Solid Geometry)** : operations booleennes sur meshes (union, subtract, intersect)
-- **Decals** : quads projetes sur les surfaces
 - **Textures animees** : scrolling UV, frame-by-frame
 
 ## Pistes futures (par ordre de complexite)

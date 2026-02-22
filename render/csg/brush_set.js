@@ -9,7 +9,6 @@ export default class BrushSet extends Notifier {
     #dirtyFrom = 0
     #result = null
 
-
     get count () {
         return this.#brushes.length
     }

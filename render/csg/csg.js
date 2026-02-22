@@ -184,18 +184,32 @@ function computeDiagonal (polygons) {
         return 0
     }
 
-    let minX = Infinity, minY = Infinity, minZ = Infinity
-    let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity
+    let minX = Infinity; let minY = Infinity; let 
+        minZ = Infinity
+    let maxX = -Infinity; let maxY = -Infinity; let 
+        maxZ = -Infinity
 
     for (const polygon of polygons) {
         for (const vertex of polygon.vertices) {
             const p = vertex.position
-            if (p.x < minX) minX = p.x
-            if (p.y < minY) minY = p.y
-            if (p.z < minZ) minZ = p.z
-            if (p.x > maxX) maxX = p.x
-            if (p.y > maxY) maxY = p.y
-            if (p.z > maxZ) maxZ = p.z
+            if (p.x < minX) {
+                minX = p.x
+            }
+            if (p.y < minY) {
+                minY = p.y
+            }
+            if (p.z < minZ) {
+                minZ = p.z
+            }
+            if (p.x > maxX) {
+                maxX = p.x
+            }
+            if (p.y > maxY) {
+                maxY = p.y
+            }
+            if (p.z > maxZ) {
+                maxZ = p.z
+            }
         }
     }
 

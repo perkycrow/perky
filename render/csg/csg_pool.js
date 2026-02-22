@@ -14,7 +14,6 @@ export default class CSGPool {
     #vectors = []
     #index = 0
 
-
     static run (fn) {
         const pool = active || new CSGPool()
         const prev = active

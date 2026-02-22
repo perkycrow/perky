@@ -8,7 +8,6 @@ export default class BrushHistory {
     #index = -1
     #maxStates = 50
 
-
     constructor (brushSet, options = {}) {
         this.#brushSet = brushSet
         this.#maxStates = options.maxStates ?? 50

@@ -19,9 +19,15 @@ describe('Brush', () => {
         const brush = new Brush({
             shape: 'sphere',
             operation: 'subtract',
-            x: 1, y: 2, z: 3,
-            rx: 0.1, ry: 0.2, rz: 0.3,
-            sx: 2, sy: 3, sz: 4,
+            x: 1,
+            y: 2,
+            z: 3,
+            rx: 0.1,
+            ry: 0.2,
+            rz: 0.3,
+            sx: 2,
+            sy: 3,
+            sz: 4,
             params: {segments: 8, rings: 6},
             enabled: false
         })
@@ -141,9 +147,15 @@ describe('Brush', () => {
         const original = new Brush({
             shape: 'sphere',
             operation: 'subtract',
-            x: 1, y: 2, z: 3,
-            rx: 0.1, ry: 0.2, rz: 0.3,
-            sx: 2, sy: 3, sz: 4,
+            x: 1,
+            y: 2,
+            z: 3,
+            rx: 0.1,
+            ry: 0.2,
+            rz: 0.3,
+            sx: 2,
+            sy: 3,
+            sz: 4,
             params: {segments: 12},
             enabled: false
         })

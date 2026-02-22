@@ -8,7 +8,6 @@ export default class CSGService extends ServiceHost {
 
     static serviceMethods = ['operate']
 
-
     operate (req, res) {
         try {
             const {operation, a, b} = req.params

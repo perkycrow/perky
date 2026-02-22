@@ -37,7 +37,8 @@ describe('CSGPlane', () => {
             new CSGVertex(new Vec3(1, 0, 0), new Vec3(0, 1, 0), [1, 0]),
             new CSGVertex(new Vec3(0, 1, 0), new Vec3(0, 1, 0), [0, 1])
         ])
-        const cf = [], cb = [], f = [], b = []
+        const cf = []; const cb = []; const f = []; const 
+            b = []
         plane.splitPolygon(triangle, cf, cb, f, b, 1e-5)
         expect(f).toHaveLength(1)
         expect(b).toHaveLength(0)
@@ -51,7 +52,8 @@ describe('CSGPlane', () => {
             new CSGVertex(new Vec3(1, 0, 0), new Vec3(0, 1, 0), [1, 0]),
             new CSGVertex(new Vec3(0, 1, 0), new Vec3(0, 1, 0), [0, 1])
         ])
-        const cf = [], cb = [], f = [], b = []
+        const cf = []; const cb = []; const f = []; const 
+            b = []
         plane.splitPolygon(triangle, cf, cb, f, b, 1e-5)
         expect(f).toHaveLength(0)
         expect(b).toHaveLength(1)
@@ -65,7 +67,8 @@ describe('CSGPlane', () => {
             new CSGVertex(new Vec3(1, 0, 0), new Vec3(0, 0, 1), [1, 0]),
             new CSGVertex(new Vec3(0, 1, 0), new Vec3(0, 0, 1), [0, 1])
         ])
-        const cf = [], cb = [], f = [], b = []
+        const cf = []; const cb = []; const f = []; const 
+            b = []
         plane.splitPolygon(triangle, cf, cb, f, b, 1e-5)
         expect(cf).toHaveLength(1)
         expect(cb).toHaveLength(0)
@@ -79,7 +82,8 @@ describe('CSGPlane', () => {
             new CSGVertex(new Vec3(1, 0, 0), new Vec3(0, 0, 1), [1, 0]),
             new CSGVertex(new Vec3(0, 1, 0), new Vec3(0, 0, 1), [0, 1])
         ])
-        const cf = [], cb = [], f = [], b = []
+        const cf = []; const cb = []; const f = []; const 
+            b = []
         plane.splitPolygon(triangle, cf, cb, f, b, 1e-5)
         expect(cf).toHaveLength(0)
         expect(cb).toHaveLength(1)
@@ -93,7 +97,8 @@ describe('CSGPlane', () => {
             new CSGVertex(new Vec3(1, 0, 0), new Vec3(0, 0, 1), [1, 0]),
             new CSGVertex(new Vec3(0.5, 1, 0), new Vec3(0, 0, 1), [0.5, 1])
         ])
-        const cf = [], cb = [], f = [], b = []
+        const cf = []; const cb = []; const f = []; const 
+            b = []
         plane.splitPolygon(triangle, cf, cb, f, b, 1e-5)
         expect(f).toHaveLength(1)
         expect(b).toHaveLength(1)
@@ -109,7 +114,8 @@ describe('CSGPlane', () => {
             new CSGVertex(new Vec3(1, 0, 0), new Vec3(0, 0, 1), [1, 0]),
             new CSGVertex(new Vec3(0, 1, 0), new Vec3(0, 0, 1), [0, 1])
         ])
-        const cf = [], cb = [], f = [], b = []
+        const cf = []; const cb = []; const f = []; const 
+            b = []
         plane.splitPolygon(triangle, cf, cb, f, b, 1e-5)
         const frontVertices = f[0].vertices
         const allY = frontVertices.map(v => v.position.y)
