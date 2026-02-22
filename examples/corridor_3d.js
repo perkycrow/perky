@@ -1,9 +1,11 @@
 import RenderSystem from '/render/render_system.js'
 import WebGLMeshRenderer from '/render/webgl/webgl_mesh_renderer.js'
+import WebGLBillboardRenderer from '/render/webgl/webgl_billboard_renderer.js'
 import Camera3D from '/render/camera_3d.js'
 import Geometry from '/render/geometry.js'
 import Mesh from '/render/mesh.js'
 import MeshInstance from '/render/mesh_instance.js'
+import Billboard from '/render/billboard.js'
 import Material3D from '/render/material_3d.js'
 import Light3D from '/render/light_3d.js'
 import Object3D from '/render/object_3d.js'
@@ -63,6 +65,13 @@ meshRenderer.ambient = 0.08
 meshRenderer.fogNear = 8
 meshRenderer.fogFar = 28
 meshRenderer.fogColor = [0.04, 0.04, 0.07]
+
+const billboardRenderer = new WebGLBillboardRenderer()
+renderer.registerRenderer(billboardRenderer)
+billboardRenderer.camera3d = camera3d
+billboardRenderer.fogNear = meshRenderer.fogNear
+billboardRenderer.fogFar = meshRenderer.fogFar
+billboardRenderer.fogColor = meshRenderer.fogColor
 
 
 const boxGeo = Geometry.createBox(1, 1, 1)
@@ -248,7 +257,47 @@ function buildScene (textures) {
     addBox(0, halfH, -CORRIDOR_LENGTH - 0.05, CORRIDOR_WIDTH, CORRIDOR_HEIGHT, 0.1, wallMat)
     addBox(0, halfH, 0.05, CORRIDOR_WIDTH, CORRIDOR_HEIGHT, 0.1, wallMat)
 
+    spawnDust(lights)
+
     layer.setContent(scene)
+}
+
+
+const dustMat = new Material3D({
+    color: [1.0, 0.9, 0.7],
+    emissive: [0.15, 0.1, 0.05],
+    opacity: 0.3,
+    unlit: true
+})
+
+const dustParticles = []
+let time = 0
+
+
+function spawnDust (lights) {
+    for (const light of lights) {
+        const count = 6
+        for (let i = 0; i < count; i++) {
+            const size = 0.02 + Math.random() * 0.04
+            const bb = new Billboard({
+                x: light.position.x + (Math.random() - 0.5) * 2,
+                y: light.position.y - Math.random() * 1.5,
+                z: light.position.z + (Math.random() - 0.5) * 2,
+                width: size,
+                height: size,
+                material: dustMat
+            })
+            scene.addChild(bb)
+            dustParticles.push({
+                billboard: bb,
+                vx: (Math.random() - 0.5) * 0.02,
+                vy: (Math.random() - 0.5) * 0.01,
+                vz: (Math.random() - 0.5) * 0.02,
+                phase: Math.random() * Math.PI * 2,
+                baseY: bb.position.y
+            })
+        }
+    }
 }
 
 
@@ -335,6 +384,9 @@ function animate () {
     camera3d.position.set(nx, EYE_HEIGHT, nz)
     camera3d.rotation.setFromEuler(pitch, yaw, 0, 'YXZ')
     camera3d.markDirty()
+
+    time += dt
+    updateDust(dt)
 
     layer.render()
     requestAnimationFrame(animate)
@@ -518,6 +570,31 @@ function buildWallWithDoors (wallX, doorPositions) {
         const segLen = segStart - (-CORRIDOR_LENGTH)
         const segCenter = -CORRIDOR_LENGTH + segLen / 2
         addBox(wallX, halfH, segCenter, WALL_THICKNESS, CORRIDOR_HEIGHT, segLen, wallMat)
+    }
+}
+
+
+function updateDust (dt) {
+    for (const p of dustParticles) {
+        const pos = p.billboard.position
+        pos.x += p.vx * dt
+        pos.y = p.baseY + Math.sin(time * 0.5 + p.phase) * 0.15
+        pos.z += p.vz * dt
+
+        if (pos.x < -halfW + 0.1) {
+            pos.x = halfW - 0.1
+        }
+        if (pos.x > halfW - 0.1) {
+            pos.x = -halfW + 0.1
+        }
+        if (pos.z < -CORRIDOR_LENGTH + 0.1) {
+            pos.z = -0.1
+        }
+        if (pos.z > -0.1) {
+            pos.z = -CORRIDOR_LENGTH + 0.1
+        }
+
+        p.billboard.markDirty()
     }
 }
 
