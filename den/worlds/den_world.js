@@ -1,11 +1,11 @@
-import World from '../game/world.js'
-import Player from './entities/player.js'
-import Projectile from './entities/projectile.js'
-import Pig from './entities/pig.js'
-import Red from './entities/red.js'
-import Granny from './entities/granny.js'
-import Amalgam from './entities/amalgam.js'
-import {testHitbox} from './collision_shapes.js'
+import World from '../../game/world.js'
+import Player from '../entities/player.js'
+import Projectile from '../entities/projectile.js'
+import Pig from '../entities/pig.js'
+import Red from '../entities/red.js'
+import Granny from '../entities/granny.js'
+import Amalgam from '../entities/amalgam.js'
+import {testHitbox} from '../collision_shapes.js'
 
 
 export default class DenWorld extends World {

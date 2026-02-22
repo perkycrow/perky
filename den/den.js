@@ -5,13 +5,13 @@ import OutlineEffect from '../render/shaders/builtin/effects/outline_effect.js'
 import GameplayStage from './stages/gameplay_stage.js'
 import PreviewStage from './stages/preview_stage.js'
 
-import manifest from './manifest.json' with { type: 'json' }
+import manifest from './manifest.json' with {type: 'json'}
 import wiring from './wiring.js'
 
 
-export default class DefendTheDen extends Game {
+export default class Den extends Game {
 
-    static $name = 'defendTheDen'
+    static $name = 'den'
     static manifest = manifest
     static ActionController = null
 
@@ -44,11 +44,6 @@ export default class DefendTheDen extends Game {
 
         const stageName = params.preview ? 'preview' : 'gameplay'
         this.setStage(stageName)
-    }
-
-
-    onStart () {
-        super.onStart()
     }
 
 }

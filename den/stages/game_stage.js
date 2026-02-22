@@ -3,7 +3,7 @@ import Group2D from '../../render/group_2d.js'
 import Sprite from '../../render/sprite.js'
 import ShadowTransform from '../../render/transforms/shadow_transform.js'
 
-import DenWorld from '../den_world.js'
+import DenWorld from '../worlds/den_world.js'
 import DenController from '../controllers/den_controller.js'
 import wiring from '../wiring.js'
 
