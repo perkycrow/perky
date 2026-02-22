@@ -1,4 +1,5 @@
 import Entity from '../../game/entity.js'
+import Velocity from '../../game/velocity.js'
 
 
 export default class Enemy extends Entity {
@@ -14,7 +15,7 @@ export default class Enemy extends Entity {
             hp = 3
         } = params
 
-        this.velocity.set(-maxSpeed, 0)
+        this.create(Velocity, {x: -maxSpeed, y: 0})
 
         this.maxSpeed = maxSpeed
         this.boundaries = boundaries

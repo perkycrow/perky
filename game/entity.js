@@ -12,7 +12,11 @@ export default class Entity extends PerkyModule {
         const {x = 0, y = 0} = options
 
         this.position = new Vec2(x, y)
-        this.velocity = new Vec2(0, 0)
+    }
+
+
+    get components () {
+        return this.childrenByCategory('component')
     }
 
 

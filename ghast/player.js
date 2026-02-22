@@ -1,10 +1,13 @@
 import Entity from '../game/entity.js'
+import Velocity from '../game/velocity.js'
 
 
 export default class Player extends Entity {
 
     constructor (params = {}) {
         super(params)
+
+        this.create(Velocity)
 
         const {maxSpeed = 3, acceleration = 25} = params
 

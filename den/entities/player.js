@@ -1,4 +1,5 @@
 import Entity from '../../game/entity.js'
+import Velocity from '../../game/velocity.js'
 import {CapsuleHitbox} from '../collision_shapes.js'
 
 
@@ -6,6 +7,8 @@ export default class Player extends Entity {
 
     constructor (params = {}) {
         super(params)
+
+        this.create(Velocity)
 
         const {maxSpeed = 3, acceleration = 25, boundaries = {min: -1.25, max: 1.15}} = params
 

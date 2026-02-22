@@ -176,7 +176,7 @@ function saveJSON (key, value) {
     try {
         localStorage.setItem(key, JSON.stringify(value))
     } catch (_e) {
-        // localStorage full or unavailable
+
     }
 }
 

@@ -1,5 +1,6 @@
 import {describe, test, expect} from 'vitest'
 import Entity from './entity.js'
+import Velocity from './velocity.js'
 import Vec2 from '../math/vec2.js'
 
 
@@ -35,12 +36,10 @@ describe('Entity', () => {
     })
 
 
-    test('has default velocity at zero', () => {
+    test('does not have velocity by default', () => {
         const entity = new Entity()
 
-        expect(entity.velocity).toBeInstanceOf(Vec2)
-        expect(entity.velocity.x).toBe(0)
-        expect(entity.velocity.y).toBe(0)
+        expect(entity.velocity).toBeUndefined()
     })
 
 
@@ -59,6 +58,17 @@ describe('Entity', () => {
         const entity = new Entity()
 
         expect(typeof entity.update).toBe('function')
+    })
+
+
+    test('components returns children with category "component"', () => {
+        const entity = new Entity()
+
+        expect(entity.components).toEqual([])
+
+        const velocity = entity.create(Velocity)
+
+        expect(entity.components).toEqual([velocity])
     })
 
 })

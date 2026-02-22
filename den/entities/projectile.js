@@ -1,4 +1,5 @@
 import Entity from '../../game/entity.js'
+import Velocity from '../../game/velocity.js'
 import {CircleHitbox} from '../collision_shapes.js'
 
 
@@ -20,7 +21,7 @@ export default class Projectile extends Entity {
             size = 0.25
         } = params
 
-        this.velocity.set(velocityX, velocityY)
+        this.create(Velocity, {x: velocityX, y: velocityY})
         this.gravity = gravity
         this.drag = drag
         this.alive = true

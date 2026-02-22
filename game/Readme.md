@@ -119,18 +119,42 @@ class MyWorld extends World {
 
 ### [entity.js](entity.js)
 
-Base class for game objects. Has a position, velocity, and an `update()` hook.
+Base class for game objects. Has a position and an `update()` hook. Use components for additional capabilities.
 
 ```js
 class Player extends Entity {
+    constructor (options = {}) {
+        super(options)
+        this.create(Velocity)
+    }
+
     update (deltaTime) {
-        this.position.add(this.velocity.clone().scale(deltaTime))
+        this.position.add(this.velocity.clone().multiplyScalar(deltaTime))
     }
 }
 
 const player = world.create(Player, {x: 5, y: 3})
-player.x          // 5
-player.position   // Vec2
+player.x            // 5
+player.position     // Vec2
+player.components   // [Velocity]
+```
+
+---
+
+### [component.js](component.js)
+
+Base class for entity components. Extends PerkyModule with `$category = 'component'`. Attach to entities via `create()`. Use `onInstall` / `onUninstall` hooks to wire up the host entity.
+
+---
+
+### [velocity.js](velocity.js)
+
+Component that adds a velocity Vec2 to an entity. Sets `entity.velocity` on attach.
+
+```js
+entity.create(Velocity, {x: 2, y: -1})
+entity.velocity.x   // 2
+entity.velocity.y   // -1
 ```
 
 ---
