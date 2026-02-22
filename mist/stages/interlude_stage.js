@@ -14,6 +14,7 @@ export default class InterludeStage extends Stage {
         })
 
         this.#buildUI()
+        this.#fadeIn()
     }
 
 
@@ -23,6 +24,20 @@ export default class InterludeStage extends Stage {
         if (this.game.getLayer('interludeUI')) {
             this.game.removeLayer('interludeUI')
         }
+    }
+
+
+    #fadeIn () {
+        if (!this.#layer?.div) {
+            return
+        }
+
+        const div = this.#layer.div
+        div.style.opacity = '0'
+        div.style.transition = 'opacity 0.5s ease-out'
+        requestAnimationFrame(() => {
+            div.style.opacity = '1'
+        })
     }
 
 

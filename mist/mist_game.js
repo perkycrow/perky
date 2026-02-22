@@ -7,6 +7,11 @@ import StoryAdventure from './adventures/story_adventure.js'
 import manifest from './manifest.js'
 
 
+const SAVE_KEY = 'mistbrewer_story'
+const VOLUME_KEY = 'mistbrewer_volume'
+const KEYBINDS_KEY = 'mistbrewer_keybinds'
+
+
 export default class MistGame extends Game {
 
     static $name = 'mistGame'
@@ -24,6 +29,7 @@ export default class MistGame extends Game {
     adventure = null
 
     configureGame () {
+        loadVolume(this)
         this.setStage('menu')
     }
 
@@ -32,6 +38,47 @@ export default class MistGame extends Game {
         this.adventure = new StoryAdventure()
         this.#bindAdventureHooks()
         this.adventure.triggerAction('start')
+    }
+
+
+    continueAdventure () {
+        const data = loadJSON(SAVE_KEY)
+
+        if (!data) {
+            this.startAdventure()
+            return
+        }
+
+        this.adventure = new StoryAdventure(data)
+        this.#bindAdventureHooks()
+        this.adventure.triggerAction('start')
+    }
+
+
+    hasSave () {
+        return loadJSON(SAVE_KEY) !== null
+    }
+
+
+    clearSave () {
+        localStorage.removeItem(SAVE_KEY)
+        localStorage.removeItem(VOLUME_KEY)
+        localStorage.removeItem(KEYBINDS_KEY)
+    }
+
+
+    saveVolume (global, music, sfx) {
+        saveJSON(VOLUME_KEY, {global, music, sfx})
+    }
+
+
+    loadKeybinds () {
+        return loadJSON(KEYBINDS_KEY)
+    }
+
+
+    saveKeybinds (bindings) {
+        saveJSON(KEYBINDS_KEY, bindings)
     }
 
 
@@ -84,10 +131,61 @@ export default class MistGame extends Game {
             }
         })
 
+        adventure.actionSet.hook('stateChange', () => {
+            saveJSON(SAVE_KEY, adventure.export())
+        })
+
         adventure.actionSet.hook('end', () => {
             this.adventure = null
+            localStorage.removeItem(SAVE_KEY)
             this.setStage('menu')
         })
     }
 
+}
+
+
+function loadVolume (game) {
+    const data = loadJSON(VOLUME_KEY)
+
+    if (!data) {
+        return
+    }
+
+    if (data.global !== undefined) {
+        game.setVolume(data.global)
+    }
+
+    const audio = game.audioSystem
+
+    if (!audio) {
+        return
+    }
+
+    if (data.music !== undefined) {
+        audio.setChannelVolume('music', data.music)
+    }
+
+    if (data.sfx !== undefined) {
+        audio.setChannelVolume('sfx', data.sfx)
+    }
+}
+
+
+function saveJSON (key, value) {
+    try {
+        localStorage.setItem(key, JSON.stringify(value))
+    } catch (_e) {
+        // localStorage full or unavailable
+    }
+}
+
+
+function loadJSON (key) {
+    try {
+        const raw = localStorage.getItem(key)
+        return raw ? JSON.parse(raw) : null
+    } catch (_e) {
+        return null
+    }
 }

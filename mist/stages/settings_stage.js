@@ -27,7 +27,7 @@ export default class SettingsStage extends Stage {
 
         this.game.getLayer('game').setContent(null)
 
-        this.#bindings = buildBindingsFromStatic()
+        this.#bindings = this.game.loadKeybinds() || buildBindingsFromStatic()
 
         this.#layer = this.game.createLayer('settingsUI', 'html', {
             camera: this.game.camera,
@@ -124,6 +124,7 @@ export default class SettingsStage extends Stage {
             }
 
             onChange(value)
+            this.#saveVolume()
         })
     }
 
@@ -162,6 +163,7 @@ export default class SettingsStage extends Stage {
             this.#bindings[actionId][slot] = event.code
             this.#cancelRebind()
             this.#refreshKeybindDisplay()
+            this.game.saveKeybinds(this.#bindings)
         }
 
         document.addEventListener('keydown', this.#rebindListener)
@@ -205,8 +207,34 @@ export default class SettingsStage extends Stage {
                 this.#cancelRebind()
                 this.#bindings = buildBindingsFromStatic()
                 this.#refreshKeybindDisplay()
+                this.game.saveKeybinds(this.#bindings)
             })
         }
+
+        const deleteBtn = div.querySelector('[data-action="deleteSave"]')
+
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', () => {
+                this.game.clearSave()
+                deleteBtn.textContent = 'Sauvegarde supprimée'
+                deleteBtn.disabled = true
+            })
+        }
+    }
+
+
+    #saveVolume () {
+        const audio = this.game.audioSystem
+
+        if (!audio) {
+            return
+        }
+
+        this.game.saveVolume(
+            this.game.getVolume(),
+            audio.getChannelVolume('music'),
+            audio.getChannelVolume('sfx')
+        )
     }
 
 }
@@ -268,7 +296,7 @@ function buildSettingsHTML (backSrc, gearSrc, bindings) {
             </div>
 
             <div style="text-align: center; margin-top: 20px;">
-                <button style="
+                <button data-action="deleteSave" style="
                     font-family: 'Jacques Francois', serif;
                     font-size: 14px;
                     color: #4d382a;

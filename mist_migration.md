@@ -25,8 +25,8 @@ Migrating from `mist_old/` (toxilibs/Vue/jQuery) to `mist/` (Perky framework).
 | 12 | Stage navigation (menu, adventure, interludes) | DONE |
 | 12b | Menu polish — title image, fog clouds, styled text, fonts | DONE |
 | 12c | Settings screen — sound sliders, keybinds, navigation | DONE |
-| 13 | Visual polish (particles, transitions) | TODO |
-| 14 | Save (localStorage) + finitions | TODO |
+| 13 | Visual polish — post-processing, fog, stage fade-in | DONE |
+| 14 | Save (localStorage) — adventure progress, settings, continue | DONE |
 
 ## Step 9b — Scene Graph & Wiring (Framework Change)
 

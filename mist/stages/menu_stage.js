@@ -129,13 +129,27 @@ export default class MenuStage extends Stage {
         }
 
         const iconSrc = this.game.getSource('menuIcon')?.src || ''
+        const hasSave = this.game.hasSave()
 
-        this.#htmlLayer.setContent(buildMenuHTML(iconSrc))
+        this.#htmlLayer.setContent(buildMenuHTML(iconSrc, hasSave))
 
         const playButton = this.#htmlLayer.div.querySelector('[data-action="play"]')
 
         if (playButton) {
             playButton.addEventListener('click', () => {
+                if (hasSave) {
+                    this.game.continueAdventure()
+                } else {
+                    this.game.startAdventure()
+                }
+            })
+        }
+
+        const newGameButton = this.#htmlLayer.div.querySelector('[data-action="newGame"]')
+
+        if (newGameButton) {
+            newGameButton.addEventListener('click', () => {
+                this.game.clearSave()
                 this.game.startAdventure()
             })
         }
@@ -176,9 +190,18 @@ function resetCloud (sprite, scattered) {
 }
 
 
-function buildMenuHTML (iconSrc) {
+function buildMenuHTML (iconSrc, hasSave) {
     const settingsIcon = iconSrc
         ? `<img src="${iconSrc}" style="width: 32px; height: 32px; opacity: 0.6; cursor: pointer;" />`
+        : ''
+
+    const playLabel = hasSave ? 'Continue' : 'Start the adventure'
+
+    const newGameLink = hasSave
+        ? `<div data-action="newGame" style="${menuLinkStyle(14)}; margin-bottom: 20px;"
+               onmouseover="this.style.textShadow='0.15em 0.15em 0.8em #2c2119, -0.02em -0.02em 0.02em #977966'"
+               onmouseout="this.style.textShadow='0.15em 0.15em 0.4em #2c2119, -0.02em -0.02em 0.01em #977966'"
+           >New game</div>`
         : ''
 
     return `
@@ -192,30 +215,16 @@ function buildMenuHTML (iconSrc) {
             box-sizing: border-box;
             font-family: 'Macondo Swash Caps', serif;
         ">
-            <div data-action="play" style="
-                text-align: center;
-                cursor: pointer;
-                color: #d8d0cc;
-                font-size: 22px;
-                font-weight: bold;
-                letter-spacing: 1px;
-                text-shadow: 0.15em 0.15em 0.4em #2c2119, -0.02em -0.02em 0.01em #977966;
-                margin-bottom: 20px;
-                transition: text-shadow 0.2s;
-            " onmouseover="this.style.textShadow='0.15em 0.15em 0.8em #2c2119, -0.02em -0.02em 0.02em #977966'"
-               onmouseout="this.style.textShadow='0.15em 0.15em 0.4em #2c2119, -0.02em -0.02em 0.01em #977966'"
-            >Start the adventure</div>
+            <div data-action="play" style="${menuLinkStyle(22)}; font-weight: bold; margin-bottom: 20px;"
+                 onmouseover="this.style.textShadow='0.15em 0.15em 0.8em #2c2119, -0.02em -0.02em 0.02em #977966'"
+                 onmouseout="this.style.textShadow='0.15em 0.15em 0.4em #2c2119, -0.02em -0.02em 0.01em #977966'"
+            >${playLabel}</div>
 
-            <div style="
-                text-align: center;
-                cursor: pointer;
-                color: #d8d0cc;
-                font-size: 14px;
-                letter-spacing: 1px;
-                text-shadow: 0.15em 0.15em 0.4em #2c2119, -0.02em -0.02em 0.01em #977966;
-                transition: text-shadow 0.2s;
-            " onmouseover="this.style.textShadow='0.15em 0.15em 0.8em #2c2119, -0.02em -0.02em 0.02em #977966'"
-               onmouseout="this.style.textShadow='0.15em 0.15em 0.4em #2c2119, -0.02em -0.02em 0.01em #977966'"
+            ${newGameLink}
+
+            <div style="${menuLinkStyle(14)}"
+                 onmouseover="this.style.textShadow='0.15em 0.15em 0.8em #2c2119, -0.02em -0.02em 0.02em #977966'"
+                 onmouseout="this.style.textShadow='0.15em 0.15em 0.4em #2c2119, -0.02em -0.02em 0.01em #977966'"
             >Roadmap</div>
         </div>
 
@@ -224,5 +233,18 @@ function buildMenuHTML (iconSrc) {
             bottom: 20px;
             right: 20px;
         ">${settingsIcon}</div>
+    `
+}
+
+
+function menuLinkStyle (fontSize) {
+    return `
+        text-align: center;
+        cursor: pointer;
+        color: #d8d0cc;
+        font-size: ${fontSize}px;
+        letter-spacing: 1px;
+        text-shadow: 0.15em 0.15em 0.4em #2c2119, -0.02em -0.02em 0.01em #977966;
+        transition: text-shadow 0.2s;
     `
 }
