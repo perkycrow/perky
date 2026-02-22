@@ -13,11 +13,14 @@ describe('Material3D', () => {
         expect(mat.uvScale).toEqual([1, 1])
         expect(mat.roughness).toBe(0.5)
         expect(mat.specular).toBe(0.5)
+        expect(mat.normalMap).toBe(null)
+        expect(mat.normalStrength).toBe(1.0)
     })
 
 
     test('with all options', () => {
         const tex = {id: 'tex'}
+        const normalTex = {id: 'normal'}
         const mat = new Material3D({
             texture: tex,
             color: [0.5, 0.3, 0.1],
@@ -26,7 +29,9 @@ describe('Material3D', () => {
             unlit: true,
             uvScale: [4, 2],
             roughness: 0.8,
-            specular: 0.3
+            specular: 0.3,
+            normalMap: normalTex,
+            normalStrength: 0.6
         })
         expect(mat.texture).toBe(tex)
         expect(mat.color).toEqual([0.5, 0.3, 0.1])
@@ -36,6 +41,8 @@ describe('Material3D', () => {
         expect(mat.uvScale).toEqual([4, 2])
         expect(mat.roughness).toBe(0.8)
         expect(mat.specular).toBe(0.3)
+        expect(mat.normalMap).toBe(normalTex)
+        expect(mat.normalStrength).toBe(0.6)
     })
 
 
@@ -49,6 +56,8 @@ describe('Material3D', () => {
         expect(mat.uvScale).toEqual([1, 1])
         expect(mat.roughness).toBe(0.5)
         expect(mat.specular).toBe(0.5)
+        expect(mat.normalMap).toBe(null)
+        expect(mat.normalStrength).toBe(1.0)
     })
 
 })

@@ -1,10 +1,21 @@
 export default class Geometry {
 
-    constructor ({positions, normals, uvs, indices}) {
+    constructor ({positions, normals, uvs, indices, tangents}) {
         this.positions = positions instanceof Float32Array ? positions : new Float32Array(positions)
         this.normals = normals instanceof Float32Array ? normals : new Float32Array(normals)
         this.uvs = uvs instanceof Float32Array ? uvs : new Float32Array(uvs)
         this.indices = indices instanceof Uint16Array ? indices : new Uint16Array(indices)
+        if (tangents) {
+            this.tangents = tangents instanceof Float32Array ? tangents : new Float32Array(tangents)
+        } else {
+            this.tangents = null
+        }
+    }
+
+
+    computeTangents () {
+        this.tangents = calculateTangents(this.positions, this.normals, this.uvs, this.indices)
+        return this
     }
 
 
@@ -78,7 +89,7 @@ export default class Geometry {
             normals,
             uvs,
             indices
-        })
+        }).computeTangents()
     }
 
 
@@ -122,7 +133,84 @@ export default class Geometry {
             normals,
             uvs,
             indices
-        })
+        }).computeTangents()
     }
 
+}
+
+
+function calculateTangents (positions, normals, uvs, indices) {
+    const vertexCount = positions.length / 3
+    const tangents = new Float32Array(vertexCount * 3)
+
+    for (let i = 0; i < indices.length; i += 3) {
+        const i0 = indices[i]
+        const i1 = indices[i + 1]
+        const i2 = indices[i + 2]
+
+        const p0x = positions[i0 * 3]
+        const p0y = positions[i0 * 3 + 1]
+        const p0z = positions[i0 * 3 + 2]
+        const p1x = positions[i1 * 3]
+        const p1y = positions[i1 * 3 + 1]
+        const p1z = positions[i1 * 3 + 2]
+        const p2x = positions[i2 * 3]
+        const p2y = positions[i2 * 3 + 1]
+        const p2z = positions[i2 * 3 + 2]
+
+        const e1x = p1x - p0x
+        const e1y = p1y - p0y
+        const e1z = p1z - p0z
+        const e2x = p2x - p0x
+        const e2y = p2y - p0y
+        const e2z = p2z - p0z
+
+        const du1 = uvs[i1 * 2] - uvs[i0 * 2]
+        const dv1 = uvs[i1 * 2 + 1] - uvs[i0 * 2 + 1]
+        const du2 = uvs[i2 * 2] - uvs[i0 * 2]
+        const dv2 = uvs[i2 * 2 + 1] - uvs[i0 * 2 + 1]
+
+        let det = du1 * dv2 - du2 * dv1
+        if (Math.abs(det) < 1e-8) {
+            det = 1e-8
+        }
+        const r = 1.0 / det
+
+        const tx = (e1x * dv2 - e2x * dv1) * r
+        const ty = (e1y * dv2 - e2y * dv1) * r
+        const tz = (e1z * dv2 - e2z * dv1) * r
+
+        tangents[i0 * 3] += tx
+        tangents[i0 * 3 + 1] += ty
+        tangents[i0 * 3 + 2] += tz
+        tangents[i1 * 3] += tx
+        tangents[i1 * 3 + 1] += ty
+        tangents[i1 * 3 + 2] += tz
+        tangents[i2 * 3] += tx
+        tangents[i2 * 3 + 1] += ty
+        tangents[i2 * 3 + 2] += tz
+    }
+
+    for (let i = 0; i < vertexCount; i++) {
+        const nx = normals[i * 3]
+        const ny = normals[i * 3 + 1]
+        const nz = normals[i * 3 + 2]
+        let tx = tangents[i * 3]
+        let ty = tangents[i * 3 + 1]
+        let tz = tangents[i * 3 + 2]
+
+        const dot = tx * nx + ty * ny + tz * nz
+        tx -= nx * dot
+        ty -= ny * dot
+        tz -= nz * dot
+
+        const len = Math.sqrt(tx * tx + ty * ty + tz * tz)
+        if (len > 1e-8) {
+            tangents[i * 3] = tx / len
+            tangents[i * 3 + 1] = ty / len
+            tangents[i * 3 + 2] = tz / len
+        }
+    }
+
+    return tangents
 }

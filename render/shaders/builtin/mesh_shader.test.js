@@ -15,16 +15,20 @@ describe('MESH_VERTEX', () => {
         expect(MESH_VERTEX).toContain('#version 300 es')
     })
 
-    test('declares aPosition attribute', () => {
-        expect(MESH_VERTEX).toContain('in vec3 aPosition')
+    test('declares aPosition attribute with layout', () => {
+        expect(MESH_VERTEX).toContain('layout(location = 0) in vec3 aPosition')
     })
 
-    test('declares aNormal attribute', () => {
-        expect(MESH_VERTEX).toContain('in vec3 aNormal')
+    test('declares aNormal attribute with layout', () => {
+        expect(MESH_VERTEX).toContain('layout(location = 1) in vec3 aNormal')
     })
 
-    test('declares aTexCoord attribute', () => {
-        expect(MESH_VERTEX).toContain('in vec2 aTexCoord')
+    test('declares aTexCoord attribute with layout', () => {
+        expect(MESH_VERTEX).toContain('layout(location = 2) in vec2 aTexCoord')
+    })
+
+    test('declares aTangent attribute with layout', () => {
+        expect(MESH_VERTEX).toContain('layout(location = 3) in vec3 aTangent')
     })
 
     test('declares mat4 uniforms', () => {
@@ -38,7 +42,11 @@ describe('MESH_VERTEX', () => {
     })
 
     test('transforms normal with model matrix', () => {
-        expect(MESH_VERTEX).toContain('mat3(uModel) * aNormal')
+        expect(MESH_VERTEX).toContain('normalMatrix * aNormal')
+    })
+
+    test('transforms tangent with model matrix', () => {
+        expect(MESH_VERTEX).toContain('normalMatrix * aTangent')
     })
 
 })
@@ -94,6 +102,16 @@ describe('MESH_FRAGMENT', () => {
 
     test('declares uCameraPosition uniform', () => {
         expect(MESH_FRAGMENT).toContain('uniform vec3 uCameraPosition')
+    })
+
+    test('declares normal map uniforms', () => {
+        expect(MESH_FRAGMENT).toContain('uniform sampler2D uNormalMap')
+        expect(MESH_FRAGMENT).toContain('uniform float uHasNormalMap')
+        expect(MESH_FRAGMENT).toContain('uniform float uNormalStrength')
+    })
+
+    test('constructs TBN matrix for normal mapping', () => {
+        expect(MESH_FRAGMENT).toContain('mat3 TBN = mat3(T, B, normal)')
     })
 
     test('applies uUVScale to texture coordinates', () => {
@@ -159,7 +177,10 @@ describe('MESH_SHADER_DEF', () => {
             'uUVScale',
             'uRoughness',
             'uSpecular',
-            'uCameraPosition'
+            'uCameraPosition',
+            'uNormalMap',
+            'uHasNormalMap',
+            'uNormalStrength'
         ])
     })
 
@@ -167,7 +188,8 @@ describe('MESH_SHADER_DEF', () => {
         expect(MESH_SHADER_DEF.attributes).toEqual([
             'aPosition',
             'aNormal',
-            'aTexCoord'
+            'aTexCoord',
+            'aTangent'
         ])
     })
 

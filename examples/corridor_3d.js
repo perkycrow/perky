@@ -7,6 +7,7 @@ import MeshInstance from '/render/mesh_instance.js'
 import Material3D from '/render/material_3d.js'
 import Light3D from '/render/light_3d.js'
 import Object3D from '/render/object_3d.js'
+import generateNormalMap from '/render/textures/generate_normal_map.js'
 import {loadImage} from '/application/loaders.js'
 import {createElement, createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
@@ -88,12 +89,18 @@ async function loadTextures () {
 
 
 function buildScene (textures) {
+    const wallNormal = generateNormalMap(textures.wallTex, {strength: 2.0})
+    const floorNormal = generateNormalMap(textures.floorTex, {strength: 1.5})
+    const doorNormal = generateNormalMap(textures.doorTex, {strength: 2.0})
+
     const floorMat = new Material3D({
         texture: textures.floorTex,
         color: [0.9, 0.9, 0.85],
         uvScale: [4, 40],
         roughness: 0.4,
-        specular: 0.5
+        specular: 0.5,
+        normalMap: floorNormal,
+        normalStrength: 0.8
     })
 
     const ceilingMat = new Material3D({
@@ -109,7 +116,9 @@ function buildScene (textures) {
         color: [0.95, 0.95, 0.9],
         uvScale: [10, 3],
         roughness: 0.7,
-        specular: 0.3
+        specular: 0.3,
+        normalMap: wallNormal,
+        normalStrength: 0.8
     })
 
     const doorMat = new Material3D({
@@ -117,7 +126,9 @@ function buildScene (textures) {
         color: [0.9, 0.8, 0.7],
         uvScale: [1, 1],
         roughness: 0.4,
-        specular: 0.5
+        specular: 0.5,
+        normalMap: doorNormal,
+        normalStrength: 0.8
     })
 
     const frameMat = new Material3D({

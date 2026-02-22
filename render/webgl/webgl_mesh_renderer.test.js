@@ -13,6 +13,7 @@ function createMockGL () {
         LEQUAL: 0x0203,
         DEPTH_BUFFER_BIT: 0x00000100,
         TEXTURE0: 0x84C0,
+        TEXTURE1: 0x84C1,
         TEXTURE_2D: 0x0DE1,
         calls,
         enable (cap) {
@@ -91,12 +92,16 @@ function createMockShaderRegistry () {
             uUVScale: 20,
             uRoughness: 21,
             uSpecular: 22,
-            uCameraPosition: 23
+            uCameraPosition: 23,
+            uNormalMap: 24,
+            uHasNormalMap: 25,
+            uNormalStrength: 26
         },
         attributes: {
             aPosition: 0,
             aNormal: 1,
-            aTexCoord: 2
+            aTexCoord: 2,
+            aTangent: 3
         },
         registerUniform () {
             return this
@@ -358,6 +363,30 @@ describe('flush', () => {
 
         const specCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 22 && c.args[1] === 0.3)
         expect(specCalls.length).toBe(1)
+    })
+
+
+    test('binds normal map on TEXTURE1 when material has normalMap', () => {
+        const {renderer, gl} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+
+        const normalTex = {id: 'normalTex'}
+        const mat = new Material3D({normalMap: normalTex, normalStrength: 0.6})
+        const mi = new MeshInstance({mesh: {draw () {}}, texture: null, material: mat})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1, mi.renderHints)
+
+        gl.calls.length = 0
+        renderer.flush()
+
+        const activeCalls = gl.calls.filter(c => c.fn === 'activeTexture' && c.args[0] === gl.TEXTURE1)
+        expect(activeCalls.length).toBeGreaterThanOrEqual(1)
+
+        const hasNormalCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 25 && c.args[1] === 1)
+        expect(hasNormalCalls.length).toBe(1)
+
+        const strengthCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 26 && c.args[1] === 0.6)
+        expect(strengthCalls.length).toBe(1)
     })
 
 

@@ -29,6 +29,28 @@ describe('Geometry', () => {
             expect(geo.indices).toBeInstanceOf(Uint16Array)
         })
 
+        test('tangents default to null', () => {
+            const geo = new Geometry({
+                positions: [0, 0, 0],
+                normals: [0, 1, 0],
+                uvs: [0, 0],
+                indices: [0]
+            })
+            expect(geo.tangents).toBe(null)
+        })
+
+        test('accepts tangents as typed array', () => {
+            const geo = new Geometry({
+                positions: [0, 0, 0],
+                normals: [0, 1, 0],
+                uvs: [0, 0],
+                indices: [0],
+                tangents: new Float32Array([1, 0, 0])
+            })
+            expect(geo.tangents).toBeInstanceOf(Float32Array)
+            expect(geo.tangents.length).toBe(3)
+        })
+
     })
 
 
@@ -51,6 +73,54 @@ describe('Geometry', () => {
             indices: [0, 1, 2]
         })
         expect(geo.indexCount).toBe(3)
+    })
+
+
+    describe('computeTangents', () => {
+
+        test('produces a Float32Array', () => {
+            const geo = Geometry.createPlane(1, 1, 1, 1)
+            geo.tangents = null
+            geo.computeTangents()
+            expect(geo.tangents).toBeInstanceOf(Float32Array)
+            expect(geo.tangents.length).toBe(geo.vertexCount * 3)
+        })
+
+        test('returns this for chaining', () => {
+            const geo = new Geometry({
+                positions: [0, 0, 0, 1, 0, 0, 0, 0, 1],
+                normals: [0, 1, 0, 0, 1, 0, 0, 1, 0],
+                uvs: [0, 0, 1, 0, 0, 1],
+                indices: [0, 1, 2]
+            })
+            expect(geo.computeTangents()).toBe(geo)
+        })
+
+        test('tangents are orthogonal to normals', () => {
+            const box = Geometry.createBox(1, 1, 1)
+            for (let i = 0; i < box.vertexCount; i++) {
+                const nx = box.normals[i * 3]
+                const ny = box.normals[i * 3 + 1]
+                const nz = box.normals[i * 3 + 2]
+                const tx = box.tangents[i * 3]
+                const ty = box.tangents[i * 3 + 1]
+                const tz = box.tangents[i * 3 + 2]
+                const dot = nx * tx + ny * ty + nz * tz
+                expect(Math.abs(dot)).toBeLessThan(1e-5)
+            }
+        })
+
+        test('tangents are unit length', () => {
+            const box = Geometry.createBox(1, 1, 1)
+            for (let i = 0; i < box.vertexCount; i++) {
+                const tx = box.tangents[i * 3]
+                const ty = box.tangents[i * 3 + 1]
+                const tz = box.tangents[i * 3 + 2]
+                const len = Math.sqrt(tx * tx + ty * ty + tz * tz)
+                expect(Math.abs(len - 1)).toBeLessThan(1e-5)
+            }
+        })
+
     })
 
 
@@ -103,6 +173,12 @@ describe('Geometry', () => {
             }
         })
 
+        test('has tangents computed', () => {
+            const box = Geometry.createBox(1, 1, 1)
+            expect(box.tangents).toBeInstanceOf(Float32Array)
+            expect(box.tangents.length).toBe(24 * 3)
+        })
+
     })
 
 
@@ -149,6 +225,12 @@ describe('Geometry', () => {
                 expect(plane.indices[i]).toBeGreaterThanOrEqual(0)
                 expect(plane.indices[i]).toBeLessThan(plane.vertexCount)
             }
+        })
+
+        test('has tangents computed', () => {
+            const plane = Geometry.createPlane(1, 1, 1, 1)
+            expect(plane.tangents).toBeInstanceOf(Float32Array)
+            expect(plane.tangents.length).toBe(4 * 3)
         })
 
     })

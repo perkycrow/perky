@@ -55,7 +55,7 @@ function createMockGL () {
 
 describe('Mesh', () => {
 
-    test('creates buffers from geometry', () => {
+    test('creates buffers from geometry with tangents', () => {
         const gl = createMockGL()
         const geometry = Geometry.createBox(1, 1, 1)
         const mesh = new Mesh(gl, geometry)
@@ -63,17 +63,32 @@ describe('Mesh', () => {
         expect(mesh.indexCount).toBe(36)
 
         const bufferDataCalls = gl.calls.filter(c => c.fn === 'bufferData')
+        expect(bufferDataCalls.length).toBe(5)
+    })
+
+
+    test('creates buffers from geometry without tangents', () => {
+        const gl = createMockGL()
+        const geometry = new Geometry({
+            positions: [0, 0, 0, 1, 0, 0, 0, 0, 1],
+            normals: [0, 1, 0, 0, 1, 0, 0, 1, 0],
+            uvs: [0, 0, 1, 0, 0, 1],
+            indices: [0, 1, 2]
+        })
+        new Mesh(gl, geometry)
+
+        const bufferDataCalls = gl.calls.filter(c => c.fn === 'bufferData')
         expect(bufferDataCalls.length).toBe(4)
     })
 
 
-    test('sets up vertex attributes', () => {
+    test('sets up vertex attributes with tangents', () => {
         const gl = createMockGL()
         const geometry = Geometry.createBox(1, 1, 1)
-        new Mesh(gl, geometry)  
+        new Mesh(gl, geometry)
 
         const attribCalls = gl.calls.filter(c => c.fn === 'vertexAttribPointer')
-        expect(attribCalls.length).toBe(3)
+        expect(attribCalls.length).toBe(4)
 
         expect(attribCalls[0].args[0]).toBe(0)
         expect(attribCalls[0].args[1]).toBe(3)
@@ -83,6 +98,9 @@ describe('Mesh', () => {
 
         expect(attribCalls[2].args[0]).toBe(2)
         expect(attribCalls[2].args[1]).toBe(2)
+
+        expect(attribCalls[3].args[0]).toBe(3)
+        expect(attribCalls[3].args[1]).toBe(3)
     })
 
 
@@ -130,7 +148,7 @@ describe('Mesh', () => {
         expect(mesh.disposed).toBe(true)
 
         const deleteCalls = gl.calls.filter(c => c.fn === 'deleteBuffer' || c.fn === 'deleteVertexArray')
-        expect(deleteCalls.length).toBe(5)
+        expect(deleteCalls.length).toBe(6)
     })
 
 

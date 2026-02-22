@@ -189,6 +189,11 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
         gl.activeTexture(gl.TEXTURE0)
         gl.uniform1i(program.uniforms.uTexture, 0)
+
+        gl.activeTexture(gl.TEXTURE1)
+        gl.uniform1i(program.uniforms.uNormalMap, 1)
+        gl.uniform1f(program.uniforms.uHasNormalMap, 0)
+        gl.uniform1f(program.uniforms.uNormalStrength, 1)
     }
 
 
@@ -210,12 +215,25 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
         const texture = object.activeTexture
         if (texture) {
+            gl.activeTexture(gl.TEXTURE0)
             gl.bindTexture(gl.TEXTURE_2D, this.context.textureManager.acquire(texture))
         } else {
             gl.uniform1f(this.#meshProgram.uniforms.uHasTexture, 0)
         }
 
+        const normalMap = hints?.material?.normalMap ?? null
+        if (normalMap) {
+            gl.activeTexture(gl.TEXTURE1)
+            gl.bindTexture(gl.TEXTURE_2D, this.context.textureManager.acquire(normalMap))
+            gl.uniform1f(this.#meshProgram.uniforms.uHasNormalMap, 1)
+        }
+
         object.mesh.draw()
+
+        if (normalMap) {
+            this.context.textureManager.release(normalMap)
+            gl.uniform1f(this.#meshProgram.uniforms.uHasNormalMap, 0)
+        }
 
         if (texture) {
             this.context.textureManager.release(texture)
@@ -242,6 +260,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform2f(u.uUVScale, material.uvScale[0], material.uvScale[1])
         gl.uniform1f(u.uRoughness, material.roughness)
         gl.uniform1f(u.uSpecular, material.specular)
+        gl.uniform1f(u.uNormalStrength, material.normalStrength)
     }
 
 
@@ -254,6 +273,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform2f(u.uUVScale, 1, 1)
         gl.uniform1f(u.uRoughness, 0.5)
         gl.uniform1f(u.uSpecular, 0.5)
+        gl.uniform1f(u.uNormalStrength, 1)
     }
 
 }

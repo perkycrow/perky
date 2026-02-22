@@ -1,7 +1,8 @@
 export const MESH_VERTEX = `#version 300 es
-in vec3 aPosition;
-in vec3 aNormal;
-in vec2 aTexCoord;
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec3 aNormal;
+layout(location = 2) in vec2 aTexCoord;
+layout(location = 3) in vec3 aTangent;
 
 uniform mat4 uProjection;
 uniform mat4 uView;
@@ -10,11 +11,14 @@ uniform mat4 uModel;
 out vec2 vTexCoord;
 out vec3 vNormal;
 out vec3 vWorldPosition;
+out vec3 vTangent;
 
 void main() {
     vec4 worldPos = uModel * vec4(aPosition, 1.0);
     vWorldPosition = worldPos.xyz;
-    vNormal = mat3(uModel) * aNormal;
+    mat3 normalMatrix = mat3(uModel);
+    vNormal = normalMatrix * aNormal;
+    vTangent = normalMatrix * aTangent;
     vTexCoord = aTexCoord;
 
     gl_Position = uProjection * uView * worldPos;
@@ -45,6 +49,10 @@ uniform float uRoughness;
 uniform float uSpecular;
 uniform vec3 uCameraPosition;
 
+uniform sampler2D uNormalMap;
+uniform float uHasNormalMap;
+uniform float uNormalStrength;
+
 uniform int uNumLights;
 uniform vec3 uLightPositions[MAX_LIGHTS];
 uniform vec3 uLightColors[MAX_LIGHTS];
@@ -54,6 +62,7 @@ uniform float uLightRadii[MAX_LIGHTS];
 in vec2 vTexCoord;
 in vec3 vNormal;
 in vec3 vWorldPosition;
+in vec3 vTangent;
 
 out vec4 fragColor;
 
@@ -61,6 +70,15 @@ void main() {
     vec4 texColor = uHasTexture > 0.5 ? texture(uTexture, vTexCoord * uUVScale) : vec4(1.0);
     vec3 baseColor = texColor.rgb * uMaterialColor;
     vec3 normal = normalize(vNormal);
+
+    if (uHasNormalMap > 0.5) {
+        vec3 T = normalize(vTangent - dot(vTangent, normal) * normal);
+        vec3 B = cross(normal, T);
+        mat3 TBN = mat3(T, B, normal);
+        vec3 mapN = texture(uNormalMap, vTexCoord * uUVScale).rgb * 2.0 - 1.0;
+        mapN.xy *= uNormalStrength;
+        normal = normalize(TBN * mapN);
+    }
 
     vec3 lit;
 
@@ -140,7 +158,10 @@ export const MESH_SHADER_DEF = {
         'uUVScale',
         'uRoughness',
         'uSpecular',
-        'uCameraPosition'
+        'uCameraPosition',
+        'uNormalMap',
+        'uHasNormalMap',
+        'uNormalStrength'
     ],
-    attributes: ['aPosition', 'aNormal', 'aTexCoord']
+    attributes: ['aPosition', 'aNormal', 'aTexCoord', 'aTangent']
 }

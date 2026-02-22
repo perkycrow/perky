@@ -5,6 +5,7 @@ export default class Mesh {
     #positionBuffer = null
     #normalBuffer = null
     #uvBuffer = null
+    #tangentBuffer = null
     #indexBuffer = null
     #indexCount = 0
     #disposed = false
@@ -53,6 +54,9 @@ export default class Mesh {
         gl.deleteBuffer(this.#positionBuffer)
         gl.deleteBuffer(this.#normalBuffer)
         gl.deleteBuffer(this.#uvBuffer)
+        if (this.#tangentBuffer) {
+            gl.deleteBuffer(this.#tangentBuffer)
+        }
         gl.deleteBuffer(this.#indexBuffer)
         gl.deleteVertexArray(this.#vao)
 
@@ -83,6 +87,14 @@ export default class Mesh {
         gl.bufferData(gl.ARRAY_BUFFER, geometry.uvs, gl.STATIC_DRAW)
         gl.enableVertexAttribArray(2)
         gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0)
+
+        if (geometry.tangents) {
+            this.#tangentBuffer = gl.createBuffer()
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.#tangentBuffer)
+            gl.bufferData(gl.ARRAY_BUFFER, geometry.tangents, gl.STATIC_DRAW)
+            gl.enableVertexAttribArray(3)
+            gl.vertexAttribPointer(3, 3, gl.FLOAT, false, 0, 0)
+        }
 
         this.#indexBuffer = gl.createBuffer()
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.#indexBuffer)
