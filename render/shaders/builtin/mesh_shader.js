@@ -40,6 +40,10 @@ uniform vec3 uMaterialEmissive;
 uniform float uMaterialOpacity;
 uniform float uUnlit;
 uniform float uHasTexture;
+uniform vec2 uUVScale;
+uniform float uRoughness;
+uniform float uSpecular;
+uniform vec3 uCameraPosition;
 
 uniform int uNumLights;
 uniform vec3 uLightPositions[MAX_LIGHTS];
@@ -54,7 +58,7 @@ in vec3 vWorldPosition;
 out vec4 fragColor;
 
 void main() {
-    vec4 texColor = uHasTexture > 0.5 ? texture(uTexture, vTexCoord) : vec4(1.0);
+    vec4 texColor = uHasTexture > 0.5 ? texture(uTexture, vTexCoord * uUVScale) : vec4(1.0);
     vec3 baseColor = texColor.rgb * uMaterialColor;
     vec3 normal = normalize(vNormal);
 
@@ -63,17 +67,34 @@ void main() {
     if (uUnlit > 0.5) {
         lit = baseColor;
     } else {
-        float diffuse = max(dot(normal, normalize(uLightDirection)), 0.0);
+        vec3 viewDir = normalize(uCameraPosition - vWorldPosition);
+        float shininess = pow(2.0, (1.0 - uRoughness) * 10.0);
+
+        vec3 dirLight = normalize(uLightDirection);
+        float diffuse = max(dot(normal, dirLight), 0.0);
         float lighting = uAmbient + (1.0 - uAmbient) * diffuse;
         lit = baseColor * lighting;
+
+        if (uSpecular > 0.0 && diffuse > 0.0) {
+            vec3 halfDir = normalize(dirLight + viewDir);
+            float specAngle = max(dot(normal, halfDir), 0.0);
+            lit += vec3(uSpecular * pow(specAngle, shininess));
+        }
 
         for (int i = 0; i < MAX_LIGHTS; i++) {
             if (i >= uNumLights) break;
             vec3 toLight = uLightPositions[i] - vWorldPosition;
             float dist = length(toLight);
             float attenuation = 1.0 - smoothstep(0.0, uLightRadii[i], dist);
-            float nDotL = max(dot(normal, normalize(toLight)), 0.0);
+            vec3 lightDir = normalize(toLight);
+            float nDotL = max(dot(normal, lightDir), 0.0);
             lit += baseColor * uLightColors[i] * uLightIntensities[i] * nDotL * attenuation;
+
+            if (uSpecular > 0.0 && nDotL > 0.0) {
+                vec3 halfVec = normalize(lightDir + viewDir);
+                float specAngle = max(dot(normal, halfVec), 0.0);
+                lit += uLightColors[i] * uLightIntensities[i] * uSpecular * pow(specAngle, shininess) * attenuation;
+            }
         }
     }
 
@@ -115,7 +136,11 @@ export const MESH_SHADER_DEF = {
         'uLightPositions',
         'uLightColors',
         'uLightIntensities',
-        'uLightRadii'
+        'uLightRadii',
+        'uUVScale',
+        'uRoughness',
+        'uSpecular',
+        'uCameraPosition'
     ],
     attributes: ['aPosition', 'aNormal', 'aTexCoord']
 }

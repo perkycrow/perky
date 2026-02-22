@@ -167,6 +167,15 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform1f(program.uniforms.uMaterialOpacity, 1)
         gl.uniform1f(program.uniforms.uUnlit, 0)
         gl.uniform1f(program.uniforms.uHasTexture, 1)
+        gl.uniform2f(program.uniforms.uUVScale, 1, 1)
+        gl.uniform1f(program.uniforms.uRoughness, 0.5)
+        gl.uniform1f(program.uniforms.uSpecular, 0.5)
+        gl.uniform3f(
+            program.uniforms.uCameraPosition,
+            this.#camera3d.position.x,
+            this.#camera3d.position.y,
+            this.#camera3d.position.z
+        )
 
         const numLights = Math.min(this.#lights.length, MAX_LIGHTS)
         gl.uniform1i(program.uniforms.uNumLights, numLights)
@@ -230,6 +239,9 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform3fv(u.uMaterialEmissive, material.emissive)
         gl.uniform1f(u.uMaterialOpacity, material.opacity)
         gl.uniform1f(u.uUnlit, material.unlit ? 1 : 0)
+        gl.uniform2f(u.uUVScale, material.uvScale[0], material.uvScale[1])
+        gl.uniform1f(u.uRoughness, material.roughness)
+        gl.uniform1f(u.uSpecular, material.specular)
     }
 
 
@@ -239,6 +251,9 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform3f(u.uMaterialEmissive, 0, 0, 0)
         gl.uniform1f(u.uMaterialOpacity, 1)
         gl.uniform1f(u.uUnlit, 0)
+        gl.uniform2f(u.uUVScale, 1, 1)
+        gl.uniform1f(u.uRoughness, 0.5)
+        gl.uniform1f(u.uSpecular, 0.5)
     }
 
 }

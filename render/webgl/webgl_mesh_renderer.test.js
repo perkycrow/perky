@@ -36,6 +36,9 @@ function createMockGL () {
         uniform3fv (loc, data) {
             calls.push({fn: 'uniform3fv', args: [loc, data]})
         },
+        uniform2f (...args) {
+            calls.push({fn: 'uniform2f', args})
+        },
         uniform3f (...args) {
             calls.push({fn: 'uniform3f', args})
         },
@@ -84,7 +87,11 @@ function createMockShaderRegistry () {
             uLightPositions: 16,
             uLightColors: 17,
             uLightIntensities: 18,
-            uLightRadii: 19
+            uLightRadii: 19,
+            uUVScale: 20,
+            uRoughness: 21,
+            uSpecular: 22,
+            uCameraPosition: 23
         },
         attributes: {
             aPosition: 0,
@@ -293,6 +300,64 @@ describe('flush', () => {
         expect(posCalls[0].args[1][0]).toBe(1)
         expect(posCalls[0].args[1][1]).toBe(2)
         expect(posCalls[0].args[1][2]).toBe(3)
+    })
+
+
+    test('uploads camera position uniform', () => {
+        const {renderer, gl} = createRenderer()
+        renderer.camera3d = new Camera3D({x: 2, y: 3, z: 5})
+
+        const mi = new MeshInstance({mesh: {draw () {}}, texture: null})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1)
+
+        gl.calls.length = 0
+        renderer.flush()
+
+        const camCalls = gl.calls.filter(c => c.fn === 'uniform3f' && c.args[0] === 23)
+        expect(camCalls.length).toBeGreaterThanOrEqual(1)
+        expect(camCalls[0].args[1]).toBe(2)
+        expect(camCalls[0].args[2]).toBe(3)
+        expect(camCalls[0].args[3]).toBe(5)
+    })
+
+
+    test('uploads uvScale from material', () => {
+        const {renderer, gl} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+
+        const mat = new Material3D({uvScale: [4, 2]})
+        const mi = new MeshInstance({mesh: {draw () {}}, texture: null, material: mat})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1, mi.renderHints)
+
+        gl.calls.length = 0
+        renderer.flush()
+
+        const scaleCalls = gl.calls.filter(c => c.fn === 'uniform2f' && c.args[0] === 20)
+        expect(scaleCalls.length).toBeGreaterThanOrEqual(2)
+        const applyCalls = scaleCalls.filter(c => c.args[1] === 4 && c.args[2] === 2)
+        expect(applyCalls.length).toBe(1)
+    })
+
+
+    test('uploads roughness and specular from material', () => {
+        const {renderer, gl} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+
+        const mat = new Material3D({roughness: 0.8, specular: 0.3})
+        const mi = new MeshInstance({mesh: {draw () {}}, texture: null, material: mat})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1, mi.renderHints)
+
+        gl.calls.length = 0
+        renderer.flush()
+
+        const roughCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 21 && c.args[1] === 0.8)
+        expect(roughCalls.length).toBe(1)
+
+        const specCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 22 && c.args[1] === 0.3)
+        expect(specCalls.length).toBe(1)
     })
 
 

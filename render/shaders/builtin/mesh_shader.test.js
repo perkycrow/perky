@@ -80,6 +80,31 @@ describe('MESH_FRAGMENT', () => {
         expect(MESH_FRAGMENT).toContain('uniform float uHasTexture')
     })
 
+    test('declares uUVScale uniform', () => {
+        expect(MESH_FRAGMENT).toContain('uniform vec2 uUVScale')
+    })
+
+    test('declares uRoughness uniform', () => {
+        expect(MESH_FRAGMENT).toContain('uniform float uRoughness')
+    })
+
+    test('declares uSpecular uniform', () => {
+        expect(MESH_FRAGMENT).toContain('uniform float uSpecular')
+    })
+
+    test('declares uCameraPosition uniform', () => {
+        expect(MESH_FRAGMENT).toContain('uniform vec3 uCameraPosition')
+    })
+
+    test('applies uUVScale to texture coordinates', () => {
+        expect(MESH_FRAGMENT).toContain('vTexCoord * uUVScale')
+    })
+
+    test('contains Blinn-Phong half vector', () => {
+        expect(MESH_FRAGMENT).toContain('halfDir')
+        expect(MESH_FRAGMENT).toContain('halfVec')
+    })
+
     test('declares light uniforms', () => {
         expect(MESH_FRAGMENT).toContain('uniform int uNumLights')
         expect(MESH_FRAGMENT).toContain('uniform vec3 uLightPositions[MAX_LIGHTS]')
@@ -130,7 +155,11 @@ describe('MESH_SHADER_DEF', () => {
             'uLightPositions',
             'uLightColors',
             'uLightIntensities',
-            'uLightRadii'
+            'uLightRadii',
+            'uUVScale',
+            'uRoughness',
+            'uSpecular',
+            'uCameraPosition'
         ])
     })
 

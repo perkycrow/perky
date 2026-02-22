@@ -10,6 +10,9 @@ describe('Material3D', () => {
         expect(mat.emissive).toEqual([0, 0, 0])
         expect(mat.opacity).toBe(1)
         expect(mat.unlit).toBe(false)
+        expect(mat.uvScale).toEqual([1, 1])
+        expect(mat.roughness).toBe(0.5)
+        expect(mat.specular).toBe(0.5)
     })
 
 
@@ -20,13 +23,19 @@ describe('Material3D', () => {
             color: [0.5, 0.3, 0.1],
             emissive: [1, 0.9, 0.6],
             opacity: 0.8,
-            unlit: true
+            unlit: true,
+            uvScale: [4, 2],
+            roughness: 0.8,
+            specular: 0.3
         })
         expect(mat.texture).toBe(tex)
         expect(mat.color).toEqual([0.5, 0.3, 0.1])
         expect(mat.emissive).toEqual([1, 0.9, 0.6])
         expect(mat.opacity).toBe(0.8)
         expect(mat.unlit).toBe(true)
+        expect(mat.uvScale).toEqual([4, 2])
+        expect(mat.roughness).toBe(0.8)
+        expect(mat.specular).toBe(0.3)
     })
 
 
@@ -37,6 +46,9 @@ describe('Material3D', () => {
         expect(mat.emissive).toEqual([0, 0, 0])
         expect(mat.opacity).toBe(1)
         expect(mat.unlit).toBe(false)
+        expect(mat.uvScale).toEqual([1, 1])
+        expect(mat.roughness).toBe(0.5)
+        expect(mat.specular).toBe(0.5)
     })
 
 })
