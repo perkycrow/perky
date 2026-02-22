@@ -52,6 +52,11 @@ Ajout progressif d'un pipeline 3D au framework Perky.
 | 44 | CSG Phase 2 — inline math + shallow clone | `render/csg/csg_polygon.js`, `csg_plane.js`, `csg.js` | - | Done |
 | 45 | CSG Pool | `render/csg/csg_pool.js` | 8 | Done |
 | 46 | CSG Service (Web Worker) | `render/csg/csg_service.js` | 6 | Done |
+| 47 | Brush | `render/csg/brush.js` | 15 | Done |
+| 48 | BrushSet | `render/csg/brush_set.js` | 17 | Done |
+| 49 | BrushHistory | `render/csg/brush_history.js` | 9 | Done |
+| 50 | Corridor brush demo | `examples/corridor_3d.js` | - | Done |
+| 51 | Camera-relative fog fix | `render/shaders/builtin/mesh_shader.js` | - | Done |
 
 ## Architecture actuelle
 

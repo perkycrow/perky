@@ -12,7 +12,8 @@ import Light3D from '/render/light_3d.js'
 import Object3D from '/render/object_3d.js'
 import Skybox from '/render/skybox.js'
 import ShadowMap from '/render/shadow_map.js'
-import CSG from '/render/csg/csg.js'
+import Brush from '/render/csg/brush.js'
+import BrushSet from '/render/csg/brush_set.js'
 import generateNormalMap from '/render/textures/generate_normal_map.js'
 import {loadImage} from '/application/loaders.js'
 import {createElement, createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
@@ -615,10 +616,10 @@ function buildWallWithDoors (wallX, doorPositions) {
 
 
 function buildCSGDecoration (x, z, material, lights, lightMat) { // eslint-disable-line max-params -- clean
-    const boxCSG = CSG.fromGeometry(Geometry.createBox(1, 1, 1))
-    const sphereCSG = CSG.fromGeometry(Geometry.createSphere(0.65, 16, 12))
-    const result = boxCSG.subtract(sphereCSG)
-    const geo = result.toGeometry()
+    const brushes = new BrushSet()
+    brushes.add(new Brush({shape: 'box'}))
+    brushes.add(new Brush({shape: 'sphere', operation: 'subtract', sx: 1.3, sy: 1.3, sz: 1.3, params: {segments: 16, rings: 12}}))
+    const geo = brushes.build()
     const mesh = new Mesh(renderer.gl, geo)
 
     const pedestal = addBox(x, 0.5, z, 0.6, 1, 0.6, material)
