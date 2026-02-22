@@ -30,9 +30,21 @@ function computePlane (vertices) {
     const a = vertices[0].position
     const b = vertices[1].position
     const c = vertices[2].position
-    const normal = new Vec3()
-        .subVectors(b, a)
-        .cross(new Vec3().subVectors(c, a))
-        .normalize()
-    return {normal, w: normal.dot(a)}
+    const abx = b.x - a.x
+    const aby = b.y - a.y
+    const abz = b.z - a.z
+    const acx = c.x - a.x
+    const acy = c.y - a.y
+    const acz = c.z - a.z
+    let nx = aby * acz - abz * acy
+    let ny = abz * acx - abx * acz
+    let nz = abx * acy - aby * acx
+    const len = Math.sqrt(nx * nx + ny * ny + nz * nz)
+    if (len > 0) {
+        nx /= len
+        ny /= len
+        nz /= len
+    }
+    const normal = new Vec3(nx, ny, nz)
+    return {normal, w: nx * a.x + ny * a.y + nz * a.z}
 }

@@ -67,6 +67,10 @@ export default class CSGPlane {
 function splitSpanning (plane, polygon, types, front, back) {
     const f = []
     const b = []
+    const nx = plane.normal.x
+    const ny = plane.normal.y
+    const nz = plane.normal.z
+    const pw = plane.w
 
     for (let i = 0; i < polygon.vertices.length; i++) {
         const j = (i + 1) % polygon.vertices.length
@@ -84,8 +88,13 @@ function splitSpanning (plane, polygon, types, front, back) {
         }
 
         if ((ti | tj) === SPANNING) {
-            const edge = vj.position.clone().sub(vi.position)
-            const t = (plane.w - plane.normal.dot(vi.position)) / plane.normal.dot(edge)
+            const pi = vi.position
+            const pj = vj.position
+            const ex = pj.x - pi.x
+            const ey = pj.y - pi.y
+            const ez = pj.z - pi.z
+            const denom = nx * ex + ny * ey + nz * ez
+            const t = (pw - (nx * pi.x + ny * pi.y + nz * pi.z)) / denom
             const v = vi.interpolate(vj, t)
             f.push(v)
             b.push(v.clone())

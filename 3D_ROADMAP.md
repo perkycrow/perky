@@ -49,6 +49,9 @@ Ajout progressif d'un pipeline 3D au framework Perky.
 | 41 | Skybox | `render/skybox.js`, `render/shaders/builtin/skybox_shader.js`, `render/webgl/webgl_skybox_renderer.js` | 32 | Done |
 | 42 | CSG Phase 1 | `render/csg/csg_vertex.js`, `csg_polygon.js`, `csg_plane.js`, `csg_node.js`, `csg.js` | 43 | Done |
 | 43 | Corridor CSG demo | `examples/corridor_3d.js` | - | Done |
+| 44 | CSG Phase 2 — inline math + shallow clone | `render/csg/csg_polygon.js`, `csg_plane.js`, `csg.js` | - | Done |
+| 45 | CSG Pool | `render/csg/csg_pool.js` | 8 | Done |
+| 46 | CSG Service (Web Worker) | `render/csg/csg_service.js` | 6 | Done |
 
 ## Architecture actuelle
 

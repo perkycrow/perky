@@ -22,8 +22,8 @@ export default class CSG {
 
     union (other) {
         const epsilon = computeEpsilon(this, other)
-        const a = new CSGNode(this.clone().polygons, epsilon)
-        const b = new CSGNode(other.clone().polygons, epsilon)
+        const a = new CSGNode(shallowClonePolygons(this.polygons), epsilon)
+        const b = new CSGNode(shallowClonePolygons(other.polygons), epsilon)
         a.clipTo(b, epsilon)
         b.clipTo(a, epsilon)
         b.invert()
@@ -36,8 +36,8 @@ export default class CSG {
 
     subtract (other) {
         const epsilon = computeEpsilon(this, other)
-        const a = new CSGNode(this.clone().polygons, epsilon)
-        const b = new CSGNode(other.clone().polygons, epsilon)
+        const a = new CSGNode(shallowClonePolygons(this.polygons), epsilon)
+        const b = new CSGNode(shallowClonePolygons(other.polygons), epsilon)
         a.invert()
         a.clipTo(b, epsilon)
         b.clipTo(a, epsilon)
@@ -52,8 +52,8 @@ export default class CSG {
 
     intersect (other) {
         const epsilon = computeEpsilon(this, other)
-        const a = new CSGNode(this.clone().polygons, epsilon)
-        const b = new CSGNode(other.clone().polygons, epsilon)
+        const a = new CSGNode(shallowClonePolygons(this.polygons), epsilon)
+        const b = new CSGNode(shallowClonePolygons(other.polygons), epsilon)
         a.invert()
         b.clipTo(a, epsilon)
         b.invert()
@@ -148,6 +148,14 @@ export default class CSG {
 }
 
 
+function shallowClonePolygons (polygons) {
+    return polygons.map(p => new CSGPolygon(
+        [...p.vertices],
+        {normal: p.plane.normal.clone(), w: p.plane.w}
+    ))
+}
+
+
 function vertexKey (vertex) {
     const p = vertex.position
     const n = vertex.normal
@@ -176,15 +184,23 @@ function computeDiagonal (polygons) {
         return 0
     }
 
-    const min = new Vec3(Infinity, Infinity, Infinity)
-    const max = new Vec3(-Infinity, -Infinity, -Infinity)
+    let minX = Infinity, minY = Infinity, minZ = Infinity
+    let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity
 
     for (const polygon of polygons) {
         for (const vertex of polygon.vertices) {
-            min.min(vertex.position)
-            max.max(vertex.position)
+            const p = vertex.position
+            if (p.x < minX) minX = p.x
+            if (p.y < minY) minY = p.y
+            if (p.z < minZ) minZ = p.z
+            if (p.x > maxX) maxX = p.x
+            if (p.y > maxY) maxY = p.y
+            if (p.z > maxZ) maxZ = p.z
         }
     }
 
-    return min.distanceTo(max)
+    const dx = maxX - minX
+    const dy = maxY - minY
+    const dz = maxZ - minZ
+    return Math.sqrt(dx * dx + dy * dy + dz * dz)
 }

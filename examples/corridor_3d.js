@@ -279,7 +279,7 @@ function buildScene (textures) {
     addBox(halfW, halfH, -CORRIDOR_LENGTH - 0.5, WALL_THICKNESS, CORRIDOR_HEIGHT, 1, wallMat).castShadow = false
     addBox(0, CORRIDOR_HEIGHT + 0.05, -CORRIDOR_LENGTH - 0.5, CORRIDOR_WIDTH, 0.1, 1, ceilingMat).castShadow = false
 
-    buildCSGDecoration(0, -CORRIDOR_LENGTH - 4, wallMat)
+    buildCSGDecoration(0, -CORRIDOR_LENGTH - 4, wallMat, lights, ceilingLightMat)
 
     spawnDust(lights)
 
@@ -614,7 +614,7 @@ function buildWallWithDoors (wallX, doorPositions) {
 }
 
 
-function buildCSGDecoration (x, z, material) {
+function buildCSGDecoration (x, z, material, lights, lightMat) { // eslint-disable-line max-params -- clean
     const boxCSG = CSG.fromGeometry(Geometry.createBox(1, 1, 1))
     const sphereCSG = CSG.fromGeometry(Geometry.createSphere(0.65, 16, 12))
     const result = boxCSG.subtract(sphereCSG)
@@ -629,6 +629,20 @@ function buildCSGDecoration (x, z, material) {
     piece.scale.set(0.8, 0.8, 0.8)
     piece.rotation.setFromEuler(Math.PI / 6, Math.PI / 4, 0, 'YXZ')
     scene.addChild(piece)
+
+    addBox(x, CORRIDOR_HEIGHT - 0.02, z, 0.6, 0.04, 0.15, lightMat).castShadow = false
+
+    lights.push(new Light3D({
+        x,
+        y: CORRIDOR_HEIGHT - 0.1,
+        z,
+        color: [1.0, 0.9, 0.7],
+        intensity: 1.2,
+        radius: 6,
+        direction: [0, -1, 0],
+        angle: 35,
+        penumbra: 0.4
+    }))
 }
 
 
