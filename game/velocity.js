@@ -15,7 +15,7 @@ export default class Velocity extends Component {
 
     onInstall (host) {
         this.delegateTo(host, {vec2: 'velocity'})
-        this.delegateTo(host, ['applyVelocity', 'clampVelocity'])
+        this.delegateTo(host, ['applyVelocity', 'clampVelocity', 'dampenVelocity'])
     }
 
 
@@ -32,6 +32,11 @@ export default class Velocity extends Component {
         if (this.vec2.length() < 0.01) {
             this.vec2.set(0, 0)
         }
+    }
+
+
+    dampenVelocity (ratio, deltaTime, referenceFps = 60) {
+        this.vec2.multiplyScalar(Math.pow(ratio, deltaTime * referenceFps))
     }
 
 }

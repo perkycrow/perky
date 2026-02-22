@@ -97,4 +97,15 @@ describe('Velocity', () => {
         expect(entity.velocity.y).toBe(0)
     })
 
+
+    test('dampenVelocity applies exponential decay', () => {
+        const entity = new Entity()
+
+        entity.create(Velocity, {x: 10, y: 10})
+        entity.dampenVelocity(0.5, 1 / 60)
+
+        expect(entity.velocity.x).toBeCloseTo(5)
+        expect(entity.velocity.y).toBeCloseTo(5)
+    })
+
 })

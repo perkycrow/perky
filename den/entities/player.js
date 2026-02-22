@@ -84,7 +84,7 @@ function updateRecoilTimer (player, deltaTime) {
 
 function applyMovement (player, deltaTime) {
     if (player.isStunned) {
-        player.velocity.multiplyScalar(Math.pow(0.1, deltaTime * 60))
+        player.dampenVelocity(0.1, deltaTime)
         return
     }
 
@@ -92,7 +92,7 @@ function applyMovement (player, deltaTime) {
         const accel = player.direction.clone().multiplyScalar(player.acceleration * deltaTime)
         player.velocity.add(accel)
     } else {
-        player.velocity.multiplyScalar(Math.pow(0.01, deltaTime * 60))
+        player.dampenVelocity(0.01, deltaTime)
     }
 }
 
