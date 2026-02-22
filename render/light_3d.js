@@ -1,7 +1,7 @@
 import Vec3 from '../math/vec3.js'
 
 
-export const MAX_LIGHTS = 8
+export const MAX_LIGHTS = 16
 
 
 export default class Light3D {

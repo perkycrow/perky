@@ -436,6 +436,33 @@ export default class Matrix4 {
     }
 
 
+    makeOrthographic (left, right, bottom, top, near, far) {
+        const e = this.elements
+        const w = 1 / (right - left)
+        const h = 1 / (top - bottom)
+        const d = 1 / (far - near)
+
+        e[0] = 2 * w
+        e[4] = 0
+        e[8] = 0
+        e[12] = -(right + left) * w
+        e[1] = 0
+        e[5] = 2 * h
+        e[9] = 0
+        e[13] = -(top + bottom) * h
+        e[2] = 0
+        e[6] = 0
+        e[10] = -2 * d
+        e[14] = -(far + near) * d
+        e[3] = 0
+        e[7] = 0
+        e[11] = 0
+        e[15] = 1
+
+        return this
+    }
+
+
     makeLookAt (eye, target, up) {
         const zx = eye.x - target.x
         const zy = eye.y - target.y

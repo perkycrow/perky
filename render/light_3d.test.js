@@ -46,6 +46,6 @@ describe('Light3D', () => {
 })
 
 
-test('MAX_LIGHTS is 8', () => {
-    expect(MAX_LIGHTS).toBe(8)
+test('MAX_LIGHTS is 16', () => {
+    expect(MAX_LIGHTS).toBe(16)
 })

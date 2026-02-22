@@ -17,6 +17,7 @@ describe('MeshInstance', () => {
         expect(mi.texture).toBe(null)
         expect(mi.tint).toBe(null)
         expect(mi.material).toBe(null)
+        expect(mi.castShadow).toBe(true)
     })
 
 
@@ -44,6 +45,12 @@ describe('MeshInstance', () => {
         const mat = new Material3D({color: [0.5, 0.5, 0.5]})
         const mi = new MeshInstance({material: mat})
         expect(mi.material).toBe(mat)
+    })
+
+
+    test('castShadow can be set to false', () => {
+        const mi = new MeshInstance({castShadow: false})
+        expect(mi.castShadow).toBe(false)
     })
 
 })

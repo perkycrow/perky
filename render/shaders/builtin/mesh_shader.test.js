@@ -35,10 +35,15 @@ describe('MESH_VERTEX', () => {
         expect(MESH_VERTEX).toContain('uniform mat4 uProjection')
         expect(MESH_VERTEX).toContain('uniform mat4 uView')
         expect(MESH_VERTEX).toContain('uniform mat4 uModel')
+        expect(MESH_VERTEX).toContain('uniform mat4 uLightMatrix')
     })
 
     test('computes world position', () => {
         expect(MESH_VERTEX).toContain('uModel * vec4(aPosition, 1.0)')
+    })
+
+    test('computes light space position', () => {
+        expect(MESH_VERTEX).toContain('vLightSpacePosition = uLightMatrix * worldPos')
     })
 
     test('transforms normal with model matrix', () => {
@@ -108,6 +113,16 @@ describe('MESH_FRAGMENT', () => {
         expect(MESH_FRAGMENT).toContain('uniform sampler2D uNormalMap')
         expect(MESH_FRAGMENT).toContain('uniform float uHasNormalMap')
         expect(MESH_FRAGMENT).toContain('uniform float uNormalStrength')
+    })
+
+    test('declares shadow map uniforms', () => {
+        expect(MESH_FRAGMENT).toContain('uniform highp sampler2DShadow uShadowMap')
+        expect(MESH_FRAGMENT).toContain('uniform float uHasShadowMap')
+    })
+
+    test('contains calcShadow function with PCF', () => {
+        expect(MESH_FRAGMENT).toContain('float calcShadow')
+        expect(MESH_FRAGMENT).toContain('shadow / 9.0')
     })
 
     test('constructs TBN matrix for normal mapping', () => {
@@ -180,7 +195,10 @@ describe('MESH_SHADER_DEF', () => {
             'uCameraPosition',
             'uNormalMap',
             'uHasNormalMap',
-            'uNormalStrength'
+            'uNormalStrength',
+            'uLightMatrix',
+            'uShadowMap',
+            'uHasShadowMap'
         ])
     })
 

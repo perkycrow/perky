@@ -4,6 +4,7 @@ import MeshInstance from '../mesh_instance.js'
 import Material3D from '../material_3d.js'
 import Light3D from '../light_3d.js'
 import Camera3D from '../camera_3d.js'
+import Matrix4 from '../../math/matrix4.js'
 
 
 function createMockGL () {
@@ -14,7 +15,12 @@ function createMockGL () {
         DEPTH_BUFFER_BIT: 0x00000100,
         TEXTURE0: 0x84C0,
         TEXTURE1: 0x84C1,
+        TEXTURE2: 0x84C2,
         TEXTURE_2D: 0x0DE1,
+        FRAMEBUFFER: 0x8D40,
+        CULL_FACE: 0x0B44,
+        FRONT: 0x0404,
+        canvas: {width: 800, height: 600},
         calls,
         enable (cap) {
             calls.push({fn: 'enable', args: [cap]})
@@ -60,6 +66,15 @@ function createMockGL () {
         },
         bindTexture (target, tex) {
             calls.push({fn: 'bindTexture', args: [target, tex]})
+        },
+        bindFramebuffer (target, fb) {
+            calls.push({fn: 'bindFramebuffer', args: [target, fb]})
+        },
+        viewport (...args) {
+            calls.push({fn: 'viewport', args})
+        },
+        cullFace (mode) {
+            calls.push({fn: 'cullFace', args: [mode]})
         }
     }
 }
@@ -95,7 +110,10 @@ function createMockShaderRegistry () {
             uCameraPosition: 23,
             uNormalMap: 24,
             uHasNormalMap: 25,
-            uNormalStrength: 26
+            uNormalStrength: 26,
+            uLightMatrix: 27,
+            uShadowMap: 28,
+            uHasShadowMap: 29
         },
         attributes: {
             aPosition: 0,
@@ -200,6 +218,15 @@ describe('WebGLMeshRenderer', () => {
         const lights = [new Light3D({x: 1})]
         renderer.lights = lights
         expect(renderer.lights).toBe(lights)
+    })
+
+
+    test('shadowMap getter/setter', () => {
+        const renderer = new WebGLMeshRenderer()
+        expect(renderer.shadowMap).toBe(null)
+        const fakeShadow = {}
+        renderer.shadowMap = fakeShadow
+        expect(renderer.shadowMap).toBe(fakeShadow)
     })
 
 })
@@ -308,6 +335,31 @@ describe('flush', () => {
     })
 
 
+    test('sorts lights by distance to camera', () => {
+        const {renderer, gl} = createRenderer()
+        renderer.camera3d = new Camera3D({x: 0, y: 0, z: 0})
+        renderer.lights = [
+            new Light3D({x: 0, y: 0, z: -100}),
+            new Light3D({x: 0, y: 0, z: -1}),
+            new Light3D({x: 0, y: 0, z: -50})
+        ]
+
+        const mi = new MeshInstance({mesh: {draw () {}}, texture: null})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1)
+
+        gl.calls.length = 0
+        renderer.flush()
+
+        const posCalls = gl.calls.filter(c => c.fn === 'uniform3fv' && c.args[0] === 16)
+        expect(posCalls.length).toBe(1)
+        const positions = posCalls[0].args[1]
+        expect(positions[2]).toBe(-1)
+        expect(positions[5]).toBe(-50)
+        expect(positions[8]).toBe(-100)
+    })
+
+
     test('uploads camera position uniform', () => {
         const {renderer, gl} = createRenderer()
         renderer.camera3d = new Camera3D({x: 2, y: 3, z: 5})
@@ -405,6 +457,125 @@ describe('flush', () => {
 
         const bindCalls = gl.calls.filter(c => c.fn === 'bindTexture')
         expect(bindCalls.length).toBe(1)
+    })
+
+
+    test('renders shadow pass when shadowMap is set', () => {
+        const {renderer, gl} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+
+        let drawCount = 0
+        const mi = new MeshInstance({mesh: {draw () {
+            drawCount++
+        }},
+        texture: null})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1)
+
+        const fakeShadowMap = {
+            texture: 'shadowTex',
+            lightMatrix: new Matrix4(),
+            lightProjection: new Matrix4(),
+            lightView: new Matrix4(),
+            update () {},
+            begin () {},
+            end () {}
+        }
+        renderer.shadowMap = fakeShadowMap
+
+        gl.calls.length = 0
+        renderer.flush()
+
+        expect(drawCount).toBe(2)
+
+        const cullEnables = gl.calls.filter(c => c.fn === 'enable' && c.args[0] === gl.CULL_FACE)
+        expect(cullEnables.length).toBe(1)
+
+        const cullDisables = gl.calls.filter(c => c.fn === 'disable' && c.args[0] === gl.CULL_FACE)
+        expect(cullDisables.length).toBe(1)
+
+        const viewportCalls = gl.calls.filter(c => c.fn === 'viewport')
+        expect(viewportCalls.length).toBeGreaterThanOrEqual(1)
+        const lastViewport = viewportCalls[viewportCalls.length - 1]
+        expect(lastViewport.args).toEqual([0, 0, 800, 600])
+    })
+
+
+    test('skips objects with castShadow false in shadow pass', () => {
+        const {renderer} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+
+        let drawCount = 0
+        const fakeMesh = {draw () {
+            drawCount++
+        }}
+
+        const caster = new MeshInstance({mesh: fakeMesh, texture: null})
+        caster.updateWorldMatrix()
+        renderer.collect(caster, 1)
+
+        const noCaster = new MeshInstance({mesh: fakeMesh, texture: null, castShadow: false})
+        noCaster.updateWorldMatrix()
+        renderer.collect(noCaster, 1)
+
+        renderer.shadowMap = {
+            texture: 'shadowTex',
+            lightMatrix: new Matrix4(),
+            lightProjection: new Matrix4(),
+            lightView: new Matrix4(),
+            update () {},
+            begin () {},
+            end () {}
+        }
+
+        renderer.flush()
+
+        expect(drawCount).toBe(3)
+    })
+
+
+    test('binds shadow map on TEXTURE2 when shadowMap is set', () => {
+        const {renderer, gl} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+
+        const mi = new MeshInstance({mesh: {draw () {}}, texture: null})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1)
+
+        renderer.shadowMap = {
+            texture: 'shadowTex',
+            lightMatrix: new Matrix4(),
+            lightProjection: new Matrix4(),
+            lightView: new Matrix4(),
+            update () {},
+            begin () {},
+            end () {}
+        }
+
+        gl.calls.length = 0
+        renderer.flush()
+
+        const activeCalls = gl.calls.filter(c => c.fn === 'activeTexture' && c.args[0] === gl.TEXTURE2)
+        expect(activeCalls.length).toBe(1)
+
+        const hasShadowCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 29 && c.args[1] === 1)
+        expect(hasShadowCalls.length).toBe(1)
+    })
+
+
+    test('sets uHasShadowMap to 0 when no shadowMap', () => {
+        const {renderer, gl} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+
+        const mi = new MeshInstance({mesh: {draw () {}}, texture: null})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1)
+
+        gl.calls.length = 0
+        renderer.flush()
+
+        const hasShadowCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 29 && c.args[1] === 0)
+        expect(hasShadowCalls.length).toBe(1)
     })
 
 })

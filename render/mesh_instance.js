@@ -9,6 +9,7 @@ export default class MeshInstance extends Object3D {
         this.texture = options.texture ?? null
         this.tint = options.tint ?? null
         this.material = options.material ?? null
+        this.castShadow = options.castShadow ?? true
     }
 
 

@@ -9,6 +9,7 @@ import Billboard from '/render/billboard.js'
 import Material3D from '/render/material_3d.js'
 import Light3D from '/render/light_3d.js'
 import Object3D from '/render/object_3d.js'
+import ShadowMap from '/render/shadow_map.js'
 import generateNormalMap from '/render/textures/generate_normal_map.js'
 import {loadImage} from '/application/loaders.js'
 import {createElement, createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
@@ -65,6 +66,7 @@ meshRenderer.ambient = 0.08
 meshRenderer.fogNear = 8
 meshRenderer.fogFar = 28
 meshRenderer.fogColor = [0.04, 0.04, 0.07]
+meshRenderer.shadowMap = new ShadowMap(renderer.gl, {resolution: 1024})
 
 const billboardRenderer = new WebGLBillboardRenderer()
 renderer.registerRenderer(billboardRenderer)
@@ -204,26 +206,26 @@ function buildScene (textures) {
         specular: 0.7
     })
 
-    addBox(0, -0.05, -halfL, CORRIDOR_WIDTH, 0.1, CORRIDOR_LENGTH, floorMat)
-    addBox(0, CORRIDOR_HEIGHT + 0.05, -halfL, CORRIDOR_WIDTH, 0.1, CORRIDOR_LENGTH, ceilingMat)
+    addBox(0, -0.05, -halfL, CORRIDOR_WIDTH, 0.1, CORRIDOR_LENGTH, floorMat).castShadow = false
+    addBox(0, CORRIDOR_HEIGHT + 0.05, -halfL, CORRIDOR_WIDTH, 0.1, CORRIDOR_LENGTH, ceilingMat).castShadow = false
 
-    addBox(-halfW, halfH, -halfL, WALL_THICKNESS, CORRIDOR_HEIGHT, CORRIDOR_LENGTH, wallMat)
+    addBox(-halfW, halfH, -halfL, WALL_THICKNESS, CORRIDOR_HEIGHT, CORRIDOR_LENGTH, wallMat).castShadow = false
 
     buildWallWithDoors(halfW, DOOR_POSITIONS)
 
     for (const dz of DOOR_POSITIONS) {
-        addBox(halfW - WALL_THICKNESS / 2 - 0.02, DOOR_HEIGHT / 2, dz, 0.06, DOOR_HEIGHT - 0.1, DOOR_WIDTH - 0.15, doorMat)
-        addBox(halfW, DOOR_HEIGHT + 0.05, dz, WALL_THICKNESS + 0.04, 0.1, DOOR_WIDTH + 0.15, frameMat)
-        addBox(halfW, DOOR_HEIGHT / 2, dz - DOOR_WIDTH / 2 - 0.05, WALL_THICKNESS + 0.04, DOOR_HEIGHT, 0.1, frameMat)
-        addBox(halfW, DOOR_HEIGHT / 2, dz + DOOR_WIDTH / 2 + 0.05, WALL_THICKNESS + 0.04, DOOR_HEIGHT, 0.1, frameMat)
+        addBox(halfW - WALL_THICKNESS / 2 - 0.02, DOOR_HEIGHT / 2, dz, 0.06, DOOR_HEIGHT - 0.1, DOOR_WIDTH - 0.15, doorMat).castShadow = false
+        addBox(halfW, DOOR_HEIGHT + 0.05, dz, WALL_THICKNESS + 0.04, 0.1, DOOR_WIDTH + 0.15, frameMat).castShadow = false
+        addBox(halfW, DOOR_HEIGHT / 2, dz - DOOR_WIDTH / 2 - 0.05, WALL_THICKNESS + 0.04, DOOR_HEIGHT, 0.1, frameMat).castShadow = false
+        addBox(halfW, DOOR_HEIGHT / 2, dz + DOOR_WIDTH / 2 + 0.05, WALL_THICKNESS + 0.04, DOOR_HEIGHT, 0.1, frameMat).castShadow = false
     }
 
-    addBox(0, 0.05, -halfL, CORRIDOR_WIDTH - 0.4, 0.02, CORRIDOR_LENGTH, trimMat)
+    addBox(0, 0.05, -halfL, CORRIDOR_WIDTH - 0.4, 0.02, CORRIDOR_LENGTH, trimMat).castShadow = false
 
     const lights = []
 
     for (let z = -5; z > -CORRIDOR_LENGTH; z -= 10) {
-        addBox(0, CORRIDOR_HEIGHT - 0.02, z, 0.6, 0.04, 0.15, ceilingLightMat)
+        addBox(0, CORRIDOR_HEIGHT - 0.02, z, 0.6, 0.04, 0.15, ceilingLightMat).castShadow = false
         lights.push(new Light3D({
             x: 0,
             y: CORRIDOR_HEIGHT - 0.1,
@@ -254,8 +256,8 @@ function buildScene (textures) {
 
     meshRenderer.lights = lights
 
-    addBox(0, halfH, -CORRIDOR_LENGTH - 0.05, CORRIDOR_WIDTH, CORRIDOR_HEIGHT, 0.1, wallMat)
-    addBox(0, halfH, 0.05, CORRIDOR_WIDTH, CORRIDOR_HEIGHT, 0.1, wallMat)
+    addBox(0, halfH, -CORRIDOR_LENGTH - 0.05, CORRIDOR_WIDTH, CORRIDOR_HEIGHT, 0.1, wallMat).castShadow = false
+    addBox(0, halfH, 0.05, CORRIDOR_WIDTH, CORRIDOR_HEIGHT, 0.1, wallMat).castShadow = false
 
     spawnDust(lights)
 
@@ -557,11 +559,11 @@ function buildWallWithDoors (wallX, doorPositions) {
         if (segStart > gapStart + 0.01) {
             const segLen = segStart - gapStart
             const segCenter = gapStart + segLen / 2
-            addBox(wallX, halfH, segCenter, WALL_THICKNESS, CORRIDOR_HEIGHT, segLen, wallMat)
+            addBox(wallX, halfH, segCenter, WALL_THICKNESS, CORRIDOR_HEIGHT, segLen, wallMat).castShadow = false
         }
 
         addBox(wallX, DOOR_HEIGHT + (CORRIDOR_HEIGHT - DOOR_HEIGHT) / 2, dz,
-            WALL_THICKNESS, CORRIDOR_HEIGHT - DOOR_HEIGHT, DOOR_WIDTH, wallMat)
+            WALL_THICKNESS, CORRIDOR_HEIGHT - DOOR_HEIGHT, DOOR_WIDTH, wallMat).castShadow = false
 
         segStart = gapEnd
     }
@@ -569,7 +571,7 @@ function buildWallWithDoors (wallX, doorPositions) {
     if (segStart > -CORRIDOR_LENGTH + 0.01) {
         const segLen = segStart - (-CORRIDOR_LENGTH)
         const segCenter = -CORRIDOR_LENGTH + segLen / 2
-        addBox(wallX, halfH, segCenter, WALL_THICKNESS, CORRIDOR_HEIGHT, segLen, wallMat)
+        addBox(wallX, halfH, segCenter, WALL_THICKNESS, CORRIDOR_HEIGHT, segLen, wallMat).castShadow = false
     }
 }
 

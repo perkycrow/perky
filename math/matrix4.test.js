@@ -361,6 +361,37 @@ describe('Matrix4', () => {
     })
 
 
+    describe('makeOrthographic', () => {
+
+        test('produces valid orthographic projection', () => {
+            const m = new Matrix4().makeOrthographic(-5, 5, -5, 5, 0.1, 100)
+            expectClose(m.elements[0], 2 / 10)
+            expectClose(m.elements[5], 2 / 10)
+            expectClose(m.elements[10], -2 / 99.9)
+            expect(m.elements[15]).toBe(1)
+            expect(m.elements[11]).toBe(0)
+        })
+
+        test('symmetric bounds center translation at zero', () => {
+            const m = new Matrix4().makeOrthographic(-10, 10, -10, 10, 1, 50)
+            expectClose(m.elements[12], 0)
+            expectClose(m.elements[13], 0)
+        })
+
+        test('asymmetric bounds produce translation', () => {
+            const m = new Matrix4().makeOrthographic(0, 10, 0, 10, 1, 50)
+            expectClose(m.elements[12], -1)
+            expectClose(m.elements[13], -1)
+        })
+
+        test('returns this', () => {
+            const m = new Matrix4()
+            expect(m.makeOrthographic(-1, 1, -1, 1, 0.1, 10)).toBe(m)
+        })
+
+    })
+
+
     describe('makeLookAt', () => {
 
         test('looking down -Z from origin', () => {

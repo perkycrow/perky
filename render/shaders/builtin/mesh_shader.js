@@ -7,11 +7,13 @@ layout(location = 3) in vec3 aTangent;
 uniform mat4 uProjection;
 uniform mat4 uView;
 uniform mat4 uModel;
+uniform mat4 uLightMatrix;
 
 out vec2 vTexCoord;
 out vec3 vNormal;
 out vec3 vWorldPosition;
 out vec3 vTangent;
+out vec4 vLightSpacePosition;
 
 void main() {
     vec4 worldPos = uModel * vec4(aPosition, 1.0);
@@ -20,6 +22,7 @@ void main() {
     vNormal = normalMatrix * aNormal;
     vTangent = normalMatrix * aTangent;
     vTexCoord = aTexCoord;
+    vLightSpacePosition = uLightMatrix * worldPos;
 
     gl_Position = uProjection * uView * worldPos;
 }
@@ -29,7 +32,7 @@ void main() {
 export const MESH_FRAGMENT = `#version 300 es
 precision mediump float;
 
-const int MAX_LIGHTS = 8;
+const int MAX_LIGHTS = 16;
 
 uniform sampler2D uTexture;
 uniform vec3 uLightDirection;
@@ -59,12 +62,33 @@ uniform vec3 uLightColors[MAX_LIGHTS];
 uniform float uLightIntensities[MAX_LIGHTS];
 uniform float uLightRadii[MAX_LIGHTS];
 
+uniform highp sampler2DShadow uShadowMap;
+uniform float uHasShadowMap;
+
 in vec2 vTexCoord;
 in vec3 vNormal;
 in vec3 vWorldPosition;
 in vec3 vTangent;
+in vec4 vLightSpacePosition;
 
 out vec4 fragColor;
+
+float calcShadow (vec3 normal, vec3 lightDir) {
+    if (uHasShadowMap < 0.5) return 1.0;
+    vec3 coords = vLightSpacePosition.xyz / vLightSpacePosition.w;
+    coords = coords * 0.5 + 0.5;
+    if (coords.x < 0.0 || coords.x > 1.0 || coords.y < 0.0 || coords.y > 1.0 || coords.z > 1.0) return 1.0;
+    float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.001);
+    float depth = coords.z - bias;
+    vec2 texelSize = vec2(1.0) / vec2(textureSize(uShadowMap, 0));
+    float shadow = 0.0;
+    for (int x = -1; x <= 1; x++) {
+        for (int y = -1; y <= 1; y++) {
+            shadow += texture(uShadowMap, vec3(coords.xy + vec2(x, y) * texelSize, depth));
+        }
+    }
+    return shadow / 9.0;
+}
 
 void main() {
     vec4 texColor = uHasTexture > 0.5 ? texture(uTexture, vTexCoord * uUVScale) : vec4(1.0);
@@ -90,13 +114,14 @@ void main() {
 
         vec3 dirLight = normalize(uLightDirection);
         float diffuse = max(dot(normal, dirLight), 0.0);
-        float lighting = uAmbient + (1.0 - uAmbient) * diffuse;
+        float shadow = calcShadow(normal, dirLight);
+        float lighting = uAmbient + (1.0 - uAmbient) * diffuse * shadow;
         lit = baseColor * lighting;
 
         if (uSpecular > 0.0 && diffuse > 0.0) {
             vec3 halfDir = normalize(dirLight + viewDir);
             float specAngle = max(dot(normal, halfDir), 0.0);
-            lit += vec3(uSpecular * pow(specAngle, shininess));
+            lit += vec3(uSpecular * pow(specAngle, shininess)) * shadow;
         }
 
         for (int i = 0; i < MAX_LIGHTS; i++) {
@@ -161,7 +186,10 @@ export const MESH_SHADER_DEF = {
         'uCameraPosition',
         'uNormalMap',
         'uHasNormalMap',
-        'uNormalStrength'
+        'uNormalStrength',
+        'uLightMatrix',
+        'uShadowMap',
+        'uHasShadowMap'
     ],
     attributes: ['aPosition', 'aNormal', 'aTexCoord', 'aTangent']
 }

@@ -1,13 +1,16 @@
 import WebGLObjectRenderer from './webgl_object_renderer.js'
 import MeshInstance from '../mesh_instance.js'
 import {MESH_SHADER_DEF} from '../shaders/builtin/mesh_shader.js'
+import {DEPTH_SHADER_DEF} from '../shaders/builtin/depth_shader.js'
 import {MAX_LIGHTS} from '../light_3d.js'
 
 
 export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
     #meshProgram = null
+    #depthProgram = null
     #camera3d = null
+    #shadowMap = null
     #lightDirection = [0.5, 1.0, 0.3]
     #ambient = 0.3
     #fogNear = 20
@@ -94,9 +97,20 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
+    get shadowMap () {
+        return this.#shadowMap
+    }
+
+
+    set shadowMap (value) {
+        this.#shadowMap = value
+    }
+
+
     init (context) {
         super.init(context)
         this.#meshProgram = context.shaderRegistry.register('mesh', MESH_SHADER_DEF)
+        this.#depthProgram = context.shaderRegistry.register('depth', DEPTH_SHADER_DEF)
     }
 
 
@@ -109,6 +123,11 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
         gl.enable(gl.DEPTH_TEST)
         gl.depthFunc(gl.LEQUAL)
+
+        if (this.#shadowMap) {
+            this.#renderShadowPass(gl)
+        }
+
         gl.clear(gl.DEPTH_BUFFER_BIT)
 
         this.#packLightUniforms()
@@ -124,17 +143,56 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
     dispose () {
         this.#meshProgram = null
+        this.#depthProgram = null
         this.#camera3d = null
+        this.#shadowMap = null
         this.#lights = []
         super.dispose()
     }
 
 
+    #renderShadowPass (gl) {
+        const sm = this.#shadowMap
+        sm.update(this.#lightDirection, this.#camera3d)
+        sm.begin()
+
+        gl.enable(gl.CULL_FACE)
+        gl.cullFace(gl.FRONT)
+
+        const program = this.#depthProgram
+        gl.useProgram(program.program)
+        gl.uniformMatrix4fv(program.uniforms.uProjection, false, sm.lightProjection.elements)
+        gl.uniformMatrix4fv(program.uniforms.uView, false, sm.lightView.elements)
+
+        for (const {object} of this.collected) {
+            if (!object.mesh || !object.visible || !object.castShadow) {
+                continue
+            }
+            gl.uniformMatrix4fv(program.uniforms.uModel, false, object.worldMatrix.elements)
+            object.mesh.draw()
+        }
+
+        gl.disable(gl.CULL_FACE)
+        sm.end()
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+    }
+
+
     #packLightUniforms () {
-        const count = Math.min(this.#lights.length, MAX_LIGHTS)
+        const camPos = this.#camera3d.position
+        const sorted = this.#lights
+            .map(light => ({
+                light,
+                dist: (light.position.x - camPos.x) ** 2
+                    + (light.position.y - camPos.y) ** 2
+                    + (light.position.z - camPos.z) ** 2
+            }))
+            .sort((a, b) => a.dist - b.dist)
+
+        const count = Math.min(sorted.length, MAX_LIGHTS)
 
         for (let i = 0; i < count; i++) {
-            const light = this.#lights[i]
+            const light = sorted[i].light
             const offset = i * 3
             this.#lightPositions[offset] = light.position.x
             this.#lightPositions[offset + 1] = light.position.y
@@ -194,6 +252,16 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform1i(program.uniforms.uNormalMap, 1)
         gl.uniform1f(program.uniforms.uHasNormalMap, 0)
         gl.uniform1f(program.uniforms.uNormalStrength, 1)
+
+        if (this.#shadowMap) {
+            gl.activeTexture(gl.TEXTURE2)
+            gl.bindTexture(gl.TEXTURE_2D, this.#shadowMap.texture)
+            gl.uniform1i(program.uniforms.uShadowMap, 2)
+            gl.uniformMatrix4fv(program.uniforms.uLightMatrix, false, this.#shadowMap.lightMatrix.elements)
+            gl.uniform1f(program.uniforms.uHasShadowMap, 1)
+        } else {
+            gl.uniform1f(program.uniforms.uHasShadowMap, 0)
+        }
     }
 
 
