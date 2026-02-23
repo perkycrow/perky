@@ -673,6 +673,21 @@ function buildDecals (textures) {
         opacity: 0.8
     })
 
+    const wallX = -halfW + WALL_THICKNESS / 2 + 0.01
+
+    for (const z of [-8, -16, -24, -33]) {
+        const d = new Decal({
+            x: wallX,
+            y: 1.6,
+            z,
+            width: 0.5,
+            height: 0.5,
+            material: signMat
+        })
+        d.rotation.setFromEuler(0, Math.PI / 2, 0, 'YXZ')
+        scene.addChild(d)
+    }
+
     for (const z of [-5, -15, -25, -35]) {
         const d = new Decal({
             x: 0,
@@ -681,19 +696,6 @@ function buildDecals (textures) {
             width: 1.2,
             height: 1.2,
             material: lightMat
-        })
-        d.rotation.setFromEuler(-Math.PI / 2, 0, 0, 'YXZ')
-        scene.addChild(d)
-    }
-
-    for (const z of [-10, -20, -30]) {
-        const d = new Decal({
-            x: 0,
-            y: CORRIDOR_HEIGHT - 0.01,
-            z,
-            width: 0.8,
-            height: 0.8,
-            material: signMat
         })
         d.rotation.setFromEuler(-Math.PI / 2, 0, 0, 'YXZ')
         scene.addChild(d)
