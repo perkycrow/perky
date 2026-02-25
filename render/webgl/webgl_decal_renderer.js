@@ -220,5 +220,5 @@ function createQuadMesh (gl) {
         ],
         indices: [0, 1, 2, 0, 2, 3]
     })
-    return new Mesh(gl, geo)
+    return new Mesh({gl, geometry: geo})
 }

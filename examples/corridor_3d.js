@@ -72,7 +72,7 @@ meshRenderer.ambient = 0.08
 meshRenderer.fogNear = 8
 meshRenderer.fogFar = 45
 meshRenderer.fogColor = [0.04, 0.04, 0.07]
-meshRenderer.shadowMap = new ShadowMap(renderer.gl, {resolution: 1024})
+meshRenderer.shadowMap = new ShadowMap({gl: renderer.gl, resolution: 1024})
 
 const skyboxRenderer = new WebGLSkyboxRenderer()
 renderer.registerRenderer(skyboxRenderer)
@@ -98,14 +98,11 @@ billboardRenderer.fogFar = meshRenderer.fogFar
 billboardRenderer.fogColor = meshRenderer.fogColor
 
 
-const boxGeo = Geometry.createBox(1, 1, 1)
-const boxMesh = new Mesh(renderer.gl, boxGeo)
-const cylinderGeo = Geometry.createCylinder({radialSegments: 12})
-const cylinderMesh = new Mesh(renderer.gl, cylinderGeo)
-const coneGeo = Geometry.createCylinder({radiusTop: 0, radialSegments: 12})
-const coneMesh = new Mesh(renderer.gl, coneGeo)
-const sphereGeo = Geometry.createSphere(0.5, 12, 8)
-const sphereMesh = new Mesh(renderer.gl, sphereGeo)
+const gl = renderer.gl
+const boxMesh = new Mesh({gl, geometry: Geometry.createBox(1, 1, 1)})
+const cylinderMesh = new Mesh({gl, geometry: Geometry.createCylinder({radialSegments: 12})})
+const coneMesh = new Mesh({gl, geometry: Geometry.createCylinder({radiusTop: 0, radialSegments: 12})})
+const sphereMesh = new Mesh({gl, geometry: Geometry.createSphere(0.5, 12, 8)})
 
 const scene = new Object3D()
 const halfW = CORRIDOR_WIDTH / 2
@@ -633,7 +630,7 @@ function buildCSGDecoration (x, z, material, lights, lightMat) { // eslint-disab
     brushes.add(new Brush({shape: 'box'}))
     brushes.add(new Brush({shape: 'sphere', operation: 'subtract', sx: 1.3, sy: 1.3, sz: 1.3, params: {segments: 16, rings: 12}}))
     const geo = brushes.build()
-    const mesh = new Mesh(renderer.gl, geo)
+    const mesh = new Mesh({gl, geometry: geo})
 
     const pedestal = addBox(x, 0.5, z, 0.6, 1, 0.6, material)
     pedestal.castShadow = true

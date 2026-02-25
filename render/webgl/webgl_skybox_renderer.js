@@ -114,5 +114,5 @@ export default class WebGLSkyboxRenderer extends WebGLObjectRenderer {
 
 function createSkyboxMesh (gl) {
     const geo = Geometry.createBox(1, 1, 1)
-    return new Mesh(gl, geo)
+    return new Mesh({gl, geometry: geo})
 }

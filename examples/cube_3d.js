@@ -51,7 +51,7 @@ meshRenderer.fogColor = [0.067, 0.067, 0.133]
 
 
 const geometry = Geometry.createBox(1, 1, 1)
-const mesh = new Mesh(renderer.gl, geometry)
+const mesh = new Mesh({gl: renderer.gl, geometry})
 
 
 const whiteTex = createWhiteTexture()

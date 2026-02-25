@@ -74,7 +74,7 @@ describe('ShadowMap', () => {
 
     test('creates depth framebuffer on construction', () => {
         const gl = createMockGL()
-        const sm = new ShadowMap(gl)
+        const sm = new ShadowMap({gl})
         expect(sm.texture).toBe('depthTex')
         expect(sm.resolution).toBe(1024)
         const fboCalls = gl.calls.filter(c => c.fn === 'createFramebuffer')
@@ -84,14 +84,14 @@ describe('ShadowMap', () => {
 
     test('custom resolution', () => {
         const gl = createMockGL()
-        const sm = new ShadowMap(gl, {resolution: 2048})
+        const sm = new ShadowMap({gl, resolution: 2048})
         expect(sm.resolution).toBe(2048)
     })
 
 
     test('configures depth texture with compare mode', () => {
         const gl = createMockGL()
-        new ShadowMap(gl)
+        new ShadowMap({gl})
         const compareCalls = gl.calls.filter(
             c => c.fn === 'texParameteri' && c.args[1] === gl.TEXTURE_COMPARE_MODE
         )
@@ -102,7 +102,7 @@ describe('ShadowMap', () => {
 
     test('disables color output on framebuffer', () => {
         const gl = createMockGL()
-        new ShadowMap(gl)
+        new ShadowMap({gl})
         const drawCalls = gl.calls.filter(c => c.fn === 'drawBuffers')
         expect(drawCalls.length).toBe(1)
         expect(drawCalls[0].args[0]).toEqual([gl.NONE])
@@ -111,7 +111,7 @@ describe('ShadowMap', () => {
 
     test('update computes light matrix', () => {
         const gl = createMockGL()
-        const sm = new ShadowMap(gl)
+        const sm = new ShadowMap({gl})
         const cam = new Camera3D({x: 0, y: 1, z: 0})
         sm.update([0, 1, 0], cam, 10)
         expect(sm.lightMatrix).toBeInstanceOf(Matrix4)
@@ -121,7 +121,7 @@ describe('ShadowMap', () => {
 
     test('begin binds framebuffer and sets viewport', () => {
         const gl = createMockGL()
-        const sm = new ShadowMap(gl, {resolution: 512})
+        const sm = new ShadowMap({gl, resolution: 512})
         gl.calls.length = 0
         sm.begin()
         const bindCalls = gl.calls.filter(c => c.fn === 'bindFramebuffer')
@@ -135,7 +135,7 @@ describe('ShadowMap', () => {
 
     test('end unbinds framebuffer', () => {
         const gl = createMockGL()
-        const sm = new ShadowMap(gl)
+        const sm = new ShadowMap({gl})
         gl.calls.length = 0
         sm.end()
         const bindCalls = gl.calls.filter(c => c.fn === 'bindFramebuffer')
@@ -146,7 +146,7 @@ describe('ShadowMap', () => {
 
     test('dispose cleans up resources', () => {
         const gl = createMockGL()
-        const sm = new ShadowMap(gl)
+        const sm = new ShadowMap({gl})
         gl.calls.length = 0
         sm.dispose()
         const deleteFBOs = gl.calls.filter(c => c.fn === 'deleteFramebuffer')

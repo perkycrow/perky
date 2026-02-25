@@ -12,8 +12,8 @@ export default class ShadowMap {
     #lightView = new Matrix4()
     #lightMatrix = new Matrix4()
 
-    constructor (gl, options = {}) {
-        this.#gl = gl
+    constructor (options = {}) {
+        this.#gl = options.gl
         this.#resolution = options.resolution ?? 1024
         this.#createFramebuffer()
     }

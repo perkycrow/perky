@@ -10,7 +10,7 @@ export default class Mesh {
     #indexCount = 0
     #disposed = false
 
-    constructor (gl, geometry) {
+    constructor ({gl, geometry}) {
         this.#gl = gl
         this.#indexCount = geometry.indexCount
         this.#createBuffers(geometry)

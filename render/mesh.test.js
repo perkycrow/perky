@@ -58,7 +58,7 @@ describe('Mesh', () => {
     test('creates buffers from geometry with tangents', () => {
         const gl = createMockGL()
         const geometry = Geometry.createBox(1, 1, 1)
-        const mesh = new Mesh(gl, geometry)
+        const mesh = new Mesh({gl, geometry})
 
         expect(mesh.indexCount).toBe(36)
 
@@ -75,7 +75,7 @@ describe('Mesh', () => {
             uvs: [0, 0, 1, 0, 0, 1],
             indices: [0, 1, 2]
         })
-        new Mesh(gl, geometry)
+        new Mesh({gl, geometry})
 
         const bufferDataCalls = gl.calls.filter(c => c.fn === 'bufferData')
         expect(bufferDataCalls.length).toBe(4)
@@ -85,7 +85,7 @@ describe('Mesh', () => {
     test('sets up vertex attributes with tangents', () => {
         const gl = createMockGL()
         const geometry = Geometry.createBox(1, 1, 1)
-        new Mesh(gl, geometry)
+        new Mesh({gl, geometry})
 
         const attribCalls = gl.calls.filter(c => c.fn === 'vertexAttribPointer')
         expect(attribCalls.length).toBe(4)
@@ -107,7 +107,7 @@ describe('Mesh', () => {
     test('draw calls drawElements with correct count', () => {
         const gl = createMockGL()
         const geometry = Geometry.createBox(1, 1, 1)
-        const mesh = new Mesh(gl, geometry)
+        const mesh = new Mesh({gl, geometry})
 
         gl.calls.length = 0
         mesh.draw()
@@ -123,7 +123,7 @@ describe('Mesh', () => {
     test('draw binds and unbinds VAO', () => {
         const gl = createMockGL()
         const geometry = Geometry.createBox(1, 1, 1)
-        const mesh = new Mesh(gl, geometry)
+        const mesh = new Mesh({gl, geometry})
 
         gl.calls.length = 0
         mesh.draw()
@@ -138,7 +138,7 @@ describe('Mesh', () => {
     test('dispose deletes GPU resources', () => {
         const gl = createMockGL()
         const geometry = Geometry.createBox(1, 1, 1)
-        const mesh = new Mesh(gl, geometry)
+        const mesh = new Mesh({gl, geometry})
 
         expect(mesh.disposed).toBe(false)
 
@@ -155,7 +155,7 @@ describe('Mesh', () => {
     test('dispose is idempotent', () => {
         const gl = createMockGL()
         const geometry = Geometry.createBox(1, 1, 1)
-        const mesh = new Mesh(gl, geometry)
+        const mesh = new Mesh({gl, geometry})
 
         mesh.dispose()
         gl.calls.length = 0

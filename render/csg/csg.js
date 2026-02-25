@@ -184,9 +184,9 @@ function computeDiagonal (polygons) {
         return 0
     }
 
-    let minX = Infinity; let minY = Infinity; let 
+    let minX = Infinity; let minY = Infinity; let
         minZ = Infinity
-    let maxX = -Infinity; let maxY = -Infinity; let 
+    let maxX = -Infinity; let maxY = -Infinity; let
         maxZ = -Infinity
 
     for (const polygon of polygons) {

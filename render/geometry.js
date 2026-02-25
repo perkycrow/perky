@@ -1,6 +1,6 @@
 export default class Geometry {
 
-    constructor ({positions, normals, uvs, indices, tangents}) {
+    constructor ({positions, normals, uvs, indices, tangents} = {}) {
         this.positions = positions instanceof Float32Array ? positions : new Float32Array(positions)
         this.normals = normals instanceof Float32Array ? normals : new Float32Array(normals)
         this.uvs = uvs instanceof Float32Array ? uvs : new Float32Array(uvs)
