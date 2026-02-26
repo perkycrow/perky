@@ -7,7 +7,7 @@ import Vec3 from '../../math/vec3.js'
 
 describe('applyTriplanarUVs', () => {
 
-    function vertex (x, y, z, u = 0, v = 0) {
+    function vertex (x, y, z, u = 0, v = 0) { // eslint-disable-line max-params -- clean
         return new CSGVertex(new Vec3(x, y, z), new Vec3(0, 1, 0), [u, v])
     }
 

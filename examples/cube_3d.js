@@ -68,11 +68,8 @@ layer.setContent(scene)
 
 const rotY = new Quaternion()
 const rotX = new Quaternion()
-let time = 0
 
 function animate () {
-    time += 0.016
-
     rotY.setFromAxisAngle(new Vec3(0, 1, 0), 0.012)
     rotX.setFromAxisAngle(new Vec3(1, 0, 0), 0.005)
 

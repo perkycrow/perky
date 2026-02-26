@@ -91,7 +91,7 @@ describe('BrushHistory', () => {
 
 
     test('respects maxStates', () => {
-        const {set, history} = setup()
+        const {set} = setup()
         const small = new BrushHistory(set, {maxStates: 3})
         for (let i = 0; i < 5; i++) {
             set.add(new Brush({x: i}))

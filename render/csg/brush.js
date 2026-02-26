@@ -12,14 +12,29 @@ const SHAPES = {
 }
 
 
+function createPositionVec (options) {
+    return new Vec3(options.x ?? 0, options.y ?? 0, options.z ?? 0)
+}
+
+
+function createRotationVec (options) {
+    return new Vec3(options.rx ?? 0, options.ry ?? 0, options.rz ?? 0)
+}
+
+
+function createScaleVec (options) {
+    return new Vec3(options.sx ?? 1, options.sy ?? 1, options.sz ?? 1)
+}
+
+
 export default class Brush {
 
     constructor (options = {}) {
         this.shape = options.shape ?? 'box'
         this.operation = options.operation ?? 'union'
-        this.position = new Vec3(options.x ?? 0, options.y ?? 0, options.z ?? 0)
-        this.rotation = new Vec3(options.rx ?? 0, options.ry ?? 0, options.rz ?? 0)
-        this.scale = new Vec3(options.sx ?? 1, options.sy ?? 1, options.sz ?? 1)
+        this.position = createPositionVec(options)
+        this.rotation = createRotationVec(options)
+        this.scale = createScaleVec(options)
         this.params = options.params ?? {}
         this.enabled = options.enabled ?? true
     }
@@ -77,58 +92,70 @@ const _quat = new Quaternion()
 const _v = new Vec3()
 
 
-function transformGeometry (geometry, position, rotation, scale) {
+function hasTransform (position, rotation, scale) {
     const hasRotation = rotation.x !== 0 || rotation.y !== 0 || rotation.z !== 0
     const hasScale = scale.x !== 1 || scale.y !== 1 || scale.z !== 1
     const hasTranslation = position.x !== 0 || position.y !== 0 || position.z !== 0
+    return {hasRotation, hasScale, hasTranslation}
+}
 
-    if (!hasRotation && !hasScale && !hasTranslation) {
+
+function transformGeometry (geometry, position, rotation, scale) {
+    const flags = hasTransform(position, rotation, scale)
+
+    if (!flags.hasRotation && !flags.hasScale && !flags.hasTranslation) {
         return
     }
 
-    if (hasRotation) {
+    if (flags.hasRotation) {
         _quat.setFromEuler(rotation.x, rotation.y, rotation.z)
     }
 
-    const positions = geometry.positions
-    const normals = geometry.normals
-    const px = position.x
-    const py = position.y
-    const pz = position.z
-    const sx = scale.x
-    const sy = scale.y
-    const sz = scale.z
+    const ctx = {hasRotation: flags.hasRotation, hasScale: flags.hasScale, position, scale}
+    applyTransformToVertices(geometry, ctx)
+}
 
-    for (let i = 0; i < positions.length; i += 3) {
-        _v.x = positions[i] * sx
-        _v.y = positions[i + 1] * sy
-        _v.z = positions[i + 2] * sz
 
-        if (hasRotation) {
-            _quat.rotateVec3(_v)
-        }
-
-        positions[i] = _v.x + px
-        positions[i + 1] = _v.y + py
-        positions[i + 2] = _v.z + pz
-
-        _v.x = normals[i]
-        _v.y = normals[i + 1]
-        _v.z = normals[i + 2]
-
-        if (hasScale) {
-            _v.x /= sx
-            _v.y /= sy
-            _v.z /= sz
-        }
-
-        if (hasRotation) {
-            _quat.rotateVec3(_v)
-        }
-
-        const len = Math.sqrt(_v.x * _v.x + _v.y * _v.y + _v.z * _v.z) || 1
-        normals[i] = _v.x / len
-        normals[i + 1] = _v.y / len
-        normals[i + 2] = _v.z / len
+function applyTransformToVertices (geometry, ctx) {
+    for (let i = 0; i < geometry.positions.length; i += 3) {
+        transformPosition(geometry.positions, i, ctx)
+        transformNormal(geometry.normals, i, ctx)
     }
+}
+
+
+function transformPosition (positions, i, ctx) {
+    _v.x = positions[i] * ctx.scale.x
+    _v.y = positions[i + 1] * ctx.scale.y
+    _v.z = positions[i + 2] * ctx.scale.z
+
+    if (ctx.hasRotation) {
+        _quat.rotateVec3(_v)
+    }
+
+    positions[i] = _v.x + ctx.position.x
+    positions[i + 1] = _v.y + ctx.position.y
+    positions[i + 2] = _v.z + ctx.position.z
+}
+
+
+function transformNormal (normals, i, ctx) {
+    _v.x = normals[i]
+    _v.y = normals[i + 1]
+    _v.z = normals[i + 2]
+
+    if (ctx.hasScale) {
+        _v.x /= ctx.scale.x
+        _v.y /= ctx.scale.y
+        _v.z /= ctx.scale.z
+    }
+
+    if (ctx.hasRotation) {
+        _quat.rotateVec3(_v)
+    }
+
+    const len = Math.sqrt(_v.x * _v.x + _v.y * _v.y + _v.z * _v.z) || 1
+    normals[i] = _v.x / len
+    normals[i + 1] = _v.y / len
+    normals[i + 2] = _v.z / len
 }

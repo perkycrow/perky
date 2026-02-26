@@ -200,13 +200,26 @@ function buildCylinder (options) {
     const radialSegments = options.radialSegments ?? 16
     const openEnded = options.openEnded ?? false
 
-    const positions = []
-    const normals = []
-    const uvs = []
-    const indices = []
-
+    const buffers = {positions: [], normals: [], uvs: [], indices: []}
     const halfHeight = height / 2
     const slope = (radiusBottom - radiusTop) / height
+    const ctx = {radiusTop, radiusBottom, halfHeight, radialSegments, slope}
+
+    buildCylinderBody(buffers, ctx)
+    buildCylinderIndices(buffers.indices, radialSegments)
+
+    if (!openEnded) {
+        buildCylinderCaps(buffers, ctx)
+    }
+
+    return new Geometry(buffers).computeTangents()
+}
+
+
+function buildCylinderBody (buffers, ctx) {
+    const {positions, normals, uvs} = buffers
+    const {radiusTop, radiusBottom, halfHeight, radialSegments, slope} = ctx
+    const lenFactor = Math.sqrt(1 + slope * slope)
 
     for (let iy = 0; iy <= 1; iy++) {
         const y = iy === 0 ? -halfHeight : halfHeight
@@ -219,15 +232,14 @@ function buildCylinder (options) {
             const sinT = Math.sin(theta)
 
             positions.push(cosT * radius, y, sinT * radius)
-
-            const ny = slope
-            const len = Math.sqrt(1 + ny * ny)
-            normals.push(cosT / len, ny / len, sinT / len)
-
+            normals.push(cosT / lenFactor, slope / lenFactor, sinT / lenFactor)
             uvs.push(u, iy)
         }
     }
+}
 
+
+function buildCylinderIndices (indices, radialSegments) {
     const stride = radialSegments + 1
 
     for (let ix = 0; ix < radialSegments; ix++) {
@@ -239,22 +251,18 @@ function buildCylinder (options) {
         indices.push(a, b, c)
         indices.push(a, c, d)
     }
+}
 
-    if (!openEnded) {
-        if (radiusBottom > 0) {
-            buildCap(positions, normals, uvs, indices, radiusBottom, -halfHeight, -1, radialSegments)
-        }
-        if (radiusTop > 0) {
-            buildCap(positions, normals, uvs, indices, radiusTop, halfHeight, 1, radialSegments)
-        }
+
+function buildCylinderCaps (buffers, ctx) {
+    const {radiusTop, radiusBottom, halfHeight, radialSegments} = ctx
+
+    if (radiusBottom > 0) {
+        buildCap(buffers.positions, buffers.normals, buffers.uvs, buffers.indices, radiusBottom, -halfHeight, -1, radialSegments)
     }
-
-    return new Geometry({
-        positions,
-        normals,
-        uvs,
-        indices
-    }).computeTangents()
+    if (radiusTop > 0) {
+        buildCap(buffers.positions, buffers.normals, buffers.uvs, buffers.indices, radiusTop, halfHeight, 1, radialSegments)
+    }
 }
 
 

@@ -30,12 +30,12 @@ export default class BrushSet extends Notifier {
 
 
     add (brush, index) {
-        if (index !== undefined) {
-            this.#brushes.splice(index, 0, brush)
-            this.#invalidateFrom(index)
-        } else {
+        if (index === undefined) {
             this.#brushes.push(brush)
             this.#invalidateFrom(this.#brushes.length - 1)
+        } else {
+            this.#brushes.splice(index, 0, brush)
+            this.#invalidateFrom(index)
         }
         return brush
     }
@@ -78,26 +78,7 @@ export default class BrushSet extends Notifier {
         let csg = start > 0 ? this.#snapshots[start - 1]?.clone() ?? null : null
 
         for (let i = start; i < this.#brushes.length; i++) {
-            const brush = this.#brushes[i]
-
-            if (!brush.enabled) {
-                this.#snapshots[i] = csg?.clone() ?? null
-                continue
-            }
-
-            const brushCSG = brush.toCSG()
-            if (!brushCSG) {
-                this.#snapshots[i] = csg?.clone() ?? null
-                continue
-            }
-
-            if (!csg) {
-                csg = brushCSG
-            } else {
-                csg = csg[brush.operation](brushCSG)
-            }
-
-            this.#snapshots[i] = csg.clone()
+            csg = this.#processBrush(this.#brushes[i], csg, i)
         }
 
         this.#snapshots.length = this.#brushes.length
@@ -105,6 +86,29 @@ export default class BrushSet extends Notifier {
         this.#result = csg ? csg.toGeometry() : null
         this.emit('change', {geometry: this.#result, brushCount: this.#brushes.length})
         return this.#result
+    }
+
+
+    #processBrush (brush, csg, index) {
+        if (!brush.enabled) {
+            this.#snapshots[index] = csg?.clone() ?? null
+            return csg
+        }
+
+        const brushCSG = brush.toCSG()
+        if (!brushCSG) {
+            this.#snapshots[index] = csg?.clone() ?? null
+            return csg
+        }
+
+        if (csg) {
+            csg = csg[brush.operation](brushCSG)
+        } else {
+            csg = brushCSG
+        }
+
+        this.#snapshots[index] = csg.clone()
+        return csg
     }
 
 

@@ -34,8 +34,8 @@ export default class CSGPlane {
 
         for (const vertex of polygon.vertices) {
             const d = this.normal.dot(vertex.position) - this.w
-            const type = d < -epsilon ? BACK : d > epsilon ? FRONT : COPLANAR
-            polygonType |= type
+            const type = classifyDistance(d, epsilon)
+            polygonType = combineTypes(polygonType, type)
             types.push(type)
         }
 
@@ -58,52 +58,50 @@ export default class CSGPlane {
             return
         }
 
-        splitSpanning(this, polygon, types, front, back)
+        splitSpanning({plane: this, polygon, types, front, back})
     }
 
 }
 
 
-function splitSpanning (plane, polygon, types, front, back) {
+function classifyDistance (d, epsilon) {
+    if (d < -epsilon) {
+        return BACK
+    }
+    if (d > epsilon) {
+        return FRONT
+    }
+    return COPLANAR
+}
+
+
+function combineTypes (a, b) {
+    if (a === COPLANAR) {
+        return b
+    }
+    if (b === COPLANAR) {
+        return a
+    }
+    if (a === b) {
+        return a
+    }
+    return SPANNING
+}
+
+
+function isSpanningEdge (ti, tj) {
+    return (ti === FRONT && tj === BACK) || (ti === BACK && tj === FRONT)
+}
+
+
+function splitSpanning (ctx) {
+    const {polygon, front, back} = ctx
     const f = []
     const b = []
-    const nx = plane.normal.x
-    const ny = plane.normal.y
-    const nz = plane.normal.z
-    const pw = plane.w
+    const vertexCtx = {...ctx, f, b}
 
     for (let i = 0; i < polygon.vertices.length; i++) {
-        const j = (i + 1) % polygon.vertices.length
-        const ti = types[i]
-        const tj = types[j]
-        const vi = polygon.vertices[i]
-        const vj = polygon.vertices[j]
-
-        if (ti !== BACK) {
-            f.push(vi)
-        }
-
-        if (ti !== FRONT) {
-            b.push(ti !== BACK ? vi.clone() : vi)
-        }
-
-        if ((ti | tj) === SPANNING) {
-            const pi = vi.position
-            const pj = vj.position
-            const ex = pj.x - pi.x
-            const ey = pj.y - pi.y
-            const ez = pj.z - pi.z
-            const denom = nx * ex + ny * ey + nz * ez
-
-            if (Math.abs(denom) < 1e-10) {
-                continue
-            }
-
-            const t = (pw - (nx * pi.x + ny * pi.y + nz * pi.z)) / denom
-            const v = vi.interpolate(vj, t)
-            f.push(v)
-            b.push(v.clone())
-        }
+        processSpanningVertex(vertexCtx, i)
     }
 
     if (f.length >= 3) {
@@ -113,4 +111,49 @@ function splitSpanning (plane, polygon, types, front, back) {
     if (b.length >= 3) {
         back.push(new CSGPolygon(b))
     }
+}
+
+
+function processSpanningVertex (ctx, i) {
+    const {polygon, types, f, b, plane} = ctx
+    const j = (i + 1) % polygon.vertices.length
+    const ti = types[i]
+    const tj = types[j]
+    const vi = polygon.vertices[i]
+    const vj = polygon.vertices[j]
+
+    if (ti === FRONT || ti === COPLANAR) {
+        f.push(vi)
+    }
+
+    if (ti === BACK || ti === COPLANAR) {
+        b.push(ti === BACK ? vi : vi.clone())
+    }
+
+    if (isSpanningEdge(ti, tj)) {
+        interpolateEdge({vi, vj, plane, f, b})
+    }
+}
+
+
+function interpolateEdge (ctx) {
+    const {vi, vj, plane, f, b} = ctx
+    const pi = vi.position
+    const pj = vj.position
+    const nx = plane.normal.x
+    const ny = plane.normal.y
+    const nz = plane.normal.z
+    const ex = pj.x - pi.x
+    const ey = pj.y - pi.y
+    const ez = pj.z - pi.z
+    const denom = nx * ex + ny * ey + nz * ez
+
+    if (Math.abs(denom) < 1e-10) {
+        return
+    }
+
+    const t = (plane.w - (nx * pi.x + ny * pi.y + nz * pi.z)) / denom
+    const v = vi.interpolate(vj, t)
+    f.push(v)
+    b.push(v.clone())
 }

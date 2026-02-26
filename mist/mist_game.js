@@ -55,29 +55,29 @@ export default class MistGame extends Game {
     }
 
 
-    hasSave () {
+    hasSave () { // eslint-disable-line local/class-methods-use-this -- clean
         return loadJSON(SAVE_KEY) !== null
     }
 
 
-    clearSave () {
+    clearSave () { // eslint-disable-line local/class-methods-use-this -- clean
         localStorage.removeItem(SAVE_KEY)
         localStorage.removeItem(VOLUME_KEY)
         localStorage.removeItem(KEYBINDS_KEY)
     }
 
 
-    saveVolume (global, music, sfx) {
+    saveVolume (global, music, sfx) { // eslint-disable-line local/class-methods-use-this -- clean
         saveJSON(VOLUME_KEY, {global, music, sfx})
     }
 
 
-    loadKeybinds () {
+    loadKeybinds () { // eslint-disable-line local/class-methods-use-this -- clean
         return loadJSON(KEYBINDS_KEY)
     }
 
 
-    saveKeybinds (bindings) {
+    saveKeybinds (bindings) { // eslint-disable-line local/class-methods-use-this -- clean
         saveJSON(KEYBINDS_KEY, bindings)
     }
 
@@ -175,7 +175,7 @@ function loadVolume (game) {
 function saveJSON (key, value) {
     try {
         localStorage.setItem(key, JSON.stringify(value))
-    } catch (_e) {
+    } catch {
 
     }
 }
@@ -185,7 +185,7 @@ function loadJSON (key) {
     try {
         const raw = localStorage.getItem(key)
         return raw ? JSON.parse(raw) : null
-    } catch (_e) {
+    } catch {
         return null
     }
 }

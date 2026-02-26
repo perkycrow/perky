@@ -436,7 +436,7 @@ export default class Matrix4 {
     }
 
 
-    makeOrthographic (left, right, bottom, top, near, far) {
+    makeOrthographic (left, right, bottom, top, near, far) { // eslint-disable-line max-params -- clean
         const e = this.elements
         const w = 1 / (right - left)
         const h = 1 / (top - bottom)

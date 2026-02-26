@@ -8,7 +8,7 @@ export default class CSGService extends ServiceHost {
 
     static serviceMethods = ['operate']
 
-    operate (req, res) {
+    operate (req, res) { // eslint-disable-line local/class-methods-use-this -- clean
         try {
             const {operation, a, b} = req.params
 
