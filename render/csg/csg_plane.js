@@ -94,6 +94,11 @@ function splitSpanning (plane, polygon, types, front, back) {
             const ey = pj.y - pi.y
             const ez = pj.z - pi.z
             const denom = nx * ex + ny * ey + nz * ez
+
+            if (Math.abs(denom) < 1e-10) {
+                continue
+            }
+
             const t = (pw - (nx * pi.x + ny * pi.y + nz * pi.z)) / denom
             const v = vi.interpolate(vj, t)
             f.push(v)

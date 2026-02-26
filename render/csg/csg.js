@@ -3,6 +3,10 @@ import Vec3 from '../../math/vec3.js'
 import CSGVertex from './csg_vertex.js'
 import CSGPolygon from './csg_polygon.js'
 import CSGNode from './csg_node.js'
+import filterDegeneratePolygons from './csg_cleanup.js'
+import suppressTJunctions from './csg_tjunction.js'
+import mergeCoplanarPolygons from './csg_merge.js'
+import applyTriplanarUVs from './csg_triplanar.js'
 
 
 const BASE_EPSILON = 1e-5
@@ -65,7 +69,15 @@ export default class CSG {
     }
 
 
-    toGeometry () {
+    toGeometry (options = {}) {
+        let polygons = suppressTJunctions(this.polygons, BASE_EPSILON)
+        polygons = mergeCoplanarPolygons(polygons, BASE_EPSILON)
+        polygons = filterDegeneratePolygons(polygons, BASE_EPSILON)
+
+        if (options.triplanar) {
+            applyTriplanarUVs(polygons, options.uvScale ?? 1)
+        }
+
         const positions = []
         const normals = []
         const uvs = []
@@ -73,7 +85,7 @@ export default class CSG {
         const vertexMap = new Map()
         let vertexCount = 0
 
-        for (const polygon of this.polygons) {
+        for (const polygon of polygons) {
             const polyIndices = []
 
             for (const vertex of polygon.vertices) {
