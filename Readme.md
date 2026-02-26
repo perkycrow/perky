@@ -1,8 +1,8 @@
 # Perky Framework
 
-You want to make games. Not fight your tools.
+A personal game framework that I'm sharing with you.
 
-Perky is a modular JavaScript framework for browser-based games and interactive applications. Use what you need, ignore the rest, replace anything with your own code. No drama.
+I built Perky for myself — a modular JavaScript framework for browser-based games and interactive applications, shaped by years of failed attempts and accumulated opinions. If you're looking for a battle-tested engine, this probably isn't it. But if you're curious about a different take on game tooling, stick around.
 
 > **Warning**: Perky is under active development. The API is unstable and breaking changes happen frequently. Not recommended for production use yet.
 
