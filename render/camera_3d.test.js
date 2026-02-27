@@ -123,6 +123,17 @@ describe('Camera3D', () => {
             expect(cam.lookAt(new Vec3(0, 0, -1))).toBe(cam)
         })
 
+        test('view matrix survives dirty recalculation after lookAt', () => {
+            const cam = new Camera3D({x: 5, y: 5, z: 5})
+            cam.lookAt(new Vec3(0, 0, 0))
+            const viewBefore = new Float32Array(cam.viewMatrix.elements)
+            cam.setAspect(2)
+            const viewAfter = cam.viewMatrix
+            for (let i = 0; i < 16; i++) {
+                expectClose(viewAfter.elements[i], viewBefore[i])
+            }
+        })
+
     })
 
 

@@ -68,7 +68,7 @@ export default class Camera3D {
 
     lookAt (target) {
         this.#viewMatrix.makeLookAt(this.position, target, new Vec3(0, 1, 0))
-        this.rotation.setFromRotationMatrix(this.#viewMatrix)
+        this.rotation.setFromRotationMatrix(this.#viewMatrix).conjugate()
         this.#projectionMatrix.makePerspective(this.fov, this.aspect, this.near, this.far)
         this.#dirty = false
         return this
