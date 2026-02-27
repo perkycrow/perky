@@ -6,8 +6,8 @@ import Mesh from '../render/mesh.js'
 import MeshInstance from '../render/mesh_instance.js'
 import Material3D from '../render/material_3d.js'
 import Object3D from '../render/object_3d.js'
-import Vec3 from '../math/vec3.js'
 import ShadowMap from '../render/shadow_map.js'
+import OrbitCamera from './orbit_camera.js'
 
 
 export default class Forge extends Game {
@@ -35,8 +35,10 @@ export default class Forge extends Game {
             near: 0.1,
             far: 100
         })
-        this.camera3d.lookAt(new Vec3(0, 0, 0))
         this.meshRenderer.camera3d = this.camera3d
+
+        this.orbitCamera = new OrbitCamera(this.camera3d, layer.canvas)
+        this.orbitCamera.attach()
 
         this.renderSystem.on('resize', ({width, height}) => {
             this.camera3d.setAspect(width / height)

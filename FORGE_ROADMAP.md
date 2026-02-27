@@ -24,7 +24,7 @@ Le studio actuel (`studio/`) est branche sur le manifest d'un jeu (den) et orien
 | `Geometry` | Pret | `../render/geometry.js` |
 | `Vec3` | Pret | `../math/vec3.js` |
 
-Ce qui manque : navigation camera tactile, interaction brushes (placement, selection, manipulation), et le liant UI.
+Ce qui manque : interaction brushes (placement, selection, manipulation), et le liant UI.
 
 ---
 
@@ -138,11 +138,14 @@ Fichiers :
 
 Lancer avec `yarn forge`.
 
-### Etape 2 — Camera orbitale tactile
+### Etape 2 — Camera orbitale tactile ✅
 
 Navigation camera inspiree Procreate / apps 3D iPad.
 
-Fichier a creer : `forge/orbit_camera.js`
+Fichiers :
+
+- `forge/orbit_camera.js` — `OrbitCamera` wraps `Camera3D`, coordonnees spheriques, pointer events
+- `forge/orbit_camera.test.js` — 12 tests (position, contraintes, attach/detach)
 
 La classe `OrbitCamera` wrap une `Camera3D` et gere les inputs :
 
@@ -239,9 +242,11 @@ Ces etapes ne sont pas planifiees en detail. Elles viendront des besoins ressent
 
 ```
 forge/
-    index.html          page standalone
-    index.js            bootstrap (ApplicationManager + Forge)
-    forge.js            Forge extends Game (pipeline 3D)
+    index.html              page standalone
+    index.js                bootstrap (ApplicationManager + Forge)
+    forge.js                Forge extends Game (pipeline 3D)
+    orbit_camera.js         OrbitCamera (spherical coords, pointer events)
+    orbit_camera.test.js    tests
 ```
 
-On ajoutera des fichiers au fur et a mesure des etapes (ex: `orbit_camera.js` a l'etape 2). Pas de sur-architecture d'avance.
+On ajoutera des fichiers au fur et a mesure des etapes. Pas de sur-architecture d'avance.
