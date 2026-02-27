@@ -7,7 +7,10 @@ import MeshInstance from '../render/mesh_instance.js'
 import Material3D from '../render/material_3d.js'
 import Object3D from '../render/object_3d.js'
 import ShadowMap from '../render/shadow_map.js'
+import Brush from '../render/csg/brush.js'
+import BrushSet from '../render/csg/brush_set.js'
 import OrbitCamera from './orbit_camera.js'
+import ForgeUI from './forge_ui.js'
 
 
 export default class Forge extends Game {
@@ -56,7 +59,34 @@ export default class Forge extends Game {
         const grid = new MeshInstance({mesh: gridMesh, material: gridMat})
         this.scene.addChild(grid)
 
+        this.brushSet = new BrushSet()
+        this.brushMaterial = new Material3D({color: [0.8, 0.6, 0.4], roughness: 0.7})
+        this.brushMeshInstance = null
+
+        this.brushSet.on('change', ({geometry}) => {
+            if (this.brushMeshInstance) {
+                this.scene.removeChild(this.brushMeshInstance)
+                this.brushMeshInstance.mesh?.dispose()
+            }
+            if (geometry) {
+                const mesh = new Mesh({gl: this.gl, geometry})
+                this.brushMeshInstance = new MeshInstance({mesh, material: this.brushMaterial})
+                this.scene.addChild(this.brushMeshInstance)
+            } else {
+                this.brushMeshInstance = null
+            }
+        })
+
         layer.setContent(this.scene)
+
+        this.ui = new ForgeUI(this.element, this)
+    }
+
+
+    addBrush () {
+        const y = 0.5 + this.brushSet.count
+        this.brushSet.add(new Brush({shape: 'box', x: 0, y, z: 0}))
+        this.brushSet.build()
     }
 
 }

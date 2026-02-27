@@ -1,5 +1,5 @@
 import {describe, test, expect} from 'vitest'
-import filterDegeneratePolygons from './csg_cleanup.js'
+import filterDegeneratePolygons from './csg_utils.js'
 import CSGPolygon from './csg_polygon.js'
 import CSGVertex from './csg_vertex.js'
 import Vec3 from '../../math/vec3.js'
@@ -50,6 +50,20 @@ describe('filterDegeneratePolygons', () => {
 
     test('empty input returns empty', () => {
         expect(filterDegeneratePolygons([], 1e-5)).toHaveLength(0)
+    })
+
+
+    test('keeps polygon with collinear first 3 vertices but valid area', () => {
+        const polygon = new CSGPolygon([
+            vertex(0, 0, 0),
+            vertex(0, 1, 0),
+            vertex(0, 2, 0),
+            vertex(1, 2, 0),
+            vertex(1, 1, 0),
+            vertex(1, 0, 0)
+        ])
+        const result = filterDegeneratePolygons([polygon], 1e-5)
+        expect(result).toHaveLength(1)
     })
 
 })

@@ -52,7 +52,7 @@ Les lights sont stockees dans une texture `RGBA32F` (4 texels par light : positi
 
 Operations booleennes sur meshes via BSP-tree. Classes : `CSGPlane`, `CSGVertex`, `CSGPolygon`, `CSGNode`, `CSG`. Brush system non-destructif avec `Brush`, `BrushSet`, `BrushHistory`. Web Worker via `CSGService`/`CSGPool`.
 
-Post-processing dans `toGeometry()` : suppression T-junctions (`csg_tjunction.js`), fusion faces coplanaires (`csg_merge.js`), filtrage triangles degeneres (`csg_cleanup.js`), projection triplanaire UV (`csg_triplanar.js`, opt-in via `toGeometry({triplanar: true})`).
+Post-processing dans `toGeometry()` : suppression T-junctions (`csg_tjunction.js`), fusion faces coplanaires (`csg_merge.js`), filtrage triangles degeneres (`csg_utils.js`), projection triplanaire UV (`csg_triplanar.js`, opt-in via `toGeometry({triplanar: true})`).
 
 ## WebGL 2 vs WebGPU
 

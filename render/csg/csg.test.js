@@ -3,6 +3,20 @@ import CSG from './csg.js'
 import Geometry from '../geometry.js'
 
 
+function computeVolume (geometry) {
+    const {positions, indices} = geometry
+    let volume = 0
+    for (let i = 0; i < indices.length; i += 3) {
+        const a = indices[i], b = indices[i + 1], c = indices[i + 2]
+        const ax = positions[a * 3], ay = positions[a * 3 + 1], az = positions[a * 3 + 2]
+        const bx = positions[b * 3], by = positions[b * 3 + 1], bz = positions[b * 3 + 2]
+        const cx = positions[c * 3], cy = positions[c * 3 + 1], cz = positions[c * 3 + 2]
+        volume += (ax * (by * cz - bz * cy) + bx * (cy * az - cz * ay) + cx * (ay * bz - az * by)) / 6
+    }
+    return Math.abs(volume)
+}
+
+
 describe('CSG', () => {
 
     function offsetGeometry (geometry, dx, dy, dz) {
@@ -159,6 +173,16 @@ describe('CSG', () => {
         for (let i = 0; i < geometry.indices.length; i++) {
             expect(geometry.indices[i]).toBeLessThan(geometry.vertexCount)
         }
+    })
+
+
+    test('union of touching boxes preserves volume', () => {
+        const geoA = Geometry.createBox(1, 1, 1)
+        const geoB = offsetGeometry(Geometry.createBox(1, 1, 1), 0, 1, 0)
+        const geometry = CSG.fromGeometry(geoA).union(CSG.fromGeometry(geoB)).toGeometry()
+
+        expect(computeVolume(geometry)).toBeCloseTo(2, 1)
+        expect(geometry.indexCount).toBeGreaterThan(0)
     })
 
 })

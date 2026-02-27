@@ -159,15 +159,16 @@ Representation interne : coordonnees spheriques (`theta`, `phi`, `radius`) + `ta
 
 **Resultat** : on peut tourner autour de la grille, zoomer, se deplacer.
 
-### Etape 3 — Placer un brush
+### Etape 3 — Placer un brush ✅
 
 Le geste fondamental de l'editeur.
 
-- Un bouton "+" (HTML overlay, floating action button) pour ajouter un brush box
-- Le brush apparait au centre de la grille (y: 0.5 pour poser sur le sol)
-- Cree un `BrushSet`, appelle `add(new Brush(...))` puis `build()`
-- Affiche le mesh resultant dans la scene (un seul `MeshInstance` pour tout le CSG, qu'on remplace a chaque rebuild)
-- Le mesh se met a jour a chaque ajout
+Fichiers :
+
+- `forge/forge.js` — `BrushSet`, `addBrush()`, listener `change` pour reconstruire le mesh
+- `forge/forge_ui.js` — bouton "+" (floating action button, bas droite)
+
+Bugfix inclus : `filterDegeneratePolygons` supprimait les polygones dont les 3 premiers sommets etaient colineaires (cas des faces laterales apres merge coplanaire). Corrige pour calculer l'aire du polygone entier.
 
 **Resultat** : on peut empiler des cubes dans la scene. Pas encore de manipulation.
 
@@ -247,6 +248,7 @@ forge/
     forge.js                Forge extends Game (pipeline 3D)
     orbit_camera.js         OrbitCamera (spherical coords, pointer events)
     orbit_camera.test.js    tests
+    forge_ui.js             UI overlay (bouton "+")
 ```
 
 On ajoutera des fichiers au fur et a mesure des etapes. Pas de sur-architecture d'avance.
