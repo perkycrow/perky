@@ -21,12 +21,12 @@ export default class Forge extends Game {
     configureGame () {
         const renderer = this.getRenderer('game')
         const layer = this.getLayer('game')
-        const gl = renderer.gl
+        this.gl = renderer.gl
 
-        const meshRenderer = new WebGLMeshRenderer()
-        renderer.registerRenderer(meshRenderer)
+        this.meshRenderer = new WebGLMeshRenderer()
+        renderer.registerRenderer(this.meshRenderer)
 
-        const camera3d = new Camera3D({
+        this.camera3d = new Camera3D({
             x: 5,
             y: 5,
             z: 5,
@@ -35,37 +35,26 @@ export default class Forge extends Game {
             near: 0.1,
             far: 100
         })
-        camera3d.lookAt(new Vec3(0, 0, 0))
-        meshRenderer.camera3d = camera3d
+        this.camera3d.lookAt(new Vec3(0, 0, 0))
+        this.meshRenderer.camera3d = this.camera3d
 
         this.renderSystem.on('resize', ({width, height}) => {
-            camera3d.setAspect(width / height)
+            this.camera3d.setAspect(width / height)
         })
 
-        meshRenderer.lightDirection = [0.3, 0.8, 0.5]
-        meshRenderer.ambient = 0.5
-        meshRenderer.shadowMap = new ShadowMap({gl, resolution: 512})
+        this.meshRenderer.lightDirection = [0.3, 0.8, 0.5]
+        this.meshRenderer.ambient = 0.5
+        this.meshRenderer.shadowMap = new ShadowMap({gl: this.gl, resolution: 512})
 
-        const scene = new Object3D()
+        this.scene = new Object3D()
 
-        const boxGeo = Geometry.createBox(1, 1, 1)
-        const boxMesh = new Mesh({gl, geometry: boxGeo})
-        const cubeMat = new Material3D({
-            color: [1.0, 0.4, 0.1],
-            roughness: 0.8,
-            specular: 0.2
-        })
-        const cube = new MeshInstance({mesh: boxMesh, material: cubeMat})
-        cube.position.set(0, 0.5, 0)
-        scene.addChild(cube)
+        const gridGeo = Geometry.createPlane(20, 20, 20, 20)
+        const gridMesh = new Mesh({gl: this.gl, geometry: gridGeo})
+        const gridMat = new Material3D({color: [0.3, 0.3, 0.35], roughness: 1})
+        const grid = new MeshInstance({mesh: gridMesh, material: gridMat})
+        this.scene.addChild(grid)
 
-        const floorGeo = Geometry.createPlane(10, 10)
-        const floorMesh = new Mesh({gl, geometry: floorGeo})
-        const floorMat = new Material3D({color: [0.3, 0.3, 0.35], roughness: 1})
-        const floor = new MeshInstance({mesh: floorMesh, material: floorMat})
-        scene.addChild(floor)
-
-        layer.setContent(scene)
+        layer.setContent(this.scene)
     }
 
 }

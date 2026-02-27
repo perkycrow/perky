@@ -39,54 +39,24 @@ Ce qui manque : navigation camera tactile, interaction brushes (placement, selec
 
 ## Reference API rapide
 
-### Init pipeline 3D
+### Forge extends Game
+
+Forge utilise le pattern `Game` avec `static camera = null` pour opt-out de la camera 2D. Le pipeline 3D est configure dans `configureGame()`. Les proprietes cles sont exposees sur l'instance :
+
+- `this.scene` — Object3D, racine du scene graph
+- `this.camera3d` — Camera3D, camera 3D
+- `this.meshRenderer` — WebGLMeshRenderer, renderer 3D
+- `this.gl` — WebGLRenderingContext
 
 ```javascript
-import RenderSystem from '../render/render_system.js'
-import WebGLMeshRenderer from '../render/webgl/webgl_mesh_renderer.js'
-import Camera3D from '../render/camera_3d.js'
-import Object3D from '../render/object_3d.js'
-import Geometry from '../render/geometry.js'
-import Mesh from '../render/mesh.js'
-import MeshInstance from '../render/mesh_instance.js'
-import Material3D from '../render/material_3d.js'
-import Vec3 from '../math/vec3.js'
+class Forge extends Game {
+    static camera = null
+    static layer = {type: 'webgl', backgroundColor: '#1a1a2e'}
 
-const container = document.getElementById('app')
-const renderSystem = new RenderSystem({container, autoResize: true})
-renderSystem.createLayer('main', 'webgl', {backgroundColor: '#1a1a2e'})
-
-const layer = renderSystem.getLayer('main')
-const renderer = renderSystem.getRenderer('main')
-const gl = renderer.gl
-
-const meshRenderer = new WebGLMeshRenderer()
-renderer.registerRenderer(meshRenderer)
-
-const camera3d = new Camera3D({
-    x: 5, y: 5, z: 5, fov: Math.PI / 4,
-    aspect: container.clientWidth / container.clientHeight,
-    near: 0.1, far: 100
-})
-camera3d.lookAt(new Vec3(0, 0, 0))
-meshRenderer.camera3d = camera3d
-meshRenderer.lightDirection = [0.3, 0.8, 0.5]
-meshRenderer.ambient = 0.3
-
-renderSystem.on('resize', ({width, height}) => camera3d.setAspect(width / height))
-
-const scene = new Object3D()
-layer.setContent(scene)
-```
-
-### Grille au sol
-
-```javascript
-const gridGeo = Geometry.createPlane(20, 20, 20, 20)
-const gridMesh = new Mesh({gl, geometry: gridGeo})
-const gridMat = new Material3D({color: [0.3, 0.3, 0.3], roughness: 1})
-const grid = new MeshInstance({mesh: gridMesh, material: gridMat})
-scene.addChild(grid)
+    configureGame () {
+        // Pipeline 3D: meshRenderer, camera3d, scene, lighting, shadows
+    }
+}
 ```
 
 ### Brush CSG
@@ -156,18 +126,17 @@ new Brush({
 
 ## Etapes
 
-### Etape 1 — Viewport vide
+### Etape 1 — Viewport vide ✅
 
-Le minimum : un canvas WebGL plein ecran avec une scene 3D et une grille au sol.
+Canvas WebGL plein ecran, grille au sol 20x20, camera isometrique, lumiere + shadows.
 
-Fichiers a creer :
+Fichiers :
 
-- `forge/index.html` — page standalone, un `<div id="app">` plein ecran, charge `index.js` en module
-- `forge/index.js` — init `RenderSystem` + `WebGLMeshRenderer` + `Camera3D`, grille au sol (`Geometry.createPlane`), lumiere directionnelle + ambient, loop `requestAnimationFrame` avec `layer.render()`
+- `forge/index.html` — page standalone, `<section id="forge">` plein ecran
+- `forge/index.js` — bootstrap via `ApplicationManager`
+- `forge/forge.js` — `Forge extends Game`, `static camera = null`, pipeline 3D dans `configureGame()`
 
-Se baser sur le pattern de `examples/cube_3d.js` pour l'init. Camera en position isometrique (ex: `x: 5, y: 5, z: 5`) regardant l'origine.
-
-**Resultat** : un ecran avec une grille au sol eclairee. Le pipeline 3D tourne.
+Lancer avec `yarn forge`.
 
 ### Etape 2 — Camera orbitale tactile
 
@@ -266,12 +235,13 @@ Ces etapes ne sont pas planifiees en detail. Elles viendront des besoins ressent
 
 ---
 
-## Structure de fichiers (etape 1)
+## Structure de fichiers
 
 ```
 forge/
     index.html          page standalone
-    index.js            entry point (init renderer, scene, loop)
+    index.js            bootstrap (ApplicationManager + Forge)
+    forge.js            Forge extends Game (pipeline 3D)
 ```
 
 On ajoutera des fichiers au fur et a mesure des etapes (ex: `orbit_camera.js` a l'etape 2). Pas de sur-architecture d'avance.
