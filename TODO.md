@@ -17,6 +17,15 @@ Voir [3D_ROADMAP.md](3D_ROADMAP.md) pour l'architecture du pipeline.
 - [ ] **Skybox cubemap** — Loader 6 faces (`TEXTURE_CUBE_MAP`). Le shader et le flag `uHasCubemap` sont deja prets. Sources : Poly Haven, ambientCG, Humus.
 - [ ] **Textures animees** — Scrolling UV, frame-by-frame.
 
+### Refactor : camera3d partagee dans WebGLObjectRenderer
+
+Les 4 sub-renderers 3D (mesh, billboard, decal, skybox) dupliquent chacun la meme propriete `camera3d` : champ prive, getter, setter, null-guard dans flush(), cleanup dans dispose(). 3 d'entre eux (mesh, billboard, decal) dupliquent aussi `fogNear`/`fogFar`/`fogColor`.
+
+- [ ] **Remonter camera3d dans WebGLObjectRenderer** — Champ + getter/setter dans la classe de base
+- [ ] **WebGLRenderer.camera3d** — Setter qui propage a tous les sub-renderers enregistres. Un seul `renderer.camera3d = camera3d` au lieu de 4 assignations
+
+Refactor interne aux renderers, pas un changement de RenderSystem.
+
 ### Pistes futures (par complexite croissante)
 
 - Cascaded Shadow Maps (CSM) — 4 cascades, resolution adaptative
