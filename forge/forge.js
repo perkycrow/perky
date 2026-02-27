@@ -14,12 +14,8 @@ export default class Forge extends Game {
 
     static $name = 'forge'
 
-    // No camera: 'main' — pure 3D, like corridor_3d
     static camera = null
-
-    static layers = [
-        {name: 'game', type: 'webgl', backgroundColor: '#1a1a2e'}
-    ]
+    static layer = {type: 'webgl', backgroundColor: '#1a1a2e'}
 
 
     configureGame () {

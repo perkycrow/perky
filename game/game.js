@@ -35,7 +35,9 @@ export default class Game extends Application {
             ...params.textureSystem
         })
 
-        this.camera = this.renderSystem?.getCamera('main')
+        this.camera = this.constructor.camera
+            ? this.renderSystem?.getCamera('main')
+            : null
 
         this.on('update', this.#onUpdate)
         this.on('render', this.#onRender)
@@ -321,21 +323,19 @@ export default class Game extends Application {
         if (layersConfig) {
             layers = layersConfig
         } else {
-            layers = [
-                {
-                    name: 'game',
-                    camera: 'main',
-                    ...layerConfig
-                }
-            ]
+            const layer = {name: 'game', ...layerConfig}
+            if (cameraConfig) {
+                layer.camera = 'main'
+            }
+            layers = [layer]
         }
 
-        return {
-            cameras: {
-                main: cameraConfig
-            },
-            layers
+        const config = {layers}
+        if (cameraConfig) {
+            config.cameras = {main: cameraConfig}
         }
+
+        return config
     }
 
 

@@ -506,6 +506,32 @@ describe('Game', () => {
     })
 
 
+    test('static camera = null skips 2D camera', () => {
+        class Game3D extends Game {
+            static camera = null
+        }
+
+        const game3d = new Game3D()
+
+        expect(game3d.camera).toBeNull()
+        expect(game3d.renderSystem).toBeInstanceOf(RenderSystem)
+    })
+
+
+    test('static camera = null with static layer does not inject camera into layer', () => {
+        class Game3D extends Game {
+            static camera = null
+            static layer = {type: 'webgl', backgroundColor: '#000'}
+        }
+
+        const game3d = new Game3D()
+        const layer = game3d.getLayer('game')
+
+        expect(game3d.camera).toBeNull()
+        expect(layer).toBeDefined()
+    })
+
+
     describe('stage render config', () => {
 
         test('applies stage camera config on setStage', () => {
