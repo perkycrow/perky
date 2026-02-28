@@ -51,6 +51,39 @@ describe('Geometry', () => {
             expect(geo.tangents.length).toBe(3)
         })
 
+        test('colors default to null', () => {
+            const geo = new Geometry({
+                positions: [0, 0, 0],
+                normals: [0, 1, 0],
+                uvs: [0, 0],
+                indices: [0]
+            })
+            expect(geo.colors).toBe(null)
+        })
+
+        test('accepts colors as typed array', () => {
+            const geo = new Geometry({
+                positions: [0, 0, 0],
+                normals: [0, 1, 0],
+                uvs: [0, 0],
+                indices: [0],
+                colors: new Float32Array([1, 0, 0])
+            })
+            expect(geo.colors).toBeInstanceOf(Float32Array)
+            expect(geo.colors.length).toBe(3)
+        })
+
+        test('converts plain color arrays to typed arrays', () => {
+            const geo = new Geometry({
+                positions: [0, 0, 0],
+                normals: [0, 1, 0],
+                uvs: [0, 0],
+                indices: [0],
+                colors: [0.9, 0.3, 0.3]
+            })
+            expect(geo.colors).toBeInstanceOf(Float32Array)
+        })
+
     })
 
 

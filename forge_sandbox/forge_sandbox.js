@@ -25,11 +25,7 @@ import {snap} from '../math/utils.js'
 const MIN_SCALE = 0.1
 const HANDLE_SIZE = 0.12
 
-const WIREFRAME_COLORS = {
-    union: [0.3, 0.6, 1.0],
-    subtract: [1.0, 0.5, 0.2],
-    intersect: [0.3, 0.8, 0.4]
-}
+const DEFAULT_WIREFRAME_COLOR = [0.6, 0.6, 0.6]
 
 
 export default class ForgeSandbox extends Game {
@@ -93,7 +89,7 @@ export default class ForgeSandbox extends Game {
         this.scene.addChild(grid)
 
         this.brushSet = new BrushSet()
-        this.brushMaterial = new Material3D({color: [0.8, 0.6, 0.4], roughness: 0.7})
+        this.brushMaterial = new Material3D({color: [1, 1, 1], roughness: 0.7})
         this.selectionMaterial = new Material3D({color: [0.3, 0.6, 1.0], roughness: 0.5, opacity: 0.15})
         this.handleMaterial = new Material3D({color: [1.0, 1.0, 1.0], roughness: 0.3})
         this.brushMeshInstance = null
@@ -195,6 +191,17 @@ export default class ForgeSandbox extends Game {
         this.brushSet.build()
         this.history.save()
         this.ui.updateOperationToolbar(brush.operation)
+    }
+
+
+    setBrushColor (color) {
+        const brush = this.brushSet.get(this.#selectedBrush)
+        if (!brush) {
+            return
+        }
+        brush.color = [...color]
+        this.brushSet.build()
+        this.history.save()
     }
 
 
@@ -499,7 +506,8 @@ export default class ForgeSandbox extends Game {
             const brush = this.brushSet.get(i)
             const positions = brushWirePositions(brush)
             const lineMesh = new LineMesh({gl: this.gl, positions})
-            const color = WIREFRAME_COLORS[brush.operation] || WIREFRAME_COLORS.union
+            const isWhite = brush.color[0] === 1 && brush.color[1] === 1 && brush.color[2] === 1
+            const color = isWhite ? DEFAULT_WIREFRAME_COLOR : brush.color
             this.#wireframes.push({lineMesh, color})
         }
     }

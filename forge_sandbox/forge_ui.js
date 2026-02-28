@@ -11,6 +11,17 @@ const SHAPES = [
     {id: 'cone', label: '△'}
 ]
 
+const COLORS = [
+    {color: [1, 1, 1], css: '#ffffff'},
+    {color: [0.9, 0.3, 0.3], css: '#e64d4d'},
+    {color: [0.9, 0.6, 0.3], css: '#e6994d'},
+    {color: [0.9, 0.9, 0.3], css: '#e6e64d'},
+    {color: [0.3, 0.8, 0.4], css: '#4dcc66'},
+    {color: [0.3, 0.5, 0.9], css: '#4d80e6'},
+    {color: [0.7, 0.3, 0.9], css: '#b34de6'},
+    {color: [0.5, 0.5, 0.5], css: '#808080'}
+]
+
 const BUTTON_STYLE = {
     width: '44px',
     height: '44px',
@@ -30,6 +41,7 @@ export default class ForgeUI {
     #operationBar = null
     #operationButtons = {}
     #shapePalette = null
+    #colorPalette = null
     #snapButton = null
     #toast = null
 
@@ -51,6 +63,7 @@ export default class ForgeUI {
 
     hideOperationToolbar () {
         this.#operationBar.style.display = 'none'
+        this.#hideColorPalette()
     }
 
 
@@ -234,8 +247,76 @@ export default class ForgeUI {
         delBtn.addEventListener('click', () => this.#forge.deleteBrush())
         bar.appendChild(delBtn)
 
+        const colorSep = document.createElement('div')
+        Object.assign(colorSep.style, {width: '1px', background: 'rgba(255, 255, 255, 0.2)', margin: '4px 0'})
+        bar.appendChild(colorSep)
+
+        const colorBtn = document.createElement('button')
+        colorBtn.textContent = '🎨'
+        Object.assign(colorBtn.style, BUTTON_STYLE)
+        colorBtn.style.background = 'rgba(255, 255, 255, 0.1)'
+        colorBtn.addEventListener('click', () => this.#toggleColorPalette())
+        bar.appendChild(colorBtn)
+
         this.#container.appendChild(bar)
         this.#operationBar = bar
+
+        this.#createColorPalette()
+    }
+
+
+    #createColorPalette () {
+        const palette = document.createElement('div')
+        Object.assign(palette.style, {
+            position: 'absolute',
+            bottom: '84px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            display: 'none',
+            gap: '6px',
+            background: 'rgba(30, 30, 50, 0.85)',
+            padding: '8px',
+            borderRadius: '12px',
+            zIndex: '10',
+            flexWrap: 'wrap',
+            maxWidth: '200px',
+            justifyContent: 'center'
+        })
+
+        for (const entry of COLORS) {
+            const btn = document.createElement('button')
+            Object.assign(btn.style, {
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                background: entry.css,
+                cursor: 'pointer',
+                touchAction: 'manipulation'
+            })
+            btn.addEventListener('click', () => {
+                this.#forge.setBrushColor(entry.color)
+                this.#hideColorPalette()
+            })
+            palette.appendChild(btn)
+        }
+
+        this.#container.appendChild(palette)
+        this.#colorPalette = palette
+    }
+
+
+    #toggleColorPalette () {
+        if (this.#colorPalette.style.display === 'none') {
+            this.#colorPalette.style.display = 'flex'
+        } else {
+            this.#hideColorPalette()
+        }
+    }
+
+
+    #hideColorPalette () {
+        this.#colorPalette.style.display = 'none'
     }
 
 

@@ -37,6 +37,7 @@ export default class Brush {
         this.scale = createScaleVec(options)
         this.params = options.params ?? {}
         this.enabled = options.enabled ?? true
+        this.color = options.color ? [...options.color] : [1, 1, 1]
     }
 
 
@@ -47,6 +48,7 @@ export default class Brush {
         }
         const geo = factory(this.params)
         transformGeometry(geo, this.position, this.rotation, this.scale)
+        fillColors(geo, this.color)
         return geo
     }
 
@@ -76,7 +78,8 @@ export default class Brush {
             sy: this.scale.y,
             sz: this.scale.z,
             params: {...this.params},
-            enabled: this.enabled
+            enabled: this.enabled,
+            color: [...this.color]
         }
     }
 
@@ -158,4 +161,14 @@ function transformNormal (normals, i, ctx) {
     normals[i] = _v.x / len
     normals[i + 1] = _v.y / len
     normals[i + 2] = _v.z / len
+}
+
+
+function fillColors (geometry, color) {
+    geometry.colors = new Float32Array(geometry.vertexCount * 3)
+    for (let i = 0; i < geometry.colors.length; i += 3) {
+        geometry.colors[i] = color[0]
+        geometry.colors[i + 1] = color[1]
+        geometry.colors[i + 2] = color[2]
+    }
 }

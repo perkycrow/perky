@@ -165,4 +165,50 @@ describe('Mesh', () => {
         expect(deleteCalls.length).toBe(0)
     })
 
+
+    test('hasColors is false without colors', () => {
+        const gl = createMockGL()
+        const geometry = Geometry.createBox(1, 1, 1)
+        const mesh = new Mesh({gl, geometry})
+        expect(mesh.hasColors).toBe(false)
+    })
+
+
+    test('creates color buffer at location 4', () => {
+        const gl = createMockGL()
+        const geometry = new Geometry({
+            positions: [0, 0, 0, 1, 0, 0, 0, 0, 1],
+            normals: [0, 1, 0, 0, 1, 0, 0, 1, 0],
+            uvs: [0, 0, 1, 0, 0, 1],
+            indices: [0, 1, 2],
+            colors: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+        })
+        const mesh = new Mesh({gl, geometry})
+        expect(mesh.hasColors).toBe(true)
+
+        const attribCalls = gl.calls.filter(c => c.fn === 'vertexAttribPointer')
+        const colorAttrib = attribCalls.find(c => c.args[0] === 4)
+        expect(colorAttrib).toBeDefined()
+        expect(colorAttrib.args[1]).toBe(3)
+    })
+
+
+    test('dispose deletes color buffer', () => {
+        const gl = createMockGL()
+        const geometry = new Geometry({
+            positions: [0, 0, 0, 1, 0, 0, 0, 0, 1],
+            normals: [0, 1, 0, 0, 1, 0, 0, 1, 0],
+            uvs: [0, 0, 1, 0, 0, 1],
+            indices: [0, 1, 2],
+            colors: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+        })
+        const mesh = new Mesh({gl, geometry})
+
+        gl.calls.length = 0
+        mesh.dispose()
+
+        const deleteCalls = gl.calls.filter(c => c.fn === 'deleteBuffer')
+        expect(deleteCalls.length).toBe(5)
+    })
+
 })

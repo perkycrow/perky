@@ -193,4 +193,66 @@ describe('CSG', () => {
         expect(geometry.indexCount).toBeGreaterThan(0)
     })
 
+
+    test('toGeometry outputs colors', () => {
+        const box = Geometry.createBox()
+        const csg = CSG.fromGeometry(box)
+        const result = csg.toGeometry()
+        expect(result.colors).not.toBeNull()
+        expect(result.colors.length).toBe(result.vertexCount * 3)
+    })
+
+
+    test('fromGeometry preserves vertex colors', () => {
+        const box = Geometry.createBox()
+        box.colors = new Float32Array(box.vertexCount * 3)
+        for (let i = 0; i < box.colors.length; i += 3) {
+            box.colors[i] = 0.9
+            box.colors[i + 1] = 0.3
+            box.colors[i + 2] = 0.3
+        }
+        const csg = CSG.fromGeometry(box)
+        const result = csg.toGeometry()
+        for (let i = 0; i < result.colors.length; i += 3) {
+            expect(result.colors[i]).toBeCloseTo(0.9, 1)
+            expect(result.colors[i + 1]).toBeCloseTo(0.3, 1)
+            expect(result.colors[i + 2]).toBeCloseTo(0.3, 1)
+        }
+    })
+
+
+    test('union preserves different colors per brush', () => {
+        const geoA = Geometry.createBox(1, 1, 1)
+        geoA.colors = new Float32Array(geoA.vertexCount * 3)
+        for (let i = 0; i < geoA.colors.length; i += 3) {
+            geoA.colors[i] = 1
+            geoA.colors[i + 1] = 0
+            geoA.colors[i + 2] = 0
+        }
+
+        const geoB = offsetGeometry(Geometry.createBox(1, 1, 1), 0, 1, 0)
+        geoB.colors = new Float32Array(geoB.vertexCount * 3)
+        for (let i = 0; i < geoB.colors.length; i += 3) {
+            geoB.colors[i] = 0
+            geoB.colors[i + 1] = 0
+            geoB.colors[i + 2] = 1
+        }
+
+        const result = CSG.fromGeometry(geoA).union(CSG.fromGeometry(geoB)).toGeometry()
+        expect(result.colors).not.toBeNull()
+
+        let hasRed = false
+        let hasBlue = false
+        for (let i = 0; i < result.colors.length; i += 3) {
+            if (result.colors[i] > 0.5 && result.colors[i + 2] < 0.5) {
+                hasRed = true
+            }
+            if (result.colors[i] < 0.5 && result.colors[i + 2] > 0.5) {
+                hasBlue = true
+            }
+        }
+        expect(hasRed).toBe(true)
+        expect(hasBlue).toBe(true)
+    })
+
 })

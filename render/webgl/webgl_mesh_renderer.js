@@ -266,6 +266,8 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             gl.uniform1f(this.#meshProgram.uniforms.uHasNormalMap, 1)
         }
 
+        gl.uniform1f(this.#meshProgram.uniforms.uHasVertexColors, object.mesh.hasColors ? 1 : 0)
+
         object.mesh.draw()
 
         if (normalMap) {

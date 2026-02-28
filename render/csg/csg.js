@@ -81,6 +81,7 @@ export default class CSG {
         const positions = []
         const normals = []
         const uvs = []
+        const colors = []
         const indices = []
         const vertexMap = new Map()
         let vertexCount = 0
@@ -98,6 +99,7 @@ export default class CSG {
                     positions.push(vertex.position.x, vertex.position.y, vertex.position.z)
                     normals.push(vertex.normal.x, vertex.normal.y, vertex.normal.z)
                     uvs.push(vertex.uv[0], vertex.uv[1])
+                    colors.push(vertex.color[0], vertex.color[1], vertex.color[2])
                 }
 
                 polyIndices.push(index)
@@ -108,19 +110,23 @@ export default class CSG {
             }
         }
 
-        return new Geometry({positions, normals, uvs, indices}).computeTangents()
+        return new Geometry({positions, normals, uvs, indices, colors}).computeTangents()
     }
 
 
     static fromGeometry (geometry) {
         const polygons = []
-        const {positions, normals, uvs, indices} = geometry
+        const {positions, normals, uvs, indices, colors} = geometry
+        const hasColors = colors && colors.length > 0
 
         for (let i = 0; i < indices.length; i += 3) {
             const vertices = []
 
             for (let j = 0; j < 3; j++) {
                 const idx = indices[i + j]
+                const color = hasColors
+                    ? [colors[idx * 3], colors[idx * 3 + 1], colors[idx * 3 + 2]]
+                    : [1, 1, 1]
                 vertices.push(new CSGVertex(
                     new Vec3(
                         positions[idx * 3],
@@ -132,7 +138,8 @@ export default class CSG {
                         normals[idx * 3 + 1],
                         normals[idx * 3 + 2]
                     ),
-                    [uvs[idx * 2], uvs[idx * 2 + 1]]
+                    [uvs[idx * 2], uvs[idx * 2 + 1]],
+                    color
                 ))
             }
 
@@ -180,7 +187,10 @@ function vertexKey (vertex) {
     const nz = Math.round(n.z * precision)
     const ux = Math.round(vertex.uv[0] * precision)
     const uy = Math.round(vertex.uv[1] * precision)
-    return `${px},${py},${pz},${nx},${ny},${nz},${ux},${uy}`
+    const cr = Math.round(vertex.color[0] * 255)
+    const cg = Math.round(vertex.color[1] * 255)
+    const cb = Math.round(vertex.color[2] * 255)
+    return `${px},${py},${pz},${nx},${ny},${nz},${ux},${uy},${cr},${cg},${cb}`
 }
 
 

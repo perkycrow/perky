@@ -3,6 +3,7 @@ layout(location = 0) in vec3 aPosition;
 layout(location = 1) in vec3 aNormal;
 layout(location = 2) in vec2 aTexCoord;
 layout(location = 3) in vec3 aTangent;
+layout(location = 4) in vec3 aColor;
 
 uniform mat4 uProjection;
 uniform mat4 uView;
@@ -14,6 +15,7 @@ out vec3 vNormal;
 out vec3 vWorldPosition;
 out vec3 vTangent;
 out vec4 vLightSpacePosition;
+out vec3 vColor;
 
 void main() {
     vec4 worldPos = uModel * vec4(aPosition, 1.0);
@@ -23,6 +25,7 @@ void main() {
     vTangent = normalMatrix * aTangent;
     vTexCoord = aTexCoord;
     vLightSpacePosition = uLightMatrix * worldPos;
+    vColor = aColor;
 
     gl_Position = uProjection * uView * worldPos;
 }
@@ -60,11 +63,14 @@ uniform highp sampler2D uLightData;
 uniform highp sampler2DShadow uShadowMap;
 uniform float uHasShadowMap;
 
+uniform float uHasVertexColors;
+
 in vec2 vTexCoord;
 in vec3 vNormal;
 in vec3 vWorldPosition;
 in vec3 vTangent;
 in vec4 vLightSpacePosition;
+in vec3 vColor;
 
 out vec4 fragColor;
 
@@ -87,7 +93,8 @@ float calcShadow (vec3 normal, vec3 lightDir) {
 
 void main() {
     vec4 texColor = uHasTexture > 0.5 ? texture(uTexture, vTexCoord * uUVScale) : vec4(1.0);
-    vec3 baseColor = texColor.rgb * uMaterialColor;
+    vec3 vertexColor = uHasVertexColors > 0.5 ? vColor : vec3(1.0);
+    vec3 baseColor = texColor.rgb * uMaterialColor * vertexColor;
     vec3 normal = normalize(vNormal);
 
     if (uHasNormalMap > 0.5) {
@@ -190,7 +197,8 @@ export const MESH_SHADER_DEF = {
         'uNormalStrength',
         'uLightMatrix',
         'uShadowMap',
-        'uHasShadowMap'
+        'uHasShadowMap',
+        'uHasVertexColors'
     ],
-    attributes: ['aPosition', 'aNormal', 'aTexCoord', 'aTangent']
+    attributes: ['aPosition', 'aNormal', 'aTexCoord', 'aTangent', 'aColor']
 }

@@ -6,6 +6,7 @@ export default class Mesh {
     #normalBuffer = null
     #uvBuffer = null
     #tangentBuffer = null
+    #colorBuffer = null
     #indexBuffer = null
     #indexCount = 0
     #disposed = false
@@ -13,6 +14,7 @@ export default class Mesh {
     constructor ({gl, geometry}) {
         this.#gl = gl
         this.#indexCount = geometry.indexCount
+        this.hasColors = Boolean(geometry.colors)
         this.#createBuffers(geometry)
     }
 
@@ -57,6 +59,9 @@ export default class Mesh {
         if (this.#tangentBuffer) {
             gl.deleteBuffer(this.#tangentBuffer)
         }
+        if (this.#colorBuffer) {
+            gl.deleteBuffer(this.#colorBuffer)
+        }
         gl.deleteBuffer(this.#indexBuffer)
         gl.deleteVertexArray(this.#vao)
 
@@ -94,6 +99,14 @@ export default class Mesh {
             gl.bufferData(gl.ARRAY_BUFFER, geometry.tangents, gl.STATIC_DRAW)
             gl.enableVertexAttribArray(3)
             gl.vertexAttribPointer(3, 3, gl.FLOAT, false, 0, 0)
+        }
+
+        if (geometry.colors) {
+            this.#colorBuffer = gl.createBuffer()
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.#colorBuffer)
+            gl.bufferData(gl.ARRAY_BUFFER, geometry.colors, gl.STATIC_DRAW)
+            gl.enableVertexAttribArray(4)
+            gl.vertexAttribPointer(4, 3, gl.FLOAT, false, 0, 0)
         }
 
         this.#indexBuffer = gl.createBuffer()

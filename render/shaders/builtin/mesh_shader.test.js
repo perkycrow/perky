@@ -31,6 +31,14 @@ describe('MESH_VERTEX', () => {
         expect(MESH_VERTEX).toContain('layout(location = 3) in vec3 aTangent')
     })
 
+    test('declares aColor attribute with layout', () => {
+        expect(MESH_VERTEX).toContain('layout(location = 4) in vec3 aColor')
+    })
+
+    test('passes vertex color to fragment', () => {
+        expect(MESH_VERTEX).toContain('vColor = aColor')
+    })
+
     test('declares mat4 uniforms', () => {
         expect(MESH_VERTEX).toContain('uniform mat4 uProjection')
         expect(MESH_VERTEX).toContain('uniform mat4 uView')
@@ -164,6 +172,14 @@ describe('MESH_FRAGMENT', () => {
         expect(MESH_FRAGMENT).toContain('out vec4 fragColor')
     })
 
+    test('declares uHasVertexColors uniform', () => {
+        expect(MESH_FRAGMENT).toContain('uniform float uHasVertexColors')
+    })
+
+    test('multiplies baseColor by vertex color', () => {
+        expect(MESH_FRAGMENT).toContain('uMaterialColor * vertexColor')
+    })
+
 })
 
 
@@ -205,7 +221,8 @@ describe('MESH_SHADER_DEF', () => {
             'uNormalStrength',
             'uLightMatrix',
             'uShadowMap',
-            'uHasShadowMap'
+            'uHasShadowMap',
+            'uHasVertexColors'
         ])
     })
 
@@ -214,7 +231,8 @@ describe('MESH_SHADER_DEF', () => {
             'aPosition',
             'aNormal',
             'aTexCoord',
-            'aTangent'
+            'aTangent',
+            'aColor'
         ])
     })
 

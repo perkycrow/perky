@@ -12,6 +12,7 @@ describe('Brush', () => {
         expect(brush.rotation.x).toBe(0)
         expect(brush.scale.x).toBe(1)
         expect(brush.enabled).toBe(true)
+        expect(brush.color).toEqual([1, 1, 1])
     })
 
 
@@ -176,6 +177,47 @@ describe('Brush', () => {
         const b = a.clone()
         b.position.x = 99
         expect(a.position.x).toBe(1)
+    })
+
+
+    test('constructor with color', () => {
+        const brush = new Brush({color: [0.9, 0.3, 0.3]})
+        expect(brush.color).toEqual([0.9, 0.3, 0.3])
+    })
+
+
+    test('createGeometry fills vertex colors', () => {
+        const brush = new Brush({color: [0.9, 0.3, 0.3]})
+        const geo = brush.createGeometry()
+        expect(geo.colors).not.toBeNull()
+        expect(geo.colors.length).toBe(geo.vertexCount * 3)
+        for (let i = 0; i < geo.colors.length; i += 3) {
+            expect(geo.colors[i]).toBeCloseTo(0.9, 5)
+            expect(geo.colors[i + 1]).toBeCloseTo(0.3, 5)
+            expect(geo.colors[i + 2]).toBeCloseTo(0.3, 5)
+        }
+    })
+
+
+    test('toJSON includes color', () => {
+        const brush = new Brush({color: [0.9, 0.3, 0.3]})
+        const json = brush.toJSON()
+        expect(json.color).toEqual([0.9, 0.3, 0.3])
+    })
+
+
+    test('fromJSON restores color', () => {
+        const original = new Brush({color: [0.3, 0.5, 0.9]})
+        const restored = Brush.fromJSON(original.toJSON())
+        expect(restored.color).toEqual([0.3, 0.5, 0.9])
+    })
+
+
+    test('clone copies color independently', () => {
+        const a = new Brush({color: [0.9, 0.3, 0.3]})
+        const b = a.clone()
+        b.color[0] = 0
+        expect(a.color[0]).toBe(0.9)
     })
 
 })
