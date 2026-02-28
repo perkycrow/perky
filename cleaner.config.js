@@ -8,7 +8,8 @@ export default {
             'ghast/',
             'mist/',
             'examples/',
-            'integration/'
+            'integration/',
+            'forge_sandbox/'
         ],
         excludeFiles: [
             '**/test_helpers.js',
@@ -22,7 +23,8 @@ export default {
             'ghast/',
             'mist/',
             'examples/',
-            'integration/'
+            'integration/',
+            'forge_sandbox/'
         ],
         excludeFiles: [
             '**/test_helpers.js',
@@ -34,7 +36,8 @@ export default {
         excludeDirs: [
             'den/',
             'mist_old/',
-            'examples/'
+            'examples/',
+            'forge_sandbox/'
         ]
     },
     fileLength: {

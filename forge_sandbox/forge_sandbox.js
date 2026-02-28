@@ -9,13 +9,23 @@ import Object3D from '../render/object_3d.js'
 import ShadowMap from '../render/shadow_map.js'
 import Brush from '../render/csg/brush.js'
 import BrushSet from '../render/csg/brush_set.js'
+import LineMesh from '../render/line_mesh.js'
 import OrbitCamera from '../forge/orbit_camera.js'
 import ForgeUI from './forge_ui.js'
-import {pickBrush, pickHandle, screenToRay, rayHorizontalPlane, rayAxisProject, handlePositions, HANDLE_AXES} from '../forge/forge_pick.js'
+import {pickBrush, pickHandle, screenToRay, rayAxisProject, handlePositions, HANDLE_AXES} from '../forge/forge_pick.js'
+import {boxWirePositions} from '../forge/wire_geometry.js'
+import {pickGizmoArrow, gizmoArrowPositions, GIZMO_AXES} from '../forge/forge_gizmo.js'
+import {WIRE_SHADER_DEF} from '../render/shaders/builtin/wire_shader.js'
 
 
 const MIN_SCALE = 0.1
 const HANDLE_SIZE = 0.12
+
+const WIREFRAME_COLORS = {
+    union: [0.3, 0.6, 1.0],
+    subtract: [1.0, 0.5, 0.2],
+    intersect: [0.3, 0.8, 0.4]
+}
 
 
 export default class ForgeSandbox extends Game {
@@ -29,6 +39,8 @@ export default class ForgeSandbox extends Game {
     #selectionMesh = null
     #handlesMesh = null
     #dragState = null
+    #wireframes = []
+    #gizmoLines = []
 
 
     configureGame () {
@@ -36,8 +48,12 @@ export default class ForgeSandbox extends Game {
         const layer = this.getLayer('game')
         this.gl = renderer.gl
 
+        layer.autoRender = false
+
         this.meshRenderer = new WebGLMeshRenderer()
         renderer.registerRenderer(this.meshRenderer)
+
+        this.wireProgram = renderer.registerShader('wire', WIRE_SHADER_DEF)
 
         this.camera3d = new Camera3D({
             x: 5,
@@ -90,6 +106,8 @@ export default class ForgeSandbox extends Game {
             } else {
                 this.brushMeshInstance = null
             }
+            this.#rebuildWireframes()
+            this.#rebuildGizmo()
         })
 
         layer.setContent(this.scene)
@@ -107,6 +125,23 @@ export default class ForgeSandbox extends Game {
         const y = 0.5 + this.brushSet.count
         this.brushSet.add(new Brush({shape: 'box', x: 0, y, z: 0}))
         this.brushSet.build()
+    }
+
+
+    setOperation (operation) {
+        const brush = this.brushSet.get(this.#selectedBrush)
+        if (!brush) {
+            return
+        }
+        brush.operation = operation
+        this.brushSet.build()
+        this.ui.updateOperationToolbar(brush.operation)
+    }
+
+
+    render () {
+        this.getLayer('game').render()
+        this.#drawOverlays()
     }
 
 
@@ -128,6 +163,12 @@ export default class ForgeSandbox extends Game {
         if (this.#selectedBrush >= 0) {
             const brush = this.brushSet.get(this.#selectedBrush)
             if (brush) {
+                const arrowIndex = pickGizmoArrow(this.camera3d, e.clientX, e.clientY, this.canvas, brush.position)
+                if (arrowIndex >= 0) {
+                    this.#startGizmoDrag(e, arrowIndex)
+                    return true
+                }
+
                 const handleIndex = pickHandle(this.camera3d, e.clientX, e.clientY, this.canvas, brush)
                 if (handleIndex >= 0) {
                     this.#startResizeDrag(e, handleIndex)
@@ -144,23 +185,26 @@ export default class ForgeSandbox extends Game {
         }
 
         this.#select(index)
-        this.#startMoveDrag(e, index)
 
         return true
     }
 
 
-    #startMoveDrag (e, index) {
-        const brush = this.brushSet.get(index)
-        const {origin, direction} = screenToRay(this.camera3d, e.clientX, e.clientY, this.canvas)
-        const hitPoint = rayHorizontalPlane(origin, direction, brush.position.y)
+    #startGizmoDrag (e, arrowIndex) {
+        const brush = this.brushSet.get(this.#selectedBrush)
+        const {axis} = GIZMO_AXES[arrowIndex]
 
-        if (hitPoint) {
+        const {origin, direction} = screenToRay(this.camera3d, e.clientX, e.clientY, this.canvas)
+        const startOffset = rayAxisProject(origin, direction, brush.position, axis, this.camera3d.position)
+
+        if (startOffset !== null) {
             this.canvas.setPointerCapture(e.pointerId)
             this.#dragState = {
-                mode: 'move',
-                brushIndex: index,
-                startPoint: hitPoint,
+                mode: 'gizmo',
+                brushIndex: this.#selectedBrush,
+                arrowIndex,
+                axis,
+                startOffset,
                 originalPosition: brush.position.clone()
             }
         }
@@ -197,28 +241,34 @@ export default class ForgeSandbox extends Game {
             return false
         }
 
+        if (this.#dragState.mode === 'gizmo') {
+            return this.#handleGizmoMove(e)
+        }
+
         if (this.#dragState.mode === 'resize') {
             return this.#handleResizeMove(e)
         }
 
-        return this.#handleMoveMove(e)
+        return false
     }
 
 
-    #handleMoveMove (e) {
-        const brush = this.brushSet.get(this.#dragState.brushIndex)
-        const {origin, direction} = screenToRay(this.camera3d, e.clientX, e.clientY, this.canvas)
-        const point = rayHorizontalPlane(origin, direction, this.#dragState.originalPosition.y)
+    #handleGizmoMove (e) {
+        const {axis, startOffset, originalPosition, brushIndex} = this.#dragState
+        const brush = this.brushSet.get(brushIndex)
 
-        if (!point) {
+        const {origin, direction} = screenToRay(this.camera3d, e.clientX, e.clientY, this.canvas)
+        const currentOffset = rayAxisProject(origin, direction, originalPosition, axis, this.camera3d.position)
+
+        if (currentOffset === null) {
             return true
         }
 
-        const dx = point.x - this.#dragState.startPoint.x
-        const dz = point.z - this.#dragState.startPoint.z
+        const delta = currentOffset - startOffset
 
-        brush.position.x = this.#dragState.originalPosition.x + dx
-        brush.position.z = this.#dragState.originalPosition.z + dz
+        brush.position.x = originalPosition.x + axis.x * delta
+        brush.position.y = originalPosition.y + axis.y * delta
+        brush.position.z = originalPosition.z + axis.z * delta
 
         this.#updateSelectionMesh()
 
@@ -273,6 +323,8 @@ export default class ForgeSandbox extends Game {
     #select (index) {
         this.#selectedBrush = index
         this.#updateSelectionMesh()
+        const brush = this.brushSet.get(index)
+        this.ui.showOperationToolbar(brush.operation)
     }
 
 
@@ -282,6 +334,8 @@ export default class ForgeSandbox extends Game {
         }
         this.#selectedBrush = -1
         this.#removeSelectionMesh()
+        this.#disposeGizmo()
+        this.ui.hideOperationToolbar()
     }
 
 
@@ -308,6 +362,9 @@ export default class ForgeSandbox extends Game {
         const handlesMesh = new Mesh({gl: this.gl, geometry: handlesGeo})
         this.#handlesMesh = new MeshInstance({mesh: handlesMesh, material: this.handleMaterial})
         this.scene.addChild(this.#handlesMesh)
+
+        this.#rebuildWireframes()
+        this.#rebuildGizmo()
     }
 
 
@@ -321,6 +378,85 @@ export default class ForgeSandbox extends Game {
             this.scene.removeChild(this.#handlesMesh)
             this.#handlesMesh.mesh?.dispose()
             this.#handlesMesh = null
+        }
+    }
+
+
+    #rebuildWireframes () {
+        this.#disposeWireframes()
+
+        for (let i = 0; i < this.brushSet.count; i++) {
+            const brush = this.brushSet.get(i)
+            const positions = boxWirePositions(brush.position, brush.scale)
+            const lineMesh = new LineMesh({gl: this.gl, positions})
+            const color = WIREFRAME_COLORS[brush.operation] || WIREFRAME_COLORS.union
+            this.#wireframes.push({lineMesh, color})
+        }
+    }
+
+
+    #disposeWireframes () {
+        for (const {lineMesh} of this.#wireframes) {
+            lineMesh.dispose()
+        }
+        this.#wireframes = []
+    }
+
+
+    #rebuildGizmo () {
+        this.#disposeGizmo()
+
+        if (this.#selectedBrush < 0) {
+            return
+        }
+
+        const brush = this.brushSet.get(this.#selectedBrush)
+        if (!brush) {
+            return
+        }
+
+        const positions = gizmoArrowPositions(brush.position)
+
+        for (let i = 0; i < 3; i++) {
+            const arrowPositions = new Float32Array([
+                positions[i * 6], positions[i * 6 + 1], positions[i * 6 + 2],
+                positions[i * 6 + 3], positions[i * 6 + 4], positions[i * 6 + 5]
+            ])
+            this.#gizmoLines.push(new LineMesh({gl: this.gl, positions: arrowPositions}))
+        }
+    }
+
+
+    #disposeGizmo () {
+        for (const lineMesh of this.#gizmoLines) {
+            lineMesh.dispose()
+        }
+        this.#gizmoLines = []
+    }
+
+
+    #drawOverlays () {
+        if (this.#wireframes.length === 0 && this.#gizmoLines.length === 0) {
+            return
+        }
+
+        const gl = this.gl
+        const program = this.wireProgram
+
+        gl.useProgram(program.program)
+        gl.uniformMatrix4fv(program.uniforms.uProjection, false, this.camera3d.projectionMatrix.elements)
+        gl.uniformMatrix4fv(program.uniforms.uView, false, this.camera3d.viewMatrix.elements)
+
+        for (const {lineMesh, color} of this.#wireframes) {
+            gl.uniform3fv(program.uniforms.uColor, color)
+            gl.uniform1f(program.uniforms.uOpacity, 0.6)
+            lineMesh.draw()
+        }
+
+        for (let i = 0; i < this.#gizmoLines.length; i++) {
+            gl.uniform3fv(program.uniforms.uColor, GIZMO_AXES[i].color)
+            gl.uniform1f(program.uniforms.uOpacity, 1.0)
+            this.#gizmoLines[i].draw()
         }
     }
 

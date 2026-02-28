@@ -12,6 +12,10 @@ forge/                       theme framework (teste, conventions Perky)
     orbit_camera.test.js
     forge_pick.js            raycasting (screenToRay, rayAABB, pickBrush, handles)
     forge_pick.test.js
+    wire_geometry.js         boxWirePositions (12 aretes → Float32Array)
+    wire_geometry.test.js
+    forge_gizmo.js           gizmo picking (pickGizmoArrow, gizmoArrowPositions)
+    forge_gizmo.test.js
 
 forge_sandbox/               app sandbox (comme den/, ghast/)
     forge_sandbox.js         ForgeSandbox extends Game
@@ -22,6 +26,13 @@ forge_sandbox/               app sandbox (comme den/, ghast/)
 ```
 
 `forge/` contient les outils. `forge_sandbox/` les consomme. Quand Studio arrivera, il importera depuis `forge/` aussi.
+
+### Overlay rendering
+
+La sandbox desactive `autoRender` sur le layer et gere le rendu manuellement :
+
+1. `layer.render()` — rendu 3D standard (meshes, ombres, etc.)
+2. `#drawOverlays()` — wireframes des brushes + gizmo de translation (GL_LINES, sans depth test → toujours visible)
 
 ## Ce qui existe deja
 
@@ -39,6 +50,7 @@ forge_sandbox/               app sandbox (comme den/, ghast/)
 | `MeshInstance` | Pret | `render/mesh_instance.js` |
 | `Material3D` | Pret | `render/material_3d.js` |
 | `Geometry` | Pret | `render/geometry.js` |
+| `LineMesh` | Pret | `render/line_mesh.js` |
 | `Vec3` | Pret | `math/vec3.js` |
 | `clamp` | Pret | `math/utils.js` |
 
@@ -187,13 +199,41 @@ UX : quand un brush est selectionne, 6 petites poignees blanches apparaissent au
 
 Separation du theme `forge/` (outils reutilisables) et de la sandbox `forge_sandbox/` (app de test). DRY `clamp` dans `math/utils.js`.
 
-### Etape 6 — Operations booleennes
+### Etape 6 — Operations booleennes ✅
 
-- Toggle par brush : union / subtract / intersect
-- UI : un petit menu contextuel quand un brush est selectionne (3 icones)
-- Le resultat CSG se met a jour en temps reel grace au rebuild incremental du BrushSet
+Toggle par brush : union / subtract / intersect.
+
+Fichiers :
+
+- `forge_sandbox/forge_sandbox.js` — `setOperation(op)`, notification UI sur select/deselect
+- `forge_sandbox/forge_ui.js` — barre d'operation (∪ / − / ∩) centree en bas, visible quand un brush est selectionne
+
+`brush.operation` existait deja sur `Brush`. Il suffit de le modifier et d'appeler `brushSet.build()`. Le pipeline CSG utilise deja `brush.operation` pour choisir union/subtract/intersect.
 
 **Resultat** : on peut creuser des trous, faire des ouvertures, sculpter.
+
+### Etape 6b — Wireframes et gizmo de translation ✅
+
+Visibilite des brushes et mouvement 3 axes.
+
+Fichiers framework :
+
+- `render/line_mesh.js` + test — GPU buffer GL_LINES (positions-only, pas de normals/uvs/indices)
+- `render/shaders/builtin/wire_shader.js` + test — shader unlit minimal (uProjection, uView, uColor, uOpacity)
+- `forge/wire_geometry.js` + test — `boxWirePositions(position, scale)` → 12 aretes
+- `forge/forge_gizmo.js` + test — `pickGizmoArrow`, `gizmoArrowPositions`, `GIZMO_AXES`
+
+Fichier sandbox :
+
+- `forge_sandbox/forge_sandbox.js` — overlay rendering, gizmo drag, picking modifie
+
+**Wireframes** : chaque brush affiche son contour en wireframe colore par operation (union = bleu, subtract = orange, intersect = vert). Dessine apres le rendu 3D sans depth test → toujours visible, meme les brushes subtract "caches" dans le CSG.
+
+**Gizmo** : 3 fleches colorees (R=X, V=Y, B=Z) au centre du brush selectionne. Drag une fleche → mouvement contraint a cet axe. Remplace le body-drag horizontal.
+
+**Picking** : priorite gizmo → handles → brush body (selection seulement, plus de body-drag).
+
+**Resultat** : on comprend ou sont les brushes, on peut les deplacer sur les 3 axes.
 
 ### Etape 7 — Undo / Redo
 
