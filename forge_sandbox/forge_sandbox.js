@@ -117,6 +117,9 @@ export default class ForgeSandbox extends Game {
         this.snapEnabled = true
         this.gridStep = 0.25
 
+        this.gridMinor = new LineMesh({gl: this.gl, positions: buildGridPositions(20, this.gridStep)})
+        this.gridMajor = new LineMesh({gl: this.gl, positions: buildGridPositions(20, 1)})
+
         this.history = new BrushHistory(this.brushSet, {maxStates: 50})
         this.history.save()
 
@@ -516,16 +519,20 @@ export default class ForgeSandbox extends Game {
 
 
     #drawOverlays () {
-        if (this.#wireframes.length === 0 && this.#gizmoLines.length === 0) {
-            return
-        }
-
         const gl = this.gl
         const program = this.wireProgram
 
         gl.useProgram(program.program)
         gl.uniformMatrix4fv(program.uniforms.uProjection, false, this.camera3d.projectionMatrix.elements)
         gl.uniformMatrix4fv(program.uniforms.uView, false, this.camera3d.viewMatrix.elements)
+
+        gl.uniform3fv(program.uniforms.uColor, [1, 1, 1])
+
+        gl.uniform1f(program.uniforms.uOpacity, 0.08)
+        this.gridMinor.draw()
+
+        gl.uniform1f(program.uniforms.uOpacity, 0.2)
+        this.gridMajor.draw()
 
         for (const {lineMesh, color} of this.#wireframes) {
             gl.uniform3fv(program.uniforms.uColor, color)
@@ -599,4 +606,34 @@ function buildHandlesGeometry (brush) {
         uvs: new Float32Array(allUvs),
         indices: new Uint16Array(allIndices)
     })
+}
+
+
+function buildGridPositions (size, step) {
+    const half = size / 2
+    const count = Math.round(size / step) + 1
+    const positions = new Float32Array(count * 2 * 6)
+    let offset = 0
+
+    for (let i = 0; i < count; i++) {
+        const t = -half + i * step
+        positions[offset++] = -half
+        positions[offset++] = 0.002
+        positions[offset++] = t
+        positions[offset++] = half
+        positions[offset++] = 0.002
+        positions[offset++] = t
+    }
+
+    for (let i = 0; i < count; i++) {
+        const t = -half + i * step
+        positions[offset++] = t
+        positions[offset++] = 0.002
+        positions[offset++] = -half
+        positions[offset++] = t
+        positions[offset++] = 0.002
+        positions[offset++] = half
+    }
+
+    return positions
 }
