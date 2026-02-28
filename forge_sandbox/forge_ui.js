@@ -216,6 +216,24 @@ export default class ForgeUI {
             this.#operationButtons[op.id] = btn
         }
 
+        const separator = document.createElement('div')
+        Object.assign(separator.style, {width: '1px', background: 'rgba(255, 255, 255, 0.2)', margin: '4px 0'})
+        bar.appendChild(separator)
+
+        const dupBtn = document.createElement('button')
+        dupBtn.textContent = '⧉'
+        Object.assign(dupBtn.style, BUTTON_STYLE)
+        dupBtn.style.background = 'rgba(255, 255, 255, 0.1)'
+        dupBtn.addEventListener('click', () => this.#forge.duplicateBrush())
+        bar.appendChild(dupBtn)
+
+        const delBtn = document.createElement('button')
+        delBtn.textContent = '✕'
+        Object.assign(delBtn.style, BUTTON_STYLE)
+        delBtn.style.background = 'rgba(255, 255, 255, 0.1)'
+        delBtn.addEventListener('click', () => this.#forge.deleteBrush())
+        bar.appendChild(delBtn)
+
         this.#container.appendChild(bar)
         this.#operationBar = bar
     }

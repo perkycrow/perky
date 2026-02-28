@@ -157,6 +157,35 @@ export default class ForgeSandbox extends Game {
     }
 
 
+    duplicateBrush () {
+        const brush = this.brushSet.get(this.#selectedBrush)
+        if (!brush) {
+            return
+        }
+        const clone = brush.clone()
+        clone.position.y += 0.5
+        const newIndex = this.#selectedBrush + 1
+        this.brushSet.add(clone, newIndex)
+        this.brushSet.build()
+        this.history.save()
+        this.#select(newIndex)
+        this.ui.showToast('Duplicated')
+    }
+
+
+    deleteBrush () {
+        if (this.#selectedBrush < 0) {
+            return
+        }
+        const index = this.#selectedBrush
+        this.#deselect()
+        this.brushSet.remove(index)
+        this.brushSet.build()
+        this.history.save()
+        this.ui.showToast('Deleted')
+    }
+
+
     setOperation (operation) {
         const brush = this.brushSet.get(this.#selectedBrush)
         if (!brush) {
@@ -566,6 +595,14 @@ export default class ForgeSandbox extends Game {
         }
         if (e.key === 'r') {
             this.#resetRotation()
+            return true
+        }
+        if (e.key === 'd') {
+            this.duplicateBrush()
+            return true
+        }
+        if (e.key === 'Backspace' || e.key === 'Delete') {
+            this.deleteBrush()
             return true
         }
         return false
