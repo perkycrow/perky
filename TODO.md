@@ -78,7 +78,7 @@ Sandbox standalone pour prototyper l'editeur de niveaux 3D. Style Trenchbroom/Ha
 - [x] **Etape 2 — Camera orbitale tactile** — Orbite, zoom, pan (touch + souris)
 - [x] **Etape 3 — Placer un brush** — Bouton "+", ajout de box dans la scene via BrushSet
 - [x] **Etape 4 — Selectionner et deplacer** — Tap select, drag move, raycasting AABB
-- [ ] **Etape 5 — Redimensionner** — Pinch scale ou poignees
+- [x] **Etape 5 — Redimensionner** — Poignees aux faces, resize par axe
 - [ ] **Etape 6 — Operations booleennes** — Toggle union/subtract/intersect par brush
 - [ ] **Etape 7 — Undo / Redo** — Gestes Procreate (2 doigts tap / 3 doigts tap) + BrushHistory
 - [ ] **Etape 8 — Formes de brush** — Box, sphere, cylinder, cone

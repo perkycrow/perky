@@ -101,6 +101,89 @@ export function pickBrush (camera3d, clientX, clientY, canvas, brushSet) {
 }
 
 
+export const HANDLE_AXES = [
+    new Vec3(1, 0, 0),
+    new Vec3(-1, 0, 0),
+    new Vec3(0, 1, 0),
+    new Vec3(0, -1, 0),
+    new Vec3(0, 0, 1),
+    new Vec3(0, 0, -1)
+]
+
+const HANDLE_HALF = 0.075
+
+
+export function handlePositions (brush) {
+    const p = brush.position
+    const s = brush.scale
+    return [
+        new Vec3(p.x + s.x / 2, p.y, p.z),
+        new Vec3(p.x - s.x / 2, p.y, p.z),
+        new Vec3(p.x, p.y + s.y / 2, p.z),
+        new Vec3(p.x, p.y - s.y / 2, p.z),
+        new Vec3(p.x, p.y, p.z + s.z / 2),
+        new Vec3(p.x, p.y, p.z - s.z / 2)
+    ]
+}
+
+
+export function pickHandle (camera3d, clientX, clientY, canvas, brush) {
+    const {origin, direction} = screenToRay(camera3d, clientX, clientY, canvas)
+    const positions = handlePositions(brush)
+
+    let closest = -1
+    let closestT = Infinity
+
+    for (let i = 0; i < 6; i++) {
+        const hp = positions[i]
+        const min = new Vec3(hp.x - HANDLE_HALF, hp.y - HANDLE_HALF, hp.z - HANDLE_HALF)
+        const max = new Vec3(hp.x + HANDLE_HALF, hp.y + HANDLE_HALF, hp.z + HANDLE_HALF)
+        const t = rayAABB(origin, direction, min, max)
+        if (t >= 0 && t < closestT) {
+            closest = i
+            closestT = t
+        }
+    }
+
+    return closest
+}
+
+
+export function rayAxisProject (origin, direction, axisOrigin, axisDir, cameraPos) {
+    const toCamera = new Vec3(
+        cameraPos.x - axisOrigin.x,
+        cameraPos.y - axisOrigin.y,
+        cameraPos.z - axisOrigin.z
+    )
+
+    const perp = new Vec3().crossVectors(axisDir, toCamera)
+    const planeNormal = new Vec3().crossVectors(perp, axisDir).normalize()
+
+    const denom = planeNormal.dot(direction)
+    if (Math.abs(denom) < 1e-12) {
+        return null
+    }
+
+    const diff = new Vec3(
+        axisOrigin.x - origin.x,
+        axisOrigin.y - origin.y,
+        axisOrigin.z - origin.z
+    )
+    const t = diff.dot(planeNormal) / denom
+    if (t < 0) {
+        return null
+    }
+
+    const hitX = origin.x + direction.x * t
+    const hitY = origin.y + direction.y * t
+    const hitZ = origin.z + direction.z * t
+
+    return (hitX - axisOrigin.x) * axisDir.x +
+           (hitY - axisOrigin.y) * axisDir.y +
+           (hitZ - axisOrigin.z) * axisDir.z
+}
+
+
 export function rayHorizontalPlane (origin, direction, planeY) {
     if (Math.abs(direction.y) < 1e-12) {
         return null

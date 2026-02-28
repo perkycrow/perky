@@ -187,11 +187,17 @@ Architecture : OrbitCamera a un `interceptor` callback. Sur `pointerdown`, Forge
 
 **Resultat** : on peut placer des cubes et les reorganiser au doigt.
 
-### Etape 5 — Redimensionner
+### Etape 5 — Redimensionner ✅
 
-- **Pinch** sur un brush selectionne : scale uniforme
-- Ou : poignees aux coins/faces (a voir ce qui marche mieux au tactile)
-- Mise a jour du `brush.scale` → rebuild
+Poignees aux faces pour redimensionner par axe.
+
+Fichiers :
+
+- `forge/forge_pick.js` — ajout `handlePositions`, `pickHandle`, `rayAxisProject`, `HANDLE_AXES`
+- `forge/forge_pick.test.js` — 7 tests supplementaires (23 total)
+- `forge/forge.js` — resize drag, handles blancs aux faces, scale clamp (min 0.1)
+
+UX : quand un brush est selectionne, 6 petites poignees blanches apparaissent au centre de chaque face. Drag une poignee → resize le brush le long de cet axe, la face opposee reste fixe. Fonctionne identiquement sur iPad et desktop.
 
 **Resultat** : des cubes de tailles variees. On commence a voir des formes de niveaux.
 

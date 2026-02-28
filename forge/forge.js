@@ -11,7 +11,11 @@ import Brush from '../render/csg/brush.js'
 import BrushSet from '../render/csg/brush_set.js'
 import OrbitCamera from './orbit_camera.js'
 import ForgeUI from './forge_ui.js'
-import {pickBrush, screenToRay, rayHorizontalPlane} from './forge_pick.js'
+import {pickBrush, pickHandle, screenToRay, rayHorizontalPlane, rayAxisProject, handlePositions, HANDLE_AXES} from './forge_pick.js'
+
+
+const MIN_SCALE = 0.1
+const HANDLE_SIZE = 0.12
 
 
 export default class Forge extends Game {
@@ -23,6 +27,7 @@ export default class Forge extends Game {
 
     #selectedBrush = -1
     #selectionMesh = null
+    #handlesMesh = null
     #dragState = null
 
 
@@ -70,6 +75,7 @@ export default class Forge extends Game {
         this.brushSet = new BrushSet()
         this.brushMaterial = new Material3D({color: [0.8, 0.6, 0.4], roughness: 0.7})
         this.selectionMaterial = new Material3D({color: [0.3, 0.6, 1.0], roughness: 0.5})
+        this.handleMaterial = new Material3D({color: [1.0, 1.0, 1.0], roughness: 0.3})
         this.brushMeshInstance = null
 
         this.brushSet.on('change', ({geometry}) => {
@@ -119,6 +125,17 @@ export default class Forge extends Game {
 
 
     #handleBrushPointerDown (e) {
+        if (this.#selectedBrush >= 0) {
+            const brush = this.brushSet.get(this.#selectedBrush)
+            if (brush) {
+                const handleIndex = pickHandle(this.camera3d, e.clientX, e.clientY, this.canvas, brush)
+                if (handleIndex >= 0) {
+                    this.#startResizeDrag(e, handleIndex)
+                    return true
+                }
+            }
+        }
+
         const index = pickBrush(this.camera3d, e.clientX, e.clientY, this.canvas, this.brushSet)
 
         if (index < 0) {
@@ -127,7 +144,13 @@ export default class Forge extends Game {
         }
 
         this.#select(index)
+        this.#startMoveDrag(e, index)
 
+        return true
+    }
+
+
+    #startMoveDrag (e, index) {
         const brush = this.brushSet.get(index)
         const {origin, direction} = screenToRay(this.camera3d, e.clientX, e.clientY, this.canvas)
         const hitPoint = rayHorizontalPlane(origin, direction, brush.position.y)
@@ -135,13 +158,37 @@ export default class Forge extends Game {
         if (hitPoint) {
             this.canvas.setPointerCapture(e.pointerId)
             this.#dragState = {
+                mode: 'move',
                 brushIndex: index,
                 startPoint: hitPoint,
                 originalPosition: brush.position.clone()
             }
         }
+    }
 
-        return true
+
+    #startResizeDrag (e, handleIndex) {
+        const brush = this.brushSet.get(this.#selectedBrush)
+        const axis = HANDLE_AXES[handleIndex]
+        const positions = handlePositions(brush)
+        const handlePos = positions[handleIndex]
+
+        const {origin, direction} = screenToRay(this.camera3d, e.clientX, e.clientY, this.canvas)
+        const startOffset = rayAxisProject(origin, direction, handlePos, axis, this.camera3d.position)
+
+        if (startOffset !== null) {
+            this.canvas.setPointerCapture(e.pointerId)
+            this.#dragState = {
+                mode: 'resize',
+                brushIndex: this.#selectedBrush,
+                handleIndex,
+                axis,
+                handleOrigin: handlePos,
+                startOffset,
+                originalPosition: brush.position.clone(),
+                originalScale: brush.scale.clone()
+            }
+        }
     }
 
 
@@ -150,6 +197,15 @@ export default class Forge extends Game {
             return false
         }
 
+        if (this.#dragState.mode === 'resize') {
+            return this.#handleResizeMove(e)
+        }
+
+        return this.#handleMoveMove(e)
+    }
+
+
+    #handleMoveMove (e) {
         const brush = this.brushSet.get(this.#dragState.brushIndex)
         const {origin, direction} = screenToRay(this.camera3d, e.clientX, e.clientY, this.canvas)
         const point = rayHorizontalPlane(origin, direction, this.#dragState.originalPosition.y)
@@ -163,6 +219,38 @@ export default class Forge extends Game {
 
         brush.position.x = this.#dragState.originalPosition.x + dx
         brush.position.z = this.#dragState.originalPosition.z + dz
+
+        this.#updateSelectionMesh()
+
+        return true
+    }
+
+
+    #handleResizeMove (e) {
+        const {axis, handleOrigin, startOffset, originalPosition, originalScale, brushIndex} = this.#dragState
+        const brush = this.brushSet.get(brushIndex)
+
+        const {origin, direction} = screenToRay(this.camera3d, e.clientX, e.clientY, this.canvas)
+        const currentOffset = rayAxisProject(origin, direction, handleOrigin, axis, this.camera3d.position)
+
+        if (currentOffset === null) {
+            return true
+        }
+
+        const delta = currentOffset - startOffset
+        const sign = axis.x + axis.y + axis.z
+
+        const axisIndex = getAxisIndex(axis)
+        const originalAxisScale = originalScale.getComponent(axisIndex)
+
+        const newScale = Math.max(MIN_SCALE, originalAxisScale + delta * sign)
+        const scaleDiff = newScale - originalAxisScale
+
+        brush.scale.setComponent(axisIndex, newScale)
+        brush.position.setComponent(
+            axisIndex,
+            originalPosition.getComponent(axisIndex) + scaleDiff * sign / 2
+        )
 
         this.#updateSelectionMesh()
 
@@ -215,6 +303,11 @@ export default class Forge extends Game {
         const mesh = new Mesh({gl: this.gl, geometry: geo})
         this.#selectionMesh = new MeshInstance({mesh, material: this.selectionMaterial})
         this.scene.addChild(this.#selectionMesh)
+
+        const handlesGeo = buildHandlesGeometry(brush)
+        const handlesMesh = new Mesh({gl: this.gl, geometry: handlesGeo})
+        this.#handlesMesh = new MeshInstance({mesh: handlesMesh, material: this.handleMaterial})
+        this.scene.addChild(this.#handlesMesh)
     }
 
 
@@ -224,8 +317,24 @@ export default class Forge extends Game {
             this.#selectionMesh.mesh?.dispose()
             this.#selectionMesh = null
         }
+        if (this.#handlesMesh) {
+            this.scene.removeChild(this.#handlesMesh)
+            this.#handlesMesh.mesh?.dispose()
+            this.#handlesMesh = null
+        }
     }
 
+}
+
+
+function getAxisIndex (axis) {
+    if (Math.abs(axis.x) === 1) {
+        return 0
+    }
+    if (Math.abs(axis.y) === 1) {
+        return 1
+    }
+    return 2
 }
 
 
@@ -235,4 +344,43 @@ function offsetGeometry (geometry, dx, dy, dz) {
         geometry.positions[i + 1] += dy
         geometry.positions[i + 2] += dz
     }
+}
+
+
+function buildHandlesGeometry (brush) {
+    const positions = handlePositions(brush)
+    const allPositions = []
+    const allNormals = []
+    const allUvs = []
+    const allIndices = []
+
+    for (let i = 0; i < 6; i++) {
+        const cube = Geometry.createBox(HANDLE_SIZE, HANDLE_SIZE, HANDLE_SIZE)
+        const offset = positions[i]
+        const baseVertex = allPositions.length / 3
+
+        for (let j = 0; j < cube.positions.length; j += 3) {
+            allPositions.push(
+                cube.positions[j] + offset.x,
+                cube.positions[j + 1] + offset.y,
+                cube.positions[j + 2] + offset.z
+            )
+            allNormals.push(cube.normals[j], cube.normals[j + 1], cube.normals[j + 2])
+        }
+
+        for (let j = 0; j < cube.uvs.length; j++) {
+            allUvs.push(cube.uvs[j])
+        }
+
+        for (let j = 0; j < cube.indices.length; j++) {
+            allIndices.push(cube.indices[j] + baseVertex)
+        }
+    }
+
+    return new Geometry({
+        positions: new Float32Array(allPositions),
+        normals: new Float32Array(allNormals),
+        uvs: new Float32Array(allUvs),
+        indices: new Uint16Array(allIndices)
+    })
 }
