@@ -4,6 +4,13 @@ const OPERATIONS = [
     {id: 'intersect', label: '∩'}
 ]
 
+const SHAPES = [
+    {id: 'box', label: '▢'},
+    {id: 'sphere', label: '●'},
+    {id: 'cylinder', label: '⬡'},
+    {id: 'cone', label: '△'}
+]
+
 const BUTTON_STYLE = {
     width: '44px',
     height: '44px',
@@ -22,6 +29,7 @@ export default class ForgeUI {
     #forge
     #operationBar = null
     #operationButtons = {}
+    #shapePalette = null
     #toast = null
 
 
@@ -29,6 +37,7 @@ export default class ForgeUI {
         this.#container = container
         this.#forge = forge
         this.#createAddButton()
+        this.#createShapePalette()
         this.#createOperationBar()
     }
 
@@ -46,59 +55,6 @@ export default class ForgeUI {
 
     updateOperationToolbar (activeOperation) {
         this.#highlightOperation(activeOperation)
-    }
-
-
-    #createAddButton () {
-        const button = document.createElement('button')
-        button.textContent = '+'
-        Object.assign(button.style, {
-            position: 'absolute',
-            bottom: '24px',
-            right: '24px',
-            width: '56px',
-            height: '56px',
-            borderRadius: '50%',
-            border: 'none',
-            background: '#4a90d9',
-            color: 'white',
-            fontSize: '28px',
-            cursor: 'pointer',
-            zIndex: '10',
-            touchAction: 'manipulation'
-        })
-        button.addEventListener('click', () => this.#forge.addBrush())
-        this.#container.appendChild(button)
-    }
-
-
-    #createOperationBar () {
-        const bar = document.createElement('div')
-        Object.assign(bar.style, {
-            position: 'absolute',
-            bottom: '24px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            display: 'none',
-            gap: '8px',
-            background: 'rgba(30, 30, 50, 0.85)',
-            padding: '8px',
-            borderRadius: '12px',
-            zIndex: '10'
-        })
-
-        for (const op of OPERATIONS) {
-            const btn = document.createElement('button')
-            btn.textContent = op.label
-            Object.assign(btn.style, BUTTON_STYLE)
-            btn.style.background = 'rgba(255, 255, 255, 0.1)'
-            btn.addEventListener('click', () => this.#forge.setOperation(op.id))
-            bar.appendChild(btn)
-            this.#operationButtons[op.id] = btn
-        }
-
-        this.#container.appendChild(bar)
-        this.#operationBar = bar
     }
 
 
@@ -132,6 +88,105 @@ export default class ForgeUI {
                 this.#toast = null
             }
         }, 600)
+    }
+
+
+    #createAddButton () {
+        const button = document.createElement('button')
+        button.textContent = '+'
+        Object.assign(button.style, {
+            position: 'absolute',
+            bottom: '24px',
+            right: '24px',
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            border: 'none',
+            background: '#4a90d9',
+            color: 'white',
+            fontSize: '28px',
+            cursor: 'pointer',
+            zIndex: '10',
+            touchAction: 'manipulation'
+        })
+        button.addEventListener('click', () => this.#toggleShapePalette())
+        this.#container.appendChild(button)
+    }
+
+
+    #createShapePalette () {
+        const palette = document.createElement('div')
+        Object.assign(palette.style, {
+            position: 'absolute',
+            bottom: '92px',
+            right: '18px',
+            display: 'none',
+            flexDirection: 'column',
+            gap: '8px',
+            background: 'rgba(30, 30, 50, 0.85)',
+            padding: '8px',
+            borderRadius: '12px',
+            zIndex: '10'
+        })
+
+        for (const shape of SHAPES) {
+            const btn = document.createElement('button')
+            btn.textContent = shape.label
+            Object.assign(btn.style, BUTTON_STYLE)
+            btn.style.background = 'rgba(255, 255, 255, 0.1)'
+            btn.addEventListener('click', () => {
+                this.#forge.addBrush(shape.id)
+                this.#hideShapePalette()
+            })
+            palette.appendChild(btn)
+        }
+
+        this.#container.appendChild(palette)
+        this.#shapePalette = palette
+    }
+
+
+    #toggleShapePalette () {
+        if (this.#shapePalette.style.display === 'none') {
+            this.#shapePalette.style.display = 'flex'
+        } else {
+            this.#hideShapePalette()
+        }
+    }
+
+
+    #hideShapePalette () {
+        this.#shapePalette.style.display = 'none'
+    }
+
+
+    #createOperationBar () {
+        const bar = document.createElement('div')
+        Object.assign(bar.style, {
+            position: 'absolute',
+            bottom: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            display: 'none',
+            gap: '8px',
+            background: 'rgba(30, 30, 50, 0.85)',
+            padding: '8px',
+            borderRadius: '12px',
+            zIndex: '10'
+        })
+
+        for (const op of OPERATIONS) {
+            const btn = document.createElement('button')
+            btn.textContent = op.label
+            Object.assign(btn.style, BUTTON_STYLE)
+            btn.style.background = 'rgba(255, 255, 255, 0.1)'
+            btn.addEventListener('click', () => this.#forge.setOperation(op.id))
+            bar.appendChild(btn)
+            this.#operationButtons[op.id] = btn
+        }
+
+        this.#container.appendChild(bar)
+        this.#operationBar = bar
     }
 
 

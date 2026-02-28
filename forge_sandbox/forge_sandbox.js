@@ -15,7 +15,7 @@ import OrbitCamera from '../forge/orbit_camera.js'
 import TapGesture from '../forge/tap_gesture.js'
 import ForgeUI from './forge_ui.js'
 import {pickBrush, pickHandle, screenToRay, rayAxisProject, handlePositions, HANDLE_AXES} from '../forge/forge_pick.js'
-import {boxWirePositions} from '../forge/wire_geometry.js'
+import {brushWirePositions} from '../forge/wire_geometry.js'
 import {pickGizmoArrow, gizmoArrowPositions, GIZMO_AXES} from '../forge/forge_gizmo.js'
 import {WIRE_SHADER_DEF} from '../render/shaders/builtin/wire_shader.js'
 
@@ -134,9 +134,9 @@ export default class ForgeSandbox extends Game {
     }
 
 
-    addBrush () {
+    addBrush (shape = 'box') {
         const y = 0.5 + this.brushSet.count
-        this.brushSet.add(new Brush({shape: 'box', x: 0, y, z: 0}))
+        this.brushSet.add(new Brush({shape, x: 0, y, z: 0}))
         this.brushSet.build()
         this.history.save()
     }
@@ -403,7 +403,7 @@ export default class ForgeSandbox extends Game {
 
         for (let i = 0; i < this.brushSet.count; i++) {
             const brush = this.brushSet.get(i)
-            const positions = boxWirePositions(brush.position, brush.scale)
+            const positions = brushWirePositions(brush)
             const lineMesh = new LineMesh({gl: this.gl, positions})
             const color = WIREFRAME_COLORS[brush.operation] || WIREFRAME_COLORS.union
             this.#wireframes.push({lineMesh, color})
