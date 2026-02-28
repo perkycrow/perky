@@ -212,37 +212,61 @@ describe('coneWirePositions', () => {
 describe('brushWirePositions', () => {
 
     test('dispatches to box for box shape', () => {
-        const brush = {shape: 'box', position: new Vec3(0, 0, 0), scale: new Vec3(1, 1, 1)}
+        const brush = {shape: 'box', position: new Vec3(0, 0, 0), scale: new Vec3(1, 1, 1), rotation: new Vec3(0, 0, 0)}
         const positions = brushWirePositions(brush)
         expect(positions.length).toBe(72)
     })
 
 
     test('dispatches to sphere for sphere shape', () => {
-        const brush = {shape: 'sphere', position: new Vec3(0, 0, 0), scale: new Vec3(1, 1, 1)}
+        const brush = {shape: 'sphere', position: new Vec3(0, 0, 0), scale: new Vec3(1, 1, 1), rotation: new Vec3(0, 0, 0)}
         const positions = brushWirePositions(brush)
         expect(positions.length).toBe(16 * 3 * 6)
     })
 
 
     test('dispatches to cylinder for cylinder shape', () => {
-        const brush = {shape: 'cylinder', position: new Vec3(0, 0, 0), scale: new Vec3(1, 1, 1)}
+        const brush = {shape: 'cylinder', position: new Vec3(0, 0, 0), scale: new Vec3(1, 1, 1), rotation: new Vec3(0, 0, 0)}
         const positions = brushWirePositions(brush)
         expect(positions.length).toBe((16 * 2 + 4) * 6)
     })
 
 
     test('dispatches to cone for cone shape', () => {
-        const brush = {shape: 'cone', position: new Vec3(0, 0, 0), scale: new Vec3(1, 1, 1)}
+        const brush = {shape: 'cone', position: new Vec3(0, 0, 0), scale: new Vec3(1, 1, 1), rotation: new Vec3(0, 0, 0)}
         const positions = brushWirePositions(brush)
         expect(positions.length).toBe((16 + 4) * 6)
     })
 
 
     test('falls back to box for unknown shape', () => {
-        const brush = {shape: 'unknown', position: new Vec3(0, 0, 0), scale: new Vec3(1, 1, 1)}
+        const brush = {shape: 'unknown', position: new Vec3(0, 0, 0), scale: new Vec3(1, 1, 1), rotation: new Vec3(0, 0, 0)}
         const positions = brushWirePositions(brush)
         expect(positions.length).toBe(72)
+    })
+
+
+    test('applies rotation to box wireframe', () => {
+        const brush = {shape: 'box', position: new Vec3(0, 0, 0), scale: new Vec3(2, 1, 1), rotation: new Vec3(0, Math.PI / 2, 0)}
+        const positions = brushWirePositions(brush)
+        const {minX, maxX, minZ, maxZ} = getExtents(positions)
+
+        expect(maxX).toBeCloseTo(0.5, 2)
+        expect(minX).toBeCloseTo(-0.5, 2)
+        expect(maxZ).toBeCloseTo(1, 2)
+        expect(minZ).toBeCloseTo(-1, 2)
+    })
+
+
+    test('no rotation leaves wireframe unchanged', () => {
+        const brush = {shape: 'box', position: new Vec3(0, 0, 0), scale: new Vec3(2, 1, 1), rotation: new Vec3(0, 0, 0)}
+        const positions = brushWirePositions(brush)
+        const {minX, maxX, minZ, maxZ} = getExtents(positions)
+
+        expect(maxX).toBeCloseTo(1, 2)
+        expect(minX).toBeCloseTo(-1, 2)
+        expect(maxZ).toBeCloseTo(0.5, 2)
+        expect(minZ).toBeCloseTo(-0.5, 2)
     })
 
 })

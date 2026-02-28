@@ -17,6 +17,7 @@ import ForgeUI from './forge_ui.js'
 import {pickBrush, pickHandle, screenToRay, rayAxisProject, handlePositions, HANDLE_AXES} from '../forge/forge_pick.js'
 import {brushWirePositions} from '../forge/wire_geometry.js'
 import {pickGizmoArrow, gizmoArrowPositions, GIZMO_AXES} from '../forge/forge_gizmo.js'
+import {pickRotationRing, rotationRingPositions, rayPlaneAngle, ROTATION_AXES, ROTATION_RING_SEGMENTS} from '../forge/forge_rotation_gizmo.js'
 import {WIRE_SHADER_DEF} from '../render/shaders/builtin/wire_shader.js'
 import {snap} from '../math/utils.js'
 
@@ -44,6 +45,7 @@ export default class ForgeSandbox extends Game {
     #dragState = null
     #wireframes = []
     #gizmoLines = []
+    #rotationRings = []
 
     configureGame () {
         const renderer = this.getRenderer('game')
@@ -197,6 +199,12 @@ export default class ForgeSandbox extends Game {
                     return true
                 }
 
+                const ringIndex = pickRotationRing({camera3d: this.camera3d, clientX: e.clientX, clientY: e.clientY, canvas: this.canvas, center: brush.position})
+                if (ringIndex >= 0) {
+                    this.#startRotationDrag(e, ringIndex)
+                    return true
+                }
+
                 const handleIndex = pickHandle({camera3d: this.camera3d, clientX: e.clientX, clientY: e.clientY, canvas: this.canvas, brush})
                 if (handleIndex >= 0) {
                     this.#startResizeDrag(e, handleIndex)
@@ -264,6 +272,25 @@ export default class ForgeSandbox extends Game {
     }
 
 
+    #startRotationDrag (e, axisIndex) {
+        const brush = this.brushSet.get(this.#selectedBrush)
+
+        const {origin, direction} = screenToRay(this.camera3d, e.clientX, e.clientY, this.canvas)
+        const startAngle = rayPlaneAngle({origin, direction, center: brush.position, axisIndex})
+
+        if (startAngle !== null) {
+            this.canvas.setPointerCapture(e.pointerId)
+            this.#dragState = {
+                mode: 'rotation',
+                brushIndex: this.#selectedBrush,
+                axisIndex,
+                startAngle,
+                originalRotation: brush.rotation.clone()
+            }
+        }
+    }
+
+
     #handleBrushPointerMove (e) {
         if (!this.#dragState) {
             return false
@@ -271,6 +298,10 @@ export default class ForgeSandbox extends Game {
 
         if (this.#dragState.mode === 'gizmo') {
             return this.#handleGizmoMove(e)
+        }
+
+        if (this.#dragState.mode === 'rotation') {
+            return this.#handleRotationMove(e)
         }
 
         if (this.#dragState.mode === 'resize') {
@@ -297,6 +328,27 @@ export default class ForgeSandbox extends Game {
         brush.position.x = this.#snap(originalPosition.x + axis.x * delta)
         brush.position.y = this.#snap(originalPosition.y + axis.y * delta)
         brush.position.z = this.#snap(originalPosition.z + axis.z * delta)
+
+        this.#updateSelectionMesh()
+
+        return true
+    }
+
+
+    #handleRotationMove (e) {
+        const {axisIndex, startAngle, originalRotation, brushIndex} = this.#dragState
+        const brush = this.brushSet.get(brushIndex)
+
+        const {origin, direction} = screenToRay(this.camera3d, e.clientX, e.clientY, this.canvas)
+        const currentAngle = rayPlaneAngle({origin, direction, center: brush.position, axisIndex})
+
+        if (currentAngle === null) {
+            return true
+        }
+
+        const delta = currentAngle - startAngle
+        const component = getRotationComponent(axisIndex)
+        brush.rotation[component] = this.#snapAngle(originalRotation[component] + delta)
 
         this.#updateSelectionMesh()
 
@@ -453,6 +505,14 @@ export default class ForgeSandbox extends Game {
             ])
             this.#gizmoLines.push(new LineMesh({gl: this.gl, positions: arrowPositions}))
         }
+
+        const ringPositions = rotationRingPositions(brush.position)
+        const segPerRing = ROTATION_RING_SEGMENTS * 6
+
+        for (let i = 0; i < 3; i++) {
+            const ringData = ringPositions.slice(i * segPerRing, (i + 1) * segPerRing)
+            this.#rotationRings.push(new LineMesh({gl: this.gl, positions: ringData}))
+        }
     }
 
 
@@ -461,11 +521,21 @@ export default class ForgeSandbox extends Game {
             lineMesh.dispose()
         }
         this.#gizmoLines = []
+
+        for (const lineMesh of this.#rotationRings) {
+            lineMesh.dispose()
+        }
+        this.#rotationRings = []
     }
 
 
     #snap (value) {
         return this.snapEnabled ? snap(value, this.gridStep) : value
+    }
+
+
+    #snapAngle (value) {
+        return this.snapEnabled ? snap(value, Math.PI / 12) : value
     }
 
 
@@ -479,10 +549,30 @@ export default class ForgeSandbox extends Game {
 
 
     #onKeyDown (e) {
-        if (e.key === 'g' && !e.ctrlKey && !e.metaKey) {
-            this.toggleSnap()
+        if (this.#handleShortcutKey(e)) {
             return
         }
+        this.#handleUndoRedo(e)
+    }
+
+
+    #handleShortcutKey (e) {
+        if (e.ctrlKey || e.metaKey) {
+            return false
+        }
+        if (e.key === 'g') {
+            this.toggleSnap()
+            return true
+        }
+        if (e.key === 'r') {
+            this.#resetRotation()
+            return true
+        }
+        return false
+    }
+
+
+    #handleUndoRedo (e) {
         if (!e.ctrlKey && !e.metaKey) {
             return
         }
@@ -518,6 +608,18 @@ export default class ForgeSandbox extends Game {
     }
 
 
+    #resetRotation () {
+        const brush = this.brushSet.get(this.#selectedBrush)
+        if (!brush) {
+            return
+        }
+        brush.rotation.set(0, 0, 0)
+        this.brushSet.build()
+        this.history.save()
+        this.ui.showToast('Rotation Reset')
+    }
+
+
     #drawOverlays () {
         const gl = this.gl
         const program = this.wireProgram
@@ -540,6 +642,12 @@ export default class ForgeSandbox extends Game {
             lineMesh.draw()
         }
 
+        for (let i = 0; i < this.#rotationRings.length; i++) {
+            gl.uniform3fv(program.uniforms.uColor, ROTATION_AXES[i].color)
+            gl.uniform1f(program.uniforms.uOpacity, 0.6)
+            this.#rotationRings[i].draw()
+        }
+
         for (let i = 0; i < this.#gizmoLines.length; i++) {
             gl.uniform3fv(program.uniforms.uColor, GIZMO_AXES[i].color)
             gl.uniform1f(program.uniforms.uOpacity, 1.0)
@@ -558,6 +666,17 @@ function getAxisIndex (axis) {
         return 1
     }
     return 2
+}
+
+
+function getRotationComponent (axisIndex) {
+    if (ROTATION_AXES[axisIndex].axis.x) {
+        return 'x'
+    }
+    if (ROTATION_AXES[axisIndex].axis.y) {
+        return 'y'
+    }
+    return 'z'
 }
 
 

@@ -1,3 +1,6 @@
+import {applyWireRotation} from './forge_rotation_gizmo.js'
+
+
 export function boxWirePositions (position, scale) {
     const hx = scale.x / 2
     const hy = scale.y / 2
@@ -186,5 +189,11 @@ const WIRE_FACTORIES = {
 
 export function brushWirePositions (brush) {
     const factory = WIRE_FACTORIES[brush.shape] ?? boxWirePositions
-    return factory(brush.position, brush.scale)
+    const positions = factory(brush.position, brush.scale)
+
+    if (brush.rotation.x !== 0 || brush.rotation.y !== 0 || brush.rotation.z !== 0) {
+        applyWireRotation(positions, brush.position, brush.rotation)
+    }
+
+    return positions
 }
