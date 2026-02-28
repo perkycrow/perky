@@ -18,6 +18,7 @@ import {pickBrush, pickHandle, screenToRay, rayAxisProject, handlePositions, HAN
 import {brushWirePositions} from '../forge/wire_geometry.js'
 import {pickGizmoArrow, gizmoArrowPositions, GIZMO_AXES} from '../forge/forge_gizmo.js'
 import {WIRE_SHADER_DEF} from '../render/shaders/builtin/wire_shader.js'
+import {snap} from '../math/utils.js'
 
 
 const MIN_SCALE = 0.1
@@ -113,6 +114,9 @@ export default class ForgeSandbox extends Game {
 
         layer.setContent(this.scene)
 
+        this.snapEnabled = true
+        this.gridStep = 0.25
+
         this.history = new BrushHistory(this.brushSet, {maxStates: 50})
         this.history.save()
 
@@ -134,10 +138,17 @@ export default class ForgeSandbox extends Game {
 
 
     addBrush (shape = 'box') {
-        const y = 0.5 + this.brushSet.count
+        const y = this.#snap(0.5 + this.brushSet.count)
         this.brushSet.add(new Brush({shape, x: 0, y, z: 0}))
         this.brushSet.build()
         this.history.save()
+    }
+
+
+    toggleSnap () {
+        this.snapEnabled = !this.snapEnabled
+        this.ui.updateSnapButton(this.snapEnabled)
+        this.ui.showToast(this.snapEnabled ? 'Snap On' : 'Snap Off')
     }
 
 
@@ -280,9 +291,9 @@ export default class ForgeSandbox extends Game {
 
         const delta = currentOffset - startOffset
 
-        brush.position.x = originalPosition.x + axis.x * delta
-        brush.position.y = originalPosition.y + axis.y * delta
-        brush.position.z = originalPosition.z + axis.z * delta
+        brush.position.x = this.#snap(originalPosition.x + axis.x * delta)
+        brush.position.y = this.#snap(originalPosition.y + axis.y * delta)
+        brush.position.z = this.#snap(originalPosition.z + axis.z * delta)
 
         this.#updateSelectionMesh()
 
@@ -307,7 +318,7 @@ export default class ForgeSandbox extends Game {
         const axisIndex = getAxisIndex(axis)
         const originalAxisScale = originalScale.getComponent(axisIndex)
 
-        const newScale = Math.max(MIN_SCALE, originalAxisScale + delta * sign)
+        const newScale = Math.max(MIN_SCALE, this.#snap(originalAxisScale + delta * sign))
         const scaleDiff = newScale - originalAxisScale
 
         brush.scale.setComponent(axisIndex, newScale)
@@ -450,6 +461,11 @@ export default class ForgeSandbox extends Game {
     }
 
 
+    #snap (value) {
+        return this.snapEnabled ? snap(value, this.gridStep) : value
+    }
+
+
     #onTap (fingerCount) {
         if (fingerCount === 2) {
             this.#undo()
@@ -460,6 +476,10 @@ export default class ForgeSandbox extends Game {
 
 
     #onKeyDown (e) {
+        if (e.key === 'g' && !e.ctrlKey && !e.metaKey) {
+            this.toggleSnap()
+            return
+        }
         if (!e.ctrlKey && !e.metaKey) {
             return
         }

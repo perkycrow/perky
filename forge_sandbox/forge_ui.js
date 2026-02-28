@@ -30,6 +30,7 @@ export default class ForgeUI {
     #operationBar = null
     #operationButtons = {}
     #shapePalette = null
+    #snapButton = null
     #toast = null
 
     constructor (container, forge) {
@@ -37,6 +38,7 @@ export default class ForgeUI {
         this.#forge = forge
         this.#createAddButton()
         this.#createShapePalette()
+        this.#createSnapButton()
         this.#createOperationBar()
     }
 
@@ -156,6 +158,36 @@ export default class ForgeUI {
 
     #hideShapePalette () {
         this.#shapePalette.style.display = 'none'
+    }
+
+
+    updateSnapButton (enabled) {
+        this.#snapButton.style.background = enabled ? '#4a90d9' : 'rgba(255, 255, 255, 0.1)'
+        this.#snapButton.style.borderColor = enabled ? '#6ab0ff' : 'transparent'
+    }
+
+
+    #createSnapButton () {
+        const button = document.createElement('button')
+        button.textContent = '⊞'
+        Object.assign(button.style, {
+            position: 'absolute',
+            bottom: '24px',
+            left: '24px',
+            width: '44px',
+            height: '44px',
+            borderRadius: '50%',
+            border: '2px solid #6ab0ff',
+            background: '#4a90d9',
+            color: 'white',
+            fontSize: '20px',
+            cursor: 'pointer',
+            zIndex: '10',
+            touchAction: 'manipulation'
+        })
+        button.addEventListener('click', () => this.#forge.toggleSnap())
+        this.#container.appendChild(button)
+        this.#snapButton = button
     }
 
 
