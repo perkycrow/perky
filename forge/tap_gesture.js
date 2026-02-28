@@ -12,7 +12,6 @@ export default class TapGesture {
     #onPointerMove = null
     #onPointerUp = null
 
-
     constructor (element, {onTap, moveThreshold = 10, timeThreshold = 300}) {
         this.#element = element
         this.#onTap = onTap

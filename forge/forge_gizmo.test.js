@@ -93,7 +93,9 @@ describe('pickGizmoArrow', () => {
 
     function createCamera () {
         return new Camera3D({
-            x: 5, y: 5, z: 5,
+            x: 5,
+            y: 5,
+            z: 5,
             fov: Math.PI / 4,
             aspect: 1,
             near: 0.1,
@@ -109,7 +111,7 @@ describe('pickGizmoArrow', () => {
     test('returns -1 when missing all arrows', () => {
         const camera = createCamera()
         const canvas = createCanvas()
-        const result = pickGizmoArrow(camera, 0, 0, canvas, new Vec3(0, 0, 0))
+        const result = pickGizmoArrow({camera3d: camera, clientX: 0, clientY: 0, canvas, center: new Vec3(0, 0, 0)})
         expect(result).toBe(-1)
     })
 

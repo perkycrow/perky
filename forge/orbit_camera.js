@@ -32,14 +32,25 @@ export default class OrbitCamera {
 
     interceptor = null
 
-
     constructor (camera3d, canvas, options = {}) {
         this.#camera3d = camera3d
         this.#canvas = canvas
+        this.#applyOptions(options)
+        this.update()
+    }
 
+
+    #applyOptions (options) {
         if (options.target) {
             this.#target.copy(options.target)
         }
+        this.#applySphericalOptions(options)
+        this.#applyConstraintOptions(options)
+        this.#applySensitivityOptions(options)
+    }
+
+
+    #applySphericalOptions (options) {
         if (options.theta !== undefined) {
             this.#theta = options.theta
         }
@@ -49,6 +60,10 @@ export default class OrbitCamera {
         if (options.radius !== undefined) {
             this.#radius = options.radius
         }
+    }
+
+
+    #applyConstraintOptions (options) {
         if (options.minRadius !== undefined) {
             this.#minRadius = options.minRadius
         }
@@ -61,6 +76,10 @@ export default class OrbitCamera {
         if (options.maxPhi !== undefined) {
             this.#maxPhi = options.maxPhi
         }
+    }
+
+
+    #applySensitivityOptions (options) {
         if (options.rotateSensitivity !== undefined) {
             this.#rotateSensitivity = options.rotateSensitivity
         }
@@ -70,8 +89,6 @@ export default class OrbitCamera {
         if (options.panSensitivity !== undefined) {
             this.#panSensitivity = options.panSensitivity
         }
-
-        this.update()
     }
 
 

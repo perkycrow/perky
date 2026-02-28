@@ -44,7 +44,6 @@ export default class ForgeSandbox extends Game {
     #wireframes = []
     #gizmoLines = []
 
-
     configureGame () {
         const renderer = this.getRenderer('game')
         const layer = this.getLayer('game')
@@ -178,13 +177,13 @@ export default class ForgeSandbox extends Game {
         if (this.#selectedBrush >= 0) {
             const brush = this.brushSet.get(this.#selectedBrush)
             if (brush) {
-                const arrowIndex = pickGizmoArrow(this.camera3d, e.clientX, e.clientY, this.canvas, brush.position)
+                const arrowIndex = pickGizmoArrow({camera3d: this.camera3d, clientX: e.clientX, clientY: e.clientY, canvas: this.canvas, center: brush.position})
                 if (arrowIndex >= 0) {
                     this.#startGizmoDrag(e, arrowIndex)
                     return true
                 }
 
-                const handleIndex = pickHandle(this.camera3d, e.clientX, e.clientY, this.canvas, brush)
+                const handleIndex = pickHandle({camera3d: this.camera3d, clientX: e.clientX, clientY: e.clientY, canvas: this.canvas, brush})
                 if (handleIndex >= 0) {
                     this.#startResizeDrag(e, handleIndex)
                     return true
@@ -192,7 +191,7 @@ export default class ForgeSandbox extends Game {
             }
         }
 
-        const index = pickBrush(this.camera3d, e.clientX, e.clientY, this.canvas, this.brushSet)
+        const index = pickBrush({camera3d: this.camera3d, clientX: e.clientX, clientY: e.clientY, canvas: this.canvas, brushSet: this.brushSet})
 
         if (index < 0) {
             this.#deselect()
@@ -210,7 +209,7 @@ export default class ForgeSandbox extends Game {
         const {axis} = GIZMO_AXES[arrowIndex]
 
         const {origin, direction} = screenToRay(this.camera3d, e.clientX, e.clientY, this.canvas)
-        const startOffset = rayAxisProject(origin, direction, brush.position, axis, this.camera3d.position)
+        const startOffset = rayAxisProject({origin, direction, axisOrigin: brush.position, axisDir: axis, cameraPos: this.camera3d.position})
 
         if (startOffset !== null) {
             this.canvas.setPointerCapture(e.pointerId)
@@ -233,7 +232,7 @@ export default class ForgeSandbox extends Game {
         const handlePos = positions[handleIndex]
 
         const {origin, direction} = screenToRay(this.camera3d, e.clientX, e.clientY, this.canvas)
-        const startOffset = rayAxisProject(origin, direction, handlePos, axis, this.camera3d.position)
+        const startOffset = rayAxisProject({origin, direction, axisOrigin: handlePos, axisDir: axis, cameraPos: this.camera3d.position})
 
         if (startOffset !== null) {
             this.canvas.setPointerCapture(e.pointerId)
@@ -273,7 +272,7 @@ export default class ForgeSandbox extends Game {
         const brush = this.brushSet.get(brushIndex)
 
         const {origin, direction} = screenToRay(this.camera3d, e.clientX, e.clientY, this.canvas)
-        const currentOffset = rayAxisProject(origin, direction, originalPosition, axis, this.camera3d.position)
+        const currentOffset = rayAxisProject({origin, direction, axisOrigin: originalPosition, axisDir: axis, cameraPos: this.camera3d.position})
 
         if (currentOffset === null) {
             return true
@@ -296,7 +295,7 @@ export default class ForgeSandbox extends Game {
         const brush = this.brushSet.get(brushIndex)
 
         const {origin, direction} = screenToRay(this.camera3d, e.clientX, e.clientY, this.canvas)
-        const currentOffset = rayAxisProject(origin, direction, handleOrigin, axis, this.camera3d.position)
+        const currentOffset = rayAxisProject({origin, direction, axisOrigin: handleOrigin, axisDir: axis, cameraPos: this.camera3d.position})
 
         if (currentOffset === null) {
             return true
@@ -461,12 +460,17 @@ export default class ForgeSandbox extends Game {
 
 
     #onKeyDown (e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
-            e.preventDefault()
-            this.#undo()
-        } else if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
-            e.preventDefault()
+        if (!e.ctrlKey && !e.metaKey) {
+            return
+        }
+        if (e.key !== 'z') {
+            return
+        }
+        e.preventDefault()
+        if (e.shiftKey) {
             this.#redo()
+        } else {
+            this.#undo()
         }
     }
 

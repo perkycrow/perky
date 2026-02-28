@@ -78,7 +78,8 @@ export function brushAABB (brush) {
 }
 
 
-export function pickBrush (camera3d, clientX, clientY, canvas, brushSet) {
+export function pickBrush (params) {
+    const {camera3d, clientX, clientY, canvas, brushSet} = params
     const {origin, direction} = screenToRay(camera3d, clientX, clientY, canvas)
 
     let closest = -1
@@ -127,7 +128,8 @@ export function handlePositions (brush) {
 }
 
 
-export function pickHandle (camera3d, clientX, clientY, canvas, brush) {
+export function pickHandle (params) {
+    const {camera3d, clientX, clientY, canvas, brush} = params
     const {origin, direction} = screenToRay(camera3d, clientX, clientY, canvas)
     const positions = handlePositions(brush)
 
@@ -149,7 +151,8 @@ export function pickHandle (camera3d, clientX, clientY, canvas, brush) {
 }
 
 
-export function rayAxisProject (origin, direction, axisOrigin, axisDir, cameraPos) {
+export function rayAxisProject (params) {
+    const {origin, direction, axisOrigin, axisDir, cameraPos} = params
     const toCamera = new Vec3(
         cameraPos.x - axisOrigin.x,
         cameraPos.y - axisOrigin.y,

@@ -28,7 +28,8 @@ export function gizmoArrowPositions (center) {
 }
 
 
-export function pickGizmoArrow (camera3d, clientX, clientY, canvas, center) {
+export function pickGizmoArrow (params) {
+    const {camera3d, clientX, clientY, canvas, center} = params
     const {origin, direction} = screenToRay(camera3d, clientX, clientY, canvas)
     const half = GIZMO_THICKNESS / 2
 

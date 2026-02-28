@@ -130,7 +130,7 @@ describe('forge_pick', () => {
         camera.lookAt(new Vec3(0, 0.5, 0))
         const canvas = createCanvas(100, 100)
 
-        const index = pickBrush(camera, 50, 50, canvas, brushSet)
+        const index = pickBrush({camera3d: camera, clientX: 50, clientY: 50, canvas, brushSet})
         expect(index).toBe(1)
     })
 
@@ -143,7 +143,7 @@ describe('forge_pick', () => {
         camera.lookAt(new Vec3(0, 0.5, 0))
         const canvas = createCanvas(100, 100)
 
-        const index = pickBrush(camera, 50, 50, canvas, brushSet)
+        const index = pickBrush({camera3d: camera, clientX: 50, clientY: 50, canvas, brushSet})
         expect(index).toBe(-1)
     })
 
@@ -156,7 +156,7 @@ describe('forge_pick', () => {
         camera.lookAt(new Vec3(0, 0.5, 0))
         const canvas = createCanvas(100, 100)
 
-        const index = pickBrush(camera, 50, 50, canvas, brushSet)
+        const index = pickBrush({camera3d: camera, clientX: 50, clientY: 50, canvas, brushSet})
         expect(index).toBe(-1)
     })
 
@@ -236,7 +236,7 @@ describe('forge_pick', () => {
         camera.lookAt(new Vec3(0, 0.5, 0))
         const canvas = createCanvas(100, 100)
 
-        const index = pickHandle(camera, 50, 50, canvas, brush)
+        const index = pickHandle({camera3d: camera, clientX: 50, clientY: 50, canvas, brush})
         expect(index).toBe(0)
     })
 
@@ -247,7 +247,7 @@ describe('forge_pick', () => {
         camera.lookAt(new Vec3(0, 0.5, 20))
         const canvas = createCanvas(100, 100)
 
-        const index = pickHandle(camera, 50, 50, canvas, brush)
+        const index = pickHandle({camera3d: camera, clientX: 50, clientY: 50, canvas, brush})
         expect(index).toBe(-1)
     })
 
@@ -270,7 +270,7 @@ describe('forge_pick', () => {
         const axisDir = new Vec3(1, 0, 0)
         const cameraPos = new Vec3(0, 5, 5)
 
-        const result = rayAxisProject(origin, direction, axisOrigin, axisDir, cameraPos)
+        const result = rayAxisProject({origin, direction, axisOrigin, axisDir, cameraPos})
         expect(result).not.toBeNull()
         expect(result).toBeCloseTo(1, 1)
     })
@@ -283,7 +283,7 @@ describe('forge_pick', () => {
         const axisDir = new Vec3(0, 1, 0)
         const cameraPos = new Vec3(3, 5, 5)
 
-        const result = rayAxisProject(origin, direction, axisOrigin, axisDir, cameraPos)
+        const result = rayAxisProject({origin, direction, axisOrigin, axisDir, cameraPos})
         expect(result).not.toBeNull()
     })
 

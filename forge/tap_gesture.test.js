@@ -32,7 +32,9 @@ describe('TapGesture', () => {
     test('two-finger tap triggers onTap with 2', () => {
         const el = createMockElement()
         let result = null
-        const tap = new TapGesture(el, {onTap: (n) => { result = n }})
+        const tap = new TapGesture(el, {onTap: (n) => {
+            result = n
+        }})
         tap.attach()
 
         el.emit('pointerdown', pointerEvent('pointerdown', 1))
@@ -47,7 +49,9 @@ describe('TapGesture', () => {
     test('three-finger tap triggers onTap with 3', () => {
         const el = createMockElement()
         let result = null
-        const tap = new TapGesture(el, {onTap: (n) => { result = n }})
+        const tap = new TapGesture(el, {onTap: (n) => {
+            result = n
+        }})
         tap.attach()
 
         el.emit('pointerdown', pointerEvent('pointerdown', 1))
@@ -64,7 +68,9 @@ describe('TapGesture', () => {
     test('single-finger tap does not trigger', () => {
         const el = createMockElement()
         let result = null
-        const tap = new TapGesture(el, {onTap: (n) => { result = n }})
+        const tap = new TapGesture(el, {onTap: (n) => {
+            result = n
+        }})
         tap.attach()
 
         el.emit('pointerdown', pointerEvent('pointerdown', 1))
@@ -77,7 +83,10 @@ describe('TapGesture', () => {
     test('movement beyond threshold cancels tap', () => {
         const el = createMockElement()
         let result = null
-        const tap = new TapGesture(el, {onTap: (n) => { result = n }, moveThreshold: 5})
+        const tap = new TapGesture(el, {onTap: (n) => {
+            result = n
+        },
+        moveThreshold: 5})
         tap.attach()
 
         el.emit('pointerdown', pointerEvent('pointerdown', 1, 0, 0))
@@ -93,7 +102,10 @@ describe('TapGesture', () => {
     test('slow tap does not trigger', () => {
         const el = createMockElement()
         let result = null
-        const tap = new TapGesture(el, {onTap: (n) => { result = n }, timeThreshold: 200})
+        const tap = new TapGesture(el, {onTap: (n) => {
+            result = n
+        },
+        timeThreshold: 200})
         tap.attach()
 
         let now = 0
@@ -113,7 +125,9 @@ describe('TapGesture', () => {
     test('detach removes listeners', () => {
         const el = createMockElement()
         let result = null
-        const tap = new TapGesture(el, {onTap: (n) => { result = n }})
+        const tap = new TapGesture(el, {onTap: (n) => {
+            result = n
+        }})
         tap.attach()
         tap.detach()
 
@@ -129,7 +143,9 @@ describe('TapGesture', () => {
     test('pointercancel ends gesture cleanly', () => {
         const el = createMockElement()
         let result = null
-        const tap = new TapGesture(el, {onTap: (n) => { result = n }})
+        const tap = new TapGesture(el, {onTap: (n) => {
+            result = n
+        }})
         tap.attach()
 
         el.emit('pointerdown', pointerEvent('pointerdown', 1))

@@ -7,10 +7,18 @@ function computeVolume (geometry) {
     const {positions, indices} = geometry
     let volume = 0
     for (let i = 0; i < indices.length; i += 3) {
-        const a = indices[i], b = indices[i + 1], c = indices[i + 2]
-        const ax = positions[a * 3], ay = positions[a * 3 + 1], az = positions[a * 3 + 2]
-        const bx = positions[b * 3], by = positions[b * 3 + 1], bz = positions[b * 3 + 2]
-        const cx = positions[c * 3], cy = positions[c * 3 + 1], cz = positions[c * 3 + 2]
+        const a = indices[i]
+        const b = indices[i + 1]
+        const c = indices[i + 2]
+        const ax = positions[a * 3]
+        const ay = positions[a * 3 + 1]
+        const az = positions[a * 3 + 2]
+        const bx = positions[b * 3]
+        const by = positions[b * 3 + 1]
+        const bz = positions[b * 3 + 2]
+        const cx = positions[c * 3]
+        const cy = positions[c * 3 + 1]
+        const cz = positions[c * 3 + 2]
         volume += (ax * (by * cz - bz * cy) + bx * (cy * az - cz * ay) + cx * (ay * bz - az * by)) / 6
     }
     return Math.abs(volume)

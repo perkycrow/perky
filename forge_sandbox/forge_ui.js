@@ -32,7 +32,6 @@ export default class ForgeUI {
     #shapePalette = null
     #toast = null
 
-
     constructor (container, forge) {
         this.#container = container
         this.#forge = forge

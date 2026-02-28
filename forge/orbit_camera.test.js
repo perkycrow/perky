@@ -69,7 +69,7 @@ describe('OrbitCamera', () => {
     describe('update', () => {
 
         test('positions camera from spherical coordinates', () => {
-            const orbit = new OrbitCamera(camera3d, canvas, {
+            new OrbitCamera(camera3d, canvas, {
                 theta: 0,
                 phi: Math.PI / 2,
                 radius: 10
@@ -81,7 +81,7 @@ describe('OrbitCamera', () => {
         })
 
         test('theta rotates around Y axis', () => {
-            const orbit = new OrbitCamera(camera3d, canvas, {
+            new OrbitCamera(camera3d, canvas, {
                 theta: Math.PI / 2,
                 phi: Math.PI / 2,
                 radius: 10
@@ -93,7 +93,7 @@ describe('OrbitCamera', () => {
         })
 
         test('phi controls elevation', () => {
-            const orbit = new OrbitCamera(camera3d, canvas, {
+            new OrbitCamera(camera3d, canvas, {
                 theta: 0,
                 phi: 0.1,
                 radius: 10
@@ -103,7 +103,7 @@ describe('OrbitCamera', () => {
         })
 
         test('target offsets camera position', () => {
-            const orbit = new OrbitCamera(camera3d, canvas, {
+            new OrbitCamera(camera3d, canvas, {
                 theta: 0,
                 phi: Math.PI / 2,
                 radius: 10,
@@ -115,7 +115,7 @@ describe('OrbitCamera', () => {
         })
 
         test('calls lookAt on camera', () => {
-            const orbit = new OrbitCamera(camera3d, canvas)
+            new OrbitCamera(camera3d, canvas)
 
             expect(camera3d.lookAt).toHaveBeenCalled()
         })
@@ -174,7 +174,9 @@ describe('OrbitCamera', () => {
         test('interceptor blocks pointer events when returning true', () => {
             const orbit = new OrbitCamera(camera3d, canvas)
             const listeners = {}
-            canvas.addEventListener = vi.fn((type, fn) => { listeners[type] = fn })
+            canvas.addEventListener = vi.fn((type, fn) => {
+                listeners[type] = fn
+            })
             orbit.attach()
 
             orbit.interceptor = () => true
@@ -189,7 +191,9 @@ describe('OrbitCamera', () => {
         test('interceptor allows events when returning false', () => {
             const orbit = new OrbitCamera(camera3d, canvas)
             const listeners = {}
-            canvas.addEventListener = vi.fn((type, fn) => { listeners[type] = fn })
+            canvas.addEventListener = vi.fn((type, fn) => {
+                listeners[type] = fn
+            })
             orbit.attach()
 
             orbit.interceptor = () => false
@@ -201,7 +205,9 @@ describe('OrbitCamera', () => {
         test('no interceptor lets events through', () => {
             const orbit = new OrbitCamera(camera3d, canvas)
             const listeners = {}
-            canvas.addEventListener = vi.fn((type, fn) => { listeners[type] = fn })
+            canvas.addEventListener = vi.fn((type, fn) => {
+                listeners[type] = fn
+            })
             orbit.attach()
 
             listeners.pointerdown({pointerId: 1, clientX: 100, clientY: 100})
