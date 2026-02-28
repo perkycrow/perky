@@ -22,6 +22,7 @@ export default class ForgeUI {
     #forge
     #operationBar = null
     #operationButtons = {}
+    #toast = null
 
 
     constructor (container, forge) {
@@ -98,6 +99,39 @@ export default class ForgeUI {
 
         this.#container.appendChild(bar)
         this.#operationBar = bar
+    }
+
+
+    showToast (message) {
+        if (this.#toast) {
+            this.#toast.remove()
+        }
+
+        const div = document.createElement('div')
+        div.textContent = message
+        Object.assign(div.style, {
+            position: 'absolute',
+            top: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'rgba(30, 30, 50, 0.85)',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            fontSize: '14px',
+            zIndex: '10',
+            pointerEvents: 'none'
+        })
+
+        this.#container.appendChild(div)
+        this.#toast = div
+
+        setTimeout(() => {
+            if (this.#toast === div) {
+                div.remove()
+                this.#toast = null
+            }
+        }, 600)
     }
 
 

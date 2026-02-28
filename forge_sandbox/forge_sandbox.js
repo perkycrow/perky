@@ -9,8 +9,10 @@ import Object3D from '../render/object_3d.js'
 import ShadowMap from '../render/shadow_map.js'
 import Brush from '../render/csg/brush.js'
 import BrushSet from '../render/csg/brush_set.js'
+import BrushHistory from '../render/csg/brush_history.js'
 import LineMesh from '../render/line_mesh.js'
 import OrbitCamera from '../forge/orbit_camera.js'
+import TapGesture from '../forge/tap_gesture.js'
 import ForgeUI from './forge_ui.js'
 import {pickBrush, pickHandle, screenToRay, rayAxisProject, handlePositions, HANDLE_AXES} from '../forge/forge_pick.js'
 import {boxWirePositions} from '../forge/wire_geometry.js'
@@ -90,7 +92,7 @@ export default class ForgeSandbox extends Game {
 
         this.brushSet = new BrushSet()
         this.brushMaterial = new Material3D({color: [0.8, 0.6, 0.4], roughness: 0.7})
-        this.selectionMaterial = new Material3D({color: [0.3, 0.6, 1.0], roughness: 0.5})
+        this.selectionMaterial = new Material3D({color: [0.3, 0.6, 1.0], roughness: 0.5, opacity: 0.15})
         this.handleMaterial = new Material3D({color: [1.0, 1.0, 1.0], roughness: 0.3})
         this.brushMeshInstance = null
 
@@ -112,6 +114,17 @@ export default class ForgeSandbox extends Game {
 
         layer.setContent(this.scene)
 
+        this.history = new BrushHistory(this.brushSet, {maxStates: 50})
+        this.history.save()
+
+        this.tapGesture = new TapGesture(this.canvas, {
+            onTap: (n) => this.#onTap(n)
+        })
+        this.tapGesture.attach()
+
+        this.keyHandler = (e) => this.#onKeyDown(e)
+        document.addEventListener('keydown', this.keyHandler)
+
         this.ui = new ForgeUI(this.element, this)
     }
 
@@ -125,6 +138,7 @@ export default class ForgeSandbox extends Game {
         const y = 0.5 + this.brushSet.count
         this.brushSet.add(new Brush({shape: 'box', x: 0, y, z: 0}))
         this.brushSet.build()
+        this.history.save()
     }
 
 
@@ -135,6 +149,7 @@ export default class ForgeSandbox extends Game {
         }
         brush.operation = operation
         this.brushSet.build()
+        this.history.save()
         this.ui.updateOperationToolbar(brush.operation)
     }
 
@@ -315,6 +330,7 @@ export default class ForgeSandbox extends Game {
 
         this.#dragState = null
         this.brushSet.build()
+        this.history.save()
 
         return true
     }
@@ -432,6 +448,46 @@ export default class ForgeSandbox extends Game {
             lineMesh.dispose()
         }
         this.#gizmoLines = []
+    }
+
+
+    #onTap (fingerCount) {
+        if (fingerCount === 2) {
+            this.#undo()
+        } else if (fingerCount === 3) {
+            this.#redo()
+        }
+    }
+
+
+    #onKeyDown (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+            e.preventDefault()
+            this.#undo()
+        } else if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
+            e.preventDefault()
+            this.#redo()
+        }
+    }
+
+
+    #undo () {
+        this.#deselect()
+        if (!this.history.undo()) {
+            return
+        }
+        this.brushSet.build()
+        this.ui.showToast('Undo')
+    }
+
+
+    #redo () {
+        this.#deselect()
+        if (!this.history.redo()) {
+            return
+        }
+        this.brushSet.build()
+        this.ui.showToast('Redo')
     }
 
 
