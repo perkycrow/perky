@@ -1,30 +1,46 @@
-# Forge — Level Editor Sandbox
+# Forge — Editing Toolkit
 
-Sandbox standalone pour prototyper l'editeur de niveaux 3D. Style Trenchbroom/Hammer, UX inspiree de Procreate, iPad-first.
+Forge est un theme framework dedie a l'edition (2D/3D). Il fournit des outils reutilisables : orbit camera, picking/raycasting, gizmos. Studio (futur) et les jeux peuvent l'utiliser directement.
 
-## Pourquoi un dossier separe
+La sandbox `forge_sandbox/` sert de banc d'essai pour tester ces outils.
 
-Le studio actuel (`studio/`) est branche sur le manifest d'un jeu (den) et oriente sprite animation. Forge est independant : pas de manifest, pas de jeu hote. Juste un viewport 3D, des brushes, et des gestes. On verra plus tard comment le brancher a un jeu.
+## Architecture
+
+```
+forge/                       theme framework (teste, conventions Perky)
+    orbit_camera.js          OrbitCamera (spherical coords, pointer events, interceptor)
+    orbit_camera.test.js
+    forge_pick.js            raycasting (screenToRay, rayAABB, pickBrush, handles)
+    forge_pick.test.js
+
+forge_sandbox/               app sandbox (comme den/, ghast/)
+    forge_sandbox.js         ForgeSandbox extends Game
+    forge_ui.js              UI overlay (bouton "+")
+    dev_texture.js           texture debug
+    index.js                 bootstrap
+    index.html               page standalone
+```
+
+`forge/` contient les outils. `forge_sandbox/` les consomme. Quand Studio arrivera, il importera depuis `forge/` aussi.
 
 ## Ce qui existe deja
 
-| Brique | Statut | Import depuis `forge/` |
-|--------|--------|------------------------|
-| `BrushSet` | Pret | `../render/csg/brush_set.js` |
-| `BrushHistory` | Pret | `../render/csg/brush_history.js` |
-| `Brush` | Pret | `../render/csg/brush.js` |
-| `CSGService` | Pret | `../render/csg/csg_service.js` |
-| `RenderSystem` | Pret | `../render/render_system.js` |
-| `WebGLMeshRenderer` | Pret | `../render/webgl/webgl_mesh_renderer.js` |
-| `Camera3D` | Pret | `../render/camera_3d.js` |
-| `Object3D` | Pret | `../render/object_3d.js` |
-| `Mesh` | Pret | `../render/mesh.js` |
-| `MeshInstance` | Pret | `../render/mesh_instance.js` |
-| `Material3D` | Pret | `../render/material_3d.js` |
-| `Geometry` | Pret | `../render/geometry.js` |
-| `Vec3` | Pret | `../math/vec3.js` |
-
-Ce qui manque : interaction brushes (placement, selection, manipulation), et le liant UI.
+| Brique | Statut | Import |
+|--------|--------|--------|
+| `BrushSet` | Pret | `render/csg/brush_set.js` |
+| `BrushHistory` | Pret | `render/csg/brush_history.js` |
+| `Brush` | Pret | `render/csg/brush.js` |
+| `CSGService` | Pret | `render/csg/csg_service.js` |
+| `RenderSystem` | Pret | `render/render_system.js` |
+| `WebGLMeshRenderer` | Pret | `render/webgl/webgl_mesh_renderer.js` |
+| `Camera3D` | Pret | `render/camera_3d.js` |
+| `Object3D` | Pret | `render/object_3d.js` |
+| `Mesh` | Pret | `render/mesh.js` |
+| `MeshInstance` | Pret | `render/mesh_instance.js` |
+| `Material3D` | Pret | `render/material_3d.js` |
+| `Geometry` | Pret | `render/geometry.js` |
+| `Vec3` | Pret | `math/vec3.js` |
+| `clamp` | Pret | `math/utils.js` |
 
 ---
 
@@ -39,32 +55,12 @@ Ce qui manque : interaction brushes (placement, selection, manipulation), et le 
 
 ## Reference API rapide
 
-### Forge extends Game
-
-Forge utilise le pattern `Game` avec `static camera = null` pour opt-out de la camera 2D. Le pipeline 3D est configure dans `configureGame()`. Les proprietes cles sont exposees sur l'instance :
-
-- `this.scene` — Object3D, racine du scene graph
-- `this.camera3d` — Camera3D, camera 3D
-- `this.meshRenderer` — WebGLMeshRenderer, renderer 3D
-- `this.gl` — WebGLRenderingContext
-
-```javascript
-class Forge extends Game {
-    static camera = null
-    static layer = {type: 'webgl', backgroundColor: '#1a1a2e'}
-
-    configureGame () {
-        // Pipeline 3D: meshRenderer, camera3d, scene, lighting, shadows
-    }
-}
-```
-
 ### Brush CSG
 
 ```javascript
-import Brush from '../render/csg/brush.js'
-import BrushSet from '../render/csg/brush_set.js'
-import BrushHistory from '../render/csg/brush_history.js'
+import Brush from 'render/csg/brush.js'
+import BrushSet from 'render/csg/brush_set.js'
+import BrushHistory from 'render/csg/brush_history.js'
 
 const brushSet = new BrushSet()
 const history = new BrushHistory(brushSet, {maxStates: 50})
@@ -130,11 +126,7 @@ new Brush({
 
 Canvas WebGL plein ecran, grille au sol 20x20, camera isometrique, lumiere + shadows.
 
-Fichiers :
-
-- `forge/index.html` — page standalone, `<section id="forge">` plein ecran
-- `forge/index.js` — bootstrap via `ApplicationManager`
-- `forge/forge.js` — `Forge extends Game`, `static camera = null`, pipeline 3D dans `configureGame()`
+Fichiers : `forge_sandbox/index.html`, `forge_sandbox/index.js`, `forge_sandbox/forge_sandbox.js`
 
 Lancer avec `yarn forge`.
 
@@ -142,10 +134,7 @@ Lancer avec `yarn forge`.
 
 Navigation camera inspiree Procreate / apps 3D iPad.
 
-Fichiers :
-
-- `forge/orbit_camera.js` — `OrbitCamera` wraps `Camera3D`, coordonnees spheriques, pointer events
-- `forge/orbit_camera.test.js` — 12 tests (position, contraintes, attach/detach)
+Fichiers : `forge/orbit_camera.js` + tests (15 tests)
 
 La classe `OrbitCamera` wrap une `Camera3D` et gere les inputs :
 
@@ -155,18 +144,13 @@ La classe `OrbitCamera` wrap une `Camera3D` et gere les inputs :
 - Ecoute `pointerdown`, `pointermove`, `pointerup`, `wheel` sur le canvas
 - Utilise `pointerId` pour distinguer les doigts (multi-touch)
 
-Representation interne : coordonnees spheriques (`theta`, `phi`, `radius`) + `target` (Vec3, point focal). A chaque update, recalcule `camera3d.position` et appelle `camera3d.lookAt(target)`.
-
 **Resultat** : on peut tourner autour de la grille, zoomer, se deplacer.
 
 ### Etape 3 — Placer un brush ✅
 
 Le geste fondamental de l'editeur.
 
-Fichiers :
-
-- `forge/forge.js` — `BrushSet`, `addBrush()`, listener `change` pour reconstruire le mesh
-- `forge/forge_ui.js` — bouton "+" (floating action button, bas droite)
+Fichiers : `forge_sandbox/forge_sandbox.js` (BrushSet + addBrush), `forge_sandbox/forge_ui.js` (bouton "+")
 
 Bugfix inclus : `filterDegeneratePolygons` supprimait les polygones dont les 3 premiers sommets etaient colineaires (cas des faces laterales apres merge coplanaire). Corrige pour calculer l'aire du polygone entier.
 
@@ -180,10 +164,9 @@ Fichiers :
 
 - `forge/forge_pick.js` — raycasting (screenToRay, rayAABB, brushAABB, pickBrush, rayHorizontalPlane)
 - `forge/forge_pick.test.js` — 16 tests raycasting
-- `forge/orbit_camera.js` — ajout `interceptor` pour laisser Forge intercepter les pointer events
-- `forge/forge.js` — selection, drag sur plan horizontal, overlay bleu sur brush selectionne
+- `forge/orbit_camera.js` — ajout `interceptor` pour laisser la sandbox intercepter les pointer events
 
-Architecture : OrbitCamera a un `interceptor` callback. Sur `pointerdown`, Forge raycast contre les AABB des brushes. Hit → mode selection/drag (OrbitCamera ignore). Miss → OrbitCamera gere normalement. Le CSG rebuild se fait au `pointerup` pour eviter le lag.
+Architecture : OrbitCamera a un `interceptor` callback. Sur `pointerdown`, la sandbox raycast contre les AABB des brushes. Hit → mode selection/drag (OrbitCamera ignore). Miss → OrbitCamera gere normalement. Le CSG rebuild se fait au `pointerup` pour eviter le lag.
 
 **Resultat** : on peut placer des cubes et les reorganiser au doigt.
 
@@ -195,11 +178,14 @@ Fichiers :
 
 - `forge/forge_pick.js` — ajout `handlePositions`, `pickHandle`, `rayAxisProject`, `HANDLE_AXES`
 - `forge/forge_pick.test.js` — 7 tests supplementaires (23 total)
-- `forge/forge.js` — resize drag, handles blancs aux faces, scale clamp (min 0.1)
 
 UX : quand un brush est selectionne, 6 petites poignees blanches apparaissent au centre de chaque face. Drag une poignee → resize le brush le long de cet axe, la face opposee reste fixe. Fonctionne identiquement sur iPad et desktop.
 
 **Resultat** : des cubes de tailles variees. On commence a voir des formes de niveaux.
+
+### Etape 5b — Refactoring architecture ✅
+
+Separation du theme `forge/` (outils reutilisables) et de la sandbox `forge_sandbox/` (app de test). DRY `clamp` dans `math/utils.js`.
 
 ### Etape 6 — Operations booleennes
 
@@ -245,21 +231,3 @@ Ces etapes ne sont pas planifiees en detail. Elles viendront des besoins ressent
 - **Lights** — placer des lumieres dans la scene
 - **Multi-selection** — selectionner plusieurs brushes, operations groupees
 - **Layers/groupes** — organiser les brushes (murs, sol, details)
-
----
-
-## Structure de fichiers
-
-```
-forge/
-    index.html              page standalone
-    index.js                bootstrap (ApplicationManager + Forge)
-    forge.js                Forge extends Game (pipeline 3D, selection, drag)
-    orbit_camera.js         OrbitCamera (spherical coords, pointer events, interceptor)
-    orbit_camera.test.js    tests
-    forge_pick.js           raycasting (screenToRay, rayAABB, pickBrush)
-    forge_pick.test.js      tests
-    forge_ui.js             UI overlay (bouton "+")
-```
-
-On ajoutera des fichiers au fur et a mesure des etapes. Pas de sur-architecture d'avance.

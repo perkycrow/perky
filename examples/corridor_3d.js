@@ -1,3 +1,4 @@
+import {clamp} from '/math/utils.js'
 import RenderSystem from '/render/render_system.js'
 import WebGLMeshRenderer from '/render/webgl/webgl_mesh_renderer.js'
 import WebGLBillboardRenderer from '/render/webgl/webgl_billboard_renderer.js'
@@ -722,9 +723,4 @@ function updateDust (dt) {
 
         p.billboard.markDirty()
     }
-}
-
-
-function clamp (value, min, max) {
-    return Math.max(min, Math.min(max, value))
 }

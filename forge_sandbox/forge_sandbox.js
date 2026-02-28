@@ -9,18 +9,18 @@ import Object3D from '../render/object_3d.js'
 import ShadowMap from '../render/shadow_map.js'
 import Brush from '../render/csg/brush.js'
 import BrushSet from '../render/csg/brush_set.js'
-import OrbitCamera from './orbit_camera.js'
+import OrbitCamera from '../forge/orbit_camera.js'
 import ForgeUI from './forge_ui.js'
-import {pickBrush, pickHandle, screenToRay, rayHorizontalPlane, rayAxisProject, handlePositions, HANDLE_AXES} from './forge_pick.js'
+import {pickBrush, pickHandle, screenToRay, rayHorizontalPlane, rayAxisProject, handlePositions, HANDLE_AXES} from '../forge/forge_pick.js'
 
 
 const MIN_SCALE = 0.1
 const HANDLE_SIZE = 0.12
 
 
-export default class Forge extends Game {
+export default class ForgeSandbox extends Game {
 
-    static $name = 'forge'
+    static $name = 'forgeSandbox'
 
     static camera = null
     static layer = {type: 'webgl', backgroundColor: '#1a1a2e'}

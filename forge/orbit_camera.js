@@ -1,4 +1,5 @@
 import Vec3 from '../math/vec3.js'
+import {clamp} from '../math/utils.js'
 
 
 export default class OrbitCamera {
@@ -278,9 +279,4 @@ export default class OrbitCamera {
         }
     }
 
-}
-
-
-function clamp (value, min, max) {
-    return Math.max(min, Math.min(max, value))
 }
