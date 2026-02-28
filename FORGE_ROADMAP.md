@@ -172,17 +172,20 @@ Bugfix inclus : `filterDegeneratePolygons` supprimait les polygones dont les 3 p
 
 **Resultat** : on peut empiler des cubes dans la scene. Pas encore de manipulation.
 
-### Etape 4 — Selectionner et deplacer
+### Etape 4 — Selectionner et deplacer ✅
 
 Interaction directe sur les brushes.
 
-- **Tap** sur un brush : le selectionne (highlight via tint ou wireframe)
-- **Drag** sur un brush selectionne : le deplace sur le plan horizontal
-- La selection necessite du raycasting : projeter le tap en rayon 3D, tester l'intersection avec les AABB de chaque brush
-- Gizmo minimaliste : pas de fleches RGB, juste le deplacement direct au doigt
-- `BrushSet.rebuild()` apres chaque deplacement
+Fichiers :
 
-**Resultat** : on peut placer des cubes et les reorganiser.
+- `forge/forge_pick.js` — raycasting (screenToRay, rayAABB, brushAABB, pickBrush, rayHorizontalPlane)
+- `forge/forge_pick.test.js` — 16 tests raycasting
+- `forge/orbit_camera.js` — ajout `interceptor` pour laisser Forge intercepter les pointer events
+- `forge/forge.js` — selection, drag sur plan horizontal, overlay bleu sur brush selectionne
+
+Architecture : OrbitCamera a un `interceptor` callback. Sur `pointerdown`, Forge raycast contre les AABB des brushes. Hit → mode selection/drag (OrbitCamera ignore). Miss → OrbitCamera gere normalement. Le CSG rebuild se fait au `pointerup` pour eviter le lag.
+
+**Resultat** : on peut placer des cubes et les reorganiser au doigt.
 
 ### Etape 5 — Redimensionner
 
@@ -245,9 +248,11 @@ Ces etapes ne sont pas planifiees en detail. Elles viendront des besoins ressent
 forge/
     index.html              page standalone
     index.js                bootstrap (ApplicationManager + Forge)
-    forge.js                Forge extends Game (pipeline 3D)
-    orbit_camera.js         OrbitCamera (spherical coords, pointer events)
+    forge.js                Forge extends Game (pipeline 3D, selection, drag)
+    orbit_camera.js         OrbitCamera (spherical coords, pointer events, interceptor)
     orbit_camera.test.js    tests
+    forge_pick.js           raycasting (screenToRay, rayAABB, pickBrush)
+    forge_pick.test.js      tests
     forge_ui.js             UI overlay (bouton "+")
 ```
 

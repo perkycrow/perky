@@ -29,6 +29,9 @@ export default class OrbitCamera {
     #onWheel = (e) => this.#handleWheel(e)
 
 
+    interceptor = null
+
+
     constructor (camera3d, canvas, options = {}) {
         this.#camera3d = camera3d
         this.#canvas = canvas
@@ -143,6 +146,9 @@ export default class OrbitCamera {
 
 
     #handlePointerDown (e) {
+        if (this.interceptor?.(e)) {
+            return
+        }
         this.#canvas.setPointerCapture(e.pointerId)
         this.#pointers.set(e.pointerId, {x: e.clientX, y: e.clientY})
 
@@ -154,6 +160,9 @@ export default class OrbitCamera {
 
 
     #handlePointerMove (e) {
+        if (this.interceptor?.(e)) {
+            return
+        }
         const prev = this.#pointers.get(e.pointerId)
         if (!prev) {
             return
@@ -178,6 +187,9 @@ export default class OrbitCamera {
 
 
     #handlePointerUp (e) {
+        if (this.interceptor?.(e)) {
+            return
+        }
         this.#pointers.delete(e.pointerId)
         this.#lastMidpoint = null
     }

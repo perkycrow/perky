@@ -169,6 +169,48 @@ describe('OrbitCamera', () => {
     })
 
 
+    describe('interceptor', () => {
+
+        test('interceptor blocks pointer events when returning true', () => {
+            const orbit = new OrbitCamera(camera3d, canvas)
+            const listeners = {}
+            canvas.addEventListener = vi.fn((type, fn) => { listeners[type] = fn })
+            orbit.attach()
+
+            orbit.interceptor = () => true
+
+            listeners.pointerdown({pointerId: 1, clientX: 100, clientY: 100})
+            listeners.pointermove({pointerId: 1, clientX: 110, clientY: 110, buttons: 1})
+            listeners.pointerup({pointerId: 1})
+
+            expect(canvas.setPointerCapture).not.toHaveBeenCalled()
+        })
+
+        test('interceptor allows events when returning false', () => {
+            const orbit = new OrbitCamera(camera3d, canvas)
+            const listeners = {}
+            canvas.addEventListener = vi.fn((type, fn) => { listeners[type] = fn })
+            orbit.attach()
+
+            orbit.interceptor = () => false
+
+            listeners.pointerdown({pointerId: 1, clientX: 100, clientY: 100})
+            expect(canvas.setPointerCapture).toHaveBeenCalledWith(1)
+        })
+
+        test('no interceptor lets events through', () => {
+            const orbit = new OrbitCamera(camera3d, canvas)
+            const listeners = {}
+            canvas.addEventListener = vi.fn((type, fn) => { listeners[type] = fn })
+            orbit.attach()
+
+            listeners.pointerdown({pointerId: 1, clientX: 100, clientY: 100})
+            expect(canvas.setPointerCapture).toHaveBeenCalledWith(1)
+        })
+
+    })
+
+
     describe('attach / detach', () => {
 
         test('attach registers event listeners', () => {
