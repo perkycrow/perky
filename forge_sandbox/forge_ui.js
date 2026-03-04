@@ -43,11 +43,13 @@ export default class ForgeUI {
     #shapePalette = null
     #colorPalette = null
     #snapButton = null
+    #fileInput = null
     #toast = null
 
     constructor (container, forge) {
         this.#container = container
         this.#forge = forge
+        this.#createMenuBar()
         this.#createAddButton()
         this.#createShapePalette()
         this.#createSnapButton()
@@ -102,6 +104,57 @@ export default class ForgeUI {
                 this.#toast = null
             }
         }, 600)
+    }
+
+
+    #createMenuBar () {
+        const bar = document.createElement('div')
+        Object.assign(bar.style, {
+            position: 'absolute',
+            top: '24px',
+            left: '24px',
+            display: 'flex',
+            gap: '8px',
+            background: 'rgba(30, 30, 50, 0.85)',
+            padding: '8px',
+            borderRadius: '12px',
+            zIndex: '10'
+        })
+
+        const newBtn = document.createElement('button')
+        newBtn.textContent = '📄'
+        Object.assign(newBtn.style, BUTTON_STYLE)
+        newBtn.style.background = 'rgba(255, 255, 255, 0.1)'
+        newBtn.addEventListener('click', () => this.#forge.newProject())
+        bar.appendChild(newBtn)
+
+        const importBtn = document.createElement('button')
+        importBtn.textContent = '📥'
+        Object.assign(importBtn.style, BUTTON_STYLE)
+        importBtn.style.background = 'rgba(255, 255, 255, 0.1)'
+        importBtn.addEventListener('click', () => this.#fileInput.click())
+        bar.appendChild(importBtn)
+
+        const exportBtn = document.createElement('button')
+        exportBtn.textContent = '📤'
+        Object.assign(exportBtn.style, BUTTON_STYLE)
+        exportBtn.style.background = 'rgba(255, 255, 255, 0.1)'
+        exportBtn.addEventListener('click', () => this.#forge.exportProject())
+        bar.appendChild(exportBtn)
+
+        this.#container.appendChild(bar)
+
+        this.#fileInput = document.createElement('input')
+        this.#fileInput.type = 'file'
+        this.#fileInput.accept = '.json'
+        this.#fileInput.style.display = 'none'
+        this.#fileInput.addEventListener('change', () => {
+            if (this.#fileInput.files[0]) {
+                this.#forge.importProject(this.#fileInput.files[0])
+                this.#fileInput.value = ''
+            }
+        })
+        this.#container.appendChild(this.#fileInput)
     }
 
 

@@ -24,6 +24,7 @@ import {snap} from '../math/utils.js'
 
 const MIN_SCALE = 0.1
 const HANDLE_SIZE = 0.12
+const STORAGE_KEY = 'forge-project'
 
 const DEFAULT_WIREFRAME_COLOR = [0.6, 0.6, 0.6]
 
@@ -133,6 +134,12 @@ export default class ForgeSandbox extends Game {
     }
 
 
+    onStart () {
+        super.onStart()
+        this.loadFromStorage()
+    }
+
+
     get selectedBrush () {
         return this.#selectedBrush
     }
@@ -143,6 +150,7 @@ export default class ForgeSandbox extends Game {
         this.brushSet.add(new Brush({shape, x: 0, y, z: 0}))
         this.brushSet.build()
         this.history.save()
+        this.saveToStorage()
     }
 
 
@@ -164,6 +172,7 @@ export default class ForgeSandbox extends Game {
         this.brushSet.add(clone, newIndex)
         this.brushSet.build()
         this.history.save()
+        this.saveToStorage()
         this.#select(newIndex)
         this.ui.showToast('Duplicated')
     }
@@ -178,6 +187,7 @@ export default class ForgeSandbox extends Game {
         this.brushSet.remove(index)
         this.brushSet.build()
         this.history.save()
+        this.saveToStorage()
         this.ui.showToast('Deleted')
     }
 
@@ -190,6 +200,7 @@ export default class ForgeSandbox extends Game {
         brush.operation = operation
         this.brushSet.build()
         this.history.save()
+        this.saveToStorage()
         this.ui.updateOperationToolbar(brush.operation)
     }
 
@@ -202,6 +213,112 @@ export default class ForgeSandbox extends Game {
         brush.color = [...color]
         this.brushSet.build()
         this.history.save()
+        this.saveToStorage()
+    }
+
+
+    toJSON () {
+        return {
+            version: 1,
+            brushes: this.brushSet.toJSON(),
+            snapEnabled: this.snapEnabled,
+            gridStep: this.gridStep,
+            camera: {
+                theta: this.orbitCamera.theta,
+                phi: this.orbitCamera.phi,
+                radius: this.orbitCamera.radius,
+                targetX: this.orbitCamera.target.x,
+                targetY: this.orbitCamera.target.y,
+                targetZ: this.orbitCamera.target.z
+            }
+        }
+    }
+
+
+    fromJSON (data) {
+        this.#deselect()
+
+        while (this.brushSet.count > 0) {
+            this.brushSet.remove(0)
+        }
+        for (const entry of data.brushes) {
+            this.brushSet.add(Brush.fromJSON(entry))
+        }
+        this.brushSet.build()
+
+        this.snapEnabled = data.snapEnabled ?? true
+        this.gridStep = data.gridStep ?? 0.25
+        this.ui.updateSnapButton(this.snapEnabled)
+
+        if (data.camera) {
+            this.orbitCamera.theta = data.camera.theta
+            this.orbitCamera.phi = data.camera.phi
+            this.orbitCamera.radius = data.camera.radius
+            this.orbitCamera.target.set(
+                data.camera.targetX ?? 0,
+                data.camera.targetY ?? 0,
+                data.camera.targetZ ?? 0
+            )
+            this.orbitCamera.update()
+        }
+
+        this.history.clear()
+        this.history.save()
+    }
+
+
+    saveToStorage () {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.toJSON()))
+    }
+
+
+    loadFromStorage () {
+        const raw = localStorage.getItem(STORAGE_KEY)
+        if (!raw) {
+            return false
+        }
+        this.fromJSON(JSON.parse(raw))
+        return true
+    }
+
+
+    newProject () {
+        this.#deselect()
+        while (this.brushSet.count > 0) {
+            this.brushSet.remove(0)
+        }
+        this.brushSet.build()
+        this.snapEnabled = true
+        this.gridStep = 0.25
+        this.ui.updateSnapButton(this.snapEnabled)
+        this.history.clear()
+        this.history.save()
+        localStorage.removeItem(STORAGE_KEY)
+        this.ui.showToast('New Project')
+    }
+
+
+    exportProject () {
+        const json = JSON.stringify(this.toJSON(), null, 2)
+        const blob = new Blob([json], {type: 'application/json'})
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'forge-project.json'
+        a.click()
+        URL.revokeObjectURL(url)
+        this.ui.showToast('Exported')
+    }
+
+
+    importProject (file) {
+        const reader = new FileReader()
+        reader.onload = () => {
+            this.fromJSON(JSON.parse(reader.result))
+            this.saveToStorage()
+            this.ui.showToast('Imported')
+        }
+        reader.readAsText(file)
     }
 
 
@@ -432,6 +549,7 @@ export default class ForgeSandbox extends Game {
         this.#dragState = null
         this.brushSet.build()
         this.history.save()
+        this.saveToStorage()
 
         return true
     }
@@ -613,12 +731,25 @@ export default class ForgeSandbox extends Game {
             this.deleteBrush()
             return true
         }
+        if (e.key === 'n') {
+            this.newProject()
+            return true
+        }
+        if (e.key === 'e') {
+            this.exportProject()
+            return true
+        }
         return false
     }
 
 
     #handleUndoRedo (e) {
         if (!e.ctrlKey && !e.metaKey) {
+            return
+        }
+        if (e.key === 's') {
+            e.preventDefault()
+            this.exportProject()
             return
         }
         if (e.key !== 'z') {
@@ -661,6 +792,7 @@ export default class ForgeSandbox extends Game {
         brush.rotation.set(0, 0, 0)
         this.brushSet.build()
         this.history.save()
+        this.saveToStorage()
         this.ui.showToast('Rotation Reset')
     }
 
