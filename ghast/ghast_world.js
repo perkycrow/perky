@@ -25,44 +25,54 @@ export default class GhastWorld extends World {
 
 
     spawnShade (options = {}) {
-        return this.create(Shade, {
+        const entity = this.create(Shade, {
             $id: 'shade',
             $bind: 'shade',
             x: options.x || 0,
             y: options.y || 0
         })
+        entity.team = options.team || null
+        return entity
     }
 
 
     spawnSkeleton (options = {}) {
-        return this.create(Skeleton, {
+        const entity = this.create(Skeleton, {
             x: options.x || 0,
             y: options.y || 0
         })
+        entity.team = options.team || null
+        return entity
     }
 
 
     spawnRat (options = {}) {
-        return this.create(Rat, {
+        const entity = this.create(Rat, {
             x: options.x || 0,
             y: options.y || 0
         })
+        entity.team = options.team || null
+        return entity
     }
 
 
     spawnInquisitor (options = {}) {
-        return this.create(Inquisitor, {
+        const entity = this.create(Inquisitor, {
             x: options.x || 0,
             y: options.y || 0
         })
+        entity.team = options.team || null
+        return entity
     }
 
 
     spawnSoul (options = {}) {
-        return this.create(Soul, {
+        const entity = this.create(Soul, {
             x: options.x || 0,
             y: options.y || 0
         })
+        entity.team = options.team || null
+        return entity
     }
 
 

@@ -48,9 +48,9 @@ describe('OutlineEffect', () => {
     })
 
 
-    test('getParams returns width value', () => {
+    test('getParams returns width and color values', () => {
         const effect = new OutlineEffect({width: 0.03})
-        expect(effect.getParams()).toEqual([0.03])
+        expect(effect.getParams()).toEqual([0.03, 1.0, 1.0, 1.0])
     })
 
 
