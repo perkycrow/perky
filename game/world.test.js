@@ -288,4 +288,55 @@ describe('World', () => {
 
     })
 
+
+    describe('checkHit', () => {
+
+        test('returns entity when hit radii overlap', () => {
+            world.start()
+            const a = world.create(Entity, {$id: 'a', x: 0, y: 0, hitRadius: 0.5})
+            const b = world.create(Entity, {$id: 'b', x: 0.8, y: 0, hitRadius: 0.5})
+
+            const result = world.checkHit(a)
+
+            expect(result).toBe(b)
+        })
+
+
+        test('returns null when no overlap', () => {
+            world.start()
+            const a = world.create(Entity, {$id: 'a', x: 0, y: 0, hitRadius: 0.3})
+            world.create(Entity, {$id: 'b', x: 5, y: 0, hitRadius: 0.3})
+
+            const result = world.checkHit(a)
+
+            expect(result).toBe(null)
+        })
+
+
+        test('applies filter function', () => {
+            world.start()
+            const a = world.create(Entity, {$id: 'a', x: 0, y: 0, hitRadius: 0.5})
+            a.team = 'shadow'
+            const b = world.create(Entity, {$id: 'b', x: 0.5, y: 0, hitRadius: 0.5})
+            b.team = 'shadow'
+            const c = world.create(Entity, {$id: 'c', x: 0.8, y: 0, hitRadius: 0.5})
+            c.team = 'light'
+
+            const result = world.checkHit(a, e => e.team !== a.team)
+
+            expect(result).toBe(c)
+        })
+
+
+        test('excludes self', () => {
+            world.start()
+            const a = world.create(Entity, {$id: 'a', x: 0, y: 0, hitRadius: 1})
+
+            const result = world.checkHit(a)
+
+            expect(result).toBe(null)
+        })
+
+    })
+
 })

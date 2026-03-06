@@ -53,6 +53,28 @@ export default class World extends PerkyModule {
     }
 
 
+    checkHit (entity, filter) {
+        for (const other of this.entities) {
+            if (other === entity) {
+                continue
+            }
+
+            if (filter && !filter(other)) {
+                continue
+            }
+
+            const dist = entity.position.distanceTo(other.position)
+            const threshold = (entity.hitRadius || 0) + (other.hitRadius || 0)
+
+            if (dist < threshold) {
+                return other
+            }
+        }
+
+        return null
+    }
+
+
     entitiesInRange (entity, range, filter) {
         const rangeSq = range * range
         const results = []

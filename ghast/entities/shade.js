@@ -6,7 +6,7 @@ import Dash from '../../game/dash.js'
 export default class Shade extends Entity {
 
     constructor (params = {}) {
-        super(params)
+        super({hitRadius: 0.3, ...params})
 
         this.create(Velocity)
         this.create(Dash)

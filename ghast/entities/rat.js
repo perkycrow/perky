@@ -6,7 +6,7 @@ import Steering from '../../game/steering.js'
 export default class Rat extends Entity {
 
     constructor (params = {}) {
-        super(params)
+        super({hitRadius: 0.25, ...params})
 
         this.create(Velocity)
         this.create(Steering)

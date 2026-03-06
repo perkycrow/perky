@@ -7,7 +7,7 @@ import Dash from '../../game/dash.js'
 export default class Skeleton extends Entity {
 
     constructor (params = {}) {
-        super(params)
+        super({hitRadius: 0.3, ...params})
 
         this.create(Velocity)
         this.create(Steering)
@@ -26,15 +26,16 @@ export default class Skeleton extends Entity {
 
 
     update (deltaTime) {
+        const world = this.host
+
         this.updateDash(deltaTime)
 
         if (this.isDashing()) {
+            this.#checkChargeHit(world)
             this.clampVelocity(this.maxSpeed * 5)
             this.applyVelocity(deltaTime)
             return
         }
-
-        const world = this.host
         const enemy = world.nearest(this, 5, e => e.team && e.team !== this.team)
 
         if (enemy) {
@@ -57,6 +58,17 @@ export default class Skeleton extends Entity {
         applyMovement(this, deltaTime)
         this.clampVelocity(this.maxSpeed)
         this.applyVelocity(deltaTime)
+    }
+
+
+    #checkChargeHit (world) {
+        const hit = world.checkHit(this, e => {
+            return e.team && e.team !== this.team && e.hitRadius > 0
+        })
+
+        if (hit) {
+            world.emit('hit', {source: this, target: hit})
+        }
     }
 
 }

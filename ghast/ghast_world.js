@@ -7,6 +7,7 @@ import Soul from './entities/soul.js'
 import Cage from './entities/cage.js'
 import Turret from './entities/turret.js'
 import Jar from './entities/jar.js'
+import Projectile from './entities/projectile.js'
 
 
 export default class GhastWorld extends World {
@@ -20,6 +21,48 @@ export default class GhastWorld extends World {
         const direction = context.getDirection('move')
         if (this.shade) {
             this.shade.move(direction)
+        }
+    }
+
+
+    postUpdate () {
+        this.#checkProjectileHits()
+        this.#cleanup()
+    }
+
+
+    #checkProjectileHits () {
+        for (const entity of this.entities) {
+            if (!(entity instanceof Projectile) || !entity.alive) {
+                continue
+            }
+
+            const hit = this.checkHit(entity, e => {
+                if (e instanceof Projectile) {
+                    return false
+                }
+                if (!e.team || e.team === entity.team) {
+                    return false
+                }
+                if (e === entity.source) {
+                    return false
+                }
+                return e.hitRadius > 0
+            })
+
+            if (hit) {
+                entity.alive = false
+                this.emit('hit', {source: entity.source, target: hit, projectile: entity})
+            }
+        }
+    }
+
+
+    #cleanup () {
+        for (const entity of this.entities) {
+            if (entity.alive === false) {
+                this.removeChild(entity.$id)
+            }
         }
     }
 
@@ -96,6 +139,20 @@ export default class GhastWorld extends World {
         return this.create(Jar, {
             x: options.x || 0,
             y: options.y || 0
+        })
+    }
+
+
+    spawnProjectile (options = {}) {
+        return this.create(Projectile, {
+            x: options.x || 0,
+            y: options.y || 0,
+            dirX: options.dirX || 0,
+            dirY: options.dirY || 0,
+            speed: options.speed || 6,
+            team: options.team || null,
+            source: options.source || null,
+            ttl: options.ttl || 3
         })
     }
 
