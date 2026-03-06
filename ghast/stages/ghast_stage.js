@@ -17,6 +17,12 @@ export default class GhastStage extends Stage {
         this.groundPass = this.addPostPass(GroundPass)
         this.game.execute('spawnShade', {x: 0, y: 0})
         this.game.execute('spawnSkeleton', {x: 1.5, y: 0})
+        this.game.execute('spawnRat', {x: -1.5, y: 0})
+        this.game.execute('spawnInquisitor', {x: 0, y: 1.5})
+        this.game.execute('spawnSoul', {x: 0, y: -1.5})
+        this.game.execute('spawnCage', {x: 3, y: 0})
+        this.game.execute('spawnTurret', {x: -3, y: 0})
+        this.game.execute('spawnJar', {x: 3, y: 1.5})
     }
 
 

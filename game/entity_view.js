@@ -11,6 +11,7 @@ export default class EntityView {
         if (this.root) {
             this.root.x = this.entity.x
             this.root.y = this.entity.y
+            this.root.setDepth(-this.entity.y)
         }
     }
 
