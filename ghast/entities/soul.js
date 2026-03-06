@@ -1,5 +1,6 @@
 import Entity from '../../game/entity.js'
 import Velocity from '../../game/velocity.js'
+import Steering from '../../game/steering.js'
 
 
 export default class Soul extends Entity {
@@ -8,6 +9,7 @@ export default class Soul extends Entity {
         super(params)
 
         this.create(Velocity)
+        this.create(Steering)
 
         const {maxSpeed = 2.5, acceleration = 15} = params
 
@@ -22,6 +24,19 @@ export default class Soul extends Entity {
 
 
     update (deltaTime) {
+        const world = this.host
+        const ally = world.nearest(this, 6, e => e.team === this.team)
+
+        if (ally) {
+            this.arrive(ally.position, 0.8, 2)
+        }
+
+        this.wander(0.5)
+
+        const neighbors = world.entitiesInRange(this, 1)
+        this.separate(neighbors, 0.8)
+
+        this.move(this.resolveForce())
         applyMovement(this, deltaTime)
         this.clampVelocity(this.maxSpeed)
         this.applyVelocity(deltaTime)
@@ -30,11 +45,11 @@ export default class Soul extends Entity {
 }
 
 
-function applyMovement (soul, deltaTime) {
-    if (soul.direction?.length() > 0) {
-        const accel = soul.direction.clone().multiplyScalar(soul.acceleration * deltaTime)
-        soul.velocity.add(accel)
+function applyMovement (entity, deltaTime) {
+    if (entity.direction?.length() > 0) {
+        const accel = entity.direction.clone().multiplyScalar(entity.acceleration * deltaTime)
+        entity.velocity.add(accel)
     } else {
-        soul.dampenVelocity(0.01, deltaTime)
+        entity.dampenVelocity(0.01, deltaTime)
     }
 }

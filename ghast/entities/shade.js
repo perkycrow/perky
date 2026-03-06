@@ -1,5 +1,6 @@
 import Entity from '../../game/entity.js'
 import Velocity from '../../game/velocity.js'
+import Dash from '../../game/dash.js'
 
 
 export default class Shade extends Entity {
@@ -8,6 +9,7 @@ export default class Shade extends Entity {
         super(params)
 
         this.create(Velocity)
+        this.create(Dash)
 
         const {maxSpeed = 3, acceleration = 25} = params
 
@@ -21,20 +23,38 @@ export default class Shade extends Entity {
     }
 
 
+    triggerDash () {
+        const dir = this.velocity.length() > 0.1
+            ? this.velocity.clone().normalize()
+            : this.direction?.length() > 0
+                ? this.direction.clone()
+                : null
+
+        if (dir) {
+            this.dash(dir, {power: 12, duration: 0.12, cooldown: 0.6})
+        }
+    }
+
+
     update (deltaTime) {
-        applyMovement(this, deltaTime)
-        this.clampVelocity(this.maxSpeed)
+        this.updateDash(deltaTime)
+
+        if (!this.isDashing()) {
+            applyMovement(this, deltaTime)
+        }
+
+        this.clampVelocity(this.isDashing() ? this.maxSpeed * 4 : this.maxSpeed)
         this.applyVelocity(deltaTime)
     }
 
 }
 
 
-function applyMovement (shade, deltaTime) {
-    if (shade.direction?.length() > 0) {
-        const accel = shade.direction.clone().multiplyScalar(shade.acceleration * deltaTime)
-        shade.velocity.add(accel)
+function applyMovement (entity, deltaTime) {
+    if (entity.direction?.length() > 0) {
+        const accel = entity.direction.clone().multiplyScalar(entity.acceleration * deltaTime)
+        entity.velocity.add(accel)
     } else {
-        shade.dampenVelocity(0.01, deltaTime)
+        entity.dampenVelocity(0.01, deltaTime)
     }
 }
