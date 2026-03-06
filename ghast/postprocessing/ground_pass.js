@@ -69,17 +69,20 @@ export default class GroundPass extends RenderPass {
                 // Start position at edge of tile (radius ~0.5)
                 vec2 startPos = startDir * 0.48;
 
+                // Early-out: skip if pixel is too far from tendril origin
+                float maxReach = 0.55;
+                if (length(p - startPos) > maxReach) return 1.0;
+
                 // Animated length - slow breathing effect
                 float timeOffset = hash(seed * 6.66) * 6.28;
-                float breatheSpeed = 0.3 + hash(seed * 7.77) * 0.2; // 0.3 to 0.5 - slow
-                float breathe = sin(time * breatheSpeed + timeOffset) * 0.5 + 0.5; // 0 to 1
+                float breatheSpeed = 0.3 + hash(seed * 7.77) * 0.2;
+                float breathe = sin(time * breatheSpeed + timeOffset) * 0.5 + 0.5;
 
-                // Tendril properties - more variation in length, bigger amplitude
-                float baseLength = 0.1 + hash(seed * 1.1) * 0.4; // 0.1 to 0.5
-                float totalLength = baseLength * (0.4 + breathe * 0.6); // animate between 40% and 100%
+                // Tendril properties
+                float baseLength = 0.1 + hash(seed * 1.1) * 0.4;
+                float totalLength = baseLength * (0.4 + breathe * 0.6);
 
-                // Wiggle speed - moderate and varies per tendril
-                float wiggleSpeed = 1.2 + hash(seed * 8.88) * 1.0; // 1.2 to 2.2
+                float wiggleSpeed = 1.2 + hash(seed * 8.88) * 1.0;
                 float baseWidth = 0.015 + hash(seed * 2.2) * 0.01;
                 float curliness = 1.0 + hash(seed * 3.3) * 1.5;
                 float curlFreq = 3.0 + hash(seed * 4.4) * 2.0;
@@ -87,25 +90,20 @@ export default class GroundPass extends RenderPass {
                 // March along the tendril and find closest point
                 float minDist = 1.0;
                 vec2 pos = startPos;
+                float stepSize = totalLength / 11.0;
 
-                for (int step = 0; step < 30; step++) {
-                    float t = float(step) / 29.0;
+                for (int step = 0; step < 12; step++) {
+                    float t = float(step) / 11.0;
 
-                    // Curl the direction as we go outward - with animated wiggle
-                    // Wiggle increases along the tendril (tip moves more than base)
                     float wiggle = sin(time * wiggleSpeed + t * 3.0 + timeOffset) * 0.8 * t;
                     float curlAngle = startAngle + wiggle + sin(t * curlFreq + hash(seed * 5.5) * 6.28) * curliness * t;
                     vec2 dir = vec2(cos(curlAngle), sin(curlAngle));
 
-                    // Width tapers toward tip
                     float width = baseWidth * (1.0 - t * 0.8);
 
-                    // Distance from query point to this segment
                     float d = length(p - pos) - width;
                     minDist = min(minDist, d);
 
-                    // Move along path
-                    float stepSize = totalLength / 29.0;
                     pos += dir * stepSize;
                 }
 
@@ -121,9 +119,9 @@ export default class GroundPass extends RenderPass {
                 if (damageLevel < 0.5) return 1.0;
 
                 float minDist = 1.0;
-                int numTendrils = 2 + int(hash(tileIndex * 4.44) * 3.0);
+                int numTendrils = 2 + int(hash(tileIndex * 4.44) * 1.0);
 
-                for (int i = 0; i < 4; i++) {
+                for (int i = 0; i < 3; i++) {
                     if (i >= numTendrils) break;
                     float d = curlTendril(p, tileIndex, i, time);
                     minDist = min(minDist, d);
@@ -164,7 +162,7 @@ export default class GroundPass extends RenderPass {
                 grayBlend = 0.5;
 
                 // Multiple scales of splatters
-                for (int layer = 0; layer < 3; layer++) {
+                for (int layer = 0; layer < 2; layer++) {
                     float scale = 8.0 + float(layer) * 6.0;
                     vec2 p = worldPos * scale;
                     vec2 cellId = floor(p);
