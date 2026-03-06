@@ -14,6 +14,10 @@ export default class GhastWorld extends World {
 
     constructor (options = {}) {
         super(options)
+
+        this.on('hit', ({target, source}) => {
+            this.#applyHit(target, source)
+        })
     }
 
 
@@ -54,6 +58,33 @@ export default class GhastWorld extends World {
                 entity.alive = false
                 this.emit('hit', {source: entity.source, target: hit, projectile: entity})
             }
+        }
+    }
+
+
+    #applyHit (target, source) {
+        if (!target.damage) {
+            return
+        }
+
+        const dealt = target.damage(1, {invincibility: 0.3})
+
+        if (!dealt) {
+            return
+        }
+
+        if (source && target.velocity) {
+            const knockDir = target.position.clone().sub(source.position)
+            const len = knockDir.length()
+
+            if (len > 0.01) {
+                knockDir.multiplyScalar(5 / len)
+                target.velocity.add(knockDir)
+            }
+        }
+
+        if (!target.isAlive()) {
+            target.alive = false
         }
     }
 

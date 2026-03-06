@@ -14,6 +14,11 @@ export default class GhastView extends EntityView {
         super(entity, context)
 
         this.outlineEffect = null
+        this.flashTimer = 0
+
+        entity.on('damaged', () => {
+            this.flashTimer = 0.15
+        })
     }
 
 
@@ -38,11 +43,23 @@ export default class GhastView extends EntityView {
         this.root.y = this.entity.y
         this.root.setDepth(-this.entity.y)
 
+        if (this.flashTimer > 0) {
+            this.flashTimer -= 1 / 60
+            this.root.tint = [1, 1, 1, 0.6]
+        } else if (this.root.tint) {
+            this.root.tint = null
+        }
+
         if (this.outlineEffect) {
             const team = this.entity.team
             if (team) {
-                this.outlineEffect.width = 0.04
-                this.outlineEffect.color = teamColors[team] || [1, 1, 1]
+                if (this.flashTimer > 0) {
+                    this.outlineEffect.width = 0.08
+                    this.outlineEffect.color = [1, 1, 1]
+                } else {
+                    this.outlineEffect.width = 0.04
+                    this.outlineEffect.color = teamColors[team] || [1, 1, 1]
+                }
             } else {
                 this.outlineEffect.width = 0
             }

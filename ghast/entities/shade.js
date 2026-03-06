@@ -1,6 +1,7 @@
 import Entity from '../../game/entity.js'
 import Velocity from '../../game/velocity.js'
 import Dash from '../../game/dash.js'
+import Health from '../../game/health.js'
 
 
 export default class Shade extends Entity {
@@ -10,6 +11,7 @@ export default class Shade extends Entity {
 
         this.create(Velocity)
         this.create(Dash)
+        this.create(Health, {hp: 5})
 
         const {maxSpeed = 3, acceleration = 25} = params
 
@@ -37,6 +39,7 @@ export default class Shade extends Entity {
 
 
     update (deltaTime) {
+        this.updateHealth(deltaTime)
         this.updateDash(deltaTime)
 
         if (!this.isDashing()) {

@@ -1,6 +1,7 @@
 import Entity from '../../game/entity.js'
 import Velocity from '../../game/velocity.js'
 import Steering from '../../game/steering.js'
+import Health from '../../game/health.js'
 
 
 export default class Rat extends Entity {
@@ -10,6 +11,7 @@ export default class Rat extends Entity {
 
         this.create(Velocity)
         this.create(Steering)
+        this.create(Health, {hp: 1})
 
         const {maxSpeed = 3, acceleration = 25} = params
 
@@ -24,6 +26,8 @@ export default class Rat extends Entity {
 
 
     update (deltaTime) {
+        this.updateHealth(deltaTime)
+
         const world = this.host
         const enemy = world.nearest(this, 4, e => e.team && e.team !== this.team)
 

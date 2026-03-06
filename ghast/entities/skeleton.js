@@ -2,6 +2,7 @@ import Entity from '../../game/entity.js'
 import Velocity from '../../game/velocity.js'
 import Steering from '../../game/steering.js'
 import Dash from '../../game/dash.js'
+import Health from '../../game/health.js'
 
 
 export default class Skeleton extends Entity {
@@ -12,6 +13,7 @@ export default class Skeleton extends Entity {
         this.create(Velocity)
         this.create(Steering)
         this.create(Dash)
+        this.create(Health, {hp: 3})
 
         const {maxSpeed = 1.5, acceleration = 8} = params
 
@@ -28,6 +30,7 @@ export default class Skeleton extends Entity {
     update (deltaTime) {
         const world = this.host
 
+        this.updateHealth(deltaTime)
         this.updateDash(deltaTime)
 
         if (this.isDashing()) {
