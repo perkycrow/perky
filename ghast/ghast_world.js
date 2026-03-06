@@ -21,6 +21,23 @@ export default class GhastWorld extends World {
     }
 
 
+    update (deltaTime, context) {
+        if (!this.started) {
+            return
+        }
+
+        this.preUpdate(deltaTime, context)
+
+        for (const entity of this.entities) {
+            if (entity.started && !entity.dying) {
+                entity.update(deltaTime)
+            }
+        }
+
+        this.postUpdate(deltaTime, context)
+    }
+
+
     preUpdate (deltaTime, context) {
         const direction = context.getDirection('move')
         if (this.shade) {
@@ -29,8 +46,9 @@ export default class GhastWorld extends World {
     }
 
 
-    postUpdate () {
+    postUpdate (deltaTime) {
         this.#checkProjectileHits()
+        this.#updateDying(deltaTime)
         this.#cleanup()
     }
 
@@ -84,7 +102,21 @@ export default class GhastWorld extends World {
         }
 
         if (!target.isAlive()) {
-            target.alive = false
+            target.dying = 0.3
+            target.hitRadius = 0
+        }
+    }
+
+
+    #updateDying (deltaTime) {
+        for (const entity of this.entities) {
+            if (entity.dying > 0) {
+                entity.dying -= deltaTime
+
+                if (entity.dying <= 0) {
+                    entity.alive = false
+                }
+            }
         }
     }
 

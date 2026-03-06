@@ -7,6 +7,9 @@ const teamColors = {
     light: [1.0, 0.2, 0.2]
 }
 
+const DEATH_DURATION = 0.3
+const LUNGE_DISTANCE = 0.25
+
 
 export default class GhastView extends EntityView {
 
@@ -43,6 +46,21 @@ export default class GhastView extends EntityView {
         this.root.y = this.entity.y
         this.root.setDepth(-this.entity.y)
 
+        if (this.entity.dying > 0) {
+            const t = Math.max(0, this.entity.dying / DEATH_DURATION)
+            this.root.setScale(t)
+            this.root.opacity = t
+            if (this.outlineEffect) {
+                this.outlineEffect.width = 0
+            }
+            return
+        }
+
+        this.root.setScale(1)
+        this.root.opacity = 1
+
+        this.#syncAttackLunge()
+
         if (this.flashTimer > 0) {
             this.flashTimer -= 1 / 60
             this.root.tint = [1, 1, 1, 0.6]
@@ -64,6 +82,33 @@ export default class GhastView extends EntityView {
                 this.outlineEffect.width = 0
             }
         }
+    }
+
+
+    #syncAttackLunge () {
+        const entity = this.entity
+
+        if (!entity.isAttacking?.()) {
+            return
+        }
+
+        const comp = entity.components?.find(c => c.phase)
+
+        if (!comp) {
+            return
+        }
+
+        const dir = comp.attackDirection
+        let offset = 0
+
+        if (comp.phase === 'winding') {
+            offset = -comp.attackProgress * LUNGE_DISTANCE * 0.3
+        } else if (comp.phase === 'striking') {
+            offset = (1 - comp.attackProgress) * LUNGE_DISTANCE
+        }
+
+        this.root.x += dir.x * offset
+        this.root.y += dir.y * offset
     }
 
 }

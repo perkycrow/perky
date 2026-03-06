@@ -3,6 +3,7 @@ import Velocity from '../../game/velocity.js'
 import Steering from '../../game/steering.js'
 import Dash from '../../game/dash.js'
 import Health from '../../game/health.js'
+import MeleeAttack from '../../game/melee_attack.js'
 
 
 export default class Skeleton extends Entity {
@@ -14,11 +15,16 @@ export default class Skeleton extends Entity {
         this.create(Steering)
         this.create(Dash)
         this.create(Health, {hp: 3})
+        this.create(MeleeAttack, {damage: 1, range: 0.5, cooldown: 1.2, windUp: 0.15, strikeTime: 0.1})
 
         const {maxSpeed = 1.5, acceleration = 8} = params
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
+
+        this.on('strike', ({target}) => {
+            this.host?.emit('hit', {source: this, target})
+        })
     }
 
 
@@ -32,6 +38,7 @@ export default class Skeleton extends Entity {
 
         this.updateHealth(deltaTime)
         this.updateDash(deltaTime)
+        this.updateMeleeAttack(deltaTime)
 
         if (this.isDashing()) {
             this.#checkChargeHit(world)
@@ -39,12 +46,21 @@ export default class Skeleton extends Entity {
             this.applyVelocity(deltaTime)
             return
         }
+
+        if (this.isAttacking()) {
+            this.dampenVelocity(0.001, deltaTime)
+            this.applyVelocity(deltaTime)
+            return
+        }
+
         const enemy = world.nearest(this, 5, e => e.team && e.team !== this.team)
 
         if (enemy) {
             const distSq = this.position.distanceToSquared(enemy.position)
 
-            if (distSq < 2.5 * 2.5) {
+            if (this.meleeAttack(enemy)) {
+                // melee attack started
+            } else if (distSq < 2.5 * 2.5 && !this.isAttacking()) {
                 const dir = enemy.position.clone().sub(this.position)
                 this.dash(dir, {power: 8, duration: 0.25, cooldown: 2, sustain: 0.8})
             } else {
