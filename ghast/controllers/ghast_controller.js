@@ -10,8 +10,8 @@ export default class GhastController extends GameController {
         moveRight: ['KeyD', 'ArrowRight', 'swipeRight']
     }
 
-    spawnPlayer (options = {}) {
-        return this.world.spawnPlayer(options)
+    spawnShade (options = {}) {
+        return this.world.spawnShade(options)
     }
 
 }

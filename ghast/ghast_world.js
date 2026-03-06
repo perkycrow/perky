@@ -1,5 +1,5 @@
 import World from '../game/world.js'
-import Player from './player.js'
+import Shade from './entities/shade.js'
 
 
 export default class GhastWorld extends World {
@@ -11,16 +11,16 @@ export default class GhastWorld extends World {
 
     preUpdate (deltaTime, context) {
         const direction = context.getDirection('move')
-        if (this.player) {
-            this.player.move(direction)
+        if (this.shade) {
+            this.shade.move(direction)
         }
     }
 
 
-    spawnPlayer (options = {}) {
-        return this.create(Player, {
-            $id: 'player',
-            $bind: 'player',
+    spawnShade (options = {}) {
+        return this.create(Shade, {
+            $id: 'shade',
+            $bind: 'shade',
             x: options.x || 0,
             y: options.y || 0
         })

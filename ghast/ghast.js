@@ -22,10 +22,10 @@ export default class Ghast extends Game {
 
 
     #updateCamera () {
-        const player = this.world?.player
-        if (player) {
-            this.camera.x = player.x
-            this.camera.y = player.y
+        const shade = this.world?.shade
+        if (shade) {
+            this.camera.x = shade.x
+            this.camera.y = shade.y
         }
     }
 

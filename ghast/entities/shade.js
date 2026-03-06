@@ -1,8 +1,8 @@
-import Entity from '../game/entity.js'
-import Velocity from '../game/velocity.js'
+import Entity from '../../game/entity.js'
+import Velocity from '../../game/velocity.js'
 
 
-export default class Player extends Entity {
+export default class Shade extends Entity {
 
     constructor (params = {}) {
         super(params)
@@ -30,11 +30,11 @@ export default class Player extends Entity {
 }
 
 
-function applyMovement (player, deltaTime) {
-    if (player.direction?.length() > 0) {
-        const accel = player.direction.clone().multiplyScalar(player.acceleration * deltaTime)
-        player.velocity.add(accel)
+function applyMovement (shade, deltaTime) {
+    if (shade.direction?.length() > 0) {
+        const accel = shade.direction.clone().multiplyScalar(shade.acceleration * deltaTime)
+        shade.velocity.add(accel)
     } else {
-        player.dampenVelocity(0.01, deltaTime)
+        shade.dampenVelocity(0.01, deltaTime)
     }
 }

@@ -27,9 +27,9 @@ export default class GroundPass extends RenderPass {
             in vec2 vTexCoord;
             out vec4 fragColor;
 
-            // Colors
-            const vec3 COLOR_LIGHT = vec3(0.68, 0.66, 0.64);
-            const vec3 COLOR_DARK = vec3(0.52, 0.50, 0.48);
+            // Colors - slight cool tint for atmosphere
+            const vec3 COLOR_LIGHT = vec3(0.66, 0.67, 0.68);
+            const vec3 COLOR_DARK = vec3(0.48, 0.50, 0.52);
 
             float hash(vec2 p) {
                 return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
@@ -243,6 +243,12 @@ export default class GroundPass extends RenderPass {
                 vec3 lightColor = COLOR_LIGHT + hash(closestLightTile * 2.2) * 0.03 - 0.015;
                 baseColor = mix(darkColor, lightColor, lightBlend);
 
+                // // Cushion effect - darken edges of light tiles for depth
+                // if (lightBlend > 0.01) {
+                //     float edgeDist = smoothstep(0.0, 0.15, -minDist);
+                //     baseColor *= 1.0 - edgeDist * 0.12;
+                // }
+
                 // Paint splatters
                 float grayBlend;
                 float splatIntensity = splatter(worldPos, grayBlend);
@@ -250,6 +256,15 @@ export default class GroundPass extends RenderPass {
                     vec3 splatColor = mix(COLOR_DARK - 0.03, COLOR_LIGHT + 0.03, grayBlend);
                     baseColor = mix(baseColor, splatColor, splatIntensity * 0.6);
                 }
+
+                // Fine grain noise
+                float grain = hash(pixelPos + fract(uTime * 0.1)) * 0.04 - 0.02;
+                baseColor += grain;
+
+                // Vignette
+                vec2 uv = vTexCoord * 2.0 - 1.0;
+                float vignette = 1.0 - dot(uv * 0.5, uv * 0.5);
+                baseColor *= smoothstep(0.0, 1.0, vignette);
 
                 // Composite with scene
                 vec4 sceneColor = texture(uTexture, vTexCoord);

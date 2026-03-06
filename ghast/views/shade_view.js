@@ -2,7 +2,7 @@ import EntityView from '../../game/entity_view.js'
 import Sprite from '../../render/sprite.js'
 
 
-export default class PlayerView extends EntityView {
+export default class ShadeView extends EntityView {
 
     constructor (entity, context) {
         super(entity, context)
