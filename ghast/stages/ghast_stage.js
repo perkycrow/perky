@@ -16,6 +16,7 @@ export default class GhastStage extends Stage {
         this.game.getLayer('game').setContent(this.viewsGroup)
         this.groundPass = this.addPostPass(GroundPass)
         this.game.execute('spawnShade', {x: 0, y: 0})
+        this.game.execute('spawnSkeleton', {x: 1.5, y: 0})
     }
 
 

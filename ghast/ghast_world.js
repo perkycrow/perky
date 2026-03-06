@@ -1,5 +1,6 @@
 import World from '../game/world.js'
 import Shade from './entities/shade.js'
+import Skeleton from './entities/skeleton.js'
 
 
 export default class GhastWorld extends World {
@@ -21,6 +22,14 @@ export default class GhastWorld extends World {
         return this.create(Shade, {
             $id: 'shade',
             $bind: 'shade',
+            x: options.x || 0,
+            y: options.y || 0
+        })
+    }
+
+
+    spawnSkeleton (options = {}) {
+        return this.create(Skeleton, {
             x: options.x || 0,
             y: options.y || 0
         })
