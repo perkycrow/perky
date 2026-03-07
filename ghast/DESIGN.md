@@ -207,13 +207,34 @@ Les spores reagissent au contexte du swarm :
 - L'empreinte influence subtilement le comportement meme sans spores actifs
 - Ca cree une "histoire" pour chaque entite
 
-### Charme / Lust (rose)
+### Charme / Lust (rose) — Mecanisme de conversion
 
-Mecanisme de conversion : peut retourner un ennemi. A equilibrer car potentiellement abuse. Pistes :
-- Cooldown long, chance de succes faible
-- Ne marche que sur les entites faibles / isolees
-- L'entite convertie perd ses spores ?
-- Temporaire ?
+Le spore lust permet de **convertir une unite ennemie** (changer sa faction). C'est l'action la plus impactante du jeu, donc le cout est proportionnel au gain.
+
+#### Regle de conversion
+
+- Le convertisseur doit avoir **au moins 2 ranks de plus** que la cible
+- Apres conversion, le convertisseur **perd 2 ranks** (perd des slots de spores, devient plus faible)
+- L'unite convertie **garde son rank, son XP et ses stats** — c'est tout l'interet du risque
+
+| Convertisseur | Peut convertir | Cout |
+|---|---|---|
+| Rank 3 | Rank 1 | Passe rank 1 |
+| Rank 4 | Rank 1-2 | Passe rank 2 |
+| Rank 5 | Rank 1-3 | Passe rank 3 |
+| Rank 6 | Rank 1-4 | Passe rank 4 |
+| Rank 7 | Rank 1-6 | **Sacrifice** (meurt) |
+
+#### Exception rank 7 : le sacrifice
+
+Une unite rank 7 peut convertir jusqu'au rank 6 (pas rank 7 — trop abuse). Mais la contrepartie est **la mort du convertisseur**. C'est un moment dramatique : l'unite legendaire se sacrifie pour retourner un ennemi puissant. Narrativement fort, strategiquement risque.
+
+#### Equilibrage
+
+- Le cout en rank = cout en slots de spores. Le convertisseur perd en diversite comportementale.
+- Convertir un veteran rank 6 avec un sacrifice rank 7 = mega-gain (on recupere toute son XP et ses stats). Haut risque, haute recompense.
+- Les combos lust amplifient : lust + arrogance = cible les forts pour convertir. Lust + fear = tente de convertir par desespoir.
+- Cooldown long sur la conversion pour eviter le spam
 
 ### Revision du spore violet (#5) : Ingenu / Naive
 

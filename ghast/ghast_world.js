@@ -9,6 +9,8 @@ import Cage from './entities/cage.js'
 import Turret from './entities/turret.js'
 import Jar from './entities/jar.js'
 import Projectile from './entities/projectile.js'
+import BUFF_DEFINITIONS from './buff_definitions.js'
+import {applySporeReactions, applySwarmReaction} from './spore_reactions.js'
 
 
 export default class GhastWorld extends World {
@@ -30,6 +32,31 @@ export default class GhastWorld extends World {
 
         this.on('battle_resolved', ({battle, winner}) => {
             this.#trackBattleSurvived(battle, winner)
+        })
+
+        this.on('ally_died', ({swarm}) => {
+            for (const member of swarm.members) {
+                if (!member.dying) {
+                    applySporeReactions(member, 'ally_died')
+                }
+            }
+        })
+
+        this.on('kill', ({killer}) => {
+            applySporeReactions(killer, 'kill')
+        })
+
+        this.on('low_hp', ({entity}) => {
+            applySporeReactions(entity, 'low_hp')
+        })
+
+        this.on('surrounded', ({entity}) => {
+            applySporeReactions(entity, 'surrounded')
+        })
+
+        this.on('leader_died', ({swarm}) => {
+            applySwarmReaction(swarm, 'disarray')
+            swarm._leaderDied = true
         })
     }
 
@@ -75,6 +102,8 @@ export default class GhastWorld extends World {
         this.#checkProjectileHits()
         this.#updateDying(deltaTime)
         this.#cleanupSwarms()
+        this.#applyLeaderPromotions()
+        this.#updateBuffs(deltaTime)
         this.#updateBattles(deltaTime)
         this.#cleanupBattles()
         this.#cleanup()
@@ -445,6 +474,35 @@ export default class GhastWorld extends World {
     #cleanupSwarms () {
         for (const swarm of this.swarms) {
             swarm.cleanup()
+        }
+    }
+
+
+    #applyLeaderPromotions () {
+        for (const swarm of this.swarms) {
+            if (!swarm._leaderDied) {
+                continue
+            }
+
+            swarm._leaderDied = false
+
+            if (swarm.leader && swarm.leader.applyBuff) {
+                const def = BUFF_DEFINITIONS.promotion
+                swarm.leader.applyBuff(def.key, def.duration, {...def.modifiers})
+            }
+        }
+    }
+
+
+    #updateBuffs (deltaTime) {
+        for (const entity of this.entities) {
+            if (entity.updateBuffs && !entity.dying) {
+                entity.updateBuffs(deltaTime)
+            }
+        }
+
+        for (const swarm of this.swarms) {
+            swarm.updateBuffs(deltaTime)
         }
     }
 
