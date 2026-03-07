@@ -20,14 +20,12 @@ export default class GhastStage extends Stage {
         this.game.execute('spawnSkeleton', {x: -3, y: 1, team: 'shadow'})
         this.game.execute('spawnRat', {x: -3, y: -1, team: 'shadow'})
         this.game.execute('spawnInquisitor', {x: -5, y: 0.5, team: 'shadow'})
-        this.game.execute('spawnSoul', {x: -5, y: -0.5, team: 'shadow'})
 
         // Light team (right)
         this.game.execute('spawnShade', {x: 4, y: 0, team: 'light'})
         this.game.execute('spawnSkeleton', {x: 3, y: -1, team: 'light'})
         this.game.execute('spawnRat', {x: 3, y: 1, team: 'light'})
         this.game.execute('spawnInquisitor', {x: 5, y: -0.5, team: 'light'})
-        this.game.execute('spawnSoul', {x: 5, y: 0.5, team: 'light'})
     }
 
 

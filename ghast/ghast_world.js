@@ -3,7 +3,6 @@ import Shade from './entities/shade.js'
 import Skeleton from './entities/skeleton.js'
 import Rat from './entities/rat.js'
 import Inquisitor from './entities/inquisitor.js'
-import Soul from './entities/soul.js'
 import Cage from './entities/cage.js'
 import Turret from './entities/turret.js'
 import Jar from './entities/jar.js'
@@ -166,16 +165,6 @@ export default class GhastWorld extends World {
 
     spawnInquisitor (options = {}) {
         const entity = this.create(Inquisitor, {
-            x: options.x || 0,
-            y: options.y || 0
-        })
-        entity.team = options.team || null
-        return entity
-    }
-
-
-    spawnSoul (options = {}) {
-        const entity = this.create(Soul, {
             x: options.x || 0,
             y: options.y || 0
         })

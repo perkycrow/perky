@@ -32,16 +32,17 @@ export default class Inquisitor extends Entity {
         this.updateHealth(deltaTime)
 
         const world = this.host
-        const enemy = world.nearest(this, 6, e => e.team && e.team !== this.team)
+        const enemy = world?.nearest(this, 4, e => e.team && e.team !== this.team)
 
         if (enemy) {
-            this.arrive(enemy.position, 1, 1.5)
             this.#tryShoot(world, enemy, deltaTime)
         } else {
-            this.wander(0.3)
+            this.shootCooldown = Math.max(0, this.shootCooldown - deltaTime)
         }
 
-        const neighbors = world.entitiesInRange(this, 1)
+        this.wander(0.5)
+
+        const neighbors = world?.entitiesInRange(this, 1)
         this.separate(neighbors, 0.6)
 
         this.move(this.resolveForce())

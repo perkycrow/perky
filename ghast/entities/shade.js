@@ -1,7 +1,9 @@
 import Entity from '../../game/entity.js'
 import Velocity from '../../game/velocity.js'
+import Steering from '../../game/steering.js'
 import Dash from '../../game/dash.js'
 import Health from '../../game/health.js'
+import MeleeAttack from '../../game/melee_attack.js'
 
 
 export default class Shade extends Entity {
@@ -10,44 +12,60 @@ export default class Shade extends Entity {
         super({hitRadius: 0.3, ...params})
 
         this.create(Velocity)
+        this.create(Steering)
         this.create(Dash)
         this.create(Health, {hp: 5})
+        this.create(MeleeAttack, {damage: 2, range: 0.5, cooldown: 1, windUp: 0.15, strikeTime: 0.1})
 
-        const {maxSpeed = 3, acceleration = 25} = params
+        const {maxSpeed = 2, acceleration = 12} = params
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
-    }
 
-
-    move (direction) {
-        this.direction = direction
-    }
-
-
-    triggerDash () {
-        const dir = this.velocity.length() > 0.1
-            ? this.velocity.clone().normalize()
-            : this.direction?.length() > 0
-                ? this.direction.clone()
-                : null
-
-        if (dir) {
-            this.dash(dir, {power: 12, duration: 0.12, cooldown: 0.6})
-        }
+        this.on('strike', ({target}) => {
+            this.host?.emit('hit', {source: this, target})
+        })
     }
 
 
     update (deltaTime) {
         this.updateHealth(deltaTime)
+        this.updateMeleeAttack(deltaTime)
         this.updateDash(deltaTime)
 
-        if (!this.isDashing()) {
-            applyMovement(this, deltaTime)
+        if (this.isDashing()) {
+            this.clampVelocity(this.maxSpeed * 4)
+            this.applyVelocity(deltaTime)
+            return
         }
 
-        this.clampVelocity(this.isDashing() ? this.maxSpeed * 4 : this.maxSpeed)
+        if (this.isAttacking()) {
+            this.dampenVelocity(0.001, deltaTime)
+            this.applyVelocity(deltaTime)
+            return
+        }
+
+        const world = this.host
+        const enemy = world?.nearest(this, 1, e => e.team && e.team !== this.team)
+
+        if (enemy) {
+            this.meleeAttack(enemy)
+        }
+
+        this.wander(0.5)
+
+        const neighbors = world?.entitiesInRange(this, 1)
+        this.separate(neighbors, 0.8)
+
+        this.move(this.resolveForce())
+        applyMovement(this, deltaTime)
+        this.clampVelocity(this.maxSpeed)
         this.applyVelocity(deltaTime)
+    }
+
+
+    move (direction) {
+        this.direction = direction
     }
 
 }

@@ -26,10 +26,6 @@ export default class GhastController extends GameController {
         return this.world.spawnInquisitor(options)
     }
 
-    spawnSoul (options = {}) {
-        return this.world.spawnSoul(options)
-    }
-
     spawnCage (options = {}) {
         return this.world.spawnCage(options)
     }
