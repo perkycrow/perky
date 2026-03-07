@@ -64,6 +64,8 @@ export default class Skeleton extends Entity {
         if (enemy) {
             this.seek(enemy.position, getSporeValue(this, 'approachWeight', 1))
             this.meleeAttack(enemy)
+        } else if (this._battleCenter) {
+            this.seek(this._battleCenter, 0.3)
         }
 
         this.wander(getSporeValue(this, 'wanderWeight', 0.3))

@@ -51,6 +51,10 @@ export default class Inquisitor extends Entity {
             this.#tryShoot(this.host, enemy, deltaTime)
         } else {
             this.shootCooldown = Math.max(0, this.shootCooldown - deltaTime)
+
+            if (this._battleCenter) {
+                this.seek(this._battleCenter, 0.3)
+            }
         }
 
         this.wander(getSporeValue(this, 'wanderWeight', 0.3))

@@ -29,6 +29,10 @@ export default class GhastWorld extends World {
 
         this.on('kill', ({killer}) => {
             this.#trackStat(killer, 'kills', 1, 'kill')
+
+            if (killer?.swarm) {
+                killer.swarm.recentKills++
+            }
         })
 
         this.on('battle_resolved', ({battle, winner}) => {
@@ -36,6 +40,8 @@ export default class GhastWorld extends World {
         })
 
         this.on('ally_died', ({swarm}) => {
+            swarm.recentLosses++
+
             for (const member of swarm.members) {
                 if (!member.dying) {
                     applySporeReactions(member, 'ally_died')

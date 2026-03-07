@@ -91,6 +91,34 @@ export default class Battle {
     }
 
 
+    #fleeVerdict (fleeingSwarm) {
+        let totalScore = 0
+        let count = 0
+
+        for (const swarm of this.swarms) {
+            if (swarm === fleeingSwarm) {
+                continue
+            }
+
+            totalScore += swarm.combativeness || 0.5
+            count++
+        }
+
+        const avgRemaining = count > 0 ? totalScore / count : 0.5
+        const diff = avgRemaining - (fleeingSwarm.combativeness || 0.5)
+
+        if (diff > 0.15) {
+            return 'fled'
+        }
+
+        if (diff < -0.15) {
+            return 'routed'
+        }
+
+        return 'disengage'
+    }
+
+
     #checkFlee (deltaTime, world) {
         const center = this.getCenter()
 
@@ -115,8 +143,9 @@ export default class Battle {
                 const timer = (this.#fleeTimers.get(swarm) || 0) + deltaTime
 
                 if (timer >= FLEE_DELAY) {
+                    const verdict = this.#fleeVerdict(swarm)
                     this.removeSwarm(swarm)
-                    world.emit('battle_fled', {battle: this, swarm})
+                    world.emit('battle_fled', {battle: this, swarm, verdict})
                 } else {
                     this.#fleeTimers.set(swarm, timer)
                 }

@@ -579,6 +579,19 @@ La frequence de decision est un levier de design modulable par les spores :
 Avantage perf : `world.nearest()` lineaire sur toutes les entites passe de 60x/s/entite a 1x/s/entite.
 
 
+### Cohesion de swarm : vitesse du leader
+
+Le leader etant souvent le plus rapide (Shade maxSpeed 1 vs Skeleton/Inquisitor 0.8), il peut distancer son swarm et creer des trainards. Pour mitiger ca, la vitesse effective du leader est un blend entre sa propre maxSpeed et la moyenne du swarm :
+
+```
+effectiveMax = lerp(averageSwarmSpeed, leader.maxSpeed, 0.6)
+```
+
+Avec un facteur de 0.6, le leader garde 60% de sa vitesse native mais ralentit un peu pour le groupe. Pas de cap a 100% de la moyenne — le leader reste devant, il tire juste moins fort sur la laisse.
+
+Le facteur pourrait etre module par la taille du swarm (un swarm de 2 a moins besoin de cohesion qu'un swarm de 8) ou par les spores (anger = ignore la cohesion, fear = reste groupe).
+
+
 ## Prochaines etapes
 
 1. Implementer le systeme de reactions event x spore (buffs)

@@ -18,8 +18,8 @@ L'UI arrive tot (phase 2) pour donner du feedback visuel des les premieres featu
 | 5 | **Game Events** | DONE | Detection d'events gameplay (ally_died, low_hp, surrounded...) |
 | 6 | **Battle System + 3e Faction** | DONE | Abstraction Battle, first_blood per-battle, N-faction, join/flee/resolve |
 | 7 | **XP & Stats** | DONE | Tracking des stats de combat, calcul XP, rank dynamique |
-| 8 | **Event Reactions** | — | Spore x Event → Buff (couche 2) |
-| 9 | **Targeting & Decision Loop** | — | Target persistant, boucle strategique ~1/s, traits visuels FFXII |
+| 8 | **Event Reactions** | DONE | Spore x Event → Buff (couche 2) |
+| 9 | **Targeting & Decision Loop** | DONE | Target persistant, boucle strategique ~1/s, helpers extraits |
 | 10 | **Battle Attraction & Flee Scoring** | — | Attraction vers bataille active, score de combativite, verdict de fuite |
 | 11 | **Aggro** | — | Valeur de menace par entite, influence le choix de cible |
 | 12 | **Morale** | — | Jauge de moral au niveau swarm |

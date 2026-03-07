@@ -6,6 +6,9 @@ export default class Swarm {
         this.leader = null
         this.leashRadius = 3
         this.xp = 0
+        this.combativeness = 0.5
+        this.recentKills = 0
+        this.recentLosses = 0
         this.buffs = new Map()
     }
 
