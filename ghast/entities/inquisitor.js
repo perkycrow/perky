@@ -6,7 +6,7 @@ import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
 import {createSporeStorage, createImprintStorage} from '../spores.js'
 import {getRankModifier} from '../rank.js'
-import {applyLeash, applyMovement, getEffectiveStat} from '../entity_helpers.js'
+import {applyLeash, applyMovement, applySporeFrame, getEffectiveStat} from '../entity_helpers.js'
 
 
 export default class Inquisitor extends Entity {
@@ -50,17 +50,11 @@ export default class Inquisitor extends Entity {
 
         if (enemy) {
             this.#tryShoot(this.host, enemy, deltaTime)
-            const fleeWeight = getEffectiveStat(this, 'fleeWeight', 1) - 1
-            if (fleeWeight > 0) {
-                this.flee(enemy.position, fleeWeight)
-                this.move(this.resolveForce())
-                applyMovement(this, deltaTime)
-                this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')))
-                this.applyVelocity(deltaTime)
-            } else {
-                this.dampenVelocity(0.01, deltaTime)
-                this.applyVelocity(deltaTime)
-            }
+            applySporeFrame(this)
+            this.move(this.resolveForce())
+            applyMovement(this, deltaTime)
+            this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')))
+            this.applyVelocity(deltaTime)
             return
         }
 
@@ -70,6 +64,7 @@ export default class Inquisitor extends Entity {
             this.seek(this._battleCenter, 0.3)
         }
 
+        applySporeFrame(this)
         this.wander(getEffectiveStat(this, 'wanderWeight', 0.3))
 
         const neighbors = this.host?.entitiesInRange(this, 1)

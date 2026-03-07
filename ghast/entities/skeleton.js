@@ -8,7 +8,7 @@ import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
 import {createSporeStorage, createImprintStorage} from '../spores.js'
 import {getRankModifier} from '../rank.js'
-import {applyLeash, applyMovement, getEffectiveStat} from '../entity_helpers.js'
+import {applyLeash, applyMovement, applySporeFrame, getEffectiveStat} from '../entity_helpers.js'
 
 
 export default class Skeleton extends Entity {
@@ -63,15 +63,12 @@ export default class Skeleton extends Entity {
 
         if (enemy) {
             this.seek(enemy.position, getEffectiveStat(this, 'approachWeight', 1))
-            const fleeWeight = getEffectiveStat(this, 'fleeWeight', 1) - 1
-            if (fleeWeight > 0) {
-                this.flee(enemy.position, fleeWeight)
-            }
             this.meleeAttack(enemy)
         } else if (this._battleCenter) {
             this.seek(this._battleCenter, 0.3)
         }
 
+        applySporeFrame(this)
         this.wander(getEffectiveStat(this, 'wanderWeight', 0.3))
 
         const neighbors = this.host?.entitiesInRange(this, 1)

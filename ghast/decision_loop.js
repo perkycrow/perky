@@ -1,12 +1,13 @@
 import {getSporeValue} from './spore_effects.js'
 import BUFF_DEFINITIONS from './buff_definitions.js'
 import {DECAY_RATE} from './spores.js'
+import {SPORE_LIST, SPORE_DEFINITIONS} from './spores/index.js'
 
 
 const DECISION_INTERVAL = 1
 
-const OFFENSIVE_SPORES = ['anger', 'arrogance', 'naive']
-const DEFENSIVE_SPORES = ['fear', 'sadness']
+const OFFENSIVE_SPORES = SPORE_LIST.filter(s => s.inclination === 'offensive').map(s => s.key)
+const DEFENSIVE_SPORES = SPORE_LIST.filter(s => s.inclination === 'defensive').map(s => s.key)
 
 
 export default function updateDecisions (world, deltaTime) {
@@ -35,6 +36,8 @@ export default function updateDecisions (world, deltaTime) {
         } else {
             entity._battleCenter = findBattleCenter(world, entity)
         }
+
+        applySporeDecisions(entity, world)
     }
 
     updateSporeDecay(world)
@@ -211,25 +214,40 @@ function updateSwarmCombativeness (swarm, battle) {
 }
 
 
-function updateSwarmMorale (swarm) {
-    let sadnessCount = 0
-    let naiveCount = 0
+function applySporeDecisions (entity, world) {
+    if (!entity.spores) {
+        return
+    }
 
-    for (const member of swarm.members) {
-        if (member.dying || !member.spores) {
+    for (const key in entity.spores) {
+        if (entity.spores[key] <= 0) {
             continue
         }
 
-        sadnessCount += member.spores.sadness || 0
-        naiveCount += member.spores.naive || 0
+        SPORE_DEFINITIONS[key]?.onDecisionFrame?.(entity, world)
     }
+}
 
-    if (sadnessCount > 0) {
-        swarm.adjustMorale(-0.5 * sadnessCount)
-    }
 
-    if (naiveCount > 0) {
-        swarm.adjustMorale(0.5 * naiveCount)
+function updateSwarmMorale (swarm) {
+    for (const spore of SPORE_LIST) {
+        if (!spore.morale) {
+            continue
+        }
+
+        let count = 0
+
+        for (const member of swarm.members) {
+            if (member.dying || !member.spores) {
+                continue
+            }
+
+            count += member.spores[spore.key] || 0
+        }
+
+        if (count > 0) {
+            swarm.adjustMorale(spore.morale * count)
+        }
     }
 
     checkMoraleThresholds(swarm)

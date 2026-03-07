@@ -1,12 +1,7 @@
-export const SPORE_TYPES = [
-    {key: 'fear', color: '#4fc3f7', label: 'Peur', asset: 'spore_scared'},
-    {key: 'sadness', color: '#8d6e63', label: 'Triste', asset: 'spore_sad'},
-    {key: 'anger', color: '#ef5350', label: 'Colère', asset: 'spore_angry'},
-    {key: 'arrogance', color: '#d7ccc8', label: 'Arrogant', asset: 'spore_arrogant'},
-    {key: 'naive', color: '#ab47bc', label: 'Ingénu', asset: 'spore_naive'},
-    {key: 'surprise', color: '#66bb6a', label: 'Étonné', asset: 'spore_surprised'},
-    {key: 'lust', color: '#f48fb1', label: 'Charme', asset: 'spore_lust'}
-]
+import {SPORE_LIST} from './spores/index.js'
+
+
+export const SPORE_TYPES = SPORE_LIST
 
 
 export const DECAY_RATE = 0.1

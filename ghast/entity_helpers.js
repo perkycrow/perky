@@ -1,4 +1,5 @@
 import {getSporeValue} from './spore_effects.js'
+import {SPORE_DEFINITIONS} from './spores/index.js'
 
 
 export function getEffectiveStat (entity, stat, base) {
@@ -28,6 +29,21 @@ export function applyLeash (entity) {
     if (dist > radius * 0.6) {
         const urgency = Math.min((dist - radius * 0.6) / (radius * 0.4), 1)
         entity.seek(center, urgency * 1.5)
+    }
+}
+
+
+export function applySporeFrame (entity) {
+    if (!entity.spores) {
+        return
+    }
+
+    for (const key in entity.spores) {
+        if (entity.spores[key] <= 0) {
+            continue
+        }
+
+        SPORE_DEFINITIONS[key]?.onEveryFrame?.(entity)
     }
 }
 

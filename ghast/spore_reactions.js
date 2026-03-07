@@ -1,46 +1,29 @@
 import BUFF_DEFINITIONS from './buff_definitions.js'
 import {getCatalystReactions} from './catalysts.js'
+import {SPORE_LIST} from './spores/index.js'
 
 
-const REACTIONS = {
+const REACTIONS = buildReactions()
 
-    ally_died: {
-        anger: 'rage',
-        sadness: 'grief',
-        fear: 'panic',
-        surprise: 'shock'
-    },
 
-    low_hp: {
-        fear: 'terror',
-        anger: 'lastBreath',
-        arrogance: 'indignation'
-    },
+function buildReactions () {
+    const result = {}
 
-    kill: {
-        arrogance: 'triumph',
-        naive: 'excitement',
-        lust: 'trophy'
-    },
+    for (const spore of SPORE_LIST) {
+        if (!spore.reactions) {
+            continue
+        }
 
-    surrounded: {
-        fear: 'panic',
-        naive: 'party',
-        surprise: 'startle'
-    },
+        for (const [event, buff] of Object.entries(spore.reactions)) {
+            if (!result[event]) {
+                result[event] = {}
+            }
 
-    isolated: {
-        fear: 'panic',
-        sadness: 'grief',
-        naive: 'excitement'
-    },
-
-    first_blood: {
-        anger: 'rage',
-        arrogance: 'triumph',
-        naive: 'excitement'
+            result[event][spore.key] = buff
+        }
     }
 
+    return result
 }
 
 
