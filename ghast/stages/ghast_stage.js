@@ -2,8 +2,7 @@ import Stage from '../../game/stage.js'
 import GhastWorld from '../ghast_world.js'
 import GhastController from '../controllers/ghast_controller.js'
 import GroundPass from '../postprocessing/ground_pass.js'
-import Player from '../player.js'
-import PlayerView from '../views/player_view.js'
+import wiring from '../wiring.js'
 
 
 export default class GhastStage extends Stage {
@@ -13,10 +12,17 @@ export default class GhastStage extends Stage {
 
     onStart () {
         super.onStart()
-        this.register(Player, PlayerView)
+        wiring.registerViews(this)
         this.game.getLayer('game').setContent(this.viewsGroup)
         this.groundPass = this.addPostPass(GroundPass)
-        this.game.execute('spawnPlayer', {x: 0, y: 0})
+        this.game.execute('spawnShade', {x: 0, y: 0, team: 'shadow'})
+        this.game.execute('spawnSkeleton', {x: 1.5, y: 0, team: 'shadow'})
+        this.game.execute('spawnRat', {x: -1.5, y: 0, team: 'shadow'})
+        this.game.execute('spawnInquisitor', {x: 0, y: 1.5, team: 'light'})
+        this.game.execute('spawnSoul', {x: 0, y: -1.5, team: 'light'})
+        this.game.execute('spawnCage', {x: 3, y: 0})
+        this.game.execute('spawnTurret', {x: -3, y: 0})
+        this.game.execute('spawnJar', {x: 3, y: 1.5})
     }
 
 

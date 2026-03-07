@@ -7,11 +7,44 @@ export default class GhastController extends GameController {
         moveUp: ['KeyW', 'ArrowUp', 'swipeUp'],
         moveDown: ['KeyS', 'ArrowDown', 'swipeDown'],
         moveLeft: ['KeyA', 'ArrowLeft', 'swipeLeft'],
-        moveRight: ['KeyD', 'ArrowRight', 'swipeRight']
+        moveRight: ['KeyD', 'ArrowRight', 'swipeRight'],
+        dashAction: ['Space', 'ShiftLeft']
     }
 
-    spawnPlayer (options = {}) {
-        return this.world.spawnPlayer(options)
+    dashAction () {
+        this.world?.shade?.triggerDash()
+    }
+
+    spawnShade (options = {}) {
+        return this.world.spawnShade(options)
+    }
+
+    spawnSkeleton (options = {}) {
+        return this.world.spawnSkeleton(options)
+    }
+
+    spawnRat (options = {}) {
+        return this.world.spawnRat(options)
+    }
+
+    spawnInquisitor (options = {}) {
+        return this.world.spawnInquisitor(options)
+    }
+
+    spawnSoul (options = {}) {
+        return this.world.spawnSoul(options)
+    }
+
+    spawnCage (options = {}) {
+        return this.world.spawnCage(options)
+    }
+
+    spawnTurret (options = {}) {
+        return this.world.spawnTurret(options)
+    }
+
+    spawnJar (options = {}) {
+        return this.world.spawnJar(options)
     }
 
 }
