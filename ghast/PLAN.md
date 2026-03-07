@@ -16,12 +16,15 @@ L'UI arrive tot (phase 2) pour donner du feedback visuel des les premieres featu
 | 3 | **Spore Rename** | DONE | Renommer mischief→naive, cunning→lust dans le code |
 | 4 | **Spore Engine** | DONE | Spores actifs : stats passives (couche 1) |
 | 5 | **Game Events** | DONE | Detection d'events gameplay (ally_died, low_hp, surrounded...) |
-| 6 | **Event Reactions** | — | Spore x Event → Buff (couche 2) |
-| 7 | **Aggro** | — | Valeur de menace par entite |
-| 8 | **Morale** | — | Jauge de moral au niveau swarm |
-| 9 | **Swarm Capacity** | — | Taille max = rank du leader |
-| 10 | **Consumption & Imprint** | — | Decroissance des spores + empreinte (couche 3) |
-| 11 | **Catalysts** | — | Combos hand-crafted |
+| 6 | **Battle System** | — | Abstraction Battle : first_blood per-battle, N-team, join/flee/resolve |
+| 7 | **3e Team** | — | Ajout d'une 3e equipe pour tester multi-team |
+| 8 | **XP & Stats** | — | Tracking des stats de combat, calcul XP, rank dynamique |
+| 9 | **Event Reactions** | — | Spore x Event → Buff (couche 2) |
+| 10 | **Aggro** | — | Valeur de menace par entite |
+| 11 | **Morale** | — | Jauge de moral au niveau swarm |
+| 12 | **Swarm Capacity** | — | Taille max = rank du leader (lie au rank dynamique) |
+| 13 | **Consumption & Imprint** | — | Decroissance des spores + empreinte (couche 3) |
+| 14 | **Catalysts** | — | Combos hand-crafted |
 
 
 ---

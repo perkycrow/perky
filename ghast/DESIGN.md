@@ -364,6 +364,107 @@ En bas de l'ecran, affichage de cadres representant les unites du swarm :
 Les entites ont une attirance subtile vers les ennemis a longue portee, independante des spores. Ca evite que les equipes s'ignorent quand elles n'ont pas de spores offensifs. L'attraction de base est un seek faible (~0.3) sur l'ennemi le plus proche dans un grand rayon (~8 unites). Les spores modulent cette force : anger l'amplifie, fear la reduit, naive l'augmente (fonce sans reflechir). Ca sert de "gravite" naturelle qui pousse les equipes a se confronter tot ou tard, meme sans intervention du joueur.
 
 
+### Systeme d'experience et de promotion
+
+Inspire de Total War Warhammer 3 (systeme de chevrons). Les entites gagnent de l'XP via leurs actions en combat et montent en rank. Le rank determine le nombre de slots de spores.
+
+#### Stats trackees par entite
+
+Chaque entite accumule des stats permanentes :
+- **Degats infliges** — points de degats totaux
+- **Degats encaisses** — resilience, tanking
+- **Degats soignes** — support (systeme de heal a definir)
+- **Degats absorbes pour un allie** — sacrifice, prise de coups pour proteger
+- **Coups fatals** — kills confirmes
+- **Debuffs ennemis infliges** — controle de terrain
+- **Buffs allies appliques** — support
+- **Friendly fire** — degats infliges aux allies (penalite)
+- **Entites converties** — pour le spore lust
+- **Batailles survivees** — endurance
+- **Distance parcourue** — exploration
+- **Spores collectes** — total absorbe dans sa vie
+- **Temps en tant que leader** — leadership
+
+#### Poids XP
+
+Chaque stat est ponderee pour calculer l'XP totale :
+
+| Stat | Poids | Justification |
+|------|-------|---------------|
+| Coup fatal | 10 | Recompense la plus forte |
+| Degats infliges | 2/pt | Contribution au combat |
+| Degats encaisses | 1/pt | Resilience |
+| Degats absorbes pour allie | 3/pt | Sacrifice valorise |
+| Degats soignes | 3/pt | Support valorise |
+| Debuff ennemi inflige | 5 | Controle |
+| Buff allie applique | 4 | Support |
+| Entite convertie | 15 | Tres impactant |
+| Bataille survivee | 8 | Endurance |
+| Friendly fire | -3/pt | Penalite |
+
+#### Courbe de progression
+
+Exponentiel mitigue, inspire de Total War (rangs 1-5 quasi-lineaires, puis acceleration) :
+
+| Rang | XP cumulee | Slots spores | Note |
+|------|-----------|--------------|------|
+| 1 | 0 | 1 | depart Rat |
+| 2 | 50 | 2 | depart Skeleton/Inquisitor |
+| 3 | 150 | 3 | depart Shade |
+| 4 | 400 | 4 | palier |
+| 5 | 800 | 5 | — |
+| 6 | 1500 | 6 | palier |
+| 7 | 3000 | 7 | legendaire |
+
+Le baseRank du type d'entite = XP de depart :
+- Rat spawn avec 0 XP → rank 1
+- Skeleton/Inquisitor spawn avec 50 XP → rank 2
+- Shade spawn avec 150 XP → rank 3
+
+Un Rat veteran peut depasser un Shade frais. C'est le cote narratif interessant.
+
+#### Rank up = promotion automatique
+
+Quand l'XP atteint le seuil → rank_up immediat. Events :
+- `xp_gained` — `{entity, amount, source}` (source = 'kill', 'damage', 'heal', etc.)
+- `rank_up` — `{entity, oldRank, newRank}` — moment fort, buff temporaire "Promotion"
+
+Le rank_up est un moment dramatique : flash visuel, buff Promotion (+stats 3s), boost de moral au swarm.
+
+#### XP de swarm
+
+L'XP du swarm = somme de l'XP gagnee par tous les membres pendant qu'ils etaient dans le swarm. Pas l'XP individuelle cumulee, mais l'XP generee collectivement.
+
+Le swarm level debloque :
+- Meilleure cohesion (leash radius plus grand)
+- Moral de base plus eleve
+- Bonus passif de stats pour tous les membres (veterancy collectif)
+
+Un swarm veterant qui a traverse 5 batailles est plus cohesif qu'un swarm fraichement forme. Si un membre quitte, il emporte son XP individuelle mais le swarm garde l'XP collective deja accumulee.
+
+Event : `swarm_level_up` — `{swarm, level}`
+
+#### Healing (a definir)
+
+Le healing n'est pas encore dans le jeu. Pistes :
+- Combo de spores (sadness + lust = empathie soignante ?)
+- Entite dediee future (type healer)
+- Champignons (proximite d'un shroom = regen lente ?)
+
+#### Friendly fire
+
+Le friendly fire est une penalite d'XP. Une entite sadness+anger (rancune) qui attaque ses allies perd de l'XP. Tension entre "cette combo est puissante en combat" et "elle sabote ma progression". Le joueur doit choisir.
+
+#### Battle comme abstraction
+
+Le systeme de first_blood doit etre relatif a une confrontation (Battle), pas global au world. Une Battle regroupe des swarms ennemis engages :
+- Creee sur le premier hit inter-equipes
+- Swarms illimites (une 3e team peut rejoindre)
+- Resolue quand une seule team reste
+- Mecanisme de fuite de la bataille (spatial)
+- first_blood, outnumbered, et les recompenses d'XP de bataille sont scopes par Battle
+
+
 ## Prochaines etapes
 
 1. Definir l'architecture technique des spores (jauges, stats, events, buffs)
