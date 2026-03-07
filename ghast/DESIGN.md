@@ -192,14 +192,53 @@ Les comportements emergents viennent des combos, pas de spores dedies :
 - **Accule** = colere + peur (fuit, si coince -> explose)
 - etc. (voir table des catalyseurs plus haut)
 
-### Architecture spore : 3 couches
+### Architecture spore : le paquet
 
-1. **Stats passives** — chaque spore modifie des parametres (vitesse, degats, cooldown, range de detection, poids des forces de steering)
-2. **Comportements evenementiels** — declenchés par des situations contextuelles :
-   - Allie meurt -> colere = rage / triste = moral en baisse
-   - Swarm ennemi plus fort -> peur = fuite / arrogance = charge
-   - Entite proche faible -> arrogant = agresse / charme = convertit
-3. **Jauges internes** — montent/descendent selon le contexte, declenchent des seuils (panique, rage, moral...)
+Un spore n'est **pas juste un modificateur de stats**. C'est un paquet complet qui agit sur plusieurs couches simultanement :
+
+1. **Stats passives** — modifie des parametres en continu (vitesse, degats, cooldown, range de detection, poids des forces de steering)
+2. **Events** — reagit a des situations contextuelles (ally_died, low_hp, surrounded, kill, isolated, first_blood)
+3. **Buffs** — pics temporaires de stats ET de comportement, declenches par les events (rage, panic, grief, shock...)
+4. **Actions** — capacites uniques que seul ce spore apporte (fuir, convertir, ignorer la laisse...)
+5. **Comportement** — modifie la decision loop : qui cibler, comment s'engager, quand lacher sa cible
+
+L'emergence vient du fait que chaque couche se **combine** independamment entre spores. Anger + Fear ce n'est pas un comportement hardcode "Accule" — c'est le seek d'anger + le flee de fear qui se resolvent physiquement, le persist d'anger + le disengage de fear qui se contredisent, le rage buff + le panic buff qui se stackent sur le meme event.
+
+On ne code pas les 21 combos. On code 7 paquets individuels, et les combos emergent.
+
+#### Chaque spore possede un verbe unique
+
+Chaque spore apporte un comportement que lui seul fournit. Ces verbes sont orthogonaux — aucun doublon — ce qui garantit que chaque combinaison de 2 active 2 verbes distincts.
+
+| Spore | Verbe | Description |
+|-------|-------|-------------|
+| Fear (bleu) | **FUIR** | Le seul spore qui inverse le vecteur de mouvement. Sans fear, aucune entite ne recule |
+| Sadness (brun) | **SE LIER** | Le seul spore oriente vers les allies. Change *vers qui* tu te deplaces |
+| Anger (rouge) | **CHARGER** | Le seul spore qui casse la discipline. Ignore la laisse, fonce sans reflechir |
+| Arrogance (beige) | **CIBLER** | Le seul spore qui change *qui* tu cibles. Prefere les forts, ignore les faibles |
+| Naive (violet) | **PROVOQUER** | Le seul spore qui affecte le comportement *des ennemis*. Genere de l'aggro passivement |
+| Surprise (vert) | **REAGIR** | Le seul spore qui change la temporalite. Freeze puis burst, hyper-reactif aux events |
+| Lust (rose) | **CONVERTIR** | Le seul spore avec une action unique : changer la faction d'un ennemi |
+
+#### Rapport au target (engagement)
+
+Au-dela du mouvement, chaque spore modifie **comment** l'entite gere sa cible dans la decision loop :
+
+| Spore | Engagement | Effet sur la decision loop |
+|-------|-----------|---------------------------|
+| Anger | **PERSIST** | Reste sur sa cible quoi qu'il arrive. Tick lent (re-evaluate rarement) |
+| Fear | **DISENGAGE** | Drop sa cible des que ca tourne mal (low HP, surrounded). Tick rapide en danger |
+| Arrogance | **EVALUATE** | Reevalue en permanence, drop les cibles faibles mid-combat |
+| Naive | **RANDOM** | Target le plus proche, change par accident. Aucune preference |
+| Surprise | **RE-TARGET** | Change de cible a chaque event. Hyper-reactif, jamais stable |
+| Sadness | **CLING** | Reste pres des allies, lent a s'engager |
+| Lust | **ORBIT** | Approche sans attaquer, tente la conversion |
+
+Ces comportements sont des parametres de la decision loop (frequence de re-targeting, criteres de drop, seuils), pas du hardcode par combinaison.
+
+#### Jauges internes
+
+Les jauges montent/descendent selon le contexte et declenchent des seuils (panique, rage, moral...). Elles permettent aux spores d'avoir une memoire a court terme et de creer des basculements dramatiques.
 
 ### Conscience du swarm
 
