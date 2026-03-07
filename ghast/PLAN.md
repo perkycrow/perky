@@ -13,7 +13,7 @@ L'UI arrive tot (phase 2) pour donner du feedback visuel des les premieres featu
 |---|-------|--------|-------------|
 | 1 | **Buff System** | DONE | Moteur de buffs/debuffs temporaires (entite + swarm) |
 | 2 | **Swarm UI** | — | Barre Total War en bas : cadres des unites, vie, buffs |
-| 3 | **Spore Rename** | — | Renommer mischief→naive, cunning→lust dans le code |
+| 3 | **Spore Rename** | DONE | Renommer mischief→naive, cunning→lust dans le code |
 | 4 | **Spore Engine** | — | Spores actifs : stats passives (couche 1) |
 | 5 | **Game Events** | — | Detection d'events gameplay (ally_died, low_hp, surrounded...) |
 | 6 | **Event Reactions** | — | Spore x Event → Buff (couche 2) |

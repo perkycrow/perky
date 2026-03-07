@@ -15,9 +15,9 @@ const manifest = {
         spore_sad: {type: 'image', url: './assets/images/spore_sad.png'},
         spore_angry: {type: 'image', url: './assets/images/spore_angry.png'},
         spore_arrogant: {type: 'image', url: './assets/images/spore_arrogant.png'},
-        spore_mischievous: {type: 'image', url: './assets/images/spore_mischievous.png'},
+        spore_naive: {type: 'image', url: './assets/images/spore_naive.png'},
         spore_surprised: {type: 'image', url: './assets/images/spore_surprised.png'},
-        spore_cunning: {type: 'image', url: './assets/images/spore_cunning.png'}
+        spore_lust: {type: 'image', url: './assets/images/spore_lust.png'}
     }
 }
 

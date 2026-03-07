@@ -3,9 +3,9 @@ export const SPORE_TYPES = [
     {key: 'sadness', color: '#8d6e63', label: 'Triste', asset: 'spore_sad'},
     {key: 'anger', color: '#ef5350', label: 'Colère', asset: 'spore_angry'},
     {key: 'arrogance', color: '#d7ccc8', label: 'Arrogant', asset: 'spore_arrogant'},
-    {key: 'mischief', color: '#ab47bc', label: 'Taquin', asset: 'spore_mischievous'},
+    {key: 'naive', color: '#ab47bc', label: 'Ingénu', asset: 'spore_naive'},
     {key: 'surprise', color: '#66bb6a', label: 'Étonné', asset: 'spore_surprised'},
-    {key: 'cunning', color: '#f48fb1', label: 'Sournois', asset: 'spore_cunning'}
+    {key: 'lust', color: '#f48fb1', label: 'Charme', asset: 'spore_lust'}
 ]
 
 
