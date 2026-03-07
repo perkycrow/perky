@@ -33,17 +33,17 @@ export default class GhastStage extends Stage {
         const lightSwarm = this.world.createSwarm('light')
         const chaosSwarm = this.world.createSwarm('chaos')
 
-        this.game.execute('spawnShade', {x: -3, y: 0, faction: 'shadow', swarm: shadowSwarm})
-        this.game.execute('spawnSkeleton', {x: -3.8, y: -0.8, faction: 'shadow', swarm: shadowSwarm})
+        this.game.execute('spawnShade', {x: -3, y: 0, faction: 'shadow', swarm: shadowSwarm, rank: 3})
+        this.game.execute('spawnSkeleton', {x: -3.8, y: -0.8, faction: 'shadow', swarm: shadowSwarm, rank: 2})
         this.game.execute('spawnRat', {x: -2.5, y: -0.6, faction: 'shadow', swarm: shadowSwarm})
 
-        this.game.execute('spawnShade', {x: 3, y: 0, faction: 'light', swarm: lightSwarm})
-        this.game.execute('spawnInquisitor', {x: 3.8, y: -0.8, faction: 'light', swarm: lightSwarm})
+        this.game.execute('spawnShade', {x: 3, y: 0, faction: 'light', swarm: lightSwarm, rank: 3})
+        this.game.execute('spawnInquisitor', {x: 3.8, y: -0.8, faction: 'light', swarm: lightSwarm, rank: 2})
         this.game.execute('spawnRat', {x: 2.5, y: -0.6, faction: 'light', swarm: lightSwarm})
 
-        this.game.execute('spawnShade', {x: 0, y: 4, faction: 'chaos', swarm: chaosSwarm})
-        this.game.execute('spawnSkeleton', {x: -0.6, y: 3.3, faction: 'chaos', swarm: chaosSwarm})
-        this.game.execute('spawnInquisitor', {x: 0.6, y: 3.3, faction: 'chaos', swarm: chaosSwarm})
+        this.game.execute('spawnShade', {x: 0, y: 4, faction: 'chaos', swarm: chaosSwarm, rank: 3})
+        this.game.execute('spawnSkeleton', {x: -0.6, y: 3.3, faction: 'chaos', swarm: chaosSwarm, rank: 2})
+        this.game.execute('spawnInquisitor', {x: 0.6, y: 3.3, faction: 'chaos', swarm: chaosSwarm, rank: 2})
 
         this.#assignDefaultSpores()
 

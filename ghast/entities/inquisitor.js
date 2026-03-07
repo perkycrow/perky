@@ -6,6 +6,7 @@ import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
 import {createSporeStorage, createImprintStorage} from '../spores.js'
 import {getSporeValue} from '../spore_effects.js'
+import {getRankModifier} from '../rank.js'
 import {applyLeash, applyMovement} from '../entity_helpers.js'
 
 
@@ -14,23 +15,22 @@ export default class Inquisitor extends Entity {
     constructor (params = {}) {
         super({hitRadius: 0.3, ...params})
 
+        this.rank = params.rank || 1
+
         this.create(Velocity)
         this.create(Steering)
-        this.create(Health, {hp: 25})
+        this.create(Health, {hp: Math.round(25 * getRankModifier(this.rank, 'hp'))})
 
         const {maxSpeed = 0.7, acceleration = 3} = params
 
         this.shootCooldown = 1.5
-        this.shootInterval = params.shootInterval || 2
+        this.shootInterval = (params.shootInterval || 2) * getRankModifier(this.rank, 'cooldown')
         this.shootDamage = params.shootDamage || 10
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
         this.create(BuffSystem)
         this.create(CombatStats)
-
-        this.rank = 2
-        this.baseRank = 2
         this.target = null
         this.baseDetectRange = 4
         this.swarm = null
@@ -70,7 +70,7 @@ export default class Inquisitor extends Entity {
         applyLeash(this)
         this.move(this.resolveForce())
         applyMovement(this, deltaTime)
-        this.clampVelocity(getSporeValue(this, 'speed', this.maxSpeed))
+        this.clampVelocity(getSporeValue(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')))
         this.applyVelocity(deltaTime)
     }
 

@@ -8,6 +8,7 @@ import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
 import {createSporeStorage, createImprintStorage} from '../spores.js'
 import {getSporeValue} from '../spore_effects.js'
+import {getRankModifier} from '../rank.js'
 import {applyLeash, applyMovement} from '../entity_helpers.js'
 
 
@@ -16,11 +17,13 @@ export default class Skeleton extends Entity {
     constructor (params = {}) {
         super({hitRadius: 0.3, ...params})
 
+        this.rank = params.rank || 1
+
         this.create(Velocity)
         this.create(Steering)
         this.create(Dash)
-        this.create(Health, {hp: 60})
-        this.create(MeleeAttack, {damage: 11, range: 0.5, cooldown: 1.2, windUp: 0.15, strikeTime: 0.1})
+        this.create(Health, {hp: Math.round(60 * getRankModifier(this.rank, 'hp'))})
+        this.create(MeleeAttack, {damage: 11, range: 0.5, cooldown: 1.2 * getRankModifier(this.rank, 'cooldown'), windUp: 0.15, strikeTime: 0.1})
 
         const {maxSpeed = 0.6, acceleration = 3} = params
 
@@ -28,9 +31,6 @@ export default class Skeleton extends Entity {
         this.acceleration = acceleration
         this.create(BuffSystem)
         this.create(CombatStats)
-
-        this.rank = 2
-        this.baseRank = 2
         this.target = null
         this.baseDetectRange = 1
         this.swarm = null
@@ -77,7 +77,7 @@ export default class Skeleton extends Entity {
         applyLeash(this)
         this.move(this.resolveForce())
         applyMovement(this, deltaTime)
-        this.clampVelocity(getSporeValue(this, 'speed', this.maxSpeed))
+        this.clampVelocity(getSporeValue(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')))
         this.applyVelocity(deltaTime)
     }
 

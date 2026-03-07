@@ -1,3 +1,6 @@
+import {TYPE_PRIORITY} from './rank.js'
+
+
 export default class Swarm {
 
     constructor (faction) {
@@ -5,6 +8,7 @@ export default class Swarm {
         this.members = []
         this.leader = null
         this.leashRadius = 3
+        this.shards = 0
         this.xp = 0
         this.morale = 50
         this.combativeness = 0.5
@@ -58,6 +62,21 @@ export default class Swarm {
     }
 
 
+    addShards (amount) {
+        this.shards += amount
+    }
+
+
+    spendShards (amount) {
+        if (this.shards < amount) {
+            return false
+        }
+
+        this.shards -= amount
+        return true
+    }
+
+
     electLeader () {
         let best = null
 
@@ -66,7 +85,7 @@ export default class Swarm {
                 continue
             }
 
-            if (!best || member.rank > best.rank) {
+            if (!best || comparePriority(member, best) > 0) {
                 best = member
             }
         }
@@ -156,4 +175,23 @@ export default class Swarm {
         }
     }
 
+}
+
+
+function comparePriority (a, b) {
+    if (a.rank !== b.rank) {
+        return a.rank - b.rank
+    }
+
+    const xpA = a.getXp?.() ?? 0
+    const xpB = b.getXp?.() ?? 0
+
+    if (xpA !== xpB) {
+        return xpA - xpB
+    }
+
+    const typeA = TYPE_PRIORITY[a.constructor.name] || 0
+    const typeB = TYPE_PRIORITY[b.constructor.name] || 0
+
+    return typeA - typeB
 }

@@ -12,6 +12,7 @@ import Projectile from './entities/projectile.js'
 import BUFF_DEFINITIONS from './buff_definitions.js'
 import {applySporeReactions, applySwarmReaction} from './spore_reactions.js'
 import {getSporeModifier} from './spore_effects.js'
+import {getRankModifier} from './rank.js'
 import updateDecisions from './decision_loop.js'
 
 
@@ -35,6 +36,7 @@ export default class GhastWorld extends World {
             if (killer?.swarm) {
                 killer.swarm.recentKills++
                 killer.swarm.adjustMorale(5)
+                killer.swarm.addShards(1)
             }
         })
 
@@ -549,7 +551,8 @@ export default class GhastWorld extends World {
     spawnShade (options = {}) {
         const entity = this.create(Shade, {
             x: options.x || 0,
-            y: options.y || 0
+            y: options.y || 0,
+            rank: options.rank
         })
         entity.faction = options.faction || null
         assignSwarm(entity, options.swarm)
@@ -560,7 +563,8 @@ export default class GhastWorld extends World {
     spawnSkeleton (options = {}) {
         const entity = this.create(Skeleton, {
             x: options.x || 0,
-            y: options.y || 0
+            y: options.y || 0,
+            rank: options.rank
         })
         entity.faction = options.faction || null
         assignSwarm(entity, options.swarm)
@@ -571,7 +575,8 @@ export default class GhastWorld extends World {
     spawnRat (options = {}) {
         const entity = this.create(Rat, {
             x: options.x || 0,
-            y: options.y || 0
+            y: options.y || 0,
+            rank: options.rank
         })
         entity.faction = options.faction || null
         assignSwarm(entity, options.swarm)
@@ -582,7 +587,8 @@ export default class GhastWorld extends World {
     spawnInquisitor (options = {}) {
         const entity = this.create(Inquisitor, {
             x: options.x || 0,
-            y: options.y || 0
+            y: options.y || 0,
+            rank: options.rank
         })
         entity.faction = options.faction || null
         assignSwarm(entity, options.swarm)
@@ -634,11 +640,12 @@ function computeEffectiveDamage (source, baseDamage) {
         return Math.max(1, baseDamage)
     }
 
+    const rank = getRankModifier(source.rank || 1, 'damage')
     const spore = getSporeModifier(source, 'damage')
     const buff = source.getBuffModifier?.('damage') ?? 1
     const swarm = source.swarm?.getBuffModifier?.('damage') ?? 1
 
-    return Math.max(1, Math.round(baseDamage * spore * buff * swarm))
+    return Math.max(1, Math.round(baseDamage * rank * spore * buff * swarm))
 }
 
 

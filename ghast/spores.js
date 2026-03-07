@@ -33,9 +33,16 @@ export function createImprintStorage () {
 
 
 export function addSpore (entity, key) {
-    if (entity.spores[key] !== undefined) {
-        entity.spores[key]++
+    if (entity.spores[key] === undefined) {
+        return false
     }
+
+    if (entity.rank !== undefined && getSporeCount(entity) >= entity.rank) {
+        return false
+    }
+
+    entity.spores[key]++
+    return true
 }
 
 

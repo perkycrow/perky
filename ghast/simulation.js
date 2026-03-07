@@ -56,7 +56,8 @@ export default class Simulation {
                     x: unit.x ?? faction.x ?? 0,
                     y: unit.y ?? faction.y ?? 0,
                     faction: faction.name,
-                    swarm
+                    swarm,
+                    rank: unit.rank
                 })
 
                 applyUnitConfig(entity, unit)
@@ -181,11 +182,13 @@ export function runMatchup (typeA, typeB, options = {}) {
         sporesB = [],
         overridesA = null,
         overridesB = null,
+        rankA,
+        rankB,
         maxDuration = 30
     } = options
 
-    const unitA = {type: typeA, spores: sporesA}
-    const unitB = {type: typeB, spores: sporesB}
+    const unitA = {type: typeA, spores: sporesA, rank: rankA}
+    const unitB = {type: typeB, spores: sporesB, rank: rankB}
 
     if (overridesA) {
         unitA.overrides = overridesA
