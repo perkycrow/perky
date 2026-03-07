@@ -1,3 +1,14 @@
+import {getSporeValue} from './spore_effects.js'
+
+
+export function getEffectiveStat (entity, stat, base) {
+    const spore = getSporeValue(entity, stat, base)
+    const buff = entity.getBuffModifier?.(stat) ?? 1
+    const swarm = entity.swarm?.getBuffModifier?.(stat) ?? 1
+    return spore * buff * swarm
+}
+
+
 export function applyLeash (entity) {
     if (!entity.swarm) {
         return

@@ -5,9 +5,8 @@ import Health from '../../game/health.js'
 import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
 import {createSporeStorage, createImprintStorage} from '../spores.js'
-import {getSporeValue} from '../spore_effects.js'
 import {getRankModifier} from '../rank.js'
-import {applyLeash, applyMovement} from '../entity_helpers.js'
+import {applyLeash, applyMovement, getEffectiveStat} from '../entity_helpers.js'
 
 
 export default class Inquisitor extends Entity {
@@ -51,8 +50,17 @@ export default class Inquisitor extends Entity {
 
         if (enemy) {
             this.#tryShoot(this.host, enemy, deltaTime)
-            this.dampenVelocity(0.01, deltaTime)
-            this.applyVelocity(deltaTime)
+            const fleeWeight = getEffectiveStat(this, 'fleeWeight', 1) - 1
+            if (fleeWeight > 0) {
+                this.flee(enemy.position, fleeWeight)
+                this.move(this.resolveForce())
+                applyMovement(this, deltaTime)
+                this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')))
+                this.applyVelocity(deltaTime)
+            } else {
+                this.dampenVelocity(0.01, deltaTime)
+                this.applyVelocity(deltaTime)
+            }
             return
         }
 
@@ -62,7 +70,7 @@ export default class Inquisitor extends Entity {
             this.seek(this._battleCenter, 0.3)
         }
 
-        this.wander(getSporeValue(this, 'wanderWeight', 0.3))
+        this.wander(getEffectiveStat(this, 'wanderWeight', 0.3))
 
         const neighbors = this.host?.entitiesInRange(this, 1)
         this.separate(neighbors, 0.6)
@@ -70,7 +78,7 @@ export default class Inquisitor extends Entity {
         applyLeash(this)
         this.move(this.resolveForce())
         applyMovement(this, deltaTime)
-        this.clampVelocity(getSporeValue(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')))
+        this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')))
         this.applyVelocity(deltaTime)
     }
 

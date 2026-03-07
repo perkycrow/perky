@@ -7,9 +7,8 @@ import MeleeAttack from '../../game/melee_attack.js'
 import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
 import {createSporeStorage, createImprintStorage} from '../spores.js'
-import {getSporeValue} from '../spore_effects.js'
 import {getRankModifier} from '../rank.js'
-import {applyLeash, applyMovement} from '../entity_helpers.js'
+import {applyLeash, applyMovement, getEffectiveStat} from '../entity_helpers.js'
 
 
 export default class Skeleton extends Entity {
@@ -63,13 +62,17 @@ export default class Skeleton extends Entity {
         const enemy = this.target
 
         if (enemy) {
-            this.seek(enemy.position, getSporeValue(this, 'approachWeight', 1))
+            this.seek(enemy.position, getEffectiveStat(this, 'approachWeight', 1))
+            const fleeWeight = getEffectiveStat(this, 'fleeWeight', 1) - 1
+            if (fleeWeight > 0) {
+                this.flee(enemy.position, fleeWeight)
+            }
             this.meleeAttack(enemy)
         } else if (this._battleCenter) {
             this.seek(this._battleCenter, 0.3)
         }
 
-        this.wander(getSporeValue(this, 'wanderWeight', 0.3))
+        this.wander(getEffectiveStat(this, 'wanderWeight', 0.3))
 
         const neighbors = this.host?.entitiesInRange(this, 1)
         this.separate(neighbors, 0.8)
@@ -77,7 +80,7 @@ export default class Skeleton extends Entity {
         applyLeash(this)
         this.move(this.resolveForce())
         applyMovement(this, deltaTime)
-        this.clampVelocity(getSporeValue(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')))
+        this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')))
         this.applyVelocity(deltaTime)
     }
 
