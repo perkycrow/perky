@@ -239,12 +239,108 @@ Valeur partagee par le swarm, pas individuelle :
 | surprise + lust | Coup de foudre | Freeze en voyant un ennemi → conversion instantanee courte |
 
 
+### Systeme d'events
+
+Les events sont le carburant des combos. Sans eux les spores ne font que modifier des stats. Avec eux les spores **reagissent** au monde.
+
+Events proposes :
+- `ally_died` — un allie du swarm meurt
+- `leader_died` — le leader du swarm meurt
+- `kill` — j'ai tue quelqu'un
+- `low_hp` — je passe sous un seuil de vie
+- `surrounded` — 3+ ennemis dans mon rayon
+- `isolated` — je suis loin de mon swarm
+- `outnumbered` — mon swarm est en inferiorite
+- `first_blood` — premier coup du combat
+
+### Systeme de buffs / debuffs
+
+Les events declenchent des **buffs/debuffs temporaires** sur les entites et/ou les swarms. Ca cree des **moments** lisibles et dramatiques.
+
+#### Structure d'un buff
+- **Key** unique (ex: `rage`, `panic`, `grief`)
+- **Duree** en secondes
+- **Modificateurs** de stats (multiplicateurs ou additions)
+- **Niveau entite ou swarm** (buff individuel vs buff de groupe)
+- **Non-empilable** : si un buff identique est reapplique, le timer se reset (pas de double buff). Comme dans WoW.
+
+#### Buffs par event × spore
+
+**`ally_died`** :
+- Anger → buff **Rage** (3s) : +50% degats, +30% vitesse, ignore la laisse
+- Sadness → debuff **Deuil** (5s) : -40% vitesse, -20% degats
+- Fear → debuff **Panique** (2s) : fuite incontrolable, vitesse x2
+- Naive → rien (il comprend pas)
+- Surprise → buff **Choc** (1s) : freeze total puis burst de vitesse
+
+**`low_hp`** :
+- Fear → debuff **Terreur** (permanent tant que low HP) : fuite totale
+- Anger → buff **Dernier souffle** (permanent tant que low HP) : +degats proportionnel aux HP manquants
+- Arrogance → buff **Indignation** (4s) : charge le responsable du coup
+
+**`kill`** :
+- Arrogance → buff **Triomphe** (3s) : +aggro, cherche la prochaine cible forte
+- Naive → buff **Excitation** (2s) : +vitesse, +erratic
+- Lust → buff **Trophee** (3s) : +charme, facilite la prochaine conversion
+
+**`surrounded`** :
+- Fear → debuff **Panique**
+- Naive → buff **Fete** (3s) : +moral au swarm
+- Surprise → buff **Sursaut** (1s) : burst AOE ou dash d'evasion
+
+**`leader_died`** :
+- Swarm entier → debuff **Desarroi** (3s) : moral chute, confusion
+- Puis election du nouveau leader → buff **Promotion** (3s) sur le nouveau leader
+
+#### Buffs de swarm vs buffs individuels
+
+Deux niveaux :
+- **Buff individuel** : sur une entite, affecte ses propres stats (rage, panique, etc.)
+- **Buff de swarm** : sur le swarm, affecte tous les membres (desarroi, fete, deroute)
+
+Le swarm a deja une structure (`swarm.js`) qui peut porter des buffs. Les buffs de swarm sont des multiplicateurs globaux appliques a chaque membre.
+
+### Combos de 3 — exemples d'emergence
+
+Les combos de 3 sont plus riches car plusieurs buffs peuvent se stacker sur le meme event :
+
+**Fear + Sadness + Anger = Martyr**
+- `ally_died` → Panique + Deuil + Rage en meme temps
+- L'entite fuit (peur), est ralentie (deuil), mais si elle est coincee la rage domine → explosion devastatrice
+- Le gars deprime qui pete un cable apres avoir vu son pote tomber
+
+**Anger + Arrogance + Naive = Tyran fou**
+- Aucun spore defensif → pas de fuite, pas de prudence
+- `kill` → Triomphe + Excitation : accelere, cherche le prochain fort
+- `low_hp` → Dernier souffle + Indignation : ne recule jamais, tape de plus en plus fort
+- Meurt en premier mais fait des ravages
+
+**Sadness + Lust + Fear = Parasite**
+- Dependance (sadness+lust) : s'attache a une entite et la suit
+- Fear : a peur de tout le reste, utilise son protecteur comme bouclier
+- `isolated` → Panique totale, fuite vers sa cible d'attachement
+- Si la cible meurt → Deuil + Panique = shutdown complet
+
+**Surprise + Anger + Lust = Piege vivant**
+- Freeze (surprise) quand un ennemi approche
+- Activation du charme (lust) pendant le freeze
+- Si conversion echoue → burst de rage (anger)
+- Sequence : freeze → charme → explosion
+
+**Arrogance + Fear + Lust = Manipulateur**
+- Tyran lache (arrogance+fear) : cible les faibles, fuit les forts
+- Lust : au lieu de tuer les faibles, les convertit
+- `outnumbered` → tente de convertir pour retourner les effectifs
+- Ne se bat jamais lui-meme, retourne les gens
+
+
 ## Prochaines etapes
 
-1. Definir l'architecture technique des spores (jauges, stats, events)
-2. Implementer un premier spore complet comme prototype (Fear ?)
-3. Ajouter la conscience swarm (stats cumulees, comparaison, moral)
-4. Implementer les catalyseurs (combos)
-5. Ajouter les champignons dans le monde
-6. Systeme de consommation + empreinte de personnalite
-7. Tester les comportements emergents
+1. Definir l'architecture technique des spores (jauges, stats, events, buffs)
+2. Implementer le systeme de buffs/debuffs (entite + swarm)
+3. Implementer un premier spore complet comme prototype (Fear ?)
+4. Ajouter la conscience swarm (stats cumulees, comparaison, moral)
+5. Implementer les catalyseurs (combos)
+6. Ajouter les champignons dans le monde
+7. Systeme de consommation + empreinte de personnalite
+8. Tester les comportements emergents
