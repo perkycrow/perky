@@ -10,8 +10,13 @@ Jeu top-down avec des entites controllees par le joueur et/ou par une IA comport
 Chaque entite a des capacites propres (sa specialite) mais partage un set d'actions communes.
 
 ### Entites actuelles
-- **Shade** - le personnage de base, controllable par le joueur
-- **Skeleton** - premiere entite supplementaire
+- **Shade** (rank 3) - le personnage de base, controllable par le joueur. Melee + dash, 5 HP
+- **Skeleton** (rank 2) - melee + dash, 3 HP
+- **Inquisitor** (rank 2) - tireur a distance (projectiles), 3 HP
+- **Rat** (rank 1) - melee rapide et fragile, 1 HP
+- **Soul** - entite passive qui rejoint les allies proches (flocking)
+- **Projectile** - projectile a duree de vie limitee, faction du tireur
+- **Cage**, **Jar**, **Turret** - entites statiques placeholder
 
 ### Actions communes (a definir)
 Les entites partagent un vocabulaire d'actions que l'IA peut decider d'executer :

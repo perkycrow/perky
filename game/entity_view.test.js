@@ -59,7 +59,7 @@ describe('EntityView', () => {
 
 
         test('syncs root position from entity', () => {
-            view.root = {x: 0, y: 0}
+            view.root = {x: 0, y: 0, setDepth: () => {}}
 
             entity.x = 100
             entity.y = 200
@@ -71,7 +71,7 @@ describe('EntityView', () => {
 
 
         test('updates root when entity moves', () => {
-            view.root = {x: 0, y: 0}
+            view.root = {x: 0, y: 0, setDepth: () => {}}
 
             view.sync()
             expect(view.root.x).toBe(10)
