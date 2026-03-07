@@ -17,8 +17,8 @@ export default class Rat extends Entity {
 
         this.create(Velocity)
         this.create(Steering)
-        this.create(Health, {hp: 10})
-        this.create(MeleeAttack, {damage: 5, range: 0.3, cooldown: 0.8, windUp: 0.1, strikeTime: 0.08})
+        this.create(Health, {hp: 8})
+        this.create(MeleeAttack, {damage: 4, range: 0.3, cooldown: 0.5, windUp: 0.1, strikeTime: 0.08})
 
         const {maxSpeed = 2, acceleration = 8} = params
 

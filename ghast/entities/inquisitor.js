@@ -16,7 +16,7 @@ export default class Inquisitor extends Entity {
 
         this.create(Velocity)
         this.create(Steering)
-        this.create(Health, {hp: 8})
+        this.create(Health, {hp: 6})
 
         const {maxSpeed = 1, acceleration = 4} = params
 
