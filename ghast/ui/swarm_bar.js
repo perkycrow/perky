@@ -91,6 +91,7 @@ export default class SwarmBar {
 
             frame.element.style.borderColor = getBorderColor(isSelected, isLeader)
             frame.element.style.borderWidth = isLeader || isSelected ? '2px' : '1px'
+            frame.leaderLabel.style.display = isLeader ? 'block' : 'none'
 
             updateHpBar(frame.hpBar, entity)
             updateXpBar(frame.xpBar, entity)
@@ -212,12 +213,12 @@ function createFrame (entity, game, onSelect) {
     Object.assign(rankBadge.style, {
         position: 'absolute',
         top: '2px',
-        right: '2px',
-        fontSize: '10px',
+        right: '4px',
+        fontSize: '12px',
         fontFamily: 'monospace',
         fontWeight: 'bold',
         color: '#d4a017',
-        textShadow: '0 0 3px #000',
+        textShadow: '0 0 4px #000, 0 0 2px #000',
         pointerEvents: 'none'
     })
 
@@ -236,10 +237,29 @@ function createFrame (entity, game, onSelect) {
     })
     xpBar.appendChild(xpFill)
 
+    const leaderLabel = document.createElement('div')
+    Object.assign(leaderLabel.style, {
+        position: 'absolute',
+        bottom: '10px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        fontSize: '9px',
+        fontFamily: 'monospace',
+        fontWeight: 'bold',
+        color: '#d4a017',
+        background: 'rgba(0,0,0,0.6)',
+        padding: '1px 4px',
+        borderRadius: '2px',
+        pointerEvents: 'none',
+        display: 'none'
+    })
+    leaderLabel.textContent = '\u2605'
+
     el.style.position = 'relative'
     el.appendChild(sporesRow)
     el.appendChild(portrait)
     el.appendChild(rankBadge)
+    el.appendChild(leaderLabel)
     el.appendChild(buffsRow)
     el.appendChild(hpBar)
     el.appendChild(xpBar)
@@ -249,7 +269,7 @@ function createFrame (entity, game, onSelect) {
         onSelect(entity)
     })
 
-    return {element: el, portrait, hpBar, xpBar, rankBadge, buffsRow, sporesRow}
+    return {element: el, portrait, hpBar, xpBar, rankBadge, leaderLabel, buffsRow, sporesRow}
 }
 
 

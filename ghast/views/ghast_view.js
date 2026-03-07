@@ -17,6 +17,15 @@ const DOT_RADIUS = 0.05
 const DOT_SPACING = 0.13
 const DOT_Y_OFFSET = 0.55
 
+const RANK_DOT_RADIUS = 0.03
+const RANK_DOT_SPACING = 0.09
+const RANK_DOT_Y = -0.55
+const RANK_DOT_COLOR = '#d4a017'
+
+const LEADER_DOT_RADIUS = 0.06
+const LEADER_DOT_Y = 0.72
+const LEADER_DOT_COLOR = '#d4a017'
+
 
 export default class GhastView extends EntityView {
 
@@ -28,6 +37,10 @@ export default class GhastView extends EntityView {
         this.sporeGroup = null
         this.sporeDots = []
         this.lastSporeHash = ''
+        this.rankDots = []
+        this.lastRank = 0
+        this.leaderDot = null
+        this.wasLeader = false
 
         entity.on('damaged', () => {
             this.flashTimer = 0.15
@@ -56,6 +69,8 @@ export default class GhastView extends EntityView {
         }
         this.sporeGroup = null
         this.sporeDots = []
+        this.rankDots = []
+        this.leaderDot = null
         super.dispose()
     }
 
@@ -79,6 +94,8 @@ export default class GhastView extends EntityView {
 
         this.#syncAttackLunge()
         this.#syncSpores()
+        this.#syncRank()
+        this.#syncLeader()
         this.#syncFlash()
         this.#syncOutline()
     }
@@ -121,12 +138,86 @@ export default class GhastView extends EntityView {
             return
         }
 
+        const isLeader = this.entity.swarm?.leader === this.entity
+
         if (this.flashTimer > 0) {
             this.outlineEffect.width = 0.08
             this.outlineEffect.color = [1, 1, 1]
         } else {
-            this.outlineEffect.width = 0.04
+            this.outlineEffect.width = isLeader ? 0.06 : 0.04
             this.outlineEffect.color = factionColors[faction] || [1, 1, 1]
+        }
+    }
+
+
+    #syncRank () {
+        if (!this.sporeGroup || this.entity.rank === undefined) {
+            return
+        }
+
+        const rank = this.entity.rank
+
+        if (rank === this.lastRank) {
+            return
+        }
+
+        this.lastRank = rank
+        this.#rebuildRankDots()
+    }
+
+
+    #rebuildRankDots () {
+        for (const dot of this.rankDots) {
+            this.sporeGroup.remove(dot)
+        }
+        this.rankDots = []
+
+        const rank = this.entity.rank || 0
+
+        if (rank <= 0) {
+            return
+        }
+
+        const totalWidth = (rank - 1) * RANK_DOT_SPACING
+        const startX = -totalWidth / 2
+
+        for (let i = 0; i < rank; i++) {
+            const circle = new Circle({
+                radius: RANK_DOT_RADIUS,
+                color: RANK_DOT_COLOR,
+                x: startX + i * RANK_DOT_SPACING,
+                y: RANK_DOT_Y
+            })
+            this.rankDots.push(circle)
+            this.sporeGroup.add(circle)
+        }
+    }
+
+
+    #syncLeader () {
+        if (!this.sporeGroup || !this.entity.swarm) {
+            return
+        }
+
+        const isLeader = this.entity.swarm.leader === this.entity
+
+        if (isLeader === this.wasLeader) {
+            return
+        }
+
+        this.wasLeader = isLeader
+
+        if (isLeader && !this.leaderDot) {
+            this.leaderDot = new Circle({
+                radius: LEADER_DOT_RADIUS,
+                color: LEADER_DOT_COLOR,
+                x: 0,
+                y: LEADER_DOT_Y
+            })
+            this.sporeGroup.add(this.leaderDot)
+        } else if (!isLeader && this.leaderDot) {
+            this.sporeGroup.remove(this.leaderDot)
+            this.leaderDot = null
         }
     }
 
