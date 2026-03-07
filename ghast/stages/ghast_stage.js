@@ -2,6 +2,7 @@ import Stage from '../../game/stage.js'
 import GhastWorld from '../ghast_world.js'
 import GhastController from '../controllers/ghast_controller.js'
 import GroundPass from '../postprocessing/ground_pass.js'
+import SwarmBar from '../ui/swarm_bar.js'
 import wiring from '../wiring.js'
 
 
@@ -19,11 +20,10 @@ export default class GhastStage extends Stage {
         const shadowSwarm = this.world.createSwarm('shadow')
         const lightSwarm = this.world.createSwarm('light')
 
-        // Shadow team (left)
         this.game.execute('spawnShade', {x: -2, y: 0, team: 'shadow', swarm: shadowSwarm})
-
-        // Light team (right)
         this.game.execute('spawnShade', {x: 2, y: 0, team: 'light', swarm: lightSwarm})
+
+        this.swarmBar = new SwarmBar(this.game.perkyView.element, shadowSwarm, this.game)
     }
 
 
@@ -36,6 +36,7 @@ export default class GhastStage extends Stage {
     render () {
         this.syncViews()
         this.#updateGroundPass()
+        this.swarmBar?.update()
     }
 
 
