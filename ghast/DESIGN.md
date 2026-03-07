@@ -10,11 +10,14 @@ Jeu top-down avec des entites controllees par le joueur et/ou par une IA comport
 Chaque entite a des capacites propres (sa specialite) mais partage un set d'actions communes.
 
 ### Entites actuelles
-- **Shade** (rank 3) - tank/leader, melee + dash, 5 HP, dmg 2, speed 1, cd 1s
-- **Skeleton** (rank 2) - infanterie, melee + dash, 3 HP, dmg 1, speed 0.8, cd 1.2s
-- **Inquisitor** (rank 2) - distant, projectiles range 4, 2 HP, speed 1, cd 1.5s
-- **Rat** (rank 1) - melee rapide et fragile, 2 HP, dmg 1, speed 2, cd 0.8s
-- **Soul** - entite passive qui rejoint les allies proches (flocking)
+
+Toutes les entites de combat commencent **rank 1** et montent en rank via les soul shards (voir systeme de shards).
+
+- **Shade** - tank/leader, melee + dash, 5 HP, dmg 2, speed 1, cd 1s
+- **Skeleton** - infanterie, melee + dash, 3 HP, dmg 1, speed 0.8, cd 1.2s
+- **Inquisitor** - distant, projectiles range 4, 2 HP, speed 1, cd 1.5s
+- **Rat** - melee rapide et fragile, 2 HP, dmg 1, speed 2, cd 0.8s
+- **Soul** - entite passive qui erre dans le monde, recrutee par un swarm pour devenir une creature (cout en shards)
 - **Projectile** - projectile a duree de vie limitee, faction du tireur
 - **Cage**, **Jar**, **Turret** - entites statiques placeholder
 
@@ -166,14 +169,14 @@ Le rose passe de **Sournois/Cunning** a **Charme/Lust**. Ca colle mieux a la cou
 ### Slots = rank
 
 Le nombre de spores qu'une entite peut porter est lie a son rang :
-- Rank 1 (Rat) = 1 slot
-- Rank 2 (Skeleton, Inquisitor) = 2 slots
-- Rank 3 (Shade) = 3 slots
+- Rank 1 = 1 slot (toutes les entites commencent ici)
+- Rank 2 = 2 slots
+- Rank 3 = 3 slots
 - ... jusqu'a rank 7 = 7 slots (les 7 spores, entite ultime equilibree)
 
 Ca rend les unites haut-rang strategiquement precieuses : elles portent plus de diversite comportementale. L'unite rank 7 avec les 7 spores serait legendaire et ultra-rare.
 
-Le rank pourra evoluer via un systeme de promotion (a definir).
+Le rank evolue via le systeme de soul shards (voir ci-dessous).
 
 ### Emergence par combinaisons
 
@@ -209,30 +212,27 @@ Les spores reagissent au contexte du swarm :
 
 ### Charme / Lust (rose) — Mecanisme de conversion
 
-Le spore lust permet de **convertir une unite ennemie** (changer sa faction). C'est l'action la plus impactante du jeu, donc le cout est proportionnel au gain.
+Le spore lust permet de **convertir une unite ennemie** (changer sa faction). C'est l'action la plus impactante du jeu, donc le cout en soul shards est proportionnel au gain.
 
 #### Regle de conversion
 
-- Le convertisseur doit avoir **au moins 2 ranks de plus** que la cible
-- Apres conversion, le convertisseur **perd 2 ranks** (perd des slots de spores, devient plus faible)
-- L'unite convertie **garde son rank, son XP et ses stats** — c'est tout l'interet du risque
+- La conversion coute des **soul shards** : cout = **rank de la cible × 3 shards**
+- L'unite convertie **garde son rank, ses stats et ses spores** — c'est tout l'interet du prix eleve
+- Pas de contrainte de rank sur le convertisseur, juste le cout en shards
 
-| Convertisseur | Peut convertir | Cout |
+| Rank cible | Cout en shards | Equivalent en kills |
 |---|---|---|
-| Rank 3 | Rank 1 | Passe rank 1 |
-| Rank 4 | Rank 1-2 | Passe rank 2 |
-| Rank 5 | Rank 1-3 | Passe rank 3 |
-| Rank 6 | Rank 1-4 | Passe rank 4 |
-| Rank 7 | Rank 1-6 | **Sacrifice** (meurt) |
-
-#### Exception rank 7 : le sacrifice
-
-Une unite rank 7 peut convertir jusqu'au rank 6 (pas rank 7 — trop abuse). Mais la contrepartie est **la mort du convertisseur**. C'est un moment dramatique : l'unite legendaire se sacrifie pour retourner un ennemi puissant. Narrativement fort, strategiquement risque.
+| Rank 1 | 3 shards | 3 kills |
+| Rank 2 | 6 shards | 6 kills |
+| Rank 3 | 9 shards | 9 kills |
+| Rank 4 | 12 shards | 12 kills |
+| Rank 5 | 15 shards | 15 kills |
+| Rank 6 | 18 shards | 18 kills |
+| Rank 7 | 21 shards | 21 kills |
 
 #### Equilibrage
 
-- Le cout en rank = cout en slots de spores. Le convertisseur perd en diversite comportementale.
-- Convertir un veteran rank 6 avec un sacrifice rank 7 = mega-gain (on recupere toute son XP et ses stats). Haut risque, haute recompense.
+- Convertir coute toujours **plus cher** que recruter + promouvoir au meme rank (recruter rank 1 = 1 shard, promouvoir jusqu'a rank 3 = 1+2+4 = 7 shards total vs convertir rank 3 = 9 shards). Mais on recupere une unite deja operationnelle avec son XP et ses spores.
 - Les combos lust amplifient : lust + arrogance = cible les forts pour convertir. Lust + fear = tente de convertir par desespoir.
 - Cooldown long sur la conversion pour eviter le spam
 
@@ -464,9 +464,55 @@ Quand les deux swarms d'une bataille se desolidarisent (tous les membres hors du
 Ca resout le probleme de "qui a fui ?" quand deux swarms se separent. Le mecanisme de flee actuel (FLEE_RADIUS + FLEE_DELAY dans battle.js) donne le timing, le score de combativite donne le verdict.
 
 
-### Systeme d'experience et de promotion
+### Systeme de Soul Shards
 
-Inspire de Total War Warhammer 3 (systeme de chevrons). Les entites gagnent de l'XP via leurs actions en combat et montent en rank. Le rank determine le nombre de slots de spores.
+Les **soul shards** sont la monnaie universelle du jeu. Ils droppent des ennemis vaincus et servent a tout : recruter, promouvoir, convertir.
+
+#### Drop
+
+**1 shard par kill**, quel que soit le rank de la victime. Simple, lisible, valorise le volume de kills.
+
+Les shards sont collectes par le **swarm** (pas par l'entite qui a porte le coup fatal). C'est une ressource de faction/swarm.
+
+#### Recrutement (Souls)
+
+Les Souls errent dans le monde. Quand une Soul entre dans le range d'un swarm, le joueur peut la **transformer en creature** de son choix (Rat, Skeleton, Inquisitor, Shade). L'entite creee commence rank 1.
+
+| Action | Cout |
+|--------|------|
+| Recruter une Soul (n'importe quel type) | 1 shard |
+
+Le type de creature choisi determine ses stats de base (HP, vitesse, degats, style de combat) mais pas son rank — tout le monde commence rank 1.
+
+#### Promotion
+
+Les shards servent aussi a **promouvoir** une entite (augmenter son rank). Le cout double a chaque palier :
+
+| Promotion | Cout | Cout cumule depuis rank 1 |
+|-----------|------|--------------------------|
+| Rank 1 → 2 | 2 shards | 2 |
+| Rank 2 → 3 | 4 shards | 6 |
+| Rank 3 → 4 | 8 shards | 14 |
+| Rank 4 → 5 | 16 shards | 30 |
+| Rank 5 → 6 | 32 shards | 62 |
+| Rank 6 → 7 | 64 shards | 126 |
+
+Atteindre rank 7 coute 126 shards = 126 kills. C'est un investissement enorme, ce qui rend les unites haut-rang irreplacables. Le rank_up est un moment dramatique : flash visuel, buff Promotion (+stats 3s), boost de moral au swarm.
+
+Event : `rank_up` — `{entity, oldRank, newRank}`
+
+#### Choix strategique : largeur vs profondeur
+
+Le joueur a un dilemme permanent :
+- **Largeur** : recruter beaucoup de rank 1 (1 shard chacun) → armee nombreuse mais fragile
+- **Profondeur** : promouvoir quelques unites a haut rank → armee petite mais puissante avec plus de slots de spores
+- **Conversion** : retourner un ennemi deja promu (cher mais on recupere tout son investissement)
+
+Le cout exponentiel de la promotion rend chaque choix impactant. Promouvoir un rat rank 6→7 coute 64 shards — c'est 64 recrues potentielles sacrifiees pour un seul slot de spore supplementaire.
+
+### Systeme de stats et d'histoire
+
+Les entites accumulent des stats permanentes pour le systeme de named units et de perks. Ce n'est plus lie a la progression de rank (geree par les shards) mais sert a l'attachement du joueur et aux achievements.
 
 #### Stats trackees par entite
 
@@ -541,65 +587,14 @@ Ces stats de swarm servent au swarm level (veterancy collectif) et pourraient al
 
 **Limite** : nombre de named par swarm limite (1-2 par swarm ?) pour que ca reste special. Ou pas de limite, mais les seuils sont assez hauts pour que ca arrive naturellement rarement.
 
-#### Poids XP
+#### Veterancy de swarm
 
-Chaque stat est ponderee pour calculer l'XP totale :
-
-| Stat | Poids | Justification |
-|------|-------|---------------|
-| Coup fatal | 10 | Recompense la plus forte |
-| Assist | 4 | Contribution sans le kill |
-| Degats infliges | 2/pt | Contribution au combat |
-| Degats encaisses | 1/pt | Resilience |
-| Degats absorbes pour allie | 3/pt | Sacrifice valorise |
-| Degats soignes | 3/pt | Support valorise |
-| Debuff ennemi inflige | 5 | Controle |
-| Buff allie applique | 4 | Support |
-| Entite convertie | 15 | Tres impactant |
-| Bataille survivee | 8 | Endurance |
-| Friendly fire | -3/pt | Penalite |
-
-#### Courbe de progression
-
-Exponentiel mitigue, inspire de Total War (rangs 1-5 quasi-lineaires, puis acceleration) :
-
-| Rang | XP cumulee | Slots spores | Note |
-|------|-----------|--------------|------|
-| 1 | 0 | 1 | depart Rat |
-| 2 | 50 | 2 | depart Skeleton/Inquisitor |
-| 3 | 150 | 3 | depart Shade |
-| 4 | 400 | 4 | palier |
-| 5 | 800 | 5 | — |
-| 6 | 1500 | 6 | palier |
-| 7 | 3000 | 7 | legendaire |
-
-Le baseRank du type d'entite = XP de depart :
-- Rat spawn avec 0 XP → rank 1
-- Skeleton/Inquisitor spawn avec 50 XP → rank 2
-- Shade spawn avec 150 XP → rank 3
-
-Un Rat veteran peut depasser un Shade frais. C'est le cote narratif interessant.
-
-#### Rank up = promotion automatique
-
-Quand l'XP atteint le seuil → rank_up immediat. Events :
-- `xp_gained` — `{entity, amount, source}` (source = 'kill', 'damage', 'heal', etc.)
-- `rank_up` — `{entity, oldRank, newRank}` — moment fort, buff temporaire "Promotion"
-
-Le rank_up est un moment dramatique : flash visuel, buff Promotion (+stats 3s), boost de moral au swarm.
-
-#### XP de swarm
-
-L'XP du swarm = somme de l'XP gagnee par tous les membres pendant qu'ils etaient dans le swarm. Pas l'XP individuelle cumulee, mais l'XP generee collectivement.
-
-Le swarm level debloque :
+Le swarm accumule de la veterancy via les batailles livrees et les stats collectives. La veterancy de swarm debloque :
 - Meilleure cohesion (leash radius plus grand)
 - Moral de base plus eleve
 - Bonus passif de stats pour tous les membres (veterancy collectif)
 
-Un swarm veterant qui a traverse 5 batailles est plus cohesif qu'un swarm fraichement forme. Si un membre quitte, il emporte son XP individuelle mais le swarm garde l'XP collective deja accumulee.
-
-Event : `swarm_level_up` — `{swarm, level}`
+Un swarm veterant qui a traverse 5 batailles est plus cohesif qu'un swarm fraichement forme.
 
 #### Healing (a definir)
 
@@ -785,13 +780,14 @@ L'ordre donne la **direction** (quoi faire), les spores donnent le **style** (co
 
 ## Prochaines etapes
 
-1. Implementer le systeme de reactions event x spore (buffs)
-2. Implementer le targeting persistant + decision loop
-3. Ajouter le systeme d'aggro (menace)
-4. Ajouter la jauge de moral au swarm
-5. Implementer la capacite swarm = rank du leader
-6. Ajouter les champignons dans le monde
-7. Systeme de consommation + empreinte de personnalite
-8. Implementer les catalyseurs (combos)
-9. Equilibrer le triangle RPS
-10. Tester les comportements emergents
+1. Implementer le systeme de soul shards (drop, recrutement, promotion)
+2. Implementer le systeme de reactions event x spore (buffs)
+3. Implementer le targeting persistant + decision loop
+4. Ajouter le systeme d'aggro (menace)
+5. Ajouter la jauge de moral au swarm
+6. Implementer la capacite swarm = rank du leader
+7. Ajouter les champignons dans le monde
+8. Systeme de consommation + empreinte de personnalite
+9. Implementer les catalyseurs (combos)
+10. Equilibrer le triangle RPS
+11. Tester les comportements emergents
