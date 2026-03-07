@@ -8,6 +8,7 @@ import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
 import {createSporeStorage} from '../spores.js'
 import {getSporeValue} from '../spore_effects.js'
+import {applyLeash, applyMovement} from '../entity_helpers.js'
 
 
 export default class Shade extends Entity {
@@ -30,6 +31,8 @@ export default class Shade extends Entity {
 
         this.rank = 3
         this.baseRank = 3
+        this.target = null
+        this.baseDetectRange = 1
         this.swarm = null
         this.spores = createSporeStorage()
 
@@ -56,9 +59,7 @@ export default class Shade extends Entity {
             return
         }
 
-        const world = this.host
-        const detectRange = getSporeValue(this, 'detectRange', 1)
-        const enemy = world?.nearest(this, detectRange, e => e.faction && e.faction !== this.faction)
+        const enemy = this.target
 
         if (enemy) {
             this.seek(enemy.position, getSporeValue(this, 'approachWeight', 1))
@@ -67,7 +68,7 @@ export default class Shade extends Entity {
 
         this.wander(getSporeValue(this, 'wanderWeight', 0.3))
 
-        const neighbors = world?.entitiesInRange(this, 1)
+        const neighbors = this.host?.entitiesInRange(this, 1)
         this.separate(neighbors, 0.8)
 
         applyLeash(this)
@@ -82,37 +83,4 @@ export default class Shade extends Entity {
         this.direction = direction
     }
 
-}
-
-
-function applyLeash (entity) {
-    if (!entity.swarm) {
-        return
-    }
-
-    const center = entity.swarm.getCenter()
-
-    if (!center || center === entity.position) {
-        return
-    }
-
-    const dx = entity.x - center.x
-    const dy = entity.y - center.y
-    const dist = Math.sqrt(dx * dx + dy * dy)
-    const radius = entity.swarm.leashRadius
-
-    if (dist > radius * 0.6) {
-        const urgency = Math.min((dist - radius * 0.6) / (radius * 0.4), 1)
-        entity.seek(center, urgency * 1.5)
-    }
-}
-
-
-function applyMovement (entity, deltaTime) {
-    if (entity.direction?.length() > 0) {
-        const accel = entity.direction.clone().multiplyScalar(entity.acceleration * deltaTime)
-        entity.velocity.add(accel)
-    } else {
-        entity.dampenVelocity(0.01, deltaTime)
-    }
 }

@@ -2,6 +2,7 @@ import Entity from '../../game/entity.js'
 import Velocity from '../../game/velocity.js'
 import Steering from '../../game/steering.js'
 import Health from '../../game/health.js'
+import {applyMovement} from '../entity_helpers.js'
 
 
 export default class Soul extends Entity {
@@ -46,14 +47,4 @@ export default class Soul extends Entity {
         this.applyVelocity(deltaTime)
     }
 
-}
-
-
-function applyMovement (entity, deltaTime) {
-    if (entity.direction?.length() > 0) {
-        const accel = entity.direction.clone().multiplyScalar(entity.acceleration * deltaTime)
-        entity.velocity.add(accel)
-    } else {
-        entity.dampenVelocity(0.01, deltaTime)
-    }
 }

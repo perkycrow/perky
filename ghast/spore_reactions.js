@@ -26,6 +26,18 @@ const REACTIONS = {
         fear: 'panic',
         naive: 'party',
         surprise: 'startle'
+    },
+
+    isolated: {
+        fear: 'panic',
+        sadness: 'grief',
+        naive: 'excitement'
+    },
+
+    first_blood: {
+        anger: 'rage',
+        arrogance: 'triumph',
+        naive: 'excitement'
     }
 
 }

@@ -11,6 +11,7 @@ import Jar from './entities/jar.js'
 import Projectile from './entities/projectile.js'
 import BUFF_DEFINITIONS from './buff_definitions.js'
 import {applySporeReactions, applySwarmReaction} from './spore_reactions.js'
+import updateDecisions from './decision_loop.js'
 
 
 export default class GhastWorld extends World {
@@ -54,6 +55,14 @@ export default class GhastWorld extends World {
             applySporeReactions(entity, 'surrounded')
         })
 
+        this.on('isolated', ({entity}) => {
+            applySporeReactions(entity, 'isolated')
+        })
+
+        this.on('first_blood', ({source}) => {
+            applySporeReactions(source, 'first_blood')
+        })
+
         this.on('leader_died', ({swarm}) => {
             applySwarmReaction(swarm, 'disarray')
             swarm._leaderDied = true
@@ -84,7 +93,9 @@ export default class GhastWorld extends World {
     }
 
 
-    preUpdate () {
+    preUpdate (deltaTime) {
+        updateDecisions(this, deltaTime)
+
         for (const entity of this.entities) {
             if (!entity.faction || entity.dying) {
                 continue
@@ -160,6 +171,7 @@ export default class GhastWorld extends World {
         if (!target.isAlive()) {
             target.dying = 0.3
             target.hitRadius = 0
+            this.#clearTargetsOn(target)
             this.#emitDeathEvents(target, source)
         }
     }
@@ -193,6 +205,15 @@ export default class GhastWorld extends World {
 
             if (wasLeader) {
                 this.emit('leader_died', {entity: victim, swarm: victim.swarm, killer})
+            }
+        }
+    }
+
+
+    #clearTargetsOn (deadEntity) {
+        for (const entity of this.entities) {
+            if (entity.target === deadEntity) {
+                entity.target = null
             }
         }
     }
