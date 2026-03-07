@@ -166,17 +166,23 @@ Pas de 8eme spore. Les comportements complexes (rancune, etc.) emergent des comb
 
 Le rose passe de **Sournois/Cunning** a **Charme/Lust**. Ca colle mieux a la couleur et apporte un mecanisme unique de conversion/attraction. Le visuel du champignon reste le sourire en coin.
 
-### Slots = rank
+### Rank
 
-Le nombre de spores qu'une entite peut porter est lie a son rang :
-- Rank 1 = 1 slot (toutes les entites commencent ici)
+Toutes les entites commencent rank 1. Le rank evolue via le systeme de soul shards (voir ci-dessous). Le rank sert a 3 choses :
+
+**1. Leadership du swarm** — Le membre avec le rank le plus eleve est le leader. En cas d'egalite de rank : XP la plus elevee. En cas d'egalite d'XP : priorite par type (Shade > Inquisitor > Skeleton > Rat).
+
+**2. Capacite du swarm** — Le rank du leader determine la taille max du swarm (rank 1 = 1 membre, rank 7 = 7 membres).
+
+**3. Modificateurs de stats** — Le rank donne un bonus passif aux stats de combat, scale par une baseline propre a chaque type d'unite. Un Shade rank 3 est significativement plus fort qu'un Shade rank 1. Les bonus exacts sont a definir (HP, degats, vitesse, cooldown), mais l'idee est que le rank represente la puissance brute, les spores representent le comportement.
+
+**Slots de spores** — Le rank determine aussi le nombre de spores qu'une entite peut porter :
+- Rank 1 = 1 slot
 - Rank 2 = 2 slots
-- Rank 3 = 3 slots
-- ... jusqu'a rank 7 = 7 slots (les 7 spores, entite ultime equilibree)
+- ...
+- Rank 7 = 7 slots (les 7 spores, entite ultime equilibree)
 
-Ca rend les unites haut-rang strategiquement precieuses : elles portent plus de diversite comportementale. L'unite rank 7 avec les 7 spores serait legendaire et ultra-rare.
-
-Le rank evolue via le systeme de soul shards (voir ci-dessous).
+Ca rend les unites haut-rang strategiquement precieuses : elles portent plus de diversite comportementale ET sont plus puissantes au combat.
 
 ### Emergence par combinaisons
 
