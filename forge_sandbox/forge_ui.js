@@ -1,3 +1,6 @@
+import {createElement} from '../application/dom_utils.js'
+
+
 const OPERATIONS = [
     {id: 'union', label: '∪'},
     {id: 'subtract', label: '−'},
@@ -79,20 +82,21 @@ export default class ForgeUI {
             this.#toast.remove()
         }
 
-        const div = document.createElement('div')
-        div.textContent = message
-        Object.assign(div.style, {
-            position: 'absolute',
-            top: '24px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'rgba(30, 30, 50, 0.85)',
-            color: 'white',
-            padding: '8px 16px',
-            borderRadius: '8px',
-            fontSize: '14px',
-            zIndex: '10',
-            pointerEvents: 'none'
+        const div = createElement('div', {
+            text: message,
+            style: {
+                position: 'absolute',
+                top: '24px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: 'rgba(30, 30, 50, 0.85)',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                zIndex: '10',
+                pointerEvents: 'none'
+            }
         })
 
         this.#container.appendChild(div)
@@ -121,33 +125,34 @@ export default class ForgeUI {
             zIndex: '10'
         })
 
-        const newBtn = document.createElement('button')
-        newBtn.textContent = '📄'
-        Object.assign(newBtn.style, BUTTON_STYLE)
-        newBtn.style.background = 'rgba(255, 255, 255, 0.1)'
+        const newBtn = createElement('button', {
+            text: '📄',
+            style: {...BUTTON_STYLE, background: 'rgba(255, 255, 255, 0.1)'}
+        })
         newBtn.addEventListener('click', () => this.#forge.newProject())
         bar.appendChild(newBtn)
 
-        const importBtn = document.createElement('button')
-        importBtn.textContent = '📥'
-        Object.assign(importBtn.style, BUTTON_STYLE)
-        importBtn.style.background = 'rgba(255, 255, 255, 0.1)'
+        const importBtn = createElement('button', {
+            text: '📥',
+            style: {...BUTTON_STYLE, background: 'rgba(255, 255, 255, 0.1)'}
+        })
         importBtn.addEventListener('click', () => this.#fileInput.click())
         bar.appendChild(importBtn)
 
-        const exportBtn = document.createElement('button')
-        exportBtn.textContent = '📤'
-        Object.assign(exportBtn.style, BUTTON_STYLE)
-        exportBtn.style.background = 'rgba(255, 255, 255, 0.1)'
+        const exportBtn = createElement('button', {
+            text: '📤',
+            style: {...BUTTON_STYLE, background: 'rgba(255, 255, 255, 0.1)'}
+        })
         exportBtn.addEventListener('click', () => this.#forge.exportProject())
         bar.appendChild(exportBtn)
 
         this.#container.appendChild(bar)
 
-        this.#fileInput = document.createElement('input')
-        this.#fileInput.type = 'file'
-        this.#fileInput.accept = '.json'
-        this.#fileInput.style.display = 'none'
+        this.#fileInput = createElement('input', {
+            type: 'file',
+            attrs: {accept: '.json'},
+            style: {display: 'none'}
+        })
         this.#fileInput.addEventListener('change', () => {
             if (this.#fileInput.files[0]) {
                 this.#forge.importProject(this.#fileInput.files[0])
@@ -159,22 +164,23 @@ export default class ForgeUI {
 
 
     #createAddButton () {
-        const button = document.createElement('button')
-        button.textContent = '+'
-        Object.assign(button.style, {
-            position: 'absolute',
-            bottom: '24px',
-            right: '24px',
-            width: '56px',
-            height: '56px',
-            borderRadius: '50%',
-            border: 'none',
-            background: '#4a90d9',
-            color: 'white',
-            fontSize: '28px',
-            cursor: 'pointer',
-            zIndex: '10',
-            touchAction: 'manipulation'
+        const button = createElement('button', {
+            text: '+',
+            style: {
+                position: 'absolute',
+                bottom: '24px',
+                right: '24px',
+                width: '56px',
+                height: '56px',
+                borderRadius: '50%',
+                border: 'none',
+                background: '#4a90d9',
+                color: 'white',
+                fontSize: '28px',
+                cursor: 'pointer',
+                zIndex: '10',
+                touchAction: 'manipulation'
+            }
         })
         button.addEventListener('click', () => this.#toggleShapePalette())
         this.#container.appendChild(button)
@@ -234,22 +240,23 @@ export default class ForgeUI {
 
 
     #createSnapButton () {
-        const button = document.createElement('button')
-        button.textContent = '⊞'
-        Object.assign(button.style, {
-            position: 'absolute',
-            bottom: '24px',
-            left: '24px',
-            width: '44px',
-            height: '44px',
-            borderRadius: '50%',
-            border: '2px solid #6ab0ff',
-            background: '#4a90d9',
-            color: 'white',
-            fontSize: '20px',
-            cursor: 'pointer',
-            zIndex: '10',
-            touchAction: 'manipulation'
+        const button = createElement('button', {
+            text: '⊞',
+            style: {
+                position: 'absolute',
+                bottom: '24px',
+                left: '24px',
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                border: '2px solid #6ab0ff',
+                background: '#4a90d9',
+                color: 'white',
+                fontSize: '20px',
+                cursor: 'pointer',
+                zIndex: '10',
+                touchAction: 'manipulation'
+            }
         })
         button.addEventListener('click', () => this.#forge.toggleSnap())
         this.#container.appendChild(button)
@@ -282,32 +289,34 @@ export default class ForgeUI {
             this.#operationButtons[op.id] = btn
         }
 
-        const separator = document.createElement('div')
-        Object.assign(separator.style, {width: '1px', background: 'rgba(255, 255, 255, 0.2)', margin: '4px 0'})
+        const separator = createElement('div', {
+            style: {width: '1px', background: 'rgba(255, 255, 255, 0.2)', margin: '4px 0'}
+        })
         bar.appendChild(separator)
 
-        const dupBtn = document.createElement('button')
-        dupBtn.textContent = '⧉'
-        Object.assign(dupBtn.style, BUTTON_STYLE)
-        dupBtn.style.background = 'rgba(255, 255, 255, 0.1)'
+        const dupBtn = createElement('button', {
+            text: '⧉',
+            style: {...BUTTON_STYLE, background: 'rgba(255, 255, 255, 0.1)'}
+        })
         dupBtn.addEventListener('click', () => this.#forge.duplicateBrush())
         bar.appendChild(dupBtn)
 
-        const delBtn = document.createElement('button')
-        delBtn.textContent = '✕'
-        Object.assign(delBtn.style, BUTTON_STYLE)
-        delBtn.style.background = 'rgba(255, 255, 255, 0.1)'
+        const delBtn = createElement('button', {
+            text: '✕',
+            style: {...BUTTON_STYLE, background: 'rgba(255, 255, 255, 0.1)'}
+        })
         delBtn.addEventListener('click', () => this.#forge.deleteBrush())
         bar.appendChild(delBtn)
 
-        const colorSep = document.createElement('div')
-        Object.assign(colorSep.style, {width: '1px', background: 'rgba(255, 255, 255, 0.2)', margin: '4px 0'})
+        const colorSep = createElement('div', {
+            style: {width: '1px', background: 'rgba(255, 255, 255, 0.2)', margin: '4px 0'}
+        })
         bar.appendChild(colorSep)
 
-        const colorBtn = document.createElement('button')
-        colorBtn.textContent = '🎨'
-        Object.assign(colorBtn.style, BUTTON_STYLE)
-        colorBtn.style.background = 'rgba(255, 255, 255, 0.1)'
+        const colorBtn = createElement('button', {
+            text: '🎨',
+            style: {...BUTTON_STYLE, background: 'rgba(255, 255, 255, 0.1)'}
+        })
         colorBtn.addEventListener('click', () => this.#toggleColorPalette())
         bar.appendChild(colorBtn)
 

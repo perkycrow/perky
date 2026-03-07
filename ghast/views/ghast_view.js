@@ -70,15 +70,7 @@ export default class GhastView extends EntityView {
         this.root.setDepth(-this.entity.y)
 
         if (this.entity.dying > 0) {
-            const t = Math.max(0, this.entity.dying / DEATH_DURATION)
-            this.root.setScale(t)
-            this.root.opacity = t
-            if (this.outlineEffect) {
-                this.outlineEffect.width = 0
-            }
-            if (this.sporeGroup) {
-                this.sporeGroup.visible = false
-            }
+            this.#syncDying()
             return
         }
 
@@ -87,27 +79,54 @@ export default class GhastView extends EntityView {
 
         this.#syncAttackLunge()
         this.#syncSpores()
+        this.#syncFlash()
+        this.#syncOutline()
+    }
 
+
+    #syncDying () {
+        const t = Math.max(0, this.entity.dying / DEATH_DURATION)
+        this.root.setScale(t)
+        this.root.opacity = t
+
+        if (this.outlineEffect) {
+            this.outlineEffect.width = 0
+        }
+
+        if (this.sporeGroup) {
+            this.sporeGroup.visible = false
+        }
+    }
+
+
+    #syncFlash () {
         if (this.flashTimer > 0) {
             this.flashTimer -= 1 / 60
             this.root.tint = [1, 1, 1, 0.6]
         } else if (this.root.tint) {
             this.root.tint = null
         }
+    }
 
-        if (this.outlineEffect) {
-            const faction = this.entity.faction
-            if (faction) {
-                if (this.flashTimer > 0) {
-                    this.outlineEffect.width = 0.08
-                    this.outlineEffect.color = [1, 1, 1]
-                } else {
-                    this.outlineEffect.width = 0.04
-                    this.outlineEffect.color = factionColors[faction] || [1, 1, 1]
-                }
-            } else {
-                this.outlineEffect.width = 0
-            }
+
+    #syncOutline () {
+        if (!this.outlineEffect) {
+            return
+        }
+
+        const faction = this.entity.faction
+
+        if (!faction) {
+            this.outlineEffect.width = 0
+            return
+        }
+
+        if (this.flashTimer > 0) {
+            this.outlineEffect.width = 0.08
+            this.outlineEffect.color = [1, 1, 1]
+        } else {
+            this.outlineEffect.width = 0.04
+            this.outlineEffect.color = factionColors[faction] || [1, 1, 1]
         }
     }
 

@@ -294,6 +294,23 @@ describe('Matrix4', () => {
     })
 
 
+    test('makeRotationFromQuaternion', () => {
+        const halfAngle = Math.PI / 4
+        const quat = {
+            x: 0,
+            y: Math.sin(halfAngle),
+            z: 0,
+            w: Math.cos(halfAngle)
+        }
+        const m = new Matrix4().makeRotationFromQuaternion(quat)
+        const v = new Vec3(1, 0, 0)
+        m.transformPoint(v)
+        expectClose(v.x, 0)
+        expectClose(v.y, 0)
+        expectClose(v.z, -1)
+    })
+
+
     describe('compose / decompose', () => {
 
         test('compose identity', () => {

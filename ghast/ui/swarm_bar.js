@@ -74,7 +74,7 @@ export default class SwarmBar {
             const isLeader = entity === this.swarm.leader
             const isSelected = entity === this.selectedEntity
 
-            frame.element.style.borderColor = isSelected ? '#fff' : isLeader ? '#d4a017' : '#555'
+            frame.element.style.borderColor = getBorderColor(isSelected, isLeader)
             frame.element.style.borderWidth = isLeader || isSelected ? '2px' : '1px'
 
             updateHpBar(frame.hpBar, entity)
@@ -254,6 +254,19 @@ function updateBuffs (column, entity) {
             child.remove()
         }
     }
+}
+
+
+function getBorderColor (isSelected, isLeader) {
+    if (isSelected) {
+        return '#fff'
+    }
+
+    if (isLeader) {
+        return '#d4a017'
+    }
+
+    return '#555'
 }
 
 

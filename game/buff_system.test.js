@@ -228,19 +228,15 @@ describe('BuffSystem', () => {
     })
 
 
-    describe('clearBuffs', () => {
+    test('clearBuffs removes all buffs', () => {
+        const entity = createEntity()
 
-        test('removes all buffs', () => {
-            const entity = createEntity()
+        entity.applyBuff('rage', 3)
+        entity.applyBuff('haste', 2)
+        entity.clearBuffs()
 
-            entity.applyBuff('rage', 3)
-            entity.applyBuff('haste', 2)
-            entity.clearBuffs()
-
-            expect(entity.hasBuff('rage')).toBe(false)
-            expect(entity.hasBuff('haste')).toBe(false)
-        })
-
+        expect(entity.hasBuff('rage')).toBe(false)
+        expect(entity.hasBuff('haste')).toBe(false)
     })
 
 })

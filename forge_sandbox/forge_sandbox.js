@@ -1,3 +1,4 @@
+import {createElement} from '../application/dom_utils.js'
 import Game from '../game/game.js'
 import WebGLMeshRenderer from '../render/webgl/webgl_mesh_renderer.js'
 import Camera3D from '../render/camera_3d.js'
@@ -302,9 +303,7 @@ export default class ForgeSandbox extends Game {
         const json = JSON.stringify(this.toJSON(), null, 2)
         const blob = new Blob([json], {type: 'application/json'})
         const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'forge-project.json'
+        const a = createElement('a', {href: url, attrs: {download: 'forge-project.json'}})
         a.click()
         URL.revokeObjectURL(url)
         this.ui.showToast('Exported')

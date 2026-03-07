@@ -12,21 +12,6 @@ const SHAPES = {
 }
 
 
-function createPositionVec (options) {
-    return new Vec3(options.x ?? 0, options.y ?? 0, options.z ?? 0)
-}
-
-
-function createRotationVec (options) {
-    return new Vec3(options.rx ?? 0, options.ry ?? 0, options.rz ?? 0)
-}
-
-
-function createScaleVec (options) {
-    return new Vec3(options.sx ?? 1, options.sy ?? 1, options.sz ?? 1)
-}
-
-
 export default class Brush {
 
     constructor (options = {}) {
@@ -88,6 +73,21 @@ export default class Brush {
         return new Brush(data)
     }
 
+}
+
+
+function createPositionVec (options) {
+    return new Vec3(options.x ?? 0, options.y ?? 0, options.z ?? 0)
+}
+
+
+function createRotationVec (options) {
+    return new Vec3(options.rx ?? 0, options.ry ?? 0, options.rz ?? 0)
+}
+
+
+function createScaleVec (options) {
+    return new Vec3(options.sx ?? 1, options.sy ?? 1, options.sz ?? 1)
 }
 
 

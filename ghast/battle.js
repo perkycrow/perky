@@ -4,12 +4,13 @@ const FLEE_DELAY = 2
 
 export default class Battle {
 
+    #fleeTimers = new Map()
+    #totalAdded = 0
+
     constructor () {
         this.swarms = []
         this.firstBlood = false
         this.resolved = false
-        this._fleeTimers = new Map()
-        this._totalAdded = 0
     }
 
 
@@ -19,8 +20,8 @@ export default class Battle {
         }
 
         this.swarms.push(swarm)
-        this._fleeTimers.set(swarm, 0)
-        this._totalAdded++
+        this.#fleeTimers.set(swarm, 0)
+        this.#totalAdded++
     }
 
 
@@ -29,7 +30,7 @@ export default class Battle {
 
         if (index !== -1) {
             this.swarms.splice(index, 1)
-            this._fleeTimers.delete(swarm)
+            this.#fleeTimers.delete(swarm)
         }
     }
 
@@ -81,7 +82,7 @@ export default class Battle {
 
 
     isOver () {
-        return this._totalAdded >= 2 && this.aliveFactions().size <= 1
+        return this.#totalAdded >= 2 && this.aliveFactions().size <= 1
     }
 
 
@@ -111,16 +112,16 @@ export default class Battle {
             const hasAlive = swarm.members.some(m => !m.dying && m.alive !== false)
 
             if (allOutside && hasAlive) {
-                const timer = (this._fleeTimers.get(swarm) || 0) + deltaTime
+                const timer = (this.#fleeTimers.get(swarm) || 0) + deltaTime
 
                 if (timer >= FLEE_DELAY) {
                     this.removeSwarm(swarm)
                     world.emit('battle_fled', {battle: this, swarm})
                 } else {
-                    this._fleeTimers.set(swarm, timer)
+                    this.#fleeTimers.set(swarm, timer)
                 }
             } else {
-                this._fleeTimers.set(swarm, 0)
+                this.#fleeTimers.set(swarm, 0)
             }
         }
     }

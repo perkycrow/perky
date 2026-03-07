@@ -56,19 +56,15 @@ describe('Steering', () => {
     })
 
 
-    describe('flee', () => {
+    test('flee adds force away from target', () => {
+        const entity = new Entity({x: 0, y: 0})
+        entity.create(Steering)
 
-        test('adds force away from target', () => {
-            const entity = new Entity({x: 0, y: 0})
-            entity.create(Steering)
+        entity.flee({x: 10, y: 0}, 1)
+        const result = entity.resolveForce()
 
-            entity.flee({x: 10, y: 0}, 1)
-            const result = entity.resolveForce()
-
-            expect(result.x).toBeCloseTo(-1)
-            expect(result.y).toBeCloseTo(0)
-        })
-
+        expect(result.x).toBeCloseTo(-1)
+        expect(result.y).toBeCloseTo(0)
     })
 
 
@@ -110,18 +106,14 @@ describe('Steering', () => {
     })
 
 
-    describe('wander', () => {
+    test('wander produces non-zero force', () => {
+        const entity = new Entity({x: 0, y: 0})
+        entity.create(Steering)
 
-        test('produces non-zero force', () => {
-            const entity = new Entity({x: 0, y: 0})
-            entity.create(Steering)
+        entity.wander(1)
+        const result = entity.resolveForce()
 
-            entity.wander(1)
-            const result = entity.resolveForce()
-
-            expect(result.length()).toBeGreaterThan(0)
-        })
-
+        expect(result.length()).toBeGreaterThan(0)
     })
 
 
