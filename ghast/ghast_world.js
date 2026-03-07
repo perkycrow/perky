@@ -24,8 +24,8 @@ export default class GhastWorld extends World {
         this.swarms = []
         this.battles = []
 
-        this.on('hit', ({target, source, damage}) => {
-            this.#applyHit(target, source, damage)
+        this.on('hit', ({target, source, damage, projectile}) => {
+            this.#applyHit(target, source, damage, !!projectile)
         })
 
         this.on('kill', ({killer}) => {
@@ -162,7 +162,7 @@ export default class GhastWorld extends World {
     }
 
 
-    #applyHit (target, source, baseDamage = 1) {
+    #applyHit (target, source, baseDamage = 1, isProjectile = false) {
         if (typeof target.damage !== 'function') {
             return
         }
@@ -176,7 +176,7 @@ export default class GhastWorld extends World {
 
         this.#trackDamage(source, target)
         this.#emitFirstBlood(source, target)
-        applyKnockback(target, source)
+        applyKnockback(target, source, isProjectile ? 1 : 5)
 
         if (target.isAlive() && target.hp <= target.maxHp * 0.3 && !target._lowHp) {
             target._lowHp = true
@@ -639,7 +639,7 @@ function computeEffectiveDamage (source, baseDamage) {
 }
 
 
-function applyKnockback (target, source) {
+function applyKnockback (target, source, force = 5) {
     if (!source || !target.velocity) {
         return
     }
@@ -648,7 +648,7 @@ function applyKnockback (target, source) {
     const len = knockDir.length()
 
     if (len > 0.01) {
-        knockDir.multiplyScalar(5 / len)
+        knockDir.multiplyScalar(force / len)
         target.velocity.add(knockDir)
     }
 }

@@ -16,13 +16,13 @@ export default class Inquisitor extends Entity {
 
         this.create(Velocity)
         this.create(Steering)
-        this.create(Health, {hp: 2})
+        this.create(Health, {hp: 8})
 
         const {maxSpeed = 1, acceleration = 4} = params
 
-        this.shootCooldown = 0
-        this.shootInterval = params.shootInterval || 1.5
-        this.shootDamage = params.shootDamage || 1
+        this.shootCooldown = 1.5
+        this.shootInterval = params.shootInterval || 2
+        this.shootDamage = params.shootDamage || 5
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
@@ -51,12 +51,15 @@ export default class Inquisitor extends Entity {
 
         if (enemy) {
             this.#tryShoot(this.host, enemy, deltaTime)
-        } else {
-            this.shootCooldown = Math.max(0, this.shootCooldown - deltaTime)
+            this.dampenVelocity(0.01, deltaTime)
+            this.applyVelocity(deltaTime)
+            return
+        }
 
-            if (this._battleCenter) {
-                this.seek(this._battleCenter, 0.3)
-            }
+        this.shootCooldown = Math.max(0, this.shootCooldown - deltaTime)
+
+        if (this._battleCenter) {
+            this.seek(this._battleCenter, 0.3)
         }
 
         this.wander(getSporeValue(this, 'wanderWeight', 0.3))
@@ -93,7 +96,7 @@ export default class Inquisitor extends Entity {
             y: this.y,
             dirX: dir.x,
             dirY: dir.y,
-            speed: 5,
+            speed: 4,
             faction: this.faction,
             source: this,
             damage: this.shootDamage

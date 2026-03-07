@@ -59,6 +59,20 @@ test('inquisitor beats skeleton in 1v1', () => {
 })
 
 
+test('shade beats inquisitor in 1v1', () => {
+    const result = runMatchup('Shade', 'Inquisitor', MATCHUP_OPTS)
+
+    expect(result.winsA).toBeGreaterThanOrEqual(8)
+})
+
+
+test('rat beats inquisitor in 1v1', () => {
+    const result = runMatchup('Rat', 'Inquisitor', MATCHUP_OPTS)
+
+    expect(result.winsA).toBeGreaterThanOrEqual(8)
+})
+
+
 test('runMatchup returns correct structure', () => {
     const result = runMatchup('Shade', 'Rat', {runs: 3, maxDuration: 15, distance: 2})
 

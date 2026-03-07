@@ -19,8 +19,8 @@ export default class Shade extends Entity {
         this.create(Velocity)
         this.create(Steering)
         this.create(Dash)
-        this.create(Health, {hp: 5})
-        this.create(MeleeAttack, {damage: 2, range: 0.5, cooldown: 1, windUp: 0.15, strikeTime: 0.1})
+        this.create(Health, {hp: 25})
+        this.create(MeleeAttack, {damage: 5, range: 0.5, cooldown: 0.8, windUp: 0.15, strikeTime: 0.1})
 
         const {maxSpeed = 1, acceleration = 5} = params
 
@@ -32,7 +32,7 @@ export default class Shade extends Entity {
         this.rank = 3
         this.baseRank = 3
         this.target = null
-        this.baseDetectRange = 1
+        this.baseDetectRange = 4
         this.swarm = null
         this.spores = createSporeStorage()
         this.imprint = createImprintStorage()

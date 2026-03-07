@@ -17,8 +17,8 @@ export default class Rat extends Entity {
 
         this.create(Velocity)
         this.create(Steering)
-        this.create(Health, {hp: 2})
-        this.create(MeleeAttack, {damage: 1, range: 0.3, cooldown: 0.8, windUp: 0.1, strikeTime: 0.08})
+        this.create(Health, {hp: 10})
+        this.create(MeleeAttack, {damage: 5, range: 0.3, cooldown: 0.8, windUp: 0.1, strikeTime: 0.08})
 
         const {maxSpeed = 2, acceleration = 8} = params
 
@@ -30,7 +30,7 @@ export default class Rat extends Entity {
         this.rank = 1
         this.baseRank = 1
         this.target = null
-        this.baseDetectRange = 0.8
+        this.baseDetectRange = 2
         this.swarm = null
         this.spores = createSporeStorage()
         this.imprint = createImprintStorage()

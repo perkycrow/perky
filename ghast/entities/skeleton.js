@@ -19,8 +19,8 @@ export default class Skeleton extends Entity {
         this.create(Velocity)
         this.create(Steering)
         this.create(Dash)
-        this.create(Health, {hp: 3})
-        this.create(MeleeAttack, {damage: 1, range: 0.5, cooldown: 1.2, windUp: 0.15, strikeTime: 0.1})
+        this.create(Health, {hp: 15})
+        this.create(MeleeAttack, {damage: 5, range: 0.5, cooldown: 1.2, windUp: 0.15, strikeTime: 0.1})
 
         const {maxSpeed = 0.8, acceleration = 4} = params
 

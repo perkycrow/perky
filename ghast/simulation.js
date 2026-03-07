@@ -59,13 +59,7 @@ export default class Simulation {
                     swarm
                 })
 
-                if (unit.spores) {
-                    for (const key of unit.spores) {
-                        if (entity.spores[key] !== undefined) {
-                            entity.spores[key]++
-                        }
-                    }
-                }
+                applyUnitConfig(entity, unit)
             }
         }
 
@@ -109,6 +103,23 @@ export default class Simulation {
         return {winner, duration, survivors, kills: log.kills}
     }
 
+}
+
+
+function applyUnitConfig (entity, unit) {
+    if (unit.spores) {
+        for (const key of unit.spores) {
+            if (entity.spores[key] !== undefined) {
+                entity.spores[key]++
+            }
+        }
+    }
+
+    if (unit.overrides) {
+        for (const [key, value] of Object.entries(unit.overrides)) {
+            entity[key] = value
+        }
+    }
 }
 
 
@@ -168,8 +179,21 @@ export function runMatchup (typeA, typeB, options = {}) {
         distance = 2,
         sporesA = [],
         sporesB = [],
+        overridesA = null,
+        overridesB = null,
         maxDuration = 30
     } = options
+
+    const unitA = {type: typeA, spores: sporesA}
+    const unitB = {type: typeB, spores: sporesB}
+
+    if (overridesA) {
+        unitA.overrides = overridesA
+    }
+
+    if (overridesB) {
+        unitB.overrides = overridesB
+    }
 
     const sim = new Simulation({
         runs,
@@ -179,13 +203,13 @@ export function runMatchup (typeA, typeB, options = {}) {
                 name: 'alpha',
                 x: -distance / 2,
                 y: 0,
-                units: [{type: typeA, spores: sporesA}]
+                units: [unitA]
             },
             {
                 name: 'beta',
                 x: distance / 2,
                 y: 0,
-                units: [{type: typeB, spores: sporesB}]
+                units: [unitB]
             }
         ]
     })
