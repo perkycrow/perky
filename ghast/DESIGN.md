@@ -334,6 +334,31 @@ Les combos de 3 sont plus riches car plusieurs buffs peuvent se stacker sur le m
 - Ne se bat jamais lui-meme, retourne les gens
 
 
+### Taille du swarm = rank du leader
+
+La capacite maximale d'un swarm est egale au rank de son leader :
+- Rank 1 = 1 membre max (le leader seul)
+- Rank 2 = 2 membres
+- Rank 3 = 3 membres
+- ...
+- Rank 7 = 7 membres (swarm complet)
+
+**Succession et sur-capacite** : quand le leader meurt et qu'un membre de rang inferieur prend la tete :
+- On garde toutes les unites existantes (pas d'expulsion)
+- Le nouveau leader ne peut plus recruter tant qu'il n'a pas atteint le rank de l'ancien leader
+- Marqueur visuel en rouge "6/3" (6 unites, capacite 3) pour indiquer la sur-capacite
+- Le swarm fonctionne normalement mais ne grandit plus
+
+### UI de swarm (Total War style)
+
+En bas de l'ecran, affichage de cadres representant les unites du swarm :
+- Un seul swarm affiche (pas de multi-selection)
+- Chaque unite = un cadre cliquable
+- Cliquer sur un cadre = la camera se fixe sur cette unite (pas de prise de controle)
+- Affiche le rank, la vie, les spores de l'unite
+- Marqueur de sur-capacite visible (ex: "6/3" en rouge)
+
+
 ## Prochaines etapes
 
 1. Definir l'architecture technique des spores (jauges, stats, events, buffs)
