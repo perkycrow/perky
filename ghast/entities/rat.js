@@ -4,6 +4,7 @@ import Steering from '../../game/steering.js'
 import Health from '../../game/health.js'
 import MeleeAttack from '../../game/melee_attack.js'
 import {createSporeStorage} from '../spores.js'
+import {getSporeValue} from '../spore_effects.js'
 
 
 export default class Rat extends Entity {
@@ -16,7 +17,7 @@ export default class Rat extends Entity {
         this.create(Health, {hp: 1})
         this.create(MeleeAttack, {damage: 1, range: 0.3, cooldown: 0.8, windUp: 0.1, strikeTime: 0.08})
 
-        const {maxSpeed = 3, acceleration = 25} = params
+        const {maxSpeed = 1.5, acceleration = 8} = params
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
@@ -41,13 +42,15 @@ export default class Rat extends Entity {
         }
 
         const world = this.host
-        const enemy = world?.nearest(this, 0.8, e => e.team && e.team !== this.team)
+        const detectRange = getSporeValue(this, 'detectRange', 0.8)
+        const enemy = world?.nearest(this, detectRange, e => e.team && e.team !== this.team)
 
         if (enemy) {
+            this.seek(enemy.position, getSporeValue(this, 'approachWeight', 1))
             this.meleeAttack(enemy)
         }
 
-        this.wander(0.5)
+        this.wander(getSporeValue(this, 'wanderWeight', 0.3))
 
         const neighbors = world?.entitiesInRange(this, 0.8)
         this.separate(neighbors, 1)
@@ -55,7 +58,7 @@ export default class Rat extends Entity {
         applyLeash(this)
         this.move(this.resolveForce())
         applyMovement(this, deltaTime)
-        this.clampVelocity(this.maxSpeed)
+        this.clampVelocity(getSporeValue(this, 'speed', this.maxSpeed))
         this.applyVelocity(deltaTime)
     }
 

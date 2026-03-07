@@ -3,6 +3,7 @@ import Velocity from '../../game/velocity.js'
 import Steering from '../../game/steering.js'
 import Health from '../../game/health.js'
 import {createSporeStorage} from '../spores.js'
+import {getSporeValue} from '../spore_effects.js'
 
 
 export default class Inquisitor extends Entity {
@@ -14,7 +15,7 @@ export default class Inquisitor extends Entity {
         this.create(Steering)
         this.create(Health, {hp: 3})
 
-        const {maxSpeed = 2, acceleration = 10} = params
+        const {maxSpeed = 0.8, acceleration = 4} = params
 
         this.shootCooldown = 0
         this.shootInterval = params.shootInterval || 1.5
@@ -36,7 +37,8 @@ export default class Inquisitor extends Entity {
         this.updateHealth(deltaTime)
 
         const world = this.host
-        const enemy = world?.nearest(this, 4, e => e.team && e.team !== this.team)
+        const detectRange = getSporeValue(this, 'detectRange', 4)
+        const enemy = world?.nearest(this, detectRange, e => e.team && e.team !== this.team)
 
         if (enemy) {
             this.#tryShoot(world, enemy, deltaTime)
@@ -44,7 +46,7 @@ export default class Inquisitor extends Entity {
             this.shootCooldown = Math.max(0, this.shootCooldown - deltaTime)
         }
 
-        this.wander(0.5)
+        this.wander(getSporeValue(this, 'wanderWeight', 0.3))
 
         const neighbors = world?.entitiesInRange(this, 1)
         this.separate(neighbors, 0.6)
@@ -52,7 +54,7 @@ export default class Inquisitor extends Entity {
         applyLeash(this)
         this.move(this.resolveForce())
         applyMovement(this, deltaTime)
-        this.clampVelocity(this.maxSpeed)
+        this.clampVelocity(getSporeValue(this, 'speed', this.maxSpeed))
         this.applyVelocity(deltaTime)
     }
 

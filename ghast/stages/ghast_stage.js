@@ -20,8 +20,8 @@ export default class GhastStage extends Stage {
         const shadowSwarm = this.world.createSwarm('shadow')
         const lightSwarm = this.world.createSwarm('light')
 
-        this.game.execute('spawnShade', {x: -2, y: 0, team: 'shadow', swarm: shadowSwarm})
-        this.game.execute('spawnShade', {x: 2, y: 0, team: 'light', swarm: lightSwarm})
+        this.game.execute('spawnShade', {x: -3, y: 0, team: 'shadow', swarm: shadowSwarm})
+        this.game.execute('spawnShade', {x: 3, y: 0, team: 'light', swarm: lightSwarm})
 
         this.swarmBar = new SwarmBar(this.game.perkyView.element, shadowSwarm, this.game)
     }
