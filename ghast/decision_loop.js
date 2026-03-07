@@ -1,5 +1,4 @@
 import {getSporeValue} from './spore_effects.js'
-import BUFF_DEFINITIONS from './buff_definitions.js'
 import {DECAY_RATE} from './spores.js'
 import {SPORE_LIST, SPORE_DEFINITIONS} from './spores/index.js'
 
@@ -250,28 +249,6 @@ function updateSwarmMorale (swarm) {
         }
     }
 
-    checkMoraleThresholds(swarm)
-}
-
-
-function checkMoraleThresholds (swarm) {
-    if (swarm.morale < 20 && !swarm.hasBuff('rout')) {
-        const def = BUFF_DEFINITIONS.rout
-        swarm.applyBuff(def.key, def.duration, {...def.modifiers})
-    }
-
-    if (swarm.morale >= 20 && swarm.hasBuff('rout')) {
-        swarm.removeBuff('rout')
-    }
-
-    if (swarm.morale > 80 && !swarm.hasBuff('exaltation')) {
-        const def = BUFF_DEFINITIONS.exaltation
-        swarm.applyBuff(def.key, def.duration, {...def.modifiers})
-    }
-
-    if (swarm.morale <= 80 && swarm.hasBuff('exaltation')) {
-        swarm.removeBuff('exaltation')
-    }
 }
 
 

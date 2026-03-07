@@ -2,11 +2,31 @@ import {getSporeValue} from './spore_effects.js'
 import {SPORE_DEFINITIONS} from './spores/index.js'
 
 
+const MORALE_STATS = {
+    approachWeight: 0.3,
+    fleeWeight: -0.3,
+    damage: 0.1
+}
+
+
 export function getEffectiveStat (entity, stat, base) {
     const spore = getSporeValue(entity, stat, base)
     const buff = entity.getBuffModifier?.(stat) ?? 1
     const swarm = entity.swarm?.getBuffModifier?.(stat) ?? 1
-    return spore * buff * swarm
+    const morale = getMoraleModifier(entity, stat)
+    return spore * buff * swarm * morale
+}
+
+
+function getMoraleModifier (entity, stat) {
+    const strength = MORALE_STATS[stat]
+
+    if (!strength || !entity.swarm) {
+        return 1
+    }
+
+    const morale = entity.swarm.morale ?? 50
+    return 1 + (morale - 50) / 100 * strength
 }
 
 
