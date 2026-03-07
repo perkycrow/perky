@@ -16,15 +16,14 @@ L'UI arrive tot (phase 2) pour donner du feedback visuel des les premieres featu
 | 3 | **Spore Rename** | DONE | Renommer mischief→naive, cunning→lust dans le code |
 | 4 | **Spore Engine** | DONE | Spores actifs : stats passives (couche 1) |
 | 5 | **Game Events** | DONE | Detection d'events gameplay (ally_died, low_hp, surrounded...) |
-| 6 | **Battle System** | — | Abstraction Battle : first_blood per-battle, N-team, join/flee/resolve |
-| 7 | **3e Team** | — | Ajout d'une 3e equipe pour tester multi-team |
-| 8 | **XP & Stats** | — | Tracking des stats de combat, calcul XP, rank dynamique |
-| 9 | **Event Reactions** | — | Spore x Event → Buff (couche 2) |
-| 10 | **Aggro** | — | Valeur de menace par entite |
-| 11 | **Morale** | — | Jauge de moral au niveau swarm |
-| 12 | **Swarm Capacity** | — | Taille max = rank du leader (lie au rank dynamique) |
-| 13 | **Consumption & Imprint** | — | Decroissance des spores + empreinte (couche 3) |
-| 14 | **Catalysts** | — | Combos hand-crafted |
+| 6 | **Battle System + 3e Faction** | DONE | Abstraction Battle, first_blood per-battle, N-faction, join/flee/resolve |
+| 7 | **XP & Stats** | — | Tracking des stats de combat, calcul XP, rank dynamique |
+| 8 | **Event Reactions** | — | Spore x Event → Buff (couche 2) |
+| 9 | **Aggro** | — | Valeur de menace par entite |
+| 10 | **Morale** | — | Jauge de moral au niveau swarm |
+| 11 | **Swarm Capacity** | — | Taille max = rank du leader (lie au rank dynamique) |
+| 12 | **Consumption & Imprint** | — | Decroissance des spores + empreinte (couche 3) |
+| 13 | **Catalysts** | — | Combos hand-crafted |
 
 
 ---
@@ -94,7 +93,7 @@ Detection d'events gameplay dans `ghast_world.js`. Les events sont emis sur le w
 
 ### Events instantanes (dans #applyHit)
 
-- **`first_blood`** — premier coup du combat. `{source, target}`. Flag `world.firstBlood`.
+- **`first_blood`** — premier coup d'une bataille. `{source, target, battle}`. Flag `battle.firstBlood`.
 - **`low_hp`** — entite tombe sous 30% HP. `{entity, source}`. Flag `entity._lowHp` (une seule fois).
 - **`kill`** — une entite en tue une autre. `{killer, victim}`. Emis sur le world.
 - **`ally_died`** — un membre du swarm meurt. Emis sur le world `{entity, swarm, killer}` ET sur chaque membre survivant `{ally, killer}`.
@@ -104,4 +103,39 @@ Detection d'events gameplay dans `ghast_world.js`. Les events sont emis sur le w
 
 - **`surrounded`** — 3+ ennemis dans un rayon de 2 unites. `{entity, enemies}`. Transition-based (flag `entity._surrounded`).
 - **`isolated`** — distance au centre du swarm > 1.5x leashRadius. `{entity, swarm}`. Transition-based (flag `entity._isolated`).
-- **`outnumbered`** — swarm en inferiorite numerique (ratio 1.5x). `{swarm, allyCount, enemyCount}`. Transition-based (flag `swarm._outnumbered`).
+- **`outnumbered`** — swarm en inferiorite numerique dans une battle (ratio 1.5x). `{swarm, allyCount, enemyCount, battle}`. Transition-based (flag `swarm._outnumbered`).
+
+
+---
+
+
+## Phase 6 : Battle System + 3e Faction — DONE
+
+Abstraction Battle au-dessus des swarms. Represente une confrontation active entre 2+ swarms.
+
+### `ghast/battle.js`
+
+Classe simple (meme pattern que Swarm). Proprietes : `swarms[]`, `firstBlood`, `resolved`, `_fleeTimers`.
+Methodes : `addSwarm`, `removeSwarm`, `hasSwarm`, `getCenter` (centroide), `aliveFactions`, `isOver`, `update`.
+Flee : si tous les membres d'un swarm sont hors FLEE_RADIUS (8u) pendant FLEE_DELAY (2s) → `battle_fled`.
+
+### `ghast/ghast_world.js`
+
+- `this.battles = []`, supprime `this.firstBlood`
+- `#ensureBattle` : cree/recupere la battle pour deux swarms ennemis, gere le merge
+- `#emitFirstBlood` : first_blood per-battle
+- `#updateBattles` + `#checkBattleJoin` : join spatial (leader a <6u du centre)
+- `#cleanupBattles` : battle_resolved quand 1 seule faction reste
+- `#checkOutnumbered` scope per-battle
+- Knockback et assignSwarm extraits en fonctions libres
+
+### Events
+
+- `battle_started` — `{battle}`
+- `battle_joined` — `{battle, swarm}`
+- `battle_fled` — `{battle, swarm}`
+- `battle_resolved` — `{battle, winner}`
+
+### 3e Faction
+
+Faction 'chaos' avec un Shade a `{x: 0, y: 4}`. Triangle equidistant.

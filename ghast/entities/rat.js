@@ -43,7 +43,7 @@ export default class Rat extends Entity {
 
         const world = this.host
         const detectRange = getSporeValue(this, 'detectRange', 0.8)
-        const enemy = world?.nearest(this, detectRange, e => e.team && e.team !== this.team)
+        const enemy = world?.nearest(this, detectRange, e => e.faction && e.faction !== this.faction)
 
         if (enemy) {
             this.seek(enemy.position, getSporeValue(this, 'approachWeight', 1))

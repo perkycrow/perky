@@ -35,11 +35,11 @@ describe('Projectile', () => {
     })
 
 
-    test('stores team and source', () => {
+    test('stores faction and source', () => {
         const source = {}
-        const p = new Projectile({team: 'shadow', source})
+        const p = new Projectile({faction: 'shadow', source})
 
-        expect(p.team).toBe('shadow')
+        expect(p.faction).toBe('shadow')
         expect(p.source).toBe(source)
     })
 

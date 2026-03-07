@@ -29,7 +29,7 @@ export default class Soul extends Entity {
         this.updateHealth(deltaTime)
 
         const world = this.host
-        const ally = world.nearest(this, 6, e => e.team === this.team)
+        const ally = world.nearest(this, 6, e => e.faction === this.faction)
 
         if (ally) {
             this.arrive(ally.position, 0.8, 2)

@@ -38,7 +38,7 @@ export default class Inquisitor extends Entity {
 
         const world = this.host
         const detectRange = getSporeValue(this, 'detectRange', 4)
-        const enemy = world?.nearest(this, detectRange, e => e.team && e.team !== this.team)
+        const enemy = world?.nearest(this, detectRange, e => e.faction && e.faction !== this.faction)
 
         if (enemy) {
             this.#tryShoot(world, enemy, deltaTime)
@@ -81,7 +81,7 @@ export default class Inquisitor extends Entity {
             dirX: dir.x,
             dirY: dir.y,
             speed: 5,
-            team: this.team,
+            faction: this.faction,
             source: this
         })
 

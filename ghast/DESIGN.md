@@ -359,9 +359,9 @@ En bas de l'ecran, affichage de cadres representant les unites du swarm :
 - Marqueur de sur-capacite visible (ex: "6/3" en rouge)
 
 
-### Attraction de base entre equipes
+### Attraction de base entre factions
 
-Les entites ont une attirance subtile vers les ennemis a longue portee, independante des spores. Ca evite que les equipes s'ignorent quand elles n'ont pas de spores offensifs. L'attraction de base est un seek faible (~0.3) sur l'ennemi le plus proche dans un grand rayon (~8 unites). Les spores modulent cette force : anger l'amplifie, fear la reduit, naive l'augmente (fonce sans reflechir). Ca sert de "gravite" naturelle qui pousse les equipes a se confronter tot ou tard, meme sans intervention du joueur.
+Les entites ont une attirance subtile vers les ennemis a longue portee, independante des spores. Ca evite que les factions s'ignorent quand elles n'ont pas de spores offensifs. L'attraction de base est un seek faible (~0.3) sur l'ennemi le plus proche dans un grand rayon (~8 unites). Les spores modulent cette force : anger l'amplifie, fear la reduit, naive l'augmente (fonce sans reflechir). Ca sert de "gravite" naturelle qui pousse les factions a se confronter tot ou tard, meme sans intervention du joueur.
 
 
 ### Systeme d'experience et de promotion
@@ -458,9 +458,9 @@ Le friendly fire est une penalite d'XP. Une entite sadness+anger (rancune) qui a
 #### Battle comme abstraction
 
 Le systeme de first_blood doit etre relatif a une confrontation (Battle), pas global au world. Une Battle regroupe des swarms ennemis engages :
-- Creee sur le premier hit inter-equipes
-- Swarms illimites (une 3e team peut rejoindre)
-- Resolue quand une seule team reste
+- Creee sur le premier hit inter-factions
+- Swarms illimites (une 3e faction peut rejoindre)
+- Resolue quand une seule faction reste
 - Mecanisme de fuite de la bataille (spatial)
 - first_blood, outnumbered, et les recompenses d'XP de bataille sont scopes par Battle
 

@@ -1,7 +1,7 @@
 export default class Swarm {
 
-    constructor (team) {
-        this.team = team
+    constructor (faction) {
+        this.faction = faction
         this.members = []
         this.leader = null
         this.leashRadius = 3

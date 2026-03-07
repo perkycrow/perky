@@ -11,7 +11,7 @@ export default class Projectile extends Entity {
             dirY = 0,
             ttl = 3,
             hitRadius = 0.15,
-            team = null,
+            faction = null,
             source = null
         } = params
 
@@ -19,7 +19,7 @@ export default class Projectile extends Entity {
 
         this.create(Velocity, {x: dirX * speed, y: dirY * speed})
 
-        this.team = team
+        this.faction = faction
         this.source = source
         this.alive = true
         this.ttl = ttl

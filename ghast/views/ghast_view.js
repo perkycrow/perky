@@ -5,9 +5,10 @@ import Group2D from '../../render/group_2d.js'
 import {SPORE_TYPES} from '../spores.js'
 
 
-const teamColors = {
+const factionColors = {
     shadow: [0.5, 0.2, 1.0],
-    light: [1.0, 0.2, 0.2]
+    light: [1.0, 0.2, 0.2],
+    chaos: [0.2, 0.8, 0.3]
 }
 
 const DEATH_DURATION = 0.3
@@ -95,14 +96,14 @@ export default class GhastView extends EntityView {
         }
 
         if (this.outlineEffect) {
-            const team = this.entity.team
-            if (team) {
+            const faction = this.entity.faction
+            if (faction) {
                 if (this.flashTimer > 0) {
                     this.outlineEffect.width = 0.08
                     this.outlineEffect.color = [1, 1, 1]
                 } else {
                     this.outlineEffect.width = 0.04
-                    this.outlineEffect.color = teamColors[team] || [1, 1, 1]
+                    this.outlineEffect.color = factionColors[faction] || [1, 1, 1]
                 }
             } else {
                 this.outlineEffect.width = 0
