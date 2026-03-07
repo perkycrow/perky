@@ -1,5 +1,6 @@
 import {getSporeValue} from './spore_effects.js'
 import BUFF_DEFINITIONS from './buff_definitions.js'
+import {DECAY_RATE} from './spores.js'
 
 
 const DECISION_INTERVAL = 1
@@ -36,6 +37,7 @@ export default function updateDecisions (world, deltaTime) {
         }
     }
 
+    updateSporeDecay(world)
     updateCombativeness(world)
 }
 
@@ -137,6 +139,27 @@ function findBattleCenter (world, entity) {
     }
 
     return battle.getCenter()
+}
+
+
+function updateSporeDecay (world) {
+    for (const entity of world.entities) {
+        if (!entity.spores || entity.dying) {
+            continue
+        }
+
+        for (const key in entity.spores) {
+            if (entity.spores[key] <= 0) {
+                continue
+            }
+
+            if (entity.imprint) {
+                entity.imprint[key] += entity.spores[key]
+            }
+
+            entity.spores[key] = Math.max(0, entity.spores[key] - DECAY_RATE)
+        }
+    }
 }
 
 

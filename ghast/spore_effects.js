@@ -1,3 +1,6 @@
+import {IMPRINT_STRENGTH} from './spores.js'
+
+
 const EFFECTS = {
     fear: {
         speed: 1.3,
@@ -70,6 +73,39 @@ export function getSporeModifier (entity, stat) {
         const base = effects[stat]
         const deviation = base - 1
         result *= 1 + deviation * count
+    }
+
+    return result * getImprintModifier(entity, stat)
+}
+
+
+function getImprintModifier (entity, stat) {
+    if (!entity.imprint) {
+        return 1
+    }
+
+    let total = 0
+
+    for (const key in entity.imprint) {
+        total += entity.imprint[key]
+    }
+
+    if (total <= 0) {
+        return 1
+    }
+
+    let result = 1
+
+    for (const key in entity.imprint) {
+        const weight = entity.imprint[key] / total
+        const effects = EFFECTS[key]
+
+        if (!effects || !(stat in effects)) {
+            continue
+        }
+
+        const deviation = effects[stat] - 1
+        result *= 1 + deviation * IMPRINT_STRENGTH * weight
     }
 
     return result

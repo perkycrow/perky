@@ -4,7 +4,7 @@ import Steering from '../../game/steering.js'
 import Health from '../../game/health.js'
 import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
-import {createSporeStorage} from '../spores.js'
+import {createSporeStorage, createImprintStorage} from '../spores.js'
 import {getSporeValue} from '../spore_effects.js'
 import {applyLeash, applyMovement} from '../entity_helpers.js'
 
@@ -35,6 +35,7 @@ export default class Inquisitor extends Entity {
         this.baseDetectRange = 4
         this.swarm = null
         this.spores = createSporeStorage()
+        this.imprint = createImprintStorage()
     }
 
 

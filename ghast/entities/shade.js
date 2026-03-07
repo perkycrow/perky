@@ -6,7 +6,7 @@ import Health from '../../game/health.js'
 import MeleeAttack from '../../game/melee_attack.js'
 import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
-import {createSporeStorage} from '../spores.js'
+import {createSporeStorage, createImprintStorage} from '../spores.js'
 import {getSporeValue} from '../spore_effects.js'
 import {applyLeash, applyMovement} from '../entity_helpers.js'
 
@@ -35,6 +35,7 @@ export default class Shade extends Entity {
         this.baseDetectRange = 1
         this.swarm = null
         this.spores = createSporeStorage()
+        this.imprint = createImprintStorage()
 
         this.on('strike', ({target, damage}) => {
             this.host?.emit('hit', {source: this, target, damage})

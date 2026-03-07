@@ -9,12 +9,26 @@ export const SPORE_TYPES = [
 ]
 
 
+export const DECAY_RATE = 0.1
+
+export const IMPRINT_STRENGTH = 0.3
+
+
 export function createSporeStorage () {
     const spores = {}
     for (const {key} of SPORE_TYPES) {
         spores[key] = 0
     }
     return spores
+}
+
+
+export function createImprintStorage () {
+    const imprint = {}
+    for (const {key} of SPORE_TYPES) {
+        imprint[key] = 0
+    }
+    return imprint
 }
 
 
