@@ -15,14 +15,22 @@ export default class GhastWorld extends World {
     constructor (options = {}) {
         super(options)
 
+        this.paused = true
+
         this.on('hit', ({target, source}) => {
             this.#applyHit(target, source)
         })
     }
 
 
+    togglePause () {
+        this.paused = !this.paused
+        return this.paused
+    }
+
+
     update (deltaTime, context) {
-        if (!this.started) {
+        if (!this.started || this.paused) {
             return
         }
 
@@ -38,11 +46,7 @@ export default class GhastWorld extends World {
     }
 
 
-    preUpdate (deltaTime, context) {
-        const direction = context.getDirection('move')
-        if (this.shade) {
-            this.shade.move(direction)
-        }
+    preUpdate () {
     }
 
 
@@ -132,8 +136,6 @@ export default class GhastWorld extends World {
 
     spawnShade (options = {}) {
         const entity = this.create(Shade, {
-            $id: 'shade',
-            $bind: 'shade',
             x: options.x || 0,
             y: options.y || 0
         })

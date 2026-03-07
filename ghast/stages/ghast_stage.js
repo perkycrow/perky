@@ -15,14 +15,19 @@ export default class GhastStage extends Stage {
         wiring.registerViews(this)
         this.game.getLayer('game').setContent(this.viewsGroup)
         this.groundPass = this.addPostPass(GroundPass)
-        this.game.execute('spawnShade', {x: 0, y: 0, team: 'shadow'})
-        this.game.execute('spawnSkeleton', {x: 1.5, y: 0, team: 'shadow'})
-        this.game.execute('spawnRat', {x: -1.5, y: 0, team: 'shadow'})
-        this.game.execute('spawnInquisitor', {x: 0, y: 1.5, team: 'light'})
-        this.game.execute('spawnSoul', {x: 0, y: -1.5, team: 'light'})
-        this.game.execute('spawnCage', {x: 3, y: 0})
-        this.game.execute('spawnTurret', {x: -3, y: 0})
-        this.game.execute('spawnJar', {x: 3, y: 1.5})
+        // Shadow team (left)
+        this.game.execute('spawnShade', {x: -4, y: 0, team: 'shadow'})
+        this.game.execute('spawnSkeleton', {x: -3, y: 1, team: 'shadow'})
+        this.game.execute('spawnRat', {x: -3, y: -1, team: 'shadow'})
+        this.game.execute('spawnInquisitor', {x: -5, y: 0.5, team: 'shadow'})
+        this.game.execute('spawnSoul', {x: -5, y: -0.5, team: 'shadow'})
+
+        // Light team (right)
+        this.game.execute('spawnShade', {x: 4, y: 0, team: 'light'})
+        this.game.execute('spawnSkeleton', {x: 3, y: -1, team: 'light'})
+        this.game.execute('spawnRat', {x: 3, y: 1, team: 'light'})
+        this.game.execute('spawnInquisitor', {x: 5, y: -0.5, team: 'light'})
+        this.game.execute('spawnSoul', {x: 5, y: 0.5, team: 'light'})
     }
 
 

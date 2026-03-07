@@ -7,12 +7,7 @@ export default class GhastController extends GameController {
         moveUp: ['KeyW', 'ArrowUp', 'swipeUp'],
         moveDown: ['KeyS', 'ArrowDown', 'swipeDown'],
         moveLeft: ['KeyA', 'ArrowLeft', 'swipeLeft'],
-        moveRight: ['KeyD', 'ArrowRight', 'swipeRight'],
-        dashAction: ['Space', 'ShiftLeft']
-    }
-
-    dashAction () {
-        this.world?.shade?.triggerDash()
+        moveRight: ['KeyD', 'ArrowRight', 'swipeRight']
     }
 
     spawnShade (options = {}) {
