@@ -5,6 +5,7 @@ import GhastController from '../controllers/ghast_controller.js'
 import GroundPass from '../postprocessing/ground_pass.js'
 import SwarmBar from '../ui/swarm_bar.js'
 import EventLog from '../ui/event_log.js'
+import {addSpore} from '../spores.js'
 import wiring from '../wiring.js'
 
 
@@ -43,6 +44,8 @@ export default class GhastStage extends Stage {
         this.game.execute('spawnShade', {x: 0, y: 4, faction: 'chaos', swarm: chaosSwarm})
         this.game.execute('spawnSkeleton', {x: -0.6, y: 3.3, faction: 'chaos', swarm: chaosSwarm})
         this.game.execute('spawnInquisitor', {x: 0.6, y: 3.3, faction: 'chaos', swarm: chaosSwarm})
+
+        this.#assignDefaultSpores()
 
         this.swarmCircles = this.#createSwarmCircles()
         this.swarmBar = new SwarmBar(this.game.perkyView.element, shadowSwarm, this.game)
@@ -112,6 +115,31 @@ export default class GhastStage extends Stage {
         this.groundPass.setUniform('uResolution', [gameLayer.canvas.width, gameLayer.canvas.height])
         this.groundPass.setUniform('uPixelsPerUnit', camera.pixelsPerUnit * gameRenderer.pixelRatio)
         this.groundPass.setUniform('uTime', performance.now() / 1000)
+    }
+
+
+    #assignDefaultSpores () {
+        for (const entity of this.world.entities) {
+            if (!entity.spores) {
+                continue
+            }
+
+            const name = entity.constructor.name
+
+            if (name === 'Shade') {
+                addSpore(entity, 'anger')
+                addSpore(entity, 'arrogance')
+                addSpore(entity, 'fear')
+            } else if (name === 'Skeleton') {
+                addSpore(entity, 'sadness')
+                addSpore(entity, 'anger')
+            } else if (name === 'Inquisitor') {
+                addSpore(entity, 'fear')
+                addSpore(entity, 'surprise')
+            } else if (name === 'Rat') {
+                addSpore(entity, 'naive')
+            }
+        }
     }
 
 }
