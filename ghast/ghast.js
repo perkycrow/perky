@@ -2,6 +2,7 @@ import Game from '../game/game.js'
 import GhastStage from './stages/ghast_stage.js'
 import OutlineEffect from '../render/shaders/builtin/effects/outline_effect.js'
 import manifest from './manifest.js'
+import {SPORE_TYPES, addSpore} from './spores.js'
 
 
 export default class Ghast extends Game {
@@ -20,6 +21,7 @@ export default class Ghast extends Game {
         this.setStage('ghast')
 
         this.cameraSpeed = 5
+        this.selectedSpore = null
 
         this.on('update', (deltaTime) => {
             this.#updateCamera(deltaTime)
@@ -44,6 +46,13 @@ export default class Ghast extends Game {
 
     #createDevUI () {
         const container = this.perkyView.element
+        this.#createPauseButton(container)
+        this.#createSporeSidebar(container)
+        this.#setupClickToAssign(container)
+    }
+
+
+    #createPauseButton (container) {
         const button = document.createElement('button')
 
         Object.assign(button.style, {
@@ -71,6 +80,103 @@ export default class Ghast extends Game {
         })
 
         container.appendChild(button)
+    }
+
+
+    #createSporeSidebar (container) {
+        const sidebar = document.createElement('div')
+
+        Object.assign(sidebar.style, {
+            position: 'absolute',
+            top: '12px',
+            left: '12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            zIndex: '100'
+        })
+
+        for (const sporeType of SPORE_TYPES) {
+            const btn = document.createElement('button')
+            const source = this.getSource(sporeType.asset)
+
+            Object.assign(btn.style, {
+                width: '40px',
+                height: '40px',
+                borderRadius: '4px',
+                border: '2px solid transparent',
+                background: 'transparent',
+                backgroundImage: source ? `url(${source.src})` : 'none',
+                backgroundColor: source ? 'transparent' : sporeType.color,
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+                cursor: 'pointer',
+                opacity: '0.7',
+                transition: 'border-color 0.1s, opacity 0.1s',
+                imageRendering: 'pixelated'
+            })
+
+            btn.title = sporeType.label
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation()
+
+                if (this.selectedSpore === sporeType.key) {
+                    this.selectedSpore = null
+                    btn.style.borderColor = 'transparent'
+                    btn.style.opacity = '0.85'
+                } else {
+                    this.selectedSpore = sporeType.key
+                    for (const child of sidebar.children) {
+                        child.style.borderColor = 'transparent'
+                        child.style.opacity = '0.85'
+                    }
+                    btn.style.borderColor = '#fff'
+                    btn.style.opacity = '1'
+                }
+            })
+
+            sidebar.appendChild(btn)
+        }
+
+        container.appendChild(sidebar)
+    }
+
+
+    #setupClickToAssign (container) {
+        container.addEventListener('click', (e) => {
+            if (!this.selectedSpore) {
+                return
+            }
+
+            const rect = container.getBoundingClientRect()
+            const screenX = e.clientX - rect.left
+            const screenY = e.clientY - rect.top
+            const worldPos = this.camera.screenToWorld(screenX, screenY)
+
+            let closest = null
+            let closestDist = 0.8
+
+            for (const entity of this.world.entities) {
+                if (!entity.spores) {
+                    continue
+                }
+
+                const dx = entity.x - worldPos.x
+                const dy = entity.y - worldPos.y
+                const dist = Math.sqrt(dx * dx + dy * dy)
+
+                if (dist < closestDist) {
+                    closestDist = dist
+                    closest = entity
+                }
+            }
+
+            if (closest) {
+                addSpore(closest, this.selectedSpore)
+            }
+        })
     }
 
 }

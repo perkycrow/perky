@@ -2,6 +2,7 @@ import Entity from '../../game/entity.js'
 import Velocity from '../../game/velocity.js'
 import Steering from '../../game/steering.js'
 import Health from '../../game/health.js'
+import {createSporeStorage} from '../spores.js'
 
 
 export default class Inquisitor extends Entity {
@@ -20,6 +21,7 @@ export default class Inquisitor extends Entity {
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
+        this.spores = createSporeStorage()
     }
 
 

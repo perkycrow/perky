@@ -10,7 +10,14 @@ const manifest = {
         soul: {type: 'image', url: './assets/images/soul.png'},
         cage: {type: 'image', url: './assets/images/cage.png'},
         turret: {type: 'image', url: './assets/images/turret.png'},
-        jar: {type: 'image', url: './assets/images/jar.png'}
+        jar: {type: 'image', url: './assets/images/jar.png'},
+        spore_scared: {type: 'image', url: './assets/images/spore_scared.png'},
+        spore_sad: {type: 'image', url: './assets/images/spore_sad.png'},
+        spore_angry: {type: 'image', url: './assets/images/spore_angry.png'},
+        spore_arrogant: {type: 'image', url: './assets/images/spore_arrogant.png'},
+        spore_mischievous: {type: 'image', url: './assets/images/spore_mischievous.png'},
+        spore_surprised: {type: 'image', url: './assets/images/spore_surprised.png'},
+        spore_cunning: {type: 'image', url: './assets/images/spore_cunning.png'}
     }
 }
 

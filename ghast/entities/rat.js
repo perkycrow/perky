@@ -3,6 +3,7 @@ import Velocity from '../../game/velocity.js'
 import Steering from '../../game/steering.js'
 import Health from '../../game/health.js'
 import MeleeAttack from '../../game/melee_attack.js'
+import {createSporeStorage} from '../spores.js'
 
 
 export default class Rat extends Entity {
@@ -19,6 +20,7 @@ export default class Rat extends Entity {
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
+        this.spores = createSporeStorage()
 
         this.on('strike', ({target}) => {
             this.host?.emit('hit', {source: this, target})
