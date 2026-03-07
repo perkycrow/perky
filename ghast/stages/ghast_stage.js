@@ -1,10 +1,20 @@
 import Stage from '../../game/stage.js'
+import Circle from '../../render/circle.js'
 import GhastWorld from '../ghast_world.js'
 import GhastController from '../controllers/ghast_controller.js'
 import GroundPass from '../postprocessing/ground_pass.js'
 import SwarmBar from '../ui/swarm_bar.js'
 import EventLog from '../ui/event_log.js'
 import wiring from '../wiring.js'
+
+
+const SWARM_COLORS = {
+    shadow: '#8033ff',
+    light: '#ff3333',
+    chaos: '#33cc55'
+}
+
+const LEASH_OPACITY = 0.5
 
 
 export default class GhastStage extends Stage {
@@ -34,6 +44,7 @@ export default class GhastStage extends Stage {
         this.game.execute('spawnSkeleton', {x: -0.6, y: 3.3, faction: 'chaos', swarm: chaosSwarm})
         this.game.execute('spawnInquisitor', {x: 0.6, y: 3.3, faction: 'chaos', swarm: chaosSwarm})
 
+        this.swarmCircles = this.#createSwarmCircles()
         this.swarmBar = new SwarmBar(this.game.perkyView.element, shadowSwarm, this.game)
         this.eventLog = new EventLog(this.game.perkyView.element, this.world)
     }
@@ -47,9 +58,44 @@ export default class GhastStage extends Stage {
 
     render () {
         this.syncViews()
+        this.#updateSwarmCircles()
         this.#updateGroundPass()
         this.swarmBar?.update()
         this.eventLog?.update()
+    }
+
+
+    #createSwarmCircles () {
+        const circles = new Map()
+
+        for (const swarm of this.world.swarms) {
+            const color = SWARM_COLORS[swarm.faction] || '#ffffff'
+            const circle = new Circle({radius: swarm.leashRadius, color})
+            circle.opacity = LEASH_OPACITY
+            circle.visible = false
+            circle.setDepth(-100)
+            this.viewsGroup.add(circle)
+            circles.set(swarm, circle)
+        }
+
+        return circles
+    }
+
+
+    #updateSwarmCircles () {
+        for (const [swarm, circle] of this.swarmCircles) {
+            const leader = swarm.leader
+
+            if (!leader || leader.dying) {
+                circle.visible = false
+                continue
+            }
+
+            circle.x = leader.x
+            circle.y = leader.y
+            circle.radius = swarm.leashRadius
+            circle.visible = true
+        }
     }
 
 

@@ -10,13 +10,44 @@ Jeu top-down avec des entites controllees par le joueur et/ou par une IA comport
 Chaque entite a des capacites propres (sa specialite) mais partage un set d'actions communes.
 
 ### Entites actuelles
-- **Shade** (rank 3) - le personnage de base, controllable par le joueur. Melee + dash, 5 HP
-- **Skeleton** (rank 2) - melee + dash, 3 HP
-- **Inquisitor** (rank 2) - tireur a distance (projectiles), 3 HP
-- **Rat** (rank 1) - melee rapide et fragile, 1 HP
+- **Shade** (rank 3) - tank/leader, melee + dash, 5 HP, dmg 2, speed 1, cd 1s
+- **Skeleton** (rank 2) - infanterie, melee + dash, 3 HP, dmg 1, speed 0.8, cd 1.2s
+- **Inquisitor** (rank 2) - distant, projectiles range 4, 3 HP, speed 0.8, cd 1.5s
+- **Rat** (rank 1) - melee rapide et fragile, 1 HP, dmg 1, speed 1.5, cd 0.8s
 - **Soul** - entite passive qui rejoint les allies proches (flocking)
 - **Projectile** - projectile a duree de vie limitee, faction du tireur
 - **Cage**, **Jar**, **Turret** - entites statiques placeholder
+
+### Triangle de combat (pierre-feuille-ciseaux)
+
+Les 4 unites de combat forment un triangle RPS avec un tank au-dessus :
+
+```
+        Shade (tank)
+       /     |     \
+      v      v      v
+Skeleton --> Inquisitor --> Rat
+    ^                        |
+    |________________________|
+```
+
+- **Skeleton > Rat** — L'infanterie encaisse (3 HP vs 1 HP) et finit le rat meme si celui-ci tape vite
+- **Rat > Inquisitor** — Le rat est assez rapide (1.5 vs 0.8) pour closer le gap et harceler le tireur fragile au contact
+- **Inquisitor > Skeleton** — Le tireur kite le squelette lent a distance, le poke sans jamais se faire toucher
+- **Shade > tous** — Le tank (5 HP, dmg 2) gagne tout en 1v1 par endurance. C'est le leader par defaut (rank 3)
+
+#### Principe fondamental
+
+**Sans spore, sans buff, sans moral : le triangle est 100% deterministe.** Le counter gagne toujours en 1v1 vanilla. C'est la baseline lisible du jeu.
+
+Les spores, buffs, moral, composition d'equipe et XP/rank sont les leviers qui permettent d'inverser les matchups. Un rat anger+naive peut surprendre un squelette. Un inquisiteur fear qui kite un shade peut survivre. C'est ce qui rend les spores strategiquement essentiels — ils sont le seul moyen de casser le triangle.
+
+#### Equilibrage a verifier
+
+Les stats actuelles doivent etre validees pour que le triangle tienne :
+- Skeleton vs Rat : OK (3 HP vs 1 HP, le squelette survit facilement)
+- Rat vs Inquisitor : a verifier (le rat doit closer le gap avant de mourir aux projectiles, sa vitesse 1.5 vs range 4 + cd 1.5s)
+- Inquisitor vs Skeleton : a verifier (l'inquisiteur doit pouvoir kiter indefiniment, speed egale 0.8 = probleme ? il faut soit plus de speed soit du knockback sur les tirs)
 
 ### Actions communes (a definir)
 Les entites partagent un vocabulaire d'actions que l'IA peut decider d'executer :
@@ -368,6 +399,24 @@ En bas de l'ecran, affichage de cadres representant les unites du swarm :
 
 Les entites ont une attirance subtile vers les ennemis a longue portee, independante des spores. Ca evite que les factions s'ignorent quand elles n'ont pas de spores offensifs. L'attraction de base est un seek faible (~0.3) sur l'ennemi le plus proche dans un grand rayon (~8 unites). Les spores modulent cette force : anger l'amplifie, fear la reduit, naive l'augmente (fonce sans reflechir). Ca sert de "gravite" naturelle qui pousse les factions a se confronter tot ou tard, meme sans intervention du joueur.
 
+#### Attraction vers la bataille active
+
+En plus de l'attraction inter-factions, quand une bataille est en cours les entites devraient avoir une faible attraction vers le centre de gravite de la bataille (battle.getCenter()). Meme en wandering, les entites derivent doucement vers le combat plutot que de s'en eloigner. Ca evite les situations ou un swarm entier drift hors de la zone de combat sans intention de fuir.
+
+#### Score de combativite (fight/flee inclination)
+
+Chaque swarm a un score de combativite qui represente sa volonte de rester au combat vs fuir :
+- Le score monte avec : kills, avantage numerique, moral eleve, spores offensifs (anger, arrogance, naive)
+- Le score baisse avec : pertes recentes, inferiorite numerique, moral bas, spores defensifs (fear, sadness)
+- Le score evolue en temps reel pendant la bataille
+
+Quand les deux swarms d'une bataille se desolidarisent (tous les membres hors du rayon de bataille pendant X temps), le score de combativite determine qui a "fui" la bataille :
+- Le swarm avec le score le plus bas est considere comme le fuyard → penalite (malus moral, debuff, perte d'XP ?)
+- Le swarm avec le score le plus haut est considere comme le vainqueur → bonus (moral, XP de bataille)
+- Si les scores sont proches → desengagement mutuel, pas de vainqueur clair
+
+Ca resout le probleme de "qui a fui ?" quand deux swarms se separent. Le mecanisme de flee actuel (FLEE_RADIUS + FLEE_DELAY dans battle.js) donne le timing, le score de combativite donne le verdict.
+
 
 ### Systeme d'experience et de promotion
 
@@ -470,13 +519,54 @@ Le systeme de first_blood doit etre relatif a une confrontation (Battle), pas gl
 - first_blood, outnumbered, et les recompenses d'XP de bataille sont scopes par Battle
 
 
+### Targeting persistant et traits visuels (style FFXII)
+
+Actuellement les entites re-evaluent leur cible chaque frame via `world.nearest()`. Pas de `.target` persistant sur l'entite, pas de visualisation de qui cible qui.
+
+#### Target persistant
+
+Chaque entite de combat a une propriete `target` (reference a une autre entite) :
+- La target est assignee par la decision loop (voir ci-dessous), pas chaque frame
+- Une target reste tant qu'elle est vivante, en range, et que rien de plus prioritaire n'apparait
+- La game loop (60fps) se contente de seek vers `entity.target.position` et d'attaquer si en range
+- Pas de re-evaluation frame-by-frame = comportements plus stables et realistes
+
+#### Traits visuels
+
+Lignes fines entre chaque entite et sa cible (comme FFXII) :
+- Couleur selon la faction de l'attaquant
+- Opacite faible pour ne pas polluer l'ecran
+- Permet de lire le combat d'un coup d'oeil : qui focus qui, quelles unites sont free, lesquelles sont sous pression
+- Option toggle pour le debug (comme les cercles de leash)
+
+#### Decision loop (boucle strategique)
+
+Deuxieme boucle en plus de la game loop, cadencee a ~1 tick par seconde (pas par frame). Responsable des decisions strategiques :
+
+- **Choix de cible** — evaluation des menaces, poids d'aggro, triangle RPS, distance. Assigne `entity.target`
+- **Evaluation de la situation** — outnumbered ?, isolated ?, surrounded ?
+- **Score de combativite** — recalcul du fight/flee du swarm
+- **Reactions aux events** — buffs a appliquer selon les events recents et les spores
+
+Scope : par battle ou par swarm (les entites hors combat n'ont pas besoin de tick strategique frequent).
+
+La frequence de decision est un levier de design modulable par les spores :
+- Naive = tick lent (reagit tard, decisions mauvaises mais persistantes)
+- Surprise = tick rapide (hyper-reactif, change de cible souvent)
+- Fear = tick rapide en danger, lent sinon
+
+Avantage perf : `world.nearest()` lineaire sur toutes les entites passe de 60x/s/entite a 1x/s/entite.
+
+
 ## Prochaines etapes
 
-1. Definir l'architecture technique des spores (jauges, stats, events, buffs)
-2. Implementer le systeme de buffs/debuffs (entite + swarm)
-3. Implementer un premier spore complet comme prototype (Fear ?)
-4. Ajouter la conscience swarm (stats cumulees, comparaison, moral)
-5. Implementer les catalyseurs (combos)
+1. Implementer le systeme de reactions event x spore (buffs)
+2. Implementer le targeting persistant + decision loop
+3. Ajouter le systeme d'aggro (menace)
+4. Ajouter la jauge de moral au swarm
+5. Implementer la capacite swarm = rank du leader
 6. Ajouter les champignons dans le monde
 7. Systeme de consommation + empreinte de personnalite
-8. Tester les comportements emergents
+8. Implementer les catalyseurs (combos)
+9. Equilibrer le triangle RPS
+10. Tester les comportements emergents
