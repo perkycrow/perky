@@ -18,7 +18,7 @@ export default function updateDecisions (world, deltaTime) {
     world._decisionTimer -= DECISION_INTERVAL
 
     for (const entity of world.entities) {
-        if (!entity.faction || entity.dying) {
+        if (!entity.faction || entity.dying || entity.rank === undefined) {
             continue
         }
 
@@ -54,6 +54,15 @@ function isTargetValid (entity) {
 }
 
 
+function isValidTarget (entity, other) {
+    return other !== entity
+        && other.faction
+        && other.faction !== entity.faction
+        && !other.dying
+        && other.rank !== undefined
+}
+
+
 function findTarget (world, entity) {
     const range = getSporeValue(entity, 'detectRange', entity.baseDetectRange || 1)
     const rangeSq = range * range
@@ -61,7 +70,7 @@ function findTarget (world, entity) {
     let bestScore = 0
 
     for (const other of world.entities) {
-        if (other === entity || !other.faction || other.faction === entity.faction || other.dying) {
+        if (!isValidTarget(entity, other)) {
             continue
         }
 

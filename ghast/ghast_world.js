@@ -163,7 +163,7 @@ export default class GhastWorld extends World {
 
 
     #applyHit (target, source, baseDamage = 1) {
-        if (!target.damage) {
+        if (typeof target.damage !== 'function') {
             return
         }
 

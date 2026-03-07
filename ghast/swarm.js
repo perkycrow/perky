@@ -14,13 +14,28 @@ export default class Swarm {
     }
 
 
+    get capacity () {
+        return this.leader?.rank || 0
+    }
+
+
+    get isOverCapacity () {
+        return this.members.length > this.capacity
+    }
+
+
     add (entity) {
         if (this.members.includes(entity)) {
-            return
+            return false
+        }
+
+        if (this.leader && this.members.length >= this.capacity) {
+            return false
         }
 
         this.members.push(entity)
         this.electLeader()
+        return true
     }
 
 

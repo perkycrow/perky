@@ -13,6 +13,11 @@ export default class SwarmBar {
 
         this.element = document.createElement('div')
         applyBarStyle(this.element)
+
+        this.capacityLabel = document.createElement('div')
+        applyCapacityStyle(this.capacityLabel)
+        this.element.appendChild(this.capacityLabel)
+
         container.appendChild(this.element)
     }
 
@@ -20,6 +25,7 @@ export default class SwarmBar {
     update () {
         this.#syncFrames()
         this.#updateFrames()
+        this.#updateCapacity()
         this.#followCamera()
     }
 
@@ -70,6 +76,14 @@ export default class SwarmBar {
     }
 
 
+    #updateCapacity () {
+        const count = this.swarm.members.length
+        const cap = this.swarm.capacity
+        this.capacityLabel.textContent = `${count}/${cap}`
+        this.capacityLabel.style.color = this.swarm.isOverCapacity ? '#f44336' : '#aaa'
+    }
+
+
     #updateFrames () {
         for (const [entity, frame] of this.frames) {
             const isLeader = entity === this.swarm.leader
@@ -96,6 +110,21 @@ export default class SwarmBar {
         this.game.camera.y = this.followTarget.y
     }
 
+}
+
+
+function applyCapacityStyle (el) {
+    Object.assign(el.style, {
+        position: 'absolute',
+        top: '-20px',
+        right: '8px',
+        fontSize: '11px',
+        fontFamily: 'monospace',
+        fontWeight: 'bold',
+        color: '#aaa',
+        textShadow: '0 0 3px #000',
+        pointerEvents: 'none'
+    })
 }
 
 

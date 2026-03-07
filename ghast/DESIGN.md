@@ -470,12 +470,15 @@ Inspire de Total War Warhammer 3 (systeme de chevrons). Les entites gagnent de l
 
 #### Stats trackees par entite
 
-Chaque entite accumule des stats permanentes :
+Chaque entite accumule des stats permanentes. Deux categories : stats de **combat** (pour le calcul d'XP) et stats d'**histoire** (pour l'attachement, les perks, et les systemes futurs).
+
+**Stats de combat :**
 - **Degats infliges** — points de degats totaux
 - **Degats encaisses** — resilience, tanking
 - **Degats soignes** — support (systeme de heal a definir)
 - **Degats absorbes pour un allie** — sacrifice, prise de coups pour proteger
-- **Coups fatals** — kills confirmes
+- **Coups fatals** — kills confirmes (le coup qui tue)
+- **Assists** — kills ou l'entite a contribue (degats infliges) sans porter le coup fatal
 - **Debuffs ennemis infliges** — controle de terrain
 - **Buffs allies appliques** — support
 - **Friendly fire** — degats infliges aux allies (penalite)
@@ -485,6 +488,59 @@ Chaque entite accumule des stats permanentes :
 - **Spores collectes** — total absorbe dans sa vie
 - **Temps en tant que leader** — leadership
 
+**Stats d'histoire :**
+- **Age** — temps ecoule depuis la creation de l'entite (en secondes de jeu)
+- **Temps dans le swarm actuel** — depuis combien de temps elle a rejoint ce swarm
+- **Swarms precedents** — liste des swarms auxquels elle a appartenu (faction, leader, duree). Utile pour des systemes futurs : grudge (rancune envers un ancien swarm ennemi qui l'a battue), trahison (une entite convertie par lust garde la memoire de son ancienne faction), loyaute (plus elle reste longtemps, plus elle est fidele)
+- **Faction d'origine** — la faction a la creation (utile si convertie par lust)
+- **Conversions subies** — combien de fois elle a change de faction
+- **Plus longue serie de kills** — killstreak max
+- **Plus gros degat inflige en un coup** — moment de gloire
+- **Entite la plus tuee** — type d'entite le plus souvent acheve (ex: "tueur de rats")
+
+#### Stats trackees par swarm
+
+Le swarm accumule aussi des stats collectives, independantes des membres individuels :
+
+- **Age du swarm** — temps depuis la formation
+- **Batailles livrees** — total de battles engagees
+- **Batailles gagnees / perdues / fuies** — bilan
+- **Kills collectifs** — total de coups fatals par tous les membres
+- **Pertes** — nombre de membres morts pendant leur appartenance au swarm
+- **Membres recrutes** — total d'entites ayant rejoint le swarm
+- **Conversions reussies** — entites ennemies converties par des membres du swarm
+- **Plus longue duree de vie d'un membre** — le veteran du swarm
+- **Nombre de leaders successifs** — stabilite du leadership
+
+Ces stats de swarm servent au swarm level (veterancy collectif) et pourraient alimenter des titres de swarm ("Escouade invincible", "Les deserteurs", "Bouchers de rats").
+
+#### Unites named et perks (attachement du joueur)
+
+**Objectif** : creer un lien emotionnel entre le joueur et ses creatures. Une unite basique qui survit assez longtemps et accumule des achievements devient une unite **named** — elle gagne un nom genere, un perk unique, et une identite visuelle distinctive.
+
+**Declenchement** : une entite devient named quand elle franchit un seuil d'accomplissement (a definir). Pas juste l'XP — c'est une combinaison de stats d'histoire qui raconte quelque chose. Exemples de seuils :
+
+| Achievement | Condition | Perk potentiel |
+|-------------|-----------|----------------|
+| Veteran | Age > X, 5+ batailles survivees | +HP, +moral au swarm |
+| Boucher | 10+ coups fatals | +degats, aura d'intimidation (aggro) |
+| Garde du corps | Degats absorbes pour allies > X | Attire les coups diriges vers les allies proches |
+| Survivant | A survecu a 3+ batailles en low HP | Buff "Dernier souffle" permanent (leger) |
+| Deserteur | A change de swarm 3+ fois | +vitesse, -loyaute (desobeit plus facilement) |
+| Fidele | Temps dans le meme swarm > X | +stats quand le leader est proche |
+| Renegate | Converti par lust, puis a tue des membres de son ancienne faction | +degats vs ancienne faction |
+| Tueur de geants | A tue une entite de rank 3+ superieur | +degats vs entites de rank superieur |
+
+**Nom genere** : quand une entite devient named, elle recoit un nom (pool de noms thematiques par type d'entite). Le nom apparait au-dessus de l'entite et dans l'UI de swarm. Ca transforme "Skeleton #47" en "Gristle le Boucher".
+
+**Visuel distinctif** : les unites named ont un marqueur visuel (bordure doree dans l'UI de swarm, legere aura ou tint sur le sprite) pour les reperer sur le champ de bataille.
+
+**Perte d'une unite named** : la mort d'une unite named est un event special (`named_died`). Debuff de moral plus fort que `ally_died`. Le joueur ressent la perte parce qu'il connait cette unite, son histoire, son perk. C'est le levier d'attachement principal — le joueur veut proteger ses unites named parce qu'elles sont irreplacables.
+
+**Interaction avec les spores** : les perks ne remplacent pas les spores, ils se stackent. Un "Boucher" avec anger+naive = berserker nomme qui tape encore plus fort. Un "Fidele" avec fear = un lache qui reste quand meme parce que sa loyaute compense.
+
+**Limite** : nombre de named par swarm limite (1-2 par swarm ?) pour que ca reste special. Ou pas de limite, mais les seuils sont assez hauts pour que ca arrive naturellement rarement.
+
 #### Poids XP
 
 Chaque stat est ponderee pour calculer l'XP totale :
@@ -492,6 +548,7 @@ Chaque stat est ponderee pour calculer l'XP totale :
 | Stat | Poids | Justification |
 |------|-------|---------------|
 | Coup fatal | 10 | Recompense la plus forte |
+| Assist | 4 | Contribution sans le kill |
 | Degats infliges | 2/pt | Contribution au combat |
 | Degats encaisses | 1/pt | Resilience |
 | Degats absorbes pour allie | 3/pt | Sacrifice valorise |
