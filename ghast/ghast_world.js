@@ -17,6 +17,7 @@ export default class GhastWorld extends World {
 
         this.paused = true
         this.swarms = []
+        this.firstBlood = false
 
         this.on('hit', ({target, source}) => {
             this.#applyHit(target, source)
@@ -48,6 +49,16 @@ export default class GhastWorld extends World {
 
 
     preUpdate () {
+        for (const entity of this.entities) {
+            if (!entity.team || entity.dying) {
+                continue
+            }
+
+            this.#checkSurrounded(entity)
+            this.#checkIsolated(entity)
+        }
+
+        this.#checkOutnumbered()
     }
 
 
@@ -97,6 +108,11 @@ export default class GhastWorld extends World {
             return
         }
 
+        if (!this.firstBlood) {
+            this.firstBlood = true
+            this.emit('first_blood', {source, target})
+        }
+
         if (source && target.velocity) {
             const knockDir = target.position.clone().sub(source.position)
             const len = knockDir.length()
@@ -107,9 +123,99 @@ export default class GhastWorld extends World {
             }
         }
 
+        if (target.isAlive() && target.hp <= target.maxHp * 0.3 && !target._lowHp) {
+            target._lowHp = true
+            this.emit('low_hp', {entity: target, source})
+        }
+
         if (!target.isAlive()) {
             target.dying = 0.3
             target.hitRadius = 0
+            this.#emitDeathEvents(target, source)
+        }
+    }
+
+
+    #emitDeathEvents (victim, killer) {
+        if (killer) {
+            this.emit('kill', {killer, victim})
+        }
+
+        if (victim.swarm) {
+            const wasLeader = victim.swarm.leader === victim
+
+            for (const member of victim.swarm.members) {
+                if (member !== victim && !member.dying) {
+                    member.emit('ally_died', {ally: victim, killer})
+                }
+            }
+
+            this.emit('ally_died', {entity: victim, swarm: victim.swarm, killer})
+
+            if (wasLeader) {
+                this.emit('leader_died', {entity: victim, swarm: victim.swarm, killer})
+            }
+        }
+    }
+
+
+    #checkSurrounded (entity) {
+        const enemies = this.entitiesInRange(entity, 2, e => e.team && e.team !== entity.team && !e.dying)
+        const wasSurrounded = entity._surrounded || false
+        entity._surrounded = enemies.length >= 3
+
+        if (entity._surrounded && !wasSurrounded) {
+            this.emit('surrounded', {entity, enemies})
+        }
+    }
+
+
+    #checkIsolated (entity) {
+        if (!entity.swarm || entity.swarm.members.length <= 1) {
+            entity._isolated = false
+            return
+        }
+
+        const center = entity.swarm.getCenter()
+
+        if (!center) {
+            entity._isolated = false
+            return
+        }
+
+        const dist = entity.position.distanceTo(center)
+        const wasIsolated = entity._isolated || false
+        entity._isolated = dist > entity.swarm.leashRadius * 1.5
+
+        if (entity._isolated && !wasIsolated) {
+            this.emit('isolated', {entity, swarm: entity.swarm})
+        }
+    }
+
+
+    #checkOutnumbered () {
+        for (const swarm of this.swarms) {
+            const alive = swarm.members.filter(m => !m.dying)
+
+            if (alive.length === 0) {
+                swarm._outnumbered = false
+                continue
+            }
+
+            let enemyCount = 0
+
+            for (const other of this.swarms) {
+                if (other.team !== swarm.team) {
+                    enemyCount += other.members.filter(m => !m.dying).length
+                }
+            }
+
+            const wasOutnumbered = swarm._outnumbered || false
+            swarm._outnumbered = enemyCount > alive.length * 1.5
+
+            if (swarm._outnumbered && !wasOutnumbered) {
+                this.emit('outnumbered', {swarm, allyCount: alive.length, enemyCount})
+            }
         }
     }
 

@@ -15,7 +15,7 @@ L'UI arrive tot (phase 2) pour donner du feedback visuel des les premieres featu
 | 2 | **Swarm UI** | DONE | Barre Total War en bas : cadres des unites, vie, buffs |
 | 3 | **Spore Rename** | DONE | Renommer mischief→naive, cunning→lust dans le code |
 | 4 | **Spore Engine** | DONE | Spores actifs : stats passives (couche 1) |
-| 5 | **Game Events** | — | Detection d'events gameplay (ally_died, low_hp, surrounded...) |
+| 5 | **Game Events** | DONE | Detection d'events gameplay (ally_died, low_hp, surrounded...) |
 | 6 | **Event Reactions** | — | Spore x Event → Buff (couche 2) |
 | 7 | **Aggro** | — | Valeur de menace par entite |
 | 8 | **Morale** | — | Jauge de moral au niveau swarm |
@@ -80,3 +80,25 @@ SwarmBar (div, position: absolute, bottom: 0)
 - Barre de vie verte/rouge
 - Leader = bordure doree
 - Compact, pas intrusif
+
+
+---
+
+
+## Phase 5 : Game Events — DONE
+
+Detection d'events gameplay dans `ghast_world.js`. Les events sont emis sur le world et/ou sur les entites concernees. Phase 6 les consommera pour appliquer des buffs.
+
+### Events instantanes (dans #applyHit)
+
+- **`first_blood`** — premier coup du combat. `{source, target}`. Flag `world.firstBlood`.
+- **`low_hp`** — entite tombe sous 30% HP. `{entity, source}`. Flag `entity._lowHp` (une seule fois).
+- **`kill`** — une entite en tue une autre. `{killer, victim}`. Emis sur le world.
+- **`ally_died`** — un membre du swarm meurt. Emis sur le world `{entity, swarm, killer}` ET sur chaque membre survivant `{ally, killer}`.
+- **`leader_died`** — le leader du swarm meurt. `{entity, swarm, killer}`.
+
+### Events periodiques (dans preUpdate)
+
+- **`surrounded`** — 3+ ennemis dans un rayon de 2 unites. `{entity, enemies}`. Transition-based (flag `entity._surrounded`).
+- **`isolated`** — distance au centre du swarm > 1.5x leashRadius. `{entity, swarm}`. Transition-based (flag `entity._isolated`).
+- **`outnumbered`** — swarm en inferiorite numerique (ratio 1.5x). `{swarm, allyCount, enemyCount}`. Transition-based (flag `swarm._outnumbered`).

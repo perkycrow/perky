@@ -359,6 +359,11 @@ En bas de l'ecran, affichage de cadres representant les unites du swarm :
 - Marqueur de sur-capacite visible (ex: "6/3" en rouge)
 
 
+### Attraction de base entre equipes
+
+Les entites ont une attirance subtile vers les ennemis a longue portee, independante des spores. Ca evite que les equipes s'ignorent quand elles n'ont pas de spores offensifs. L'attraction de base est un seek faible (~0.3) sur l'ennemi le plus proche dans un grand rayon (~8 unites). Les spores modulent cette force : anger l'amplifie, fear la reduit, naive l'augmente (fonce sans reflechir). Ca sert de "gravite" naturelle qui pousse les equipes a se confronter tot ou tard, meme sans intervention du joueur.
+
+
 ## Prochaines etapes
 
 1. Definir l'architecture technique des spores (jauges, stats, events, buffs)
