@@ -17,7 +17,7 @@ L'UI arrive tot (phase 2) pour donner du feedback visuel des les premieres featu
 | 4 | **Spore Engine** | DONE | Spores actifs : stats passives (couche 1) |
 | 5 | **Game Events** | DONE | Detection d'events gameplay (ally_died, low_hp, surrounded...) |
 | 6 | **Battle System + 3e Faction** | DONE | Abstraction Battle, first_blood per-battle, N-faction, join/flee/resolve |
-| 7 | **XP & Stats** | — | Tracking des stats de combat, calcul XP, rank dynamique |
+| 7 | **XP & Stats** | DONE | Tracking des stats de combat, calcul XP, rank dynamique |
 | 8 | **Event Reactions** | — | Spore x Event → Buff (couche 2) |
 | 9 | **Aggro** | — | Valeur de menace par entite |
 | 10 | **Morale** | — | Jauge de moral au niveau swarm |
@@ -139,3 +139,41 @@ Flee : si tous les membres d'un swarm sont hors FLEE_RADIUS (8u) pendant FLEE_DE
 ### 3e Faction
 
 Faction 'chaos' avec un Shade a `{x: 0, y: 4}`. Triangle equidistant.
+
+
+---
+
+
+## Phase 7 : XP & Stats — DONE
+
+Tracking des stats de combat par entite, calcul XP pondere, rank dynamique avec promotion automatique.
+
+### `ghast/xp_config.js`
+
+Constantes : `XP_WEIGHTS` (poids par stat) et `RANK_THRESHOLDS` ([0, 50, 150, 400, 800, 1500, 3000]).
+
+### `ghast/combat_stats.js`
+
+Component (meme pattern que Health/BuffSystem). Delegue a l'entite : `addStat`, `getStat`, `getXp`, `computeXp`, `checkRankUp`.
+Stats trackees : damageDealt, damageTaken, kills, damageAbsorbed, battlesSurvived, friendlyFire, entitiesConverted.
+XP = somme ponderee des stats + seuil du baseRank. Rank monte automatiquement (jamais descend).
+
+### Entites (shade, skeleton, inquisitor, rat)
+
+Ajout `this.create(CombatStats)` et `this.baseRank` (= rank de depart du type).
+
+### `ghast/ghast_world.js`
+
+- `#trackDamage` dans `#applyHit` : damageDealt/damageTaken/friendlyFire apres confirmation du dealt
+- Listener `kill` : kills +1
+- Listener `battle_resolved` : battlesSurvived +1 pour chaque survivant de la faction gagnante
+- `#trackStat` : helper qui addStat, calcule le gain XP, emet `xp_gained`, incremente swarm XP
+
+### `ghast/swarm.js`
+
+Ajout `this.xp = 0` et `addXp(amount)` pour le XP collectif du swarm.
+
+### Events
+
+- `xp_gained` — `{entity, amount, source}`
+- `rank_up` — `{entity, oldRank, newRank}`

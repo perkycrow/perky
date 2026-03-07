@@ -48,6 +48,7 @@ export default class Ghast extends Game {
         const container = this.perkyView.element
         this.#createPauseButton(container)
         this.#createSporeSidebar(container)
+        this.#createSpawnButtons(container)
         this.#setupClickToAssign(container)
     }
 
@@ -141,6 +142,62 @@ export default class Ghast extends Game {
         }
 
         container.appendChild(sidebar)
+    }
+
+
+    #createSpawnButtons (container) {
+        const bar = document.createElement('div')
+
+        Object.assign(bar.style, {
+            position: 'absolute',
+            bottom: '180px',
+            left: '12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+            zIndex: '100'
+        })
+
+        const types = ['Shade', 'Skeleton', 'Inquisitor', 'Rat']
+
+        for (const type of types) {
+            const btn = document.createElement('button')
+            const key = type.toLowerCase()
+            const source = this.getSource(key)
+
+            Object.assign(btn.style, {
+                width: '36px',
+                height: '36px',
+                borderRadius: '4px',
+                border: '1px solid #555',
+                background: 'rgba(30, 30, 50, 0.9)',
+                backgroundImage: source ? `url(${source.src})` : 'none',
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+                cursor: 'pointer',
+                opacity: '0.8',
+                imageRendering: 'pixelated'
+            })
+
+            btn.title = `Spawn ${type} (shadow)`
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation()
+                const swarm = this.world.swarms.find(s => s.faction === 'shadow')
+                if (!swarm) {
+                    return
+                }
+                const leader = swarm.leader
+                const x = leader ? leader.x + (Math.random() - 0.5) : 0
+                const y = leader ? leader.y + (Math.random() - 0.5) : 0
+                this.execute(`spawn${type}`, {x, y, faction: 'shadow', swarm})
+            })
+
+            bar.appendChild(btn)
+        }
+
+        container.appendChild(bar)
     }
 
 

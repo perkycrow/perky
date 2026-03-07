@@ -1,4 +1,5 @@
 import {SPORE_TYPES} from '../spores.js'
+import {RANK_THRESHOLDS} from '../xp_config.js'
 
 
 export default class SwarmBar {
@@ -78,6 +79,8 @@ export default class SwarmBar {
             frame.element.style.borderWidth = isLeader || isSelected ? '2px' : '1px'
 
             updateHpBar(frame.hpBar, entity)
+            updateXpBar(frame.xpBar, entity)
+            updateRank(frame.rankBadge, entity)
             updateBuffs(frame.buffsRow, entity)
             updateSpores(frame.sporesRow, entity, this.game)
         }
@@ -176,17 +179,48 @@ function createFrame (entity, game, onSelect) {
     })
     hpBar.appendChild(hpFill)
 
+    const rankBadge = document.createElement('div')
+    Object.assign(rankBadge.style, {
+        position: 'absolute',
+        top: '2px',
+        right: '2px',
+        fontSize: '10px',
+        fontFamily: 'monospace',
+        fontWeight: 'bold',
+        color: '#d4a017',
+        textShadow: '0 0 3px #000',
+        pointerEvents: 'none'
+    })
+
+    const xpBar = document.createElement('div')
+    Object.assign(xpBar.style, {
+        width: '100%',
+        height: '3px',
+        background: '#111'
+    })
+    const xpFill = document.createElement('div')
+    Object.assign(xpFill.style, {
+        width: '0%',
+        height: '100%',
+        background: '#7c4dff',
+        transition: 'width 0.3s'
+    })
+    xpBar.appendChild(xpFill)
+
+    el.style.position = 'relative'
     el.appendChild(sporesRow)
     el.appendChild(portrait)
+    el.appendChild(rankBadge)
     el.appendChild(buffsRow)
     el.appendChild(hpBar)
+    el.appendChild(xpBar)
 
     el.addEventListener('click', (e) => {
         e.stopPropagation()
         onSelect(entity)
     })
 
-    return {element: el, portrait, hpBar, buffsRow, sporesRow}
+    return {element: el, portrait, hpBar, xpBar, rankBadge, buffsRow, sporesRow}
 }
 
 
@@ -307,4 +341,35 @@ function updateSpores (column, entity, game) {
     while (column.children.length > index) {
         column.lastChild.remove()
     }
+}
+
+
+function updateRank (badge, entity) {
+    if (entity.rank === undefined) {
+        return
+    }
+
+    badge.textContent = `R${entity.rank}`
+}
+
+
+function updateXpBar (xpBar, entity) {
+    const fill = xpBar.firstChild
+
+    if (!fill || !entity.getXp) {
+        return
+    }
+
+    const xp = entity.getXp()
+    const rank = entity.rank || 1
+    const currentThreshold = RANK_THRESHOLDS[rank - 1] || 0
+    const nextThreshold = RANK_THRESHOLDS[rank] || RANK_THRESHOLDS[RANK_THRESHOLDS.length - 1]
+
+    if (nextThreshold <= currentThreshold) {
+        fill.style.width = '100%'
+        return
+    }
+
+    const progress = (xp - currentThreshold) / (nextThreshold - currentThreshold)
+    fill.style.width = `${Math.min(100, Math.max(0, progress * 100))}%`
 }
