@@ -21,6 +21,7 @@ export default class GhastWorld extends World {
         super(options)
 
         this.paused = true
+        this.timeScale = options.timeScale ?? 1
         this.swarms = []
         this.battles = []
 
@@ -95,15 +96,17 @@ export default class GhastWorld extends World {
             return
         }
 
-        this.preUpdate(deltaTime, context)
+        const dt = deltaTime * this.timeScale
+
+        this.preUpdate(dt, context)
 
         for (const entity of this.entities) {
             if (entity.started && !entity.dying) {
-                entity.update(deltaTime)
+                entity.update(dt)
             }
         }
 
-        this.postUpdate(deltaTime, context)
+        this.postUpdate(dt, context)
     }
 
 

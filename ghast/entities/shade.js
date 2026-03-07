@@ -19,10 +19,10 @@ export default class Shade extends Entity {
         this.create(Velocity)
         this.create(Steering)
         this.create(Dash)
-        this.create(Health, {hp: 18})
-        this.create(MeleeAttack, {damage: 4, range: 0.5, cooldown: 0.8, windUp: 0.15, strikeTime: 0.1})
+        this.create(Health, {hp: 80})
+        this.create(MeleeAttack, {damage: 8, range: 0.5, cooldown: 0.8, windUp: 0.15, strikeTime: 0.1})
 
-        const {maxSpeed = 1, acceleration = 5} = params
+        const {maxSpeed = 0.5, acceleration = 3} = params
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
