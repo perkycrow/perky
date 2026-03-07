@@ -612,17 +612,7 @@ export default class GhastWorld extends World {
 
 
     spawnProjectile (options = {}) {
-        return this.create(Projectile, {
-            x: options.x || 0,
-            y: options.y || 0,
-            dirX: options.dirX || 0,
-            dirY: options.dirY || 0,
-            speed: options.speed || 6,
-            faction: options.faction || null,
-            source: options.source || null,
-            ttl: options.ttl || 3,
-            damage: options.damage || 1
-        })
+        return this.create(Projectile, options)
     }
 
 }

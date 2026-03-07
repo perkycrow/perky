@@ -23,7 +23,7 @@ L'UI arrive tot (phase 2) pour donner du feedback visuel des les premieres featu
 | 10 | **Battle Attraction & Flee Scoring** | DONE | Attraction vers bataille active, score de combativite, verdict de fuite |
 | 11 | **Aggro** | DONE | Threat scoring (rank + spores + RPS triangle) dans decision loop |
 | 12 | **Morale** | DONE | Jauge 0-100, spore drift, seuils rout/exaltation |
-| 13 | **RPS Balancing** | — | Equilibrage du triangle Skeleton > Rat > Inquisitor > Skeleton, Shade > tous |
+| 13 | **RPS Balancing** | DONE | Equilibrage du triangle Skeleton > Rat > Inquisitor > Skeleton, Shade > tous |
 | 14 | **Swarm Capacity** | — | Taille max = rank du leader (lie au rank dynamique) |
 | 15 | **Consumption & Imprint** | — | Decroissance des spores + empreinte (couche 3) |
 | 16 | **Catalysts** | — | Combos hand-crafted |

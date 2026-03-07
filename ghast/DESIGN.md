@@ -12,8 +12,8 @@ Chaque entite a des capacites propres (sa specialite) mais partage un set d'acti
 ### Entites actuelles
 - **Shade** (rank 3) - tank/leader, melee + dash, 5 HP, dmg 2, speed 1, cd 1s
 - **Skeleton** (rank 2) - infanterie, melee + dash, 3 HP, dmg 1, speed 0.8, cd 1.2s
-- **Inquisitor** (rank 2) - distant, projectiles range 4, 3 HP, speed 0.8, cd 1.5s
-- **Rat** (rank 1) - melee rapide et fragile, 1 HP, dmg 1, speed 1.5, cd 0.8s
+- **Inquisitor** (rank 2) - distant, projectiles range 4, 2 HP, speed 1, cd 1.5s
+- **Rat** (rank 1) - melee rapide et fragile, 2 HP, dmg 1, speed 2, cd 0.8s
 - **Soul** - entite passive qui rejoint les allies proches (flocking)
 - **Projectile** - projectile a duree de vie limitee, faction du tireur
 - **Cage**, **Jar**, **Turret** - entites statiques placeholder
