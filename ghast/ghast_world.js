@@ -1,4 +1,5 @@
 import World from '../game/world.js'
+import Swarm from './swarm.js'
 import Shade from './entities/shade.js'
 import Skeleton from './entities/skeleton.js'
 import Rat from './entities/rat.js'
@@ -15,6 +16,7 @@ export default class GhastWorld extends World {
         super(options)
 
         this.paused = true
+        this.swarms = []
 
         this.on('hit', ({target, source}) => {
             this.#applyHit(target, source)
@@ -52,6 +54,7 @@ export default class GhastWorld extends World {
     postUpdate (deltaTime) {
         this.#checkProjectileHits()
         this.#updateDying(deltaTime)
+        this.#cleanupSwarms()
         this.#cleanup()
     }
 
@@ -133,12 +136,27 @@ export default class GhastWorld extends World {
     }
 
 
+    createSwarm (team) {
+        const swarm = new Swarm(team)
+        this.swarms.push(swarm)
+        return swarm
+    }
+
+
+    #cleanupSwarms () {
+        for (const swarm of this.swarms) {
+            swarm.cleanup()
+        }
+    }
+
+
     spawnShade (options = {}) {
         const entity = this.create(Shade, {
             x: options.x || 0,
             y: options.y || 0
         })
         entity.team = options.team || null
+        this.#assignSwarm(entity, options.swarm)
         return entity
     }
 
@@ -149,6 +167,7 @@ export default class GhastWorld extends World {
             y: options.y || 0
         })
         entity.team = options.team || null
+        this.#assignSwarm(entity, options.swarm)
         return entity
     }
 
@@ -159,6 +178,7 @@ export default class GhastWorld extends World {
             y: options.y || 0
         })
         entity.team = options.team || null
+        this.#assignSwarm(entity, options.swarm)
         return entity
     }
 
@@ -169,7 +189,16 @@ export default class GhastWorld extends World {
             y: options.y || 0
         })
         entity.team = options.team || null
+        this.#assignSwarm(entity, options.swarm)
         return entity
+    }
+
+
+    #assignSwarm (entity, swarm) {
+        if (swarm) {
+            entity.swarm = swarm
+            swarm.add(entity)
+        }
     }
 
 

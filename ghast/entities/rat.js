@@ -20,6 +20,8 @@ export default class Rat extends Entity {
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
+        this.rank = 1
+        this.swarm = null
         this.spores = createSporeStorage()
 
         this.on('strike', ({target}) => {
@@ -50,6 +52,7 @@ export default class Rat extends Entity {
         const neighbors = world?.entitiesInRange(this, 0.8)
         this.separate(neighbors, 1)
 
+        applyLeash(this)
         this.move(this.resolveForce())
         applyMovement(this, deltaTime)
         this.clampVelocity(this.maxSpeed)
@@ -61,6 +64,29 @@ export default class Rat extends Entity {
         this.direction = direction
     }
 
+}
+
+
+function applyLeash (entity) {
+    if (!entity.swarm) {
+        return
+    }
+
+    const center = entity.swarm.getCenter()
+
+    if (!center || center === entity.position) {
+        return
+    }
+
+    const dx = entity.x - center.x
+    const dy = entity.y - center.y
+    const dist = Math.sqrt(dx * dx + dy * dy)
+    const radius = entity.swarm.leashRadius
+
+    if (dist > radius * 0.6) {
+        const urgency = Math.min((dist - radius * 0.6) / (radius * 0.4), 1)
+        entity.seek(center, urgency * 1.5)
+    }
 }
 
 
