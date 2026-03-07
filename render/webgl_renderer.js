@@ -12,6 +12,7 @@ import FullscreenQuad from './postprocessing/fullscreen_quad.js'
 
 import WebGLSpriteRenderer from './webgl/webgl_sprite_renderer.js'
 import WebGLCircleRenderer from './webgl/webgl_circle_renderer.js'
+import WebGLLineRenderer from './webgl/webgl_line_renderer.js'
 import WebGLRectangleRenderer from './webgl/webgl_rectangle_renderer.js'
 import WebGLDebugGizmoRenderer from './webgl/webgl_debug_gizmo_renderer.js'
 
@@ -119,6 +120,7 @@ export default class WebGLRenderer extends BaseRenderer {
     #setupDefaultRenderers () {
         this.registerRenderer(new WebGLSpriteRenderer())
         this.registerRenderer(new WebGLCircleRenderer())
+        this.registerRenderer(new WebGLLineRenderer())
         this.registerRenderer(new WebGLRectangleRenderer())
 
         this.#debugGizmoRenderer = new WebGLDebugGizmoRenderer()

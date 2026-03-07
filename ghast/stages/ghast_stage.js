@@ -1,5 +1,7 @@
 import Stage from '../../game/stage.js'
 import Circle from '../../render/circle.js'
+import Line from '../../render/line.js'
+import Group2D from '../../render/group_2d.js'
 import GhastWorld from '../ghast_world.js'
 import GhastController from '../controllers/ghast_controller.js'
 import GroundPass from '../postprocessing/ground_pass.js'
@@ -16,6 +18,9 @@ const SWARM_COLORS = {
 }
 
 const LEASH_OPACITY = 0.5
+const TARGET_LINE_OPACITY = 0.3
+const TARGET_LINE_WIDTH = 0.02
+const TARGET_LINE_POOL_SIZE = 20
 
 
 export default class GhastStage extends Stage {
@@ -26,7 +31,11 @@ export default class GhastStage extends Stage {
     onStart () {
         super.onStart()
         wiring.registerViews(this)
-        this.game.getLayer('game').setContent(this.viewsGroup)
+
+        this.circlesGroup = new Group2D()
+        this.linesGroup = new Group2D()
+        this.#setupRenderGroups()
+
         this.groundPass = this.addPostPass(GroundPass)
 
         const shadowSwarm = this.world.createSwarm('shadow')
@@ -48,6 +57,7 @@ export default class GhastStage extends Stage {
         this.#assignDefaultSpores()
 
         this.swarmCircles = this.#createSwarmCircles()
+        this.targetLines = this.#createTargetLines()
         this.swarmBar = new SwarmBar(this.game.perkyView.element, shadowSwarm, this.game)
         this.eventLog = new EventLog(this.game.perkyView.element, this.world)
     }
@@ -62,9 +72,21 @@ export default class GhastStage extends Stage {
     render () {
         this.syncViews()
         this.#updateSwarmCircles()
+        this.#updateTargetLines()
         this.#updateGroundPass()
         this.swarmBar?.update()
         this.eventLog?.update()
+    }
+
+
+    #setupRenderGroups () {
+        const gameRenderer = this.game.getRenderer('game')
+
+        gameRenderer.setRenderGroups([
+            {$name: 'circles', content: this.circlesGroup},
+            {$name: 'entities', content: this.viewsGroup},
+            {$name: 'lines', content: this.linesGroup}
+        ])
     }
 
 
@@ -76,8 +98,7 @@ export default class GhastStage extends Stage {
             const circle = new Circle({radius: swarm.leashRadius, color})
             circle.opacity = LEASH_OPACITY
             circle.visible = false
-            circle.setDepth(-100)
-            this.viewsGroup.add(circle)
+            this.circlesGroup.add(circle)
             circles.set(swarm, circle)
         }
 
@@ -98,6 +119,49 @@ export default class GhastStage extends Stage {
             circle.y = leader.y
             circle.radius = swarm.leashRadius
             circle.visible = true
+        }
+    }
+
+
+    #createTargetLines () {
+        const lines = []
+
+        for (let i = 0; i < TARGET_LINE_POOL_SIZE; i++) {
+            const line = new Line({lineWidth: TARGET_LINE_WIDTH})
+            line.opacity = TARGET_LINE_OPACITY
+            line.visible = false
+            this.linesGroup.add(line)
+            lines.push(line)
+        }
+
+        return lines
+    }
+
+
+    #updateTargetLines () {
+        let lineIndex = 0
+
+        for (const entity of this.world.entities) {
+            if (!entity.target || entity.dying || entity.target.dying) {
+                continue
+            }
+
+            if (lineIndex >= this.targetLines.length) {
+                break
+            }
+
+            const line = this.targetLines[lineIndex]
+            line.x = entity.x
+            line.y = entity.y
+            line.x2 = entity.target.x - entity.x
+            line.y2 = entity.target.y - entity.y
+            line.color = SWARM_COLORS[entity.faction] || '#ffffff'
+            line.visible = true
+            lineIndex++
+        }
+
+        for (let i = lineIndex; i < this.targetLines.length; i++) {
+            this.targetLines[i].visible = false
         }
     }
 
