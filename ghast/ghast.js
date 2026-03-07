@@ -9,7 +9,7 @@ export default class Ghast extends Game {
     static $name = 'ghast'
     static manifest = manifest
 
-    static camera = {unitsInView: {width: 6, height: 5}}
+    static camera = {unitsInView: {width: 7, height: 6}}
     static layer = {type: 'webgl', backgroundColor: 'transparent', pixelRatio: 1}
     static stages = {ghast: GhastStage}
 
