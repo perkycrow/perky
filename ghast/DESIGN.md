@@ -357,6 +357,31 @@ Deux niveaux :
 
 Le swarm a deja une structure (`swarm.js`) qui peut porter des buffs. Les buffs de swarm sont des multiplicateurs globaux appliques a chaque membre.
 
+#### Modificateurs passifs continus
+
+En plus des buffs evenementiels (pics ponctuels), les spores dominants generent des **modificateurs passifs permanents** qui scalent avec l'intensite du spore. C'est le "plancher" comportemental de l'entite, toujours actif, qui monte et descend lentement avec l'accumulation/consommation de spores.
+
+**Soft cap logarithmique** : les premiers points d'un spore donnent beaucoup, les derniers de moins en moins. Ca evite qu'un swarm full anger devienne absurde et encourage la diversite de spores.
+
+Modificateurs negatifs (debuff passif) :
+- **Tristesse elevee** → -vitesse, -degats progressif (soft cap -30%)
+- **Peur elevee** → +vitesse de fuite, -degats, -range d'engagement (soft cap -40%)
+- **Colere elevee** → +degats, -defense, -prudence (soft cap +40% degats / -25% defense)
+
+Modificateurs positifs (buff passif) :
+- **Naive eleve** → +moral passif, +aggro generee, -esquive (soft cap +30%)
+- **Arrogance elevee** → +degats vs cibles de rank inferieur, -degats vs rank superieur
+- **Colere elevee** → +cooldown reduction (soft cap -25%)
+- **Charme eleve** → +range de conversion, +vitesse de charme
+
+Etats emergents du moral :
+- **Excitement** (naive + kills recents) → +vitesse, +cadence d'attaque
+- **Euphorie** (moral tres haut) → +all stats leger (~+10%)
+- **Confiance** (arrogance + avantage numerique) → +degats, +range d'engagement
+- **Abattement** (moral tres bas) → -all stats (~-15%), delai d'obeissance aux ordres
+
+Les deux systemes se stackent : un guerrier anger a deja +30% degats passif (plancher), et quand un allie meurt il recoit Rage +50% degats pendant 3s (pic). Total momentane = +80% degats. Les pics sont dramatiques, le plancher est strategique.
+
 ### Combos de 3 — exemples d'emergence
 
 Les combos de 3 sont plus riches car plusieurs buffs peuvent se stacker sur le meme event :
