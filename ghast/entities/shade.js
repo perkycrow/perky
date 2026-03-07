@@ -4,6 +4,7 @@ import Steering from '../../game/steering.js'
 import Dash from '../../game/dash.js'
 import Health from '../../game/health.js'
 import MeleeAttack from '../../game/melee_attack.js'
+import CombatStats from '../combat_stats.js'
 import {createSporeStorage} from '../spores.js'
 import {getSporeValue} from '../spore_effects.js'
 
@@ -23,7 +24,10 @@ export default class Shade extends Entity {
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
+        this.create(CombatStats)
+
         this.rank = 3
+        this.baseRank = 3
         this.swarm = null
         this.spores = createSporeStorage()
 

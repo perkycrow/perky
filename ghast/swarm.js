@@ -5,6 +5,7 @@ export default class Swarm {
         this.members = []
         this.leader = null
         this.leashRadius = 3
+        this.xp = 0
         this.buffs = new Map()
     }
 
@@ -52,6 +53,11 @@ export default class Swarm {
         }
 
         this.leader = best
+    }
+
+
+    addXp (amount) {
+        this.xp += amount
     }
 
 

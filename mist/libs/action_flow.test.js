@@ -96,7 +96,7 @@ test('active returns combined running state', () => {
 
 test('getAction delegates to actionSet.get', () => {
     const mockAction = () => {}
-    const mockActionSet = {get: (name) => name === 'testAction' ? mockAction : null, getHooks: () => []}
+    const mockActionSet = {get: (name) => (name === 'testAction' ? mockAction : null), getHooks: () => []}
     const flow = new ActionFlow(mockActionSet)
 
     expect(flow.getAction('testAction')).toBe(mockAction)

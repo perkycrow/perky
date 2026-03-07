@@ -3,6 +3,7 @@ import Velocity from '../../game/velocity.js'
 import Steering from '../../game/steering.js'
 import Health from '../../game/health.js'
 import MeleeAttack from '../../game/melee_attack.js'
+import CombatStats from '../combat_stats.js'
 import {createSporeStorage} from '../spores.js'
 import {getSporeValue} from '../spore_effects.js'
 
@@ -21,7 +22,10 @@ export default class Rat extends Entity {
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
+        this.create(CombatStats)
+
         this.rank = 1
+        this.baseRank = 1
         this.swarm = null
         this.spores = createSporeStorage()
 

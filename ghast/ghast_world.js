@@ -23,6 +23,14 @@ export default class GhastWorld extends World {
         this.on('hit', ({target, source}) => {
             this.#applyHit(target, source)
         })
+
+        this.on('kill', ({killer}) => {
+            this.#trackStat(killer, 'kills', 1, 'kill')
+        })
+
+        this.on('battle_resolved', ({battle, winner}) => {
+            this.#trackBattleSurvived(battle, winner)
+        })
     }
 
 
@@ -111,6 +119,7 @@ export default class GhastWorld extends World {
             return
         }
 
+        this.#trackDamage(source, target)
         this.#emitFirstBlood(source, target)
         applyKnockback(target, source)
 
@@ -155,6 +164,56 @@ export default class GhastWorld extends World {
 
             if (wasLeader) {
                 this.emit('leader_died', {entity: victim, swarm: victim.swarm, killer})
+            }
+        }
+    }
+
+
+    #trackDamage (source, target) {
+        if (source?.addStat) {
+            const isFriendly = source.faction && source.faction === target.faction
+            this.#trackStat(source, isFriendly ? 'friendlyFire' : 'damageDealt', 1, 'damage')
+        }
+
+        if (target?.addStat) {
+            target.addStat('damageTaken', 1)
+        }
+    }
+
+
+    #trackStat (entity, key, amount, source) {
+        if (!entity?.addStat) {
+            return
+        }
+
+        const oldXp = entity.getXp()
+        entity.addStat(key, amount)
+        const gained = entity.getXp() - oldXp
+
+        if (gained > 0) {
+            this.emit('xp_gained', {entity, amount: gained, source})
+
+            if (entity.swarm) {
+                entity.swarm.addXp(gained)
+            }
+        }
+    }
+
+
+    #trackBattleSurvived (battle, winner) {
+        if (!winner) {
+            return
+        }
+
+        for (const swarm of battle.swarms) {
+            if (swarm.faction !== winner) {
+                continue
+            }
+
+            for (const member of swarm.members) {
+                if (!member.dying) {
+                    this.#trackStat(member, 'battlesSurvived', 1, 'battle')
+                }
             }
         }
     }
