@@ -32,15 +32,21 @@ export default class GhastWorld extends World {
 
             if (killer?.swarm) {
                 killer.swarm.recentKills++
+                killer.swarm.adjustMorale(5)
             }
         })
 
         this.on('battle_resolved', ({battle, winner}) => {
             this.#trackBattleSurvived(battle, winner)
+
+            for (const swarm of battle.swarms) {
+                swarm.adjustMorale(swarm.faction === winner ? 15 : -15)
+            }
         })
 
         this.on('ally_died', ({swarm}) => {
             swarm.recentLosses++
+            swarm.adjustMorale(-8)
 
             for (const member of swarm.members) {
                 if (!member.dying) {
@@ -70,6 +76,7 @@ export default class GhastWorld extends World {
         })
 
         this.on('leader_died', ({swarm}) => {
+            swarm.adjustMorale(-12)
             applySwarmReaction(swarm, 'disarray')
             swarm._leaderDied = true
         })

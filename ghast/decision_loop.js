@@ -1,4 +1,5 @@
 import {getSporeValue} from './spore_effects.js'
+import BUFF_DEFINITIONS from './buff_definitions.js'
 
 
 const DECISION_INTERVAL = 1
@@ -131,9 +132,21 @@ function findBattleCenter (world, entity) {
 
 
 function updateCombativeness (world) {
+    const updated = new Set()
+
     for (const battle of world.battles) {
         for (const swarm of battle.swarms) {
             updateSwarmCombativeness(swarm, battle)
+            updated.add(swarm)
+        }
+    }
+
+    for (const swarm of world.swarms) {
+        updateSwarmMorale(swarm)
+
+        if (!updated.has(swarm)) {
+            swarm.recentKills *= 0.7
+            swarm.recentLosses *= 0.7
         }
     }
 }
@@ -156,12 +169,59 @@ function updateSwarmCombativeness (swarm, battle) {
         (swarm.recentKills - swarm.recentLosses) * 0.3))
 
     const sporeScore = getSwarmSporeInclination(swarm)
+    const moraleFactor = (swarm.morale - 50) / 100
 
-    const raw = numRatio * 0.4 + momentum * 0.3 + sporeScore * 0.3
+    const raw = numRatio * 0.3 + momentum * 0.25 + sporeScore * 0.25 + moraleFactor * 0.2
     swarm.combativeness += (raw * 0.5 + 0.5 - swarm.combativeness) * 0.3
 
     swarm.recentKills *= 0.7
     swarm.recentLosses *= 0.7
+}
+
+
+function updateSwarmMorale (swarm) {
+    let sadnessCount = 0
+    let naiveCount = 0
+
+    for (const member of swarm.members) {
+        if (member.dying || !member.spores) {
+            continue
+        }
+
+        sadnessCount += member.spores.sadness || 0
+        naiveCount += member.spores.naive || 0
+    }
+
+    if (sadnessCount > 0) {
+        swarm.adjustMorale(-0.5 * sadnessCount)
+    }
+
+    if (naiveCount > 0) {
+        swarm.adjustMorale(0.5 * naiveCount)
+    }
+
+    checkMoraleThresholds(swarm)
+}
+
+
+function checkMoraleThresholds (swarm) {
+    if (swarm.morale < 20 && !swarm.hasBuff('rout')) {
+        const def = BUFF_DEFINITIONS.rout
+        swarm.applyBuff(def.key, def.duration, {...def.modifiers})
+    }
+
+    if (swarm.morale >= 20 && swarm.hasBuff('rout')) {
+        swarm.removeBuff('rout')
+    }
+
+    if (swarm.morale > 80 && !swarm.hasBuff('exaltation')) {
+        const def = BUFF_DEFINITIONS.exaltation
+        swarm.applyBuff(def.key, def.duration, {...def.modifiers})
+    }
+
+    if (swarm.morale <= 80 && swarm.hasBuff('exaltation')) {
+        swarm.removeBuff('exaltation')
+    }
 }
 
 

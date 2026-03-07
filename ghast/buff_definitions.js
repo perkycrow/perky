@@ -82,6 +82,18 @@ const BUFF_DEFINITIONS = {
         key: 'promotion',
         duration: 3,
         modifiers: {damage: 1.3, speed: 1.2}
+    },
+
+    rout: {
+        key: 'rout',
+        duration: -1,
+        modifiers: {speed: 0.5, damage: 0.6, fleeWeight: 3, approachWeight: 0.2}
+    },
+
+    exaltation: {
+        key: 'exaltation',
+        duration: -1,
+        modifiers: {speed: 1.2, damage: 1.3}
     }
 
 }

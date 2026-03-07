@@ -6,6 +6,7 @@ export default class Swarm {
         this.leader = null
         this.leashRadius = 3
         this.xp = 0
+        this.morale = 50
         this.combativeness = 0.5
         this.recentKills = 0
         this.recentLosses = 0
@@ -61,6 +62,11 @@ export default class Swarm {
 
     addXp (amount) {
         this.xp += amount
+    }
+
+
+    adjustMorale (amount) {
+        this.morale = Math.max(0, Math.min(100, this.morale + amount))
     }
 
 
