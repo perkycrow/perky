@@ -17,10 +17,10 @@ export default class Rat extends Entity {
 
         this.create(Velocity)
         this.create(Steering)
-        this.create(Health, {hp: 1})
+        this.create(Health, {hp: 2})
         this.create(MeleeAttack, {damage: 1, range: 0.3, cooldown: 0.8, windUp: 0.1, strikeTime: 0.08})
 
-        const {maxSpeed = 1.5, acceleration = 8} = params
+        const {maxSpeed = 2, acceleration = 8} = params
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
@@ -34,8 +34,8 @@ export default class Rat extends Entity {
         this.swarm = null
         this.spores = createSporeStorage()
 
-        this.on('strike', ({target}) => {
-            this.host?.emit('hit', {source: this, target})
+        this.on('strike', ({target, damage}) => {
+            this.host?.emit('hit', {source: this, target, damage})
         })
     }
 

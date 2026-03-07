@@ -12,7 +12,8 @@ export default class Projectile extends Entity {
             ttl = 3,
             hitRadius = 0.15,
             faction = null,
-            source = null
+            source = null,
+            damage = 1
         } = params
 
         super({...params, hitRadius})
@@ -21,6 +22,7 @@ export default class Projectile extends Entity {
 
         this.faction = faction
         this.source = source
+        this.damage = damage
         this.alive = true
         this.ttl = ttl
         this.time = 0

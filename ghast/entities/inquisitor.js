@@ -16,12 +16,13 @@ export default class Inquisitor extends Entity {
 
         this.create(Velocity)
         this.create(Steering)
-        this.create(Health, {hp: 3})
+        this.create(Health, {hp: 2})
 
-        const {maxSpeed = 0.8, acceleration = 4} = params
+        const {maxSpeed = 1, acceleration = 4} = params
 
         this.shootCooldown = 0
         this.shootInterval = params.shootInterval || 1.5
+        this.shootDamage = params.shootDamage || 1
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
@@ -93,7 +94,8 @@ export default class Inquisitor extends Entity {
             dirY: dir.y,
             speed: 5,
             faction: this.faction,
-            source: this
+            source: this,
+            damage: this.shootDamage
         })
 
         this.shootCooldown = this.shootInterval

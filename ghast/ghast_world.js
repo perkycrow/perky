@@ -11,6 +11,7 @@ import Jar from './entities/jar.js'
 import Projectile from './entities/projectile.js'
 import BUFF_DEFINITIONS from './buff_definitions.js'
 import {applySporeReactions, applySwarmReaction} from './spore_reactions.js'
+import {getSporeModifier} from './spore_effects.js'
 import updateDecisions from './decision_loop.js'
 
 
@@ -23,8 +24,8 @@ export default class GhastWorld extends World {
         this.swarms = []
         this.battles = []
 
-        this.on('hit', ({target, source}) => {
-            this.#applyHit(target, source)
+        this.on('hit', ({target, source, damage}) => {
+            this.#applyHit(target, source, damage)
         })
 
         this.on('kill', ({killer}) => {
@@ -155,18 +156,19 @@ export default class GhastWorld extends World {
 
             if (hit) {
                 entity.alive = false
-                this.emit('hit', {source: entity.source, target: hit, projectile: entity})
+                this.emit('hit', {source: entity.source, target: hit, projectile: entity, damage: entity.damage})
             }
         }
     }
 
 
-    #applyHit (target, source) {
+    #applyHit (target, source, baseDamage = 1) {
         if (!target.damage) {
             return
         }
 
-        const dealt = target.damage(1, {invincibility: 0.3})
+        const effectiveDamage = computeEffectiveDamage(source, baseDamage)
+        const dealt = target.damage(effectiveDamage, {invincibility: 0.3})
 
         if (!dealt) {
             return
@@ -618,7 +620,8 @@ export default class GhastWorld extends World {
             speed: options.speed || 6,
             faction: options.faction || null,
             source: options.source || null,
-            ttl: options.ttl || 3
+            ttl: options.ttl || 3,
+            damage: options.damage || 1
         })
     }
 
@@ -630,6 +633,19 @@ function assignSwarm (entity, swarm) {
         entity.swarm = swarm
         swarm.add(entity)
     }
+}
+
+
+function computeEffectiveDamage (source, baseDamage) {
+    if (!source) {
+        return Math.max(1, baseDamage)
+    }
+
+    const spore = getSporeModifier(source, 'damage')
+    const buff = source.getBuffModifier?.('damage') ?? 1
+    const swarm = source.swarm?.getBuffModifier?.('damage') ?? 1
+
+    return Math.max(1, Math.round(baseDamage * spore * buff * swarm))
 }
 
 

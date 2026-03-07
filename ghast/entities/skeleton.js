@@ -36,8 +36,8 @@ export default class Skeleton extends Entity {
         this.swarm = null
         this.spores = createSporeStorage()
 
-        this.on('strike', ({target}) => {
-            this.host?.emit('hit', {source: this, target})
+        this.on('strike', ({target, damage}) => {
+            this.host?.emit('hit', {source: this, target, damage})
         })
     }
 

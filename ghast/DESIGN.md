@@ -585,6 +585,32 @@ Lignes fines entre chaque entite et sa cible (comme FFXII) :
 - Permet de lire le combat d'un coup d'oeil : qui focus qui, quelles unites sont free, lesquelles sont sous pression
 - Option toggle pour le debug (comme les cercles de leash)
 
+#### Icones d'intention et de reaction
+
+Petites icones qui pop au-dessus des entites pour rendre lisibles les decisions de l'IA et les reactions aux events. Deux categories :
+
+**Icones d'intention** (pop quand l'IA prend une decision, reste tant que l'intention est active) :
+- Epee → attaque / engage une cible
+- Fleche de fuite → fuit
+- `...` ou `?` → wander, pas de decision claire
+- Coeur rose → tente une conversion (lust)
+- Bouclier → defend une zone / un allie
+- Champignon → se dirige vers un shroom pour recolter
+
+**Icones de reaction** (pop puis fade-out sur un event, ~0.5-1s) :
+- Crane rouge → Rage (ally_died + anger)
+- `!` bleu → Panique (ally_died + fear, surrounded + fear)
+- Larme brune → Deuil (ally_died + sadness)
+- Etoiles → Choc/Sursaut (surprise)
+- `!!` jaune → Indignation (low_hp + arrogance)
+- Crane dore → Triomphe (kill + arrogance)
+- Coeur brise → Deuil + Panique combo
+- Fleche montante verte → Promotion / Rank up
+
+**Implementation** : sprite enfant du root Object2D de chaque EntityView, positionne au-dessus de l'entite. Animation pop-in (scale 0→1 rapide) puis fade-out pour les reactions. Le systeme de buffs emet un event `buff:applied` que la view ecoute pour afficher l'icone correspondante. Les icones d'intention se mettent a jour sur chaque tick de la decision loop (~1/s).
+
+**Lisibilite** : les icones doivent etre petites et discretes pour ne pas polluer l'ecran. En combat avec 10+ entites, seules les reactions (pics ponctuels) sont vraiment visibles — les intentions sont un complement pour le joueur qui observe une entite specifique. Opacite reduite possible pour les entites loin de la camera.
+
 #### Decision loop (boucle strategique)
 
 Deuxieme boucle en plus de la game loop, cadencee a ~1 tick par seconde (pas par frame). Responsable des decisions strategiques :
