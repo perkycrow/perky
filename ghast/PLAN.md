@@ -479,7 +479,7 @@ Decroissance des spores + empreinte de personnalite permanente.
 ---
 
 
-## Phase 16 : Catalysts
+## Phase 16 : Catalysts — DONE
 
 Combos hand-crafted pour les combinaisons ou les forces seules ne produisent pas un comportement assez lisible.
 

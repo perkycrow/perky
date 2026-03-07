@@ -104,15 +104,28 @@ describe('SporeReactions', () => {
         })
 
 
-        test('multiple spores apply multiple buffs simultaneously', () => {
+        test('catalyst combo overrides normal reactions', () => {
             const entity = createCombatEntity()
             addSpore(entity, 'anger')
             addSpore(entity, 'fear')
 
             applySporeReactions(entity, 'ally_died')
 
-            expect(entity.hasBuff('rage')).toBe(true)
             expect(entity.hasBuff('panic')).toBe(true)
+            expect(entity.hasBuff('rage')).toBe(false)
+        })
+
+
+        test('catalyst falls back to normal for undefined events', () => {
+            const entity = createCombatEntity()
+            addSpore(entity, 'fear')
+            addSpore(entity, 'sadness')
+
+            applySporeReactions(entity, 'isolated')
+
+            expect(entity.hasBuff('despair')).toBe(false)
+            expect(entity.hasBuff('panic')).toBe(true)
+            expect(entity.hasBuff('grief')).toBe(true)
         })
 
 

@@ -1,4 +1,5 @@
 import BUFF_DEFINITIONS from './buff_definitions.js'
+import {getCatalystReactions} from './catalysts.js'
 
 
 const REACTIONS = {
@@ -45,6 +46,19 @@ const REACTIONS = {
 
 export function applySporeReactions (entity, eventType) {
     if (!entity.spores || !entity.applyBuff) {
+        return
+    }
+
+    const catalystReactions = getCatalystReactions(entity)
+
+    if (catalystReactions && catalystReactions[eventType]) {
+        const buffKey = catalystReactions[eventType]
+        const definition = BUFF_DEFINITIONS[buffKey]
+
+        if (definition) {
+            entity.applyBuff(definition.key, definition.duration, {...definition.modifiers})
+        }
+
         return
     }
 
