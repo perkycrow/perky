@@ -592,6 +592,66 @@ Avec un facteur de 0.6, le leader garde 60% de sa vitesse native mais ralentit u
 Le facteur pourrait etre module par la taille du swarm (un swarm de 2 a moins besoin de cohesion qu'un swarm de 8) ou par les spores (anger = ignore la cohesion, fear = reste groupe).
 
 
+### Multi-swarm et systeme d'ordres
+
+#### Multi-swarm par faction
+
+A terme, chaque faction a **plusieurs swarms**. Le joueur ne controle pas une armee monolithique mais des escouades independantes. La contrainte "taille swarm = rank du leader" rend ca naturel : un rank 3 ne peut mener que 3 unites, donc pour une armee de 8 il *faut* plusieurs swarms.
+
+Le joueur peut **split** un swarm (choisir quelles unites partent former un nouveau swarm) et **merge** deux swarms allies (le leader de rank le plus haut prend la tete, regle de sur-capacite si necessaire).
+
+#### Ordres
+
+Chaque swarm a un **ordre courant** et une **stack d'ordres** (file d'attente). Quand l'ordre courant est accompli, on pop le suivant. Si la stack est vide, l'IA reprend en autonomie (wander, patrouille, retour au camp...).
+
+Les ordres peuvent etre donnes par le joueur (controle direct) ou par l'IA de faction (autonomie).
+
+Ordres de base :
+- **Attaquer** — cible un swarm ennemi ou une entite, le swarm se dirige et engage
+- **Explorer** — se deplacer vers une zone / coordonnee
+- **Defendre** — rester dans une zone, repousser les intrus
+- **Recolter** — aller vers des shrooms pour collecter des spores
+- **Suivre** — coller un autre swarm allie (escorte)
+
+#### Posture : comment l'ordre est execute
+
+Les spores ne changent pas l'ordre, ils changent **comment** l'ordre est execute. Le profil de spores du swarm determine une **posture** sur un axe continu :
+
+```
+agressif <-------|--------> prudent
+```
+
+- Tres agressif → engage tout sur son passage, ignore l'ordre temporairement pour combattre
+- Neutre → engage si l'ennemi bloque le chemin, contourne sinon
+- Tres prudent → evite tout contact, detours, fuite si engage
+
+Facteurs qui poussent vers agressif : anger, arrogance, naive
+Facteurs qui poussent vers prudent : fear, sadness
+
+Le joueur peut **override** la posture manuellement ("force ce swarm a etre prudent meme s'il est full anger"). Ca donne un levier de controle direct sans casser le systeme de spores.
+
+#### Exemples par profil de spores
+
+- Swarm **anger dominant** + ordre "explorer" → croise un ennemi → engage le combat, reprend l'ordre apres
+- Swarm **fear dominant** + ordre "explorer" → croise un ennemi → contourne, evite, continue sa route
+- Swarm **arrogance** + ordre "explorer" → engage si l'ennemi est plus faible, contourne si plus fort
+- Swarm **naive** + ordre "explorer" → fonce droit, ne realise meme pas qu'il y a un danger sur la route
+
+#### Interruptions et engagement non-voulu
+
+Quand un swarm en cours d'ordre se fait engager dans une bataille (ennemi sur sa trajectoire ou ennemi qui l'agresse), la posture determine la reaction :
+
+1. **Posture agressive** → engage le combat, reprend l'ordre apres la bataille
+2. **Posture neutre** → combat si l'ennemi bloque le passage, contourne sinon
+3. **Posture prudente** → **fighting retreat** : recule en se battant *vers sa destination*. Il ne fuit pas au hasard, il fuit vers son objectif
+
+Le fighting retreat est un comportement emergent interessant : un swarm fear avec un ordre d'exploration qui se fait engager recule vers sa destination tout en se defendant. Ca produit des mouvements tactiques realistes sans les coder explicitement.
+
+#### Synthese
+
+L'ordre donne la **direction** (quoi faire), les spores donnent le **style** (comment reagir aux imprevus). Le joueur fait ses choix strategiques en amont en composant les spores de ses swarms. Au moment de la rencontre, c'est le profil qui decide, pas un micro-management.
+
+
 ## Prochaines etapes
 
 1. Implementer le systeme de reactions event x spore (buffs)
