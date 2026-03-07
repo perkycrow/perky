@@ -647,9 +647,32 @@ Quand un swarm en cours d'ordre se fait engager dans une bataille (ennemi sur sa
 
 Le fighting retreat est un comportement emergent interessant : un swarm fear avec un ordre d'exploration qui se fait engager recule vers sa destination tout en se defendant. Ca produit des mouvements tactiques realistes sans les coder explicitement.
 
+#### Obeissance et discipline
+
+L'obeissance aux ordres n'est pas garantie. Le moral du swarm et les spores individuelles determinent a quel point les unites sont promptes a obeir.
+
+**Obeissance du swarm (moral)** :
+- Moral haut → execution immediate, cohesion forte
+- Moral moyen → delai avant d'obeir, hesitations
+- Moral bas → ordres partiellement ignores, certaines unites trainent ou derivent
+- Moral en deroute → l'ordre est completement ignore, fuite collective
+
+**Obeissance individuelle (spores)** — chaque unite a sa propre tendance a obeir ou desobeir :
+- **Fear** → obeit si l'ordre est prudent, desobeit si l'ordre l'envoie au danger
+- **Anger** → desobeit pour engager un combat meme si l'ordre dit "explorer"
+- **Arrogance** → ignore les ordres du leader si celui-ci est de rank inferieur ou proche
+- **Naive** → obeit toujours joyeusement (meme aux mauvais ordres)
+- **Sadness** → delai d'execution, traine, lent a reagir
+- **Surprise** → obeit mais se laisse distraire facilement par les events
+- **Lust** → desobeit pour aller convertir/charmer une cible d'opportunite
+
+Ca cree une tension strategique fondamentale : un swarm full anger est puissant en combat mais ingereable strategiquement. Un swarm naive est docile mais stupide tactiquement. Le joueur doit equilibrer **puissance** et **controlabilite** quand il compose ses spores.
+
+Exemple concret : le joueur ordonne "explorer vers le nord". Le shade leader (anger+arrogance) croise un rat ennemi. Le shade engage le rat (anger desobeit). Le skeleton du swarm (naive) suit joyeusement le leader dans le combat. L'inquisitor (fear) continue vers le nord en ignorant le combat. Le swarm se disloque temporairement. Si le moral est haut, l'inquisitor finit par revenir. Si le moral est bas, il continue seul.
+
 #### Synthese
 
-L'ordre donne la **direction** (quoi faire), les spores donnent le **style** (comment reagir aux imprevus). Le joueur fait ses choix strategiques en amont en composant les spores de ses swarms. Au moment de la rencontre, c'est le profil qui decide, pas un micro-management.
+L'ordre donne la **direction** (quoi faire), les spores donnent le **style** (comment reagir aux imprevus), et le moral + les spores determinent la **discipline** (a quel point l'ordre est respecte). Le joueur fait ses choix strategiques en amont en composant les spores de ses swarms. Au moment de la rencontre, c'est le profil qui decide, pas un micro-management.
 
 
 ## Prochaines etapes

@@ -55,8 +55,63 @@ function isTargetValid (entity) {
 
 function findTarget (world, entity) {
     const range = getSporeValue(entity, 'detectRange', entity.baseDetectRange || 1)
+    const rangeSq = range * range
+    let best = null
+    let bestScore = 0
 
-    return world.nearest(entity, range, e => e.faction && e.faction !== entity.faction && !e.dying)
+    for (const other of world.entities) {
+        if (other === entity || !other.faction || other.faction === entity.faction || other.dying) {
+            continue
+        }
+
+        const distSq = entity.position.distanceToSquared(other.position)
+
+        if (distSq >= rangeSq) {
+            continue
+        }
+
+        const score = computeThreat(entity, other, distSq)
+
+        if (score > bestScore) {
+            bestScore = score
+            best = other
+        }
+    }
+
+    return best
+}
+
+
+const RPS_BONUS = {
+    Skeleton: 'Rat',
+    Rat: 'Inquisitor',
+    Inquisitor: 'Skeleton'
+}
+
+
+function computeThreat (attacker, target, distSq) {
+    const proximity = 1 / (1 + distSq)
+    const rankFactor = target.rank || 1
+
+    const arrogance = attacker.spores?.arrogance || 0
+    const fear = attacker.spores?.fear || 0
+    const naive = attacker.spores?.naive || 0
+
+    const rankWeight = 1 + arrogance * 0.3 - fear * 0.3 - naive * 0.2
+    const rpsFactor = getRpsBonus(attacker, target)
+
+    return proximity * (1 + rankFactor * rankWeight * 0.2) * rpsFactor
+}
+
+
+function getRpsBonus (attacker, target) {
+    const preferred = RPS_BONUS[attacker.constructor.name]
+
+    if (preferred === target.constructor.name) {
+        return 1.5
+    }
+
+    return 1
 }
 
 

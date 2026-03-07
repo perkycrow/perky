@@ -21,7 +21,7 @@ L'UI arrive tot (phase 2) pour donner du feedback visuel des les premieres featu
 | 8 | **Event Reactions** | DONE | Spore x Event → Buff (couche 2) |
 | 9 | **Targeting & Decision Loop** | DONE | Target persistant, boucle strategique ~1/s, helpers extraits |
 | 10 | **Battle Attraction & Flee Scoring** | DONE | Attraction vers bataille active, score de combativite, verdict de fuite |
-| 11 | **Aggro** | — | Valeur de menace par entite, influence le choix de cible |
+| 11 | **Aggro** | DONE | Threat scoring (rank + spores + RPS triangle) dans decision loop |
 | 12 | **Morale** | — | Jauge de moral au niveau swarm |
 | 13 | **RPS Balancing** | — | Equilibrage du triangle Skeleton > Rat > Inquisitor > Skeleton, Shade > tous |
 | 14 | **Swarm Capacity** | — | Taille max = rank du leader (lie au rank dynamique) |
