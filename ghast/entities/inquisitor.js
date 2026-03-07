@@ -6,7 +6,7 @@ import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
 import {createSporeStorage, createImprintStorage} from '../spores.js'
 import {getRankModifier} from '../rank.js'
-import {applyLeash, applyMovement, applySporeFrame, getEffectiveStat} from '../entity_helpers.js'
+import {applyLeash, applyMovement, applySporeFrame, getCooldownModifier, getEffectiveStat} from '../entity_helpers.js'
 
 
 export default class Inquisitor extends Entity {
@@ -105,7 +105,7 @@ export default class Inquisitor extends Entity {
             damage: this.shootDamage
         })
 
-        this.shootCooldown = this.shootInterval
+        this.shootCooldown = this.shootInterval * getCooldownModifier(this)
     }
 
 }

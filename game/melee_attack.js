@@ -93,7 +93,7 @@ export default class MeleeAttack extends Component {
         } else if (this.phase === 'striking' && this.phaseTimer <= 0) {
             this.phase = 'idle'
             this.phaseTimer = 0
-            this.cooldownTimer = this.meleeCooldown
+            this.cooldownTimer = this.meleeCooldown * (this.host?.getCooldownModifier?.() ?? 1)
             this.attackTarget = null
         }
     }

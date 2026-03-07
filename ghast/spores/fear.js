@@ -7,10 +7,11 @@ export default {
     morale: -0.5,
 
     effects: {
-        speed: 1.3,
-        damage: 0.8,
-        detectRange: 1.5,
-        approachWeight: 0.2
+        speed: 0.85,
+        damage: 0.7,
+        cooldown: 1.4,
+        detectRange: 0.8,
+        approachWeight: 0.5
     },
 
     reactions: {
@@ -22,8 +23,14 @@ export default {
 
     onEveryFrame (entity) {
         const count = entity.spores.fear
-        if (entity.target && count > 0) {
-            entity.flee(entity.target.position, count * 1.5)
+        if (count <= 0) {
+            return
+        }
+
+        entity.wander(count * 0.6)
+
+        if (entity.target) {
+            entity.flee(entity.target.position, count * 0.3)
         }
     }
 }

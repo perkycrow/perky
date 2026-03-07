@@ -68,6 +68,11 @@ export function applySporeFrame (entity) {
 }
 
 
+export function getCooldownModifier (entity) {
+    return getEffectiveStat(entity, 'cooldown', 1)
+}
+
+
 export function applyMovement (entity, deltaTime) {
     if (entity.direction?.length() > 0) {
         const accel = entity.direction.clone().multiplyScalar(entity.acceleration * deltaTime)

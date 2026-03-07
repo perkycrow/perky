@@ -7,7 +7,7 @@ import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
 import {createSporeStorage, createImprintStorage} from '../spores.js'
 import {getRankModifier} from '../rank.js'
-import {applyLeash, applyMovement, applySporeFrame, getEffectiveStat} from '../entity_helpers.js'
+import {applyLeash, applyMovement, applySporeFrame, getCooldownModifier, getEffectiveStat} from '../entity_helpers.js'
 
 
 export default class Rat extends Entity {
@@ -70,6 +70,11 @@ export default class Rat extends Entity {
         applyMovement(this, deltaTime)
         this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')))
         this.applyVelocity(deltaTime)
+    }
+
+
+    getCooldownModifier () {
+        return getCooldownModifier(this)
     }
 
 
