@@ -74,10 +74,10 @@ export function getCooldownModifier (entity) {
 
 
 export function applyMovement (entity, deltaTime) {
+    entity.dampenVelocity(0.88, deltaTime)
+
     if (entity.direction?.length() > 0) {
         const accel = entity.direction.clone().multiplyScalar(entity.acceleration * deltaTime)
         entity.velocity.add(accel)
-    } else {
-        entity.dampenVelocity(0.01, deltaTime)
     }
 }

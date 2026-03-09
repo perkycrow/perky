@@ -20,7 +20,7 @@ export default class Inquisitor extends Entity {
         this.create(Steering)
         this.create(Health, {hp: Math.round(25 * getRankModifier(this.rank, 'hp'))})
 
-        const {maxSpeed = 0.7, acceleration = 3} = params
+        const {maxSpeed = 0.7, acceleration = 5} = params
 
         this.shootCooldown = 1.5
         this.shootInterval = (params.shootInterval || 2) * getRankModifier(this.rank, 'cooldown')

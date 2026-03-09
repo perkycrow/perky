@@ -4,7 +4,7 @@ import {SPORE_LIST} from './spores/index.js'
 export const SPORE_TYPES = SPORE_LIST
 
 
-export const DECAY_RATE = 0.1
+export const DECAY_RATE = 0
 
 export const IMPRINT_STRENGTH = 0.3
 

@@ -22,7 +22,7 @@ export default class Rat extends Entity {
         this.create(Health, {hp: Math.round(35 * getRankModifier(this.rank, 'hp'))})
         this.create(MeleeAttack, {damage: 8, range: 0.3, cooldown: 0.5 * getRankModifier(this.rank, 'cooldown'), windUp: 0.1, strikeTime: 0.08})
 
-        const {maxSpeed = 1.2, acceleration = 5} = params
+        const {maxSpeed = 1.2, acceleration = 8} = params
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration

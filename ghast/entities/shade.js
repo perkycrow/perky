@@ -24,7 +24,7 @@ export default class Shade extends Entity {
         this.create(Health, {hp: Math.round(80 * getRankModifier(this.rank, 'hp'))})
         this.create(MeleeAttack, {damage: 8, range: 0.5, cooldown: 0.8 * getRankModifier(this.rank, 'cooldown'), windUp: 0.15, strikeTime: 0.1})
 
-        const {maxSpeed = 0.5, acceleration = 3} = params
+        const {maxSpeed = 0.5, acceleration = 5} = params
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration

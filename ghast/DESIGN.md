@@ -184,6 +184,19 @@ Toutes les entites commencent rank 1. Le rank evolue via le systeme de soul shar
 
 Ca rend les unites haut-rang strategiquement precieuses : elles portent plus de diversite comportementale ET sont plus puissantes au combat.
 
+**4. Competences de rank** — En plus des bonus passifs de stats, certains paliers de rank debloquent des **competences specifiques au type d'entite**. C'est une progression qualitative (nouvelles capacites) et pas juste quantitative (+stats). Chaque rank-up devient potentiellement un moment marquant.
+
+Exemples (a equilibrer) :
+
+| Type | Rank | Competence potentielle |
+|------|------|----------------------|
+| Shade | 3 | Buff defensif actif (-50% degats recus, 5s, cooldown long) |
+| Inquisitor | 5 | Aura de soin passive (regen lente des allies proches) |
+| Rat | 4 | Charge (dash offensif avec degats bonus) |
+| Skeleton | ? | A definir |
+
+Les competences sont liees au **type + rank**, pas aux spores. Les spores modifient le comportement (quand et comment l'IA utilise la competence), le rank la debloque. Un Shade rank 3 anger utilisera son buff defensif rarement (trop agressif pour se proteger), un Shade rank 3 fear l'utilisera des qu'il est en danger.
+
 ### Emergence par combinaisons
 
 Les comportements emergents viennent des combos, pas de spores dedies :
@@ -883,6 +896,37 @@ Quand une faction epuise completement un filon, elle recoit un **bonus** (a defi
 - Visuel de progression (barre, couleur de la zone, animation de la jar)
 - Interaction avec les spores (un swarm fear fuit-il la zone contested ? un swarm anger refuse-t-il de quitter ?)
 - D'autres types d'objectifs viendront s'ajouter — les zones de capture sont le premier
+
+
+## Camps (bases de faction)
+
+### Concept
+
+Les camps sont des **bases permanentes** appartenant a une faction. Contrairement aux zones de capture (objectifs offensifs temporaires), les camps sont des lieux de gestion et de regroupement — l'equivalent d'une ville dans un RTS ou du camp de Total War.
+
+### Fonctions
+
+Un swarm stationne dans son camp peut :
+- **Promouvoir** des unites (depenser des shards pour rank-up)
+- **Recruter** des Souls (transformer en creatures)
+- **Echanger des unites entre swarms** — transferer des membres d'un swarm a un autre (style Total War : gestion d'armee entre batailles)
+- **Inspecter** — le joueur prend le temps de consulter les stats, spores, perks de ses unites
+- **Reorganiser** — split/merge de swarms, reassigner les leaders
+
+### Enjeu strategique
+
+Les camps sont des points a **defendre** (perdre son camp = perdre l'acces a la gestion) et a **conquerir** (prendre le camp ennemi = coup strategique majeur). Ca cree deux types d'objectifs sur la carte :
+- **Zones de capture** — objectifs offensifs, income temporaire, contestables
+- **Camps** — bases permanentes, gestion et logistique, a proteger
+
+### A definir
+
+- Un camp par faction ou plusieurs ?
+- Mecanisme de conquete d'un camp ennemi (plus long qu'une zone ? detruire le camp ? le convertir ?)
+- Le camp offre-t-il des bonus passifs (regen, moral, defense) aux swarms stationnes ?
+- Peut-on construire/ameliorer un camp (investir des shards) ?
+- Visuel du camp (zone avec structures ? entite speciale ? agrandissement avec le rank de la faction ?)
+- Que se passe-t-il si une faction perd son camp ? Peut-elle en fonder un nouveau ?
 
 
 ## Prochaines etapes

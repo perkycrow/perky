@@ -3,6 +3,7 @@ import GhastStage from './stages/ghast_stage.js'
 import OutlineEffect from '../render/shaders/builtin/effects/outline_effect.js'
 import manifest from './manifest.js'
 import {SPORE_TYPES, addSpore} from './spores.js'
+import SCENARIOS from './scenarios.js'
 
 
 export default class Ghast extends Game {
@@ -32,6 +33,10 @@ export default class Ghast extends Game {
     onStart () {
         super.onStart()
         this.#createDevUI()
+
+        this.stage.once('start', () => {
+            this.#loadScenario(0)
+        })
     }
 
 
@@ -44,23 +49,75 @@ export default class Ghast extends Game {
     }
 
 
+    #loadScenario (index) {
+        const scenario = SCENARIOS[index]
+
+        if (!scenario) {
+            return
+        }
+
+        this.stage.loadScenario(scenario)
+        this.camera.x = 0
+        this.camera.y = 0
+
+        if (this.playButton) {
+            this.playButton.textContent = 'Play'
+        }
+    }
+
+
     #createDevUI () {
         const container = this.perkyView.element
-        this.#createPauseButton(container)
+        this.#createTopBar(container)
         this.#createSporeSidebar(container)
         this.#createSpawnButtons(container)
         this.#setupClickToAssign(container)
     }
 
 
-    #createPauseButton (container) {
-        const button = document.createElement('button')
+    #createTopBar (container) {
+        const bar = document.createElement('div')
 
-        Object.assign(button.style, {
+        Object.assign(bar.style, {
             position: 'absolute',
             top: '12px',
             left: '50%',
             transform: 'translateX(-50%)',
+            display: 'flex',
+            gap: '8px',
+            alignItems: 'center',
+            zIndex: '100'
+        })
+
+        const select = document.createElement('select')
+
+        Object.assign(select.style, {
+            padding: '6px 10px',
+            fontSize: '13px',
+            fontFamily: 'monospace',
+            background: '#1a1a2e',
+            color: '#e0e0e0',
+            border: '1px solid #444',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            maxWidth: '260px'
+        })
+
+        for (let i = 0; i < SCENARIOS.length; i++) {
+            const option = document.createElement('option')
+            option.value = i
+            option.textContent = SCENARIOS[i].label
+            select.appendChild(option)
+        }
+
+        select.addEventListener('change', () => {
+            this.#loadScenario(Number(select.value))
+        })
+
+        const playBtn = document.createElement('button')
+        this.playButton = playBtn
+
+        Object.assign(playBtn.style, {
             padding: '6px 18px',
             fontSize: '14px',
             fontFamily: 'monospace',
@@ -69,18 +126,75 @@ export default class Ghast extends Game {
             border: '1px solid #444',
             borderRadius: '4px',
             cursor: 'pointer',
-            zIndex: '100',
             opacity: '0.85'
         })
 
-        button.textContent = 'Start'
+        playBtn.textContent = 'Play'
 
-        button.addEventListener('click', () => {
+        playBtn.addEventListener('click', () => {
             const paused = this.world.togglePause()
-            button.textContent = paused ? 'Start' : 'Pause'
+            playBtn.textContent = paused ? 'Play' : 'Pause'
         })
 
-        container.appendChild(button)
+        const resetBtn = document.createElement('button')
+
+        Object.assign(resetBtn.style, {
+            padding: '6px 12px',
+            fontSize: '14px',
+            fontFamily: 'monospace',
+            background: '#1a1a2e',
+            color: '#e0e0e0',
+            border: '1px solid #444',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            opacity: '0.85'
+        })
+
+        resetBtn.textContent = 'Reset'
+
+        resetBtn.addEventListener('click', () => {
+            this.#loadScenario(Number(select.value))
+        })
+
+        const speedLabel = document.createElement('span')
+        speedLabel.textContent = '1x'
+
+        Object.assign(speedLabel.style, {
+            fontSize: '12px',
+            fontFamily: 'monospace',
+            color: '#888',
+            minWidth: '28px',
+            textAlign: 'center'
+        })
+
+        const slider = document.createElement('input')
+        slider.type = 'range'
+        slider.min = '0'
+        slider.max = '4'
+        slider.step = '1'
+        slider.value = '0'
+
+        Object.assign(slider.style, {
+            width: '80px',
+            cursor: 'pointer',
+            accentColor: '#8033ff'
+        })
+
+        const SPEEDS = [1, 2, 5, 10, 20]
+
+        slider.addEventListener('input', () => {
+            const speed = SPEEDS[Number(slider.value)]
+            this.world.timeScale = speed
+            speedLabel.textContent = `${speed}x`
+        })
+
+        bar.appendChild(select)
+        bar.appendChild(playBtn)
+        bar.appendChild(resetBtn)
+        bar.appendChild(slider)
+        bar.appendChild(speedLabel)
+
+        container.appendChild(bar)
     }
 
 

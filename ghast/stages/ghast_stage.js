@@ -17,6 +17,13 @@ const SWARM_COLORS = {
     chaos: '#33cc55'
 }
 
+const SPAWN_FN = {
+    Shade: 'spawnShade',
+    Skeleton: 'spawnSkeleton',
+    Rat: 'spawnRat',
+    Inquisitor: 'spawnInquisitor'
+}
+
 const LEASH_OPACITY = 0.5
 const TARGET_LINE_OPACITY = 0.3
 const TARGET_LINE_WIDTH = 0.02
@@ -38,28 +45,57 @@ export default class GhastStage extends Stage {
 
         this.groundPass = this.addPostPass(GroundPass)
 
-        const shadowSwarm = this.world.createSwarm('shadow')
-        const lightSwarm = this.world.createSwarm('light')
-        const chaosSwarm = this.world.createSwarm('chaos')
-
-        this.game.execute('spawnShade', {x: -3, y: 0, faction: 'shadow', swarm: shadowSwarm, rank: 3})
-        this.game.execute('spawnSkeleton', {x: -3.8, y: -0.8, faction: 'shadow', swarm: shadowSwarm, rank: 2})
-        this.game.execute('spawnRat', {x: -2.5, y: -0.6, faction: 'shadow', swarm: shadowSwarm})
-
-        this.game.execute('spawnShade', {x: 3, y: 0, faction: 'light', swarm: lightSwarm, rank: 3})
-        this.game.execute('spawnInquisitor', {x: 3.8, y: -0.8, faction: 'light', swarm: lightSwarm, rank: 2})
-        this.game.execute('spawnRat', {x: 2.5, y: -0.6, faction: 'light', swarm: lightSwarm})
-
-        this.game.execute('spawnShade', {x: 0, y: 4, faction: 'chaos', swarm: chaosSwarm, rank: 3})
-        this.game.execute('spawnSkeleton', {x: -0.6, y: 3.3, faction: 'chaos', swarm: chaosSwarm, rank: 2})
-        this.game.execute('spawnInquisitor', {x: 0.6, y: 3.3, faction: 'chaos', swarm: chaosSwarm, rank: 2})
-
-        this.#assignDefaultSpores()
-
-        this.swarmCircles = this.#createSwarmCircles()
+        this.swarmCircles = new Map()
         this.targetLines = this.#createTargetLines()
-        this.swarmBar = new SwarmBar(this.game.perkyView.element, shadowSwarm, this.game)
-        this.eventLog = new EventLog(this.game.perkyView.element, this.world)
+    }
+
+
+    loadScenario (scenario) {
+        this.#clearWorld()
+
+        for (const faction of scenario.factions) {
+            const swarm = this.world.createSwarm(faction.name)
+
+            for (const unit of faction.units) {
+                const fn = SPAWN_FN[unit.type]
+
+                if (!fn) {
+                    continue
+                }
+
+                const entity = this.world[fn]({
+                    x: unit.x ?? faction.x ?? 0,
+                    y: unit.y ?? faction.y ?? 0,
+                    faction: faction.name,
+                    swarm,
+                    rank: unit.rank
+                })
+
+                if (unit.spores) {
+                    for (const key of unit.spores) {
+                        addSpore(entity, key)
+                    }
+                }
+            }
+        }
+
+        this.#rebuildSwarmCircles()
+
+        const shadowSwarm = this.world.swarms.find(s => s.faction === 'shadow')
+
+        if (this.swarmBar) {
+            this.swarmBar.destroy()
+        }
+
+        if (shadowSwarm) {
+            this.swarmBar = new SwarmBar(this.game.perkyView.element, shadowSwarm, this.game)
+        }
+
+        if (!this.eventLog) {
+            this.eventLog = new EventLog(this.game.perkyView.element, this.world)
+        }
+
+        this.world.paused = true
     }
 
 
@@ -79,6 +115,18 @@ export default class GhastStage extends Stage {
     }
 
 
+    #clearWorld () {
+        for (const entity of [...this.world.entities]) {
+            entity.alive = false
+            this.world.removeChild(entity.$id)
+        }
+
+        this.world.swarms = []
+        this.world.battles = []
+        this.world.paused = true
+    }
+
+
     #setupRenderGroups () {
         const gameRenderer = this.game.getRenderer('game')
 
@@ -90,8 +138,12 @@ export default class GhastStage extends Stage {
     }
 
 
-    #createSwarmCircles () {
-        const circles = new Map()
+    #rebuildSwarmCircles () {
+        for (const circle of this.swarmCircles.values()) {
+            this.circlesGroup.remove(circle)
+        }
+
+        this.swarmCircles.clear()
 
         for (const swarm of this.world.swarms) {
             const color = SWARM_COLORS[swarm.faction] || '#ffffff'
@@ -99,10 +151,8 @@ export default class GhastStage extends Stage {
             circle.opacity = LEASH_OPACITY
             circle.visible = false
             this.circlesGroup.add(circle)
-            circles.set(swarm, circle)
+            this.swarmCircles.set(swarm, circle)
         }
-
-        return circles
     }
 
 
@@ -181,36 +231,4 @@ export default class GhastStage extends Stage {
         this.groundPass.setUniform('uTime', performance.now() / 1000)
     }
 
-
-    #assignDefaultSpores () {
-        for (const entity of this.world.entities) {
-            if (!entity.spores) {
-                continue
-            }
-
-            assignSporesForEntity(entity)
-        }
-    }
-
-}
-
-
-const DEFAULT_SPORES = {
-    Shade: ['anger', 'arrogance', 'fear'],
-    Skeleton: ['sadness', 'anger'],
-    Inquisitor: ['fear', 'surprise'],
-    Rat: ['naive']
-}
-
-
-function assignSporesForEntity (entity) {
-    const spores = DEFAULT_SPORES[entity.constructor.name]
-
-    if (!spores) {
-        return
-    }
-
-    for (const spore of spores) {
-        addSpore(entity, spore)
-    }
 }

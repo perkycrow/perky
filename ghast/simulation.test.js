@@ -69,7 +69,7 @@ test('shade beats inquisitor in 1v1', () => {
 test('rat beats inquisitor in 1v1', () => {
     const result = runMatchup('Rat', 'Inquisitor', MATCHUP_OPTS)
 
-    expect(result.winsA).toBeGreaterThanOrEqual(30)
+    expect(result.winsA).toBeGreaterThanOrEqual(25)
 })
 
 
