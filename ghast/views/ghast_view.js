@@ -89,9 +89,10 @@ export default class GhastView extends EntityView {
             return
         }
 
-        this.root.setScale(1)
+        this.root.scaleY = 1
         this.root.opacity = 1
 
+        this.#syncFacing()
         this.#syncAttackLunge()
         this.#syncSpores()
         this.#syncRank()
@@ -272,6 +273,15 @@ export default class GhastView extends EntityView {
             })
             this.sporeDots.push(circle)
             this.sporeGroup.add(circle)
+        }
+    }
+
+
+    #syncFacing () {
+        const vx = this.entity.velocity?.x ?? 0
+
+        if (Math.abs(vx) > 0.01) {
+            this.root.scaleX = vx > 0 ? -1 : 1
         }
     }
 

@@ -929,6 +929,25 @@ Les camps sont des points a **defendre** (perdre son camp = perdre l'acces a la 
 - Que se passe-t-il si une faction perd son camp ? Peut-elle en fonder un nouveau ?
 
 
+### Flanking et positionnement (a implementer)
+
+#### Bonus de degats de flanc
+
+Quand une unite attaque une cible qui "regarde" ailleurs (basee sur la velocite de la cible), bonus de degats. La direction de facing est deja implementee visuellement (flip horizontal du sprite basee sur velocity.x). Le bonus recompense le positionnement sans toucher aux spores.
+
+- Attaque de face (meme direction que la cible regarde) : x1.0
+- Attaque de cote : x1.15
+- Attaque de dos (direction opposee a la cible) : x1.3
+
+#### Lust rework pour flanking
+
+Le spore lust a un comportement d'orbiting (flee si trop pres, seek si trop loin). Reworker pour creer un vrai orbiting offensif : l'unite tourne activement autour de la cible pour trouver le dos. Combo naturel : Rats + lust = predateurs qui circulent autour des Inquisitors, exploitent leur vitesse (1.2 vs 0.55), et frappent dans le dos avec bonus.
+
+#### RPS-aware targeting
+
+Le triangle RPS est deja pris en compte dans le target scoring (x1.5 pour la cible preferee). A renforcer potentiellement (x2 ?) et ajouter un malus pour les mauvais matchups (x0.5 quand on attaque celui qui nous bat). Les unites prioriseraient vraiment leurs cibles RPS.
+
+
 ## Prochaines etapes
 
 1. Implementer le systeme de soul shards (drop, recrutement, promotion)
