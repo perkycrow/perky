@@ -239,6 +239,3 @@ export function getCatalystReactions (entity) {
 
     return catalyst ? catalyst.reactions : null
 }
-
-
-export {CATALYSTS}

@@ -41,13 +41,6 @@ export function addSpore (entity, key) {
 }
 
 
-export function removeSpore (entity, key) {
-    if (entity.spores[key] > 0) {
-        entity.spores[key]--
-    }
-}
-
-
 export function getSporeCount (entity) {
     let total = 0
     for (const key in entity.spores) {

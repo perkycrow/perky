@@ -39,6 +39,7 @@ export default function updateDecisions (world, deltaTime) {
         applySporeDecisions(entity, world)
     }
 
+    updateThreat(world)
     updateSporeDecay(world)
     updateCombativeness(world)
 }
@@ -151,6 +152,35 @@ function findBattleCenter (world, entity) {
     }
 
     return battle.getCenter()
+}
+
+
+function updateThreat (world) {
+    for (const entity of world.entities) {
+        if (entity.rank === undefined || entity.dying) {
+            continue
+        }
+
+        entity._threat = 0
+        entity._threatCount = 0
+    }
+
+    for (const entity of world.entities) {
+        if (!entity.target || entity.dying || entity.rank === undefined) {
+            continue
+        }
+
+        const target = entity.target
+
+        if (target._threat === undefined) {
+            continue
+        }
+
+        const distSq = entity.position.distanceToSquared(target.position)
+        const proximity = 1 / (1 + distSq)
+        target._threat += (entity.rank || 1) * proximity
+        target._threatCount++
+    }
 }
 
 

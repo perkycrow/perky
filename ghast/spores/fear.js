@@ -34,10 +34,14 @@ export default {
         }
 
         const awareness = Math.min(entity.baseDetectRange || 1, 3) / 3
-        entity.wander(count * awareness * 0.4)
+        const threat = entity._threat || 0
+        const myRank = entity.rank || 1
+        const pressure = 1 + Math.max(0, threat - myRank * 0.5) * 0.6
+
+        entity.wander(count * awareness * 0.4 * pressure)
 
         if (entity.target) {
-            entity.flee(entity.target.position, count * awareness * 0.3)
+            entity.flee(entity.target.position, count * awareness * 0.3 * pressure)
         }
     }
 }

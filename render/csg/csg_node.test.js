@@ -87,4 +87,20 @@ describe('CSGNode', () => {
         expect(result).toHaveLength(1)
     })
 
+
+    test('clipTo removes polygons behind bsp', () => {
+        const node = new CSGNode([makeTriangle(-5)], 1e-5)
+        const bsp = new CSGNode([makeTriangle(0)], 1e-5)
+        node.clipTo(bsp, 1e-5)
+        expect(node.allPolygons()).toHaveLength(0)
+    })
+
+
+    test('clipTo keeps polygons in front of bsp', () => {
+        const node = new CSGNode([makeTriangle(5)], 1e-5)
+        const bsp = new CSGNode([makeTriangle(0)], 1e-5)
+        node.clipTo(bsp, 1e-5)
+        expect(node.allPolygons()).toHaveLength(1)
+    })
+
 })

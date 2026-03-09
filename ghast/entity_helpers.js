@@ -1,5 +1,6 @@
 import {getSporeValue} from './spore_effects.js'
 import {SPORE_DEFINITIONS} from './spores/index.js'
+import {getRankModifier} from './rank.js'
 
 
 const MORALE_STATS = {
@@ -88,20 +89,41 @@ export function applyFlankForce (entity, target, weight = 0.8) {
         return
     }
 
+    const perp = computePerpendicularToTarget(entity, target)
+
+    if (!perp) {
+        return
+    }
+
+    const lateralSum = computeLateralSum(entity, perp)
+
+    if (lateralSum === null) {
+        return
+    }
+
+    const side = lateralSum >= 0 ? 1 : -1
+    entity.addForce({x: perp.x * side, y: perp.y * side}, weight)
+}
+
+
+function computePerpendicularToTarget (entity, target) {
     const toTargetX = target.x - entity.x
     const toTargetY = target.y - entity.y
     const toTargetLen = Math.sqrt(toTargetX * toTargetX + toTargetY * toTargetY)
 
     if (toTargetLen < 0.01) {
-        return
+        return null
     }
 
     const dirX = toTargetX / toTargetLen
     const dirY = toTargetY / toTargetLen
-    const perpX = -dirY
-    const perpY = dirX
 
-    const allies = host.entitiesInRange(entity, 2)
+    return {x: -dirY, y: dirX}
+}
+
+
+function computeLateralSum (entity, perp) {
+    const allies = entity.host.entitiesInRange(entity, 2)
     let lateralSum = 0
     let count = 0
 
@@ -114,30 +136,46 @@ export function applyFlankForce (entity, target, weight = 0.8) {
             continue
         }
 
-        const dx = entity.x - ally.x
-        const dy = entity.y - ally.y
-        const distSq = dx * dx + dy * dy
-
-        if (distSq < 0.01) {
-            lateralSum += (Math.random() - 0.5) * 2
-            count++
-            continue
-        }
-
-        const dist = Math.sqrt(distSq)
-        const lateral = (dx * perpX + dy * perpY) / dist
-        const proximity = 1 / dist
-
-        lateralSum += (lateral >= 0 ? 1 : -1) * proximity
+        const contribution = computeAllyLateralContribution(entity, ally, perp)
+        lateralSum += contribution
         count++
     }
 
     if (count === 0) {
-        return
+        return null
     }
 
-    const side = lateralSum >= 0 ? 1 : -1
-    entity.addForce({x: perpX * side, y: perpY * side}, weight)
+    return lateralSum
+}
+
+
+function computeAllyLateralContribution (entity, ally, perp) {
+    const dx = entity.x - ally.x
+    const dy = entity.y - ally.y
+    const distSq = dx * dx + dy * dy
+
+    if (distSq < 0.01) {
+        return (Math.random() - 0.5) * 2
+    }
+
+    const dist = Math.sqrt(distSq)
+    const lateral = (dx * perp.x + dy * perp.y) / dist
+    const proximity = 1 / dist
+
+    return (lateral >= 0 ? 1 : -1) * proximity
+}
+
+
+export function getMaxSpeed (entity) {
+    const baseSpeed = entity.maxSpeed * (getRankModifier(entity.rank || 1, 'speed') || 1)
+    const effective = getEffectiveStat(entity, 'speed', baseSpeed) * getStaminaSpeedModifier(entity)
+    const inCombat = entity.target || entity._battleCenter
+
+    if (!inCombat && entity.swarm) {
+        return Math.min(effective, entity.swarm.marchSpeed)
+    }
+
+    return effective
 }
 
 
@@ -173,6 +211,75 @@ export function updateStamina (entity, deltaTime) {
     }
 
     entity.stamina = Math.max(0, Math.min(entity.maxStamina, entity.stamina))
+}
+
+
+export function updateMelee (entity, deltaTime, {separateRange = 1.5, separateWeight = 1} = {}) {
+    updateStamina(entity, deltaTime)
+    entity.updateHealth(deltaTime)
+    entity.updateMeleeAttack(deltaTime)
+
+    if (updateDashPhase(entity, deltaTime)) {
+        return
+    }
+
+    if (updateAttackPhase(entity, deltaTime)) {
+        return
+    }
+
+    updateCombatBehavior(entity)
+    applySporeFrame(entity)
+    entity.wander(getEffectiveStat(entity, 'wanderWeight', 0.3))
+
+    const neighbors = entity.host?.entitiesInRange(entity, separateRange)
+    entity.separate(neighbors, separateWeight)
+
+    applyLeash(entity)
+    entity.move(entity.resolveForce())
+    applyMovement(entity, deltaTime)
+    entity.clampVelocity(getMaxSpeed(entity))
+    entity.applyVelocity(deltaTime)
+}
+
+
+function updateDashPhase (entity, deltaTime) {
+    if (!entity.updateDash) {
+        return false
+    }
+
+    entity.updateDash(deltaTime)
+
+    if (!entity.isDashing()) {
+        return false
+    }
+
+    entity.clampVelocity(entity.maxSpeed * (entity.dashMultiplier || 4))
+    entity.applyVelocity(deltaTime)
+    return true
+}
+
+
+function updateAttackPhase (entity, deltaTime) {
+    if (!entity.isAttacking()) {
+        return false
+    }
+
+    entity.dampenVelocity(0.001, deltaTime)
+    entity.applyVelocity(deltaTime)
+    return true
+}
+
+
+function updateCombatBehavior (entity) {
+    const enemy = entity.target
+
+    if (enemy) {
+        entity.seek(enemy.position, getEffectiveStat(entity, 'approachWeight', 1))
+        applyFlankForce(entity, enemy)
+        entity.meleeAttack(enemy)
+    } else if (entity._battleCenter) {
+        entity.seek(entity._battleCenter, 0.3)
+    }
 }
 
 

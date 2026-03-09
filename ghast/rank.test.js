@@ -6,6 +6,7 @@ import {
     promote,
     MAX_RANK,
     PROMOTION_COSTS,
+    RANK_SCALING,
     TYPE_PRIORITY
 } from './rank.js'
 
@@ -145,4 +146,12 @@ test('TYPE_PRIORITY ordering', () => {
     expect(TYPE_PRIORITY.Shade).toBeGreaterThan(TYPE_PRIORITY.Inquisitor)
     expect(TYPE_PRIORITY.Inquisitor).toBeGreaterThan(TYPE_PRIORITY.Skeleton)
     expect(TYPE_PRIORITY.Skeleton).toBeGreaterThan(TYPE_PRIORITY.Rat)
+})
+
+
+test('RANK_SCALING stats', () => {
+    expect(RANK_SCALING.hp).toBe(0.35)
+    expect(RANK_SCALING.damage).toBe(0.2)
+    expect(RANK_SCALING.speed).toBe(0.06)
+    expect(RANK_SCALING.cooldown).toBe(-0.08)
 })

@@ -7,7 +7,7 @@ import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
 import {createSporeStorage, createImprintStorage} from '../spores.js'
 import {getRankModifier} from '../rank.js'
-import {applyFlankForce, applyLeash, applyMovement, applySporeFrame, getCooldownModifier, getEffectiveStat, getStaminaSpeedModifier, updateStamina} from '../entity_helpers.js'
+import {getCooldownModifier, updateMelee} from '../entity_helpers.js'
 
 
 export default class Rat extends Entity {
@@ -22,7 +22,7 @@ export default class Rat extends Entity {
         this.create(Health, {hp: Math.round(40 * getRankModifier(this.rank, 'hp'))})
         this.create(MeleeAttack, {damage: 8, range: 0.5, cooldown: 0.5 * getRankModifier(this.rank, 'cooldown'), windUp: 0.1, strikeTime: 0.08})
 
-        const {maxSpeed = 1.2, acceleration = 8} = params
+        const {maxSpeed = 1.0, acceleration = 8} = params
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
@@ -43,37 +43,7 @@ export default class Rat extends Entity {
 
 
     update (deltaTime) {
-        updateStamina(this, deltaTime)
-        this.updateHealth(deltaTime)
-        this.updateMeleeAttack(deltaTime)
-
-        if (this.isAttacking()) {
-            this.dampenVelocity(0.001, deltaTime)
-            this.applyVelocity(deltaTime)
-            return
-        }
-
-        const enemy = this.target
-
-        if (enemy) {
-            this.seek(enemy.position, getEffectiveStat(this, 'approachWeight', 1))
-            applyFlankForce(this, enemy)
-            this.meleeAttack(enemy)
-        } else if (this._battleCenter) {
-            this.seek(this._battleCenter, 0.3)
-        }
-
-        applySporeFrame(this)
-        this.wander(getEffectiveStat(this, 'wanderWeight', 0.3))
-
-        const neighbors = this.host?.entitiesInRange(this, 1.2)
-        this.separate(neighbors, 1.2)
-
-        applyLeash(this)
-        this.move(this.resolveForce())
-        applyMovement(this, deltaTime)
-        this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')) * getStaminaSpeedModifier(this))
-        this.applyVelocity(deltaTime)
+        updateMelee(this, deltaTime, {separateRange: 1.2, separateWeight: 1.2})
     }
 
 

@@ -25,5 +25,19 @@ export default {
         const rank = target.rank || 1
 
         return 1 + rank * count * 0.15
+    },
+
+    onEveryFrame (entity) {
+        const count = entity.spores.arrogance
+        if (count <= 0) {
+            return
+        }
+
+        const threat = entity._threat || 0
+        const myRank = entity.rank || 1
+
+        if (threat < myRank * 0.3 && entity.target) {
+            entity.seek(entity.target.position, count * 0.3)
+        }
     }
 }

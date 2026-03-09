@@ -75,6 +75,3 @@ export function applySwarmReaction (swarm, buffKey) {
 
     swarm.applyBuff(definition.key, definition.duration, {...definition.modifiers})
 }
-
-
-export {REACTIONS}

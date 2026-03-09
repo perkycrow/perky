@@ -52,35 +52,44 @@ export default class GhastStage extends Stage {
 
     loadScenario (scenario) {
         this.#clearWorld()
+        this.#spawnFactions(scenario.factions)
+        this.#rebuildSwarmCircles()
+        this.#setupUI()
+        this.world.paused = true
+    }
 
-        for (const faction of scenario.factions) {
+
+    #spawnFactions (factions) {
+        for (const faction of factions) {
             const swarm = this.world.createSwarm(faction.name)
 
             for (const unit of faction.units) {
-                const fn = SPAWN_FN[unit.type]
-
-                if (!fn) {
-                    continue
-                }
-
-                const entity = this.world[fn]({
-                    x: unit.x ?? faction.x ?? 0,
-                    y: unit.y ?? faction.y ?? 0,
-                    faction: faction.name,
-                    swarm,
-                    rank: unit.rank
-                })
-
-                if (unit.spores) {
-                    for (const key of unit.spores) {
-                        addSpore(entity, key)
-                    }
-                }
+                this.#spawnUnit(unit, faction, swarm)
             }
         }
+    }
 
-        this.#rebuildSwarmCircles()
 
+    #spawnUnit (unit, faction, swarm) {
+        const fn = SPAWN_FN[unit.type]
+
+        if (!fn) {
+            return
+        }
+
+        const entity = this.world[fn]({
+            x: unit.x ?? faction.x ?? 0,
+            y: unit.y ?? faction.y ?? 0,
+            faction: faction.name,
+            swarm,
+            rank: unit.rank
+        })
+
+        applyUnitSpores(entity, unit.spores)
+    }
+
+
+    #setupUI () {
         const shadowSwarm = this.world.swarms.find(s => s.faction === 'shadow')
 
         if (this.swarmBar) {
@@ -94,8 +103,6 @@ export default class GhastStage extends Stage {
         if (!this.eventLog) {
             this.eventLog = new EventLog(this.game.perkyView.element, this.world)
         }
-
-        this.world.paused = true
     }
 
 
@@ -231,4 +238,15 @@ export default class GhastStage extends Stage {
         this.groundPass.setUniform('uTime', performance.now() / 1000)
     }
 
+}
+
+
+function applyUnitSpores (entity, spores) {
+    if (!spores) {
+        return
+    }
+
+    for (const key of spores) {
+        addSpore(entity, key)
+    }
 }

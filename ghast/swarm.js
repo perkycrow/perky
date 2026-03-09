@@ -28,6 +28,23 @@ export default class Swarm {
     }
 
 
+    get marchSpeed () {
+        let min = Infinity
+
+        for (const member of this.members) {
+            if (member.dying || member.maxSpeed === undefined) {
+                continue
+            }
+
+            if (member.maxSpeed < min) {
+                min = member.maxSpeed
+            }
+        }
+
+        return min === Infinity ? 0 : min
+    }
+
+
     add (entity) {
         if (this.members.includes(entity)) {
             return false

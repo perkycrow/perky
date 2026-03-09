@@ -2,7 +2,7 @@ import {describe, test, expect} from 'vitest'
 import Entity from '../game/entity.js'
 import BuffSystem from '../game/buff_system.js'
 import {createSporeStorage, addSpore} from './spores.js'
-import {applySporeReactions, applySwarmReaction, REACTIONS} from './spore_reactions.js'
+import {applySporeReactions, applySwarmReaction} from './spore_reactions.js'
 import Swarm from './swarm.js'
 
 
@@ -15,14 +15,6 @@ function createCombatEntity () {
 
 
 describe('SporeReactions', () => {
-
-    test('REACTIONS covers expected events', () => {
-        expect(REACTIONS.ally_died).toBeDefined()
-        expect(REACTIONS.low_hp).toBeDefined()
-        expect(REACTIONS.kill).toBeDefined()
-        expect(REACTIONS.surrounded).toBeDefined()
-    })
-
 
     describe('applySporeReactions', () => {
 

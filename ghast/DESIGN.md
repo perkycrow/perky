@@ -415,17 +415,25 @@ Deux niveaux :
 
 Le swarm a deja une structure (`swarm.js`) qui peut porter des buffs. Les buffs de swarm sont des multiplicateurs globaux appliques a chaque membre.
 
-#### Auras de swarm (a explorer)
+#### Auras de swarm (budget de multiplicateur)
 
-Idee : le **profil de spores collectif** du swarm (somme des spores de tous les membres) pourrait generer des buffs/debuffs passifs au niveau du swarm entier. Pas par event, pas par entite individuelle — par la composition globale.
+Au fil du temps les unites d'un swarm accumulent des spores. Le **profil collectif** du swarm (somme des spores de tous les membres) determine une **aura** — un multiplicateur global de stats et/ou de comportement applique a tout le swarm.
 
-Exemples potentiels :
-- Swarm a dominante anger → aura **Ferocite** : +degats collectif leger, mais -cohesion (leash plus lache)
-- Swarm a dominante fear → aura **Vigilance** : +detect range collectif, mais -moral passif
-- Swarm a dominante naive → aura **Enthousiasme** : +moral passif, +aggro generee par le swarm entier
-- Swarm mixte equilibre → aura **Harmonie** : petit bonus a tout, pas de malus
+**Mecanisme** : le rank du leader du swarm determine un **budget de multiplicateur** total. Ce budget est reparti proportionnellement aux spores dominants du swarm. Plus un spore est represente collectivement, plus sa part du budget est grande, et plus son effet d'aura est puissant.
 
-**Point de vigilance** : les spores agissent deja sur 3 couches (stats passives individuelles, events/buffs, comportement via onEveryFrame). Ajouter une 4e couche (aura de swarm) risque la redondance. L'interet serait que l'aura emerge de la **composition collective** et pas juste de la somme des effets individuels — des synergies ou des tensions qui n'existent pas au niveau d'une seule entite. A creuser quand le systeme de base sera assez stable pour mesurer ce qui manque.
+Ca signifie qu'un swarm specialise (tous anger) a une aura forte et focalisee, tandis qu'un swarm diversifie a des auras plus faibles mais plus variees. Le rank du leader amplifie l'ensemble — un swarm rank 7 avec la meme composition qu'un swarm rank 3 a des auras significativement plus fortes.
+
+Exemples d'auras par dominante :
+- **Anger dominant** → aura **Ferocite** : +degats collectif, -cohesion (leash plus lache)
+- **Fear dominant** → aura **Vigilance** : +detect range collectif, -moral passif
+- **Naive dominant** → aura **Enthousiasme** : +moral passif, +aggro generee par le swarm entier
+- **Sadness dominant** → aura **Resilience** : +cohesion, -vitesse collective
+- **Arrogance dominant** → aura **Superiorite** : +degats vs swarms de rank inferieur
+- **Mixte equilibre** → aura **Harmonie** : petit bonus a tout, pas de malus
+
+Les auras peuvent aussi influencer le **comportement collectif** du swarm (posture agressive/prudente, tendance a engager ou contourner, discipline aux ordres) en plus des stats pures.
+
+**Point de vigilance** : les spores agissent deja sur 3 couches (stats passives individuelles, events/buffs, comportement). Les auras de swarm doivent apporter quelque chose qui n'existe pas au niveau individuel — des effets qui emergent de la **composition collective** (synergies, seuils, tensions entre dominantes).
 
 #### Modificateurs passifs continus
 
@@ -946,6 +954,29 @@ Le spore lust a un comportement d'orbiting (flee si trop pres, seek si trop loin
 #### RPS-aware targeting
 
 Le triangle RPS est deja pris en compte dans le target scoring (x1.5 pour la cible preferee). A renforcer potentiellement (x2 ?) et ajouter un malus pour les mauvais matchups (x0.5 quand on attaque celui qui nous bat). Les unites prioriseraient vraiment leurs cibles RPS.
+
+
+### Systeme de fuyards (stragglers)
+
+Quand une unite fuit trop loin de la leash (fear, panique, etc.), elle ne reste pas indefiniment dans le swarm. Elle devient un "fuyard" (straggler) — une unite neutre qui erre seule.
+
+#### Devenir fuyard
+
+- Si une unite depasse la hard leash (2x leashRadius) pendant un certain temps, elle est retiree du swarm
+- Elle perd sa faction (neutre) et erre en mode passif (wander only)
+- Le swarm perd un membre (slot libere)
+
+#### Recuperation
+
+- Si le swarm retrouve le fuyard hors combat dans la portee de la leash
+- Apres ~30s de presence continue dans la range, le fuyard rejoind le swarm
+- Il retrouve sa faction et reprend son comportement normal
+
+#### Transformation en Soul
+
+- Si un fuyard n'est pas reintegre dans un swarm au bout de ~5 minutes
+- Il se transforme en Soul (entite passive recrutable)
+- Le swarm qui le retrouve peut le re-recruter via le systeme de shards
 
 
 ## Prochaines etapes

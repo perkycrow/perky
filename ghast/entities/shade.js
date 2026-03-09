@@ -8,7 +8,7 @@ import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
 import {createSporeStorage, createImprintStorage} from '../spores.js'
 import {getRankModifier} from '../rank.js'
-import {applyFlankForce, applyLeash, applyMovement, applySporeFrame, getCooldownModifier, getEffectiveStat, getStaminaSpeedModifier, updateStamina} from '../entity_helpers.js'
+import {getCooldownModifier, updateMelee} from '../entity_helpers.js'
 
 
 export default class Shade extends Entity {
@@ -45,44 +45,7 @@ export default class Shade extends Entity {
 
 
     update (deltaTime) {
-        updateStamina(this, deltaTime)
-        this.updateHealth(deltaTime)
-        this.updateMeleeAttack(deltaTime)
-        this.updateDash(deltaTime)
-
-        if (this.isDashing()) {
-            this.clampVelocity(this.maxSpeed * 4)
-            this.applyVelocity(deltaTime)
-            return
-        }
-
-        if (this.isAttacking()) {
-            this.dampenVelocity(0.001, deltaTime)
-            this.applyVelocity(deltaTime)
-            return
-        }
-
-        const enemy = this.target
-
-        if (enemy) {
-            this.seek(enemy.position, getEffectiveStat(this, 'approachWeight', 1))
-            applyFlankForce(this, enemy)
-            this.meleeAttack(enemy)
-        } else if (this._battleCenter) {
-            this.seek(this._battleCenter, 0.3)
-        }
-
-        applySporeFrame(this)
-        this.wander(getEffectiveStat(this, 'wanderWeight', 0.3))
-
-        const neighbors = this.host?.entitiesInRange(this, 1.5)
-        this.separate(neighbors, 1)
-
-        applyLeash(this)
-        this.move(this.resolveForce())
-        applyMovement(this, deltaTime)
-        this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')) * getStaminaSpeedModifier(this))
-        this.applyVelocity(deltaTime)
+        updateMelee(this, deltaTime)
     }
 
 

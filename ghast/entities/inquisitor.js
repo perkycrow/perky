@@ -6,7 +6,7 @@ import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
 import {createSporeStorage, createImprintStorage} from '../spores.js'
 import {getRankModifier} from '../rank.js'
-import {applyLeash, applyMovement, applySporeFrame, getCooldownModifier, getEffectiveStat, getStaminaSpeedModifier, updateStamina} from '../entity_helpers.js'
+import {applyLeash, applyMovement, applySporeFrame, getCooldownModifier, getEffectiveStat, getMaxSpeed, updateStamina} from '../entity_helpers.js'
 
 
 export default class Inquisitor extends Entity {
@@ -64,7 +64,7 @@ export default class Inquisitor extends Entity {
             applyLeash(this)
             this.move(this.resolveForce())
             applyMovement(this, deltaTime)
-            this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')) * getStaminaSpeedModifier(this))
+            this.clampVelocity(getMaxSpeed(this))
             this.applyVelocity(deltaTime)
             return
         }
@@ -84,7 +84,7 @@ export default class Inquisitor extends Entity {
         applyLeash(this)
         this.move(this.resolveForce())
         applyMovement(this, deltaTime)
-        this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')) * getStaminaSpeedModifier(this))
+        this.clampVelocity(getMaxSpeed(this))
         this.applyVelocity(deltaTime)
     }
 
