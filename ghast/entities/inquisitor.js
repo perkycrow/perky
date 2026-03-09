@@ -20,7 +20,7 @@ export default class Inquisitor extends Entity {
         this.create(Steering)
         this.create(Health, {hp: Math.round(25 * getRankModifier(this.rank, 'hp'))})
 
-        const {maxSpeed = 0.7, acceleration = 5} = params
+        const {maxSpeed = 0.55, acceleration = 5} = params
 
         this.shootCooldown = 1.5
         this.shootInterval = (params.shootInterval || 2) * getRankModifier(this.rank, 'cooldown')
@@ -53,7 +53,15 @@ export default class Inquisitor extends Entity {
 
         if (enemy) {
             this.#tryShoot(this.host, enemy, deltaTime)
+
+            const dist = this.position.distanceTo(enemy.position)
+
+            if (dist < 1.5) {
+                this.flee(enemy.position, 0.6)
+            }
+
             applySporeFrame(this)
+            applyLeash(this)
             this.move(this.resolveForce())
             applyMovement(this, deltaTime)
             this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')) * getStaminaSpeedModifier(this))

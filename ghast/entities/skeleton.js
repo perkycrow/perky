@@ -24,14 +24,14 @@ export default class Skeleton extends Entity {
         this.create(Health, {hp: Math.round(60 * getRankModifier(this.rank, 'hp'))})
         this.create(MeleeAttack, {damage: 11, range: 0.5, cooldown: 1.2 * getRankModifier(this.rank, 'cooldown'), windUp: 0.15, strikeTime: 0.1})
 
-        const {maxSpeed = 0.6, acceleration = 5} = params
+        const {maxSpeed = 0.5, acceleration = 5} = params
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
         this.create(BuffSystem)
         this.create(CombatStats)
         this.target = null
-        this.baseDetectRange = 2
+        this.baseDetectRange = 4
         this.swarm = null
         this.stamina = 100
         this.maxStamina = 100

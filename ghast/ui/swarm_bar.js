@@ -94,6 +94,7 @@ export default class SwarmBar {
             frame.leaderLabel.style.display = isLeader ? 'block' : 'none'
 
             updateHpBar(frame.hpBar, entity)
+            updateStaminaBar(frame.staminaBar, entity)
             updateXpBar(frame.xpBar, entity)
             updateRank(frame.rankBadge, entity)
             updateBuffs(frame.buffsRow, entity)
@@ -222,6 +223,21 @@ function createFrame (entity, game, onSelect) {
         pointerEvents: 'none'
     })
 
+    const staminaBar = document.createElement('div')
+    Object.assign(staminaBar.style, {
+        width: '100%',
+        height: '4px',
+        background: '#111'
+    })
+    const staminaFill = document.createElement('div')
+    Object.assign(staminaFill.style, {
+        width: '100%',
+        height: '100%',
+        background: '#ffb300',
+        transition: 'width 0.15s'
+    })
+    staminaBar.appendChild(staminaFill)
+
     const xpBar = document.createElement('div')
     Object.assign(xpBar.style, {
         width: '100%',
@@ -262,6 +278,7 @@ function createFrame (entity, game, onSelect) {
     el.appendChild(leaderLabel)
     el.appendChild(buffsRow)
     el.appendChild(hpBar)
+    el.appendChild(staminaBar)
     el.appendChild(xpBar)
 
     el.addEventListener('click', (e) => {
@@ -269,7 +286,7 @@ function createFrame (entity, game, onSelect) {
         onSelect(entity)
     })
 
-    return {element: el, portrait, hpBar, xpBar, rankBadge, leaderLabel, buffsRow, sporesRow}
+    return {element: el, portrait, hpBar, staminaBar, xpBar, rankBadge, leaderLabel, buffsRow, sporesRow}
 }
 
 
@@ -399,6 +416,26 @@ function updateRank (badge, entity) {
     }
 
     badge.textContent = `R${entity.rank}`
+}
+
+
+function updateStaminaBar (staminaBar, entity) {
+    const fill = staminaBar.firstChild
+
+    if (!fill || entity.stamina === undefined) {
+        return
+    }
+
+    const ratio = Math.max(0, entity.stamina / entity.maxStamina)
+    fill.style.width = `${ratio * 100}%`
+
+    if (ratio > 0.5) {
+        fill.style.background = '#ffb300'
+    } else if (ratio > 0.25) {
+        fill.style.background = '#ff8c00'
+    } else {
+        fill.style.background = '#d32f2f'
+    }
 }
 
 
