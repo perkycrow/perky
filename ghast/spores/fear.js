@@ -7,10 +7,9 @@ export default {
     morale: -0.5,
 
     effects: {
-        speed: 0.85,
-        damage: 0.7,
-        cooldown: 1.4,
-        detectRange: 0.8,
+        speed: 0.9,
+        damage: 0.85,
+        cooldown: 1.2,
         approachWeight: 0.5
     },
 
@@ -27,10 +26,11 @@ export default {
             return
         }
 
-        entity.wander(count * 0.6)
+        const awareness = Math.min(entity.baseDetectRange || 1, 3) / 3
+        entity.wander(count * awareness * 0.4)
 
         if (entity.target) {
-            entity.flee(entity.target.position, count * 0.3)
+            entity.flee(entity.target.position, count * awareness * 0.3)
         }
     }
 }

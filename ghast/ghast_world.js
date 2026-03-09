@@ -102,7 +102,9 @@ export default class GhastWorld extends World {
 
         this.preUpdate(dt, context)
 
-        for (const entity of this.entities) {
+        const entities = shuffle(this.entities)
+
+        for (const entity of entities) {
             if (entity.started && !entity.dying) {
                 entity.update(dt)
             }
@@ -646,6 +648,20 @@ function computeEffectiveDamage (source, baseDamage) {
     const swarm = source.swarm?.getBuffModifier?.('damage') ?? 1
 
     return Math.max(1, Math.round(baseDamage * rank * spore * buff * swarm))
+}
+
+
+function shuffle (array) {
+    const result = [...array]
+
+    for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        const temp = result[i]
+        result[i] = result[j]
+        result[j] = temp
+    }
+
+    return result
 }
 
 

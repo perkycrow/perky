@@ -25,19 +25,21 @@ export default class Simulation {
         const results = []
 
         for (let i = 0; i < this.runs; i++) {
-            results.push(this.#runOnce())
+            results.push(this.#runOnce(i % 2 === 1))
         }
 
         return summarize(results)
     }
 
 
-    #runOnce () {
+    #runOnce (reverseFactions = false) {
         const world = new GhastWorld()
         world.start()
         world.paused = false
 
-        const factions = this.config.factions || []
+        const factions = reverseFactions
+            ? [...this.config.factions].reverse()
+            : (this.config.factions || [])
         const swarms = []
         const log = {kills: [], battleResolved: null}
 
