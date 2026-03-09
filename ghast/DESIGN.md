@@ -956,6 +956,82 @@ Le spore lust a un comportement d'orbiting (flee si trop pres, seek si trop loin
 Le triangle RPS est deja pris en compte dans le target scoring (x1.5 pour la cible preferee). A renforcer potentiellement (x2 ?) et ajouter un malus pour les mauvais matchups (x0.5 quand on attaque celui qui nous bat). Les unites prioriseraient vraiment leurs cibles RPS.
 
 
+### Palettes comportementales des spores
+
+Le systeme de forces (steering weights) ne suffit pas a creer des comportements visuellement distincts. Chaque spore doit pouvoir **remplacer** des sous-comportements entiers du flow de combat, pas juste tweaker des poids.
+
+#### Principe
+
+Le flow de base `updateMelee` (seek→flank→attack→wander→separate→leash) est le comportement par defaut quand aucune spore ne domine. Chaque spore a un **domaine** ou elle excelle et propose 2-3 overrides max sur les comportements ou ca fait sens. Le reste reste en default. L'intensite (nombre de spores du meme type) determine quel niveau de comportement s'active.
+
+Mecaniquement, la spore dominante (celle avec le plus d'intensite) peut fournir un hook `onCombatUpdate(entity, deltaTime)`. Si le hook retourne `true`, le flow par defaut est skippe. La spore lit `entity.spores[key]` pour connaitre son intensite et choisir quel sous-comportement activer.
+
+#### Fear — domaine : fuite / desengagement
+
+| Intensite | Comportement |
+|-----------|-------------|
+| 1 | **Kite** — attaque mais recule entre chaque coup, maintient la distance max |
+| 2 | **Fuite ciblee** — fuit l'ennemi le plus menacant, continue a se battre contre les faibles |
+| 3 | **Panique** — drop tout target, sprint loin du combat, ignore la leash temporairement |
+
+#### Anger — domaine : attaque / charge
+
+| Intensite | Comportement |
+|-----------|-------------|
+| 1 | **Rush** — pas de flank, charge en ligne droite, attaque des que possible |
+| 2 | **Berserker** — ignore la leash, poursuit sa cible jusqu'au bout, cooldown reduit |
+| 3 | **Rampage** — switch a la cible la plus proche apres un kill, ne s'arrete jamais |
+
+#### Sadness — domaine : desengagement / rythme
+
+| Intensite | Comportement |
+|-----------|-------------|
+| 1 | **Hesitation** — pauses aleatoires avant d'attaquer, approche ralentie |
+| 2 | **Desengagement** — se bat quelques secondes puis recule, cycle engage/disengage |
+| 3 | **Apathie** — arrete de chercher des cibles, wander au ralenti, ne se defend que si attaque directement |
+
+#### Arrogance — domaine : targeting / stand-ground
+
+| Intensite | Comportement |
+|-----------|-------------|
+| 1 | **Showoff** — cible toujours l'ennemi le plus fort (rank le plus eleve) |
+| 2 | **Duel** — se lock sur un seul adversaire, refuse de changer de cible tant qu'il est vivant |
+| 3 | **Taunt** — avance au milieu du groupe ennemi, attaque tous ceux a portee |
+
+#### Naive — domaine : wander / target-switching
+
+| Intensite | Comportement |
+|-----------|-------------|
+| 1 | **Curieux** — change de cible souvent, attire par les mouvements rapides |
+| 2 | **Joueur** — approche puis recule, "joue" avec l'ennemi, mouvements erratiques |
+| 3 | **Perdu** — ignore le combat, wander avec beaucoup d'amplitude, suit le premier allie qu'il voit |
+
+#### Surprise — domaine : bursts reactifs
+
+| Intensite | Comportement |
+|-----------|-------------|
+| 1 | **Sursaut** — burst de vitesse quand touche, puis retour au normal |
+| 2 | **Freeze** — se fige 0.5s quand un nouvel ennemi entre en range, puis reagit en burst |
+| 3 | **Erratique** — alterne entre rush et fuite de maniere imprevisible, timing random |
+
+#### Lust — domaine : mouvement / obsession
+
+| Intensite | Comportement |
+|-----------|-------------|
+| 1 | **Fixation** — ne change jamais de cible volontairement |
+| 2 | **Orbite** — tourne autour de sa cible a distance moyenne, fonce pour frapper puis recule en arc |
+| 3 | **Devotion** — suit sa cible partout meme hors leash, ignore les degats des autres |
+
+#### Impact sur les comportements existants
+
+Quand une spore override un comportement existant (seek, flank, attack, flee), elle ne doit pas juste modifier un poids — elle doit le **transformer qualitativement** :
+
+- **Seek** : anger = ligne droite sans flank / lust = approche en spirale / naive = cible random qui change
+- **Flank** : arrogance = attaque de face / surprise = grand arc, approche par derriere
+- **Attack** : anger = cooldown reduit drastiquement / fear = frappe une fois puis recule / naive = frappe puis s'arrete pour "regarder"
+- **Flee** : arrogance = ne fuit jamais / fear = fuit des 50% HP / sadness = ne fuit pas mais arrete de combattre
+
+
 ### Systeme de fuyards (stragglers)
 
 Quand une unite fuit trop loin de la leash (fear, panique, etc.), elle ne reste pas indefiniment dans le swarm. Elle devient un "fuyard" (straggler) — une unite neutre qui erre seule.
