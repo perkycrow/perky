@@ -31,7 +31,7 @@ export default class Skeleton extends Entity {
         this.create(BuffSystem)
         this.create(CombatStats)
         this.target = null
-        this.baseDetectRange = 1
+        this.baseDetectRange = 2
         this.swarm = null
         this.spores = createSporeStorage()
         this.imprint = createImprintStorage()

@@ -29,7 +29,7 @@ export default class Rat extends Entity {
         this.create(BuffSystem)
         this.create(CombatStats)
         this.target = null
-        this.baseDetectRange = 2
+        this.baseDetectRange = 4
         this.swarm = null
         this.spores = createSporeStorage()
         this.imprint = createImprintStorage()

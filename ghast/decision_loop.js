@@ -3,7 +3,7 @@ import {DECAY_RATE} from './spores.js'
 import {SPORE_LIST, SPORE_DEFINITIONS} from './spores/index.js'
 
 
-const DECISION_INTERVAL = 1
+const DECISION_INTERVAL = 0.5
 
 const OFFENSIVE_SPORES = SPORE_LIST.filter(s => s.inclination === 'offensive').map(s => s.key)
 const DEFENSIVE_SPORES = SPORE_LIST.filter(s => s.inclination === 'defensive').map(s => s.key)

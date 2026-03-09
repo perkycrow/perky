@@ -45,8 +45,16 @@ export function applyLeash (entity) {
     const dy = entity.y - center.y
     const dist = Math.sqrt(dx * dx + dy * dy)
     const radius = entity.swarm.leashRadius
+    const hasTarget = entity.target && !entity.target.dying
 
-    if (dist > radius * 0.6) {
+    if (hasTarget) {
+        const hardRadius = radius * 2
+
+        if (dist > hardRadius) {
+            entity.target = null
+            entity.seek(center, 2)
+        }
+    } else if (dist > radius * 0.6) {
         const urgency = Math.min((dist - radius * 0.6) / (radius * 0.4), 1)
         entity.seek(center, urgency * 1.5)
     }
