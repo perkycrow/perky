@@ -40,67 +40,14 @@ export default class Simulation {
         const factions = reverseFactions
             ? [...this.config.factions].reverse()
             : (this.config.factions || [])
-        const swarms = []
         const log = {kills: [], battleResolved: null}
 
-        for (const faction of factions) {
-            const swarm = world.createSwarm(faction.name)
-            swarms.push({name: faction.name, swarm})
+        const swarms = spawnFactions(world, factions)
+        setupLogging(world, log)
 
-            for (const unit of faction.units) {
-                const fn = SPAWN_FN[unit.type]
-
-                if (!fn) {
-                    continue
-                }
-
-                const entity = world[fn]({
-                    x: unit.x ?? faction.x ?? 0,
-                    y: unit.y ?? faction.y ?? 0,
-                    faction: faction.name,
-                    swarm,
-                    rank: unit.rank
-                })
-
-                applyUnitConfig(entity, unit)
-            }
-        }
-
-        world.on('kill', ({killer, victim}) => {
-            log.kills.push({
-                killer: killer?.constructor.name,
-                killerFaction: killer?.faction,
-                victim: victim?.constructor.name,
-                victimFaction: victim?.faction
-            })
-        })
-
-        world.on('battle_resolved', ({winner}) => {
-            log.battleResolved = winner
-        })
-
-        const maxFrames = Math.ceil(this.maxDuration / DT)
-        let frame = 0
-
-        for (frame = 0; frame < maxFrames; frame++) {
-            world.update(DT)
-
-            if (isFinished(world)) {
-                break
-            }
-        }
-
+        const frame = runSimulationLoop(world, this.maxDuration)
         const duration = frame * DT
-        const survivors = {}
-
-        for (const {name, swarm} of swarms) {
-            const alive = swarm.members.filter(m => !m.dying && m.alive !== false)
-            survivors[name] = {
-                count: alive.length,
-                totalHp: alive.reduce((sum, m) => sum + (m.hp ?? 0), 0)
-            }
-        }
-
+        const survivors = collectSurvivors(swarms)
         const winner = findWinner(survivors, log.battleResolved)
 
         return {winner, duration, survivors, kills: log.kills}
@@ -123,6 +70,87 @@ function applyUnitConfig (entity, unit) {
             entity[key] = value
         }
     }
+}
+
+
+function spawnFactions (world, factions) {
+    const swarms = []
+
+    for (const faction of factions) {
+        const swarm = world.createSwarm(faction.name)
+        swarms.push({name: faction.name, swarm})
+        spawnUnits(world, faction, swarm)
+    }
+
+    return swarms
+}
+
+
+function spawnUnits (world, faction, swarm) {
+    for (const unit of faction.units) {
+        const fn = SPAWN_FN[unit.type]
+
+        if (!fn) {
+            continue
+        }
+
+        const entity = world[fn]({
+            x: unit.x ?? faction.x ?? 0,
+            y: unit.y ?? faction.y ?? 0,
+            faction: faction.name,
+            swarm,
+            rank: unit.rank
+        })
+
+        applyUnitConfig(entity, unit)
+    }
+}
+
+
+function setupLogging (world, log) {
+    world.on('kill', ({killer, victim}) => {
+        log.kills.push({
+            killer: killer?.constructor.name,
+            killerFaction: killer?.faction,
+            victim: victim?.constructor.name,
+            victimFaction: victim?.faction
+        })
+    })
+
+    world.on('battle_resolved', ({winner}) => {
+        log.battleResolved = winner
+    })
+}
+
+
+function runSimulationLoop (world, maxDuration) {
+    const maxFrames = Math.ceil(maxDuration / DT)
+    let frame = 0
+
+    for (frame = 0; frame < maxFrames; frame++) {
+        world.update(DT)
+
+        if (isFinished(world)) {
+            break
+        }
+    }
+
+    return frame
+}
+
+
+function collectSurvivors (swarms) {
+    const survivors = {}
+
+    for (const {name, swarm} of swarms) {
+        const alive = swarm.members.filter(m => !m.dying && m.alive !== false)
+        survivors[name] = {
+            count: alive.length,
+            totalHp: alive.reduce((sum, m) => sum + (m.hp ?? 0), 0)
+        }
+    }
+
+    return survivors
 }
 
 
@@ -177,49 +205,57 @@ function summarize (results) {
 
 
 export function runMatchup (typeA, typeB, options = {}) {
-    const {
-        runs = 100,
-        distance = 2,
-        sporesA = [],
-        sporesB = [],
-        overridesA = null,
-        overridesB = null,
-        rankA,
-        rankB,
-        maxDuration = 30
-    } = options
+    const opts = parseMatchupOptions(options)
+    const unitA = createMatchupUnit(typeA, opts.sporesA, opts.rankA, opts.overridesA)
+    const unitB = createMatchupUnit(typeB, opts.sporesB, opts.rankB, opts.overridesB)
+    const config = buildMatchupConfig(opts, unitA, unitB)
 
-    const unitA = {type: typeA, spores: sporesA, rank: rankA}
-    const unitB = {type: typeB, spores: sporesB, rank: rankB}
-
-    if (overridesA) {
-        unitA.overrides = overridesA
-    }
-
-    if (overridesB) {
-        unitB.overrides = overridesB
-    }
-
-    const sim = new Simulation({
-        runs,
-        maxDuration,
-        factions: [
-            {
-                name: 'alpha',
-                x: -distance / 2,
-                y: 0,
-                units: [unitA]
-            },
-            {
-                name: 'beta',
-                x: distance / 2,
-                y: 0,
-                units: [unitB]
-            }
-        ]
-    })
-
+    const sim = new Simulation(config)
     const summary = sim.run()
+
+    return formatMatchupResult(typeA, typeB, summary, opts.runs)
+}
+
+
+function parseMatchupOptions (options) {
+    return {
+        runs: options.runs ?? 100,
+        distance: options.distance ?? 2,
+        sporesA: options.sporesA ?? [],
+        sporesB: options.sporesB ?? [],
+        overridesA: options.overridesA ?? null,
+        overridesB: options.overridesB ?? null,
+        rankA: options.rankA,
+        rankB: options.rankB,
+        maxDuration: options.maxDuration ?? 30
+    }
+}
+
+
+function createMatchupUnit (type, spores, rank, overrides) {
+    const unit = {type, spores, rank}
+
+    if (overrides) {
+        unit.overrides = overrides
+    }
+
+    return unit
+}
+
+
+function buildMatchupConfig (opts, unitA, unitB) {
+    return {
+        runs: opts.runs,
+        maxDuration: opts.maxDuration,
+        factions: [
+            {name: 'alpha', x: -opts.distance / 2, y: 0, units: [unitA]},
+            {name: 'beta', x: opts.distance / 2, y: 0, units: [unitB]}
+        ]
+    }
+}
+
+
+function formatMatchupResult (typeA, typeB, summary, runs) {
     const winsA = summary.wins.alpha || 0
     const winsB = summary.wins.beta || 0
 

@@ -106,7 +106,9 @@ test('promote', () => {
     const events = []
     const swarm = {
         shards: 10,
-        spendShards (amount) { this.shards -= amount }
+        spendShards (amount) {
+            this.shards -= amount
+        }
     }
     const host = {emit: (name, data) => events.push({name, data})}
     const entity = {rank: 1, swarm, host}

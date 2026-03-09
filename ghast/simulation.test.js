@@ -2,7 +2,7 @@ import {test, expect} from 'vitest'
 import Simulation, {runMatchup, runMatrix} from './simulation.js'
 
 
-const MATCHUP_OPTS = {runs: 20, maxDuration: 60, distance: 2}
+const MATCHUP_OPTS = {runs: 50, maxDuration: 60, distance: 2}
 
 
 test('constructor', () => {
@@ -34,42 +34,42 @@ test('run returns summary with wins and duration', () => {
 test('shade beats rat in 1v1', () => {
     const result = runMatchup('Shade', 'Rat', MATCHUP_OPTS)
 
-    expect(result.winsA).toBeGreaterThanOrEqual(12)
+    expect(result.winsA).toBeGreaterThanOrEqual(30)
 })
 
 
 test('shade beats skeleton in 1v1', () => {
     const result = runMatchup('Shade', 'Skeleton', MATCHUP_OPTS)
 
-    expect(result.winsA).toBeGreaterThanOrEqual(12)
+    expect(result.winsA).toBeGreaterThanOrEqual(30)
 })
 
 
 test('skeleton beats rat in 1v1', () => {
     const result = runMatchup('Skeleton', 'Rat', MATCHUP_OPTS)
 
-    expect(result.winsA).toBeGreaterThanOrEqual(12)
+    expect(result.winsA).toBeGreaterThanOrEqual(30)
 })
 
 
 test('inquisitor beats skeleton in 1v1', () => {
     const result = runMatchup('Inquisitor', 'Skeleton', MATCHUP_OPTS)
 
-    expect(result.winsA).toBeGreaterThanOrEqual(12)
+    expect(result.winsA).toBeGreaterThanOrEqual(30)
 })
 
 
 test('shade beats inquisitor in 1v1', () => {
     const result = runMatchup('Shade', 'Inquisitor', MATCHUP_OPTS)
 
-    expect(result.winsA).toBeGreaterThanOrEqual(12)
+    expect(result.winsA).toBeGreaterThanOrEqual(30)
 })
 
 
 test('rat beats inquisitor in 1v1', () => {
     const result = runMatchup('Rat', 'Inquisitor', MATCHUP_OPTS)
 
-    expect(result.winsA).toBeGreaterThanOrEqual(12)
+    expect(result.winsA).toBeGreaterThanOrEqual(30)
 })
 
 

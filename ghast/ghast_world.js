@@ -27,7 +27,7 @@ export default class GhastWorld extends World {
         this.battles = []
 
         this.on('hit', ({target, source, damage, projectile}) => {
-            this.#applyHit(target, source, damage, !!projectile)
+            this.#applyHit(target, source, damage, Boolean(projectile))
         })
 
         this.on('kill', ({killer}) => {

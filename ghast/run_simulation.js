@@ -132,7 +132,7 @@ function printTriangleVerdict (matrix) {
     for (const {a, b, label} of checks) {
         const m = matrix[a][b]
         const pct = Math.round(m.winRateA * 100)
-        const status = pct >= 90 ? 'OK' : pct >= 70 ? 'WEAK' : 'BROKEN'
+        const status = getVerdictStatus(pct)
         log(`  ${pad(label, 24)} ${pad(pct + '%', 6)} ${status}`)
     }
 
@@ -159,6 +159,19 @@ function getFlag (name, fallback) {
     }
 
     return fallback
+}
+
+
+function getVerdictStatus (pct) {
+    if (pct >= 90) {
+        return 'OK'
+    }
+
+    if (pct >= 70) {
+        return 'WEAK'
+    }
+
+    return 'BROKEN'
 }
 
 

@@ -188,22 +188,29 @@ export default class GhastStage extends Stage {
                 continue
             }
 
-            const name = entity.constructor.name
-
-            if (name === 'Shade') {
-                addSpore(entity, 'anger')
-                addSpore(entity, 'arrogance')
-                addSpore(entity, 'fear')
-            } else if (name === 'Skeleton') {
-                addSpore(entity, 'sadness')
-                addSpore(entity, 'anger')
-            } else if (name === 'Inquisitor') {
-                addSpore(entity, 'fear')
-                addSpore(entity, 'surprise')
-            } else if (name === 'Rat') {
-                addSpore(entity, 'naive')
-            }
+            assignSporesForEntity(entity)
         }
     }
 
+}
+
+
+const DEFAULT_SPORES = {
+    Shade: ['anger', 'arrogance', 'fear'],
+    Skeleton: ['sadness', 'anger'],
+    Inquisitor: ['fear', 'surprise'],
+    Rat: ['naive']
+}
+
+
+function assignSporesForEntity (entity) {
+    const spores = DEFAULT_SPORES[entity.constructor.name]
+
+    if (!spores) {
+        return
+    }
+
+    for (const spore of spores) {
+        addSpore(entity, spore)
+    }
 }

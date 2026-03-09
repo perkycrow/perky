@@ -75,7 +75,7 @@ runScenario(
 runScenario(
     'Anger Shade vs Fear Shade (anger vs fear — anger should win)',
     {units: [u('Shade', {spores: ['anger']})]},
-    {units: [u('Shade', {spores: ['fear']})]},
+    {units: [u('Shade', {spores: ['fear']})]}
 )
 
 
@@ -147,7 +147,7 @@ runScenario(
 runScenario(
     '3 Anger Rats vs 3 Fear Rats (anger vs fear in group — anger wins)',
     {units: [u('Rat', {spores: ['anger']}), u('Rat', {spores: ['anger']}), u('Rat', {spores: ['anger']})]},
-    {units: [u('Rat', {spores: ['fear']}), u('Rat', {spores: ['fear']}), u('Rat', {spores: ['fear']})]},
+    {units: [u('Rat', {spores: ['fear']}), u('Rat', {spores: ['fear']}), u('Rat', {spores: ['fear']})]}
 )
 
 

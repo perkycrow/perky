@@ -402,6 +402,18 @@ Deux niveaux :
 
 Le swarm a deja une structure (`swarm.js`) qui peut porter des buffs. Les buffs de swarm sont des multiplicateurs globaux appliques a chaque membre.
 
+#### Auras de swarm (a explorer)
+
+Idee : le **profil de spores collectif** du swarm (somme des spores de tous les membres) pourrait generer des buffs/debuffs passifs au niveau du swarm entier. Pas par event, pas par entite individuelle — par la composition globale.
+
+Exemples potentiels :
+- Swarm a dominante anger → aura **Ferocite** : +degats collectif leger, mais -cohesion (leash plus lache)
+- Swarm a dominante fear → aura **Vigilance** : +detect range collectif, mais -moral passif
+- Swarm a dominante naive → aura **Enthousiasme** : +moral passif, +aggro generee par le swarm entier
+- Swarm mixte equilibre → aura **Harmonie** : petit bonus a tout, pas de malus
+
+**Point de vigilance** : les spores agissent deja sur 3 couches (stats passives individuelles, events/buffs, comportement via onEveryFrame). Ajouter une 4e couche (aura de swarm) risque la redondance. L'interet serait que l'aura emerge de la **composition collective** et pas juste de la somme des effets individuels — des synergies ou des tensions qui n'existent pas au niveau d'une seule entite. A creuser quand le systeme de base sera assez stable pour mesurer ce qui manque.
+
 #### Modificateurs passifs continus
 
 En plus des buffs evenementiels (pics ponctuels), les spores dominants generent des **modificateurs passifs permanents** qui scalent avec l'intensite du spore. C'est le "plancher" comportemental de l'entite, toujours actif, qui monte et descend lentement avec l'accumulation/consommation de spores.

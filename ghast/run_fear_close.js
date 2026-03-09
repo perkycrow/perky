@@ -59,7 +59,7 @@ runScenario(
 runScenario(
     'Anger Skeleton vs Fear Skeleton',
     {units: [u('Skeleton', {spores: ['anger']})]},
-    {units: [u('Skeleton', {spores: ['fear']})]},
+    {units: [u('Skeleton', {spores: ['fear']})]}
 )
 
 console.log('\n=== NORMAL RANGE (dist 4) — includes approach phase ===\n')
