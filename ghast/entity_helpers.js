@@ -89,3 +89,43 @@ export function applyMovement (entity, deltaTime) {
         entity.velocity.add(accel)
     }
 }
+
+
+const STAMINA_DRAIN = 8
+const STAMINA_REGEN = 12
+const STAMINA_THRESHOLD = 0.3
+
+
+export function updateStamina (entity, deltaTime) {
+    if (entity.stamina === undefined) {
+        return
+    }
+
+    const inCombat = entity.target && !entity.target.dying
+    const speed = entity.velocity?.length() ?? 0
+    const maxSpeed = entity.maxSpeed || 1
+    const effort = speed / maxSpeed
+
+    if (inCombat && effort > 0.3) {
+        entity.stamina -= STAMINA_DRAIN * effort * deltaTime
+    } else {
+        entity.stamina += STAMINA_REGEN * deltaTime
+    }
+
+    entity.stamina = Math.max(0, Math.min(entity.maxStamina, entity.stamina))
+}
+
+
+export function getStaminaSpeedModifier (entity) {
+    if (entity.stamina === undefined) {
+        return 1
+    }
+
+    const ratio = entity.stamina / entity.maxStamina
+
+    if (ratio > STAMINA_THRESHOLD) {
+        return 1
+    }
+
+    return 0.4 + 0.6 * (ratio / STAMINA_THRESHOLD)
+}

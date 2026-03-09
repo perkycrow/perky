@@ -6,7 +6,7 @@ import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
 import {createSporeStorage, createImprintStorage} from '../spores.js'
 import {getRankModifier} from '../rank.js'
-import {applyLeash, applyMovement, applySporeFrame, getCooldownModifier, getEffectiveStat} from '../entity_helpers.js'
+import {applyLeash, applyMovement, applySporeFrame, getCooldownModifier, getEffectiveStat, getStaminaSpeedModifier, updateStamina} from '../entity_helpers.js'
 
 
 export default class Inquisitor extends Entity {
@@ -24,7 +24,7 @@ export default class Inquisitor extends Entity {
 
         this.shootCooldown = 1.5
         this.shootInterval = (params.shootInterval || 2) * getRankModifier(this.rank, 'cooldown')
-        this.shootDamage = params.shootDamage || 10
+        this.shootDamage = params.shootDamage || 8
 
         this.maxSpeed = maxSpeed
         this.acceleration = acceleration
@@ -33,6 +33,8 @@ export default class Inquisitor extends Entity {
         this.target = null
         this.baseDetectRange = 4
         this.swarm = null
+        this.stamina = 70
+        this.maxStamina = 70
         this.spores = createSporeStorage()
         this.imprint = createImprintStorage()
     }
@@ -44,6 +46,7 @@ export default class Inquisitor extends Entity {
 
 
     update (deltaTime) {
+        updateStamina(this, deltaTime)
         this.updateHealth(deltaTime)
 
         const enemy = this.target
@@ -53,7 +56,7 @@ export default class Inquisitor extends Entity {
             applySporeFrame(this)
             this.move(this.resolveForce())
             applyMovement(this, deltaTime)
-            this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')))
+            this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')) * getStaminaSpeedModifier(this))
             this.applyVelocity(deltaTime)
             return
         }
@@ -73,7 +76,7 @@ export default class Inquisitor extends Entity {
         applyLeash(this)
         this.move(this.resolveForce())
         applyMovement(this, deltaTime)
-        this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')))
+        this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')) * getStaminaSpeedModifier(this))
         this.applyVelocity(deltaTime)
     }
 

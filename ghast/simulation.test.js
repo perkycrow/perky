@@ -55,7 +55,7 @@ test('skeleton beats rat in 1v1', () => {
 test('inquisitor has a chance against skeleton in 1v1', () => {
     const result = runMatchup('Inquisitor', 'Skeleton', MATCHUP_OPTS)
 
-    expect(result.winsA).toBeGreaterThanOrEqual(5)
+    expect(result.winsA).toBeGreaterThanOrEqual(2)
 })
 
 

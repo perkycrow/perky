@@ -8,7 +8,7 @@ import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
 import {createSporeStorage, createImprintStorage} from '../spores.js'
 import {getRankModifier} from '../rank.js'
-import {applyLeash, applyMovement, applySporeFrame, getCooldownModifier, getEffectiveStat} from '../entity_helpers.js'
+import {applyLeash, applyMovement, applySporeFrame, getCooldownModifier, getEffectiveStat, getStaminaSpeedModifier, updateStamina} from '../entity_helpers.js'
 
 
 export default class Skeleton extends Entity {
@@ -33,6 +33,8 @@ export default class Skeleton extends Entity {
         this.target = null
         this.baseDetectRange = 2
         this.swarm = null
+        this.stamina = 100
+        this.maxStamina = 100
         this.spores = createSporeStorage()
         this.imprint = createImprintStorage()
 
@@ -43,6 +45,7 @@ export default class Skeleton extends Entity {
 
 
     update (deltaTime) {
+        updateStamina(this, deltaTime)
         this.updateHealth(deltaTime)
         this.updateMeleeAttack(deltaTime)
         this.updateDash(deltaTime)
@@ -77,7 +80,7 @@ export default class Skeleton extends Entity {
         applyLeash(this)
         this.move(this.resolveForce())
         applyMovement(this, deltaTime)
-        this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')))
+        this.clampVelocity(getEffectiveStat(this, 'speed', this.maxSpeed * getRankModifier(this.rank, 'speed')) * getStaminaSpeedModifier(this))
         this.applyVelocity(deltaTime)
     }
 
