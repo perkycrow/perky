@@ -17,6 +17,13 @@ export default {
         kill: 'trophy'
     },
 
+    scoreTarget (entity, target) {
+        const count = entity.spores.lust
+        const hpRatio = (target.hp ?? 1) / (target.maxHp ?? 1)
+
+        return 1 + count * (1 - hpRatio) * 0.5
+    },
+
     onEveryFrame (entity) {
         const count = entity.spores.lust
         if (count <= 0 || !entity.target) {

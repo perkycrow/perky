@@ -20,6 +20,13 @@ export default {
         isolated: 'panic'
     },
 
+    scoreTarget (entity, target) {
+        const count = entity.spores.fear
+        const rank = target.rank || 1
+
+        return 1 / (1 + rank * count * 0.15)
+    },
+
     onEveryFrame (entity) {
         const count = entity.spores.fear
         if (count <= 0) {

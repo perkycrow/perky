@@ -17,6 +17,14 @@ export default {
         surrounded: 'startle'
     },
 
+    scoreTarget (entity, target) {
+        if (entity.target === target) {
+            return 1
+        }
+
+        return 1 + entity.spores.surprise * 0.2
+    },
+
     onEveryFrame (entity) {
         const count = entity.spores.surprise
         if (count <= 0) {

@@ -738,6 +738,21 @@ La frequence de decision est un levier de design modulable par les spores :
 
 Avantage perf : `world.nearest()` lineaire sur toutes les entites passe de 60x/s/entite a 1x/s/entite.
 
+#### Target scoring (inspiration FFXII gambits)
+
+Inspire du systeme de gambits de FFXII, mais au lieu que le joueur programme des regles explicites, les spores **votent** sur les cibles potentielles. Chaque spore definit un hook `scoreTarget(entity, target, context)` qui retourne un multiplicateur de priorite. Le score final d'une cible = produit de tous les votes × score de base (proximite, RPS, aggro).
+
+Les combos emergent naturellement parce que les votes se combinent :
+- **Arrogance** vote pour les cibles de haut rank → cible le plus fort
+- **Fear** vote contre les cibles de haut rank → prefere les faibles
+- **Arrogance + Fear** → les deux s'annulent sur les forts, fear pousse vers les faibles → "tyran lache" emerge
+- **Lust** vote pour les cibles low HP → acheve les affaiblis / cibles faciles a convertir
+- **Anger** vote pour la cible actuelle → persist, ne change pas de cible
+- **Surprise** vote pour les cibles pas encore engagees → embuscade
+- **Naive** ne vote pas (ou vote uniformement) → prend le plus proche, pas de preference
+
+Le systeme est additif/multiplicatif, pas conditionnel — pas besoin de coder 21 combos, les 7 hooks individuels se combinent par multiplication des scores.
+
 
 ### Cohesion de swarm : vitesse du leader
 

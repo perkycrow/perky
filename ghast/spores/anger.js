@@ -20,6 +20,14 @@ export default {
         first_blood: 'rage'
     },
 
+    scoreTarget (entity, target) {
+        if (entity.target === target) {
+            return 1 + entity.spores.anger * 0.3
+        }
+
+        return 1
+    },
+
     onEveryFrame (entity) {
         const count = entity.spores.anger
         if (!entity.target || count <= 0) {

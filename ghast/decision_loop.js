@@ -105,17 +105,26 @@ const RPS_BONUS = {
 
 function computeThreat (attacker, target, distSq) {
     const proximity = 1 / (1 + distSq)
-    const rankFactor = target.rank || 1
-
-    const arrogance = attacker.spores?.arrogance || 0
-    const fear = attacker.spores?.fear || 0
-    const naive = attacker.spores?.naive || 0
-
-    const rankWeight = 1 + arrogance * 0.3 - fear * 0.3 - naive * 0.2
     const rpsFactor = getRpsBonus(attacker, target)
     const targetAggro = 1 + (target.spores?.naive || 0) * 0.2
 
-    return proximity * (1 + rankFactor * rankWeight * 0.2) * rpsFactor * targetAggro
+    let score = proximity * rpsFactor * targetAggro
+
+    if (attacker.spores) {
+        for (const key in attacker.spores) {
+            if (attacker.spores[key] <= 0) {
+                continue
+            }
+
+            const hook = SPORE_DEFINITIONS[key]?.scoreTarget
+
+            if (hook) {
+                score *= hook(attacker, target)
+            }
+        }
+    }
+
+    return score
 }
 
 

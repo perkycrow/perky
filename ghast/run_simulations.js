@@ -97,6 +97,29 @@ runScenario('3 Anger vs 3 Fear (group)',
     {units: [u('Rat', {spores: ['fear']}), u('Rat', {spores: ['fear']}), u('Rat', {spores: ['fear']})]})
 
 
+console.log('\n\n=== TARGET SCORING (multi-target choices) ===\n')
+
+runScenario('Arrogance vs Rank1+Rank3 (should focus rank 3)',
+    {units: [u('Shade', {spores: ['arrogance']})]},
+    {units: [u('Rat'), u('Shade', {rank: 3})]})
+
+runScenario('Fear vs Rank1+Rank3 (should focus rank 1)',
+    {units: [u('Shade', {spores: ['fear']})]},
+    {units: [u('Rat'), u('Shade', {rank: 3})]})
+
+runScenario('Arrogance+Fear vs Rank1+Rank3 (tyran lache)',
+    {units: [u('Shade', {spores: ['arrogance', 'fear']})]},
+    {units: [u('Rat'), u('Shade', {rank: 3})]})
+
+runScenario('Lust vs full HP + wounded (should focus wounded)',
+    {units: [u('Shade', {spores: ['lust']})]},
+    {units: [u('Skeleton'), u('Skeleton')]})
+
+runScenario('Surprise vs 2 targets (should switch targets)',
+    {units: [u('Shade', {spores: ['surprise']})]},
+    {units: [u('Rat'), u('Rat')]})
+
+
 console.log('\n\n=== RPS BASELINE (sanity check) ===\n')
 
 runScenario('Shade vs Shade (mirror)', {units: [u('Shade')]}, {units: [u('Shade')]})

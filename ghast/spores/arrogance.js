@@ -20,44 +20,10 @@ export default {
         first_blood: 'triumph'
     },
 
-    onDecisionFrame (entity, world) {
+    scoreTarget (entity, target) {
         const count = entity.spores.arrogance
-        if (count <= 0 || !entity.target) {
-            return
-        }
+        const rank = target.rank || 1
 
-        const strongest = findStrongestTarget(entity, world)
-
-        if (strongest) {
-            entity.target = strongest
-        }
+        return 1 + rank * count * 0.15
     }
-}
-
-
-function findStrongestTarget (entity, world) {
-    const range = entity.baseDetectRange || 1
-    let strongest = null
-    let bestRank = entity.target.rank || 1
-
-    for (const other of world.entities) {
-        if (other === entity || other.faction === entity.faction || other.dying) {
-            continue
-        }
-
-        const rank = other.rank || 1
-
-        if (rank <= bestRank) {
-            continue
-        }
-
-        const distSq = entity.position.distanceToSquared(other.position)
-
-        if (distSq < range * range) {
-            bestRank = rank
-            strongest = other
-        }
-    }
-
-    return strongest
 }
