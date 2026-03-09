@@ -1,7 +1,7 @@
 export default {
     key: 'fear',
     color: '#4fc3f7',
-    label: 'Peur',
+    label: 'Fear',
     asset: 'spore_scared',
     inclination: 'defensive',
     morale: -0.5,

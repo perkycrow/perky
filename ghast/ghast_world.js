@@ -12,6 +12,7 @@ import Projectile from './entities/projectile.js'
 import BUFF_DEFINITIONS from './buff_definitions.js'
 import {applySporeReactions, applySwarmReaction} from './spore_reactions.js'
 import {getSporeModifier} from './spore_effects.js'
+import {getMoraleModifier} from './entity_helpers.js'
 import {getRankModifier} from './rank.js'
 import updateDecisions from './decision_loop.js'
 
@@ -647,7 +648,9 @@ function computeEffectiveDamage (source, baseDamage) {
     const buff = source.getBuffModifier?.('damage') ?? 1
     const swarm = source.swarm?.getBuffModifier?.('damage') ?? 1
 
-    return Math.max(1, Math.round(baseDamage * rank * spore * buff * swarm))
+    const morale = getMoraleModifier(source, 'damage')
+
+    return Math.max(1, Math.round(baseDamage * rank * spore * buff * swarm * morale))
 }
 
 

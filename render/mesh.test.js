@@ -211,4 +211,32 @@ describe('Mesh', () => {
         expect(deleteCalls.length).toBe(5)
     })
 
+
+    test('bind', () => {
+        const gl = createMockGL()
+        const geometry = Geometry.createBox(1, 1, 1)
+        const mesh = new Mesh({gl, geometry})
+
+        gl.calls.length = 0
+        mesh.bind()
+
+        const vaoCalls = gl.calls.filter(c => c.fn === 'bindVertexArray')
+        expect(vaoCalls.length).toBe(1)
+        expect(vaoCalls[0].args[0]).not.toBeNull()
+    })
+
+
+    test('unbind', () => {
+        const gl = createMockGL()
+        const geometry = Geometry.createBox(1, 1, 1)
+        const mesh = new Mesh({gl, geometry})
+
+        gl.calls.length = 0
+        mesh.unbind()
+
+        const vaoCalls = gl.calls.filter(c => c.fn === 'bindVertexArray')
+        expect(vaoCalls.length).toBe(1)
+        expect(vaoCalls[0].args[0]).toBeNull()
+    })
+
 })

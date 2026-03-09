@@ -137,4 +137,32 @@ describe('LineMesh', () => {
         expect(deleteCalls.length).toBe(0)
     })
 
+
+    test('bind', () => {
+        const gl = createMockGL()
+        const positions = new Float32Array([0, 0, 0, 1, 0, 0])
+        const mesh = new LineMesh({gl, positions})
+
+        gl.calls.length = 0
+        mesh.bind()
+
+        const vaoCalls = gl.calls.filter(c => c.fn === 'bindVertexArray')
+        expect(vaoCalls.length).toBe(1)
+        expect(vaoCalls[0].args[0]).not.toBeNull()
+    })
+
+
+    test('unbind', () => {
+        const gl = createMockGL()
+        const positions = new Float32Array([0, 0, 0, 1, 0, 0])
+        const mesh = new LineMesh({gl, positions})
+
+        gl.calls.length = 0
+        mesh.unbind()
+
+        const vaoCalls = gl.calls.filter(c => c.fn === 'bindVertexArray')
+        expect(vaoCalls.length).toBe(1)
+        expect(vaoCalls[0].args[0]).toBeNull()
+    })
+
 })

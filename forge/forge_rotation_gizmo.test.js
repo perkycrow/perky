@@ -6,8 +6,14 @@ import {
     applyWireRotation,
     ROTATION_RING_RADIUS,
     ROTATION_RING_SEGMENTS,
+    ROTATION_RING_TOLERANCE,
     ROTATION_AXES
 } from './forge_rotation_gizmo.js'
+
+
+test('ROTATION_RING_TOLERANCE', () => {
+    expect(ROTATION_RING_TOLERANCE).toBe(0.15)
+})
 
 
 describe('rotationRingPositions', () => {
@@ -268,7 +274,7 @@ function pickFromRay (origin, direction, center, radius = ROTATION_RING_RADIUS) 
         const dist = Math.sqrt(hitX * hitX + hitY * hitY + hitZ * hitZ)
         const ringDist = Math.abs(dist - radius)
 
-        if (ringDist < 0.15 && ringDist < closestDist) {
+        if (ringDist < ROTATION_RING_TOLERANCE && ringDist < closestDist) {
             closest = i
             closestDist = ringDist
         }

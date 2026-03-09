@@ -113,8 +113,9 @@ function computeThreat (attacker, target, distSq) {
 
     const rankWeight = 1 + arrogance * 0.3 - fear * 0.3 - naive * 0.2
     const rpsFactor = getRpsBonus(attacker, target)
+    const targetAggro = 1 + (target.spores?.naive || 0) * 0.2
 
-    return proximity * (1 + rankFactor * rankWeight * 0.2) * rpsFactor
+    return proximity * (1 + rankFactor * rankWeight * 0.2) * rpsFactor * targetAggro
 }
 
 

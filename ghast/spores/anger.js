@@ -1,7 +1,7 @@
 export default {
     key: 'anger',
     color: '#ef5350',
-    label: 'Colère',
+    label: 'Anger',
     asset: 'spore_angry',
     inclination: 'offensive',
     morale: 0,
@@ -18,5 +18,14 @@ export default {
         ally_died: 'rage',
         low_hp: 'lastBreath',
         first_blood: 'rage'
+    },
+
+    onEveryFrame (entity) {
+        const count = entity.spores.anger
+        if (!entity.target || count <= 0) {
+            return
+        }
+
+        entity.seek(entity.target.position, count * 0.5)
     }
 }

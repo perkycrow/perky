@@ -203,10 +203,10 @@ export default class ForgeUI {
         })
 
         for (const shape of SHAPES) {
-            const btn = document.createElement('button')
-            btn.textContent = shape.label
-            Object.assign(btn.style, BUTTON_STYLE)
-            btn.style.background = 'rgba(255, 255, 255, 0.1)'
+            const btn = createElement('button', {
+                text: shape.label,
+                style: {...BUTTON_STYLE, background: 'rgba(255, 255, 255, 0.1)'}
+            })
             btn.addEventListener('click', () => {
                 this.#forge.addBrush(shape.id)
                 this.#hideShapePalette()
@@ -280,10 +280,10 @@ export default class ForgeUI {
         })
 
         for (const op of OPERATIONS) {
-            const btn = document.createElement('button')
-            btn.textContent = op.label
-            Object.assign(btn.style, BUTTON_STYLE)
-            btn.style.background = 'rgba(255, 255, 255, 0.1)'
+            const btn = createElement('button', {
+                text: op.label,
+                style: {...BUTTON_STYLE, background: 'rgba(255, 255, 255, 0.1)'}
+            })
             btn.addEventListener('click', () => this.#forge.setOperation(op.id))
             bar.appendChild(btn)
             this.#operationButtons[op.id] = btn

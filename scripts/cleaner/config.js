@@ -58,7 +58,8 @@ export const EXCLUSIONS = {
         /\.test\.js$/,
         /^scripts\//,
         /^core\/logger\.js$/,
-        /^core\/debug\.js$/
+        /^core\/debug\.js$/,
+        /^ghast\/run_.*\.js$/
     ],
 
     privacy: [],

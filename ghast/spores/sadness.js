@@ -1,7 +1,7 @@
 export default {
     key: 'sadness',
     color: '#8d6e63',
-    label: 'Triste',
+    label: 'Sadness',
     asset: 'spore_sad',
     inclination: 'defensive',
     morale: -0.5,
@@ -16,5 +16,19 @@ export default {
     reactions: {
         ally_died: 'grief',
         isolated: 'grief'
+    },
+
+    onEveryFrame (entity) {
+        const count = entity.spores.sadness
+        if (count <= 0 || !entity.host) {
+            return
+        }
+
+        const ally = entity.host.nearest(entity, 3, other =>
+            other.faction === entity.faction && !other.dying)
+
+        if (ally) {
+            entity.seek(ally.position, count * 0.4)
+        }
     }
 }

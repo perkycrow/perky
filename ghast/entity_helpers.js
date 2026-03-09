@@ -18,7 +18,7 @@ export function getEffectiveStat (entity, stat, base) {
 }
 
 
-function getMoraleModifier (entity, stat) {
+export function getMoraleModifier (entity, stat) {
     const strength = MORALE_STATS[stat]
 
     if (!strength || !entity.swarm) {
