@@ -835,6 +835,41 @@ Exemple concret : le joueur ordonne "explorer vers le nord". Le shade leader (an
 L'ordre donne la **direction** (quoi faire), les spores donnent le **style** (comment reagir aux imprevus), et le moral + les spores determinent la **discipline** (a quel point l'ordre est respecte). Le joueur fait ses choix strategiques en amont en composant les spores de ses swarms. Au moment de la rencontre, c'est le profil qui decide, pas un micro-management.
 
 
+## Zones de capture (objectifs)
+
+### Concept
+
+Des zones circulaires placees dans le monde (rayon ~1.5x celui d'un swarm) avec une **jar** au centre comme marqueur. Elles servent d'objectifs strategiques : les swarms se battent pour les controler, ce qui donne une raison de se deplacer et de s'affronter plutot que d'errer sans but.
+
+### Mecanisme de capture (style Overwatch)
+
+1. Un swarm entre dans la zone → le **timer de conquete** demarre pour sa faction
+2. Si un swarm ennemi entre dans la zone pendant la conquete → le timer se **bloque** (contested)
+3. Le timer reprend quand le swarm adverse est tue ou quitte la zone
+4. Si le swarm qui a initie la conquete quitte la zone alors qu'un swarm ennemi est encore dedans → la progression est **perdue** et l'autre faction commence son propre timer de 0
+5. Quand le timer se complete → la zone est **convertie** pour la faction du swarm
+
+### Income passif
+
+Une zone convertie produit un **income passif de soul shards** pour la faction qui la controle, jusqu'a epuisement du filon. L'income est au niveau **faction** (pas swarm) — toute la faction beneficie des shards generes par ses zones.
+
+### Bonus d'epuisement
+
+Quand une faction epuise completement un filon, elle recoit un **bonus** (a definir — burst de shards, buff temporaire de faction, etc.). Ca force les factions adverses a reprendre les zones meme quand le filon est presque vide, sinon elles laissent l'ennemi empocher le bonus. Tension strategique : est-ce qu'on investit un swarm pour contester une zone a 5% de filon restant, ou on la laisse et on se concentre ailleurs ?
+
+### A definir
+
+- Duree du timer de conquete
+- Taux d'income en shards par seconde
+- Capacite totale du filon (combien de shards avant epuisement)
+- Nature du bonus d'epuisement (shards, buff, spawn d'une nouvelle zone ?)
+- Ce qui se passe apres le bonus d'epuisement (la zone disparait ? se recharge ? un nouveau spawn ailleurs ?)
+- Placement des zones dans le monde (fixe, aleatoire, dynamique ?)
+- Visuel de progression (barre, couleur de la zone, animation de la jar)
+- Interaction avec les spores (un swarm fear fuit-il la zone contested ? un swarm anger refuse-t-il de quitter ?)
+- D'autres types d'objectifs viendront s'ajouter — les zones de capture sont le premier
+
+
 ## Prochaines etapes
 
 1. Implementer le systeme de soul shards (drop, recrutement, promotion)
