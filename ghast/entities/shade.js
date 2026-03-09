@@ -8,7 +8,7 @@ import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
 import {createSporeStorage, createImprintStorage} from '../spores.js'
 import {getRankModifier} from '../rank.js'
-import {applyLeash, applyMovement, applySporeFrame, getCooldownModifier, getEffectiveStat, getStaminaSpeedModifier, updateStamina} from '../entity_helpers.js'
+import {applyFlankForce, applyLeash, applyMovement, applySporeFrame, getCooldownModifier, getEffectiveStat, getStaminaSpeedModifier, updateStamina} from '../entity_helpers.js'
 
 
 export default class Shade extends Entity {
@@ -22,7 +22,7 @@ export default class Shade extends Entity {
         this.create(Steering)
         this.create(Dash)
         this.create(Health, {hp: Math.round(80 * getRankModifier(this.rank, 'hp'))})
-        this.create(MeleeAttack, {damage: 8, range: 0.5, cooldown: 0.8 * getRankModifier(this.rank, 'cooldown'), windUp: 0.15, strikeTime: 0.1})
+        this.create(MeleeAttack, {damage: 8, range: 0.7, cooldown: 0.8 * getRankModifier(this.rank, 'cooldown'), windUp: 0.15, strikeTime: 0.1})
 
         const {maxSpeed = 0.7, acceleration = 5} = params
 
@@ -66,6 +66,7 @@ export default class Shade extends Entity {
 
         if (enemy) {
             this.seek(enemy.position, getEffectiveStat(this, 'approachWeight', 1))
+            applyFlankForce(this, enemy)
             this.meleeAttack(enemy)
         } else if (this._battleCenter) {
             this.seek(this._battleCenter, 0.3)
@@ -74,8 +75,8 @@ export default class Shade extends Entity {
         applySporeFrame(this)
         this.wander(getEffectiveStat(this, 'wanderWeight', 0.3))
 
-        const neighbors = this.host?.entitiesInRange(this, 1)
-        this.separate(neighbors, 0.8)
+        const neighbors = this.host?.entitiesInRange(this, 1.5)
+        this.separate(neighbors, 1)
 
         applyLeash(this)
         this.move(this.resolveForce())

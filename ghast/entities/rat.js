@@ -7,7 +7,7 @@ import BuffSystem from '../../game/buff_system.js'
 import CombatStats from '../combat_stats.js'
 import {createSporeStorage, createImprintStorage} from '../spores.js'
 import {getRankModifier} from '../rank.js'
-import {applyLeash, applyMovement, applySporeFrame, getCooldownModifier, getEffectiveStat, getStaminaSpeedModifier, updateStamina} from '../entity_helpers.js'
+import {applyFlankForce, applyLeash, applyMovement, applySporeFrame, getCooldownModifier, getEffectiveStat, getStaminaSpeedModifier, updateStamina} from '../entity_helpers.js'
 
 
 export default class Rat extends Entity {
@@ -20,7 +20,7 @@ export default class Rat extends Entity {
         this.create(Velocity)
         this.create(Steering)
         this.create(Health, {hp: Math.round(40 * getRankModifier(this.rank, 'hp'))})
-        this.create(MeleeAttack, {damage: 8, range: 0.3, cooldown: 0.5 * getRankModifier(this.rank, 'cooldown'), windUp: 0.1, strikeTime: 0.08})
+        this.create(MeleeAttack, {damage: 8, range: 0.5, cooldown: 0.5 * getRankModifier(this.rank, 'cooldown'), windUp: 0.1, strikeTime: 0.08})
 
         const {maxSpeed = 1.2, acceleration = 8} = params
 
@@ -57,6 +57,7 @@ export default class Rat extends Entity {
 
         if (enemy) {
             this.seek(enemy.position, getEffectiveStat(this, 'approachWeight', 1))
+            applyFlankForce(this, enemy)
             this.meleeAttack(enemy)
         } else if (this._battleCenter) {
             this.seek(this._battleCenter, 0.3)
@@ -65,8 +66,8 @@ export default class Rat extends Entity {
         applySporeFrame(this)
         this.wander(getEffectiveStat(this, 'wanderWeight', 0.3))
 
-        const neighbors = this.host?.entitiesInRange(this, 0.8)
-        this.separate(neighbors, 1)
+        const neighbors = this.host?.entitiesInRange(this, 1.2)
+        this.separate(neighbors, 1.2)
 
         applyLeash(this)
         this.move(this.resolveForce())

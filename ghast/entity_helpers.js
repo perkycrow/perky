@@ -81,6 +81,66 @@ export function getCooldownModifier (entity) {
 }
 
 
+export function applyFlankForce (entity, target, weight = 0.8) {
+    const host = entity.host
+
+    if (!host) {
+        return
+    }
+
+    const toTargetX = target.x - entity.x
+    const toTargetY = target.y - entity.y
+    const toTargetLen = Math.sqrt(toTargetX * toTargetX + toTargetY * toTargetY)
+
+    if (toTargetLen < 0.01) {
+        return
+    }
+
+    const dirX = toTargetX / toTargetLen
+    const dirY = toTargetY / toTargetLen
+    const perpX = -dirY
+    const perpY = dirX
+
+    const allies = host.entitiesInRange(entity, 2)
+    let lateralSum = 0
+    let count = 0
+
+    for (const ally of allies) {
+        if (ally === entity || ally.faction !== entity.faction) {
+            continue
+        }
+
+        if (ally.target !== entity.target) {
+            continue
+        }
+
+        const dx = entity.x - ally.x
+        const dy = entity.y - ally.y
+        const distSq = dx * dx + dy * dy
+
+        if (distSq < 0.01) {
+            lateralSum += (Math.random() - 0.5) * 2
+            count++
+            continue
+        }
+
+        const dist = Math.sqrt(distSq)
+        const lateral = (dx * perpX + dy * perpY) / dist
+        const proximity = 1 / dist
+
+        lateralSum += (lateral >= 0 ? 1 : -1) * proximity
+        count++
+    }
+
+    if (count === 0) {
+        return
+    }
+
+    const side = lateralSum >= 0 ? 1 : -1
+    entity.addForce({x: perpX * side, y: perpY * side}, weight)
+}
+
+
 export function applyMovement (entity, deltaTime) {
     entity.dampenVelocity(0.88, deltaTime)
 

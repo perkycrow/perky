@@ -7,7 +7,7 @@ export default class Swarm {
         this.faction = faction
         this.members = []
         this.leader = null
-        this.leashRadius = 3
+        this.leashRadius = 5
         this.shards = 0
         this.xp = 0
         this.morale = 50
