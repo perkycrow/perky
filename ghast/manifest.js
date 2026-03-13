@@ -11,6 +11,7 @@ const manifest = {
         cage: {type: 'image', url: './assets/images/cage.png'},
         turret: {type: 'image', url: './assets/images/turret.png'},
         jar: {type: 'image', url: './assets/images/jar.png'},
+        shroom: {type: 'image', url: './assets/images/shroom_scared.png'},
         spore_scared: {type: 'image', url: './assets/images/spore_scared.png'},
         spore_sad: {type: 'image', url: './assets/images/spore_sad.png'},
         spore_angry: {type: 'image', url: './assets/images/spore_angry.png'},

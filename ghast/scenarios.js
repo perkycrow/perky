@@ -248,6 +248,37 @@ const SCENARIOS = [
             {name: 'shadow', x: -2, y: 0, units: [u('Shade', {rank: 3})]},
             {name: 'light', x: 2, y: 0, units: line({type: 'Shade', count: 3, y0: -0.5, spacing: 0.5})}
         ]
+    },
+
+    {
+        label: 'Shroom Garden (spore collection)',
+        factions: [
+            {name: 'shadow',
+                x: -4,
+                y: 0,
+                units: [
+                    u('Shade', {rank: 3}),
+                    u('Skeleton', {x: -4.5, y: -0.6}),
+                    u('Rat', {x: -3.5, y: 0.5})
+                ]},
+            {name: 'light',
+                x: 4,
+                y: 0,
+                units: [
+                    u('Shade', {rank: 3}),
+                    u('Skeleton', {x: 4.5, y: -0.6}),
+                    u('Rat', {x: 3.5, y: 0.5})
+                ]}
+        ],
+        shrooms: [
+            {x: -1.5, y: 2, sporeType: 'anger'},
+            {x: 1.5, y: 2, sporeType: 'fear'},
+            {x: 0, y: -2, sporeType: 'naive'},
+            {x: -2, y: -1, sporeType: 'sadness'},
+            {x: 2, y: -1, sporeType: 'arrogance'},
+            {x: 0, y: 3, sporeType: 'surprise'},
+            {x: 0, y: 0, sporeType: 'lust'}
+        ]
     }
 ]
 

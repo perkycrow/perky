@@ -8,12 +8,15 @@ import Inquisitor from './entities/inquisitor.js'
 import Cage from './entities/cage.js'
 import Turret from './entities/turret.js'
 import Jar from './entities/jar.js'
+import Shroom from './entities/shroom.js'
+import SporeItem from './entities/spore_item.js'
 import Projectile from './entities/projectile.js'
 import BUFF_DEFINITIONS from './buff_definitions.js'
 import {applySporeReactions, applySwarmReaction} from './spore_reactions.js'
 import {getSporeModifier} from './spore_effects.js'
 import {getMoraleModifier} from './entity_helpers.js'
 import {getRankModifier} from './rank.js'
+import {addSpore} from './spores.js'
 import updateDecisions from './decision_loop.js'
 
 
@@ -133,12 +136,14 @@ export default class GhastWorld extends World {
 
     postUpdate (deltaTime) {
         this.#checkProjectileHits()
+        this.#collectSporeItems()
         this.#updateDying(deltaTime)
         this.#cleanupSwarms()
         this.#applyLeaderPromotions()
         this.#updateBuffs(deltaTime)
         this.#updateBattles(deltaTime)
         this.#cleanupBattles()
+        this.#cleanupShrooms()
         this.#cleanup()
     }
 
@@ -165,6 +170,33 @@ export default class GhastWorld extends World {
             if (hit) {
                 entity.alive = false
                 this.emit('hit', {source: entity.source, target: hit, projectile: entity, damage: entity.damage})
+            }
+        }
+    }
+
+
+    #collectSporeItems () {
+        for (const item of this.entities) {
+            if (!(item instanceof SporeItem) || item.alive === false) {
+                continue
+            }
+
+            const collector = this.checkHit(item, e => {
+                return Boolean(e.spores && e.faction && !e.dying)
+            })
+
+            if (collector && addSpore(collector, item.sporeType)) {
+                item.alive = false
+                this.emit('spore_collected', {entity: collector, sporeType: item.sporeType})
+            }
+        }
+    }
+
+
+    #cleanupShrooms () {
+        for (const entity of this.entities) {
+            if (entity instanceof Shroom && entity.depleted) {
+                entity.alive = false
             }
         }
     }
@@ -619,6 +651,31 @@ export default class GhastWorld extends World {
         return this.create(Jar, {
             x: options.x || 0,
             y: options.y || 0
+        })
+    }
+
+
+    spawnShroom (options = {}) {
+        const shroom = this.create(Shroom, {
+            x: options.x || 0,
+            y: options.y || 0,
+            sporeType: options.sporeType || 'fear',
+            stock: options.stock
+        })
+
+        shroom.on('spawn_spore', ({sporeType, x, y}) => {
+            this.spawnSporeItem({sporeType, x, y})
+        })
+
+        return shroom
+    }
+
+
+    spawnSporeItem (options = {}) {
+        return this.create(SporeItem, {
+            x: options.x || 0,
+            y: options.y || 0,
+            sporeType: options.sporeType || 'fear'
         })
     }
 

@@ -53,6 +53,7 @@ export default class GhastStage extends Stage {
     loadScenario (scenario) {
         this.#clearWorld()
         this.#spawnFactions(scenario.factions)
+        this.#spawnShrooms(scenario.shrooms)
         this.#rebuildSwarmCircles()
         this.#setupUI()
         this.world.paused = true
@@ -142,6 +143,17 @@ export default class GhastStage extends Stage {
             {$name: 'entities', content: this.viewsGroup},
             {$name: 'lines', content: this.linesGroup}
         ])
+    }
+
+
+    #spawnShrooms (shrooms) {
+        if (!shrooms) {
+            return
+        }
+
+        for (const shroom of shrooms) {
+            this.world.spawnShroom(shroom)
+        }
     }
 
 
