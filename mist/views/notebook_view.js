@@ -192,7 +192,7 @@ export default class NotebookView extends EntityView {
 
         if (!this.#infoElement) {
             const worldX = this.entity.x - 0.5
-            const worldY = this.entity.y + 0.25
+            const worldY = this.entity.y - 0.5
 
             this.#infoElement = this.htmlLayer.createWorldElement(
                 buildInfoHTML(score, chapterTitle),

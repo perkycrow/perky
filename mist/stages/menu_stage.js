@@ -11,8 +11,10 @@ const CLOUD_GROW_W = 0.4
 const CLOUD_GROW_H = 0.8
 const CLOUD_BASE_WIDTH = 9
 const CLOUD_BASE_HEIGHT = 4.5
-const CLOUD_FADE_MIN = 0.75
-const CLOUD_FADE_MAX = 3
+const CLOUD_FADE_IN_MIN = 0.75
+const CLOUD_FADE_IN_MAX = 2
+const CLOUD_FADE_OUT_MIN = 1.5
+const CLOUD_FADE_OUT_MAX = 3
 
 
 export default class MenuStage extends Stage {
@@ -82,7 +84,7 @@ export default class MenuStage extends Stage {
             return
         }
 
-        this.#fogGroup = new Group2D({depth: 1, y: 2})
+        this.#fogGroup = new Group2D({depth: -1, y: 2})
         this.#sceneGroup.addChild(this.#fogGroup)
 
         for (let i = 0; i < CLOUD_COUNT; i++) {
@@ -105,9 +107,9 @@ export default class MenuStage extends Stage {
 
             if (cloud.age < cloud.fadeIn) {
                 sprite.opacity = (cloud.age / cloud.fadeIn) * cloud.maxOpacity
-            } else if (cloud.age > cloud.lifespan - cloud.fadeIn) {
+            } else if (cloud.age > cloud.lifespan - cloud.fadeOut) {
                 const remaining = cloud.lifespan - cloud.age
-                sprite.opacity = Math.max(0, (remaining / cloud.fadeIn) * cloud.maxOpacity)
+                sprite.opacity = Math.max(0, (remaining / cloud.fadeOut) * cloud.maxOpacity)
             } else {
                 sprite.opacity = cloud.maxOpacity
             }
@@ -115,8 +117,9 @@ export default class MenuStage extends Stage {
             if (cloud.age >= cloud.lifespan) {
                 resetCloud(sprite, false)
                 cloud.age = 0
-                cloud.fadeIn = CLOUD_FADE_MIN + Math.random() * (CLOUD_FADE_MAX - CLOUD_FADE_MIN)
-                cloud.lifespan = 3 + Math.random() * 5
+                cloud.fadeIn = CLOUD_FADE_IN_MIN + Math.random() * (CLOUD_FADE_IN_MAX - CLOUD_FADE_IN_MIN)
+                cloud.fadeOut = CLOUD_FADE_OUT_MIN + Math.random() * (CLOUD_FADE_OUT_MAX - CLOUD_FADE_OUT_MIN)
+                cloud.lifespan = cloud.fadeIn + cloud.fadeOut + 2 + Math.random() * 4
                 cloud.maxOpacity = 0.3 + Math.random() * 0.4
             }
         }
@@ -180,11 +183,15 @@ function resetCloud (sprite, scattered) {
 
     const age = scattered ? Math.random() * 6 : 0
 
+    const fadeIn = CLOUD_FADE_IN_MIN + Math.random() * (CLOUD_FADE_IN_MAX - CLOUD_FADE_IN_MIN)
+    const fadeOut = CLOUD_FADE_OUT_MIN + Math.random() * (CLOUD_FADE_OUT_MAX - CLOUD_FADE_OUT_MIN)
+
     return {
         sprite,
         age,
-        fadeIn: CLOUD_FADE_MIN + Math.random() * (CLOUD_FADE_MAX - CLOUD_FADE_MIN),
-        lifespan: 3 + Math.random() * 5,
+        fadeIn,
+        fadeOut,
+        lifespan: fadeIn + fadeOut + 2 + Math.random() * 4,
         maxOpacity: 0.3 + Math.random() * 0.4
     }
 }

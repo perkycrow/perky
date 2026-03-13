@@ -210,7 +210,7 @@ export default class EndPanelView extends EntityView {
         }
 
         const worldX = this.entity.x
-        const worldY = this.entity.y
+        const worldY = this.entity.y - 1.75
 
         this.#buttonElement = this.htmlLayer.createWorldElement(
             buildButtonHTML(label),
