@@ -37,3 +37,11 @@ test('drifts around origin', () => {
     const dist = Math.sqrt(item.x * item.x + item.y * item.y)
     expect(dist).toBeLessThan(2)
 })
+
+
+test('move sets direction', () => {
+    const item = new SporeItem()
+    const direction = {x: 1, y: 0}
+    item.move(direction)
+    expect(item.direction).toBe(direction)
+})

@@ -10,8 +10,6 @@ import Group2D from '/render/group_2d.js'
 import {createElement, createStyleSheet, adoptStyleSheets} from '/application/dom_utils.js'
 
 
-// --- Entities ---
-
 class Player extends Entity {
 
     constructor (options = {}) {
@@ -32,8 +30,6 @@ class Prop extends Entity {
 
 }
 
-
-// --- Views ---
 
 class PlayerView extends EntityView {
 
@@ -66,8 +62,6 @@ class PropView extends EntityView {
 }
 
 
-// --- Worlds ---
-
 class ForestWorld extends World {
 
     onStart () {
@@ -95,8 +89,6 @@ class CaveWorld extends World {
 
 }
 
-
-// --- Stages ---
 
 const ZONE_HALF_W = 4
 const ZONE_HALF_H = 3
@@ -199,8 +191,6 @@ class CaveStage extends Stage {
 }
 
 
-// --- Controller ---
-
 class ZoneController extends GameController {
 
     static bindings = {
@@ -210,14 +200,13 @@ class ZoneController extends GameController {
         moveRight: ['KeyD', 'ArrowRight']
     }
 
-
     update (game, deltaTime) {
-        const player = game.player
+        const player = this.game.player
         if (!player) {
             return
         }
 
-        const direction = game.getDirection('move')
+        const direction = this.game.getDirection('move')
         if (!direction || direction.length() === 0) {
             return
         }
@@ -227,10 +216,10 @@ class ZoneController extends GameController {
 
         player.y = clamp(player.y, -ZONE_HALF_H + 0.3, ZONE_HALF_H - 0.3)
 
-        if (game.currentStageName === 'forest' && player.x > ZONE_HALF_W - TRIGGER) {
-            game.transitionTo('cave', -ZONE_HALF_W + 0.5, player.y)
-        } else if (game.currentStageName === 'cave' && player.x < -ZONE_HALF_W + TRIGGER) {
-            game.transitionTo('forest', ZONE_HALF_W - 0.5, player.y)
+        if (this.game.currentStageName === 'forest' && player.x > ZONE_HALF_W - TRIGGER) {
+            this.game.transitionTo('cave', -ZONE_HALF_W + 0.5, player.y)
+        } else if (this.game.currentStageName === 'cave' && player.x < -ZONE_HALF_W + TRIGGER) {
+            this.game.transitionTo('forest', ZONE_HALF_W - 0.5, player.y)
         } else {
             player.x = clamp(player.x, -ZONE_HALF_W + 0.3, ZONE_HALF_W - 0.3)
         }
@@ -243,8 +232,6 @@ function clamp (v, min, max) {
     return Math.max(min, Math.min(max, v))
 }
 
-
-// --- Game ---
 
 class ZoneGame extends Game {
 
@@ -261,7 +248,6 @@ class ZoneGame extends Game {
 
     player = null
     transitionCount = 0
-
 
     onStart () {
         super.onStart()
@@ -298,16 +284,12 @@ class ZoneGame extends Game {
 }
 
 
-// --- Bootstrap ---
-
 const container = document.getElementById('game-container')
 
 const game = new ZoneGame()
 game.mount(container)
 game.start()
 
-
-// --- HUD ---
 
 const hud = createElement('div', {class: 'zone-hud'})
 
@@ -323,7 +305,7 @@ hud.appendChild(statusLabel)
 container.appendChild(hud)
 
 
-game.on('zone:changed', ({from, to, transitions, entitiesFrom, entitiesTo}) => {
+game.on('zone:changed', ({to, transitions, entitiesFrom, entitiesTo}) => {
     const zoneName = to.charAt(0).toUpperCase() + to.slice(1)
     zoneLabel.textContent = zoneName
     zoneLabel.className = `zone-label zone-${to}`

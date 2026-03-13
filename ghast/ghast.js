@@ -4,6 +4,7 @@ import OutlineEffect from '../render/shaders/builtin/effects/outline_effect.js'
 import manifest from './manifest.js'
 import {SPORE_TYPES, addSpore} from './spores.js'
 import SCENARIOS from './scenarios.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 export default class Ghast extends Game {
@@ -104,9 +105,10 @@ export default class Ghast extends Game {
         })
 
         for (let i = 0; i < SCENARIOS.length; i++) {
-            const option = document.createElement('option')
-            option.value = i
-            option.textContent = SCENARIOS[i].label
+            const option = createElement('option', {
+                value: i,
+                text: SCENARIOS[i].label
+            })
             select.appendChild(option)
         }
 
@@ -156,28 +158,28 @@ export default class Ghast extends Game {
             this.#loadScenario(Number(select.value))
         })
 
-        const speedLabel = document.createElement('span')
-        speedLabel.textContent = '1x'
-
-        Object.assign(speedLabel.style, {
-            fontSize: '12px',
-            fontFamily: 'monospace',
-            color: '#888',
-            minWidth: '28px',
-            textAlign: 'center'
+        const speedLabel = createElement('span', {
+            text: '1x',
+            style: {
+                fontSize: '12px',
+                fontFamily: 'monospace',
+                color: '#888',
+                minWidth: '28px',
+                textAlign: 'center'
+            }
         })
 
-        const slider = document.createElement('input')
-        slider.type = 'range'
-        slider.min = '0'
-        slider.max = '4'
-        slider.step = '1'
-        slider.value = '0'
-
-        Object.assign(slider.style, {
-            width: '80px',
-            cursor: 'pointer',
-            accentColor: '#8033ff'
+        const slider = createElement('input', {
+            type: 'range',
+            min: '0',
+            max: '4',
+            step: '1',
+            value: '0',
+            style: {
+                width: '80px',
+                cursor: 'pointer',
+                accentColor: '#8033ff'
+            }
         })
 
         const SPEEDS = [1, 2, 5, 10, 20]

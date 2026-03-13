@@ -83,10 +83,11 @@ node scripts/perky_packer.js -u character.perky -o output/
 
 ### [psd_exporter.js](psd_exporter.js)
 
-Exports PSD files to PNG. Supports resizing and nearest-neighbor interpolation for pixel art.
+Exports PSD files to PNG. Supports resizing (by width or height) and nearest-neighbor interpolation for pixel art.
 
 ```sh
 node scripts/psd_exporter.js character.psd --width 256
+node scripts/psd_exporter.js character.psd -w 256 -h 256
 node scripts/psd_exporter.js pixel_art.psd -w 128 --nearest
 ```
 
@@ -108,10 +109,10 @@ node scripts/psd_parser_test.js character.psd
 
 The cleaner's internals. Auditors are grouped by concern:
 
-- **auditors/** — code style (whitespace, comments, imports, console, privacy, function order, multiple classes)
+- **auditors/** — code style (whitespace, comments, imports, console, privacy, function order, multiple classes, file length, style elements, DOM utils usage)
 - **auditors/eslint/** — ESLint integration (errors, directives, disables, switches)
 - **auditors/tests/** — test quality (missing tests, deep nesting, `it` usage, single describes)
-- **auditors/coverage/** — coverage indicators (stale files, missing coverage, missing docs, import usage)
+- **auditors/coverage/** — coverage indicators (stale files, stale readme, missing coverage, missing docs, import usage)
 - **auditors/filescore/** — health scoring with weighted scorers (age, stability, maturity, coverage, balance, size, usage)
 - **auditors/docs/** — documentation checks (broken links)
 

@@ -70,8 +70,8 @@ app.loadAsset('hero')
 app.loadTag('preload')
 app.loadAll()
 
-app.on('loader:progress', ({loaded, total}) => {
-    console.log(`${loaded}/${total}`)
+app.on('loader:progress', (progress, {asset}) => {
+    console.log(`${Math.round(progress * 100)}% - ${asset.id}`)
 })
 
 app.on('loader:complete', () => {
