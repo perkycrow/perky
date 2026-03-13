@@ -418,6 +418,17 @@ describe(AudioSource, () => {
             })
             expect(() => source.stop()).not.toThrow()
         })
+
+        test('cancels pending fadeOut timeout', () => {
+            vi.useFakeTimers()
+            source.playBuffer({})
+            source.fadeOut(2)
+            source.stop()
+            source.playBuffer({})
+            vi.advanceTimersByTime(2000)
+            expect(source.playing).toBe(true)
+            vi.useRealTimers()
+        })
     })
 
 
@@ -527,6 +538,16 @@ describe(AudioSource, () => {
             vi.useRealTimers()
         })
 
+        test('cancels previous fade timeout on new fadeOut', () => {
+            vi.useFakeTimers()
+            source.playBuffer({})
+            source.fadeOut(2)
+            source.fadeOut(1)
+            vi.advanceTimersByTime(1000)
+            expect(source.playing).toBe(false)
+            vi.useRealTimers()
+        })
+
         test('returns self for chaining', () => {
             source.playBuffer({})
             expect(source.fadeOut()).toBe(source)
@@ -575,10 +596,23 @@ describe(AudioSource, () => {
     })
 
 
-    test('onDispose stops playback', () => {
-        source.playBuffer({})
-        source.onDispose()
-        expect(source.playing).toBe(false)
+    describe('onDispose', () => {
+        test('stops playback', () => {
+            source.playBuffer({})
+            source.onDispose()
+            expect(source.playing).toBe(false)
+        })
+
+        test('cancels pending fadeOut timeout', () => {
+            vi.useFakeTimers()
+            source.playBuffer({})
+            source.fadeOut(2)
+            source.onDispose()
+            source.playBuffer({})
+            vi.advanceTimersByTime(2000)
+            expect(source.playing).toBe(true)
+            vi.useRealTimers()
+        })
     })
 
 })

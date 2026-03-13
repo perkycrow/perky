@@ -626,4 +626,44 @@ describe('Game', () => {
 
     })
 
+
+    describe('asset event listeners', () => {
+
+        test('registers asset:loaded listener only once across multiple starts', () => {
+            const spy = vi.spyOn(game, 'on')
+
+            game.onStart()
+            game.onStart()
+
+            const assetLoadedCalls = spy.mock.calls.filter(call => call[0] === 'asset:loaded')
+            expect(assetLoadedCalls.length).toBe(1)
+        })
+
+
+        test('asset:unloaded removes texture region via textureSystem', () => {
+            const removeFromAsset = vi.fn()
+            game.textureSystem.removeFromAsset = removeFromAsset
+
+            game.onStart()
+
+            const asset = {id: 'tree', type: 'image'}
+            game.emit('asset:unloaded', asset)
+
+            expect(removeFromAsset).toHaveBeenCalledWith(asset)
+        })
+
+
+        test('asset:unloaded removes audio buffer via audioSystem', () => {
+            game.audioSystem = {unregisterBuffer: vi.fn()}
+
+            game.onStart()
+
+            const asset = {id: 'boom', type: 'audio'}
+            game.emit('asset:unloaded', asset)
+
+            expect(game.audioSystem.unregisterBuffer).toHaveBeenCalledWith('boom')
+        })
+
+    })
+
 })

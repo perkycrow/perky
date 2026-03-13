@@ -17,6 +17,7 @@ export default class AudioSource extends PerkyModule {
     #playbackRate = 1
     #startTime = 0
     #pauseTime = 0
+    #fadeTimeout = null
     #x = 0
     #y = 0
     #spatial = false
@@ -311,6 +312,9 @@ export default class AudioSource extends PerkyModule {
             return false
         }
 
+        clearTimeout(this.#fadeTimeout)
+        this.#fadeTimeout = null
+
         this.#playing = false
         this.#pauseTime = 0
 
@@ -400,7 +404,8 @@ export default class AudioSource extends PerkyModule {
         this.#gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + duration)
 
         if (stopAfter) {
-            setTimeout(() => this.stop(), duration * 1000)
+            clearTimeout(this.#fadeTimeout)
+            this.#fadeTimeout = setTimeout(() => this.stop(), duration * 1000)
         }
 
         return this
@@ -408,6 +413,7 @@ export default class AudioSource extends PerkyModule {
 
 
     onDispose () {
+        clearTimeout(this.#fadeTimeout)
         this.stop()
     }
 

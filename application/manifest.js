@@ -39,8 +39,12 @@ export default class Manifest extends PerkyModule {
             'getAssetsByType',
             'getAssetsByTag',
             'getSource',
-            'getAllAssets'
+            'getAllAssets',
+            'unloadSource',
+            'unloadSourcesByTag'
         ])
+
+        this.delegateEventsTo(host, ['asset:unloaded'])
 
         this.delegateTo(host, {
             export: 'exportManifest',
@@ -150,6 +154,36 @@ export default class Manifest extends PerkyModule {
 
     removeAsset (id) {
         return this.assets.delete(id)
+    }
+
+
+    unloadSource (id) {
+        const asset = this.getAsset(id)
+
+        if (!asset || !asset.source) {
+            return false
+        }
+
+        asset.source = null
+        this.emit('asset:unloaded', asset)
+
+        return true
+    }
+
+
+    unloadSourcesByTag (tag) {
+        const assets = this.getAssetsByTag(tag)
+        let count = 0
+
+        for (const asset of assets) {
+            if (asset.source) {
+                asset.source = null
+                this.emit('asset:unloaded', asset)
+                count++
+            }
+        }
+
+        return count
     }
 
 

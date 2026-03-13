@@ -146,4 +146,33 @@ describe('Spritesheet', () => {
         })
 
     })
+
+
+    describe('dispose', () => {
+
+        test('clears images', () => {
+            const sheet = new Spritesheet({image: mockImage, data: mockData})
+            sheet.dispose()
+            expect(sheet.images).toBeNull()
+        })
+
+        test('clears framesMap', () => {
+            const sheet = new Spritesheet({image: mockImage, data: mockData})
+            sheet.dispose()
+            expect(sheet.framesMap.size).toBe(0)
+        })
+
+        test('clears data', () => {
+            const sheet = new Spritesheet({image: mockImage, data: mockData})
+            sheet.dispose()
+            expect(sheet.data).toBeNull()
+        })
+
+        test('getFrame returns null after dispose', () => {
+            const sheet = new Spritesheet({image: mockImage, data: mockData})
+            sheet.dispose()
+            expect(sheet.getFrame('frame1')).toBeNull()
+        })
+
+    })
 })

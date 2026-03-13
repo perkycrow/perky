@@ -111,6 +111,19 @@ export default class TextureAtlasManager {
     }
 
 
+    remove (id) {
+        const region = this.#regionIndex.get(id)
+
+        if (!region) {
+            return null
+        }
+
+        this.#regionIndex.delete(id)
+
+        return region
+    }
+
+
     getDirtyAtlases () {
         return this.#atlases.filter(atlas => atlas.dirty)
     }

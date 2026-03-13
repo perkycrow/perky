@@ -182,6 +182,18 @@ export default class AudioSystem extends PerkyModule {
     }
 
 
+    unregisterBuffer (id) {
+        if (!this.#buffers.has(id)) {
+            return false
+        }
+
+        this.#buffers.delete(id)
+        this.emit('buffer:unregistered', id)
+
+        return true
+    }
+
+
     async loadBuffer (id, url) {
         try {
             const response = await fetch(url)

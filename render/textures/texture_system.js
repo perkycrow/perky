@@ -104,6 +104,47 @@ export default class TextureSystem extends PerkyModule {
     }
 
 
+    removeRegion (id) {
+        if (this.#manualRegions.has(id)) {
+            this.#manualRegions.delete(id)
+            return true
+        }
+
+        return this.#atlasManager.remove(id) !== null
+    }
+
+
+    removeSpritesheet (id) {
+        const spritesheet = this.#spritesheets.get(id)
+
+        if (!spritesheet) {
+            return false
+        }
+
+        spritesheet.dispose?.()
+        this.#spritesheets.delete(id)
+
+        return true
+    }
+
+
+    removeFromAsset (asset) {
+        if (!asset) {
+            return false
+        }
+
+        if (asset.type === 'spritesheet') {
+            return this.removeSpritesheet(asset.id)
+        }
+
+        if (isImageAsset(asset)) {
+            return this.removeRegion(asset.id)
+        }
+
+        return false
+    }
+
+
     addFromAsset (asset) {
         if (!isImageAsset(asset) || !asset.source) {
             return null

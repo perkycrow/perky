@@ -355,4 +355,36 @@ describe('TextureAtlasManager', () => {
 
     })
 
+
+    describe('remove', () => {
+
+        test('removes region from index', () => {
+            manager.add('sprite1', createMockImage(32, 32))
+
+            manager.remove('sprite1')
+
+            expect(manager.has('sprite1')).toBe(false)
+        })
+
+        test('returns removed region', () => {
+            const region = manager.add('sprite1', createMockImage(32, 32))
+
+            expect(manager.remove('sprite1')).toBe(region)
+        })
+
+        test('returns null for unknown id', () => {
+            expect(manager.remove('unknown')).toBeNull()
+        })
+
+        test('decrements regionCount', () => {
+            manager.add('sprite1', createMockImage(32, 32))
+            manager.add('sprite2', createMockImage(32, 32))
+
+            manager.remove('sprite1')
+
+            expect(manager.regionCount).toBe(1)
+        })
+
+    })
+
 })

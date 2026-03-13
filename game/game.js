@@ -22,6 +22,7 @@ export default class Game extends Application {
     #stageControllerName = null
     #gamePostPasses = []
     #stagePostPasses = []
+    #assetListenersReady = false
 
     constructor (params = {}) {
         super(params)
@@ -178,7 +179,7 @@ export default class Game extends Application {
     onStart () {
         this.#buildTextureAtlases()
         this.#buildSpritesheets()
-        this.#listenForLateAssets()
+        this.#listenForAssetEvents()
         this.#setupPostPasses()
     }
 
@@ -248,14 +249,30 @@ export default class Game extends Application {
     }
 
 
-    #listenForLateAssets () {
-        if (!this.textureSystem) {
+    #listenForAssetEvents () {
+        if (this.#assetListenersReady) {
             return
         }
 
-        this.on('asset:loaded', (asset) => {
-            this.textureSystem.addFromAsset(asset)
-        })
+        this.#assetListenersReady = true
+
+        if (this.textureSystem) {
+            this.on('asset:loaded', (asset) => {
+                this.textureSystem.addFromAsset(asset)
+            })
+
+            this.on('asset:unloaded', (asset) => {
+                this.textureSystem.removeFromAsset(asset)
+            })
+        }
+
+        if (this.audioSystem) {
+            this.on('asset:unloaded', (asset) => {
+                if (asset.type === 'audio') {
+                    this.audioSystem.unregisterBuffer(asset.id)
+                }
+            })
+        }
     }
 
 

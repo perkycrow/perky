@@ -1,3 +1,4 @@
+import {vi} from 'vitest'
 import Manifest from './manifest.js'
 import Asset from './asset.js'
 
@@ -267,6 +268,99 @@ describe('Manifest', () => {
 
         expect(manifest.assets.hasIndex('tags')).toBe(true)
         expect(manifest.assets.lookup('tags', 'preload')).toHaveLength(1)
+    })
+
+
+    describe('unloadSource', () => {
+
+        test('sets asset source to null', () => {
+            manifest.addAsset({id: 'tree', type: 'image', url: '/tree.png', source: {width: 32}})
+
+            manifest.unloadSource('tree')
+
+            expect(manifest.getAsset('tree').source).toBeNull()
+        })
+
+        test('emits asset:unloaded', () => {
+            manifest.addAsset({id: 'tree', type: 'image', url: '/tree.png', source: {width: 32}})
+            const listener = vi.fn()
+            manifest.on('asset:unloaded', listener)
+
+            manifest.unloadSource('tree')
+
+            expect(listener).toHaveBeenCalledWith(manifest.getAsset('tree'))
+        })
+
+        test('returns true on success', () => {
+            manifest.addAsset({id: 'tree', type: 'image', url: '/tree.png', source: {width: 32}})
+
+            expect(manifest.unloadSource('tree')).toBe(true)
+        })
+
+        test('returns false for unknown id', () => {
+            expect(manifest.unloadSource('unknown')).toBe(false)
+        })
+
+        test('returns false when source is already null', () => {
+            manifest.addAsset({id: 'tree', type: 'image', url: '/tree.png'})
+
+            expect(manifest.unloadSource('tree')).toBe(false)
+        })
+
+        test('keeps the asset in the registry', () => {
+            manifest.addAsset({id: 'tree', type: 'image', url: '/tree.png', source: {width: 32}})
+
+            manifest.unloadSource('tree')
+
+            expect(manifest.hasAsset('tree')).toBe(true)
+            expect(manifest.getAsset('tree').url).toBe('/tree.png')
+        })
+
+    })
+
+
+    describe('unloadSourcesByTag', () => {
+
+        test('unloads all sources with matching tag', () => {
+            manifest.addAsset({id: 'tree', type: 'image', url: '/tree.png', source: {}, tags: ['forest']})
+            manifest.addAsset({id: 'bush', type: 'image', url: '/bush.png', source: {}, tags: ['forest']})
+            manifest.addAsset({id: 'rock', type: 'image', url: '/rock.png', source: {}, tags: ['cave']})
+
+            manifest.unloadSourcesByTag('forest')
+
+            expect(manifest.getAsset('tree').source).toBeNull()
+            expect(manifest.getAsset('bush').source).toBeNull()
+            expect(manifest.getAsset('rock').source).not.toBeNull()
+        })
+
+        test('emits asset:unloaded for each asset', () => {
+            manifest.addAsset({id: 'tree', type: 'image', url: '/tree.png', source: {}, tags: ['forest']})
+            manifest.addAsset({id: 'bush', type: 'image', url: '/bush.png', source: {}, tags: ['forest']})
+            const listener = vi.fn()
+            manifest.on('asset:unloaded', listener)
+
+            manifest.unloadSourcesByTag('forest')
+
+            expect(listener).toHaveBeenCalledTimes(2)
+        })
+
+        test('returns count of unloaded assets', () => {
+            manifest.addAsset({id: 'tree', type: 'image', url: '/tree.png', source: {}, tags: ['forest']})
+            manifest.addAsset({id: 'bush', type: 'image', url: '/bush.png', source: {}, tags: ['forest']})
+
+            expect(manifest.unloadSourcesByTag('forest')).toBe(2)
+        })
+
+        test('returns 0 for unknown tag', () => {
+            expect(manifest.unloadSourcesByTag('unknown')).toBe(0)
+        })
+
+        test('skips assets with source already null', () => {
+            manifest.addAsset({id: 'tree', type: 'image', url: '/tree.png', tags: ['forest']})
+
+            expect(manifest.unloadSourcesByTag('forest')).toBe(0)
+        })
+
     })
 
 })

@@ -260,6 +260,32 @@ describe(AudioSystem, () => {
     })
 
 
+    describe('unregisterBuffer', () => {
+        test('removes registered buffer', () => {
+            system.registerBuffer('test', {})
+            system.unregisterBuffer('test')
+            expect(system.hasBuffer('test')).toBe(false)
+        })
+
+        test('emits buffer:unregistered event', () => {
+            const listener = vi.fn()
+            system.on('buffer:unregistered', listener)
+            system.registerBuffer('test', {})
+            system.unregisterBuffer('test')
+            expect(listener).toHaveBeenCalledWith('test')
+        })
+
+        test('returns true on success', () => {
+            system.registerBuffer('test', {})
+            expect(system.unregisterBuffer('test')).toBe(true)
+        })
+
+        test('returns false for unknown buffer', () => {
+            expect(system.unregisterBuffer('unknown')).toBe(false)
+        })
+    })
+
+
     describe('loadBuffer', () => {
         test('fetches and decodes audio', async () => {
             // Set context to running so decodeAudioData doesn't queue

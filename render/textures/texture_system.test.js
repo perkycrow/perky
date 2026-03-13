@@ -305,6 +305,88 @@ describe('TextureSystem', () => {
     })
 
 
+    describe('removeRegion', () => {
+
+        test('removes a manual region', () => {
+            const asset = {
+                id: 'standalone',
+                type: 'image',
+                source: createMockImage(32, 32),
+                config: {atlas: false}
+            }
+            system.addFromAsset(asset)
+
+            expect(system.removeRegion('standalone')).toBe(true)
+            expect(system.hasRegion('standalone')).toBe(false)
+        })
+
+        test('removes an atlas region', () => {
+            system.addRegion('sprite1', createMockImage(32, 32))
+
+            expect(system.removeRegion('sprite1')).toBe(true)
+            expect(system.hasRegion('sprite1')).toBe(false)
+        })
+
+        test('returns false for unknown region', () => {
+            expect(system.removeRegion('unknown')).toBe(false)
+        })
+
+    })
+
+
+    describe('removeSpritesheet', () => {
+
+        test('removes a registered spritesheet', () => {
+            const source = {
+                image: createMockImage(256, 256),
+                data: {frames: [], animations: {}, meta: {}}
+            }
+            system.registerSpritesheet('player', source)
+
+            expect(system.removeSpritesheet('player')).toBe(true)
+            expect(system.getSpritesheet('player')).toBeNull()
+        })
+
+        test('returns false for unknown spritesheet', () => {
+            expect(system.removeSpritesheet('unknown')).toBe(false)
+        })
+
+    })
+
+
+    describe('removeFromAsset', () => {
+
+        test('removes region for image asset', () => {
+            system.addRegion('tree', createMockImage(32, 32))
+
+            system.removeFromAsset({id: 'tree', type: 'image'})
+
+            expect(system.hasRegion('tree')).toBe(false)
+        })
+
+        test('removes spritesheet for spritesheet asset', () => {
+            const source = {
+                image: createMockImage(256, 256),
+                data: {frames: [], animations: {}, meta: {}}
+            }
+            system.registerSpritesheet('player', source)
+
+            system.removeFromAsset({id: 'player', type: 'spritesheet'})
+
+            expect(system.getSpritesheet('player')).toBeNull()
+        })
+
+        test('returns false for non-image asset', () => {
+            expect(system.removeFromAsset({id: 'sound', type: 'audio'})).toBe(false)
+        })
+
+        test('returns false for null asset', () => {
+            expect(system.removeFromAsset(null)).toBe(false)
+        })
+
+    })
+
+
     test('onInstall delegates methods to host', () => {
         const host = {}
         system.onInstall(host)

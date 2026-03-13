@@ -93,4 +93,12 @@ export default class Spritesheet {
         return Object.keys(this.animations)
     }
 
+
+    dispose () {
+        this.images = null
+        this.data = null
+        this.framesMap.clear()
+        this.animations = null
+    }
+
 }
