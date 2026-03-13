@@ -128,6 +128,19 @@
       ],
       "title": "Audio Pattern Demo",
       "description": "Strudel-inspired pattern sequencing with mini-notation."
+    },
+    {
+      "id": "zone_loading_demo",
+      "file": "zone_loading_demo.html",
+      "category": "game",
+      "tags": [
+        "game",
+        "level",
+        "scene-graph",
+        "performance"
+      ],
+      "title": "Seamless Zone Loading",
+      "description": "Zone transitions with automatic cleanup and entity/view disposal. Move between Forest and Cave zones."
     }
   ]
 }
