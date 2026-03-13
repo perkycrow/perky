@@ -102,8 +102,13 @@ function buildInterludeHTML (content, choices) {
             box-sizing: border-box;
         ">
             <div style="
-                max-width: 400px;
+                max-width: 420px;
                 text-align: center;
+                background: rgba(216, 207, 200, 0.88);
+                border: 2px solid #4d3c2e;
+                border-radius: 8px;
+                padding: 32px 36px;
+                box-shadow: 0.3em 0.3em 1.5em rgba(43, 33, 25, 0.4);
             ">
                 <div style="font-size: 20px; letter-spacing: 1px; margin-bottom: 24px;">
                     New Skill
