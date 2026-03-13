@@ -252,6 +252,45 @@ describe(HTMLLayer, () => {
     })
 
 
+    test('basePpu scales world elements', () => {
+        const camera = new Camera({
+            x: 0,
+            y: 0,
+            zoom: 1,
+            unitsInView: 10,
+            viewportWidth: 800,
+            viewportHeight: 600,
+            pixelRatio: 1
+        })
+        const scaledLayer = new HTMLLayer({$id: 'scaled', camera, basePpu: 120})
+
+        const el = scaledLayer.createWorldElement('<div>Scaled</div>', 0, 0)
+        scaledLayer.updateWorldElements(true)
+
+        expect(el.style.transform).toContain('scale')
+        expect(el.style.transform).toContain('0.5')
+    })
+
+
+    test('basePpu null does not scale world elements', () => {
+        const camera = new Camera({
+            x: 0,
+            y: 0,
+            zoom: 1,
+            unitsInView: 10,
+            viewportWidth: 800,
+            viewportHeight: 600,
+            pixelRatio: 1
+        })
+        layer.camera = camera
+
+        const el = layer.createWorldElement('<div>NoScale</div>', 0, 0)
+        layer.updateWorldElements(true)
+
+        expect(el.style.transform).not.toContain('scale')
+    })
+
+
     test('updateWorldElements culls offscreen elements', () => {
         const camera = new Camera({
             x: 0,

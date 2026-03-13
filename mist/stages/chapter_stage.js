@@ -8,6 +8,7 @@ import wiring from '../wiring.js'
 
 
 const FADE_DURATION = 0.5
+const BASE_PPU = 57
 
 
 export default class ChapterStage extends Stage {
@@ -25,7 +26,8 @@ export default class ChapterStage extends Stage {
         this.game.getLayer('game').setContent(this.viewsGroup)
         this.game.createLayer('chapterUI', 'html', {
             camera: this.game.camera,
-            pointerEvents: 'none'
+            pointerEvents: 'none',
+            basePpu: BASE_PPU
         })
         this.world.init(this.game, {
             chapter: this.options.chapter,

@@ -24,6 +24,7 @@ export default class HTMLLayer extends Layer {
         this.camera = options.camera ?? null
         this.autoUpdate = options.autoUpdate ?? true
         this.updateThreshold = options.updateThreshold ?? 0.5
+        this.basePpu = options.basePpu ?? null
 
         this.applyViewport()
     }
@@ -93,6 +94,7 @@ export default class HTMLLayer extends Layer {
                 position: 'absolute',
                 pointerEvents: options.pointerEvents ?? 'auto',
                 willChange: 'transform',
+                transformOrigin: '0 0',
                 left: '0',
                 top: '0'
             }
@@ -113,7 +115,7 @@ export default class HTMLLayer extends Layer {
             targetObject: options.targetObject ?? null,
             lastScreenX: null,
             lastScreenY: null,
-            lastZoom: null,
+            lastPpu: null,
             visible: true
         }
 
@@ -175,10 +177,13 @@ export default class HTMLLayer extends Layer {
             return this
         }
 
+        const ppu = this.camera.pixelsPerUnit
+
         const ctx = {
             camera: this.camera,
-            ppu: this.camera.pixelsPerUnit,
-            zoomChanged: force || this.worldElements.some(el => el.lastZoom !== this.camera.zoom),
+            ppu,
+            ppuScale: this.basePpu ? ppu / this.basePpu : 1,
+            zoomChanged: force || this.worldElements.some(el => el.lastPpu !== ppu),
             force,
             threshold: this.updateThreshold
         }
@@ -276,9 +281,9 @@ function shouldInheritTransform (worldEl) {
 }
 
 
-function computeTransformScale (worldEl) {
-    let scaleX = worldEl.worldScaleX
-    let scaleY = worldEl.worldScaleY
+function computeTransformScale (worldEl, ppuScale) {
+    let scaleX = worldEl.worldScaleX * ppuScale
+    let scaleY = worldEl.worldScaleY * ppuScale
     let rotationDeg = 0
 
     if (shouldInheritTransform(worldEl)) {
@@ -314,20 +319,20 @@ function updateSingleWorldElement (worldEl, ctx) {
 
     if (!isElementVisible(final.x, final.y, ctx.camera)) {
         setElementVisibility(worldEl, false)
-        worldEl.lastZoom = ctx.camera.zoom
+        worldEl.lastPpu = ctx.ppu
         return
     }
 
     if (shouldSkipUpdate(worldEl, final, ctx.force, ctx.threshold)) {
-        worldEl.lastZoom = ctx.camera.zoom
+        worldEl.lastPpu = ctx.ppu
         return
     }
 
     setElementVisibility(worldEl, true)
 
-    const transform = computeTransformScale(worldEl)
+    const transform = computeTransformScale(worldEl, ctx.ppuScale)
     worldEl.element.style.transform = buildTransformString(final.x, final.y, transform)
     worldEl.lastScreenX = final.x
     worldEl.lastScreenY = final.y
-    worldEl.lastZoom = ctx.camera.zoom
+    worldEl.lastPpu = ctx.ppu
 }

@@ -200,7 +200,7 @@ export default class EndPanelView extends EntityView {
         }
 
         filling.height = FILLING_HEIGHT * progress
-        filling.y = -(FILLING_HEIGHT * (1 - progress)) / 2
+        filling.y = -(FILLING_HEIGHT * (1 - progress)) / 2 + 0.75
     }
 
 
