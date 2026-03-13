@@ -179,6 +179,7 @@ export default class RenderSystem extends PerkyModule {
         }
 
         const layer = this.create(LayerClass, layerOptions)
+        layer.resize(this.layerWidth, this.layerHeight)
         layer.mount(this.element)
         this.sortLayers()
 
