@@ -1,5 +1,5 @@
 import {doc, section, text, code, action, logger} from '../doc/runtime.js'
-import {applyOverrides} from './manifest_patcher.js'
+import {applyOverrides, loadStudioOverrides} from './manifest_patcher.js'
 
 
 export default doc('ManifestPatcher', {advanced: true}, () => {

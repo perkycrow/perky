@@ -151,7 +151,7 @@ export default doc('Spritesheet', {advanced: true}, () => {
             }]
 
             const animations = {
-                idle: {frames: ['idle/1', 'idle/2'], fps: 8}
+                idle: ['idle/1', 'idle/2']
             }
 
             const json = buildJsonData(atlases, animations, 'hero')

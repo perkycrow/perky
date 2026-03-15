@@ -94,7 +94,11 @@ export default doc('Transform', {advanced: true}, () => {
 
     section('Depth Sorting', () => {
 
-        text('Children can be sorted by depth for rendering order.')
+        text(`
+            Children can be sorted by depth for rendering order.
+            The \`depth\` property is defined on [[Object2D@render]], but Transform
+            provides the sorting mechanism for any children with a \`depth\` value.
+        `)
 
         action('getSortedChildren', () => {
             const parent = new Transform()
