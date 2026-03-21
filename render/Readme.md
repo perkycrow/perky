@@ -1,6 +1,6 @@
 # Render
 
-2D rendering with dual backend: Canvas 2D for simplicity, WebGL2 for performance. Same scene graph, same objects, pick your renderer.
+2D and 3D rendering with dual backend: Canvas 2D for simplicity, WebGL2 for performance. Same scene graph, same objects, pick your renderer.
 
 ---
 
@@ -18,7 +18,15 @@ Object2D (visibility, opacity, anchor, tint)
     ├── Sprite (texture, animations, effects)
     ├── Circle
     ├── Rectangle
+    ├── Line
     └── Group2D (container)
+
+Object3D (position, rotation, scale, quaternion)
+    ├── MeshInstance (geometry + material)
+    ├── Light3D (point, directional)
+    ├── Billboard (camera-facing plane)
+    ├── Decal (surface projection)
+    └── Skybox (environment cube)
 ```
 
 RenderSystem manages cameras and layers. Each CanvasLayer picks a renderer. Objects form a scene graph — the renderer traverses it, culls what's off-screen, and draws the rest.
@@ -132,13 +140,14 @@ Container for multiple animations on a sprite. Loads from configuration, resolve
 
 ---
 
-### [circle.js](circle.js) + [rectangle.js](rectangle.js)
+### [circle.js](circle.js) + [rectangle.js](rectangle.js) + [line.js](line.js)
 
 Simple geometric shapes. Fill color, optional stroke.
 
 ```js
 const circle = new Circle({radius: 20, color: '#ff0000', strokeColor: '#000', strokeWidth: 2})
 const rect = new Rectangle({width: 100, height: 50, color: '#00ff00'})
+const line = new Line({x1: 0, y1: 0, x2: 100, y2: 50, color: '#0000ff', width: 2})
 ```
 
 ---
@@ -189,6 +198,83 @@ GPU texture lifecycle. Reference counting, deferred deletion, memory tracking. T
 
 ---
 
+## 3D Rendering
+
+### [object_3d.js](object_3d.js)
+
+Base class for 3D objects. Position, rotation (quaternion), scale. Parent-child hierarchy with automatic world matrix propagation.
+
+```js
+const obj = new Object3D({x: 0, y: 1, z: 0})
+obj.rotation.setFromAxisAngle({x: 0, y: 1, z: 0}, Math.PI / 4)
+obj.updateWorldMatrix()
+```
+
+---
+
+### [geometry.js](geometry.js)
+
+Vertex data container. Positions, normals, UVs, indices, tangents. Built-in primitives.
+
+```js
+const box = Geometry.createBox(1, 1, 1)
+const sphere = Geometry.createSphere(0.5, 16, 12)
+const plane = Geometry.createPlane(10, 10)
+const cylinder = Geometry.createCylinder({radiusTop: 0.5, height: 2})
+```
+
+---
+
+### [mesh.js](mesh.js)
+
+WebGL vertex buffers from Geometry. VAO-based. Bind and draw.
+
+```js
+const mesh = new Mesh({gl, geometry})
+mesh.draw()
+mesh.dispose()
+```
+
+---
+
+### [mesh_instance.js](mesh_instance.js)
+
+Object3D with a mesh and material attached. The thing you actually add to scenes.
+
+---
+
+### [camera_3d.js](camera_3d.js)
+
+Perspective camera. FOV, near/far planes, aspect ratio. Computes view and projection matrices.
+
+---
+
+### [light_3d.js](light_3d.js)
+
+Point and directional lights. Color, intensity. Used by shaders for lighting calculations.
+
+---
+
+### [shadow_map.js](shadow_map.js)
+
+Depth texture for shadow mapping. Renders scene from light's perspective.
+
+---
+
+### [billboard.js](billboard.js) + [decal.js](decal.js) + [skybox.js](skybox.js)
+
+**Billboard** — always faces the camera.
+**Decal** — projected onto surfaces.
+**Skybox** — environment cube rendered behind everything.
+
+---
+
+### [line_mesh.js](line_mesh.js)
+
+Line strip or line segments in 3D. Useful for debug visualization, paths, or laser beams.
+
+---
+
 ## Subfolders
 
 ### [canvas/](canvas/)
@@ -218,6 +304,10 @@ Visual effects for sprites (outline, splatter). Stack multiple effects per sprit
 ### [transforms/](transforms/)
 
 Custom render transforms (e.g., shadow projection). Applied to RenderGroups.
+
+### [csg/](csg/)
+
+Constructive Solid Geometry. Boolean operations (union, subtract, intersect) on 3D meshes. Brush-based editing with history. Useful for level editors or procedural geometry.
 
 ---
 

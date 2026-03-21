@@ -209,6 +209,96 @@ stage.register(
 
 ---
 
+### [timer.js](timer.js)
+
+Simple countdown timer. Useful for cooldowns, durations, or any time-based logic.
+
+```js
+const timer = new Timer(0.5)
+timer.reset()           // starts the countdown
+timer.update(deltaTime) // returns true when it expires
+timer.active            // true while counting down
+timer.progress          // 0→1 as time elapses
+timer.remaining         // 1→0 as time elapses
+```
+
+---
+
+### [health.js](health.js)
+
+Component for HP, damage, healing, and invincibility frames.
+
+```js
+entity.create(Health, {hp: 10, maxHp: 10})
+entity.damage(3, {invincibility: 0.5})
+entity.heal(2)
+entity.isAlive()
+entity.isInvincible()
+entity.on('damaged', ({amount, hp}) => flash())
+entity.on('death', () => explode())
+```
+
+---
+
+### [dash.js](dash.js)
+
+Component for dash movement with cooldown.
+
+```js
+entity.create(Dash)
+entity.dash({x: 1, y: 0}, {power: 12, duration: 0.15, cooldown: 0.5})
+entity.isDashing()
+entity.updateDash(deltaTime)
+```
+
+---
+
+### [steering.js](steering.js)
+
+Component for steering behaviors (seek, flee, arrive, wander, separation).
+
+```js
+entity.create(Steering)
+entity.seek(target, weight)
+entity.flee(target, weight)
+entity.arrive(target, weight, slowRadius)
+entity.wander(weight, jitter)
+entity.separate(neighbors, weight, radius)
+const direction = entity.resolveForce()
+```
+
+---
+
+### [melee_attack.js](melee_attack.js)
+
+Component for melee attacks with wind-up, strike, and cooldown phases.
+
+```js
+entity.create(MeleeAttack, {damage: 2, range: 0.6, cooldown: 1, windUp: 0.15})
+entity.meleeAttack(target)
+entity.updateMeleeAttack(deltaTime)
+entity.isAttacking()
+entity.on('strike', ({target, direction, damage}) => applyDamage())
+```
+
+---
+
+### [buff_system.js](buff_system.js)
+
+Component for timed buffs with stat modifiers.
+
+```js
+entity.create(BuffSystem)
+entity.applyBuff('speed', 5, {speed: 1.5})  // 5 seconds, 1.5x speed
+entity.hasBuff('speed')
+entity.getBuffModifier('speed')  // returns combined multiplier
+entity.updateBuffs(deltaTime)
+entity.on('buff:applied', (buff) => showIcon())
+entity.on('buff:expired', (buff) => hideIcon())
+```
+
+---
+
 ### [game_controller.js](game_controller.js)
 
 Action controller with game-specific conveniences. Has access to `world`, `renderer`, and `camera` as resources.
