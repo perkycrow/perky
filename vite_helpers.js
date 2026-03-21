@@ -6,6 +6,8 @@ const ANIMATOR_TEMPLATE = 'studio/animator/index.html'
 const ANIMATOR_JS_TEMPLATE = 'studio/animator/index.js'
 const SPRITESHEET_TEMPLATE = 'studio/spritesheet/index.html'
 const SPRITESHEET_JS_TEMPLATE = 'studio/spritesheet/index.js'
+const SCENE_TEMPLATE = 'studio/scene/index.html'
+const SCENE_JS_TEMPLATE = 'studio/scene/index.js'
 const HUB_TEMPLATE = 'studio/index.html'
 const HUB_JS_TEMPLATE = 'studio/index.js'
 
@@ -106,6 +108,39 @@ function generateHubFiles (options, baseDir) {
 }
 
 
+function generateSceneFiles (options, baseDir) {
+    const {game, title, icon} = options
+    const outDir = path.resolve(baseDir, game, 'studio')
+    mkdirSync(outDir, {recursive: true})
+
+
+    const htmlTemplatePath = path.resolve(baseDir, SCENE_TEMPLATE)
+    let html = readFileSync(htmlTemplatePath, 'utf-8')
+
+    if (title) {
+        html = html.replace(/<title>.*?<\/title>/, `<title>Scene - ${title}</title>`)
+        html = html.replace(/content="Scene Composer"/, `content="${title}"`)
+    }
+
+    if (icon) {
+        html = html.replace(/href="\.\.\/assets\/images\/studio\.png"/g, `href="${icon}"`)
+    }
+
+    html = html.replace(/src="\.\/index\.js"/, 'src="./scene.js"')
+    html = `<!-- GENERATED FILE - Do not edit! Modify studio/scene/index.html instead -->\n${html}`
+    writeFileSync(path.resolve(outDir, 'scene.html'), html)
+
+
+    const jsTemplatePath = path.resolve(baseDir, SCENE_JS_TEMPLATE)
+    let js = readFileSync(jsTemplatePath, 'utf-8')
+    js = js.replace("'./launcher.js'", "'../../studio/scene/launcher.js'")
+    js = js.replace(/from '\.\.\/\.\.\/[^']+\/manifest\.json'/g, "from '../manifest.json'")
+    js = js.replace(/basePath: '\.\.\/\.\.\/[^']+\/'/g, "basePath: '../'")
+    js = `// GENERATED FILE - Do not edit! Modify studio/scene/index.js instead\n\n${js}`
+    writeFileSync(path.resolve(outDir, 'scene.js'), js)
+}
+
+
 export function createStudioPlugin (options) {
     let baseDir
 
@@ -120,12 +155,14 @@ export function createStudioPlugin (options) {
             generateHubFiles(options, baseDir)
             generateAnimatorFiles(options, baseDir)
             generateSpritesheetFiles(options, baseDir)
+            generateSceneFiles(options, baseDir)
         },
 
         configureServer () {
             generateHubFiles(options, baseDir)
             generateAnimatorFiles(options, baseDir)
             generateSpritesheetFiles(options, baseDir)
+            generateSceneFiles(options, baseDir)
         }
     }
 }

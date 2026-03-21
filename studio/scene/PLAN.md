@@ -62,21 +62,28 @@ Scene Config (JSON in PerkyStore)
 ### Phase 1 — Foundation (framework-level)
 > Goal: scene config format + loader + basic round-trip
 
-- [ ] **1.1** Define SceneConfig format (JSON schema)
-- [ ] **1.2** Scene loader: reads config, creates entities via wiring, adds decor to scene graph
-- [ ] **1.3** Scene serializer: reads current world entities, outputs SceneConfig JSON
-- [ ] **1.4** Tests for loader + serializer
+- [x] **1.1** Define SceneConfig format (JSON schema)
+- [x] **1.2** Scene loader: reads config, creates entities via wiring, adds decor to scene graph
+- [x] **1.3** Scene serializer: reads current world entities, outputs SceneConfig JSON
+- [x] **1.4** Tests for loader + serializer (18 tests)
+
+**Files**: `game/scene_config.js`, `game/scene_config.test.js`
 
 ### Phase 2 — Scene Composer View (studio tool)
 > Goal: visual editor that renders a stage and lets you manipulate entities
 
-- [ ] **2.1** `scene_view.js` — main editor web component (like animator_view.js)
+- [x] **2.1** `scene_view.js` — main editor web component (like animator_view.js)
 - [ ] **2.2** Viewport rendering: instantiate stage, render one static frame (no game loop)
-- [ ] **2.3** Entity picking: click in viewport → screenToWorld → find entity by bounds
-- [ ] **2.4** Entity dragging: drag to move, update entity position + re-render
-- [ ] **2.5** Selection highlight (outline/gizmo on selected entity)
-- [ ] **2.6** Properties panel: edit x, y, depth, scale, rotation numerically
-- [ ] **2.7** Scene tree panel: list all entities, click to select
+      Currently renders entities as labeled rectangles on a grid canvas.
+      Next step: render actual sprites via the entity→view pipeline.
+- [x] **2.3** Entity picking: click in viewport → screenToWorld → find entity by bounds
+- [x] **2.4** Entity dragging: drag to move, update entity position + re-render (snaps to 0.5)
+- [x] **2.5** Selection highlight (outline/gizmo on selected entity)
+- [x] **2.6** Properties panel: edit x, y numerically (depth/scale/rotation TODO)
+- [x] **2.7** Scene tree panel: list all entities, click to select
+- [x] **2.8** Camera pan (drag on empty space) + zoom (mouse wheel)
+
+**Files**: `studio/scene/scene_view.js`, `scene_view.styles.js`, `launcher.js`, `index.html`, `index.js`
 
 ### Phase 3 — Persistence & Integration
 > Goal: save/load scenes, integrate into studio hub
@@ -84,7 +91,7 @@ Scene Config (JSON in PerkyStore)
 - [ ] **3.1** Save scene config to PerkyStore (auto-save like animator)
 - [ ] **3.2** Load scene config on editor open
 - [ ] **3.3** Hub integration: scene cards in hub_view.js
-- [ ] **3.4** Vite plugin: generate scene.html/scene.js for game's studio
+- [x] **3.4** Vite plugin: generate scene.html/scene.js for game's studio
 - [ ] **3.5** Runtime loading: game loads scene overrides from PerkyStore
 
 ### Phase 4 — Mist Integration (first real use)
