@@ -363,6 +363,8 @@ export default class SceneView extends EditorComponent {
             this.#drag = {
                 startWorldX: world.x,
                 startWorldY: world.y,
+                startScreenX: e.offsetX,
+                startScreenY: e.offsetY,
                 startCameraX: cam.x,
                 startCameraY: cam.y,
                 panning: true
@@ -381,10 +383,9 @@ export default class SceneView extends EditorComponent {
 
         if (this.#drag.panning) {
             const cam = this.#renderer.camera
-            const dx = world.x - this.#drag.startWorldX
-            const dy = world.y - this.#drag.startWorldY
-            cam.x = this.#drag.startCameraX - dx
-            cam.y = this.#drag.startCameraY - dy
+            const ppu = cam.pixelsPerUnit
+            cam.x = this.#drag.startCameraX - (e.offsetX - this.#drag.startScreenX) / ppu
+            cam.y = this.#drag.startCameraY + (e.offsetY - this.#drag.startScreenY) / ppu
         } else {
             const dx = world.x - this.#drag.startWorldX
             const dy = world.y - this.#drag.startWorldY
