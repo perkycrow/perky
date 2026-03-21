@@ -19,8 +19,7 @@ export const sceneViewStyles = createStyleSheet(`
         overflow: hidden;
     }
 
-    .viewport canvas {
-        display: block;
+    .viewport .render-system-container {
         width: 100%;
         height: 100%;
     }
