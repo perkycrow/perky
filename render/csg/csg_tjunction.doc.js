@@ -1,7 +1,7 @@
 import {doc, section, text, code, action, logger} from '../../doc/runtime.js'
 import suppressTJunctions from './csg_tjunction.js'
 import CSG from './csg.js'
-import {createBoxGeometry, createSphereGeometry} from '../geometry_primitives.js'
+import Geometry from '../geometry.js'
 
 
 export default doc('CSG T-Junction', {advanced: true}, () => {
@@ -41,8 +41,8 @@ export default doc('CSG T-Junction', {advanced: true}, () => {
         })
 
         action('Fix T-junctions', () => {
-            const box = CSG.fromGeometry(createBoxGeometry())
-            const sphere = CSG.fromGeometry(createSphereGeometry({radius: 0.7}))
+            const box = CSG.fromGeometry(Geometry.createBox())
+            const sphere = CSG.fromGeometry(Geometry.createSphere(0.7))
             const result = box.subtract(sphere)
 
             const before = result.polygons.length

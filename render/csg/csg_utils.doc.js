@@ -1,7 +1,7 @@
 import {doc, section, text, code, action, logger} from '../../doc/runtime.js'
 import filterDegeneratePolygons from './csg_utils.js'
 import CSG from './csg.js'
-import {createBoxGeometry} from '../geometry_primitives.js'
+import Geometry from '../geometry.js'
 
 
 export default doc('CSG Utils', {advanced: true}, () => {
@@ -30,7 +30,7 @@ export default doc('CSG Utils', {advanced: true}, () => {
         })
 
         action('Filter in action', () => {
-            const csg = CSG.fromGeometry(createBoxGeometry())
+            const csg = CSG.fromGeometry(Geometry.createBox())
             const polygons = csg.polygons
             const before = polygons.length
             const filtered = filterDegeneratePolygons(polygons, 0.0001)
