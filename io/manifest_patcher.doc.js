@@ -54,9 +54,10 @@ export default doc('ManifestPatcher', {advanced: true}, () => {
     section('loadStudioOverrides', () => {
 
         text(`
-            Reads all animator resources from [[PerkyStore@perky_store]], extracts their
+            Reads all animator and scene resources from [[PerkyStore@perky_store]], extracts their
             configuration files, and builds an override list. Each animator produces an
             override for its config, and optionally one for its spritesheet if present.
+            Each scene produces an override for its config.
         `)
 
         code('Typical usage', async () => {
