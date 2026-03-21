@@ -379,9 +379,10 @@ export default class WebGLRenderer extends BaseRenderer {
 
 
     #getMatrices () {
+        const cam = this.camera
         const w = this.canvas.width
         const h = this.canvas.height
-        const ppu = this.camera.pixelsPerUnit * this.pixelRatio
+        const ppu = cam.pixelsPerUnit * this.pixelRatio
 
         const projectionMatrix = [
             2 / w, 0, 0,
@@ -392,7 +393,7 @@ export default class WebGLRenderer extends BaseRenderer {
         const viewMatrix = [
             ppu, 0, 0,
             0, ppu, 0,
-            w / 2 - this.camera.x * ppu, h / 2 - this.camera.y * ppu, 1
+            w / 2 - cam.effectiveX * ppu, h / 2 - cam.effectiveY * ppu, 1
         ]
 
         return {projectionMatrix, viewMatrix}

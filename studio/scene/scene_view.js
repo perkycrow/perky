@@ -12,6 +12,7 @@ import {sceneViewStyles} from './scene_view.styles.js'
 
 const GRID_COLOR = 'rgba(255, 255, 255, 0.06)'
 const AXIS_COLOR = 'rgba(255, 255, 255, 0.15)'
+const CAMERA_FRAME_COLOR = 'rgba(255, 255, 255, 0.3)'
 const SELECTED_BORDER = 'rgba(255, 200, 80, 1)'
 const LABEL_COLOR = '#c8d8e8'
 const ENTITY_SIZE = 1
@@ -172,13 +173,13 @@ export default class SceneView extends EditorComponent {
                 main: {unitsInView: {width: 26, height: 15}}
             },
             layers: [
-                {name: 'game', type: 'webgl', camera: 'main', backgroundColor: 'transparent'},
-                {name: 'overlay', type: 'canvas', camera: 'main', backgroundColor: 'transparent'}
+                {name: 'game', type: 'canvas', camera: 'main', backgroundColor: 'transparent'},
+                {name: 'overlay', type: 'canvas', camera: 'main', backgroundColor: 'transparent', autoRender: false}
             ]
         })
         this.#renderSystem.mount(viewport)
-        this.#renderSystem.resizeToContainer()
         this.#renderSystem.on('resize', () => this.#scheduleRender())
+        requestAnimationFrame(() => this.#renderSystem.resizeToContainer())
 
         this.#setupInputEvents(viewport)
         this.#containerEl.appendChild(viewport)
@@ -453,95 +454,122 @@ export default class SceneView extends EditorComponent {
             return
         }
 
-        const ctx = overlayLayer.renderer.ctx
-        const canvas = overlayLayer.renderer.canvas
+        const renderer = overlayLayer.renderer
+        const ctx = renderer.ctx
         const cam = this.camera
+        const ppu = cam.pixelsPerUnit
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        ctx.clearRect(0, 0, renderer.canvas.width, renderer.canvas.height)
 
-        this.#renderGrid(ctx, canvas, cam)
-        this.#renderSelectionHighlight(ctx, cam)
-        this.#renderLabels(ctx, cam)
+        ctx.save()
+        cam.applyToContext(ctx, renderer.pixelRatio)
+
+        const lineWidth = 1 / ppu
+
+        this.#renderGrid(ctx, cam, lineWidth)
+        this.#renderCameraFrame(ctx, lineWidth)
+        this.#renderSelectionHighlight(ctx, lineWidth)
+        this.#renderLabels(ctx, ppu)
+
+        ctx.restore()
     }
 
 
-    #renderGrid (ctx, canvas, cam) { // eslint-disable-line local/class-methods-use-this -- clean
-        const w = canvas.width
-        const h = canvas.height
-
+    #renderGrid (ctx, cam, lineWidth) { // eslint-disable-line local/class-methods-use-this -- clean
         const topLeft = cam.screenToWorld(0, 0)
-        const bottomRight = cam.screenToWorld(w, h)
+        const bottomRight = cam.screenToWorld(cam.viewportWidth, cam.viewportHeight)
 
         const startX = Math.floor(topLeft.x)
         const endX = Math.ceil(bottomRight.x)
         const startY = Math.floor(bottomRight.y)
         const endY = Math.ceil(topLeft.y)
+        const bigNumber = 10000
 
         ctx.strokeStyle = GRID_COLOR
-        ctx.lineWidth = 1
+        ctx.lineWidth = lineWidth
 
         for (let x = startX; x <= endX; x++) {
-            const screen = cam.worldToScreen(x, 0)
             ctx.beginPath()
-            ctx.moveTo(Math.round(screen.x) + 0.5, 0)
-            ctx.lineTo(Math.round(screen.x) + 0.5, h)
+            ctx.moveTo(x, -bigNumber)
+            ctx.lineTo(x, bigNumber)
             ctx.stroke()
         }
 
         for (let y = startY; y <= endY; y++) {
-            const screen = cam.worldToScreen(0, y)
             ctx.beginPath()
-            ctx.moveTo(0, Math.round(screen.y) + 0.5)
-            ctx.lineTo(w, Math.round(screen.y) + 0.5)
+            ctx.moveTo(-bigNumber, y)
+            ctx.lineTo(bigNumber, y)
             ctx.stroke()
         }
 
         ctx.strokeStyle = AXIS_COLOR
-        ctx.lineWidth = 1
+        ctx.lineWidth = lineWidth
 
-        const origin = cam.worldToScreen(0, 0)
         ctx.beginPath()
-        ctx.moveTo(Math.round(origin.x) + 0.5, 0)
-        ctx.lineTo(Math.round(origin.x) + 0.5, h)
+        ctx.moveTo(0, -bigNumber)
+        ctx.lineTo(0, bigNumber)
         ctx.stroke()
 
         ctx.beginPath()
-        ctx.moveTo(0, Math.round(origin.y) + 0.5)
-        ctx.lineTo(w, Math.round(origin.y) + 0.5)
+        ctx.moveTo(-bigNumber, 0)
+        ctx.lineTo(bigNumber, 0)
         ctx.stroke()
     }
 
 
-    #renderSelectionHighlight (ctx, cam) {
+    #renderCameraFrame (ctx, lineWidth) {
+        const gameCamera = this.#context?.studioConfig?.camera
+
+        if (!gameCamera) {
+            return
+        }
+
+        const halfW = gameCamera.width / 2
+        const halfH = gameCamera.height / 2
+
+        ctx.strokeStyle = CAMERA_FRAME_COLOR
+        ctx.lineWidth = lineWidth
+        ctx.setLineDash([lineWidth * 6, lineWidth * 4])
+        ctx.strokeRect(-halfW, -halfH, gameCamera.width, gameCamera.height)
+        ctx.setLineDash([])
+    }
+
+
+    #renderSelectionHighlight (ctx, lineWidth) {
         if (this.#selectedIndex < 0) {
             return
         }
 
         const entity = this.#entities[this.#selectedIndex]
-        const ppu = cam.pixelsPerUnit
-        const size = ENTITY_SIZE * ppu
-        const screen = cam.worldToScreen(entity.x, entity.y)
+        const halfSize = ENTITY_SIZE / 2
 
         ctx.strokeStyle = SELECTED_BORDER
-        ctx.lineWidth = 2
-        ctx.setLineDash([4, 4])
-        ctx.strokeRect(screen.x - size / 2, screen.y - size / 2, size, size)
+        ctx.lineWidth = lineWidth * 2
+        ctx.setLineDash([lineWidth * 4, lineWidth * 4])
+        ctx.strokeRect(entity.x - halfSize, entity.y - halfSize, ENTITY_SIZE, ENTITY_SIZE)
         ctx.setLineDash([])
     }
 
 
-    #renderLabels (ctx, cam) {
-        const ppu = cam.pixelsPerUnit
+    #renderLabels (ctx, ppu) {
+        ctx.save()
 
         for (const entity of this.#entities) {
-            const screen = cam.worldToScreen(entity.x, entity.y)
             const label = entity.$id || entity.type
+            const fontSize = 11 / ppu
 
             ctx.fillStyle = LABEL_COLOR
-            ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif'
+            ctx.font = `${fontSize}px -apple-system, BlinkMacSystemFont, sans-serif`
             ctx.textAlign = 'center'
-            ctx.fillText(label, screen.x, screen.y + (ENTITY_SIZE * ppu) / 2 + 14)
+
+            ctx.save()
+            ctx.translate(entity.x, entity.y - ENTITY_SIZE / 2 - fontSize * 1.2)
+            ctx.scale(1, -1)
+            ctx.fillText(label, 0, 0)
+            ctx.restore()
         }
+
+        ctx.restore()
     }
 
 }

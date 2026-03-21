@@ -2,7 +2,9 @@
     "config": {
         "name": "The Mistbrewer",
         "studio": {
-            "scene": {}
+            "scene": {
+                "camera": {"width": 26, "height": 15}
+            }
         }
     },
     "assets": {
