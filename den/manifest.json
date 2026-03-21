@@ -1,5 +1,5 @@
 {
-    "version": "0.0.3",
+    "version": "0.0.4",
     "config": {
         "name": "Den",
         "audio": {
@@ -167,12 +167,12 @@
         "pigSpritesheet": {
             "type": "spritesheet",
             "url": "./assets/spritesheets/pig.json",
-            "updatedAt": 1769961246932
+            "updatedAt": 1774086050070
         },
         "pigAnimator": {
             "type": "animator",
             "url": "./assets/animators/pig_animator.json",
-            "updatedAt": 1769961246932
+            "updatedAt": 1774086050070
         }
     }
 }
