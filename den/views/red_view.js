@@ -42,15 +42,15 @@ export default class RedView extends EnemyView {
 
     syncAnimation () {
         const state = this.entity.state
-        const skipAnim = this.animator.get('skip')
+        const skipwalkAnim = this.animator.get('skipwalk')
         const throwAnim = this.animator.get('throw')
 
         if (state === 'stopping') {
             if (this.animator.current !== throwAnim) {
                 this.animator.play('throw')
             }
-        } else if (this.animator.current !== skipAnim) {
-            this.animator.play('skip')
+        } else if (this.animator.current !== skipwalkAnim) {
+            this.animator.play('skipwalk')
         }
     }
 
