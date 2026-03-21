@@ -102,14 +102,23 @@ Properties per entity: type, x, y (and later: rotation, scaleX, scaleY, depth, $
 3. **A Stage (or Stage-like context)** → so entity→view binding works via the existing pipeline
 4. The Stage needs to work **without a full Game** — just a canvas + textureSystem
 
-### The Stage coupling problem
+### The Stage coupling problem (resolved temporarily)
 
-Currently Stage needs `this.game` for:
-- `game.getLayer()` / `game.createLayer()` — to attach viewsGroup to renderer
-- `game.getRenderer()` — for post-passes
-- Views use `context.game.getRegion()` / `context.game.getSource()` — to resolve textures
+Stage needs `this.game` for texture resolution and layer access. Views use `context.game.getSource()`, `context.game.getSpritesheet()`.
 
-For the editor, we need a **lightweight render context** that provides texture resolution without a full Game. This is the key refactor to unlock real view rendering in the editor.
+**Current solution**: a `gameProxy` object that delegates to manifest + textureSystem. Works but is a temporary hack — a proper refactor would decouple Stage from Game at the framework level.
+
+```js
+const gameProxy = {
+    getSource: (id) => manifest.getSource(id),
+    getSpritesheet: (id) => textureSystem.getSpritesheet(id),
+    getRegion: (id) => textureSystem.getRegion(id),
+    getLayer: (name) => renderSystem.getLayer(name),
+    createLayer: (...args) => renderSystem.createLayer(...args),
+    textureSystem,
+    camera
+}
+```
 
 ### Data Flow (runtime)
 
@@ -155,16 +164,19 @@ Scene Config (JSON from PerkyStore or manifest)
 - [x] `game/scene_config.test.js` — 18 tests
 - [x] `application/loaders.js` — added `scene` loader type
 
-### Phase 2 — Basic Editor (current state)
-> Visual editor with placeholder rendering
+### Phase 2 — Editor ✅
+> Visual editor with real view rendering
 
-- [x] `studio/scene/scene_view.js` — web component with canvas, grid, entity rectangles
+- [x] `studio/scene/scene_view.js` — web component
 - [x] Entity picking, dragging (snap to 0.5), selection highlight
 - [x] Properties panel (x, y), scene tree
-- [x] Camera pan + zoom
+- [x] Camera pan (screen-space delta) + zoom (wheel)
 - [x] Auto-save to PerkyStore on changes
 - [x] Load from PerkyStore on editor open
-- [ ] **2.2** Real view rendering (requires lightweight Stage — see below)
+- [x] Real view rendering via gameProxy + Stage + wiring
+- [x] RenderSystem with WebGL game layer + Canvas overlay layer
+- [x] Game camera frame overlay (dashed rect from manifest studio.scene.camera config)
+- [x] Grid + axis overlay, labels, selection gizmo
 
 ### Phase 3 — Persistence & Integration
 > Save/load + runtime override
@@ -184,14 +196,12 @@ Scene Config (JSON from PerkyStore or manifest)
 - [x] ChapterWorld reads layout from manifest (resolveLayout)
 - [ ] **4.6** Full round-trip validation
 
-### Phase 5 — Real View Rendering (NEW — was part of 2.2)
-> Render actual entity views in the editor viewport
+### Phase 5 — View Picking & Bounds
+> Use actual view bounds for selection instead of fixed-size rectangles
 
-- [ ] **5.1** Lightweight render context (textureSystem + canvas, no full Game)
-- [ ] **5.2** Instantiate Stage + World in editor, register views via wiring
-- [ ] **5.3** Create entities with preview defaults → views auto-created
-- [ ] **5.4** Render viewsGroup on editor canvas
-- [ ] **5.5** Entity picking based on view bounds (not fixed rectangles)
+- [ ] **5.1** Entity picking based on view bounds (getWorldBounds)
+- [ ] **5.2** Selection highlight matches view shape
+- [ ] **5.3** Preview defaults for entities (so views render representative content)
 
 ### Phase 6 — Entity Palette & Drag-to-Add
 > Toolbar of available entities from wiring
@@ -224,9 +234,15 @@ Scene Config (JSON from PerkyStore or manifest)
 
 ---
 
+## Known Issues
+
+- Camera frame overlay may desync from sprites during zoom (needs investigation)
+- Mist views were missing `super.sync()` — fixed, but other games might have the same issue
+- Labels overlay might drift from sprites when panning (canvas coordinate space mismatch)
+
 ## Open Questions
 
 - How to define preview defaults? Static property on Entity class? Separate config?
-- Should the lightweight render context be a new class, or a refactored Stage?
+- Should the gameProxy be replaced by a proper framework-level refactor (decouple Stage from Game)?
 - How to handle conditional entities (ArsenalPanel only exists if skills > 0)?
 - Should the entity palette show ALL entities from wiring, or a curated subset?
