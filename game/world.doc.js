@@ -175,6 +175,32 @@ export default doc('World', () => {
     })
 
 
+    section('Spatial Queries', () => {
+
+        text(`
+            World provides methods to find entities based on distance and collision.
+        `)
+
+        code('Find nearest entity', () => {
+            // const target = world.nearest(entity, range, filter)
+            // Returns the closest entity within range, or null
+            // filter is optional: (other) => other.hasTag('enemy')
+        })
+
+        code('Check collision', () => {
+            // const hit = world.checkHit(entity, filter)
+            // Uses entity.hitRadius + other.hitRadius as threshold
+            // Returns first entity hit, or null
+        })
+
+        code('Get all in range', () => {
+            // const entities = world.entitiesInRange(entity, range, filter)
+            // Returns array of all entities within range
+        })
+
+    })
+
+
     section('API', () => {
 
         code('Properties', () => {
@@ -185,6 +211,9 @@ export default doc('World', () => {
             // update(deltaTime, context) - Update all entities
             // preUpdate(deltaTime, context) - Hook before entity updates
             // postUpdate(deltaTime, context) - Hook after entity updates
+            // nearest(entity, range, filter) - Find closest entity in range
+            // checkHit(entity, filter) - Check hit using hitRadius
+            // entitiesInRange(entity, range, filter) - Get all entities in range
         })
 
         code('Inherited from PerkyModule', () => {

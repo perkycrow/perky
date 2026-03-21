@@ -212,17 +212,21 @@ export default doc('Manifest', () => {
 
         code('Delegated methods', () => {
             // When manifest.onInstall(host) is called:
-            // - host.getConfig()     -> manifest.getConfig()
-            // - host.setConfig()     -> manifest.setConfig()
-            // - host.addAsset()      -> manifest.addAsset()
-            // - host.getAsset()      -> manifest.getAsset()
-            // - host.getAssets()     -> manifest.getAssets()
-            // - host.getAssetsByType() -> manifest.getAssetsByType()
-            // - host.getAssetsByTag()  -> manifest.getAssetsByTag()
-            // - host.getSource()     -> manifest.getSource()
-            // - host.getAllAssets()  -> manifest.getAllAssets()
-            // - host.exportManifest() -> manifest.export()
-            // - host.importManifest() -> manifest.import()
+            // - host.getConfig()        -> manifest.getConfig()
+            // - host.setConfig()        -> manifest.setConfig()
+            // - host.addAsset()         -> manifest.addAsset()
+            // - host.getAsset()         -> manifest.getAsset()
+            // - host.getAssets()        -> manifest.getAssets()
+            // - host.getAssetsByType()  -> manifest.getAssetsByType()
+            // - host.getAssetsByTag()   -> manifest.getAssetsByTag()
+            // - host.getSource()        -> manifest.getSource()
+            // - host.getAllAssets()     -> manifest.getAllAssets()
+            // - host.unloadSource()     -> manifest.unloadSource()
+            // - host.unloadSourcesByTag() -> manifest.unloadSourcesByTag()
+            // - host.exportManifest()   -> manifest.export()
+            // - host.importManifest()   -> manifest.import()
+            //
+            // Also delegates the 'asset:unloaded' event.
         })
 
     })

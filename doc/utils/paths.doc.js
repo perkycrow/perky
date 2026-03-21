@@ -1,4 +1,5 @@
 import {doc, section, text, code} from '../runtime.js'
+import {buildDocUrl, getTabUrl, docFileToHtml, extractBaseName, guideIdToHtml} from './paths.js'
 
 
 export default doc('Paths', {advanced: true}, () => {

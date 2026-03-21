@@ -20,7 +20,7 @@ export default doc('Frame Editor', {advanced: true}, () => {
         `)
 
         code('Usage', () => {
-            const editor = buildFrameEditor(frame, {
+            const container = buildFrameEditor(frame, {
                 onFramesUpdate: () => save(),
                 getSuggestions: (current) => allEvents.filter(e => !current.includes(e))
             })

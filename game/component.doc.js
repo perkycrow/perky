@@ -16,7 +16,7 @@ export default doc('Component', () => {
 
         text(`
             Components add capabilities to entities.
-            The built-in [[Velocity@game]] is a typical example.
+            The built-in \`Velocity\` component is a typical example.
         `)
 
         code('Custom component', () => {

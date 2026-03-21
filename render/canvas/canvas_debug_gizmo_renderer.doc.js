@@ -33,9 +33,9 @@ export default doc('CanvasDebugGizmoRenderer', {advanced: true}, () => {
         code('Collect and flush', () => {
             const renderer = new CanvasDebugGizmoRenderer()
 
+            renderer.reset()
             renderer.collectGizmo(object, 1.0)
             renderer.flush()
-            renderer.reset()
         })
 
     })

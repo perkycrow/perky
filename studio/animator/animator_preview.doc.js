@@ -51,8 +51,8 @@ export default doc('Animator Preview', {advanced: true}, () => {
 
         text(`
             Configure the preview display with animation data, anchor point,
-            sprite size, motion, and background. Call \`render()\` to draw
-            a single frame without starting the loop.
+            sprite size, motion, background, and camera framing. Call
+            \`render()\` to draw a single frame without starting the loop.
         `)
 
         code('Usage', () => {
@@ -61,6 +61,7 @@ export default doc('Animator Preview', {advanced: true}, () => {
             preview.setSize({width: 1, height: 2})
             preview.setMotion({mode: 'walk', speed: 1, direction: 'e'})
             preview.setBackgroundRegion(region)
+            preview.setUnitsInView({width: 7, height: 5})
             preview.seekToFrame(3)
             preview.resize(800, 600)
             preview.render()

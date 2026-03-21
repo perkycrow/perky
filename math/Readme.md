@@ -8,6 +8,7 @@ Vectors, noise, colors, grids, pathfinding, easing, and a seedable RNG. Pure fun
 
 ```
 Vec2, Vec3, Vec4     (geometry)
+Matrix4, Quaternion  (3D transforms)
 
 Random               (seedable PRNG)
 Noise                (Perlin noise, fbm)
@@ -41,6 +42,32 @@ new Vec4([1, 0, 0, 1])  // w defaults to 1
 ```
 
 Vec2 is used everywhere in Perky: positions, velocities, input controls, camera.
+
+---
+
+### [matrix4.js](matrix4.js) + [quaternion.js](quaternion.js)
+
+4x4 transformation matrices and quaternions for 3D graphics. Column-major layout (WebGL-compatible). Methods return `this` for chaining.
+
+```js
+const mat = new Matrix4()
+mat.makeTranslation(10, 0, 5)
+mat.makeRotationY(Math.PI / 4)
+mat.makePerspective(fov, aspect, near, far)
+mat.makeLookAt(eye, target, up)
+
+mat.multiply(other)
+mat.invert()
+mat.transpose()
+mat.compose(position, quaternion, scale)
+mat.decompose(position, quaternion, scale)
+
+const q = new Quaternion()
+q.setFromAxisAngle({x: 0, y: 1, z: 0}, Math.PI / 2)
+q.setFromEuler(x, y, z, 'YXZ')
+q.slerp(other, 0.5)
+q.rotateVec3(vec)
+```
 
 ---
 
