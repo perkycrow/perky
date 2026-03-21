@@ -1,5 +1,6 @@
 import {launchSceneStudio} from './launcher.js'
 import manifestData from '../../den/manifest.json' with { type: 'json' }
+import wiring from '../../den/wiring.js'
 
 
 async function init () {
@@ -9,7 +10,8 @@ async function init () {
 
     await launchSceneStudio(manifestData, container, {
         basePath: '../../den/',
-        sceneId
+        sceneId,
+        wiring
     })
 }
 

@@ -135,6 +135,7 @@ function generateSceneFiles (options, baseDir) {
     let js = readFileSync(jsTemplatePath, 'utf-8')
     js = js.replace("'./launcher.js'", "'../../studio/scene/launcher.js'")
     js = js.replace(/from '\.\.\/\.\.\/[^']+\/manifest\.json'/g, "from '../manifest.json'")
+    js = js.replace(/from '\.\.\/\.\.\/[^']+\/wiring\.js'/g, "from '../wiring.js'")
     js = js.replace(/basePath: '\.\.\/\.\.\/[^']+\/'/g, "basePath: '../'")
     js = `// GENERATED FILE - Do not edit! Modify studio/scene/index.js instead\n\n${js}`
     writeFileSync(path.resolve(outDir, 'scene.js'), js)

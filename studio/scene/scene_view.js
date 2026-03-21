@@ -4,14 +4,14 @@ import '../../editor/layout/app_layout.js'
 import '../../editor/number_input.js'
 import {ICONS} from '../../editor/devtools/devtools_icons.js'
 import PerkyStore from '../../io/perky_store.js'
+import Stage from '../../game/stage.js'
+import World from '../../game/world.js'
+import WebGLRenderer from '../../render/webgl_renderer.js'
 import {sceneViewStyles} from './scene_view.styles.js'
 
 
 const GRID_COLOR = 'rgba(255, 255, 255, 0.06)'
 const AXIS_COLOR = 'rgba(255, 255, 255, 0.15)'
-const ENTITY_COLOR = 'rgba(100, 180, 255, 0.3)'
-const ENTITY_BORDER = 'rgba(100, 180, 255, 0.8)'
-const SELECTED_COLOR = 'rgba(255, 200, 80, 0.3)'
 const SELECTED_BORDER = 'rgba(255, 200, 80, 1)'
 const LABEL_COLOR = '#c8d8e8'
 const ENTITY_SIZE = 1
@@ -23,20 +23,21 @@ export default class SceneView extends EditorComponent {
     #sceneId = null
     #entities = []
     #selectedIndex = -1
-    #canvas = null
-    #ctx = null
     #containerEl = null
     #appLayout = null
     #propsPanel = null
     #treeEl = null
     #drag = null
-    #camera = {x: 0, y: 0, zoom: 40}
     #animFrame = null
     #boundResize = null
     #store = new PerkyStore()
     #dirty = false
     #autoSaveTimer = null
     #boundBeforeUnload = null
+    #stage = null
+    #renderer = null
+    #overlayCanvas = null
+    #overlayCtx = null
 
     onConnected () {
         adoptStyleSheets(this.shadowRoot, sceneViewStyles)
@@ -56,11 +57,12 @@ export default class SceneView extends EditorComponent {
         clearTimeout(this.#autoSaveTimer)
         this.#flushSave()
         cancelAnimationFrame(this.#animFrame)
+        this.#stage?.stop()
     }
 
 
-    setContext ({manifest, textureSystem, studioConfig, scenes, sceneId}) {
-        this.#context = {manifest, textureSystem, studioConfig}
+    setContext ({manifest, textureSystem, studioConfig, scenes, sceneId, wiring}) {
+        this.#context = {manifest, textureSystem, studioConfig, wiring}
         this.#sceneId = sceneId || null
 
         if (sceneId && scenes[sceneId]) {
@@ -73,10 +75,61 @@ export default class SceneView extends EditorComponent {
             }))
         }
 
+        this.#initStage()
+
         if (this.isConnected) {
             this.#updateTree()
             this.#scheduleRender()
         }
+    }
+
+
+    #initStage () {
+        const {manifest, textureSystem, wiring} = this.#context
+
+        if (!wiring) {
+            return
+        }
+
+        const gameProxy = {
+            getSource: (id) => manifest.getSource(id),
+            getSpritesheet: (id) => textureSystem.getSpritesheet(id),
+            getRegion: (id) => textureSystem.getRegion(id),
+            getLayer: () => null,
+            createLayer: () => null,
+            textureSystem,
+            camera: null
+        }
+
+        this.#stage = new Stage({game: gameProxy})
+        const world = this.#stage.create(World, {$bind: 'world'})
+
+        wiring.registerViews(this.#stage)
+        this.#stage.start()
+
+        for (const entry of this.#entities) {
+            const EntityClass = wiring.get('entities', entry.type)
+
+            if (!EntityClass) {
+                continue
+            }
+
+            world.create(EntityClass, {x: entry.x, y: entry.y, $id: entry.$id})
+        }
+
+        this.#stage.syncViews()
+        this.#scheduleRender()
+        requestAnimationFrame(() => this.#scheduleRender())
+    }
+
+
+    #rebuildStage () {
+        if (this.#stage) {
+            this.#stage.stop()
+            this.#stage = null
+        }
+
+        this.#initStage()
     }
 
 
@@ -104,10 +157,21 @@ export default class SceneView extends EditorComponent {
         this.#containerEl = createElement('div', {class: 'scene-container'})
 
         const viewport = createElement('div', {class: 'viewport'})
-        this.#canvas = document.createElement('canvas')
-        this.#ctx = this.#canvas.getContext('2d')
+
+        this.#renderer = new WebGLRenderer({
+            canvas: document.createElement('canvas'),
+            enableCulling: false,
+            enableDebugGizmos: false
+        })
+        this.#renderer.camera.setUnitsInView({width: 26, height: 15})
+        viewport.appendChild(this.#renderer.canvas)
+
+        this.#overlayCanvas = document.createElement('canvas')
+        this.#overlayCanvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none'
+        this.#overlayCtx = this.#overlayCanvas.getContext('2d')
+        viewport.appendChild(this.#overlayCanvas)
+
         this.#setupCanvasEvents()
-        viewport.appendChild(this.#canvas)
         this.#containerEl.appendChild(viewport)
 
         this.#propsPanel = createElement('div', {class: 'properties-panel'})
@@ -168,8 +232,30 @@ export default class SceneView extends EditorComponent {
         }
 
         this.#entities[this.#selectedIndex][prop] = value
+        this.#syncEntityPositions()
         this.#markDirty()
         this.#scheduleRender()
+    }
+
+
+    #syncEntityPositions () {
+        if (!this.#stage?.world) {
+            return
+        }
+
+        const worldEntities = this.#stage.world.entities
+
+        for (let i = 0; i < this.#entities.length; i++) {
+            const entry = this.#entities[i]
+            const worldEntity = worldEntities[i]
+
+            if (worldEntity) {
+                worldEntity.x = entry.x
+                worldEntity.y = entry.y
+            }
+        }
+
+        this.#stage.syncViews()
     }
 
 
@@ -248,16 +334,18 @@ export default class SceneView extends EditorComponent {
 
 
     #setupCanvasEvents () {
-        this.#canvas.addEventListener('pointerdown', (e) => this.#onPointerDown(e))
-        this.#canvas.addEventListener('pointermove', (e) => this.#onPointerMove(e))
-        this.#canvas.addEventListener('pointerup', () => this.#onPointerUp())
-        this.#canvas.addEventListener('wheel', (e) => this.#onWheel(e))
+        const canvas = this.#renderer.canvas
+        canvas.addEventListener('pointerdown', (e) => this.#onPointerDown(e))
+        canvas.addEventListener('pointermove', (e) => this.#onPointerMove(e))
+        canvas.addEventListener('pointerup', () => this.#onPointerUp())
+        canvas.addEventListener('wheel', (e) => this.#onWheel(e))
     }
 
 
     #onPointerDown (e) {
         const world = this.#screenToWorld(e.offsetX, e.offsetY)
         const hit = this.#pickEntity(world.x, world.y)
+        const canvas = this.#renderer.canvas
 
         if (hit >= 0) {
             this.#selectEntity(hit)
@@ -268,17 +356,18 @@ export default class SceneView extends EditorComponent {
                 startEntityX: entity.x,
                 startEntityY: entity.y
             }
-            this.#canvas.setPointerCapture(e.pointerId)
+            canvas.setPointerCapture(e.pointerId)
         } else {
             this.#selectEntity(-1)
+            const cam = this.#renderer.camera
             this.#drag = {
                 startWorldX: world.x,
                 startWorldY: world.y,
-                startCameraX: this.#camera.x,
-                startCameraY: this.#camera.y,
+                startCameraX: cam.x,
+                startCameraY: cam.y,
                 panning: true
             }
-            this.#canvas.setPointerCapture(e.pointerId)
+            canvas.setPointerCapture(e.pointerId)
         }
     }
 
@@ -291,15 +380,17 @@ export default class SceneView extends EditorComponent {
         const world = this.#screenToWorld(e.offsetX, e.offsetY)
 
         if (this.#drag.panning) {
+            const cam = this.#renderer.camera
             const dx = world.x - this.#drag.startWorldX
             const dy = world.y - this.#drag.startWorldY
-            this.#camera.x = this.#drag.startCameraX - dx
-            this.#camera.y = this.#drag.startCameraY - dy
+            cam.x = this.#drag.startCameraX - dx
+            cam.y = this.#drag.startCameraY - dy
         } else {
             const dx = world.x - this.#drag.startWorldX
             const dy = world.y - this.#drag.startWorldY
             this.#entities[this.#selectedIndex].x = roundHalf(this.#drag.startEntityX + dx)
             this.#entities[this.#selectedIndex].y = roundHalf(this.#drag.startEntityY + dy)
+            this.#syncEntityPositions()
             this.#markDirty()
             this.#buildPropsPanel()
         }
@@ -315,8 +406,10 @@ export default class SceneView extends EditorComponent {
 
     #onWheel (e) {
         e.preventDefault()
+        const cam = this.#renderer.camera
         const factor = e.deltaY > 0 ? 0.9 : 1.1
-        this.#camera.zoom = clamp(this.#camera.zoom * factor, 10, 200)
+        const currentZoom = cam.zoom
+        cam.setZoom(clamp(currentZoom * factor, 0.3, 5))
         this.#scheduleRender()
     }
 
@@ -337,41 +430,22 @@ export default class SceneView extends EditorComponent {
 
 
     #screenToWorld (screenX, screenY) {
-        const w = this.#canvas.width
-        const h = this.#canvas.height
-        const zoom = this.#camera.zoom
-
-        return {
-            x: (screenX - w / 2) / zoom + this.#camera.x,
-            y: -(screenY - h / 2) / zoom + this.#camera.y
-        }
-    }
-
-
-    #worldToScreen (worldX, worldY) {
-        const w = this.#canvas.width
-        const h = this.#canvas.height
-        const zoom = this.#camera.zoom
-
-        return {
-            x: (worldX - this.#camera.x) * zoom + w / 2,
-            y: -(worldY - this.#camera.y) * zoom + h / 2
-        }
+        return this.#renderer.camera.screenToWorld(screenX, screenY)
     }
 
 
     #resizeCanvas () {
-        if (!this.#canvas) {
-            return
-        }
-
-        const viewport = this.#canvas.parentElement
+        const viewport = this.#renderer?.canvas?.parentElement
         if (!viewport) {
             return
         }
 
-        this.#canvas.width = viewport.clientWidth
-        this.#canvas.height = viewport.clientHeight
+        const w = viewport.clientWidth
+        const h = viewport.clientHeight
+
+        this.#renderer.resize(w, h)
+        this.#overlayCanvas.width = w
+        this.#overlayCanvas.height = h
         this.#scheduleRender()
     }
 
@@ -389,27 +463,34 @@ export default class SceneView extends EditorComponent {
 
 
     #renderFrame () {
-        const ctx = this.#ctx
-        const w = this.#canvas.width
-        const h = this.#canvas.height
+        if (this.#stage) {
+            this.#renderer.render(this.#stage.viewsGroup)
+        }
+
+        this.#renderOverlay()
+    }
+
+
+    #renderOverlay () {
+        const ctx = this.#overlayCtx
+        const w = this.#overlayCanvas.width
+        const h = this.#overlayCanvas.height
 
         ctx.clearRect(0, 0, w, h)
-
         this.#renderGrid()
-
-        for (let i = 0; i < this.#entities.length; i++) {
-            this.#renderEntity(i)
-        }
+        this.#renderSelectionHighlight()
+        this.#renderLabels()
     }
 
 
     #renderGrid () {
-        const ctx = this.#ctx
-        const w = this.#canvas.width
-        const h = this.#canvas.height
+        const ctx = this.#overlayCtx
+        const cam = this.#renderer.camera
+        const w = this.#overlayCanvas.width
+        const h = this.#overlayCanvas.height
 
-        const topLeft = this.#screenToWorld(0, 0)
-        const bottomRight = this.#screenToWorld(w, h)
+        const topLeft = cam.screenToWorld(0, 0)
+        const bottomRight = cam.screenToWorld(w, h)
 
         const startX = Math.floor(topLeft.x)
         const endX = Math.ceil(bottomRight.x)
@@ -420,7 +501,7 @@ export default class SceneView extends EditorComponent {
         ctx.lineWidth = 1
 
         for (let x = startX; x <= endX; x++) {
-            const screen = this.#worldToScreen(x, 0)
+            const screen = cam.worldToScreen(x, 0)
             ctx.beginPath()
             ctx.moveTo(Math.round(screen.x) + 0.5, 0)
             ctx.lineTo(Math.round(screen.x) + 0.5, h)
@@ -428,7 +509,7 @@ export default class SceneView extends EditorComponent {
         }
 
         for (let y = startY; y <= endY; y++) {
-            const screen = this.#worldToScreen(0, y)
+            const screen = cam.worldToScreen(0, y)
             ctx.beginPath()
             ctx.moveTo(0, Math.round(screen.y) + 0.5)
             ctx.lineTo(w, Math.round(screen.y) + 0.5)
@@ -438,39 +519,53 @@ export default class SceneView extends EditorComponent {
         ctx.strokeStyle = AXIS_COLOR
         ctx.lineWidth = 1
 
-        const originScreen = this.#worldToScreen(0, 0)
+        const origin = cam.worldToScreen(0, 0)
         ctx.beginPath()
-        ctx.moveTo(Math.round(originScreen.x) + 0.5, 0)
-        ctx.lineTo(Math.round(originScreen.x) + 0.5, h)
+        ctx.moveTo(Math.round(origin.x) + 0.5, 0)
+        ctx.lineTo(Math.round(origin.x) + 0.5, h)
         ctx.stroke()
 
         ctx.beginPath()
-        ctx.moveTo(0, Math.round(originScreen.y) + 0.5)
-        ctx.lineTo(w, Math.round(originScreen.y) + 0.5)
+        ctx.moveTo(0, Math.round(origin.y) + 0.5)
+        ctx.lineTo(w, Math.round(origin.y) + 0.5)
         ctx.stroke()
     }
 
 
-    #renderEntity (index) {
-        const ctx = this.#ctx
-        const entity = this.#entities[index]
-        const isSelected = index === this.#selectedIndex
-        const zoom = this.#camera.zoom
-        const size = ENTITY_SIZE * zoom
+    #renderSelectionHighlight () {
+        if (this.#selectedIndex < 0) {
+            return
+        }
 
-        const screen = this.#worldToScreen(entity.x, entity.y)
+        const ctx = this.#overlayCtx
+        const cam = this.#renderer.camera
+        const entity = this.#entities[this.#selectedIndex]
+        const ppu = cam.pixelsPerUnit
+        const size = ENTITY_SIZE * ppu
+        const screen = cam.worldToScreen(entity.x, entity.y)
 
-        ctx.fillStyle = isSelected ? SELECTED_COLOR : ENTITY_COLOR
-        ctx.strokeStyle = isSelected ? SELECTED_BORDER : ENTITY_BORDER
-        ctx.lineWidth = isSelected ? 2 : 1
-        ctx.fillRect(screen.x - size / 2, screen.y - size / 2, size, size)
+        ctx.strokeStyle = SELECTED_BORDER
+        ctx.lineWidth = 2
+        ctx.setLineDash([4, 4])
         ctx.strokeRect(screen.x - size / 2, screen.y - size / 2, size, size)
+        ctx.setLineDash([])
+    }
 
-        const label = entity.$id || entity.type
-        ctx.fillStyle = LABEL_COLOR
-        ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif'
-        ctx.textAlign = 'center'
-        ctx.fillText(label, screen.x, screen.y + size / 2 + 14)
+
+    #renderLabels () {
+        const ctx = this.#overlayCtx
+        const cam = this.#renderer.camera
+        const ppu = cam.pixelsPerUnit
+
+        for (const entity of this.#entities) {
+            const screen = cam.worldToScreen(entity.x, entity.y)
+            const label = entity.$id || entity.type
+
+            ctx.fillStyle = LABEL_COLOR
+            ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif'
+            ctx.textAlign = 'center'
+            ctx.fillText(label, screen.x, screen.y + (ENTITY_SIZE * ppu) / 2 + 14)
+        }
     }
 
 }

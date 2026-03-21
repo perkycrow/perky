@@ -12,6 +12,7 @@ export async function launchSceneStudio (manifestData, container, options = {}) 
         const studioConfig = getStudioConfig(manifest, 'scene')
         const scenes = collectScenes(manifest)
         const sceneId = options.sceneId || Object.keys(scenes)[0] || null
+        const wiring = options.wiring || null
 
         if (sceneId) {
             const customScene = await loadCustomScene(sceneId)
@@ -27,7 +28,8 @@ export async function launchSceneStudio (manifestData, container, options = {}) 
             textureSystem,
             studioConfig,
             scenes,
-            sceneId
+            sceneId,
+            wiring
         })
         container.appendChild(sceneView)
 
