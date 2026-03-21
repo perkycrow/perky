@@ -1,4 +1,5 @@
 import logger from '../../core/logger.js'
+import PerkyStore from '../../io/perky_store.js'
 import {loadManifest, buildTextureSystem, getStudioConfig} from '../launcher.js'
 
 import './scene_view.js'
@@ -11,6 +12,13 @@ export async function launchSceneStudio (manifestData, container, options = {}) 
         const studioConfig = getStudioConfig(manifest, 'scene')
         const scenes = collectScenes(manifest)
         const sceneId = options.sceneId || Object.keys(scenes)[0] || null
+
+        if (sceneId) {
+            const customScene = await loadCustomScene(sceneId)
+            if (customScene) {
+                scenes[sceneId] = customScene
+            }
+        }
 
         container.innerHTML = ''
         const sceneView = document.createElement('scene-view')
@@ -41,4 +49,23 @@ function collectScenes (manifest) {
     }
 
     return scenes
+}
+
+
+async function loadCustomScene (sceneId) {
+    const store = new PerkyStore()
+    const resource = await store.get(sceneId)
+
+    if (!resource) {
+        return null
+    }
+
+    const jsonFile = resource.files.find(f => f.name.endsWith('.json'))
+
+    if (!jsonFile) {
+        return null
+    }
+
+    const text = await jsonFile.blob.text()
+    return JSON.parse(text)
 }

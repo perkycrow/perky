@@ -13,9 +13,6 @@ const GRAVITY_DELAY = 200
 const DEPOP_DELAY = 380
 const POP_DELAY = 330
 
-const ARSENAL_OFFSET_X = -3
-const ARSENAL_OFFSET_Y = -3
-
 const SKILL_HITBOX_WIDTH = 1.5
 const SKILL_HITBOX_HEIGHT = 1.5
 const SKILL_OFFSET_X = -1.4
@@ -40,11 +37,13 @@ export default class ChapterWorld extends World {
         this.#game = game
         this.#boardEntities = new Map()
 
+        const layout = resolveLayout(game)
+
         const gameState = chapter?.currentGameState || {
             lab: {reagentsCount: 7, unlockedCount: 3, startsAt: 0}
         }
 
-        this.#board = this.create(Board, {x: -3, y: -3.5})
+        this.#board = this.create(Board, {x: layout.Board.x, y: layout.Board.y})
         this.#board.initGame(gameState, {skillFactory, artifactFactory})
 
         this.#clusterReagent0 = this.#board.workshop.create(Reagent, {active: false})
@@ -52,8 +51,8 @@ export default class ChapterWorld extends World {
 
         const lab = this.#board.lab
         this.#labPanel = this.create(LabPanel, {
-            x: 7.5,
-            y: 5,
+            x: layout.LabPanel.x,
+            y: layout.LabPanel.y,
             reagentNames: lab.reagents,
             unlockedCount: lab.unlockedCount
         })
@@ -62,19 +61,19 @@ export default class ChapterWorld extends World {
 
         if (skills.length > 0) {
             this.#arsenalPanel = this.create(ArsenalPanel, {
-                x: ARSENAL_OFFSET_X,
-                y: ARSENAL_OFFSET_Y,
+                x: layout.ArsenalPanel.x,
+                y: layout.ArsenalPanel.y,
                 skills
             })
         }
 
         this.#notebook = this.create(Notebook, {
-            x: -9,
-            y: -2,
+            x: layout.Notebook.x,
+            y: layout.Notebook.y,
             chapterTitle: getChapterTitle(adventure)
         })
 
-        this.#endPanel = this.create(EndPanel, {x: 7.5, y: -3, active: false})
+        this.#endPanel = this.create(EndPanel, {x: layout.EndPanel.x, y: layout.EndPanel.y, active: false})
 
         this.#initAnimationHooks()
         this.#initSoundHooks()
@@ -125,8 +124,8 @@ export default class ChapterWorld extends World {
             return -1
         }
 
-        const localX = worldX - ARSENAL_OFFSET_X
-        const localY = worldY - ARSENAL_OFFSET_Y
+        const localX = worldX - this.#arsenalPanel.x
+        const localY = worldY - this.#arsenalPanel.y
 
         for (let i = 0; i < skills.length; i++) {
             const skillX = SKILL_OFFSET_X
@@ -341,6 +340,34 @@ export default class ChapterWorld extends World {
         })
     }
 
+}
+
+
+const DEFAULT_LAYOUT = {
+    Board: {x: -3, y: -3.5},
+    LabPanel: {x: 7.5, y: 5},
+    ArsenalPanel: {x: -3, y: -3},
+    Notebook: {x: -9, y: -2},
+    EndPanel: {x: 7.5, y: -3}
+}
+
+
+function resolveLayout (game) {
+    const sceneConfig = game?.manifest?.getAsset('chapterScene')?.source
+
+    if (!sceneConfig?.entities) {
+        return DEFAULT_LAYOUT
+    }
+
+    const layout = {...DEFAULT_LAYOUT}
+
+    for (const entry of sceneConfig.entities) {
+        if (layout[entry.type]) {
+            layout[entry.type] = {x: entry.x ?? 0, y: entry.y ?? 0}
+        }
+    }
+
+    return layout
 }
 
 

@@ -97,12 +97,15 @@ Scene Config (JSON in PerkyStore)
 ### Phase 4 — Mist Integration (first real use)
 > Goal: use the scene composer with Mist's ChapterStage
 
-- [ ] **4.1** Add perky.config.js to Mist with studio + scene config
-- [ ] **4.2** Add vite.mist.config.js
-- [ ] **4.3** Declare ChapterStage as editable scene
-- [ ] **4.4** Extract hardcoded positions from chapter_world.js → scene config JSON
+- [x] **4.1** Add perky.config.js to Mist with studio + scene config
+- [x] **4.2** Add vite.mist.config.js + update package.json (`yarn mist` uses vite config)
+- [x] **4.3** Declare ChapterStage as editable scene (chapterScene asset in manifest.json)
+- [x] **4.4** Extract hardcoded positions from chapter_world.js → scene config JSON
+      **File**: `mist/assets/scenes/chapter.json`
 - [ ] **4.5** ChapterWorld.init() loads scene config first, then applies game logic on top
 - [ ] **4.6** Test full round-trip: edit in studio → save → reload game → see changes
+
+**Also done**: converted `mist/manifest.js` → `mist/manifest.json`, added `scene` loader in `application/loaders.js`
 
 ### Phase 5 — Polish & UX (later)
 > Goal: make it pleasant to use daily
@@ -145,7 +148,7 @@ Dynamic entities (Reagent, ClusterReagent) are NOT part of scene config — they
 ## Notes
 
 - The studio is NOT standalone — it's per-game (`yarn mist` → `/studio/`)
-- Mist has no studio setup yet (no perky.config.js, no vite.mist.config.js)
+- Mist studio is now set up (perky.config.js, vite.mist.config.js, manifest.json)
 - The Scene Composer is a new tool type alongside animator and spritesheet
 - Camera is fixed for Mist — no pan/zoom needed in Phase 1
 - The existing editor/ folder has SceneTreeNode and inspectors — potentially reusable

@@ -16,8 +16,17 @@ export function applyOverrides (manifestData, overrides) {
 
 export async function loadStudioOverrides () {
     const store = new PerkyStore()
-    const resources = await store.list('animator')
     const overrides = []
+
+    await loadAnimatorOverrides(store, overrides)
+    await loadSceneOverrides(store, overrides)
+
+    return overrides
+}
+
+
+async function loadAnimatorOverrides (store, overrides) {
+    const resources = await store.list('animator')
 
     for (const meta of resources) {
         const resource = await store.get(meta.id)
@@ -52,8 +61,26 @@ export async function loadStudioOverrides () {
 
         overrides.push({id: spritesheetName, source: {data: spritesheetData, images}})
     }
+}
 
-    return overrides
+
+async function loadSceneOverrides (store, overrides) {
+    const resources = await store.list('scene')
+
+    for (const meta of resources) {
+        const resource = await store.get(meta.id)
+        if (!resource) {
+            continue
+        }
+
+        const jsonFile = resource.files.find(f => f.name.endsWith('.json'))
+        if (!jsonFile) {
+            continue
+        }
+
+        const sceneConfig = JSON.parse(await jsonFile.blob.text())
+        overrides.push({id: meta.id, source: sceneConfig})
+    }
 }
 
 

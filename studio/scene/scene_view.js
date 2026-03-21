@@ -3,6 +3,7 @@ import {createElement, adoptStyleSheets} from '../../application/dom_utils.js'
 import '../../editor/layout/app_layout.js'
 import '../../editor/number_input.js'
 import {ICONS} from '../../editor/devtools/devtools_icons.js'
+import PerkyStore from '../../io/perky_store.js'
 import {sceneViewStyles} from './scene_view.styles.js'
 
 
@@ -19,7 +20,7 @@ const ENTITY_SIZE = 1
 export default class SceneView extends EditorComponent {
 
     #context = null
-    #sceneConfig = null
+    #sceneId = null
     #entities = []
     #selectedIndex = -1
     #canvas = null
@@ -32,12 +33,18 @@ export default class SceneView extends EditorComponent {
     #camera = {x: 0, y: 0, zoom: 40}
     #animFrame = null
     #boundResize = null
+    #store = new PerkyStore()
+    #dirty = false
+    #autoSaveTimer = null
+    #boundBeforeUnload = null
 
     onConnected () {
         adoptStyleSheets(this.shadowRoot, sceneViewStyles)
         this.#buildDOM()
         this.#boundResize = () => this.#resizeCanvas()
         window.addEventListener('resize', this.#boundResize)
+        this.#boundBeforeUnload = () => this.#flushSave()
+        window.addEventListener('beforeunload', this.#boundBeforeUnload)
         this.#resizeCanvas()
         this.#scheduleRender()
     }
@@ -45,16 +52,20 @@ export default class SceneView extends EditorComponent {
 
     onDisconnected () {
         window.removeEventListener('resize', this.#boundResize)
+        window.removeEventListener('beforeunload', this.#boundBeforeUnload)
+        clearTimeout(this.#autoSaveTimer)
+        this.#flushSave()
         cancelAnimationFrame(this.#animFrame)
     }
 
 
     setContext ({manifest, textureSystem, studioConfig, scenes, sceneId}) {
         this.#context = {manifest, textureSystem, studioConfig}
+        this.#sceneId = sceneId || null
 
         if (sceneId && scenes[sceneId]) {
-            this.#sceneConfig = scenes[sceneId]
-            this.#entities = (this.#sceneConfig.entities || []).map((entry, index) => ({
+            const config = scenes[sceneId]
+            this.#entities = (config.entities || []).map((entry, index) => ({
                 ...entry,
                 x: entry.x ?? 0,
                 y: entry.y ?? 0,
@@ -157,7 +168,48 @@ export default class SceneView extends EditorComponent {
         }
 
         this.#entities[this.#selectedIndex][prop] = value
+        this.#markDirty()
         this.#scheduleRender()
+    }
+
+
+    #markDirty () {
+        this.#dirty = true
+        clearTimeout(this.#autoSaveTimer)
+        this.#autoSaveTimer = setTimeout(() => this.#autoSave(), 2000)
+    }
+
+
+    #flushSave () {
+        if (this.#dirty) {
+            clearTimeout(this.#autoSaveTimer)
+            this.#autoSave()
+        }
+    }
+
+
+    async #autoSave () {
+        if (!this.#dirty || !this.#sceneId) {
+            return
+        }
+
+        this.#dirty = false
+
+        const config = this.#buildSceneConfig()
+        const blob = new Blob([JSON.stringify(config, null, 4)], {type: 'application/json'})
+
+        await this.#store.save(this.#sceneId, {
+            type: 'scene',
+            name: this.#sceneId,
+            files: [{name: `${this.#sceneId}.json`, blob}]
+        })
+    }
+
+
+    #buildSceneConfig () {
+        return {
+            entities: this.#entities.map(buildEntityEntry)
+        }
     }
 
 
@@ -248,6 +300,7 @@ export default class SceneView extends EditorComponent {
             const dy = world.y - this.#drag.startWorldY
             this.#entities[this.#selectedIndex].x = roundHalf(this.#drag.startEntityX + dx)
             this.#entities[this.#selectedIndex].y = roundHalf(this.#drag.startEntityY + dy)
+            this.#markDirty()
             this.#buildPropsPanel()
         }
 
@@ -433,4 +486,23 @@ function roundHalf (value) {
 
 function clamp (value, min, max) {
     return Math.min(max, Math.max(min, value))
+}
+
+
+function buildEntityEntry (entity) {
+    const entry = {type: entity.type}
+
+    if (entity.$id) {
+        entry.$id = entity.$id
+    }
+
+    if (entity.x !== 0) {
+        entry.x = entity.x
+    }
+
+    if (entity.y !== 0) {
+        entry.y = entity.y
+    }
+
+    return entry
 }
