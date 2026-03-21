@@ -99,26 +99,14 @@ Properties per entity: type, x, y (and later: rotation, scaleX, scaleY, depth, $
 
 1. **Wiring** → knows all entity classes and their view classes (the "palette")
 2. **TextureSystem** → resolves textures for views to render
-3. **A Stage (or Stage-like context)** → so entity→view binding works via the existing pipeline
-4. The Stage needs to work **without a full Game** — just a canvas + textureSystem
+3. **RenderSystem** → manages camera, layers (WebGL game + Canvas overlay), auto-resize
+4. **A Stage + gameProxy** → so entity→view binding works via the existing pipeline
 
 ### The Stage coupling problem (resolved temporarily)
 
 Stage needs `this.game` for texture resolution and layer access. Views use `context.game.getSource()`, `context.game.getSpritesheet()`.
 
-**Current solution**: a `gameProxy` object that delegates to manifest + textureSystem. Works but is a temporary hack — a proper refactor would decouple Stage from Game at the framework level.
-
-```js
-const gameProxy = {
-    getSource: (id) => manifest.getSource(id),
-    getSpritesheet: (id) => textureSystem.getSpritesheet(id),
-    getRegion: (id) => textureSystem.getRegion(id),
-    getLayer: (name) => renderSystem.getLayer(name),
-    createLayer: (...args) => renderSystem.createLayer(...args),
-    textureSystem,
-    camera
-}
-```
+**Current solution**: a `gameProxy` object that delegates to manifest + textureSystem + renderSystem. Works but is a temporary hack — a proper refactor would decouple Stage from Game at the framework level.
 
 ### Data Flow (runtime)
 
@@ -144,13 +132,15 @@ Scene Config (JSON)
 Scene Config (JSON from PerkyStore or manifest)
         │
         ▼
-  Editor creates lightweight Stage + World
+  Editor creates Stage + World with gameProxy
         │
         ├── for each entity in config:
-        │     world.create(EntityClass, {x, y, ...previewDefaults})
+        │     world.create(EntityClass, {x, y})
         │     → stage creates view → visible in viewport
         │
-        └── user edits positions → auto-save to PerkyStore
+        ├── user edits positions → entity.x/y updated → syncViews() → re-render
+        │
+        └── auto-save to PerkyStore every 2s on change
 ```
 
 ---
@@ -167,49 +157,50 @@ Scene Config (JSON from PerkyStore or manifest)
 ### Phase 2 — Editor ✅
 > Visual editor with real view rendering
 
-- [x] `studio/scene/scene_view.js` — web component
+- [x] `studio/scene/scene_view.js` — web component with RenderSystem
+- [x] Real view rendering via gameProxy + Stage + wiring (WebGL game layer)
+- [x] Canvas overlay layer: grid, axis, camera frame, labels, selection
+- [x] Overlay draws in world space via `camera.applyToContext()` — synced with WebGL
 - [x] Entity picking, dragging (snap to 0.5), selection highlight
 - [x] Properties panel (x, y), scene tree
 - [x] Camera pan (screen-space delta) + zoom (wheel)
+- [x] Game camera frame overlay (dashed rect from manifest `config.studio.scene.camera`)
 - [x] Auto-save to PerkyStore on changes
 - [x] Load from PerkyStore on editor open
-- [x] Real view rendering via gameProxy + Stage + wiring
-- [x] RenderSystem with WebGL game layer + Canvas overlay layer
-- [x] Game camera frame overlay (dashed rect from manifest studio.scene.camera config)
-- [x] Grid + axis overlay, labels, selection gizmo
 
-### Phase 3 — Persistence & Integration
-> Save/load + runtime override
+### Phase 3 — Persistence & Integration ✅
+> Save/load + runtime override + vite plugin
 
-- [x] Vite plugin generates scene.html/scene.js
+- [x] Vite plugin generates scene.html/scene.js (with wiring import)
 - [x] Auto-save to PerkyStore (scene_view.js)
 - [x] Load custom from PerkyStore (scene launcher.js)
-- [x] manifest_patcher.js loads scene overrides
-- [x] mist/index.js loads overrides with ?studio flag
+- [x] manifest_patcher.js loads scene overrides (animators + scenes)
+- [x] mist/index.js loads overrides with `?studio` flag
 - [ ] Hub integration: scene cards in hub_view.js
 
-### Phase 4 — Mist Integration
-> First real use
+### Phase 4 — Mist Integration ✅
+> First real use with The Mistbrewer
 
 - [x] mist/perky.config.js, vite.mist.config.js, manifest.json
 - [x] mist/assets/scenes/chapter.json (entity positions)
 - [x] ChapterWorld reads layout from manifest (resolveLayout)
-- [ ] **4.6** Full round-trip validation
+- [x] Mist views fixed: added `super.sync()` in all custom views
+- [x] Round-trip: edit positions in studio → save → reload game with `?studio` → positions applied
 
 ### Phase 5 — View Picking & Bounds
 > Use actual view bounds for selection instead of fixed-size rectangles
 
-- [ ] **5.1** Entity picking based on view bounds (getWorldBounds)
-- [ ] **5.2** Selection highlight matches view shape
-- [ ] **5.3** Preview defaults for entities (so views render representative content)
+- [ ] Entity picking based on view bounds (getWorldBounds)
+- [ ] Selection highlight matches view shape
+- [ ] Preview defaults for entities (so views render representative content)
 
 ### Phase 6 — Entity Palette & Drag-to-Add
 > Toolbar of available entities from wiring
 
-- [ ] **6.1** Read entity classes from wiring → build palette UI
-- [ ] **6.2** Drag entity from palette into viewport
-- [ ] **6.3** Create new entity at drop position
-- [ ] **6.4** Delete entities
+- [ ] Read entity classes from wiring → build palette UI
+- [ ] Drag entity from palette into viewport
+- [ ] Create new entity at drop position
+- [ ] Delete entities
 
 ### Phase 7 — Polish & UX
 - [ ] Undo/redo
@@ -218,6 +209,13 @@ Scene Config (JSON from PerkyStore or manifest)
 - [ ] Copy/paste entities
 - [ ] Keyboard shortcuts
 - [ ] Property editing: depth, scale, rotation
+
+---
+
+## Framework Fixes Done During Development
+
+- **WebGL `#getMatrices` bug**: was using `camera.x/y` instead of `camera.effectiveX/effectiveY`, causing desync with Canvas2D `applyToContext()`. Fixed in `render/webgl_renderer.js`.
+- **Mist views missing `super.sync()`**: all custom views (NotebookView, LabPanelView, etc.) overrode `sync()` without calling `super.sync()`, preventing entity position updates from propagating to views. Fixed in all Mist views.
 
 ---
 
@@ -233,12 +231,6 @@ Scene Config (JSON from PerkyStore or manifest)
 8. **Nested entities visible**: child entities (Workshop inside Board) shown in hierarchy, positioned relative to parent.
 
 ---
-
-## Known Issues
-
-- Camera frame overlay may desync from sprites during zoom (needs investigation)
-- Mist views were missing `super.sync()` — fixed, but other games might have the same issue
-- Labels overlay might drift from sprites when panning (canvas coordinate space mismatch)
 
 ## Open Questions
 
