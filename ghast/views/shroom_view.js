@@ -7,6 +7,7 @@ export default class ShroomView extends EntityView {
 
     constructor (entity, context) {
         super(entity, context)
+        this.autoDepth = true
 
         const sprite = new Sprite({
             region: context.game.getRegion('shroom'),

@@ -14,6 +14,7 @@ export default class ProjectileView extends EntityView {
 
     constructor (entity, context) {
         super(entity, context)
+        this.autoDepth = true
 
         const config = context.config || {}
         const sprite = entity.sprite || config.image

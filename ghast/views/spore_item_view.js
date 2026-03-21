@@ -11,6 +11,7 @@ export default class SporeItemView extends EntityView {
 
     constructor (entity, context) {
         super(entity, context)
+        this.autoDepth = true
 
         this.root = new Circle({
             radius: ITEM_RADIUS,

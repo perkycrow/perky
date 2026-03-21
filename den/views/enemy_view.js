@@ -8,6 +8,7 @@ export default class EnemyView extends EntityView {
 
     constructor (entity, context) {
         super(entity, context)
+        this.autoDepth = true
 
         const config = context.config || {}
         const region = context.game.getRegion(config.image)

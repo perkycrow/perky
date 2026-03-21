@@ -7,6 +7,7 @@ export default class PlayerView extends EntityView {
 
     constructor (entity, context) {
         super(entity, context)
+        this.autoDepth = true
 
         this.regions = {
             right: context.game.getRegion('wolf_right'),

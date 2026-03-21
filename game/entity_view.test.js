@@ -70,6 +70,37 @@ describe('EntityView', () => {
         })
 
 
+        test('does not set depth by default', () => {
+            let depthCalled = false
+            view.root = {x: 0,
+                y: 0,
+                setDepth: () => {
+                    depthCalled = true
+                }}
+
+            view.sync()
+
+            expect(depthCalled).toBe(false)
+        })
+
+
+        test('sets depth from entity y when autoDepth is true', () => {
+            let depthValue = null
+            const customView = new EntityView(entity, context)
+            customView.autoDepth = true
+            customView.root = {x: 0,
+                y: 0,
+                setDepth: (d) => {
+                    depthValue = d
+                }}
+
+            entity.y = 5
+            customView.sync()
+
+            expect(depthValue).toBe(-5)
+        })
+
+
         test('updates root when entity moves', () => {
             view.root = {x: 0, y: 0, setDepth: () => {}}
 

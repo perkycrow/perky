@@ -31,6 +31,7 @@ export default class GhastView extends EntityView {
 
     constructor (entity, context) {
         super(entity, context)
+        this.autoDepth = true
 
         this.outlineEffect = null
         this.flashTimer = 0

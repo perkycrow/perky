@@ -13,6 +13,7 @@ export default class ProjectileView extends EntityView {
 
     constructor (entity, context) {
         super(entity, context)
+        this.autoDepth = true
 
         const color = factionColors[entity.faction] || '#ffffff'
 
