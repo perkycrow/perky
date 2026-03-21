@@ -10,6 +10,10 @@ import RenderSystem from '../../render/render_system.js'
 import {sceneViewStyles} from './scene_view.styles.js'
 
 
+const GRID_COLOR = 'rgba(255, 255, 255, 0.06)'
+const AXIS_COLOR = 'rgba(255, 255, 255, 0.15)'
+const SELECTED_BORDER = 'rgba(255, 200, 80, 1)'
+const LABEL_COLOR = '#c8d8e8'
 const ENTITY_SIZE = 1
 
 
@@ -168,7 +172,8 @@ export default class SceneView extends EditorComponent {
                 main: {unitsInView: {width: 26, height: 15}}
             },
             layers: [
-                {name: 'game', type: 'webgl', camera: 'main', backgroundColor: 'transparent'}
+                {name: 'game', type: 'webgl', camera: 'main', backgroundColor: 'transparent'},
+                {name: 'overlay', type: 'canvas', camera: 'main', backgroundColor: 'transparent'}
             ]
         })
         this.#renderSystem.mount(viewport)
@@ -437,6 +442,106 @@ export default class SceneView extends EditorComponent {
         }
 
         this.#renderSystem?.render()
+        this.#renderOverlay()
+    }
+
+
+    #renderOverlay () {
+        const overlayLayer = this.#renderSystem?.getLayer('overlay')
+
+        if (!overlayLayer) {
+            return
+        }
+
+        const ctx = overlayLayer.renderer.ctx
+        const canvas = overlayLayer.renderer.canvas
+        const cam = this.camera
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+        this.#renderGrid(ctx, canvas, cam)
+        this.#renderSelectionHighlight(ctx, cam)
+        this.#renderLabels(ctx, cam)
+    }
+
+
+    #renderGrid (ctx, canvas, cam) { // eslint-disable-line local/class-methods-use-this -- clean
+        const w = canvas.width
+        const h = canvas.height
+
+        const topLeft = cam.screenToWorld(0, 0)
+        const bottomRight = cam.screenToWorld(w, h)
+
+        const startX = Math.floor(topLeft.x)
+        const endX = Math.ceil(bottomRight.x)
+        const startY = Math.floor(bottomRight.y)
+        const endY = Math.ceil(topLeft.y)
+
+        ctx.strokeStyle = GRID_COLOR
+        ctx.lineWidth = 1
+
+        for (let x = startX; x <= endX; x++) {
+            const screen = cam.worldToScreen(x, 0)
+            ctx.beginPath()
+            ctx.moveTo(Math.round(screen.x) + 0.5, 0)
+            ctx.lineTo(Math.round(screen.x) + 0.5, h)
+            ctx.stroke()
+        }
+
+        for (let y = startY; y <= endY; y++) {
+            const screen = cam.worldToScreen(0, y)
+            ctx.beginPath()
+            ctx.moveTo(0, Math.round(screen.y) + 0.5)
+            ctx.lineTo(w, Math.round(screen.y) + 0.5)
+            ctx.stroke()
+        }
+
+        ctx.strokeStyle = AXIS_COLOR
+        ctx.lineWidth = 1
+
+        const origin = cam.worldToScreen(0, 0)
+        ctx.beginPath()
+        ctx.moveTo(Math.round(origin.x) + 0.5, 0)
+        ctx.lineTo(Math.round(origin.x) + 0.5, h)
+        ctx.stroke()
+
+        ctx.beginPath()
+        ctx.moveTo(0, Math.round(origin.y) + 0.5)
+        ctx.lineTo(w, Math.round(origin.y) + 0.5)
+        ctx.stroke()
+    }
+
+
+    #renderSelectionHighlight (ctx, cam) {
+        if (this.#selectedIndex < 0) {
+            return
+        }
+
+        const entity = this.#entities[this.#selectedIndex]
+        const ppu = cam.pixelsPerUnit
+        const size = ENTITY_SIZE * ppu
+        const screen = cam.worldToScreen(entity.x, entity.y)
+
+        ctx.strokeStyle = SELECTED_BORDER
+        ctx.lineWidth = 2
+        ctx.setLineDash([4, 4])
+        ctx.strokeRect(screen.x - size / 2, screen.y - size / 2, size, size)
+        ctx.setLineDash([])
+    }
+
+
+    #renderLabels (ctx, cam) {
+        const ppu = cam.pixelsPerUnit
+
+        for (const entity of this.#entities) {
+            const screen = cam.worldToScreen(entity.x, entity.y)
+            const label = entity.$id || entity.type
+
+            ctx.fillStyle = LABEL_COLOR
+            ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif'
+            ctx.textAlign = 'center'
+            ctx.fillText(label, screen.x, screen.y + (ENTITY_SIZE * ppu) / 2 + 14)
+        }
     }
 
 }
