@@ -34,6 +34,8 @@ export default class EndPanelView extends EntityView {
 
 
     sync () {
+        super.sync()
+
         if (!this.entity) {
             return
         }

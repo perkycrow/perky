@@ -28,6 +28,8 @@ export default class LabPanelView extends EntityView {
 
 
     sync () {
+        super.sync()
+
         if (!this.entity) {
             return
         }

@@ -33,6 +33,8 @@ export default class NotebookView extends EntityView {
 
 
     sync () {
+        super.sync()
+
         if (!this.entity) {
             return
         }

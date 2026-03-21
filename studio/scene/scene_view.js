@@ -243,13 +243,10 @@ export default class SceneView extends EditorComponent {
             return
         }
 
-        const worldEntities = this.#stage.world.entities
+        for (const worldEntity of this.#stage.world.entities) {
+            const entry = this.#entities.find(e => e.type === worldEntity.constructor.name)
 
-        for (let i = 0; i < this.#entities.length; i++) {
-            const entry = this.#entities[i]
-            const worldEntity = worldEntities[i]
-
-            if (worldEntity) {
+            if (entry) {
                 worldEntity.x = entry.x
                 worldEntity.y = entry.y
             }
