@@ -164,5 +164,6 @@ export const loaders = {
     audio: loadAudio,
     font: loadFont,
     spritesheet: loadSpritesheet,
-    animator: loadJson
+    animator: loadJson,
+    scene: loadJson
 }

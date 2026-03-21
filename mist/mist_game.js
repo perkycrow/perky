@@ -4,7 +4,7 @@ import ChapterStage from './stages/chapter_stage.js'
 import InterludeStage from './stages/interlude_stage.js'
 import SettingsStage from './stages/settings_stage.js'
 import StoryAdventure from './adventures/story_adventure.js'
-import manifest from './manifest.js'
+import manifest from './manifest.json' with {type: 'json'}
 
 
 const SAVE_KEY = 'mistbrewer_story'

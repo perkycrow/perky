@@ -1,0 +1,9 @@
+{
+    "entities": [
+        {"type": "Board", "x": -3, "y": -3.5},
+        {"type": "LabPanel", "x": 7.5, "y": 5},
+        {"type": "ArsenalPanel", "x": -3, "y": -3},
+        {"type": "Notebook", "x": -9, "y": -2},
+        {"type": "EndPanel", "x": 7.5, "y": -3}
+    ]
+}
