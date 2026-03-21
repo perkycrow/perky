@@ -1,18 +1,85 @@
-# Scene Composer — Studio Tool
+# World Editor — Studio Tool
 
 ## Vision
 
-A visual editor integrated into the per-game Studio that allows placing, scaling, rotating, and adjusting depth of entities in a stage — without writing code.
+A visual **world editor** integrated into the per-game Studio. It edits the content of a World: which entities exist and where they are positioned.
 
-**First target**: Mist's ChapterStage (fixed camera, UI-layout style, few entities).
+An entity **has** a view (via wiring). The editor shows the real views when available, or placeholders when not. The editor doesn't need to know the entity/view distinction — it sees visual nodes that can be selected and moved.
+
+**Philosophy**: the editor handles **layout** (what, where). Code handles **behavior** (gameplay logic, hooks, sounds, dynamic spawning). These are two layers that compose.
+
+**First target**: Mist's ChapterWorld.
+
+---
+
+## Core Concepts
+
+### What the editor does
+- Place entities in a World (type + position)
+- Show their views (resolved via wiring + textureSystem)
+- Allow repositioning, reordering, adjusting properties
+- Serialize the layout as a JSON scene config
+- Provide an entity palette (from wiring) to drag new entities in
+
+### What the editor does NOT do
+- Run gameplay logic (hooks, action sets, sounds)
+- Spawn dynamic entities (reagents, projectiles)
+- Configure game state (skills, chapters, save data)
+
+### The two layers
+
+```
+┌─────────────────────────────────────────┐
+│  LAYOUT (world editor / scene config)   │
+│  "Board at (-3, -3.5)"                  │
+│  "Notebook at (-9, -2)"                 │
+│  "Workshop visible as zone placeholder" │
+└────────────────┬────────────────────────┘
+                 │  loaded first
+                 ▼
+┌─────────────────────────────────────────┐
+│  BEHAVIOR (code / world.init)           │
+│  board.initGame(gameState, factories)   │
+│  labPanel.reagentNames = lab.reagents   │
+│  initAnimationHooks()                   │
+│  initSoundHooks()                       │
+└─────────────────────────────────────────┘
+```
+
+### Preview defaults
+
+Entities can have **preview data** so the editor shows representative visuals without needing runtime game state:
+
+| Entity | Preview defaults | Runtime (replaced by code) |
+|--------|-----------------|---------------------------|
+| Board | empty grid + 2 placeholder reagents | grid filled dynamically |
+| LabPanel | sample reagent names | reagents from chapter |
+| ArsenalPanel | placeholder skills | skills from game state |
+| Notebook | "Chapter I" / score 0 | real title and score |
+| EndPanel | inactive | activated at game end |
+
+### Entity hierarchy in the editor
+
+Entities can be nested (Board → Workshop → Reagents). The editor shows this hierarchy:
+
+```
+World
+├── Board (view: boardFrame + grid)
+│   └── Workshop (view: zone placeholder)
+│       └── Reagent ×2 (preview placeholders)
+├── LabPanel (view: parchemin)
+├── Notebook (view: book)
+├── ArsenalPanel (view: skills frame)
+└── EndPanel (view: flask, inactive)
+```
+
+Child entities (Workshop, Reagents) have positions relative to their parent. Moving Board moves everything underneath.
 
 ---
 
 ## Architecture
 
 ### Scene Config Format
-
-A JSON file describing the initial state of a scene:
 
 ```json
 {
@@ -22,133 +89,144 @@ A JSON file describing the initial state of a scene:
         {"type": "ArsenalPanel", "x": -3, "y": -3},
         {"type": "Notebook", "x": -9, "y": -2},
         {"type": "EndPanel", "x": 7.5, "y": -3}
-    ],
-    "decor": []
+    ]
 }
 ```
 
-- `entities` — resolved via wiring, creates real Entity + auto-binds View
-- `decor` — pure Object2D (Sprite, Group2D, etc.) added to the scene graph directly
-- Properties: x, y, rotation, scaleX, scaleY, depth, opacity, visible
+Properties per entity: type, x, y (and later: rotation, scaleX, scaleY, depth, $id).
 
-### Data Flow
+### What the editor needs
+
+1. **Wiring** → knows all entity classes and their view classes (the "palette")
+2. **TextureSystem** → resolves textures for views to render
+3. **A Stage (or Stage-like context)** → so entity→view binding works via the existing pipeline
+4. The Stage needs to work **without a full Game** — just a canvas + textureSystem
+
+### The Stage coupling problem
+
+Currently Stage needs `this.game` for:
+- `game.getLayer()` / `game.createLayer()` — to attach viewsGroup to renderer
+- `game.getRenderer()` — for post-passes
+- Views use `context.game.getRegion()` / `context.game.getSource()` — to resolve textures
+
+For the editor, we need a **lightweight render context** that provides texture resolution without a full Game. This is the key refactor to unlock real view rendering in the editor.
+
+### Data Flow (runtime)
 
 ```
-Scene Config (JSON in PerkyStore)
+Scene Config (JSON)
         │
         ▼
-  Scene Loader (framework)
+  world.init() loads layout
         │
-        ├── entities → world.create(EntityClass, props)
-        │                 └── stage catches entity:set → creates view (existing pipeline)
+        ├── for each entity in config:
+        │     world.create(EntityClass, {x, y})
+        │     → stage catches entity:set → creates view (existing pipeline)
         │
-        └── decor → createObject2D(config) → viewsGroup.addChild()
-
-  Code can still add/modify entities on top (procedural layer)
+        └── then code runs behavior on top:
+              board.initGame(gameState, factories)
+              initAnimationHooks()
+              etc.
 ```
 
-### Integration Points
+### Data Flow (editor)
 
-- **Hub**: new "Scenes" section alongside "Animators"
-- **Studio config**: `tools: ['animator', 'spritesheet', 'scene']`
-- **Game declares scenes** in manifest config or perky.config.js
-- **Persistence**: PerkyStore (IndexedDB) + .perky export, same pattern as animator
-- **Runtime override**: game loads scene config via loadStudioOverrides() if ?studio flag
+```
+Scene Config (JSON from PerkyStore or manifest)
+        │
+        ▼
+  Editor creates lightweight Stage + World
+        │
+        ├── for each entity in config:
+        │     world.create(EntityClass, {x, y, ...previewDefaults})
+        │     → stage creates view → visible in viewport
+        │
+        └── user edits positions → auto-save to PerkyStore
+```
 
 ---
 
-## Implementation Plan
+## Implementation Progress
 
-### Phase 1 — Foundation (framework-level)
-> Goal: scene config format + loader + basic round-trip
+### Phase 1 — Foundation ✅
+> Scene config format + loader + serializer
 
-- [x] **1.1** Define SceneConfig format (JSON schema)
-- [x] **1.2** Scene loader: reads config, creates entities via wiring, adds decor to scene graph
-- [x] **1.3** Scene serializer: reads current world entities, outputs SceneConfig JSON
-- [x] **1.4** Tests for loader + serializer (18 tests)
+- [x] `game/scene_config.js` — loadScene() + serializeScene()
+- [x] `game/scene_config.test.js` — 18 tests
+- [x] `application/loaders.js` — added `scene` loader type
 
-**Files**: `game/scene_config.js`, `game/scene_config.test.js`
+### Phase 2 — Basic Editor (current state)
+> Visual editor with placeholder rendering
 
-### Phase 2 — Scene Composer View (studio tool)
-> Goal: visual editor that renders a stage and lets you manipulate entities
-
-- [x] **2.1** `scene_view.js` — main editor web component (like animator_view.js)
-- [ ] **2.2** Viewport rendering: instantiate stage, render one static frame (no game loop)
-      Currently renders entities as labeled rectangles on a grid canvas.
-      Next step: render actual sprites via the entity→view pipeline.
-- [x] **2.3** Entity picking: click in viewport → screenToWorld → find entity by bounds
-- [x] **2.4** Entity dragging: drag to move, update entity position + re-render (snaps to 0.5)
-- [x] **2.5** Selection highlight (outline/gizmo on selected entity)
-- [x] **2.6** Properties panel: edit x, y numerically (depth/scale/rotation TODO)
-- [x] **2.7** Scene tree panel: list all entities, click to select
-- [x] **2.8** Camera pan (drag on empty space) + zoom (mouse wheel)
-
-**Files**: `studio/scene/scene_view.js`, `scene_view.styles.js`, `launcher.js`, `index.html`, `index.js`
+- [x] `studio/scene/scene_view.js` — web component with canvas, grid, entity rectangles
+- [x] Entity picking, dragging (snap to 0.5), selection highlight
+- [x] Properties panel (x, y), scene tree
+- [x] Camera pan + zoom
+- [x] Auto-save to PerkyStore on changes
+- [x] Load from PerkyStore on editor open
+- [ ] **2.2** Real view rendering (requires lightweight Stage — see below)
 
 ### Phase 3 — Persistence & Integration
-> Goal: save/load scenes, integrate into studio hub
+> Save/load + runtime override
 
-- [ ] **3.1** Save scene config to PerkyStore (auto-save like animator)
-- [ ] **3.2** Load scene config on editor open
-- [ ] **3.3** Hub integration: scene cards in hub_view.js
-- [x] **3.4** Vite plugin: generate scene.html/scene.js for game's studio
-- [ ] **3.5** Runtime loading: game loads scene overrides from PerkyStore
+- [x] Vite plugin generates scene.html/scene.js
+- [x] Auto-save to PerkyStore (scene_view.js)
+- [x] Load custom from PerkyStore (scene launcher.js)
+- [x] manifest_patcher.js loads scene overrides
+- [x] mist/index.js loads overrides with ?studio flag
+- [ ] Hub integration: scene cards in hub_view.js
 
-### Phase 4 — Mist Integration (first real use)
-> Goal: use the scene composer with Mist's ChapterStage
+### Phase 4 — Mist Integration
+> First real use
 
-- [x] **4.1** Add perky.config.js to Mist with studio + scene config
-- [x] **4.2** Add vite.mist.config.js + update package.json (`yarn mist` uses vite config)
-- [x] **4.3** Declare ChapterStage as editable scene (chapterScene asset in manifest.json)
-- [x] **4.4** Extract hardcoded positions from chapter_world.js → scene config JSON
-      **File**: `mist/assets/scenes/chapter.json`
-- [ ] **4.5** ChapterWorld.init() loads scene config first, then applies game logic on top
-- [ ] **4.6** Test full round-trip: edit in studio → save → reload game → see changes
+- [x] mist/perky.config.js, vite.mist.config.js, manifest.json
+- [x] mist/assets/scenes/chapter.json (entity positions)
+- [x] ChapterWorld reads layout from manifest (resolveLayout)
+- [ ] **4.6** Full round-trip validation
 
-**Also done**: converted `mist/manifest.js` → `mist/manifest.json`, added `scene` loader in `application/loaders.js`
+### Phase 5 — Real View Rendering (NEW — was part of 2.2)
+> Render actual entity views in the editor viewport
 
-### Phase 5 — Polish & UX (later)
-> Goal: make it pleasant to use daily
+- [ ] **5.1** Lightweight render context (textureSystem + canvas, no full Game)
+- [ ] **5.2** Instantiate Stage + World in editor, register views via wiring
+- [ ] **5.3** Create entities with preview defaults → views auto-created
+- [ ] **5.4** Render viewsGroup on editor canvas
+- [ ] **5.5** Entity picking based on view bounds (not fixed rectangles)
 
-- [ ] **5.1** Undo/redo
-- [ ] **5.2** Play/preview mode (toggle game loop on/off)
-- [ ] **5.3** Grid/snap options
-- [ ] **5.4** Copy/paste entities
-- [ ] **5.5** Keyboard shortcuts
-- [ ] **5.6** Prefabs / scene fragments (reusable scene chunks)
+### Phase 6 — Entity Palette & Drag-to-Add
+> Toolbar of available entities from wiring
 
----
+- [ ] **6.1** Read entity classes from wiring → build palette UI
+- [ ] **6.2** Drag entity from palette into viewport
+- [ ] **6.3** Create new entity at drop position
+- [ ] **6.4** Delete entities
 
-## Current Entities in Mist ChapterWorld
-
-Reference for Phase 4 — these are the hardcoded positions to extract:
-
-| Entity | x | y | Notes |
-|--------|---|---|-------|
-| Board | -3 | -3.5 | Main game board |
-| LabPanel | 7.5 | 5 | Reagent inventory |
-| ArsenalPanel | -3 | -3 | Skills panel (conditional) |
-| Notebook | -9 | -2 | Chapter info / skill tooltips |
-| EndPanel | 7.5 | -3 | Win/lose screen (starts inactive) |
-
-Dynamic entities (Reagent, ClusterReagent) are NOT part of scene config — they're spawned by game logic.
+### Phase 7 — Polish & UX
+- [ ] Undo/redo
+- [ ] Play/preview mode (toggle game loop)
+- [ ] Grid/snap options
+- [ ] Copy/paste entities
+- [ ] Keyboard shortcuts
+- [ ] Property editing: depth, scale, rotation
 
 ---
 
 ## Design Decisions
 
-1. **Entity vs Decor separation**: entities go through wiring (entity→view), decor is pure Object2D. Both editable in composer.
-2. **Code-first, editor-assists**: the scene config is an initialization layer. Code can still override everything.
-3. **Per-game, not global**: each game declares its editable scenes. The composer adapts to the game's entities/views.
-4. **Same persistence pattern as animator**: PerkyStore + IndexedDB + .perky export + manifest override.
-5. **Static rendering first**: the composer renders a frozen frame. Play mode (Phase 5) adds the game loop.
+1. **World editor, not scene editor**: we edit World content (entities), not visual trees directly.
+2. **Entity = editable node**: an entity has a position and (usually) a view. The editor treats them as visual objects.
+3. **Layout vs behavior**: the editor handles placement. Code handles logic. Clean separation.
+4. **Preview defaults**: entities can declare default options for editor preview, replaced at runtime.
+5. **Per-game**: each game declares its editable worlds. The editor adapts via wiring.
+6. **Same persistence as animator**: PerkyStore + IndexedDB + .perky export + manifest override.
+7. **Placeholder for viewless entities**: entities without views get a gizmo/icon in the editor.
+8. **Nested entities visible**: child entities (Workshop inside Board) shown in hierarchy, positioned relative to parent.
 
 ---
 
-## Notes
+## Open Questions
 
-- The studio is NOT standalone — it's per-game (`yarn mist` → `/studio/`)
-- Mist studio is now set up (perky.config.js, vite.mist.config.js, manifest.json)
-- The Scene Composer is a new tool type alongside animator and spritesheet
-- Camera is fixed for Mist — no pan/zoom needed in Phase 1
-- The existing editor/ folder has SceneTreeNode and inspectors — potentially reusable
+- How to define preview defaults? Static property on Entity class? Separate config?
+- Should the lightweight render context be a new class, or a refactored Stage?
+- How to handle conditional entities (ArsenalPanel only exists if skills > 0)?
+- Should the entity palette show ALL entities from wiring, or a curated subset?
