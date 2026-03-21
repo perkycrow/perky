@@ -64,8 +64,6 @@ export default class ReagentView extends EntityView {
 
 
     sync () {
-        super.sync()
-
         if (!this.root || !this.entity) {
             return
         }
