@@ -26,6 +26,7 @@ export default doc('Loaders', {advanced: true}, () => {
             loaders.font        // loads a FontFace
             loaders.spritesheet // loads spritesheet JSON + images
             loaders.animator    // alias for json loader
+            loaders.scene       // alias for json loader
         })
 
     })

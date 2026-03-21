@@ -64,7 +64,7 @@ Viewport control. Position, zoom, rotation, world-to-screen conversion.
 ```js
 camera.setPosition(100, 200)
 camera.setZoom(2)
-camera.follow(player, {speed: 0.1})
+camera.follow(player, 0.1)
 camera.shake({intensity: 5, duration: 300})
 camera.isVisible(object)  // frustum culling
 camera.screenToWorld(mouseX, mouseY)
@@ -87,7 +87,7 @@ Extends Transform. Adds visibility, opacity, anchor, tint, depth sorting. Base c
 ```js
 const obj = new Object2D({x: 100, y: 50, rotation: 0.5})
 obj.setOpacity(0.8)
-obj.setTint('#ff0000')
+obj.tint = '#ff0000'
 obj.setVisible(false)
 ```
 

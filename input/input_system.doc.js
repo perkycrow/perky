@@ -1,4 +1,4 @@
-import {doc, section, setup, text, code, action, container, logger} from '../doc/runtime.js'
+import {doc, section, text, code, action, container, logger} from '../doc/runtime.js'
 import InputSystem from './input_system.js'
 import PerkyModule from '../core/perky_module.js'
 import PerkyView from '../application/perky_view.js'

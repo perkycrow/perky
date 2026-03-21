@@ -35,6 +35,8 @@ Studio reads the game's manifest, lets you edit assets, and saves changes to Ind
 
 **Animator** (`animator/index.html`) — full editor for a single animator. Timeline, frame editing, anchor points, motion preview, auto-save.
 
+**Scene** (`scene/index.html`) — visual scene editor. Place and arrange entities, edit transforms, preview with camera framing.
+
 **Spritesheet exporter** (`spritesheet/index.html`) — standalone PSD to spritesheet converter. No storage, just download PNG + JSON.
 
 ---
@@ -47,6 +49,7 @@ EditorComponent (from editor/)
 ┌────────────────────────────────────────┐
 │  HubView          animator gallery     │
 │  AnimatorView     animation editor     │
+│  SceneView        scene editor         │
 │  PsdImporter      PSD import wizard    │
 │  ConflictResolver version conflicts    │
 │  StorageInfo      storage usage widget │
@@ -123,4 +126,5 @@ A zip archive containing animator config + spritesheet data + atlas PNGs. Used f
 - [animator/animator_preview.js](animator/animator_preview.js) — WebGL preview with motion simulation
 - [animator/components/](animator/components/) — frame editor, anchor editor, animation settings
 - [components/psd_importer.js](components/psd_importer.js) — PSD import wizard
+- [scene/scene_view.js](scene/scene_view.js) — visual scene editor
 - [spritesheet/](spritesheet/) — standalone PSD to spritesheet tool

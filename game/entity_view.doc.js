@@ -65,7 +65,9 @@ export default doc('EntityView', () => {
 
         text(`
             The sync method is called each frame to update the render object.
-            By default it copies x/y from entity to root. Override for custom behavior.
+            By default it copies x/y from entity to root.
+            Set \`autoDepth = true\` to automatically set depth based on y position.
+            Override for custom behavior.
         `)
 
         action('Default sync', () => {
@@ -149,6 +151,7 @@ export default doc('EntityView', () => {
             // view.entity - The linked Entity
             // view.context - Context object from Stage
             // view.root - The root Object2D node (you must set this)
+            // view.autoDepth - Set depth based on y position (default: false)
         })
 
         code('Methods', () => {

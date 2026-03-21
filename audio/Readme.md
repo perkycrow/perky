@@ -123,7 +123,9 @@ Listens for the first user interaction (click, touch, keydown, gamepad) and fire
 ```js
 import {onAudioUnlock, isAudioUnlocked} from './audio_unlock.js'
 
-onAudioUnlock(() => console.log('audio ready'))
+onAudioUnlock(() => {
+    // audio is now ready to play
+})
 ```
 
 ---

@@ -57,12 +57,17 @@ export default doc('RenderGroup', () => {
         `)
 
         code('Adding a pass', () => {
-            group.addPostPass(vignettePass)
+            const group = new RenderGroup()
+
+            group.addPostPass(myPass)
             group.hasActivePasses()
         })
 
         code('Removing a pass', () => {
-            group.removePostPass(vignettePass)
+            const group = new RenderGroup()
+            group.addPostPass(myPass)
+
+            group.removePostPass(myPass)
         })
 
     })

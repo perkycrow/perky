@@ -135,7 +135,8 @@ export default doc('Entity', () => {
         code('Constructor', () => {
             const entity = new Entity({
                 x: 0,
-                y: 0
+                y: 0,
+                hitRadius: 0
             })
         })
 
@@ -143,6 +144,7 @@ export default doc('Entity', () => {
             // entity.x - X position (shorthand for position.x)
             // entity.y - Y position (shorthand for position.y)
             // entity.position - Vec2 position vector
+            // entity.hitRadius - Collision radius for simple hit tests
             // entity.components - Array of attached components
         })
 

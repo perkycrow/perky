@@ -95,14 +95,15 @@ export default doc('ServiceClient', () => {
         text(`
             \`ServiceClient.from()\` is the preferred way to create a client.
             It accepts one of \`worker\`, \`service\`, or \`path\`.
+            The \`service\` and \`path\` options return a Promise.
         `)
 
         code('from() options', () => {
-            ServiceClient.from({service: MyService})
+            const client = ServiceClient.from({worker: './my_service.js'})
 
-            ServiceClient.from({worker: './my_service.js'})
+            const client = await ServiceClient.from({service: MyService})
 
-            ServiceClient.from({path: './my_service.js'})
+            const client = await ServiceClient.from({path: './my_service.js'})
         })
 
     })
