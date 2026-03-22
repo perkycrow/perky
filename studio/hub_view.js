@@ -384,10 +384,16 @@ export default class HubView extends EditorComponent {
         const grid = createElement('div', {class: 'animator-grid'})
 
         for (const name of Object.keys(this.#scenes)) {
-            const card = createElement('div', {class: 'animator-card'})
+            const card = createElement('div', {class: 'animator-card selectable'})
+            card.dataset.name = name
 
             const preview = createElement('div', {class: 'card-preview'})
             preview.appendChild(createElement('div', {class: 'create-icon', text: '\u25A6'}))
+
+            const checkbox = createElement('div', {class: 'card-checkbox'})
+            checkbox.dataset.name = name
+            preview.appendChild(checkbox)
+
             card.appendChild(preview)
 
             const info = createElement('div', {class: 'card-info'})
@@ -396,7 +402,13 @@ export default class HubView extends EditorComponent {
             card.appendChild(info)
 
             card.addEventListener('click', () => {
-                window.location.href = `scene.html?id=${encodeURIComponent(name)}`
+                if (this.#selectionMode) {
+                    const cardCheckbox = card.querySelector('.card-checkbox')
+                    cardCheckbox.classList.toggle('selected')
+                    this.#toggleItemSelection(name)
+                } else {
+                    window.location.href = `scene.html?id=${encodeURIComponent(name)}`
+                }
             })
 
             grid.appendChild(card)
