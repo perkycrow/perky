@@ -1,4 +1,5 @@
 import {pack, unpack} from './pack.js'
+import {createElement} from '../application/dom_utils.js'
 
 
 const DB_PREFIX = 'perky-'
@@ -334,9 +335,6 @@ function downloadBlob (blob, filename) {
     }
 
     const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    a.click()
+    createElement('a', {href: url, download: filename}).click()
     URL.revokeObjectURL(url)
 }
