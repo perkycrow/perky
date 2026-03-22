@@ -205,6 +205,10 @@ export default class SceneView extends EditorComponent {
             const entity = this.#entities[this.#selectedIndex]
             this.#addPropInput('x', entity.x, (v) => this.#updateEntityProp('x', v))
             this.#addPropInput('y', entity.y, (v) => this.#updateEntityProp('y', v))
+
+            const deleteBtn = createElement('button', {class: 'delete-btn', text: 'Delete'})
+            deleteBtn.addEventListener('click', () => this.#deleteSelectedEntity())
+            this.#propsPanel.appendChild(deleteBtn)
         } else {
             this.#propsPanel.appendChild(createElement('div', {
                 class: 'empty-message',
@@ -215,6 +219,7 @@ export default class SceneView extends EditorComponent {
         this.#treeEl = createElement('div', {class: 'scene-tree'})
         this.#propsPanel.appendChild(this.#treeEl)
         this.#updateTree()
+        this.#buildPalette()
     }
 
 
@@ -317,6 +322,70 @@ export default class SceneView extends EditorComponent {
 
             this.#treeEl.appendChild(item)
         }
+    }
+
+
+    #buildPalette () {
+        const wiring = this.#context?.wiring
+        if (!wiring) {
+            return
+        }
+
+        const paletteEl = createElement('div', {class: 'scene-tree'})
+        paletteEl.appendChild(createElement('div', {class: 'panel-title', text: 'Add Entity'}))
+
+        const entityClasses = wiring.getAll('entities')
+
+        for (const name of Object.keys(entityClasses)) {
+            const item = createElement('div', {class: 'tree-item palette-item', text: '+ ' + name})
+
+            item.addEventListener('click', () => this.#addEntity(name))
+            paletteEl.appendChild(item)
+        }
+
+        this.#propsPanel.appendChild(paletteEl)
+    }
+
+
+    #addEntity (type) {
+        const wiring = this.#context?.wiring
+        const EntityClass = wiring?.get('entities', type)
+
+        if (!EntityClass || !this.#stage?.world) {
+            return
+        }
+
+        const cam = this.camera
+        const x = roundHalf(cam.x)
+        const y = roundHalf(cam.y)
+
+        const entry = {type, x, y, index: this.#entities.length}
+        entry.worldEntity = this.#stage.world.create(EntityClass, {x, y})
+
+        this.#entities.push(entry)
+        this.#selectedIndex = this.#entities.length - 1
+        this.#markDirty()
+        this.#buildPropsPanel()
+        this.#scheduleRender()
+    }
+
+
+    #deleteSelectedEntity () {
+        if (this.#selectedIndex < 0) {
+            return
+        }
+
+        const entry = this.#entities[this.#selectedIndex]
+
+        if (entry.worldEntity && this.#stage?.world) {
+            this.#stage.world.removeChild(entry.worldEntity.$id)
+        }
+
+        this.#entities.splice(this.#selectedIndex, 1)
+        this.#selectedIndex = -1
+        this.#markDirty()
+        this.#buildPropsPanel()
+        this.#scheduleRender()
     }
 
 

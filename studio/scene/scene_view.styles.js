@@ -104,4 +104,25 @@ export const sceneViewStyles = createStyleSheet(`
         padding: var(--spacing-xl);
     }
 
+    .delete-btn {
+        width: 100%;
+        margin-top: var(--spacing-md);
+        padding: 6px;
+        background: transparent;
+        border: 1px solid #f66;
+        border-radius: var(--radius-sm);
+        color: #f66;
+        font-size: var(--font-size-sm);
+        font-family: var(--font-mono);
+        cursor: pointer;
+    }
+
+    .delete-btn:hover {
+        background: rgba(255, 102, 102, 0.1);
+    }
+
+    .palette-item {
+        color: var(--accent);
+    }
+
 `)
