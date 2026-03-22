@@ -148,4 +148,225 @@ describe(WebGLSpriteRenderer, () => {
         expect(mockGl.uniformMatrix3fv).toHaveBeenCalled()
     })
 
+
+    test('reset uses transform program when provided', () => {
+        const renderer = new WebGLSpriteRenderer()
+        const mockGl = {
+            createBuffer: vi.fn(() => ({})),
+            bindBuffer: vi.fn(),
+            bufferData: vi.fn(),
+            ARRAY_BUFFER: 'ARRAY_BUFFER',
+            ELEMENT_ARRAY_BUFFER: 'ELEMENT_ARRAY_BUFFER',
+            STATIC_DRAW: 'STATIC_DRAW'
+        }
+        const transformProgram = {program: {}}
+        const mockContext = {
+            gl: mockGl,
+            spriteProgram: {},
+            textureManager: {}
+        }
+        renderer.init(mockContext)
+        const renderContext = {
+            transform: {getProgram: () => transformProgram}
+        }
+        expect(() => renderer.reset(renderContext)).not.toThrow()
+    })
+
+
+    test('flush groups sprites by shader effects', () => {
+        const renderer = new WebGLSpriteRenderer()
+        const mockGl = {
+            createBuffer: vi.fn(() => ({})),
+            bindBuffer: vi.fn(),
+            bufferData: vi.fn(),
+            useProgram: vi.fn(),
+            uniformMatrix3fv: vi.fn(),
+            uniform2f: vi.fn(),
+            activeTexture: vi.fn(),
+            bindTexture: vi.fn(),
+            uniform1i: vi.fn(),
+            enableVertexAttribArray: vi.fn(),
+            vertexAttribPointer: vi.fn(),
+            drawElements: vi.fn(),
+            ARRAY_BUFFER: 'ARRAY_BUFFER',
+            ELEMENT_ARRAY_BUFFER: 'ELEMENT_ARRAY_BUFFER',
+            STATIC_DRAW: 'STATIC_DRAW',
+            DYNAMIC_DRAW: 'DYNAMIC_DRAW',
+            TEXTURE0: 'TEXTURE0',
+            TEXTURE_2D: 'TEXTURE_2D',
+            FLOAT: 'FLOAT',
+            TRIANGLES: 'TRIANGLES',
+            UNSIGNED_SHORT: 'UNSIGNED_SHORT'
+        }
+
+        const mockProgram = {
+            program: {},
+            uniforms: {
+                uProjectionMatrix: 'uProjectionMatrix',
+                uViewMatrix: 'uViewMatrix',
+                uModelMatrix: 'uModelMatrix',
+                uTexture: 'uTexture'
+            },
+            attributes: {
+                aPosition: 0,
+                aTexCoord: 1,
+                aOpacity: 2
+            }
+        }
+
+        const effectProgram = {
+            program: {name: 'effect'},
+            uniforms: {
+                uProjectionMatrix: 'uProjectionMatrix',
+                uViewMatrix: 'uViewMatrix',
+                uModelMatrix: 'uModelMatrix',
+                uTexture: 'uTexture'
+            },
+            attributes: {
+                aPosition: 0,
+                aTexCoord: 1,
+                aOpacity: 2
+            }
+        }
+
+        const mockTexture = {}
+        const mockTextureManager = {
+            getTexture: vi.fn(() => mockTexture)
+        }
+
+        const mockShaderEffectRegistry = {
+            getShaderForEffects: vi.fn(() => effectProgram),
+            applyUniforms: vi.fn()
+        }
+
+        const mockContext = {
+            gl: mockGl,
+            spriteProgram: mockProgram,
+            textureManager: mockTextureManager,
+            shaderEffectRegistry: mockShaderEffectRegistry
+        }
+
+        renderer.init(mockContext)
+        renderer.reset()
+
+        const sprite1 = {
+            region: {
+                image: {complete: true, naturalWidth: 100, width: 100, height: 100},
+                uvs: {u0: 0, v0: 0, u1: 1, v1: 1}
+            },
+            getBounds: () => ({minX: 0, minY: 0, maxX: 10, maxY: 10, width: 10, height: 10}),
+            worldMatrix: [1, 0, 0, 1, 0, 0],
+            anchorX: 0.5,
+            anchorY: 0.5
+        }
+
+        const sprite2 = {
+            region: {
+                image: {complete: true, naturalWidth: 100, width: 100, height: 100},
+                uvs: {u0: 0, v0: 0, u1: 1, v1: 1}
+            },
+            getBounds: () => ({minX: 0, minY: 0, maxX: 10, maxY: 10, width: 10, height: 10}),
+            worldMatrix: [1, 0, 0, 1, 0, 0],
+            anchorX: 0.5,
+            anchorY: 0.5
+        }
+
+        renderer.collect(sprite1, 1.0, {shaderEffectTypes: ['blur']})
+        renderer.collect(sprite2, 1.0)
+
+        const matrices = {
+            projectionMatrix: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+            viewMatrix: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+        }
+
+        renderer.flush(matrices)
+
+        expect(mockShaderEffectRegistry.getShaderForEffects).toHaveBeenCalledWith(['blur'])
+        expect(mockShaderEffectRegistry.applyUniforms).toHaveBeenCalled()
+    })
+
+
+    test('flush applies transform uniforms when transform is provided', () => {
+        const renderer = new WebGLSpriteRenderer()
+        const mockGl = {
+            createBuffer: vi.fn(() => ({})),
+            bindBuffer: vi.fn(),
+            bufferData: vi.fn(),
+            useProgram: vi.fn(),
+            uniformMatrix3fv: vi.fn(),
+            uniform2f: vi.fn(),
+            activeTexture: vi.fn(),
+            bindTexture: vi.fn(),
+            uniform1i: vi.fn(),
+            enableVertexAttribArray: vi.fn(),
+            vertexAttribPointer: vi.fn(),
+            drawElements: vi.fn(),
+            ARRAY_BUFFER: 'ARRAY_BUFFER',
+            ELEMENT_ARRAY_BUFFER: 'ELEMENT_ARRAY_BUFFER',
+            STATIC_DRAW: 'STATIC_DRAW',
+            DYNAMIC_DRAW: 'DYNAMIC_DRAW',
+            TEXTURE0: 'TEXTURE0',
+            TEXTURE_2D: 'TEXTURE_2D',
+            FLOAT: 'FLOAT',
+            TRIANGLES: 'TRIANGLES',
+            UNSIGNED_SHORT: 'UNSIGNED_SHORT'
+        }
+
+        const mockProgram = {
+            program: {},
+            uniforms: {
+                uProjectionMatrix: 'uProjectionMatrix',
+                uViewMatrix: 'uViewMatrix',
+                uModelMatrix: 'uModelMatrix',
+                uTexture: 'uTexture'
+            },
+            attributes: {
+                aPosition: 0,
+                aTexCoord: 1,
+                aOpacity: 2
+            }
+        }
+
+        const mockTexture = {}
+        const mockTextureManager = {
+            getTexture: vi.fn(() => mockTexture)
+        }
+
+        const mockContext = {
+            gl: mockGl,
+            spriteProgram: mockProgram,
+            textureManager: mockTextureManager
+        }
+
+        const mockTransform = {
+            getProgram: vi.fn(() => null),
+            applyUniforms: vi.fn()
+        }
+
+        renderer.init(mockContext)
+        renderer.reset()
+
+        const mockSprite = {
+            region: {
+                image: {complete: true, naturalWidth: 100, width: 100, height: 100},
+                uvs: {u0: 0, v0: 0, u1: 1, v1: 1}
+            },
+            getBounds: () => ({minX: 0, minY: 0, maxX: 10, maxY: 10, width: 10, height: 10}),
+            worldMatrix: [1, 0, 0, 1, 0, 0],
+            anchorX: 0.5,
+            anchorY: 0.5
+        }
+
+        renderer.collect(mockSprite, 1.0)
+
+        const matrices = {
+            projectionMatrix: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+            viewMatrix: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+        }
+
+        renderer.flush(matrices, {transform: mockTransform})
+
+        expect(mockTransform.applyUniforms).toHaveBeenCalledWith(mockGl, mockProgram, matrices)
+    })
+
 })
