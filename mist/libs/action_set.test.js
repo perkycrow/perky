@@ -2,6 +2,22 @@ import {test, expect} from 'vitest'
 import ActionSet from './action_set.js'
 
 
+test('constructor with initialize', async () => {
+    const history = []
+
+    const actionSet = new ActionSet(({set, hook}) => {
+        set('actionA', () => {
+            history.push('actionA')
+            return true
+        })
+        hook('actionA', () => history.push('hookA'))
+    })
+
+    await actionSet.trigger('actionA')
+    expect(history).toEqual(['actionA', 'hookA'])
+})
+
+
 test('single action', async () => {
     const actionSet = new ActionSet()
     const {set, get, trigger} = actionSet.getApi()
