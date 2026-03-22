@@ -44,6 +44,193 @@ describe(PerkyModule, () => {
     })
 
 
+    test('constructor uses static $name', () => {
+        class CustomModule extends PerkyModule {
+            static $name = 'CustomName'
+        }
+
+        const module = new CustomModule()
+        expect(module.$name).toBe('CustomName')
+        expect(module.$id).toBe('CustomName')
+    })
+
+
+    test('constructor inherits static $tags', () => {
+        class TaggedModule extends PerkyModule {
+            static $tags = ['enemy', 'collidable']
+        }
+
+        const module = new TaggedModule()
+        expect(module.$tags).toEqual(['enemy', 'collidable'])
+    })
+
+
+    test('constructor merges static $tags with options $tags', () => {
+        class TaggedModule extends PerkyModule {
+            static $tags = ['enemy']
+        }
+
+        const module = new TaggedModule({$tags: ['flying']})
+        expect(module.$tags).toContain('enemy')
+        expect(module.$tags).toContain('flying')
+    })
+
+
+    test('running getter returns started state', () => {
+        const module = new PerkyModule()
+        expect(module.running).toBe(false)
+
+        module.start()
+        expect(module.running).toBe(true)
+
+        module.stop()
+        expect(module.running).toBe(false)
+    })
+
+
+    test('start returns true on first call', () => {
+        const module = new PerkyModule()
+        expect(module.start()).toBe(true)
+    })
+
+
+    test('start returns false when already started', () => {
+        const module = new PerkyModule()
+        module.start()
+        expect(module.start()).toBe(false)
+    })
+
+
+    test('stop returns true on first call when started', () => {
+        const module = new PerkyModule()
+        module.start()
+        expect(module.stop()).toBe(true)
+    })
+
+
+    test('stop returns false when not started', () => {
+        const module = new PerkyModule()
+        expect(module.stop()).toBe(false)
+    })
+
+
+    test('dispose returns true on first call', () => {
+        const module = new PerkyModule()
+        expect(module.dispose()).toBe(true)
+    })
+
+
+    test('dispose returns false when already disposed', () => {
+        const module = new PerkyModule()
+        module.dispose()
+        expect(module.dispose()).toBe(false)
+    })
+
+
+    test('start calls onStart hook', () => {
+        const onStartSpy = vi.fn()
+
+        class TestModule extends PerkyModule {
+            onStart () {
+                onStartSpy()
+            }
+        }
+
+        const module = new TestModule()
+        module.start()
+
+        expect(onStartSpy).toHaveBeenCalledTimes(1)
+    })
+
+
+    test('stop calls onStop hook', () => {
+        const onStopSpy = vi.fn()
+
+        class TestModule extends PerkyModule {
+            onStop () {
+                onStopSpy()
+            }
+        }
+
+        const module = new TestModule()
+        module.start()
+        module.stop()
+
+        expect(onStopSpy).toHaveBeenCalledTimes(1)
+    })
+
+
+    test('dispose calls onDispose hook', () => {
+        const onDisposeSpy = vi.fn()
+
+        class TestModule extends PerkyModule {
+            onDispose () {
+                onDisposeSpy()
+            }
+        }
+
+        const module = new TestModule()
+        module.dispose()
+
+        expect(onDisposeSpy).toHaveBeenCalledTimes(1)
+    })
+
+
+    test('$name:changed event emits when $name changes', () => {
+        const module = new PerkyModule({$name: 'OldName'})
+        const spy = vi.fn()
+
+        module.on('$name:changed', spy)
+        module.$name = 'NewName'
+
+        expect(spy).toHaveBeenCalledWith('NewName', 'OldName')
+    })
+
+
+    test('$name:changed event does not emit when value is same', () => {
+        const module = new PerkyModule({$name: 'SameName'})
+        const spy = vi.fn()
+
+        module.on('$name:changed', spy)
+        module.$name = 'SameName'
+
+        expect(spy).not.toHaveBeenCalled()
+    })
+
+
+    test('$category:changed event emits when $category changes', () => {
+        const module = new PerkyModule({$category: 'oldCategory'})
+        const spy = vi.fn()
+
+        module.on('$category:changed', spy)
+        module.$category = 'newCategory'
+
+        expect(spy).toHaveBeenCalledWith('newCategory', 'oldCategory')
+    })
+
+
+    test('$id:changed event emits when $id changes', () => {
+        const module = new PerkyModule({$id: 'oldId'})
+        const spy = vi.fn()
+
+        module.on('$id:changed', spy)
+        module.$id = 'newId'
+
+        expect(spy).toHaveBeenCalledWith('newId', 'oldId')
+    })
+
+
+    test('$id:changed event does not emit when value is same', () => {
+        const module = new PerkyModule({$id: 'sameId'})
+        const spy = vi.fn()
+
+        module.on('$id:changed', spy)
+        module.$id = 'sameId'
+
+        expect(spy).not.toHaveBeenCalled()
+    })
+
+
     test('install', () => {
         const result = child.install(host, {})
 

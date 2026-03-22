@@ -205,6 +205,112 @@ describe('Logger', () => {
         test('default maxHistory is 100', () => {
             expect(logger.maxHistory).toBe(100)
         })
+
+
+        test('setting maxHistory trims existing history', () => {
+            logger.info('1')
+            logger.info('2')
+            logger.info('3')
+            logger.info('4')
+            logger.info('5')
+
+            expect(logger.history).toHaveLength(5)
+
+            logger.maxHistory = 2
+
+            expect(logger.history).toHaveLength(2)
+            expect(logger.history[0].items).toEqual(['4'])
+            expect(logger.history[1].items).toEqual(['5'])
+        })
+    })
+
+
+    describe('consoleOutput', () => {
+
+        test('default consoleOutput is true', () => {
+            logger.consoleOutput = true
+            expect(logger.consoleOutput).toBe(true)
+        })
+
+
+        test('consoleOutput can be toggled', () => {
+            logger.consoleOutput = true
+            expect(logger.consoleOutput).toBe(true)
+
+            logger.consoleOutput = false
+            expect(logger.consoleOutput).toBe(false)
+        })
+
+
+        test('calls console.info when consoleOutput is true and type is info', () => {
+            const spy = vi.spyOn(console, 'info').mockImplementation(() => {})
+            logger.consoleOutput = true
+
+            logger.info('test message')
+
+            expect(spy).toHaveBeenCalledWith('test message')
+            spy.mockRestore()
+        })
+
+
+        test('calls console.warn when consoleOutput is true and type is warn', () => {
+            const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+            logger.consoleOutput = true
+
+            logger.warn('warning message')
+
+            expect(spy).toHaveBeenCalledWith('warning message')
+            spy.mockRestore()
+        })
+
+
+        test('calls console.error when consoleOutput is true and type is error', () => {
+            const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+            logger.consoleOutput = true
+
+            logger.error('error message')
+
+            expect(spy).toHaveBeenCalledWith('error message')
+            spy.mockRestore()
+        })
+
+
+        test('calls console.log for notice type', () => {
+            const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+            logger.consoleOutput = true
+
+            logger.notice('notice message')
+
+            expect(spy).toHaveBeenCalledWith('notice message')
+            spy.mockRestore()
+        })
+
+
+        test('calls console.log for success type', () => {
+            const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+            logger.consoleOutput = true
+
+            logger.success('success message')
+
+            expect(spy).toHaveBeenCalledWith('success message')
+            spy.mockRestore()
+        })
+
+
+        test('does not call console when consoleOutput is false', () => {
+            const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+            const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+            logger.consoleOutput = false
+
+            logger.info('test')
+            logger.notice('test')
+
+            expect(logSpy).not.toHaveBeenCalled()
+            expect(infoSpy).not.toHaveBeenCalled()
+            logSpy.mockRestore()
+            infoSpy.mockRestore()
+        })
+
     })
 
 })
