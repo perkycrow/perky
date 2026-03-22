@@ -171,7 +171,7 @@ describe('BaseRenderer', () => {
 
 
         test('emits resize event', () => {
-            let emittedWidth, emittedHeight
+            let emittedWidth; let emittedHeight
             renderer.on('resize', (width, height) => {
                 emittedWidth = width
                 emittedHeight = height

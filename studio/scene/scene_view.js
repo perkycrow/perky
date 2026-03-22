@@ -402,33 +402,28 @@ export default class SceneView extends EditorComponent {
     }
 
 
-    #addTypedEntity (type) {
+    #addEntity (entry) {
         const wiring = this.#context?.wiring
-        const EntityClass = wiring?.get('entities', type)
+        const world = this.#stage?.world
 
-        if (!EntityClass || !this.#stage?.world) {
+        if (!world) {
             return
         }
 
-        const cam = this.camera
-        const x = roundHalf(cam.x)
-        const y = roundHalf(cam.y)
-        const world = this.#stage.world
-        const entry = {type, x, y}
+        if (entry.type && !wiring?.get('entities', entry.type)) {
+            return
+        }
 
         this.#history.execute({
             execute: () => {
-                entry.worldEntity = world.create(EntityClass, {x: entry.x, y: entry.y})
+                entry.worldEntity = createWorldEntity(world, entry, wiring)
                 if (!this.#entities.includes(entry)) {
                     this.#entities.push(entry)
                 }
                 this.#selectedIndex = this.#entities.indexOf(entry)
             },
             undo: () => {
-                if (entry.worldEntity) {
-                    world.removeChild(entry.worldEntity.$id)
-                    entry.worldEntity = null
-                }
+                removeWorldEntity(world, entry)
                 const idx = this.#entities.indexOf(entry)
                 if (idx >= 0) {
                     this.#entities.splice(idx, 1)
@@ -441,46 +436,15 @@ export default class SceneView extends EditorComponent {
     }
 
 
-    #addSpriteEntity (texture) {
-        if (!this.#stage?.world) {
-            return
-        }
-
+    #addTypedEntity (type) {
         const cam = this.camera
-        const x = roundHalf(cam.x)
-        const y = roundHalf(cam.y)
-        const world = this.#stage.world
-        const entry = {texture, x, y, width: 2, height: 2}
+        this.#addEntity({type, x: roundHalf(cam.x), y: roundHalf(cam.y)})
+    }
 
-        this.#history.execute({
-            execute: () => {
-                entry.worldEntity = world.create(Entity, {
-                    x: entry.x,
-                    y: entry.y,
-                    texture: entry.texture,
-                    width: entry.width,
-                    height: entry.height,
-                    $tags: ['decor']
-                })
-                if (!this.#entities.includes(entry)) {
-                    this.#entities.push(entry)
-                }
-                this.#selectedIndex = this.#entities.indexOf(entry)
-            },
-            undo: () => {
-                if (entry.worldEntity) {
-                    world.removeChild(entry.worldEntity.$id)
-                    entry.worldEntity = null
-                }
-                const idx = this.#entities.indexOf(entry)
-                if (idx >= 0) {
-                    this.#entities.splice(idx, 1)
-                }
-                this.#selectedIndex = -1
-            }
-        })
 
-        this.#afterHistoryAction()
+    #addSpriteEntity (texture) {
+        const cam = this.camera
+        this.#addEntity({texture, x: roundHalf(cam.x), y: roundHalf(cam.y), width: 2, height: 2})
     }
 
 
@@ -500,10 +464,7 @@ export default class SceneView extends EditorComponent {
 
         this.#history.execute({
             execute: () => {
-                if (entry.worldEntity) {
-                    world.removeChild(entry.worldEntity.$id)
-                    entry.worldEntity = null
-                }
+                removeWorldEntity(world, entry)
                 const currentIdx = this.#entities.indexOf(entry)
                 if (currentIdx >= 0) {
                     this.#entities.splice(currentIdx, 1)
@@ -511,21 +472,7 @@ export default class SceneView extends EditorComponent {
                 this.#selectedIndex = -1
             },
             undo: () => {
-                const EntityClass = entry.type ? wiring?.get('entities', entry.type) : null
-
-                if (EntityClass) {
-                    entry.worldEntity = world.create(EntityClass, {x: entry.x, y: entry.y})
-                } else if (entry.texture) {
-                    entry.worldEntity = world.create(Entity, {
-                        x: entry.x,
-                        y: entry.y,
-                        texture: entry.texture,
-                        width: entry.width,
-                        height: entry.height,
-                        $tags: ['decor']
-                    })
-                }
-
+                entry.worldEntity = createWorldEntity(world, entry, wiring)
                 this.#entities.splice(idx, 0, entry)
                 this.#selectedIndex = idx
             }
@@ -733,13 +680,7 @@ export default class SceneView extends EditorComponent {
 
     #getEntryBounds (entry) {
         if (!entry.worldEntity || !this.#stage) {
-            const halfSize = ENTITY_SIZE / 2
-            return {
-                minX: entry.x - halfSize,
-                minY: entry.y - halfSize,
-                maxX: entry.x + halfSize,
-                maxY: entry.y + halfSize
-            }
+            return defaultBounds(entry.x, entry.y)
         }
 
         const views = this.#stage.getViews(entry.worldEntity)
@@ -747,16 +688,13 @@ export default class SceneView extends EditorComponent {
 
         if (root) {
             root.updateWorldMatrix(true)
-            return root instanceof Group2D ? root.getBounds() : root.getWorldBounds()
+            const bounds = root instanceof Group2D ? root.getBounds() : root.getWorldBounds()
+            bounds.width = bounds.maxX - bounds.minX
+            bounds.height = bounds.maxY - bounds.minY
+            return bounds
         }
 
-        const halfSize = ENTITY_SIZE / 2
-        return {
-            minX: entry.x - halfSize,
-            minY: entry.y - halfSize,
-            maxX: entry.x + halfSize,
-            maxY: entry.y + halfSize
-        }
+        return defaultBounds(entry.x, entry.y)
     }
 
 
@@ -801,54 +739,12 @@ export default class SceneView extends EditorComponent {
 
         const lineWidth = 1 / ppu
 
-        this.#renderGrid(ctx, cam, lineWidth)
+        renderGrid(ctx, cam, lineWidth)
         this.#renderCameraFrame(ctx, lineWidth)
         this.#renderSelectionHighlight(ctx, lineWidth)
         this.#renderLabels(ctx, ppu)
 
         ctx.restore()
-    }
-
-
-    #renderGrid (ctx, cam, lineWidth) { // eslint-disable-line local/class-methods-use-this -- clean
-        const topLeft = cam.screenToWorld(0, 0)
-        const bottomRight = cam.screenToWorld(cam.viewportWidth, cam.viewportHeight)
-
-        const startX = Math.floor(topLeft.x)
-        const endX = Math.ceil(bottomRight.x)
-        const startY = Math.floor(bottomRight.y)
-        const endY = Math.ceil(topLeft.y)
-        const bigNumber = 10000
-
-        ctx.strokeStyle = GRID_COLOR
-        ctx.lineWidth = lineWidth
-
-        for (let x = startX; x <= endX; x++) {
-            ctx.beginPath()
-            ctx.moveTo(x, -bigNumber)
-            ctx.lineTo(x, bigNumber)
-            ctx.stroke()
-        }
-
-        for (let y = startY; y <= endY; y++) {
-            ctx.beginPath()
-            ctx.moveTo(-bigNumber, y)
-            ctx.lineTo(bigNumber, y)
-            ctx.stroke()
-        }
-
-        ctx.strokeStyle = AXIS_COLOR
-        ctx.lineWidth = lineWidth
-
-        ctx.beginPath()
-        ctx.moveTo(0, -bigNumber)
-        ctx.lineTo(0, bigNumber)
-        ctx.stroke()
-
-        ctx.beginPath()
-        ctx.moveTo(-bigNumber, 0)
-        ctx.lineTo(bigNumber, 0)
-        ctx.stroke()
     }
 
 
@@ -952,4 +848,90 @@ function buildEntityEntry (entity) {
     }
 
     return entry
+}
+
+
+function defaultBounds (x, y) {
+    const halfSize = ENTITY_SIZE / 2
+    return {
+        minX: x - halfSize,
+        minY: y - halfSize,
+        maxX: x + halfSize,
+        maxY: y + halfSize,
+        width: ENTITY_SIZE,
+        height: ENTITY_SIZE
+    }
+}
+
+
+function createWorldEntity (world, entry, wiring) {
+    const EntityClass = entry.type ? wiring?.get('entities', entry.type) : null
+
+    if (EntityClass) {
+        return world.create(EntityClass, {x: entry.x, y: entry.y, $id: entry.$id})
+    }
+
+    if (entry.texture) {
+        return world.create(Entity, {
+            x: entry.x,
+            y: entry.y,
+            texture: entry.texture,
+            width: entry.width,
+            height: entry.height,
+            depth: entry.depth,
+            $tags: ['decor']
+        })
+    }
+
+    return null
+}
+
+
+function removeWorldEntity (world, entry) {
+    if (entry.worldEntity) {
+        world.removeChild(entry.worldEntity.$id)
+        entry.worldEntity = null
+    }
+}
+
+
+function renderGrid (ctx, cam, lineWidth) {
+    const topLeft = cam.screenToWorld(0, 0)
+    const bottomRight = cam.screenToWorld(cam.viewportWidth, cam.viewportHeight)
+
+    const startX = Math.floor(topLeft.x)
+    const endX = Math.ceil(bottomRight.x)
+    const startY = Math.floor(bottomRight.y)
+    const endY = Math.ceil(topLeft.y)
+    const bigNumber = 10000
+
+    ctx.strokeStyle = GRID_COLOR
+    ctx.lineWidth = lineWidth
+
+    for (let x = startX; x <= endX; x++) {
+        ctx.beginPath()
+        ctx.moveTo(x, -bigNumber)
+        ctx.lineTo(x, bigNumber)
+        ctx.stroke()
+    }
+
+    for (let y = startY; y <= endY; y++) {
+        ctx.beginPath()
+        ctx.moveTo(-bigNumber, y)
+        ctx.lineTo(bigNumber, y)
+        ctx.stroke()
+    }
+
+    ctx.strokeStyle = AXIS_COLOR
+    ctx.lineWidth = lineWidth
+
+    ctx.beginPath()
+    ctx.moveTo(0, -bigNumber)
+    ctx.lineTo(0, bigNumber)
+    ctx.stroke()
+
+    ctx.beginPath()
+    ctx.moveTo(-bigNumber, 0)
+    ctx.lineTo(bigNumber, 0)
+    ctx.stroke()
 }
