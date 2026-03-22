@@ -98,12 +98,12 @@ export default doc('ServiceClient', () => {
             The \`service\` and \`path\` options return a Promise.
         `)
 
-        code('from() options', () => {
-            const client = ServiceClient.from({worker: './my_service.js'})
+        code('from() options', async () => {
+            const clientFromWorker = ServiceClient.from({worker: './my_service.js'})
 
-            const client = await ServiceClient.from({service: MyService})
+            const clientFromService = await ServiceClient.from({service: MyService})
 
-            const client = await ServiceClient.from({path: './my_service.js'})
+            const clientFromPath = await ServiceClient.from({path: './my_service.js'})
         })
 
     })
