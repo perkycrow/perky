@@ -1,5 +1,5 @@
 import {doc, section, text, code} from '../../doc/runtime.js'
-import {inferSpritesheetName, buildAnimationConfig} from './animator_helpers.js'
+import {inferSpritesheetName, buildAnimationConfig, collectEventSuggestions, buildFramePreview} from './animator_helpers.js'
 
 
 export default doc('Animator Helpers', {advanced: true}, () => {
@@ -54,6 +54,38 @@ export default doc('Animator Helpers', {advanced: true}, () => {
             const config = buildAnimationConfig(anim, 'player')
             config.fps // 12
             config.frames.length // 1
+        })
+
+    })
+
+
+    section('collectEventSuggestions', () => {
+
+        text(`
+            Collects unique event names from all frames across all animations in
+            the animator. Returns up to 6 suggestions, excluding any events
+            already present in the exclude list.
+        `)
+
+        code('Usage', () => {
+            const suggestions = collectEventSuggestions(animator, ['footstep'])
+
+            // ['attack', 'jump', ...]
+        })
+
+    })
+
+
+    section('buildFramePreview', () => {
+
+        text(`
+            Creates a DOM element displaying a frame thumbnail and name. Draws
+            the frame's region onto a 120x120 canvas, centered and scaled to fit.
+        `)
+
+        code('Usage', () => {
+            const previewEl = buildFramePreview(frame)
+            container.appendChild(previewEl)
         })
 
     })
