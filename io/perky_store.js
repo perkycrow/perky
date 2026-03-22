@@ -221,10 +221,10 @@ export default class PerkyStore {
                 continue
             }
 
-            resources.push({type: resource.type, name: resource.name})
+            resources.push({id: resource.id, type: resource.type, name: resource.name})
 
             for (const file of resource.files) {
-                allFiles.push({name: `${resource.name}/${file.name}`, blob: file.blob})
+                allFiles.push({name: `${resource.id}/${file.name}`, blob: file.blob})
             }
         }
 
@@ -285,12 +285,11 @@ export default class PerkyStore {
         const results = []
 
         for (const resource of meta.resources) {
-            const prefix = `${resource.name}/`
+            const id = resource.id || `${resource.name}${capitalize(resource.type)}`
+            const prefix = `${id}/`
             const files = allFiles
                 .filter(f => f.name.startsWith(prefix))
                 .map(f => ({name: f.name.slice(prefix.length), blob: f.blob}))
-
-            const id = `${resource.name}${capitalize(resource.type)}`
 
             await this.save(id, {
                 type: resource.type,

@@ -750,8 +750,9 @@ export default class HubView extends EditorComponent {
         this.#deleteBtn.disabled = !hasSelection
         this.#updateBtn.disabled = this.#selectedItems.size !== 1
 
-        const hasModified = [...this.#selectedItems].some(id => this.#animators[id])
-        this.#revertBtn.disabled = !hasModified
+        const hasRevertable = [...this.#selectedItems].some(id =>
+            this.#animators[id] || this.#scenes[id])
+        this.#revertBtn.disabled = !hasRevertable
     }
 
 
@@ -763,7 +764,10 @@ export default class HubView extends EditorComponent {
             if (!file) {
                 return
             }
-            await this.#store.import(file)
+            const result = await this.#store.import(file)
+            const imported = Array.isArray(result) ? result : [result]
+            const names = imported.map(r => r.name).join(', ')
+            alert(`Imported: ${names}`)
             this.#render()
         })
         input.click()
@@ -797,21 +801,21 @@ export default class HubView extends EditorComponent {
             return
         }
 
-        for (const name of this.#selectedItems) {
-            await this.#store.export(name)
-        }
+        await this.#store.exportBundle([...this.#selectedItems])
     }
 
 
     async #revertSelected () {
-        const revertable = [...this.#selectedItems].filter(id => this.#animators[id])
+        const revertable = [...this.#selectedItems].filter(id =>
+            this.#animators[id] || this.#scenes[id])
+
         if (revertable.length === 0) {
             return
         }
 
         const message = revertable.length === 1
             ? `Revert "${revertable[0]}" to native version?`
-            : `Revert ${revertable.length} animators to native version?`
+            : `Revert ${revertable.length} items to native version?`
 
         if (!confirm(message)) {
             return
@@ -835,7 +839,7 @@ export default class HubView extends EditorComponent {
         const count = this.#selectedItems.size
         const message = count === 1
             ? `Delete "${[...this.#selectedItems][0]}"?`
-            : `Delete ${count} animators?`
+            : `Delete ${count} items?`
 
         if (!confirm(message)) {
             return
@@ -844,6 +848,7 @@ export default class HubView extends EditorComponent {
         for (const name of this.#selectedItems) {
             await this.#store.delete(name)
             delete this.#customAnimators[name]
+            this.#customMeta.delete(name)
             this.#thumbnails.delete(name)
         }
 

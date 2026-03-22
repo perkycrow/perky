@@ -413,17 +413,17 @@ describe('import', () => {
         const meta = {
             version: 2,
             resources: [
-                {type: 'animator', name: 'red'},
-                {type: 'scene', name: 'chapter'}
+                {id: 'redAnimator', type: 'animator', name: 'red'},
+                {id: 'chapterScene', type: 'scene', name: 'chapter'}
             ],
             updatedAt: 123
         }
 
         const files = [
             {name: 'meta.json', type: 'application/json', content: JSON.stringify(meta)},
-            {name: 'red/redAnimator.json', type: 'application/json', content: '{"animations":{}}'},
-            {name: 'red/redSpritesheet.json', type: 'application/json', content: '{"frames":{}}'},
-            {name: 'chapter/chapterScene.json', type: 'application/json', content: '{"entities":[]}'}
+            {name: 'redAnimator/redAnimator.json', type: 'application/json', content: '{"animations":{}}'},
+            {name: 'redAnimator/redSpritesheet.json', type: 'application/json', content: '{"frames":{}}'},
+            {name: 'chapterScene/chapterScene.json', type: 'application/json', content: '{"entities":[]}'}
         ]
         const perkyBlob = new Blob([JSON.stringify(files)], {type: 'application/octet-stream'})
 
@@ -441,6 +441,27 @@ describe('import', () => {
         const scene = await store.get('chapterScene')
         expect(scene.files).toHaveLength(1)
         expect(scene.files[0].name).toBe('chapterScene.json')
+    })
+
+
+    test('imports v2 bundle without id field uses fallback', async () => {
+        const meta = {
+            version: 2,
+            resources: [
+                {type: 'animator', name: 'blue'}
+            ],
+            updatedAt: 123
+        }
+
+        const files = [
+            {name: 'meta.json', type: 'application/json', content: JSON.stringify(meta)},
+            {name: 'blueAnimator/blueAnimator.json', type: 'application/json', content: '{}'}
+        ]
+        const perkyBlob = new Blob([JSON.stringify(files)], {type: 'application/octet-stream'})
+
+        const results = await store.import(perkyBlob)
+
+        expect(results[0].id).toBe('blueAnimator')
     })
 
 

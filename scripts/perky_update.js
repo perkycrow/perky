@@ -74,7 +74,8 @@ async function updatePerky (target, filePath, config) {
         for (const resource of meta.resources) {
             console.log(`${resource.type}: ${resource.name}`)
 
-            const prefix = `${resource.name}/`
+            const id = resource.id || `${resource.name}${resource.type.charAt(0).toUpperCase()}${resource.type.slice(1)}`
+            const prefix = `${id}/`
             const matched = resourceFiles
                 .filter(f => f.name.startsWith(prefix))
                 .map(f => ({name: f.name.slice(prefix.length), blob: f.blob}))
