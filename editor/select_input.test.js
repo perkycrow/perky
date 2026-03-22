@@ -328,19 +328,15 @@ describe('SelectInput', () => {
     })
 
 
-    describe('separator options', () => {
+    test('setOptions renders separator element', () => {
+        select.setOptions([
+            {value: 'a', label: 'A'},
+            {separator: true},
+            {value: 'b', label: 'B'}
+        ])
 
-        test('renders separator element', () => {
-            select.setOptions([
-                {value: 'a', label: 'A'},
-                {separator: true},
-                {value: 'b', label: 'B'}
-            ])
-
-            const separator = select.shadowRoot.querySelector('.select-separator')
-            expect(separator).not.toBeNull()
-        })
-
+        const separator = select.shadowRoot.querySelector('.select-separator')
+        expect(separator).not.toBeNull()
     })
 
 

@@ -255,12 +255,8 @@ describe('Sprite', () => {
     })
 
 
-    describe('renderHints', () => {
-
-        test('returns null when no effects and no tint', () => {
-            expect(sprite.renderHints).toBeNull()
-        })
-
+    test('renderHints returns null when no effects and no tint', () => {
+        expect(sprite.renderHints).toBeNull()
     })
 
 })
