@@ -43,6 +43,23 @@ export default doc('PsdImporter', {advanced: true}, () => {
     })
 
 
+    section('setTargetName', () => {
+
+        text(`
+            Sets the importer to update mode for an existing animator.
+            The name input will be pre-filled and disabled, and the wizard
+            title changes to "Update PSD". The \`Animator\` suffix is
+            stripped automatically.
+        `)
+
+        code('Usage', () => {
+            importer.setTargetName('playerAnimator')
+            importer.open() // Opens in update mode
+        })
+
+    })
+
+
     section('Conversion flow', () => {
 
         text(`
