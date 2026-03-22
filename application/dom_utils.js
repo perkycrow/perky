@@ -17,7 +17,8 @@ const directAttrs = [
     'checked',
     'disabled',
     'readonly',
-    'selected'
+    'selected',
+    'download'
 ]
 
 export function createElement (tag, options = {}) {
