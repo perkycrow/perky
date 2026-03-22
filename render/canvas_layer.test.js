@@ -274,6 +274,13 @@ describe(CanvasLayer, () => {
             expect(l.canvas.height).toBe(768)
         })
 
+
+        test('throws error for unknown rendererType', () => {
+            expect(() => {
+                new CanvasLayer({$id: 'invalid', rendererType: 'unknown'})
+            }).toThrow('Unknown renderer type: "unknown"')
+        })
+
     })
 
 

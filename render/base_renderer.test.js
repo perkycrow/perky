@@ -136,6 +136,16 @@ describe('BaseRenderer', () => {
             expect(renderer.setPixelRatio(2)).toBe(renderer)
         })
 
+
+        test('applyPixelRatio updates camera viewport', () => {
+            renderer.displayWidth = 800
+            renderer.displayHeight = 600
+            renderer.applyPixelRatio()
+
+            expect(renderer.camera.viewportWidth).toBe(800)
+            expect(renderer.camera.viewportHeight).toBe(600)
+        })
+
     })
 
 
@@ -157,6 +167,20 @@ describe('BaseRenderer', () => {
 
         test('returns this', () => {
             expect(renderer.resize(100, 100)).toBe(renderer)
+        })
+
+
+        test('emits resize event', () => {
+            let emittedWidth, emittedHeight
+            renderer.on('resize', (width, height) => {
+                emittedWidth = width
+                emittedHeight = height
+            })
+
+            renderer.resize(640, 480)
+
+            expect(emittedWidth).toBe(640)
+            expect(emittedHeight).toBe(480)
         })
 
     })

@@ -14,6 +14,7 @@ class MockObject {
         this.depth = options.depth
         this.children = options.children ?? []
         this.renderHints = options.renderHints ?? null
+        this.debugGizmos = options.debugGizmos ?? null
         this.#worldBounds = options.worldBounds ?? {x: 0, y: 0, width: 1, height: 1}
     }
 
@@ -361,6 +362,58 @@ describe('traverseAndCollect', () => {
 
             expect(root.children[0]).toBe(child1)
             expect(root.children[1]).toBe(child2)
+        })
+
+    })
+
+
+    describe('debug gizmos', () => {
+
+        test('collects gizmos when debugGizmoRenderer provided', () => {
+            const gizmoRenderer = {
+                collected: [],
+                collectGizmo (object, opacity) {
+                    this.collected.push({object, opacity})
+                }
+            }
+            const root = new MockObject({debugGizmos: true})
+
+            traverseAndCollect(root, rendererRegistry, {debugGizmoRenderer: gizmoRenderer})
+
+            expect(gizmoRenderer.collected.length).toBe(1)
+            expect(gizmoRenderer.collected[0].object).toBe(root)
+        })
+
+
+        test('does not collect gizmos without debugGizmos property', () => {
+            const gizmoRenderer = {
+                collected: [],
+                collectGizmo (object, opacity) {
+                    this.collected.push({object, opacity})
+                }
+            }
+            const root = new MockObject()
+
+            traverseAndCollect(root, rendererRegistry, {debugGizmoRenderer: gizmoRenderer})
+
+            expect(gizmoRenderer.collected.length).toBe(0)
+        })
+
+
+        test('passes effective opacity to gizmo renderer', () => {
+            const gizmoRenderer = {
+                collected: [],
+                collectGizmo (object, opacity) {
+                    this.collected.push({object, opacity})
+                }
+            }
+            const child = new MockObject({opacity: 0.5, debugGizmos: true})
+            const root = new MockObject({opacity: 0.5, children: [child], debugGizmos: true})
+
+            traverseAndCollect(root, rendererRegistry, {debugGizmoRenderer: gizmoRenderer})
+
+            expect(gizmoRenderer.collected[0].opacity).toBe(0.5)
+            expect(gizmoRenderer.collected[1].opacity).toBe(0.25)
         })
 
     })
