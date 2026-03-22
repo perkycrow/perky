@@ -53,6 +53,18 @@ describe('pack', () => {
         expect(packed).toBeInstanceOf(Blob)
     })
 
+
+    test('pack with compression disabled', async () => {
+        const files = [
+            {name: 'test.txt', blob: new Blob(['Hello World'], {type: 'text/plain'})}
+        ]
+
+        const packed = await pack(files, {compress: false})
+
+        expect(packed).toBeInstanceOf(Blob)
+        expect(packed.size).toBeGreaterThan(0)
+    })
+
 })
 
 
@@ -113,6 +125,19 @@ describe('unpack', () => {
         const unpacked = await unpack(packed)
 
         expect(unpacked[0].blob.type).toBe('image/png')
+    })
+
+
+    test('unpack with compression disabled', async () => {
+        const original = [{name: 'test.txt', blob: new Blob(['Hello'], {type: 'text/plain'})}]
+        const packed = await pack(original, {compress: false})
+        const unpacked = await unpack(packed, {compressed: false})
+
+        expect(unpacked).toHaveLength(1)
+        expect(unpacked[0].name).toBe('test.txt')
+
+        const text = await blobToText(unpacked[0].blob)
+        expect(text).toBe('Hello')
     })
 
 })

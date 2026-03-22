@@ -165,4 +165,35 @@ describe('PsdConverter', () => {
         )
     })
 
+
+    test('convert uses nearest neighbor resize when specified', async () => {
+        const {findAnimationGroups, resizeFrames} = await import('./spritesheet.js')
+        findAnimationGroups.mockReturnValue([])
+        resizeFrames.mockClear()
+
+        const converter = new PsdConverter()
+        const psd = {width: 64, height: 64, tree: [], filename: 'test'}
+
+        await converter.convert(psd, {name: 'test', nearest: true})
+
+        expect(resizeFrames).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({nearest: true})
+        )
+    })
+
+
+    test('convert uses psd filename as default name', async () => {
+        const {findAnimationGroups} = await import('./spritesheet.js')
+        findAnimationGroups.mockReturnValue([])
+
+        const converter = new PsdConverter()
+        const psd = {width: 64, height: 64, tree: [], filename: 'heroSprite'}
+
+        const result = await converter.convert(psd)
+
+        expect(result.name).toBe('heroSprite')
+        expect(result.spritesheetName).toBe('heroSpriteSpritesheet')
+    })
+
 })
