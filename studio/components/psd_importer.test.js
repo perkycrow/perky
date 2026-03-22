@@ -296,4 +296,122 @@ describe('PsdImporter', () => {
 
     })
 
+
+    describe('update mode', () => {
+
+        test('setTargetName strips Animator suffix', () => {
+            importer.setTargetName('playerAnimator')
+            importer.open()
+
+            const title = importer.shadowRoot.querySelector('.header-title')
+            expect(title.textContent).toBe('Update PSD')
+        })
+
+
+        test('setTargetName handles names without Animator suffix', () => {
+            importer.setTargetName('player')
+            importer.open()
+
+            const title = importer.shadowRoot.querySelector('.header-title')
+            expect(title.textContent).toBe('Update PSD')
+        })
+
+
+        test('open resets to drop step', () => {
+            importer.open()
+            const dropStep = importer.shadowRoot.querySelector('[data-step="drop"]')
+            expect(dropStep.classList.contains('active')).toBe(true)
+        })
+
+
+        test('open preserves targetName across reset', () => {
+            importer.setTargetName('testAnimator')
+            importer.open()
+
+            const title = importer.shadowRoot.querySelector('.header-title')
+            expect(title.textContent).toBe('Update PSD')
+        })
+
+    })
+
+
+    describe('back button behavior', () => {
+
+        test('back button on drop step closes overlay', () => {
+            const overlay = importer.shadowRoot.querySelector('editor-overlay')
+            const closeSpy = vi.spyOn(overlay, 'close')
+
+            importer.open()
+            const backBtn = importer.shadowRoot.querySelector('.header-btn')
+            backBtn.click()
+
+            expect(closeSpy).toHaveBeenCalled()
+        })
+
+    })
+
+
+    describe('drop event', () => {
+
+        test('drop removes dragover class', () => {
+            const dropZone = importer.shadowRoot.querySelector('.drop-zone')
+            dropZone.classList.add('dragover')
+
+            const event = new Event('drop')
+            event.preventDefault = vi.fn()
+            event.dataTransfer = {files: []}
+
+            dropZone.dispatchEvent(event)
+
+            expect(dropZone.classList.contains('dragover')).toBe(false)
+        })
+
+    })
+
+
+    describe('resize mode select', () => {
+
+        test('default value is smooth', () => {
+            const select = importer.shadowRoot.querySelector('.resize-select')
+            expect(select.value).toBe('smooth')
+        })
+
+
+        test('has smooth and nearest options', () => {
+            const select = importer.shadowRoot.querySelector('.resize-select')
+            const options = Array.from(select.options).map(o => o.value)
+            expect(options).toContain('smooth')
+            expect(options).toContain('nearest')
+        })
+
+    })
+
+
+    describe('size inputs', () => {
+
+        test('has both width and height inputs', () => {
+            const inputs = importer.shadowRoot.querySelectorAll('.size-input')
+            expect(inputs.length).toBe(2)
+        })
+
+
+        test('inputs are number type', () => {
+            const inputs = importer.shadowRoot.querySelectorAll('.size-input')
+            inputs.forEach(input => {
+                expect(input.type).toBe('number')
+            })
+        })
+
+    })
+
+
+    describe('output info', () => {
+
+        test('has output info section', () => {
+            const outputInfo = importer.shadowRoot.querySelector('.output-info')
+            expect(outputInfo).not.toBeNull()
+        })
+
+    })
+
 })

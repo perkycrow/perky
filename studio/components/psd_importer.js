@@ -400,6 +400,7 @@ export default class PsdImporter extends EditorComponent {
         const targetName = this.#targetName
         this.#reset()
         this.#targetName = targetName
+        this.#updateStep()
         this.#overlay.open()
     }
 
