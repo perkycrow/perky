@@ -1,4 +1,5 @@
 import PerkyModule from '../core/perky_module.js'
+import Entity from './entity.js'
 
 
 export default class World extends PerkyModule {
@@ -16,18 +17,23 @@ export default class World extends PerkyModule {
 
 
     loadLayout (config, wiring) {
-        if (!config?.entities || !wiring) {
+        if (!config?.entities) {
             return
         }
 
         for (const entry of config.entities) {
-            const EntityClass = wiring.get('entities', entry.type)
+            if (entry.type && wiring) {
+                const EntityClass = wiring.get('entities', entry.type)
 
-            if (!EntityClass) {
-                continue
+                if (EntityClass) {
+                    this.create(EntityClass, entry)
+                }
+            } else if (entry.texture) {
+                this.create(Entity, {
+                    ...entry,
+                    $tags: ['decor']
+                })
             }
-
-            this.create(EntityClass, entry)
         }
     }
 

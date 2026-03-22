@@ -4,6 +4,7 @@ import ChapterController from '../controllers/chapter_controller.js'
 import VignettePass from '../../render/postprocessing/passes/vignette_pass.js'
 import ColorGradePass from '../../render/postprocessing/passes/color_grade_pass.js'
 import Easing from '../../math/easing.js'
+import SpriteEntityView from '../../game/sprite_entity_view.js'
 import wiring from '../wiring.js'
 
 
@@ -22,6 +23,7 @@ export default class ChapterStage extends Stage {
     onStart () {
         super.onStart()
         wiring.registerViews(this)
+        this.register((e) => e.options?.texture, SpriteEntityView)
 
         this.game.getLayer('game').setContent(this.viewsGroup)
         this.game.createLayer('chapterUI', 'html', {

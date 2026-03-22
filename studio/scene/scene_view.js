@@ -7,6 +7,9 @@ import PerkyStore from '../../io/perky_store.js'
 import Stage from '../../game/stage.js'
 import World from '../../game/world.js'
 import RenderSystem from '../../render/render_system.js'
+import SpriteEntityView from '../../game/sprite_entity_view.js'
+import Entity from '../../game/entity.js'
+import Group2D from '../../render/group_2d.js'
 import CommandHistory from '../../editor/command_history.js'
 import {toolbarStyles} from '../../editor/styles/toolbar.styles.js'
 import {sceneViewStyles} from './scene_view.styles.js'
@@ -120,18 +123,27 @@ export default class SceneView extends EditorComponent {
         const world = this.#stage.create(World, {$bind: 'world'})
 
         wiring.registerViews(this.#stage)
+        this.#stage.register((e) => e.options?.texture, SpriteEntityView)
         this.#stage.start()
 
         this.#renderSystem.getLayer('game').setContent(this.#stage.viewsGroup)
 
         for (const entry of this.#entities) {
-            const EntityClass = wiring.get('entities', entry.type)
+            const EntityClass = entry.type ? wiring.get('entities', entry.type) : null
 
-            if (!EntityClass) {
-                continue
+            if (EntityClass) {
+                entry.worldEntity = world.create(EntityClass, {x: entry.x, y: entry.y, $id: entry.$id})
+            } else if (entry.texture) {
+                entry.worldEntity = world.create(Entity, {
+                    x: entry.x,
+                    y: entry.y,
+                    texture: entry.texture,
+                    width: entry.width,
+                    height: entry.height,
+                    depth: entry.depth,
+                    $tags: ['decor']
+                })
             }
-
-            entry.worldEntity = world.create(EntityClass, {x: entry.x, y: entry.y, $id: entry.$id})
         }
 
         this.#stage.syncViews()
@@ -346,7 +358,7 @@ export default class SceneView extends EditorComponent {
             const entity = this.#entities[i]
             const item = createElement('div', {
                 class: `tree-item${i === this.#selectedIndex ? ' selected' : ''}`,
-                text: entity.$id || entity.type
+                text: entity.$id || entity.type || entity.texture
             })
 
             item.addEventListener('click', () => {
@@ -360,27 +372,37 @@ export default class SceneView extends EditorComponent {
 
     #buildPalette () {
         const wiring = this.#context?.wiring
-        if (!wiring) {
-            return
-        }
+        const manifest = this.#context?.manifest
 
         const paletteEl = createElement('div', {class: 'scene-tree'})
-        paletteEl.appendChild(createElement('div', {class: 'panel-title', text: 'Add Entity'}))
 
-        const entityClasses = wiring.getAll('entities')
+        if (wiring) {
+            paletteEl.appendChild(createElement('div', {class: 'panel-title', text: 'Add Entity'}))
 
-        for (const name of Object.keys(entityClasses)) {
-            const item = createElement('div', {class: 'tree-item palette-item', text: '+ ' + name})
+            for (const name of Object.keys(wiring.getAll('entities'))) {
+                const item = createElement('div', {class: 'tree-item palette-item', text: '+ ' + name})
+                item.addEventListener('click', () => this.#addTypedEntity(name))
+                paletteEl.appendChild(item)
+            }
+        }
 
-            item.addEventListener('click', () => this.#addEntity(name))
-            paletteEl.appendChild(item)
+        if (manifest) {
+            paletteEl.appendChild(createElement('div', {class: 'panel-title', text: 'Add Sprite'}))
+
+            const imageAssets = manifest.getAssetsByType('image')
+
+            for (const asset of imageAssets) {
+                const item = createElement('div', {class: 'tree-item palette-item', text: '+ ' + asset.id})
+                item.addEventListener('click', () => this.#addSpriteEntity(asset.id))
+                paletteEl.appendChild(item)
+            }
         }
 
         this.#propsPanel.appendChild(paletteEl)
     }
 
 
-    #addEntity (type) {
+    #addTypedEntity (type) {
         const wiring = this.#context?.wiring
         const EntityClass = wiring?.get('entities', type)
 
@@ -392,12 +414,54 @@ export default class SceneView extends EditorComponent {
         const x = roundHalf(cam.x)
         const y = roundHalf(cam.y)
         const world = this.#stage.world
-
-        const entry = {type, x, y, index: this.#entities.length}
+        const entry = {type, x, y}
 
         this.#history.execute({
             execute: () => {
                 entry.worldEntity = world.create(EntityClass, {x: entry.x, y: entry.y})
+                if (!this.#entities.includes(entry)) {
+                    this.#entities.push(entry)
+                }
+                this.#selectedIndex = this.#entities.indexOf(entry)
+            },
+            undo: () => {
+                if (entry.worldEntity) {
+                    world.removeChild(entry.worldEntity.$id)
+                    entry.worldEntity = null
+                }
+                const idx = this.#entities.indexOf(entry)
+                if (idx >= 0) {
+                    this.#entities.splice(idx, 1)
+                }
+                this.#selectedIndex = -1
+            }
+        })
+
+        this.#afterHistoryAction()
+    }
+
+
+    #addSpriteEntity (texture) {
+        if (!this.#stage?.world) {
+            return
+        }
+
+        const cam = this.camera
+        const x = roundHalf(cam.x)
+        const y = roundHalf(cam.y)
+        const world = this.#stage.world
+        const entry = {texture, x, y, width: 2, height: 2}
+
+        this.#history.execute({
+            execute: () => {
+                entry.worldEntity = world.create(Entity, {
+                    x: entry.x,
+                    y: entry.y,
+                    texture: entry.texture,
+                    width: entry.width,
+                    height: entry.height,
+                    $tags: ['decor']
+                })
                 if (!this.#entities.includes(entry)) {
                     this.#entities.push(entry)
                 }
@@ -428,7 +492,6 @@ export default class SceneView extends EditorComponent {
         const entry = this.#entities[this.#selectedIndex]
         const idx = this.#selectedIndex
         const wiring = this.#context?.wiring
-        const EntityClass = wiring?.get('entities', entry.type)
         const world = this.#stage?.world
 
         if (!world) {
@@ -448,9 +511,21 @@ export default class SceneView extends EditorComponent {
                 this.#selectedIndex = -1
             },
             undo: () => {
+                const EntityClass = entry.type ? wiring?.get('entities', entry.type) : null
+
                 if (EntityClass) {
                     entry.worldEntity = world.create(EntityClass, {x: entry.x, y: entry.y})
+                } else if (entry.texture) {
+                    entry.worldEntity = world.create(Entity, {
+                        x: entry.x,
+                        y: entry.y,
+                        texture: entry.texture,
+                        width: entry.width,
+                        height: entry.height,
+                        $tags: ['decor']
+                    })
                 }
+
                 this.#entities.splice(idx, 0, entry)
                 this.#selectedIndex = idx
             }
@@ -670,9 +745,9 @@ export default class SceneView extends EditorComponent {
         const views = this.#stage.getViews(entry.worldEntity)
         const root = views[0]?.root
 
-        if (root?.getBounds) {
+        if (root) {
             root.updateWorldMatrix(true)
-            return root.getBounds()
+            return root instanceof Group2D ? root.getBounds() : root.getWorldBounds()
         }
 
         const halfSize = ENTITY_SIZE / 2
@@ -815,7 +890,7 @@ export default class SceneView extends EditorComponent {
         ctx.save()
 
         for (const entity of this.#entities) {
-            const label = entity.$id || entity.type
+            const label = entity.$id || entity.type || entity.texture
             const fontSize = 11 / ppu
 
             ctx.fillStyle = LABEL_COLOR
@@ -862,19 +937,18 @@ function resolveKeyAction (e) {
 }
 
 
+const ENTITY_ENTRY_KEYS = ['type', 'texture', '$id', 'x', 'y', 'width', 'height', 'depth']
+
+
 function buildEntityEntry (entity) {
-    const entry = {type: entity.type}
+    const entry = {}
 
-    if (entity.$id) {
-        entry.$id = entity.$id
-    }
+    for (const key of ENTITY_ENTRY_KEYS) {
+        const value = entity[key]
 
-    if (entity.x !== 0) {
-        entry.x = entity.x
-    }
-
-    if (entity.y !== 0) {
-        entry.y = entity.y
+        if (value !== undefined && value !== null && value !== 0) {
+            entry[key] = value
+        }
     }
 
     return entry
