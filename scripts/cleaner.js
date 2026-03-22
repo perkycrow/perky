@@ -72,7 +72,7 @@ function printHelp () {
     console.log('  --imports   Show files ranked by import count')
     console.log('  --filelength Sort files by line count')
     console.log('  --instructions Fix, audit, and output only the detailed instructions')
-    console.log('  --json      Output results as JSON (use with --coverage)')
+    console.log('  --json      Output results as JSON (use with --coverage, --filescore)')
     console.log('  --dry-run   Preview fixes without applying\n')
     console.log('Arguments:')
     console.log('  path        Optional path to specific file or directory to clean')
@@ -93,7 +93,7 @@ if (instructionsMode) {
 } else if (importsMode) {
     await runImports(rootDir, {targetPath: validatedPath})
 } else if (filescoreMode || flopMode) {
-    await runFilescore(rootDir, {targetPath: validatedPath, verbose: verboseMode, flop: flopMode})
+    await runFilescore(rootDir, {targetPath: validatedPath, verbose: verboseMode, flop: flopMode, json: jsonMode})
 } else if (coverageMode) {
     await runCoverage(rootDir, {targetPath: validatedPath, json: jsonMode})
 } else if (auditMode && fixMode) {

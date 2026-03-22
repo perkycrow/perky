@@ -90,6 +90,18 @@ describe('WebGLRenderer', () => {
             expect(renderer.stats.totalObjects).toBe(0)
             expect(renderer.stats.renderedObjects).toBe(0)
             expect(renderer.stats.culledObjects).toBe(0)
+            expect(renderer.stats.drawCalls).toBe(0)
+        })
+
+
+        test('with enableDebugGizmos option', () => {
+            const r = new WebGLRenderer({canvas, enableDebugGizmos: false})
+            expect(r.enableDebugGizmos).toBe(false)
+        })
+
+
+        test('enableDebugGizmos defaults to true', () => {
+            expect(renderer.enableDebugGizmos).toBe(true)
         })
 
     })
@@ -292,6 +304,27 @@ describe('WebGLRenderer', () => {
 
         expect(renderer.gl).toBe(null)
         expect(renderer.canvas).toBe(null)
+    })
+
+
+    test('onInstall delegates methods to host', () => {
+        const host = {
+            on: vi.fn()
+        }
+
+        renderer.install(host)
+
+        expect(host.setRenderGroups).toBeDefined()
+        expect(host.clearRenderGroups).toBeDefined()
+        expect(host.prependRenderGroup).toBeDefined()
+        expect(host.appendRenderGroup).toBeDefined()
+        expect(host.removeRenderGroup).toBeDefined()
+        expect(host.setUniform).toBeDefined()
+        expect(host.getUniform).toBeDefined()
+        expect(host.getPass).toBeDefined()
+        expect(host.addPostPass).toBeDefined()
+        expect(host.removePostPass).toBeDefined()
+        expect(host.registerShaderEffect).toBeDefined()
     })
 
 

@@ -6,7 +6,7 @@ export default doc('Scene Launcher', () => {
     text(`
         Entry point for the scene studio. Loads a game manifest, builds
         the texture system, fetches scene configs, and mounts a
-        [[SceneView@studio/scene]] into the provided container.
+        SceneView into the provided container.
     `)
 
 

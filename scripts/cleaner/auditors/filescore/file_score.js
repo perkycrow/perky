@@ -42,13 +42,7 @@ export default class FileScoreAuditor extends Auditor {
 
 
     async audit () {
-        const config = await loadCleanerConfig(this.rootDir)
-        this.#excludeDirs = config.filescore?.excludeDirs || []
-        this.#excludeFiles = config.filescore?.excludeFiles || []
-
-        for (const scorer of this.#scorers) {
-            scorer.excludeDirs = this.#excludeDirs
-        }
+        await this.#loadConfig()
 
         const scores = this.#calculateScores()
 
@@ -60,23 +54,30 @@ export default class FileScoreAuditor extends Auditor {
         const sorted = scores.sort((a, b) => b.total - a.total)
         const maxScore = sorted[0].total
 
-        for (const item of sorted) {
-            item.percent = maxScore > 0 ? Math.round((item.total / maxScore) * 100) : 0
-        }
+        addPercentages(sorted, maxScore)
 
         const flop = this.options.flop
         const displayList = flop ? [...sorted].reverse().slice(0, 10) : sorted
 
-        this.#printResults(displayList, flop)
+        const files = sorted.map(s => ({file: s.file, score: s.total, percent: s.percent}))
 
-        return {
-            filesAnalyzed: sorted.length,
-            maxScore,
-            files: sorted.map(s => ({
-                file: s.file,
-                score: s.total,
-                percent: s.percent
-            }))
+        if (this.options.json) {
+            console.log(JSON.stringify(files, null, 2))
+        } else {
+            this.#printResults(displayList, flop)
+        }
+
+        return {filesAnalyzed: sorted.length, maxScore, files}
+    }
+
+
+    async #loadConfig () {
+        const config = await loadCleanerConfig(this.rootDir)
+        this.#excludeDirs = config.filescore?.excludeDirs || []
+        this.#excludeFiles = config.filescore?.excludeFiles || []
+
+        for (const scorer of this.#scorers) {
+            scorer.excludeDirs = this.#excludeDirs
         }
     }
 
@@ -233,6 +234,13 @@ export default class FileScoreAuditor extends Auditor {
         }
     }
 
+}
+
+
+function addPercentages (sorted, maxScore) {
+    for (const item of sorted) {
+        item.percent = maxScore > 0 ? Math.round((item.total / maxScore) * 100) : 0
+    }
 }
 
 

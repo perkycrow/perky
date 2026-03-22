@@ -39,6 +39,46 @@ describe('RenderSystem', () => {
             expect(renderSystem.$category).toBe('renderSystem')
         })
 
+
+        test('creates initial layers from config', () => {
+            const rs = new RenderSystem({
+                container,
+                layers: [
+                    {name: 'background', type: 'canvas'},
+                    {name: 'ui', type: 'html'}
+                ]
+            })
+
+            expect(rs.getLayer('background')).toBeDefined()
+            expect(rs.getLayer('ui')).toBeDefined()
+        })
+
+
+        test('autoResizeEnabled defaults to true without explicit dimensions', () => {
+            const rs = new RenderSystem({container})
+
+            expect(rs.autoResizeEnabled).toBe(true)
+        })
+
+
+        test('autoResizeEnabled defaults to false with explicit dimensions', () => {
+            const rs = new RenderSystem({container, width: 800, height: 600})
+
+            expect(rs.autoResizeEnabled).toBe(false)
+        })
+
+
+        test('autoResize option overrides default behavior', () => {
+            const rs = new RenderSystem({container, width: 800, height: 600, autoResize: true})
+
+            expect(rs.autoResizeEnabled).toBe(true)
+        })
+
+
+        test('element accessor returns view element', () => {
+            expect(renderSystem.element).toBe(renderSystem.view.element)
+        })
+
     })
 
 
@@ -85,6 +125,22 @@ describe('RenderSystem', () => {
 
             expect(renderer).toBeDefined()
             expect(renderer.constructor.name).toBe('WebGLRenderer')
+        })
+
+
+        test('createLayer throws for duplicate layer name', () => {
+            renderSystem.createLayer('duplicate', 'canvas')
+
+            expect(() => {
+                renderSystem.createLayer('duplicate', 'canvas')
+            }).toThrow('Layer "duplicate" already exists')
+        })
+
+
+        test('createLayer throws for unknown layer type', () => {
+            expect(() => {
+                renderSystem.createLayer('invalid', 'unknown')
+            }).toThrow('Unknown layer type: "unknown"')
         })
 
     })
@@ -196,6 +252,13 @@ describe('RenderSystem', () => {
             expect(cameras.map(c => c.$id)).toContain('secondary')
         })
 
+
+        test('getCamera throws for non-existent camera', () => {
+            expect(() => {
+                renderSystem.getCamera('nonexistent')
+            }).toThrow('Camera "nonexistent" not found')
+        })
+
     })
 
 
@@ -292,6 +355,15 @@ describe('RenderSystem', () => {
         const resolved = renderSystem.resolveCamera(null)
 
         expect(resolved).toBeNull()
+    })
+
+
+    test('resolveCamera with object config creates camera', () => {
+        const resolved = renderSystem.resolveCamera({$id: 'dynamic', zoom: 3})
+
+        expect(resolved.$id).toBe('dynamic')
+        expect(resolved.zoom).toBe(3)
+        expect(renderSystem.getCamera('dynamic')).toBe(resolved)
     })
 
 

@@ -50,6 +50,41 @@ describe(CanvasRenderer, () => {
     })
 
 
+    test('constructor with enableCulling option', () => {
+        const r = new CanvasRenderer({canvas, enableCulling: true})
+        expect(r.enableCulling).toBe(true)
+    })
+
+
+    test('enableCulling defaults to false', () => {
+        expect(renderer.enableCulling).toBe(false)
+    })
+
+
+    test('constructor with enableDebugGizmos option', () => {
+        const r = new CanvasRenderer({canvas, enableDebugGizmos: false})
+        expect(r.enableDebugGizmos).toBe(false)
+    })
+
+
+    test('enableDebugGizmos defaults to true', () => {
+        expect(renderer.enableDebugGizmos).toBe(true)
+    })
+
+
+    test('initializes stats object', () => {
+        expect(renderer.stats).toBeDefined()
+        expect(renderer.stats.totalObjects).toBe(0)
+        expect(renderer.stats.renderedObjects).toBe(0)
+        expect(renderer.stats.culledObjects).toBe(0)
+    })
+
+
+    test('has static $name', () => {
+        expect(CanvasRenderer.$name).toBe('canvasRenderer')
+    })
+
+
     test('autoFit observes container resize', () => {
         const container = document.createElement('div')
 
