@@ -289,6 +289,37 @@ describe('RenderGroupInspector', () => {
     })
 
 
+    describe('transform display', () => {
+
+        test('shows transform none when no transform', () => {
+            const module = new MockRenderGroup({renderTransform: null})
+            inspector.setModule(module)
+
+            const values = inspector.gridEl.querySelectorAll('.inspector-value')
+            const labels = inspector.gridEl.querySelectorAll('.inspector-label')
+
+            const transformLabelIndex = Array.from(labels).findIndex(l => l.textContent === 'transform')
+            expect(transformLabelIndex).not.toBe(-1)
+            expect(values[transformLabelIndex].textContent).toBe('none')
+        })
+
+
+        test('renders transform section when transform exists', () => {
+            const transform = {
+                enabled: true,
+                constructor: {name: 'TestTransform'},
+                getPropertyConfig: () => ({})
+            }
+            const module = new MockRenderGroup({renderTransform: transform})
+            inspector.setModule(module)
+
+            const sections = inspector.gridEl.querySelectorAll('.pass-section')
+            expect(sections.length).toBeGreaterThan(0)
+        })
+
+    })
+
+
     describe('post-processing passes', () => {
 
         test('shows post-passes count', () => {
