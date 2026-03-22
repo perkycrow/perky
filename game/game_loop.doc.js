@@ -1,6 +1,5 @@
-import {doc, text, code, action, section} from '../doc/runtime.js'
+import {doc, text, code, action, section, logger} from '../doc/runtime.js'
 import GameLoop from './game_loop.js'
-import logger from '../core/logger.js'
 
 
 export default doc('GameLoop', () => {
