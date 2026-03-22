@@ -177,6 +177,10 @@
         "chapterScene": {
             "type": "scene",
             "url": "./assets/scenes/chapter.json"
+        },
+        "menuScene": {
+            "type": "scene",
+            "url": "./assets/scenes/menu.json"
         }
     }
 }
