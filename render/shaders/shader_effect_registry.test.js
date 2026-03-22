@@ -172,6 +172,27 @@ describe('ShaderEffectRegistry', () => {
         })
 
 
+        test('includes object-format uniforms with explicit type', () => {
+            class ObjectUniformEffect extends ShaderEffect {
+                static shader = {
+                    params: [],
+                    uniforms: [{name: 'uCustomVec', type: 'vec3'}],
+                    fragment: 'color.rgb += uCustomVec;'
+                }
+            }
+
+            registry.register(ObjectUniformEffect)
+            registry.getShaderForEffects(['ObjectUniformEffect'])
+
+            const call = shaderRegistry.register.mock.calls[0]
+            const uniforms = call[1].uniforms
+            const fragmentSource = call[1].fragment
+
+            expect(uniforms).toContain('uCustomVec')
+            expect(fragmentSource).toContain('uniform vec3 uCustomVec;')
+        })
+
+
         test('generates base shader for empty effects', () => {
             const shader = registry.getShaderForEffects([])
             expect(shader).toBeDefined()
@@ -299,6 +320,58 @@ describe('ShaderEffectRegistry', () => {
             expect(gl.uniform2fv).toHaveBeenCalledWith(1, [0.1, 0.2])
         })
 
+
+        test('applies vec3 uniform', () => {
+            const mockProgram = {
+                uniforms: {uColor: 2}
+            }
+            gl.uniform3fv = vi.fn()
+
+            registry.setUniform('uColor', [1.0, 0.5, 0.0], 'vec3')
+            registry.applyUniforms(gl, mockProgram)
+
+            expect(gl.uniform3fv).toHaveBeenCalledWith(2, [1.0, 0.5, 0.0])
+        })
+
+
+        test('applies vec4 uniform', () => {
+            const mockProgram = {
+                uniforms: {uRect: 3}
+            }
+            gl.uniform4fv = vi.fn()
+
+            registry.setUniform('uRect', [0.0, 0.0, 1.0, 1.0], 'vec4')
+            registry.applyUniforms(gl, mockProgram)
+
+            expect(gl.uniform4fv).toHaveBeenCalledWith(3, [0.0, 0.0, 1.0, 1.0])
+        })
+
+
+        test('applies int uniform', () => {
+            const mockProgram = {
+                uniforms: {uSampler: 4}
+            }
+            gl.uniform1i = vi.fn()
+
+            registry.setUniform('uSampler', 0, 'int')
+            registry.applyUniforms(gl, mockProgram)
+
+            expect(gl.uniform1i).toHaveBeenCalledWith(4, 0)
+        })
+
+
+        test('skips uniform if location is -1', () => {
+            const mockProgram = {
+                uniforms: {uTime: -1}
+            }
+            gl.uniform1f = vi.fn()
+
+            registry.setUniform('uTime', 2.5)
+            registry.applyUniforms(gl, mockProgram)
+
+            expect(gl.uniform1f).not.toHaveBeenCalled()
+        })
+
     })
 
 
@@ -319,6 +392,22 @@ describe('ShaderEffectRegistry', () => {
             registry.setUniform('uTime', 1.0)
             registry.dispose()
             expect(registry.getUniform('uTime')).toBeUndefined()
+        })
+
+
+        test('clears shader cache', () => {
+            registry.register(ChromaticEffect)
+            registry.getShaderForEffects(['ChromaticEffect'])
+
+            expect(shaderRegistry.register).toHaveBeenCalledTimes(1)
+
+            registry.dispose()
+
+            registry = new ShaderEffectRegistry(gl, shaderRegistry)
+            registry.register(ChromaticEffect)
+            registry.getShaderForEffects(['ChromaticEffect'])
+
+            expect(shaderRegistry.register).toHaveBeenCalledTimes(2)
         })
 
     })
