@@ -332,11 +332,26 @@ export default class SceneView extends EditorComponent {
         viewport.addEventListener('pointermove', (e) => this.#onPointerMove(e))
         viewport.addEventListener('pointerup', () => this.#onPointerUp())
         viewport.addEventListener('wheel', (e) => this.#onWheel(e))
+        viewport.addEventListener('contextmenu', (e) => e.preventDefault())
     }
 
 
     #onPointerDown (e) {
         const cam = this.camera
+
+        if (e.button === 1 || e.button === 2) {
+            this.#drag = {
+                startScreenX: e.offsetX,
+                startScreenY: e.offsetY,
+                startCameraX: cam.x,
+                startCameraY: cam.y,
+                panning: true
+            }
+            e.target.setPointerCapture(e.pointerId)
+            e.preventDefault()
+            return
+        }
+
         const world = cam.screenToWorld(e.offsetX, e.offsetY)
         const hit = this.#pickEntity(world.x, world.y)
 
@@ -352,14 +367,6 @@ export default class SceneView extends EditorComponent {
             e.target.setPointerCapture(e.pointerId)
         } else {
             this.#selectEntity(-1)
-            this.#drag = {
-                startScreenX: e.offsetX,
-                startScreenY: e.offsetY,
-                startCameraX: cam.x,
-                startCameraY: cam.y,
-                panning: true
-            }
-            e.target.setPointerCapture(e.pointerId)
         }
     }
 
