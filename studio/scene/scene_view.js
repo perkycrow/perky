@@ -7,6 +7,7 @@ import PerkyStore from '../../io/perky_store.js'
 import Stage from '../../game/stage.js'
 import World from '../../game/world.js'
 import RenderSystem from '../../render/render_system.js'
+import CommandHistory from '../../editor/command_history.js'
 import {sceneViewStyles} from './scene_view.styles.js'
 
 
@@ -36,12 +37,16 @@ export default class SceneView extends EditorComponent {
     #boundBeforeUnload = null
     #stage = null
     #renderSystem = null
+    #history = new CommandHistory()
+    #boundKeyDown = null
 
     onConnected () {
         adoptStyleSheets(this.shadowRoot, sceneViewStyles)
         this.#buildDOM()
         this.#boundBeforeUnload = () => this.#flushSave()
         window.addEventListener('beforeunload', this.#boundBeforeUnload)
+        this.#boundKeyDown = (e) => this.#onKeyDown(e)
+        window.addEventListener('keydown', this.#boundKeyDown)
 
         if (this.#context) {
             this.#initStage()
@@ -54,6 +59,7 @@ export default class SceneView extends EditorComponent {
 
     onDisconnected () {
         window.removeEventListener('beforeunload', this.#boundBeforeUnload)
+        window.removeEventListener('keydown', this.#boundKeyDown)
         clearTimeout(this.#autoSaveTimer)
         this.#flushSave()
         cancelAnimationFrame(this.#animFrame)
@@ -162,6 +168,21 @@ export default class SceneView extends EditorComponent {
             window.location.href = 'index.html'
         })
         headerStart.appendChild(backBtn)
+
+        const undoBtn = createElement('button', {class: 'toolbar-btn', text: '\u21A9', title: 'Undo'})
+        undoBtn.addEventListener('click', () => {
+            this.#history.undo()
+            this.#afterHistoryAction()
+        })
+        headerStart.appendChild(undoBtn)
+
+        const redoBtn = createElement('button', {class: 'toolbar-btn', text: '\u21AA', title: 'Redo'})
+        redoBtn.addEventListener('click', () => {
+            this.#history.redo()
+            this.#afterHistoryAction()
+        })
+        headerStart.appendChild(redoBtn)
+
         this.#appLayout.appendChild(headerStart)
 
         this.#containerEl = createElement('div', {class: 'scene-container'})
@@ -358,15 +379,32 @@ export default class SceneView extends EditorComponent {
         const cam = this.camera
         const x = roundHalf(cam.x)
         const y = roundHalf(cam.y)
+        const world = this.#stage.world
 
         const entry = {type, x, y, index: this.#entities.length}
-        entry.worldEntity = this.#stage.world.create(EntityClass, {x, y})
 
-        this.#entities.push(entry)
-        this.#selectedIndex = this.#entities.length - 1
-        this.#markDirty()
-        this.#buildPropsPanel()
-        this.#scheduleRender()
+        this.#history.execute({
+            execute: () => {
+                entry.worldEntity = world.create(EntityClass, {x: entry.x, y: entry.y})
+                if (!this.#entities.includes(entry)) {
+                    this.#entities.push(entry)
+                }
+                this.#selectedIndex = this.#entities.indexOf(entry)
+            },
+            undo: () => {
+                if (entry.worldEntity) {
+                    world.removeChild(entry.worldEntity.$id)
+                    entry.worldEntity = null
+                }
+                const idx = this.#entities.indexOf(entry)
+                if (idx >= 0) {
+                    this.#entities.splice(idx, 1)
+                }
+                this.#selectedIndex = -1
+            }
+        })
+
+        this.#afterHistoryAction()
     }
 
 
@@ -376,21 +414,70 @@ export default class SceneView extends EditorComponent {
         }
 
         const entry = this.#entities[this.#selectedIndex]
+        const idx = this.#selectedIndex
+        const wiring = this.#context?.wiring
+        const EntityClass = wiring?.get('entities', entry.type)
+        const world = this.#stage?.world
 
-        if (entry.worldEntity && this.#stage?.world) {
-            this.#stage.world.removeChild(entry.worldEntity.$id)
+        if (!world) {
+            return
         }
 
-        this.#entities.splice(this.#selectedIndex, 1)
-        this.#selectedIndex = -1
-        this.#markDirty()
-        this.#buildPropsPanel()
-        this.#scheduleRender()
+        this.#history.execute({
+            execute: () => {
+                if (entry.worldEntity) {
+                    world.removeChild(entry.worldEntity.$id)
+                    entry.worldEntity = null
+                }
+                const currentIdx = this.#entities.indexOf(entry)
+                if (currentIdx >= 0) {
+                    this.#entities.splice(currentIdx, 1)
+                }
+                this.#selectedIndex = -1
+            },
+            undo: () => {
+                if (EntityClass) {
+                    entry.worldEntity = world.create(EntityClass, {x: entry.x, y: entry.y})
+                }
+                this.#entities.splice(idx, 0, entry)
+                this.#selectedIndex = idx
+            }
+        })
+
+        this.#afterHistoryAction()
     }
 
 
     #selectEntity (index) {
         this.#selectedIndex = index
+        this.#buildPropsPanel()
+        this.#scheduleRender()
+    }
+
+
+    #onKeyDown (e) {
+        const action = resolveKeyAction(e)
+
+        if (!action) {
+            return
+        }
+
+        e.preventDefault()
+
+        if (action === 'undo') {
+            this.#history.undo()
+            this.#afterHistoryAction()
+        } else if (action === 'redo') {
+            this.#history.redo()
+            this.#afterHistoryAction()
+        } else if (action === 'delete' && this.#selectedIndex >= 0) {
+            this.#deleteSelectedEntity()
+        }
+    }
+
+
+    #afterHistoryAction () {
+        this.#markDirty()
         this.#buildPropsPanel()
         this.#scheduleRender()
     }
@@ -478,6 +565,35 @@ export default class SceneView extends EditorComponent {
 
 
     #onPointerUp () {
+        if (this.#drag && !this.#drag.panning && this.#selectedIndex >= 0) {
+            const entry = this.#entities[this.#selectedIndex]
+            const startX = this.#drag.startEntityX
+            const startY = this.#drag.startEntityY
+            const endX = entry.x
+            const endY = entry.y
+
+            if (startX !== endX || startY !== endY) {
+                this.#history.push({
+                    execute () {
+                        entry.x = endX
+                        entry.y = endY
+                        if (entry.worldEntity) {
+                            entry.worldEntity.x = endX
+                            entry.worldEntity.y = endY
+                        }
+                    },
+                    undo () {
+                        entry.x = startX
+                        entry.y = startY
+                        if (entry.worldEntity) {
+                            entry.worldEntity.x = startX
+                            entry.worldEntity.y = startY
+                        }
+                    }
+                })
+            }
+        }
+
         this.#drag = null
     }
 
@@ -709,6 +825,20 @@ function roundHalf (value) {
 
 function clamp (value, min, max) {
     return Math.min(max, Math.max(min, value))
+}
+
+
+const KEY_ACTIONS = {
+    z: (e) => ((e.metaKey || e.ctrlKey) && !e.shiftKey ? 'undo' : null),
+    Z: (e) => ((e.metaKey || e.ctrlKey) ? 'redo' : null),
+    Delete: () => 'delete',
+    Backspace: () => 'delete'
+}
+
+
+function resolveKeyAction (e) {
+    const resolver = KEY_ACTIONS[e.key]
+    return resolver ? resolver(e) : null
 }
 
 
