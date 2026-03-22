@@ -94,6 +94,150 @@ describe('ICONS', () => {
     })
 
 
+    test('inspect', () => {
+        expect(ICONS.inspect).toBeDefined()
+        expect(ICONS.inspect).toContain('<svg')
+    })
+
+
+    test('clipboard', () => {
+        expect(ICONS.clipboard).toBeDefined()
+        expect(ICONS.clipboard).toContain('<svg')
+    })
+
+
+    test('pause', () => {
+        expect(ICONS.pause).toBeDefined()
+        expect(ICONS.pause).toContain('<svg')
+    })
+
+
+    test('volume', () => {
+        expect(ICONS.volume).toBeDefined()
+        expect(ICONS.volume).toContain('<svg')
+    })
+
+
+    test('volumeMuted', () => {
+        expect(ICONS.volumeMuted).toBeDefined()
+        expect(ICONS.volumeMuted).toContain('<svg')
+    })
+
+
+    test('audio', () => {
+        expect(ICONS.audio).toBeDefined()
+        expect(ICONS.audio).toContain('<svg')
+    })
+
+
+    test('book', () => {
+        expect(ICONS.book).toBeDefined()
+        expect(ICONS.book).toContain('<svg')
+    })
+
+
+    test('layers', () => {
+        expect(ICONS.layers).toBeDefined()
+        expect(ICONS.layers).toContain('<svg')
+    })
+
+
+    test('system', () => {
+        expect(ICONS.system).toBeDefined()
+        expect(ICONS.system).toContain('<svg')
+    })
+
+
+    test('wrench', () => {
+        expect(ICONS.wrench).toBeDefined()
+        expect(ICONS.wrench).toContain('<svg')
+    })
+
+
+    test('hammer', () => {
+        expect(ICONS.hammer).toBeDefined()
+        expect(ICONS.hammer).toContain('<svg')
+    })
+
+
+    test('tools', () => {
+        expect(ICONS.tools).toBeDefined()
+        expect(ICONS.tools).toContain('<svg')
+    })
+
+
+    test('flask', () => {
+        expect(ICONS.flask).toBeDefined()
+        expect(ICONS.flask).toContain('<svg')
+    })
+
+
+    test('clapperboard', () => {
+        expect(ICONS.clapperboard).toBeDefined()
+        expect(ICONS.clapperboard).toContain('<svg')
+    })
+
+
+    test('scenery', () => {
+        expect(ICONS.scenery).toBeDefined()
+        expect(ICONS.scenery).toContain('<svg')
+    })
+
+
+    test('reverse', () => {
+        expect(ICONS.reverse).toBeDefined()
+        expect(ICONS.reverse).toContain('<svg')
+    })
+
+
+    test('anchor', () => {
+        expect(ICONS.anchor).toBeDefined()
+        expect(ICONS.anchor).toContain('<svg')
+    })
+
+
+    test('zoom', () => {
+        expect(ICONS.zoom).toBeDefined()
+        expect(ICONS.zoom).toContain('<svg')
+    })
+
+
+    test('grid', () => {
+        expect(ICONS.grid).toBeDefined()
+        expect(ICONS.grid).toContain('<svg')
+    })
+
+
+    test('folder', () => {
+        expect(ICONS.folder).toBeDefined()
+        expect(ICONS.folder).toContain('<svg')
+    })
+
+
+    test('link', () => {
+        expect(ICONS.link).toBeDefined()
+        expect(ICONS.link).toContain('<svg')
+    })
+
+
+    test('unlink', () => {
+        expect(ICONS.unlink).toBeDefined()
+        expect(ICONS.unlink).toContain('<svg')
+    })
+
+
+    test('image', () => {
+        expect(ICONS.image).toBeDefined()
+        expect(ICONS.image).toContain('<svg')
+    })
+
+
+    test('film', () => {
+        expect(ICONS.film).toBeDefined()
+        expect(ICONS.film).toContain('<svg')
+    })
+
+
     test('all icons have valid SVG viewBox attribute', () => {
         for (const [name, icon] of Object.entries(ICONS)) {
             expect(icon).toContain('viewBox', `${name} icon should have viewBox`)
