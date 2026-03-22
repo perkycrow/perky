@@ -30,3 +30,17 @@ test('trigger', () => {
     expect(queue[0].args[0][0].name).toEqual('A')
     expect(queue[1].name).toEqual('applyRules')
 })
+
+
+test('trigger with empty board', () => {
+    const skill = new ContagionSkill()
+    const board = new Board()
+
+    const queue = []
+    const flow = {enqueue: (name, ...args) => queue.push({name, args})}
+    const lab = {reagents: ['A', 'B', 'C', 'D']}
+    const game = {board, lab}
+
+    expect(skill.trigger(flow, game)).toBeTruthy()
+    expect(queue.length).toEqual(0)
+})

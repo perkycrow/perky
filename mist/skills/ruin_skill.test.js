@@ -30,3 +30,17 @@ test('trigger', () => {
     expect(queue[0].args[0].length).toEqual(3)
     expect(queue[1].name).toEqual('applyRules')
 })
+
+
+test('trigger with empty board', () => {
+    const skill = new RuinSkill()
+    const board = new Board()
+    const random = new Random('test')
+
+    const queue = []
+    const flow = {enqueue: (name, ...args) => queue.push({name, args})}
+    const game = {board, random}
+
+    expect(skill.trigger(flow, game)).toBeTruthy()
+    expect(queue.length).toEqual(0)
+})
