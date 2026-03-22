@@ -140,6 +140,23 @@ Low-level DOM helpers. Used internally.
 
 ---
 
+### [wiring.js](wiring.js)
+
+Entity-view mapping helper. Organizes module imports into named groups and wires up game entities with their visual representations.
+
+```js
+const wiring = new Wiring({
+    entities: entityModules,
+    views: viewModules,
+    effects: effectModules
+})
+
+wiring.registerViews(stage)      // Auto-matches Player → PlayerView
+wiring.registerEffects(renderer) // Registers shader effects
+```
+
+---
+
 ## Going further
 
 Each file has its `.doc.js` with examples. Check [Application doc](https://perkycrow.com/doc/application_application.html) for the full API.

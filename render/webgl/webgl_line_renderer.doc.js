@@ -1,4 +1,5 @@
 import {doc, section, text, code} from '../../doc/runtime.js'
+import WebGLLineRenderer from './webgl_line_renderer.js'
 
 
 export default doc('WebGLLineRenderer', {advanced: true}, () => {

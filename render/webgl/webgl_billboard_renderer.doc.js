@@ -1,4 +1,5 @@
 import {doc, section, text, code} from '../../doc/runtime.js'
+import WebGLBillboardRenderer from './webgl_billboard_renderer.js'
 
 
 export default doc('WebGLBillboardRenderer', {advanced: true}, () => {
