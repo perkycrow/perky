@@ -169,4 +169,38 @@ describe('PerkyDevTools', () => {
         expect(stub).not.toHaveBeenCalled()
     })
 
+
+    describe('state events', () => {
+
+        test('logger:open event shows logger', () => {
+            const logger = devtools.shadowRoot.querySelector('perky-logger')
+            devtools.state.dispatchEvent(new Event('logger:open'))
+            expect(logger.classList.contains('hidden')).toBe(false)
+        })
+
+
+        test('logger:close event hides logger', () => {
+            const logger = devtools.shadowRoot.querySelector('perky-logger')
+            devtools.state.dispatchEvent(new Event('logger:open'))
+            devtools.state.dispatchEvent(new Event('logger:close'))
+            expect(logger.classList.contains('hidden')).toBe(true)
+        })
+
+
+        test('sidebar:open event adds sidebar-open class to logger', () => {
+            const logger = devtools.shadowRoot.querySelector('perky-logger')
+            devtools.state.dispatchEvent(new Event('sidebar:open'))
+            expect(logger.classList.contains('sidebar-open')).toBe(true)
+        })
+
+
+        test('sidebar:close event removes sidebar-open class from logger', () => {
+            const logger = devtools.shadowRoot.querySelector('perky-logger')
+            devtools.state.dispatchEvent(new Event('sidebar:open'))
+            devtools.state.dispatchEvent(new Event('sidebar:close'))
+            expect(logger.classList.contains('sidebar-open')).toBe(false)
+        })
+
+    })
+
 })
