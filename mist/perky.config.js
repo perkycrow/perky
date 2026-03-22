@@ -3,5 +3,9 @@ export default {
         title: 'Mist Studio',
         icon: '../assets/images/menu_icon.png',
         tools: ['scene']
+    },
+
+    assets: {
+        scenes: './assets/scenes'
     }
 }

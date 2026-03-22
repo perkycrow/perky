@@ -200,19 +200,7 @@ export default class PerkyStore {
                 }
 
                 const filename = `${item.name}.perky`
-                const file = new File([item.blob], filename)
-
-                if (navigator.canShare?.({files: [file]})) {
-                    await navigator.share({files: [file]})
-                } else {
-                    const url = URL.createObjectURL(item.blob)
-                    const a = document.createElement('a')
-                    a.href = url
-                    a.download = filename
-                    a.click()
-                    URL.revokeObjectURL(url)
-                }
-
+                downloadBlob(item.blob, filename)
                 resolve()
             }
 
@@ -220,6 +208,43 @@ export default class PerkyStore {
                 reject(new Error('Failed to export resource'))
             }
         })
+    }
+
+
+    async exportBundle (ids) {
+        const resources = []
+        const allFiles = []
+
+        for (const id of ids) {
+            const resource = await this.get(id)
+            if (!resource) {
+                continue
+            }
+
+            resources.push({type: resource.type, name: resource.name})
+
+            for (const file of resource.files) {
+                allFiles.push({name: `${resource.name}/${file.name}`, blob: file.blob})
+            }
+        }
+
+        if (resources.length === 0) {
+            throw new Error('No resources to export')
+        }
+
+        const meta = {
+            version: 2,
+            resources,
+            updatedAt: Date.now()
+        }
+
+        const bundleFiles = [
+            {name: META_FILENAME, blob: new Blob([JSON.stringify(meta)], {type: 'application/json'})},
+            ...allFiles
+        ]
+
+        const blob = await pack(bundleFiles)
+        downloadBlob(blob, 'export.perky')
     }
 
 
@@ -235,6 +260,10 @@ export default class PerkyStore {
         const metaText = await blobToText(metaFile.blob)
         const meta = JSON.parse(metaText)
 
+        if (meta.resources) {
+            return this.#importBundle(meta, allFiles)
+        }
+
         if (!meta.type || !meta.name) {
             throw new Error('Invalid .perky file: meta.json must have type and name')
         }
@@ -249,6 +278,30 @@ export default class PerkyStore {
         })
 
         return {id, type: meta.type, name: meta.name}
+    }
+
+
+    async #importBundle (meta, allFiles) {
+        const results = []
+
+        for (const resource of meta.resources) {
+            const prefix = `${resource.name}/`
+            const files = allFiles
+                .filter(f => f.name.startsWith(prefix))
+                .map(f => ({name: f.name.slice(prefix.length), blob: f.blob}))
+
+            const id = `${resource.name}${capitalize(resource.type)}`
+
+            await this.save(id, {
+                type: resource.type,
+                name: resource.name,
+                files
+            })
+
+            results.push({id, type: resource.type, name: resource.name})
+        }
+
+        return results
     }
 
 }
@@ -269,4 +322,21 @@ function blobToText (blob) {
 
 function capitalize (str) {
     return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+
+function downloadBlob (blob, filename) {
+    const file = new File([blob], filename)
+
+    if (navigator.canShare?.({files: [file]})) {
+        navigator.share({files: [file]})
+        return
+    }
+
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
 }

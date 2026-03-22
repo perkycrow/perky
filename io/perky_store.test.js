@@ -408,4 +408,132 @@ describe('import', () => {
         await expect(store.import(perkyBlob)).rejects.toThrow('Invalid .perky file: meta.json must have type and name')
     })
 
+
+    test('imports v2 bundle with multiple resources', async () => {
+        const meta = {
+            version: 2,
+            resources: [
+                {type: 'animator', name: 'red'},
+                {type: 'scene', name: 'chapter'}
+            ],
+            updatedAt: 123
+        }
+
+        const files = [
+            {name: 'meta.json', type: 'application/json', content: JSON.stringify(meta)},
+            {name: 'red/redAnimator.json', type: 'application/json', content: '{"animations":{}}'},
+            {name: 'red/redSpritesheet.json', type: 'application/json', content: '{"frames":{}}'},
+            {name: 'chapter/chapterScene.json', type: 'application/json', content: '{"entities":[]}'}
+        ]
+        const perkyBlob = new Blob([JSON.stringify(files)], {type: 'application/octet-stream'})
+
+        const results = await store.import(perkyBlob)
+
+        expect(results).toHaveLength(2)
+        expect(results[0]).toEqual({id: 'redAnimator', type: 'animator', name: 'red'})
+        expect(results[1]).toEqual({id: 'chapterScene', type: 'scene', name: 'chapter'})
+
+        const animator = await store.get('redAnimator')
+        expect(animator.files).toHaveLength(2)
+        expect(animator.files[0].name).toBe('redAnimator.json')
+        expect(animator.files[1].name).toBe('redSpritesheet.json')
+
+        const scene = await store.get('chapterScene')
+        expect(scene.files).toHaveLength(1)
+        expect(scene.files[0].name).toBe('chapterScene.json')
+    })
+
+
+    test('v1 import still works alongside v2', async () => {
+        const files = [
+            {name: 'meta.json', type: 'application/json', content: '{"type":"spritesheet","name":"green","version":1}'},
+            {name: 'green.json', type: 'application/json', content: '{"frames":{}}'}
+        ]
+        const perkyBlob = new Blob([JSON.stringify(files)], {type: 'application/octet-stream'})
+
+        const result = await store.import(perkyBlob)
+
+        expect(result.id).toBe('greenSpritesheet')
+        expect(result.type).toBe('spritesheet')
+        expect(result.name).toBe('green')
+    })
+
+})
+
+
+describe('exportBundle', () => {
+
+    test('creates bundle with multiple resources', async () => {
+        await store.save('redAnimator', {
+            type: 'animator',
+            name: 'red',
+            files: [{name: 'redAnimator.json', blob: new Blob(['{}'], {type: 'application/json'})}]
+        })
+
+        await store.save('chapterScene', {
+            type: 'scene',
+            name: 'chapter',
+            files: [{name: 'chapterScene.json', blob: new Blob(['[]'], {type: 'application/json'})}]
+        })
+
+        const mockAnchor = {click: vi.fn(), href: '', download: ''}
+        const originalCreateElement = document.createElement.bind(document)
+        vi.spyOn(document, 'createElement').mockImplementation((tag) => {
+            if (tag === 'a') {
+                return mockAnchor
+            }
+            return originalCreateElement(tag)
+        })
+
+        const originalCreateObjectURL = URL.createObjectURL
+        const originalRevokeObjectURL = URL.revokeObjectURL
+        URL.createObjectURL = vi.fn(() => 'blob:test')
+        URL.revokeObjectURL = vi.fn()
+
+        await store.exportBundle(['redAnimator', 'chapterScene'])
+
+        expect(mockAnchor.click).toHaveBeenCalled()
+        expect(mockAnchor.download).toBe('export.perky')
+
+        document.createElement.mockRestore()
+        URL.createObjectURL = originalCreateObjectURL
+        URL.revokeObjectURL = originalRevokeObjectURL
+    })
+
+
+    test('rejects when no resources found', async () => {
+        await expect(store.exportBundle(['nonExistent'])).rejects.toThrow('No resources to export')
+    })
+
+
+    test('skips non-existent resources', async () => {
+        await store.save('redAnimator', {
+            type: 'animator',
+            name: 'red',
+            files: [{name: 'redAnimator.json', blob: new Blob(['{}'], {type: 'application/json'})}]
+        })
+
+        const mockAnchor = {click: vi.fn(), href: '', download: ''}
+        const originalCreateElement = document.createElement.bind(document)
+        vi.spyOn(document, 'createElement').mockImplementation((tag) => {
+            if (tag === 'a') {
+                return mockAnchor
+            }
+            return originalCreateElement(tag)
+        })
+
+        const originalCreateObjectURL = URL.createObjectURL
+        const originalRevokeObjectURL = URL.revokeObjectURL
+        URL.createObjectURL = vi.fn(() => 'blob:test')
+        URL.revokeObjectURL = vi.fn()
+
+        await store.exportBundle(['redAnimator', 'nonExistent'])
+
+        expect(mockAnchor.click).toHaveBeenCalled()
+
+        document.createElement.mockRestore()
+        URL.createObjectURL = originalCreateObjectURL
+        URL.revokeObjectURL = originalRevokeObjectURL
+    })
+
 })
