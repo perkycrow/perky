@@ -3,6 +3,7 @@ import {
     loadManifest,
     buildTextureSystem,
     collectAnimators,
+    collectScenes,
     getStudioConfig,
     getBackgroundImage
 } from './launcher.js'
@@ -125,6 +126,48 @@ describe('collectAnimators', () => {
         }
 
         const result = collectAnimators(manifest)
+
+        expect(result).toEqual({})
+    })
+
+})
+
+
+describe('collectScenes', () => {
+
+    test('returns empty object when no scenes', () => {
+        const manifest = {
+            getAssetsByType: vi.fn(() => [])
+        }
+
+        const result = collectScenes(manifest)
+
+        expect(result).toEqual({})
+    })
+
+
+    test('collects scenes from manifest', () => {
+        const sceneSource = {entities: [{type: 'Player', x: 0, y: 0}]}
+        const manifest = {
+            getAssetsByType: vi.fn(() => [
+                {id: 'level1', source: sceneSource}
+            ])
+        }
+
+        const result = collectScenes(manifest)
+
+        expect(result).toEqual({level1: sceneSource})
+    })
+
+
+    test('skips scenes without source', () => {
+        const manifest = {
+            getAssetsByType: vi.fn(() => [
+                {id: 'level1', source: null}
+            ])
+        }
+
+        const result = collectScenes(manifest)
 
         expect(result).toEqual({})
     })
