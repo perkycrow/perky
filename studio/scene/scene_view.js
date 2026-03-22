@@ -340,15 +340,7 @@ export default class SceneView extends EditorComponent {
         const cam = this.camera
 
         if (e.button === 1 || e.button === 2) {
-            this.#drag = {
-                startScreenX: e.offsetX,
-                startScreenY: e.offsetY,
-                startCameraX: cam.x,
-                startCameraY: cam.y,
-                panning: true
-            }
-            e.target.setPointerCapture(e.pointerId)
-            e.preventDefault()
+            this.#startPan(e, cam)
             return
         }
 
@@ -368,6 +360,19 @@ export default class SceneView extends EditorComponent {
         } else {
             this.#selectEntity(-1)
         }
+    }
+
+
+    #startPan (e, cam) {
+        this.#drag = {
+            startScreenX: e.offsetX,
+            startScreenY: e.offsetY,
+            startCameraX: cam.x,
+            startCameraY: cam.y,
+            panning: true
+        }
+        e.target.setPointerCapture(e.pointerId)
+        e.preventDefault()
     }
 
 
@@ -418,17 +423,31 @@ export default class SceneView extends EditorComponent {
 
 
     #pickEntity (worldX, worldY) {
-        for (let i = this.#entities.length - 1; i >= 0; i--) {
+        const hits = this.#pickAllEntities(worldX, worldY)
+
+        if (hits.length === 0) {
+            return -1
+        }
+
+        hits.sort((a, b) => a.area - b.area)
+        return hits[0].index
+    }
+
+
+    #pickAllEntities (worldX, worldY) {
+        const hits = []
+
+        for (let i = 0; i < this.#entities.length; i++) {
             const entry = this.#entities[i]
             const bounds = this.#getEntryBounds(entry)
 
             if (worldX >= bounds.minX && worldX <= bounds.maxX &&
                 worldY >= bounds.minY && worldY <= bounds.maxY) {
-                return i
+                hits.push({index: i, area: bounds.width * bounds.height, entry})
             }
         }
 
-        return -1
+        return hits
     }
 
 
