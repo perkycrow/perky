@@ -23,6 +23,11 @@ async function init () {
 
     const app = await appManager.spawn('mistGame', spawnOptions)
 
+    const stageParam = params.get('stage')
+    if (stageParam) {
+        app.setStage(stageParam)
+    }
+
     const devtools = new PerkyDevTools()
     document.body.appendChild(devtools)
     devtools.setModule(app)

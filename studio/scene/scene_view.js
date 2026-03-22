@@ -463,7 +463,8 @@ export default class SceneView extends EditorComponent {
     async #openPreview () {
         this.#flushSave()
         await this.#autoSave()
-        window.open('../index.html?studio', '_blank')
+        const stageName = this.#sceneId?.replace(/Scene$/, '') || ''
+        window.open(`../index.html?studio&stage=${stageName}`, '_blank')
     }
 
 
