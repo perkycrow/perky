@@ -2,12 +2,24 @@ import {describe, test, expect, vi, beforeEach} from 'vitest'
 import './side_drawer.js'
 
 
+if (typeof PointerEvent === 'undefined') {
+    globalThis.PointerEvent = class PointerEvent extends MouseEvent {
+        constructor (type, params) {
+            super(type, params)
+            this.pointerType = params?.pointerType || 'mouse'
+            this.pointerId = params?.pointerId || 1
+        }
+    }
+}
+
+
 describe('SideDrawer', () => {
 
     let drawer
 
     beforeEach(() => {
         drawer = document.createElement('side-drawer')
+        drawer.setPointerCapture = vi.fn()
         document.body.appendChild(drawer)
     })
 
@@ -168,6 +180,103 @@ describe('SideDrawer', () => {
         test('can be set to right', () => {
             drawer.setAttribute('position', 'right')
             expect(drawer.getAttribute('position')).toBe('right')
+        })
+
+    })
+
+
+    describe('swipe to close', () => {
+
+        test('adds dragging class on pointerdown', () => {
+            drawer.open()
+            drawer.dispatchEvent(new PointerEvent('pointerdown', {
+                clientX: 100,
+                bubbles: true
+            }))
+            expect(drawer.classList.contains('dragging')).toBe(true)
+        })
+
+
+        test('removes dragging class on pointerup', () => {
+            drawer.open()
+            drawer.dispatchEvent(new PointerEvent('pointerdown', {
+                clientX: 100,
+                bubbles: true
+            }))
+            drawer.dispatchEvent(new PointerEvent('pointerup', {bubbles: true}))
+            expect(drawer.classList.contains('dragging')).toBe(false)
+        })
+
+
+        test('closes drawer when swiped past threshold for left position', () => {
+            drawer.open()
+            drawer.dispatchEvent(new PointerEvent('pointerdown', {
+                clientX: 100,
+                bubbles: true
+            }))
+            drawer.dispatchEvent(new PointerEvent('pointermove', {
+                clientX: 40,
+                bubbles: true
+            }))
+            drawer.dispatchEvent(new PointerEvent('pointerup', {bubbles: true}))
+            expect(drawer.isOpen).toBe(false)
+        })
+
+
+        test('does not close drawer when swipe is below threshold', () => {
+            drawer.open()
+            drawer.dispatchEvent(new PointerEvent('pointerdown', {
+                clientX: 100,
+                bubbles: true
+            }))
+            drawer.dispatchEvent(new PointerEvent('pointermove', {
+                clientX: 80,
+                bubbles: true
+            }))
+            drawer.dispatchEvent(new PointerEvent('pointerup', {bubbles: true}))
+            expect(drawer.isOpen).toBe(true)
+        })
+
+
+        test('closes drawer when swiped past threshold for right position', () => {
+            drawer.setAttribute('position', 'right')
+            drawer.open()
+            drawer.dispatchEvent(new PointerEvent('pointerdown', {
+                clientX: 100,
+                bubbles: true
+            }))
+            drawer.dispatchEvent(new PointerEvent('pointermove', {
+                clientX: 160,
+                bubbles: true
+            }))
+            drawer.dispatchEvent(new PointerEvent('pointerup', {bubbles: true}))
+            expect(drawer.isOpen).toBe(false)
+        })
+
+
+        test('removes dragging class on pointercancel', () => {
+            drawer.open()
+            drawer.dispatchEvent(new PointerEvent('pointerdown', {
+                clientX: 100,
+                bubbles: true
+            }))
+            drawer.dispatchEvent(new PointerEvent('pointercancel', {bubbles: true}))
+            expect(drawer.classList.contains('dragging')).toBe(false)
+        })
+
+
+        test('resets transform style after drag ends', () => {
+            drawer.open()
+            drawer.dispatchEvent(new PointerEvent('pointerdown', {
+                clientX: 100,
+                bubbles: true
+            }))
+            drawer.dispatchEvent(new PointerEvent('pointermove', {
+                clientX: 80,
+                bubbles: true
+            }))
+            drawer.dispatchEvent(new PointerEvent('pointerup', {bubbles: true}))
+            expect(drawer.style.transform).toBe('')
         })
 
     })

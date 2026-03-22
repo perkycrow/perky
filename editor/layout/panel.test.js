@@ -118,4 +118,12 @@ describe('Panel', () => {
         expect(slot).toBeTruthy()
     })
 
+
+    test('observedAttributes includes title, collapsed, and floating', () => {
+        const attrs = panel.constructor.observedAttributes
+        expect(attrs).toContain('title')
+        expect(attrs).toContain('collapsed')
+        expect(attrs).toContain('floating')
+    })
+
 })
