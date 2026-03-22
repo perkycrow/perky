@@ -101,4 +101,15 @@ export default doc('Random', {featured: true}, () => {
         logger.log('after restore:', rng.between(0, 100))
     })
 
+
+    action('getSeed / setSeed', () => {
+        const rng = new Random('original')
+        logger.log('seed:', rng.getSeed())
+        logger.log('val:', rng.between(0, 100))
+
+        rng.setSeed('new-seed')
+        logger.log('new seed:', rng.getSeed())
+        logger.log('val:', rng.between(0, 100))
+    })
+
 })
