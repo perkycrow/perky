@@ -25,6 +25,8 @@ EditorComponent ──── theme + reset styles baked in
 │                                           │
 │  Tools        BaseFloatingTool + manager  │
 │                                           │
+│  History      CommandHistory (undo/redo)   │
+│                                           │
 │  DevTools     Dock, Sidebar, Palette      │
 └───────────────────────────────────────────┘
 ```
@@ -229,5 +231,7 @@ toolManager.open('myDebug', {someParam: 42})
 - [tools/tool_manager.js](tools/tool_manager.js) — tool window lifecycle
 - [perky_explorer.js](perky_explorer.js) — the explorer itself
 - [perky_explorer_details.js](perky_explorer_details.js) — inspector host + registration
+- [command_history.js](command_history.js) — undo/redo command stack
 - [log_renderers/log_renderer_registry.js](log_renderers/log_renderer_registry.js) — custom log rendering
 - [context_menu_actions.js](context_menu_actions.js) — pluggable context menus
+- [styles/toolbar.styles.js](styles/toolbar.styles.js) — toolbar style sheet

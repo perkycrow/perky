@@ -143,7 +143,7 @@ const overrides = await loadStudioOverrides()
 const patchedManifest = applyOverrides(originalManifest, overrides)
 ```
 
-Used by games that support the `?studio` URL parameter.
+Loads overrides for both animator and scene resources from IndexedDB. Used by games that support the `?studio` URL parameter.
 
 ---
 
