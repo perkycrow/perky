@@ -209,8 +209,21 @@ describe('AnimationTimeline', () => {
             frameEls[3].click()
             frameEls[1].click()
 
-            // Click toggles selection, so first click selects 0, second selects 3, third selects 1
             expect(indices).toEqual([0, 3, 1])
+        })
+
+
+        test('dispatches addrequest event on add button click', () => {
+            const frames = createMockFrames()
+            timeline.setFrames(frames)
+
+            const handler = vi.fn()
+            timeline.addEventListener('addrequest', handler)
+
+            const addBtn = timeline.shadowRoot.querySelector('.add-frame-btn')
+            addBtn.click()
+
+            expect(handler).toHaveBeenCalled()
         })
 
     })

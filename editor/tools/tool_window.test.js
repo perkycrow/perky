@@ -204,4 +204,71 @@ describe('ToolWindow', () => {
         removeEventListenerSpy.mockRestore()
     })
 
+
+    test('resizing updates size on resize handle drag', () => {
+        toolWindow.setPosition(20, 20)
+        toolWindow.setSize(300, 200)
+        const handle = toolWindow.shadowRoot.querySelector('.tool-window-resize')
+
+        handle.dispatchEvent(new PointerEvent('pointerdown', {
+            bubbles: true
+        }))
+
+        window.dispatchEvent(new PointerEvent('pointermove', {
+            clientX: 420,
+            clientY: 320,
+            bubbles: true
+        }))
+
+        window.dispatchEvent(new PointerEvent('pointerup', {bubbles: true}))
+
+        expect(toolWindow.style.width).toBe('400px')
+        expect(toolWindow.style.height).toBe('300px')
+    })
+
+
+    test('resizing respects minimum dimensions', () => {
+        toolWindow.setPosition(50, 50)
+        toolWindow.setSize(300, 200)
+        const handle = toolWindow.shadowRoot.querySelector('.tool-window-resize')
+
+        handle.dispatchEvent(new PointerEvent('pointerdown', {
+            bubbles: true
+        }))
+
+        window.dispatchEvent(new PointerEvent('pointermove', {
+            clientX: 100,
+            clientY: 100,
+            bubbles: true
+        }))
+
+        window.dispatchEvent(new PointerEvent('pointerup', {bubbles: true}))
+
+        expect(toolWindow.style.width).toBe('200px')
+        expect(toolWindow.style.height).toBe('150px')
+    })
+
+
+    test('resizing is disabled when setResizable is false', () => {
+        toolWindow.setPosition(20, 20)
+        toolWindow.setSize(300, 200)
+        toolWindow.setResizable(false)
+        const handle = toolWindow.shadowRoot.querySelector('.tool-window-resize')
+
+        handle.dispatchEvent(new PointerEvent('pointerdown', {
+            bubbles: true
+        }))
+
+        window.dispatchEvent(new PointerEvent('pointermove', {
+            clientX: 420,
+            clientY: 320,
+            bubbles: true
+        }))
+
+        window.dispatchEvent(new PointerEvent('pointerup', {bubbles: true}))
+
+        expect(toolWindow.style.width).toBe('300px')
+        expect(toolWindow.style.height).toBe('200px')
+    })
+
 })
