@@ -26,6 +26,36 @@ describe('MeleeAttack', () => {
     })
 
 
+    test('has default values', () => {
+        const attack = new MeleeAttack()
+
+        expect(attack.meleeDamage).toBe(1)
+        expect(attack.meleeRange).toBe(0.6)
+        expect(attack.meleeCooldown).toBe(1)
+        expect(attack.windUp).toBe(0.15)
+        expect(attack.strikeTime).toBe(0.1)
+        expect(attack.cooldownTimer).toBe(0)
+        expect(attack.phase).toBe('idle')
+    })
+
+
+    test('accepts custom values', () => {
+        const attack = new MeleeAttack({
+            damage: 5,
+            range: 1.2,
+            cooldown: 2,
+            windUp: 0.3,
+            strikeTime: 0.2
+        })
+
+        expect(attack.meleeDamage).toBe(5)
+        expect(attack.meleeRange).toBe(1.2)
+        expect(attack.meleeCooldown).toBe(2)
+        expect(attack.windUp).toBe(0.3)
+        expect(attack.strikeTime).toBe(0.2)
+    })
+
+
     test('delegates methods to host', () => {
         const entity = createEntity()
 
@@ -147,6 +177,20 @@ describe('MeleeAttack', () => {
             const result = entity.meleeAttack(target)
 
             expect(result).toBe(true)
+        })
+
+
+        test('applies host getCooldownModifier to cooldown', () => {
+            const entity = createEntity()
+            entity.getCooldownModifier = () => 0.5
+            const target = createTarget(0.5, 0)
+            const comp = entity.children[0]
+
+            entity.meleeAttack(target)
+            entity.updateMeleeAttack(0.15)
+            entity.updateMeleeAttack(0.1)
+
+            expect(comp.cooldownTimer).toBeCloseTo(0.5)
         })
 
     })

@@ -36,6 +36,20 @@ describe('Entity', () => {
     })
 
 
+    test('has default hitRadius of 0', () => {
+        const entity = new Entity()
+
+        expect(entity.hitRadius).toBe(0)
+    })
+
+
+    test('accepts initial hitRadius', () => {
+        const entity = new Entity({hitRadius: 1.5})
+
+        expect(entity.hitRadius).toBe(1.5)
+    })
+
+
     test('does not have velocity by default', () => {
         const entity = new Entity()
 

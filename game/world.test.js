@@ -123,6 +123,22 @@ describe('World', () => {
             expect(world.entities.length).toBe(0)
         })
 
+
+        test('creates decor entities from texture entries', () => {
+            world.start()
+
+            world.loadLayout({
+                entities: [
+                    {texture: 'tree', x: 3, y: 4}
+                ]
+            }, null)
+
+            expect(world.entities.length).toBe(1)
+            expect(world.entities[0].x).toBe(3)
+            expect(world.entities[0].y).toBe(4)
+            expect(world.entities[0].$tags).toContain('decor')
+        })
+
     })
 
 
