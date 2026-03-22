@@ -28,6 +28,24 @@ describe('SourceManager', () => {
     test('constructor', () => {
         expect(manager).toBeInstanceOf(PerkyModule)
         expect(manager.manifest).toBe(manifest)
+        expect(manager.loaders).toBe(loaders)
+    })
+
+
+    test('onInstall delegates methods and events', () => {
+        const host = new PerkyModule()
+        vi.spyOn(manager, 'delegateTo')
+        vi.spyOn(manager, 'delegateEventsTo')
+
+        manager.onInstall(host)
+
+        expect(manager.delegateTo).toHaveBeenCalledWith(host, ['loadAsset', 'loadTag', 'loadAll', 'loaders'])
+        expect(manager.delegateEventsTo).toHaveBeenCalledWith(host, [
+            'loader:progress',
+            'loader:complete',
+            'loader:error',
+            'asset:loaded'
+        ])
     })
 
 
@@ -100,6 +118,26 @@ describe('SourceManager', () => {
         expect(manifest.getAllAssets).toHaveBeenCalled()
         expect(result).toBeInstanceOf(SourceLoader)
         expect(result.assets).toEqual([])
+    })
+
+
+    test('forwards loader events', async () => {
+        const asset = {type: 'image', id: 'logo', url: '/assets/logo.png'}
+        manifest.getAsset.mockReturnValueOnce(asset)
+
+        const progressHandler = vi.fn()
+        const completeHandler = vi.fn()
+        const assetLoadedHandler = vi.fn()
+
+        manager.on('loader:progress', progressHandler)
+        manager.on('loader:complete', completeHandler)
+        manager.on('asset:loaded', assetLoadedHandler)
+
+        await manager.loadAsset('logo')
+
+        expect(progressHandler).toHaveBeenCalled()
+        expect(completeHandler).toHaveBeenCalled()
+        expect(assetLoadedHandler).toHaveBeenCalledWith(asset)
     })
 
 })

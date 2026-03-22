@@ -65,6 +65,39 @@ describe(PerkyView, () => {
     })
 
 
+    test('constructor with position absolute', () => {
+        const viewWithPosition = new PerkyView({
+            element,
+            position: 'absolute'
+        })
+
+        expect(viewWithPosition.element.style.position).toBe('absolute')
+        expect(viewWithPosition.element.style.top).toBe('0px')
+        expect(viewWithPosition.element.style.left).toBe('0px')
+    })
+
+
+    test('constructor with position relative', () => {
+        const viewWithPosition = new PerkyView({
+            element,
+            position: 'relative'
+        })
+
+        expect(viewWithPosition.element.style.position).toBe('relative')
+        expect(viewWithPosition.element.style.top).toBe('')
+    })
+
+
+    test('constructor with className', () => {
+        const viewWithClass = new PerkyView({
+            element,
+            className: 'my-custom-class'
+        })
+
+        expect(viewWithClass.element.classList.contains('my-custom-class')).toBe(true)
+    })
+
+
     test('html getter', () => {
         element.innerHTML = '<div>test content</div>'
         expect(view.html).toBe('<div>test content</div>')
@@ -91,6 +124,13 @@ describe(PerkyView, () => {
         vi.spyOn(element, 'offsetWidth', 'get').mockReturnValue(300)
         vi.spyOn(element, 'offsetHeight', 'get').mockReturnValue(400)
         expect(view.aspectRatio).toBe(300 / 400)
+    })
+
+
+    test('aspectRatio returns 0 when height is 0', () => {
+        vi.spyOn(element, 'offsetWidth', 'get').mockReturnValue(300)
+        vi.spyOn(element, 'offsetHeight', 'get').mockReturnValue(0)
+        expect(view.aspectRatio).toBe(0)
     })
 
 
@@ -170,6 +210,35 @@ describe(PerkyView, () => {
         expect(container.contains(element)).toBe(true)
         expect(view.container).toBe(container)
         expect(view.emit).toHaveBeenCalledWith('mount', {container})
+    })
+
+
+    test('mount throws without container', () => {
+        expect(() => view.mount(null)).toThrow('Container element is required')
+    })
+
+
+    test('mount remounts when already mounted elsewhere', () => {
+        const firstContainer = document.createElement('div')
+        document.body.appendChild(firstContainer)
+
+        view.mount(firstContainer)
+        expect(firstContainer.contains(element)).toBe(true)
+
+        view.mount(container)
+        expect(firstContainer.contains(element)).toBe(false)
+        expect(container.contains(element)).toBe(true)
+    })
+
+
+    test('mounted getter', () => {
+        expect(view.mounted).toBe(false)
+
+        view.mount(container)
+        expect(view.mounted).toBe(true)
+
+        view.dismount()
+        expect(view.mounted).toBe(false)
     })
 
 
@@ -329,6 +398,45 @@ describe(PerkyView, () => {
         view.toggleFullscreen()
 
         expect(view.exitFullscreenMode).toHaveBeenCalled()
+    })
+
+
+    test('onInstall delegates methods and events', () => {
+        const host = new PerkyModule()
+        vi.spyOn(view, 'delegateTo')
+        vi.spyOn(view, 'delegateEventsTo')
+
+        view.onInstall(host)
+
+        expect(view.delegateTo).toHaveBeenCalledWith(host, [
+            'element',
+            'mount',
+            'dismount',
+            'mounted',
+            'displayMode',
+            'setDisplayMode',
+            'enterFullscreenMode',
+            'exitFullscreenMode',
+            'toggleFullscreen'
+        ])
+        expect(view.delegateEventsTo).toHaveBeenCalledWith(host, [
+            'resize',
+            'mount',
+            'dismount',
+            'displayMode:changed'
+        ])
+    })
+
+
+    test('onDispose cleans up', () => {
+        element.requestFullscreen = vi.fn()
+        view.mount(container)
+        view.enterFullscreenMode()
+
+        view.onDispose()
+
+        expect(view.displayMode).toBe('normal')
+        expect(container.contains(element)).toBe(false)
     })
 
 })
