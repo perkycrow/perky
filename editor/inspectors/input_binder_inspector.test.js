@@ -1,5 +1,6 @@
 import {describe, test, expect, beforeEach, afterEach} from 'vitest'
 import InputBinderInspector from './input_binder_inspector.js'
+import CompositeBinding from '../../input/composite_binding.js'
 
 
 class MockBinding {
@@ -282,6 +283,80 @@ describe('InputBinderInspector', () => {
 
         const groups = inspector.shadowRoot.querySelectorAll('.binding-group')
         expect(groups.length).toBe(2)
+    })
+
+
+    describe('composite bindings', () => {
+
+        test('shows Combo label for composite bindings', () => {
+            const composite = new CompositeBinding({
+                controls: [
+                    {deviceName: 'keyboard', controlName: 'ControlLeft'},
+                    {deviceName: 'keyboard', controlName: 'KeyS'}
+                ],
+                actionName: 'save'
+            })
+            const module = new MockInputBinder([composite])
+            inspector.setModule(module)
+
+            const controlName = inspector.shadowRoot.querySelector('.control-name')
+            expect(controlName.textContent).toBe('Combo')
+        })
+
+
+        test('shows combo controls for composite bindings', () => {
+            const composite = new CompositeBinding({
+                controls: [
+                    {deviceName: 'keyboard', controlName: 'ControlLeft'},
+                    {deviceName: 'keyboard', controlName: 'KeyS'}
+                ],
+                actionName: 'save'
+            })
+            const module = new MockInputBinder([composite])
+            inspector.setModule(module)
+
+            const comboControls = inspector.shadowRoot.querySelector('.combo-controls')
+            expect(comboControls).not.toBeNull()
+        })
+
+
+        test('shows plus sign between combo controls', () => {
+            const composite = new CompositeBinding({
+                controls: [
+                    {deviceName: 'keyboard', controlName: 'ControlLeft'},
+                    {deviceName: 'keyboard', controlName: 'KeyS'}
+                ],
+                actionName: 'save'
+            })
+            const module = new MockInputBinder([composite])
+            inspector.setModule(module)
+
+            const plus = inspector.shadowRoot.querySelector('.combo-plus')
+            expect(plus).not.toBeNull()
+            expect(plus.textContent).toBe('+')
+        })
+
+
+        test('shows device and control for each combo control', () => {
+            const composite = new CompositeBinding({
+                controls: [
+                    {deviceName: 'keyboard', controlName: 'ControlLeft'},
+                    {deviceName: 'keyboard', controlName: 'KeyS'}
+                ],
+                actionName: 'save'
+            })
+            const module = new MockInputBinder([composite])
+            inspector.setModule(module)
+
+            const comboControls = inspector.shadowRoot.querySelectorAll('.combo-control')
+            expect(comboControls.length).toBe(2)
+
+            const firstDevice = comboControls[0].querySelector('.device-badge')
+            const firstName = comboControls[0].querySelector('.control-name')
+            expect(firstDevice.textContent).toBe('keyboard')
+            expect(firstName.textContent).toBe('ControlLeft')
+        })
+
     })
 
 })

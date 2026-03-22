@@ -267,6 +267,179 @@ describe('ManifestInspector', () => {
             expect(tags[1].textContent).toBe('menu')
         })
 
+
+        test('shows asset url as link', () => {
+            const assets = [{id: 'a', type: 'texture', url: 'assets/player.png'}]
+            const module = new MockManifest({}, assets)
+            inspector.setModule(module)
+
+            const link = inspector.shadowRoot.querySelector('.asset-link')
+            expect(link).not.toBeNull()
+            expect(link.href).toContain('assets/player.png')
+            expect(link.textContent).toBe('assets/player.png')
+        })
+
+
+        test('shows asset config section', () => {
+            const assets = [{id: 'a', type: 'texture', config: {loop: true, volume: 0.8}}]
+            const module = new MockManifest({}, assets)
+            inspector.setModule(module)
+
+            const configSection = inspector.shadowRoot.querySelector('.asset-config')
+            expect(configSection).not.toBeNull()
+
+            const configTitle = inspector.shadowRoot.querySelector('.config-title')
+            expect(configTitle.textContent).toBe('Config')
+        })
+
+
+        test('renders config array values', () => {
+            const config = {modes: ['easy', 'hard']}
+            const module = new MockManifest(config, [])
+            inspector.setModule(module)
+
+            const values = inspector.shadowRoot.querySelectorAll('.data-value')
+            const hasArray = Array.from(values).some(v => v.textContent === '[easy, hard]')
+            expect(hasArray).toBe(true)
+        })
+
+    })
+
+
+    describe('search and filters', () => {
+
+        test('renders search bar', () => {
+            const assets = [{id: 'a', type: 'texture'}]
+            const module = new MockManifest({}, assets)
+            inspector.setModule(module)
+
+            const searchBar = inspector.shadowRoot.querySelector('.search-bar')
+            expect(searchBar).not.toBeNull()
+            expect(searchBar.placeholder).toBe('Search by name, id, type or tag...')
+        })
+
+
+        test('renders filter buttons for asset types', () => {
+            const assets = [
+                {id: 'a', type: 'texture'},
+                {id: 'b', type: 'audio'}
+            ]
+            const module = new MockManifest({}, assets)
+            inspector.setModule(module)
+
+            const filterButtons = inspector.shadowRoot.querySelectorAll('.filter-button')
+            expect(filterButtons.length).toBeGreaterThanOrEqual(2)
+        })
+
+
+        test('renders filter buttons for tags', () => {
+            const assets = [{id: 'a', type: 'texture', tags: ['ui']}]
+            const module = new MockManifest({}, assets)
+            inspector.setModule(module)
+
+            const filterButtons = inspector.shadowRoot.querySelectorAll('.filter-button')
+            const hasTagFilter = Array.from(filterButtons).some(b => b.textContent.includes('#ui'))
+            expect(hasTagFilter).toBe(true)
+        })
+
+
+        test('filters assets by search query', () => {
+            const assets = [
+                {id: 'player', type: 'texture'},
+                {id: 'enemy', type: 'texture'}
+            ]
+            const module = new MockManifest({}, assets)
+            inspector.setModule(module)
+
+            const searchBar = inspector.shadowRoot.querySelector('.search-bar')
+            searchBar.value = 'player'
+            searchBar.dispatchEvent(new Event('input'))
+
+            const assetNames = inspector.shadowRoot.querySelectorAll('.asset-name')
+            expect(assetNames.length).toBe(1)
+            expect(assetNames[0].textContent).toBe('player')
+        })
+
+
+        test('shows no matches message when search has no results', () => {
+            const assets = [{id: 'player', type: 'texture'}]
+            const module = new MockManifest({}, assets)
+            inspector.setModule(module)
+
+            const searchBar = inspector.shadowRoot.querySelector('.search-bar')
+            searchBar.value = 'nonexistent'
+            searchBar.dispatchEvent(new Event('input'))
+
+            const emptyMessages = inspector.shadowRoot.querySelectorAll('.empty-message')
+            const hasNoMatches = Array.from(emptyMessages).some(
+                e => e.textContent === 'No assets match the current filters'
+            )
+            expect(hasNoMatches).toBe(true)
+        })
+
+
+        test('clear button clears search', () => {
+            const assets = [{id: 'player', type: 'texture'}]
+            const module = new MockManifest({}, assets)
+            inspector.setModule(module)
+
+            const searchBar = inspector.shadowRoot.querySelector('.search-bar')
+            searchBar.value = 'test'
+            searchBar.dispatchEvent(new Event('input'))
+
+            const clearButton = inspector.shadowRoot.querySelector('.search-clear')
+            clearButton.click()
+
+            expect(searchBar.value).toBe('')
+        })
+
+    })
+
+
+    describe('asset card interactions', () => {
+
+        test('asset card header is clickable', () => {
+            const assets = [{id: 'a', type: 'texture'}]
+            const module = new MockManifest({}, assets)
+            inspector.setModule(module)
+
+            const header = inspector.shadowRoot.querySelector('.asset-header')
+            expect(header.style.cursor).toBe('pointer')
+        })
+
+
+        test('clicking asset header toggles details', () => {
+            const assets = [{id: 'a', type: 'texture'}]
+            const module = new MockManifest({}, assets)
+            inspector.setModule(module)
+
+            const header = inspector.shadowRoot.querySelector('.asset-header')
+            const card = inspector.shadowRoot.querySelector('.asset-card')
+
+            expect(card.classList.contains('collapsed')).toBe(true)
+
+            header.click()
+
+            expect(card.classList.contains('collapsed')).toBe(false)
+        })
+
+
+        test('type group header toggles content visibility', () => {
+            const assets = [{id: 'a', type: 'texture'}]
+            const module = new MockManifest({}, assets)
+            inspector.setModule(module)
+
+            const typeHeader = inspector.shadowRoot.querySelector('.asset-type-header')
+            const typeGroup = inspector.shadowRoot.querySelector('.asset-type-group')
+            const typeContent = typeGroup.querySelector('div:last-child')
+
+            expect(typeContent.style.display).toBe('block')
+
+            typeHeader.click()
+
+            expect(typeContent.style.display).toBe('none')
+        })
+
     })
 
 
