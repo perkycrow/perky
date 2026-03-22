@@ -3,6 +3,7 @@ import {createElement, adoptStyleSheets, createStyleSheet} from '../application/
 import {pluralize} from '../core/utils.js'
 import {flash} from '../editor/flash.js'
 import PerkyStore from '../io/perky_store.js'
+import {blobToText, blobToImage} from '../io/canvas.js'
 import '../editor/layout/app_layout.js'
 import './components/psd_importer.js'
 import './components/conflict_resolver.js'
@@ -878,36 +879,6 @@ function getFirstAnimation (config) {
 
 function getFrameSource (frame) {
     return typeof frame === 'string' ? frame : frame.source
-}
-
-
-function blobToText (blob) {
-    if (typeof blob.text === 'function') {
-        return blob.text()
-    }
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(reader.result)
-        reader.onerror = reject
-        reader.readAsText(blob)
-    })
-}
-
-
-function blobToImage (blob) {
-    return new Promise((resolve, reject) => {
-        const url = URL.createObjectURL(blob)
-        const img = new Image()
-        img.onload = () => {
-            URL.revokeObjectURL(url)
-            resolve(img)
-        }
-        img.onerror = () => {
-            URL.revokeObjectURL(url)
-            reject(new Error('Failed to load image'))
-        }
-        img.src = url
-    })
 }
 
 

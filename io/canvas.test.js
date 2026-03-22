@@ -4,7 +4,8 @@ import {
     canvasToBlob,
     putPixels,
     calculateResizeDimensions,
-    resizeCanvas
+    resizeCanvas,
+    blobToText
 } from './canvas.js'
 
 
@@ -149,5 +150,30 @@ test('canvasToBuffer converts canvas to buffer', async () => {
 
     Blob.prototype.arrayBuffer = originalArrayBuffer
 })
+
+
+describe('blobToText', () => {
+
+    test('converts blob to text using blob.text()', async () => {
+        const blob = new Blob(['Hello World'], {type: 'text/plain'})
+        const text = await blobToText(blob)
+        expect(text).toBe('Hello World')
+    })
+
+    test('handles JSON content', async () => {
+        const data = {name: 'test', value: 42}
+        const blob = new Blob([JSON.stringify(data)], {type: 'application/json'})
+        const text = await blobToText(blob)
+        expect(JSON.parse(text)).toEqual(data)
+    })
+
+    test('handles empty blob', async () => {
+        const blob = new Blob([''], {type: 'text/plain'})
+        const text = await blobToText(blob)
+        expect(text).toBe('')
+    })
+
+})
+
 
 

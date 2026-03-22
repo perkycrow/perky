@@ -1,5 +1,6 @@
 import {pack, unpack} from './pack.js'
 import {createElement} from '../application/dom_utils.js'
+import {blobToText} from './canvas.js'
 
 
 const DB_PREFIX = 'perky-'
@@ -305,19 +306,6 @@ export default class PerkyStore {
         return results
     }
 
-}
-
-
-function blobToText (blob) {
-    if (typeof blob.text === 'function') {
-        return blob.text()
-    }
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(reader.result)
-        reader.onerror = reject
-        reader.readAsText(blob)
-    })
 }
 
 

@@ -101,3 +101,33 @@ export async function resizeCanvas (sourceCanvas, targetWidth, targetHeight, nea
     ctx.drawImage(sourceCanvas, 0, 0, targetWidth, targetHeight)
     return destCanvas
 }
+
+
+export function blobToText (blob) {
+    if (typeof blob.text === 'function') {
+        return blob.text()
+    }
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result)
+        reader.onerror = reject
+        reader.readAsText(blob)
+    })
+}
+
+
+export function blobToImage (blob) {
+    return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(blob)
+        const img = new Image()
+        img.onload = () => {
+            URL.revokeObjectURL(url)
+            resolve(img)
+        }
+        img.onerror = () => {
+            URL.revokeObjectURL(url)
+            reject(new Error('Failed to load image'))
+        }
+        img.src = url
+    })
+}
