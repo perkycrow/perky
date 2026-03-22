@@ -141,4 +141,57 @@ describe('Asset', () => {
         expect(asset.config).toEqual({})
     })
 
+
+    test('constructor accepts path as alias for url', () => {
+        const asset = new Asset({
+            type: 'image',
+            id: 'path_test',
+            path: '/assets/image.png'
+        })
+
+        expect(asset.url).toBe('/assets/image.png')
+    })
+
+
+    test('constructor generates id from name when id not provided', () => {
+        const asset = new Asset({
+            type: 'image',
+            name: 'Hero Sprite'
+        })
+
+        expect(asset.id).toMatch(/^hero_sprite/)
+        expect(asset.name).toBe('Hero Sprite')
+    })
+
+
+    test('constructor generates id from type when no id or name', () => {
+        const asset = new Asset({
+            type: 'audio'
+        })
+
+        expect(asset.id).toMatch(/^audio/)
+    })
+
+
+    test('updatedAt defaults to 0', () => {
+        const asset = new Asset({
+            type: 'json',
+            id: 'config'
+        })
+
+        expect(asset.updatedAt).toBe(0)
+    })
+
+
+    test('updatedAt can be set via params', () => {
+        const timestamp = Date.now()
+        const asset = new Asset({
+            type: 'json',
+            id: 'config',
+            updatedAt: timestamp
+        })
+
+        expect(asset.updatedAt).toBe(timestamp)
+    })
+
 })

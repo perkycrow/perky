@@ -66,6 +66,11 @@ describe(WebGLTextureManager, () => {
     })
 
 
+    test('gl getter returns the gl context', () => {
+        expect(manager.gl).toBe(gl)
+    })
+
+
     describe('release', () => {
 
         test('decrements ref count', () => {
@@ -109,6 +114,13 @@ describe(WebGLTextureManager, () => {
             manager.release(image)
 
             expect(handler).toHaveBeenCalled()
+        })
+
+
+        test('returns false for unknown image', () => {
+            const image = createMockImage()
+
+            expect(manager.release(image)).toBe(false)
         })
 
     })
@@ -268,6 +280,11 @@ describe(WebGLTextureManager, () => {
 
             expect(texture).toBeDefined()
             expect(manager.stats.activeCount).toBe(1)
+        })
+
+
+        test('returns null for null image', () => {
+            expect(manager.getTexture(null)).toBeNull()
         })
 
     })

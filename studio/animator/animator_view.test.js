@@ -129,4 +129,36 @@ describe('AnimatorView', () => {
         window.location = originalLocation
     })
 
+
+    test('renders container element on setup', () => {
+        const mockTextureSystem = {
+            getSpritesheet: vi.fn(() => null)
+        }
+
+        view.setContext({
+            textureSystem: mockTextureSystem,
+            animatorConfig: null,
+            animatorName: null
+        })
+
+        const containerEl = view.shadowRoot.querySelector('.animator-container')
+        expect(containerEl).not.toBeNull()
+    })
+
+
+    test('accepts isCustom flag', () => {
+        const mockTextureSystem = {
+            getSpritesheet: vi.fn(() => null)
+        }
+
+        expect(() => {
+            view.setContext({
+                textureSystem: mockTextureSystem,
+                animatorConfig: {animations: {}},
+                animatorName: 'custom',
+                isCustom: true
+            })
+        }).not.toThrow()
+    })
+
 })

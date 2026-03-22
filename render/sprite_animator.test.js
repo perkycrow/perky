@@ -1,5 +1,6 @@
 import {describe, test, expect, beforeEach, afterEach} from 'vitest'
 import SpriteAnimator from './sprite_animator.js'
+import PerkyModule from '../core/perky_module.js'
 
 
 describe('SpriteAnimator', () => {
@@ -42,6 +43,18 @@ describe('SpriteAnimator', () => {
     })
 
 
+    test('extends PerkyModule', () => {
+        animator = new SpriteAnimator({sprite, textureSystem})
+
+        expect(animator).toBeInstanceOf(PerkyModule)
+    })
+
+
+    test('$category', () => {
+        expect(SpriteAnimator.$category).toBe('spriteAnimator')
+    })
+
+
     describe('constructor', () => {
 
         test('creates animator with sprite and textureSystem', () => {
@@ -73,6 +86,40 @@ describe('SpriteAnimator', () => {
             })
 
             expect(animator.get('idle')).not.toBeNull()
+        })
+
+
+        test('uses default anchor when not specified', () => {
+            animator = new SpriteAnimator({sprite, textureSystem})
+
+            expect(animator.anchor).toEqual({x: 0.5, y: 0.5})
+        })
+
+
+        test('uses anchor from config', () => {
+            animator = new SpriteAnimator({
+                sprite,
+                textureSystem,
+                config: {
+                    anchor: {x: 0, y: 1}
+                }
+            })
+
+            expect(animator.anchor).toEqual({x: 0, y: 1})
+        })
+
+
+        test('uses static animations when no config provided', () => {
+            class CustomAnimator extends SpriteAnimator {
+                static animations = {
+                    idle: {source: 'testSheet:walk', fps: 8}
+                }
+            }
+
+            animator = new CustomAnimator({sprite, textureSystem})
+
+            expect(animator.get('idle')).not.toBeNull()
+            expect(animator.get('idle').fps).toBe(8)
         })
 
     })
@@ -175,6 +222,22 @@ describe('SpriteAnimator', () => {
             expect(anim.playbackMode).toBe('forward')
         })
 
+
+        test('assigns motion property to animation', () => {
+            animator = new SpriteAnimator({sprite, textureSystem})
+
+            const motionData = {x: 10, y: 5}
+            animator.loadConfig({
+                walk: {
+                    source: 'testSheet:walk',
+                    motion: motionData
+                }
+            })
+
+            const anim = animator.get('walk')
+            expect(anim.motion).toBe(motionData)
+        })
+
     })
 
 
@@ -213,7 +276,7 @@ describe('SpriteAnimator', () => {
         })
 
 
-        test('returns undefined for non-existent animation', () => {
+        test('returns null for non-existent animation', () => {
             const result = animator.play('nonexistent')
 
             expect(result).toBeNull()
@@ -388,6 +451,15 @@ describe('SpriteAnimator', () => {
             const frame = animator.resolveFrame({
                 source: 'unknownSheet:frame1'
             })
+
+            expect(frame.region).toBeNull()
+        })
+
+
+        test('returns null region when no source or region specified', () => {
+            animator = new SpriteAnimator({sprite, textureSystem})
+
+            const frame = animator.resolveFrame({})
 
             expect(frame.region).toBeNull()
         })

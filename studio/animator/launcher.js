@@ -1,6 +1,7 @@
 import logger from '../../core/logger.js'
 import PerkyStore from '../../io/perky_store.js'
 import TextureSystem from '../../render/textures/texture_system.js'
+import {blobToText, blobToImage} from '../../io/canvas.js'
 import {
     loadManifest,
     buildTextureSystem,
@@ -112,34 +113,4 @@ async function loadCustomAnimator (animatorId) {
     })
 
     return {textureSystem, animatorConfig}
-}
-
-
-function blobToText (blob) {
-    if (typeof blob.text === 'function') {
-        return blob.text()
-    }
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(reader.result)
-        reader.onerror = reject
-        reader.readAsText(blob)
-    })
-}
-
-
-function blobToImage (blob) {
-    return new Promise((resolve, reject) => {
-        const url = URL.createObjectURL(blob)
-        const img = new Image()
-        img.onload = () => {
-            URL.revokeObjectURL(url)
-            resolve(img)
-        }
-        img.onerror = () => {
-            URL.revokeObjectURL(url)
-            reject(new Error('Failed to load image'))
-        }
-        img.src = url
-    })
 }

@@ -1,10 +1,29 @@
-import {vi, beforeEach, afterEach} from 'vitest'
+import {vi, beforeEach, afterEach, describe, test, expect} from 'vitest'
 
 
 vi.mock('../../core/logger.js', () => ({
     default: {
         error: vi.fn()
     }
+}))
+
+
+vi.mock('../../io/perky_store.js', () => ({
+    default: class MockPerkyStore {
+        constructor () {
+            this.data = {}
+        }
+
+        async get (id) {
+            return this.data[id] || null
+        }
+    }
+}))
+
+
+vi.mock('../../io/canvas.js', () => ({
+    blobToText: vi.fn(async (blob) => blob._text || '{}'),
+    blobToImage: vi.fn(async () => new Image())
 }))
 
 
@@ -151,6 +170,76 @@ describe('launchAnimatorStudio', () => {
         await launchAnimatorStudio({}, container)
 
         expect(container.innerHTML).toContain('No animator found')
+    })
+
+
+    test('selects specific animator by animatorId', async () => {
+        const manifestData = {
+            assets: {
+                player: {
+                    type: 'animator',
+                    animations: {idle: {frames: []}}
+                },
+                enemy: {
+                    type: 'animator',
+                    animations: {walk: {frames: []}}
+                }
+            }
+        }
+
+        let receivedContext = null
+        const MockAnimatorView = customElements.get('animator-view')
+        const originalSetContext = MockAnimatorView.prototype.setContext
+        MockAnimatorView.prototype.setContext = function (ctx) {
+            receivedContext = ctx
+        }
+
+        await launchAnimatorStudio(manifestData, container, {animatorId: 'enemy'})
+
+        expect(receivedContext.animatorName).toBe('enemy')
+        MockAnimatorView.prototype.setContext = originalSetContext
+    })
+
+
+    test('falls back to first animator when animatorId not found', async () => {
+        const manifestData = {
+            assets: {
+                player: {
+                    type: 'animator',
+                    animations: {idle: {frames: []}}
+                }
+            }
+        }
+
+        let receivedContext = null
+        const MockAnimatorView = customElements.get('animator-view')
+        const originalSetContext = MockAnimatorView.prototype.setContext
+        MockAnimatorView.prototype.setContext = function (ctx) {
+            receivedContext = ctx
+        }
+
+        await launchAnimatorStudio(manifestData, container, {animatorId: 'nonexistent'})
+
+        expect(receivedContext.animatorName).toBe('player')
+        MockAnimatorView.prototype.setContext = originalSetContext
+    })
+
+
+    test('shows error message on exception', async () => {
+        const logger = (await import('../../core/logger.js')).default
+
+        const brokenManifest = {
+            assets: {
+                get player () {
+                    throw new Error('Test error')
+                }
+            }
+        }
+
+        await launchAnimatorStudio(brokenManifest, container)
+
+        expect(container.innerHTML).toContain('Error:')
+        expect(logger.error).toHaveBeenCalled()
     })
 
 })

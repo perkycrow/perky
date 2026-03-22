@@ -1,6 +1,7 @@
 import {describe, test, expect, vi, beforeEach} from 'vitest'
 import Sprite from './sprite.js'
 import TextureRegion from './textures/texture_region.js'
+import SpriteEffectStack from './sprite_effects/sprite_effect_stack.js'
 import CanvasSpriteRenderer from './canvas/canvas_sprite_renderer.js'
 
 
@@ -154,6 +155,112 @@ describe('Sprite', () => {
 
         expect(sprite.image).toBeNull()
         expect(sprite.region).toBeNull()
+    })
+
+
+    test('currentFrame returns the region', () => {
+        expect(sprite.currentFrame).toBe(sprite.region)
+    })
+
+
+    test('play stops previous animation when switching', () => {
+        const walkAnim = {play: vi.fn(), stop: vi.fn()}
+        const runAnim = {play: vi.fn(), stop: vi.fn()}
+
+        sprite.addAnimation('walk', walkAnim)
+        sprite.addAnimation('run', runAnim)
+
+        sprite.play('walk')
+        sprite.play('run')
+
+        expect(walkAnim.stop).toHaveBeenCalled()
+        expect(sprite.currentAnimation).toBe(runAnim)
+    })
+
+
+    test('setFrame with null clears region', () => {
+        sprite.setFrame(null)
+
+        expect(sprite.region).toBeNull()
+    })
+
+
+    describe('effects', () => {
+
+        test('returns a SpriteEffectStack', () => {
+            expect(sprite.effects).toBeInstanceOf(SpriteEffectStack)
+        })
+
+
+        test('returns the same instance on subsequent calls', () => {
+            const effects1 = sprite.effects
+            const effects2 = sprite.effects
+
+            expect(effects1).toBe(effects2)
+        })
+
+    })
+
+
+    describe('getBounds', () => {
+
+        test('uses both width and height when set', () => {
+            sprite = new Sprite({
+                frame: mockFrame,
+                width: 20,
+                height: 30
+            })
+            const bounds = sprite.getBounds()
+
+            expect(bounds.width).toBe(20)
+            expect(bounds.height).toBe(30)
+        })
+
+
+        test('uses region dimensions when no width/height set', () => {
+            sprite = new Sprite({frame: mockFrame})
+            const bounds = sprite.getBounds()
+
+            expect(bounds.width).toBe(10)
+            expect(bounds.height).toBe(10)
+        })
+
+
+        test('returns default bounds when no region', () => {
+            sprite = new Sprite({})
+            const bounds = sprite.getBounds()
+
+            expect(bounds.width).toBe(10)
+            expect(bounds.height).toBe(10)
+        })
+
+
+        test('calculates offset based on anchor', () => {
+            sprite = new Sprite({
+                frame: mockFrame,
+                width: 100,
+                height: 100
+            })
+            sprite.anchorX = 0.5
+            sprite.anchorY = 0.5
+
+            const bounds = sprite.getBounds()
+
+            expect(bounds.minX).toBe(-50)
+            expect(bounds.minY).toBe(-50)
+            expect(bounds.maxX).toBe(50)
+            expect(bounds.maxY).toBe(50)
+        })
+
+    })
+
+
+    describe('renderHints', () => {
+
+        test('returns null when no effects and no tint', () => {
+            expect(sprite.renderHints).toBeNull()
+        })
+
     })
 
 })
