@@ -8,6 +8,7 @@ import Stage from '../../game/stage.js'
 import World from '../../game/world.js'
 import RenderSystem from '../../render/render_system.js'
 import CommandHistory from '../../editor/command_history.js'
+import {toolbarStyles} from '../../editor/styles/toolbar.styles.js'
 import {sceneViewStyles} from './scene_view.styles.js'
 
 
@@ -41,7 +42,7 @@ export default class SceneView extends EditorComponent {
     #boundKeyDown = null
 
     onConnected () {
-        adoptStyleSheets(this.shadowRoot, sceneViewStyles)
+        adoptStyleSheets(this.shadowRoot, toolbarStyles, sceneViewStyles)
         this.#buildDOM()
         this.#boundBeforeUnload = () => this.#flushSave()
         window.addEventListener('beforeunload', this.#boundBeforeUnload)

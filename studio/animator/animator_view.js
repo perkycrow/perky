@@ -18,6 +18,7 @@ import TextureRegion from '../../render/textures/texture_region.js'
 import PerkyStore from '../../io/perky_store.js'
 import PsdConverter from '../../io/psd_converter.js'
 import {canvasToBlob} from '../../io/canvas.js'
+import {toolbarStyles} from '../../editor/styles/toolbar.styles.js'
 import {animatorViewStyles, frameEditorStyles, settingsStyles} from './animator_view.styles.js'
 import {inferSpritesheetName, collectEventSuggestions, buildAnimationConfig} from './animator_helpers.js'
 import {buildFrameEditor} from './components/frame_editor.js'
@@ -112,7 +113,7 @@ export default class AnimatorView extends EditorComponent {
 
 
     #buildDOM () {
-        adoptStyleSheets(this.shadowRoot, animatorViewStyles, frameEditorStyles, settingsStyles)
+        adoptStyleSheets(this.shadowRoot, toolbarStyles, animatorViewStyles, frameEditorStyles, settingsStyles)
 
 
         this.#appLayout = createElement('app-layout', {
