@@ -6,6 +6,11 @@ import Geometry from '../geometry.js'
 
 describe('CSGService', () => {
 
+    test('serviceMethods', () => {
+        expect(CSGService.serviceMethods).toEqual(['operate'])
+    })
+
+
     function makeReq (params) {
         return {params}
     }

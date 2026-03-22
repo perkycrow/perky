@@ -59,6 +59,16 @@ describe('BrushSet', () => {
     })
 
 
+    test('move same index does nothing', () => {
+        const set = new BrushSet()
+        const a = set.add(new Brush({x: 1}))
+        const b = set.add(new Brush({x: 2}))
+        set.move(0, 0)
+        expect(set.get(0)).toBe(a)
+        expect(set.get(1)).toBe(b)
+    })
+
+
     test('replace brush', () => {
         const set = new BrushSet()
         const old = set.add(new Brush({shape: 'box'}))
@@ -66,6 +76,14 @@ describe('BrushSet', () => {
         const returned = set.replace(0, replacement)
         expect(returned).toBe(old)
         expect(set.get(0)).toBe(replacement)
+    })
+
+
+    test('replace at undefined index returns null', () => {
+        const set = new BrushSet()
+        const replacement = new Brush({shape: 'sphere'})
+        const returned = set.replace(5, replacement)
+        expect(returned).toBeNull()
     })
 
 
