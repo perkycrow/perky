@@ -176,7 +176,7 @@ Scene Config (JSON from PerkyStore or manifest)
 - [x] Load custom from PerkyStore (scene launcher.js)
 - [x] manifest_patcher.js loads scene overrides (animators + scenes)
 - [x] mist/index.js loads overrides with `?studio` flag
-- [ ] Hub integration: scene cards in hub_view.js
+- [x] Hub integration: scene cards in hub_view.js
 
 ### Phase 4 — Mist Integration ✅
 > First real use with The Mistbrewer

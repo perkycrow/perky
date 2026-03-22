@@ -418,17 +418,46 @@ export default class SceneView extends EditorComponent {
 
 
     #pickEntity (worldX, worldY) {
-        const halfSize = ENTITY_SIZE / 2
-
         for (let i = this.#entities.length - 1; i >= 0; i--) {
-            const entity = this.#entities[i]
-            if (worldX >= entity.x - halfSize && worldX <= entity.x + halfSize &&
-                worldY >= entity.y - halfSize && worldY <= entity.y + halfSize) {
+            const entry = this.#entities[i]
+            const bounds = this.#getEntryBounds(entry)
+
+            if (worldX >= bounds.minX && worldX <= bounds.maxX &&
+                worldY >= bounds.minY && worldY <= bounds.maxY) {
                 return i
             }
         }
 
         return -1
+    }
+
+
+    #getEntryBounds (entry) {
+        if (!entry.worldEntity || !this.#stage) {
+            const halfSize = ENTITY_SIZE / 2
+            return {
+                minX: entry.x - halfSize,
+                minY: entry.y - halfSize,
+                maxX: entry.x + halfSize,
+                maxY: entry.y + halfSize
+            }
+        }
+
+        const views = this.#stage.getViews(entry.worldEntity)
+        const root = views[0]?.root
+
+        if (root?.getBounds) {
+            root.updateWorldMatrix(true)
+            return root.getBounds()
+        }
+
+        const halfSize = ENTITY_SIZE / 2
+        return {
+            minX: entry.x - halfSize,
+            minY: entry.y - halfSize,
+            maxX: entry.x + halfSize,
+            maxY: entry.y + halfSize
+        }
     }
 
 
@@ -547,13 +576,13 @@ export default class SceneView extends EditorComponent {
             return
         }
 
-        const entity = this.#entities[this.#selectedIndex]
-        const halfSize = ENTITY_SIZE / 2
+        const entry = this.#entities[this.#selectedIndex]
+        const bounds = this.#getEntryBounds(entry)
 
         ctx.strokeStyle = SELECTED_BORDER
         ctx.lineWidth = lineWidth * 2
         ctx.setLineDash([lineWidth * 4, lineWidth * 4])
-        ctx.strokeRect(entity.x - halfSize, entity.y - halfSize, ENTITY_SIZE, ENTITY_SIZE)
+        ctx.strokeRect(bounds.minX, bounds.minY, bounds.maxX - bounds.minX, bounds.maxY - bounds.minY)
         ctx.setLineDash([])
     }
 
