@@ -29,6 +29,12 @@ export default class ChapterStage extends Stage {
             pointerEvents: 'none',
             basePpu: BASE_PPU
         })
+
+        const sceneConfig = this.game.manifest?.getAsset('chapterScene')?.source
+        if (sceneConfig) {
+            this.world.loadLayout(sceneConfig, wiring)
+        }
+
         this.world.init(this.game, {
             chapter: this.options.chapter,
             adventure: this.options.adventure

@@ -63,6 +63,69 @@ describe('World', () => {
     })
 
 
+    describe('findByType', () => {
+
+        test('finds entity by class', () => {
+            world.start()
+            const entity = world.create(Entity, {$id: 'test'})
+
+            expect(world.findByType(Entity)).toBe(entity)
+        })
+
+
+        test('returns null when not found', () => {
+            expect(world.findByType(Entity)).toBeNull()
+        })
+
+    })
+
+
+    describe('loadLayout', () => {
+
+        test('creates entities from config', () => {
+            world.start()
+
+            const mockWiring = {
+                get: (group, name) => (name === 'Entity' ? Entity : null)
+            }
+
+            world.loadLayout({
+                entities: [
+                    {type: 'Entity', x: 5, y: 3},
+                    {type: 'Entity', x: -1, y: 2}
+                ]
+            }, mockWiring)
+
+            expect(world.entities.length).toBe(2)
+            expect(world.entities[0].x).toBe(5)
+            expect(world.entities[1].x).toBe(-1)
+        })
+
+
+        test('skips unknown types', () => {
+            world.start()
+
+            const mockWiring = {
+                get: () => null
+            }
+
+            world.loadLayout({
+                entities: [{type: 'Unknown', x: 0, y: 0}]
+            }, mockWiring)
+
+            expect(world.entities.length).toBe(0)
+        })
+
+
+        test('handles missing config', () => {
+            world.loadLayout(null, null)
+
+            expect(world.entities.length).toBe(0)
+        })
+
+    })
+
+
     describe('update', () => {
 
         test('does not call preUpdate when not started', () => {

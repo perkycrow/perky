@@ -10,6 +10,28 @@ export default class World extends PerkyModule {
     }
 
 
+    findByType (EntityClass) {
+        return this.entities.find(e => e instanceof EntityClass) || null
+    }
+
+
+    loadLayout (config, wiring) {
+        if (!config?.entities || !wiring) {
+            return
+        }
+
+        for (const entry of config.entities) {
+            const EntityClass = wiring.get('entities', entry.type)
+
+            if (!EntityClass) {
+                continue
+            }
+
+            this.create(EntityClass, entry)
+        }
+    }
+
+
     update (deltaTime, context) {
         if (!this.started) {
             return

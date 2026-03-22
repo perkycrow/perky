@@ -37,43 +37,36 @@ export default class ChapterWorld extends World {
         this.#game = game
         this.#boardEntities = new Map()
 
-        const layout = resolveLayout(game)
-
         const gameState = chapter?.currentGameState || {
             lab: {reagentsCount: 7, unlockedCount: 3, startsAt: 0}
         }
 
-        this.#board = this.create(Board, {x: layout.Board.x, y: layout.Board.y})
+        this.#board = this.findByType(Board)
         this.#board.initGame(gameState, {skillFactory, artifactFactory})
 
         this.#clusterReagent0 = this.#board.workshop.create(Reagent, {active: false})
         this.#clusterReagent1 = this.#board.workshop.create(Reagent, {active: false})
 
         const lab = this.#board.lab
-        this.#labPanel = this.create(LabPanel, {
-            x: layout.LabPanel.x,
-            y: layout.LabPanel.y,
-            reagentNames: lab.reagents,
-            unlockedCount: lab.unlockedCount
-        })
-
-        const skills = this.#board.arsenal?.skills || []
-
-        if (skills.length > 0) {
-            this.#arsenalPanel = this.create(ArsenalPanel, {
-                x: layout.ArsenalPanel.x,
-                y: layout.ArsenalPanel.y,
-                skills
-            })
+        this.#labPanel = this.findByType(LabPanel)
+        if (this.#labPanel) {
+            this.#labPanel.reagentNames = lab.reagents
+            this.#labPanel.unlockedCount = lab.unlockedCount
         }
 
-        this.#notebook = this.create(Notebook, {
-            x: layout.Notebook.x,
-            y: layout.Notebook.y,
-            chapterTitle: getChapterTitle(adventure)
-        })
+        const skills = this.#board.arsenal?.skills || []
+        this.#arsenalPanel = this.findByType(ArsenalPanel)
+        if (this.#arsenalPanel) {
+            this.#arsenalPanel.skills = skills
+            this.#arsenalPanel.active = skills.length > 0
+        }
 
-        this.#endPanel = this.create(EndPanel, {x: layout.EndPanel.x, y: layout.EndPanel.y, active: false})
+        this.#notebook = this.findByType(Notebook)
+        if (this.#notebook) {
+            this.#notebook.chapterTitle = getChapterTitle(adventure)
+        }
+
+        this.#endPanel = this.findByType(EndPanel)
 
         this.#initAnimationHooks()
         this.#initSoundHooks()
@@ -340,34 +333,6 @@ export default class ChapterWorld extends World {
         })
     }
 
-}
-
-
-const DEFAULT_LAYOUT = {
-    Board: {x: -3, y: -3.5},
-    LabPanel: {x: 7.5, y: 5},
-    ArsenalPanel: {x: -3, y: -3},
-    Notebook: {x: -9, y: -2},
-    EndPanel: {x: 7.5, y: -3}
-}
-
-
-function resolveLayout (game) {
-    const sceneConfig = game?.manifest?.getAsset('chapterScene')?.source
-
-    if (!sceneConfig?.entities) {
-        return DEFAULT_LAYOUT
-    }
-
-    const layout = {...DEFAULT_LAYOUT}
-
-    for (const entry of sceneConfig.entities) {
-        if (layout[entry.type]) {
-            layout[entry.type] = {x: entry.x ?? 0, y: entry.y ?? 0}
-        }
-    }
-
-    return layout
 }
 
 
