@@ -80,9 +80,9 @@ export default doc('CanvasLayer', () => {
                 height: 600
             })
 
-            logger.log('before:', layer.renderer.width, 'x', layer.renderer.height)
+            logger.log('before:', layer.renderer.displayWidth, 'x', layer.renderer.displayHeight)
             layer.resize(1024, 768)
-            logger.log('after:', layer.renderer.width, 'x', layer.renderer.height)
+            logger.log('after:', layer.renderer.displayWidth, 'x', layer.renderer.displayHeight)
         })
 
     })
@@ -101,6 +101,9 @@ export default doc('CanvasLayer', () => {
                 rendererType: 'canvas',
                 autoRender: false
             })
+
+            const scene = new Group2D()
+            scene.add(new Rectangle({width: 4, height: 2, color: '#e94560'}))
 
             layer.setContent(scene)
             layer.render()

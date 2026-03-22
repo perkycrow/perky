@@ -40,6 +40,7 @@ export default doc('CSG Triplanar', {advanced: true}, () => {
         })
 
         code('With UV scale', () => {
+            const polygons = []
             applyTriplanarUVs(polygons, 2)
         })
 
@@ -49,7 +50,7 @@ export default doc('CSG Triplanar', {advanced: true}, () => {
             const result = box.subtract(sphere)
 
             applyTriplanarUVs(result.polygons, 1)
-            const geo = result.toGeometry({skipTriplanar: true})
+            const geo = result.toGeometry()
 
             logger.log('vertices:', geo.vertexCount)
             logger.log('has UVs:', geo.uvs !== null)

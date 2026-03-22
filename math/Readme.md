@@ -92,6 +92,7 @@ rng.weightedChoice([
 const snapshot = rng.getState()  // save
 rng.setState(snapshot)           // restore
 rng.fork()                       // independent copy
+rng.setSeed('new-seed')          // reseed
 ```
 
 ---
@@ -205,6 +206,24 @@ const path = pathfinder.findPath(grid, {x: 0, y: 0}, {x: 9, y: 9})
 ### [services/pathfinding_service.js](services/pathfinding_service.js)
 
 Worker-ready wrapper around Grid + Pathfinder. Manages a grid, caches results, exposes `setGrid`, `setCell`, `findPath` as service methods. Used via `ServiceHost` for off-main-thread pathfinding.
+
+---
+
+### [utils.js](utils.js)
+
+Simple math utilities for common operations.
+
+```js
+import {clamp, snap} from './utils.js'
+
+clamp(5, 0, 10)    // 5 (value within range)
+clamp(-5, 0, 10)   // 0 (clamped to min)
+clamp(15, 0, 10)   // 10 (clamped to max)
+
+snap(7, 5)         // 5 (snap to nearest multiple)
+snap(12, 5)        // 10
+snap(0.35, 0.25)   // 0.25
+```
 
 ---
 

@@ -66,10 +66,12 @@ export default doc('CSG T-Junction', {advanced: true}, () => {
         `)
 
         code('Tight tolerance', () => {
+            const polygons = []
             const fixed = suppressTJunctions(polygons, 0.0001)
         })
 
         code('Loose tolerance', () => {
+            const polygons = []
             const fixed = suppressTJunctions(polygons, 0.001)
         })
 

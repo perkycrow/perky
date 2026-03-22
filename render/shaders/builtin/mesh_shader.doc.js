@@ -48,6 +48,7 @@ export default doc('Mesh Shader', {advanced: true}, () => {
             - \`uRoughness\` (float) — specular roughness
             - \`uSpecular\` (float) — specular intensity
             - \`uUnlit\` (float) — bypass lighting
+            - \`uTintColor\` (vec4) — tint color with alpha as blend factor
 
             Texturing:
             - \`uTexture\` — diffuse texture
@@ -56,12 +57,14 @@ export default doc('Mesh Shader', {advanced: true}, () => {
             - \`uHasNormalMap\` (float) — 1.0 if has normal map
             - \`uNormalStrength\` (float) — normal map intensity
             - \`uUVScale\` (vec2) — UV tiling
+            - \`uHasVertexColors\` (float) — 1.0 if using vertex colors
 
             Lighting:
             - \`uLightDirection\` (vec3) — directional light direction
             - \`uAmbient\` (float) — ambient light level
             - \`uNumLights\` (int) — point/spot light count
             - \`uLightData\` (sampler2D) — light data texture
+            - \`uCameraPosition\` (vec3) — camera world position for specular
 
             Shadows:
             - \`uShadowMap\` (sampler2DShadow) — shadow depth map

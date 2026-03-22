@@ -195,6 +195,24 @@ stage.register(Player, Sprite, {
 
 ---
 
+### [sprite_entity_view.js](sprite_entity_view.js)
+
+EntityView that creates a Sprite from entity options. Useful when entities carry their own texture configuration.
+
+```js
+class Player extends Entity {
+    constructor (options = {}) {
+        super({texture: 'hero', width: 1, height: 1, ...options})
+    }
+}
+
+stage.register(Player, SpriteEntityView)
+```
+
+Reads `texture`, `width`, `height`, `depth`, and `opacity` from `entity.options`.
+
+---
+
 ### [collision_box_view.js](collision_box_view.js)
 
 Debug view that draws a rectangle outline around an entity. Useful for visualizing collision boundaries.

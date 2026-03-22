@@ -211,6 +211,8 @@ export default doc('World', () => {
             // update(deltaTime, context) - Update all entities
             // preUpdate(deltaTime, context) - Hook before entity updates
             // postUpdate(deltaTime, context) - Hook after entity updates
+            // findByType(EntityClass) - Find first entity of given class
+            // loadLayout(config, wiring) - Load entities from layout config
             // nearest(entity, range, filter) - Find closest entity in range
             // checkHit(entity, filter) - Check hit using hitRadius
             // entitiesInRange(entity, range, filter) - Get all entities in range
