@@ -229,7 +229,7 @@ export default class PerkyStore {
         }
 
         if (resources.length === 0) {
-            throw new Error('No resources to export')
+            return 0
         }
 
         const meta = {
@@ -245,6 +245,7 @@ export default class PerkyStore {
 
         const blob = await pack(bundleFiles)
         downloadBlob(blob, 'export.perky')
+        return resources.length
     }
 
 

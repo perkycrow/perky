@@ -1,5 +1,5 @@
 import {describe, test, expect, vi, beforeEach, afterEach} from 'vitest'
-import './flash.js'
+import Flash from './flash.js'
 
 
 let flashEl
@@ -13,6 +13,27 @@ beforeEach(() => {
 
 afterEach(() => {
     flashEl.remove()
+})
+
+
+describe('Flash', () => {
+
+    test('is a class', () => {
+        expect(typeof Flash).toBe('function')
+        expect(Flash.prototype).toBeDefined()
+    })
+
+
+    test('is registered as custom element', () => {
+        expect(customElements.get('editor-flash')).toBe(Flash)
+    })
+
+
+    test('has static styles', () => {
+        expect(Flash.styles).toBeDefined()
+        expect(Flash.styles).toContain('.flash-item')
+    })
+
 })
 
 

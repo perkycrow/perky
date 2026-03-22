@@ -802,7 +802,13 @@ export default class HubView extends EditorComponent {
             return
         }
 
-        await this.#store.exportBundle([...this.#selectedItems])
+        const exported = await this.#store.exportBundle([...this.#selectedItems])
+
+        if (exported) {
+            flash(`Exported ${exported} ${pluralize('resource', exported)}`, 'success')
+        } else {
+            flash('Nothing to export — no custom changes found', 'warning')
+        }
     }
 
 

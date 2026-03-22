@@ -511,8 +511,9 @@ describe('exportBundle', () => {
         URL.createObjectURL = vi.fn(() => 'blob:test')
         URL.revokeObjectURL = vi.fn()
 
-        await store.exportBundle(['redAnimator', 'chapterScene'])
+        const count = await store.exportBundle(['redAnimator', 'chapterScene'])
 
+        expect(count).toBe(2)
         expect(mockAnchor.click).toHaveBeenCalled()
         expect(mockAnchor.download).toBe('export.perky')
 
@@ -522,8 +523,9 @@ describe('exportBundle', () => {
     })
 
 
-    test('rejects when no resources found', async () => {
-        await expect(store.exportBundle(['nonExistent'])).rejects.toThrow('No resources to export')
+    test('returns 0 when no resources found', async () => {
+        const result = await store.exportBundle(['nonExistent'])
+        expect(result).toBe(0)
     })
 
 
