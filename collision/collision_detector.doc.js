@@ -1,5 +1,5 @@
 import {doc, section, text, action, logger} from '../doc/runtime.js'
-import {detectCollision, isBoxVsBox, isCircleVsCircle, isBoxVsCircle} from './collision_detector.js'
+import {detectCollision, isBoxVsBox, isCircleVsCircle, isBoxVsCircle, isCircleVsBox} from './collision_detector.js'
 import BoxShape from './shapes/box_shape.js'
 import CircleShape from './shapes/circle_shape.js'
 
@@ -77,6 +77,7 @@ export default doc('CollisionDetector', () => {
             logger.log('box vs box:', isBoxVsBox(box, box))
             logger.log('circle vs circle:', isCircleVsCircle(circle, circle))
             logger.log('box vs circle:', isBoxVsCircle(box, circle))
+            logger.log('circle vs box:', isCircleVsBox(circle, box))
         })
 
     })

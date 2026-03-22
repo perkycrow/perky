@@ -1,5 +1,5 @@
 import {doc, section, text, code} from '../doc/runtime.js'
-import {loadManifest, buildTextureSystem, collectAnimators, getStudioConfig, getBackgroundImage} from './launcher.js'
+import {loadManifest, buildTextureSystem, collectAnimators, collectScenes, getStudioConfig, getBackgroundImage} from './launcher.js'
 
 
 export default doc('Launcher', {advanced: true}, () => {
@@ -42,15 +42,17 @@ export default doc('Launcher', {advanced: true}, () => {
     })
 
 
-    section('collectAnimators', () => {
+    section('collectAnimators / collectScenes', () => {
 
         text(`
-            Extracts all animator assets from the manifest into a plain object
-            keyed by asset id.
+            Extract assets of a given type from the manifest into a plain object
+            keyed by asset id. \`collectAnimators\` extracts animator assets,
+            \`collectScenes\` extracts scene assets.
         `)
 
         code('Usage', () => {
             const animators = collectAnimators(manifest)
+            const scenes = collectScenes(manifest)
         })
 
     })

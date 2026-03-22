@@ -4,8 +4,8 @@ import {doc, section, text, code} from '../doc/runtime.js'
 export default doc('HubView', {advanced: true}, () => {
 
     text(`
-        The main gallery view of the animator studio. Displays all available
-        animators (game and custom) as a grid of thumbnail cards. Provides
+        The main gallery view of the studio. Displays all available animators
+        (game and custom) and scenes as grids of thumbnail cards. Provides
         import, export, selection, deletion, and conflict resolution. Mounts
         inside an [[AppLayout@editor/layout]] with a [[StorageInfo@studio/components]]
         header widget.
@@ -15,9 +15,9 @@ export default doc('HubView', {advanced: true}, () => {
     section('setContext', () => {
 
         text(`
-            Initializes the hub with the game manifest, animator configs, and
-            texture system. Can be called before or after the element connects
-            to the DOM.
+            Initializes the hub with the game manifest, animator configs, scene
+            configs, and texture system. Can be called before or after the
+            element connects to the DOM.
         `)
 
         code('Usage', () => {
@@ -26,6 +26,7 @@ export default doc('HubView', {advanced: true}, () => {
             hub.setContext({
                 manifest,
                 animators: {playerAnimator: config},
+                scenes: {mainScene: sceneConfig},
                 textureSystem
             })
         })
