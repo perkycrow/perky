@@ -1,6 +1,7 @@
 import EditorComponent from '../editor/editor_component.js'
 import {createElement, adoptStyleSheets, createStyleSheet} from '../application/dom_utils.js'
 import {pluralize} from '../core/utils.js'
+import {flash} from '../editor/flash.js'
 import PerkyStore from '../io/perky_store.js'
 import '../editor/layout/app_layout.js'
 import './components/psd_importer.js'
@@ -767,7 +768,7 @@ export default class HubView extends EditorComponent {
             const result = await this.#store.import(file)
             const imported = Array.isArray(result) ? result : [result]
             const names = imported.map(r => r.name).join(', ')
-            alert(`Imported: ${names}`)
+            flash(`Imported: ${names}`, 'success')
             this.#render()
         })
         input.click()

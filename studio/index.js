@@ -1,7 +1,18 @@
 import logger from '../core/logger.js'
+import {flash} from '../editor/flash.js'
 import {loadManifest, buildTextureSystem, collectAnimators, collectScenes} from './launcher.js'
 import './hub_view.js'
 import manifestData from '../den/manifest.json' with { type: 'json' }
+
+
+window.addEventListener('error', (e) => {
+    flash(e.message, 'error')
+})
+
+window.addEventListener('unhandledrejection', (e) => {
+    const message = e.reason?.message || String(e.reason)
+    flash(message, 'error')
+})
 
 
 async function init () {
