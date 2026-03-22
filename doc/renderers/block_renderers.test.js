@@ -66,10 +66,24 @@ describe('block_renderers', () => {
         })
 
 
+        test('uses block source when extractedSource is null', () => {
+            const el = renderCode({title: 'Test', source: 'original'})
+            const codeEl = el.querySelector('perky-code')
+            expect(codeEl.code).toBe('original')
+        })
+
+
         test('uses extracted source if provided', () => {
             const el = renderCode({title: 'Test', source: 'original'}, 'extracted')
             const codeEl = el.querySelector('perky-code')
             expect(codeEl.code).toBe('extracted')
+        })
+
+
+        test('sets title attribute on perky-code', () => {
+            const el = renderCode({title: 'My Title', source: 'code'})
+            const codeEl = el.querySelector('perky-code')
+            expect(codeEl.getAttribute('title')).toBe('My Title')
         })
 
     })
@@ -87,6 +101,45 @@ describe('block_renderers', () => {
             const el = renderSee({name: 'Logger', pageType: 'doc'})
             const link = el.querySelector('.doc-see-link')
             expect(link).toBeTruthy()
+        })
+
+
+        test('sets href from buildDocUrl', () => {
+            const el = renderSee({name: 'Logger', pageType: 'doc'})
+            const link = el.querySelector('.doc-see-link')
+            expect(link.href).toContain('test.html')
+        })
+
+
+        test('shows basic label for doc pageType', () => {
+            const el = renderSee({name: 'Logger', pageType: 'doc'})
+            const link = el.querySelector('.doc-see-link')
+            expect(link.textContent).toContain('See Logger')
+            expect(link.textContent).not.toContain('(doc)')
+        })
+
+
+        test('shows pageType in label when not doc', () => {
+            const el = renderSee({name: 'Logger', pageType: 'guide'})
+            const link = el.querySelector('.doc-see-link')
+            expect(link.textContent).toContain('See Logger')
+            expect(link.textContent).toContain('(guide)')
+        })
+
+
+        test('shows section in label when provided', () => {
+            const el = renderSee({name: 'Logger', pageType: 'doc', section: 'Methods'})
+            const link = el.querySelector('.doc-see-link')
+            expect(link.textContent).toContain('See Logger')
+            expect(link.textContent).toContain('> Methods')
+        })
+
+
+        test('includes svg icon', () => {
+            const el = renderSee({name: 'Logger', pageType: 'doc'})
+            const link = el.querySelector('.doc-see-link')
+            const svg = link.querySelector('svg')
+            expect(svg).toBeTruthy()
         })
 
     })
