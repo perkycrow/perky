@@ -63,6 +63,18 @@ export function collectAnimators (manifest) {
 }
 
 
+export function collectScenes (manifest) {
+    const sceneAssets = manifest.getAssetsByType('scene')
+    const scenes = {}
+    for (const asset of sceneAssets) {
+        if (asset.source) {
+            scenes[asset.id] = asset.source
+        }
+    }
+    return scenes
+}
+
+
 export function getStudioConfig (manifest, tool) {
     return manifest.getConfig(`studio.${tool}`) || {}
 }

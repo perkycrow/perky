@@ -241,6 +241,7 @@ export default class HubView extends EditorComponent {
 
     #manifest = null
     #animators = {}
+    #scenes = {}
     #customAnimators = {}
     #textureSystem = null
     #appLayout = null
@@ -264,9 +265,10 @@ export default class HubView extends EditorComponent {
     }
 
 
-    setContext ({manifest, animators, textureSystem}) {
+    setContext ({manifest, animators, textureSystem, scenes}) {
         this.#manifest = manifest
         this.#animators = animators || {}
+        this.#scenes = scenes || {}
         this.#textureSystem = textureSystem
 
         if (this.isConnected) {
@@ -366,7 +368,42 @@ export default class HubView extends EditorComponent {
         section.appendChild(grid)
 
         this.#contentEl.innerHTML = ''
+
+        if (Object.keys(this.#scenes).length > 0) {
+            this.#contentEl.appendChild(this.#buildScenesSection())
+        }
+
         this.#contentEl.appendChild(section)
+    }
+
+
+    #buildScenesSection () {
+        const section = createElement('div', {class: 'section'})
+        section.appendChild(createElement('h2', {class: 'section-title', text: 'Scenes'}))
+
+        const grid = createElement('div', {class: 'animator-grid'})
+
+        for (const name of Object.keys(this.#scenes)) {
+            const card = createElement('div', {class: 'animator-card'})
+
+            const preview = createElement('div', {class: 'card-preview'})
+            preview.appendChild(createElement('div', {class: 'create-icon', text: '\u25A6'}))
+            card.appendChild(preview)
+
+            const info = createElement('div', {class: 'card-info'})
+            info.appendChild(createElement('div', {class: 'card-title', text: name}))
+            info.appendChild(createElement('div', {class: 'card-meta', text: 'Scene'}))
+            card.appendChild(info)
+
+            card.addEventListener('click', () => {
+                window.location.href = `scene.html?id=${encodeURIComponent(name)}`
+            })
+
+            grid.appendChild(card)
+        }
+
+        section.appendChild(grid)
+        return section
     }
 
 

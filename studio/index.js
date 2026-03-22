@@ -1,5 +1,5 @@
 import logger from '../core/logger.js'
-import {loadManifest, buildTextureSystem, collectAnimators} from './launcher.js'
+import {loadManifest, buildTextureSystem, collectAnimators, collectScenes} from './launcher.js'
 import './hub_view.js'
 import manifestData from '../den/manifest.json' with { type: 'json' }
 
@@ -11,10 +11,11 @@ async function init () {
         const manifest = await loadManifest(manifestData, '../den/')
         const textureSystem = buildTextureSystem(manifest)
         const animators = collectAnimators(manifest)
+        const scenes = collectScenes(manifest)
 
         container.innerHTML = ''
         const hubView = document.createElement('hub-view')
-        hubView.setContext({manifest, animators, textureSystem})
+        hubView.setContext({manifest, animators, textureSystem, scenes})
         container.appendChild(hubView)
 
     } catch (error) {
