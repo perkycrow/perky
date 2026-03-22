@@ -159,6 +159,10 @@ Entities can have default data so views render representative content in the edi
 
 ## Open Questions
 
+- **World scope**: should a World contain purely visual elements (UI, backgrounds, decorations) or only gameplay entities? Two approaches:
+  - **World = everything**: simple, one place for all content, the editor manages it all. But the World gains entities that have no gameplay purpose, and headless/server mode would carry visual baggage.
+  - **World = gameplay only**: visuals live elsewhere (viewsGroup directly, or a separate "decor" layer). Cleaner separation but two systems to manage. The editor would need to edit both.
+  - A middle ground: generic entities live in the World but are tagged/categorized (e.g., `$tags: ['decor']`) so they can be filtered out for headless mode.
 - How to define preview defaults? Static property on Entity class? In the scene config?
 - Should generic entities be a special Entity subclass (SpriteEntity?) or just base Entity?
 - How to handle entity hierarchy in the editor (Board → Workshop → Reagents)?
