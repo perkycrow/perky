@@ -186,6 +186,17 @@ export default class SceneView extends EditorComponent {
 
         this.#appLayout.appendChild(headerStart)
 
+        const headerEnd = createElement('div', {
+            class: 'header-controls',
+            attrs: {slot: 'header-end'}
+        })
+
+        const previewBtn = createElement('button', {class: 'toolbar-btn', text: '\u25B6 Preview', title: 'Preview in game'})
+        previewBtn.addEventListener('click', () => this.#openPreview())
+        headerEnd.appendChild(previewBtn)
+
+        this.#appLayout.appendChild(headerEnd)
+
         this.#containerEl = createElement('div', {class: 'scene-container'})
 
         const viewport = createElement('div', {class: 'viewport'})
@@ -446,6 +457,13 @@ export default class SceneView extends EditorComponent {
         })
 
         this.#afterHistoryAction()
+    }
+
+
+    async #openPreview () {
+        this.#flushSave()
+        await this.#autoSave()
+        window.open('../index.html?studio', '_blank')
     }
 
 
