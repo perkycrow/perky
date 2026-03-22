@@ -126,6 +126,18 @@ describe(FramebufferManager, () => {
     })
 
 
+    test('resize recreates named buffers', () => {
+        manager.getOrCreateBuffer('test')
+        const oldTexture = manager.getBufferTexture('test')
+
+        manager.resize(1024, 768)
+
+        const newTexture = manager.getBufferTexture('test')
+        expect(newTexture).not.toBeNull()
+        expect(newTexture).not.toBe(oldTexture)
+    })
+
+
     test('bindSceneBuffer', () => {
         manager.bindSceneBuffer()
         expect(gl.bindFramebuffer).toHaveBeenCalled()

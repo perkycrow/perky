@@ -22,6 +22,16 @@ class NoShaderPass extends RenderPass {}
 
 describe(RenderPass, () => {
 
+    test('static $category', () => {
+        expect(RenderPass.$category).toBe('renderPass')
+    })
+
+
+    test('static $lifecycle', () => {
+        expect(RenderPass.$lifecycle).toBe(false)
+    })
+
+
     test('static shaderDefinition is null by default', () => {
         expect(RenderPass.shaderDefinition).toBeNull()
     })

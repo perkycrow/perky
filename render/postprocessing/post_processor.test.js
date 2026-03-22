@@ -1,4 +1,4 @@
-import {describe, test, expect, beforeEach} from 'vitest'
+import {describe, test, expect, beforeEach, vi} from 'vitest'
 import PostProcessor from './post_processor.js'
 import RenderPass from './render_pass.js'
 import PerkyModule from '../../core/perky_module.js'
