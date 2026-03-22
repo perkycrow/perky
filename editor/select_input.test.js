@@ -1,4 +1,4 @@
-import {describe, test, expect, vi, beforeEach} from 'vitest'
+import {describe, test, expect, vi, beforeEach, afterEach} from 'vitest'
 import './select_input.js'
 
 
@@ -7,8 +7,14 @@ describe('SelectInput', () => {
     let select
 
     beforeEach(() => {
+        Element.prototype.scrollIntoView = vi.fn()
         select = document.createElement('select-input')
         document.body.appendChild(select)
+    })
+
+
+    afterEach(() => {
+        document.body.innerHTML = ''
     })
 
 
@@ -270,6 +276,44 @@ describe('SelectInput', () => {
             expect(button.classList.contains('open')).toBe(false)
         })
 
+
+        test('ArrowDown moves focus when open', () => {
+            select.setOptions(['a', 'b', 'c'])
+            const button = select.shadowRoot.querySelector('.select-button')
+            button.click()
+
+            button.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowDown'}))
+
+            const options = select.shadowRoot.querySelectorAll('.select-option')
+            expect(options[1].classList.contains('focused')).toBe(true)
+        })
+
+
+        test('ArrowUp moves focus when open', () => {
+            select.setOptions(['a', 'b', 'c'])
+            select.setValue('c')
+            const button = select.shadowRoot.querySelector('.select-button')
+            button.click()
+
+            button.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowUp'}))
+
+            const options = select.shadowRoot.querySelectorAll('.select-option')
+            expect(options[1].classList.contains('focused')).toBe(true)
+        })
+
+
+        test('Enter selects focused option', () => {
+            select.setOptions(['a', 'b', 'c'])
+            const button = select.shadowRoot.querySelector('.select-button')
+            button.click()
+
+            button.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowDown'}))
+            button.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}))
+
+            expect(select.value).toBe('b')
+            expect(button.classList.contains('open')).toBe(false)
+        })
+
     })
 
 
@@ -281,6 +325,60 @@ describe('SelectInput', () => {
         select.disconnectedCallback()
 
         expect(button.classList.contains('open')).toBe(false)
+    })
+
+
+    describe('separator options', () => {
+
+        test('renders separator element', () => {
+            select.setOptions([
+                {value: 'a', label: 'A'},
+                {separator: true},
+                {value: 'b', label: 'B'}
+            ])
+
+            const separator = select.shadowRoot.querySelector('.select-separator')
+            expect(separator).not.toBeNull()
+        })
+
+    })
+
+
+    describe('action options', () => {
+
+        test('dispatches action event instead of change', () => {
+            const actionHandler = vi.fn()
+            const changeHandler = vi.fn()
+            select.addEventListener('action', actionHandler)
+            select.addEventListener('change', changeHandler)
+
+            select.setOptions([
+                {value: 'a', label: 'A'},
+                {value: 'add', label: 'Add New', action: true}
+            ])
+
+            const button = select.shadowRoot.querySelector('.select-button')
+            button.click()
+
+            const options = select.shadowRoot.querySelectorAll('.select-option')
+            options[1].click()
+
+            expect(actionHandler).toHaveBeenCalled()
+            expect(actionHandler.mock.calls[0][0].detail).toEqual({value: 'add'})
+            expect(changeHandler).not.toHaveBeenCalled()
+        })
+
+
+        test('action options have select-action class', () => {
+            select.setOptions([
+                {value: 'a', label: 'A'},
+                {value: 'add', label: 'Add New', action: true}
+            ])
+
+            const options = select.shadowRoot.querySelectorAll('.select-option')
+            expect(options[1].classList.contains('select-action')).toBe(true)
+        })
+
     })
 
 })

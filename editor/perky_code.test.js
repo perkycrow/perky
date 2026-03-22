@@ -308,4 +308,14 @@ console.log(view.element.tagName) // 'DIV'`
         expect(element.formattedCode).toContain('keys')
     })
 
+
+    test('no-header attribute hides the header', () => {
+        const header = element.shadowRoot.querySelector('.editor-header')
+        expect(header.style.display).toBe('')
+
+        element.setAttribute('no-header', '')
+
+        expect(header.style.display).toBe('none')
+    })
+
 })
