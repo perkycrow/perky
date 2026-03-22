@@ -9,7 +9,7 @@ import {
 describe('animation_settings', () => {
 
     function createMockAnimator (animations = []) {
-        return {
+        const animator = {
             children: animations.map((anim, i) => ({
                 $id: anim.id || `anim_${i}`,
                 fps: anim.fps || 10,
@@ -17,8 +17,12 @@ describe('animation_settings', () => {
                 playbackMode: anim.playbackMode || 'forward',
                 motion: anim.motion || null,
                 frames: anim.frames || []
-            }))
+            })),
+            hasChild (name) {
+                return this.children.some(c => c.$id === name)
+            }
         }
+        return animator
     }
 
 
@@ -138,6 +142,58 @@ describe('animation_settings', () => {
 
             const motionOptions = container.querySelector('.motion-options')
             expect(motionOptions.style.display).toBe('none')
+        })
+
+
+        test('mode select change toggles motion options visibility', () => {
+            const container = document.createElement('div')
+            const animation = {motion: {enabled: false}}
+            const onMotionChange = vi.fn()
+
+            buildAnimationSettingsContent(container, animation, {onMotionChange})
+
+            const modeSelect = container.querySelector('select-input')
+            modeSelect.dispatchEvent(new CustomEvent('change', {detail: {value: 'sidescroller'}}))
+
+            expect(animation.motion.enabled).toBe(true)
+            expect(animation.motion.mode).toBe('sidescroller')
+            expect(onMotionChange).toHaveBeenCalled()
+
+            const motionOptions = container.querySelector('.motion-options')
+            expect(motionOptions.style.display).toBe('flex')
+        })
+
+
+        test('mode select change to none disables motion', () => {
+            const container = document.createElement('div')
+            const animation = {motion: {enabled: true, mode: 'sidescroller'}}
+            const onMotionChange = vi.fn()
+
+            buildAnimationSettingsContent(container, animation, {onMotionChange})
+
+            const modeSelect = container.querySelector('select-input')
+            modeSelect.dispatchEvent(new CustomEvent('change', {detail: {value: 'none'}}))
+
+            expect(animation.motion.enabled).toBe(false)
+            expect(onMotionChange).toHaveBeenCalled()
+
+            const motionOptions = container.querySelector('.motion-options')
+            expect(motionOptions.style.display).toBe('none')
+        })
+
+
+        test('speed slider change calls onMotionUpdate', () => {
+            const container = document.createElement('div')
+            const animation = {motion: {enabled: true, mode: 'sidescroller'}}
+            const onMotionUpdate = vi.fn()
+
+            buildAnimationSettingsContent(container, animation, {onMotionUpdate})
+
+            const speedInput = container.querySelector('slider-input')
+            speedInput.dispatchEvent(new CustomEvent('change', {detail: {value: 2.5}}))
+
+            expect(animation.motion.speed).toBe(2.5)
+            expect(onMotionUpdate).toHaveBeenCalledWith(animation.motion)
         })
 
     })
@@ -264,6 +320,91 @@ describe('animation_settings', () => {
 
             const deleteBtn = container.querySelector('.settings-delete-btn')
             expect(deleteBtn).not.toBeNull()
+        })
+
+
+        test('calls onRename when name changed on blur', () => {
+            const animator = createMockAnimator([{id: 'idle'}])
+            const animation = animator.children[0]
+            const onRename = vi.fn()
+
+            const {nameInput} = buildAnimationSettings(animator, animation, {onRename})
+
+            nameInput.value = 'walk'
+            nameInput.dispatchEvent(new Event('blur'))
+
+            expect(onRename).toHaveBeenCalledWith('walk')
+        })
+
+
+        test('Enter key blurs input to trigger rename', () => {
+            const animator = createMockAnimator([{id: 'idle'}])
+            const animation = animator.children[0]
+
+            const {nameInput} = buildAnimationSettings(animator, animation, {})
+
+            const blurSpy = vi.spyOn(nameInput, 'blur')
+            nameInput.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}))
+
+            expect(blurSpy).toHaveBeenCalled()
+        })
+
+
+        test('does not call onRename when name unchanged', () => {
+            const animator = createMockAnimator([{id: 'idle'}])
+            const animation = animator.children[0]
+            const onRename = vi.fn()
+
+            const {nameInput} = buildAnimationSettings(animator, animation, {onRename})
+
+            nameInput.value = 'idle'
+            nameInput.dispatchEvent(new Event('blur'))
+
+            expect(onRename).not.toHaveBeenCalled()
+        })
+
+
+        test('appends number when name conflicts', () => {
+            const animator = createMockAnimator([{id: 'idle'}, {id: 'walk'}])
+            const animation = animator.children[0]
+            const onRename = vi.fn()
+
+            const {nameInput} = buildAnimationSettings(animator, animation, {onRename})
+
+            nameInput.value = 'walk'
+            nameInput.dispatchEvent(new Event('blur'))
+
+            expect(onRename).toHaveBeenCalledWith('walk2')
+            expect(nameInput.value).toBe('walk2')
+        })
+
+
+        test('converts name to camelCase', () => {
+            const animator = createMockAnimator([{id: 'idle'}])
+            const animation = animator.children[0]
+            const onRename = vi.fn()
+
+            const {nameInput} = buildAnimationSettings(animator, animation, {onRename})
+
+            nameInput.value = 'my animation'
+            nameInput.dispatchEvent(new Event('blur'))
+
+            expect(onRename).toHaveBeenCalledWith('myAnimation')
+        })
+
+
+        test('restores original name when input is empty', () => {
+            const animator = createMockAnimator([{id: 'idle'}])
+            const animation = animator.children[0]
+            const onRename = vi.fn()
+
+            const {nameInput} = buildAnimationSettings(animator, animation, {onRename})
+
+            nameInput.value = ''
+            nameInput.dispatchEvent(new Event('blur'))
+
+            expect(nameInput.value).toBe('idle')
+            expect(onRename).not.toHaveBeenCalled()
         })
 
     })
