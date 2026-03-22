@@ -13,7 +13,7 @@ Game (den/)                          Studio (studio/)
     │                                     │
     ├── manifest.json ──────────────────► loads manifest
     │                                     ├── builds TextureSystem
-    │                                     ├── collects animators
+    │                                     ├── collects animators + scenes
     │                                     └── renders hub
     │
     │   ?studio URL param
@@ -31,7 +31,7 @@ Studio reads the game's manifest, lets you edit assets, and saves changes to Ind
 
 ## The flow
 
-**Hub** (`index.html`) — gallery of all animators. Shows game animators and custom ones. Import PSDs, export `.perky` files, detect conflicts when both versions changed.
+**Hub** (`index.html`) — gallery of all animators and scenes. Shows game animators and custom ones. Import PSDs, export `.perky` files, detect conflicts when both versions changed.
 
 **Animator** (`animator/index.html`) — full editor for a single animator. Timeline, frame editing, anchor points, motion preview, auto-save.
 
@@ -47,7 +47,7 @@ Studio reads the game's manifest, lets you edit assets, and saves changes to Ind
 EditorComponent (from editor/)
     ↓
 ┌────────────────────────────────────────┐
-│  HubView          animator gallery     │
+│  HubView          animator + scene gallery │
 │  AnimatorView     animation editor     │
 │  SceneView        scene editor         │
 │  PsdImporter      PSD import wizard    │
@@ -120,7 +120,7 @@ A zip archive containing animator config + spritesheet data + atlas PNGs. Used f
 ## Key files
 
 - [index.js](index.js) — hub entry point
-- [launcher.js](launcher.js) — shared utilities: load manifest, build textures, collect animators
+- [launcher.js](launcher.js) — shared utilities: load manifest, build textures, collect animators + scenes
 - [hub_view.js](hub_view.js) — gallery grid with import/export/conflict management
 - [animator/animator_view.js](animator/animator_view.js) — the full animation editor
 - [animator/animator_preview.js](animator/animator_preview.js) — WebGL preview with motion simulation
