@@ -11,6 +11,11 @@ describe(VignettePass, () => {
     })
 
 
+    test('$name', () => {
+        expect(VignettePass.$name).toBe('vignettePass')
+    })
+
+
     test('shaderDefinition', () => {
         expect(VignettePass.shaderDefinition).toBeDefined()
         expect(VignettePass.shaderDefinition.vertex).toContain('aPosition')
