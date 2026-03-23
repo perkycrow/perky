@@ -335,7 +335,7 @@ describe('PsdImporter', () => {
     })
 
 
-    describe('back button behavior', () => {
+    describe('back button and drop event', () => {
 
         test('back button on drop step closes overlay', () => {
             const overlay = importer.shadowRoot.querySelector('editor-overlay')
@@ -348,10 +348,6 @@ describe('PsdImporter', () => {
             expect(closeSpy).toHaveBeenCalled()
         })
 
-    })
-
-
-    describe('drop event', () => {
 
         test('drop removes dragover class', () => {
             const dropZone = importer.shadowRoot.querySelector('.drop-zone')
@@ -387,7 +383,7 @@ describe('PsdImporter', () => {
     })
 
 
-    describe('size inputs', () => {
+    describe('size inputs and output info', () => {
 
         test('has both width and height inputs', () => {
             const inputs = importer.shadowRoot.querySelectorAll('.size-input')
@@ -402,10 +398,6 @@ describe('PsdImporter', () => {
             })
         })
 
-    })
-
-
-    describe('output info', () => {
 
         test('has output info section', () => {
             const outputInfo = importer.shadowRoot.querySelector('.output-info')
