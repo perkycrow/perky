@@ -5,7 +5,8 @@ import {
     putPixels,
     calculateResizeDimensions,
     resizeCanvas,
-    blobToText
+    blobToText,
+    blobToImage
 } from './canvas.js'
 
 
@@ -171,6 +172,69 @@ describe('blobToText', () => {
         const blob = new Blob([''], {type: 'text/plain'})
         const text = await blobToText(blob)
         expect(text).toBe('')
+    })
+
+})
+
+
+describe('blobToImage', () => {
+
+    beforeEach(() => {
+        global.URL = global.URL || {}
+        global.URL.createObjectURL = vi.fn(() => 'blob:mock-url')
+        global.URL.revokeObjectURL = vi.fn()
+
+        global.Image = vi.fn(function () {
+            return this
+        })
+    })
+
+    afterEach(() => {
+        delete global.Image
+        vi.restoreAllMocks()
+    })
+
+    test('converts blob to image', async () => {
+        const canvas = await createCanvas(10, 10)
+        const ctx = canvas.getContext('2d')
+        ctx.fillStyle = 'red'
+        ctx.fillRect(0, 0, 10, 10)
+
+        const blob = await canvasToBlob(canvas)
+
+        const imagePromise = blobToImage(blob)
+
+        await vi.waitFor(() => {
+            const img = global.Image.mock.instances[0]
+            if (img && img.onload) {
+                Object.defineProperty(img, 'width', {value: 10})
+                Object.defineProperty(img, 'height', {value: 10})
+                img.onload()
+            }
+        })
+
+        const img = await imagePromise
+
+        expect(global.URL.createObjectURL).toHaveBeenCalledWith(blob)
+        expect(img.width).toBe(10)
+        expect(img.height).toBe(10)
+        expect(global.URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url')
+    })
+
+    test('rejects when image fails to load', async () => {
+        const blob = new Blob(['invalid image data'], {type: 'image/png'})
+
+        const imagePromise = blobToImage(blob)
+
+        await vi.waitFor(() => {
+            const img = global.Image.mock.instances[0]
+            if (img && img.onerror) {
+                img.onerror()
+            }
+        })
+
+        await expect(imagePromise).rejects.toThrow('Failed to load image')
+        expect(global.URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url')
     })
 
 })
