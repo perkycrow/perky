@@ -126,13 +126,80 @@ describe('PerkyExplorerDetails', () => {
     })
 
 
-    test('registerInspector should be a static method', () => {
-        expect(typeof PerkyExplorerDetails.registerInspector).toBe('function')
+    describe('default grid rendering', () => {
+
+        test('displays $name in grid', () => {
+            details.setModule(createMockModule({$name: 'Player'}))
+
+            const content = details.shadowRoot.querySelector('.details-content')
+            expect(content.textContent).toContain('$name')
+            expect(content.textContent).toContain('Player')
+        })
+
+
+        test('displays $category in grid', () => {
+            details.setModule(createMockModule({$category: 'game'}))
+
+            const content = details.shadowRoot.querySelector('.details-content')
+            expect(content.textContent).toContain('$category')
+            expect(content.textContent).toContain('game')
+        })
+
+
+        test('displays $tags when present', () => {
+            details.setModule(createMockModule({$tags: ['enemy', 'boss']}))
+
+            const content = details.shadowRoot.querySelector('.details-content')
+            expect(content.textContent).toContain('$tags')
+            expect(content.textContent).toContain('enemy')
+            expect(content.textContent).toContain('boss')
+        })
+
+
+        test('displays children count', () => {
+            const children = [
+                createMockModule({$id: 'child1'}),
+                createMockModule({$id: 'child2'})
+            ]
+            details.setModule(createMockModule({children}))
+
+            const content = details.shadowRoot.querySelector('.details-content')
+            expect(content.textContent).toContain('children')
+            expect(content.textContent).toContain('2')
+        })
+
     })
 
 
-    test('unregisterInspector should be a static method', () => {
-        expect(typeof PerkyExplorerDetails.unregisterInspector).toBe('function')
+    describe('inspect method rendering', () => {
+
+        test('uses inspect() when module has it', () => {
+            const module = createMockModule({
+                inspect: () => ({health: 100, speed: 5})
+            })
+            details.setModule(module)
+
+            const content = details.shadowRoot.querySelector('.details-content')
+            expect(content.textContent).toContain('health')
+            expect(content.textContent).toContain('100')
+            expect(content.textContent).toContain('speed')
+            expect(content.textContent).toContain('5')
+        })
+
+    })
+
+
+    describe('inspector registration', () => {
+
+        test('registerInspector should be a static method', () => {
+            expect(typeof PerkyExplorerDetails.registerInspector).toBe('function')
+        })
+
+
+        test('unregisterInspector should be a static method', () => {
+            expect(typeof PerkyExplorerDetails.unregisterInspector).toBe('function')
+        })
+
     })
 
 })

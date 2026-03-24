@@ -177,6 +177,77 @@ describe('PerkyExplorerNode', () => {
     })
 
 
+    describe('updateChildren', () => {
+
+        test('adds child nodes for module children', () => {
+            const child1 = createMockModule({$id: 'child1'})
+            const child2 = createMockModule({$id: 'child2'})
+            node.setModule(createMockModule({children: [child1, child2]}))
+
+            node.updateChildren()
+
+            expect(node.childrenEl.children.length).toBe(2)
+        })
+
+
+        test('does not duplicate existing child nodes', () => {
+            const child = createMockModule({$id: 'child'})
+            node.setModule(createMockModule({children: [child]}))
+
+            node.updateChildren()
+            node.updateChildren()
+
+            expect(node.childrenEl.children.length).toBe(1)
+        })
+
+
+        test('removes child nodes when children are removed from module', () => {
+            const child1 = createMockModule({$id: 'child1'})
+            const child2 = createMockModule({$id: 'child2'})
+            const module = createMockModule({children: [child1, child2]})
+            node.setModule(module)
+            node.updateChildren()
+
+            module.children = [child1]
+            node.updateChildren()
+
+            expect(node.childrenEl.children.length).toBe(1)
+        })
+
+    })
+
+
+    describe('renderNodeContent', () => {
+
+        test('creates status element', () => {
+            node.setModule(createMockModule({$status: 'started'}))
+
+            const statusEl = node.contentEl.querySelector('.node-status')
+            expect(statusEl).not.toBeNull()
+            expect(statusEl.classList.contains('started')).toBe(true)
+        })
+
+
+        test('creates id element', () => {
+            node.setModule(createMockModule({$id: 'my-module'}))
+
+            const idEl = node.contentEl.querySelector('.node-id')
+            expect(idEl).not.toBeNull()
+            expect(idEl.textContent).toBe('my-module')
+        })
+
+
+        test('creates category element', () => {
+            node.setModule(createMockModule({$category: 'game'}))
+
+            const categoryEl = node.contentEl.querySelector('.node-category')
+            expect(categoryEl).not.toBeNull()
+            expect(categoryEl.textContent).toBe('game')
+        })
+
+    })
+
+
     describe('setSystemModule', () => {
 
         test('adds system icon when set to true', () => {
