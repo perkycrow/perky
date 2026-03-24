@@ -316,6 +316,8 @@ export default doc('Application', {featured: true}, () => {
                 }
             }
 
+            const app = new Application({$id: 'demo'})
+
             // Bindings are auto-registered when controller is added
             app.registerController('game', GameController)
         })
