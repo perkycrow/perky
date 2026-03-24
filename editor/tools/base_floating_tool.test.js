@@ -58,6 +58,11 @@ describe('BaseFloatingTool', () => {
             expect(BaseFloatingTool.resizable).toBe(true)
         })
 
+
+        test('has static toolIcon', () => {
+            expect(BaseFloatingTool.toolIcon).toBe(ICONS.wrench)
+        })
+
     })
 
 
@@ -130,6 +135,11 @@ describe('BaseFloatingTool', () => {
             expect(() => tool.onClose()).not.toThrow()
         })
 
+
+        test('setupStyles is callable', () => {
+            expect(() => tool.setupStyles()).not.toThrow()
+        })
+
     })
 
 
@@ -145,6 +155,25 @@ describe('BaseFloatingTool', () => {
             const customStyle = '.my-class { display: flex; }'
             const styles = BaseFloatingTool.buildStyles(customStyle)
             expect(styles).toContain(customStyle)
+        })
+
+
+        test('combines multiple custom styles', () => {
+            const style1 = '.a { color: red; }'
+            const style2 = '.b { color: blue; }'
+            const styles = BaseFloatingTool.buildStyles(style1, style2)
+            expect(styles).toContain(style1)
+            expect(styles).toContain(style2)
+        })
+
+    })
+
+
+    describe('buildStyleSheet', () => {
+
+        test('returns a CSSStyleSheet', () => {
+            const styleSheet = BaseFloatingTool.buildStyleSheet('.test { color: red; }')
+            expect(styleSheet).toBeInstanceOf(CSSStyleSheet)
         })
 
     })
