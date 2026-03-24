@@ -245,6 +245,7 @@ export default class HubView extends EditorComponent {
     #animators = {}
     #scenes = {}
     #customAnimators = {}
+    #customScenes = {}
     #textureSystem = null
     #appLayout = null
     #contentEl = null
@@ -343,6 +344,7 @@ export default class HubView extends EditorComponent {
 
     async #render () {
         await this.#loadCustomAnimators()
+        await this.#loadCustomScenes()
         await this.#reconcile()
 
         const section = createElement('div', {class: 'section'})
@@ -371,7 +373,9 @@ export default class HubView extends EditorComponent {
 
         this.#contentEl.innerHTML = ''
 
-        if (Object.keys(this.#scenes).length > 0) {
+        const hasScenes = Object.keys(this.#scenes).length > 0
+            || Object.keys(this.#customScenes).length > 0
+        if (hasScenes) {
             this.#contentEl.appendChild(this.#buildScenesSection())
         }
 
@@ -384,40 +388,66 @@ export default class HubView extends EditorComponent {
         section.appendChild(createElement('h2', {class: 'section-title', text: 'Scenes'}))
 
         const grid = createElement('div', {class: 'animator-grid'})
+        const renderedCustoms = new Set()
 
         for (const name of Object.keys(this.#scenes)) {
-            const card = createElement('div', {class: 'animator-card selectable'})
-            card.dataset.name = name
+            const state = this.#customScenes[name] ? 'modified' : 'game'
+            grid.appendChild(this.#createSceneCard(name, state))
+            if (this.#customScenes[name]) {
+                renderedCustoms.add(name)
+            }
+        }
 
-            const preview = createElement('div', {class: 'card-preview'})
-            preview.appendChild(createElement('div', {class: 'create-icon', text: '\u25A6'}))
-
-            const checkbox = createElement('div', {class: 'card-checkbox'})
-            checkbox.dataset.name = name
-            preview.appendChild(checkbox)
-
-            card.appendChild(preview)
-
-            const info = createElement('div', {class: 'card-info'})
-            info.appendChild(createElement('div', {class: 'card-title', text: name}))
-            info.appendChild(createElement('div', {class: 'card-meta', text: 'Scene'}))
-            card.appendChild(info)
-
-            card.addEventListener('click', () => {
-                if (this.#selectionMode) {
-                    const cardCheckbox = card.querySelector('.card-checkbox')
-                    cardCheckbox.classList.toggle('selected')
-                    this.#toggleItemSelection(name)
-                } else {
-                    window.location.href = `scene.html?id=${encodeURIComponent(name)}`
-                }
-            })
-
-            grid.appendChild(card)
+        for (const name of Object.keys(this.#customScenes)) {
+            if (!renderedCustoms.has(name)) {
+                grid.appendChild(this.#createSceneCard(name, 'custom'))
+            }
         }
 
         section.appendChild(grid)
         return section
+    }
+
+
+    #createSceneCard (name, state = 'game') {
+        const card = createElement('div', {class: 'animator-card selectable'})
+        const isCustom = state === 'custom' || state === 'modified'
+        card.dataset.name = name
+
+        const preview = createElement('div', {class: 'card-preview'})
+        preview.appendChild(createElement('div', {class: 'create-icon', text: '\u25A6'}))
+
+        if (state === 'custom') {
+            preview.appendChild(createElement('div', {class: 'card-badge', text: 'New'}))
+        } else if (state === 'modified') {
+            preview.appendChild(createElement('div', {class: 'card-badge modified', text: 'Modified'}))
+        }
+
+        const checkbox = createElement('div', {class: 'card-checkbox'})
+        checkbox.dataset.name = name
+        preview.appendChild(checkbox)
+
+        card.appendChild(preview)
+
+        const info = createElement('div', {class: 'card-info'})
+        info.appendChild(createElement('div', {class: 'card-title', text: name}))
+        info.appendChild(createElement('div', {class: 'card-meta', text: 'Scene'}))
+        card.appendChild(info)
+
+        card.addEventListener('click', () => {
+            if (this.#selectionMode) {
+                const cardCheckbox = card.querySelector('.card-checkbox')
+                cardCheckbox.classList.toggle('selected')
+                this.#toggleItemSelection(name)
+            } else {
+                const url = isCustom
+                    ? `scene.html?id=${encodeURIComponent(name)}&custom=1`
+                    : `scene.html?id=${encodeURIComponent(name)}`
+                window.location.href = url
+            }
+        })
+
+        return card
     }
 
 
@@ -455,11 +485,40 @@ export default class HubView extends EditorComponent {
     }
 
 
+    async #loadCustomScenes () {
+        const resources = await this.#store.list('scene')
+
+        for (const resource of resources) {
+            if (this.#customScenes[resource.id]) {
+                continue
+            }
+
+            const full = await this.#store.get(resource.id)
+            if (!full) {
+                continue
+            }
+
+            const jsonFile = full.files.find(f => f.name.endsWith('.json'))
+            if (!jsonFile) {
+                continue
+            }
+
+            const configText = await blobToText(jsonFile.blob)
+            this.#customScenes[resource.id] = JSON.parse(configText)
+            this.#customMeta.set(resource.id, {updatedAt: resource.updatedAt || 0})
+        }
+    }
+
+
     async #reconcile () {
         const synced = []
         const conflicts = []
+        const customIds = [
+            ...Object.keys(this.#customAnimators),
+            ...Object.keys(this.#customScenes)
+        ]
 
-        for (const id of Object.keys(this.#customAnimators)) {
+        for (const id of customIds) {
             const state = this.#compareVersions(id)
             if (state === 'synced') {
                 synced.push(id)
@@ -479,21 +538,14 @@ export default class HubView extends EditorComponent {
 
 
     #compareVersions (id) {
-        if (!this.#animators[id]) {
+        if (!this.#animators[id] && !this.#scenes[id]) {
             return 'custom-only'
         }
-        const gameUpdatedAt = this.#manifest?.getAsset?.(id)?.updatedAt || 0
-        const customUpdatedAt = this.#customMeta.get(id)?.updatedAt || 0
-
-        if (gameUpdatedAt >= customUpdatedAt) {
-            return 'synced'
-        }
-
-        const lastSeen = getLastSeenGameUpdate(id)
-        if (lastSeen >= gameUpdatedAt) {
-            return 'modified'
-        }
-        return 'conflict'
+        return compareCustomToGame(
+            this.#manifest?.getAsset?.(id)?.updatedAt || 0,
+            this.#customMeta.get(id)?.updatedAt || 0,
+            id
+        )
     }
 
 
@@ -525,6 +577,7 @@ export default class HubView extends EditorComponent {
     async #deleteCustom (id) {
         await this.#store.delete(id)
         delete this.#customAnimators[id]
+        delete this.#customScenes[id]
         this.#customMeta.delete(id)
         this.#thumbnails.delete(id)
         localStorage.removeItem(`${SEEN_KEY_PREFIX}${id}`)
@@ -914,6 +967,19 @@ async function extractThumbnailFromPerky (files) {
     )
 
     return canvas
+}
+
+
+function compareCustomToGame (gameUpdatedAt, customUpdatedAt, id) {
+    if (gameUpdatedAt >= customUpdatedAt) {
+        return 'synced'
+    }
+
+    const lastSeen = getLastSeenGameUpdate(id)
+    if (lastSeen >= gameUpdatedAt) {
+        return 'modified'
+    }
+    return 'conflict'
 }
 
 
