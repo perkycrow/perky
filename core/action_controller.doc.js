@@ -170,4 +170,69 @@ export default doc('ActionController', () => {
 
     })
 
+
+    section('Bindings', () => {
+
+        text(`
+            Define input bindings with \`static bindings\`. Maps action names to
+            input keys. Used by input systems to automatically connect inputs to actions.
+        `)
+
+        code('Basic bindings', () => {
+            class PlayerController extends ActionController {
+                static bindings = {
+                    jump: 'Space',
+                    shoot: 'KeyX',
+                    move: ['ArrowLeft', 'ArrowRight']
+                }
+
+                jump () {}
+                shoot () {}
+                move () {}
+            }
+        })
+
+        code('Advanced bindings', () => {
+            class PlayerController extends ActionController {
+                static bindings = {
+                    jump: {
+                        keys: ['Space', 'KeyW'],
+                        scoped: true,
+                        eventType: 'pressed'
+                    }
+                }
+            }
+
+            // scoped: true - binding only active when this controller is active
+            // eventType: 'pressed' | 'released' | 'held'
+        })
+
+    })
+
+
+    section('Resources', () => {
+
+        text(`
+            Declare resource dependencies with \`static resources\`. The controller
+            automatically creates getters that look up resources from the engine.
+        `)
+
+        code('Resource access', () => {
+            class PlayerController extends ActionController {
+                static resources = ['textures', 'audio', 'input']
+
+                shoot () {
+                    this.audio.play('shoot.wav')
+                    // this.audio resolves to this.engine.audio
+                }
+            }
+        })
+
+        text(`
+            The \`engine\` property traverses up the host chain to find the root.
+            Resources are resolved lazily from \`this.engine[resourceName]\`.
+        `)
+
+    })
+
 })
