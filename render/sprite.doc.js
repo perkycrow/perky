@@ -6,14 +6,14 @@ export default doc('Sprite', () => {
 
     text(`
         Animated sprite extending [[Object2D@render]].
-        Displays a single frame from a spritesheet and supports frame-based animations.
+        Displays a texture region and supports frame-based animations and visual effects.
         Use with [[CanvasRenderer@render]] or [[WebGLRenderer@render]] for rendering.
     `)
 
 
     section('Creation', () => {
 
-        text('Create sprites with an image and optional frame data.')
+        text('Create sprites with an image, region, or frame data.')
 
         code('Basic sprite', () => {
             const sprite = new Sprite({
@@ -23,8 +23,17 @@ export default doc('Sprite', () => {
             })
         })
 
+        code('With region', () => {
+            // TextureRegion from a spritesheet
+            const sprite = new Sprite({
+                region: textureRegion,
+                x: 100,
+                y: 100
+            })
+        })
+
         code('With frame', () => {
-            // Frame from a spritesheet (includes image reference)
+            // Frame object (converted to TextureRegion internally)
             const frame = {
                 image: spritesheet,
                 frame: {x: 0, y: 0, w: 32, h: 32}
@@ -49,12 +58,21 @@ export default doc('Sprite', () => {
     })
 
 
-    section('Frames', () => {
+    section('Regions and Frames', () => {
 
         text(`
-            A frame defines which part of the image to display.
-            Frame data typically comes from spritesheet tools like TexturePacker.
+            Sprites use [[TextureRegion@render/textures]] internally to define which part
+            of an image to display. You can set this via \`region\`, \`frame\`, or \`image\`.
         `)
+
+        action('region property', () => {
+            const sprite = new Sprite({image: null})
+
+            logger.log('region (no image):', sprite.region)
+
+            sprite.image = new Image()
+            logger.log('region (with image):', sprite.region ? 'TextureRegion' : 'null')
+        })
 
         action('setFrame', () => {
             const sprite = new Sprite({image: null})
@@ -63,15 +81,15 @@ export default doc('Sprite', () => {
             const frame2 = {frame: {x: 32, y: 0, w: 32, h: 32}}
 
             sprite.setFrame(frame1)
-            logger.log('currentFrame:', sprite.currentFrame ? 'set' : 'null')
+            logger.log('region after setFrame:', sprite.region ? 'TextureRegion' : 'null')
 
             sprite.setFrame(frame2)
-            logger.log('after setFrame:', sprite.currentFrame ? 'set' : 'null')
+            logger.log('region updated:', sprite.region ? 'TextureRegion' : 'null')
         })
 
         code('Frame structure', () => {
             // Frame object from Spritesheet.getFrame()
-            // includes image reference for use with setFrame()
+            // converted to TextureRegion internally
             const frame = {
                 image: spritesheet,
                 frame: {x: 64, y: 0, w: 32, h: 48}
@@ -129,10 +147,44 @@ export default doc('Sprite', () => {
     })
 
 
+    section('Effects', () => {
+
+        text(`
+            Sprites can have visual effects applied via the \`effects\` stack.
+            Effects are managed through [[SpriteEffectStack@render/sprite_effects]].
+        `)
+
+        code('Adding effects', () => {
+            const sprite = new Sprite({image: myImage})
+
+            // Access the effect stack (created on first access)
+            sprite.effects.add(new OutlineEffect({color: '#ffffff', width: 2}))
+            sprite.effects.add(new SplatterEffect({intensity: 0.5}))
+        })
+
+        code('Managing effects', () => {
+            const sprite = new Sprite({image: myImage})
+
+            // Check if effect exists
+            sprite.effects.has(OutlineEffect)
+
+            // Get effect instance
+            const outline = sprite.effects.get(OutlineEffect)
+
+            // Remove effect
+            sprite.effects.remove(OutlineEffect)
+
+            // Clear all effects
+            sprite.effects.clear()
+        })
+
+    })
+
+
     section('Sizing', () => {
 
         text(`
-            Sprite size can be set explicitly or derived from the frame.
+            Sprite size can be set explicitly or derived from the region.
             Setting width or height maintains aspect ratio.
         `)
 
