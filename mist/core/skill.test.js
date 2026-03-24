@@ -180,3 +180,71 @@ test('export', () => {
         overload: 1
     })
 })
+
+
+test('remainingCharges', () => {
+    const skill = new Skill({
+        cost: 5,
+        charges: 2,
+        additionalCost: 1
+    })
+
+    expect(skill.remainingCharges).toEqual(4)
+    skill.charge()
+    expect(skill.remainingCharges).toEqual(3)
+})
+
+
+test('progress', () => {
+    const skill = new Skill({
+        cost: 4,
+        charges: 2,
+        overload: 2
+    })
+
+    expect(skill.progress).toEqual(2 / 6)
+    skill.charge()
+    skill.charge()
+    expect(skill.progress).toEqual(4 / 6)
+})
+
+
+test('totalCost', () => {
+    const skill = new Skill({
+        cost: 3,
+        additionalCost: 2
+    })
+
+    expect(skill.totalCost).toEqual(5)
+})
+
+
+test('totalCharges', () => {
+    const skill = new Skill({
+        cost: 3,
+        additionalCost: 2,
+        overload: 1
+    })
+
+    expect(skill.totalCharges).toEqual(6)
+})
+
+
+test('default id derivation', () => {
+    class FireballSkill extends Skill {}
+    const fireball = new FireballSkill()
+    expect(fireball.id).toEqual('fireball')
+
+    class HealSkill extends Skill {}
+    const heal = new HealSkill()
+    expect(heal.id).toEqual('heal')
+
+    class CustomSkill extends Skill {
+        static id = 'customId'
+    }
+    const custom = new CustomSkill()
+    expect(custom.id).toEqual('customId')
+
+    const base = new Skill()
+    expect(base.id).toEqual('Skill')
+})
