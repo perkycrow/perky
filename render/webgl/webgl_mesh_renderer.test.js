@@ -136,7 +136,8 @@ function createMockShaderRegistry () {
             uNormalStrength: 23,
             uLightMatrix: 24,
             uShadowMap: 25,
-            uHasShadowMap: 26
+            uHasShadowMap: 26,
+            uHasVertexColors: 27
         },
         attributes: {
             aPosition: 0,
@@ -603,6 +604,106 @@ describe('flush', () => {
 
         const hasShadowCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 26 && c.args[1] === 0)
         expect(hasShadowCalls.length).toBe(1)
+    })
+
+
+    test('skips invisible objects', () => {
+        const {renderer} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+
+        let drawCount = 0
+        const fakeMesh = {draw () {
+            drawCount++
+        }}
+
+        const visible = new MeshInstance({mesh: fakeMesh, texture: null})
+        visible.updateWorldMatrix()
+        renderer.collect(visible, 1)
+
+        const invisible = new MeshInstance({mesh: fakeMesh, texture: null, visible: false})
+        invisible.updateWorldMatrix()
+        renderer.collect(invisible, 1)
+
+        renderer.flush()
+        expect(drawCount).toBe(1)
+    })
+
+
+    test('skips objects with null mesh', () => {
+        const {renderer} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+
+        let drawCount = 0
+        const fakeMesh = {draw () {
+            drawCount++
+        }}
+
+        const withMesh = new MeshInstance({mesh: fakeMesh, texture: null})
+        withMesh.updateWorldMatrix()
+        renderer.collect(withMesh, 1)
+
+        const noMesh = new MeshInstance({mesh: null, texture: null})
+        noMesh.updateWorldMatrix()
+        renderer.collect(noMesh, 1)
+
+        renderer.flush()
+        expect(drawCount).toBe(1)
+    })
+
+
+    test('applies tint hints', () => {
+        const {renderer, gl} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+
+        const mi = new MeshInstance({mesh: {draw () {}}, texture: null, tint: {r: 0.5, g: 0.3, b: 0.1, a: 0.8}})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1, mi.renderHints)
+
+        gl.calls.length = 0
+        renderer.flush()
+
+        const tintCalls = gl.calls.filter(c => c.fn === 'uniform4f' && c.args[0] === 6)
+        expect(tintCalls.length).toBeGreaterThanOrEqual(2)
+
+        const appliedTint = tintCalls.find(c => c.args[1] === 0.5 && c.args[2] === 0.3 && c.args[3] === 0.1 && c.args[4] === 0.8)
+        expect(appliedTint).toBeDefined()
+
+        const resetTint = tintCalls.find(c => c.args[1] === 0 && c.args[2] === 0 && c.args[3] === 0 && c.args[4] === 0)
+        expect(resetTint).toBeDefined()
+    })
+
+
+    test('sets hasVertexColors uniform based on mesh', () => {
+        const {renderer, gl} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+
+        const meshWithColors = {draw () {}, hasColors: true}
+        const mi = new MeshInstance({mesh: meshWithColors, texture: null})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1)
+
+        gl.calls.length = 0
+        renderer.flush()
+
+        const hasColorsCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 27 && c.args[1] === 1)
+        expect(hasColorsCalls.length).toBe(1)
+    })
+
+
+    test('sets hasVertexColors to 0 when mesh has no colors', () => {
+        const {renderer, gl} = createRenderer()
+        renderer.camera3d = new Camera3D({z: 5})
+
+        const meshNoColors = {draw () {}, hasColors: false}
+        const mi = new MeshInstance({mesh: meshNoColors, texture: null})
+        mi.updateWorldMatrix()
+        renderer.collect(mi, 1)
+
+        gl.calls.length = 0
+        renderer.flush()
+
+        const hasColorsCalls = gl.calls.filter(c => c.fn === 'uniform1f' && c.args[0] === 27 && c.args[1] === 0)
+        expect(hasColorsCalls.length).toBe(1)
     })
 
 })
