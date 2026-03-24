@@ -223,6 +223,7 @@ export default doc('ActionController', () => {
 
                 shoot () {
                     this.audio.play('shoot.wav')
+
                     // this.audio resolves to this.engine.audio
                 }
             }
