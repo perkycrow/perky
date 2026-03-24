@@ -138,6 +138,63 @@ describe('parseTestFile', () => {
     })
 
 
+    test('parses it() as test', () => {
+        const source = `
+            describe('Tests', () => {
+                it('should work', () => {
+                    expect(1).toBe(1)
+                })
+            })
+        `
+
+        const result = parseTestFile(source)
+        const tests = result.describes[0].tests
+
+        expect(tests).toHaveLength(1)
+        expect(tests[0].title).toBe('should work')
+    })
+
+
+    test('captures line numbers on hooks', () => {
+        const source = `describe('Test', () => {
+    beforeEach(() => {})
+    afterEach(() => {})
+    test('case', () => {})
+})`
+
+        const result = parseTestFile(source)
+
+        expect(result.describes[0].beforeEach.line).toBe(2)
+        expect(result.describes[0].afterEach.line).toBe(3)
+    })
+
+
+    test('handles complex expression as title', () => {
+        const source = `
+            describe(\`Template\`, () => {
+                test('test', () => {})
+            })
+        `
+
+        const result = parseTestFile(source)
+
+        expect(result.describes[0].title).toBe('`Template`')
+    })
+
+
+    test('defaults filePath to null', () => {
+        const source = `
+            describe('Test', () => {
+                test('case', () => {})
+            })
+        `
+
+        const result = parseTestFile(source)
+
+        expect(result.file).toBeNull()
+    })
+
+
     test('returns empty describes for non-test file', () => {
         const source = `
             const x = 1
