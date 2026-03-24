@@ -29,12 +29,16 @@ export default doc('ShadowMap', {advanced: true}, () => {
     section('Properties', () => {
 
         text(`
-            - \`texture\` — the depth texture for sampling in the main shader
-            - \`resolution\` — shadow map size in pixels
-            - \`lightMatrix\` — combined projection * view matrix from light
-            - \`lightProjection\` — orthographic projection matrix
-            - \`lightView\` — look-at matrix from light position
+            Access shadow map state and matrices for shader uniforms.
         `)
+
+        code('Available properties', () => {
+            shadowMap.texture
+            shadowMap.resolution
+            shadowMap.lightMatrix
+            shadowMap.lightProjection
+            shadowMap.lightView
+        })
 
     })
 
@@ -44,7 +48,7 @@ export default doc('ShadowMap', {advanced: true}, () => {
         text(`
             Recalculates the light matrices based on a directional light and
             camera position. The light looks at the camera from a distance
-            determined by \`sceneRadius\`.
+            determined by sceneRadius (defaults to 20).
         `)
 
         code('Update light matrices', () => {
@@ -55,17 +59,32 @@ export default doc('ShadowMap', {advanced: true}, () => {
             )
         })
 
+        code('Parameters', () => {
+            // shadowMap.update(lightDirection, camera3d, sceneRadius)
+            // lightDirection: [x, y, z] normalized direction vector
+            // camera3d: camera with .position property
+            // sceneRadius: distance from camera (default 20)
+        })
+
     })
 
 
     section('Render Pass', () => {
 
         text(`
-            Wrap your depth-only render calls between \`begin()\` and \`end()\`.
-            This binds the shadow framebuffer and sets the viewport.
+            Wrap your depth-only render calls between begin() and end().
+            This binds the shadow framebuffer, sets the viewport, and clears
+            the depth buffer.
         `)
 
         code('Shadow pass', () => {
+            shadowMap.begin()
+            shadowMap.end()
+        })
+
+        code('Typical usage', () => {
+            shadowMap.update([0, -1, 0], camera3d, 50)
+
             shadowMap.begin()
             shadowMap.end()
         })
