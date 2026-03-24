@@ -1,4 +1,4 @@
-import {describe, test, expect, vi, beforeEach} from 'vitest'
+import {describe, test, expect, vi, beforeEach, afterEach} from 'vitest'
 import './dropdown_menu.js'
 
 
@@ -9,6 +9,11 @@ describe('DropdownMenu', () => {
     beforeEach(() => {
         menu = document.createElement('dropdown-menu')
         document.body.appendChild(menu)
+    })
+
+
+    afterEach(() => {
+        menu.remove()
     })
 
 
@@ -56,6 +61,15 @@ describe('DropdownMenu', () => {
             menu.setItems([{label: 'Test Item', value: 'test'}])
             const item = menu.shadowRoot.querySelector('.menu-item')
             expect(item.textContent).toBe('Test Item')
+        })
+
+
+        test('clears previous items when called again', () => {
+            menu.setItems([{label: 'Item 1'}, {label: 'Item 2'}])
+            menu.setItems([{label: 'New Item'}])
+            const items = menu.shadowRoot.querySelectorAll('.menu-item')
+            expect(items.length).toBe(1)
+            expect(items[0].textContent).toBe('New Item')
         })
 
     })
@@ -163,16 +177,25 @@ describe('DropdownMenu', () => {
         })
 
 
-        test('does not close on click inside menu', () => {
+        test('does not close on click inside component', () => {
             menu.setItems([{label: 'Test', value: 'test'}])
             menu.open()
 
-            const trigger = menu.shadowRoot.querySelector('.trigger')
-            trigger.click()
+            menu.click()
 
-            expect(menu.hasAttribute('open')).toBe(false)
+            expect(menu.hasAttribute('open')).toBe(true)
         })
 
+    })
+
+
+    test('adds outside click listener on connect', () => {
+        const spy = vi.spyOn(document, 'addEventListener')
+        const newMenu = document.createElement('dropdown-menu')
+        document.body.appendChild(newMenu)
+        expect(spy).toHaveBeenCalledWith('click', expect.any(Function))
+        spy.mockRestore()
+        newMenu.remove()
     })
 
 
