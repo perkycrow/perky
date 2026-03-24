@@ -1,5 +1,4 @@
 import {doc, section, text, code} from '../../doc/runtime.js'
-import WebGLSpriteBatch from './webgl_sprite_batch.js'
 
 
 export default doc('WebGLSpriteBatch', {advanced: true}, () => {

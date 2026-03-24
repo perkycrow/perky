@@ -1,5 +1,4 @@
 import {doc, section, text, code} from '../../doc/runtime.js'
-import WebGLPrimitiveRenderer from './webgl_primitive_renderer.js'
 
 
 export default doc('WebGLPrimitiveRenderer', {advanced: true}, () => {

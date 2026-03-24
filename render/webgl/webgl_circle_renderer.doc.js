@@ -1,5 +1,4 @@
 import {doc, section, text, code} from '../../doc/runtime.js'
-import WebGLCircleRenderer from './webgl_circle_renderer.js'
 
 
 export default doc('WebGLCircleRenderer', {advanced: true}, () => {
