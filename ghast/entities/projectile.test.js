@@ -44,6 +44,37 @@ describe('Projectile', () => {
     })
 
 
+    test('has damage with default of 1', () => {
+        const p = new Projectile()
+
+        expect(p.damage).toBe(1)
+    })
+
+
+    test('accepts custom damage', () => {
+        const p = new Projectile({damage: 5})
+
+        expect(p.damage).toBe(5)
+    })
+
+
+    test('starts with time at 0', () => {
+        const p = new Projectile()
+
+        expect(p.time).toBe(0)
+    })
+
+
+    test('accumulates time on update', () => {
+        const p = new Projectile()
+
+        p.update(0.1)
+        p.update(0.2)
+
+        expect(p.time).toBeCloseTo(0.3)
+    })
+
+
     test('starts alive', () => {
         const p = new Projectile()
 
