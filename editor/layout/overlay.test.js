@@ -134,4 +134,31 @@ describe('Overlay', () => {
         expect(overlay.isOpen).toBe(true)
     })
 
+
+    test('closes on Escape key by default', () => {
+        overlay.open()
+
+        const event = new KeyboardEvent('keydown', {key: 'Escape'})
+        overlay.dispatchEvent(event)
+
+        expect(overlay.isOpen).toBe(false)
+    })
+
+
+    test('does not close on Escape key with no-close-on-escape', () => {
+        overlay.setAttribute('no-close-on-escape', '')
+        overlay.open()
+
+        const event = new KeyboardEvent('keydown', {key: 'Escape'})
+        overlay.dispatchEvent(event)
+
+        expect(overlay.isOpen).toBe(true)
+    })
+
+
+    test('observedAttributes includes open', () => {
+        const Overlay = customElements.get('editor-overlay')
+        expect(Overlay.observedAttributes).toContain('open')
+    })
+
 })

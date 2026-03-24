@@ -62,4 +62,10 @@ describe('Toolbar', () => {
         expect(toolbar.hasAttribute('no-border')).toBe(true)
     })
 
+
+    test('observedAttributes includes variant', () => {
+        const Toolbar = customElements.get('editor-toolbar')
+        expect(Toolbar.observedAttributes).toContain('variant')
+    })
+
 })
