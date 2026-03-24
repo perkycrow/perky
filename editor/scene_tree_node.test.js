@@ -202,6 +202,50 @@ describe('SceneTreeNode', () => {
         }
     })
 
+
+    describe('renderNodeContent', () => {
+
+        test('shows $rendererName as label when available', () => {
+            node.setObject(createMockObject({$rendererName: 'PlayerSprite'}))
+            const labelEl = node.shadowRoot.querySelector('.node-label')
+            expect(labelEl.textContent).toBe('PlayerSprite')
+        })
+
+
+        test('shows constructor name as label when no $rendererName', () => {
+            node.setObject(createMockObject({$rendererName: null}))
+            const labelEl = node.shadowRoot.querySelector('.node-label')
+            expect(labelEl.textContent).toBe('Object2D')
+        })
+
+
+        test('shows coordinates in props for non-entity objects', () => {
+            node.setObject(createMockObject({x: 10, y: 20}))
+            const propsEl = node.shadowRoot.querySelector('.node-props')
+            expect(propsEl.textContent).toBe('(10, 20)')
+        })
+
+
+        test('shows entity reference in props for entity objects', () => {
+            const entity = {$id: 'hero', constructor: {name: 'Player'}}
+            node.setObject(createMockObject({$entity: entity}))
+            const propsEl = node.shadowRoot.querySelector('.node-props')
+            expect(propsEl.textContent).toBe('→ hero')
+            expect(propsEl.classList.contains('has-entity')).toBe(true)
+        })
+
+
+        test('removes has-entity class for non-entity objects', () => {
+            const entity = {$id: 'hero', constructor: {name: 'Player'}}
+            node.setObject(createMockObject({$entity: entity}))
+            node.setObject(createMockObject({$entity: null}))
+
+            const propsEl = node.shadowRoot.querySelector('.node-props')
+            expect(propsEl.classList.contains('has-entity')).toBe(false)
+        })
+
+    })
+
 })
 
 

@@ -80,6 +80,30 @@ describe('ToggleInput', () => {
     })
 
 
+    describe('attribute handling', () => {
+
+        test('setAttribute checked sets checked state', () => {
+            toggle.setAttribute('checked', '')
+            expect(toggle.checked).toBe(true)
+        })
+
+
+        test('removeAttribute checked unsets checked state', () => {
+            toggle.setAttribute('checked', '')
+            toggle.removeAttribute('checked')
+            expect(toggle.checked).toBe(false)
+        })
+
+
+        test('setAttribute label sets label text', () => {
+            toggle.setAttribute('label', 'My Label')
+            const label = toggle.shadowRoot.querySelector('.toggle-input-label')
+            expect(label.textContent).toBe('My Label')
+        })
+
+    })
+
+
     describe('visual state', () => {
 
         test('adds checked class when checked', () => {

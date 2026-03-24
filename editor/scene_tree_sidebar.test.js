@@ -161,6 +161,48 @@ describe('SceneTreeSidebar', () => {
             expect(handler).toHaveBeenCalled()
         })
 
+
+        test('refresh button calls refresh', () => {
+            const content = createMockContainer()
+            sidebar.setContent(content)
+
+            const buttons = sidebar.shadowRoot.querySelectorAll('.panel-btn')
+            const refreshBtn = Array.from(buttons).find(b => b.textContent === '↻')
+
+            expect(() => refreshBtn.click()).not.toThrow()
+        })
+
+    })
+
+
+    describe('details panel', () => {
+
+        test('shows empty state when no object selected', () => {
+            sidebar.setContent(createMockContainer())
+            const details = sidebar.shadowRoot.querySelector('.panel-details')
+            const emptyState = details.querySelector('.panel-empty')
+            expect(emptyState).not.toBeNull()
+            expect(emptyState.textContent).toBe('Select an object to inspect')
+        })
+
+    })
+
+
+    describe('node selection', () => {
+
+        test('handles node:select event from tree', () => {
+            const content = createMockContainer()
+            sidebar.setContent(content)
+
+            const rootNode = sidebar.shadowRoot.querySelector('scene-tree-node')
+            rootNode.dispatchEvent(new CustomEvent('node:select', {
+                bubbles: true,
+                detail: {object: content}
+            }))
+
+            expect(() => sidebar.refresh()).not.toThrow()
+        })
+
     })
 
 
