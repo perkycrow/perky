@@ -171,7 +171,7 @@ export default class TabBar extends EditorComponent {
         const slottedButtons = slot.assignedElements()
 
         for (const btn of slottedButtons) {
-            btn.setAttributes({
+            setAttributes(btn, {
                 'aria-selected': btn.dataset.value === this.#value ? 'true' : 'false'
             })
 

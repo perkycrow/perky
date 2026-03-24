@@ -110,4 +110,79 @@ describe('TabBar', () => {
         expect(slot).toBeTruthy()
     })
 
+
+    test('observedAttributes includes value', () => {
+        expect(tabBar.constructor.observedAttributes).toContain('value')
+    })
+
+
+    test('slotted buttons get aria-selected attribute', async () => {
+        const btn1 = document.createElement('button')
+        btn1.slot = 'tab'
+        btn1.dataset.value = 'x'
+        btn1.textContent = 'Tab X'
+
+        const btn2 = document.createElement('button')
+        btn2.slot = 'tab'
+        btn2.dataset.value = 'y'
+        btn2.textContent = 'Tab Y'
+
+        tabBar.value = 'x'
+        tabBar.appendChild(btn1)
+        tabBar.appendChild(btn2)
+
+        await new Promise(resolve => setTimeout(resolve, 0))
+
+        expect(btn1.getAttribute('aria-selected')).toBe('true')
+        expect(btn2.getAttribute('aria-selected')).toBe('false')
+    })
+
+
+    test('clicking slotted button changes value', async () => {
+        const btn1 = document.createElement('button')
+        btn1.slot = 'tab'
+        btn1.dataset.value = 'x'
+
+        const btn2 = document.createElement('button')
+        btn2.slot = 'tab'
+        btn2.dataset.value = 'y'
+
+        tabBar.value = 'x'
+        tabBar.appendChild(btn1)
+        tabBar.appendChild(btn2)
+
+        await new Promise(resolve => setTimeout(resolve, 0))
+
+        let eventValue = null
+        tabBar.addEventListener('change', (e) => {
+            eventValue = e.detail.value
+        })
+
+        btn2.click()
+
+        expect(eventValue).toBe('y')
+        expect(tabBar.value).toBe('y')
+    })
+
+
+    test('slotted buttons update aria-selected when value changes', async () => {
+        const btn1 = document.createElement('button')
+        btn1.slot = 'tab'
+        btn1.dataset.value = 'x'
+
+        const btn2 = document.createElement('button')
+        btn2.slot = 'tab'
+        btn2.dataset.value = 'y'
+
+        tabBar.appendChild(btn1)
+        tabBar.appendChild(btn2)
+
+        await new Promise(resolve => setTimeout(resolve, 0))
+
+        tabBar.value = 'y'
+
+        expect(btn1.getAttribute('aria-selected')).toBe('false')
+        expect(btn2.getAttribute('aria-selected')).toBe('true')
+    })
+
 })

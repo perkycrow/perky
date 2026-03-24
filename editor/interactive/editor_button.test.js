@@ -225,4 +225,24 @@ describe('EditorButton', () => {
         expect(btn.className).toBe(initialClass)
     })
 
+
+    test('observedAttributes contains all watched attributes', () => {
+        expect(button.constructor.observedAttributes).toContain('variant')
+        expect(button.constructor.observedAttributes).toContain('icon')
+        expect(button.constructor.observedAttributes).toContain('disabled')
+        expect(button.constructor.observedAttributes).toContain('active')
+    })
+
+
+    test('multiple classes applied together', () => {
+        button.variant = 'primary'
+        button.active = true
+        button.setAttribute('icon', '')
+
+        const btn = button.shadowRoot.querySelector('button')
+        expect(btn.classList.contains('primary')).toBe(true)
+        expect(btn.classList.contains('active')).toBe(true)
+        expect(btn.classList.contains('icon-only')).toBe(true)
+    })
+
 })
