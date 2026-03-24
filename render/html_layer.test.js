@@ -343,6 +343,18 @@ describe(HTMLLayer, () => {
     })
 
 
+    test('cssToWorldUnits returns 0 without camera', () => {
+        layer.camera = null
+        expect(layer.cssToWorldUnits(100)).toBe(0)
+    })
+
+
+    test('worldUnitsToCss returns 0 without camera', () => {
+        layer.camera = null
+        expect(layer.worldUnitsToCss(5)).toBe(0)
+    })
+
+
     test('resize updates viewport', () => {
         layer.viewport = {x: 0, y: 0, width: '50%', height: '50%', anchor: 'top-left'}
 

@@ -48,6 +48,24 @@ describe('SpriteAnimation', () => {
         expect(animation.playing).toBe(false)
     })
 
+
+    test('progress returns current frame progress', () => {
+        expect(animation.progress).toBe(0)
+
+        animation.setFrame(1)
+        expect(animation.progress).toBeCloseTo(1 / 3)
+
+        animation.setFrame(2)
+        expect(animation.progress).toBeCloseTo(2 / 3)
+    })
+
+
+    test('progress returns 0 with no frames', () => {
+        const emptyAnimation = new SpriteAnimation({sprite, frames: [], fps: 10})
+        expect(emptyAnimation.progress).toBe(0)
+        emptyAnimation.dispose()
+    })
+
     test('play starts animation', () => {
         const playSpy = vi.fn()
         animation.on('play', playSpy)
@@ -60,6 +78,30 @@ describe('SpriteAnimation', () => {
         expect(playSpy).toHaveBeenCalled()
 
         vi.unstubAllGlobals()
+    })
+
+
+    test('play does nothing if already playing', () => {
+        const playSpy = vi.fn()
+        animation.on('play', playSpy)
+
+        animation.play()
+        animation.play()
+
+        expect(playSpy).toHaveBeenCalledTimes(1)
+    })
+
+
+    test('play does nothing with no frames', () => {
+        const emptyAnimation = new SpriteAnimation({sprite, frames: [], fps: 10})
+        const playSpy = vi.fn()
+        emptyAnimation.on('play', playSpy)
+
+        emptyAnimation.play()
+
+        expect(emptyAnimation.playing).toBe(false)
+        expect(playSpy).not.toHaveBeenCalled()
+        emptyAnimation.dispose()
     })
 
     test('update advances frames', () => {
@@ -155,6 +197,16 @@ describe('SpriteAnimation', () => {
         expect(pauseSpy).toHaveBeenCalled()
 
         vi.unstubAllGlobals()
+    })
+
+
+    test('pause does nothing if not playing', () => {
+        const pauseSpy = vi.fn()
+        animation.on('pause', pauseSpy)
+
+        animation.pause()
+
+        expect(pauseSpy).not.toHaveBeenCalled()
     })
 
 
@@ -290,6 +342,86 @@ describe('SpriteAnimation', () => {
     })
 
 
+    test('reverse mode plays frames backwards', () => {
+        animation.setPlaybackMode('reverse')
+        animation.setFrame(2)
+        animation.play()
+
+        animation.update(0.1)
+        expect(animation.currentIndex).toBe(1)
+
+        animation.update(0.1)
+        expect(animation.currentIndex).toBe(0)
+    })
+
+
+    test('reverse mode loops to last frame', () => {
+        animation.setPlaybackMode('reverse')
+        animation.setFrame(0)
+        animation.play()
+
+        const loopSpy = vi.fn()
+        animation.on('loop', loopSpy)
+
+        animation.update(0.1)
+
+        expect(animation.currentIndex).toBe(2)
+        expect(loopSpy).toHaveBeenCalled()
+    })
+
+
+    test('reverse mode completes when loop disabled', () => {
+        animation.setPlaybackMode('reverse')
+        animation.setLoop(false)
+        animation.setFrame(0)
+        animation.play()
+
+        const completeSpy = vi.fn()
+        animation.on('complete', completeSpy)
+
+        animation.update(0.1)
+
+        expect(animation.completed).toBe(true)
+        expect(completeSpy).toHaveBeenCalled()
+    })
+
+
+    test('pingpong mode bounces at boundaries', () => {
+        animation.setPlaybackMode('pingpong')
+        animation.play()
+
+        const bounceSpy = vi.fn()
+        animation.on('bounce', bounceSpy)
+
+        animation.update(0.1)
+        animation.update(0.1)
+        expect(animation.currentIndex).toBe(2)
+
+        animation.update(0.1)
+        expect(animation.currentIndex).toBe(1)
+        expect(bounceSpy).toHaveBeenCalledWith(-1)
+    })
+
+
+    test('pingpong mode completes at start when loop disabled', () => {
+        animation.setPlaybackMode('pingpong')
+        animation.setLoop(false)
+        animation.play()
+
+        const completeSpy = vi.fn()
+        animation.on('complete', completeSpy)
+
+        animation.update(0.1)
+        animation.update(0.1)
+        animation.update(0.1)
+        animation.update(0.1)
+        animation.update(0.1)
+
+        expect(animation.completed).toBe(true)
+        expect(completeSpy).toHaveBeenCalled()
+    })
+
+
     describe('events', () => {
 
         test('addEvent adds event to frame', () => {
@@ -375,6 +507,21 @@ describe('SpriteAnimation', () => {
             animation.clearEvents()
 
             expect(animation.getFramesByEvent('hop')).toEqual([])
+        })
+
+
+        test('frame events emit during playback', () => {
+            animation.addEvent(1, 'footstep')
+            const eventSpy = vi.fn()
+            const namedEventSpy = vi.fn()
+            animation.on('event', eventSpy)
+            animation.on('event:footstep', namedEventSpy)
+
+            animation.play()
+            animation.update(0.1)
+
+            expect(eventSpy).toHaveBeenCalledWith('footstep', 1)
+            expect(namedEventSpy).toHaveBeenCalledWith(1)
         })
 
     })
