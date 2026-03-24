@@ -75,14 +75,17 @@ export default doc('World', () => {
             const world = app.create(World)
 
             class MovingEntity extends Entity {
+                constructor (options = {}) {
+                    super(options)
+                    this.speed = options.speed ?? 0
+                }
+
                 update (deltaTime) {
-                    this.x += this.velocity.x * deltaTime
-                    this.y += this.velocity.y * deltaTime
+                    this.x += this.speed * deltaTime
                 }
             }
 
-            const entity = world.create(MovingEntity, {x: 0, y: 0})
-            entity.velocity.x = 10
+            const entity = world.create(MovingEntity, {x: 0, y: 0, speed: 10})
 
             app.start()
 

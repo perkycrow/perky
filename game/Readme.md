@@ -117,6 +117,23 @@ class MyWorld extends World {
 
 ---
 
+### [scene_config.js](scene_config.js)
+
+Utilities for loading and saving scene layouts. A scene config is a JSON object with an `entities` array.
+
+```js
+import {loadScene, serializeScene} from './scene_config.js'
+
+const config = {entities: [{type: 'Player', x: 3, y: 5}]}
+const entities = loadScene(config, world, wiring)
+
+const saved = serializeScene(world, wiring)
+```
+
+Uses a Wiring registry to resolve type names to classes.
+
+---
+
 ### [entity.js](entity.js)
 
 Base class for game objects. Has a position and an `update()` hook. Use components for additional capabilities.
