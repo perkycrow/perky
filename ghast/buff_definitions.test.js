@@ -25,18 +25,27 @@ describe('BuffDefinitions', () => {
         const expected = [
             'rage', 'grief', 'panic', 'shock', 'terror', 'lastBreath',
             'indignation', 'triumph', 'excitement', 'trophy', 'party',
-            'startle', 'disarray', 'promotion'
+            'startle', 'disarray', 'promotion', 'rout', 'exaltation',
+            'cornered', 'vendetta', 'duelFury', 'berserk', 'detonation',
+            'possessive', 'cowardTyrant', 'megalomania', 'nobleMelancholy',
+            'snobShock', 'seduction', 'obsession', 'unstable', 'despair',
+            'terrorFreeze', 'groupie', 'dependence', 'loveStrike', 'bipolar',
+            'wonder', 'apathy'
         ]
 
         for (const key of expected) {
             expect(BUFF_DEFINITIONS[key]).toBeDefined()
         }
+
+        expect(Object.keys(BUFF_DEFINITIONS).length).toBe(expected.length)
     })
 
 
     test('permanent buffs have duration -1', () => {
         expect(BUFF_DEFINITIONS.terror.duration).toBe(-1)
         expect(BUFF_DEFINITIONS.lastBreath.duration).toBe(-1)
+        expect(BUFF_DEFINITIONS.rout.duration).toBe(-1)
+        expect(BUFF_DEFINITIONS.exaltation.duration).toBe(-1)
     })
 
 
