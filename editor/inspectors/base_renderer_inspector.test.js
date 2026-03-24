@@ -1,25 +1,12 @@
 import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import BaseRendererInspector from './base_renderer_inspector.js'
+import BaseRenderer from '../../render/base_renderer.js'
 
 
-class MockRenderer {
+class MockRenderer extends BaseRenderer {
 
     constructor (options = {}) {
-        this.canvas = {
-            width: options.canvasWidth ?? 800,
-            height: options.canvasHeight ?? 600
-        }
-        this.displayWidth = options.displayWidth ?? 800
-        this.displayHeight = options.displayHeight ?? 600
-        this.pixelRatio = options.pixelRatio ?? 1
-    }
-
-
-    setPixelRatio (ratio) {
-        this.pixelRatio = ratio
-        this.canvas.width = this.displayWidth * ratio
-        this.canvas.height = this.displayHeight * ratio
-        return this
+        super(options)
     }
 
 }
@@ -64,8 +51,20 @@ describe('BaseRendererInspector', () => {
     })
 
 
-    test('static matches method exists', () => {
-        expect(typeof BaseRendererInspector.matches).toBe('function')
+    describe('static matches', () => {
+
+        test('matches BaseRenderer instance', () => {
+            const renderer = new MockRenderer()
+            expect(BaseRendererInspector.matches(renderer)).toBe(true)
+        })
+
+
+        test('does not match non-BaseRenderer', () => {
+            expect(BaseRendererInspector.matches({})).toBe(false)
+            expect(BaseRendererInspector.matches(null)).toBe(false)
+            expect(BaseRendererInspector.matches('string')).toBe(false)
+        })
+
     })
 
 
@@ -79,7 +78,8 @@ describe('BaseRendererInspector', () => {
 
 
         test('displays canvas dimensions', () => {
-            const module = new MockRenderer({canvasWidth: 1600, canvasHeight: 1200})
+            const module = new MockRenderer({width: 800, height: 600, pixelRatio: 2})
+            module.applyPixelRatio()
             inspector.setModule(module)
 
             const values = inspector.gridEl.querySelectorAll('.inspector-value')
@@ -89,7 +89,7 @@ describe('BaseRendererInspector', () => {
 
 
         test('displays display dimensions', () => {
-            const module = new MockRenderer({displayWidth: 800, displayHeight: 600})
+            const module = new MockRenderer({width: 800, height: 600})
             inspector.setModule(module)
 
             const values = inspector.gridEl.querySelectorAll('.inspector-value')
@@ -103,7 +103,7 @@ describe('BaseRendererInspector', () => {
     describe('pixelRatio slider', () => {
 
         test('creates slider for pixelRatio', () => {
-            const module = new MockRenderer({pixelRatio: 1})
+            const module = new MockRenderer()
             inspector.setModule(module)
 
             const slider = inspector.gridEl.querySelector('slider-input')
@@ -121,14 +121,14 @@ describe('BaseRendererInspector', () => {
 
 
         test('slider calls setPixelRatio on change', () => {
-            const module = new MockRenderer({pixelRatio: 1})
-            module.setPixelRatio = vi.fn()
+            const module = new MockRenderer()
+            const setPixelRatioSpy = vi.spyOn(module, 'setPixelRatio')
             inspector.setModule(module)
 
             const slider = inspector.gridEl.querySelector('slider-input')
             slider.dispatchEvent(new CustomEvent('change', {detail: {value: 0.5}}))
 
-            expect(module.setPixelRatio).toHaveBeenCalledWith(0.5)
+            expect(setPixelRatioSpy).toHaveBeenCalledWith(0.5)
         })
 
     })
