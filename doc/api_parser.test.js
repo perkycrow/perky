@@ -102,6 +102,35 @@ describe('api_parser', () => {
         })
 
 
+        test('default export function', () => {
+            const source = `
+                export default function main () {
+                    return 42
+                }
+            `
+
+            const result = parseSourceFile(source)
+
+            expect(result.functions).toHaveLength(1)
+            expect(result.functions[0].name).toBe('main')
+            expect(result.functions[0].isDefault).toBe(true)
+        })
+
+
+        test('destructuring params', () => {
+            const source = `
+                function foo ({a, b}, [x, y]) {
+                    return a + x
+                }
+            `
+
+            const result = parseSourceFile(source)
+
+            expect(result.functions).toHaveLength(1)
+            expect(result.functions[0].params).toEqual(['{...}', '[...]'])
+        })
+
+
         test('named exports', () => {
             const source = `
                 export const FOO = 'bar'

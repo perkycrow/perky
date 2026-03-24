@@ -144,3 +144,32 @@ test('parseDocFile filters out ctx.setApp lines', () => {
     expect(blocks[0].source).not.toContain('ctx.setApp')
     expect(blocks[0].source).toContain('const x = 1')
 })
+
+
+test('parseDocFile parses setup blocks', () => {
+    const source = `
+        import {doc, setup, code} from './runtime.js'
+
+        export default doc('Test', () => {
+            setup(() => {
+                const context = {}
+            })
+            code('Example', () => {
+                return 1
+            })
+        })
+    `
+
+    fs.readFileSync.mockReturnValue(source)
+
+    const blocks = parseDocFile('test.doc.js')
+
+    expect(blocks).toHaveLength(2)
+    const setupBlock = blocks.find(b => b.type === 'setup')
+    const codeBlock = blocks.find(b => b.type === 'code')
+    expect(setupBlock).toBeDefined()
+    expect(setupBlock.index).toBe(0)
+    expect(setupBlock.source).toContain('const context = {}')
+    expect(codeBlock).toBeDefined()
+    expect(codeBlock.title).toBe('Example')
+})
