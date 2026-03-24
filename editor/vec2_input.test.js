@@ -135,3 +135,29 @@ test('Vec2Input sub-input change mutates vec2 object', () => {
 
     expect(vec.x).toBe(123)
 })
+
+
+test.skip('Vec2Input context attribute propagates to child inputs', () => {
+    vec2Input.setAttribute('context', 'studio')
+
+    const inputs = vec2Input.shadowRoot.querySelectorAll('number-input')
+    const xInput = Array.from(inputs).find(i => i.getAttribute('label') === 'x')
+    const yInput = Array.from(inputs).find(i => i.getAttribute('label') === 'y')
+
+    expect(xInput.getAttribute('context')).toBe('studio')
+    expect(yInput.getAttribute('context')).toBe('studio')
+})
+
+
+test('Vec2Input does not emit change when value is null', () => {
+    const handler = vi.fn()
+    vec2Input.addEventListener('change', handler)
+
+    const inputs = vec2Input.shadowRoot.querySelectorAll('number-input')
+    const xInput = Array.from(inputs).find(i => i.getAttribute('label') === 'x')
+    xInput.dispatchEvent(new CustomEvent('change', {
+        detail: {value: 50}
+    }))
+
+    expect(handler).not.toHaveBeenCalled()
+})

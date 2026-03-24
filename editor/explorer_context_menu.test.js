@@ -104,6 +104,19 @@ describe('ExplorerContextMenu', () => {
             expect(item.classList.contains('danger')).toBe(true)
         })
 
+
+        test('renders iconSvg when provided', () => {
+            const svgContent = '<svg><circle cx="5" cy="5" r="5"></circle></svg>'
+            const actions = [
+                {label: 'With SVG', iconSvg: svgContent, action: vi.fn()}
+            ]
+
+            menu.show(actions, {}, {x: 100, y: 100})
+
+            const icon = menu.shadowRoot.querySelector('.context-menu-icon')
+            expect(icon.innerHTML).toBe(svgContent)
+        })
+
     })
 
 
@@ -166,6 +179,29 @@ describe('ExplorerContextMenu', () => {
         menu.show(actions, {}, {x: 100, y: 100})
 
         const event = new KeyboardEvent('keydown', {key: 'Escape'})
+        document.dispatchEvent(event)
+
+        expect(menu.style.display).toBe('none')
+    })
+
+
+    test('outside click hides the menu', () => {
+        const actions = [{label: 'Test', icon: '🔍', action: vi.fn()}]
+
+        menu.show(actions, {}, {x: 100, y: 100})
+
+        document.dispatchEvent(new MouseEvent('click'))
+
+        expect(menu.style.display).toBe('none')
+    })
+
+
+    test('outside contextmenu hides the menu', () => {
+        const actions = [{label: 'Test', icon: '🔍', action: vi.fn()}]
+
+        menu.show(actions, {}, {x: 100, y: 100})
+
+        const event = new MouseEvent('contextmenu', {cancelable: true})
         document.dispatchEvent(event)
 
         expect(menu.style.display).toBe('none')
