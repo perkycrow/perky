@@ -146,4 +146,108 @@ describe('NumberInput', () => {
 
     })
 
+
+    describe('keyboard interaction', () => {
+
+        test('ArrowUp increases value by step', () => {
+            input.setStep(1)
+            input.setValue(5)
+
+            const handler = vi.fn()
+            input.addEventListener('change', handler)
+
+            const field = input.shadowRoot.querySelector('.number-input-field')
+            field.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowUp'}))
+
+            expect(input.value).toBe(6)
+            expect(handler).toHaveBeenCalled()
+        })
+
+
+        test('ArrowDown decreases value by step', () => {
+            input.setStep(1)
+            input.setValue(5)
+
+            const handler = vi.fn()
+            input.addEventListener('change', handler)
+
+            const field = input.shadowRoot.querySelector('.number-input-field')
+            field.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowDown'}))
+
+            expect(input.value).toBe(4)
+            expect(handler).toHaveBeenCalled()
+        })
+
+
+        test('Shift multiplies step by 10', () => {
+            input.setStep(1)
+            input.setValue(5)
+
+            const field = input.shadowRoot.querySelector('.number-input-field')
+            field.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowUp', shiftKey: true}))
+
+            expect(input.value).toBe(15)
+        })
+
+
+        test('Ctrl multiplies step by 0.1', () => {
+            input.setStep(1)
+            input.setValue(5)
+
+            const field = input.shadowRoot.querySelector('.number-input-field')
+            field.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowUp', ctrlKey: true}))
+
+            expect(input.value).toBeCloseTo(5.1, 5)
+        })
+
+    })
+
+
+    describe('stepper buttons', () => {
+
+        test('decrement button decreases value', () => {
+            input.setStep(1)
+            input.setValue(10)
+
+            const decrementBtn = input.shadowRoot.querySelectorAll('.number-input-stepper')[0]
+            decrementBtn.click()
+
+            expect(input.value).toBe(9)
+        })
+
+
+        test('increment button increases value', () => {
+            input.setStep(1)
+            input.setValue(10)
+
+            const incrementBtn = input.shadowRoot.querySelectorAll('.number-input-stepper')[1]
+            incrementBtn.click()
+
+            expect(input.value).toBe(11)
+        })
+
+    })
+
+
+    describe('display formatting', () => {
+
+        test('displays value with configured precision', () => {
+            input.setPrecision(3)
+            input.setValue(1.5)
+
+            const field = input.shadowRoot.querySelector('.number-input-field')
+            expect(field.value).toBe('1.500')
+        })
+
+
+        test('updates display when precision changes', () => {
+            input.setValue(1.5)
+            input.setPrecision(1)
+
+            const field = input.shadowRoot.querySelector('.number-input-field')
+            expect(field.value).toBe('1.5')
+        })
+
+    })
+
 })

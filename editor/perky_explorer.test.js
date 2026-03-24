@@ -510,4 +510,88 @@ describe('PerkyExplorer', () => {
 
     })
 
+
+    describe('embedded', () => {
+
+        test('defaults to false', () => {
+            expect(explorer.embedded).toBe(false)
+        })
+
+
+        test('sets embedded via property', () => {
+            explorer.embedded = true
+
+            expect(explorer.embedded).toBe(true)
+            expect(explorer.hasAttribute('embedded')).toBe(true)
+        })
+
+
+        test('removes attribute when set to false', () => {
+            explorer.embedded = true
+            explorer.embedded = false
+
+            expect(explorer.embedded).toBe(false)
+            expect(explorer.hasAttribute('embedded')).toBe(false)
+        })
+
+
+        test('reads embedded from attribute', () => {
+            explorer.setAttribute('embedded', '')
+
+            expect(explorer.embedded).toBe(true)
+        })
+
+
+        test('hides minimize button in embedded mode', () => {
+            const module = new PerkyModule({$id: 'test'})
+            explorer.setModule(module)
+
+            explorer.embedded = true
+
+            const minimizeBtn = explorer.shadowRoot.querySelectorAll('.explorer-btn')[3]
+            expect(minimizeBtn.classList.contains('hidden')).toBe(true)
+        })
+
+    })
+
+
+    describe('showSystemModules', () => {
+
+        test('defaults to false', () => {
+            expect(explorer.showSystemModules).toBe(false)
+        })
+
+
+        test('sets showSystemModules via property', () => {
+            explorer.showSystemModules = true
+
+            expect(explorer.showSystemModules).toBe(true)
+        })
+
+
+        test('emits change event when toggled', () => {
+            const handler = vi.fn()
+            explorer.addEventListener('showSystemModules:change', handler)
+
+            explorer.showSystemModules = true
+
+            expect(handler).toHaveBeenCalled()
+            expect(handler.mock.calls[0][0].detail.showSystemModules).toBe(true)
+        })
+
+
+        test('updates layers button active state', () => {
+            const module = new PerkyModule({$id: 'test'})
+            explorer.setModule(module)
+
+            const layersBtn = explorer.shadowRoot.querySelectorAll('.explorer-btn')[1]
+            expect(layersBtn.classList.contains('active')).toBe(false)
+
+            explorer.showSystemModules = true
+
+            expect(layersBtn.classList.contains('active')).toBe(true)
+        })
+
+    })
+
 })
