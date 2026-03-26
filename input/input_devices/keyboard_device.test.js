@@ -4,10 +4,14 @@ import ButtonControl from '../input_controls/button_control.js'
 import {vi} from 'vitest'
 
 
-function createKeyEvent (code, target = document.body) {
+function createKeyEvent (code, options = {}) {
+    const {target = document.body, key = null, preventDefault = vi.fn(), stopPropagation = vi.fn()} = options
     return {
         code,
+        key,
         target,
+        preventDefault,
+        stopPropagation,
         composedPath: () => [target, document.body, document, window]
     }
 }
@@ -179,6 +183,195 @@ describe(KeyboardDevice, () => {
         keyupListener(event)
         expect(controlReleasedListener).toHaveBeenCalledTimes(1)
         expect(device.isPressed('Space')).toBe(false)
+    })
+
+
+    test('shouldPreventDefault true calls preventDefault and stopPropagation', () => {
+        const deviceWithPrevent = new KeyboardDevice({
+            container: mockContainer,
+            shouldPreventDefault: true
+        })
+        deviceWithPrevent.start()
+
+        const keydownListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'keydown')[1]
+
+        const event = createKeyEvent('KeyA')
+        keydownListener(event)
+
+        expect(event.preventDefault).toHaveBeenCalled()
+        expect(event.stopPropagation).toHaveBeenCalled()
+    })
+
+
+    test('shouldPreventDefault false does not call preventDefault', () => {
+        device.start()
+
+        const keydownListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'keydown')[1]
+
+        const event = createKeyEvent('KeyA')
+        keydownListener(event)
+
+        expect(event.preventDefault).not.toHaveBeenCalled()
+        expect(event.stopPropagation).not.toHaveBeenCalled()
+    })
+
+
+    test('shouldPreventDefault as function receives event, control and device', () => {
+        const shouldPreventDefault = vi.fn(() => true)
+        const deviceWithFn = new KeyboardDevice({
+            container: mockContainer,
+            shouldPreventDefault
+        })
+        deviceWithFn.start()
+
+        const keydownListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'keydown')[1]
+
+        const event = createKeyEvent('KeyA')
+        keydownListener(event)
+
+        expect(shouldPreventDefault).toHaveBeenCalledWith(event, expect.any(ButtonControl), deviceWithFn)
+        expect(event.preventDefault).toHaveBeenCalled()
+    })
+
+
+    test('keydown creates alias control for single character keys', () => {
+        device.start()
+
+        const keydownListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'keydown')[1]
+
+        const event = createKeyEvent('KeyA', {key: 'a'})
+        keydownListener(event)
+
+        expect(device.getControl('KeyA')).toBeInstanceOf(ButtonControl)
+        expect(device.getControl('a')).toBeInstanceOf(ButtonControl)
+        expect(device.isPressed('a')).toBe(true)
+    })
+
+
+    test('keydown creates lowercase alias for uppercase letters', () => {
+        device.start()
+
+        const keydownListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'keydown')[1]
+
+        const event = createKeyEvent('KeyA', {key: 'A'})
+        keydownListener(event)
+
+        expect(device.getControl('a')).toBeInstanceOf(ButtonControl)
+        expect(device.isPressed('a')).toBe(true)
+    })
+
+
+    test('keyup releases alias control', () => {
+        device.start()
+
+        const keydownListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'keydown')[1]
+        const keyupListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'keyup')[1]
+
+        const event = createKeyEvent('KeyA', {key: 'a'})
+        keydownListener(event)
+        expect(device.isPressed('a')).toBe(true)
+
+        keyupListener(event)
+        expect(device.isPressed('a')).toBe(false)
+    })
+
+
+    test('no alias created when key equals code', () => {
+        device.start()
+
+        const keydownListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'keydown')[1]
+
+        const event = createKeyEvent('Space', {key: 'Space'})
+        keydownListener(event)
+
+        expect(device.getControl('Space')).toBeInstanceOf(ButtonControl)
+        expect(device.getControl('space')).toBeUndefined()
+    })
+
+
+    test('no alias created for multi-character keys', () => {
+        device.start()
+
+        const keydownListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'keydown')[1]
+
+        const event = createKeyEvent('ShiftLeft', {key: 'Shift'})
+        keydownListener(event)
+
+        expect(device.getControl('ShiftLeft')).toBeInstanceOf(ButtonControl)
+        expect(device.getControl('shift')).toBeUndefined()
+    })
+
+
+    test('ignores keydown events from input elements', () => {
+        device.start()
+
+        const keydownListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'keydown')[1]
+
+        const inputElement = document.createElement('input')
+        const event = createKeyEvent('KeyA', {target: inputElement})
+        keydownListener(event)
+
+        expect(device.getControl('KeyA')).toBeUndefined()
+    })
+
+
+    test('ignores keydown events from textarea elements', () => {
+        device.start()
+
+        const keydownListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'keydown')[1]
+
+        const textareaElement = document.createElement('textarea')
+        const event = createKeyEvent('KeyA', {target: textareaElement})
+        keydownListener(event)
+
+        expect(device.getControl('KeyA')).toBeUndefined()
+    })
+
+
+    test('ignores keydown events from contenteditable elements', () => {
+        device.start()
+
+        const keydownListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'keydown')[1]
+
+        const editableElement = {
+            tagName: 'DIV',
+            isContentEditable: true
+        }
+        const event = createKeyEvent('KeyA', {target: editableElement})
+        keydownListener(event)
+
+        expect(device.getControl('KeyA')).toBeUndefined()
+    })
+
+
+    test('ignores keyup events from input elements', () => {
+        device.start()
+
+        const keydownListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'keydown')[1]
+        const keyupListener = mockContainer.addEventListener.mock.calls
+            .find(call => call[0] === 'keyup')[1]
+
+        keydownListener(createKeyEvent('KeyA'))
+        expect(device.isPressed('KeyA')).toBe(true)
+
+        const inputElement = document.createElement('input')
+        const keyupEvent = createKeyEvent('KeyA', {target: inputElement})
+        keyupListener(keyupEvent)
+
+        expect(device.isPressed('KeyA')).toBe(true)
     })
 
 })

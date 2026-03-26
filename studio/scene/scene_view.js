@@ -102,6 +102,7 @@ export default class SceneView extends StudioTool {
             getRegion: (id) => textureSystem.getRegion(id),
             getLayer: (name) => this.#renderSystem.getLayer(name),
             createLayer: (...args) => this.#renderSystem.createLayer(...args),
+            getRenderer: (name) => this.#renderSystem.getRenderer(name),
             textureSystem,
             camera
         }

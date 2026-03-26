@@ -136,7 +136,8 @@ describe('launchSceneStudio', () => {
     test('passes wiring option', async () => {
         const mockWiring = {
             get: vi.fn(),
-            getAll: vi.fn(() => ({}))
+            getAll: vi.fn(() => ({})),
+            registerViews: vi.fn()
         }
 
         await launchSceneStudio({assets: {}}, container, {wiring: mockWiring})
