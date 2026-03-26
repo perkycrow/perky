@@ -2,6 +2,7 @@ import {describe, test, expect, vi} from 'vitest'
 import {
     loadManifest,
     buildTextureSystem,
+    collectAssets,
     collectAnimators,
     collectScenes,
     getStudioConfig,
@@ -86,6 +87,55 @@ describe('buildTextureSystem', () => {
 
         expect(manifest.getAssetsByType).toHaveBeenCalledWith('spritesheet')
         expect(result.getSpritesheet('sprites')).toBeDefined()
+    })
+
+})
+
+
+describe('collectAssets', () => {
+
+    test('returns empty object when no assets of type', () => {
+        const manifest = {
+            getAssetsByType: vi.fn(() => [])
+        }
+
+        const result = collectAssets(manifest, 'animator')
+
+        expect(manifest.getAssetsByType).toHaveBeenCalledWith('animator')
+        expect(result).toEqual({})
+    })
+
+
+    test('collects assets by type', () => {
+        const source = {data: 'test'}
+        const manifest = {
+            getAssetsByType: vi.fn(() => [
+                {id: 'item1', source},
+                {id: 'item2', source: {other: 'data'}}
+            ])
+        }
+
+        const result = collectAssets(manifest, 'custom')
+
+        expect(manifest.getAssetsByType).toHaveBeenCalledWith('custom')
+        expect(result).toEqual({
+            item1: source,
+            item2: {other: 'data'}
+        })
+    })
+
+
+    test('skips assets without source', () => {
+        const manifest = {
+            getAssetsByType: vi.fn(() => [
+                {id: 'item1', source: {data: 'test'}},
+                {id: 'item2', source: null}
+            ])
+        }
+
+        const result = collectAssets(manifest, 'custom')
+
+        expect(result).toEqual({item1: {data: 'test'}})
     })
 
 })

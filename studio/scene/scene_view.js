@@ -301,7 +301,11 @@ export default class SceneView extends EditorComponent {
         entry[prop] = value
 
         if (entry.worldEntity) {
-            entry.worldEntity[prop] = value
+            if (prop === 'x' || prop === 'y') {
+                entry.worldEntity[prop] = value
+            } else {
+                entry.worldEntity.options[prop] = value
+            }
         }
 
         this.#markDirty()
