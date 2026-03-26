@@ -120,6 +120,8 @@ export default class ActionController extends PerkyModule {
                 normalized.push({
                     action: actionName,
                     key: config.key,
+                    combo: config.combo ?? false,
+                    controls: config.controls ?? null,
                     scoped: config.scoped ?? false,
                     eventType: config.eventType ?? 'pressed',
                     controllerName: config.scoped ? controllerName : null
@@ -187,23 +189,56 @@ function extractPrototypeMethods (instance) {
 
 function normalizeBindingDefinition (bindingDef) {
     if (typeof bindingDef === 'string') {
-        return [{key: bindingDef}]
+        return [parseBindingKey(bindingDef)]
     }
 
     if (Array.isArray(bindingDef)) {
-        return bindingDef.map(key => ({key}))
+        return bindingDef.map(key => parseBindingKey(key))
     }
 
     if (typeof bindingDef === 'object' && bindingDef !== null) {
         const keys = Array.isArray(bindingDef.keys) ? bindingDef.keys : [bindingDef.keys]
         return keys.map(key => ({
-            key,
+            ...parseBindingKey(key),
             scoped: bindingDef.scoped ?? false,
             eventType: bindingDef.eventType ?? 'pressed'
         }))
     }
 
     return []
+}
+
+
+const MODIFIER_MAP = {
+    ctrl: ['ControlLeft', 'ControlRight'],
+    shift: ['ShiftLeft', 'ShiftRight'],
+    alt: ['AltLeft', 'AltRight'],
+    meta: ['MetaLeft', 'MetaRight'],
+    cmd: ['MetaLeft', 'MetaRight']
+}
+
+
+function parseBindingKey (key) {
+    if (typeof key !== 'string' || !key.includes('+')) {
+        return {key}
+    }
+
+    const parts = key.split('+')
+    const mainKey = parts.pop()
+    const modifiers = parts.map(m => m.toLowerCase())
+
+    const controls = []
+
+    for (const mod of modifiers) {
+        const mapped = MODIFIER_MAP[mod]
+        if (mapped) {
+            controls.push(mapped[0])
+        }
+    }
+
+    controls.push(mainKey)
+
+    return {key: mainKey, combo: true, controls}
 }
 
 

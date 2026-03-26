@@ -78,12 +78,14 @@ export default class Application extends PerkyModule {
         const bindingKeys = []
 
         for (const binding of bindings) {
-            const inputBinding = this.bindInput({
-                controlName: binding.key,
-                actionName: binding.action,
-                controllerName: binding.controllerName,
-                eventType: binding.eventType
-            })
+            const inputBinding = binding.combo
+                ? this.#registerComboBinding(binding)
+                : this.bindInput({
+                    controlName: binding.key,
+                    actionName: binding.action,
+                    controllerName: binding.controllerName,
+                    eventType: binding.eventType
+                })
 
             if (inputBinding) {
                 bindingKeys.push(inputBinding.key)
@@ -93,6 +95,16 @@ export default class Application extends PerkyModule {
         if (bindingKeys.length > 0) {
             this.#controllerBindings.set(controllerName, bindingKeys)
         }
+    }
+
+
+    #registerComboBinding (binding) {
+        return this.inputSystem.inputBinder.bindCombo(
+            binding.controls,
+            binding.action,
+            binding.controllerName,
+            binding.eventType
+        )
     }
 
 

@@ -400,13 +400,7 @@ describe(ActionController, () => {
 
             const normalized = TestController.normalizeBindings('test')
             expect(normalized).toEqual([
-                {
-                    action: 'shoot',
-                    key: 'Space',
-                    scoped: false,
-                    eventType: 'pressed',
-                    controllerName: null
-                }
+                {action: 'shoot', key: 'Space', combo: false, controls: null, scoped: false, eventType: 'pressed', controllerName: null}
             ])
         })
 
@@ -420,20 +414,8 @@ describe(ActionController, () => {
 
             const normalized = TestController.normalizeBindings('test')
             expect(normalized).toEqual([
-                {
-                    action: 'moveUp',
-                    key: 'KeyW',
-                    scoped: false,
-                    eventType: 'pressed',
-                    controllerName: null
-                },
-                {
-                    action: 'moveUp',
-                    key: 'ArrowUp',
-                    scoped: false,
-                    eventType: 'pressed',
-                    controllerName: null
-                }
+                {action: 'moveUp', key: 'KeyW', combo: false, controls: null, scoped: false, eventType: 'pressed', controllerName: null},
+                {action: 'moveUp', key: 'ArrowUp', combo: false, controls: null, scoped: false, eventType: 'pressed', controllerName: null}
             ])
         })
 
@@ -447,13 +429,7 @@ describe(ActionController, () => {
 
             const normalized = TestController.normalizeBindings('game')
             expect(normalized).toEqual([
-                {
-                    action: 'shoot',
-                    key: 'Space',
-                    scoped: true,
-                    eventType: 'pressed',
-                    controllerName: 'game'
-                }
+                {action: 'shoot', key: 'Space', combo: false, controls: null, scoped: true, eventType: 'pressed', controllerName: 'game'}
             ])
         })
 
@@ -467,20 +443,8 @@ describe(ActionController, () => {
 
             const normalized = TestController.normalizeBindings('game')
             expect(normalized).toEqual([
-                {
-                    action: 'move',
-                    key: 'KeyW',
-                    scoped: true,
-                    eventType: 'pressed',
-                    controllerName: 'game'
-                },
-                {
-                    action: 'move',
-                    key: 'KeyS',
-                    scoped: true,
-                    eventType: 'pressed',
-                    controllerName: 'game'
-                }
+                {action: 'move', key: 'KeyW', combo: false, controls: null, scoped: true, eventType: 'pressed', controllerName: 'game'},
+                {action: 'move', key: 'KeyS', combo: false, controls: null, scoped: true, eventType: 'pressed', controllerName: 'game'}
             ])
         })
 
@@ -494,13 +458,23 @@ describe(ActionController, () => {
 
             const normalized = TestController.normalizeBindings('test')
             expect(normalized).toEqual([
-                {
-                    action: 'shoot',
-                    key: 'Space',
-                    scoped: false,
-                    eventType: 'released',
-                    controllerName: null
+                {action: 'shoot', key: 'Space', combo: false, controls: null, scoped: false, eventType: 'released', controllerName: null}
+            ])
+        })
+
+
+        test('modifier combo binding', () => {
+            class TestController extends ActionController {
+                static bindings = {
+                    undo: 'ctrl+z',
+                    redo: 'ctrl+shift+z'
                 }
+            }
+
+            const normalized = TestController.normalizeBindings('test')
+            expect(normalized).toEqual([
+                {action: 'undo', key: 'z', combo: true, controls: ['ControlLeft', 'z'], scoped: false, eventType: 'pressed', controllerName: null},
+                {action: 'redo', key: 'z', combo: true, controls: ['ControlLeft', 'ShiftLeft', 'z'], scoped: false, eventType: 'pressed', controllerName: null}
             ])
         })
 
@@ -518,21 +492,13 @@ describe(ActionController, () => {
             const normalized = TestController.normalizeBindings('player')
             expect(normalized).toHaveLength(6)
 
-            expect(normalized).toContainEqual({
-                action: 'shoot',
-                key: 'Space',
-                scoped: false,
-                eventType: 'pressed',
-                controllerName: null
-            })
+            expect(normalized).toContainEqual(
+                expect.objectContaining({action: 'shoot', key: 'Space'})
+            )
 
-            expect(normalized).toContainEqual({
-                action: 'jump',
-                key: 'KeyJ',
-                scoped: true,
-                eventType: 'pressed',
-                controllerName: 'player'
-            })
+            expect(normalized).toContainEqual(
+                expect.objectContaining({action: 'jump', key: 'KeyJ', scoped: true, controllerName: 'player'})
+            )
         })
 
     })
