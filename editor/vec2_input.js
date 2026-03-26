@@ -70,7 +70,7 @@ export default class Vec2Input extends EditorComponent {
     #labelEl = null
 
     static get observedAttributes () {
-        return ['label']
+        return ['label', 'context']
     }
 
 

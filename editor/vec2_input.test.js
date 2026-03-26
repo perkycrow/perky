@@ -137,7 +137,7 @@ test('Vec2Input sub-input change mutates vec2 object', () => {
 })
 
 
-test.skip('Vec2Input context attribute propagates to child inputs', () => {
+test('Vec2Input context attribute propagates to child inputs', () => {
     vec2Input.setAttribute('context', 'studio')
 
     const inputs = vec2Input.shadowRoot.querySelectorAll('number-input')
