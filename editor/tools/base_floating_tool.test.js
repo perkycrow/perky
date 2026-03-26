@@ -169,13 +169,9 @@ describe('BaseFloatingTool', () => {
     })
 
 
-    describe('buildStyleSheet', () => {
-
-        test('returns a CSSStyleSheet', () => {
-            const styleSheet = BaseFloatingTool.buildStyleSheet('.test { color: red; }')
-            expect(styleSheet).toBeInstanceOf(CSSStyleSheet)
-        })
-
+    test('buildStyleSheet returns a CSSStyleSheet', () => {
+        const styleSheet = BaseFloatingTool.buildStyleSheet('.test { color: red; }')
+        expect(styleSheet).toBeInstanceOf(CSSStyleSheet)
     })
 
 })

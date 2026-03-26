@@ -811,5 +811,3 @@ function cleanAnimatorConfig (config, spritesheetJson) {
         })
     }
 }
-
-

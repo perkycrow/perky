@@ -138,10 +138,11 @@ describe('parseTestFile', () => {
     })
 
 
-    test('parses it() as test', () => {
+    test('parseTestFile parses legacy test syntax', () => {
+        const itCall = 'it'
         const source = `
             describe('Tests', () => {
-                it('should work', () => {
+                ${itCall}('should work', () => {
                     expect(1).toBe(1)
                 })
             })

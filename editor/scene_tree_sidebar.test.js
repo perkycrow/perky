@@ -175,34 +175,26 @@ describe('SceneTreeSidebar', () => {
     })
 
 
-    describe('details panel', () => {
-
-        test('shows empty state when no object selected', () => {
-            sidebar.setContent(createMockContainer())
-            const details = sidebar.shadowRoot.querySelector('.panel-details')
-            const emptyState = details.querySelector('.panel-empty')
-            expect(emptyState).not.toBeNull()
-            expect(emptyState.textContent).toBe('Select an object to inspect')
-        })
-
+    test('details panel shows empty state when no object selected', () => {
+        sidebar.setContent(createMockContainer())
+        const details = sidebar.shadowRoot.querySelector('.panel-details')
+        const emptyState = details.querySelector('.panel-empty')
+        expect(emptyState).not.toBeNull()
+        expect(emptyState.textContent).toBe('Select an object to inspect')
     })
 
 
-    describe('node selection', () => {
+    test('node:select event handles node:select event from tree', () => {
+        const content = createMockContainer()
+        sidebar.setContent(content)
 
-        test('handles node:select event from tree', () => {
-            const content = createMockContainer()
-            sidebar.setContent(content)
+        const rootNode = sidebar.shadowRoot.querySelector('scene-tree-node')
+        rootNode.dispatchEvent(new CustomEvent('node:select', {
+            bubbles: true,
+            detail: {object: content}
+        }))
 
-            const rootNode = sidebar.shadowRoot.querySelector('scene-tree-node')
-            rootNode.dispatchEvent(new CustomEvent('node:select', {
-                bubbles: true,
-                detail: {object: content}
-            }))
-
-            expect(() => sidebar.refresh()).not.toThrow()
-        })
-
+        expect(() => sidebar.refresh()).not.toThrow()
     })
 
 

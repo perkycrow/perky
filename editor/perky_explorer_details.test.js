@@ -171,21 +171,17 @@ describe('PerkyExplorerDetails', () => {
     })
 
 
-    describe('inspect method rendering', () => {
-
-        test('uses inspect() when module has it', () => {
-            const module = createMockModule({
-                inspect: () => ({health: 100, speed: 5})
-            })
-            details.setModule(module)
-
-            const content = details.shadowRoot.querySelector('.details-content')
-            expect(content.textContent).toContain('health')
-            expect(content.textContent).toContain('100')
-            expect(content.textContent).toContain('speed')
-            expect(content.textContent).toContain('5')
+    test('setModule uses inspect() when module has it', () => {
+        const module = createMockModule({
+            inspect: () => ({health: 100, speed: 5})
         })
+        details.setModule(module)
 
+        const content = details.shadowRoot.querySelector('.details-content')
+        expect(content.textContent).toContain('health')
+        expect(content.textContent).toContain('100')
+        expect(content.textContent).toContain('speed')
+        expect(content.textContent).toContain('5')
     })
 
 
