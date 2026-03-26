@@ -67,20 +67,25 @@ export const editorBaseStyles = `
 `
 
 
-export const editorScrollbarStyles = `
-    ::-webkit-scrollbar {
+export function scrollbarStyles (selector = '') {
+    return `
+    ${selector}::-webkit-scrollbar {
         width: 6px;
     }
 
-    ::-webkit-scrollbar-track {
+    ${selector}::-webkit-scrollbar-track {
         background: var(--bg-primary);
     }
 
-    ::-webkit-scrollbar-thumb {
+    ${selector}::-webkit-scrollbar-thumb {
         background: var(--border);
         border-radius: 3px;
     }
 `
+}
+
+
+export const editorScrollbarStyles = scrollbarStyles()
 
 
 export const editorButtonStyles = `

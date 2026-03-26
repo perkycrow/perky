@@ -1,5 +1,6 @@
 import EditorComponent from '../../editor/editor_component.js'
 import {createElement, adoptStyleSheets} from '../../application/dom_utils.js'
+import {pickFile} from '../../application/file_utils.js'
 import '../../editor/layout/app_layout.js'
 import '../../editor/layout/overlay.js'
 import '../../editor/tools/animation_preview.js'
@@ -812,12 +813,3 @@ function cleanAnimatorConfig (config, spritesheetJson) {
 }
 
 
-function pickFile (accept) {
-    return new Promise(resolve => {
-        const input = document.createElement('input')
-        input.type = 'file'
-        input.accept = accept
-        input.addEventListener('change', () => resolve(input.files[0] || null))
-        input.click()
-    })
-}

@@ -1,3 +1,6 @@
+import {scrollbarStyles} from './editor_theme.js'
+
+
 export const explorerStyles = `
     *, *::before, *::after {
         box-sizing: border-box;
@@ -28,18 +31,7 @@ export const explorerStyles = `
         max-height: inherit;
     }
 
-    .explorer::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .explorer::-webkit-scrollbar-track {
-        background: var(--bg-primary);
-    }
-
-    .explorer::-webkit-scrollbar-thumb {
-        background: var(--border);
-        border-radius: 3px;
-    }
+    ${scrollbarStyles('.explorer')}
 
     .explorer-header {
         display: flex;
@@ -116,18 +108,7 @@ export const explorerStyles = `
         min-height: 100px;
     }
 
-    .explorer-tree::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .explorer-tree::-webkit-scrollbar-track {
-        background: var(--bg-primary);
-    }
-
-    .explorer-tree::-webkit-scrollbar-thumb {
-        background: var(--border);
-        border-radius: 3px;
-    }
+    ${scrollbarStyles('.explorer-tree')}
 
     .explorer-minimized {
         height: 36px;
@@ -587,18 +568,7 @@ export const panelStyles = `
         min-height: 100px;
     }
 
-    .panel-tree::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .panel-tree::-webkit-scrollbar-track {
-        background: var(--bg-primary);
-    }
-
-    .panel-tree::-webkit-scrollbar-thumb {
-        background: var(--border);
-        border-radius: 3px;
-    }
+    ${scrollbarStyles('.panel-tree')}
 
     .panel-empty {
         padding: 20px;
