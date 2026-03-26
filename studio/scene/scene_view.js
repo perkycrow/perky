@@ -137,6 +137,11 @@ export default class SceneView extends StudioTool {
     }
 
 
+    hasContext () {
+        return Boolean(this.#context)
+    }
+
+
     init () {
         if (!this.#context) {
             return
