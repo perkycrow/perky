@@ -1,7 +1,6 @@
-import EditorComponent from '../../editor/editor_component.js'
-import {createElement, adoptStyleSheets} from '../../application/dom_utils.js'
+import StudioTool from '../studio_tool.js'
+import {createElement} from '../../application/dom_utils.js'
 import {pickFile} from '../../application/file_utils.js'
-import '../../editor/layout/app_layout.js'
 import '../../editor/layout/overlay.js'
 import '../../editor/tools/animation_preview.js'
 import '../../editor/tools/animation_timeline.js'
@@ -16,10 +15,8 @@ import {ICONS} from '../../editor/devtools/devtools_icons.js'
 import SpriteAnimator from '../../render/sprite_animator.js'
 import SpriteAnimation from '../../render/sprite_animation.js'
 import TextureRegion from '../../render/textures/texture_region.js'
-import PerkyStore from '../../io/perky_store.js'
 import PsdConverter from '../../io/psd_converter.js'
 import {canvasToBlob, imageToBlob} from '../../io/canvas.js'
-import {toolbarStyles} from '../../editor/styles/toolbar.styles.js'
 import {animatorViewStyles, frameEditorStyles, settingsStyles} from './animator_view.styles.js'
 import {inferSpritesheetName, collectEventSuggestions, buildAnimationConfig, buildAnimatorFiles} from './animator_helpers.js'
 import {buildFrameEditor} from './components/frame_editor.js'
@@ -27,7 +24,7 @@ import {buildAnchorEditor} from './components/anchor_editor.js'
 import {buildAnimationSettings} from './components/animation_settings.js'
 
 
-export default class AnimatorView extends EditorComponent {
+export default class AnimatorView extends StudioTool {
 
     #context = null
     #animatorName = null
@@ -36,12 +33,7 @@ export default class AnimatorView extends EditorComponent {
     #spritesheet = null
     #selectedAnimation = null
     #isCustom = false
-    #store = new PerkyStore()
-    #dirty = false
-    #autoSaveTimer = null
-    #boundBeforeUnload = null
 
-    #appLayout = null
     #containerEl = null
     #previewSectionEl = null
     #previewEl = null
@@ -58,25 +50,6 @@ export default class AnimatorView extends EditorComponent {
     #animationSettings = null
     #backgroundImage = null
 
-    onConnected () {
-        this.#buildDOM()
-
-        if (this.#context && this.#animatorConfig) {
-            this.#initAnimator()
-        }
-
-        this.#boundBeforeUnload = () => this.#flushSave()
-        window.addEventListener('beforeunload', this.#boundBeforeUnload)
-    }
-
-
-    onDisconnected () {
-        clearTimeout(this.#autoSaveTimer)
-        this.#flushSave()
-        window.removeEventListener('beforeunload', this.#boundBeforeUnload)
-    }
-
-
     setContext ({textureSystem, animatorConfig, animatorName, backgroundImage, studioConfig, isCustom, manifest}) {
         this.#context = {textureSystem, studioConfig, manifest}
         this.#animatorConfig = animatorConfig
@@ -87,6 +60,27 @@ export default class AnimatorView extends EditorComponent {
         if (this.isConnected && this.#animatorConfig) {
             this.#initAnimator()
         }
+    }
+
+
+    hasContext () {
+        return Boolean(this.#context && this.#animatorConfig)
+    }
+
+
+    init () {
+        this.#initAnimator()
+    }
+
+
+    toolStyles () { // eslint-disable-line local/class-methods-use-this -- clean
+        return [animatorViewStyles, frameEditorStyles, settingsStyles]
+    }
+
+
+    buildContent () {
+        this.#containerEl = createElement('div', {class: 'animator-container'})
+        return this.#containerEl
     }
 
 
@@ -113,25 +107,9 @@ export default class AnimatorView extends EditorComponent {
     }
 
 
-    #buildDOM () {
-        adoptStyleSheets(this.shadowRoot, toolbarStyles, animatorViewStyles, frameEditorStyles, settingsStyles)
-
-
-        this.#appLayout = createElement('app-layout', {
-            attrs: {'no-menu': '', 'no-close': '', 'no-footer': ''}
-        })
-
-
-        this.#containerEl = createElement('div', {class: 'animator-container'})
-        this.#appLayout.appendChild(this.#containerEl)
-
-        this.shadowRoot.appendChild(this.#appLayout)
-    }
-
-
     #render () {
 
-        this.#appLayout.querySelectorAll('[slot]').forEach(el => el.remove())
+        this.appLayout.querySelectorAll('[slot]').forEach(el => el.remove())
         this.#containerEl.innerHTML = ''
 
         if (!this.#animator) {
@@ -245,7 +223,7 @@ export default class AnimatorView extends EditorComponent {
         })
 
         headerStart.appendChild(this.#headerAnimSelect)
-        this.#appLayout.appendChild(headerStart)
+        this.appLayout.appendChild(headerStart)
 
 
         if (this.#selectedAnimation) {
@@ -266,7 +244,7 @@ export default class AnimatorView extends EditorComponent {
             fpsInput.setMax(60)
             fpsInput.addEventListener('change', (e) => {
                 anim.setFps(e.detail.value)
-                this.#markDirty()
+                this.markDirty()
             })
 
 
@@ -275,7 +253,7 @@ export default class AnimatorView extends EditorComponent {
             loopToggle.setChecked(anim.loop)
             loopToggle.addEventListener('change', (e) => {
                 anim.setLoop(e.detail.checked)
-                this.#markDirty()
+                this.markDirty()
             })
 
 
@@ -288,13 +266,13 @@ export default class AnimatorView extends EditorComponent {
             modeSelect.setValue(anim.playbackMode)
             modeSelect.addEventListener('change', (e) => {
                 anim.setPlaybackMode(e.detail.value)
-                this.#markDirty()
+                this.markDirty()
             })
 
             headerEnd.appendChild(fpsInput)
             headerEnd.appendChild(loopToggle)
             headerEnd.appendChild(modeSelect)
-            this.#appLayout.appendChild(headerEnd)
+            this.appLayout.appendChild(headerEnd)
         }
     }
 
@@ -344,7 +322,7 @@ export default class AnimatorView extends EditorComponent {
             this.#anchorEditor.syncInputs()
             this.#anchorEditor.updatePreview()
             this.#previewEl?.setAnchor(anchor)
-            this.#markDirty()
+            this.markDirty()
         })
 
         this.#spritesheetSettingsDrawerEl.appendChild(this.#anchorEditor.container)
@@ -366,15 +344,15 @@ export default class AnimatorView extends EditorComponent {
                 }
                 this.#selectedAnimation.$id = newName
                 this.#updateForSelectedAnimation()
-                this.#markDirty()
+                this.markDirty()
             },
             onMotionChange: (motion) => {
                 this.#previewEl?.setMotion(motion)
-                this.#markDirty()
+                this.markDirty()
             },
             onMotionUpdate: (motion) => {
                 this.#previewEl?.updateMotion(motion)
-                this.#markDirty()
+                this.markDirty()
             },
             onDelete: () => {
                 this.#deleteSelectedAnimation()
@@ -397,7 +375,7 @@ export default class AnimatorView extends EditorComponent {
         this.#editorDrawerEl.close()
         this.#drawerMode = null
         this.#render()
-        this.#markDirty()
+        this.markDirty()
     }
 
 
@@ -423,7 +401,7 @@ export default class AnimatorView extends EditorComponent {
         this.#selectedAnimation = this.#animator.getChild(name)
         this.#updateForSelectedAnimation()
         this.#openAnimationSettings()
-        this.#markDirty()
+        this.markDirty()
     }
 
 
@@ -466,7 +444,7 @@ export default class AnimatorView extends EditorComponent {
         const frameEditor = buildFrameEditor(frame, {
             onFramesUpdate: () => {
                 this.#timelineEl.setFrames(this.#selectedAnimation.frames)
-                this.#markDirty()
+                this.markDirty()
             },
             getSuggestions: (excludeEvents) => {
                 return collectEventSuggestions(this.#animator, excludeEvents)
@@ -496,7 +474,7 @@ export default class AnimatorView extends EditorComponent {
 
         this.#timelineEl.setFrames(frames)
         this.#timelineEl.flashAddedFrame(insertIndex)
-        this.#markDirty()
+        this.markDirty()
     }
 
 
@@ -541,7 +519,7 @@ export default class AnimatorView extends EditorComponent {
         }
 
 
-        this.#appLayout.querySelectorAll('[slot^="header"]').forEach(el => el.remove())
+        this.appLayout.querySelectorAll('[slot^="header"]').forEach(el => el.remove())
         this.#buildHeaderControls()
     }
 
@@ -558,7 +536,7 @@ export default class AnimatorView extends EditorComponent {
 
         this.#timelineEl.setFrames(frames)
         this.#timelineEl.flashMovedFrame(insertIndex)
-        this.#markDirty()
+        this.markDirty()
     }
 
 
@@ -577,7 +555,7 @@ export default class AnimatorView extends EditorComponent {
 
         this.#selectedAnimation.frames.splice(index, 1)
         this.#timelineEl.setFrames(this.#selectedAnimation.frames)
-        this.#markDirty()
+        this.markDirty()
     }
 
 
@@ -590,7 +568,7 @@ export default class AnimatorView extends EditorComponent {
         if (frame) {
             frame.duration = duration
             this.#timelineEl.setFrames(this.#selectedAnimation.frames)
-            this.#markDirty()
+            this.markDirty()
         }
     }
 
@@ -611,39 +589,22 @@ export default class AnimatorView extends EditorComponent {
     }
 
 
-    #markDirty () {
-        this.#dirty = true
-        clearTimeout(this.#autoSaveTimer)
-        this.#autoSaveTimer = setTimeout(() => this.#autoSave(), 2000)
-    }
-
-
-    #flushSave () {
-        if (this.#dirty) {
-            clearTimeout(this.#autoSaveTimer)
-            this.#autoSave()
-        }
-    }
-
-
-    async #autoSave () {
-        if (!this.#dirty || !this.#animator) {
+    autoSave () {
+        if (!this.#animator) {
             return
         }
 
-        this.#dirty = false
-
         if (this.#isCustom) {
-            await this.#saveCustomAnimator()
+            this.#saveCustomAnimator()
         } else {
-            await this.#forkAndSave()
+            this.#forkAndSave()
         }
     }
 
 
     async #saveCustomAnimator () {
         const animatorConfig = this.#buildAnimatorConfig()
-        const resource = await this.#store.get(this.#animatorName)
+        const resource = await this.store.get(this.#animatorName)
         if (!resource) {
             return
         }
@@ -653,7 +614,7 @@ export default class AnimatorView extends EditorComponent {
             configFile.blob = new Blob([JSON.stringify(animatorConfig)], {type: 'application/json'})
         }
 
-        await this.#store.save(this.#animatorName, {
+        await this.store.save(this.#animatorName, {
             type: 'animator',
             name: resource.name,
             files: resource.files
@@ -677,7 +638,7 @@ export default class AnimatorView extends EditorComponent {
         const animatorConfig = this.#buildAnimatorConfig()
         const files = await buildForkFiles(name, spritesheetId, animatorConfig, spritesheetAsset.source)
 
-        await this.#store.save(this.#animatorName, {
+        await this.store.save(this.#animatorName, {
             type: 'animator',
             name,
             files
@@ -692,7 +653,7 @@ export default class AnimatorView extends EditorComponent {
             await this.#forkAndSave()
         }
 
-        await this.#store.export(this.#animatorName)
+        await this.store.export(this.#animatorName)
     }
 
 
@@ -738,7 +699,7 @@ export default class AnimatorView extends EditorComponent {
         )
         const files = buildAnimatorFiles({name, spritesheetName, animatorConfig, spritesheetData: result.spritesheetJson, atlasBlobs})
 
-        await this.#store.save(this.#animatorName, {
+        await this.store.save(this.#animatorName, {
             type: 'animator',
             name,
             files

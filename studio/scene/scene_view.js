@@ -152,7 +152,7 @@ export default class SceneView extends StudioTool {
     }
 
 
-    toolStyles () { // eslint-disable-line local/class-methods-use-this -- override
+    toolStyles () { // eslint-disable-line local/class-methods-use-this -- clean
         return [sceneViewStyles]
     }
 

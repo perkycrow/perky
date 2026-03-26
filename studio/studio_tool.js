@@ -40,31 +40,31 @@ export default class StudioTool extends EditorComponent {
     }
 
 
-    hasContext () { // eslint-disable-line local/class-methods-use-this -- override
+    hasContext () { // eslint-disable-line local/class-methods-use-this -- clean
         return false
     }
 
 
-    init () {  
+    init () {
     }
 
 
-    buildHeaderStart () { // eslint-disable-line local/class-methods-use-this -- override
+    buildHeaderStart () { // eslint-disable-line local/class-methods-use-this -- clean
         return null
     }
 
 
-    buildHeaderEnd () { // eslint-disable-line local/class-methods-use-this -- override
+    buildHeaderEnd () { // eslint-disable-line local/class-methods-use-this -- clean
         return null
     }
 
 
-    buildContent () { // eslint-disable-line local/class-methods-use-this -- override
+    buildContent () { // eslint-disable-line local/class-methods-use-this -- clean
         return null
     }
 
 
-    toolStyles () { // eslint-disable-line local/class-methods-use-this -- override
+    toolStyles () { // eslint-disable-line local/class-methods-use-this -- clean
         return []
     }
 
