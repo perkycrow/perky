@@ -33,6 +33,73 @@ describe(ActionDispatcher, () => {
     })
 
 
+    test('register with controller class (auto-naming)', () => {
+        class GameController extends ActionController {}
+        const controller = dispatcher.register(GameController)
+
+        expect(dispatcher.getController('game')).toBe(controller)
+    })
+
+
+    test('register with controller class and options', () => {
+        class GameController extends ActionController {}
+        const controller = dispatcher.register(GameController, {name: 'customName'})
+
+        expect(dispatcher.getController('customName')).toBe(controller)
+    })
+
+
+    test('register with controller class uses $name if available', () => {
+        class GameController extends ActionController {
+            static $name = 'myGame'
+        }
+        const controller = dispatcher.register(GameController)
+
+        expect(dispatcher.getController('myGame')).toBe(controller)
+    })
+
+
+    test('register returns null for invalid input', () => {
+        const result = dispatcher.register(123)
+
+        expect(result).toBeNull()
+    })
+
+
+    test('register emits controller:set event', () => {
+        let emittedData = null
+        dispatcher.on('controller:set', (name, ctrl) => {
+            emittedData = {name, controller: ctrl}
+        })
+
+        const controller = dispatcher.register('main', ActionController)
+
+        expect(emittedData).not.toBeNull()
+        expect(emittedData.name).toBe('main')
+        expect(emittedData.controller).toBe(controller)
+    })
+
+
+    test('register auto-pushes second controller when first is active', () => {
+        dispatcher.register('first', ActionController)
+        dispatcher.pushActive('first')
+
+        dispatcher.register('second', ActionController)
+
+        expect(dispatcher.getActive()).toContain('second')
+    })
+
+
+    test('register does not auto-push when active option is false', () => {
+        dispatcher.register('first', ActionController)
+        dispatcher.pushActive('first')
+
+        dispatcher.register('second', ActionController, {active: false})
+
+        expect(dispatcher.getActive()).not.toContain('second')
+    })
+
+
     test('mainController returns null when no controllers registered', () => {
         expect(dispatcher.mainController).toBeNull()
     })
@@ -44,6 +111,15 @@ describe(ActionDispatcher, () => {
 
         expect(dispatcher.mainController).toBeInstanceOf(ActionController)
         expect(dispatcher.mainController.$id).toBe('game')
+    })
+
+
+    test('engine getter returns host', () => {
+        const host = new PerkyModule()
+        const newDispatcher = new ActionDispatcher()
+        newDispatcher.install(host)
+
+        expect(newDispatcher.engine).toBe(host)
     })
 
 
@@ -152,6 +228,20 @@ describe(ActionDispatcher, () => {
     })
 
 
+    test('setActive emits controllers:activated event', () => {
+        dispatcher.register('main', ActionController)
+
+        let emittedNames = null
+        dispatcher.on('controllers:activated', (names) => {
+            emittedNames = names
+        })
+
+        dispatcher.setActive('main')
+
+        expect(emittedNames).toEqual(['main'])
+    })
+
+
     test('getActive returns array', () => {
         dispatcher.register('main', ActionController)
         dispatcher.setActive('main')
@@ -196,6 +286,33 @@ describe(ActionDispatcher, () => {
         dispatcher.executeTo('main', 'someAction', 'arg1', 'arg2')
 
         expect(controller.someAction).toHaveBeenCalledWith('arg1', 'arg2')
+    })
+
+
+    test('executeTo does nothing for inactive controller', () => {
+        class TestController extends PerkyModule {
+            someAction = vi.fn()
+        }
+        const controller = dispatcher.register('main', TestController)
+
+        dispatcher.executeTo('main', 'someAction', 'arg1')
+
+        expect(controller.someAction).not.toHaveBeenCalled()
+    })
+
+
+    test('executeTo uses execute method when available', () => {
+        class TestController extends ActionController {
+            customAction = vi.fn()
+        }
+        const controller = dispatcher.register('main', TestController)
+        dispatcher.setActive('main')
+
+        const executeSpy = vi.spyOn(controller, 'execute')
+
+        dispatcher.executeTo('main', 'customAction', 'arg1')
+
+        expect(executeSpy).toHaveBeenCalledWith('customAction', 'arg1')
     })
 
 
@@ -286,6 +403,32 @@ describe(ActionDispatcher, () => {
     })
 
 
+    test('dispatchAction calls preventDefault by default', () => {
+        dispatcher.register('main', ActionController)
+        dispatcher.setActive('main')
+
+        const mockEvent = {preventDefault: vi.fn()}
+        const binding = {actionName: 'someAction'}
+
+        dispatcher.dispatchAction(binding, mockEvent)
+
+        expect(mockEvent.preventDefault).toHaveBeenCalled()
+    })
+
+
+    test('dispatchAction does not call preventDefault when binding.preventDefault is false', () => {
+        dispatcher.register('main', ActionController)
+        dispatcher.setActive('main')
+
+        const mockEvent = {preventDefault: vi.fn()}
+        const binding = {actionName: 'someAction', preventDefault: false}
+
+        dispatcher.dispatchAction(binding, mockEvent)
+
+        expect(mockEvent.preventDefault).not.toHaveBeenCalled()
+    })
+
+
     test('pushActive', () => {
         dispatcher.register('main', ActionController)
 
@@ -333,6 +476,20 @@ describe(ActionDispatcher, () => {
     })
 
 
+    test('pushActive emits controller:pushed event', () => {
+        dispatcher.register('main', ActionController)
+
+        let emittedData = null
+        dispatcher.on('controller:pushed', (name, stackLength) => {
+            emittedData = {name, stackLength}
+        })
+
+        dispatcher.pushActive('main')
+
+        expect(emittedData).toEqual({name: 'main', stackLength: 1})
+    })
+
+
     test('popActive - returns popped controller', () => {
         dispatcher.register('main', ActionController)
 
@@ -353,6 +510,21 @@ describe(ActionDispatcher, () => {
         expect(consoleSpy).toHaveBeenCalled()
 
         consoleSpy.mockRestore()
+    })
+
+
+    test('popActive emits controller:popped event', () => {
+        dispatcher.register('main', ActionController)
+        dispatcher.pushActive('main')
+
+        let emittedData = null
+        dispatcher.on('controller:popped', (name, stackLength) => {
+            emittedData = {name, stackLength}
+        })
+
+        dispatcher.popActive()
+
+        expect(emittedData).toEqual({name: 'main', stackLength: 0})
     })
 
 
@@ -392,6 +564,21 @@ describe(ActionDispatcher, () => {
     })
 
 
+    test('removeActive emits controller:removed event', () => {
+        dispatcher.register('main', ActionController)
+        dispatcher.pushActive('main')
+
+        let emittedData = null
+        dispatcher.on('controller:removed', (name, stackLength) => {
+            emittedData = {name, stackLength}
+        })
+
+        dispatcher.removeActive('main')
+
+        expect(emittedData).toEqual({name: 'main', stackLength: 0})
+    })
+
+
     test('getActive - returns copy', () => {
         dispatcher.register('main', ActionController)
 
@@ -419,6 +606,21 @@ describe(ActionDispatcher, () => {
         dispatcher.clearActive()
 
         expect(dispatcher.getActive()).toEqual([])
+    })
+
+
+    test('clearActive emits controllers:cleared event', () => {
+        dispatcher.register('main', ActionController)
+        dispatcher.pushActive('main')
+
+        let emitted = false
+        dispatcher.on('controllers:cleared', () => {
+            emitted = true
+        })
+
+        dispatcher.clearActive()
+
+        expect(emitted).toBe(true)
     })
 
 
@@ -551,6 +753,54 @@ describe(ActionDispatcher, () => {
         expect(consoleSpy).toHaveBeenCalled()
 
         consoleSpy.mockRestore()
+    })
+
+
+    test('onInstall sets up input:triggered listener', () => {
+        const host = new PerkyModule()
+        const newDispatcher = new ActionDispatcher()
+        newDispatcher.install(host)
+
+        class TestController extends ActionController {
+            jump = vi.fn()
+        }
+        newDispatcher.register('main', TestController)
+        newDispatcher.setActive('main')
+
+        const binding = {actionName: 'jump'}
+        host.emit('input:triggered', binding)
+
+        expect(newDispatcher.getController('main').jump).toHaveBeenCalled()
+    })
+
+
+    test('onInstall delegates methods to host', () => {
+        const host = new PerkyModule()
+        const newDispatcher = new ActionDispatcher()
+        newDispatcher.install(host)
+        newDispatcher.register('main', ActionController)
+
+        expect(host.registerController).toBeDefined()
+        expect(host.getController('main')).toBe(newDispatcher.getController('main'))
+    })
+
+
+    test('listAllActions falls back to listActions when listActionsWithParams not available', () => {
+        class SimpleController extends PerkyModule {
+            listActions () {
+                return ['action1', 'action2']
+            }
+        }
+
+        dispatcher.register('simple', SimpleController)
+
+        const allActions = dispatcher.listAllActions()
+        const actions = allActions.get('simple')
+
+        expect(actions).toEqual([
+            {name: 'action1', params: []},
+            {name: 'action2', params: []}
+        ])
     })
 
 })
