@@ -141,8 +141,8 @@ Inspectors plug into the Perky Explorer. When a module is selected, the explorer
 import BaseInspector from './base_inspector.js'
 
 class MyEntityInspector extends BaseInspector {
-    static match (instance) {
-        return instance instanceof MyEntity
+    static matches (module) {
+        return module instanceof MyEntity
     }
 
     onModuleSet (module) {
@@ -152,7 +152,7 @@ class MyEntityInspector extends BaseInspector {
         this.addSeparator()
 
         const btn = this.createButton('⟳', 'Reset', () => module.reset())
-        this.addAction(btn)
+        this.actionsEl.appendChild(btn)
     }
 }
 
