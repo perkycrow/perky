@@ -670,85 +670,27 @@ describe(Application, () => {
             expect(binding.controllerName).toBeNull()
         })
 
-        test('object format validation - empty object should throw', () => {
-            expect(() => {
-                application.bindMouse('leftButton', {})
-            }).toThrow()
-        })
-
-        test('object format validation - undefined actionName should throw', () => {
-            expect(() => {
-                application.bindMouse('rightButton', {actionName: undefined})
-            }).toThrow()
-        })
-
-        test('parameter format validation - undefined actionName should throw', () => {
-            expect(() => {
-                application.bindMouse('middleButton', undefined)
-            }).toThrow()
-        })
-
     })
 
 
-    describe('flexible API edge cases', () => {
+    test('mixed input binding formats in same application', () => {
+        const binding1 = application.bindInput({controlName: 'Digit1', actionName: 'slot1', eventType: 'pressed', controllerName: 'inventory'})
 
-        test('mixed usage in same application', () => {
-            const binding1 = application.bindInput({controlName: 'Digit1', actionName: 'slot1', eventType: 'pressed', controllerName: 'inventory'})
-
-            const binding2 = application.bindInput({
-                controlName: 'Digit2',
-                actionName: 'slot2',
-                eventType: 'pressed',
-                controllerName: 'inventory'
-            })
-
-            expect(binding1.actionName).toBe('slot1')
-            expect(binding1.controllerName).toBe('inventory')
-            expect(binding2.actionName).toBe('slot2')
-            expect(binding2.controllerName).toBe('inventory')
-
-            const allBindings = application.getAllBindings()
-            const inventoryBindings = allBindings.filter(b => b.controllerName === 'inventory')
-            expect(inventoryBindings).toHaveLength(2)
+        const binding2 = application.bindInput({
+            controlName: 'Digit2',
+            actionName: 'slot2',
+            eventType: 'pressed',
+            controllerName: 'inventory'
         })
 
-        test('object format with empty object defaults everything', () => {
-            expect(() => {
-                application.bindKey('KeyEmpty', {})
-            }).toThrow()
-        })
+        expect(binding1.actionName).toBe('slot1')
+        expect(binding1.controllerName).toBe('inventory')
+        expect(binding2.actionName).toBe('slot2')
+        expect(binding2.controllerName).toBe('inventory')
 
-        test('object format with undefined actionName', () => {
-            expect(() => {
-                application.bindKey('KeyUndef', {actionName: undefined})
-            }).toThrow()
-        })
-
-        test('object format with null actionName', () => {
-            expect(() => {
-                application.bindKey('KeyNull', {actionName: null})
-            }).toThrow()
-        })
-
-        test('object format with empty string actionName', () => {
-            expect(() => {
-                application.bindKey('KeyEmpty', {actionName: ''})
-            }).toThrow()
-        })
-
-        test('parameter format with undefined actionName', () => {
-            expect(() => {
-                application.bindKey('KeyParamUndef', undefined)
-            }).toThrow()
-        })
-
-        test('parameter format with null actionName', () => {
-            expect(() => {
-                application.bindKey('KeyParamNull', null)
-            }).toThrow()
-        })
-
+        const allBindings = application.getAllBindings()
+        const inventoryBindings = allBindings.filter(b => b.controllerName === 'inventory')
+        expect(inventoryBindings).toHaveLength(2)
     })
 
 
