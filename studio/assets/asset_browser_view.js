@@ -108,15 +108,6 @@ export default class AssetBrowserView extends StudioTool {
 
     setContext ({manifest, textureSystem}) {
         this.#context = {manifest, textureSystem}
-
-        if (this.isConnected) {
-            this.init()
-        }
-    }
-
-
-    hasContext () {
-        return Boolean(this.#context)
     }
 
 
@@ -193,6 +184,3 @@ export default class AssetBrowserView extends StudioTool {
     }
 
 }
-
-
-customElements.define('asset-browser-view', AssetBrowserView)

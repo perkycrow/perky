@@ -1,5 +1,7 @@
-import EditorComponent from '../editor/editor_component.js'
-import {createElement, adoptStyleSheets} from '../application/dom_utils.js'
+import Application from '../application/application.js'
+import {createElement, createStyleSheet, adoptStyleSheets} from '../application/dom_utils.js'
+import {themeCSS} from '../editor/styles/theme.styles.js'
+import {resetCSS} from '../editor/styles/reset.styles.js'
 import PerkyStore from '../io/perky_store.js'
 import CommandHistory from '../editor/command_history.js'
 import {toolbarStyles} from '../editor/styles/toolbar.styles.js'
@@ -10,38 +12,30 @@ import '../editor/layout/app_layout.js'
 const AUTO_SAVE_DELAY = 2000
 
 
-export default class StudioTool extends EditorComponent {
+export default class StudioTool extends Application {
 
     store = new PerkyStore()
     history = new CommandHistory()
     appLayout = null
+    shadow = null
 
     #dirty = false
     #autoSaveTimer = null
-    #boundBeforeUnload = null
-    #boundKeyDown = null
 
-    onConnected () {
-        this.#setupStyles()
+    onStart () {
+        this.shadow = this.element.attachShadow({mode: 'open'})
+        const allStyles = [...themeCSS, resetCSS, ...this.toolStyles()]
+            .map(s => (typeof s === 'string' ? createStyleSheet(s) : s))
+        adoptStyleSheets(this.shadow, toolbarStyles, ...allStyles)
         this.#buildBaseLayout()
-        this.#setupLifecycle()
-
-        if (this.hasContext()) {
-            this.init()
-        }
+        window.addEventListener('beforeunload', () => this.flushSave())
+        this.init()
     }
 
 
-    onDisconnected () {
-        window.removeEventListener('beforeunload', this.#boundBeforeUnload)
-        window.removeEventListener('keydown', this.#boundKeyDown)
+    onStop () {
         clearTimeout(this.#autoSaveTimer)
         this.flushSave()
-    }
-
-
-    hasContext () { // eslint-disable-line local/class-methods-use-this -- clean
-        return false
     }
 
 
@@ -88,19 +82,6 @@ export default class StudioTool extends EditorComponent {
     }
 
 
-    executeAction (name) {
-        const actions = this.constructor.actions || {}
-        const methodName = actions[name]
-
-        if (methodName && typeof this[methodName] === 'function') {
-            this[methodName]()
-            return true
-        }
-
-        return false
-    }
-
-
     listActions () {
         return Object.keys(this.constructor.actions || {})
     }
@@ -108,11 +89,6 @@ export default class StudioTool extends EditorComponent {
 
     listBindings () {
         return {...(this.constructor.bindings || {})}
-    }
-
-
-    #setupStyles () {
-        adoptStyleSheets(this.shadowRoot, toolbarStyles, ...this.toolStyles())
     }
 
 
@@ -157,29 +133,7 @@ export default class StudioTool extends EditorComponent {
             this.appLayout.appendChild(content)
         }
 
-        this.shadowRoot.appendChild(this.appLayout)
-    }
-
-
-    #setupLifecycle () {
-        this.#boundBeforeUnload = () => this.flushSave()
-        window.addEventListener('beforeunload', this.#boundBeforeUnload)
-
-        this.#boundKeyDown = (e) => this.#onKeyDown(e)
-        window.addEventListener('keydown', this.#boundKeyDown)
-    }
-
-
-    #onKeyDown (e) {
-        const bindings = this.constructor.bindings || {}
-        const action = resolveKeyAction(e, bindings)
-
-        if (!action) {
-            return
-        }
-
-        e.preventDefault()
-        this.executeAction(action)
+        this.shadow.appendChild(this.appLayout)
     }
 
 
@@ -188,44 +142,4 @@ export default class StudioTool extends EditorComponent {
         this.autoSave()
     }
 
-}
-
-
-function resolveKeyAction (e, bindings) {
-    for (const [action, keys] of Object.entries(bindings)) {
-        const keyList = Array.isArray(keys) ? keys : [keys]
-
-        for (const binding of keyList) {
-            if (matchesBinding(e, binding)) {
-                return action
-            }
-        }
-    }
-
-    return null
-}
-
-
-function matchesBinding (e, binding) {
-    const parts = binding.split('+')
-    const key = parts[0]
-    const modifiers = parts.slice(1)
-
-    if (e.key !== key) {
-        return false
-    }
-
-    const needsCtrl = modifiers.includes('ctrl')
-    const needsShift = modifiers.includes('shift')
-    const hasCtrl = e.ctrlKey || e.metaKey
-
-    if (needsCtrl !== hasCtrl) {
-        return false
-    }
-
-    if (needsShift !== e.shiftKey) {
-        return false
-    }
-
-    return true
 }

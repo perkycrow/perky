@@ -40,15 +40,12 @@ export default class KeyboardDevice extends InputDevice {
             return
         }
 
-        const keyName = getKeyName(event)
-        const control = this.findOrCreateControl(ButtonControl, {
-            name: keyName
-        })
+        const codeControl = this.#pressControl(event.code, event)
+        this.preventDefault(event, codeControl)
 
-        this.preventDefault(event, control)
-
-        if (!control.isPressed) {
-            control.press(event)
+        const keyAlias = getKeyAlias(event)
+        if (keyAlias) {
+            this.#pressControl(keyAlias, event)
         }
     }
 
@@ -58,14 +55,31 @@ export default class KeyboardDevice extends InputDevice {
             return
         }
 
-        const keyName = getKeyName(event)
-        const control = this.getControl(keyName)
+        const codeControl = this.#releaseControl(event.code, event)
+        this.preventDefault(event, codeControl)
 
-        this.preventDefault(event, control)
+        const keyAlias = getKeyAlias(event)
+        if (keyAlias) {
+            this.#releaseControl(keyAlias, event)
+        }
+    }
 
-        if (control && control.isPressed) {
+
+    #pressControl (name, event) {
+        const control = this.findOrCreateControl(ButtonControl, {name})
+        if (!control.isPressed) {
+            control.press(event)
+        }
+        return control
+    }
+
+
+    #releaseControl (name, event) {
+        const control = this.getControl(name)
+        if (control?.isPressed) {
             control.release(event)
         }
+        return control
     }
 
 
@@ -81,8 +95,18 @@ export default class KeyboardDevice extends InputDevice {
 }
 
 
-function getKeyName (event) {
-    return event.code
+function getKeyAlias (event) {
+    const key = event.key
+
+    if (!key || key === event.code) {
+        return null
+    }
+
+    if (key.length === 1) {
+        return key.toLowerCase()
+    }
+
+    return null
 }
 
 

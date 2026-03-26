@@ -236,6 +236,12 @@ export default class ActionDispatcher extends PerkyModule {
 
 
     dispatchAction (binding, ...args) {
+        const event = args[0]
+
+        if (event?.preventDefault && binding.preventDefault !== false) {
+            event.preventDefault()
+        }
+
         if (binding.controllerName) {
             this.executeTo(binding.controllerName, binding.actionName, ...args)
         } else {

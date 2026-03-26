@@ -9,8 +9,7 @@ import {
     getStudioConfig,
     getBackgroundImage
 } from '../launcher.js'
-
-import './animator_view.js'
+import AnimatorView from './animator_view.js'
 
 
 export async function launchAnimatorStudio (manifestData, container, options = {}) {
@@ -27,13 +26,14 @@ export async function launchAnimatorStudio (manifestData, container, options = {
         }
 
         container.innerHTML = ''
-        const animatorView = document.createElement('animator-view')
-        animatorView.setContext({
+        const app = new AnimatorView()
+        app.setContext({
             ...animatorData,
             backgroundImage,
             studioConfig
         })
-        container.appendChild(animatorView)
+        app.mount(container)
+        app.start()
 
     } catch (error) {
         container.innerHTML = `<div class="loading" style="color: #f66;">Error: ${error.message}</div>`

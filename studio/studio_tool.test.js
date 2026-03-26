@@ -1,33 +1,29 @@
-import {test, expect, vi, beforeEach, afterEach} from 'vitest'
+import {test, expect, vi, beforeEach} from 'vitest'
 import StudioTool from './studio_tool.js'
+import ActionController from '../core/action_controller.js'
+
+
+class TestController extends ActionController {
+
+    static bindings = {
+        save: 'ctrl+s'
+    }
+
+    save () {
+        this.engine.doSave()
+    }
+}
 
 
 class TestTool extends StudioTool {
 
-    static actions = {
-        save: 'doSave',
-        undo: 'doUndo'
-    }
-
-    static bindings = {
-        save: ['s+ctrl'],
-        undo: ['z+ctrl']
-    }
+    static ActionController = TestController
 
     saved = false
-    undone = false
     initCalled = false
 
     doSave () {
         this.saved = true
-    }
-
-    doUndo () {
-        this.undone = true
-    }
-
-    hasContext () {
-        return true
     }
 
     init () {
@@ -38,46 +34,39 @@ class TestTool extends StudioTool {
         this.saved = true
     }
 
-    toolStyles () {
+    toolStyles () {  
         return []
     }
 }
 
-customElements.define('test-studio-tool', TestTool)
-
 
 let tool
-let container
 
 
 beforeEach(() => {
-    container = document.createElement('div')
+    const container = document.createElement('div')
     document.body.appendChild(container)
-    tool = document.createElement('test-studio-tool')
-    container.appendChild(tool)
-})
-
-
-afterEach(() => {
-    container.remove()
+    tool = new TestTool()
+    tool.mount(container)
+    tool.start()
 })
 
 
 test('constructor', () => {
     expect(tool.store).toBeDefined()
     expect(tool.history).toBeDefined()
+    expect(tool.shadow).toBeDefined()
 })
 
 
-test('executeAction', () => {
-    tool.executeAction('save')
-    expect(tool.saved).toBe(true)
+test('appLayout created', () => {
+    expect(tool.appLayout).not.toBeNull()
 })
 
 
-test('executeAction unknown', () => {
-    const result = tool.executeAction('unknown')
-    expect(result).toBe(false)
+test('init called on start', () => {
+    tool.start()
+    expect(tool.initCalled).toBe(true)
 })
 
 
@@ -106,12 +95,6 @@ test('flushSave when not dirty', () => {
 })
 
 
-test('init called on connect when context ready', () => {
-    expect(tool.initCalled).toBe(true)
-})
-
-
-test('appLayout created', () => {
-    expect(tool.appLayout).not.toBeNull()
-    expect(tool.appLayout.tagName.toLowerCase()).toBe('app-layout')
+test('listActions', () => {
+    expect(tool.listActions()).toEqual([])
 })

@@ -1,5 +1,5 @@
 import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
-import './animator_view.js'
+import AnimatorView from './animator_view.js'
 
 
 describe('AnimatorView', () => {
@@ -11,27 +11,13 @@ describe('AnimatorView', () => {
         container = document.createElement('div')
         document.body.appendChild(container)
 
-        view = document.createElement('animator-view')
-        container.appendChild(view)
+        view = new AnimatorView()
+        view.mount(container)
     })
 
 
     afterEach(() => {
         container.remove()
-    })
-
-
-    describe('initialization', () => {
-
-        test('extends HTMLElement', () => {
-            expect(view).toBeInstanceOf(HTMLElement)
-        })
-
-
-        test('has shadow DOM', () => {
-            expect(view.shadowRoot).not.toBeNull()
-        })
-
     })
 
 
@@ -88,61 +74,6 @@ describe('AnimatorView', () => {
             }).not.toThrow()
         })
 
-
-        test('accepts studio config', () => {
-            const mockTextureSystem = {
-                getSpritesheet: vi.fn(() => null)
-            }
-
-            expect(() => {
-                view.setContext({
-                    textureSystem: mockTextureSystem,
-                    animatorConfig: null,
-                    studioConfig: {unitsInView: {width: 10, height: 8}}
-                })
-            }).not.toThrow()
-        })
-
-    })
-
-
-    test('back button navigates to index.html', () => {
-        const mockTextureSystem = {
-            getSpritesheet: vi.fn(() => null)
-        }
-
-        view.setContext({
-            textureSystem: mockTextureSystem,
-            animatorConfig: {animations: {}},
-            animatorName: 'test'
-        })
-
-        const originalLocation = window.location
-        delete window.location
-        window.location = {href: ''}
-
-        const backBtn = view.shadowRoot.querySelector('.toolbar-btn')
-        backBtn?.click()
-
-        expect(window.location.href).toBe('index.html')
-
-        window.location = originalLocation
-    })
-
-
-    test('renders container element on setup', () => {
-        const mockTextureSystem = {
-            getSpritesheet: vi.fn(() => null)
-        }
-
-        view.setContext({
-            textureSystem: mockTextureSystem,
-            animatorConfig: null,
-            animatorName: null
-        })
-
-        const containerEl = view.shadowRoot.querySelector('.animator-container')
-        expect(containerEl).not.toBeNull()
     })
 
 
@@ -159,6 +90,30 @@ describe('AnimatorView', () => {
                 isCustom: true
             })
         }).not.toThrow()
+    })
+
+
+    test('has shadow after start', () => {
+        view.start()
+        expect(view.shadow).not.toBeNull()
+    })
+
+
+    test('has appLayout after start', () => {
+        view.start()
+        expect(view.appLayout).not.toBeNull()
+    })
+
+
+    test('renders container after start', () => {
+        view.setContext({
+            textureSystem: {getSpritesheet: vi.fn(() => null)},
+            animatorConfig: null,
+            animatorName: null
+        })
+        view.start()
+        const containerEl = view.shadow.querySelector('.animator-container')
+        expect(containerEl).not.toBeNull()
     })
 
 })

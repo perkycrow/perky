@@ -1,4 +1,5 @@
 import StudioTool from '../studio_tool.js'
+import SceneController from './scene_controller.js'
 import {createElement} from '../../application/dom_utils.js'
 import '../../editor/number_input.js'
 import '../../editor/layout/side_drawer.js'
@@ -21,23 +22,7 @@ const ENTITY_SIZE = 1
 
 export default class SceneView extends StudioTool {
 
-    static actions = {
-        undo: 'undoAction',
-        redo: 'redoAction',
-        copy: 'copySelectedEntity',
-        paste: 'pasteEntity',
-        duplicate: 'duplicateSelectedEntity',
-        delete: 'deleteSelectedEntity'
-    }
-
-    static bindings = {
-        undo: ['z+ctrl'],
-        redo: ['Z+ctrl'],
-        copy: ['c+ctrl'],
-        paste: ['v+ctrl'],
-        duplicate: ['d+ctrl'],
-        delete: ['Delete', 'Backspace']
-    }
+    static ActionController = SceneController
 
     #context = null
     #sceneId = null
@@ -56,8 +41,8 @@ export default class SceneView extends StudioTool {
     #clipboard = null
     #pointers = new Map()
 
-    onDisconnected () {
-        super.onDisconnected()
+    onStop () {
+        super.onStop()
         cancelAnimationFrame(this.#animFrame)
         this.#stage?.stop()
         this.#renderSystem?.dismount()
@@ -76,13 +61,6 @@ export default class SceneView extends StudioTool {
                 y: entry.y ?? 0,
                 index
             }))
-        }
-
-        this.#initStage()
-
-        if (this.isConnected) {
-            this.#updateTree()
-            this.#scheduleRender()
         }
     }
 
@@ -144,12 +122,11 @@ export default class SceneView extends StudioTool {
     }
 
 
-    hasContext () {
-        return Boolean(this.#context)
-    }
-
-
     init () {
+        if (!this.#context) {
+            return
+        }
+
         this.#initStage()
         this.#updateTree()
         this.#scheduleRender()
@@ -930,9 +907,6 @@ export default class SceneView extends StudioTool {
     }
 
 }
-
-
-customElements.define('scene-view', SceneView)
 
 
 function snapValue (value, step) {

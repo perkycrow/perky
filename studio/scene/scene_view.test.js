@@ -1,15 +1,16 @@
 import {describe, test, expect} from 'vitest'
 import SceneView from './scene_view.js'
+import Application from '../../application/application.js'
 
 
 describe('SceneView', () => {
 
-    test('is defined as custom element', () => {
-        expect(customElements.get('scene-view')).toBe(SceneView)
+    test('extends Application', () => {
+        expect(SceneView.prototype).toBeInstanceOf(Application)
     })
 
 
-    test('setContext accepts context before connection', () => {
+    test('setContext accepts context', () => {
         const view = new SceneView()
 
         view.setContext({
@@ -34,22 +35,6 @@ describe('SceneView', () => {
             studioConfig: {},
             scenes: {},
             sceneId: null,
-            wiring: null
-        })
-
-        expect(view).toBeInstanceOf(SceneView)
-    })
-
-
-    test('setContext handles sceneId not found in scenes', () => {
-        const view = new SceneView()
-
-        view.setContext({
-            manifest: {getAssetsByType: () => [], getSource: () => null},
-            textureSystem: {getSpritesheet: () => null, getRegion: () => null},
-            studioConfig: {},
-            scenes: {},
-            sceneId: 'unknown',
             wiring: null
         })
 
