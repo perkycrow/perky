@@ -37,6 +37,75 @@ test('addNumber', () => {
 
     const input = panel.shadowRoot.querySelector('.prop-input')
     expect(input.value).toBe('5')
+    expect(input.step).toBe('0.5')
+
+    const label = panel.shadowRoot.querySelector('.prop-label')
+    expect(label.textContent).toBe('x')
+})
+
+
+test('addNumber calls onChange on input change', () => {
+    const onChange = vi.fn()
+    panel.addNumber('x', 5, onChange)
+
+    const input = panel.shadowRoot.querySelector('.prop-input')
+    input.value = '10'
+    input.dispatchEvent(new Event('change'))
+
+    expect(onChange).toHaveBeenCalledWith(10)
+})
+
+
+test('addNumber respects custom step option', () => {
+    panel.addNumber('x', 5, vi.fn(), {step: 0.1})
+
+    const input = panel.shadowRoot.querySelector('.prop-input')
+    expect(input.step).toBe('0.1')
+})
+
+
+test('addNumber handles invalid input', () => {
+    const onChange = vi.fn()
+    panel.addNumber('x', 5, onChange)
+
+    const input = panel.shadowRoot.querySelector('.prop-input')
+    input.value = 'invalid'
+    input.dispatchEvent(new Event('change'))
+
+    expect(onChange).toHaveBeenCalledWith(0)
+})
+
+
+test('addText', () => {
+    const onChange = vi.fn()
+    panel.addText('name', 'Alice', onChange)
+
+    const input = panel.shadowRoot.querySelector('.prop-input')
+    expect(input.value).toBe('Alice')
+    expect(input.type).toBe('text')
+
+    const label = panel.shadowRoot.querySelector('.prop-label')
+    expect(label.textContent).toBe('name')
+})
+
+
+test('addText calls onChange on input change', () => {
+    const onChange = vi.fn()
+    panel.addText('name', 'Alice', onChange)
+
+    const input = panel.shadowRoot.querySelector('.prop-input')
+    input.value = 'Bob'
+    input.dispatchEvent(new Event('change'))
+
+    expect(onChange).toHaveBeenCalledWith('Bob')
+})
+
+
+test('addText handles empty value', () => {
+    panel.addText('name', null, vi.fn())
+
+    const input = panel.shadowRoot.querySelector('.prop-input')
+    expect(input.value).toBe('')
 })
 
 
@@ -46,6 +115,25 @@ test('addButton', () => {
 
     const btn = panel.shadowRoot.querySelector('.panel-btn.danger')
     expect(btn.textContent).toBe('Delete')
+})
+
+
+test('addButton calls onClick when clicked', () => {
+    const onClick = vi.fn()
+    panel.addButton('Save', onClick)
+
+    const btn = panel.shadowRoot.querySelector('.panel-btn')
+    btn.click()
+
+    expect(onClick).toHaveBeenCalled()
+})
+
+
+test('addButton without variant', () => {
+    panel.addButton('Save', vi.fn())
+
+    const btn = panel.shadowRoot.querySelector('.panel-btn')
+    expect(btn.className).toBe('panel-btn')
 })
 
 
