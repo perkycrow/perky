@@ -43,6 +43,7 @@ export default class SceneView extends EditorComponent {
     #renderSystem = null
     #history = new CommandHistory()
     #snapStep = 0.5
+    #clipboard = null
     #boundKeyDown = null
 
     onConnected () {
@@ -184,17 +185,11 @@ export default class SceneView extends EditorComponent {
         headerStart.appendChild(backBtn)
 
         const undoBtn = createElement('button', {class: 'toolbar-btn', text: '\u21A9', title: 'Undo'})
-        undoBtn.addEventListener('click', () => {
-            this.#history.undo()
-            this.#afterHistoryAction()
-        })
+        undoBtn.addEventListener('click', () => this.#undoAction())
         headerStart.appendChild(undoBtn)
 
         const redoBtn = createElement('button', {class: 'toolbar-btn', text: '\u21AA', title: 'Redo'})
-        redoBtn.addEventListener('click', () => {
-            this.#history.redo()
-            this.#afterHistoryAction()
-        })
+        redoBtn.addEventListener('click', () => this.#redoAction())
         headerStart.appendChild(redoBtn)
 
         this.#appLayout.appendChild(headerStart)
@@ -507,6 +502,48 @@ export default class SceneView extends EditorComponent {
     }
 
 
+    #copySelectedEntity () {
+        const entry = this.#entities[this.#selectedIndex]
+        const copy = {}
+
+        for (const key of ENTITY_ENTRY_KEYS) {
+            if (entry[key] !== undefined) {
+                copy[key] = entry[key]
+            }
+        }
+
+        this.#clipboard = copy
+    }
+
+
+    #pasteEntity () {
+        const cam = this.camera
+        const entry = {
+            ...this.#clipboard,
+            x: snapValue(cam.x, this.#snapStep),
+            y: snapValue(cam.y, this.#snapStep)
+        }
+
+        this.#addEntity(entry)
+    }
+
+
+    #duplicateSelectedEntity () {
+        const entry = this.#entities[this.#selectedIndex]
+        const copy = {}
+
+        for (const key of ENTITY_ENTRY_KEYS) {
+            if (entry[key] !== undefined) {
+                copy[key] = entry[key]
+            }
+        }
+
+        copy.x = (copy.x ?? 0) + 1
+        copy.y = (copy.y ?? 0) + 1
+        this.#addEntity(copy)
+    }
+
+
     async #openPreview () {
         this.#flushSave()
         await this.#autoSave()
@@ -530,16 +567,35 @@ export default class SceneView extends EditorComponent {
         }
 
         e.preventDefault()
+        this.#executeAction(action)
+    }
 
-        if (action === 'undo') {
-            this.#history.undo()
-            this.#afterHistoryAction()
-        } else if (action === 'redo') {
-            this.#history.redo()
-            this.#afterHistoryAction()
-        } else if (action === 'delete' && this.#selectedIndex >= 0) {
-            this.#deleteSelectedEntity()
+
+    #executeAction (action) {
+        const hasSelection = this.#selectedIndex >= 0
+
+        const actions = {
+            undo: () => this.#undoAction(),
+            redo: () => this.#redoAction(),
+            copy: () => hasSelection && this.#copySelectedEntity(),
+            paste: () => this.#clipboard && this.#pasteEntity(),
+            duplicate: () => hasSelection && this.#duplicateSelectedEntity(),
+            delete: () => hasSelection && this.#deleteSelectedEntity()
         }
+
+        actions[action]?.()
+    }
+
+
+    #undoAction () {
+        this.#history.undo()
+        this.#afterHistoryAction()
+    }
+
+
+    #redoAction () {
+        this.#history.redo()
+        this.#afterHistoryAction()
     }
 
 
@@ -850,6 +906,9 @@ function clamp (value, min, max) {
 const KEY_ACTIONS = {
     z: (e) => ((e.metaKey || e.ctrlKey) && !e.shiftKey ? 'undo' : null),
     Z: (e) => ((e.metaKey || e.ctrlKey) ? 'redo' : null),
+    c: (e) => ((e.metaKey || e.ctrlKey) ? 'copy' : null),
+    v: (e) => ((e.metaKey || e.ctrlKey) ? 'paste' : null),
+    d: (e) => ((e.metaKey || e.ctrlKey) ? 'duplicate' : null),
     Delete: () => 'delete',
     Backspace: () => 'delete'
 }
