@@ -78,6 +78,7 @@ describe(GestureRecognizer, () => {
         expect(defaultRecognizer.pinchThreshold).toBe(10)
         expect(defaultRecognizer.dragThreshold).toBe(5)
         expect(defaultRecognizer.doubleTapDelay).toBe(300)
+        expect(defaultRecognizer.multiTouchWindow).toBe(100)
         expect(defaultRecognizer.preventDefaultEvents).toBe(true)
     })
 
