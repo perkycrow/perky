@@ -3,6 +3,7 @@ import {
     editorThemeVariables,
     editorThemeVariablesLight,
     editorBaseStyles,
+    scrollbarStyles,
     editorScrollbarStyles,
     editorButtonStyles,
     editorHeaderStyles,
@@ -94,6 +95,38 @@ describe('editor_theme', () => {
 
         test('contains hidden class', () => {
             expect(editorBaseStyles).toContain('.hidden')
+        })
+
+    })
+
+
+    describe('scrollbarStyles', () => {
+
+        test('returns a string', () => {
+            expect(typeof scrollbarStyles()).toBe('string')
+        })
+
+
+        test('contains webkit-scrollbar styles', () => {
+            const result = scrollbarStyles()
+            expect(result).toContain('::-webkit-scrollbar')
+            expect(result).toContain('::-webkit-scrollbar-track')
+            expect(result).toContain('::-webkit-scrollbar-thumb')
+        })
+
+
+        test('uses empty selector by default', () => {
+            const result = scrollbarStyles()
+            expect(result).toContain('::-webkit-scrollbar')
+            expect(result).not.toContain('.custom::-webkit-scrollbar')
+        })
+
+
+        test('accepts custom selector', () => {
+            const result = scrollbarStyles('.custom')
+            expect(result).toContain('.custom::-webkit-scrollbar')
+            expect(result).toContain('.custom::-webkit-scrollbar-track')
+            expect(result).toContain('.custom::-webkit-scrollbar-thumb')
         })
 
     })
