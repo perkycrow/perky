@@ -1,6 +1,6 @@
 import StudioTool from '../studio_tool.js'
 import {createElement} from '../../application/dom_utils.js'
-import '../../editor/number_input.js'
+import '../../editor/properties_panel.js'
 import '../../editor/layout/side_drawer.js'
 import Stage from '../../game/stage.js'
 import World from '../../game/world.js'
@@ -228,7 +228,7 @@ export default class SceneView extends StudioTool {
         this.#containerEl.appendChild(viewport)
 
         this.#propsDrawer = createElement('side-drawer', {attrs: {position: 'right'}})
-        this.#propsPanel = createElement('div', {class: 'properties-panel'})
+        this.#propsPanel = document.createElement('properties-panel')
         this.#propsDrawer.appendChild(this.#propsPanel)
         this.#containerEl.appendChild(this.#propsDrawer)
 
@@ -242,32 +242,23 @@ export default class SceneView extends StudioTool {
 
 
     #buildPropsPanel () {
-        this.#propsPanel.innerHTML = ''
-
-        this.#propsPanel.appendChild(createElement('div', {
-            class: 'panel-title',
-            text: 'Properties'
-        }))
+        this.#propsPanel.clear()
+        this.#propsPanel.addTitle('Properties')
 
         if (this.#selectedIndex >= 0) {
             const entity = this.#entities[this.#selectedIndex]
-            this.#addPropInput('x', entity.x, (v) => this.#updateEntityProp('x', v))
-            this.#addPropInput('y', entity.y, (v) => this.#updateEntityProp('y', v))
-            this.#addPropInput('depth', entity.depth ?? 0, (v) => this.#updateEntityProp('depth', v))
+            this.#propsPanel.addNumber('x', entity.x, (v) => this.#updateEntityProp('x', v))
+            this.#propsPanel.addNumber('y', entity.y, (v) => this.#updateEntityProp('y', v))
+            this.#propsPanel.addNumber('depth', entity.depth ?? 0, (v) => this.#updateEntityProp('depth', v))
 
             if (entity.texture) {
-                this.#addPropInput('width', entity.width ?? 2, (v) => this.#updateEntityProp('width', v))
-                this.#addPropInput('height', entity.height ?? 2, (v) => this.#updateEntityProp('height', v))
+                this.#propsPanel.addNumber('width', entity.width ?? 2, (v) => this.#updateEntityProp('width', v))
+                this.#propsPanel.addNumber('height', entity.height ?? 2, (v) => this.#updateEntityProp('height', v))
             }
 
-            const deleteBtn = createElement('button', {class: 'delete-btn', text: 'Delete'})
-            deleteBtn.addEventListener('click', () => this.deleteSelectedEntity())
-            this.#propsPanel.appendChild(deleteBtn)
+            this.#propsPanel.addButton('Delete', () => this.deleteSelectedEntity(), 'danger')
         } else {
-            this.#propsPanel.appendChild(createElement('div', {
-                class: 'empty-message',
-                text: 'Select an entity'
-            }))
+            this.#propsPanel.addMessage('Select an entity')
         }
 
         this.#buildPaletteDrawer()
@@ -281,32 +272,10 @@ export default class SceneView extends StudioTool {
 
         this.#paletteDrawer.innerHTML = ''
 
-        const content = createElement('div', {class: 'properties-panel'})
-
         this.#treeEl = createElement('div', {class: 'scene-tree'})
-        content.appendChild(this.#treeEl)
+        this.#paletteDrawer.appendChild(this.#treeEl)
         this.#updateTree()
-
-        this.#paletteDrawer.appendChild(content)
         this.#buildPalette()
-    }
-
-
-    #addPropInput (label, value, onChange) {
-        const row = createElement('div', {class: 'prop-row'})
-        row.appendChild(createElement('span', {class: 'prop-label', text: label}))
-
-        const input = createElement('input', {
-            class: 'prop-input',
-            attrs: {type: 'number', step: '0.5', value: String(value)}
-        })
-
-        input.addEventListener('change', () => {
-            onChange(parseFloat(input.value) || 0)
-        })
-
-        row.appendChild(input)
-        this.#propsPanel.appendChild(row)
     }
 
 
