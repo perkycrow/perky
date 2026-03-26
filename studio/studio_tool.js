@@ -101,6 +101,16 @@ export default class StudioTool extends EditorComponent {
     }
 
 
+    listActions () {
+        return Object.keys(this.constructor.actions || {})
+    }
+
+
+    listBindings () {
+        return {...(this.constructor.bindings || {})}
+    }
+
+
     #setupStyles () {
         adoptStyleSheets(this.shadowRoot, toolbarStyles, ...this.toolStyles())
     }
