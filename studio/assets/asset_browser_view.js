@@ -184,3 +184,6 @@ export default class AssetBrowserView extends StudioTool {
     }
 
 }
+
+
+customElements.define('asset-browser-view', AssetBrowserView)

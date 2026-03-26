@@ -1,5 +1,4 @@
 import StudioTool from '../studio_tool.js'
-import SceneController from './scene_controller.js'
 import {createElement} from '../../application/dom_utils.js'
 import '../../editor/number_input.js'
 import '../../editor/layout/side_drawer.js'
@@ -22,7 +21,23 @@ const ENTITY_SIZE = 1
 
 export default class SceneView extends StudioTool {
 
-    static ActionController = SceneController
+    static actions = {
+        undo: 'undoAction',
+        redo: 'redoAction',
+        copy: 'copySelectedEntity',
+        paste: 'pasteEntity',
+        duplicate: 'duplicateSelectedEntity',
+        delete: 'deleteSelectedEntity'
+    }
+
+    static bindings = {
+        undo: 'ctrl+z',
+        redo: ['ctrl+shift+z', 'ctrl+y'],
+        copy: 'ctrl+c',
+        paste: 'ctrl+v',
+        duplicate: 'ctrl+d',
+        delete: ['Delete', 'Backspace']
+    }
 
     #context = null
     #sceneId = null
@@ -41,8 +56,8 @@ export default class SceneView extends StudioTool {
     #clipboard = null
     #pointers = new Map()
 
-    onStop () {
-        super.onStop()
+    onDisconnected () {
+        super.onDisconnected()
         cancelAnimationFrame(this.#animFrame)
         this.#stage?.stop()
         this.#renderSystem?.dismount()
@@ -1031,3 +1046,6 @@ function renderGrid (ctx, cam, lineWidth) {
     ctx.lineTo(bigNumber, 0)
     ctx.stroke()
 }
+
+
+customElements.define('scene-view', SceneView)

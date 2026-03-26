@@ -1,7 +1,8 @@
 import logger from '../../core/logger.js'
 import PerkyStore from '../../io/perky_store.js'
 import {loadManifest, buildTextureSystem, getStudioConfig, collectScenes} from '../launcher.js'
-import SceneView from './scene_view.js'
+
+import './scene_view.js'
 
 
 export async function launchSceneStudio (manifestData, container, options = {}) {
@@ -21,11 +22,9 @@ export async function launchSceneStudio (manifestData, container, options = {}) 
         }
 
         container.innerHTML = ''
-
-        const app = new SceneView()
-        app.setContext({manifest, textureSystem, studioConfig, scenes, sceneId, wiring})
-        app.mount(container)
-        app.start()
+        const sceneView = document.createElement('scene-view')
+        sceneView.setContext({manifest, textureSystem, studioConfig, scenes, sceneId, wiring})
+        container.appendChild(sceneView)
 
     } catch (error) {
         container.innerHTML = `<div class="loading" style="color: #f66;">Error: ${error.message}</div>`

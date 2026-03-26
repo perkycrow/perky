@@ -1,21 +1,31 @@
-import {test, expect, beforeEach} from 'vitest'
-import AssetBrowserView from './asset_browser_view.js'
+import {test, expect, beforeEach, afterEach} from 'vitest'
+import './asset_browser_view.js'
 
 
 let view
+let container
 
 
 beforeEach(() => {
-    const container = document.createElement('div')
+    container = document.createElement('div')
     document.body.appendChild(container)
-    view = new AssetBrowserView()
-    view.mount(container)
-    view.start()
+    view = document.createElement('asset-browser-view')
+    container.appendChild(view)
+})
+
+
+afterEach(() => {
+    container.remove()
 })
 
 
 test('constructor', () => {
     expect(view.appLayout).not.toBeNull()
+})
+
+
+test('hasContext false by default', () => {
+    expect(view.hasContext()).toBe(false)
 })
 
 

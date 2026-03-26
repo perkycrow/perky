@@ -711,6 +711,9 @@ export default class AnimatorView extends StudioTool {
 }
 
 
+customElements.define('animator-view', AnimatorView)
+
+
 async function buildForkFiles (name, spritesheetId, animatorConfig, spritesheetSource) {
     const {data, images} = spritesheetSource
     const atlasBlobs = await Promise.all(images.map(imageToBlob))

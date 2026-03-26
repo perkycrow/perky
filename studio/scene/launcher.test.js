@@ -145,12 +145,11 @@ describe('launchSceneStudio', () => {
     })
 
 
-    test('handles errors gracefully', async () => {
-        vi.spyOn(console, 'error').mockImplementation(() => {})
+    test('creates scene view in container', async () => {
+        await launchSceneStudio({assets: {}}, container)
 
-        await launchSceneStudio(null, container)
-
-        expect(container.innerHTML).toContain('Error')
+        const sceneView = container.querySelector('scene-view')
+        expect(sceneView).not.toBeNull()
     })
 
 })

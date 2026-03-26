@@ -1,7 +1,7 @@
 import {createStyleSheet} from '../../application/dom_utils.js'
 
 
-export const toolbarStyles = createStyleSheet(`
+export const toolbarStylesRaw = `
     .header-controls {
         display: flex;
         align-items: center;
@@ -71,4 +71,6 @@ export const toolbarStyles = createStyleSheet(`
         background: var(--status-success);
         color: var(--bg-primary);
     }
-`)
+`
+
+export const toolbarStyles = createStyleSheet(toolbarStylesRaw)

@@ -1,7 +1,5 @@
-import Application from '../application/application.js'
-import {createElement, createStyleSheet, adoptStyleSheets} from '../application/dom_utils.js'
-import {themeCSS} from '../editor/styles/theme.styles.js'
-import {resetCSS} from '../editor/styles/reset.styles.js'
+import EditorComponent from '../editor/editor_component.js'
+import {createElement, adoptStyleSheets} from '../application/dom_utils.js'
 import PerkyStore from '../io/perky_store.js'
 import CommandHistory from '../editor/command_history.js'
 import {toolbarStyles} from '../editor/styles/toolbar.styles.js'
@@ -12,30 +10,38 @@ import '../editor/layout/app_layout.js'
 const AUTO_SAVE_DELAY = 2000
 
 
-export default class StudioTool extends Application {
+export default class StudioTool extends EditorComponent {
 
     store = new PerkyStore()
     history = new CommandHistory()
     appLayout = null
-    shadow = null
 
     #dirty = false
     #autoSaveTimer = null
+    #boundBeforeUnload = null
+    #boundKeyDown = null
 
-    onStart () {
-        this.shadow = this.element.attachShadow({mode: 'open'})
-        const allStyles = [...themeCSS, resetCSS, ...this.toolStyles()]
-            .map(s => (typeof s === 'string' ? createStyleSheet(s) : s))
-        adoptStyleSheets(this.shadow, toolbarStyles, ...allStyles)
+    onConnected () {
+        this.#setupStyles()
         this.#buildBaseLayout()
-        window.addEventListener('beforeunload', () => this.flushSave())
-        this.init()
+        this.#setupLifecycle()
+
+        if (this.hasContext()) {
+            this.init()
+        }
     }
 
 
-    onStop () {
+    onDisconnected () {
+        window.removeEventListener('beforeunload', this.#boundBeforeUnload)
+        window.removeEventListener('keydown', this.#boundKeyDown)
         clearTimeout(this.#autoSaveTimer)
         this.flushSave()
+    }
+
+
+    hasContext () { // eslint-disable-line local/class-methods-use-this -- clean
+        return false
     }
 
 
@@ -82,6 +88,19 @@ export default class StudioTool extends Application {
     }
 
 
+    executeAction (name) {
+        const actions = this.constructor.actions || {}
+        const methodName = actions[name]
+
+        if (methodName && typeof this[methodName] === 'function') {
+            this[methodName]()
+            return true
+        }
+
+        return false
+    }
+
+
     listActions () {
         return Object.keys(this.constructor.actions || {})
     }
@@ -89,6 +108,11 @@ export default class StudioTool extends Application {
 
     listBindings () {
         return {...(this.constructor.bindings || {})}
+    }
+
+
+    #setupStyles () {
+        adoptStyleSheets(this.shadowRoot, toolbarStyles, ...this.toolStyles())
     }
 
 
@@ -133,7 +157,29 @@ export default class StudioTool extends Application {
             this.appLayout.appendChild(content)
         }
 
-        this.shadow.appendChild(this.appLayout)
+        this.shadowRoot.appendChild(this.appLayout)
+    }
+
+
+    #setupLifecycle () {
+        this.#boundBeforeUnload = () => this.flushSave()
+        window.addEventListener('beforeunload', this.#boundBeforeUnload)
+
+        this.#boundKeyDown = (e) => this.#onKeyDown(e)
+        window.addEventListener('keydown', this.#boundKeyDown)
+    }
+
+
+    #onKeyDown (e) {
+        const bindings = this.constructor.bindings || {}
+        const action = resolveKeyAction(e, bindings)
+
+        if (!action) {
+            return
+        }
+
+        e.preventDefault()
+        this.executeAction(action)
     }
 
 
@@ -142,4 +188,36 @@ export default class StudioTool extends Application {
         this.autoSave()
     }
 
+}
+
+
+function resolveKeyAction (e, bindings) {
+    for (const [action, keys] of Object.entries(bindings)) {
+        const keyList = Array.isArray(keys) ? keys : [keys]
+
+        for (const binding of keyList) {
+            if (matchesBinding(e, binding)) {
+                return action
+            }
+        }
+    }
+
+    return null
+}
+
+
+function matchesBinding (e, binding) {
+    const parts = binding.split('+')
+    const key = parts.pop()
+    const modifiers = parts.map(m => m.toLowerCase())
+
+    if (e.key.toLowerCase() !== key.toLowerCase()) {
+        return false
+    }
+
+    const needsCtrl = modifiers.includes('ctrl') || modifiers.includes('cmd')
+    const needsShift = modifiers.includes('shift')
+    const hasCtrl = e.ctrlKey || e.metaKey
+
+    return needsCtrl === hasCtrl && needsShift === e.shiftKey
 }
