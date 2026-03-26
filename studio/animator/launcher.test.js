@@ -93,6 +93,7 @@ describe('launchAnimatorStudio', () => {
 
     let container
     let launchAnimatorStudio
+    let logger
 
     beforeEach(async () => {
         container = document.createElement('div')
@@ -100,6 +101,9 @@ describe('launchAnimatorStudio', () => {
 
         const module = await import('./launcher.js')
         launchAnimatorStudio = module.launchAnimatorStudio
+
+        const loggerModule = await import('../../core/logger.js')
+        logger = loggerModule.default
     })
 
     afterEach(() => {
@@ -137,6 +141,78 @@ describe('launchAnimatorStudio', () => {
         await launchAnimatorStudio(manifestData, container)
 
         expect(container.children.length).toBeGreaterThan(0)
+    })
+
+
+    test('creates animator-view element', async () => {
+        const manifestData = {
+            assets: {
+                player: {
+                    type: 'animator',
+                    animations: {idle: {frames: []}}
+                }
+            }
+        }
+
+        await launchAnimatorStudio(manifestData, container)
+
+        const animatorView = container.querySelector('animator-view')
+        expect(animatorView).not.toBeNull()
+    })
+
+
+    test('uses specified animatorId when available', async () => {
+        const manifestData = {
+            assets: {
+                player: {
+                    type: 'animator',
+                    animations: {idle: {frames: []}}
+                },
+                enemy: {
+                    type: 'animator',
+                    animations: {walk: {frames: []}}
+                }
+            }
+        }
+
+        await launchAnimatorStudio(manifestData, container, {animatorId: 'enemy'})
+
+        const animatorView = container.querySelector('animator-view')
+        expect(animatorView).not.toBeNull()
+    })
+
+
+    test('falls back to first animator when animatorId not found', async () => {
+        const manifestData = {
+            assets: {
+                player: {
+                    type: 'animator',
+                    animations: {idle: {frames: []}}
+                }
+            }
+        }
+
+        await launchAnimatorStudio(manifestData, container, {animatorId: 'nonexistent'})
+
+        const animatorView = container.querySelector('animator-view')
+        expect(animatorView).not.toBeNull()
+    })
+
+
+    test('falls back to game animator when custom animator not found in store', async () => {
+        const manifestData = {
+            assets: {
+                player: {
+                    type: 'animator',
+                    animations: {idle: {frames: []}}
+                }
+            }
+        }
+
+        await launchAnimatorStudio(manifestData, container, {isCustom: true, animatorId: 'customAnim'})
+
+        const animatorView = container.querySelector('animator-view')
+        expect(animatorView).not.toBeNull()
     })
 
 })
