@@ -1,6 +1,7 @@
 import StudioTool from '../studio_tool.js'
 import {createElement} from '../../application/dom_utils.js'
 import '../../editor/number_input.js'
+import '../../editor/layout/side_drawer.js'
 import Stage from '../../game/stage.js'
 import World from '../../game/world.js'
 import RenderSystem from '../../render/render_system.js'
@@ -44,6 +45,8 @@ export default class SceneView extends StudioTool {
     #selectedIndex = -1
     #containerEl = null
     #propsPanel = null
+    #propsDrawer = null
+    #paletteDrawer = null
     #treeEl = null
     #drag = null
     #animFrame = null
@@ -175,6 +178,14 @@ export default class SceneView extends StudioTool {
     buildHeaderEnd () {
         const container = createElement('div')
 
+        const paletteBtn = createElement('button', {class: 'toolbar-btn', text: '\u2630', title: 'Toggle palette'})
+        paletteBtn.addEventListener('click', () => this.#paletteDrawer?.toggle())
+        container.appendChild(paletteBtn)
+
+        const propsBtn = createElement('button', {class: 'toolbar-btn', text: '\u2699', title: 'Toggle properties'})
+        propsBtn.addEventListener('click', () => this.#propsDrawer?.toggle())
+        container.appendChild(propsBtn)
+
         const snapBtn = createElement('button', {class: 'toolbar-btn active', text: 'Snap 0.5', title: 'Toggle grid snap'})
         snapBtn.addEventListener('click', () => {
             if (this.#snapStep) {
@@ -218,9 +229,15 @@ export default class SceneView extends StudioTool {
         this.#setupInputEvents(viewport)
         this.#containerEl.appendChild(viewport)
 
+        this.#propsDrawer = createElement('side-drawer', {attrs: {position: 'right'}})
         this.#propsPanel = createElement('div', {class: 'properties-panel'})
+        this.#propsDrawer.appendChild(this.#propsPanel)
+        this.#containerEl.appendChild(this.#propsDrawer)
+
+        this.#paletteDrawer = createElement('side-drawer', {attrs: {position: 'left'}})
+        this.#containerEl.appendChild(this.#paletteDrawer)
+
         this.#buildPropsPanel()
-        this.#containerEl.appendChild(this.#propsPanel)
 
         return this.#containerEl
     }
@@ -255,9 +272,24 @@ export default class SceneView extends StudioTool {
             }))
         }
 
+        this.#buildPaletteDrawer()
+    }
+
+
+    #buildPaletteDrawer () {
+        if (!this.#paletteDrawer) {
+            return
+        }
+
+        this.#paletteDrawer.innerHTML = ''
+
+        const content = createElement('div', {class: 'properties-panel'})
+
         this.#treeEl = createElement('div', {class: 'scene-tree'})
-        this.#propsPanel.appendChild(this.#treeEl)
+        content.appendChild(this.#treeEl)
         this.#updateTree()
+
+        this.#paletteDrawer.appendChild(content)
         this.#buildPalette()
     }
 
@@ -379,7 +411,8 @@ export default class SceneView extends StudioTool {
             }
         }
 
-        this.#propsPanel.appendChild(paletteEl)
+        const target = this.#paletteDrawer?.querySelector('.properties-panel') || this.#propsPanel
+        target.appendChild(paletteEl)
     }
 
 
@@ -515,6 +548,10 @@ export default class SceneView extends StudioTool {
     #selectEntity (index) {
         this.#selectedIndex = index
         this.#buildPropsPanel()
+
+        if (index >= 0 && this.#propsDrawer) {
+            this.#propsDrawer.open()
+        }
         this.#scheduleRender()
     }
 

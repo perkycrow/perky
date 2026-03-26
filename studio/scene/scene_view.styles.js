@@ -9,12 +9,13 @@ export const sceneViewStyles = createStyleSheet(`
     }
 
     .scene-container {
-        display: flex;
+        position: relative;
         height: 100%;
     }
 
     .viewport {
-        flex: 1;
+        width: 100%;
+        height: 100%;
         position: relative;
         overflow: hidden;
     }
@@ -25,11 +26,8 @@ export const sceneViewStyles = createStyleSheet(`
     }
 
     .properties-panel {
-        width: 220px;
-        background: var(--bg-secondary);
-        border-left: 1px solid var(--border);
         padding: var(--spacing-lg);
-        overflow-y: auto;
+        padding-top: calc(28px + var(--spacing-lg));
     }
 
     .panel-title {
