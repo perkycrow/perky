@@ -61,6 +61,17 @@ describe('dedent', () => {
         expect(result).toBe('first line\nsecond line\nthird line')
     })
 
+
+    test('ignores whitespace-only lines for min indent calculation', () => {
+        const input = `
+            line 1
+
+            line 2
+        `
+        const result = dedent(input)
+        expect(result).toBe('line 1\n\nline 2')
+    })
+
 })
 
 
@@ -81,6 +92,13 @@ describe('dedentSource', () => {
     test('handles no indentation', () => {
         const input = 'line 1\nline 2'
         expect(dedentSource(input)).toBe('line 1\nline 2')
+    })
+
+
+    test('preserves leading and trailing empty lines', () => {
+        const input = '\n    line 1\n    line 2\n'
+        const result = dedentSource(input)
+        expect(result).toBe('\nline 1\nline 2\n')
     })
 
 })
