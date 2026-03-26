@@ -186,9 +186,13 @@ export default class HubView extends EditorComponent {
         const thumbnail = createElement('div', {class: 'create-icon', text: '\u25A6'})
         const isCustom = state === 'custom' || state === 'modified'
 
-        return this.#createCard({name, state, thumbnail, meta: 'Scene', onClick: () => {
-            window.location.href = buildStudioUrl('scene.html', name, isCustom)
-        }})
+        return this.#createCard({name,
+            state,
+            thumbnail,
+            meta: 'Scene',
+            onClick: () => {
+                window.location.href = buildStudioUrl('scene.html', name, isCustom)
+            }})
     }
 
 
@@ -371,9 +375,13 @@ export default class HubView extends EditorComponent {
         const isCustom = state === 'custom' || state === 'modified'
         const animCount = config.animations ? Object.keys(config.animations).length : 0
 
-        return this.#createCard({name, state, thumbnail, meta: pluralize('animation', animCount, true), onClick: () => {
-            this.#openAnimator(name, isCustom)
-        }})
+        return this.#createCard({name,
+            state,
+            thumbnail,
+            meta: pluralize('animation', animCount, true),
+            onClick: () => {
+                this.#openAnimator(name, isCustom)
+            }})
     }
 
 

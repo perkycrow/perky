@@ -23,4 +23,16 @@ export default class SpriteEntityView extends EntityView {
         })
     }
 
+
+    sync () {
+        super.sync()
+
+        if (this.root) {
+            this.root.width = this.entity.options.width ?? null
+            this.root.height = this.entity.options.height ?? null
+            this.root.setDepth(this.entity.options.depth ?? 0)
+            this.root.opacity = this.entity.options.opacity ?? 1
+        }
+    }
+
 }

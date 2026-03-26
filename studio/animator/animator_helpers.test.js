@@ -269,7 +269,7 @@ describe('animator_helpers', () => {
             const blob1 = new Blob(['png1'], {type: 'image/png'})
             const blob2 = new Blob(['png2'], {type: 'image/png'})
 
-            const files = buildAnimatorFiles('player', 'playerSpritesheet', config, spritesheetData, [blob1, blob2])
+            const files = buildAnimatorFiles({name: 'player', spritesheetName: 'playerSpritesheet', animatorConfig: config, spritesheetData, atlasBlobs: [blob1, blob2]})
 
             expect(files).toHaveLength(4)
             expect(files[0].name).toBe('playerAnimator.json')
@@ -279,7 +279,7 @@ describe('animator_helpers', () => {
         })
 
         test('creates only JSON files when no atlases', () => {
-            const files = buildAnimatorFiles('test', 'testSpritesheet', {}, {}, [])
+            const files = buildAnimatorFiles({name: 'test', spritesheetName: 'testSpritesheet', animatorConfig: {}, spritesheetData: {}, atlasBlobs: []})
             expect(files).toHaveLength(2)
         })
 
@@ -287,7 +287,7 @@ describe('animator_helpers', () => {
             const config = {anchor: {x: 0.5, y: 0.5}}
             const spritesheetData = {frames: [{filename: 'idle_0'}]}
 
-            const files = buildAnimatorFiles('hero', 'heroSpritesheet', config, spritesheetData, [])
+            const files = buildAnimatorFiles({name: 'hero', spritesheetName: 'heroSpritesheet', animatorConfig: config, spritesheetData, atlasBlobs: []})
 
             expect(files[0].blob.type).toBe('application/json')
             expect(files[1].blob.type).toBe('application/json')

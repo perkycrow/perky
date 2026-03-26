@@ -68,7 +68,8 @@ export function buildAnimationConfig (anim, spritesheetName) {
 }
 
 
-export function buildAnimatorFiles (name, spritesheetName, animatorConfig, spritesheetData, atlasBlobs) {
+export function buildAnimatorFiles (params) {
+    const {name, spritesheetName, animatorConfig, spritesheetData, atlasBlobs} = params
     const files = [
         {name: `${name}Animator.json`, blob: new Blob([JSON.stringify(animatorConfig)], {type: 'application/json'})},
         {name: `${spritesheetName}.json`, blob: new Blob([JSON.stringify(spritesheetData)], {type: 'application/json'})}

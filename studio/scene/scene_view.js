@@ -250,6 +250,12 @@ export default class SceneView extends EditorComponent {
             const entity = this.#entities[this.#selectedIndex]
             this.#addPropInput('x', entity.x, (v) => this.#updateEntityProp('x', v))
             this.#addPropInput('y', entity.y, (v) => this.#updateEntityProp('y', v))
+            this.#addPropInput('depth', entity.depth ?? 0, (v) => this.#updateEntityProp('depth', v))
+
+            if (entity.texture) {
+                this.#addPropInput('width', entity.width ?? 2, (v) => this.#updateEntityProp('width', v))
+                this.#addPropInput('height', entity.height ?? 2, (v) => this.#updateEntityProp('height', v))
+            }
 
             const deleteBtn = createElement('button', {class: 'delete-btn', text: 'Delete'})
             deleteBtn.addEventListener('click', () => this.#deleteSelectedEntity())

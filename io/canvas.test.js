@@ -206,17 +206,13 @@ describe('drawRegion', () => {
 })
 
 
-describe('imageToBlob', () => {
-
-    test('converts canvas-like image to blob', async () => {
-        const canvas = await createCanvas(10, 10)
-        canvas.width = 10
-        canvas.height = 10
-        const blob = await imageToBlob(canvas)
-        expect(blob).toBeInstanceOf(Blob)
-        expect(blob.type).toBe('image/png')
-    })
-
+test('imageToBlob converts canvas-like image to blob', async () => {
+    const canvas = await createCanvas(10, 10)
+    canvas.width = 10
+    canvas.height = 10
+    const blob = await imageToBlob(canvas)
+    expect(blob).toBeInstanceOf(Blob)
+    expect(blob.type).toBe('image/png')
 })
 
 

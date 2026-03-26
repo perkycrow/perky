@@ -488,7 +488,7 @@ export default class PsdImporter extends EditorComponent {
             const atlasBlobs = await Promise.all(
                 result.atlases.map(atlas => canvasToBlob(atlas.canvas))
             )
-            const files = buildAnimatorFiles(name, result.spritesheetName, result.animatorConfig, result.spritesheetJson, atlasBlobs)
+            const files = buildAnimatorFiles({name, spritesheetName: result.spritesheetName, animatorConfig: result.animatorConfig, spritesheetData: result.spritesheetJson, atlasBlobs})
             const animatorId = `${name}Animator`
 
             await this.#store.save(animatorId, {
@@ -531,5 +531,3 @@ function handleDragOver (e, dropZone) {
 function sanitizeName (name) {
     return name.replace(/[^a-zA-Z0-9_]/g, '').replace(/^[0-9]/, '')
 }
-
-

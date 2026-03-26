@@ -736,7 +736,7 @@ export default class AnimatorView extends EditorComponent {
         const atlasBlobs = await Promise.all(
             result.atlases.map(atlas => canvasToBlob(atlas.canvas))
         )
-        const files = buildAnimatorFiles(name, spritesheetName, animatorConfig, result.spritesheetJson, atlasBlobs)
+        const files = buildAnimatorFiles({name, spritesheetName, animatorConfig, spritesheetData: result.spritesheetJson, atlasBlobs})
 
         await this.#store.save(this.#animatorName, {
             type: 'animator',
@@ -756,9 +756,8 @@ customElements.define('animator-view', AnimatorView)
 async function buildForkFiles (name, spritesheetId, animatorConfig, spritesheetSource) {
     const {data, images} = spritesheetSource
     const atlasBlobs = await Promise.all(images.map(imageToBlob))
-    return buildAnimatorFiles(name, spritesheetId, animatorConfig, data, atlasBlobs)
+    return buildAnimatorFiles({name, spritesheetName: spritesheetId, animatorConfig, spritesheetData: data, atlasBlobs})
 }
-
 
 
 function cleanAnimatorConfig (config, spritesheetJson) {
