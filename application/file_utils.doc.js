@@ -10,7 +10,7 @@ export default doc('File Utils', () => {
     `)
 
 
-    code('Pick an image file', () => {
+    code('Pick an image file', async () => {
         const file = await pickFile('image/*')
         if (file) {
             // file is a File object
@@ -19,11 +19,11 @@ export default doc('File Utils', () => {
     })
 
 
-    code('Pick a JSON file', () => {
+    code('Pick a JSON file', async () => {
         const file = await pickFile('.json')
         if (file) {
-            const text = await file.text()
-            const data = JSON.parse(text)
+            const content = await file.text()
+            const data = JSON.parse(content)
         }
     })
 
