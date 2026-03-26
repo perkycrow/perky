@@ -103,6 +103,24 @@ export async function resizeCanvas (sourceCanvas, targetWidth, targetHeight, nea
 }
 
 
+export function drawRegion (source, {x, y, width, height}) {
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    canvas.getContext('2d').drawImage(source, x, y, width, height, 0, 0, width, height)
+    return canvas
+}
+
+
+export function imageToBlob (image) {
+    const canvas = document.createElement('canvas')
+    canvas.width = image.naturalWidth || image.width
+    canvas.height = image.naturalHeight || image.height
+    canvas.getContext('2d').drawImage(image, 0, 0)
+    return new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
+}
+
+
 export function blobToText (blob) {
     if (typeof blob.text === 'function') {
         return blob.text()

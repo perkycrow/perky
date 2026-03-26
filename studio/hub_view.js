@@ -3,7 +3,7 @@ import {createElement, adoptStyleSheets} from '../application/dom_utils.js'
 import {pluralize} from '../core/utils.js'
 import {flash} from '../editor/flash.js'
 import PerkyStore from '../io/perky_store.js'
-import {blobToText, blobToImage} from '../io/canvas.js'
+import {blobToText, blobToImage, drawRegion} from '../io/canvas.js'
 import {pickFile} from '../application/file_utils.js'
 import {hubViewStyles} from './hub_view.styles.js'
 import '../editor/layout/app_layout.js'
@@ -183,44 +183,12 @@ export default class HubView extends EditorComponent {
 
 
     #createSceneCard (name, state = 'game') {
-        const card = createElement('div', {class: 'animator-card selectable'})
+        const thumbnail = createElement('div', {class: 'create-icon', text: '\u25A6'})
         const isCustom = state === 'custom' || state === 'modified'
-        card.dataset.name = name
 
-        const preview = createElement('div', {class: 'card-preview'})
-        preview.appendChild(createElement('div', {class: 'create-icon', text: '\u25A6'}))
-
-        if (state === 'custom') {
-            preview.appendChild(createElement('div', {class: 'card-badge', text: 'New'}))
-        } else if (state === 'modified') {
-            preview.appendChild(createElement('div', {class: 'card-badge modified', text: 'Modified'}))
-        }
-
-        const checkbox = createElement('div', {class: 'card-checkbox'})
-        checkbox.dataset.name = name
-        preview.appendChild(checkbox)
-
-        card.appendChild(preview)
-
-        const info = createElement('div', {class: 'card-info'})
-        info.appendChild(createElement('div', {class: 'card-title', text: name}))
-        info.appendChild(createElement('div', {class: 'card-meta', text: 'Scene'}))
-        card.appendChild(info)
-
-        card.addEventListener('click', () => {
-            if (this.#selectionMode) {
-                const cardCheckbox = card.querySelector('.card-checkbox')
-                cardCheckbox.classList.toggle('selected')
-                this.#toggleItemSelection(name)
-            } else {
-                const url = isCustom
-                    ? `scene.html?id=${encodeURIComponent(name)}&custom=1`
-                    : `scene.html?id=${encodeURIComponent(name)}`
-                window.location.href = url
-            }
-        })
-
-        return card
+        return this.#createCard({name, state, thumbnail, meta: 'Scene', onClick: () => {
+            window.location.href = buildStudioUrl('scene.html', name, isCustom)
+        }})
     }
 
 
@@ -322,19 +290,23 @@ export default class HubView extends EditorComponent {
     }
 
 
-    async #resolveConflicts (ids) {
+    #ensureConflictResolver () {
         if (!this.#conflictResolver) {
             this.#conflictResolver = document.createElement('conflict-resolver')
             this.shadowRoot.appendChild(this.#conflictResolver)
         }
+        return this.#conflictResolver
+    }
 
+
+    async #resolveConflicts (ids) {
         const conflicts = ids.map(id => ({
             id,
             name: id,
             customDate: this.#customMeta.get(id)?.updatedAt || 0,
             gameDate: this.#manifest?.getAsset?.(id)?.updatedAt || 0
         }))
-        const choices = await this.#conflictResolver.resolve(conflicts)
+        const choices = await this.#ensureConflictResolver().resolve(conflicts)
 
         for (const {id, choice} of choices) {
             if (choice === 'game') {
@@ -357,13 +329,11 @@ export default class HubView extends EditorComponent {
     }
 
 
-    #createAnimatorCard (name, config, state = 'game') {
+    #createCard ({name, state, thumbnail, meta, onClick}) {
         const card = createElement('div', {class: 'animator-card selectable'})
-        const isCustom = state === 'custom' || state === 'modified'
         card.dataset.name = name
 
         const preview = createElement('div', {class: 'card-preview'})
-        const thumbnail = this.#createThumbnail(name, config)
         preview.appendChild(thumbnail)
 
         if (state === 'custom') {
@@ -378,27 +348,32 @@ export default class HubView extends EditorComponent {
 
         const info = createElement('div', {class: 'card-info'})
         info.appendChild(createElement('div', {class: 'card-title', text: name}))
-
-        const animCount = config.animations ? Object.keys(config.animations).length : 0
-        info.appendChild(createElement('div', {
-            class: 'card-meta',
-            text: pluralize('animation', animCount, true)
-        }))
+        info.appendChild(createElement('div', {class: 'card-meta', text: meta}))
 
         card.appendChild(preview)
         card.appendChild(info)
 
         card.addEventListener('click', () => {
             if (this.#selectionMode) {
-                const cardCheckbox = card.querySelector('.card-checkbox')
-                cardCheckbox.classList.toggle('selected')
+                checkbox.classList.toggle('selected')
                 this.#toggleItemSelection(name)
             } else {
-                this.#openAnimator(name, isCustom)
+                onClick()
             }
         })
 
         return card
+    }
+
+
+    #createAnimatorCard (name, config, state = 'game') {
+        const thumbnail = this.#createThumbnail(name, config)
+        const isCustom = state === 'custom' || state === 'modified'
+        const animCount = config.animations ? Object.keys(config.animations).length : 0
+
+        return this.#createCard({name, state, thumbnail, meta: pluralize('animation', animCount, true), onClick: () => {
+            this.#openAnimator(name, isCustom)
+        }})
     }
 
 
@@ -421,18 +396,24 @@ export default class HubView extends EditorComponent {
     }
 
 
-    #openPsdImporter () {
+    #ensurePsdImporter () {
         if (!this.#psdImporter) {
             this.#psdImporter = document.createElement('psd-importer')
             this.#psdImporter.addEventListener('complete', (e) => this.#handleImportComplete(e))
             this.shadowRoot.appendChild(this.#psdImporter)
         }
+        return this.#psdImporter
+    }
+
+
+    #openPsdImporter () {
+        const importer = this.#ensurePsdImporter()
         const existingNames = [
             ...Object.keys(this.#animators),
             ...Object.keys(this.#customAnimators)
         ]
-        this.#psdImporter.setExistingNames(existingNames)
-        this.#psdImporter.open()
+        importer.setExistingNames(existingNames)
+        importer.open()
     }
 
 
@@ -444,19 +425,8 @@ export default class HubView extends EditorComponent {
         this.#customMeta.set(animatorName, {updatedAt: Date.now()})
 
         if (atlases?.length > 0 && atlases[0].canvas && atlases[0].frames?.length > 0) {
-            const atlas = atlases[0]
-            const firstFrame = atlas.frames[0]
-
-            const thumbCanvas = document.createElement('canvas')
-            thumbCanvas.width = firstFrame.width
-            thumbCanvas.height = firstFrame.height
-            const ctx = thumbCanvas.getContext('2d')
-            ctx.drawImage(
-                atlas.canvas,
-                firstFrame.x, firstFrame.y, firstFrame.width, firstFrame.height,
-                0, 0, firstFrame.width, firstFrame.height
-            )
-            this.#thumbnails.set(animatorName, thumbCanvas)
+            const frame = atlases[0].frames[0]
+            this.#thumbnails.set(animatorName, drawRegion(atlases[0].canvas, frame))
         }
 
         this.#render()
@@ -471,12 +441,7 @@ export default class HubView extends EditorComponent {
     #createThumbnail (name, config) {
         const cached = this.#thumbnails.get(name)
         if (cached) {
-            const canvas = document.createElement('canvas')
-            canvas.width = cached.width
-            canvas.height = cached.height
-            const ctx = canvas.getContext('2d')
-            ctx.drawImage(cached, 0, 0)
-            return canvas
+            return drawRegion(cached, {x: 0, y: 0, width: cached.width, height: cached.height})
         }
 
         const region = this.#getFirstFrameRegion(config)
@@ -484,18 +449,7 @@ export default class HubView extends EditorComponent {
             return createElement('div', {class: 'placeholder'})
         }
 
-        const canvas = document.createElement('canvas')
-        canvas.width = region.width
-        canvas.height = region.height
-
-        const ctx = canvas.getContext('2d')
-        ctx.drawImage(
-            region.image,
-            region.x, region.y, region.width, region.height,
-            0, 0, region.width, region.height
-        )
-
-        return canvas
+        return drawRegion(region.image, region)
     }
 
 
@@ -530,10 +484,7 @@ export default class HubView extends EditorComponent {
 
     #openAnimator (name, isCustom = false) {
         this.dispatchEvent(new CustomEvent('navigate', {detail: {name, isCustom}}))
-        const url = isCustom
-            ? `animator.html?id=${encodeURIComponent(name)}&custom=1`
-            : `animator.html?id=${encodeURIComponent(name)}`
-        window.location.href = url
+        window.location.href = buildStudioUrl('animator.html', name, isCustom)
     }
 
 
@@ -609,13 +560,9 @@ export default class HubView extends EditorComponent {
 
 
     #openPsdImporterForUpdate (name) {
-        if (!this.#psdImporter) {
-            this.#psdImporter = document.createElement('psd-importer')
-            this.#psdImporter.addEventListener('complete', (e) => this.#handleImportComplete(e))
-            this.shadowRoot.appendChild(this.#psdImporter)
-        }
-        this.#psdImporter.setTargetName(name)
-        this.#psdImporter.open()
+        const importer = this.#ensurePsdImporter()
+        importer.setTargetName(name)
+        importer.open()
     }
 
 
@@ -654,9 +601,7 @@ export default class HubView extends EditorComponent {
             await this.#deleteCustom(id)
         }
 
-        this.#selectedItems.clear()
-        this.#toggleSelectionMode()
-        this.#render()
+        this.#exitSelectionMode()
     }
 
 
@@ -674,13 +619,15 @@ export default class HubView extends EditorComponent {
             return
         }
 
-        for (const name of this.#selectedItems) {
-            await this.#store.delete(name)
-            delete this.#customAnimators[name]
-            this.#customMeta.delete(name)
-            this.#thumbnails.delete(name)
+        for (const id of this.#selectedItems) {
+            await this.#deleteCustom(id)
         }
 
+        this.#exitSelectionMode()
+    }
+
+
+    #exitSelectionMode () {
         this.#selectedItems.clear()
         this.#toggleSelectionMode()
         this.#render()
@@ -700,6 +647,12 @@ function getFirstAnimation (config) {
 
 function getFrameSource (frame) {
     return typeof frame === 'string' ? frame : frame.source
+}
+
+
+function buildStudioUrl (page, name, isCustom) {
+    const url = `${page}?id=${encodeURIComponent(name)}`
+    return isCustom ? `${url}&custom=1` : url
 }
 
 
@@ -723,18 +676,7 @@ async function extractThumbnailFromPerky (files) {
     }
 
     const image = await blobToImage(pngFile.blob)
-
-    const canvas = document.createElement('canvas')
-    canvas.width = frame.frame.w
-    canvas.height = frame.frame.h
-    const ctx = canvas.getContext('2d')
-    ctx.drawImage(
-        image,
-        frame.frame.x, frame.frame.y, frame.frame.w, frame.frame.h,
-        0, 0, frame.frame.w, frame.frame.h
-    )
-
-    return canvas
+    return drawRegion(image, {x: frame.frame.x, y: frame.frame.y, width: frame.frame.w, height: frame.frame.h})
 }
 
 

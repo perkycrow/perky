@@ -6,7 +6,9 @@ import {
     calculateResizeDimensions,
     resizeCanvas,
     blobToText,
-    blobToImage
+    blobToImage,
+    drawRegion,
+    imageToBlob
 } from './canvas.js'
 
 
@@ -172,6 +174,47 @@ describe('blobToText', () => {
         const blob = new Blob([''], {type: 'text/plain'})
         const text = await blobToText(blob)
         expect(text).toBe('')
+    })
+
+})
+
+
+describe('drawRegion', () => {
+
+    test('creates canvas with region dimensions', async () => {
+        const source = await createCanvas(100, 100)
+        const result = drawRegion(source, {x: 10, y: 20, width: 30, height: 40})
+        expect(result.width).toBe(30)
+        expect(result.height).toBe(40)
+    })
+
+    test('copies pixel data from source region', async () => {
+        const source = await createCanvas(10, 10)
+        const ctx = source.getContext('2d')
+        ctx.fillStyle = 'red'
+        ctx.fillRect(5, 5, 2, 2)
+
+        const result = drawRegion(source, {x: 5, y: 5, width: 2, height: 2})
+        const resultCtx = result.getContext('2d')
+        const pixel = resultCtx.getImageData(0, 0, 1, 1).data
+        expect(pixel[0]).toBe(255)
+        expect(pixel[1]).toBe(0)
+        expect(pixel[2]).toBe(0)
+        expect(pixel[3]).toBe(255)
+    })
+
+})
+
+
+describe('imageToBlob', () => {
+
+    test('converts canvas-like image to blob', async () => {
+        const canvas = await createCanvas(10, 10)
+        canvas.width = 10
+        canvas.height = 10
+        const blob = await imageToBlob(canvas)
+        expect(blob).toBeInstanceOf(Blob)
+        expect(blob.type).toBe('image/png')
     })
 
 })

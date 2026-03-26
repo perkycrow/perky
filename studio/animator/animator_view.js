@@ -18,7 +18,7 @@ import SpriteAnimation from '../../render/sprite_animation.js'
 import TextureRegion from '../../render/textures/texture_region.js'
 import PerkyStore from '../../io/perky_store.js'
 import PsdConverter from '../../io/psd_converter.js'
-import {canvasToBlob} from '../../io/canvas.js'
+import {canvasToBlob, imageToBlob} from '../../io/canvas.js'
 import {toolbarStyles} from '../../editor/styles/toolbar.styles.js'
 import {animatorViewStyles, frameEditorStyles, settingsStyles} from './animator_view.styles.js'
 import {inferSpritesheetName, collectEventSuggestions, buildAnimationConfig} from './animator_helpers.js'
@@ -440,21 +440,23 @@ export default class AnimatorView extends EditorComponent {
     }
 
 
+    #closeFrameDrawer () {
+        if (this.#drawerMode === 'frame') {
+            this.#editorDrawerEl?.close()
+            this.#drawerMode = null
+        }
+    }
+
+
     #updateEditorDrawer () {
         if (this.#selectedFrameIndex < 0) {
-            if (this.#drawerMode === 'frame') {
-                this.#editorDrawerEl?.close()
-                this.#drawerMode = null
-            }
+            this.#closeFrameDrawer()
             return
         }
 
         const frame = this.#selectedAnimation?.frames[this.#selectedFrameIndex]
         if (!frame) {
-            if (this.#drawerMode === 'frame') {
-                this.#editorDrawerEl?.close()
-                this.#drawerMode = null
-            }
+            this.#closeFrameDrawer()
             return
         }
 
@@ -598,17 +600,12 @@ export default class AnimatorView extends EditorComponent {
             return
         }
 
-        const spritesheetName = inferSpritesheetName(this.#animatorConfig)
-        const animations = {}
-        for (const anim of this.#animator.children) {
-            animations[anim.$id] = buildAnimationConfig(anim, spritesheetName)
-        }
-
-        const lines = []
-
-        lines.push(`static anchor = {x: ${this.#anchor.x}, y: ${this.#anchor.y}}`)
-        lines.push('')
-        lines.push(`static animations = ${JSON.stringify(animations, null, 4)}`)
+        const config = this.#buildAnimatorConfig()
+        const lines = [
+            `static anchor = {x: ${config.anchor.x}, y: ${config.anchor.y}}`,
+            '',
+            `static animations = ${JSON.stringify(config.animations, null, 4)}`
+        ]
 
         navigator.clipboard.writeText(lines.join('\n'))
     }
@@ -736,17 +733,10 @@ export default class AnimatorView extends EditorComponent {
         const animatorConfig = this.#buildAnimatorConfig()
         cleanAnimatorConfig(animatorConfig, result.spritesheetJson)
 
-        const files = [
-            {name: `${name}Animator.json`, blob: new Blob([JSON.stringify(animatorConfig)], {type: 'application/json'})},
-            {name: `${spritesheetName}.json`, blob: new Blob([JSON.stringify(result.spritesheetJson)], {type: 'application/json'})}
-        ]
-
-        for (let i = 0; i < result.atlases.length; i++) {
-            files.push({
-                name: `${spritesheetName}_${i}.png`,
-                blob: await canvasToBlob(result.atlases[i].canvas)
-            })
-        }
+        const atlasBlobs = await Promise.all(
+            result.atlases.map(atlas => canvasToBlob(atlas.canvas))
+        )
+        const files = buildAnimatorFiles(name, spritesheetName, animatorConfig, spritesheetName, result.spritesheetJson, atlasBlobs)
 
         await this.#store.save(this.#animatorName, {
             type: 'animator',
@@ -763,38 +753,26 @@ export default class AnimatorView extends EditorComponent {
 customElements.define('animator-view', AnimatorView)
 
 
-async function buildForkFiles (name, spritesheetId, animatorConfig, spritesheetSource) {
-    const {data, images} = spritesheetSource
-    const files = []
+function buildAnimatorFiles (name, spritesheetId, animatorConfig, spritesheetName, spritesheetData, atlasBlobs) {
+    const files = [
+        {name: `${name}Animator.json`, blob: new Blob([JSON.stringify(animatorConfig)], {type: 'application/json'})},
+        {name: `${spritesheetName}.json`, blob: new Blob([JSON.stringify(spritesheetData)], {type: 'application/json'})}
+    ]
 
-    files.push({
-        name: `${name}Animator.json`,
-        blob: new Blob([JSON.stringify(animatorConfig)], {type: 'application/json'})
-    })
-
-    files.push({
-        name: `${spritesheetId}.json`,
-        blob: new Blob([JSON.stringify(data)], {type: 'application/json'})
-    })
-
-    for (let i = 0; i < images.length; i++) {
-        files.push({
-            name: `${spritesheetId}_${i}.png`,
-            blob: await imageToBlob(images[i])
-        })
+    for (let i = 0; i < atlasBlobs.length; i++) {
+        files.push({name: `${spritesheetId}_${i}.png`, blob: atlasBlobs[i]})
     }
 
     return files
 }
 
 
-function imageToBlob (image) {
-    const canvas = document.createElement('canvas')
-    canvas.width = image.naturalWidth || image.width
-    canvas.height = image.naturalHeight || image.height
-    canvas.getContext('2d').drawImage(image, 0, 0)
-    return new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
+async function buildForkFiles (name, spritesheetId, animatorConfig, spritesheetSource) {
+    const {data, images} = spritesheetSource
+    const atlasBlobs = await Promise.all(images.map(imageToBlob))
+    return buildAnimatorFiles(name, spritesheetId, animatorConfig, spritesheetId, data, atlasBlobs)
 }
+
 
 
 function cleanAnimatorConfig (config, spritesheetJson) {
