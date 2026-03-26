@@ -54,6 +54,7 @@ export default class SceneView extends StudioTool {
     #renderSystem = null
     #snapStep = 0.5
     #clipboard = null
+    #pointers = new Map()
 
     onDisconnected () {
         super.onDisconnected()
@@ -578,13 +579,27 @@ export default class SceneView extends StudioTool {
     #setupInputEvents (viewport) {
         viewport.addEventListener('pointerdown', (e) => this.#onPointerDown(e))
         viewport.addEventListener('pointermove', (e) => this.#onPointerMove(e))
-        viewport.addEventListener('pointerup', () => this.#onPointerUp())
+        viewport.addEventListener('pointerup', (e) => this.#onPointerUp(e))
+        viewport.addEventListener('pointercancel', (e) => this.#onPointerUp(e))
         viewport.addEventListener('wheel', (e) => this.#onWheel(e))
         viewport.addEventListener('contextmenu', (e) => e.preventDefault())
+        viewport.style.touchAction = 'none'
     }
 
 
     #onPointerDown (e) {
+        this.#pointers.set(e.pointerId, {x: e.offsetX, y: e.offsetY})
+
+        if (this.#pointers.size === 2) {
+            this.#drag = null
+            this.#startPinch()
+            return
+        }
+
+        if (this.#pointers.size > 2) {
+            return
+        }
+
         const cam = this.camera
 
         if (e.button === 1 || e.button === 2) {
@@ -624,8 +639,31 @@ export default class SceneView extends StudioTool {
     }
 
 
+    #startPinch () {
+        const points = [...this.#pointers.values()]
+        const cam = this.camera
+
+        this.#drag = {
+            pinching: true,
+            startDist: pointerDistance(points[0], points[1]),
+            startMidX: (points[0].x + points[1].x) / 2,
+            startMidY: (points[0].y + points[1].y) / 2,
+            startZoom: cam.zoom,
+            startCameraX: cam.x,
+            startCameraY: cam.y
+        }
+    }
+
+
     #onPointerMove (e) {
-        if (!this.#drag) {
+        this.#pointers.set(e.pointerId, {x: e.offsetX, y: e.offsetY})
+
+        if (this.#drag?.pinching && this.#pointers.size === 2) {
+            this.#handlePinchMove()
+            return
+        }
+
+        if (!this.#drag || this.#drag.pinching) {
             return
         }
 
@@ -636,57 +674,95 @@ export default class SceneView extends StudioTool {
             cam.x = this.#drag.startCameraX - (e.offsetX - this.#drag.startScreenX) / ppu
             cam.y = this.#drag.startCameraY + (e.offsetY - this.#drag.startScreenY) / ppu
         } else {
-            const world = cam.screenToWorld(e.offsetX, e.offsetY)
-            const dx = world.x - this.#drag.startWorldX
-            const dy = world.y - this.#drag.startWorldY
-            const entry = this.#entities[this.#selectedIndex]
-            entry.x = snapValue(this.#drag.startEntityX + dx, this.#snapStep)
-            entry.y = snapValue(this.#drag.startEntityY + dy, this.#snapStep)
-
-            if (entry.worldEntity) {
-                entry.worldEntity.x = entry.x
-                entry.worldEntity.y = entry.y
-            }
-
-            this.markDirty()
-            this.#buildPropsPanel()
+            this.#handleEntityDrag(e)
         }
 
         this.#scheduleRender()
     }
 
 
-    #onPointerUp () {
-        if (this.#drag && !this.#drag.panning && this.#selectedIndex >= 0) {
-            const entry = this.#entities[this.#selectedIndex]
-            const startX = this.#drag.startEntityX
-            const startY = this.#drag.startEntityY
-            const endX = entry.x
-            const endY = entry.y
+    #handleEntityDrag (e) {
+        const cam = this.camera
+        const world = cam.screenToWorld(e.offsetX, e.offsetY)
+        const dx = world.x - this.#drag.startWorldX
+        const dy = world.y - this.#drag.startWorldY
+        const entry = this.#entities[this.#selectedIndex]
+        entry.x = snapValue(this.#drag.startEntityX + dx, this.#snapStep)
+        entry.y = snapValue(this.#drag.startEntityY + dy, this.#snapStep)
 
-            if (startX !== endX || startY !== endY) {
-                this.history.push({
-                    execute () {
-                        entry.x = endX
-                        entry.y = endY
-                        if (entry.worldEntity) {
-                            entry.worldEntity.x = endX
-                            entry.worldEntity.y = endY
-                        }
-                    },
-                    undo () {
-                        entry.x = startX
-                        entry.y = startY
-                        if (entry.worldEntity) {
-                            entry.worldEntity.x = startX
-                            entry.worldEntity.y = startY
-                        }
-                    }
-                })
-            }
+        if (entry.worldEntity) {
+            entry.worldEntity.x = entry.x
+            entry.worldEntity.y = entry.y
+        }
+
+        this.markDirty()
+        this.#buildPropsPanel()
+    }
+
+
+    #handlePinchMove () {
+        const points = [...this.#pointers.values()]
+        const cam = this.camera
+        const dist = pointerDistance(points[0], points[1])
+        const scale = dist / this.#drag.startDist
+        const midX = (points[0].x + points[1].x) / 2
+        const midY = (points[0].y + points[1].y) / 2
+
+        cam.zoom = clamp(this.#drag.startZoom * scale, 0.1, 10)
+
+        const ppu = cam.pixelsPerUnit
+        cam.x = this.#drag.startCameraX - (midX - this.#drag.startMidX) / ppu
+        cam.y = this.#drag.startCameraY + (midY - this.#drag.startMidY) / ppu
+
+        this.#scheduleRender()
+    }
+
+
+    #onPointerUp (e) {
+        this.#pointers.delete(e.pointerId)
+
+        if (this.#drag?.pinching) {
+            this.#drag = null
+            return
+        }
+
+        if (this.#drag && !this.#drag.panning && this.#selectedIndex >= 0) {
+            this.#pushMoveCommand()
         }
 
         this.#drag = null
+    }
+
+
+    #pushMoveCommand () {
+        const entry = this.#entities[this.#selectedIndex]
+        const startX = this.#drag.startEntityX
+        const startY = this.#drag.startEntityY
+        const endX = entry.x
+        const endY = entry.y
+
+        if (startX === endX && startY === endY) {
+            return
+        }
+
+        this.history.push({
+            execute () {
+                entry.x = endX
+                entry.y = endY
+                if (entry.worldEntity) {
+                    entry.worldEntity.x = endX
+                    entry.worldEntity.y = endY
+                }
+            },
+            undo () {
+                entry.x = startX
+                entry.y = startY
+                if (entry.worldEntity) {
+                    entry.worldEntity.x = startX
+                    entry.worldEntity.y = startY
+                }
+            }
+        })
     }
 
 
@@ -871,6 +947,12 @@ function clamp (value, min, max) {
     return Math.min(max, Math.max(min, value))
 }
 
+
+function pointerDistance (a, b) {
+    const dx = a.x - b.x
+    const dy = a.y - b.y
+    return Math.sqrt(dx * dx + dy * dy)
+}
 
 
 const ENTITY_ENTRY_KEYS = ['type', 'texture', '$id', 'x', 'y', 'width', 'height', 'depth']
