@@ -1,6 +1,6 @@
 import logger from '../../core/logger.js'
 import PerkyStore from '../../io/perky_store.js'
-import {loadManifest, buildTextureSystem, getStudioConfig} from '../launcher.js'
+import {loadManifest, buildTextureSystem, getStudioConfig, collectScenes} from '../launcher.js'
 
 import './scene_view.js'
 
@@ -37,20 +37,6 @@ export async function launchSceneStudio (manifestData, container, options = {}) 
         container.innerHTML = `<div class="loading" style="color: #f66;">Error: ${error.message}</div>`
         logger.error(error)
     }
-}
-
-
-function collectScenes (manifest) {
-    const sceneAssets = manifest.getAssetsByType('scene')
-    const scenes = {}
-
-    for (const asset of sceneAssets) {
-        if (asset.source) {
-            scenes[asset.id] = asset.source
-        }
-    }
-
-    return scenes
 }
 
 

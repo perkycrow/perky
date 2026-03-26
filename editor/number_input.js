@@ -2,6 +2,7 @@ import EditorComponent from './editor_component.js'
 import {controlsSheet} from './styles/index.js'
 import {emitChange, handleAttributeChange} from './base_input.js'
 import {createElement} from '../application/dom_utils.js'
+import {clamp} from '../math/utils.js'
 
 
 const SHIFT_MULTIPLIER = 10
@@ -427,7 +428,7 @@ export default class NumberInput extends EditorComponent {
 
 
     #clamp (value) {
-        return Math.max(this.#min, Math.min(this.#max, value))
+        return clamp(value, this.#min, this.#max)
     }
 
 

@@ -51,27 +51,25 @@ export function buildTextureSystem (manifest) {
 }
 
 
-export function collectAnimators (manifest) {
-    const animatorAssets = manifest.getAssetsByType('animator')
-    const animators = {}
-    for (const asset of animatorAssets) {
+export function collectAssets (manifest, type) {
+    const assets = manifest.getAssetsByType(type)
+    const result = {}
+    for (const asset of assets) {
         if (asset.source) {
-            animators[asset.id] = asset.source
+            result[asset.id] = asset.source
         }
     }
-    return animators
+    return result
+}
+
+
+export function collectAnimators (manifest) {
+    return collectAssets(manifest, 'animator')
 }
 
 
 export function collectScenes (manifest) {
-    const sceneAssets = manifest.getAssetsByType('scene')
-    const scenes = {}
-    for (const asset of sceneAssets) {
-        if (asset.source) {
-            scenes[asset.id] = asset.source
-        }
-    }
-    return scenes
+    return collectAssets(manifest, 'scene')
 }
 
 
