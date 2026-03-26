@@ -42,6 +42,7 @@ export default class SceneView extends EditorComponent {
     #stage = null
     #renderSystem = null
     #history = new CommandHistory()
+    #snapStep = 0.5
     #boundKeyDown = null
 
     onConnected () {
@@ -202,6 +203,20 @@ export default class SceneView extends EditorComponent {
             class: 'header-controls',
             attrs: {slot: 'header-end'}
         })
+
+        const snapBtn = createElement('button', {class: 'toolbar-btn active', text: 'Snap 0.5', title: 'Toggle grid snap'})
+        snapBtn.addEventListener('click', () => {
+            if (this.#snapStep) {
+                this.#snapStep = 0
+                snapBtn.textContent = 'Snap Off'
+                snapBtn.classList.remove('active')
+            } else {
+                this.#snapStep = 0.5
+                snapBtn.textContent = 'Snap 0.5'
+                snapBtn.classList.add('active')
+            }
+        })
+        headerEnd.appendChild(snapBtn)
 
         const previewBtn = createElement('button', {class: 'toolbar-btn', text: '\u25B6 Preview', title: 'Preview in game'})
         previewBtn.addEventListener('click', () => this.#openPreview())
@@ -448,13 +463,13 @@ export default class SceneView extends EditorComponent {
 
     #addTypedEntity (type) {
         const cam = this.camera
-        this.#addEntity({type, x: roundHalf(cam.x), y: roundHalf(cam.y)})
+        this.#addEntity({type, x: snapValue(cam.x, this.#snapStep), y: snapValue(cam.y, this.#snapStep)})
     }
 
 
     #addSpriteEntity (texture) {
         const cam = this.camera
-        this.#addEntity({texture, x: roundHalf(cam.x), y: roundHalf(cam.y), width: 2, height: 2})
+        this.#addEntity({texture, x: snapValue(cam.x, this.#snapStep), y: snapValue(cam.y, this.#snapStep), width: 2, height: 2})
     }
 
 
@@ -600,8 +615,8 @@ export default class SceneView extends EditorComponent {
             const dx = world.x - this.#drag.startWorldX
             const dy = world.y - this.#drag.startWorldY
             const entry = this.#entities[this.#selectedIndex]
-            entry.x = roundHalf(this.#drag.startEntityX + dx)
-            entry.y = roundHalf(this.#drag.startEntityY + dy)
+            entry.x = snapValue(this.#drag.startEntityX + dx, this.#snapStep)
+            entry.y = snapValue(this.#drag.startEntityY + dy, this.#snapStep)
 
             if (entry.worldEntity) {
                 entry.worldEntity.x = entry.x
@@ -819,8 +834,11 @@ export default class SceneView extends EditorComponent {
 customElements.define('scene-view', SceneView)
 
 
-function roundHalf (value) {
-    return Math.round(value * 2) / 2
+function snapValue (value, step) {
+    if (!step) {
+        return value
+    }
+    return Math.round(value / step) * step
 }
 
 
