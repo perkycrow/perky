@@ -104,4 +104,53 @@ describe('StorageInfo', () => {
         })
     })
 
+
+    test('clicking outside closes popover', async () => {
+        const btn = component.shadowRoot.querySelector('.title-btn')
+        btn.click()
+
+        await vi.waitFor(() => {
+            const popover = component.shadowRoot.querySelector('.popover')
+            expect(popover.classList.contains('open')).toBe(true)
+        })
+
+        await new Promise(r => requestAnimationFrame(r))
+
+        document.body.dispatchEvent(new Event('pointerdown', {bubbles: true}))
+
+        const popover = component.shadowRoot.querySelector('.popover')
+        expect(popover.classList.contains('open')).toBe(false)
+    })
+
+
+    test('clicking inside popover does not close it', async () => {
+        const btn = component.shadowRoot.querySelector('.title-btn')
+        btn.click()
+
+        await vi.waitFor(() => {
+            const popover = component.shadowRoot.querySelector('.popover')
+            expect(popover.classList.contains('open')).toBe(true)
+        })
+
+        await new Promise(r => requestAnimationFrame(r))
+
+        component.dispatchEvent(new Event('pointerdown', {bubbles: true}))
+
+        const popover = component.shadowRoot.querySelector('.popover')
+        expect(popover.classList.contains('open')).toBe(true)
+    })
+
+
+    test('storage fill width reflects usage percentage', async () => {
+        const btn = component.shadowRoot.querySelector('.title-btn')
+        btn.click()
+
+        await vi.waitFor(() => {
+            const popover = component.shadowRoot.querySelector('.popover')
+            const fill = popover.querySelector('.storage-fill')
+            expect(fill).not.toBeNull()
+            expect(fill.style.width).toBe('0.1%')
+        })
+    })
+
 })

@@ -1,5 +1,6 @@
 import {describe, test, expect, beforeEach, afterEach, vi} from 'vitest'
 import './psd_importer.js'
+import EditorComponent from '../../editor/editor_component.js'
 
 
 vi.mock('../../io/psd_converter.js', () => ({
@@ -59,8 +60,8 @@ describe('PsdImporter', () => {
 
     describe('initialization', () => {
 
-        test('extends HTMLElement', () => {
-            expect(importer).toBeInstanceOf(HTMLElement)
+        test('extends EditorComponent', () => {
+            expect(importer).toBeInstanceOf(EditorComponent)
         })
 
 
@@ -72,6 +73,18 @@ describe('PsdImporter', () => {
         test('contains editor-overlay', () => {
             const overlay = importer.shadowRoot.querySelector('editor-overlay')
             expect(overlay).not.toBeNull()
+        })
+
+
+        test('overlay has fullscreen attribute', () => {
+            const overlay = importer.shadowRoot.querySelector('editor-overlay')
+            expect(overlay.hasAttribute('fullscreen')).toBe(true)
+        })
+
+
+        test('overlay has no-close-on-backdrop attribute', () => {
+            const overlay = importer.shadowRoot.querySelector('editor-overlay')
+            expect(overlay.hasAttribute('no-close-on-backdrop')).toBe(true)
         })
 
 
