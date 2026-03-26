@@ -8,6 +8,7 @@ import RenderSystem from '../../render/render_system.js'
 import SpriteEntityView from '../../game/sprite_entity_view.js'
 import Entity from '../../game/entity.js'
 import Group2D from '../../render/group_2d.js'
+import GestureRecognizer from '../../input/gesture_recognizer.js'
 import {sceneViewStyles} from './scene_view.styles.js'
 
 
@@ -54,11 +55,12 @@ export default class SceneView extends StudioTool {
     #renderSystem = null
     #snapStep = 0.5
     #clipboard = null
-    #pointers = new Map()
+    #gestures = null
 
     onDisconnected () {
         super.onDisconnected()
         cancelAnimationFrame(this.#animFrame)
+        this.#gestures?.dispose()
         this.#stage?.stop()
         this.#renderSystem?.dismount()
     }
@@ -543,160 +545,114 @@ export default class SceneView extends StudioTool {
 
 
     #setupInputEvents (viewport) {
-        viewport.addEventListener('pointerdown', (e) => this.#onPointerDown(e))
-        viewport.addEventListener('pointermove', (e) => this.#onPointerMove(e))
-        viewport.addEventListener('pointerup', (e) => this.#onPointerUp(e))
-        viewport.addEventListener('pointercancel', (e) => this.#onPointerUp(e))
-        viewport.addEventListener('wheel', (e) => this.#onWheel(e))
-        viewport.addEventListener('contextmenu', (e) => e.preventDefault())
-        viewport.style.touchAction = 'none'
-    }
+        this.#gestures = new GestureRecognizer(viewport)
 
-
-    #onPointerDown (e) {
-        this.#pointers.set(e.pointerId, {x: e.offsetX, y: e.offsetY})
-
-        if (this.#pointers.size === 2) {
-            this.#drag = null
-            this.#startPinch()
-            return
-        }
-
-        if (this.#pointers.size > 2) {
-            return
-        }
-
-        const cam = this.camera
-
-        if (e.button === 1 || e.button === 2) {
-            this.#startPan(e, cam)
-            return
-        }
-
-        const world = cam.screenToWorld(e.offsetX, e.offsetY)
-        const hit = this.#pickEntity(world.x, world.y)
-
-        if (hit >= 0) {
-            this.#selectEntity(hit)
-            const entity = this.#entities[hit]
-            this.#drag = {
-                startWorldX: world.x,
-                startWorldY: world.y,
-                startEntityX: entity.x,
-                startEntityY: entity.y
+        this.#gestures.on('tap', ({x, y, pointerCount}) => {
+            if (pointerCount === 2) {
+                this.undoAction()
+                return
             }
-            e.target.setPointerCapture(e.pointerId)
-        } else {
-            this.#selectEntity(-1)
-        }
-    }
+            if (pointerCount === 3) {
+                this.redoAction()
+                return
+            }
 
+            const cam = this.camera
+            const world = cam.screenToWorld(x, y)
+            const hit = this.#pickEntity(world.x, world.y)
+            this.#selectEntity(hit)
+        })
 
-    #startPan (e, cam) {
-        this.#drag = {
-            startScreenX: e.offsetX,
-            startScreenY: e.offsetY,
-            startCameraX: cam.x,
-            startCameraY: cam.y,
-            panning: true
-        }
-        e.target.setPointerCapture(e.pointerId)
-        e.preventDefault()
-    }
+        this.#gestures.on('drag:start', ({x, y}) => {
+            const cam = this.camera
+            const world = cam.screenToWorld(x, y)
+            const hit = this.#pickEntity(world.x, world.y)
 
+            if (hit >= 0) {
+                this.#selectEntity(hit)
+                const entity = this.#entities[hit]
+                this.#drag = {
+                    startWorldX: world.x,
+                    startWorldY: world.y,
+                    startEntityX: entity.x,
+                    startEntityY: entity.y
+                }
+            } else {
+                this.#selectEntity(-1)
+            }
+        })
 
-    #startPinch () {
-        const points = [...this.#pointers.values()]
-        const cam = this.camera
+        this.#gestures.on('drag:move', ({x, y}) => {
+            if (!this.#drag) {
+                return
+            }
 
-        this.#drag = {
-            pinching: true,
-            startDist: pointerDistance(points[0], points[1]),
-            startMidX: (points[0].x + points[1].x) / 2,
-            startMidY: (points[0].y + points[1].y) / 2,
-            startZoom: cam.zoom,
-            startCameraX: cam.x,
-            startCameraY: cam.y
-        }
-    }
+            const cam = this.camera
+            const world = cam.screenToWorld(x, y)
+            const dx = world.x - this.#drag.startWorldX
+            const dy = world.y - this.#drag.startWorldY
+            const entry = this.#entities[this.#selectedIndex]
+            entry.x = snapValue(this.#drag.startEntityX + dx, this.#snapStep)
+            entry.y = snapValue(this.#drag.startEntityY + dy, this.#snapStep)
 
+            if (entry.worldEntity) {
+                entry.worldEntity.x = entry.x
+                entry.worldEntity.y = entry.y
+            }
 
-    #onPointerMove (e) {
-        this.#pointers.set(e.pointerId, {x: e.offsetX, y: e.offsetY})
+            this.markDirty()
+            this.#buildPropsPanel()
+            this.#scheduleRender()
+        })
 
-        if (this.#drag?.pinching && this.#pointers.size === 2) {
-            this.#handlePinchMove()
-            return
-        }
-
-        if (!this.#drag || this.#drag.pinching) {
-            return
-        }
-
-        const cam = this.camera
-
-        if (this.#drag.panning) {
-            const ppu = cam.pixelsPerUnit
-            cam.x = this.#drag.startCameraX - (e.offsetX - this.#drag.startScreenX) / ppu
-            cam.y = this.#drag.startCameraY + (e.offsetY - this.#drag.startScreenY) / ppu
-        } else {
-            this.#handleEntityDrag(e)
-        }
-
-        this.#scheduleRender()
-    }
-
-
-    #handleEntityDrag (e) {
-        const cam = this.camera
-        const world = cam.screenToWorld(e.offsetX, e.offsetY)
-        const dx = world.x - this.#drag.startWorldX
-        const dy = world.y - this.#drag.startWorldY
-        const entry = this.#entities[this.#selectedIndex]
-        entry.x = snapValue(this.#drag.startEntityX + dx, this.#snapStep)
-        entry.y = snapValue(this.#drag.startEntityY + dy, this.#snapStep)
-
-        if (entry.worldEntity) {
-            entry.worldEntity.x = entry.x
-            entry.worldEntity.y = entry.y
-        }
-
-        this.markDirty()
-        this.#buildPropsPanel()
-    }
-
-
-    #handlePinchMove () {
-        const points = [...this.#pointers.values()]
-        const cam = this.camera
-        const dist = pointerDistance(points[0], points[1])
-        const scale = dist / this.#drag.startDist
-        const midX = (points[0].x + points[1].x) / 2
-        const midY = (points[0].y + points[1].y) / 2
-
-        cam.zoom = clamp(this.#drag.startZoom * scale, 0.1, 10)
-
-        const ppu = cam.pixelsPerUnit
-        cam.x = this.#drag.startCameraX - (midX - this.#drag.startMidX) / ppu
-        cam.y = this.#drag.startCameraY + (midY - this.#drag.startMidY) / ppu
-
-        this.#scheduleRender()
-    }
-
-
-    #onPointerUp (e) {
-        this.#pointers.delete(e.pointerId)
-
-        if (this.#drag?.pinching) {
+        this.#gestures.on('drag:end', () => {
+            if (this.#drag && this.#selectedIndex >= 0) {
+                this.#pushMoveCommand()
+            }
             this.#drag = null
-            return
-        }
+        })
 
-        if (this.#drag && !this.#drag.panning && this.#selectedIndex >= 0) {
-            this.#pushMoveCommand()
-        }
+        this.#gestures.on('pan:move', ({dx, dy}) => {
+            const cam = this.camera
+            const ppu = cam.pixelsPerUnit
+            cam.x -= dx / ppu
+            cam.y += dy / ppu
+            this.#scheduleRender()
+        })
 
-        this.#drag = null
+        this.#gestures.on('pinch:start', () => {
+            const cam = this.camera
+            this.#drag = {
+                pinching: true,
+                startZoom: cam.zoom
+            }
+        })
+
+        this.#gestures.on('pinch:move', ({scale, dx, dy}) => {
+            const cam = this.camera
+
+            if (this.#drag?.pinching) {
+                cam.zoom = clamp(this.#drag.startZoom * scale, 0.1, 10)
+            }
+
+            const ppu = cam.pixelsPerUnit
+            cam.x -= dx / ppu
+            cam.y += dy / ppu
+            this.#scheduleRender()
+        })
+
+        this.#gestures.on('pinch:end', () => {
+            this.#drag = null
+        })
+
+        this.#gestures.on('wheel', ({deltaY}) => {
+            const cam = this.camera
+            const factor = deltaY > 0 ? 0.9 : 1.1
+            cam.setZoom(clamp(cam.zoom * factor, 0.3, 5))
+            this.#scheduleRender()
+        })
+
+        this.#gestures.start()
     }
 
 
@@ -729,15 +685,6 @@ export default class SceneView extends StudioTool {
                 }
             }
         })
-    }
-
-
-    #onWheel (e) {
-        e.preventDefault()
-        const cam = this.camera
-        const factor = e.deltaY > 0 ? 0.9 : 1.1
-        cam.setZoom(clamp(cam.zoom * factor, 0.3, 5))
-        this.#scheduleRender()
     }
 
 
@@ -908,13 +855,6 @@ function snapValue (value, step) {
 
 function clamp (value, min, max) {
     return Math.min(max, Math.max(min, value))
-}
-
-
-function pointerDistance (a, b) {
-    const dx = a.x - b.x
-    const dy = a.y - b.y
-    return Math.sqrt(dx * dx + dy * dy)
 }
 
 
