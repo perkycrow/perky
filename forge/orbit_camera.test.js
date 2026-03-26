@@ -43,6 +43,7 @@ describe('OrbitCamera', () => {
             const orbit = new OrbitCamera(camera3d, canvas)
 
             expectClose(orbit.theta, Math.PI / 4)
+            expectClose(orbit.phi, Math.acos(5 / Math.sqrt(75)))
             expectClose(orbit.radius, Math.sqrt(75))
             expect(orbit.target).toBeInstanceOf(Vec3)
         })
@@ -61,6 +62,44 @@ describe('OrbitCamera', () => {
             expect(orbit.target.x).toBe(1)
             expect(orbit.target.y).toBe(2)
             expect(orbit.target.z).toBe(3)
+        })
+
+        test('sensitivity options affect movement', () => {
+            const listeners1 = {}
+            const canvas1 = createMockCanvas()
+            canvas1.addEventListener = vi.fn((type, fn) => {
+                listeners1[type] = fn
+            })
+            const camera1 = createMockCamera3d()
+            const orbit1 = new OrbitCamera(camera1, canvas1, {
+                theta: 0,
+                phi: Math.PI / 4,
+                radius: 10,
+                rotateSensitivity: 0.01
+            })
+            orbit1.attach()
+
+            const listeners2 = {}
+            const canvas2 = createMockCanvas()
+            canvas2.addEventListener = vi.fn((type, fn) => {
+                listeners2[type] = fn
+            })
+            const camera2 = createMockCamera3d()
+            const orbit2 = new OrbitCamera(camera2, canvas2, {
+                theta: 0,
+                phi: Math.PI / 4,
+                radius: 10,
+                rotateSensitivity: 0.001
+            })
+            orbit2.attach()
+
+            listeners1.pointerdown({pointerId: 1, clientX: 100, clientY: 100})
+            listeners1.pointermove({pointerId: 1, clientX: 200, clientY: 100, buttons: 1})
+
+            listeners2.pointerdown({pointerId: 1, clientX: 100, clientY: 100})
+            listeners2.pointermove({pointerId: 1, clientX: 200, clientY: 100, buttons: 1})
+
+            expect(Math.abs(orbit1.theta)).toBeGreaterThan(Math.abs(orbit2.theta))
         })
 
     })
@@ -145,6 +184,16 @@ describe('OrbitCamera', () => {
             expect(orbit.radius).toBe(50)
         })
 
+        test('theta is not clamped', () => {
+            const orbit = new OrbitCamera(camera3d, canvas)
+
+            orbit.theta = 10 * Math.PI
+            expect(orbit.theta).toBe(10 * Math.PI)
+
+            orbit.theta = -5 * Math.PI
+            expect(orbit.theta).toBe(-5 * Math.PI)
+        })
+
         test('custom constraints', () => {
             const orbit = new OrbitCamera(camera3d, canvas, {
                 minRadius: 5,
@@ -217,6 +266,106 @@ describe('OrbitCamera', () => {
     })
 
 
+    describe('wheel zoom', () => {
+
+        test('wheel scrolling changes radius', () => {
+            const orbit = new OrbitCamera(camera3d, canvas, {radius: 10})
+            const listeners = {}
+            canvas.addEventListener = vi.fn((type, fn) => {
+                listeners[type] = fn
+            })
+            orbit.attach()
+
+            const initialRadius = orbit.radius
+
+            listeners.wheel({deltaY: 100, preventDefault: vi.fn()})
+
+            expect(orbit.radius).toBeGreaterThan(initialRadius)
+        })
+
+        test('wheel zoom respects constraints', () => {
+            const orbit = new OrbitCamera(camera3d, canvas, {
+                radius: 10,
+                minRadius: 5,
+                maxRadius: 15
+            })
+            const listeners = {}
+            canvas.addEventListener = vi.fn((type, fn) => {
+                listeners[type] = fn
+            })
+            orbit.attach()
+
+            listeners.wheel({deltaY: 10000, preventDefault: vi.fn()})
+            expect(orbit.radius).toBe(15)
+
+            listeners.wheel({deltaY: -10000, preventDefault: vi.fn()})
+            expect(orbit.radius).toBe(5)
+        })
+
+        test('wheel prevents default', () => {
+            const orbit = new OrbitCamera(camera3d, canvas)
+            const listeners = {}
+            canvas.addEventListener = vi.fn((type, fn) => {
+                listeners[type] = fn
+            })
+            orbit.attach()
+
+            const preventDefault = vi.fn()
+            listeners.wheel({deltaY: 100, preventDefault})
+
+            expect(preventDefault).toHaveBeenCalled()
+        })
+
+    })
+
+
+    describe('pointer orbit', () => {
+
+        test('dragging changes theta and phi', () => {
+            const orbit = new OrbitCamera(camera3d, canvas, {
+                theta: 0,
+                phi: Math.PI / 4,
+                radius: 10
+            })
+            const listeners = {}
+            canvas.addEventListener = vi.fn((type, fn) => {
+                listeners[type] = fn
+            })
+            orbit.attach()
+
+            const initialTheta = orbit.theta
+            const initialPhi = orbit.phi
+
+            listeners.pointerdown({pointerId: 1, clientX: 100, clientY: 100})
+            listeners.pointermove({pointerId: 1, clientX: 200, clientY: 150, buttons: 1})
+
+            expect(orbit.theta).not.toBe(initialTheta)
+            expect(orbit.phi).not.toBe(initialPhi)
+        })
+
+        test('pointer move without prior pointerdown is ignored', () => {
+            const orbit = new OrbitCamera(camera3d, canvas, {
+                theta: 0,
+                phi: Math.PI / 4
+            })
+            const listeners = {}
+            canvas.addEventListener = vi.fn((type, fn) => {
+                listeners[type] = fn
+            })
+            orbit.attach()
+
+            const initialTheta = orbit.theta
+            const initialPhi = orbit.phi
+
+            listeners.pointermove({pointerId: 1, clientX: 200, clientY: 150, buttons: 1})
+
+            expect(orbit.theta).toBe(initialTheta)
+            expect(orbit.phi).toBe(initialPhi)
+        })
+
+    })
+
+
     describe('attach / detach', () => {
 
         test('attach registers event listeners', () => {
@@ -228,6 +377,13 @@ describe('OrbitCamera', () => {
             expect(canvas.addEventListener).toHaveBeenCalledWith('pointerup', expect.any(Function))
             expect(canvas.addEventListener).toHaveBeenCalledWith('pointercancel', expect.any(Function))
             expect(canvas.addEventListener).toHaveBeenCalledWith('wheel', expect.any(Function), {passive: false})
+        })
+
+        test('attach sets touchAction to none', () => {
+            const orbit = new OrbitCamera(camera3d, canvas)
+            orbit.attach()
+
+            expect(canvas.style.touchAction).toBe('none')
         })
 
         test('detach removes event listeners', () => {
