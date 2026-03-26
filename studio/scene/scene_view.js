@@ -1,17 +1,12 @@
-import EditorComponent from '../../editor/editor_component.js'
-import {createElement, adoptStyleSheets} from '../../application/dom_utils.js'
-import '../../editor/layout/app_layout.js'
+import StudioTool from '../studio_tool.js'
+import {createElement} from '../../application/dom_utils.js'
 import '../../editor/number_input.js'
-import {ICONS} from '../../editor/devtools/devtools_icons.js'
-import PerkyStore from '../../io/perky_store.js'
 import Stage from '../../game/stage.js'
 import World from '../../game/world.js'
 import RenderSystem from '../../render/render_system.js'
 import SpriteEntityView from '../../game/sprite_entity_view.js'
 import Entity from '../../game/entity.js'
 import Group2D from '../../render/group_2d.js'
-import CommandHistory from '../../editor/command_history.js'
-import {toolbarStyles} from '../../editor/styles/toolbar.styles.js'
 import {sceneViewStyles} from './scene_view.styles.js'
 
 
@@ -23,51 +18,42 @@ const LABEL_COLOR = '#c8d8e8'
 const ENTITY_SIZE = 1
 
 
-export default class SceneView extends EditorComponent {
+export default class SceneView extends StudioTool {
+
+    static actions = {
+        undo: 'undoAction',
+        redo: 'redoAction',
+        copy: 'copySelectedEntity',
+        paste: 'pasteEntity',
+        duplicate: 'duplicateSelectedEntity',
+        delete: 'deleteSelectedEntity'
+    }
+
+    static bindings = {
+        undo: ['z+ctrl'],
+        redo: ['Z+ctrl'],
+        copy: ['c+ctrl'],
+        paste: ['v+ctrl'],
+        duplicate: ['d+ctrl'],
+        delete: ['Delete', 'Backspace']
+    }
 
     #context = null
     #sceneId = null
     #entities = []
     #selectedIndex = -1
     #containerEl = null
-    #appLayout = null
     #propsPanel = null
     #treeEl = null
     #drag = null
     #animFrame = null
-    #store = new PerkyStore()
-    #dirty = false
-    #autoSaveTimer = null
-    #boundBeforeUnload = null
     #stage = null
     #renderSystem = null
-    #history = new CommandHistory()
     #snapStep = 0.5
     #clipboard = null
-    #boundKeyDown = null
-
-    onConnected () {
-        adoptStyleSheets(this.shadowRoot, toolbarStyles, sceneViewStyles)
-        this.#buildDOM()
-        this.#boundBeforeUnload = () => this.#flushSave()
-        window.addEventListener('beforeunload', this.#boundBeforeUnload)
-        this.#boundKeyDown = (e) => this.#onKeyDown(e)
-        window.addEventListener('keydown', this.#boundKeyDown)
-
-        if (this.#context) {
-            this.#initStage()
-            this.#updateTree()
-        }
-
-        this.#scheduleRender()
-    }
-
 
     onDisconnected () {
-        window.removeEventListener('beforeunload', this.#boundBeforeUnload)
-        window.removeEventListener('keydown', this.#boundKeyDown)
-        clearTimeout(this.#autoSaveTimer)
-        this.#flushSave()
+        super.onDisconnected()
         cancelAnimationFrame(this.#animFrame)
         this.#stage?.stop()
         this.#renderSystem?.dismount()
@@ -154,50 +140,40 @@ export default class SceneView extends EditorComponent {
     }
 
 
-    #rebuildStage () {
-        if (this.#stage) {
-            this.#stage.stop()
-            this.#stage = null
-        }
-
-        this.#initStage()
+    hasContext () {
+        return Boolean(this.#context)
     }
 
 
-    #buildDOM () {
-        this.#appLayout = createElement('app-layout', {
-            attrs: {'no-menu': '', 'no-close': '', 'no-footer': ''}
-        })
+    init () {
+        this.#initStage()
+        this.#updateTree()
+        this.#scheduleRender()
+    }
 
-        const headerStart = createElement('div', {
-            class: 'header-controls',
-            attrs: {slot: 'header-start'}
-        })
 
-        const backBtn = createElement('button', {
-            class: 'toolbar-btn',
-            html: ICONS.chevronLeft,
-            title: 'Back to hub'
-        })
-        backBtn.addEventListener('click', () => {
-            window.location.href = 'index.html'
-        })
-        headerStart.appendChild(backBtn)
+    toolStyles () { // eslint-disable-line local/class-methods-use-this -- override
+        return [sceneViewStyles]
+    }
+
+
+    buildHeaderStart () {
+        const fragment = document.createDocumentFragment()
 
         const undoBtn = createElement('button', {class: 'toolbar-btn', text: '\u21A9', title: 'Undo'})
-        undoBtn.addEventListener('click', () => this.#undoAction())
-        headerStart.appendChild(undoBtn)
+        undoBtn.addEventListener('click', () => this.undoAction())
+        fragment.appendChild(undoBtn)
 
         const redoBtn = createElement('button', {class: 'toolbar-btn', text: '\u21AA', title: 'Redo'})
-        redoBtn.addEventListener('click', () => this.#redoAction())
-        headerStart.appendChild(redoBtn)
+        redoBtn.addEventListener('click', () => this.redoAction())
+        fragment.appendChild(redoBtn)
 
-        this.#appLayout.appendChild(headerStart)
+        return fragment
+    }
 
-        const headerEnd = createElement('div', {
-            class: 'header-controls',
-            attrs: {slot: 'header-end'}
-        })
+
+    buildHeaderEnd () {
+        const container = createElement('div')
 
         const snapBtn = createElement('button', {class: 'toolbar-btn active', text: 'Snap 0.5', title: 'Toggle grid snap'})
         snapBtn.addEventListener('click', () => {
@@ -211,14 +187,17 @@ export default class SceneView extends EditorComponent {
                 snapBtn.classList.add('active')
             }
         })
-        headerEnd.appendChild(snapBtn)
+        container.appendChild(snapBtn)
 
         const previewBtn = createElement('button', {class: 'toolbar-btn', text: '\u25B6 Preview', title: 'Preview in game'})
         previewBtn.addEventListener('click', () => this.#openPreview())
-        headerEnd.appendChild(previewBtn)
+        container.appendChild(previewBtn)
 
-        this.#appLayout.appendChild(headerEnd)
+        return container
+    }
 
+
+    buildContent () {
         this.#containerEl = createElement('div', {class: 'scene-container'})
 
         const viewport = createElement('div', {class: 'viewport'})
@@ -243,8 +222,7 @@ export default class SceneView extends EditorComponent {
         this.#buildPropsPanel()
         this.#containerEl.appendChild(this.#propsPanel)
 
-        this.#appLayout.appendChild(this.#containerEl)
-        this.shadowRoot.appendChild(this.#appLayout)
+        return this.#containerEl
     }
 
 
@@ -268,7 +246,7 @@ export default class SceneView extends EditorComponent {
             }
 
             const deleteBtn = createElement('button', {class: 'delete-btn', text: 'Delete'})
-            deleteBtn.addEventListener('click', () => this.#deleteSelectedEntity())
+            deleteBtn.addEventListener('click', () => this.deleteSelectedEntity())
             this.#propsPanel.appendChild(deleteBtn)
         } else {
             this.#propsPanel.appendChild(createElement('div', {
@@ -318,37 +296,20 @@ export default class SceneView extends EditorComponent {
             }
         }
 
-        this.#markDirty()
+        this.markDirty()
         this.#scheduleRender()
     }
 
 
-    #markDirty () {
-        this.#dirty = true
-        clearTimeout(this.#autoSaveTimer)
-        this.#autoSaveTimer = setTimeout(() => this.#autoSave(), 2000)
-    }
-
-
-    #flushSave () {
-        if (this.#dirty) {
-            clearTimeout(this.#autoSaveTimer)
-            this.#autoSave()
-        }
-    }
-
-
-    async #autoSave () {
-        if (!this.#dirty || !this.#sceneId) {
+    autoSave () {
+        if (!this.#sceneId) {
             return
         }
-
-        this.#dirty = false
 
         const config = this.#buildSceneConfig()
         const blob = new Blob([JSON.stringify(config, null, 4)], {type: 'application/json'})
 
-        await this.#store.save(this.#sceneId, {
+        this.store.save(this.#sceneId, {
             type: 'scene',
             name: this.#sceneId,
             files: [{name: `${this.#sceneId}.json`, blob}]
@@ -434,7 +395,7 @@ export default class SceneView extends EditorComponent {
             return
         }
 
-        this.#history.execute({
+        this.history.execute({
             execute: () => {
                 entry.worldEntity = createWorldEntity(world, entry, wiring)
                 if (!this.#entities.includes(entry)) {
@@ -468,7 +429,7 @@ export default class SceneView extends EditorComponent {
     }
 
 
-    #deleteSelectedEntity () {
+    deleteSelectedEntity () {
         if (this.#selectedIndex < 0) {
             return
         }
@@ -482,7 +443,7 @@ export default class SceneView extends EditorComponent {
             return
         }
 
-        this.#history.execute({
+        this.history.execute({
             execute: () => {
                 removeWorldEntity(world, entry)
                 const currentIdx = this.#entities.indexOf(entry)
@@ -502,7 +463,7 @@ export default class SceneView extends EditorComponent {
     }
 
 
-    #copySelectedEntity () {
+    copySelectedEntity () {
         const entry = this.#entities[this.#selectedIndex]
         const copy = {}
 
@@ -516,7 +477,7 @@ export default class SceneView extends EditorComponent {
     }
 
 
-    #pasteEntity () {
+    pasteEntity () {
         const cam = this.camera
         const entry = {
             ...this.#clipboard,
@@ -528,7 +489,7 @@ export default class SceneView extends EditorComponent {
     }
 
 
-    #duplicateSelectedEntity () {
+    duplicateSelectedEntity () {
         const entry = this.#entities[this.#selectedIndex]
         const copy = {}
 
@@ -544,9 +505,8 @@ export default class SceneView extends EditorComponent {
     }
 
 
-    async #openPreview () {
-        this.#flushSave()
-        await this.#autoSave()
+    #openPreview () {
+        this.flushSave()
         const stageName = this.#sceneId?.replace(/Scene$/, '') || ''
         window.open(`../index.html?studio&stage=${stageName}`, '_blank')
     }
@@ -559,48 +519,20 @@ export default class SceneView extends EditorComponent {
     }
 
 
-    #onKeyDown (e) {
-        const action = resolveKeyAction(e)
-
-        if (!action) {
-            return
-        }
-
-        e.preventDefault()
-        this.#executeAction(action)
-    }
-
-
-    #executeAction (action) {
-        const hasSelection = this.#selectedIndex >= 0
-
-        const actions = {
-            undo: () => this.#undoAction(),
-            redo: () => this.#redoAction(),
-            copy: () => hasSelection && this.#copySelectedEntity(),
-            paste: () => this.#clipboard && this.#pasteEntity(),
-            duplicate: () => hasSelection && this.#duplicateSelectedEntity(),
-            delete: () => hasSelection && this.#deleteSelectedEntity()
-        }
-
-        actions[action]?.()
-    }
-
-
-    #undoAction () {
-        this.#history.undo()
+    undoAction () {
+        this.history.undo()
         this.#afterHistoryAction()
     }
 
 
-    #redoAction () {
-        this.#history.redo()
+    redoAction () {
+        this.history.redo()
         this.#afterHistoryAction()
     }
 
 
     #afterHistoryAction () {
-        this.#markDirty()
+        this.markDirty()
         this.#buildPropsPanel()
         this.#scheduleRender()
     }
@@ -679,7 +611,7 @@ export default class SceneView extends EditorComponent {
                 entry.worldEntity.y = entry.y
             }
 
-            this.#markDirty()
+            this.markDirty()
             this.#buildPropsPanel()
         }
 
@@ -696,7 +628,7 @@ export default class SceneView extends EditorComponent {
             const endY = entry.y
 
             if (startX !== endX || startY !== endY) {
-                this.#history.push({
+                this.history.push({
                     execute () {
                         entry.x = endX
                         entry.y = endY
@@ -902,22 +834,6 @@ function clamp (value, min, max) {
     return Math.min(max, Math.max(min, value))
 }
 
-
-const KEY_ACTIONS = {
-    z: (e) => ((e.metaKey || e.ctrlKey) && !e.shiftKey ? 'undo' : null),
-    Z: (e) => ((e.metaKey || e.ctrlKey) ? 'redo' : null),
-    c: (e) => ((e.metaKey || e.ctrlKey) ? 'copy' : null),
-    v: (e) => ((e.metaKey || e.ctrlKey) ? 'paste' : null),
-    d: (e) => ((e.metaKey || e.ctrlKey) ? 'duplicate' : null),
-    Delete: () => 'delete',
-    Backspace: () => 'delete'
-}
-
-
-function resolveKeyAction (e) {
-    const resolver = KEY_ACTIONS[e.key]
-    return resolver ? resolver(e) : null
-}
 
 
 const ENTITY_ENTRY_KEYS = ['type', 'texture', '$id', 'x', 'y', 'width', 'height', 'depth']
