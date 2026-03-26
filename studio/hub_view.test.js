@@ -18,6 +18,12 @@ vi.mock('../io/perky_store.js', () => {
             export () {
                 return Promise.resolve()
             }
+            import () {
+                return Promise.resolve({name: 'imported'})
+            }
+            exportBundle () {
+                return Promise.resolve(2)
+            }
         }
     }
 })
@@ -276,6 +282,289 @@ describe('HubView', () => {
             const buttons = view.shadowRoot.querySelectorAll('.selection-actions button')
             const updateBtn = [...buttons].find(b => b.textContent === 'Update')
             expect(updateBtn).not.toBeNull()
+        })
+
+
+        test('toggles selection mode on select button click', async () => {
+            const mockTextureSystem = {
+                getSpritesheet: vi.fn(() => null)
+            }
+
+            view.setContext({
+                manifest: {},
+                animators: {player: {animations: {}}},
+                textureSystem: mockTextureSystem
+            })
+
+            await flushPromises()
+
+            const selectBtn = view.shadowRoot.querySelector('.header-actions > button')
+            expect(selectBtn.textContent).toBe('Select')
+
+            selectBtn.click()
+            expect(view.hasAttribute('selection-mode')).toBe(true)
+            expect(selectBtn.textContent).toBe('Done')
+
+            selectBtn.click()
+            expect(view.hasAttribute('selection-mode')).toBe(false)
+            expect(selectBtn.textContent).toBe('Select')
+        })
+
+
+        test('toggles checkbox selection on card click in selection mode', async () => {
+            const mockTextureSystem = {
+                getSpritesheet: vi.fn(() => null)
+            }
+
+            view.setContext({
+                manifest: {},
+                animators: {player: {animations: {}}},
+                textureSystem: mockTextureSystem
+            })
+
+            await flushPromises()
+
+            const selectBtn = view.shadowRoot.querySelector('.header-actions > button')
+            selectBtn.click()
+
+            const card = view.shadowRoot.querySelector('.animator-card')
+            const checkbox = card.querySelector('.card-checkbox')
+
+            expect(checkbox.classList.contains('selected')).toBe(false)
+            card.click()
+            expect(checkbox.classList.contains('selected')).toBe(true)
+            card.click()
+            expect(checkbox.classList.contains('selected')).toBe(false)
+        })
+
+    })
+
+
+    describe('scenes section', () => {
+
+        test('renders scenes section when scenes are present', async () => {
+            const mockTextureSystem = {
+                getSpritesheet: vi.fn(() => null)
+            }
+
+            view.setContext({
+                manifest: {},
+                animators: {},
+                scenes: {level1: {}},
+                textureSystem: mockTextureSystem
+            })
+
+            await flushPromises()
+
+            const sectionTitles = view.shadowRoot.querySelectorAll('.section-title')
+            const titles = [...sectionTitles].map(t => t.textContent)
+            expect(titles).toContain('Scenes')
+        })
+
+
+        test('does not render scenes section when no scenes', async () => {
+            const mockTextureSystem = {
+                getSpritesheet: vi.fn(() => null)
+            }
+
+            view.setContext({
+                manifest: {},
+                animators: {player: {animations: {}}},
+                scenes: {},
+                textureSystem: mockTextureSystem
+            })
+
+            await flushPromises()
+
+            const sectionTitles = view.shadowRoot.querySelectorAll('.section-title')
+            const titles = [...sectionTitles].map(t => t.textContent)
+            expect(titles).not.toContain('Scenes')
+        })
+
+
+        test('scene card displays scene name', async () => {
+            const mockTextureSystem = {
+                getSpritesheet: vi.fn(() => null)
+            }
+
+            view.setContext({
+                manifest: {},
+                animators: {},
+                scenes: {level1: {}},
+                textureSystem: mockTextureSystem
+            })
+
+            await flushPromises()
+
+            const scenesSection = view.shadowRoot.querySelector('.section')
+            const sceneCard = scenesSection.querySelector('.animator-card')
+            const title = sceneCard.querySelector('.card-title')
+            expect(title.textContent).toBe('level1')
+        })
+
+
+        test('scene card displays Scene as meta', async () => {
+            const mockTextureSystem = {
+                getSpritesheet: vi.fn(() => null)
+            }
+
+            view.setContext({
+                manifest: {},
+                animators: {},
+                scenes: {level1: {}},
+                textureSystem: mockTextureSystem
+            })
+
+            await flushPromises()
+
+            const scenesSection = view.shadowRoot.querySelector('.section')
+            const sceneCard = scenesSection.querySelector('.animator-card')
+            const meta = sceneCard.querySelector('.card-meta')
+            expect(meta.textContent).toBe('Scene')
+        })
+
+    })
+
+
+    describe('header actions', () => {
+
+        test('has preview button', () => {
+            const defaultActions = view.shadowRoot.querySelector('.default-actions')
+            const buttons = defaultActions.querySelectorAll('button')
+            const previewBtn = [...buttons].find(b => b.textContent.includes('Preview'))
+            expect(previewBtn).not.toBeNull()
+        })
+
+
+        test('has import button', () => {
+            const defaultActions = view.shadowRoot.querySelector('.default-actions')
+            const buttons = defaultActions.querySelectorAll('button')
+            const importBtn = [...buttons].find(b => b.textContent === 'Import')
+            expect(importBtn).not.toBeNull()
+        })
+
+
+        test('has export button in selection actions', () => {
+            const selectionActions = view.shadowRoot.querySelector('.selection-actions')
+            const buttons = selectionActions.querySelectorAll('button')
+            const exportBtn = [...buttons].find(b => b.textContent === 'Export')
+            expect(exportBtn).not.toBeNull()
+        })
+
+
+        test('has revert button in selection actions', () => {
+            const selectionActions = view.shadowRoot.querySelector('.selection-actions')
+            const buttons = selectionActions.querySelectorAll('button')
+            const revertBtn = [...buttons].find(b => b.textContent === 'Revert')
+            expect(revertBtn).not.toBeNull()
+            expect(revertBtn.classList.contains('warning')).toBe(true)
+        })
+
+
+        test('has delete button in selection actions', () => {
+            const selectionActions = view.shadowRoot.querySelector('.selection-actions')
+            const buttons = selectionActions.querySelectorAll('button')
+            const deleteBtn = [...buttons].find(b => b.textContent === 'Delete')
+            expect(deleteBtn).not.toBeNull()
+            expect(deleteBtn.classList.contains('danger')).toBe(true)
+        })
+
+
+        test('action buttons disabled when no selection', async () => {
+            const mockTextureSystem = {
+                getSpritesheet: vi.fn(() => null)
+            }
+
+            view.setContext({
+                manifest: {},
+                animators: {player: {animations: {}}},
+                textureSystem: mockTextureSystem
+            })
+
+            await flushPromises()
+
+            const selectBtn = view.shadowRoot.querySelector('.header-actions > button')
+            selectBtn.click()
+
+            const selectionActions = view.shadowRoot.querySelector('.selection-actions')
+            const exportBtn = [...selectionActions.querySelectorAll('button')].find(b => b.textContent === 'Export')
+            const deleteBtn = [...selectionActions.querySelectorAll('button')].find(b => b.textContent === 'Delete')
+
+            expect(exportBtn.disabled).toBe(true)
+            expect(deleteBtn.disabled).toBe(true)
+        })
+
+
+        test('action buttons enabled when items selected', async () => {
+            const mockTextureSystem = {
+                getSpritesheet: vi.fn(() => null)
+            }
+
+            view.setContext({
+                manifest: {},
+                animators: {player: {animations: {}}},
+                textureSystem: mockTextureSystem
+            })
+
+            await flushPromises()
+
+            const selectBtn = view.shadowRoot.querySelector('.header-actions > button')
+            selectBtn.click()
+
+            const card = view.shadowRoot.querySelector('.animator-card')
+            card.click()
+
+            const selectionActions = view.shadowRoot.querySelector('.selection-actions')
+            const exportBtn = [...selectionActions.querySelectorAll('button')].find(b => b.textContent === 'Export')
+            const deleteBtn = [...selectionActions.querySelectorAll('button')].find(b => b.textContent === 'Delete')
+
+            expect(exportBtn.disabled).toBe(false)
+            expect(deleteBtn.disabled).toBe(false)
+        })
+
+    })
+
+
+    describe('animatorcreated event', () => {
+
+        test('dispatches animatorcreated on psd import complete', async () => {
+            const mockTextureSystem = {
+                getSpritesheet: vi.fn(() => null)
+            }
+
+            view.setContext({
+                manifest: {},
+                animators: {},
+                textureSystem: mockTextureSystem
+            })
+
+            await flushPromises()
+
+            const handler = vi.fn()
+            view.addEventListener('animatorcreated', handler)
+
+            const createCard = view.shadowRoot.querySelector('.create-card')
+            createCard.click()
+
+            await flushPromises()
+
+            const psdImporter = view.shadowRoot.querySelector('psd-importer')
+            expect(psdImporter).not.toBeNull()
+
+            const canvas = document.createElement('canvas')
+            canvas.width = 32
+            canvas.height = 32
+
+            psdImporter.dispatchEvent(new CustomEvent('complete', {
+                detail: {
+                    name: 'test',
+                    animatorConfig: {animations: {}},
+                    atlases: [{canvas, frames: [{x: 0, y: 0, width: 32, height: 32}]}]
+                }
+            }))
+
+            expect(handler).toHaveBeenCalled()
+            expect(handler.mock.calls[0][0].detail.name).toBe('test')
         })
 
     })
