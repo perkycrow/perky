@@ -3,6 +3,7 @@ import {
     inferSpritesheetName,
     collectEventSuggestions,
     buildAnimationConfig,
+    buildAnimatorFiles,
     buildFramePreview
 } from './animator_helpers.js'
 
@@ -255,6 +256,41 @@ describe('animator_helpers', () => {
             const config = buildAnimationConfig(anim, null)
             expect(config.frames[0].events).toEqual(['swing'])
             expect(config.frames[1].events).toBeUndefined()
+        })
+
+    })
+
+
+    describe('buildAnimatorFiles', () => {
+
+        test('creates animator JSON, spritesheet JSON and atlas PNGs', () => {
+            const config = {spritesheet: 'test', animations: {}}
+            const spritesheetData = {frames: []}
+            const blob1 = new Blob(['png1'], {type: 'image/png'})
+            const blob2 = new Blob(['png2'], {type: 'image/png'})
+
+            const files = buildAnimatorFiles('player', 'playerSpritesheet', config, spritesheetData, [blob1, blob2])
+
+            expect(files).toHaveLength(4)
+            expect(files[0].name).toBe('playerAnimator.json')
+            expect(files[1].name).toBe('playerSpritesheet.json')
+            expect(files[2].name).toBe('playerSpritesheet_0.png')
+            expect(files[3].name).toBe('playerSpritesheet_1.png')
+        })
+
+        test('creates only JSON files when no atlases', () => {
+            const files = buildAnimatorFiles('test', 'testSpritesheet', {}, {}, [])
+            expect(files).toHaveLength(2)
+        })
+
+        test('JSON blobs have correct type', () => {
+            const config = {anchor: {x: 0.5, y: 0.5}}
+            const spritesheetData = {frames: [{filename: 'idle_0'}]}
+
+            const files = buildAnimatorFiles('hero', 'heroSpritesheet', config, spritesheetData, [])
+
+            expect(files[0].blob.type).toBe('application/json')
+            expect(files[1].blob.type).toBe('application/json')
         })
 
     })

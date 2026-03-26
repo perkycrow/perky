@@ -6,7 +6,8 @@ import PsdConverter from '../../io/psd_converter.js'
 import PerkyStore from '../../io/perky_store.js'
 import {ICONS} from '../../editor/devtools/devtools_icons.js'
 import {extractFramesFromGroup, findAnimationGroups} from '../../io/spritesheet.js'
-import {putPixels} from '../../io/canvas.js'
+import {putPixels, canvasToBlob} from '../../io/canvas.js'
+import {buildAnimatorFiles} from '../animator/animator_helpers.js'
 
 
 export default class PsdImporter extends EditorComponent {
@@ -484,7 +485,10 @@ export default class PsdImporter extends EditorComponent {
                 name
             })
 
-            const files = await buildPerkyFiles(result)
+            const atlasBlobs = await Promise.all(
+                result.atlases.map(atlas => canvasToBlob(atlas.canvas))
+            )
+            const files = buildAnimatorFiles(name, result.spritesheetName, result.animatorConfig, result.spritesheetJson, atlasBlobs)
             const animatorId = `${name}Animator`
 
             await this.#store.save(animatorId, {
@@ -529,35 +533,3 @@ function sanitizeName (name) {
 }
 
 
-function canvasToBlob (canvas) {
-    return new Promise((resolve) => {
-        canvas.toBlob(resolve, 'image/png')
-    })
-}
-
-
-async function buildPerkyFiles (result) {
-    const {name, spritesheetName, spritesheetJson, animatorConfig, atlases} = result
-    const files = []
-
-    files.push({
-        name: `${name}Animator.json`,
-        blob: new Blob([JSON.stringify(animatorConfig)], {type: 'application/json'})
-    })
-
-    files.push({
-        name: `${spritesheetName}.json`,
-        blob: new Blob([JSON.stringify(spritesheetJson)], {type: 'application/json'})
-    })
-
-    for (let i = 0; i < atlases.length; i++) {
-        const atlas = atlases[i]
-        const pngBlob = await canvasToBlob(atlas.canvas)
-        files.push({
-            name: `${spritesheetName}_${i}.png`,
-            blob: pngBlob
-        })
-    }
-
-    return files
-}

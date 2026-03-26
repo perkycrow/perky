@@ -68,6 +68,20 @@ export function buildAnimationConfig (anim, spritesheetName) {
 }
 
 
+export function buildAnimatorFiles (name, spritesheetName, animatorConfig, spritesheetData, atlasBlobs) {
+    const files = [
+        {name: `${name}Animator.json`, blob: new Blob([JSON.stringify(animatorConfig)], {type: 'application/json'})},
+        {name: `${spritesheetName}.json`, blob: new Blob([JSON.stringify(spritesheetData)], {type: 'application/json'})}
+    ]
+
+    for (let i = 0; i < atlasBlobs.length; i++) {
+        files.push({name: `${spritesheetName}_${i}.png`, blob: atlasBlobs[i]})
+    }
+
+    return files
+}
+
+
 export function buildFramePreview (frame) {
     const section = document.createElement('div')
     section.className = 'frame-editor-preview'

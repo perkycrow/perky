@@ -21,7 +21,7 @@ import PsdConverter from '../../io/psd_converter.js'
 import {canvasToBlob, imageToBlob} from '../../io/canvas.js'
 import {toolbarStyles} from '../../editor/styles/toolbar.styles.js'
 import {animatorViewStyles, frameEditorStyles, settingsStyles} from './animator_view.styles.js'
-import {inferSpritesheetName, collectEventSuggestions, buildAnimationConfig} from './animator_helpers.js'
+import {inferSpritesheetName, collectEventSuggestions, buildAnimationConfig, buildAnimatorFiles} from './animator_helpers.js'
 import {buildFrameEditor} from './components/frame_editor.js'
 import {buildAnchorEditor} from './components/anchor_editor.js'
 import {buildAnimationSettings} from './components/animation_settings.js'
@@ -736,7 +736,7 @@ export default class AnimatorView extends EditorComponent {
         const atlasBlobs = await Promise.all(
             result.atlases.map(atlas => canvasToBlob(atlas.canvas))
         )
-        const files = buildAnimatorFiles(name, spritesheetName, animatorConfig, spritesheetName, result.spritesheetJson, atlasBlobs)
+        const files = buildAnimatorFiles(name, spritesheetName, animatorConfig, result.spritesheetJson, atlasBlobs)
 
         await this.#store.save(this.#animatorName, {
             type: 'animator',
@@ -753,24 +753,10 @@ export default class AnimatorView extends EditorComponent {
 customElements.define('animator-view', AnimatorView)
 
 
-function buildAnimatorFiles (name, spritesheetId, animatorConfig, spritesheetName, spritesheetData, atlasBlobs) {
-    const files = [
-        {name: `${name}Animator.json`, blob: new Blob([JSON.stringify(animatorConfig)], {type: 'application/json'})},
-        {name: `${spritesheetName}.json`, blob: new Blob([JSON.stringify(spritesheetData)], {type: 'application/json'})}
-    ]
-
-    for (let i = 0; i < atlasBlobs.length; i++) {
-        files.push({name: `${spritesheetId}_${i}.png`, blob: atlasBlobs[i]})
-    }
-
-    return files
-}
-
-
 async function buildForkFiles (name, spritesheetId, animatorConfig, spritesheetSource) {
     const {data, images} = spritesheetSource
     const atlasBlobs = await Promise.all(images.map(imageToBlob))
-    return buildAnimatorFiles(name, spritesheetId, animatorConfig, spritesheetId, data, atlasBlobs)
+    return buildAnimatorFiles(name, spritesheetId, animatorConfig, data, atlasBlobs)
 }
 
 
