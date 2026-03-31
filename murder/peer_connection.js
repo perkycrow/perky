@@ -48,9 +48,10 @@ export default class PeerConnection extends PerkyModule {
         this.#channel = this.#connection.createDataChannel('game')
         setupChannel(this, this.#channel)
 
-        const offer = await this.#connection.createOffer()
-        await this.#connection.setLocalDescription(offer)
-        sendSignal({type: 'offer', to: this.peerId, payload: offer})
+        await this.#connection.setLocalDescription()
+        const offer = this.#connection.localDescription
+
+        sendSignal({type: 'offer', to: this.peerId, payload: {type: offer.type, sdp: offer.sdp}})
     }
 
 
@@ -67,9 +68,10 @@ export default class PeerConnection extends PerkyModule {
         }
 
         await this.#connection.setRemoteDescription(offer)
-        const answer = await this.#connection.createAnswer()
-        await this.#connection.setLocalDescription(answer)
-        sendSignal({type: 'answer', to: this.peerId, payload: answer})
+        await this.#connection.setLocalDescription()
+        const answer = this.#connection.localDescription
+
+        sendSignal({type: 'answer', to: this.peerId, payload: {type: answer.type, sdp: answer.sdp}})
     }
 
 

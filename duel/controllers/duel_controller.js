@@ -21,42 +21,81 @@ export default class DuelController extends GameController {
 
     static resources = ['world']
 
+
+    get session () {
+        return this.engine?.stage?.session
+    }
+
+
+    get networkMode () {
+        return this.session?.connected === true
+    }
+
+
     p1Jump () {
+        if (this.networkMode) {
+            this.session.sendInput('jump')
+            return
+        }
         this.world.fencer1?.jump()
     }
 
 
     p1Lunge () {
+        if (this.networkMode) {
+            this.session.sendInput('lunge')
+            return
+        }
         this.world.fencer1?.lunge()
     }
 
 
     p1SwordUp () {
+        if (this.networkMode) {
+            this.session.sendInput('swordUp')
+            return
+        }
         this.world.fencer1?.cycleSwordUp()
     }
 
 
     p1SwordDown () {
+        if (this.networkMode) {
+            this.session.sendInput('swordDown')
+            return
+        }
         this.world.fencer1?.cycleSwordDown()
     }
 
 
     p2Jump () {
+        if (this.networkMode) {
+            return
+        }
         this.world.fencer2?.jump()
     }
 
 
     p2Lunge () {
+        if (this.networkMode) {
+            return
+        }
         this.world.fencer2?.lunge()
     }
 
 
     p2SwordUp () {
+        if (this.networkMode) {
+            return
+        }
         this.world.fencer2?.cycleSwordUp()
     }
 
 
     p2SwordDown () {
+        if (this.networkMode) {
+            return
+        }
         this.world.fencer2?.cycleSwordDown()
     }
 

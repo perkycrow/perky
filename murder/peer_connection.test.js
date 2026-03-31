@@ -21,8 +21,25 @@ function createMockRTCPeerConnection () {
 
     pc.createOffer.mockResolvedValue({type: 'offer', sdp: 'mock-offer'})
     pc.createAnswer.mockResolvedValue({type: 'answer', sdp: 'mock-answer'})
-    pc.setLocalDescription.mockResolvedValue(undefined)
-    pc.setRemoteDescription.mockResolvedValue(undefined)
+    pc.setLocalDescription.mockImplementation(async (desc) => {
+        if (!desc) {
+            if (pc.signalingState === 'stable') {
+                pc.localDescription = {type: 'offer', sdp: 'mock-offer'}
+                pc.signalingState = 'have-local-offer'
+            } else if (pc.signalingState === 'have-remote-offer') {
+                pc.localDescription = {type: 'answer', sdp: 'mock-answer'}
+                pc.signalingState = 'stable'
+            }
+        } else {
+            pc.localDescription = desc
+            if (desc.type === 'offer') pc.signalingState = 'have-local-offer'
+        }
+    })
+    pc.setRemoteDescription.mockImplementation(async (desc) => {
+        pc.remoteDescription = desc
+        if (desc.type === 'offer') pc.signalingState = 'have-remote-offer'
+        else if (desc.type === 'answer') pc.signalingState = 'stable'
+    })
     pc.addIceCandidate.mockResolvedValue(undefined)
 
     return pc
@@ -100,8 +117,7 @@ describe(PeerConnection, () => {
 
         const rtc = rtcInstances[0]
         expect(rtc.createDataChannel).toHaveBeenCalledWith('game')
-        expect(rtc.createOffer).toHaveBeenCalled()
-        expect(rtc.setLocalDescription).toHaveBeenCalledWith({type: 'offer', sdp: 'mock-offer'})
+        expect(rtc.setLocalDescription).toHaveBeenCalled()
         expect(sendSignal).toHaveBeenCalledWith({
             type: 'offer',
             to: 5,
@@ -130,8 +146,7 @@ describe(PeerConnection, () => {
 
         const rtc = rtcInstances[0]
         expect(rtc.setRemoteDescription).toHaveBeenCalledWith(offer)
-        expect(rtc.createAnswer).toHaveBeenCalled()
-        expect(rtc.setLocalDescription).toHaveBeenCalledWith({type: 'answer', sdp: 'mock-answer'})
+        expect(rtc.setLocalDescription).toHaveBeenCalled()
         expect(sendSignal).toHaveBeenCalledWith({
             type: 'answer',
             to: 3,

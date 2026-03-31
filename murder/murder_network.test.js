@@ -281,7 +281,7 @@ describe(MurderNetwork, () => {
         rtc.connectionState = 'failed'
         rtc.onconnectionstatechange()
 
-        expect(handler).toHaveBeenCalledWith(5, expect.any(PeerConnection))
+        expect(handler).toHaveBeenCalledWith(5)
         expect(network.peers.length).toBe(0)
     })
 

@@ -121,4 +121,64 @@ describe('DuelController', () => {
         expect(result).toBe('f2')
     })
 
+
+    test('p1Jump sends input in network mode', () => {
+        const controller = new DuelController()
+        const sendInput = vi.fn()
+        controller.engine = {stage: {session: {connected: true, sendInput}}}
+        controller.world = {fencer1: {jump: vi.fn()}}
+
+        controller.p1Jump()
+
+        expect(sendInput).toHaveBeenCalledWith('jump')
+        expect(controller.world.fencer1.jump).not.toHaveBeenCalled()
+    })
+
+
+    test('p2Jump is disabled in network mode', () => {
+        const controller = new DuelController()
+        controller.engine = {stage: {session: {connected: true}}}
+        controller.world = {fencer2: {jump: vi.fn()}}
+
+        controller.p2Jump()
+
+        expect(controller.world.fencer2.jump).not.toHaveBeenCalled()
+    })
+
+
+    test('p1Lunge sends input in network mode', () => {
+        const controller = new DuelController()
+        const sendInput = vi.fn()
+        controller.engine = {stage: {session: {connected: true, sendInput}}}
+        controller.world = {fencer1: {lunge: vi.fn()}}
+
+        controller.p1Lunge()
+
+        expect(sendInput).toHaveBeenCalledWith('lunge')
+    })
+
+
+    test('p1SwordUp sends input in network mode', () => {
+        const controller = new DuelController()
+        const sendInput = vi.fn()
+        controller.engine = {stage: {session: {connected: true, sendInput}}}
+        controller.world = {fencer1: {cycleSwordUp: vi.fn()}}
+
+        controller.p1SwordUp()
+
+        expect(sendInput).toHaveBeenCalledWith('swordUp')
+    })
+
+
+    test('p1SwordDown sends input in network mode', () => {
+        const controller = new DuelController()
+        const sendInput = vi.fn()
+        controller.engine = {stage: {session: {connected: true, sendInput}}}
+        controller.world = {fencer1: {cycleSwordDown: vi.fn()}}
+
+        controller.p1SwordDown()
+
+        expect(sendInput).toHaveBeenCalledWith('swordDown')
+    })
+
 })

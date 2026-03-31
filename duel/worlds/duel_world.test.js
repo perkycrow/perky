@@ -217,4 +217,85 @@ describe('DuelWorld', () => {
         expect(handler).not.toHaveBeenCalled()
     })
 
+
+    test('preUpdate skips local input in network mode', () => {
+        const world = createWorldWithFencers()
+        world.networkMode = true
+        const context = {getDirection: vi.fn(() => ({x: 1, y: 0}))}
+
+        world.preUpdate(1 / 60, context)
+
+        expect(context.getDirection).not.toHaveBeenCalled()
+    })
+
+
+    test('applyNetworkInputs sets movement and triggers actions', () => {
+        const world = createWorldWithFencers()
+        world.networkMode = true
+
+        const inputs = new Map()
+        inputs.set('fencer1', {moveX: 1, actions: ['jump', 'lunge']})
+        inputs.set('fencer2', {moveX: -1, actions: ['swordUp']})
+
+        world.applyNetworkInputs(inputs)
+
+        expect(world.fencer1.moveDirection).toBe(1)
+        expect(world.fencer1.lunging).toBe(true)
+        expect(world.fencer2.moveDirection).toBe(-1)
+        expect(world.fencer2.swordPosition).toBe('high')
+    })
+
+
+    test('exportState captures full world state', () => {
+        const world = createWorldWithFencers()
+        world.fencer1.x = -2
+        world.fencer1.score = 3
+        world.fencer2.swordPosition = 'high'
+
+        const state = world.exportState()
+
+        expect(state.roundActive).toBe(true)
+        expect(state.gameOver).toBe(false)
+        expect(state.fencer1.x).toBe(-2)
+        expect(state.fencer1.score).toBe(3)
+        expect(state.fencer2.swordPosition).toBe('high')
+    })
+
+
+    test('importState restores full world state', () => {
+        const world = createWorldWithFencers()
+
+        const state = {
+            roundActive: false,
+            respawning: true,
+            respawnTimer: 0.5,
+            gameOver: false,
+            fencer1: {
+                x: -1, y: 0.5, vx: 2, vy: 1,
+                facing: 1, swordPosition: 'low',
+                lunging: true, lungeTimer: 0.1,
+                stunned: false, stunTimer: 0,
+                grounded: false, score: 2, alive: true
+            },
+            fencer2: {
+                x: 1, y: 0, vx: 0, vy: 0,
+                facing: -1, swordPosition: 'high',
+                lunging: false, lungeTimer: 0,
+                stunned: true, stunTimer: 0.3,
+                grounded: true, score: 1, alive: true
+            }
+        }
+
+        world.importState(state)
+
+        expect(world.roundActive).toBe(false)
+        expect(world.respawning).toBe(true)
+        expect(world.fencer1.x).toBe(-1)
+        expect(world.fencer1.y).toBe(0.5)
+        expect(world.fencer1.score).toBe(2)
+        expect(world.fencer1.lunging).toBe(true)
+        expect(world.fencer2.stunned).toBe(true)
+        expect(world.fencer2.swordPosition).toBe('high')
+    })
+
 })

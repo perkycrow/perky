@@ -19,6 +19,14 @@ export default defineConfig(() => {
                 }
             }
         },
+        server: {
+            proxy: {
+                '/cable': {
+                    target: 'ws://localhost:3000',
+                    ws: true
+                }
+            }
+        },
         resolve: {
             alias: {
                 perky: path.resolve(__dirname, './')

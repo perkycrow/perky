@@ -3,6 +3,9 @@ import MurderClient from './murder_client.js'
 import PeerConnection from './peer_connection.js'
 
 
+const HELLO_INTERVAL = 1000
+
+
 export default class MurderNetwork extends PerkyModule {
 
     static $category = 'murderNetwork'
@@ -12,6 +15,7 @@ export default class MurderNetwork extends PerkyModule {
     constructor (options = {}) {
         super(options)
         this.rtcConfig = options.rtcConfig || undefined
+        this.helloInterval = null
     }
 
 
@@ -35,6 +39,11 @@ export default class MurderNetwork extends PerkyModule {
     }
 
 
+    get hasPeers () {
+        return this.peers.length > 0
+    }
+
+
     async connect (options = {}) {
         const client = this.create(MurderClient, {
             $id: 'murderClient',
@@ -47,20 +56,45 @@ export default class MurderNetwork extends PerkyModule {
             handleSignal(this, signal)
         })
 
+        client.on('identified', (userId) => {
+            this.emit('identified', userId)
+        })
+
         client.on('disconnected', () => {
+            this.stopHello()
             this.emit('disconnected')
         })
 
         await client.connect()
 
-        client.sendSignal({type: 'hello'})
-        client.on('identified', (userId) => {
-            this.emit('identified', userId)
-        })
+        this.startHello()
+    }
+
+
+    startHello () {
+        this.stopHello()
+        this.client?.sendSignal({type: 'hello'})
+
+        this.helloInterval = setInterval(() => {
+            if (this.hasPeers) {
+                this.stopHello()
+                return
+            }
+            this.client?.sendSignal({type: 'hello'})
+        }, HELLO_INTERVAL)
+    }
+
+
+    stopHello () {
+        if (this.helloInterval) {
+            clearInterval(this.helloInterval)
+            this.helloInterval = null
+        }
     }
 
 
     disconnect () {
+        this.stopHello()
         this.peers.forEach(peer => peer.close())
         this.client?.disconnect()
     }
@@ -97,6 +131,15 @@ function getPeer (network, peerId) {
 }
 
 
+function removePeer (network, peerId) {
+    const peer = getPeer(network, peerId)
+    if (peer) {
+        peer.close()
+        network.removeChild(peer.$id)
+    }
+}
+
+
 function getOrCreatePeer (network, peerId) {
     const existing = getPeer(network, peerId)
     if (existing) {
@@ -119,11 +162,13 @@ function getOrCreatePeer (network, peerId) {
     })
 
     peer.on('disconnected', () => {
-        network.emit('peer:disconnected', peerId, peer)
-        network.removeChild(peer.$id)
+        removePeer(network, peerId)
+        network.emit('peer:disconnected', peerId)
+        network.startHello()
     })
 
     peer.on('channel:open', () => {
+        network.stopHello()
         network.emit('peer:ready', peerId, peer)
     })
 
@@ -135,22 +180,15 @@ function getOrCreatePeer (network, peerId) {
 }
 
 
-function sendSignal (network, data) {
-    network.client.sendSignal(data)
-}
-
-
 function handleSignal (network, signal) {
     const peerId = signal.from
+
     if (peerId === network.userId) {
         return
     }
 
     if (signal.type === 'hello') {
-        if (network.userId < peerId) {
-            const peer = getOrCreatePeer(network, peerId)
-            peer.createOffer((data) => sendSignal(network, data))
-        }
+        handleHello(network, peerId)
         return
     }
 
@@ -161,10 +199,33 @@ function handleSignal (network, signal) {
     const peer = getOrCreatePeer(network, peerId)
 
     if (signal.type === 'offer') {
-        peer.handleOffer(signal.payload, (data) => sendSignal(network, data))
+        peer.handleOffer(signal.payload, (data) => network.client.sendSignal(data)).catch(handleError)
     } else if (signal.type === 'answer') {
-        peer.handleAnswer(signal.payload)
+        peer.handleAnswer(signal.payload).catch(handleError)
     } else if (signal.type === 'ice') {
         peer.handleIce(signal.payload)
     }
+}
+
+
+function handleHello (network, peerId) {
+    const existing = getPeer(network, peerId)
+
+    if (existing && existing.channelReady) {
+        return
+    }
+
+    if (existing) {
+        removePeer(network, peerId)
+    }
+
+    if (network.userId < peerId) {
+        const peer = getOrCreatePeer(network, peerId)
+        peer.createOffer((data) => network.client.sendSignal(data)).catch(handleError)
+    }
+}
+
+
+function handleError (error) {
+    console.error('[MurderNetwork]', error)
 }
