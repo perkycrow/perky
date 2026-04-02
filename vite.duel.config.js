@@ -21,7 +21,9 @@ export default defineConfig(() => {
         },
         server: {
             headers: {
-                'Permissions-Policy': 'publickey-credentials-get=*'
+                'Permissions-Policy': 'interest-cohort=()',
+                'Cross-Origin-Opener-Policy': 'unsafe-none',
+                'Cross-Origin-Embedder-Policy': 'unsafe-none'
             },
             proxy: {
                 '/cable': {
