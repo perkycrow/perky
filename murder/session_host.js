@@ -11,7 +11,7 @@ export default class SessionHost extends ServiceHost {
     static $category = 'sessionHost'
     static $name = 'sessionHost'
     static $eagerStart = false
-    static serviceMethods = ['join', 'input', 'ping', 'reportStats']
+    static serviceMethods = ['join', 'input', 'ping', 'reportStats', 'provideState']
 
     constructor (options = {}) {
         const multiplexer = createMultiplexer()
@@ -23,6 +23,7 @@ export default class SessionHost extends ServiceHost {
         this.inputQueues = new Map()
         this.peerStats = new Map()
         this.active = false
+        this.lastState = null
         this.heartbeatTimer = null
     }
 
@@ -148,7 +149,20 @@ export default class SessionHost extends ServiceHost {
 
 
     broadcastState (state) {
+        this.lastState = state
         this.emitToClient('state', state)
+    }
+
+
+    provideState (req, res) {
+        const state = req.params.state
+
+        if (state && !this.lastState) {
+            this.lastState = state
+            this.emit('state:recovered', state)
+        }
+
+        res.send('ok')
     }
 
 }

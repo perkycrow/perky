@@ -291,4 +291,51 @@ describe('SessionHost', () => {
         vi.useRealTimers()
     })
 
+
+    test('broadcastState stores lastState', () => {
+        const host = createHost()
+        host.broadcastState({score: 42})
+        expect(host.lastState).toEqual({score: 42})
+    })
+
+
+    test('provideState stores state when host has none', async () => {
+        const {host, client} = createHostWithClient()
+        await client.join()
+
+        await client.provideState({score: 10})
+
+        expect(host.lastState).toEqual({score: 10})
+    })
+
+
+    test('provideState emits state:recovered', async () => {
+        const {host, client} = createHostWithClient()
+        await client.join()
+
+        const events = []
+        host.on('state:recovered', (state) => events.push(state))
+
+        await client.provideState({score: 10})
+
+        expect(events.length).toBe(1)
+        expect(events[0]).toEqual({score: 10})
+    })
+
+
+    test('provideState ignores when host already has state', async () => {
+        const {host, client} = createHostWithClient()
+        await client.join()
+
+        host.broadcastState({score: 42})
+
+        const events = []
+        host.on('state:recovered', (state) => events.push(state))
+
+        await client.provideState({score: 10})
+
+        expect(host.lastState).toEqual({score: 42})
+        expect(events.length).toBe(0)
+    })
+
 })

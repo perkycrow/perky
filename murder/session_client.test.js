@@ -105,4 +105,14 @@ describe('SessionClient', () => {
         expect(host.peerStats.get('player1').connectionScore).toBe(85)
     })
 
+
+    test('provideState sends state to host', async () => {
+        const {host, client} = createConnectedPair()
+        await client.join()
+
+        await client.provideState({score: 42})
+
+        expect(host.lastState).toEqual({score: 42})
+    })
+
 })

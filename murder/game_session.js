@@ -36,6 +36,7 @@ export default class GameSession extends PerkyModule {
         this.heartbeatCheckTimer = null
         this.waitingTimer = null
         this.lastPeerScores = {}
+        this.lastState = loadPersistedState(this.lobbyToken)
     }
 
 
@@ -100,18 +101,28 @@ export default class GameSession extends PerkyModule {
 
 
     async sendInput (action, value) {
-        if (!this.sessionClient) {
+        if (!this.connected || !this.sessionClient) {
             return
         }
-        return this.sessionClient.sendInput(action, value)
+
+        try {
+            return await this.sessionClient.sendInput(action, value)
+        } catch {
+            return undefined
+        }
     }
 
 
     async sendMove (moveX) {
-        if (!this.sessionClient) {
+        if (!this.connected || !this.sessionClient) {
             return
         }
-        return this.sessionClient.sendMove(moveX)
+
+        try {
+            return await this.sessionClient.sendMove(moveX)
+        } catch {
+            return undefined
+        }
     }
 
 
@@ -129,6 +140,7 @@ export default class GameSession extends PerkyModule {
 
 
     broadcastState (state) {
+        updateLastState(this, state)
         if (!this.sessionHost) {
             return
         }
@@ -162,11 +174,9 @@ export default class GameSession extends PerkyModule {
 
 
 function handlePeerReady (session, peerId) {
-    const wasWaiting = session.waiting
+    const wasDisconnected = session.waiting || !session.connected
 
-    if (wasWaiting) {
-        exitWaitingState(session)
-    }
+    exitWaitingState(session)
 
     const host = session.sessionHost
 
@@ -187,9 +197,11 @@ function handlePeerReady (session, peerId) {
         activateAsClient(session, peerId)
     }
 
-    if (wasWaiting) {
+    if (wasDisconnected) {
         session.emit('host:recovered')
     }
+
+    sendRecoveryState(session)
 }
 
 
@@ -214,12 +226,25 @@ function teardownClient (session) {
 }
 
 
+function sendRecoveryState (session) {
+    if (!session.lastState || !session.sessionClient) {
+        return
+    }
+    session.sessionClient.provideState(session.lastState).catch(() => {})
+}
+
+
 function activateAsHost (session) {
     const host = session.sessionHost
     host.activate()
 
     host.on('peer:stats', (peerId, stats) => {
         session.emit('peer:stats', peerId, stats)
+    })
+
+    host.on('state:recovered', (state) => {
+        updateLastState(session, state)
+        session.emit('state:recovered', state)
     })
 
     const localTransport = host.addLocalTransport(session.localPlayerId)
@@ -252,6 +277,7 @@ function setupClient (session, transport) {
     })
 
     client.on('host:state', (state) => {
+        updateLastState(session, state)
         session.emit('state', state)
     })
 
@@ -273,6 +299,8 @@ function enterWaitingState (session) {
     clearInterval(session.heartbeatCheckTimer)
     session.heartbeatCheckTimer = null
 
+    forceDisconnectPeers(session)
+
     session.emit('host:lost')
 
     session.waitingTimer = setTimeout(() => {
@@ -280,6 +308,21 @@ function enterWaitingState (session) {
         session.waitingTimer = null
         session.emit('host:timeout')
     }, WAITING_TIMEOUT)
+}
+
+
+function forceDisconnectPeers (session) {
+    const network = session.network
+    if (!network) {
+        return
+    }
+
+    for (const peer of [...network.peers]) {
+        peer.close()
+        network.removeChild(peer.$id)
+    }
+
+    network.startHello()
 }
 
 
@@ -357,4 +400,37 @@ function startPingMonitor (session, client) {
     )
 
     session.pingMonitor.start()
+}
+
+
+function updateLastState (session, state) {
+    session.lastState = state
+    persistState(session.lobbyToken, state)
+}
+
+
+function persistState (lobbyToken, state) {
+    if (!lobbyToken || typeof localStorage === 'undefined') {
+        return
+    }
+
+    try {
+        localStorage.setItem(`murder:state:${lobbyToken}`, JSON.stringify(state))
+    } catch {
+        // storage full or unavailable
+    }
+}
+
+
+function loadPersistedState (lobbyToken) {
+    if (!lobbyToken || typeof localStorage === 'undefined') {
+        return null
+    }
+
+    try {
+        const raw = localStorage.getItem(`murder:state:${lobbyToken}`)
+        return raw ? JSON.parse(raw) : null
+    } catch {
+        return null
+    }
 }

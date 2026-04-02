@@ -40,4 +40,9 @@ export default class SessionClient extends ServiceClient {
         return this.request('reportStats', {peerId: this.peerId, ...stats})
     }
 
+
+    async provideState (state) {
+        return this.request('provideState', {peerId: this.peerId, state})
+    }
+
 }

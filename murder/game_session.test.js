@@ -190,4 +190,17 @@ describe('GameSession', () => {
         expect(session.heartbeatCheckTimer).toBe(null)
     })
 
+
+    test('lastState starts as null', () => {
+        const session = new GameSession()
+        expect(session.lastState).toBe(null)
+    })
+
+
+    test('broadcastState stores lastState', () => {
+        const session = new GameSession()
+        session.broadcastState({score: 42})
+        expect(session.lastState).toEqual({score: 42})
+    })
+
 })

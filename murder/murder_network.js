@@ -40,7 +40,7 @@ export default class MurderNetwork extends PerkyModule {
 
 
     get hasPeers () {
-        return this.peers.length > 0
+        return this.peers.some(peer => peer.channelReady)
     }
 
 
@@ -222,6 +222,8 @@ function handleHello (network, peerId) {
     if (network.userId < peerId) {
         const peer = getOrCreatePeer(network, peerId)
         peer.createOffer((data) => network.client.sendSignal(data)).catch(handleError)
+    } else {
+        network.client?.sendSignal({type: 'hello'})
     }
 }
 

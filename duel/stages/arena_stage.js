@@ -82,14 +82,25 @@ export default class ArenaStage extends Stage {
 
         this.world.networkMode = true
 
+        this.stateHandler = (state) => {
+            this.world.importState(state)
+        }
+
         this.session.on('connected', () => {
             this.localFencerId = this.session.isHost ? 'fencer1' : 'fencer2'
-            this.#spawnFencers()
+
+            if (!this.world.fencer1) {
+                this.#spawnFencers()
+            }
+
+            if (this.session.lastState) {
+                this.world.importState(this.session.lastState)
+            }
+
+            this.session.off('state', this.stateHandler)
 
             if (!this.session.isHost) {
-                this.session.on('state', (state) => {
-                    this.world.importState(state)
-                })
+                this.session.on('state', this.stateHandler)
             }
         })
 
@@ -103,10 +114,15 @@ export default class ArenaStage extends Stage {
 
         this.session.on('host:recovered', () => {
             hideWaitingOverlay(this.waitingOverlay)
+            updateStatsOverlay(this.statsOverlay, this.session.stats, this.session.isHost)
         })
 
         this.session.on('host:timeout', () => {
             updateWaitingText(this.waitingOverlay, 'Host disconnected')
+        })
+
+        this.session.on('state:recovered', (state) => {
+            this.world.importState(state)
         })
 
         this.statsOverlay = createStatsOverlay()
