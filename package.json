@@ -16,6 +16,7 @@
     "duel:build": "vite build --config vite.duel.config.js",
     "duel:preview": "vite preview --config vite.duel.config.js",
     "duel:serve": "vite build --config vite.duel.config.js && vite preview --config vite.duel.config.js",
+    "duel:deploy": "./scripts/deploy.sh duel",
     "den": "vite --config vite.den.config.js --port 3000",
     "den:build": "vite build --config vite.den.config.js",
     "den:deploy": "./scripts/deploy.sh den",

@@ -20,6 +20,9 @@ export default defineConfig(() => {
             }
         },
         server: {
+            headers: {
+                'Permissions-Policy': 'publickey-credentials-get=*'
+            },
             proxy: {
                 '/cable': {
                     target: 'ws://localhost:3000',
