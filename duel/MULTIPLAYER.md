@@ -108,12 +108,13 @@ Chaque peer a un SessionHost dormant + un SessionClient. Le lower userId est elu
 
 **But** : un joueur qui refresh ou perd temporairement la connexion peut revenir sans perdre la partie.
 
-- [ ] **Reconnexion au host** : le peer qui revient rejoint la session, le host lui envoie un full snapshot. Le peer reconstruit son etat local a partir du snapshot.
-- [ ] **Persistence locale** : sauvegarder periodiquement le dernier snapshot en localStorage ou IndexedDB. Au refresh, recharger et tenter de rejoindre la session existante.
-- [ ] **Lobby persistence** : le lobby token survit au refresh (deja dans l'URL). Le peer peut re-rejoindre le meme lobby.
-- [ ] **Events** : `session.on('peer:reconnected', peerId)`, `session.on('state:recovered')`
+- [x] **Reconnexion au host** : a la reconnexion, chaque peer envoie son `lastState` au host via `provideState()`. Le host importe l'etat si il n'en a pas.
+- [x] **Persistence locale** : `lastState` persiste en localStorage (cle `murder:state:{lobbyToken}`). Survit au refresh.
+- [x] **Lobby persistence** : le lobby token est dans l'URL. Au refresh, le peer rejoint le meme lobby.
+- [x] **Reconnexion rapide** : `handleHello` repond toujours avec un hello (meme quand deja connecte). `hasPeers` ne compte que les channels ouverts. `forceDisconnectPeers` nettoie les peers stale au heartbeat timeout. Reconnexion en ~1-2s.
+- [x] **Events** : `host:recovered`, `state:recovered`
 
-**Note** : on ne stocke pas d'event log a rejouer. Le host est la source de verite, un full snapshot suffit pour resync.
+**Note** : le host est la source de verite. Un full snapshot suffit pour resync.
 
 ### Etape 4 — Fluidite (prediction + interpolation)
 
