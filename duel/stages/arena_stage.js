@@ -47,6 +47,7 @@ export default class ArenaStage extends Stage {
         super.update(deltaTime)
 
         if (this.session?.connected) {
+            this.session.tick(performance.now())
             this.#sendLocalMovement()
 
             if (this.session.isHost) {
@@ -92,6 +93,11 @@ export default class ArenaStage extends Stage {
             }
         })
 
+        this.session.on('stats', (stats) => {
+            updateStatsOverlay(this.statsOverlay, stats, this.session.isHost)
+        })
+
+        this.statsOverlay = createStatsOverlay()
         this.session.connect()
     }
 
@@ -169,4 +175,28 @@ function mapInputsToFencers (session, inputs) {
     }
 
     return mapped
+}
+
+
+function createStatsOverlay () {
+    const el = document.createElement('div')
+    el.style.cssText = 'position:fixed;top:8px;left:8px;color:#0f0;font:12px monospace;background:rgba(0,0,0,0.6);padding:6px 10px;border-radius:4px;z-index:9999;pointer-events:none'
+    document.body.appendChild(el)
+    return el
+}
+
+
+function updateStatsOverlay (el, stats, isHost) {
+    if (!el) {
+        return
+    }
+
+    const role = isHost ? 'HOST' : 'CLIENT'
+    const rtt = stats.smoothedRtt?.toFixed(0) ?? '-'
+    const jitter = stats.jitter?.toFixed(0) ?? '-'
+    const fps = stats.averageFps ?? '-'
+    const conn = stats.connectionScore ?? '-'
+    const perf = stats.performanceScore ?? '-'
+
+    el.textContent = `${role} | RTT: ${rtt}ms | Jitter: ${jitter}ms | FPS: ${fps} | Conn: ${conn} | Perf: ${perf}`
 }

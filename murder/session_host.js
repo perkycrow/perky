@@ -8,7 +8,7 @@ export default class SessionHost extends ServiceHost {
     static $category = 'sessionHost'
     static $name = 'sessionHost'
     static $eagerStart = false
-    static serviceMethods = ['join', 'input', 'ping']
+    static serviceMethods = ['join', 'input', 'ping', 'reportStats']
 
     constructor (options = {}) {
         const multiplexer = createMultiplexer()
@@ -18,6 +18,7 @@ export default class SessionHost extends ServiceHost {
         this.multiplexer = multiplexer
         this.players = new Map()
         this.inputQueues = new Map()
+        this.peerStats = new Map()
         this.active = false
     }
 
@@ -42,6 +43,7 @@ export default class SessionHost extends ServiceHost {
         this.multiplexer.removeSource(peerId)
         this.players.delete(peerId)
         this.inputQueues.delete(peerId)
+        this.peerStats.delete(peerId)
     }
 
 
@@ -94,6 +96,14 @@ export default class SessionHost extends ServiceHost {
 
     ping (req, res) {
         res.send({serverTime: Date.now()})
+    }
+
+
+    reportStats (req, res) {
+        const {peerId, ...stats} = req.params
+        this.peerStats.set(peerId, stats)
+        this.emit('peer:stats', peerId, stats)
+        res.send('ok')
     }
 
 

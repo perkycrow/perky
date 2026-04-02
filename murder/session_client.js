@@ -35,4 +35,9 @@ export default class SessionClient extends ServiceClient {
         return {rtt, serverTime: result.serverTime}
     }
 
+
+    async reportStats (stats) {
+        return this.request('reportStats', {peerId: this.peerId, ...stats})
+    }
+
 }

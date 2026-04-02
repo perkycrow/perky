@@ -1,6 +1,7 @@
 import {describe, test, expect, vi} from 'vitest'
 import GameSession from './game_session.js'
 import PerkyModule from '../core/perky_module.js'
+import PerformanceMonitor from './performance_monitor.js'
 
 
 describe('GameSession', () => {
@@ -100,6 +101,59 @@ describe('GameSession', () => {
         session.connected = true
         session.disconnect()
         expect(session.connected).toBe(false)
+    })
+
+
+    test('has performanceMonitor', () => {
+        const session = new GameSession()
+        expect(session.performanceMonitor).toBeInstanceOf(PerformanceMonitor)
+    })
+
+
+    test('pingMonitor starts as null', () => {
+        const session = new GameSession()
+        expect(session.pingMonitor).toBe(null)
+    })
+
+
+    test('tick updates performance monitor', () => {
+        const session = new GameSession()
+        session.tick(100)
+        session.tick(116.67)
+        session.tick(133.34)
+
+        expect(session.performanceMonitor.history.length).toBe(2)
+    })
+
+
+    test('stats includes performance data', () => {
+        const session = new GameSession()
+        session.tick(100)
+        session.tick(116.67)
+
+        const stats = session.stats
+        expect(stats).toHaveProperty('averageFrameTime')
+        expect(stats).toHaveProperty('averageFps')
+        expect(stats).toHaveProperty('performanceScore')
+    })
+
+
+    test('peerStats returns empty map when no host', () => {
+        const session = new GameSession()
+        expect(session.peerStats).toBeInstanceOf(Map)
+        expect(session.peerStats.size).toBe(0)
+    })
+
+
+    test('disconnect stops ping monitor', () => {
+        const session = new GameSession()
+        const mockMonitor = {stop: vi.fn()}
+        session.pingMonitor = mockMonitor
+
+        session.disconnect()
+
+        expect(mockMonitor.stop).toHaveBeenCalled()
+        expect(session.pingMonitor).toBe(null)
     })
 
 })

@@ -177,4 +177,50 @@ describe('SessionHost', () => {
         expect(states[0]).toEqual({test: true})
     })
 
+
+    test('has reportStats registered', () => {
+        const host = new SessionHost()
+        expect(host.actions.has('reportStats')).toBe(true)
+    })
+
+
+    test('reportStats stores peer stats', async () => {
+        const {host, client} = createHostWithClient()
+        await client.join()
+
+        await client.reportStats({rtt: 42, connectionScore: 90})
+
+        expect(host.peerStats.has('player1')).toBe(true)
+        expect(host.peerStats.get('player1').rtt).toBe(42)
+        expect(host.peerStats.get('player1').connectionScore).toBe(90)
+    })
+
+
+    test('reportStats emits peer:stats event', async () => {
+        const {host, client} = createHostWithClient()
+        await client.join()
+
+        const events = []
+        host.on('peer:stats', (peerId, stats) => {
+            events.push({peerId, stats})
+        })
+
+        await client.reportStats({rtt: 42})
+
+        expect(events.length).toBe(1)
+        expect(events[0].peerId).toBe('player1')
+        expect(events[0].stats.rtt).toBe(42)
+    })
+
+
+    test('removePeer cleans up peerStats', async () => {
+        const {host, client} = createHostWithClient()
+        await client.join()
+        await client.reportStats({rtt: 42})
+
+        host.removePeer('player1')
+
+        expect(host.peerStats.has('player1')).toBe(false)
+    })
+
 })

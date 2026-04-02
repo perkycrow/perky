@@ -80,14 +80,15 @@ Chaque peer a un SessionHost dormant + un SessionClient. Le lower userId est elu
 
 **But** : savoir en temps reel l'etat de chaque connexion pour prendre des decisions intelligentes.
 
-- [ ] **Ping loop automatique** : ping periodique (toutes les ~1-2s) entre chaque peer et le host. Stocker historique glissant (derniers ~20 RTT).
-- [ ] **RTT lisse** : moyenne mobile exponentielle (EMA) pour eviter les spikes visuels.
-- [ ] **Jitter** : variance du RTT sur la fenetre glissante. Haut jitter = connexion instable.
+- [x] **Ping loop automatique** : `PingMonitor` — ping periodique (~2s), historique glissant (20 samples).
+- [x] **RTT lisse** : EMA (alpha 0.2) sur l'historique.
+- [x] **Jitter** : moyenne des deltas consecutifs sur la fenetre glissante.
 - [ ] **Ping vers Murder** : RTT entre chaque peer et le serveur de signaling. Utile pour diagnostiquer si le probleme est cote P2P ou cote serveur.
-- [ ] **Packet loss** : utiliser `RTCDataChannel.getStats()` ou compteur de sequence pour detecter les paquets perdus.
-- [ ] **Score de connexion** : score composite (0-100) derive de RTT + jitter + packet loss. Seuils : excellent (<50ms, <10ms jitter), bon, moyen, mauvais.
-- [ ] **Score de performance machine** : mesurer le frame time reel vs cible. Si un peer drop sous 30fps regulierement, mauvais candidat host.
-- [ ] **Events** : `session.on('stats', {rtt, jitter, packetLoss, connectionScore, performanceScore})`
+- [x] **Packet loss** : ratio failures/totalPings, auto-recovery apres succes.
+- [x] **Score de connexion** : composite (0-100) = 50% RTT + 30% jitter + 20% packet loss.
+- [x] **Score de performance machine** : `PerformanceMonitor` — mesure frame time vs cible, penalise les drops. Score = 60% ratio + 40% stabilite.
+- [x] **Events** : `session.on('stats', {...})` (local), `session.on('peer:stats', peerId, {...})` (host recoit les stats des peers).
+- [x] **Report au host** : chaque peer envoie ses stats au host via `reportStats()`. Host stocke dans `peerStats` Map.
 
 **Inspiration** : Quake 3 affichait `net_graph` avec RTT, packet loss, snapshot rate. On veut la meme visibilite.
 

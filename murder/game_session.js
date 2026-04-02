@@ -3,6 +3,8 @@ import MurderNetwork from './murder_network.js'
 import SessionHost from './session_host.js'
 import SessionClient from './session_client.js'
 import createMurderTransport from './murder_transport.js'
+import PingMonitor from './ping_monitor.js'
+import PerformanceMonitor from './performance_monitor.js'
 
 
 export default class GameSession extends PerkyModule {
@@ -21,11 +23,27 @@ export default class GameSession extends PerkyModule {
         this.hostPlayerId = null
         this.playerSlots = new Map()
         this.connected = false
+
+        this.pingMonitor = null
+        this.performanceMonitor = new PerformanceMonitor()
     }
 
 
     get isHost () {
         return this.hostPlayerId !== null && this.localPlayerId === this.hostPlayerId
+    }
+
+
+    get stats () {
+        return {
+            ...(this.pingMonitor ? this.pingMonitor.stats : {}),
+            ...this.performanceMonitor.stats
+        }
+    }
+
+
+    get peerStats () {
+        return this.sessionHost?.peerStats || new Map()
     }
 
 
@@ -87,6 +105,11 @@ export default class GameSession extends PerkyModule {
     }
 
 
+    tick (timestamp) {
+        this.performanceMonitor.tick(timestamp)
+    }
+
+
     flushInputs () {
         if (!this.sessionHost) {
             return new Map()
@@ -109,6 +132,8 @@ export default class GameSession extends PerkyModule {
 
 
     disconnect () {
+        this.pingMonitor?.stop()
+        this.pingMonitor = null
         this.network?.disconnect()
         this.connected = false
     }
@@ -170,6 +195,10 @@ function activateAsHost (session) {
     const host = session.sessionHost
     host.activate()
 
+    host.on('peer:stats', (peerId, stats) => {
+        session.emit('peer:stats', peerId, stats)
+    })
+
     const localTransport = host.addLocalTransport(session.localPlayerId)
     setupClient(session, localTransport)
 
@@ -207,4 +236,24 @@ function setupClient (session, transport) {
         session.playerSlots.set(session.localPlayerId, slot)
         session.emit('player:joined', session.localPlayerId, slot)
     })
+
+    startPingMonitor(session, client)
+}
+
+
+function startPingMonitor (session, client) {
+    session.pingMonitor?.stop()
+
+    session.pingMonitor = new PingMonitor(
+        () => client.ping(),
+        {
+            onStats: (stats) => {
+                const combined = {...stats, ...session.performanceMonitor.stats}
+                session.emit('stats', combined)
+                client.reportStats(combined).catch(() => {})
+            }
+        }
+    )
+
+    session.pingMonitor.start()
 }
