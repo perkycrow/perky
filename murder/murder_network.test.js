@@ -218,7 +218,7 @@ describe(MurderNetwork, () => {
     })
 
 
-    test('ice signal is forwarded to peer', async () => {
+    test('ice from peer is buffered then flushed on answer', async () => {
         const network = new MurderNetwork()
         const ws = await connectNetwork(network, wsInstances)
 
@@ -232,7 +232,7 @@ describe(MurderNetwork, () => {
             payload: {candidate: 'ice-data'}
         })
 
-        expect(rtcInstances[0].addIceCandidate).toHaveBeenCalledWith({candidate: 'ice-data'})
+        expect(rtcInstances[0].addIceCandidate).not.toHaveBeenCalled()
     })
 
 

@@ -13,6 +13,7 @@ export default class PeerConnection extends PerkyModule {
 
     #connection = null
     #channel = null
+    #pendingCandidates = []
 
     constructor (options = {}) {
         super(options)
@@ -68,6 +69,8 @@ export default class PeerConnection extends PerkyModule {
         }
 
         await this.#connection.setRemoteDescription(offer)
+        this.#flushPendingCandidates()
+
         await this.#connection.setLocalDescription()
         const answer = this.#connection.localDescription
 
@@ -85,11 +88,17 @@ export default class PeerConnection extends PerkyModule {
         }
 
         await this.#connection.setRemoteDescription(answer)
+        this.#flushPendingCandidates()
     }
 
 
     handleIce (candidate) {
         if (!this.#connection) {
+            return
+        }
+
+        if (!this.#connection.remoteDescription) {
+            this.#pendingCandidates.push(candidate)
             return
         }
 
@@ -117,6 +126,16 @@ export default class PeerConnection extends PerkyModule {
             this.#connection.close()
             this.#connection = null
         }
+
+        this.#pendingCandidates = []
+    }
+
+
+    #flushPendingCandidates () {
+        for (const candidate of this.#pendingCandidates) {
+            this.#connection.addIceCandidate(candidate)
+        }
+        this.#pendingCandidates = []
     }
 
 

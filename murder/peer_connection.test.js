@@ -214,12 +214,16 @@ describe(PeerConnection, () => {
     })
 
 
-    test('handleIce', async () => {
+    test('handleIce buffers candidates until remote description is set', async () => {
         const peer = new PeerConnection({peerId: 5})
         await peer.createOffer(vi.fn())
 
         const candidate = {candidate: 'ice-candidate'}
         peer.handleIce(candidate)
+
+        expect(rtcInstances[0].addIceCandidate).not.toHaveBeenCalled()
+
+        await peer.handleAnswer({type: 'answer', sdp: 'mock-answer'})
 
         expect(rtcInstances[0].addIceCandidate).toHaveBeenCalledWith(candidate)
     })
