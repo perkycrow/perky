@@ -20,6 +20,7 @@ export default defineConfig(() => {
             }
         },
         server: {
+            host: '0.0.0.0',
             headers: {
                 'Permissions-Policy': 'interest-cohort=()',
                 'Cross-Origin-Opener-Policy': 'unsafe-none',
