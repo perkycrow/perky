@@ -7,6 +7,10 @@ import PingMonitor from './ping_monitor.js'
 import PerformanceMonitor from './performance_monitor.js'
 
 
+const HEARTBEAT_TIMEOUT = 5000
+const WAITING_TIMEOUT = 15000
+
+
 export default class GameSession extends PerkyModule {
 
     static $name = 'gameSession'
@@ -23,9 +27,15 @@ export default class GameSession extends PerkyModule {
         this.hostPlayerId = null
         this.playerSlots = new Map()
         this.connected = false
+        this.waiting = false
 
         this.pingMonitor = null
         this.performanceMonitor = new PerformanceMonitor()
+
+        this.lastHeartbeat = 0
+        this.heartbeatCheckTimer = null
+        this.waitingTimer = null
+        this.lastPeerScores = {}
     }
 
 
@@ -134,6 +144,11 @@ export default class GameSession extends PerkyModule {
     disconnect () {
         this.pingMonitor?.stop()
         this.pingMonitor = null
+        clearInterval(this.heartbeatCheckTimer)
+        clearTimeout(this.waitingTimer)
+        this.heartbeatCheckTimer = null
+        this.waitingTimer = null
+        this.waiting = false
         this.network?.disconnect()
         this.connected = false
     }
@@ -147,30 +162,47 @@ export default class GameSession extends PerkyModule {
 
 
 function handlePeerReady (session, peerId) {
-    const host = session.sessionHost
-    const peer = session.network.getPeer(peerId)
+    const wasWaiting = session.waiting
 
-    host.addPeer(peerId, peer)
-    electHost(session, peerId)
+    if (wasWaiting) {
+        exitWaitingState(session)
+    }
+
+    const host = session.sessionHost
 
     if (session.connected) {
+        host.deactivate()
+        host.stopHeartbeat()
         teardownClient(session)
     }
+
+    const peer = session.network.getPeer(peerId)
+    host.addPeer(peerId, peer)
+
+    electHostByScore(session, peerId)
 
     if (session.isHost) {
         activateAsHost(session)
     } else {
         activateAsClient(session, peerId)
     }
+
+    if (wasWaiting) {
+        session.emit('host:recovered')
+    }
 }
 
 
 function handlePeerDisconnected (session, peerId) {
     session.sessionHost?.removePeer(peerId)
-    session.connected = false
-    session.hostPlayerId = null
-    teardownClient(session)
-    session.emit('peer:disconnected', peerId)
+
+    const lostHost = peerId === session.hostPlayerId && !session.isHost
+
+    if (lostHost) {
+        enterWaitingState(session)
+    } else {
+        session.emit('peer:disconnected', peerId)
+    }
 }
 
 
@@ -179,15 +211,6 @@ function teardownClient (session) {
     if (client) {
         session.removeChild(client.$id)
     }
-}
-
-
-function electHost (session, peerId) {
-    session.hostPlayerId = session.localPlayerId < peerId
-        ? session.localPlayerId
-        : peerId
-
-    session.emit('host:elected', session.hostPlayerId)
 }
 
 
@@ -237,7 +260,85 @@ function setupClient (session, transport) {
         session.emit('player:joined', session.localPlayerId, slot)
     })
 
+    startHeartbeatCheck(session, client)
     startPingMonitor(session, client)
+}
+
+
+function enterWaitingState (session) {
+    session.connected = false
+    session.waiting = true
+    session.pingMonitor?.stop()
+    teardownClient(session)
+    clearInterval(session.heartbeatCheckTimer)
+    session.heartbeatCheckTimer = null
+
+    session.emit('host:lost')
+
+    session.waitingTimer = setTimeout(() => {
+        session.waiting = false
+        session.waitingTimer = null
+        session.emit('host:timeout')
+    }, WAITING_TIMEOUT)
+}
+
+
+function exitWaitingState (session) {
+    session.waiting = false
+    clearTimeout(session.waitingTimer)
+    session.waitingTimer = null
+}
+
+
+function startHeartbeatCheck (session, client) {
+    session.lastHeartbeat = Date.now()
+
+    client.on('host:heartbeat', (data) => {
+        session.lastHeartbeat = Date.now()
+        session.lastPeerScores = data.peerScores || {}
+    })
+
+    if (session.isHost) {
+        return
+    }
+
+    session.heartbeatCheckTimer = setInterval(() => {
+        const elapsed = Date.now() - session.lastHeartbeat
+
+        if (elapsed > HEARTBEAT_TIMEOUT && session.connected && !session.waiting) {
+            enterWaitingState(session)
+        }
+    }, 1000)
+}
+
+
+function electHostByScore (session, peerId) {
+    const localScore = computeCandidateScore(
+        session.lastPeerScores[session.localPlayerId]
+    )
+    const peerScore = computeCandidateScore(
+        session.lastPeerScores[peerId]
+    )
+
+    if (localScore !== peerScore) {
+        session.hostPlayerId = localScore > peerScore
+            ? session.localPlayerId
+            : peerId
+    } else {
+        session.hostPlayerId = session.localPlayerId < peerId
+            ? session.localPlayerId
+            : peerId
+    }
+
+    session.emit('host:elected', session.hostPlayerId)
+}
+
+
+function computeCandidateScore (stats) {
+    if (!stats) {
+        return 0
+    }
+    return (stats.connectionScore || 0) * 0.5 + (stats.performanceScore || 0) * 0.5
 }
 
 

@@ -156,4 +156,38 @@ describe('GameSession', () => {
         expect(session.pingMonitor).toBe(null)
     })
 
+
+    test('starts in non-waiting state', () => {
+        const session = new GameSession()
+        expect(session.waiting).toBe(false)
+    })
+
+
+    test('lastPeerScores starts empty', () => {
+        const session = new GameSession()
+        expect(session.lastPeerScores).toEqual({})
+    })
+
+
+    test('disconnect clears waiting state', () => {
+        const session = new GameSession()
+        session.waiting = true
+        session.waitingTimer = setTimeout(() => {}, 10000)
+
+        session.disconnect()
+
+        expect(session.waiting).toBe(false)
+        expect(session.waitingTimer).toBe(null)
+    })
+
+
+    test('disconnect clears heartbeat check timer', () => {
+        const session = new GameSession()
+        session.heartbeatCheckTimer = setInterval(() => {}, 1000)
+
+        session.disconnect()
+
+        expect(session.heartbeatCheckTimer).toBe(null)
+    })
+
 })

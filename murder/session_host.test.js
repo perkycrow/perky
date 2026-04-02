@@ -1,4 +1,4 @@
-import {describe, test, expect, vi} from 'vitest'
+import {describe, test, expect, vi, beforeEach, afterEach} from 'vitest'
 import SessionHost from './session_host.js'
 import SessionClient from './session_client.js'
 import ServiceHost from '../service/service_host.js'
@@ -221,6 +221,74 @@ describe('SessionHost', () => {
         host.removePeer('player1')
 
         expect(host.peerStats.has('player1')).toBe(false)
+    })
+
+
+    test('activate starts heartbeat', () => {
+        vi.useFakeTimers()
+        const host = new SessionHost()
+
+        host.activate()
+
+        expect(host.heartbeatTimer).not.toBe(null)
+        host.deactivate()
+        vi.useRealTimers()
+    })
+
+
+    test('deactivate stops heartbeat', () => {
+        vi.useFakeTimers()
+        const host = new SessionHost()
+
+        host.activate()
+        host.deactivate()
+
+        expect(host.heartbeatTimer).toBe(null)
+        vi.useRealTimers()
+    })
+
+
+    test('heartbeat sends to clients', async () => {
+        vi.useFakeTimers()
+        const {host, client} = createHostWithClient()
+        await client.join()
+
+        const heartbeats = []
+        client.on('host:heartbeat', (data) => {
+            heartbeats.push(data)
+        })
+
+        host.startHeartbeat()
+        vi.advanceTimersByTime(1000)
+
+        expect(heartbeats.length).toBe(1)
+        expect(heartbeats[0]).toHaveProperty('timestamp')
+        expect(heartbeats[0]).toHaveProperty('peerScores')
+
+        host.stopHeartbeat()
+        vi.useRealTimers()
+    })
+
+
+    test('heartbeat includes peer scores', async () => {
+        vi.useFakeTimers()
+        const {host, client} = createHostWithClient()
+        await client.join()
+        await client.reportStats({connectionScore: 85, performanceScore: 90})
+
+        const heartbeats = []
+        client.on('host:heartbeat', (data) => {
+            heartbeats.push(data)
+        })
+
+        host.startHeartbeat()
+        vi.advanceTimersByTime(1000)
+
+        expect(heartbeats[0].peerScores.player1.connectionScore).toBe(85)
+        expect(heartbeats[0].peerScores.player1.performanceScore).toBe(90)
+
+        host.stopHeartbeat()
+        vi.useRealTimers()
     })
 
 })

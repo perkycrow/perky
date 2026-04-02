@@ -96,11 +96,11 @@ Chaque peer a un SessionHost dormant + un SessionClient. Le lower userId est elu
 
 **But** : si le host tombe, la partie continue.
 
-- [ ] **Heartbeat** : le host envoie un heartbeat regulier. Si un client ne recoit rien pendant N secondes, il considere le host perdu.
-- [ ] **Ecran "Waiting for host..."** : a la StarCraft 1, timer visible. Si le host revient dans le delai, on reprend. Sinon, migration.
-- [ ] **Election du nouveau host** : basee sur le score composite (connexion + perf machine), pas juste le lower userId. Le peer avec le meilleur score devient host.
-- [ ] **Switch** : le nouveau host active son SessionHost dormant, broadcast un full snapshot comme etat autoritaire. Les clients reconnectent leur SessionClient au nouveau host.
-- [ ] **Events** : `session.on('host:migrating')`, `session.on('host:migrated', newHostId)`
+- [x] **Heartbeat** : host envoie heartbeat toutes les 1s avec `peerScores`. Client detecte timeout apres 5s sans heartbeat.
+- [x] **Ecran "Waiting for host..."** : overlay plein ecran, 15s de timeout. Si le host revient, on reprend. Sinon, `host:timeout`.
+- [x] **Election du nouveau host** : score composite (50% connexion + 50% perf). Fallback sur lower userId en cas d'egalite.
+- [x] **Switch** : a la reconnexion, re-election + le nouveau host active son SessionHost dormant. Ancien host teardown propre.
+- [x] **Events** : `host:lost`, `host:recovered`, `host:timeout`, `host:elected`
 
 **Inspiration** : Halo faisait ca avec ~2-5s de pause. StarCraft mettait le jeu en pause avec un compteur.
 

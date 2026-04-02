@@ -97,7 +97,20 @@ export default class ArenaStage extends Stage {
             updateStatsOverlay(this.statsOverlay, stats, this.session.isHost)
         })
 
+        this.session.on('host:lost', () => {
+            showWaitingOverlay(this.waitingOverlay)
+        })
+
+        this.session.on('host:recovered', () => {
+            hideWaitingOverlay(this.waitingOverlay)
+        })
+
+        this.session.on('host:timeout', () => {
+            updateWaitingText(this.waitingOverlay, 'Host disconnected')
+        })
+
         this.statsOverlay = createStatsOverlay()
+        this.waitingOverlay = createWaitingOverlay()
         this.session.connect()
     }
 
@@ -199,4 +212,35 @@ function updateStatsOverlay (el, stats, isHost) {
     const perf = stats.performanceScore ?? '-'
 
     el.textContent = `${role} | RTT: ${rtt}ms | Jitter: ${jitter}ms | FPS: ${fps} | Conn: ${conn} | Perf: ${perf}`
+}
+
+
+function createWaitingOverlay () {
+    const el = document.createElement('div')
+    el.style.cssText = 'position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);z-index:10000;font:24px monospace;color:#fff'
+    el.textContent = 'Waiting for host...'
+    document.body.appendChild(el)
+    return el
+}
+
+
+function showWaitingOverlay (el) {
+    if (el) {
+        el.style.display = 'flex'
+        el.textContent = 'Waiting for host...'
+    }
+}
+
+
+function hideWaitingOverlay (el) {
+    if (el) {
+        el.style.display = 'none'
+    }
+}
+
+
+function updateWaitingText (el, text) {
+    if (el) {
+        el.textContent = text
+    }
 }

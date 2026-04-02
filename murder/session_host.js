@@ -3,6 +3,9 @@ import ServiceTransport from '../service/service_transport.js'
 import createMurderTransport from './murder_transport.js'
 
 
+const HEARTBEAT_INTERVAL = 1000
+
+
 export default class SessionHost extends ServiceHost {
 
     static $category = 'sessionHost'
@@ -20,16 +23,38 @@ export default class SessionHost extends ServiceHost {
         this.inputQueues = new Map()
         this.peerStats = new Map()
         this.active = false
+        this.heartbeatTimer = null
     }
 
 
     activate () {
         this.active = true
+        this.startHeartbeat()
     }
 
 
     deactivate () {
         this.active = false
+        this.stopHeartbeat()
+    }
+
+
+    startHeartbeat () {
+        this.stopHeartbeat()
+        this.heartbeatTimer = setInterval(() => {
+            this.emitToClient('heartbeat', {
+                timestamp: Date.now(),
+                peerScores: buildPeerScores(this.peerStats)
+            })
+        }, HEARTBEAT_INTERVAL)
+    }
+
+
+    stopHeartbeat () {
+        if (this.heartbeatTimer) {
+            clearInterval(this.heartbeatTimer)
+            this.heartbeatTimer = null
+        }
     }
 
 
@@ -170,4 +195,18 @@ function broadcastToSources (sources, message) {
     for (const peerTransport of sources.values()) {
         peerTransport.send(message)
     }
+}
+
+
+function buildPeerScores (peerStats) {
+    const scores = {}
+
+    for (const [peerId, stats] of peerStats) {
+        scores[peerId] = {
+            connectionScore: stats.connectionScore ?? 0,
+            performanceScore: stats.performanceScore ?? 0
+        }
+    }
+
+    return scores
 }
