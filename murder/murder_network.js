@@ -1,6 +1,7 @@
 import PerkyModule from '../core/perky_module.js'
 import MurderClient from './murder_client.js'
 import PeerConnection from './peer_connection.js'
+import logger from '../core/logger.js'
 
 
 const HELLO_INTERVAL = 1000
@@ -229,5 +230,5 @@ function handleHello (network, peerId) {
 
 
 function handleError (error) {
-    console.error('[MurderNetwork]', error)
+    logger.error('[MurderNetwork]', error)
 }
