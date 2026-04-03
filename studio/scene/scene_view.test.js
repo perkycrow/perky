@@ -117,4 +117,59 @@ describe('SceneView', () => {
         expect(view.camera).toBeUndefined()
     })
 
+
+    test('buildHeaderStart returns fragment with undo and redo buttons', () => {
+        const view = new SceneView()
+        const fragment = view.buildHeaderStart()
+
+        expect(fragment).toBeInstanceOf(DocumentFragment)
+        expect(fragment.children.length).toBe(2)
+
+        const [undoBtn, redoBtn] = fragment.children
+        expect(undoBtn.tagName).toBe('BUTTON')
+        expect(undoBtn.title).toBe('Undo')
+        expect(redoBtn.tagName).toBe('BUTTON')
+        expect(redoBtn.title).toBe('Redo')
+    })
+
+
+    test('buildHeaderEnd returns container with toolbar buttons', () => {
+        const view = new SceneView()
+        const container = view.buildHeaderEnd()
+
+        expect(container).toBeInstanceOf(HTMLDivElement)
+        expect(container.children.length).toBe(4)
+
+        const titles = Array.from(container.children).map(btn => btn.title)
+        expect(titles).toContain('Toggle palette')
+        expect(titles).toContain('Toggle properties')
+        expect(titles).toContain('Toggle grid snap')
+        expect(titles).toContain('Preview in game')
+    })
+
+
+    test('buildContent returns scene container', () => {
+        const view = new SceneView()
+        const content = view.buildContent()
+
+        expect(content).toBeInstanceOf(HTMLDivElement)
+        expect(content.classList.contains('scene-container')).toBe(true)
+    })
+
+
+    test('autoSave does nothing without sceneId', () => {
+        const view = new SceneView()
+
+        view.setContext({
+            manifest: {getAssetsByType: () => [], getSource: () => null},
+            textureSystem: {getSpritesheet: () => null, getRegion: () => null},
+            studioConfig: {},
+            scenes: {},
+            sceneId: null,
+            wiring: null
+        })
+
+        expect(() => view.autoSave()).not.toThrow()
+    })
+
 })
