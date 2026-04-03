@@ -462,7 +462,7 @@ describe(MurderNetwork, () => {
 
     test('stopHello clears interval', async () => {
         const network = new MurderNetwork()
-        const ws = await connectNetwork(network, wsInstances)
+        await connectNetwork(network, wsInstances)
 
         expect(network.helloInterval).not.toBeNull()
 
