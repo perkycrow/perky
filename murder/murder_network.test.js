@@ -43,14 +43,22 @@ function createMockRTCPeerConnection () {
     const pc = {
         connectionState: 'new',
         signalingState: 'stable',
+        localDescription: null,
+        remoteDescription: null,
         onicecandidate: null,
         onconnectionstatechange: null,
         ondatachannel: null,
         createDataChannel: vi.fn(() => channel),
         createOffer: vi.fn().mockResolvedValue({type: 'offer', sdp: 'mock'}),
         createAnswer: vi.fn().mockResolvedValue({type: 'answer', sdp: 'mock'}),
-        setLocalDescription: vi.fn().mockResolvedValue(undefined),
-        setRemoteDescription: vi.fn().mockResolvedValue(undefined),
+        setLocalDescription: vi.fn().mockImplementation(function (desc) {
+            pc.localDescription = desc || {type: 'offer', sdp: 'mock-sdp'}
+            return Promise.resolve()
+        }),
+        setRemoteDescription: vi.fn().mockImplementation(function (desc) {
+            pc.remoteDescription = desc
+            return Promise.resolve()
+        }),
         addIceCandidate: vi.fn().mockResolvedValue(undefined),
         close: vi.fn(),
         mockChannel: channel
