@@ -148,3 +148,35 @@ Le jeu choisit son mode, le framework adapte la strategie de sync.
 - **Host advantage** : le host a 0ms de latence. Mitigation possible : delay artificiel sur les inputs host.
 - **Scaling** : topologie etoile OK jusqu'a ~8 joueurs. Au-dela, serveur dedie.
 - **NAT** : WebRTC/ICE gere ~85% des cas via STUN. Les 15% restants ont besoin de TURN relay.
+
+## Lobby & privileges
+
+A terme, distinguer deux roles :
+
+- **Lobby host** (Murder) : createur de la partie. Role social/administratif. Fixe.
+- **Network host** (GameSession) : fait tourner la simulation. Role technique. Peut changer (migration).
+
+`session.lobbyHostId` vs `session.hostPlayerId`. Le jeu decide quels privileges donner au lobby host :
+
+- Relancer une partie / changer de map
+- Kick un joueur
+- Changer les regles (score max, mode de jeu, handicap)
+- Mettre en pause
+- Retour au lobby en fin de partie (le lobby host decide quand relancer)
+
+Flow envisage :
+```
+Lobby (Murder) -> Lancement -> Partie (P2P) -> Fin de partie -> Retour au lobby -> Relance
+```
+
+Le retour au lobby implique de garder la connexion WebSocket Murder active pendant la partie, et que le lobby survive a la session de jeu. Murder doit supporter un etat "finished" qui permet de relancer.
+
+## Prochaines etapes
+
+- **Lier host Murder au host GameSession** : le createur du lobby Murder pourrait etre prioritaire dans l'election host. Actuellement les deux concepts sont independants (Murder = lobby, GameSession = election par score/userId).
+- **Migration proactive** : si la connexion du host se degrade, transferer le role sans attendre la deconnexion.
+- **Lag compensation (rewind)** : le host garde un buffer de snapshots (~1s). Quand un client attaque, le host rembobine au timestamp du client pour verifier le hit. Style Quake 3 / Overwatch.
+- **Input delay equalization** : ajouter un delay artificiel aux inputs du host = RTT/2 du client pour egaliser l'avantage host.
+- **Replay d'inputs (Quake style)** : au lieu de corriger par lerp, restaurer l'etat du host puis rejouer les inputs non confirmes. Preserve parfaitement les impulsions (sauts, dashs).
+- **Rollback (GGPO style)** : replay deterministe du monde entier, re-simulation de N frames. Pour jeux competitifs.
+- **Extraction du boilerplate reseau** : extraire la plomberie reseau d'ArenaStage dans un helper reutilisable.
