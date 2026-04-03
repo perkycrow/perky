@@ -47,6 +47,11 @@ describe(MurderLobby, () => {
     })
 
 
+    test('$name', () => {
+        expect(MurderLobby.$name).toBe('murderLobby')
+    })
+
+
     test('$eagerStart', () => {
         expect(MurderLobby.$eagerStart).toBe(false)
     })

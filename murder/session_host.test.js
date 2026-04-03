@@ -28,6 +28,13 @@ describe('SessionHost', () => {
     })
 
 
+    test('static properties', () => {
+        expect(SessionHost.$category).toBe('sessionHost')
+        expect(SessionHost.$name).toBe('sessionHost')
+        expect(SessionHost.$eagerStart).toBe(false)
+    })
+
+
     test('starts inactive', () => {
         const host = new SessionHost()
         expect(host.active).toBe(false)
@@ -48,6 +55,8 @@ describe('SessionHost', () => {
         expect(host.actions.has('join')).toBe(true)
         expect(host.actions.has('input')).toBe(true)
         expect(host.actions.has('ping')).toBe(true)
+        expect(host.actions.has('reportStats')).toBe(true)
+        expect(host.actions.has('provideState')).toBe(true)
     })
 
 
@@ -91,6 +100,34 @@ describe('SessionHost', () => {
         const client = new SessionClient({transport: clientTransport, peerId: 'p1'})
 
         await expect(client.join()).rejects.toThrow()
+    })
+
+
+    test('join emits player:joined event', async () => {
+        const {host, client} = createHostWithClient()
+
+        const events = []
+        host.on('player:joined', (peerId, slot) => {
+            events.push({peerId, slot})
+        })
+
+        await client.join()
+
+        expect(events.length).toBe(1)
+        expect(events[0].peerId).toBe('player1')
+        expect(events[0].slot).toBe(0)
+    })
+
+
+    test('join returns same slot for existing player', async () => {
+        const {host, client} = createHostWithClient()
+
+        const r1 = await client.join()
+        const r2 = await client.join()
+
+        expect(r1.slot).toBe(0)
+        expect(r2.slot).toBe(0)
+        expect(host.nextSlot).toBe(1)
     })
 
 
@@ -143,6 +180,19 @@ describe('SessionHost', () => {
         expect(inputs.get('player1').moveX).toBe(1)
         expect(inputs.get('player1').moveY).toBe(-1)
         expect(inputs.get('player1').actions).toEqual([])
+    })
+
+
+    test('flushInputs returns lastSeq', async () => {
+        const {host, client} = createHostWithClient()
+        await client.join()
+
+        await client.sendInput('jump')
+        await client.sendInput('lunge')
+        await client.sendInput('parry')
+
+        const inputs = host.flushInputs()
+        expect(inputs.get('player1').lastSeq).toBe(3)
     })
 
 
