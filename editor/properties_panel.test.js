@@ -1,5 +1,5 @@
 import {test, expect, vi, beforeEach, afterEach} from 'vitest'
-import './properties_panel.js'
+import PropertiesPanel from './properties_panel.js'
 
 
 let panel
@@ -19,7 +19,8 @@ afterEach(() => {
 })
 
 
-test('creates panel element', () => {
+test('PropertiesPanel', () => {
+    expect(panel).toBeInstanceOf(PropertiesPanel)
     expect(panel.shadowRoot).not.toBeNull()
 })
 

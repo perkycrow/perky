@@ -5,6 +5,7 @@ import Circle from '../../render/circle.js'
 import Color from '../../math/color.js'
 import GameSession from '../../murder/game_session.js'
 import SnapshotInterpolator from '../../murder/snapshot_interpolator.js'
+import {createElement} from '../../application/dom_utils.js'
 
 import DuelWorld from '../worlds/duel_world.js'
 import DuelController from '../controllers/duel_controller.js'
@@ -353,8 +354,9 @@ function resolveServerHost () {
 
 
 function createStatsOverlay () {
-    const el = document.createElement('div')
-    el.style.cssText = 'position:fixed;top:8px;left:8px;color:#0f0;font:12px monospace;background:rgba(0,0,0,0.6);padding:6px 10px;border-radius:4px;z-index:9999;pointer-events:none'
+    const el = createElement('div', {
+        style: 'position:fixed;top:8px;left:8px;color:#0f0;font:12px monospace;background:rgba(0,0,0,0.6);padding:6px 10px;border-radius:4px;z-index:9999;pointer-events:none'
+    })
     document.body.appendChild(el)
     return el
 }
@@ -396,9 +398,10 @@ function updateStatsOverlay (el, options) {
 
 
 function createWaitingOverlay () {
-    const el = document.createElement('div')
-    el.style.cssText = 'position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);z-index:10000;font:24px monospace;color:#fff'
-    el.textContent = 'Waiting for host...'
+    const el = createElement('div', {
+        style: 'position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);z-index:10000;font:24px monospace;color:#fff',
+        text: 'Waiting for host...'
+    })
     document.body.appendChild(el)
     return el
 }
@@ -427,9 +430,10 @@ function updateWaitingText (el, text) {
 
 
 function createScoreOverlay () {
-    const el = document.createElement('div')
-    el.style.cssText = 'position:fixed;top:40px;left:50%;transform:translateX(-50%);font:bold 24px monospace;z-index:9999;pointer-events:none;display:flex;gap:20px'
-    el.innerHTML = '<span style="color:#4488ff">0</span><span style="color:#888">-</span><span style="color:#ff4444">0</span>'
+    const el = createElement('div', {
+        style: 'position:fixed;top:40px;left:50%;transform:translateX(-50%);font:bold 24px monospace;z-index:9999;pointer-events:none;display:flex;gap:20px',
+        html: '<span style="color:#4488ff">0</span><span style="color:#888">-</span><span style="color:#ff4444">0</span>'
+    })
     document.body.appendChild(el)
     return el
 }
