@@ -18,7 +18,7 @@ export default doc('SessionClient', {advanced: true}, () => {
             responses.
         `)
 
-        code('Basic setup', () => {
+        code('Basic setup', async () => {
             const client = new SessionClient({
                 transport: murderTransport,
                 peerId: 'player-123'
