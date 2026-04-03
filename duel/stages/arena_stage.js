@@ -2,6 +2,7 @@ import Stage from '../../game/stage.js'
 import Group2D from '../../render/group_2d.js'
 import Rectangle from '../../render/rectangle.js'
 import GameSession from '../../murder/game_session.js'
+import SnapshotInterpolator from '../../murder/snapshot_interpolator.js'
 
 import DuelWorld from '../worlds/duel_world.js'
 import DuelController from '../controllers/duel_controller.js'
@@ -25,6 +26,9 @@ export default class ArenaStage extends Stage {
         this.backgroundGroup = new Group2D()
         this.session = null
         this.localFencerId = null
+        this.interpolator = new SnapshotInterpolator({delay: 100})
+        this.broadcastAccumulator = 0
+        this.broadcastInterval = 1 / 20
 
         this.#buildArena()
         this.#setupRenderGroups()
@@ -52,6 +56,8 @@ export default class ArenaStage extends Stage {
 
             if (this.session.isHost) {
                 this.#hostTick(deltaTime)
+            } else {
+                this.#clientTick()
             }
         } else if (!this.session) {
             this.world.update(deltaTime, this.game)
@@ -83,7 +89,7 @@ export default class ArenaStage extends Stage {
         this.world.networkMode = true
 
         this.stateHandler = (state) => {
-            this.world.importState(state)
+            this.interpolator.push(state, state.timestamp || Date.now())
         }
 
         this.session.on('connected', () => {
@@ -143,14 +149,31 @@ export default class ArenaStage extends Stage {
     }
 
 
+    #clientTick () {
+        if (this.interpolator.ready) {
+            const state = this.interpolator.getInterpolatedState(Date.now())
+
+            if (state) {
+                this.world.importState(state)
+            }
+        }
+    }
+
+
     #hostTick (deltaTime) {
         const inputs = this.session.flushInputs()
         const mappedInputs = mapInputsToFencers(this.session, inputs)
         this.world.applyNetworkInputs(mappedInputs)
         this.world.update(deltaTime, this.game)
 
-        const state = this.world.exportState()
-        this.session.broadcastState(state)
+        this.broadcastAccumulator += deltaTime
+
+        if (this.broadcastAccumulator >= this.broadcastInterval) {
+            this.broadcastAccumulator -= this.broadcastInterval
+            const state = this.world.exportState()
+            state.timestamp = Date.now()
+            this.session.broadcastState(state)
+        }
     }
 
 

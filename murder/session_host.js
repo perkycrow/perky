@@ -98,7 +98,7 @@ export default class SessionHost extends ServiceHost {
 
 
     input (req, res) {
-        const {peerId, action, value} = req.params
+        const {peerId, action, value, seq} = req.params
 
         if (!this.inputQueues.has(peerId)) {
             res.error('Unknown player')
@@ -106,6 +106,10 @@ export default class SessionHost extends ServiceHost {
         }
 
         const queue = this.inputQueues.get(peerId)
+
+        if (seq) {
+            queue.lastSeq = seq
+        }
 
         if (action === 'move') {
             queue.moveX = value ?? 0
@@ -139,7 +143,8 @@ export default class SessionHost extends ServiceHost {
         for (const [peerId, queue] of this.inputQueues) {
             inputs.set(peerId, {
                 moveX: queue.moveX ?? 0,
-                actions: queue.actions || []
+                actions: queue.actions || [],
+                lastSeq: queue.lastSeq ?? 0
             })
             queue.actions = []
         }

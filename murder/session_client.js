@@ -10,6 +10,7 @@ export default class SessionClient extends ServiceClient {
     constructor (options = {}) {
         super(options)
         this.peerId = options.peerId || null
+        this.inputSeq = 0
     }
 
 
@@ -19,7 +20,8 @@ export default class SessionClient extends ServiceClient {
 
 
     async sendInput (action, value) {
-        return this.request('input', {peerId: this.peerId, action, value})
+        this.inputSeq++
+        return this.request('input', {peerId: this.peerId, action, value, seq: this.inputSeq})
     }
 
 
