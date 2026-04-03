@@ -161,3 +161,160 @@ test('listBindings returns empty when no bindings defined', () => {
     container.appendChild(bareTool)
     expect(bareTool.listBindings()).toEqual({})
 })
+
+
+test('init not called when hasContext returns false', () => {
+    class NoContextTool extends StudioTool {
+
+        initCalled = false
+
+        hasContext () {
+            return false
+        }
+
+        init () {
+            this.initCalled = true
+        }
+    }
+    customElements.define('no-context-tool', NoContextTool)
+    const noContextTool = document.createElement('no-context-tool')
+    container.appendChild(noContextTool)
+    expect(noContextTool.initCalled).toBe(false)
+})
+
+
+test('keyboard shortcut triggers action', () => {
+    tool.saved = false
+    const event = new KeyboardEvent('keydown', {
+        key: 's',
+        ctrlKey: true,
+        bubbles: true
+    })
+    window.dispatchEvent(event)
+    expect(tool.saved).toBe(true)
+})
+
+
+test('keyboard shortcut with meta key triggers action', () => {
+    tool.undone = false
+    const event = new KeyboardEvent('keydown', {
+        key: 'z',
+        metaKey: true,
+        bubbles: true
+    })
+    window.dispatchEvent(event)
+    expect(tool.undone).toBe(true)
+})
+
+
+test('keyboard shortcut without modifier does not trigger', () => {
+    tool.saved = false
+    const event = new KeyboardEvent('keydown', {
+        key: 's',
+        ctrlKey: false,
+        bubbles: true
+    })
+    window.dispatchEvent(event)
+    expect(tool.saved).toBe(false)
+})
+
+
+test('keyboard shortcut with shift modifier', () => {
+    class ShiftTool extends StudioTool {
+
+        static actions = {redo: 'doRedo'}
+        static bindings = {redo: 'ctrl+shift+z'}
+        redone = false
+
+        doRedo () {
+            this.redone = true
+        }
+    }
+    customElements.define('shift-tool', ShiftTool)
+    const shiftTool = document.createElement('shift-tool')
+    container.appendChild(shiftTool)
+
+    const event = new KeyboardEvent('keydown', {
+        key: 'z',
+        ctrlKey: true,
+        shiftKey: true,
+        bubbles: true
+    })
+    window.dispatchEvent(event)
+    expect(shiftTool.redone).toBe(true)
+})
+
+
+test('keyboard shortcut array binding', () => {
+    class MultiBindTool extends StudioTool {
+
+        static actions = {save: 'doSave'}
+        static bindings = {save: ['ctrl+s', 'cmd+s']}
+        saved = false
+
+        doSave () {
+            this.saved = true
+        }
+    }
+    customElements.define('multi-bind-tool', MultiBindTool)
+    const multiBind = document.createElement('multi-bind-tool')
+    container.appendChild(multiBind)
+
+    const event = new KeyboardEvent('keydown', {
+        key: 's',
+        ctrlKey: true,
+        bubbles: true
+    })
+    window.dispatchEvent(event)
+    expect(multiBind.saved).toBe(true)
+})
+
+
+test('onDisconnected removes event listeners and flushes save', () => {
+    vi.useFakeTimers()
+    tool.saved = false
+    tool.markDirty()
+
+    container.removeChild(tool)
+
+    expect(tool.saved).toBe(true)
+
+    tool.saved = false
+    const event = new KeyboardEvent('keydown', {
+        key: 's',
+        ctrlKey: true,
+        bubbles: true
+    })
+    window.dispatchEvent(event)
+    expect(tool.saved).toBe(false)
+
+    vi.useRealTimers()
+})
+
+
+test('onDisconnected clears pending autosave timer', () => {
+    vi.useFakeTimers()
+    tool.saved = false
+    tool.markDirty()
+
+    tool.saved = false
+    container.removeChild(tool)
+
+    expect(tool.saved).toBe(true)
+
+    vi.advanceTimersByTime(2000)
+    tool.saved = false
+    expect(tool.saved).toBe(false)
+
+    vi.useRealTimers()
+})
+
+
+test('hasContext returns false by default', () => {
+    expect(StudioTool.prototype.hasContext.call(tool)).toBe(false)
+})
+
+
+test('toolStyles returns empty array by default', () => {
+    expect(StudioTool.prototype.toolStyles.call(tool)).toEqual([])
+})
