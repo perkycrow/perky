@@ -23,6 +23,7 @@ export default doc('PerformanceMonitor', {advanced: true}, () => {
 
             function gameLoop (timestamp) {
                 monitor.tick(timestamp)
+
                 // monitor.averageFps — current average FPS
                 // monitor.performanceScore — 0-100 stability score
                 requestAnimationFrame(gameLoop)
