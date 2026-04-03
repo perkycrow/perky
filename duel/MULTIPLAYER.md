@@ -149,6 +149,28 @@ Le jeu choisit son mode, le framework adapte la strategie de sync.
 - **Scaling** : topologie etoile OK jusqu'a ~8 joueurs. Au-dela, serveur dedie.
 - **NAT** : WebRTC/ICE gere ~85% des cas via STUN. Les 15% restants ont besoin de TURN relay.
 
+## Murder & jeux — integration
+
+Les jeux tournent en P2P mais Murder reste le hub central. Deux couches de communication :
+
+- **P2P (WebRTC)** : gameplay temps reel, inputs, state sync. Autonome, fonctionne sans Murder une fois connecte.
+- **Murder API (HTTP/WS)** : lobbies, profils, privileges, messages, progression. Source de verite pour tout ce qui est persistent.
+
+Murder a un systeme de privileges : les joueurs debloquent des fonctionnalites (reactions, messages, emojis) en jouant. Sert a la retention et a l'anti-spam/bot. Certaines features du SDK seront purement P2P (gameplay), d'autres passeront par l'API Murder (validation de privileges, envoi de messages, progression).
+
+Flow :
+```
+Murder (lobby, auth, privileges)
+    |
+    v
+Game (P2P autonome)
+    |
+    v
+Murder (resultats, progression, retour lobby)
+```
+
+Le SDK Murder doit exposer les deux couches proprement : `MurderLobby` (HTTP) pour le lifecycle, `MurderNetwork` (WebSocket + WebRTC) pour le temps reel. Le jeu peut faire des appels Murder pendant la partie (ex: verifier un privilege, envoyer un resultat).
+
 ## Lobby & privileges
 
 A terme, distinguer deux roles :
