@@ -214,6 +214,21 @@ Le chat texte libre est reporte : necessite moderation, privileges, anti-spam. L
 
 Ce widget est fourni par le Murder SDK, pas par le framework Perky. Le jeu l'instancie et le positionne, Murder gere le reste (API calls, privileges, etc.).
 
+## Murder — persistence & achievements
+
+Murder sert de cloud save et de stockage d'achievements pour les jeux. Deux niveaux de validation :
+
+- **Sur l'honneur** (majorite des cas) : le jeu envoie "le joueur a obtenu cet achievement" et Murder le stocke. Simple, rapide, pas de verification serveur.
+- **Verification serveur** (rare, achievements sensibles) : le jeu envoie les inputs + le seed de la partie. Murder rejoue la partie cote serveur et verifie si l'achievement est valide. Anti-triche pour les HF importants.
+
+Auth cross-domain : les jeux sont sur games.perkycrow.com, Murder sur murder.perkycrow.com. Meme domaine parent (.perkycrow.com) donc les cookies peuvent etre partages avec `domain=.perkycrow.com`. Sinon token dans l'URL ou dans le lobby (Murder fournit un token auth au lancement de la partie, le jeu le stocke et l'utilise pour les API calls).
+
+Le Murder SDK expose :
+- `murder.saveProgress(data)` — cloud save
+- `murder.unlockAchievement(id)` — sur l'honneur
+- `murder.submitReplay(inputs, seed)` — verification serveur
+- `murder.getProgress()` — charger la sauvegarde
+
 ## Hors scope P2P (gere par Murder)
 
 - **Matchmaking** : Murder matche les joueurs, cree le lobby, les jeux s'y connectent.
