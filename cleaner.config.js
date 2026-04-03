@@ -8,6 +8,7 @@ export default {
             'ghast/',
             'mist/',
             'duel/',
+            'hollow/',
             'examples/',
             'integration/',
             'forge_sandbox/'
@@ -24,6 +25,7 @@ export default {
             'ghast/',
             'mist/',
             'duel/',
+            'hollow/',
             'examples/',
             'integration/',
             'forge_sandbox/'
@@ -53,6 +55,7 @@ export default {
             'ghast/',
             'mist_old/',
             'duel/',
+            'hollow/',
             'examples/',
             'editor/',
             'doc/',
