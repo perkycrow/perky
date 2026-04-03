@@ -175,7 +175,7 @@ export default class Fencer extends Entity {
 }
 
 
-function swordOffsetY (position) {
+export function swordOffsetY (position) {
     if (position === SWORD_HIGH) {
         return 0.2
     }

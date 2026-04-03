@@ -2,6 +2,7 @@ import EntityView from '../../game/entity_view.js'
 import Group2D from '../../render/group_2d.js'
 import Circle from '../../render/circle.js'
 import Rectangle from '../../render/rectangle.js'
+import {swordOffsetY} from '../entities/fencer.js'
 
 
 const PLAYER_1_COLOR = '#4488ff'
@@ -69,15 +70,4 @@ export default class FencerView extends EntityView {
         }
     }
 
-}
-
-
-function swordOffsetY (position) {
-    if (position === 'high') {
-        return 0.2
-    }
-    if (position === 'mid') {
-        return 0
-    }
-    return -0.2
 }

@@ -1,6 +1,14 @@
 import GameController from '../../game/game_controller.js'
 
 
+export const FENCER_ACTIONS = {
+    jump: 'jump',
+    lunge: 'lunge',
+    swordUp: 'cycleSwordUp',
+    swordDown: 'cycleSwordDown'
+}
+
+
 export default class DuelController extends GameController {
 
     static bindings = {

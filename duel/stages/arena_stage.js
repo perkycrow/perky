@@ -8,7 +8,7 @@ import SnapshotInterpolator from '../../murder/snapshot_interpolator.js'
 import {createElement} from '../../application/dom_utils.js'
 
 import DuelWorld from '../worlds/duel_world.js'
-import DuelController from '../controllers/duel_controller.js'
+import DuelController, {FENCER_ACTIONS} from '../controllers/duel_controller.js'
 import wiring from '../wiring.js'
 
 
@@ -309,28 +309,18 @@ export default class ArenaStage extends Stage {
 }
 
 
-const NETWORK_ACTION_MAP = {
-    p1Jump: {method: 'jump', input: 'jump'},
-    p1Lunge: {method: 'lunge', input: 'lunge'},
-    p1SwordUp: {method: 'cycleSwordUp', input: 'swordUp'},
-    p1SwordDown: {method: 'cycleSwordDown', input: 'swordDown'}
-}
-
-const P2_ACTIONS = ['p2Jump', 'p2Lunge', 'p2SwordUp', 'p2SwordDown']
-
-
 function patchNetworkActions (game, session, world, localFencerId) {
     const localFencer = () => world[localFencerId]
 
-    for (const [actionName, {method, input}] of Object.entries(NETWORK_ACTION_MAP)) {
-        game.addAction(actionName, () => {
+    for (const [input, method] of Object.entries(FENCER_ACTIONS)) {
+        game.addAction(`p1${input[0].toUpperCase()}${input.slice(1)}`, () => {
             localFencer()?.[method]()
             session.sendInput(input)
         })
     }
 
-    for (const actionName of P2_ACTIONS) {
-        game.addAction(actionName, () => {})
+    for (const input of Object.keys(FENCER_ACTIONS)) {
+        game.addAction(`p2${input[0].toUpperCase()}${input.slice(1)}`, () => {})
     }
 }
 

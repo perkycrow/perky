@@ -80,6 +80,10 @@ export default class DuelWorld extends World {
         if (fencer && authState) {
             fencer.stunned = authState.stunned
             fencer.stunTimer = authState.stunTimer
+            fencer.swordPosition = authState.swordPosition
+            fencer.facing = authState.facing
+            fencer.lunging = authState.lunging
+            fencer.lungeTimer = authState.lungeTimer
             fencer.score = authState.score
             fencer.alive = authState.alive
         }
