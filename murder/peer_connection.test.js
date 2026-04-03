@@ -22,23 +22,26 @@ function createMockRTCPeerConnection () {
     pc.createOffer.mockResolvedValue({type: 'offer', sdp: 'mock-offer'})
     pc.createAnswer.mockResolvedValue({type: 'answer', sdp: 'mock-answer'})
     pc.setLocalDescription.mockImplementation(async (desc) => {
-        if (!desc) {
-            if (pc.signalingState === 'stable') {
-                pc.localDescription = {type: 'offer', sdp: 'mock-offer'}
-                pc.signalingState = 'have-local-offer'
-            } else if (pc.signalingState === 'have-remote-offer') {
-                pc.localDescription = {type: 'answer', sdp: 'mock-answer'}
-                pc.signalingState = 'stable'
-            }
-        } else {
+        if (desc) {
             pc.localDescription = desc
-            if (desc.type === 'offer') pc.signalingState = 'have-local-offer'
+            if (desc.type === 'offer') {
+                pc.signalingState = 'have-local-offer'
+            }
+        } else if (pc.signalingState === 'stable') {
+            pc.localDescription = {type: 'offer', sdp: 'mock-offer'}
+            pc.signalingState = 'have-local-offer'
+        } else if (pc.signalingState === 'have-remote-offer') {
+            pc.localDescription = {type: 'answer', sdp: 'mock-answer'}
+            pc.signalingState = 'stable'
         }
     })
     pc.setRemoteDescription.mockImplementation(async (desc) => {
         pc.remoteDescription = desc
-        if (desc.type === 'offer') pc.signalingState = 'have-remote-offer'
-        else if (desc.type === 'answer') pc.signalingState = 'stable'
+        if (desc.type === 'offer') {
+            pc.signalingState = 'have-remote-offer'
+        } else if (desc.type === 'answer') {
+            pc.signalingState = 'stable'
+        }
     })
     pc.addIceCandidate.mockResolvedValue(undefined)
 

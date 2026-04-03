@@ -102,7 +102,7 @@ export default class GameSession extends PerkyModule {
 
     async sendInput (action, value) {
         if (!this.connected || !this.sessionClient) {
-            return
+            return undefined
         }
 
         try {
@@ -115,7 +115,7 @@ export default class GameSession extends PerkyModule {
 
     async sendMove (moveX) {
         if (!this.connected || !this.sessionClient) {
-            return
+            return undefined
         }
 
         try {
@@ -363,12 +363,12 @@ function electHostByScore (session, peerId) {
         session.lastPeerScores[peerId]
     )
 
-    if (localScore !== peerScore) {
-        session.hostPlayerId = localScore > peerScore
+    if (localScore === peerScore) {
+        session.hostPlayerId = session.localPlayerId < peerId
             ? session.localPlayerId
             : peerId
     } else {
-        session.hostPlayerId = session.localPlayerId < peerId
+        session.hostPlayerId = localScore > peerScore
             ? session.localPlayerId
             : peerId
     }
@@ -417,7 +417,7 @@ function persistState (lobbyToken, state) {
     try {
         localStorage.setItem(`murder:state:${lobbyToken}`, JSON.stringify(state))
     } catch {
-        // storage full or unavailable
+
     }
 }
 

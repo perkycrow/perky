@@ -21,7 +21,6 @@ export default class DuelController extends GameController {
 
     static resources = ['world']
 
-
     get session () {
         return this.engine?.stage?.session
     }

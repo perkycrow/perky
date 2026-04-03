@@ -157,7 +157,7 @@ export default class Fencer extends Entity {
     update (deltaTime) {
         updateStun(this, deltaTime)
         updateLunge(this, deltaTime)
-        applyMovement(this, deltaTime)
+        applyMovement(this)
         applyGravity(this, deltaTime)
         this.applyVelocity(deltaTime)
         clampToArena(this)
@@ -200,7 +200,7 @@ function updateLunge (fencer, deltaTime) {
 }
 
 
-function applyMovement (fencer, deltaTime) {
+function applyMovement (fencer) {
     if (fencer.stunned || fencer.lunging) {
         return
     }

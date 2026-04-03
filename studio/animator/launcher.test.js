@@ -93,7 +93,6 @@ describe('launchAnimatorStudio', () => {
 
     let container
     let launchAnimatorStudio
-    let logger
 
     beforeEach(async () => {
         container = document.createElement('div')
@@ -101,9 +100,6 @@ describe('launchAnimatorStudio', () => {
 
         const module = await import('./launcher.js')
         launchAnimatorStudio = module.launchAnimatorStudio
-
-        const loggerModule = await import('../../core/logger.js')
-        logger = loggerModule.default
     })
 
     afterEach(() => {

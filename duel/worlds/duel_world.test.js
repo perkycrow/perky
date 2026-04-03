@@ -271,18 +271,34 @@ describe('DuelWorld', () => {
             respawnTimer: 0.5,
             gameOver: false,
             fencer1: {
-                x: -1, y: 0.5, vx: 2, vy: 1,
-                facing: 1, swordPosition: 'low',
-                lunging: true, lungeTimer: 0.1,
-                stunned: false, stunTimer: 0,
-                grounded: false, score: 2, alive: true
+                x: -1,
+                y: 0.5,
+                vx: 2,
+                vy: 1,
+                facing: 1,
+                swordPosition: 'low',
+                lunging: true,
+                lungeTimer: 0.1,
+                stunned: false,
+                stunTimer: 0,
+                grounded: false,
+                score: 2,
+                alive: true
             },
             fencer2: {
-                x: 1, y: 0, vx: 0, vy: 0,
-                facing: -1, swordPosition: 'high',
-                lunging: false, lungeTimer: 0,
-                stunned: true, stunTimer: 0.3,
-                grounded: true, score: 1, alive: true
+                x: 1,
+                y: 0,
+                vx: 0,
+                vy: 0,
+                facing: -1,
+                swordPosition: 'high',
+                lunging: false,
+                lungeTimer: 0,
+                stunned: true,
+                stunTimer: 0.3,
+                grounded: true,
+                score: 1,
+                alive: true
             }
         }
 

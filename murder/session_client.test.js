@@ -1,4 +1,4 @@
-import {describe, test, expect, vi} from 'vitest'
+import {describe, test, expect} from 'vitest'
 import SessionClient from './session_client.js'
 import SessionHost from './session_host.js'
 import ServiceClient from '../service/service_client.js'

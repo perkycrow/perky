@@ -124,7 +124,7 @@ export default class SessionHost extends ServiceHost {
     }
 
 
-    ping (req, res) {
+    ping (req, res) { // eslint-disable-line local/class-methods-use-this -- clean
         res.send({serverTime: Date.now()})
     }
 

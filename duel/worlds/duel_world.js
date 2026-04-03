@@ -32,10 +32,7 @@ export default class DuelWorld extends World {
             fencer.move(input.moveX)
 
             for (const action of input.actions) {
-                if (action === 'jump') fencer.jump()
-                else if (action === 'lunge') fencer.lunge()
-                else if (action === 'swordUp') fencer.cycleSwordUp()
-                else if (action === 'swordDown') fencer.cycleSwordDown()
+                applyAction(fencer, action)
             }
         }
     }
@@ -124,6 +121,19 @@ export default class DuelWorld extends World {
         }
     }
 
+}
+
+
+function applyAction (fencer, action) {
+    if (action === 'jump') {
+        fencer.jump()
+    } else if (action === 'lunge') {
+        fencer.lunge()
+    } else if (action === 'swordUp') {
+        fencer.cycleSwordUp()
+    } else if (action === 'swordDown') {
+        fencer.cycleSwordDown()
+    }
 }
 
 

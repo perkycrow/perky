@@ -525,48 +525,44 @@ describe('HubView', () => {
     })
 
 
-    describe('animatorcreated event', () => {
+    test('dispatches animatorcreated on psd import complete', async () => {
+        const mockTextureSystem = {
+            getSpritesheet: vi.fn(() => null)
+        }
 
-        test('dispatches animatorcreated on psd import complete', async () => {
-            const mockTextureSystem = {
-                getSpritesheet: vi.fn(() => null)
-            }
-
-            view.setContext({
-                manifest: {},
-                animators: {},
-                textureSystem: mockTextureSystem
-            })
-
-            await flushPromises()
-
-            const handler = vi.fn()
-            view.addEventListener('animatorcreated', handler)
-
-            const createCard = view.shadowRoot.querySelector('.create-card')
-            createCard.click()
-
-            await flushPromises()
-
-            const psdImporter = view.shadowRoot.querySelector('psd-importer')
-            expect(psdImporter).not.toBeNull()
-
-            const canvas = document.createElement('canvas')
-            canvas.width = 32
-            canvas.height = 32
-
-            psdImporter.dispatchEvent(new CustomEvent('complete', {
-                detail: {
-                    name: 'test',
-                    animatorConfig: {animations: {}},
-                    atlases: [{canvas, frames: [{x: 0, y: 0, width: 32, height: 32}]}]
-                }
-            }))
-
-            expect(handler).toHaveBeenCalled()
-            expect(handler.mock.calls[0][0].detail.name).toBe('test')
+        view.setContext({
+            manifest: {},
+            animators: {},
+            textureSystem: mockTextureSystem
         })
 
+        await flushPromises()
+
+        const handler = vi.fn()
+        view.addEventListener('animatorcreated', handler)
+
+        const createCard = view.shadowRoot.querySelector('.create-card')
+        createCard.click()
+
+        await flushPromises()
+
+        const psdImporter = view.shadowRoot.querySelector('psd-importer')
+        expect(psdImporter).not.toBeNull()
+
+        const canvas = document.createElement('canvas')
+        canvas.width = 32
+        canvas.height = 32
+
+        psdImporter.dispatchEvent(new CustomEvent('complete', {
+            detail: {
+                name: 'test',
+                animatorConfig: {animations: {}},
+                atlases: [{canvas, frames: [{x: 0, y: 0, width: 32, height: 32}]}]
+            }
+        }))
+
+        expect(handler).toHaveBeenCalled()
+        expect(handler.mock.calls[0][0].detail.name).toBe('test')
     })
 
 })

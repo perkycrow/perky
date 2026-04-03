@@ -183,7 +183,6 @@ describe('Fencer', () => {
     test('lunge does nothing when already lunging', () => {
         const fencer = new Fencer({facing: 1})
         fencer.lunge()
-        const vel = fencer.velocity.x
         fencer.velocity.x = 0
         fencer.lunge()
         expect(fencer.velocity.x).toBe(0)
