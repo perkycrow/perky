@@ -4,7 +4,7 @@ import {doc, section, text, code} from '../doc/runtime.js'
 export default doc('GameSession', {advanced: true}, () => {
 
     text(`
-        High-level multiplayer session manager built on [[MurderNetwork@murder]].
+        High-level multiplayer session manager built on MurderNetwork.
         Handles host election, automatic failover, input collection, state
         broadcasting, and player slot assignment. Use this as your game's
         single point of contact for multiplayer networking.
@@ -15,8 +15,8 @@ export default doc('GameSession', {advanced: true}, () => {
 
         text(`
             Create a GameSession with server details and call \`connect()\`.
-            The session automatically creates a [[MurderNetwork@murder]],
-            [[SessionHost@murder]], and [[SessionClient@murder]] internally.
+            The session automatically creates a MurderNetwork,
+            SessionHost, and SessionClient internally.
         `)
 
         code('Basic setup', () => {
@@ -30,7 +30,7 @@ export default doc('GameSession', {advanced: true}, () => {
                 // role is 'host' or 'client'
             })
 
-            await session.connect()
+            session.connect()
         })
 
     })
@@ -112,8 +112,8 @@ export default doc('GameSession', {advanced: true}, () => {
 
         text(`
             Access \`stats\` for combined ping and performance metrics.
-            The session automatically monitors latency via [[PingMonitor@murder]]
-            and frame timing via [[PerformanceMonitor@murder]].
+            The session automatically monitors latency via PingMonitor
+            and frame timing via PerformanceMonitor.
         `)
 
         code('Reading stats', () => {

@@ -4,8 +4,8 @@ import {doc, section, text, code} from '../doc/runtime.js'
 export default doc('StudioTool', {advanced: true}, () => {
 
     text(`
-        Base class for studio tool views. Extends [[EditorComponent@editor]] with
-        built-in [[AppLayout@editor/layout]], [[PerkyStore@io]], [[CommandHistory@editor]],
+        Base class for studio tool views. Extends EditorComponent with
+        built-in [[AppLayout@editor/layout]], [[PerkyStore@io]], CommandHistory,
         auto-save, and keyboard bindings. Subclass this to create tools like the
         [[AnimatorView@studio/animator]] or [[SceneView@studio/scene]].
     `)
@@ -22,7 +22,7 @@ export default doc('StudioTool', {advanced: true}, () => {
             class MyTool extends StudioTool {
 
                 hasContext () {
-                    return !!this.data
+                    return Boolean(this.data)
                 }
 
                 init () {
@@ -88,9 +88,15 @@ export default doc('StudioTool', {advanced: true}, () => {
                     save: 'Ctrl+S'
                 }
 
-                handleUndo () { this.history.undo() }
-                handleRedo () { this.history.redo() }
-                handleSave () { this.flushSave() }
+                handleUndo () {
+                    this.history.undo()
+                }
+                handleRedo () {
+                    this.history.redo()
+                }
+                handleSave () {
+                    this.flushSave()
+                }
 
             }
         })
@@ -119,7 +125,7 @@ export default doc('StudioTool', {advanced: true}, () => {
         text(`
             Subclasses have access to:
             - \`store\` — [[PerkyStore@io]] for IndexedDB persistence
-            - \`history\` — [[CommandHistory@editor]] for undo/redo
+            - \`history\` — CommandHistory for undo/redo
             - \`appLayout\` — The [[AppLayout@editor/layout]] element
         `)
 
