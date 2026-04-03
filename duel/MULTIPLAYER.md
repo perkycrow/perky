@@ -199,6 +199,27 @@ Le retour au lobby implique de garder la connexion WebSocket Murder active penda
 - **Rejoin en cours de partie** : un joueur deconnecte et revient, ou un spectateur veut jouer. Le host envoie un full snapshot. Necessite que le lobby reste ouvert pendant la partie.
 - **Duree de vie d'un lobby** : quand un lobby expire-t-il ? Apres deconnexion de tous les joueurs ? Apres un timeout ? Murder doit gerer l'etat "en cours" vs "termine" vs "en attente de rejoin".
 
+## Murder — reseau social interjeu
+
+Murder est le lien entre tous les jeux Perky Crow. Un joueur a un profil unique, ses achievements de tous les jeux au meme endroit, il voit ses amis peu importe le jeu auquel ils jouent.
+
+Inspiration Steam overlay mais avec un twist : **tout se merite** (inspiration parano.be). Sur Steam tout est debloque par defaut. Sur Murder, chaque feature est gatee :
+
+- Niveau 0 : tu peux jouer, c'est tout
+- Niveau 1 : tu peux reagir aux messages (emotes)
+- Niveau 2 : tu peux envoyer des phrases presets
+- Niveau 3 : tu peux ajouter des amis
+- Niveau 4 : tu peux inviter des joueurs
+- Niveau 5+ : chat libre, creation de lobby custom, etc.
+
+Les niveaux se debloquent en jouant, en completant des achievements, en etant actif. Ca recompense l'engagement, filtre les bots/spammers sans CAPTCHA, et donne un sentiment de progression meta hors des jeux.
+
+Le widget Murder est le meme dans chaque jeu — un overlay qui affiche :
+- Presence : "hugeen joue a Duel", "ami X est en ligne dans Mist"
+- Notifications : invitations, ami connecte, achievement debloque
+- Leaderboards : par jeu, par semaine, all-time
+- Actions sociales (gatees) : ami, invite, ignore, report, emotes
+
 ## Murder SDK — outils sociaux in-game
 
 Un petit widget UI integrable dans n'importe quel jeu, connecte a Murder. Permet sans quitter le jeu de :
@@ -223,11 +244,21 @@ Murder sert de cloud save et de stockage d'achievements pour les jeux. Deux nive
 
 Auth cross-domain : les jeux sont sur games.perkycrow.com, Murder sur murder.perkycrow.com. Meme domaine parent (.perkycrow.com) donc les cookies peuvent etre partages avec `domain=.perkycrow.com`. Sinon token dans l'URL ou dans le lobby (Murder fournit un token auth au lancement de la partie, le jeu le stocke et l'utilise pour les API calls).
 
+Inspirations Steam :
+
+- **Achievements** : le jeu dit "debloquer", le serveur stocke. Pas de verification par defaut (comme Steam). Stats numeriques (kills, distance parcourue) qui alimentent des achievements automatiques quand un seuil est atteint.
+- **Cloud save** : le jeu ecrit des donnees, Murder les sync. Gestion de conflits (local vs cloud) si les deux divergent. Pas de format impose — le jeu decide ce qu'il sauvegarde.
+- **Social** : liste d'amis, invitations, profils, statuts (en ligne, en jeu, dans quel jeu). "Rejoindre la partie de X" directement depuis le profil.
+- **Overlay / widget** : une UI qui apparait par dessus le jeu sans le quitter (toast d'achievement, menu social, chat).
+
 Le Murder SDK expose :
 - `murder.saveProgress(data)` — cloud save
+- `murder.loadProgress()` — charger la sauvegarde
 - `murder.unlockAchievement(id)` — sur l'honneur
-- `murder.submitReplay(inputs, seed)` — verification serveur
-- `murder.getProgress()` — charger la sauvegarde
+- `murder.setStat(name, value)` — stats numeriques (Murder auto-unlock les achievements lies)
+- `murder.submitReplay(inputs, seed)` — verification serveur (rare)
+- `murder.getFriends()` — liste d'amis en ligne
+- `murder.inviteToLobby(userId)` — inviter un ami
 
 ## Hors scope P2P (gere par Murder)
 

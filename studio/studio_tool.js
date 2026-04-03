@@ -1,5 +1,5 @@
 import EditorComponent from '../editor/editor_component.js'
-import {createElement, adoptStyleSheets} from '../application/dom_utils.js'
+import {createElement, adoptStyleSheets, setAttributes} from '../application/dom_utils.js'
 import PerkyStore from '../io/perky_store.js'
 import CommandHistory from '../editor/command_history.js'
 import {toolbarStyles} from '../editor/styles/toolbar.styles.js'
@@ -147,7 +147,7 @@ export default class StudioTool extends EditorComponent {
 
         const headerEnd = this.buildHeaderEnd()
         if (headerEnd) {
-            headerEnd.setAttribute('slot', 'header-end')
+            setAttributes(headerEnd, {slot: 'header-end'})
             headerEnd.classList.add('header-controls')
             this.appLayout.appendChild(headerEnd)
         }
