@@ -114,3 +114,50 @@ test('init called on connect when context ready', () => {
 test('appLayout created', () => {
     expect(tool.appLayout).not.toBeNull()
 })
+
+
+test('buildHeaderStart returns null by default', () => {
+    expect(StudioTool.prototype.buildHeaderStart.call(tool)).toBeNull()
+})
+
+
+test('buildHeaderEnd returns null by default', () => {
+    expect(StudioTool.prototype.buildHeaderEnd.call(tool)).toBeNull()
+})
+
+
+test('buildContent returns null by default', () => {
+    expect(StudioTool.prototype.buildContent.call(tool)).toBeNull()
+})
+
+
+test('listActions', () => {
+    const actions = tool.listActions()
+    expect(actions).toContain('save')
+    expect(actions).toContain('undo')
+})
+
+
+test('listActions returns empty when no actions defined', () => {
+    class BareTool extends StudioTool {}
+    customElements.define('bare-tool-actions', BareTool)
+    const bareTool = document.createElement('bare-tool-actions')
+    container.appendChild(bareTool)
+    expect(bareTool.listActions()).toEqual([])
+})
+
+
+test('listBindings', () => {
+    const bindings = tool.listBindings()
+    expect(bindings.save).toBe('ctrl+s')
+    expect(bindings.undo).toBe('ctrl+z')
+})
+
+
+test('listBindings returns empty when no bindings defined', () => {
+    class BareTool extends StudioTool {}
+    customElements.define('bare-tool-bindings', BareTool)
+    const bareTool = document.createElement('bare-tool-bindings')
+    container.appendChild(bareTool)
+    expect(bareTool.listBindings()).toEqual({})
+})

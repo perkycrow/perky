@@ -7,6 +7,7 @@ export default {
             'den/',
             'ghast/',
             'mist/',
+            'duel/',
             'examples/',
             'integration/',
             'forge_sandbox/'
@@ -22,6 +23,7 @@ export default {
             'den/',
             'ghast/',
             'mist/',
+            'duel/',
             'examples/',
             'integration/',
             'forge_sandbox/'
@@ -50,6 +52,7 @@ export default {
             'den/',
             'ghast/',
             'mist_old/',
+            'duel/',
             'examples/',
             'editor/',
             'doc/',

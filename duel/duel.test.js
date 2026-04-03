@@ -1,4 +1,4 @@
-import {test, expect} from 'vitest'
+import {test, expect, vi} from 'vitest'
 import Duel from './duel.js'
 import Game from '../game/game.js'
 import ArenaStage from './stages/arena_stage.js'
@@ -34,4 +34,14 @@ test('layers configuration', () => {
 
 test('stages configuration', () => {
     expect(Duel.stages.arena).toBe(ArenaStage)
+})
+
+
+test('configureGame sets arena stage', () => {
+    const duel = new Duel()
+    const setStage = vi.spyOn(duel, 'setStage')
+
+    duel.configureGame()
+
+    expect(setStage).toHaveBeenCalledWith('arena')
 })
