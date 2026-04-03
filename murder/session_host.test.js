@@ -338,4 +338,26 @@ describe('SessionHost', () => {
         expect(events.length).toBe(0)
     })
 
+
+    test('addPeer registers peer connection as source', async () => {
+        const host = createHost()
+
+        const listeners = {}
+        const sentMessages = []
+        const mockPeerConnection = {
+            on: (event, handler) => { listeners[event] = handler },
+            send: (msg) => { sentMessages.push(msg) }
+        }
+
+        host.addPeer('peer1', mockPeerConnection)
+
+        listeners.message({
+            type: 'service-request',
+            request: {id: 1, action: 'ping', params: {}}
+        })
+
+        expect(sentMessages.length).toBe(1)
+        expect(sentMessages[0].type).toBe('service-response')
+    })
+
 })
