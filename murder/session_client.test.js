@@ -65,6 +65,19 @@ describe('SessionClient', () => {
 
         const inputs = host.flushInputs()
         expect(inputs.get('player1').moveX).toBe(-1)
+        expect(inputs.get('player1').moveY).toBe(0)
+    })
+
+
+    test('sendMove sends 2D move value to host', async () => {
+        const {host, client} = createConnectedPair()
+        await client.join()
+
+        await client.sendMove(0.5, -0.7)
+
+        const inputs = host.flushInputs()
+        expect(inputs.get('player1').moveX).toBe(0.5)
+        expect(inputs.get('player1').moveY).toBe(-0.7)
     })
 
 

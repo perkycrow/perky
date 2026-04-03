@@ -102,6 +102,19 @@ describe('SessionHost', () => {
 
         const inputs = host.flushInputs()
         expect(inputs.get('player1').moveX).toBe(-1)
+        expect(inputs.get('player1').moveY).toBe(0)
+    })
+
+
+    test('input stores 2D move value', async () => {
+        const {host, client} = createHostWithClient()
+        await client.join()
+
+        await client.sendMove(0.5, -0.7)
+
+        const inputs = host.flushInputs()
+        expect(inputs.get('player1').moveX).toBe(0.5)
+        expect(inputs.get('player1').moveY).toBe(-0.7)
     })
 
 
@@ -117,17 +130,18 @@ describe('SessionHost', () => {
     })
 
 
-    test('flushInputs clears actions but preserves moveX', async () => {
+    test('flushInputs clears actions but preserves move', async () => {
         const {host, client} = createHostWithClient()
         await client.join()
 
-        await client.sendMove(1)
+        await client.sendMove(1, -1)
         await client.sendInput('jump')
 
         host.flushInputs()
 
         const inputs = host.flushInputs()
         expect(inputs.get('player1').moveX).toBe(1)
+        expect(inputs.get('player1').moveY).toBe(-1)
         expect(inputs.get('player1').actions).toEqual([])
     })
 

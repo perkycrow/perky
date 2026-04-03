@@ -25,8 +25,8 @@ export default class SessionClient extends ServiceClient {
     }
 
 
-    async sendMove (moveX) {
-        return this.sendInput('move', moveX)
+    async sendMove (moveX, moveY) {
+        return this.sendInput('move', {x: moveX, y: moveY ?? 0})
     }
 
 

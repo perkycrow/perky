@@ -23,6 +23,7 @@ export default class SessionHost extends ServiceHost {
         this.inputQueues = new Map()
         this.peerStats = new Map()
         this.active = false
+        this.nextSlot = 0
         this.lastState = null
         this.heartbeatTimer = null
     }
@@ -87,7 +88,8 @@ export default class SessionHost extends ServiceHost {
         }
 
         const peerId = req.params.peerId
-        const slot = this.players.size
+        const existing = this.players.get(peerId)
+        const slot = existing ? existing.slot : this.nextSlot++
 
         this.players.set(peerId, {slot, joinedAt: Date.now()})
         this.inputQueues.set(peerId, {})
@@ -112,7 +114,12 @@ export default class SessionHost extends ServiceHost {
         }
 
         if (action === 'move') {
-            queue.moveX = value ?? 0
+            if (value && typeof value === 'object') {
+                queue.moveX = value.x ?? 0
+                queue.moveY = value.y ?? 0
+            } else {
+                queue.moveX = value ?? 0
+            }
         } else {
             if (!queue.actions) {
                 queue.actions = []
@@ -143,6 +150,7 @@ export default class SessionHost extends ServiceHost {
         for (const [peerId, queue] of this.inputQueues) {
             inputs.set(peerId, {
                 moveX: queue.moveX ?? 0,
+                moveY: queue.moveY ?? 0,
                 actions: queue.actions || [],
                 lastSeq: queue.lastSeq ?? 0
             })

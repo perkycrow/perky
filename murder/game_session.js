@@ -115,13 +115,13 @@ export default class GameSession extends PerkyModule {
     }
 
 
-    async sendMove (moveX) {
+    async sendMove (moveX, moveY) {
         if (!this.connected || !this.sessionClient) {
             return undefined
         }
 
         try {
-            return await this.sessionClient.sendMove(moveX)
+            return await this.sessionClient.sendMove(moveX, moveY)
         } catch {
             return undefined
         }
@@ -239,6 +239,13 @@ function sendRecoveryState (session) {
 function activateAsHost (session) {
     const host = session.sessionHost
     host.activate()
+
+    host.on('player:joined', (peerId, slot) => {
+        if (peerId !== session.localPlayerId) {
+            session.playerSlots.set(peerId, slot)
+            session.emit('player:joined', peerId, slot)
+        }
+    })
 
     host.on('peer:stats', (peerId, stats) => {
         session.emit('peer:stats', peerId, stats)
