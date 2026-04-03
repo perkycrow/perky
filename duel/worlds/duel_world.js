@@ -175,31 +175,33 @@ function applyAction (fencer, action) {
 }
 
 
-
 function checkSwordCollisions (world) {
     const f1 = world.fencer1
     const f2 = world.fencer2
 
+    if (!canCheckCollisions(f1, f2)) {
+        return
+    }
+
+    resolveHits(world, f1, f2)
+}
+
+
+function canCheckCollisions (f1, f2) {
     if (!f1 || !f2) {
-        return
+        return false
     }
 
-    if (!f1.alive || !f2.alive || f1.stunned || f2.stunned) {
-        return
-    }
+    return f1.alive && f2.alive && !f1.stunned && !f2.stunned
+}
 
+
+function resolveHits (world, f1, f2) {
     const hit1on2 = checkHit(f1, f2)
     const hit2on1 = checkHit(f2, f1)
 
     if (hit1on2 && hit2on1) {
-        if (f1.lunging && !f2.lunging) {
-            scorePoint(world, f1, f2)
-        } else if (f2.lunging && !f1.lunging) {
-            scorePoint(world, f2, f1)
-        } else {
-            f1.stun()
-            f2.stun()
-        }
+        resolveMutualHit(world, f1, f2)
         return
     }
 
@@ -211,6 +213,22 @@ function checkSwordCollisions (world) {
     if (hit2on1) {
         scorePoint(world, f2, f1)
     }
+}
+
+
+function resolveMutualHit (world, f1, f2) {
+    if (f1.lunging && !f2.lunging) {
+        scorePoint(world, f1, f2)
+        return
+    }
+
+    if (f2.lunging && !f1.lunging) {
+        scorePoint(world, f2, f1)
+        return
+    }
+
+    f1.stun()
+    f2.stun()
 }
 
 
@@ -237,8 +255,6 @@ function checkHit (attacker, defender) {
 
     return false
 }
-
-
 
 
 function scorePoint (world, scorer, loser) {
@@ -309,5 +325,3 @@ function importFencer (fencer, state) {
     fencer.score = state.score
     fencer.alive = state.alive
 }
-
-

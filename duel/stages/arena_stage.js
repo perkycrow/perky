@@ -352,7 +352,6 @@ function resolveServerHost () {
 }
 
 
-
 function createStatsOverlay () {
     const el = document.createElement('div')
     el.style.cssText = 'position:fixed;top:8px;left:8px;color:#0f0;font:12px monospace;background:rgba(0,0,0,0.6);padding:6px 10px;border-radius:4px;z-index:9999;pointer-events:none'
