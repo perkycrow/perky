@@ -1,9 +1,10 @@
 import Stage from '../../game/stage.js'
 import Group2D from '../../render/group_2d.js'
 import Rectangle from '../../render/rectangle.js'
+import Circle from '../../render/circle.js'
+import Color from '../../math/color.js'
 import GameSession from '../../murder/game_session.js'
 import SnapshotInterpolator from '../../murder/snapshot_interpolator.js'
-import {createElement} from '../../application/dom_utils.js'
 
 import DuelWorld from '../worlds/duel_world.js'
 import DuelController from '../controllers/duel_controller.js'
@@ -13,6 +14,7 @@ import wiring from '../wiring.js'
 const GROUND_COLOR = '#445544'
 const GROUND_WIDTH = 14
 const GROUND_HEIGHT = 0.3
+const BROADCAST_INTERVAL = 1 / 20
 
 
 export default class ArenaStage extends Stage {
@@ -25,11 +27,13 @@ export default class ArenaStage extends Stage {
         wiring.registerViews(this)
 
         this.backgroundGroup = new Group2D()
+        this.debugGroup = new Group2D()
         this.session = null
-        this.localFencerId = null
+        this.debug = false
+        this.debugGhost = null
+        this.debugError = 0
         this.interpolator = new SnapshotInterpolator({delay: 100})
         this.broadcastAccumulator = 0
-        this.broadcastInterval = 1 / 20
 
         this.#buildArena()
         this.#setupRenderGroups()
@@ -56,12 +60,18 @@ export default class ArenaStage extends Stage {
             this.#sendLocalMovement()
 
             if (this.session.isHost) {
-                this.#hostTick(deltaTime)
-            } else {
-                this.#clientTick()
+                this.#applyRemoteInputs()
             }
-        } else if (!this.session) {
-            this.world.update(deltaTime, this.game)
+        }
+
+        this.world.update(deltaTime, this.game)
+
+        if (this.session?.connected) {
+            if (this.session.isHost) {
+                this.#broadcastIfDue(deltaTime)
+            } else {
+                this.#correctFromSnapshots()
+            }
         }
     }
 
@@ -87,32 +97,13 @@ export default class ArenaStage extends Stage {
             protocol
         })
 
-        this.world.networkMode = true
-
-        this.stateHandler = (state) => {
-            this.interpolator.push(state, state.timestamp || Date.now())
-        }
-
         this.session.on('connected', () => {
-            this.localFencerId = this.session.isHost ? 'fencer1' : 'fencer2'
-
-            if (!this.world.fencer1) {
-                this.#spawnFencers()
-            }
-
-            if (this.session.lastState) {
-                this.world.importState(this.session.lastState)
-            }
-
-            this.session.off('state', this.stateHandler)
-
-            if (!this.session.isHost) {
-                this.session.on('state', this.stateHandler)
-            }
+            this.#setupForRole()
         })
 
         this.session.on('stats', (stats) => {
-            updateStatsOverlay(this.statsOverlay, stats, this.session.isHost)
+            const err = this.debug ? this.debugError : undefined
+            updateStatsOverlay(this.statsOverlay, stats, this.session.isHost, err)
         })
 
         this.session.on('host:lost', () => {
@@ -132,9 +123,45 @@ export default class ArenaStage extends Stage {
             this.world.importState(state)
         })
 
+        this.lastHostState = null
+
+        this.stateHandler = (state) => {
+            this.lastHostState = state
+            this.interpolator.push(state, state.timestamp || Date.now())
+        }
+
         this.statsOverlay = createStatsOverlay()
         this.waitingOverlay = createWaitingOverlay()
         this.session.connect()
+    }
+
+
+    #setupForRole () {
+        const isHost = this.session.isHost
+        const localFencerId = isHost ? 'fencer1' : 'fencer2'
+
+        this.world.localFencerId = localFencerId
+        this.world.authoritative = isHost
+
+        if (!this.world.fencer1) {
+            this.#spawnFencers()
+        }
+
+        if (this.session.lastState) {
+            this.world.importState(this.session.lastState)
+        }
+
+        this.session.off('state', this.stateHandler)
+
+        if (!isHost) {
+            this.session.on('state', this.stateHandler)
+        }
+
+        patchNetworkActions(this.game, this.session, this.world, localFencerId)
+
+        if (!isHost && this.debug) {
+            this.#createDebugGhost()
+        }
     }
 
 
@@ -150,31 +177,77 @@ export default class ArenaStage extends Stage {
     }
 
 
-    #clientTick () {
-        if (this.interpolator.ready) {
-            const state = this.interpolator.getInterpolatedState(Date.now())
-
-            if (state) {
-                this.world.importState(state)
-            }
-        }
-    }
-
-
-    #hostTick (deltaTime) {
+    #applyRemoteInputs () {
         const inputs = this.session.flushInputs()
         const mappedInputs = mapInputsToFencers(this.session, inputs)
         this.world.applyNetworkInputs(mappedInputs)
-        this.world.update(deltaTime, this.game)
+    }
 
+
+    #broadcastIfDue (deltaTime) {
         this.broadcastAccumulator += deltaTime
 
-        if (this.broadcastAccumulator >= this.broadcastInterval) {
-            this.broadcastAccumulator -= this.broadcastInterval
+        if (this.broadcastAccumulator >= BROADCAST_INTERVAL) {
+            this.broadcastAccumulator -= BROADCAST_INTERVAL
             const state = this.world.exportState()
             state.timestamp = Date.now()
             this.session.broadcastState(state)
         }
+    }
+
+
+    #correctFromSnapshots () {
+        if (this.lastHostState) {
+            this.world.correctLocalFencer(this.lastHostState)
+
+            if (this.debug) {
+                this.#updateDebugGhost(this.lastHostState)
+            }
+        }
+
+        if (this.interpolator.ready) {
+            const interpolated = this.interpolator.getInterpolatedState(Date.now())
+
+            if (interpolated) {
+                this.world.importRemoteFencer(interpolated)
+            }
+        } else if (this.lastHostState) {
+            this.world.importRemoteFencer(this.lastHostState)
+        }
+    }
+
+
+    #createDebugGhost () {
+        this.debugGhost = new Circle({
+            radius: 0.3,
+            color: '#00ff00'
+        })
+        this.debugColor = new Color('#00ff00')
+        this.debugGroup.addChild(this.debugGhost)
+    }
+
+
+    #updateDebugGhost (hostState) {
+        const localId = this.world.localFencerId
+        const authFencer = hostState[localId]
+        const localFencer = this.world[localId]
+
+        if (!this.debugGhost || !authFencer || !localFencer) {
+            return
+        }
+
+        this.debugGhost.x = authFencer.x
+        this.debugGhost.y = authFencer.y + 0.3
+
+        const dx = authFencer.x - localFencer.x
+        const dy = authFencer.y - localFencer.y
+        const rawError = Math.sqrt(dx * dx + dy * dy)
+        this.debugError = this.debugError * 0.8 + rawError * 0.2
+
+        const t = Math.min(this.debugError / this.world.correctionThreshold, 1)
+        this.debugColor.set('#00ff00')
+        this.debugColor.mix('#ff0000', t)
+        this.debugGhost.color = this.debugColor.toHex()
     }
 
 
@@ -202,10 +275,56 @@ export default class ArenaStage extends Stage {
             {
                 $name: 'entities',
                 content: this.viewsGroup
+            },
+            {
+                $name: 'debug',
+                content: this.debugGroup
             }
         ])
     }
 
+}
+
+
+function patchNetworkActions (game, session, world, localFencerId) {
+    const localFencer = () => world[localFencerId]
+
+    const actionMap = {
+        p1Jump: 'jump',
+        p1Lunge: 'lunge',
+        p1SwordUp: 'swordUp',
+        p1SwordDown: 'swordDown'
+    }
+
+    for (const [actionName, inputName] of Object.entries(actionMap)) {
+        game.addAction(actionName, () => {
+            applyLocalAction(localFencer(), inputName)
+            session.sendInput(inputName)
+        })
+    }
+
+    const p2Actions = ['p2Jump', 'p2Lunge', 'p2SwordUp', 'p2SwordDown']
+
+    for (const actionName of p2Actions) {
+        game.addAction(actionName, () => {})
+    }
+}
+
+
+function applyLocalAction (fencer, action) {
+    if (!fencer) {
+        return
+    }
+
+    if (action === 'jump') {
+        fencer.jump()
+    } else if (action === 'lunge') {
+        fencer.lunge()
+    } else if (action === 'swordUp') {
+        fencer.cycleSwordUp()
+    } else if (action === 'swordDown') {
+        fencer.cycleSwordDown()
+    }
 }
 
 
@@ -232,35 +351,51 @@ function mapInputsToFencers (session, inputs) {
 
 
 function createStatsOverlay () {
-    const el = createElement('div', {
-        style: 'position:fixed;top:8px;left:8px;color:#0f0;font:12px monospace;background:rgba(0,0,0,0.6);padding:6px 10px;border-radius:4px;z-index:9999;pointer-events:none'
-    })
+    const el = document.createElement('div')
+    el.style.cssText = 'position:fixed;top:8px;left:8px;color:#0f0;font:12px monospace;background:rgba(0,0,0,0.6);padding:6px 10px;border-radius:4px;z-index:9999;pointer-events:none'
     document.body.appendChild(el)
     return el
 }
 
 
-function updateStatsOverlay (el, stats, isHost) {
-    if (!el) {
-        return
+function formatStat (value, decimals = 0) {
+    if (value === undefined || value === null) {
+        return '-'
+    }
+    return decimals ? value.toFixed(decimals) : String(value)
+}
+
+
+function formatStats (stats, isHost, debugError) {
+    const role = isHost ? 'HOST' : 'CLIENT'
+    const parts = [
+        role,
+        `RTT: ${formatStat(stats.smoothedRtt)}ms`,
+        `Jitter: ${formatStat(stats.jitter)}ms`,
+        `FPS: ${formatStat(stats.averageFps)}`,
+        `Conn: ${formatStat(stats.connectionScore)}`,
+        `Perf: ${formatStat(stats.performanceScore)}`
+    ]
+
+    if (!isHost && debugError > 0) {
+        parts.push(`Err: ${debugError.toFixed(3)}`)
     }
 
-    const role = isHost ? 'HOST' : 'CLIENT'
-    const rtt = stats.smoothedRtt?.toFixed(0) ?? '-'
-    const jitter = stats.jitter?.toFixed(0) ?? '-'
-    const fps = stats.averageFps ?? '-'
-    const conn = stats.connectionScore ?? '-'
-    const perf = stats.performanceScore ?? '-'
+    return parts.join(' | ')
+}
 
-    el.textContent = `${role} | RTT: ${rtt}ms | Jitter: ${jitter}ms | FPS: ${fps} | Conn: ${conn} | Perf: ${perf}`
+
+function updateStatsOverlay (el, stats, isHost, debugError) {
+    if (el) {
+        el.textContent = formatStats(stats, isHost, debugError)
+    }
 }
 
 
 function createWaitingOverlay () {
-    const el = createElement('div', {
-        style: 'position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);z-index:10000;font:24px monospace;color:#fff',
-        text: 'Waiting for host...'
-    })
+    const el = document.createElement('div')
+    el.style.cssText = 'position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);z-index:10000;font:24px monospace;color:#fff'
+    el.textContent = 'Waiting for host...'
     document.body.appendChild(el)
     return el
 }

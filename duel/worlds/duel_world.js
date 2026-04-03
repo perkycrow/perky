@@ -4,6 +4,9 @@ import Fencer from '../entities/fencer.js'
 
 const RESPAWN_DELAY = 1.5
 const SCORE_TO_WIN = 5
+const DEFAULT_CORRECTION_FACTOR = 0.3
+const DEFAULT_CORRECTION_THRESHOLD = 0.5
+const DEFAULT_SNAP_THRESHOLD = 3.0
 
 
 export default class DuelWorld extends World {
@@ -17,8 +20,11 @@ export default class DuelWorld extends World {
         this.respawning = false
         this.roundActive = true
         this.gameOver = false
-        this.networkMode = false
-        this.networkInputs = new Map()
+        this.localFencerId = null
+        this.authoritative = true
+        this.correctionFactor = options.correctionFactor ?? DEFAULT_CORRECTION_FACTOR
+        this.correctionThreshold = options.correctionThreshold ?? DEFAULT_CORRECTION_THRESHOLD
+        this.snapThreshold = options.snapThreshold ?? DEFAULT_SNAP_THRESHOLD
     }
 
 
@@ -38,19 +44,35 @@ export default class DuelWorld extends World {
     }
 
 
-    preUpdate (deltaTime, context) {
-        if (this.networkMode) {
-            return
+    preUpdate (deltaTime, context) { // eslint-disable-line no-unused-vars -- override
+        if (!this.localFencerId) {
+            readLocalInputs(this, context, 'fencer1', 'p1Move')
+            readLocalInputs(this, context, 'fencer2', 'p2Move')
+        } else {
+            readLocalInputs(this, context, this.localFencerId, 'p1Move')
         }
+    }
 
-        if (this.fencer1) {
-            const p1Dir = context.getDirection('p1Move')
-            this.fencer1.move(p1Dir.x)
+
+    importRemoteFencer (state) {
+        const remoteId = this.localFencerId === 'fencer1' ? 'fencer2' : 'fencer1'
+
+        if (state[remoteId] && this[remoteId]) {
+            importFencer(this[remoteId], state[remoteId])
         }
+    }
 
-        if (this.fencer2) {
-            const p2Dir = context.getDirection('p2Move')
-            this.fencer2.move(p2Dir.x)
+
+    correctLocalFencer (state) {
+        this.roundActive = state.roundActive
+        this.respawning = state.respawning
+        this.respawnTimer = state.respawnTimer
+        this.gameOver = state.gameOver
+
+        const localId = this.localFencerId
+
+        if (state[localId] && this[localId]) {
+            correctFencer(this[localId], state[localId], this.correctionFactor, this.correctionThreshold, this.snapThreshold)
         }
     }
 
@@ -111,6 +133,10 @@ export default class DuelWorld extends World {
 
         updateFacing(this)
 
+        if (!this.authoritative) {
+            return
+        }
+
         if (this.respawning) {
             updateRespawn(this, deltaTime)
             return
@@ -121,6 +147,15 @@ export default class DuelWorld extends World {
         }
     }
 
+}
+
+
+function readLocalInputs (world, context, fencerId, directionAction) {
+    const fencer = world[fencerId]
+    if (fencer) {
+        const dir = context.getDirection(directionAction)
+        fencer.move(dir.x)
+    }
 }
 
 
@@ -273,4 +308,38 @@ function importFencer (fencer, state) {
     fencer.grounded = state.grounded
     fencer.score = state.score
     fencer.alive = state.alive
+}
+
+
+function correctFencer (fencer, authState, factor, threshold, snapThreshold) {
+    const dx = authState.x - fencer.x
+    const dy = authState.y - fencer.y
+    const error = Math.sqrt(dx * dx + dy * dy)
+
+    if (error > snapThreshold) {
+        fencer.x = authState.x
+        fencer.y = authState.y
+        fencer.velocity.x = authState.vx
+        fencer.velocity.y = authState.vy
+    } else if (error > threshold) {
+        fencer.x = lerp(fencer.x, authState.x, factor)
+        fencer.y = lerp(fencer.y, authState.y, factor)
+        fencer.velocity.x = lerp(fencer.velocity.x, authState.vx, factor)
+        fencer.velocity.y = lerp(fencer.velocity.y, authState.vy, factor)
+    }
+
+    fencer.facing = authState.facing
+    fencer.swordPosition = authState.swordPosition
+    fencer.lunging = authState.lunging
+    fencer.lungeTimer = authState.lungeTimer
+    fencer.stunned = authState.stunned
+    fencer.stunTimer = authState.stunTimer
+    fencer.grounded = authState.grounded
+    fencer.score = authState.score
+    fencer.alive = authState.alive
+}
+
+
+function lerp (a, b, t) {
+    return a + (b - a) * t
 }
