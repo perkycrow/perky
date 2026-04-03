@@ -199,6 +199,21 @@ Le retour au lobby implique de garder la connexion WebSocket Murder active penda
 - **Rejoin en cours de partie** : un joueur deconnecte et revient, ou un spectateur veut jouer. Le host envoie un full snapshot. Necessite que le lobby reste ouvert pendant la partie.
 - **Duree de vie d'un lobby** : quand un lobby expire-t-il ? Apres deconnexion de tous les joueurs ? Apres un timeout ? Murder doit gerer l'etat "en cours" vs "termine" vs "en attente de rejoin".
 
+## Murder SDK — outils sociaux in-game
+
+Un petit widget UI integrable dans n'importe quel jeu, connecte a Murder. Permet sans quitter le jeu de :
+
+- Retourner sur murder.perkycrow.com
+- Quitter officiellement le lobby
+- Voir les profils des joueurs
+- Demander en ami / pledge / ignorer / report
+- "Ne plus tomber sur ce joueur pendant X jours" (style Overwatch)
+- Envoyer des emotes ou phrases presets (style Hearthstone) — premiere version de communication
+
+Le chat texte libre est reporte : necessite moderation, privileges, anti-spam. Les emotes/phrases presets suffisent pour la V1 — pas de moderation necessaire, les joueurs ne peuvent envoyer que des messages pre-approuves.
+
+Ce widget est fourni par le Murder SDK, pas par le framework Perky. Le jeu l'instancie et le positionne, Murder gere le reste (API calls, privileges, etc.).
+
 ## Hors scope P2P (gere par Murder)
 
 - **Matchmaking** : Murder matche les joueurs, cree le lobby, les jeux s'y connectent.
