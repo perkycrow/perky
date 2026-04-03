@@ -406,4 +406,79 @@ describe(MurderNetwork, () => {
         })
     })
 
+
+    test('startHello sends immediate hello and sets interval', async () => {
+        vi.useFakeTimers()
+        const network = new MurderNetwork()
+        const ws = await connectNetwork(network, wsInstances)
+
+        ws.send.mockClear()
+        network.startHello()
+
+        const firstCall = ws.send.mock.calls[0][0]
+        const parsed = JSON.parse(firstCall)
+        expect(JSON.parse(parsed.data)).toEqual({action: 'signal', type: 'hello'})
+
+        expect(network.helloInterval).not.toBeNull()
+
+        vi.useRealTimers()
+    })
+
+
+    test('startHello interval sends hello periodically', async () => {
+        vi.useFakeTimers()
+        const network = new MurderNetwork()
+        const ws = await connectNetwork(network, wsInstances)
+
+        ws.send.mockClear()
+        network.startHello()
+
+        const initialCallCount = ws.send.mock.calls.length
+
+        vi.advanceTimersByTime(1000)
+        expect(ws.send.mock.calls.length).toBeGreaterThan(initialCallCount)
+
+        vi.useRealTimers()
+    })
+
+
+    test('startHello stops when hasPeers becomes true', async () => {
+        vi.useFakeTimers()
+        const network = new MurderNetwork()
+        const ws = await connectNetwork(network, wsInstances)
+
+        simulateSignal(ws, {type: 'hello', from: 5})
+        await vi.waitFor(() => expect(rtcInstances.length).toBe(1))
+
+        expect(network.hasPeers).toBe(true)
+
+        vi.advanceTimersByTime(1000)
+
+        expect(network.helloInterval).toBeNull()
+
+        vi.useRealTimers()
+    })
+
+
+    test('stopHello clears interval', async () => {
+        const network = new MurderNetwork()
+        const ws = await connectNetwork(network, wsInstances)
+
+        expect(network.helloInterval).not.toBeNull()
+
+        network.stopHello()
+
+        expect(network.helloInterval).toBeNull()
+    })
+
+
+    test('stopHello is safe to call when no interval', () => {
+        const network = new MurderNetwork()
+        expect(network.helloInterval).toBeNull()
+
+        network.stopHello()
+
+        expect(network.helloInterval).toBeNull()
+    })
+
 })
