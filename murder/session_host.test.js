@@ -345,8 +345,12 @@ describe('SessionHost', () => {
         const listeners = {}
         const sentMessages = []
         const mockPeerConnection = {
-            on: (event, handler) => { listeners[event] = handler },
-            send: (msg) => { sentMessages.push(msg) }
+            on: (event, handler) => {
+                listeners[event] = handler
+            },
+            send: (msg) => {
+                sentMessages.push(msg)
+            }
         }
 
         host.addPeer('peer1', mockPeerConnection)
