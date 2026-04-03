@@ -120,12 +120,14 @@ Chaque peer a un SessionHost dormant + un SessionClient. Le lower userId est elu
 
 **But** : l'experience de jeu est smooth des deux cotes malgre la latence.
 
-- [ ] **Client-side prediction** : le client applique ses propres inputs immediatement sans attendre le host. Buffer des inputs non confirmes.
-- [ ] **Server reconciliation** : quand un snapshot arrive du host, comparer l'etat predit vs l'etat autoritaire. Si divergence, snap a l'etat serveur et rejouer les inputs non confirmes.
-- [x] **Entity interpolation** : `SnapshotInterpolator` buffer les snapshots, interpole entre 2 avec 100ms de delay. Nombres interpoles lineairement, booleans/strings snappes au midpoint.
+- [x] **Client-side prediction** : le client simule son world chaque frame. Son propre fencer reagit immediatement aux inputs.
+- [x] **Server reconciliation** : correction par seuils (style Overwatch). Erreur < threshold → pas de correction. Erreur moyenne → lerp. Erreur grande → snap. Seuils configurables par jeu.
+- [x] **Entity interpolation** : `SnapshotInterpolator` pour le fencer distant. Buffer de snapshots, interpolation lineaire avec ~100ms de delay.
+- [x] **Controller clean** : DuelController zero connaissance reseau. Actions overridees via `addAction()` en mode reseau (applique local + envoie au host).
 - [ ] **Snapshot delta** : n'envoyer que ce qui a change depuis le dernier snapshot confirme. Reduit la bande passante.
 - [x] **Tick rate configurable** : host broadcast a 20Hz (50ms), simulation tourne a 60fps. Timestamp dans chaque snapshot.
-- [x] **Input sequence numbers** : chaque input a un `seq` incrementant. Le host track `lastSeq` par peer dans `flushInputs()`. Pret pour la prediction.
+- [x] **Input sequence numbers** : chaque input a un `seq` incrementant. Le host track `lastSeq` par peer dans `flushInputs()`. Pret pour le replay.
+- [x] **Debug visuel** : ghost du fencer autoritaire (vert/rouge selon erreur), Err dans le stats overlay. Active via `stage.debug = true`.
 
 **Inspiration** : Quake 3 (prediction + interpolation + lag compensation), Source Engine (snapshots delta, tick rate configurable).
 

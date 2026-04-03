@@ -16,6 +16,7 @@ export default class MurderNetwork extends PerkyModule {
     constructor (options = {}) {
         super(options)
         this.rtcConfig = options.rtcConfig || undefined
+        this.simulatedLatency = options.simulatedLatency ?? 0
         this.helloInterval = null
     }
 
@@ -151,7 +152,8 @@ function getOrCreatePeer (network, peerId) {
         $id: `peer_${peerId}`,
         $name: `peer_${peerId}`,
         peerId,
-        rtcConfig: network.rtcConfig
+        rtcConfig: network.rtcConfig,
+        simulatedLatency: network.simulatedLatency
     })
 
     peer.on('ice', (candidate) => {

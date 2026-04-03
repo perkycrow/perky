@@ -68,7 +68,15 @@ export default class Fencer extends Entity {
 
 
     move (direction) {
+        if (this.stunned || !this.alive) {
+            return
+        }
+
         this.moveDirection = direction
+
+        if (direction !== 0) {
+            this.facing = direction > 0 ? 1 : -1
+        }
     }
 
 
@@ -120,11 +128,11 @@ export default class Fencer extends Entity {
     }
 
 
-    stun () {
+    stun (knockbackDirection) {
         this.stunned = true
         this.stunTimer = HIT_STUN_DURATION
         this.lunging = false
-        this.velocity.x = -this.facing * 3
+        this.velocity.x = (knockbackDirection || -this.facing) * 3
         this.velocity.y = 2
         this.grounded = false
     }

@@ -52,6 +52,8 @@ export default class FencerView extends EntityView {
 
         const entity = this.entity
 
+        this.root.visible = entity.alive
+
         this.sword.x = entity.facing * entity.bodyRadius
         this.sword.y = BODY_CENTER_Y + swordOffsetY(entity.swordPosition)
         this.sword.anchorX = entity.facing === 1 ? 0 : 1

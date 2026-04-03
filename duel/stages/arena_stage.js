@@ -35,6 +35,8 @@ export default class ArenaStage extends Stage {
         this.interpolator = new SnapshotInterpolator({delay: 100})
         this.broadcastAccumulator = 0
 
+        this.scoreOverlay = createScoreOverlay()
+
         this.#buildArena()
         this.#setupRenderGroups()
 
@@ -78,6 +80,7 @@ export default class ArenaStage extends Stage {
 
     render () {
         this.syncViews()
+        updateScoreOverlay(this.scoreOverlay, this.world)
     }
 
 
@@ -94,7 +97,8 @@ export default class ArenaStage extends Stage {
             $id: 'gameSession',
             serverHost,
             lobbyToken,
-            protocol
+            protocol,
+            simulatedLatency: 0
         })
 
         this.session.on('connected', () => {
@@ -103,7 +107,11 @@ export default class ArenaStage extends Stage {
 
         this.session.on('stats', (stats) => {
             const err = this.debug ? this.debugError : undefined
-            updateStatsOverlay(this.statsOverlay, stats, this.session.isHost, err)
+            if (this.interpolator) {
+                this.interpolator.delay = computeAdaptiveDelay(stats, BROADCAST_INTERVAL)
+            }
+
+            updateStatsOverlay(this.statsOverlay, {stats, isHost: this.session.isHost, debugError: err, interpDelay: this.interpolator?.delay})
         })
 
         this.session.on('host:lost', () => {
@@ -112,7 +120,7 @@ export default class ArenaStage extends Stage {
 
         this.session.on('host:recovered', () => {
             hideWaitingOverlay(this.waitingOverlay)
-            updateStatsOverlay(this.statsOverlay, this.session.stats, this.session.isHost)
+            updateStatsOverlay(this.statsOverlay, {stats: this.session.stats, isHost: this.session.isHost})
         })
 
         this.session.on('host:timeout', () => {
@@ -124,9 +132,11 @@ export default class ArenaStage extends Stage {
         })
 
         this.lastHostState = null
+        this.newHostState = false
 
         this.stateHandler = (state) => {
             this.lastHostState = state
+            this.newHostState = true
             this.interpolator.push(state, state.timestamp || Date.now())
         }
 
@@ -179,8 +189,19 @@ export default class ArenaStage extends Stage {
 
     #applyRemoteInputs () {
         const inputs = this.session.flushInputs()
-        const mappedInputs = mapInputsToFencers(this.session, inputs)
-        this.world.applyNetworkInputs(mappedInputs)
+        const localPeerId = this.session.localPlayerId
+        const mapped = new Map()
+
+        for (const [peerId, input] of inputs) {
+            if (peerId === localPeerId) {
+                continue
+            }
+            const slot = this.session.getSlot(peerId)
+            const fencerId = slot === 0 ? 'fencer1' : 'fencer2'
+            mapped.set(fencerId, input)
+        }
+
+        this.world.applyNetworkInputs(mapped)
     }
 
 
@@ -197,7 +218,8 @@ export default class ArenaStage extends Stage {
 
 
     #correctFromSnapshots () {
-        if (this.lastHostState) {
+        if (this.newHostState) {
+            this.newHostState = false
             this.world.correctLocalFencer(this.lastHostState)
 
             if (this.debug) {
@@ -286,45 +308,38 @@ export default class ArenaStage extends Stage {
 }
 
 
+const NETWORK_ACTION_MAP = {
+    p1Jump: {method: 'jump', input: 'jump'},
+    p1Lunge: {method: 'lunge', input: 'lunge'},
+    p1SwordUp: {method: 'cycleSwordUp', input: 'swordUp'},
+    p1SwordDown: {method: 'cycleSwordDown', input: 'swordDown'}
+}
+
+const P2_ACTIONS = ['p2Jump', 'p2Lunge', 'p2SwordUp', 'p2SwordDown']
+
+
 function patchNetworkActions (game, session, world, localFencerId) {
     const localFencer = () => world[localFencerId]
 
-    const actionMap = {
-        p1Jump: 'jump',
-        p1Lunge: 'lunge',
-        p1SwordUp: 'swordUp',
-        p1SwordDown: 'swordDown'
-    }
-
-    for (const [actionName, inputName] of Object.entries(actionMap)) {
+    for (const [actionName, {method, input}] of Object.entries(NETWORK_ACTION_MAP)) {
         game.addAction(actionName, () => {
-            applyLocalAction(localFencer(), inputName)
-            session.sendInput(inputName)
+            localFencer()?.[method]()
+            session.sendInput(input)
         })
     }
 
-    const p2Actions = ['p2Jump', 'p2Lunge', 'p2SwordUp', 'p2SwordDown']
-
-    for (const actionName of p2Actions) {
+    for (const actionName of P2_ACTIONS) {
         game.addAction(actionName, () => {})
     }
 }
 
 
-function applyLocalAction (fencer, action) {
-    if (!fencer) {
-        return
-    }
+function computeAdaptiveDelay (stats, snapshotInterval) {
+    const halfRtt = (stats.smoothedRtt ?? 0) / 2
+    const jitter = stats.jitter ?? 0
+    const ideal = snapshotInterval * 1000 + halfRtt + jitter * 2
 
-    if (action === 'jump') {
-        fencer.jump()
-    } else if (action === 'lunge') {
-        fencer.lunge()
-    } else if (action === 'swordUp') {
-        fencer.cycleSwordUp()
-    } else if (action === 'swordDown') {
-        fencer.cycleSwordDown()
-    }
+    return Math.max(30, Math.min(200, ideal))
 }
 
 
@@ -337,18 +352,6 @@ function resolveServerHost () {
 }
 
 
-function mapInputsToFencers (session, inputs) {
-    const mapped = new Map()
-
-    for (const [peerId, input] of inputs) {
-        const slot = session.getSlot(peerId)
-        const fencerId = slot === 0 ? 'fencer1' : 'fencer2'
-        mapped.set(fencerId, input)
-    }
-
-    return mapped
-}
-
 
 function createStatsOverlay () {
     const el = document.createElement('div')
@@ -358,15 +361,12 @@ function createStatsOverlay () {
 }
 
 
-function formatStat (value, decimals = 0) {
-    if (value === undefined || value === null) {
-        return '-'
-    }
-    return decimals ? value.toFixed(decimals) : String(value)
+function formatStat (value) {
+    return value ?? '-'
 }
 
 
-function formatStats (stats, isHost, debugError) {
+function formatStats ({stats, isHost, debugError, interpDelay}) {
     const role = isHost ? 'HOST' : 'CLIENT'
     const parts = [
         role,
@@ -381,13 +381,17 @@ function formatStats (stats, isHost, debugError) {
         parts.push(`Err: ${debugError.toFixed(3)}`)
     }
 
+    if (interpDelay !== undefined) {
+        parts.push(`Delay: ${Math.round(interpDelay)}ms`)
+    }
+
     return parts.join(' | ')
 }
 
 
-function updateStatsOverlay (el, stats, isHost, debugError) {
+function updateStatsOverlay (el, options) {
     if (el) {
-        el.textContent = formatStats(stats, isHost, debugError)
+        el.textContent = formatStats(options)
     }
 }
 
@@ -420,4 +424,24 @@ function updateWaitingText (el, text) {
     if (el) {
         el.textContent = text
     }
+}
+
+
+function createScoreOverlay () {
+    const el = document.createElement('div')
+    el.style.cssText = 'position:fixed;top:40px;left:50%;transform:translateX(-50%);font:bold 24px monospace;z-index:9999;pointer-events:none;display:flex;gap:20px'
+    el.innerHTML = '<span style="color:#4488ff">0</span><span style="color:#888">-</span><span style="color:#ff4444">0</span>'
+    document.body.appendChild(el)
+    return el
+}
+
+
+function updateScoreOverlay (el, world) {
+    if (!el || !world.fencer1 || !world.fencer2) {
+        return
+    }
+
+    const spans = el.children
+    spans[0].textContent = world.fencer1.score
+    spans[2].textContent = world.fencer2.score
 }

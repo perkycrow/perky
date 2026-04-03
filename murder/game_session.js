@@ -37,6 +37,7 @@ export default class GameSession extends PerkyModule {
         this.waitingTimer = null
         this.lastPeerScores = {}
         this.lastState = loadPersistedState(this.lobbyToken)
+        this.simulatedLatency = options.simulatedLatency ?? 0
     }
 
 
@@ -75,7 +76,8 @@ export default class GameSession extends PerkyModule {
 
     async connect () {
         const network = this.create(MurderNetwork, {
-            $id: 'network'
+            $id: 'network',
+            simulatedLatency: this.simulatedLatency
         })
 
         this.create(SessionHost, {$id: 'sessionHost'})

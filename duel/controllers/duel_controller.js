@@ -6,10 +6,10 @@ export default class DuelController extends GameController {
     static bindings = {
         p1MoveLeft: ['KeyA'],
         p1MoveRight: ['KeyD'],
-        p1Jump: ['KeyW'],
-        p1Lunge: ['Space'],
-        p1SwordUp: ['KeyE'],
-        p1SwordDown: ['KeyQ'],
+        p1Jump: ['Space'],
+        p1Lunge: ['KeyF'],
+        p1SwordUp: ['KeyW'],
+        p1SwordDown: ['KeyS'],
 
         p2MoveLeft: ['ArrowLeft'],
         p2MoveRight: ['ArrowRight'],
@@ -20,7 +20,6 @@ export default class DuelController extends GameController {
     }
 
     static resources = ['world']
-
 
     p1Jump () {
         this.world.fencer1?.jump()

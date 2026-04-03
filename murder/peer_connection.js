@@ -19,6 +19,7 @@ export default class PeerConnection extends PerkyModule {
         super(options)
         this.peerId = options.peerId
         this.rtcConfig = options.rtcConfig || DEFAULT_RTC_CONFIG
+        this.simulatedLatency = options.simulatedLatency ?? 0
     }
 
 
@@ -171,5 +172,14 @@ function createRTC (peer) {
 function setupChannel (peer, channel) {
     channel.onopen = () => peer.emit('channel:open')
     channel.onclose = () => peer.emit('channel:close')
-    channel.onmessage = (event) => peer.emit('message', JSON.parse(event.data))
+
+    channel.onmessage = (event) => {
+        const data = JSON.parse(event.data)
+
+        if (peer.simulatedLatency > 0) {
+            setTimeout(() => peer.emit('message', data), peer.simulatedLatency)
+        } else {
+            peer.emit('message', data)
+        }
+    }
 }
