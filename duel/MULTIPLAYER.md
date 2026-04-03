@@ -193,6 +193,19 @@ Lobby (Murder) -> Lancement -> Partie (P2P) -> Fin de partie -> Retour au lobby 
 
 Le retour au lobby implique de garder la connexion WebSocket Murder active pendant la partie, et que le lobby survive a la session de jeu. Murder doit supporter un etat "finished" qui permet de relancer.
 
+## Spectateur & rejoin
+
+- **Mode spectateur P2P** : un joueur rejoint le lobby mais ne joue pas. Il recoit les snapshots sans envoyer d'inputs. Pas de fencer assigne, juste un viewer. Le host l'ajoute comme peer mais ne lui cree pas de slot joueur.
+- **Rejoin en cours de partie** : un joueur deconnecte et revient, ou un spectateur veut jouer. Le host envoie un full snapshot. Necessite que le lobby reste ouvert pendant la partie.
+- **Duree de vie d'un lobby** : quand un lobby expire-t-il ? Apres deconnexion de tous les joueurs ? Apres un timeout ? Murder doit gerer l'etat "en cours" vs "termine" vs "en attente de rejoin".
+
+## Hors scope P2P (gere par Murder)
+
+- **Matchmaking** : Murder matche les joueurs, cree le lobby, les jeux s'y connectent.
+- **Stats & progression** : Murder stocke les resultats en fin de partie. Historique, classements, progression.
+- **Chat in-game** : gere par le Murder SDK (privileges, anti-spam), pas en P2P.
+- **Replays** : potentiellement stocker les inputs horodates sur Murder pour rejouer les matchs.
+
 ## Prochaines etapes
 
 - **Lier host Murder au host GameSession** : le createur du lobby Murder pourrait etre prioritaire dans l'election host. Actuellement les deux concepts sont independants (Murder = lobby, GameSession = election par score/userId).
