@@ -96,6 +96,31 @@ describe(PeerConnection, () => {
     })
 
 
+    test('constructor with custom rtcConfig', () => {
+        const customConfig = {iceServers: [{urls: 'stun:custom.server'}]}
+        const peer = new PeerConnection({peerId: 1, rtcConfig: customConfig})
+        expect(peer.rtcConfig).toBe(customConfig)
+    })
+
+
+    test('constructor default rtcConfig', () => {
+        const peer = new PeerConnection({peerId: 1})
+        expect(peer.rtcConfig).toEqual({iceServers: [{urls: 'stun:stun.l.google.com:19302'}]})
+    })
+
+
+    test('constructor with simulatedLatency', () => {
+        const peer = new PeerConnection({peerId: 1, simulatedLatency: 50})
+        expect(peer.simulatedLatency).toBe(50)
+    })
+
+
+    test('constructor default simulatedLatency', () => {
+        const peer = new PeerConnection({peerId: 1})
+        expect(peer.simulatedLatency).toBe(0)
+    })
+
+
     test('extends PerkyModule', () => {
         const peer = new PeerConnection({peerId: 1})
         expect(peer).toBeInstanceOf(PerkyModule)
@@ -314,6 +339,21 @@ describe(PeerConnection, () => {
     })
 
 
+    test('emits disconnected on disconnected state', async () => {
+        const peer = new PeerConnection({peerId: 5})
+        const handler = vi.fn()
+        peer.on('disconnected', handler)
+
+        await peer.createOffer(vi.fn())
+
+        const rtc = rtcInstances[0]
+        rtc.connectionState = 'disconnected'
+        rtc.onconnectionstatechange()
+
+        expect(handler).toHaveBeenCalled()
+    })
+
+
     test('channel:open event', async () => {
         const peer = new PeerConnection({peerId: 5})
         const handler = vi.fn()
@@ -322,6 +362,18 @@ describe(PeerConnection, () => {
         await peer.createOffer(vi.fn())
 
         rtcInstances[0].mockChannel.onopen()
+        expect(handler).toHaveBeenCalled()
+    })
+
+
+    test('channel:close event', async () => {
+        const peer = new PeerConnection({peerId: 5})
+        const handler = vi.fn()
+        peer.on('channel:close', handler)
+
+        await peer.createOffer(vi.fn())
+
+        rtcInstances[0].mockChannel.onclose()
         expect(handler).toHaveBeenCalled()
     })
 
@@ -335,6 +387,36 @@ describe(PeerConnection, () => {
 
         rtcInstances[0].mockChannel.onmessage({data: JSON.stringify({hello: 'world'})})
         expect(handler).toHaveBeenCalledWith({hello: 'world'})
+    })
+
+
+    test('message event with simulated latency', async () => {
+        vi.useFakeTimers()
+        const peer = new PeerConnection({peerId: 5, simulatedLatency: 100})
+        const handler = vi.fn()
+        peer.on('message', handler)
+
+        await peer.createOffer(vi.fn())
+
+        rtcInstances[0].mockChannel.onmessage({data: JSON.stringify({hello: 'delayed'})})
+        expect(handler).not.toHaveBeenCalled()
+
+        vi.advanceTimersByTime(100)
+        expect(handler).toHaveBeenCalledWith({hello: 'delayed'})
+        vi.useRealTimers()
+    })
+
+
+    test('handleIce adds candidate when remote description set', async () => {
+        const peer = new PeerConnection({peerId: 5})
+        const sendSignal = vi.fn()
+
+        await peer.handleOffer({type: 'offer', sdp: 'test'}, sendSignal)
+
+        const candidate = {candidate: 'ice-candidate'}
+        peer.handleIce(candidate)
+
+        expect(rtcInstances[0].addIceCandidate).toHaveBeenCalledWith(candidate)
     })
 
 

@@ -12,6 +12,16 @@ describe('GameSession', () => {
     })
 
 
+    test('$name', () => {
+        expect(GameSession.$name).toBe('gameSession')
+    })
+
+
+    test('$eagerStart', () => {
+        expect(GameSession.$eagerStart).toBe(false)
+    })
+
+
     test('stores connection options', () => {
         const session = new GameSession({
             serverHost: 'localhost:3000',
@@ -22,6 +32,15 @@ describe('GameSession', () => {
         expect(session.serverHost).toBe('localhost:3000')
         expect(session.lobbyToken).toBe('abc123')
         expect(session.protocol).toBe('ws:')
+    })
+
+
+    test('constructor defaults', () => {
+        const session = new GameSession()
+        expect(session.serverHost).toBe('')
+        expect(session.lobbyToken).toBe('')
+        expect(session.protocol).toBe('wss:')
+        expect(session.simulatedLatency).toBe(0)
     })
 
 
@@ -201,6 +220,44 @@ describe('GameSession', () => {
         const session = new GameSession()
         session.broadcastState({score: 42})
         expect(session.lastState).toEqual({score: 42})
+    })
+
+
+    test('sessionHost getter returns child', () => {
+        const session = new GameSession()
+        expect(session.sessionHost).toBe(null)
+    })
+
+
+    test('sessionClient getter returns child', () => {
+        const session = new GameSession()
+        expect(session.sessionClient).toBe(null)
+    })
+
+
+    test('network getter returns child', () => {
+        const session = new GameSession()
+        expect(session.network).toBe(null)
+    })
+
+
+    test('lastHeartbeat starts at 0', () => {
+        const session = new GameSession()
+        expect(session.lastHeartbeat).toBe(0)
+    })
+
+
+    test('onStop calls disconnect', () => {
+        const session = new GameSession()
+        session.connected = true
+        session.onStop()
+        expect(session.connected).toBe(false)
+    })
+
+
+    test('simulatedLatency can be set via options', () => {
+        const session = new GameSession({simulatedLatency: 100})
+        expect(session.simulatedLatency).toBe(100)
     })
 
 })

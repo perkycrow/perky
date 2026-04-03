@@ -77,6 +77,11 @@ describe(MurderClient, () => {
     })
 
 
+    test('$name', () => {
+        expect(MurderClient.$name).toBe('murderClient')
+    })
+
+
     test('$eagerStart', () => {
         expect(MurderClient.$eagerStart).toBe(false)
     })
