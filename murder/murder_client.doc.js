@@ -19,7 +19,7 @@ export default doc('MurderClient', {advanced: true}, () => {
             channel and receives a user ID.
         `)
 
-        code('Basic connection', () => {
+        code('Basic connection', async () => {
             const client = game.create(MurderClient, {
                 host: 'murder.example.com',
                 lobbyToken: 'abc123',

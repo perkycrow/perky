@@ -18,7 +18,7 @@ export default doc('MurderLobby', {advanced: true}, () => {
             automatically for subsequent calls.
         `)
 
-        code('Create and launch', () => {
+        code('Create and launch', async () => {
             const lobby = game.create(MurderLobby, {
                 baseUrl: 'https://murder.example.com'
             })
