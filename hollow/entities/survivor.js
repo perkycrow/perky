@@ -1,5 +1,6 @@
 import Entity from '../../game/entity.js'
 import Velocity from '../../game/velocity.js'
+import Vec2 from '../../math/vec2.js'
 
 
 const MOVE_SPEED = 3
@@ -19,13 +20,12 @@ export default class Survivor extends Entity {
         this.bodyRadius = BODY_RADIUS
         this.colorIndex = params.colorIndex ?? 0
         this.alive = true
-        this.moveDirection = {x: 0, y: 0}
+        this.moveDirection = new Vec2()
     }
 
 
     move (x, y) {
-        this.moveDirection.x = x
-        this.moveDirection.y = y
+        this.moveDirection.set(x, y)
     }
 
 
@@ -43,11 +43,10 @@ function applyMovement (survivor) {
         return
     }
 
-    const {x, y} = survivor.moveDirection
+    const {moveDirection} = survivor
+    const length = moveDirection.length()
 
-    if (x !== 0 || y !== 0) {
-        const length = Math.sqrt(x * x + y * y)
-        survivor.velocity.x += (x / length) * MOVE_SPEED
-        survivor.velocity.y += (y / length) * MOVE_SPEED
+    if (length > 0) {
+        survivor.velocity.addScaledVector(moveDirection, MOVE_SPEED / length)
     }
 }
