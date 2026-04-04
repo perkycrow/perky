@@ -147,7 +147,7 @@ Simple geometric shapes. Fill color, optional stroke.
 ```js
 const circle = new Circle({radius: 20, color: '#ff0000', strokeColor: '#000', strokeWidth: 2})
 const rect = new Rectangle({width: 100, height: 50, color: '#00ff00'})
-const line = new Line({x1: 0, y1: 0, x2: 100, y2: 50, color: '#0000ff', width: 2})
+const line = new Line({x: 0, y: 0, x2: 100, y2: 50, color: '#0000ff', lineWidth: 2})
 ```
 
 ---
