@@ -1,5 +1,5 @@
 import {doc, section, text, code} from '../../doc/runtime.js'
-import {inferSpritesheetName, buildAnimationConfig, collectEventSuggestions, buildFramePreview} from './animator_helpers.js'
+import {inferSpritesheetName, buildAnimationConfig, collectEventSuggestions, buildFramePreview, buildAnimatorFiles} from './animator_helpers.js'
 
 
 export default doc('Animator Helpers', {advanced: true}, () => {
@@ -45,14 +45,15 @@ export default doc('Animator Helpers', {advanced: true}, () => {
                 fps: 12,
                 loop: true,
                 playbackMode: 'forward',
-                motion: {enabled: false},
+                motion: {enabled: true, mode: 'walk', direction: 'e'},
                 frames: [
-                    {source: 'player:idle_0', duration: 1, events: []}
+                    {source: 'player:idle_0', duration: 1, events: ['footstep']}
                 ]
             }
 
             const config = buildAnimationConfig(anim, 'player')
             config.fps // 12
+            config.motion // {mode: 'walk', direction: 'e'}
             config.frames.length // 1
         })
 
@@ -86,6 +87,29 @@ export default doc('Animator Helpers', {advanced: true}, () => {
         code('Usage', () => {
             const previewEl = buildFramePreview(frame)
             container.appendChild(previewEl)
+        })
+
+    })
+
+
+    section('buildAnimatorFiles', () => {
+
+        text(`
+            Builds an array of file objects for saving an animator to IndexedDB.
+            Creates the animator JSON config, spritesheet JSON data, and PNG
+            atlas images with appropriate filenames.
+        `)
+
+        code('Usage', () => {
+            const files = buildAnimatorFiles({
+                name: 'player',
+                spritesheetName: 'playerSpritesheet',
+                animatorConfig: {anchor: {x: 0.5, y: 0}, animations: {}},
+                spritesheetData: {frames: []},
+                atlasBlobs: [blob0, blob1]
+            })
+
+            // [{name: 'playerAnimator.json', blob}, {name: 'playerSpritesheet.json', blob}, ...]
         })
 
     })
