@@ -21,7 +21,7 @@ export default doc('WebGLObjectRenderer', {advanced: true}, () => {
 
             1. \`reset()\` — clears the collected objects list
             2. \`collect(object, opacity, hints)\` — called for each visible object during traversal
-            3. \`flush(matrices)\` — draws everything at once, override this in subclasses
+            3. \`flush()\` — draws everything at once, override this in subclasses
         `)
 
         code('Subclass example', () => {
@@ -31,7 +31,7 @@ export default doc('WebGLObjectRenderer', {advanced: true}, () => {
                     return [CustomObject]
                 }
 
-                flush (matrices) {
+                flush () {
                     for (const {object, opacity} of this.collected) {
                         drawCustomObject(object, opacity)
                     }
