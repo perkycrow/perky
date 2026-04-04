@@ -5,7 +5,7 @@ export default doc('HubView', {advanced: true}, () => {
 
     text(`
         The main gallery view of the studio. Displays all available animators
-        (game and custom) and scenes as grids of thumbnail cards. Provides
+        and scenes (game and custom) as grids of thumbnail cards. Provides
         import, export, selection, deletion, and conflict resolution. Mounts
         inside an [[AppLayout@editor/layout]] with a [[StorageInfo@studio/components]]
         header widget.
@@ -34,14 +34,14 @@ export default doc('HubView', {advanced: true}, () => {
     })
 
 
-    section('Animator cards', () => {
+    section('Cards', () => {
 
         text(`
-            Each animator is shown as a card with a thumbnail preview and
-            metadata. Cards are labeled by state: "New" for custom-only
-            animators, "Modified" for locally changed game animators, and
-            no badge for unmodified game animators. A "+" card opens the
-            [[PsdImporter@studio/components]] wizard.
+            Animators and scenes are shown as cards with thumbnail previews.
+            Each card is labeled by state: "New" for custom-only items,
+            "Modified" for locally changed game items, and no badge for
+            unmodified game items. The animator grid includes a "+" card
+            that opens the [[PsdImporter@studio/components]] wizard.
         `)
 
     })
@@ -51,9 +51,9 @@ export default doc('HubView', {advanced: true}, () => {
 
         text(`
             The "Select" button toggles selection mode, which shows
-            checkboxes on custom animator cards. Selected animators can
-            be exported as \`.perky\` files, reverted to the game version,
-            or deleted from IndexedDB.
+            checkboxes on cards. Selected items can be exported as
+            \`.perky\` files, reverted to the game version, or deleted
+            from IndexedDB.
         `)
 
     })

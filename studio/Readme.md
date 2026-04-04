@@ -122,6 +122,7 @@ A zip archive containing animator config + spritesheet data + atlas PNGs. Used f
 - [index.js](index.js) — hub entry point
 - [launcher.js](launcher.js) — shared utilities: load manifest, build textures, collect animators + scenes
 - [hub_view.js](hub_view.js) — gallery grid with import/export/conflict management
+- [studio_tool.js](studio_tool.js) — base class for tool views with auto-save, keyboard bindings, and layout
 - [animator/animator_view.js](animator/animator_view.js) — the full animation editor
 - [animator/animator_preview.js](animator/animator_preview.js) — WebGL preview with motion simulation
 - [animator/components/](animator/components/) — frame editor, anchor editor, animation settings
