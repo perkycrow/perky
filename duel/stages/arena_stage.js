@@ -6,6 +6,15 @@ import Color from '../../math/color.js'
 import GameSession from '../../murder/game_session.js'
 import SnapshotInterpolator from '../../murder/snapshot_interpolator.js'
 import {createElement} from '../../application/dom_utils.js'
+import {computeAdaptiveDelay, resolveServerHost} from '../../murder/session_helpers.js'
+import {
+    createStatsOverlay,
+    updateStatsOverlay,
+    createWaitingOverlay,
+    showWaitingOverlay,
+    hideWaitingOverlay,
+    updateWaitingText
+} from '../../murder/session_overlays.js'
 
 import DuelWorld from '../worlds/duel_world.js'
 import DuelController, {FENCER_ACTIONS} from '../controllers/duel_controller.js'
@@ -321,100 +330,6 @@ function patchNetworkActions (game, session, world, localFencerId) {
 
     for (const input of Object.keys(FENCER_ACTIONS)) {
         game.addAction(`p2${input[0].toUpperCase()}${input.slice(1)}`, () => {})
-    }
-}
-
-
-function computeAdaptiveDelay (stats, snapshotInterval) {
-    const halfRtt = (stats.smoothedRtt ?? 0) / 2
-    const jitter = stats.jitter ?? 0
-    const ideal = snapshotInterval * 1000 + halfRtt + jitter * 2
-
-    return Math.max(30, Math.min(200, ideal))
-}
-
-
-function resolveServerHost () {
-    const hostname = window.location.hostname
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        return 'localhost:3000'
-    }
-    return 'murder.perkycrow.com'
-}
-
-
-function createStatsOverlay () {
-    const el = createElement('div', {
-        style: 'position:fixed;top:8px;left:8px;color:#0f0;font:12px monospace;background:rgba(0,0,0,0.6);padding:6px 10px;border-radius:4px;z-index:9999;pointer-events:none'
-    })
-    document.body.appendChild(el)
-    return el
-}
-
-
-function formatStat (value) {
-    return value ?? '-'
-}
-
-
-function formatStats ({stats, isHost, debugError, interpDelay}) {
-    const role = isHost ? 'HOST' : 'CLIENT'
-    const parts = [
-        role,
-        `RTT: ${formatStat(stats.smoothedRtt)}ms`,
-        `Jitter: ${formatStat(stats.jitter)}ms`,
-        `FPS: ${formatStat(stats.averageFps)}`,
-        `Conn: ${formatStat(stats.connectionScore)}`,
-        `Perf: ${formatStat(stats.performanceScore)}`
-    ]
-
-    if (!isHost && debugError > 0) {
-        parts.push(`Err: ${debugError.toFixed(3)}`)
-    }
-
-    if (interpDelay !== undefined) {
-        parts.push(`Delay: ${Math.round(interpDelay)}ms`)
-    }
-
-    return parts.join(' | ')
-}
-
-
-function updateStatsOverlay (el, options) {
-    if (el) {
-        el.textContent = formatStats(options)
-    }
-}
-
-
-function createWaitingOverlay () {
-    const el = createElement('div', {
-        style: 'position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);z-index:10000;font:24px monospace;color:#fff',
-        text: 'Waiting for host...'
-    })
-    document.body.appendChild(el)
-    return el
-}
-
-
-function showWaitingOverlay (el) {
-    if (el) {
-        el.style.display = 'flex'
-        el.textContent = 'Waiting for host...'
-    }
-}
-
-
-function hideWaitingOverlay (el) {
-    if (el) {
-        el.style.display = 'none'
-    }
-}
-
-
-function updateWaitingText (el, text) {
-    if (el) {
-        el.textContent = text
     }
 }
 
