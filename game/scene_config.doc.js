@@ -9,7 +9,7 @@ export default doc('SceneConfig', () => {
     text(`
         Loads and saves scene layouts. A scene config is a JSON object with
         an \`entities\` array — each entry has a \`type\`, position, and optional id.
-        Use with a [[Wiring@game]] registry to resolve type names to classes.
+        Use with a [[Wiring@application]] registry to resolve type names to classes.
     `)
 
 
@@ -54,7 +54,7 @@ export default doc('SceneConfig', () => {
 
             const wiring = {
                 get: (ns, name) => (name === 'Player' ? Player : null),
-                getAll: () => ({Player})
+                getAll: (ns) => ({Player})
             }
 
             const config = {entities: [{type: 'Player', x: 3, y: 5}]}
