@@ -140,6 +140,19 @@ Low-level DOM helpers. Used internally.
 
 ---
 
+### [file_utils.js](file_utils.js)
+
+Browser file picker helper. Opens the native file dialog and returns the selected file.
+
+```js
+const file = await pickFile('image/*')
+if (file) {
+    const url = URL.createObjectURL(file)
+}
+```
+
+---
+
 ### [wiring.js](wiring.js)
 
 Entity-view mapping helper. Organizes module imports into named groups and wires up game entities with their visual representations.
