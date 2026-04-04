@@ -201,6 +201,31 @@ info.model  // 'dualsense'
 
 ---
 
+### [gesture_recognizer.js](gesture_recognizer.js)
+
+Unified gesture recognition for pointer events. Handles taps, drags, pans, pinch-to-zoom, long press, and mouse wheel. Works with touch, mouse, and pen input.
+
+```js
+const gestures = new GestureRecognizer(element)
+
+gestures.on('tap', ({x, y, pointerCount}) => {})
+gestures.on('doubletap', ({x, y}) => {})
+gestures.on('longpress', ({x, y}) => {})
+
+gestures.on('drag:start', ({x, y}) => {})
+gestures.on('drag:move', ({x, y, dx, dy}) => {})
+gestures.on('drag:end', () => {})
+
+gestures.on('pinch:move', ({scale, centerX, centerY}) => {})
+gestures.on('wheel', ({deltaY, x, y}) => {})
+
+gestures.start()
+```
+
+Standalone — doesn't require InputSystem. Useful for editor tools, canvas interactions, and mobile game controls.
+
+---
+
 ## Going further
 
 Each file has its `.doc.js` with examples. Check [InputSystem doc](https://perkycrow.com/doc/input_input_system.html) for the full API.
