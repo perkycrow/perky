@@ -243,6 +243,21 @@ Object3D with a mesh and material attached. The thing you actually add to scenes
 
 ---
 
+### [material_3d.js](material_3d.js)
+
+Material properties for 3D meshes. Texture, color, emissive, opacity, roughness, specular, and normal mapping.
+
+```js
+const material = new Material3D({
+    texture: woodTexture,
+    color: [1, 0.9, 0.8],
+    roughness: 0.7,
+    specular: 0.3
+})
+```
+
+---
+
 ### [camera_3d.js](camera_3d.js)
 
 Perspective camera. FOV, near/far planes, aspect ratio. Computes view and projection matrices.
