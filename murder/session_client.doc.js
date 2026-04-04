@@ -56,8 +56,9 @@ export default doc('SessionClient', {advanced: true}, () => {
         code('Input methods', () => {
             // await client.sendInput('attack', {target: 'enemy1'})
             // await client.sendInput('jump', true)
-            // await client.sendMove(1) // move right
-            // await client.sendMove(-1) // move left
+            // await client.sendMove(1, 0) // move right
+            // await client.sendMove(-1, 0) // move left
+            // await client.sendMove(0, 1) // move down
         })
 
     })

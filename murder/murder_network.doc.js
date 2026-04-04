@@ -22,7 +22,7 @@ export default doc('MurderNetwork', {advanced: true}, () => {
         code('Basic setup', async () => {
             const network = game.create(MurderNetwork)
 
-            network.on('peer:connected', (peerId, peer) => {
+            network.on('peer:connected', (peerId) => {
                 // A new peer has connected
             })
 
