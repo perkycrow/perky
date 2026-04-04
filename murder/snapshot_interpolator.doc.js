@@ -87,6 +87,20 @@ export default doc('SnapshotInterpolator', {advanced: true}, () => {
     })
 
 
+    section('Resetting', () => {
+
+        text(`
+            Call \`reset()\` to clear the snapshot buffer. Useful when starting
+            a new round or recovering from a disconnect.
+        `)
+
+        code('Reset buffer', () => {
+            // interpolator.reset()
+        })
+
+    })
+
+
     section('Configuration', () => {
 
         text(`
