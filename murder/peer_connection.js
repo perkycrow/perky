@@ -2,7 +2,11 @@ import PerkyModule from '../core/perky_module.js'
 
 
 const DEFAULT_RTC_CONFIG = {
-    iceServers: [{urls: 'stun:stun.l.google.com:19302'}]
+    iceServers: [
+        {urls: 'stun:stun.l.google.com:19302'},
+        {urls: 'stun:stun1.l.google.com:19302'},
+        {urls: 'stun:stun.cloudflare.com:3478'}
+    ]
 }
 
 
