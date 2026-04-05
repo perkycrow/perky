@@ -74,6 +74,8 @@ export default doc('SourceLoader', {advanced: true}, () => {
         text('SourceLoader emits events during the loading lifecycle.')
 
         code('Event handling', () => {
+            const loader = new SourceLoader(assets, loaders)
+
             loader.on('progress', (progress, {asset, source}) => {
                 // progress: number between 0 and 1
                 // asset: the Asset that just loaded
@@ -100,7 +102,8 @@ export default doc('SourceLoader', {advanced: true}, () => {
         `)
 
         code('Concurrent loads', () => {
-            const loader = new SourceLoader(assets, loaders)
+            const asset = new Asset({id: 'hero', type: 'image', url: '/hero.png'})
+            const loader = new SourceLoader([asset], loaders)
 
             // Both calls share the same underlying promise
             loader.loadAsset(asset)
