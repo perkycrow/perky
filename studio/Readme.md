@@ -47,12 +47,13 @@ Studio reads the game's manifest, lets you edit assets, and saves changes to Ind
 EditorComponent (from editor/)
     ↓
 ┌────────────────────────────────────────┐
-│  HubView          animator + scene gallery │
-│  AnimatorView     animation editor     │
-│  SceneView        scene editor         │
-│  PsdImporter      PSD import wizard    │
-│  ConflictResolver version conflicts    │
-│  StorageInfo      storage usage widget │
+│  HubView           animator + scene gallery │
+│  AnimatorView      animation editor      │
+│  SceneView         scene editor          │
+│  AssetBrowserView  asset browser         │
+│  PsdImporter       PSD import wizard     │
+│  ConflictResolver  version conflicts     │
+│  StorageInfo       storage usage widget  │
 └────────────────────────────────────────┘
 
 animator/
@@ -68,6 +69,9 @@ components/
     ├── psd_importer.js       drop → preview → convert
     ├── conflict_resolver.js  custom vs game version picker
     └── storage_info.js       IndexedDB usage popover
+
+assets/
+    └── asset_browser_view.js searchable asset grid
 ```
 
 ---
@@ -129,3 +133,4 @@ A zip archive containing animator config + spritesheet data + atlas PNGs. Used f
 - [components/psd_importer.js](components/psd_importer.js) — PSD import wizard
 - [scene/scene_view.js](scene/scene_view.js) — visual scene editor
 - [spritesheet/](spritesheet/) — standalone PSD to spritesheet tool
+- [assets/asset_browser_view.js](assets/asset_browser_view.js) — searchable asset grid

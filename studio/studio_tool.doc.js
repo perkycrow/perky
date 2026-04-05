@@ -25,8 +25,11 @@ export default doc('StudioTool', {advanced: true}, () => {
                     return Boolean(this.data)
                 }
 
-                init () {
-                    this.loadFromStore()
+                async init () {
+                    const resource = await this.store.get('myTool')
+                    if (resource) {
+                        this.data = resource
+                    }
                 }
 
                 buildContent () {
