@@ -27,7 +27,7 @@ export default {
             return
         }
 
-        const enemy = entity.host.nearest(entity, 6, other =>
+        const enemy = entity.host.space?.nearest(entity, 6, other =>
             other.faction && other.faction !== entity.faction && !other.dying)
 
         if (enemy) {

@@ -12,10 +12,10 @@ describe('Projectile', () => {
     })
 
 
-    test('has default hitRadius of 0.15', () => {
+    test('has default hitbox radius of 0.15', () => {
         const p = new Projectile()
 
-        expect(p.hitRadius).toBe(0.15)
+        expect(p.hitbox.radius).toBe(0.15)
     })
 
 

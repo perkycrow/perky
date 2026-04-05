@@ -48,7 +48,6 @@ describe('World', () => {
         test('does not return non-entity children', () => {
             world.create(Entity, {$id: 'entity-1'})
 
-            // Create a non-entity child
             class NonEntity extends Entity {
                 static $category = 'other'
             }
@@ -219,7 +218,7 @@ describe('World', () => {
         test('calls update on started entities', () => {
             let updateCalled = false
             class TestEntity extends Entity {
-                update () {  
+                update () {
                     updateCalled = true
                 }
             }
@@ -237,7 +236,7 @@ describe('World', () => {
         test('does not call update on non-started entities', () => {
             let updateCalled = false
             class TestEntity extends Entity {
-                update () {  
+                update () {
                     updateCalled = true
                 }
             }
@@ -254,7 +253,7 @@ describe('World', () => {
         test('passes deltaTime to entity update', () => {
             let receivedDeltaTime
             class TestEntity extends Entity {
-                update (deltaTime) {  
+                update (deltaTime) {
                     receivedDeltaTime = deltaTime
                 }
             }
@@ -266,154 +265,6 @@ describe('World', () => {
             world.update(0.033, {})
 
             expect(receivedDeltaTime).toBe(0.033)
-        })
-
-    })
-
-
-    describe('nearest', () => {
-
-        test('returns closest entity in range', () => {
-            world.start()
-            const a = world.create(Entity, {$id: 'a', x: 0, y: 0})
-            const b = world.create(Entity, {$id: 'b', x: 2, y: 0})
-            world.create(Entity, {$id: 'c', x: 5, y: 0})
-
-            const result = world.nearest(a, 3)
-
-            expect(result).toBe(b)
-        })
-
-
-        test('returns null when no entity in range', () => {
-            world.start()
-            const a = world.create(Entity, {$id: 'a', x: 0, y: 0})
-            world.create(Entity, {$id: 'b', x: 10, y: 0})
-
-            const result = world.nearest(a, 3)
-
-            expect(result).toBe(null)
-        })
-
-
-        test('applies filter function', () => {
-            world.start()
-            const a = world.create(Entity, {$id: 'a', x: 0, y: 0})
-            a.team = 'shadow'
-            const b = world.create(Entity, {$id: 'b', x: 1, y: 0})
-            b.team = 'shadow'
-            const c = world.create(Entity, {$id: 'c', x: 2, y: 0})
-            c.team = 'light'
-
-            const result = world.nearest(a, 10, e => e.team !== a.team)
-
-            expect(result).toBe(c)
-        })
-
-
-        test('excludes self', () => {
-            world.start()
-            const a = world.create(Entity, {$id: 'a', x: 0, y: 0})
-
-            const result = world.nearest(a, 10)
-
-            expect(result).toBe(null)
-        })
-
-    })
-
-
-    describe('entitiesInRange', () => {
-
-        test('returns all entities within range', () => {
-            world.start()
-            const a = world.create(Entity, {$id: 'a', x: 0, y: 0})
-            const b = world.create(Entity, {$id: 'b', x: 1, y: 0})
-            const c = world.create(Entity, {$id: 'c', x: 2, y: 0})
-            world.create(Entity, {$id: 'd', x: 10, y: 0})
-
-            const results = world.entitiesInRange(a, 3)
-
-            expect(results).toContain(b)
-            expect(results).toContain(c)
-            expect(results.length).toBe(2)
-        })
-
-
-        test('returns empty array when none in range', () => {
-            world.start()
-            const a = world.create(Entity, {$id: 'a', x: 0, y: 0})
-            world.create(Entity, {$id: 'b', x: 10, y: 0})
-
-            const results = world.entitiesInRange(a, 3)
-
-            expect(results).toEqual([])
-        })
-
-
-        test('applies filter function', () => {
-            world.start()
-            const a = world.create(Entity, {$id: 'a', x: 0, y: 0})
-            a.team = 'shadow'
-            const b = world.create(Entity, {$id: 'b', x: 1, y: 0})
-            b.team = 'shadow'
-            const c = world.create(Entity, {$id: 'c', x: 2, y: 0})
-            c.team = 'light'
-
-            const results = world.entitiesInRange(a, 10, e => e.team === 'light')
-
-            expect(results).toEqual([c])
-        })
-
-    })
-
-
-    describe('checkHit', () => {
-
-        test('returns entity when hit radii overlap', () => {
-            world.start()
-            const a = world.create(Entity, {$id: 'a', x: 0, y: 0, hitRadius: 0.5})
-            const b = world.create(Entity, {$id: 'b', x: 0.8, y: 0, hitRadius: 0.5})
-
-            const result = world.checkHit(a)
-
-            expect(result).toBe(b)
-        })
-
-
-        test('returns null when no overlap', () => {
-            world.start()
-            const a = world.create(Entity, {$id: 'a', x: 0, y: 0, hitRadius: 0.3})
-            world.create(Entity, {$id: 'b', x: 5, y: 0, hitRadius: 0.3})
-
-            const result = world.checkHit(a)
-
-            expect(result).toBe(null)
-        })
-
-
-        test('applies filter function', () => {
-            world.start()
-            const a = world.create(Entity, {$id: 'a', x: 0, y: 0, hitRadius: 0.5})
-            a.team = 'shadow'
-            const b = world.create(Entity, {$id: 'b', x: 0.5, y: 0, hitRadius: 0.5})
-            b.team = 'shadow'
-            const c = world.create(Entity, {$id: 'c', x: 0.8, y: 0, hitRadius: 0.5})
-            c.team = 'light'
-
-            const result = world.checkHit(a, e => e.team !== a.team)
-
-            expect(result).toBe(c)
-        })
-
-
-        test('excludes self', () => {
-            world.start()
-            const a = world.create(Entity, {$id: 'a', x: 0, y: 0, hitRadius: 1})
-
-            const result = world.checkHit(a)
-
-            expect(result).toBe(null)
         })
 
     })

@@ -123,7 +123,7 @@ function computePerpendicularToTarget (entity, target) {
 
 
 function computeLateralSum (entity, perp) {
-    const allies = entity.host.entitiesInRange(entity, 2)
+    const allies = entity.host?.space?.entitiesInRange(entity, 2) ?? []
     let lateralSum = 0
     let count = 0
 
@@ -231,7 +231,7 @@ export function updateMelee (entity, deltaTime, {separateRange = 1.5, separateWe
     applySporeFrame(entity)
     entity.wander(getEffectiveStat(entity, 'wanderWeight', 0.3))
 
-    const neighbors = entity.host?.entitiesInRange(entity, separateRange)
+    const neighbors = entity.host?.space?.entitiesInRange(entity, separateRange) ?? []
     entity.separate(neighbors, separateWeight)
 
     applyLeash(entity)

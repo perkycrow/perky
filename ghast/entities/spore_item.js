@@ -1,4 +1,5 @@
 import Entity from '../../game/entity.js'
+import Hitbox from '../../game/hitbox.js'
 import Velocity from '../../game/velocity.js'
 import Steering from '../../game/steering.js'
 import {SPORE_DEFINITIONS} from '../spores/index.js'
@@ -13,8 +14,9 @@ const DRIFT_RANGE = 1
 export default class SporeItem extends Entity {
 
     constructor (params = {}) {
-        super({hitRadius: COLLECT_RADIUS, ...params})
+        super(params)
 
+        this.create(Hitbox, {radius: COLLECT_RADIUS})
         this.create(Velocity)
         this.create(Steering)
 

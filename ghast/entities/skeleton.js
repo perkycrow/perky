@@ -1,4 +1,5 @@
 import Entity from '../../game/entity.js'
+import Hitbox from '../../game/hitbox.js'
 import Velocity from '../../game/velocity.js'
 import Steering from '../../game/steering.js'
 import Dash from '../../game/dash.js'
@@ -14,10 +15,11 @@ import {getCooldownModifier, updateMelee} from '../entity_helpers.js'
 export default class Skeleton extends Entity {
 
     constructor (params = {}) {
-        super({hitRadius: 0.3, ...params})
+        super(params)
 
         this.rank = params.rank || 1
 
+        this.create(Hitbox, {radius: 0.3})
         this.create(Velocity)
         this.create(Steering)
         this.create(Dash)

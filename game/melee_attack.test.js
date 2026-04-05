@@ -1,18 +1,21 @@
 import {describe, test, expect, vi} from 'vitest'
 import Entity from './entity.js'
 import Component from './component.js'
+import Hitbox from './hitbox.js'
 import MeleeAttack from './melee_attack.js'
 
 
 function createEntity (x = 0, y = 0) {
-    const entity = new Entity({x, y, hitRadius: 0.3})
+    const entity = new Entity({x, y})
     entity.create(MeleeAttack, {range: 0.6, cooldown: 1, windUp: 0.15, strikeTime: 0.1})
+    entity.create(Hitbox, {radius: 0.3})
     return entity
 }
 
 
 function createTarget (x = 0.5, y = 0) {
-    const target = new Entity({x, y, hitRadius: 0.3})
+    const target = new Entity({x, y})
+    target.create(Hitbox, {radius: 0.3})
     return target
 }
 

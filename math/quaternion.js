@@ -2,7 +2,6 @@ export default class Quaternion {
 
     static $exports = ['x', 'y', 'z', 'w']
 
-
     constructor (x = 0, y = 0, z = 0, w = 1) { // eslint-disable-line complexity -- clean
         if (typeof x === 'object') {
             if (Array.isArray(x)) {

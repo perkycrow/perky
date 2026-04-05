@@ -1,4 +1,5 @@
 import Entity from '../../game/entity.js'
+import Hitbox from '../../game/hitbox.js'
 import Velocity from '../../game/velocity.js'
 import Steering from '../../game/steering.js'
 import Health from '../../game/health.js'
@@ -13,10 +14,11 @@ import {getCooldownModifier, updateMelee} from '../entity_helpers.js'
 export default class Rat extends Entity {
 
     constructor (params = {}) {
-        super({hitRadius: 0.25, ...params})
+        super(params)
 
         this.rank = params.rank || 1
 
+        this.create(Hitbox, {radius: 0.25})
         this.create(Velocity)
         this.create(Steering)
         this.create(Health, {hp: Math.round(40 * getRankModifier(this.rank, 'hp'))})

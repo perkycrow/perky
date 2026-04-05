@@ -1,7 +1,7 @@
 import Notifier from './notifier.js'
 import Registry from './registry.js'
 import ObservableSet from './observable_set.js'
-import {delegateProperties} from './utils.js'
+import {delegateProperties, exportFrom, importTo, resolveExports} from './utils.js'
 import {query as perkyQuery, queryAll as perkyQueryAll} from './perky_query.js'
 
 
@@ -54,6 +54,8 @@ export default class PerkyModule extends Notifier {
 
         this.#childrenRegistry = new Registry()
         this.#childrenRegistry.addIndex('$category')
+
+        this.#started = Boolean(options.$started)
     }
 
 
@@ -603,6 +605,38 @@ export default class PerkyModule extends Notifier {
         }
     }
 
+
+    export () {
+        const result = {
+            $id: this.#id,
+            $type: this.constructor.name,
+            $started: this.#started
+        }
+
+        const fields = resolveExports(this.constructor)
+        for (const key of fields) {
+            result[key] = exportFrom(this[key])
+        }
+
+        return result
+    }
+
+
+    import (data) {
+        if (data === null || data === undefined || typeof data !== 'object') {
+            return this
+        }
+
+        const fields = resolveExports(this.constructor)
+        for (const key of fields) {
+            if (key in data) {
+                applyImportedField(this, key, data[key])
+            }
+        }
+
+        return this
+    }
+
     static perkyModuleMethods = Notifier.notifierMethods.concat([
         'start',
         'stop',
@@ -722,4 +756,17 @@ function unregisterChild (host, child) {
 
 function getTagIndexKey (tags) {
     return [...tags].sort().join('_')
+}
+
+
+function applyImportedField (target, key, incoming) {
+    const current = target[key]
+    const bothObjects = current && typeof current === 'object'
+        && incoming && typeof incoming === 'object'
+
+    if (bothObjects) {
+        importTo(current, incoming)
+    } else {
+        target[key] = incoming
+    }
 }

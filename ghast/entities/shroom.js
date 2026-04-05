@@ -9,7 +9,7 @@ const SPAWN_INTERVAL = 3
 export default class Shroom extends Entity {
 
     constructor (params = {}) {
-        super({hitRadius: 0, ...params})
+        super(params)
 
         this.sporeType = params.sporeType || 'fear'
         this.stock = params.stock ?? DEFAULT_STOCK

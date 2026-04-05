@@ -58,7 +58,7 @@ export default class MeleeAttack extends Component {
         const dir = target.position.clone().sub(this.host.position)
         const dist = dir.length()
 
-        if (dist > this.meleeRange + (this.host.hitRadius || 0) + (target.hitRadius || 0)) {
+        if (dist > this.meleeRange + (this.host.hitbox?.radius ?? 0) + (target.hitbox?.radius ?? 0)) {
             return false
         }
 

@@ -28,7 +28,7 @@ export default {
         const myRank = entity.rank || 1
         const urgency = threat > myRank * 0.5 ? 1 + (threat - myRank * 0.5) * 0.5 : 1
 
-        const ally = entity.host.nearest(entity, 3 + count, other =>
+        const ally = entity.host.space?.nearest(entity, 3 + count, other =>
             other.faction === entity.faction && !other.dying)
 
         if (ally) {

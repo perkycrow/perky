@@ -6,7 +6,7 @@ import SporeItem from './spore_item.js'
 test('constructor defaults', () => {
     const item = new SporeItem()
     expect(item.sporeType).toBe('fear')
-    expect(item.hitRadius).toBe(0.5)
+    expect(item.hitbox.radius).toBe(0.5)
     expect(item.maxSpeed).toBe(0.3)
 })
 

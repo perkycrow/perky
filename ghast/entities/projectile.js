@@ -1,4 +1,5 @@
 import Entity from '../../game/entity.js'
+import Hitbox from '../../game/hitbox.js'
 import Velocity from '../../game/velocity.js'
 
 
@@ -16,8 +17,9 @@ export default class Projectile extends Entity {
             damage = 1
         } = params
 
-        super({...params, hitRadius})
+        super(params)
 
+        this.create(Hitbox, {radius: hitRadius})
         this.create(Velocity, {x: dirX * speed, y: dirY * speed})
 
         this.faction = faction

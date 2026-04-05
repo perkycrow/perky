@@ -7,7 +7,7 @@ test('constructor defaults', () => {
     expect(shroom.sporeType).toBe('fear')
     expect(shroom.stock).toBe(2)
     expect(shroom.spawnInterval).toBe(3)
-    expect(shroom.hitRadius).toBe(0)
+    expect(shroom.hitbox).toBeUndefined()
 })
 
 

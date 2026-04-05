@@ -181,25 +181,11 @@ export default doc('World', () => {
     section('Spatial Queries', () => {
 
         text(`
-            World provides methods to find entities based on distance and collision.
+            World does not implement collision or distance queries.
+            For that, use a [[Space@game]] — an opt-in container that tracks
+            entities you want to query spatially (nearest, entitiesInRange, checkHit).
+            Pair it with a [[Hitbox@game]] component on each entity that needs collision.
         `)
-
-        code('Find nearest entity', () => {
-            // const target = world.nearest(entity, range, filter)
-            // Returns the closest entity within range, or null
-            // filter is optional: (other) => other.hasTag('enemy')
-        })
-
-        code('Check collision', () => {
-            // const hit = world.checkHit(entity, filter)
-            // Uses entity.hitRadius + other.hitRadius as threshold
-            // Returns first entity hit, or null
-        })
-
-        code('Get all in range', () => {
-            // const entities = world.entitiesInRange(entity, range, filter)
-            // Returns array of all entities within range
-        })
 
     })
 
@@ -216,9 +202,6 @@ export default doc('World', () => {
             // postUpdate(deltaTime, context) - Hook after entity updates
             // findByType(EntityClass) - Find first entity of given class
             // loadLayout(config, wiring) - Load entities from layout config
-            // nearest(entity, range, filter) - Find closest entity in range
-            // checkHit(entity, filter) - Check hit using hitRadius
-            // entitiesInRange(entity, range, filter) - Get all entities in range
         })
 
         code('Inherited from PerkyModule', () => {

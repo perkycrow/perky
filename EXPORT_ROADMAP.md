@@ -278,6 +278,72 @@ par type de valeur (`Float32Array`, `Map`, `Set`, etc.) plutôt qu'une
 déclaration par classe. Un codec par type scale mieux qu'une déclaration
 par champ répétée sur chaque classe qui utilise ce type.
 
+### 10. Le lifecycle state fait partie du snapshot (`$started`)
+
+Les classes qui étendent `PerkyModule` ont un lifecycle (`install`, `start`,
+`stop`, `dispose`) avec des hooks (`onInstall`, `onStart`, `onStop`,
+`onDispose`) qui peuvent contenir n'importe quoi — y compris des mutations
+de state. On **ne peut pas** imposer aux devs que leurs hooks soient
+purement fonctionnels ou idempotents, ce serait intenable.
+
+Mais ça crée un problème concret : si `onStart` fait `this.myProp = "bar"`
+et que le snapshot contient `myProp: "foo"`, une restauration naïve
+déclencherait `onStart` qui écraserait la valeur importée.
+
+**La solution** : le snapshot capture **l'état du lifecycle lui-même**, et
+le constructor le restaure directement sans passer par les hooks :
+
+```js
+// snapshot
+{
+    $id: 'foo',
+    $type: 'MyClass',
+    $started: true,        // ← était démarré au moment du snapshot
+    myProp: 'foo'          // ← state
+}
+
+// reconstruction
+new MyClass(snapshot)
+// → constructor pose #started = true directement
+// → addChild → install() → onInstall fire (wiring se ré-établit)
+// → setupLifecycle → start() → guard #started → short-circuit, onStart skip
+// → onStart ne ré-écrase pas myProp
+```
+
+**La distinction critique** entre `onInstall` et `onStart` :
+
+- **`onInstall` fire TOUJOURS**, sur création fraîche comme sur restauration.
+  Son rôle est le **wiring live non-sérialisable** : delegations vers le
+  host, event listeners, binding `$bind`, allocation de ressources DOM/Web
+  APIs. Ces choses ne vivent pas dans un snapshot (elles référencent des
+  objets live comme le host) et doivent être re-posées à chaque fois que le
+  module est en mémoire.
+
+- **`onStart` fire uniquement si `#started === false`**. Si le snapshot dit
+  `$started: true`, le constructor pose le flag et `onStart` est skip.
+  C'est là que vit le state initial ou les timers "de démarrage" qui ne
+  doivent pas re-fire sur restauration.
+
+Perky avait **déjà** cette séparation dans son design à deux hooks. Cette
+décision la rend explicite et l'exploite pour résoudre le conflit snapshot
+vs lifecycle.
+
+**Guidance douce pour les devs** : si tu as une ressource **non-sérialisable
+qui doit exister à chaque fois que le module est en mémoire** (AudioContext,
+WebGL context, DOM mount, subscription, etc.), mets son allocation dans
+`onInstall` plutôt que dans `onStart`. Les ressources allouées dans
+`onInstall` sont garanties d'être rétablies à la restauration. Ce n'est pas
+une contrainte hard, juste une recommandation cohérente avec la sémantique
+des deux hooks.
+
+**Ce qui est dans le snapshot côté lifecycle** :
+- `$started` — oui, contrôle le skip de `onStart`
+- `$id`, `$type`, `$tags` — oui, identité
+- `#installed`, `#host` — **non**, relation transiente avec un host
+  spécifique, re-établie par `install()` dans le nouveau contexte
+- `#linked`, `#delegations`, `#eventDelegations`, listeners — **non**, ce
+  sont des références vers des objets live non-sérialisables
+
 ## Plan V1 — Implémentation du socle
 
 L'ordre est important : chaque étape valide la précédente via ses tests.

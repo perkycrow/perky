@@ -1,4 +1,5 @@
 import Entity from '../../game/entity.js'
+import Hitbox from '../../game/hitbox.js'
 import Velocity from '../../game/velocity.js'
 import Steering from '../../game/steering.js'
 import Health from '../../game/health.js'
@@ -12,10 +13,11 @@ import {applyLeash, applyMovement, applySporeFrame, getCooldownModifier, getEffe
 export default class Inquisitor extends Entity {
 
     constructor (params = {}) {
-        super({hitRadius: 0.3, ...params})
+        super(params)
 
         this.rank = params.rank || 1
 
+        this.create(Hitbox, {radius: 0.3})
         this.create(Velocity)
         this.create(Steering)
         this.create(Health, {hp: Math.round(25 * getRankModifier(this.rank, 'hp'))})
@@ -78,7 +80,7 @@ export default class Inquisitor extends Entity {
         applySporeFrame(this)
         this.wander(getEffectiveStat(this, 'wanderWeight', 0.3))
 
-        const neighbors = this.host?.entitiesInRange(this, 1)
+        const neighbors = this.host?.space?.entitiesInRange(this, 1) ?? []
         this.separate(neighbors, 0.6)
 
         applyLeash(this)

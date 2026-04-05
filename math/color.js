@@ -21,7 +21,6 @@ export default class Color {
 
     static $exports = ['r', 'g', 'b', 'a']
 
-
     constructor (value) {
         this.r = 0
         this.g = 0

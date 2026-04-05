@@ -2455,5 +2455,253 @@ describe(PerkyModule, () => {
 
     })
 
+
+    describe('export and import', () => {
+
+        test('base module export returns identity and lifecycle metadata', () => {
+            const module = new PerkyModule({$id: 'test'})
+            const snapshot = module.export()
+
+            expect(snapshot.$id).toBe('test')
+            expect(snapshot.$type).toBe('PerkyModule')
+            expect(snapshot.$started).toBe(false)
+        })
+
+
+        test('export includes $started: true when module has been started', () => {
+            const module = new PerkyModule({$id: 'test'})
+            module.start()
+
+            const snapshot = module.export()
+            expect(snapshot.$started).toBe(true)
+        })
+
+
+        test('subclass with $exports exports declared fields on top of metadata', () => {
+            class Point extends PerkyModule {
+                static $exports = ['x', 'y']
+                constructor (options = {}) {
+                    super(options)
+                    this.x = options.x ?? 0
+                    this.y = options.y ?? 0
+                }
+            }
+
+            const p = new Point({$id: 'p1', x: 3, y: 5})
+            const snapshot = p.export()
+
+            expect(snapshot.$id).toBe('p1')
+            expect(snapshot.$type).toBe('Point')
+            expect(snapshot.$started).toBe(false)
+            expect(snapshot.x).toBe(3)
+            expect(snapshot.y).toBe(5)
+        })
+
+
+        test('import applies declared fields on existing instance', () => {
+            class Point extends PerkyModule {
+                static $exports = ['x', 'y']
+                constructor (options = {}) {
+                    super(options)
+                    this.x = options.x ?? 0
+                    this.y = options.y ?? 0
+                }
+            }
+
+            const p = new Point({x: 1, y: 1})
+            p.import({x: 7, y: 9})
+
+            expect(p.x).toBe(7)
+            expect(p.y).toBe(9)
+        })
+
+
+        test('import is a no-op for null or invalid data', () => {
+            class Point extends PerkyModule {
+                static $exports = ['x']
+                constructor (options = {}) {
+                    super(options)
+                    this.x = 42
+                }
+            }
+
+            const p = new Point()
+            p.import(null)
+            p.import(undefined)
+            p.import('not an object')
+            expect(p.x).toBe(42)
+        })
+
+
+        test('import ignores fields not declared in $exports', () => {
+            class Point extends PerkyModule {
+                static $exports = ['x']
+                constructor (options = {}) {
+                    super(options)
+                    this.x = 0
+                }
+            }
+
+            const p = new Point()
+            p.import({x: 5, rogue: 'intrusion'})
+
+            expect(p.x).toBe(5)
+            expect(p.rogue).toBeUndefined()
+        })
+
+
+        test('export inherits parent $exports via prototype chain', () => {
+            class Base extends PerkyModule {
+                static $exports = ['a', 'b']
+                constructor (options = {}) {
+                    super(options)
+                    this.a = options.a ?? 0
+                    this.b = options.b ?? 0
+                }
+            }
+
+            class Child extends Base {
+                static $exports = ['c']
+                constructor (options = {}) {
+                    super(options)
+                    this.c = options.c ?? 0
+                }
+            }
+
+            const childInstance = new Child({a: 1, b: 2, c: 3})
+            const snapshot = childInstance.export()
+
+            expect(snapshot.a).toBe(1)
+            expect(snapshot.b).toBe(2)
+            expect(snapshot.c).toBe(3)
+            expect(snapshot.$type).toBe('Child')
+        })
+
+
+        test('constructor accepts $started: true from snapshot and skips onStart', () => {
+            let onStartCalls = 0
+
+            class LoggingModule extends PerkyModule {
+                static $exports = ['value']
+                constructor (options = {}) {
+                    super(options)
+                    this.value = options.value ?? 'default'
+                }
+                onStart () {
+                    onStartCalls++
+                    this.value = 'overwritten_by_onStart'
+                }
+            }
+
+            const restored = new LoggingModule({$id: 'restored', value: 'from_snapshot', $started: true})
+
+            expect(restored.started).toBe(true)
+            expect(restored.value).toBe('from_snapshot')
+
+            const didStart = restored.start()
+            expect(didStart).toBe(false)
+            expect(onStartCalls).toBe(0)
+            expect(restored.value).toBe('from_snapshot')
+        })
+
+
+        test('fresh instance without $started still fires onStart normally', () => {
+            let onStartCalls = 0
+
+            class FreshModule extends PerkyModule {
+                onStart () {
+                    onStartCalls++
+                }
+            }
+
+            const fresh = new FreshModule({$id: 'fresh'})
+            expect(fresh.started).toBe(false)
+
+            fresh.start()
+            expect(fresh.started).toBe(true)
+            expect(onStartCalls).toBe(1)
+        })
+
+
+        test('onInstall still fires on a restored instance with $started: true', () => {
+            let onInstallCalls = 0
+            let onStartCalls = 0
+
+            class WiredModule extends PerkyModule {
+                onInstall (installedIn) {
+                    onInstallCalls++
+                    this.installedHost = installedIn
+                }
+                onStart () {
+                    onStartCalls++
+                }
+            }
+
+            const installHost = new PerkyModule({$id: 'host'})
+            installHost.start()
+
+            const restored = new WiredModule({$id: 'wired', $started: true})
+            installHost.addChild(restored)
+
+            expect(onInstallCalls).toBe(1)
+            expect(onStartCalls).toBe(0)
+            expect(restored.installedHost).toBe(installHost)
+            expect(restored.installed).toBe(true)
+            expect(restored.started).toBe(true)
+        })
+
+
+        test('roundtrip export → new Class(snapshot) preserves started state and fields', () => {
+            class Creature extends PerkyModule {
+                static $exports = ['name', 'hp']
+                constructor (options = {}) {
+                    super(options)
+                    this.name = options.name ?? 'unknown'
+                    this.hp = options.hp ?? 0
+                }
+                onStart () {
+                    this.hp = 100
+                }
+            }
+
+            const original = new Creature({$id: 'c1', name: 'goblin', hp: 12})
+            original.start()
+            original.hp = 8
+
+            const snapshot = original.export()
+            expect(snapshot.$started).toBe(true)
+            expect(snapshot.hp).toBe(8)
+
+            const restored = new Creature(snapshot)
+            expect(restored.$id).toBe('c1')
+            expect(restored.started).toBe(true)
+            expect(restored.hp).toBe(8)
+
+            restored.start()
+            expect(restored.hp).toBe(8)
+        })
+
+
+        test('import does not touch identity or lifecycle state on an existing instance', () => {
+            class Thing extends PerkyModule {
+                static $exports = ['value']
+                constructor (options = {}) {
+                    super(options)
+                    this.value = options.value ?? 0
+                }
+            }
+
+            const thing = new Thing({$id: 'thing', value: 5})
+            thing.start()
+
+            thing.import({value: 99, $id: 'hijacked', $started: false})
+
+            expect(thing.value).toBe(99)
+            expect(thing.$id).toBe('thing')
+            expect(thing.started).toBe(true)
+        })
+
+    })
+
 })
 

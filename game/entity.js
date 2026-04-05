@@ -5,14 +5,14 @@ import Vec2 from '../math/vec2.js'
 export default class Entity extends PerkyModule {
 
     static $category = 'entity'
+    static $exports = ['x', 'y']
 
     constructor (options = {}) {
         super(options)
 
-        const {x = 0, y = 0, hitRadius = 0} = options
+        const {x = 0, y = 0} = options
 
         this.position = new Vec2(x, y)
-        this.hitRadius = hitRadius
     }
 
 

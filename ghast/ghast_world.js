@@ -1,4 +1,5 @@
 import World from '../game/world.js'
+import Space from '../game/space.js'
 import Swarm from './swarm.js'
 import Battle from './battle.js'
 import Shade from './entities/shade.js'
@@ -29,6 +30,9 @@ export default class GhastWorld extends World {
         this.timeScale = options.timeScale ?? 1
         this.swarms = []
         this.battles = []
+
+        this.create(Space)
+        this.on('entity:set', (id, entity) => this.space.add(entity))
 
         this.on('hit', ({target, source, damage, projectile}) => {
             this.#applyHit(target, source, damage, Boolean(projectile))
@@ -154,7 +158,7 @@ export default class GhastWorld extends World {
                 continue
             }
 
-            const hit = this.checkHit(entity, e => {
+            const hit = this.space.checkHit(entity, e => {
                 if (e instanceof Projectile) {
                     return false
                 }
@@ -164,7 +168,7 @@ export default class GhastWorld extends World {
                 if (e === entity.source) {
                     return false
                 }
-                return e.hitRadius > 0
+                return true
             })
 
             if (hit) {
@@ -181,7 +185,7 @@ export default class GhastWorld extends World {
                 continue
             }
 
-            const collector = this.checkHit(item, e => {
+            const collector = this.space.checkHit(item, e => {
                 return Boolean(e.spores && e.faction && !e.dying)
             })
 
@@ -225,7 +229,7 @@ export default class GhastWorld extends World {
 
         if (!target.isAlive()) {
             target.dying = 0.3
-            target.hitRadius = 0
+            this.space.remove(target)
             this.#clearTargetsOn(target)
             this.#emitDeathEvents(target, source)
         }
@@ -325,7 +329,7 @@ export default class GhastWorld extends World {
 
 
     #checkSurrounded (entity) {
-        const enemies = this.entitiesInRange(entity, 2, e => e.faction && e.faction !== entity.faction && !e.dying)
+        const enemies = this.space.entitiesInRange(entity, 2, e => e.faction && e.faction !== entity.faction && !e.dying)
         const wasSurrounded = entity._surrounded || false
         entity._surrounded = enemies.length >= 3
 
