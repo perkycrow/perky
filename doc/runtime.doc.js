@@ -24,8 +24,8 @@ export default doc('Doc Runtime', {advanced: true}, () => {
                 text('Introduction to the module.')
             })
 
-            doc('My Module', () => {
-                text('Another example.')
+            doc('My Module', {advanced: true}, () => {
+                text('With options.')
             })
         })
 
