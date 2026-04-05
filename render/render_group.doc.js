@@ -13,24 +13,29 @@ export default doc('RenderGroup', () => {
 
     section('Creation', () => {
 
-        text('Create a render group with optional blend mode, post-processing passes, and render transform.')
+        text('Create a render group with content, blend mode, post-processing passes, and render transform.')
 
         action('Default render group', () => {
             const group = new RenderGroup()
             logger.log('blend mode:', group.blendMode)
             logger.log('visible:', group.visible)
             logger.log('opacity:', group.opacity)
+            logger.log('content:', group.content)
         })
 
         action('With options', () => {
             const group = new RenderGroup({
+                content: mySceneGraph,
                 blendMode: BLEND_MODES.additive,
+                postPasses: [],
                 opacity: 0.8,
-                visible: true
+                visible: true,
+                renderTransform: null
             })
 
             logger.log('blend mode:', group.blendMode)
             logger.log('opacity:', group.opacity)
+            logger.log('content:', group.content)
         })
 
     })
