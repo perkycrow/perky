@@ -1,4 +1,4 @@
-import {exportValue} from '../core/utils.js'
+import {exportFrom} from '../core/utils.js'
 
 
 export const fourDirections = {
@@ -179,7 +179,7 @@ export default class Grid {
 
         this.forEachDefinedCell((coords, value) => {
             const key = getCellKey(coords)
-            cells[key] = exportValue(value)
+            cells[key] = exportFrom(value)
         })
 
         return {

@@ -1,4 +1,5 @@
 import Vec3 from './vec3.js'
+import {exportFrom, importTo} from '../core/utils.js'
 
 
 describe('Vec3', () => {
@@ -672,6 +673,47 @@ describe('Vec3', () => {
             const vec = new Vec3(5, 6, 7)
             const arr = [...vec]
             expect(arr).toEqual([5, 6, 7])
+        })
+
+    })
+
+
+    describe('export and import', () => {
+
+        test('declares x, y, z in $exports', () => {
+            expect(Vec3.$exports).toEqual(['x', 'y', 'z'])
+        })
+
+
+        test('exportFrom produces a plain scalar snapshot', () => {
+            const vec = new Vec3(3, 5, 7)
+            expect(exportFrom(vec)).toEqual({x: 3, y: 5, z: 7})
+        })
+
+
+        test('importTo mutates the existing instance in place', () => {
+            const vec = new Vec3(1, 2, 3)
+            const result = importTo(vec, {x: 7, y: 9, z: 11})
+
+            expect(result).toBe(vec)
+            expect(vec.x).toBe(7)
+            expect(vec.y).toBe(9)
+            expect(vec.z).toBe(11)
+        })
+
+
+        test('roundtrip export → import preserves values and instance methods', () => {
+            const original = new Vec3(1, 2, 2)
+            const snapshot = exportFrom(original)
+
+            const restored = new Vec3()
+            importTo(restored, snapshot)
+
+            expect(restored.x).toBe(1)
+            expect(restored.y).toBe(2)
+            expect(restored.z).toBe(2)
+            expect(restored).toBeInstanceOf(Vec3)
+            expect(restored.length()).toBe(3)
         })
 
     })

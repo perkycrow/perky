@@ -1,5 +1,6 @@
 import {describe, test, expect} from 'vitest'
 import Color from './color.js'
+import {exportFrom, importTo} from '../core/utils.js'
 
 
 describe('Color', () => {
@@ -640,6 +641,57 @@ describe('Color', () => {
         test('returns false for dark colors', () => {
             const color = new Color('#000000')
             expect(color.isLight).toBe(false)
+        })
+
+    })
+
+
+    describe('export and import', () => {
+
+        test('declares r, g, b, a in $exports', () => {
+            expect(Color.$exports).toEqual(['r', 'g', 'b', 'a'])
+        })
+
+
+        test('exportFrom produces a plain scalar snapshot', () => {
+            const color = new Color('#ff8040')
+            const snapshot = exportFrom(color)
+
+            expect(snapshot).toHaveProperty('r')
+            expect(snapshot).toHaveProperty('g')
+            expect(snapshot).toHaveProperty('b')
+            expect(snapshot).toHaveProperty('a')
+            expect(snapshot.r).toBeCloseTo(1, 5)
+            expect(snapshot.g).toBeCloseTo(0.5019, 3)
+            expect(snapshot.b).toBeCloseTo(0.2509, 3)
+            expect(snapshot.a).toBe(1)
+        })
+
+
+        test('importTo mutates the existing instance in place', () => {
+            const color = new Color('#000000')
+            const result = importTo(color, {r: 0.5, g: 0.25, b: 0.75, a: 0.8})
+
+            expect(result).toBe(color)
+            expect(color.r).toBe(0.5)
+            expect(color.g).toBe(0.25)
+            expect(color.b).toBe(0.75)
+            expect(color.a).toBe(0.8)
+        })
+
+
+        test('roundtrip export → import preserves values and instance type', () => {
+            const original = new Color('#336699')
+            const snapshot = exportFrom(original)
+
+            const restored = new Color()
+            importTo(restored, snapshot)
+
+            expect(restored.r).toBeCloseTo(original.r, 5)
+            expect(restored.g).toBeCloseTo(original.g, 5)
+            expect(restored.b).toBeCloseTo(original.b, 5)
+            expect(restored.a).toBeCloseTo(original.a, 5)
+            expect(restored).toBeInstanceOf(Color)
         })
 
     })

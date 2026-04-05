@@ -161,27 +161,183 @@ function deepMergeInternal (target, source, seen) {
 }
 
 
-export function exportValue (value) {
+const EXPORTS_CACHE = new WeakMap()
+
+
+export function resolveExports (klass) {
+    if (!klass || klass === Object || klass === Function) {
+        return []
+    }
+
+    const cached = EXPORTS_CACHE.get(klass)
+    if (cached) {
+        return cached
+    }
+
+    const parent = Object.getPrototypeOf(klass)
+    const inherited = resolveExports(parent)
+    const own = Object.hasOwn(klass, '$exports') ? klass.$exports : null
+
+    let result
+    if (Array.isArray(own) && own.length > 0) {
+        const seen = new Set(inherited)
+        const merged = inherited.slice()
+        for (const field of own) {
+            if (!seen.has(field)) {
+                seen.add(field)
+                merged.push(field)
+            }
+        }
+        result = merged
+    } else {
+        result = inherited
+    }
+
+    EXPORTS_CACHE.set(klass, result)
+    return result
+}
+
+
+export function exportFrom (value) {
 
     if (value && typeof value === 'object') {
         if (typeof value.export === 'function') {
             return value.export()
         }
 
+        const fields = value.constructor ? resolveExports(value.constructor) : []
+        if (fields.length > 0) {
+            const result = {}
+            for (const key of fields) {
+                result[key] = exportFrom(value[key])
+            }
+            return result
+        }
+
         if (Array.isArray(value)) {
-            return value.map(item => exportValue(item))
+            return value.map(item => exportFrom(item))
         }
 
         const result = {}
         for (const key in value) {
             if (Object.hasOwn(value, key)) {
-                result[key] = exportValue(value[key])
+                result[key] = exportFrom(value[key])
             }
         }
         return result
     }
 
     return value
+}
+
+
+export function importTo (target, data) {
+
+    if (!isObject(target)) {
+        return target
+    }
+
+    if (typeof target.import === 'function') {
+        return target.import(data)
+    }
+
+    if (!isObject(data)) {
+        return target
+    }
+
+    const fields = getImportFields(target)
+    if (fields.length > 0) {
+        return importDeclaredFields(target, data, fields)
+    }
+
+    if (Array.isArray(target) && Array.isArray(data)) {
+        return replaceArrayContents(target, data)
+    }
+
+    return copyOwnKeys(target, data)
+}
+
+
+export function createFor (Class, data) {
+    if (typeof Class !== 'function') {
+        return null
+    }
+
+    if (typeof Class.create === 'function') {
+        return Class.create(data)
+    }
+
+    return new Class(data)
+}
+
+
+function isObject (value) {
+    return Boolean(value) && typeof value === 'object'
+}
+
+
+function getImportFields (target) {
+    if (!target.constructor) {
+        return []
+    }
+    return resolveExports(target.constructor)
+}
+
+
+function importDeclaredFields (target, data, fields) {
+    for (const key of fields) {
+        if (key in data) {
+            applyImportedField(target, key, data[key])
+        }
+    }
+    return target
+}
+
+
+function applyImportedField (target, key, incoming) {
+    const current = target[key]
+
+    if (hasImportTarget(current)) {
+        importTo(current, incoming)
+    } else {
+        target[key] = incoming
+    }
+}
+
+
+function replaceArrayContents (target, data) {
+    target.length = 0
+    for (const item of data) {
+        target.push(item)
+    }
+    return target
+}
+
+
+function copyOwnKeys (target, data) {
+    for (const key in data) {
+        if (Object.hasOwn(data, key)) {
+            target[key] = data[key]
+        }
+    }
+    return target
+}
+
+
+function hasImportTarget (value) {
+    if (!value || typeof value !== 'object') {
+        return false
+    }
+
+    if (typeof value.import === 'function') {
+        return true
+    }
+
+    if (!value.constructor) {
+        return false
+    }
+
+    return resolveExports(value.constructor).length > 0
 }
 
 

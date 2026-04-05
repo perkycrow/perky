@@ -1,5 +1,7 @@
 export default class Vec3 {
 
+    static $exports = ['x', 'y', 'z']
+
     constructor (x = 0, y = 0, z = 0) { // eslint-disable-line complexity -- clean
         if (typeof x === 'object') {
             if (Array.isArray(x)) {

@@ -23,12 +23,12 @@ Un audit a révélé que la méthode `export()` est **déjà la convention
 dominante** pour produire une représentation plain-data d'un objet :
 
 - `application/manifest.js`, `application/asset.js`
-- `math/grid.js` (utilise déjà `exportValue`)
+- `math/grid.js` (utilise déjà `exportFrom`)
 - `input/input_binder.js`
 - `service/service_request.js`, `service/service_response.js`
 - Toutes les classes `mist/core/` (~12) et certaines `mist/entities/`
 
-La fonction utilitaire `exportValue(value)` dans `core/utils.js` fait déjà la
+La fonction utilitaire `exportFrom(value)` dans `core/utils.js` fait déjà la
 moitié du travail : elle cherche une méthode `.export()` sur l'objet, sinon
 récurse sur arrays/objects. Elle est testée et utilisée.
 
@@ -51,14 +51,36 @@ Les décisions suivantes ont été prises après discussion :
 
 ### 1. Nommage canonique
 
-- **Méthode d'export** : `export()` — convention Perky existante, ne change pas.
-- **Méthode d'import** : `import(data)` — c'est la paire lexicale naturelle
-  de `export`, déjà utilisée par `Manifest` et `InputBinder`. C'est ce vers
-  quoi on converge.
-- **Déclaration statique** : `static $exports = ['field1', 'field2', ...]`.
-  Le pluriel indique qu'il s'agit d'une collection (comme `$tags`). Le `$`
-  est la convention Perky pour toute métadonnée framework (voir `$category`,
-  `$name`, `$tags`, `$lifecycle` dans `core/perky_module.js`).
+**Méthodes d'instance** :
+- **`export()`** — produit un snapshot (convention Perky existante).
+- **`import(data)`** — mute l'instance existante depuis un snapshot.
+
+**Méthodes statiques** (factory, optionnelles) :
+- **`static create(data)`** — crée une nouvelle instance depuis un snapshot.
+  N'est à définir que si le constructor ne peut pas accepter naturellement
+  le snapshot comme premier argument. Voir décision 8.
+
+**Utilitaires framework** dans `core/utils.js` :
+- **`exportFrom(instance)`** — lit un instance et retourne son snapshot.
+- **`importTo(instance, data)`** — mute une instance existante depuis un
+  snapshot.
+- **`createFor(Class, data)`** — construit une nouvelle instance depuis un
+  snapshot, avec cascade "static Class.create > new Class(data)".
+
+Les trois utilitaires et les trois méthodes forment des **paires
+cohérentes** qui utilisent le même verbe :
+- `exportFrom` ↔ `export()` (instance)
+- `importTo` ↔ `import()` (instance)
+- `createFor` ↔ `create()` (static)
+
+Cette distinction de verbes évite la confusion entre `Foo.create(data)`
+(création) et `foo.import(data)` (mutation), qui sont deux opérations
+sémantiquement différentes.
+
+**Déclaration statique** :
+- **`static $exports = ['field1', 'field2', ...]`** — liste des champs
+  observables. Le pluriel indique une collection (comme `$tags`). Le `$` est
+  la convention Perky pour toute métadonnée framework.
 
 Le pattern `restore()` utilisé dans `mist/` sera migré vers `import()` en V2.
 On ne veut pas garder deux conventions en parallèle à terme — tout le but de
@@ -108,7 +130,7 @@ hit, one-shot effects), on ajoutera un canal d'events opt-in par classe
 
 On utilise la même mécanique de façon **récursive** : si un champ déclaré
 dans `$exports` est lui-même un objet qui a un contrat (méthode `import()`
-ou `$exports` sur sa classe), `importValue` descend **dans l'instance
+ou `$exports` sur sa classe), `importTo` descend **dans l'instance
 existante** au lieu de la remplacer. Ça préserve les instances vivantes
 (méthodes, identité référentielle) et évite les pièges du "POJO qui remplace
 un Vec2".
@@ -145,17 +167,17 @@ traitées en V2 quand un besoin concret se présentera.
 ### 6. Règle anti-boucle infinie pour `PerkyModule.export()`
 
 Comme `PerkyModule` fournit une méthode `export()` par défaut héritée par
-toutes ses sous-classes, la cascade naïve `exportValue(this) → this.export()
-→ exportValue(this) → ...` boucle à l'infini.
+toutes ses sous-classes, la cascade naïve `exportFrom(this) → this.export()
+→ exportFrom(this) → ...` boucle à l'infini.
 
 La parade : la méthode `export()` par défaut de PerkyModule **n'appelle pas**
-`exportValue(this)`. Elle walk `resolveExports(this.constructor)` directement
-et n'appelle `exportValue` que sur chaque **field individuel**, jamais sur
+`exportFrom(this)`. Elle walk `resolveExports(this.constructor)` directement
+et n'appelle `exportFrom` que sur chaque **field individuel**, jamais sur
 `this`. Symétrique pour `import()`.
 
 Corollaire : **les classes qui veulent bénéficier de `$exports` sans être
 des `PerkyModule` ne doivent pas définir de méthode `export()` d'instance**.
-Elles déclarent juste le static field, et `exportValue` les prend en charge
+Elles déclarent juste le static field, et `exportFrom` les prend en charge
 via son fallback `$exports`. Exemple typique : `Vec2`, `Vec3`.
 
 Les classes `PerkyModule` ont automatiquement la méthode, et le default walk
@@ -191,6 +213,71 @@ class Granny extends Enemy {
 // resolveExports(Granny) → ['x', 'y', 'health', 'alive', 'state', 'stepProgress']
 ```
 
+### 8. Construction via `createFor` et convention "constructor accepte le snapshot"
+
+Pour reconstruire une instance à partir d'un snapshot, le framework fournit
+`createFor(Class, data)` dans `core/utils.js`. Cette fonction applique une
+cascade simple :
+
+1. Si la classe définit une méthode statique `Class.create(data)`, elle lui
+   délègue (escape hatch pour les cas qui ont besoin de logique d'init
+   custom).
+2. Sinon, elle fait simplement `new Class(data)` — le constructor est
+   supposé accepter le snapshot comme premier argument.
+
+Cette convention signifie que **la plupart des classes n'ont rien à écrire**
+côté factory statique. Les constructors de Vec2, Vec3, Vec4, Quaternion,
+Color et Matrix4 (après polymorphisation) acceptent tous leur snapshot
+comme premier argument, soit sous la forme d'un objet `{x, y, ...}`, soit
+sous la forme d'un tableau, soit sous la forme `{elements: [...]}` pour
+Matrix4. `createFor(Class, snapshot)` tombe dans le fallback `new Class()`
+et ça marche gratuitement.
+
+Les classes qui ne peuvent pas respecter cette convention (constructor avec
+signature fixe, init avec effet de bord, résolution via wiring, etc.)
+définissent explicitement `static create(data)`.
+
+Cette décision élimine la **dissymétrie** qui existait initialement entre
+`exportFrom` et `importTo` : avant, pour recréer une instance, il fallait
+faire `new Class()` puis `importTo(instance, data)` en deux temps. Avec
+`createFor`, c'est une seule ligne, et le code d'initialisation vit au
+même endroit (le constructor) au lieu d'être dupliqué.
+
+### 9. Les `$exporters` / `$importers` déclaratifs — différés, pas rejetés
+
+Une piste explorée mais non retenue pour V1 : permettre à une classe de
+déclarer des serializers par champ sous forme de fonctions stand-alone :
+
+```js
+static $exports = ['elements']
+static $exporters = {elements: instance => instance.toArray()}
+static $importers = {elements: (instance, data) => instance.fromArray(data)}
+```
+
+**Pourquoi on le différe** :
+
+- Un seul cas d'usage réel actuellement (Matrix4), et il est résolu
+  proprement par une méthode `export()`/`import()` custom + la polymorphie
+  du constructor.
+- Introduire un nouveau concept framework pour un cas unique est prématuré.
+- L'escape hatch "méthodes custom sur la classe" couvre déjà tous les cas
+  exotiques (Manifest, Grid, Matrix4) sans infrastructure additionnelle.
+
+**Pourquoi on ne le rejette pas** :
+
+- Le jour où on se retrouve avec 3+ classes qui partagent le même besoin
+  (stocker un `Map`, un `Set`, un typed array, etc.), la factorisation
+  déclarative deviendra rentable.
+- La variante "fonction stand-alone qui reçoit l'instance" est
+  architecturalement propre (composable, testable, pas de lookup par
+  string), et c'est la forme à retenir si on construit un jour ce
+  mécanisme.
+
+**Alternative à considérer à ce moment-là** : un registre global de codecs
+par type de valeur (`Float32Array`, `Map`, `Set`, etc.) plutôt qu'une
+déclaration par classe. Un codec par type scale mieux qu'une déclaration
+par champ répétée sur chaque classe qui utilise ce type.
+
 ## Plan V1 — Implémentation du socle
 
 L'ordre est important : chaque étape valide la précédente via ses tests.
@@ -199,11 +286,11 @@ L'ordre est important : chaque étape valide la précédente via ses tests.
 
 - Ajouter la fonction `resolveExports(klass)` avec cache `WeakMap`, qui
   walk la chaîne de prototype et collecte tous les `static $exports`.
-- Étendre `exportValue(value)` pour, en l'absence de méthode `export()`
+- Étendre `exportFrom(value)` pour, en l'absence de méthode `export()`
   custom, utiliser `resolveExports(value.constructor)` si elle retourne des
   champs. Comportement existant inchangé pour tous les autres cas
   (rétrocompatibilité stricte).
-- Ajouter une nouvelle fonction `importValue(target, data)` symétrique, qui :
+- Ajouter une nouvelle fonction `importTo(target, data)` symétrique, qui :
   - délègue à `target.import(data)` si la méthode existe
   - sinon utilise `resolveExports` pour écrire les champs déclarés, en
     descendant récursivement dans les sous-objets qui ont un contrat (sans
@@ -215,24 +302,24 @@ L'ordre est important : chaque étape valide la précédente via ses tests.
 - Nouveaux tests pour `resolveExports` : cas de base, héritage simple,
   héritage multiple, déduplication, pas de `$exports` du tout, cache
   invariant.
-- Nouveaux tests pour l'extension d'`exportValue` : objet avec `$exports`
+- Nouveaux tests pour l'extension d'`exportFrom` : objet avec `$exports`
   sans méthode `export()`, objet avec les deux (la méthode gagne),
   rétrocompatibilité avec les tests existants.
-- Nouveaux tests pour `importValue` : roundtrip simple, avec `$exports`,
+- Nouveaux tests pour `importTo` : roundtrip simple, avec `$exports`,
   avec sous-objet qui a son propre contrat, fallback POJO.
 
 ### Étape 3 — `core/perky_module.js`
 
 - Ajouter la méthode d'instance `export()` qui walk `resolveExports` et
-  appelle `exportValue` sur chaque field (pas sur `this`, pour éviter la
+  appelle `exportFrom` sur chaque field (pas sur `this`, pour éviter la
   boucle — voir décision 6).
 - Ajouter la méthode d'instance `import(data)` qui walk `resolveExports`
-  et pose chaque field en descendant récursivement via `importValue` sur
+  et pose chaque field en descendant récursivement via `importTo` sur
   les sous-objets qui ont un contrat.
 - La méthode par défaut n'inclut **pas** les enfants du module (voir
   décision 5). Les classes conteneurs comme `World` overrident.
 - Aucune classe qui étend déjà PerkyModule avec son propre `export()` ou
-  `import()` n'est cassée : `exportValue` et `importValue` appellent
+  `import()` n'est cassée : `exportFrom` et `importTo` appellent
   d'abord la méthode custom de l'instance avant de regarder `$exports`,
   et un override sur PerkyModule prend toujours la priorité via le polymorphisme
   d'instance.
@@ -339,7 +426,7 @@ Même logique que M2.
 
 - `input/input_binder.js` — déjà en `import()`, peut probablement adopter
   `$exports`
-- `math/grid.js` — déjà utilise `exportValue`, à harmoniser si possible
+- `math/grid.js` — déjà utilise `exportFrom`, à harmoniser si possible
 
 ### Étape M5 — CSG brushes
 
@@ -370,7 +457,7 @@ particulièrement pendant la V1 et la migration :
    test continuent à matcher, ou bien les tests sont mis à jour avec la
    nouvelle forme.
 
-2. **Tests de `exportValue`** dans `core/utils.test.js` — l'extension doit
+2. **Tests de `exportFrom`** dans `core/utils.test.js` — l'extension doit
    être strictement rétrocompatible avec les cas existants (objets
    primitifs, arrays, POJOs, objets avec méthode `export()` custom). Les
    nouveaux cas (`$exports`) sont des ajouts, pas des modifications.
@@ -380,7 +467,7 @@ particulièrement pendant la V1 et la migration :
    qu'avant (`entity.position instanceof Vec2 && entity.position === oldRef`).
    C'est la garantie qui préserve toutes les méthodes Vec2 et qui fait que
    `entity.position.distanceTo(...)` continue à fonctionner. Si ce test
-   passe, la mécanique de récursion dans `importValue` est correcte.
+   passe, la mécanique de récursion dans `importTo` est correcte.
 
 Si pendant l'implémentation un test manque manifestement pour couvrir un
 cas limite important (entity avec enfants, reconciliation d'ID dupliqués,

@@ -1,5 +1,7 @@
 export default class Vec2 {
 
+    static $exports = ['x', 'y']
+
     constructor (x = 0, y = 0) {
         if (typeof x === 'object') {
             if (Array.isArray(x)) {

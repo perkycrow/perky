@@ -2,8 +2,10 @@ export default class Matrix4 {
 
     constructor (elements) {
         this.elements = new Float32Array(16)
-        if (elements) {
-            this.elements.set(elements)
+
+        const source = extractElements(elements)
+        if (source) {
+            this.elements.set(source)
         } else {
             this.identity()
         }
@@ -68,6 +70,20 @@ export default class Matrix4 {
             array[offset + i] = e[i]
         }
         return array
+    }
+
+
+    export () {
+        return {elements: this.toArray()}
+    }
+
+
+    import (data) {
+        const source = extractElements(data)
+        if (source) {
+            this.fromArray(source)
+        }
+        return this
     }
 
 
@@ -604,4 +620,21 @@ function extractQuaternion (q, m11, m12, m13, m21, m22, m23, m31, m32, m33) { //
         q.y = (m23 + m32) / s
         q.z = 0.25 * s
     }
+}
+
+
+function extractElements (input) {
+    if (!input) {
+        return null
+    }
+
+    if (Array.isArray(input) || ArrayBuffer.isView(input)) {
+        return input
+    }
+
+    if (typeof input === 'object' && Array.isArray(input.elements)) {
+        return input.elements
+    }
+
+    return null
 }

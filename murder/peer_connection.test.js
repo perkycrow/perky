@@ -105,7 +105,13 @@ describe(PeerConnection, () => {
 
     test('constructor default rtcConfig', () => {
         const peer = new PeerConnection({peerId: 1})
-        expect(peer.rtcConfig).toEqual({iceServers: [{urls: 'stun:stun.l.google.com:19302'}]})
+        expect(peer.rtcConfig).toEqual({
+            iceServers: [
+                {urls: 'stun:stun.l.google.com:19302'},
+                {urls: 'stun:stun1.l.google.com:19302'},
+                {urls: 'stun:stun.cloudflare.com:3478'}
+            ]
+        })
     })
 
 

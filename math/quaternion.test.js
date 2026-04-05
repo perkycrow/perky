@@ -1,6 +1,7 @@
 import Quaternion from './quaternion.js'
 import Matrix4 from './matrix4.js'
 import Vec3 from './vec3.js'
+import {exportFrom, importTo} from '../core/utils.js'
 
 
 function expectClose (actual, expected, epsilon = 1e-6) {
@@ -347,6 +348,49 @@ describe('Quaternion', () => {
         const q = new Quaternion(1, 2, 3, 4)
         const arr = [...q]
         expect(arr).toEqual([1, 2, 3, 4])
+    })
+
+
+    describe('export and import', () => {
+
+        test('declares x, y, z, w in $exports', () => {
+            expect(Quaternion.$exports).toEqual(['x', 'y', 'z', 'w'])
+        })
+
+
+        test('exportFrom produces a plain scalar snapshot', () => {
+            const q = new Quaternion(0.1, 0.2, 0.3, 0.9)
+            expect(exportFrom(q)).toEqual({x: 0.1, y: 0.2, z: 0.3, w: 0.9})
+        })
+
+
+        test('importTo mutates the existing instance in place', () => {
+            const q = new Quaternion(0, 0, 0, 1)
+            const result = importTo(q, {x: 0.5, y: 0.5, z: 0.5, w: 0.5})
+
+            expect(result).toBe(q)
+            expect(q.x).toBe(0.5)
+            expect(q.y).toBe(0.5)
+            expect(q.z).toBe(0.5)
+            expect(q.w).toBe(0.5)
+        })
+
+
+        test('roundtrip export → import preserves values and instance type', () => {
+            const original = new Quaternion(0.1, 0.2, 0.3, 0.9)
+            const snapshot = exportFrom(original)
+
+            const restored = new Quaternion()
+            importTo(restored, snapshot)
+
+            expect(restored.x).toBe(0.1)
+            expect(restored.y).toBe(0.2)
+            expect(restored.z).toBe(0.3)
+            expect(restored.w).toBe(0.9)
+            expect(restored).toBeInstanceOf(Quaternion)
+            expect(restored.isQuaternion).toBe(true)
+        })
+
     })
 
 })

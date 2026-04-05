@@ -1,5 +1,6 @@
 import Matrix4 from './matrix4.js'
 import Vec3 from './vec3.js'
+import {exportFrom, importTo, createFor} from '../core/utils.js'
 
 
 function expectClose (actual, expected, epsilon = 1e-6) {
@@ -37,6 +38,43 @@ describe('Matrix4', () => {
             for (let i = 0; i < 16; i++) {
                 expect(m.elements[i]).toBe(values[i])
             }
+        })
+
+
+        test('with plain array', () => {
+            const values = [
+                1, 2, 3, 4, 5, 6, 7, 8,
+                9, 10, 11, 12, 13, 14, 15, 16
+            ]
+            const m = new Matrix4(values)
+            for (let i = 0; i < 16; i++) {
+                expect(m.elements[i]).toBe(values[i])
+            }
+        })
+
+
+        test('with snapshot object {elements: [...]}', () => {
+            const snapshot = {
+                elements: [
+                    1, 2, 3, 4, 5, 6, 7, 8,
+                    9, 10, 11, 12, 13, 14, 15, 16
+                ]
+            }
+            const m = new Matrix4(snapshot)
+            for (let i = 0; i < 16; i++) {
+                expect(m.elements[i]).toBe(snapshot.elements[i])
+            }
+            expect(m.elements).toBeInstanceOf(Float32Array)
+        })
+
+
+        test('ignores malformed inputs and falls back to identity', () => {
+            const m1 = new Matrix4({})
+            expect(m1.elements[0]).toBe(1)
+            expect(m1.elements[5]).toBe(1)
+
+            const m2 = new Matrix4({elements: 'not an array'})
+            expect(m2.elements[0]).toBe(1)
         })
 
     })
@@ -502,6 +540,118 @@ describe('Matrix4', () => {
     test('isMatrix4', () => {
         const m = new Matrix4()
         expect(m.isMatrix4).toBe(true)
+    })
+
+
+    describe('export and import', () => {
+
+        test('export returns an object wrapping the elements as a plain array', () => {
+            const m = new Matrix4()
+            m.identity()
+            const snapshot = m.export()
+
+            expect(snapshot).toHaveProperty('elements')
+            expect(Array.isArray(snapshot.elements)).toBe(true)
+            expect(snapshot.elements).toHaveLength(16)
+            expect(snapshot.elements).toEqual([
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1
+            ])
+        })
+
+
+        test('export output is JSON-serializable', () => {
+            const m = new Matrix4()
+            m.makeTranslation(2, 3, 4)
+            const snapshot = m.export()
+
+            expect(() => JSON.stringify(snapshot)).not.toThrow()
+            const roundtripped = JSON.parse(JSON.stringify(snapshot))
+            expect(roundtripped.elements).toEqual(snapshot.elements)
+        })
+
+
+        test('import mutates the existing instance in place', () => {
+            const m = new Matrix4()
+            const originalElementsRef = m.elements
+
+            m.import({
+                elements: [
+                    2, 0, 0, 0,
+                    0, 2, 0, 0,
+                    0, 0, 2, 0,
+                    5, 6, 7, 1
+                ]
+            })
+
+            expect(m.elements).toBe(originalElementsRef)
+            expect(m.elements[0]).toBe(2)
+            expect(m.elements[5]).toBe(2)
+            expect(m.elements[10]).toBe(2)
+            expect(m.elements[12]).toBe(5)
+            expect(m.elements[13]).toBe(6)
+            expect(m.elements[14]).toBe(7)
+        })
+
+
+        test('import is a no-op for malformed data', () => {
+            const m = new Matrix4()
+            m.makeTranslation(1, 2, 3)
+            const before = m.toArray()
+
+            m.import(null)
+            m.import(undefined)
+            m.import({})
+            m.import({elements: 'not an array'})
+
+            expect(m.toArray()).toEqual(before)
+        })
+
+
+        test('roundtrip export → import preserves matrix values and instance type', () => {
+            const original = new Matrix4()
+            original.makeRotationY(Math.PI / 4)
+            const snapshot = original.export()
+
+            const restored = new Matrix4()
+            restored.import(snapshot)
+
+            expect(restored.toArray()).toEqual(original.toArray())
+            expect(restored).toBeInstanceOf(Matrix4)
+            expect(restored.elements).toBeInstanceOf(Float32Array)
+        })
+
+
+        test('works via exportFrom and importTo utilities', () => {
+            const original = new Matrix4()
+            original.makeScale(2, 3, 4)
+            const snapshot = exportFrom(original)
+
+            expect(snapshot).toEqual({elements: original.toArray()})
+
+            const restored = new Matrix4()
+            importTo(restored, snapshot)
+
+            expect(restored.toArray()).toEqual(original.toArray())
+            expect(restored.elements).toBeInstanceOf(Float32Array)
+        })
+
+
+        test('createFor(Matrix4, snapshot) produces a new instance via polymorphic constructor', () => {
+            const original = new Matrix4()
+            original.makeTranslation(5, 6, 7)
+            const snapshot = exportFrom(original)
+
+            const restored = createFor(Matrix4, snapshot)
+
+            expect(restored).toBeInstanceOf(Matrix4)
+            expect(restored).not.toBe(original)
+            expect(restored.toArray()).toEqual(original.toArray())
+            expect(restored.elements).toBeInstanceOf(Float32Array)
+        })
+
     })
 
 })

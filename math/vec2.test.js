@@ -1,4 +1,5 @@
 import Vec2 from './vec2.js'
+import {exportFrom, importTo} from '../core/utils.js'
 
 
 describe('Vec2', () => {
@@ -587,6 +588,56 @@ describe('Vec2', () => {
             const vec = new Vec2(5, 6)
             const arr = [...vec]
             expect(arr).toEqual([5, 6])
+        })
+
+    })
+
+
+    describe('export and import', () => {
+
+        test('declares x and y in $exports', () => {
+            expect(Vec2.$exports).toEqual(['x', 'y'])
+        })
+
+
+        test('exportFrom produces a plain scalar snapshot', () => {
+            const vec = new Vec2(3, 5)
+            expect(exportFrom(vec)).toEqual({x: 3, y: 5})
+        })
+
+
+        test('importTo mutates the existing instance in place', () => {
+            const vec = new Vec2(1, 2)
+            const result = importTo(vec, {x: 7, y: 9})
+
+            expect(result).toBe(vec)
+            expect(vec.x).toBe(7)
+            expect(vec.y).toBe(9)
+        })
+
+
+        test('importTo ignores extra fields not in $exports', () => {
+            const vec = new Vec2(1, 2)
+            importTo(vec, {x: 7, y: 9, z: 100})
+
+            expect(vec.x).toBe(7)
+            expect(vec.y).toBe(9)
+            expect(vec.z).toBeUndefined()
+        })
+
+
+        test('roundtrip export → import preserves values and instance methods', () => {
+            const original = new Vec2(3, 4)
+            const snapshot = exportFrom(original)
+
+            const restored = new Vec2()
+            importTo(restored, snapshot)
+
+            expect(restored.x).toBe(3)
+            expect(restored.y).toBe(4)
+            expect(restored).toBeInstanceOf(Vec2)
+            expect(restored.length()).toBe(5)
+            expect(restored.distanceTo(new Vec2(0, 0))).toBe(5)
         })
 
     })

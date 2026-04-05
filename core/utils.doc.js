@@ -16,7 +16,7 @@ import {
     getNestedValue,
     setNestedValue,
     deepMerge,
-    exportValue,
+    exportFrom,
     formatNumber,
     formatBytes,
     delegateProperties
@@ -187,13 +187,13 @@ export default doc('Utils', {featured: true}, () => {
 
         text('Recursively export object values, calling `.export()` on objects that have it.')
 
-        action('exportValue', () => {
+        action('exportFrom', () => {
             const data = {
                 name: 'test',
                 nested: {value: 42},
                 items: [1, 2, 3]
             }
-            logger.log('exported:', JSON.stringify(exportValue(data)))
+            logger.log('exported:', JSON.stringify(exportFrom(data)))
         })
 
         code('With export method', () => {
@@ -204,7 +204,7 @@ export default doc('Utils', {featured: true}, () => {
                 }
             }
 
-            // exportValue(obj) returns {result: 'internal'}
+            // exportFrom(obj) returns {result: 'internal'}
         })
 
     })
