@@ -1,4 +1,4 @@
-import {describe, expect, test, beforeEach} from 'vitest'
+import {describe, expect, test} from 'vitest'
 import {
     toCamelCase,
     toPascalCase,
@@ -142,10 +142,8 @@ describe('String Utils', () => {
 
 
     test('uniqueId', () => {
-        beforeEach(() => {
-            resetUniqueId('testCollection')
-            resetUniqueId('anotherCollection')
-        })
+        resetUniqueId('testCollection')
+        resetUniqueId('anotherCollection')
 
         const id1 = uniqueId('testCollection', 'item')
         expect(id1).toBe('item')
