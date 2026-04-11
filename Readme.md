@@ -1,10 +1,12 @@
 # Perky Framework
 
-A personal game framework that I'm sharing with you.
+A personal game framework. Out in the open.
 
-I built Perky for myself — a modular JavaScript framework for browser-based games and interactive applications, shaped by years of failed attempts and accumulated opinions. If you're looking for a battle-tested engine, this probably isn't it. But if you're curious about a different take on game tooling, stick around.
+I built Perky for myself — a modular JavaScript framework for browser-based games and interactive applications, shaped by years of failed attempts and accumulated opinions. It is not a product, it is not chasing users, and the roadmap is whatever I happen to need next.
 
-> **Warning**: Perky is under active development. The API is unstable and breaking changes happen frequently. Not recommended for production use yet.
+But everything is heavily documented and fully open source. So if you're brave — if you like reading source code and bending tools to your will — you can absolutely use it. Just don't expect stability, hand-holding, or features added on your behalf.
+
+> **Warning**: Perky is under active development. The API is unstable and breaking changes happen frequently. Not recommended for production use.
 
 ## The Perky Way
 

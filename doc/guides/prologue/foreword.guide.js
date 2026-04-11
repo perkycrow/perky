@@ -4,13 +4,17 @@ import {doc, section, text, disclaimer} from '../../runtime.js'
 export default doc('Foreword', () => {
 
     text(`
-        Let's get this out of the way: I made Perky for myself.
+        Let's get this out of the way: Perky is for me. Just me. I built it so I
+        could make my games, the way I want to make them. It is not a product. It
+        is not trying to win you over. There is no roadmap shaped by what other
+        people might need.
 
         This isn't my first attempt either. I've accumulated more git repos of
         half-finished frameworks and custom libraries than I'd care to count. Each
         one taught me something about what I actually needed - and what kept getting
         in the way. I think this time I've got it right, or at least close enough
-        to be worth sharing.
+        that I can finally stop rewriting the foundations and start building games
+        on top of them.
 
         And I'll be honest: building tools is a guilty pleasure of mine. I don't just
         do this to have a framework that lets me make my games. I do it because I
@@ -36,24 +40,24 @@ export default doc('Foreword', () => {
         `)
     })
 
-    section('But not just for me', () => {
+    section('But - and it is a big BUT', () => {
         text(`
-            That said, I do care about making this useful beyond my own projects. The
-            modularity, the documentation you're reading right now, the built-in dev
-            tools - none of that is strictly necessary for a personal framework. I put
-            the work in because I genuinely want this to be interesting and usable for
-            other developers too.
+            Even though Perky is built for me alone, everything is heavily documented
+            and fully open source. I write the docs you're reading right now because
+            I need them myself, and because I think a tool you cannot read is a tool
+            you cannot trust. The code is out in the open for the same reason.
 
-            Perky ships with inspectors to peek at your game state, a logger to track
-            what's happening, a command palette for quick actions. And they're not welded
-            on. The same system that powers the built-in inspector can power yours. The
-            framework eats its own cooking - everything you see was built with the same
-            APIs you have access to.
+            So if you're brave - and I do mean brave - you can absolutely use Perky.
+            Nothing is hidden. The inspectors, the logger, the command palette, the
+            module tree: they're all there for you to poke at. The framework eats its
+            own cooking, so everything you see was built with the same APIs you have
+            access to.
 
-            I won't pretend Perky is the right choice for everyone. If you want to make
-            a "normal" game, an established engine will probably get you there faster.
-            But if you're curious about what's under the hood, or if your project doesn't
-            quite fit the usual mold, I promise I'll do my best to make this worth your time.
+            But I won't sand down the rough edges for you. I won't add features I don't
+            need. I won't keep the API stable just because someone out there depends on
+            it. If that sounds fine - if you like reading source code, if you enjoy
+            bending a tool to your will rather than being guided by it - welcome aboard.
+            Otherwise, an established engine will almost certainly serve you better.
         `)
     })
 
