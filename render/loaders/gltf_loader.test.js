@@ -1,5 +1,6 @@
-import {describe, test, expect} from 'vitest'
-import {parseGlb, buildGltfScene} from './gltf_loader.js'
+import {describe, test, expect, vi} from 'vitest'
+import {parseGlb, buildGltfScene, loadGlb} from './gltf_loader.js'
+import * as loaders from '../../application/loaders.js'
 import {createMockGL as createBaseMockGL} from '../test_helpers.js'
 import Material3D from '../material_3d.js'
 import MeshInstance from '../mesh_instance.js'
@@ -146,6 +147,59 @@ function buildTriangleGltf (offsets, lengths) {
         ]
     }
 }
+
+
+describe('loadGlb', () => {
+
+    test('loadGlb loads and parses GLB from URL string', async () => {
+        const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
+        const gltfJson = buildTriangleGltf(offsets, lengths)
+        const glb = buildGlb(gltfJson, binary)
+
+        vi.spyOn(loaders, 'loadArrayBuffer').mockResolvedValue(glb)
+
+        const result = await loadGlb('http://example.com/models/test.glb')
+
+        expect(loaders.loadArrayBuffer).toHaveBeenCalledWith({url: 'http://example.com/models/test.glb'})
+        expect(result.gltf.asset.version).toBe('2.0')
+        expect(result.binary).toBeInstanceOf(Uint8Array)
+        expect(result.baseUrl).toBe('http://example.com/models/')
+
+        vi.restoreAllMocks()
+    })
+
+
+    test('loadGlb accepts params object with url', async () => {
+        const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
+        const gltfJson = buildTriangleGltf(offsets, lengths)
+        const glb = buildGlb(gltfJson, binary)
+
+        vi.spyOn(loaders, 'loadArrayBuffer').mockResolvedValue(glb)
+
+        const result = await loadGlb({url: 'http://example.com/assets/model.glb'})
+
+        expect(loaders.loadArrayBuffer).toHaveBeenCalledWith({url: 'http://example.com/assets/model.glb'})
+        expect(result.baseUrl).toBe('http://example.com/assets/')
+
+        vi.restoreAllMocks()
+    })
+
+
+    test('loadGlb returns empty baseUrl for filename without path', async () => {
+        const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
+        const gltfJson = buildTriangleGltf(offsets, lengths)
+        const glb = buildGlb(gltfJson, binary)
+
+        vi.spyOn(loaders, 'loadArrayBuffer').mockResolvedValue(glb)
+
+        const result = await loadGlb('model.glb')
+
+        expect(result.baseUrl).toBe('')
+
+        vi.restoreAllMocks()
+    })
+
+})
 
 
 describe('parseGlb', () => {
