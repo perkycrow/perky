@@ -1,4 +1,5 @@
 import {doc, section, text, code} from '../doc/runtime.js'
+import ShadowMap from './shadow_map.js'
 
 
 export default doc('ShadowMap', {advanced: true}, () => {
@@ -17,8 +18,11 @@ export default doc('ShadowMap', {advanced: true}, () => {
         `)
 
         code('Create shadow map', () => {
+            const canvas = document.createElement('canvas')
+            const gl = canvas.getContext('webgl2')
+
             const shadowMap = new ShadowMap({
-                gl: gl,
+                gl,
                 resolution: 2048
             })
         })
@@ -33,6 +37,10 @@ export default doc('ShadowMap', {advanced: true}, () => {
         `)
 
         code('Available properties', () => {
+            const canvas = document.createElement('canvas')
+            const gl = canvas.getContext('webgl2')
+            const shadowMap = new ShadowMap({gl})
+
             shadowMap.texture
             shadowMap.resolution
             shadowMap.lightMatrix
@@ -52,6 +60,11 @@ export default doc('ShadowMap', {advanced: true}, () => {
         `)
 
         code('Update light matrices', () => {
+            const canvas = document.createElement('canvas')
+            const gl = canvas.getContext('webgl2')
+            const shadowMap = new ShadowMap({gl})
+            const camera3d = {position: {x: 0, y: 5, z: 10}}
+
             shadowMap.update(
                 [0.5, -1, 0.3],
                 camera3d,
@@ -60,10 +73,16 @@ export default doc('ShadowMap', {advanced: true}, () => {
         })
 
         code('Parameters', () => {
-            // shadowMap.update(lightDirection, camera3d, sceneRadius)
-            // lightDirection: [x, y, z] normalized direction vector
-            // camera3d: camera with .position property
-            // sceneRadius: distance from camera (default 20)
+            const canvas = document.createElement('canvas')
+            const gl = canvas.getContext('webgl2')
+            const shadowMap = new ShadowMap({gl})
+            const camera3d = {position: {x: 0, y: 0, z: 0}}
+
+            shadowMap.update(
+                [0, -1, 0],
+                camera3d,
+                20
+            )
         })
 
     })
@@ -78,11 +97,20 @@ export default doc('ShadowMap', {advanced: true}, () => {
         `)
 
         code('Shadow pass', () => {
+            const canvas = document.createElement('canvas')
+            const gl = canvas.getContext('webgl2')
+            const shadowMap = new ShadowMap({gl})
+
             shadowMap.begin()
             shadowMap.end()
         })
 
         code('Typical usage', () => {
+            const canvas = document.createElement('canvas')
+            const gl = canvas.getContext('webgl2')
+            const shadowMap = new ShadowMap({gl})
+            const camera3d = {position: {x: 0, y: 5, z: 10}}
+
             shadowMap.update([0, -1, 0], camera3d, 50)
 
             shadowMap.begin()
@@ -98,6 +126,14 @@ export default doc('ShadowMap', {advanced: true}, () => {
             Cleans up the framebuffer and depth texture. Call when the shadow
             map is no longer needed.
         `)
+
+        code('Cleanup', () => {
+            const canvas = document.createElement('canvas')
+            const gl = canvas.getContext('webgl2')
+            const shadowMap = new ShadowMap({gl})
+
+            shadowMap.dispose()
+        })
 
     })
 
