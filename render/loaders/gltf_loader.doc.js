@@ -16,11 +16,11 @@ export default doc('GLTFLoader', () => {
             binary buffer, and base URL for resolving external resources.
         `)
 
-        code('Basic usage', () => {
+        code('Basic usage', async () => {
             const {gltf, binary, baseUrl} = await loadGlb('models/character.glb')
         })
 
-        code('With params object', () => {
+        code('With params object', async () => {
             const {gltf, binary, baseUrl} = await loadGlb({url: 'models/character.glb'})
         })
 
@@ -48,7 +48,7 @@ export default doc('GLTFLoader', () => {
             Returns the scene root, meshes, materials, and loaded images.
         `)
 
-        code('Build scene from parsed data', () => {
+        code('Build scene from parsed data', async () => {
             const {gltf, binary, baseUrl} = await loadGlb('models/character.glb')
 
             const {scene, meshes, materials, images} = await buildGltfScene({
@@ -59,7 +59,7 @@ export default doc('GLTFLoader', () => {
             })
         })
 
-        code('Add to renderer', () => {
+        code('Add to renderer', async () => {
             const {scene} = await buildGltfScene({gltf, binary, gl})
 
             scene.children.forEach(child => {
@@ -78,7 +78,7 @@ export default doc('GLTFLoader', () => {
             automatically.
         `)
 
-        code('Access node transforms', () => {
+        code('Access node transforms', async () => {
             const {scene} = await buildGltfScene({gltf, binary, gl})
 
             const character = scene.children[0]
@@ -97,7 +97,7 @@ export default doc('GLTFLoader', () => {
             color, roughness, emissive, normal maps, and alpha blending.
         `)
 
-        code('Material properties', () => {
+        code('Material properties', async () => {
             const {materials} = await buildGltfScene({gltf, binary, gl})
 
             const material = materials[0]
@@ -113,8 +113,11 @@ export default doc('GLTFLoader', () => {
 
     section('API', () => {
 
-        code('loadGlb', () => {
+        code('loadGlb with URL string', async () => {
             const {gltf, binary, baseUrl} = await loadGlb(url)
+        })
+
+        code('loadGlb with options object', async () => {
             const {gltf, binary, baseUrl} = await loadGlb({url})
         })
 
@@ -122,7 +125,7 @@ export default doc('GLTFLoader', () => {
             const {gltf, binary} = parseGlb(arrayBuffer)
         })
 
-        code('buildGltfScene', () => {
+        code('buildGltfScene', async () => {
             const {scene, meshes, materials, images} = await buildGltfScene({
                 gltf: Object,
                 binary: Uint8Array,
