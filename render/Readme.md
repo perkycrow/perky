@@ -320,6 +320,10 @@ Visual effects for sprites (outline, splatter). Stack multiple effects per sprit
 
 Custom render transforms (e.g., shadow projection). Applied to RenderGroups.
 
+### [loaders/](loaders/)
+
+3D model loaders. Contains GLTF/GLB parser that creates Object3D hierarchies with MeshInstance, Material3D, and Geometry from standard 3D file formats.
+
 ### [csg/](csg/)
 
 Constructive Solid Geometry. Boolean operations (union, subtract, intersect) on 3D meshes. Brush-based editing with history. Useful for level editors or procedural geometry.
