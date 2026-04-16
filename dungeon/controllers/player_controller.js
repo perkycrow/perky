@@ -13,7 +13,6 @@ export default class PlayerController extends GameController {
 
     static resources = ['world']
 
-
     jump () {
         this.world.player?.jump()
     }

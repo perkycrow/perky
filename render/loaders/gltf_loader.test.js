@@ -1,4 +1,4 @@
-import {describe, it, expect} from 'vitest'
+import {describe, test, expect} from 'vitest'
 import {parseGlb, buildGltfScene} from './gltf_loader.js'
 import {createMockGL as createBaseMockGL} from '../test_helpers.js'
 import Material3D from '../material_3d.js'
@@ -83,10 +83,14 @@ function buildTrianglePrimitiveBinary () {
     const total = posBytes.byteLength + normBytes.byteLength + uvBytes.byteLength + idxBytes.byteLength + padBytes.byteLength
     const out = new Uint8Array(total)
     let offset = 0
-    out.set(posBytes, offset); offset += posBytes.byteLength
-    out.set(normBytes, offset); offset += normBytes.byteLength
-    out.set(uvBytes, offset); offset += uvBytes.byteLength
-    out.set(idxBytes, offset); offset += idxBytes.byteLength
+    out.set(posBytes, offset)
+    offset += posBytes.byteLength
+    out.set(normBytes, offset)
+    offset += normBytes.byteLength
+    out.set(uvBytes, offset)
+    offset += uvBytes.byteLength
+    out.set(idxBytes, offset)
+    offset += idxBytes.byteLength
     out.set(padBytes, offset)
 
     return {
@@ -146,7 +150,7 @@ function buildTriangleGltf (offsets, lengths) {
 
 describe('parseGlb', () => {
 
-    it('parses a valid GLB with JSON and BIN chunks', () => {
+    test('parseGlb extracts JSON and BIN chunks from valid GLB', () => {
         const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
         const gltfJson = buildTriangleGltf(offsets, lengths)
         const glb = buildGlb(gltfJson, binary)
@@ -160,7 +164,7 @@ describe('parseGlb', () => {
     })
 
 
-    it('throws on invalid magic', () => {
+    test('parseGlb throws on invalid magic', () => {
         const buffer = new ArrayBuffer(12)
         const dv = new DataView(buffer)
         dv.setUint32(0, 0xDEADBEEF, true)
@@ -169,7 +173,7 @@ describe('parseGlb', () => {
     })
 
 
-    it('throws on unsupported version', () => {
+    test('parseGlb throws on unsupported version', () => {
         const buffer = new ArrayBuffer(12)
         const dv = new DataView(buffer)
         dv.setUint32(0, 0x46546C67, true)
@@ -184,7 +188,7 @@ describe('parseGlb', () => {
 
 describe('buildGltfScene', () => {
 
-    it('builds a scene with one transformed MeshInstance', async () => {
+    test('buildGltfScene creates scene with transformed MeshInstance', async () => {
         const gl = createMockGL()
         const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
         const gltf = buildTriangleGltf(offsets, lengths)
@@ -208,7 +212,7 @@ describe('buildGltfScene', () => {
     })
 
 
-    it('flips UV V-axis to match Perky convention', async () => {
+    test('buildGltfScene flips UV V-axis', async () => {
         const gl = createMockGL()
         const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
         const gltf = buildTriangleGltf(offsets, lengths)
@@ -222,7 +226,7 @@ describe('buildGltfScene', () => {
     })
 
 
-    it('decomposes a node matrix into position/rotation/scale', async () => {
+    test('buildGltfScene decomposes node matrix into position/rotation/scale', async () => {
         const gl = createMockGL()
         const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
         const gltf = buildTriangleGltf(offsets, lengths)
@@ -248,7 +252,7 @@ describe('buildGltfScene', () => {
     })
 
 
-    it('shares one mesh across multiple nodes (instancing)', async () => {
+    test('buildGltfScene shares mesh across multiple nodes', async () => {
         const gl = createMockGL()
         const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
         const gltf = buildTriangleGltf(offsets, lengths)
@@ -270,7 +274,7 @@ describe('buildGltfScene', () => {
     })
 
 
-    it('handles primitives with no material by using a default', async () => {
+    test('buildGltfScene uses default material when primitive has none', async () => {
         const gl = createMockGL()
         const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
         const gltf = buildTriangleGltf(offsets, lengths)

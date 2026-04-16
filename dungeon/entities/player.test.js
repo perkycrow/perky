@@ -1,10 +1,10 @@
-import {describe, it, expect} from 'vitest'
+import {describe, test, expect} from 'vitest'
 import Player from './player.js'
 
 
 describe('Player', () => {
 
-    it('starts at the given position with zero velocity', () => {
+    test('constructor initializes position and zero velocity', () => {
         const player = new Player({x: 1, y: 2, z: 3})
 
         expect(player.position.x).toBe(1)
@@ -17,7 +17,7 @@ describe('Player', () => {
     })
 
 
-    it('moves forward in the yaw=0 direction (negative Z)', () => {
+    test('update moves forward along negative Z at yaw=0', () => {
         const player = new Player()
         player.setMoveInput(1, 0)
         player.update(1)
@@ -27,7 +27,7 @@ describe('Player', () => {
     })
 
 
-    it('strafes right in the yaw=0 direction (positive X)', () => {
+    test('update strafes right along positive X at yaw=0', () => {
         const player = new Player()
         player.setMoveInput(0, 1)
         player.update(1)
@@ -37,7 +37,7 @@ describe('Player', () => {
     })
 
 
-    it('respects yaw when moving forward (yaw=PI/2 moves along +X)', () => {
+    test('update respects yaw when moving forward', () => {
         const player = new Player()
         player.yaw = Math.PI / 2
         player.setMoveInput(1, 0)
@@ -48,7 +48,7 @@ describe('Player', () => {
     })
 
 
-    it('jumps only when on ground, velocity.y becomes positive', () => {
+    test('jump sets positive velocity.y only when on ground', () => {
         const player = new Player()
 
         player.jump()
@@ -61,7 +61,7 @@ describe('Player', () => {
     })
 
 
-    it('falls under gravity and lands on ground', () => {
+    test('update applies gravity and lands on ground', () => {
         const player = new Player({y: 5})
         player.onGround = false
 

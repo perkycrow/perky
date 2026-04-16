@@ -88,13 +88,14 @@ export async function buildGltfScene ({gltf, binary, baseUrl = '', gl}) {
     const defaultMaterial = new Material3D({color: [1, 1, 1], roughness: 0.7})
     const meshes = buildMeshes(gltf, binary, gl)
 
+    const ctx = {gltf, meshes, materials, defaultMaterial}
     const sceneIndex = gltf.scene ?? 0
     const sceneSpec = gltf.scenes?.[sceneIndex]
     const root = new Object3D()
 
     if (sceneSpec?.nodes) {
         for (const nodeIndex of sceneSpec.nodes) {
-            root.addChild(buildNode(gltf, nodeIndex, meshes, materials, defaultMaterial))
+            root.addChild(buildNode(ctx, nodeIndex))
         }
     }
 
@@ -104,9 +105,9 @@ export async function buildGltfScene ({gltf, binary, baseUrl = '', gl}) {
 }
 
 
-function buildNode (gltf, nodeIndex, meshes, materials, defaultMaterial) {
-    const node = gltf.nodes[nodeIndex]
-    const obj = createNodeObject(node, meshes, materials, defaultMaterial)
+function buildNode (ctx, nodeIndex) {
+    const node = ctx.gltf.nodes[nodeIndex]
+    const obj = createNodeObject(ctx, node)
 
     applyNodeTransform(obj, node)
 
@@ -116,7 +117,7 @@ function buildNode (gltf, nodeIndex, meshes, materials, defaultMaterial) {
 
     if (node.children) {
         for (const childIndex of node.children) {
-            obj.addChild(buildNode(gltf, childIndex, meshes, materials, defaultMaterial))
+            obj.addChild(buildNode(ctx, childIndex))
         }
     }
 
@@ -124,25 +125,33 @@ function buildNode (gltf, nodeIndex, meshes, materials, defaultMaterial) {
 }
 
 
-function createNodeObject (node, meshes, materials, defaultMaterial) {
+function createNodeObject (ctx, node) {
     if (node.mesh === undefined) {
         return new Object3D()
     }
 
-    const meshData = meshes[node.mesh]
+    const meshData = ctx.meshes[node.mesh]
 
     if (meshData.primitives.length === 1) {
         const prim = meshData.primitives[0]
-        const material = prim.materialIndex !== undefined ? materials[prim.materialIndex] : defaultMaterial
+        const material = resolvePrimitiveMaterial(ctx, prim)
         return new MeshInstance({mesh: prim.mesh, material})
     }
 
     const group = new Object3D()
     for (const prim of meshData.primitives) {
-        const material = prim.materialIndex !== undefined ? materials[prim.materialIndex] : defaultMaterial
+        const material = resolvePrimitiveMaterial(ctx, prim)
         group.addChild(new MeshInstance({mesh: prim.mesh, material}))
     }
     return group
+}
+
+
+function resolvePrimitiveMaterial (ctx, prim) {
+    if (prim.materialIndex === undefined) {
+        return ctx.defaultMaterial
+    }
+    return ctx.materials[prim.materialIndex]
 }
 
 
@@ -190,32 +199,37 @@ function buildGeometry (gltf, binary, prim) {
     const positions = readAccessorData(gltf, binary, prim.attributes.POSITION)
     const vertexCount = positions.length / 3
 
-    const normals = prim.attributes.NORMAL !== undefined
-        ? readAccessorData(gltf, binary, prim.attributes.NORMAL)
-        : new Float32Array(positions.length)
+    const normals = prim.attributes.NORMAL === undefined
+        ? new Float32Array(positions.length)
+        : readAccessorData(gltf, binary, prim.attributes.NORMAL)
 
-    const uvs = prim.attributes.TEXCOORD_0 !== undefined
-        ? flipV(readAccessorData(gltf, binary, prim.attributes.TEXCOORD_0))
-        : new Float32Array(vertexCount * 2)
+    const uvs = prim.attributes.TEXCOORD_0 === undefined
+        ? new Float32Array(vertexCount * 2)
+        : flipV(readAccessorData(gltf, binary, prim.attributes.TEXCOORD_0))
 
-    const colors = prim.attributes.COLOR_0 !== undefined
-        ? readAccessorData(gltf, binary, prim.attributes.COLOR_0)
-        : null
+    const colors = prim.attributes.COLOR_0 === undefined
+        ? null
+        : readAccessorData(gltf, binary, prim.attributes.COLOR_0)
 
-    let indices
-    if (prim.indices !== undefined) {
-        const raw = readAccessorData(gltf, binary, prim.indices)
-        indices = raw instanceof Uint16Array ? raw : new Uint16Array(raw)
-    } else {
-        indices = new Uint16Array(vertexCount)
-        for (let i = 0; i < vertexCount; i++) {
-            indices[i] = i
-        }
-    }
+    const indices = buildIndices(gltf, binary, prim, vertexCount)
 
     const geometry = new Geometry({positions, normals, uvs, indices, colors})
     geometry.computeTangents()
     return geometry
+}
+
+
+function buildIndices (gltf, binary, prim, vertexCount) {
+    if (prim.indices === undefined) {
+        const indices = new Uint16Array(vertexCount)
+        for (let i = 0; i < vertexCount; i++) {
+            indices[i] = i
+        }
+        return indices
+    }
+
+    const raw = readAccessorData(gltf, binary, prim.indices)
+    return raw instanceof Uint16Array ? raw : new Uint16Array(raw)
 }
 
 
@@ -307,44 +321,75 @@ function buildMaterial (gltf, mat, images) {
     const opts = {}
     const pbr = mat.pbrMetallicRoughness || {}
 
-    if (pbr.baseColorFactor) {
-        const [r, g, b, a] = pbr.baseColorFactor
-        opts.color = [r, g, b]
-        if (a !== undefined && a < 1) {
-            opts.opacity = a
-        }
-    }
+    applyBaseColor(opts, pbr)
+    applyBaseColorTexture(opts, gltf, images, pbr)
+    applyRoughness(opts, pbr)
+    applyEmissive(opts, mat)
+    applyNormalTexture(opts, gltf, images, mat)
+    applyAlphaMode(opts, mat)
 
-    if (pbr.baseColorTexture !== undefined) {
-        const image = resolveTextureImage(gltf, images, pbr.baseColorTexture.index)
-        if (image) {
-            opts.texture = image
-        }
-    }
+    return new Material3D(opts)
+}
 
-    if (pbr.roughnessFactor !== undefined) {
-        opts.roughness = pbr.roughnessFactor
-    }
 
-    if (mat.emissiveFactor) {
-        opts.emissive = mat.emissiveFactor
+function applyBaseColor (opts, pbr) {
+    if (!pbr.baseColorFactor) {
+        return
     }
-
-    if (mat.normalTexture !== undefined) {
-        const image = resolveTextureImage(gltf, images, mat.normalTexture.index)
-        if (image) {
-            opts.normalMap = image
-            if (mat.normalTexture.scale !== undefined) {
-                opts.normalStrength = mat.normalTexture.scale
-            }
-        }
+    const [r, g, b, a] = pbr.baseColorFactor
+    opts.color = [r, g, b]
+    if (a !== undefined && a < 1) {
+        opts.opacity = a
     }
+}
 
+
+function applyBaseColorTexture (opts, gltf, images, pbr) {
+    if (pbr.baseColorTexture === undefined) {
+        return
+    }
+    const image = resolveTextureImage(gltf, images, pbr.baseColorTexture.index)
+    if (image) {
+        opts.texture = image
+    }
+}
+
+
+function applyRoughness (opts, pbr) {
+    if (pbr.roughnessFactor === undefined) {
+        return
+    }
+    opts.roughness = pbr.roughnessFactor
+}
+
+
+function applyEmissive (opts, mat) {
+    if (!mat.emissiveFactor) {
+        return
+    }
+    opts.emissive = mat.emissiveFactor
+}
+
+
+function applyNormalTexture (opts, gltf, images, mat) {
+    if (mat.normalTexture === undefined) {
+        return
+    }
+    const image = resolveTextureImage(gltf, images, mat.normalTexture.index)
+    if (!image) {
+        return
+    }
+    opts.normalMap = image
+    if (mat.normalTexture.scale !== undefined) {
+        opts.normalStrength = mat.normalTexture.scale
+    }
+}
+
+
+function applyAlphaMode (opts, mat) {
     if (mat.alphaMode === 'BLEND') {
         opts.opacity = opts.opacity ?? 1
     }
-
-    return new Material3D(opts)
 }
 
 
