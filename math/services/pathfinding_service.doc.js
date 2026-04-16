@@ -1,7 +1,24 @@
 import {doc, section, text, code, action, logger} from '../../doc/runtime.js'
 import PathfindingService from './pathfinding_service.js'
-import ServiceRequest from '../../service/service_request.js'
-import ServiceResponse from '../../service/service_response.js'
+
+
+function createRequest (params) {
+    return {params}
+}
+
+
+function createResponse () {
+    const res = {
+        data: null,
+        send: (data) => {
+            res.data = data
+        },
+        error: (msg) => {
+            res.data = {error: msg}
+        }
+    }
+    return res
+}
 
 
 export default doc('PathfindingService', {advanced: true}, () => {
@@ -29,16 +46,16 @@ export default doc('PathfindingService', {advanced: true}, () => {
 
         action('setGrid', () => {
             const service = new PathfindingService()
-            const req = new ServiceRequest('setGrid', {
+            const req = createRequest({
                 gridData: {
                     width: 5,
                     height: 5,
                     cells: {'2,0': 'wall', '2,1': 'wall', '2,2': 'wall'}
                 }
             })
-            const res = new ServiceResponse()
+            const res = createResponse()
             service.setGrid(req, res)
-            logger.log('result:', JSON.stringify(res.result))
+            logger.log('result:', JSON.stringify(res.data))
         })
 
     })
@@ -51,48 +68,48 @@ export default doc('PathfindingService', {advanced: true}, () => {
         action('Basic pathfinding', () => {
             const service = new PathfindingService()
 
-            const setupReq = new ServiceRequest('setGrid', {
+            const setupReq = createRequest({
                 gridData: {width: 5, height: 5, cells: {}}
             })
-            const setupRes = new ServiceResponse()
+            const setupRes = createResponse()
             service.setGrid(setupReq, setupRes)
 
-            const req = new ServiceRequest('findPath', {
+            const req = createRequest({
                 start: {x: 0, y: 0},
                 goal: {x: 4, y: 4}
             })
-            const res = new ServiceResponse()
+            const res = createResponse()
             service.findPath(req, res)
 
-            logger.log('found:', res.result.found)
-            logger.log('length:', res.result.length)
-            logger.log('cached:', res.result.cached)
+            logger.log('found:', res.data.found)
+            logger.log('length:', res.data.length)
+            logger.log('cached:', res.data.cached)
         })
 
         action('With obstacles', () => {
             const service = new PathfindingService()
 
-            const setupReq = new ServiceRequest('setGrid', {
+            const setupReq = createRequest({
                 gridData: {
                     width: 5,
                     height: 5,
                     cells: {'2,0': 'wall', '2,1': 'wall', '2,2': 'wall'}
                 }
             })
-            const setupRes = new ServiceResponse()
+            const setupRes = createResponse()
             service.setGrid(setupReq, setupRes)
 
-            const req = new ServiceRequest('findPath', {
+            const req = createRequest({
                 start: {x: 0, y: 0},
                 goal: {x: 4, y: 0}
             })
-            const res = new ServiceResponse()
+            const res = createResponse()
             service.findPath(req, res)
 
-            logger.log('found:', res.result.found)
-            logger.log('path length:', res.result.length)
-            if (res.result.path) {
-                for (const step of res.result.path) {
+            logger.log('found:', res.data.found)
+            logger.log('path length:', res.data.length)
+            if (res.data.path) {
+                for (const step of res.data.path) {
                     logger.log(`(${step.x}, ${step.y})`)
                 }
             }
@@ -112,25 +129,25 @@ export default doc('PathfindingService', {advanced: true}, () => {
         action('Cached result', () => {
             const service = new PathfindingService()
 
-            const setupReq = new ServiceRequest('setGrid', {
+            const setupReq = createRequest({
                 gridData: {width: 5, height: 5, cells: {}}
             })
-            const setupRes = new ServiceResponse()
+            const setupRes = createResponse()
             service.setGrid(setupReq, setupRes)
 
-            const req1 = new ServiceRequest('findPath', {
+            const req1 = createRequest({
                 start: {x: 0, y: 0}, goal: {x: 4, y: 4}
             })
-            const res1 = new ServiceResponse()
+            const res1 = createResponse()
             service.findPath(req1, res1)
-            logger.log('first call cached:', res1.result.cached)
+            logger.log('first call cached:', res1.data.cached)
 
-            const req2 = new ServiceRequest('findPath', {
+            const req2 = createRequest({
                 start: {x: 0, y: 0}, goal: {x: 4, y: 4}
             })
-            const res2 = new ServiceResponse()
+            const res2 = createResponse()
             service.findPath(req2, res2)
-            logger.log('second call cached:', res2.result.cached)
+            logger.log('second call cached:', res2.data.cached)
         })
 
     })
@@ -143,19 +160,19 @@ export default doc('PathfindingService', {advanced: true}, () => {
         action('setCell', () => {
             const service = new PathfindingService()
 
-            const setupReq = new ServiceRequest('setGrid', {
+            const setupReq = createRequest({
                 gridData: {width: 5, height: 5, cells: {}}
             })
-            const setupRes = new ServiceResponse()
+            const setupRes = createResponse()
             service.setGrid(setupReq, setupRes)
 
-            const cellReq = new ServiceRequest('setCell', {
+            const cellReq = createRequest({
                 coords: {x: 2, y: 2},
                 value: 'wall'
             })
-            const cellRes = new ServiceResponse()
+            const cellRes = createResponse()
             service.setCell(cellReq, cellRes)
-            logger.log('setCell result:', JSON.stringify(cellRes.result))
+            logger.log('setCell result:', JSON.stringify(cellRes.data))
         })
 
     })
