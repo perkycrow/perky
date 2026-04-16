@@ -9,6 +9,7 @@ export default {
             'mist/',
             'duel/',
             'hollow/',
+            'dungeon/',
             'examples/',
             'integration/',
             'forge_sandbox/'
@@ -27,6 +28,7 @@ export default {
             'duel/',
             'hollow/',
             'examples/',
+            'dungeon/',
             'integration/',
             'forge_sandbox/'
         ],
@@ -57,6 +59,7 @@ export default {
             'duel/',
             'hollow/',
             'examples/',
+            'dungeon/',
             'editor/',
             'doc/',
             'studio/',
