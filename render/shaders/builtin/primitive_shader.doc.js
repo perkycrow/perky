@@ -42,13 +42,12 @@ export default doc('Primitive Shader', {advanced: true}, () => {
     section('Shader Definition', () => {
 
         text(`
-            \`PRIMITIVE_SHADER_DEF\` bundles the vertex source, fragment source,
-            uniform names, and attribute names. Pass it to
-            [[ShaderRegistry@render/shaders]] to compile the program.
+            \`PRIMITIVE_SHADER_DEF\` bundles vertex source, fragment source,
+            uniform names, and attribute names.
         `)
 
-        code('Using the definition', () => {
-            const program = shaderRegistry.register('primitive', PRIMITIVE_SHADER_DEF)
+        code('Uniforms', () => {
+            const uniforms = PRIMITIVE_SHADER_DEF.uniforms
         })
 
     })
