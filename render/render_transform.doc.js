@@ -53,7 +53,7 @@ export default doc('RenderTransform', () => {
         text(`
             Override these methods to create a custom transform:
 
-            - \`init(context)\` — called once when the renderer initializes. Register shaders here.
+            - \`init()\` — called once when the renderer initializes. Register shaders here.
             - \`apply(context, matrices)\` — modify projection/view matrices before rendering.
             - \`getProgram()\` — return a custom shader program, or \`null\` for the default.
             - \`applyUniforms(gl, program)\` — set shader uniforms before draw calls.
@@ -63,7 +63,7 @@ export default doc('RenderTransform', () => {
         code('Custom transform skeleton', () => {
             class MyTransform extends RenderTransform {
 
-                init (context) {
+                init () {
                     // Register shaders, acquire resources
                 }
 
