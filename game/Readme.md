@@ -176,6 +176,34 @@ entity.velocity.y   // -1
 
 ---
 
+### [hitbox.js](hitbox.js)
+
+Component that gives an entity a collision shape. Entities without a Hitbox are invisible to Space hit tests.
+
+```js
+entity.create(Hitbox, {radius: 0.5})
+entity.hitbox.radius   // 0.5
+entity.hitbox.shape    // 'circle'
+```
+
+---
+
+### [space.js](space.js)
+
+Opt-in container for spatial queries — nearest neighbor, entities in range, collision hit tests. A World has no built-in collision; create a Space and `add()` the entities you want to query.
+
+```js
+const space = new Space()
+space.add(player)
+space.add(enemy)
+
+const nearest = space.nearest(player, 10)
+const inRange = space.entitiesInRange(player, 5)
+const hit = space.checkHit(player)  // requires Hitbox on both entities
+```
+
+---
+
 ### [entity_view.js](entity_view.js)
 
 Base class for entity views. Syncs `root.x`/`root.y` with the entity's position each frame. Extend this for custom visual behavior.
