@@ -233,15 +233,6 @@ function buildIndices (gltf, binary, prim, vertexCount) {
 }
 
 
-function flipV (uvs) {
-    const flipped = new Float32Array(uvs.length)
-    for (let i = 0; i < uvs.length; i += 2) {
-        flipped[i] = uvs[i]
-        flipped[i + 1] = 1 - uvs[i + 1]
-    }
-    return flipped
-}
-
 
 function readAccessorData (gltf, binary, accessorIndex) {
     const accessor = gltf.accessors[accessorIndex]
