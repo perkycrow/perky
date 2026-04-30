@@ -12,7 +12,8 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #camera3d = null
     #shadowMap = null
     #lightDirection = [0.5, 1.0, 0.3]
-    #ambient = 0.3
+    #ambientSky = [0.3, 0.3, 0.3]
+    #ambientGround = [0.3, 0.3, 0.3]
     #fogNear = 20
     #fogFar = 80
     #fogColor = [0.0, 0.0, 0.0]
@@ -45,12 +46,37 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
 
     get ambient () {
-        return this.#ambient
+        return this.#ambientSky
     }
 
 
     set ambient (value) {
-        this.#ambient = value
+        if (typeof value === 'number') {
+            this.#ambientSky = [value, value, value]
+            this.#ambientGround = [value, value, value]
+        } else {
+            this.#ambientSky = value
+        }
+    }
+
+
+    get ambientSky () {
+        return this.#ambientSky
+    }
+
+
+    set ambientSky (value) {
+        this.#ambientSky = value
+    }
+
+
+    get ambientGround () {
+        return this.#ambientGround
+    }
+
+
+    set ambientGround (value) {
+        this.#ambientGround = value
     }
 
 
@@ -188,7 +214,8 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniformMatrix4fv(program.uniforms.uProjection, false, this.#camera3d.projectionMatrix.elements)
         gl.uniformMatrix4fv(program.uniforms.uView, false, this.#camera3d.viewMatrix.elements)
         gl.uniform3fv(program.uniforms.uLightDirection, this.#lightDirection)
-        gl.uniform1f(program.uniforms.uAmbient, this.#ambient)
+        gl.uniform3fv(program.uniforms.uAmbientSky, this.#ambientSky)
+        gl.uniform3fv(program.uniforms.uAmbientGround, this.#ambientGround)
         gl.uniform4f(program.uniforms.uTintColor, 0, 0, 0, 0)
         gl.uniform1f(program.uniforms.uFogNear, this.#fogNear)
         gl.uniform1f(program.uniforms.uFogFar, this.#fogFar)

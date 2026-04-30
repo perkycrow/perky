@@ -37,7 +37,8 @@ precision mediump float;
 
 uniform sampler2D uTexture;
 uniform vec3 uLightDirection;
-uniform float uAmbient;
+uniform vec3 uAmbientSky;
+uniform vec3 uAmbientGround;
 uniform vec4 uTintColor;
 uniform float uFogNear;
 uniform float uFogFar;
@@ -124,8 +125,9 @@ void main() {
         vec3 dirLight = normalize(uLightDirection);
         float diffuse = max(dot(normal, dirLight), 0.0);
         float shadow = calcShadow(normal, dirLight);
-        float lighting = uAmbient + (1.0 - uAmbient) * diffuse * shadow;
-        lit = baseColor * lighting;
+        float hemiFactor = normal.y * 0.5 + 0.5;
+        vec3 ambient = mix(uAmbientGround, uAmbientSky, hemiFactor);
+        lit = baseColor * (ambient + diffuse * shadow);
 
         if (uSpecular > 0.0 && diffuse > 0.0) {
             vec3 halfDir = normalize(dirLight + viewDir);
@@ -186,7 +188,8 @@ export const MESH_SHADER_DEF = {
         'uModel',
         'uTexture',
         'uLightDirection',
-        'uAmbient',
+        'uAmbientSky',
+        'uAmbientGround',
         'uTintColor',
         'uFogNear',
         'uFogFar',

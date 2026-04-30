@@ -83,8 +83,9 @@ describe('MESH_FRAGMENT', () => {
         expect(MESH_FRAGMENT).toContain('uniform vec3 uLightDirection')
     })
 
-    test('declares uAmbient uniform', () => {
-        expect(MESH_FRAGMENT).toContain('uniform float uAmbient')
+    test('declares hemisphere ambient uniforms', () => {
+        expect(MESH_FRAGMENT).toContain('uniform vec3 uAmbientSky')
+        expect(MESH_FRAGMENT).toContain('uniform vec3 uAmbientGround')
     })
 
     test('declares fog uniforms', () => {
@@ -200,7 +201,8 @@ describe('MESH_SHADER_DEF', () => {
             'uModel',
             'uTexture',
             'uLightDirection',
-            'uAmbient',
+            'uAmbientSky',
+            'uAmbientGround',
             'uTintColor',
             'uFogNear',
             'uFogFar',

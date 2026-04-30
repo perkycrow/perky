@@ -46,7 +46,8 @@ export default class DungeonStage extends Stage {
         })
 
         this.meshRenderer.lightDirection = [0.3, 0.9, 0.4]
-        this.meshRenderer.ambient = 0.35
+        this.meshRenderer.ambientSky = [0.4, 0.45, 0.5]
+        this.meshRenderer.ambientGround = [0.08, 0.06, 0.04]
         this.meshRenderer.shadowMap = new ShadowMap({gl, resolution: 1024})
 
         this.meshRenderer.lights = [

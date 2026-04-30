@@ -218,10 +218,20 @@ describe('WebGLMeshRenderer', () => {
     })
 
 
-    test('ambient getter/setter', () => {
+    test('ambient setter accepts number for backward compatibility', () => {
         const renderer = new WebGLMeshRenderer()
         renderer.ambient = 0.5
-        expect(renderer.ambient).toBe(0.5)
+        expect(renderer.ambientSky).toEqual([0.5, 0.5, 0.5])
+        expect(renderer.ambientGround).toEqual([0.5, 0.5, 0.5])
+    })
+
+
+    test('ambientSky and ambientGround getters/setters', () => {
+        const renderer = new WebGLMeshRenderer()
+        renderer.ambientSky = [0.4, 0.45, 0.5]
+        renderer.ambientGround = [0.1, 0.08, 0.05]
+        expect(renderer.ambientSky).toEqual([0.4, 0.45, 0.5])
+        expect(renderer.ambientGround).toEqual([0.1, 0.08, 0.05])
     })
 
 
