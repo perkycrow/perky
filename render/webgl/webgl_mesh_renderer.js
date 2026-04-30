@@ -17,6 +17,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #fogNear = 20
     #fogFar = 80
     #fogColor = [0.0, 0.0, 0.0]
+    #dummyShadowTexture = null
     #lights = []
     #lightDataTexture = null
 
@@ -165,7 +166,26 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
+    #getDummyShadowTexture (gl) {
+        if (!this.#dummyShadowTexture) {
+            this.#dummyShadowTexture = gl.createTexture()
+            gl.bindTexture(gl.TEXTURE_2D, this.#dummyShadowTexture)
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, 1, 1, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+            gl.bindTexture(gl.TEXTURE_2D, null)
+        }
+        return this.#dummyShadowTexture
+    }
+
+
     dispose () {
+        if (this.#dummyShadowTexture) {
+            this.context?.gl?.deleteTexture(this.#dummyShadowTexture)
+            this.#dummyShadowTexture = null
+        }
         this.#meshProgram = null
         this.#depthProgram = null
         this.#camera3d = null
@@ -246,13 +266,15 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform1f(program.uniforms.uHasNormalMap, 0)
         gl.uniform1f(program.uniforms.uNormalStrength, 1)
 
+        gl.activeTexture(gl.TEXTURE2)
         if (this.#shadowMap) {
-            gl.activeTexture(gl.TEXTURE2)
             gl.bindTexture(gl.TEXTURE_2D, this.#shadowMap.texture)
             gl.uniform1i(program.uniforms.uShadowMap, 2)
             gl.uniformMatrix4fv(program.uniforms.uLightMatrix, false, this.#shadowMap.lightMatrix.elements)
             gl.uniform1f(program.uniforms.uHasShadowMap, 1)
         } else {
+            gl.bindTexture(gl.TEXTURE_2D, this.#getDummyShadowTexture(gl))
+            gl.uniform1i(program.uniforms.uShadowMap, 2)
             gl.uniform1f(program.uniforms.uHasShadowMap, 0)
         }
 
