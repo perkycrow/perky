@@ -76,19 +76,26 @@ out vec4 fragColor;
 
 float calcShadow (vec3 normal, vec3 lightDir) {
     if (uHasShadowMap < 0.5) return 1.0;
+    float NdotL = dot(normal, lightDir);
+    if (NdotL < 0.05) return 1.0;
     vec3 coords = vLightSpacePosition.xyz / vLightSpacePosition.w;
     coords = coords * 0.5 + 0.5;
     if (coords.x < 0.0 || coords.x > 1.0 || coords.y < 0.0 || coords.y > 1.0 || coords.z > 1.0) return 1.0;
-    float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.001);
+    float bias = max(0.02 * (1.0 - NdotL), 0.002);
     float depth = coords.z - bias;
     vec2 texelSize = vec2(1.0) / vec2(textureSize(uShadowMap, 0));
     float shadow = 0.0;
-    for (int x = -1; x <= 1; x++) {
-        for (int y = -1; y <= 1; y++) {
+    for (int x = -2; x <= 2; x++) {
+        for (int y = -2; y <= 2; y++) {
             shadow += texture(uShadowMap, vec3(coords.xy + vec2(x, y) * texelSize, depth));
         }
     }
-    return shadow / 9.0;
+    return shadow / 25.0;
+}
+
+
+vec3 acesToneMap (vec3 x) {
+    return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
 }
 
 void main() {
@@ -161,6 +168,9 @@ void main() {
     float dist = length(vWorldPosition - uCameraPosition);
     float fogFactor = clamp((uFogFar - dist) / (uFogFar - uFogNear), 0.0, 1.0);
     color = mix(uFogColor, color, fogFactor);
+
+    color = acesToneMap(color);
+    color += (fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715)) * 52.9829189) - 0.5) / 255.0;
 
     fragColor = vec4(color, texColor.a * uMaterialOpacity);
 }

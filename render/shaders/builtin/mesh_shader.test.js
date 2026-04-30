@@ -130,7 +130,7 @@ describe('MESH_FRAGMENT', () => {
 
     test('contains calcShadow function with PCF', () => {
         expect(MESH_FRAGMENT).toContain('float calcShadow')
-        expect(MESH_FRAGMENT).toContain('shadow / 9.0')
+        expect(MESH_FRAGMENT).toContain('shadow / 25.0')
     })
 
     test('constructs TBN matrix for normal mapping', () => {

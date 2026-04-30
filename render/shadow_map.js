@@ -78,17 +78,21 @@ export default class ShadowMap {
 
     update (lightDirection, camera3d, sceneRadius = 20) {
         const dir = new Vec3(lightDirection[0], lightDirection[1], lightDirection[2]).normalize()
-        const center = camera3d.position
+        const texelSize = (sceneRadius * 2) / this.#resolution
 
-        const eye = new Vec3(
-            center.x + dir.x * sceneRadius,
-            center.y + dir.y * sceneRadius,
-            center.z + dir.z * sceneRadius
+        const snappedCenter = new Vec3(
+            Math.round(camera3d.position.x / texelSize) * texelSize,
+            Math.round(camera3d.position.y / texelSize) * texelSize,
+            Math.round(camera3d.position.z / texelSize) * texelSize
         )
 
-        const target = new Vec3(center.x, center.y, center.z)
+        const eye = new Vec3(
+            snappedCenter.x + dir.x * sceneRadius,
+            snappedCenter.y + dir.y * sceneRadius,
+            snappedCenter.z + dir.z * sceneRadius
+        )
 
-        this.#lightView.makeLookAt(eye, target, new Vec3(0, 1, 0))
+        this.#lightView.makeLookAt(eye, snappedCenter, new Vec3(0, 1, 0))
         this.#lightProjection.makeOrthographic(
             -sceneRadius, sceneRadius,
             -sceneRadius, sceneRadius,

@@ -49,6 +49,8 @@ void main() {
     float fogFactor = clamp((uFogFar - vFogDepth) / (uFogFar - uFogNear), 0.0, 1.0);
     color = mix(uFogColor, color, fogFactor);
 
+    color = clamp((color * (2.51 * color + 0.03)) / (color * (2.43 * color + 0.59) + 0.14), 0.0, 1.0);
+
     float alpha = texColor.a * uOpacity;
     fragColor = vec4(color, alpha);
 }
