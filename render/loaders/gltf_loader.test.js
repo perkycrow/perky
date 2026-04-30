@@ -266,7 +266,7 @@ describe('buildGltfScene', () => {
     })
 
 
-    test('buildGltfScene flips UV V-axis', async () => {
+    test('buildGltfScene preserves UV coordinates from glTF', async () => {
         const gl = createMockGL()
         const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
         const gltf = buildTriangleGltf(offsets, lengths)
@@ -274,9 +274,9 @@ describe('buildGltfScene', () => {
         const {meshes} = await buildGltfScene({gltf, binary, gl})
         const geometry = meshes[0].primitives[0].geometry
 
-        expect(geometry.uvs[1]).toBeCloseTo(1)
-        expect(geometry.uvs[3]).toBeCloseTo(1)
-        expect(geometry.uvs[5]).toBeCloseTo(0)
+        expect(geometry.uvs[1]).toBeCloseTo(0)
+        expect(geometry.uvs[3]).toBeCloseTo(0)
+        expect(geometry.uvs[5]).toBeCloseTo(1)
     })
 
 

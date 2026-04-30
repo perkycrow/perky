@@ -205,7 +205,7 @@ function buildGeometry (gltf, binary, prim) {
 
     const uvs = prim.attributes.TEXCOORD_0 === undefined
         ? new Float32Array(vertexCount * 2)
-        : flipV(readAccessorData(gltf, binary, prim.attributes.TEXCOORD_0))
+        : readAccessorData(gltf, binary, prim.attributes.TEXCOORD_0)
 
     const colors = prim.attributes.COLOR_0 === undefined
         ? null
@@ -286,7 +286,12 @@ async function loadGltfImages (gltf, binary, baseUrl) {
             }
         } else if (img.uri) {
             const src = img.uri.startsWith('data:') ? img.uri : baseUrl + img.uri
-            images.push(await loadImageElement(src))
+            try {
+                images.push(await loadImageElement(src))
+            } catch {
+                console.warn(`glTF: failed to load image "${img.uri}", skipping`)
+                images.push(null)
+            }
         } else {
             images.push(null)
         }

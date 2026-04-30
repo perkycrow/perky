@@ -93,7 +93,7 @@ export default class DungeonStage extends Stage {
 
 
     async #loadDungeon (gl) {
-        const data = await loadGlb('assets/dungeon.glb')
+        const data = await loadGlb('assets/pieces/room-small.glb')
         const {scene} = await buildGltfScene({...data, gl})
         this.scene.addChild(scene)
         scene.markDirty()
