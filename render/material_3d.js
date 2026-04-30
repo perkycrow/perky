@@ -8,7 +8,8 @@ const DEFAULTS = {
     roughness: 0.5,
     specular: 0.5,
     normalMap: null,
-    normalStrength: 1.0
+    normalStrength: 1.0,
+    filtering: 'linear'
 }
 
 

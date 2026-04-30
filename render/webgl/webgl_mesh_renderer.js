@@ -303,7 +303,13 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         const texture = object.activeTexture
         if (texture) {
             gl.activeTexture(gl.TEXTURE0)
-            gl.bindTexture(gl.TEXTURE_2D, this.context.textureManager.acquire(texture))
+            const gpuTexture = this.context.textureManager.acquire(texture)
+            gl.bindTexture(gl.TEXTURE_2D, gpuTexture)
+            const filtering = hints?.material?.filtering
+            if (filtering === 'nearest') {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+            }
         } else {
             gl.uniform1f(this.#meshProgram.uniforms.uHasTexture, 0)
         }
@@ -325,6 +331,13 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         }
 
         if (texture) {
+            if (hints?.material?.filtering === 'nearest') {
+                gl.activeTexture(gl.TEXTURE0)
+                gl.bindTexture(gl.TEXTURE_2D, this.context.textureManager.acquire(texture))
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+                this.context.textureManager.release(texture)
+            }
             this.context.textureManager.release(texture)
         } else {
             gl.uniform1f(this.#meshProgram.uniforms.uHasTexture, 1)

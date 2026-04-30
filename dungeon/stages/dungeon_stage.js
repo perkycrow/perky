@@ -73,7 +73,6 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.fogFar = 34
         this.meshRenderer.fogColor = [0.02, 0.02, 0.04]
 
-        this.gl = gl
         this.scene = new Object3D()
         layer.setContent(this.scene)
 
