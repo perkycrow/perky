@@ -2,6 +2,7 @@ import Object3D from '../render/object_3d.js'
 import MeshInstance from '../render/mesh_instance.js'
 import Material3D from '../render/material_3d.js'
 import {loadGlb, buildGltfScene} from '../render/loaders/gltf_loader.js'
+import {loadImage} from '../application/loaders.js'
 
 
 const ROOM_NAMES = [
@@ -26,11 +27,19 @@ export default class RoomLibrary {
 
 
     async load (gl, basePath = 'assets/pieces/') {
+        const sharedColormap = await loadImage(basePath + 'Textures/colormap.png')
         const defaultMaterial = new Material3D({color: [1, 1, 1], roughness: 0.7})
 
         const promises = ROOM_NAMES.map(async (name) => {
             const data = await loadGlb(basePath + name + '.glb')
             const {meshes, materials} = await buildGltfScene({...data, gl})
+
+            for (const mat of materials) {
+                if (mat.texture) {
+                    mat.texture = sharedColormap
+                }
+            }
+
             this.#templates.set(name, extractPrimitives(meshes, materials, defaultMaterial))
         })
 
