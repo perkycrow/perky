@@ -1,0 +1,25 @@
+[
+    {"room": "room-small", "x": 0, "z": 0},
+
+    {"room": "corridor", "x": 8, "z": 0},
+    {"room": "corridor", "x": 12, "z": 0},
+
+    {"room": "gate-door", "x": 16, "z": 0},
+
+    {"room": "room-small", "x": 24, "z": 0},
+
+    {"room": "corridor", "x": 0, "z": -8, "rot": 90},
+    {"room": "corridor", "x": 0, "z": -12, "rot": 90},
+
+    {"room": "room-small-variation", "x": 0, "z": -20},
+
+    {"room": "corridor-corner", "x": 24, "z": -8},
+    {"room": "corridor", "x": 24, "z": -12, "rot": 90},
+    {"room": "corridor", "x": 24, "z": -16, "rot": 90},
+
+    {"room": "gate", "x": 24, "z": -20},
+
+    {"room": "room-large", "x": 24, "z": -32},
+
+    {"room": "stairs", "x": 0, "z": -32}
+]

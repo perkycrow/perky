@@ -1,23 +1,20 @@
 import Stage from '../../game/stage.js'
 import WebGLMeshRenderer from '../../render/webgl/webgl_mesh_renderer.js'
 import Camera3D from '../../render/camera_3d.js'
-import Geometry from '../../render/geometry.js'
-import Mesh from '../../render/mesh.js'
-import MeshInstance from '../../render/mesh_instance.js'
-import Material3D from '../../render/material_3d.js'
 import Light3D from '../../render/light_3d.js'
 import Object3D from '../../render/object_3d.js'
 import ShadowMap from '../../render/shadow_map.js'
-import {loadGlb, buildGltfScene} from '../../render/loaders/gltf_loader.js'
+import RoomLibrary from '../room_library.js'
 import DungeonWorld from '../worlds/dungeon_world.js'
 import PlayerController from '../controllers/player_controller.js'
+import layout from '../layouts/main.json' with {type: 'json'}
 import wiring from '../wiring.js'
 
 
 const EYE_HEIGHT = 1.7
 const MOUSE_SENSITIVITY = 0.002
 const PITCH_LIMIT = Math.PI / 2 - 0.05
-const SPAWN = {x: 0, y: 0, z: 5}
+const SPAWN = {x: 0, y: 0, z: 0}
 
 
 export default class DungeonStage extends Stage {
@@ -64,7 +61,6 @@ export default class DungeonStage extends Stage {
         ]
 
         this.scene = new Object3D()
-        this.#buildGround(gl)
         layer.setContent(this.scene)
 
         this.player = this.world.spawnPlayer(SPAWN)
@@ -77,26 +73,16 @@ export default class DungeonStage extends Stage {
     }
 
 
-    #buildGround (gl) {
-        const groundGeo = Geometry.createPlane(60, 60)
-        const groundMesh = new Mesh({gl, geometry: groundGeo})
-        const groundMat = new Material3D({
-            color: [0.28, 0.26, 0.24],
-            roughness: 0.9,
-            specular: 0.1
-        })
-        const ground = new MeshInstance({mesh: groundMesh, material: groundMat})
-        ground.position.set(0, -0.02, 0)
-        ground.castShadow = false
-        this.scene.addChild(ground)
-    }
-
-
     async #loadDungeon (gl) {
-        const data = await loadGlb('assets/pieces/room-small.glb')
-        const {scene} = await buildGltfScene({...data, gl})
-        this.scene.addChild(scene)
-        scene.markDirty()
+        this.roomLibrary = new RoomLibrary()
+        await this.roomLibrary.load(gl)
+
+        for (const entry of layout) {
+            const room = this.roomLibrary.placeRoom(entry)
+            this.scene.addChild(room)
+        }
+
+        this.scene.markDirty()
     }
 
 
