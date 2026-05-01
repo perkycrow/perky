@@ -120,7 +120,15 @@ Pas de mesh collision — trop lourd. Chaque Prefab definit sa collision shape :
 
 - **Room Editor** — compose des Prefabs en Rooms, gere les slots visuellement
 - **Level Editor** — connecte des Rooms, place lights/spawn
-- **Material Editor** — edite les materialOverrides d'un Prefab, preview en temps reel
+- **Material Editor** — edite les materialOverrides d'un Prefab, preview en temps reel. Deux niveaux :
+  - **Par objet** (prioritaire) : selectionner un mesh, ajuster uvScale/uvOffset/uvRotation, changer de texture, preview temps reel. Suffisant pour des pieces modulaires simples (un mur = un mesh).
+  - **Par face** (ambitieux, plus tard) : selectionner des faces individuelles d'un mesh, assigner un material different par face. Implique ray-mesh intersection, face ID tracking, split en sous-meshes/multi-primitives. Le format GLB supporte deja les multi-primitives par mesh.
+- **Light Editor** — placer, deplacer, configurer des lumieres dans la scene :
+  - Drag & drop pour positionner (gizmo 3D translation)
+  - Panneau proprietes : color (color picker), intensity (slider), radius (slider + visualisation sphere), type (point/spot), direction et angle pour les spots
+  - Preview en temps reel (la scene se re-eclaire live)
+  - Serialisation dans le Level JSON (les lights font partie du layout)
+  - Les lights pourraient etre des Prefabs speciaux (une torche = mesh + light attachee)
 - **Prefab Viewer** — previsualise un Prefab avec ses slots visibles
 - **Decals** — un type de Prefab special (projete sur surfaces)
 
