@@ -233,7 +233,6 @@ function buildIndices (gltf, binary, prim, vertexCount) {
 }
 
 
-
 function readAccessorData (gltf, binary, accessorIndex) {
     const accessor = gltf.accessors[accessorIndex]
     const bufferView = gltf.bufferViews[accessor.bufferView]

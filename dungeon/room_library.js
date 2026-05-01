@@ -25,7 +25,6 @@ export default class RoomLibrary {
 
     #templates = new Map()
 
-
     async load (gl, basePath = 'assets/pieces/') {
         const sharedColormap = await loadImage(basePath + 'Textures/colormap.png')
         const defaultMaterial = new Material3D({color: [1, 1, 1], roughness: 0.7})
@@ -98,9 +97,9 @@ function extractPrimitives (meshes, materials, defaultMaterial) {
     const primitives = []
     for (const meshData of meshes) {
         for (const prim of meshData.primitives) {
-            const material = prim.materialIndex !== undefined
-                ? materials[prim.materialIndex]
-                : defaultMaterial
+            const material = prim.materialIndex === undefined
+                ? defaultMaterial
+                : materials[prim.materialIndex]
             primitives.push({mesh: prim.mesh, material})
         }
     }

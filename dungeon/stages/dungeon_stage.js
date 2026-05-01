@@ -34,7 +34,7 @@ const TORCHES = [
 
     {x: 24, y: 2.8, z: -12, color: [1.0, 0.7, 0.3], intensity: 1.5, radius: 12},
 
-    {x: 24, y: 2.8, z: -32, color: [1.0, 0.75, 0.35], intensity: 2.5, radius: 20},
+    {x: 24, y: 2.8, z: -32, color: [1.0, 0.75, 0.35], intensity: 2.5, radius: 20}
 ]
 
 
