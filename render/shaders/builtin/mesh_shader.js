@@ -121,18 +121,21 @@ void main() {
     } else {
         vec3 viewDir = normalize(uCameraPosition - vWorldPosition);
         float shininess = pow(2.0, (1.0 - uRoughness) * 10.0);
+        float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 4.0) * (1.0 - uRoughness);
 
         vec3 dirLight = normalize(uLightDirection);
         float diffuse = max(dot(normal, dirLight), 0.0);
         float shadow = calcShadow(normal, dirLight);
         float hemiFactor = normal.y * 0.5 + 0.5;
         vec3 ambient = mix(uAmbientGround, uAmbientSky, hemiFactor);
-        lit = baseColor * (ambient + diffuse * shadow);
+        float occlusion = 0.5 + 0.5 * hemiFactor;
+        lit = baseColor * (ambient * occlusion + diffuse * shadow);
 
         if (uSpecular > 0.0 && diffuse > 0.0) {
             vec3 halfDir = normalize(dirLight + viewDir);
             float specAngle = max(dot(normal, halfDir), 0.0);
-            lit += vec3(uSpecular * pow(specAngle, shininess)) * shadow;
+            float spec = uSpecular * pow(specAngle, shininess);
+            lit += vec3(spec) * shadow;
         }
 
         for (int i = 0; i < uNumLights; i++) {
@@ -159,6 +162,8 @@ void main() {
                 lit += colRad.xyz * posInt.w * uSpecular * pow(specAngle, shininess) * attenuation;
             }
         }
+
+        lit += fresnel * ambient * 0.3;
     }
 
     vec3 color = lit + uMaterialEmissive;
