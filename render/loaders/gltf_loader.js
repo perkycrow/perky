@@ -5,6 +5,7 @@ import Material3D from '../material_3d.js'
 import Object3D from '../object_3d.js'
 import Matrix4 from '../../math/matrix4.js'
 import {loadArrayBuffer} from '../../application/loaders.js'
+import logger from '../../core/logger.js'
 
 
 const GLB_MAGIC = 0x46546C67
@@ -279,7 +280,7 @@ async function loadGltfImages (gltf, binary, baseUrl) {
             try {
                 images.push(await loadImageElement(src))
             } catch {
-                console.warn(`glTF: failed to load image "${img.uri}", skipping`)
+                logger.warn(`glTF: failed to load image "${img.uri}", skipping`)
                 images.push(null)
             }
         } else {
