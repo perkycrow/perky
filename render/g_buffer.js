@@ -79,6 +79,18 @@ export default class GBuffer {
     }
 
 
+    blitDepthTo (targetFramebuffer) {
+        const gl = this.#gl
+        const w = this.#width
+        const h = this.#height
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.#framebuffer)
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, targetFramebuffer)
+        gl.blitFramebuffer(0, 0, w, h, 0, 0, w, h, gl.DEPTH_BUFFER_BIT, gl.NEAREST)
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null)
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null)
+    }
+
+
     dispose () {
         this.#deleteResources()
         this.#gl = null

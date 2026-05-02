@@ -71,6 +71,12 @@ function createMockGL () {
         },
         deleteTexture (tex) {
             calls.push({fn: 'deleteTexture', args: [tex]})
+        },
+        READ_FRAMEBUFFER: 0x8CA8,
+        DRAW_FRAMEBUFFER: 0x8CA9,
+        NEAREST: 0x2600,
+        blitFramebuffer (...args) {
+            calls.push({fn: 'blitFramebuffer', args})
         }
     }
 }
@@ -228,6 +234,22 @@ describe('GBuffer', () => {
         const gl = createMockGL()
         gl.checkFramebufferStatus = () => 0
         expect(() => new GBuffer({gl, width: 800, height: 600})).toThrow(/not complete/)
+    })
+
+
+    test('blitDepthTo copies depth to target framebuffer', () => {
+        const gl = createMockGL()
+        const gb = new GBuffer({gl, width: 800, height: 600})
+        gl.calls.length = 0
+        gb.blitDepthTo(null)
+        const bindCalls = gl.calls.filter(c => c.fn === 'bindFramebuffer')
+        expect(bindCalls[0].args).toEqual([gl.READ_FRAMEBUFFER, 'gbufferFBO'])
+        expect(bindCalls[1].args).toEqual([gl.DRAW_FRAMEBUFFER, null])
+        const blitCalls = gl.calls.filter(c => c.fn === 'blitFramebuffer')
+        expect(blitCalls.length).toBe(1)
+        expect(blitCalls[0].args).toEqual([0, 0, 800, 600, 0, 0, 800, 600, gl.DEPTH_BUFFER_BIT, gl.NEAREST])
+        expect(bindCalls[2].args).toEqual([gl.READ_FRAMEBUFFER, null])
+        expect(bindCalls[3].args).toEqual([gl.DRAW_FRAMEBUFFER, null])
     })
 
 })
