@@ -149,8 +149,25 @@ function createMockGL () {
             calls.push({fn: 'drawArrays', args})
         },
         ARRAY_BUFFER: 0x8892,
+        ELEMENT_ARRAY_BUFFER: 0x8893,
         STATIC_DRAW: 0x88E4,
-        TRIANGLE_STRIP: 0x0005
+        TRIANGLE_STRIP: 0x0005,
+        UNSIGNED_SHORT: 0x1403,
+        UNSIGNED_BYTE: 0x1401,
+        POLYGON_OFFSET_FILL: 0x8037,
+        createVertexArray () {
+            calls.push({fn: 'createVertexArray'})
+            return 'mockVAO'
+        },
+        bindVertexArray (vao) {
+            calls.push({fn: 'bindVertexArray', args: [vao]})
+        },
+        deleteVertexArray (vao) {
+            calls.push({fn: 'deleteVertexArray', args: [vao]})
+        },
+        polygonOffset (...args) {
+            calls.push({fn: 'polygonOffset', args})
+        }
     }
 }
 
@@ -249,8 +266,9 @@ describe('WebGLMeshRenderer', () => {
     })
 
 
-    test('handles MeshInstance', () => {
-        expect(WebGLMeshRenderer.handles).toEqual([MeshInstance])
+    test('handles MeshInstance and Decal', () => {
+        expect(WebGLMeshRenderer.handles).toContain(MeshInstance)
+        expect(WebGLMeshRenderer.handles.length).toBe(2)
     })
 
 

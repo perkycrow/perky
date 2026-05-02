@@ -1,6 +1,5 @@
 import Stage from '../../game/stage.js'
 import WebGLMeshRenderer from '../../render/webgl/webgl_mesh_renderer.js'
-import WebGLDecalRenderer from '../../render/webgl/webgl_decal_renderer.js'
 import Camera3D from '../../render/camera_3d.js'
 import CubeShadowMap from '../../render/cube_shadow_map.js'
 import GBuffer from '../../render/g_buffer.js'
@@ -38,9 +37,6 @@ export default class DungeonStage extends Stage {
         this.meshRenderer = new WebGLMeshRenderer()
         renderer.registerRenderer(this.meshRenderer)
 
-        this.decalRenderer = new WebGLDecalRenderer()
-        renderer.registerRenderer(this.decalRenderer)
-
         this.camera3d = new Camera3D({
             fov: Math.PI / 3,
             aspect: layer.canvas.width / layer.canvas.height,
@@ -48,7 +44,6 @@ export default class DungeonStage extends Stage {
             far: 100
         })
         this.meshRenderer.camera3d = this.camera3d
-        this.decalRenderer.camera3d = this.camera3d
 
         this.game.renderSystem.on('resize', ({width, height}) => {
             this.camera3d.setAspect(width / height)

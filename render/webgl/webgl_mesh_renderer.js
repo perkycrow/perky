@@ -1,5 +1,8 @@
 import WebGLObjectRenderer from './webgl_object_renderer.js'
 import MeshInstance from '../mesh_instance.js'
+import Decal from '../decal.js'
+import Geometry from '../geometry.js'
+import Mesh from '../mesh.js'
 import {MESH_SHADER_DEF} from '../shaders/builtin/mesh_shader.js'
 import {DEPTH_SHADER_DEF} from '../shaders/builtin/depth_shader.js'
 import {CUBE_DEPTH_SHADER_DEF} from '../shaders/builtin/cube_depth_shader.js'
@@ -22,6 +25,9 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #gbufferProgram = null
     #lightingProgram = null
     #fullscreenQuad = null
+    #decalQuadMesh = null
+    #decalModelMatrix = new Matrix4()
+    #decalScaleMatrix = new Matrix4()
     #inverseVP = new Matrix4()
     #camera3d = null
     #shadowMap = null
@@ -41,7 +47,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #gBuffer = null
 
     static get handles () {
-        return [MeshInstance]
+        return [MeshInstance, Decal]
     }
 
 
@@ -194,6 +200,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#lightingProgram = context.shaderRegistry.register('lighting', LIGHTING_SHADER_DEF)
         this.#lightDataTexture = new LightDataTexture(context.gl)
         this.#fullscreenQuad = new FullscreenQuad(context.gl)
+        this.#decalQuadMesh = createDecalQuad(context.gl)
     }
 
 
@@ -256,10 +263,13 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
     #flushDeferred (gl) {
         const opaque = []
+        const decals = []
         const transparent = []
 
         for (const item of this.collected) {
-            if (item.hints?.material?.opacity < 1) {
+            if (item.object instanceof Decal) {
+                decals.push(item)
+            } else if (item.hints?.material?.opacity < 1) {
                 transparent.push(item)
             } else {
                 opaque.push(item)
@@ -268,7 +278,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
         this.#gBuffer.resize(gl.canvas.width, gl.canvas.height)
 
-        this.#renderGBufferPass(gl, opaque)
+        this.#renderGBufferPass(gl, opaque, decals)
 
         const numLights = this.#lightDataTexture.update(this.#lights, this.#camera3d.position, this.#fogFar)
         this.#renderLightingPass(gl, numLights)
@@ -282,7 +292,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-    #renderGBufferPass (gl, items) {
+    #renderGBufferPass (gl, items, decals) {
         for (let i = 0; i < 4; i++) {
             gl.activeTexture(gl.TEXTURE0 + i)
             gl.bindTexture(gl.TEXTURE_2D, null)
@@ -320,8 +330,68 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             this.#drawGBufferItem(gl, program, object, hints)
         }
 
+        if (decals.length > 0) {
+            this.#renderGBufferDecals(gl, program, decals)
+        }
+
         this.#gBuffer.end()
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+    }
+
+
+    #renderGBufferDecals (gl, program, decals) {
+        gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.NONE, gl.NONE])
+        gl.enable(gl.BLEND)
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+        gl.depthMask(false)
+        gl.enable(gl.POLYGON_OFFSET_FILL)
+        gl.polygonOffset(-1, -1)
+
+        gl.uniform1f(program.uniforms.uHasVertexColors, 0)
+        gl.uniform1f(program.uniforms.uHasNormalMap, 0)
+
+        for (const {object} of decals) {
+            if (!object.visible) {
+                continue
+            }
+
+            this.#decalScaleMatrix.makeScale(object.width, object.height, 1)
+            this.#decalModelMatrix.multiplyMatrices(object.worldMatrix, this.#decalScaleMatrix)
+            gl.uniformMatrix4fv(program.uniforms.uModel, false, this.#decalModelMatrix.elements)
+
+            const material = object.material
+            if (material) {
+                gl.uniform3fv(program.uniforms.uMaterialColor, material.color)
+                gl.uniform1f(program.uniforms.uMaterialOpacity, material.opacity)
+                gl.uniform1f(program.uniforms.uUnlit, material.unlit ? 1 : 0)
+            }
+
+            const texture = material?.texture ?? null
+            if (texture) {
+                gl.activeTexture(gl.TEXTURE0)
+                gl.bindTexture(gl.TEXTURE_2D, this.context.textureManager.acquire(texture))
+                gl.uniform1f(program.uniforms.uHasTexture, 1)
+            } else {
+                gl.uniform1f(program.uniforms.uHasTexture, 0)
+            }
+
+            this.#decalQuadMesh.draw()
+
+            if (texture) {
+                this.context.textureManager.release(texture)
+            }
+
+            if (material) {
+                gl.uniform3f(program.uniforms.uMaterialColor, 1, 1, 1)
+                gl.uniform1f(program.uniforms.uMaterialOpacity, 1)
+                gl.uniform1f(program.uniforms.uUnlit, 0)
+            }
+        }
+
+        gl.disable(gl.POLYGON_OFFSET_FILL)
+        gl.depthMask(true)
+        gl.disable(gl.BLEND)
+        gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2])
     }
 
 
@@ -531,6 +601,10 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         if (this.#fullscreenQuad) {
             this.#fullscreenQuad.dispose(this.context?.gl)
             this.#fullscreenQuad = null
+        }
+        if (this.#decalQuadMesh) {
+            this.#decalQuadMesh.dispose()
+            this.#decalQuadMesh = null
         }
         this.#meshProgram = null
         this.#depthProgram = null
@@ -814,4 +888,30 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform1f(u.uNormalStrength, 1)
     }
 
+}
+
+
+function createDecalQuad (gl) {
+    const geo = new Geometry({
+        positions: [
+            -0.5, -0.5, 0,
+            0.5, -0.5, 0,
+            0.5, 0.5, 0,
+            -0.5, 0.5, 0
+        ],
+        normals: [
+            0, 0, 1,
+            0, 0, 1,
+            0, 0, 1,
+            0, 0, 1
+        ],
+        uvs: [
+            0, 0,
+            1, 0,
+            1, 1,
+            0, 1
+        ],
+        indices: [0, 1, 2, 0, 2, 3]
+    })
+    return new Mesh({gl, geometry: geo})
 }
