@@ -205,6 +205,108 @@ Ce qui NE rend PAS dirty :
 Resultat : dans une piece ou rien ne bouge, le cubemap est rendu UNE FOIS puis cache indefiniment. Le cout GPU tombe a zero pour cette light. Seules les pieces avec de l'activite (portes qui s'ouvrent, objets deplaces) re-rendent leurs cubemaps.
 
 
+#### Allocation dynamique des cubemaps
+
+Actuellement les cubemaps sont pre-alloues manuellement (`Array.from({length: N})`). A terme :
+- Chaque light qui a `castShadow = true` se voit attribuer un cubemap automatiquement
+- Le renderer gere un **pool** de cubemaps pre-alloues (taille configurable)
+- Quand une light est ajoutee (chunk load), un cubemap est pris du pool
+- Quand une light est supprimee (chunk unload), le cubemap est rendu au pool
+- Si le pool est vide, la light fonctionne sans shadow (fallback gracieux)
+
+
+### Level streaming (chunks)
+
+Systeme inspire de Half-Life 1/2 : le niveau est decoupe en **chunks** charges/decharges dynamiquement via des triggers (portes, zones).
+
+#### Principe
+- Le niveau complet est decrit dans le Level JSON (toutes les rooms, lights, props)
+- Chaque room appartient a un **chunk** (groupe de rooms proches)
+- Seuls les chunks proches du joueur sont charges en memoire
+- Quand le joueur traverse une porte/trigger, le chunk suivant est charge et le chunk lointain est decharge
+
+#### Chargement seamless
+- Le chunk suivant est **pre-charge** quand le joueur s'approche du trigger (pas quand il le traverse)
+- Le chargement est asynchrone (loadGlb en background)
+- Le trigger ne fait que rendre le chunk visible (instantane car deja en memoire)
+- Le chunk precedent reste en memoire un moment (buffer) avant d'etre decharge
+
+#### Impact sur les shadows
+- Quand un chunk est charge, ses lights obtiennent des cubemaps du pool → marques dirty → rendus
+- Quand un chunk est decharge, ses cubemaps sont rendus au pool
+- Le cache cubemap evite de re-rendre les chunks statiques charges/decharges frequemment
+
+#### Structure
+```
+Level = {
+    chunks: [
+        {
+            id: 'start_area',
+            rooms: ['spawn_room', 'corridor_1'],
+            triggers: [{at: 'corridor_1.south', loads: 'main_hall'}]
+        },
+        {
+            id: 'main_hall',
+            rooms: ['hall', 'wing_east'],
+            triggers: [{at: 'hall.north', loads: 'start_area'}]
+        }
+    ]
+}
+```
+
+
+### Zones d'atmosphere
+
+Le renderer utilise des presets d'atmosphere (ambient, fog, directional light) qui changent selon la zone ou se trouve le joueur. Les transitions sont smooth.
+
+#### Presets
+```
+"dungeon": {ambientSky: [0.12, 0.12, 0.15], fogColor: [0.01, 0.01, 0.02], fogNear: 6, fogFar: 34}
+"outdoor": {ambientSky: [0.5, 0.6, 0.8], fogColor: [0.6, 0.7, 0.85], fogNear: 30, fogFar: 120}
+"cave":    {ambientSky: [0.05, 0.05, 0.06], fogColor: [0.0, 0.0, 0.0], fogNear: 3, fogFar: 15}
+```
+
+#### Zones de transition
+Des volumes invisibles (boites AABB geantes) places dans le niveau. Quand le joueur est dans une zone, le preset associe s'applique. Quand il est entre deux zones, les presets se melangent (lerp base sur la position dans le volume de transition).
+
+```
+Zone = {
+    preset: 'outdoor',
+    bounds: {minX: -50, maxX: 50, minZ: -50, maxZ: 50, minY: -5, maxY: 20},
+    transition: 2.0  // metres de transition smooth aux bords
+}
+```
+
+Le volume de transition est la bande aux bords de la zone (2m par defaut). En entrant dans cette bande, le preset commence a s'appliquer progressivement. Au centre de la zone, le preset est a 100%.
+
+Parametres qui transitionnent :
+- ambientSky / ambientGround
+- fogColor / fogNear / fogFar
+- lightDirection (si applicable)
+- backgroundColor du renderer
+
+
+### Z-fighting et depth management
+
+Le z-fighting (deux surfaces coplanaires qui flickent) se gere avec :
+
+#### Polygon offset (solution standard)
+`gl.polygonOffset(factor, units)` decale la profondeur d'un mesh dans le depth buffer sans bouger sa position. Propriete `depthOffset` sur Material3D :
+- `depthOffset: 0` — defaut, pas de decalage
+- `depthOffset: -1` — le mesh apparait "devant" les surfaces coplanaires (pour decals, overlays)
+- `depthOffset: 1` — le mesh apparait "derriere" (rare)
+
+Usage : decals au sol, tapis, flaques, sang, traces de pas — tout ce qui est plaque sur une surface existante.
+
+#### Decals
+Les decals sont des quads textures projetes sur les surfaces. Ils utilisent `depthOffset: -1` pour eviter le z-fighting avec la surface sous-jacente. Le framework a deja un `Decal` class dans render/ et un `WebGLDecalRenderer`.
+
+Types de decals :
+- **Statiques** : sang, mousse, fissures, graffitis — places dans le level editor
+- **Dynamiques** : impacts de balles, traces de pas, ombres blob — generes au runtime
+- **Projetes** : texture projetee sur la geometrie environnante (comme un projecteur)
+
+
 ### Collisions simplifiees
 
 Pas de mesh collision — trop lourd. Chaque Prefab definit sa collision shape :

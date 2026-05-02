@@ -1,11 +1,15 @@
 import Stage from '../../game/stage.js'
 import WebGLMeshRenderer from '../../render/webgl/webgl_mesh_renderer.js'
+import WebGLDecalRenderer from '../../render/webgl/webgl_decal_renderer.js'
 import Camera3D from '../../render/camera_3d.js'
 import CubeShadowMap from '../../render/cube_shadow_map.js'
 import MeshInstance from '../../render/mesh_instance.js'
+import Material3D from '../../render/material_3d.js'
+import Decal from '../../render/decal.js'
 import Light3D from '../../render/light_3d.js'
 import Object3D from '../../render/object_3d.js'
 import {loadGlb, buildGltfScene} from '../../render/loaders/gltf_loader.js'
+import {loadImage} from '../../application/loaders.js'
 import {resolveCollisions} from '../collision.js'
 import DungeonWorld from '../worlds/dungeon_world.js'
 import PlayerController from '../controllers/player_controller.js'
@@ -33,6 +37,9 @@ export default class DungeonStage extends Stage {
         this.meshRenderer = new WebGLMeshRenderer()
         renderer.registerRenderer(this.meshRenderer)
 
+        this.decalRenderer = new WebGLDecalRenderer()
+        renderer.registerRenderer(this.decalRenderer)
+
         this.camera3d = new Camera3D({
             fov: Math.PI / 3,
             aspect: layer.canvas.width / layer.canvas.height,
@@ -40,6 +47,7 @@ export default class DungeonStage extends Stage {
             far: 100
         })
         this.meshRenderer.camera3d = this.camera3d
+        this.decalRenderer.camera3d = this.camera3d
 
         this.game.renderSystem.on('resize', ({width, height}) => {
             this.camera3d.setAspect(width / height)
@@ -97,6 +105,24 @@ export default class DungeonStage extends Stage {
     async #buildScene () {
         const assets = await this.#loadAssets()
         const lights = []
+
+        const shroomTex = await loadImage('assets/props/shroom.png')
+        const shroomDecal = new Decal({
+            x: -3,
+            y: 0.01,
+            z: 0.5,
+            width: 1,
+            height: 1,
+            material: new Material3D({
+                texture: shroomTex,
+                opacity: 0.9,
+                unlit: true
+            })
+        })
+        shroomDecal.rotation.setFromEuler(-Math.PI / 2, 0, 0, 'YXZ')
+        this.scene.addChild(shroomDecal)
+
+        this.shroomTex = shroomTex
 
         this.#buildBigRoom(assets, lights)
         this.#buildSmallRoom(assets, lights)
@@ -450,6 +476,8 @@ export default class DungeonStage extends Stage {
         canvas.addEventListener('click', () => {
             if (!this.pointerLocked) {
                 canvas.requestPointerLock()
+            } else {
+                this.#placeDecalAtCenter()
             }
         })
 
@@ -470,6 +498,93 @@ export default class DungeonStage extends Stage {
                 this.player.pitch = -PITCH_LIMIT
             }
         })
+    }
+
+
+    #placeDecalAtCenter () {
+        if (!this.shroomTex) {
+            return
+        }
+
+        const sin = Math.sin(this.player.yaw)
+        const cos = Math.cos(this.player.yaw)
+        const sp = Math.sin(this.player.pitch)
+        const cp = Math.cos(this.player.pitch)
+
+        const rayX = -sin * cp
+        const rayY = sp
+        const rayZ = -cos * cp
+
+        const ox = this.camera3d.position.x
+        const oy = this.camera3d.position.y
+        const oz = this.camera3d.position.z
+
+        let bestT = 50
+        let hitNormal = null
+
+        if (Math.abs(rayY) > 0.01) {
+            const tFloor = -oy / rayY
+            if (tFloor > 0 && tFloor < bestT) {
+                bestT = tFloor
+                hitNormal = {x: 0, y: 1, z: 0}
+            }
+            const tCeiling = (3 - oy) / rayY
+            if (tCeiling > 0 && tCeiling < bestT) {
+                bestT = tCeiling
+                hitNormal = {x: 0, y: -1, z: 0}
+            }
+        }
+
+        for (const box of this.colliders) {
+            const walls = [
+                {t: (box.minX - ox) / rayX, nx: -1, nz: 0, check: 'z', min: box.minZ, max: box.maxZ},
+                {t: (box.maxX - ox) / rayX, nx: 1, nz: 0, check: 'z', min: box.minZ, max: box.maxZ},
+                {t: (box.minZ - oz) / rayZ, nx: 0, nz: -1, check: 'x', min: box.minX, max: box.maxX},
+                {t: (box.maxZ - oz) / rayZ, nx: 0, nz: 1, check: 'x', min: box.minX, max: box.maxX}
+            ]
+
+            for (const w of walls) {
+                if (!isFinite(w.t) || w.t <= 0 || w.t >= bestT) {
+                    continue
+                }
+                const hitCoord = w.check === 'z'
+                    ? oz + rayZ * w.t
+                    : ox + rayX * w.t
+                const hitY = oy + rayY * w.t
+                if (hitCoord >= w.min && hitCoord <= w.max && hitY >= 0 && hitY <= 3) {
+                    bestT = w.t
+                    hitNormal = {x: w.nx, y: 0, z: w.nz}
+                }
+            }
+        }
+
+        if (!hitNormal || bestT >= 50) {
+            return
+        }
+
+        const hx = ox + rayX * bestT + hitNormal.x * 0.01
+        const hy = oy + rayY * bestT + hitNormal.y * 0.01
+        const hz = oz + rayZ * bestT + hitNormal.z * 0.01
+
+        const decal = new Decal({
+            x: hx, y: hy, z: hz,
+            width: 0.5, height: 0.5,
+            material: new Material3D({
+                texture: this.shroomTex,
+                opacity: 0.9,
+                unlit: true
+            })
+        })
+
+        if (hitNormal.y !== 0) {
+            decal.rotation.setFromEuler(Math.PI / 2 * hitNormal.y, Math.PI, 0, 'YXZ')
+        } else {
+            const yaw = Math.atan2(-hitNormal.x, -hitNormal.z)
+            decal.rotation.setFromEuler(Math.PI, yaw, 0, 'YXZ')
+        }
+
+        this.scene.addChild(decal)
+        decal.markDirty()
     }
 
 
