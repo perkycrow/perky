@@ -571,8 +571,8 @@ export default class DungeonStage extends Stage {
             width: 0.5, height: 0.5,
             material: new Material3D({
                 texture: this.shroomTex,
-                opacity: 0.9,
-                unlit: true
+                color: [0.3, 0.3, 0.3],
+                opacity: 0.9
             })
         })
 
