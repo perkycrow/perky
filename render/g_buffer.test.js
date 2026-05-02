@@ -74,7 +74,6 @@ function createMockGL () {
         },
         READ_FRAMEBUFFER: 0x8CA8,
         DRAW_FRAMEBUFFER: 0x8CA9,
-        NEAREST: 0x2600,
         blitFramebuffer (...args) {
             calls.push({fn: 'blitFramebuffer', args})
         }

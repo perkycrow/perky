@@ -122,7 +122,35 @@ function createMockGL () {
         },
         depthMask (flag) {
             calls.push({fn: 'depthMask', args: [flag]})
-        }
+        },
+        clearColor (...args) {
+            calls.push({fn: 'clearColor', args})
+        },
+        createBuffer () {
+            calls.push({fn: 'createBuffer'})
+            return 'mockBuffer'
+        },
+        bindBuffer (target, buffer) {
+            calls.push({fn: 'bindBuffer', args: [target, buffer]})
+        },
+        bufferData (...args) {
+            calls.push({fn: 'bufferData', args})
+        },
+        deleteBuffer (buffer) {
+            calls.push({fn: 'deleteBuffer', args: [buffer]})
+        },
+        enableVertexAttribArray (index) {
+            calls.push({fn: 'enableVertexAttribArray', args: [index]})
+        },
+        vertexAttribPointer (...args) {
+            calls.push({fn: 'vertexAttribPointer', args})
+        },
+        drawArrays (...args) {
+            calls.push({fn: 'drawArrays', args})
+        },
+        ARRAY_BUFFER: 0x8892,
+        STATIC_DRAW: 0x88E4,
+        TRIANGLE_STRIP: 0x0005
     }
 }
 
