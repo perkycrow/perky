@@ -53,7 +53,7 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.fogColor = [0.01, 0.01, 0.02]
         const gl = this.meshRenderer.context.gl
         this.meshRenderer.cubeShadowMaps = Array.from(
-            {length: 5},
+            {length: 7},
             () => new CubeShadowMap({gl, resolution: 512})
         )
 
@@ -76,8 +76,12 @@ export default class DungeonStage extends Stage {
             {minX: -8.05, maxX: -7.95, minZ: 2, maxZ: 14},
             {minX: -4.05, maxX: -3.95, minZ: 2, maxZ: 14},
             {minX: -10.05, maxX: -9.95, minZ: 14, maxZ: 26},
-            {minX: 1.95, maxX: 2.05, minZ: 14, maxZ: 26},
+            {minX: 1.95, maxX: 2.05, minZ: 14, maxZ: 18},
+            {minX: 1.95, maxX: 2.05, minZ: 22, maxZ: 26},
             {minX: -10, maxX: 2, minZ: 25.95, maxZ: 26.05},
+            {minX: 2, maxX: 20, minZ: 17.95, maxZ: 18.05},
+            {minX: 2, maxX: 20, minZ: 21.95, maxZ: 22.05},
+            {minX: 19.95, maxX: 20.05, minZ: 18, maxZ: 22},
             {minX: -10, maxX: -8, minZ: 13.95, maxZ: 14.05},
             {minX: -4, maxX: 2, minZ: 13.95, maxZ: 14.05}
         ]
@@ -99,6 +103,7 @@ export default class DungeonStage extends Stage {
         this.#buildSideRoom(assets, lights)
         this.#buildCorridor(assets, lights)
         this.#buildHall(assets, lights)
+        this.#buildWing(assets, lights)
 
         const doorway1 = this.#placeAsset(assets.doorway, 0, 0, 0, 90)
         const door1 = this.#findByName(doorway1, 'door_4')
@@ -245,7 +250,6 @@ export default class DungeonStage extends Stage {
         this.#buildWall(assets.wall, -10, 20, 90)
         this.#buildWall(assets.wall, -10, 24, 90)
         this.#buildWall(assets.wall, 2, 16, -90)
-        this.#buildWall(assets.wall, 2, 20, -90)
         this.#buildWall(assets.wall, 2, 24, -90)
         this.#buildWall(assets.wall, -8, 26, 180)
         this.#buildWall(assets.wall, -4, 26, 180)
@@ -269,6 +273,47 @@ export default class DungeonStage extends Stage {
         this.#placeAsset(assets.crate, 0.5, 0, 24, 5)
         this.#placeAsset(assets.crate, 0.5, 0.2, 24, 70)
         this.#placeAsset(assets.box, 1, 0, 23, -15)
+    }
+
+
+    #buildWing (assets, lights) {
+        for (let i = 0; i < 4; i++) {
+            const x = 4 + i * 4
+            this.#placeAsset(assets.floor, x, 0, 20, 0)
+            this.#placeCeiling(assets.floor, x, 3, 20)
+            this.#buildWall(assets.wall, x, 18, 0)
+            this.#buildWall(assets.wall, x, 22, 180)
+        }
+
+        const lamp1 = this.#placeAsset(assets.ceilingLamp, 8, 3, 20, 0)
+        this.#setCastShadow(lamp1, false)
+        lights.push(new Light3D({
+            x: 8,
+            y: 2.7,
+            z: 20,
+            color: [1.0, 0.5, 0.2],
+            intensity: 3.0,
+            radius: 10
+        }))
+
+        const lamp2 = this.#placeAsset(assets.ceilingLamp, 16, 3, 20, 0)
+        this.#setCastShadow(lamp2, false)
+        lights.push(new Light3D({
+            x: 16,
+            y: 2.7,
+            z: 20,
+            color: [0.4, 1.0, 0.5],
+            intensity: 3.0,
+            radius: 10
+        }))
+
+        this.#buildWall(assets.wall, 20, 20, -90)
+
+        this.#placeAsset(assets.table, 6, 0, 20, 0)
+        this.#placeAsset(assets.chair, 7, 0, 20, -90)
+        this.#placeAsset(assets.barrel, 18, 0, 21, 10)
+        this.#placeAsset(assets.shelf, 19, 0, 19, -90)
+        this.#placeAsset(assets.crate, 12, 0, 21.3, 0)
     }
 
 
@@ -478,10 +523,15 @@ export default class DungeonStage extends Stage {
 
         shadowLights = this.meshRenderer.activeCubeShadows?.length ?? 0
 
+        const cached = this.meshRenderer.cubeShadowMaps
+            .filter(m => !m.dirty).length
+        const total = this.meshRenderer.cubeShadowMaps.length
+
         this.debugOverlay.textContent = [
             `pos: ${px.toFixed(1)}, ${pz.toFixed(1)}`,
             `lights in range: ${activeLights}/${lights.length}`,
-            `active shadows: ${shadowLights}/5`,
+            `active shadows: ${shadowLights}`,
+            `cubemaps cached: ${cached}/${total}`,
             `objects: ${this.meshRenderer.collected.length}`
         ].join('\n')
         this.debugOverlay.style.whiteSpace = 'pre'

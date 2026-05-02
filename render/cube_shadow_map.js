@@ -21,11 +21,27 @@ export default class CubeShadowMap {
     #cubemap = null
     #projection = new Matrix4()
     #views = []
+    #dirty = true
 
     constructor ({gl, resolution = 512}) {
         this.#gl = gl
         this.#resolution = resolution
         this.#createResources()
+    }
+
+
+    get dirty () {
+        return this.#dirty
+    }
+
+
+    markDirty () {
+        this.#dirty = true
+    }
+
+
+    markClean () {
+        this.#dirty = false
     }
 
 

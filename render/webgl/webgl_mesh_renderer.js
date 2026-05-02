@@ -7,7 +7,7 @@ import LightDataTexture from '../light_data_texture.js'
 
 
 const SHADER_CUBE_SLOTS = 5
-const DEFAULT_MAX_CUBE_SHADOWS = 3
+const DEFAULT_MAX_CUBE_SHADOWS = 4
 
 
 export default class WebGLMeshRenderer extends WebGLObjectRenderer {
@@ -195,13 +195,18 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
                 .map((light, idx) => ({light, idx, dist: this.#distToCamera(light)}))
                 .sort((a, b) => a.dist - b.dist)
 
-            for (let i = 0; i < sorted.length && this.#activeCubeShadows.length < this.#maxCubeShadows; i++) {
+            let rendered = 0
+            for (let i = 0; i < sorted.length && this.#activeCubeShadows.length < SHADER_CUBE_SLOTS; i++) {
                 const {light, idx} = sorted[i]
                 if (idx >= this.#cubeShadowMaps.length) {
                     continue
                 }
-                this.#renderCubeShadowPass(gl, this.#cubeShadowMaps[idx], light)
-                this.#activeCubeShadows.push({map: this.#cubeShadowMaps[idx], light})
+                const csm = this.#cubeShadowMaps[idx]
+                if (csm.dirty && rendered < this.#maxCubeShadows) {
+                    this.#renderCubeShadowPass(gl, csm, light)
+                    rendered++
+                }
+                this.#activeCubeShadows.push({map: csm, light})
             }
         }
 
@@ -305,6 +310,10 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             return
         }
 
+        if (!csm.dirty) {
+            return
+        }
+
         const far = light.radius
         csm.update(light.position, far)
 
@@ -336,6 +345,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             }
         }
         csm.end()
+        csm.markClean()
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
     }
 
