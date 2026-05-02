@@ -53,7 +53,7 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.fogColor = [0.01, 0.01, 0.02]
         const gl = this.meshRenderer.context.gl
         this.meshRenderer.cubeShadowMaps = Array.from(
-            {length: 7},
+            {length: 8},
             () => new CubeShadowMap({gl, resolution: 512})
         )
 
@@ -150,6 +150,23 @@ export default class DungeonStage extends Stage {
             intensity: 3.5,
             radius: 12
         }))
+
+        this.wallLampOn = this.#placeAsset(assets.wallLampOn, -7.95, 1.5, -0.5, 90)
+        this.wallLampOff = this.#placeAsset(assets.wallLampOff, -7.95, 1.5, -0.5, 90)
+        this.wallLampOff.visible = false
+        this.#setCastShadow(this.wallLampOn, false)
+        this.#setCastShadow(this.wallLampOff, false)
+
+        this.wallLight = new Light3D({
+            x: -7.5,
+            y: 1.5,
+            z: -0.5,
+            color: [1.0, 0.8, 0.4],
+            intensity: 2.0,
+            radius: 6
+        })
+        this.wallLightIndex = lights.length
+        lights.push(this.wallLight)
 
         this.#placeAsset(assets.table, -5, 0, 0, 0)
         this.#placeAsset(assets.chair, -5.8, 0, 0, 90)
@@ -402,7 +419,8 @@ export default class DungeonStage extends Stage {
     async #loadAssets () {
         const names = [
             'wall', 'floor', 'doorway', 'ceiling_lamp',
-            'chair', 'table', 'shelf', 'barrel', 'box', 'crate', 'metal_shelf'
+            'chair', 'table', 'shelf', 'barrel', 'box', 'crate', 'metal_shelf',
+            'wall_lamp_on', 'wall_lamp_off'
         ]
 
         const glbData = await Promise.all(
@@ -469,7 +487,7 @@ export default class DungeonStage extends Stage {
 
 
 
-        this.#animateDoor(deltaTime)
+        this.#animateObjects()
 
         const px = this.player.position.x
         const py = this.player.position.y + EYE_HEIGHT
@@ -483,23 +501,36 @@ export default class DungeonStage extends Stage {
     }
 
 
-    #animateDoor () {
-        if (!this.animatedDoor) {
-            return
+    #animateObjects () {
+        const t = performance.now() * 0.001
+
+        if (this.animatedDoor) {
+            const cycle = t % 6
+            const angle = cycle < 3
+                ? Math.PI * 0.45 * Math.min(cycle, 1)
+                : Math.PI * 0.45 * Math.max(0, 1 - (cycle - 3))
+
+            this.animatedDoor.rotation.setFromEuler(0, angle, 0, 'YXZ')
+            this.animatedDoor.markDirty()
+
+            for (const idx of this.animatedDoorLights) {
+                if (this.meshRenderer.cubeShadowMaps[idx]) {
+                    this.meshRenderer.cubeShadowMaps[idx].markDirty()
+                }
+            }
         }
 
-        const t = performance.now() * 0.001
-        const cycle = t % 6
-        const angle = cycle < 3
-            ? Math.PI * 0.45 * Math.min(cycle, 1)
-            : Math.PI * 0.45 * Math.max(0, 1 - (cycle - 3))
+        if (this.wallLight) {
+            const on = Math.floor(t / 4) % 2 === 0
+            this.wallLampOn.visible = on
+            this.wallLampOff.visible = !on
+            this.wallLight.intensity = on ? 2.0 : 0.0
 
-        this.animatedDoor.rotation.setFromEuler(0, angle, 0, 'YXZ')
-        this.animatedDoor.markDirty()
-
-        for (const idx of this.animatedDoorLights) {
-            if (this.meshRenderer.cubeShadowMaps[idx]) {
-                this.meshRenderer.cubeShadowMaps[idx].markDirty()
+            if (this.meshRenderer.cubeShadowMaps[this.wallLightIndex]) {
+                this.meshRenderer.cubeShadowMaps[this.wallLightIndex].markDirty()
+            }
+            if (this.meshRenderer.cubeShadowMaps[0]) {
+                this.meshRenderer.cubeShadowMaps[0].markDirty()
             }
         }
     }
