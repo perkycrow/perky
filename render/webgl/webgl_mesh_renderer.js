@@ -6,6 +6,9 @@ import {CUBE_DEPTH_SHADER_DEF} from '../shaders/builtin/cube_depth_shader.js'
 import LightDataTexture from '../light_data_texture.js'
 
 
+const MAX_CUBE_SHADOWS = 2
+
+
 export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
     #meshProgram = null
@@ -13,8 +16,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #cubeDepthProgram = null
     #camera3d = null
     #shadowMap = null
-    #cubeShadowMap = null
-    #cubeShadowLightIndex = 0
+    #cubeShadowMaps = []
     #lightDirection = [0.5, 1.0, 0.3]
     #ambientSky = [0.3, 0.3, 0.3]
     #ambientGround = [0.3, 0.3, 0.3]
@@ -136,13 +138,13 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-    get cubeShadowMap () {
-        return this.#cubeShadowMap
+    get cubeShadowMaps () {
+        return this.#cubeShadowMaps
     }
 
 
-    set cubeShadowMap (value) {
-        this.#cubeShadowMap = value
+    set cubeShadowMaps (value) {
+        this.#cubeShadowMaps = value
     }
 
 
@@ -169,8 +171,8 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             this.#renderShadowPass(gl)
         }
 
-        if (this.#cubeShadowMap && this.#lights.length > 0) {
-            this.#renderCubeShadowPass(gl)
+        for (let i = 0; i < this.#cubeShadowMaps.length && i < MAX_CUBE_SHADOWS; i++) {
+            this.#renderCubeShadowPass(gl, this.#cubeShadowMaps[i], this.#lights[i])
         }
 
         gl.clear(gl.DEPTH_BUFFER_BIT)
@@ -230,6 +232,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#cubeDepthProgram = null
         this.#camera3d = null
         this.#shadowMap = null
+        this.#cubeShadowMaps = []
         this.#lights = []
         if (this.#lightDataTexture) {
             this.#lightDataTexture.dispose()
@@ -266,11 +269,8 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-    #renderCubeShadowPass (gl) {
-        const csm = this.#cubeShadowMap
-        const light = this.#lights[this.#cubeShadowLightIndex]
-
-        if (!light) {
+    #renderCubeShadowPass (gl, csm, light) {
+        if (!csm || !light) {
             return
         }
 
@@ -358,21 +358,23 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.bindTexture(gl.TEXTURE_2D, this.#lightDataTexture.texture)
         gl.uniform1i(program.uniforms.uLightData, 3)
 
-        gl.activeTexture(gl.TEXTURE4)
-        if (this.#cubeShadowMap) {
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.#cubeShadowMap.texture)
-            gl.uniform1i(program.uniforms.uCubeShadowMap, 4)
-            gl.uniform1f(program.uniforms.uHasCubeShadowMap, 1)
-            const light = this.#lights[this.#cubeShadowLightIndex]
-            if (light) {
-                gl.uniform3f(program.uniforms.uCubeShadowLightPos, light.position.x, light.position.y, light.position.z)
-                gl.uniform1f(program.uniforms.uCubeShadowFar, light.radius)
+        const numCubeShadows = Math.min(this.#cubeShadowMaps.length, MAX_CUBE_SHADOWS)
+        gl.uniform1i(program.uniforms.uNumCubeShadows, numCubeShadows)
+
+        for (let i = 0; i < MAX_CUBE_SHADOWS; i++) {
+            const unit = gl.TEXTURE4 + i
+            gl.activeTexture(unit)
+
+            if (i < numCubeShadows) {
+                const light = this.#lights[i]
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.#cubeShadowMaps[i].texture)
+                gl.uniform1i(program.uniforms['uCubeShadow' + i], unit - gl.TEXTURE0)
+                gl.uniform3f(program.uniforms['uCubeShadowPos' + i], light.position.x, light.position.y, light.position.z)
+                gl.uniform1f(program.uniforms['uCubeShadowFar' + i], light.radius)
+            } else {
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.#getDummyCubeShadowTexture(gl))
+                gl.uniform1i(program.uniforms['uCubeShadow' + i], unit - gl.TEXTURE0)
             }
-            gl.uniform1i(program.uniforms.uCubeShadowLightIdx, this.#cubeShadowLightIndex)
-        } else {
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.#getDummyCubeShadowTexture(gl))
-            gl.uniform1i(program.uniforms.uCubeShadowMap, 4)
-            gl.uniform1f(program.uniforms.uHasCubeShadowMap, 0)
         }
     }
 

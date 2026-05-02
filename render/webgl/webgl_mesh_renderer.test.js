@@ -159,11 +159,13 @@ function createMockShaderRegistry () {
             uLightMatrix: 24,
             uShadowMap: 25,
             uHasShadowMap: 26,
-            uCubeShadowMap: 28,
-            uHasCubeShadowMap: 29,
-            uCubeShadowLightPos: 30,
-            uCubeShadowFar: 31,
-            uCubeShadowLightIdx: 32,
+            uCubeShadow0: 28,
+            uCubeShadow1: 29,
+            uCubeShadowPos0: 30,
+            uCubeShadowPos1: 31,
+            uCubeShadowFar0: 32,
+            uCubeShadowFar1: 34,
+            uNumCubeShadows: 35,
             uHasVertexColors: 27
         },
         attributes: {

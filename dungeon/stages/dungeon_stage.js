@@ -52,7 +52,10 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.fogFar = 30
         this.meshRenderer.fogColor = [0.01, 0.01, 0.02]
         const gl = this.meshRenderer.context.gl
-        this.meshRenderer.cubeShadowMap = new CubeShadowMap({gl, resolution: 512})
+        this.meshRenderer.cubeShadowMaps = [
+            new CubeShadowMap({gl, resolution: 512}),
+            new CubeShadowMap({gl, resolution: 512})
+        ]
 
         this.scene = new Object3D()
         layer.setContent(this.scene)
@@ -138,14 +141,14 @@ export default class DungeonStage extends Stage {
         const lamp2 = this.#placeAsset(assets.ceilingLamp, 2, 3, 0, 0)
         this.#setCastShadow(lamp2, false)
 
-        // lights.push(new Light3D({
-        //     x: 2,
-        //     y: 2.7,
-        //     z: 0,
-        //     color: [1.0, 0.85, 0.6],
-        //     intensity: 3.5,
-        //     radius: 10
-        // }))
+        lights.push(new Light3D({
+            x: 2,
+            y: 2.7,
+            z: 0,
+            color: [1.0, 0.85, 0.6],
+            intensity: 3.5,
+            radius: 10
+        }))
 
         this.#placeAsset(assets.crate, 3.3, 0, -1.5, 0)
         this.#placeAsset(assets.crate, 3.3, 0.2, -1.5, 25)

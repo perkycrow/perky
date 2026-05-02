@@ -64,11 +64,13 @@ uniform highp sampler2D uLightData;
 uniform highp sampler2DShadow uShadowMap;
 uniform float uHasShadowMap;
 
-uniform mediump samplerCube uCubeShadowMap;
-uniform float uHasCubeShadowMap;
-uniform vec3 uCubeShadowLightPos;
-uniform float uCubeShadowFar;
-uniform int uCubeShadowLightIdx;
+uniform mediump samplerCube uCubeShadow0;
+uniform mediump samplerCube uCubeShadow1;
+uniform vec3 uCubeShadowPos0;
+uniform vec3 uCubeShadowPos1;
+uniform float uCubeShadowFar0;
+uniform float uCubeShadowFar1;
+uniform int uNumCubeShadows;
 
 uniform float uHasVertexColors;
 
@@ -101,16 +103,27 @@ float calcShadow (vec3 normal, vec3 lightDir) {
 }
 
 
-float calcCubeShadow (vec3 fragToLight, float currentDist, vec3 normal) {
-    if (uHasCubeShadowMap < 0.5) return 1.0;
+float calcCubeShadowSample (mediump samplerCube smap, vec3 lightPos, float far, vec3 normal) {
+    vec3 fragToLight = vWorldPosition - lightPos;
+    float currentDist = length(fragToLight);
     vec3 lightDir = normalize(-fragToLight);
     float NdotL = dot(normal, lightDir);
     if (NdotL < 0.05) return 1.0;
-    float storedDist = texture(uCubeShadowMap, fragToLight).r * uCubeShadowFar;
+    float storedDist = texture(smap, fragToLight).r * far;
     float diff = currentDist - storedDist;
     float inShadow = smoothstep(0.02, 0.4, diff);
     float fade = smoothstep(0.05, 0.4, NdotL);
     return mix(1.0, 1.0 - inShadow * 0.85, fade);
+}
+
+
+float calcPointShadow (vec3 lightPos, vec3 normal) {
+    if (uNumCubeShadows < 1) return 1.0;
+    if (length(lightPos - uCubeShadowPos0) < 0.1)
+        return calcCubeShadowSample(uCubeShadow0, uCubeShadowPos0, uCubeShadowFar0, normal);
+    if (uNumCubeShadows >= 2 && length(lightPos - uCubeShadowPos1) < 0.1)
+        return calcCubeShadowSample(uCubeShadow1, uCubeShadowPos1, uCubeShadowFar1, normal);
+    return 1.0;
 }
 
 
@@ -173,11 +186,7 @@ void main() {
                 attenuation *= smoothstep(spotDir.w, spotExtra.x, cosTheta);
             }
 
-            float pointShadow = 1.0;
-            if (uHasCubeShadowMap > 0.5) {
-                vec3 lightToFrag = vWorldPosition - uCubeShadowLightPos;
-                pointShadow = calcCubeShadow(lightToFrag, length(lightToFrag), normal);
-            }
+            float pointShadow = calcPointShadow(posInt.xyz, normal);
 
             float nDotL = max(dot(normal, lightDir), 0.0);
             lit += baseColor * colRad.xyz * posInt.w * nDotL * attenuation * pointShadow / 3.14159;
@@ -242,11 +251,13 @@ export const MESH_SHADER_DEF = {
         'uLightMatrix',
         'uShadowMap',
         'uHasShadowMap',
-        'uCubeShadowMap',
-        'uHasCubeShadowMap',
-        'uCubeShadowLightPos',
-        'uCubeShadowFar',
-        'uCubeShadowLightIdx',
+        'uCubeShadow0',
+        'uCubeShadow1',
+        'uCubeShadowPos0',
+        'uCubeShadowPos1',
+        'uCubeShadowFar0',
+        'uCubeShadowFar1',
+        'uNumCubeShadows',
         'uHasVertexColors'
     ],
     attributes: ['aPosition', 'aNormal', 'aTexCoord', 'aTangent', 'aColor']

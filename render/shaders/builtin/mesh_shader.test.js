@@ -224,11 +224,13 @@ describe('MESH_SHADER_DEF', () => {
             'uLightMatrix',
             'uShadowMap',
             'uHasShadowMap',
-            'uCubeShadowMap',
-            'uHasCubeShadowMap',
-            'uCubeShadowLightPos',
-            'uCubeShadowFar',
-            'uCubeShadowLightIdx',
+            'uCubeShadow0',
+            'uCubeShadow1',
+            'uCubeShadowPos0',
+            'uCubeShadowPos1',
+            'uCubeShadowFar0',
+            'uCubeShadowFar1',
+            'uNumCubeShadows',
             'uHasVertexColors'
         ])
     })
