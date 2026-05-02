@@ -120,11 +120,8 @@ export default class DungeonStage extends Stage {
         }
 
         const doorway3 = this.#placeAsset(assets.doorway, -6, 0, 2, 0)
-        const door3 = this.#findByName(doorway3, 'door_4')
-        if (door3) {
-            door3.rotation.setFromEuler(0, Math.PI * 0.45, 0, 'YXZ')
-            door3.markDirty()
-        }
+        this.animatedDoor = this.#findByName(doorway3, 'door_4')
+        this.animatedDoorLights = [0, 3]
 
         this.meshRenderer.lights = lights
         this.scene.markDirty()
@@ -472,6 +469,8 @@ export default class DungeonStage extends Stage {
 
 
 
+        this.#animateDoor(deltaTime)
+
         const px = this.player.position.x
         const py = this.player.position.y + EYE_HEIGHT
         const pz = this.player.position.z
@@ -481,6 +480,28 @@ export default class DungeonStage extends Stage {
         this.camera3d.markDirty()
 
         this.#updateDebugOverlay()
+    }
+
+
+    #animateDoor () {
+        if (!this.animatedDoor) {
+            return
+        }
+
+        const t = performance.now() * 0.001
+        const cycle = t % 6
+        const angle = cycle < 3
+            ? Math.PI * 0.45 * Math.min(cycle, 1)
+            : Math.PI * 0.45 * Math.max(0, 1 - (cycle - 3))
+
+        this.animatedDoor.rotation.setFromEuler(0, angle, 0, 'YXZ')
+        this.animatedDoor.markDirty()
+
+        for (const idx of this.animatedDoorLights) {
+            if (this.meshRenderer.cubeShadowMaps[idx]) {
+                this.meshRenderer.cubeShadowMaps[idx].markDirty()
+            }
+        }
     }
 
 
