@@ -52,11 +52,10 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.fogFar = 30
         this.meshRenderer.fogColor = [0.01, 0.01, 0.02]
         const gl = this.meshRenderer.context.gl
-        this.meshRenderer.cubeShadowMaps = [
-            new CubeShadowMap({gl, resolution: 512}),
-            new CubeShadowMap({gl, resolution: 512}),
-            new CubeShadowMap({gl, resolution: 512})
-        ]
+        this.meshRenderer.cubeShadowMaps = Array.from(
+            {length: 5},
+            () => new CubeShadowMap({gl, resolution: 512})
+        )
 
         this.scene = new Object3D()
         layer.setContent(this.scene)
@@ -65,15 +64,22 @@ export default class DungeonStage extends Stage {
         this.#setupMouseLook(layer.canvas)
 
         this.colliders = [
-            {minX: -8.05, maxX: -7.95, minZ: -2, maxZ: 2},
-            {minX: -8, maxX: 4, minZ: 1.95, maxZ: 2.05},
+            {minX: -8, maxX: -7.4, minZ: 1.95, maxZ: 2.05},
+            {minX: -4.6, maxX: 4, minZ: 1.95, maxZ: 2.05},
             {minX: -8, maxX: 1.4, minZ: -2.05, maxZ: -1.95},
             {minX: 2.6, maxX: 4, minZ: -2.05, maxZ: -1.95},
             {minX: -0.05, maxX: 0.05, minZ: -2, maxZ: -0.6},
             {minX: -0.05, maxX: 0.05, minZ: 0.6, maxZ: 2},
             {minX: 3.95, maxX: 4.05, minZ: -6, maxZ: 2},
             {minX: -0.05, maxX: 0.05, minZ: -6, maxZ: -2},
-            {minX: 0, maxX: 4, minZ: -6.05, maxZ: -5.95}
+            {minX: 0, maxX: 4, minZ: -6.05, maxZ: -5.95},
+            {minX: -8.05, maxX: -7.95, minZ: 2, maxZ: 14},
+            {minX: -4.05, maxX: -3.95, minZ: 2, maxZ: 14},
+            {minX: -10.05, maxX: -9.95, minZ: 14, maxZ: 26},
+            {minX: 1.95, maxX: 2.05, minZ: 14, maxZ: 26},
+            {minX: -10, maxX: 2, minZ: 25.95, maxZ: 26.05},
+            {minX: -10, maxX: -8, minZ: 13.95, maxZ: 14.05},
+            {minX: -4, maxX: 2, minZ: 13.95, maxZ: 14.05}
         ]
 
         this.#createDebugOverlay()
@@ -91,6 +97,8 @@ export default class DungeonStage extends Stage {
         this.#buildBigRoom(assets, lights)
         this.#buildSmallRoom(assets, lights)
         this.#buildSideRoom(assets, lights)
+        this.#buildCorridor(assets, lights)
+        this.#buildHall(assets, lights)
 
         const doorway1 = this.#placeAsset(assets.doorway, 0, 0, 0, 90)
         const door1 = this.#findByName(doorway1, 'door_4')
@@ -106,6 +114,13 @@ export default class DungeonStage extends Stage {
             door2.markDirty()
         }
 
+        const doorway3 = this.#placeAsset(assets.doorway, -6, 0, 2, 0)
+        const door3 = this.#findByName(doorway3, 'door_4')
+        if (door3) {
+            door3.rotation.setFromEuler(0, Math.PI * 0.45, 0, 'YXZ')
+            door3.markDirty()
+        }
+
         this.meshRenderer.lights = lights
         this.scene.markDirty()
     }
@@ -119,7 +134,6 @@ export default class DungeonStage extends Stage {
 
         this.#buildWall(assets.wall, -6, -2, 0)
         this.#buildWall(assets.wall, -2, -2, 0)
-        this.#buildWall(assets.wall, -6, 2, 180)
         this.#buildWall(assets.wall, -2, 2, 180)
         this.#buildWall(assets.wall, -8, 0, 90)
 
@@ -191,6 +205,70 @@ export default class DungeonStage extends Stage {
 
         this.#placeAsset(assets.barrel, 3.3, 0, -5.3, 20)
         this.#placeAsset(assets.crate, 0.7, 0, -5, -10)
+    }
+
+
+    #buildCorridor (assets, lights) {
+        for (let i = 0; i < 3; i++) {
+            const z = 4 + i * 4
+            this.#placeAsset(assets.floor, -6, 0, z, 0)
+            this.#placeCeiling(assets.floor, -6, 3, z)
+            this.#buildWall(assets.wall, -8, z, 90)
+            this.#buildWall(assets.wall, -4, z, -90)
+        }
+
+        const lamp = this.#placeAsset(assets.ceilingLamp, -6, 3, 8, 0)
+        this.#setCastShadow(lamp, false)
+
+        lights.push(new Light3D({
+            x: -6,
+            y: 2.7,
+            z: 8,
+            color: [1.0, 0.6, 0.3],
+            intensity: 2.5,
+            radius: 8
+        }))
+    }
+
+
+    #buildHall (assets, lights) {
+        for (let x = 0; x < 3; x++) {
+            for (let z = 0; z < 3; z++) {
+                const px = -8 + x * 4
+                const pz = 16 + z * 4
+                this.#placeAsset(assets.floor, px, 0, pz, 0)
+                this.#placeCeiling(assets.floor, px, 3, pz)
+            }
+        }
+
+        this.#buildWall(assets.wall, -10, 16, 90)
+        this.#buildWall(assets.wall, -10, 20, 90)
+        this.#buildWall(assets.wall, -10, 24, 90)
+        this.#buildWall(assets.wall, 2, 16, -90)
+        this.#buildWall(assets.wall, 2, 20, -90)
+        this.#buildWall(assets.wall, 2, 24, -90)
+        this.#buildWall(assets.wall, -8, 26, 180)
+        this.#buildWall(assets.wall, -4, 26, 180)
+
+        const lamp = this.#placeAsset(assets.ceilingLamp, -4, 3, 20, 0)
+        this.#setCastShadow(lamp, false)
+
+        lights.push(new Light3D({
+            x: -4,
+            y: 2.7,
+            z: 20,
+            color: [0.8, 0.9, 1.0],
+            intensity: 4.0,
+            radius: 14
+        }))
+
+        this.#placeAsset(assets.barrel, -8, 0, 24, 15)
+        this.#placeAsset(assets.barrel, -7, 0, 24.5, -20)
+        this.#placeAsset(assets.table, -2, 0, 18, 45)
+        this.#placeAsset(assets.chair, -3, 0, 18, 30)
+        this.#placeAsset(assets.crate, 0.5, 0, 24, 5)
+        this.#placeAsset(assets.crate, 0.5, 0.2, 24, 70)
+        this.#placeAsset(assets.box, 1, 0, 23, -15)
     }
 
 
@@ -398,12 +476,12 @@ export default class DungeonStage extends Stage {
             }
         }
 
-        shadowLights = Math.min(this.meshRenderer.cubeShadowMaps.length, lights.length)
+        shadowLights = this.meshRenderer.activeCubeShadows?.length ?? 0
 
         this.debugOverlay.textContent = [
             `pos: ${px.toFixed(1)}, ${pz.toFixed(1)}`,
             `lights in range: ${activeLights}/${lights.length}`,
-            `shadow maps: ${shadowLights}`,
+            `active shadows: ${shadowLights}/5`,
             `objects: ${this.meshRenderer.collected.length}`
         ].join('\n')
         this.debugOverlay.style.whiteSpace = 'pre'

@@ -67,12 +67,18 @@ uniform float uHasShadowMap;
 uniform mediump samplerCube uCubeShadow0;
 uniform mediump samplerCube uCubeShadow1;
 uniform mediump samplerCube uCubeShadow2;
+uniform mediump samplerCube uCubeShadow3;
+uniform mediump samplerCube uCubeShadow4;
 uniform vec3 uCubeShadowPos0;
 uniform vec3 uCubeShadowPos1;
 uniform vec3 uCubeShadowPos2;
+uniform vec3 uCubeShadowPos3;
+uniform vec3 uCubeShadowPos4;
 uniform float uCubeShadowFar0;
 uniform float uCubeShadowFar1;
 uniform float uCubeShadowFar2;
+uniform float uCubeShadowFar3;
+uniform float uCubeShadowFar4;
 uniform int uNumCubeShadows;
 
 uniform float uHasVertexColors;
@@ -128,6 +134,10 @@ float calcPointShadow (vec3 lightPos, vec3 normal) {
         return calcCubeShadowSample(uCubeShadow1, uCubeShadowPos1, uCubeShadowFar1, normal);
     if (uNumCubeShadows >= 3 && length(lightPos - uCubeShadowPos2) < 0.1)
         return calcCubeShadowSample(uCubeShadow2, uCubeShadowPos2, uCubeShadowFar2, normal);
+    if (uNumCubeShadows >= 4 && length(lightPos - uCubeShadowPos3) < 0.1)
+        return calcCubeShadowSample(uCubeShadow3, uCubeShadowPos3, uCubeShadowFar3, normal);
+    if (uNumCubeShadows >= 5 && length(lightPos - uCubeShadowPos4) < 0.1)
+        return calcCubeShadowSample(uCubeShadow4, uCubeShadowPos4, uCubeShadowFar4, normal);
     return 1.0;
 }
 
@@ -256,15 +266,9 @@ export const MESH_SHADER_DEF = {
         'uLightMatrix',
         'uShadowMap',
         'uHasShadowMap',
-        'uCubeShadow0',
-        'uCubeShadow1',
-        'uCubeShadow2',
-        'uCubeShadowPos0',
-        'uCubeShadowPos1',
-        'uCubeShadowPos2',
-        'uCubeShadowFar0',
-        'uCubeShadowFar1',
-        'uCubeShadowFar2',
+        'uCubeShadow0', 'uCubeShadow1', 'uCubeShadow2', 'uCubeShadow3', 'uCubeShadow4',
+        'uCubeShadowPos0', 'uCubeShadowPos1', 'uCubeShadowPos2', 'uCubeShadowPos3', 'uCubeShadowPos4',
+        'uCubeShadowFar0', 'uCubeShadowFar1', 'uCubeShadowFar2', 'uCubeShadowFar3', 'uCubeShadowFar4',
         'uNumCubeShadows',
         'uHasVertexColors'
     ],

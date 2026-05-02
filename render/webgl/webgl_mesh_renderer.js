@@ -6,7 +6,7 @@ import {CUBE_DEPTH_SHADER_DEF} from '../shaders/builtin/cube_depth_shader.js'
 import LightDataTexture from '../light_data_texture.js'
 
 
-const MAX_CUBE_SHADOWS = 3
+const MAX_CUBE_SHADOWS = 5
 
 
 export default class WebGLMeshRenderer extends WebGLObjectRenderer {
@@ -17,6 +17,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #camera3d = null
     #shadowMap = null
     #cubeShadowMaps = []
+    #activeCubeShadows = []
     #lightDirection = [0.5, 1.0, 0.3]
     #ambientSky = [0.3, 0.3, 0.3]
     #ambientGround = [0.3, 0.3, 0.3]
@@ -148,6 +149,11 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
+    get activeCubeShadows () {
+        return this.#activeCubeShadows
+    }
+
+
     init (context) {
         super.init(context)
         this.#meshProgram = context.shaderRegistry.register('mesh', MESH_SHADER_DEF)
@@ -171,8 +177,20 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             this.#renderShadowPass(gl)
         }
 
-        for (let i = 0; i < this.#cubeShadowMaps.length && i < MAX_CUBE_SHADOWS; i++) {
-            this.#renderCubeShadowPass(gl, this.#cubeShadowMaps[i], this.#lights[i])
+        this.#activeCubeShadows = []
+        if (this.#cubeShadowMaps.length > 0 && this.#camera3d) {
+            const sorted = this.#lights
+                .map((light, idx) => ({light, idx, dist: this.#distToCamera(light)}))
+                .sort((a, b) => a.dist - b.dist)
+
+            for (let i = 0; i < sorted.length && this.#activeCubeShadows.length < MAX_CUBE_SHADOWS; i++) {
+                const {light, idx} = sorted[i]
+                if (idx >= this.#cubeShadowMaps.length) {
+                    continue
+                }
+                this.#renderCubeShadowPass(gl, this.#cubeShadowMaps[idx], light)
+                this.#activeCubeShadows.push({map: this.#cubeShadowMaps[idx], light})
+            }
         }
 
         gl.clear(gl.DEPTH_BUFFER_BIT)
@@ -233,6 +251,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#camera3d = null
         this.#shadowMap = null
         this.#cubeShadowMaps = []
+        this.#activeCubeShadows = []
         this.#lights = []
         if (this.#lightDataTexture) {
             this.#lightDataTexture.dispose()
@@ -365,16 +384,16 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.bindTexture(gl.TEXTURE_2D, this.#lightDataTexture.texture)
         gl.uniform1i(program.uniforms.uLightData, 3)
 
-        const numCubeShadows = Math.min(this.#cubeShadowMaps.length, MAX_CUBE_SHADOWS)
-        gl.uniform1i(program.uniforms.uNumCubeShadows, numCubeShadows)
+        const active = this.#activeCubeShadows
+        gl.uniform1i(program.uniforms.uNumCubeShadows, active.length)
 
         for (let i = 0; i < MAX_CUBE_SHADOWS; i++) {
             const unit = gl.TEXTURE4 + i
             gl.activeTexture(unit)
 
-            if (i < numCubeShadows) {
-                const light = this.#lights[i]
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.#cubeShadowMaps[i].texture)
+            if (i < active.length) {
+                const {map, light} = active[i]
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, map.texture)
                 gl.uniform1i(program.uniforms['uCubeShadow' + i], unit - gl.TEXTURE0)
                 gl.uniform3f(program.uniforms['uCubeShadowPos' + i], light.position.x, light.position.y, light.position.z)
                 gl.uniform1f(program.uniforms['uCubeShadowFar' + i], light.radius)
@@ -383,6 +402,14 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
                 gl.uniform1i(program.uniforms['uCubeShadow' + i], unit - gl.TEXTURE0)
             }
         }
+    }
+
+
+    #distToCamera (light) {
+        const dx = light.position.x - this.#camera3d.position.x
+        const dy = light.position.y - this.#camera3d.position.y
+        const dz = light.position.z - this.#camera3d.position.z
+        return dx * dx + dy * dy + dz * dz
     }
 
 
