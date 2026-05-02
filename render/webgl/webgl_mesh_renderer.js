@@ -293,7 +293,14 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
                 if (!object.mesh || !object.visible || !object.castShadow) {
                     continue
                 }
-                gl.uniformMatrix4fv(program.uniforms.uModel, false, object.worldMatrix.elements)
+                const pos = object.worldMatrix.elements
+                const dx = pos[12] - light.position.x
+                const dy = pos[13] - light.position.y
+                const dz = pos[14] - light.position.z
+                if (dx * dx + dy * dy + dz * dz > far * far) {
+                    continue
+                }
+                gl.uniformMatrix4fv(program.uniforms.uModel, false, pos)
                 object.mesh.draw()
             }
         }

@@ -76,6 +76,8 @@ export default class DungeonStage extends Stage {
             {minX: 0, maxX: 4, minZ: -6.05, maxZ: -5.95}
         ]
 
+        this.#createDebugOverlay()
+
         super.onStart()
 
         this.#buildScene()
@@ -355,6 +357,56 @@ export default class DungeonStage extends Stage {
         this.camera3d.rotation.setFromEuler(this.player.pitch, this.player.yaw, 0, 'YXZ')
         this.camera3d.markDirty()
 
+        this.#updateDebugOverlay()
+    }
+
+
+    #createDebugOverlay () {
+        this.debugOverlay = document.createElement('div')
+        Object.assign(this.debugOverlay.style, {
+            position: 'fixed',
+            top: '10px',
+            left: '10px',
+            color: '#0f0',
+            fontFamily: 'monospace',
+            fontSize: '13px',
+            zIndex: '9999',
+            pointerEvents: 'none',
+            textShadow: '1px 1px 2px #000'
+        })
+        document.body.appendChild(this.debugOverlay)
+    }
+
+
+    #updateDebugOverlay () {
+        if (!this.debugOverlay || !this.player) {
+            return
+        }
+
+        const lights = this.meshRenderer.lights
+        const px = this.player.position.x
+        const pz = this.player.position.z
+        let activeLights = 0
+        let shadowLights = 0
+
+        for (const light of lights) {
+            const dx = light.position.x - px
+            const dz = light.position.z - pz
+            const dist = Math.sqrt(dx * dx + dz * dz)
+            if (dist < light.radius) {
+                activeLights++
+            }
+        }
+
+        shadowLights = Math.min(this.meshRenderer.cubeShadowMaps.length, lights.length)
+
+        this.debugOverlay.textContent = [
+            `pos: ${px.toFixed(1)}, ${pz.toFixed(1)}`,
+            `lights in range: ${activeLights}/${lights.length}`,
+            `shadow maps: ${shadowLights}`,
+            `objects: ${this.meshRenderer.collected.length}`
+        ].join('\n')
+        this.debugOverlay.style.whiteSpace = 'pre'
     }
 
 
