@@ -183,6 +183,27 @@ Les lights statiques contribuent au bake et n'ont PAS besoin de cubemap shadow a
 
 Cela signifie que dans un donjon typique avec 20 lights de plafond (statiques) et 1 torche portee (dynamique), seule la torche a besoin d'un slot cubemap → le budget shadow est quasi nul.
 
+#### Cache cubemap (optimisation)
+
+Les cubemap shadows sont re-rendus chaque frame (6 passes x N lights). Optimisation : ne re-rendre que si quelque chose a change dans le radius de la light.
+
+Chaque cubemap a un flag `dirty` :
+- `dirty = true` → re-render les 6 faces ce frame
+- `dirty = false` → skip, reutiliser le cubemap du frame precedent (0 draw calls)
+
+Ce qui rend un cubemap dirty :
+- Un objet dynamique entre ou sort du radius de la light
+- Un objet dynamique bouge dans le radius
+- La light elle-meme bouge (light dynamique)
+- Un objet statique est ajoute/supprime (edition)
+
+Ce qui NE rend PAS dirty :
+- Le joueur bouge (il ne projette pas d'ombre via cubemap, il utilise blob shadow)
+- Une light hors du radius change
+- Les objets statiques qui ne bougent pas
+
+Resultat : dans une piece ou rien ne bouge, le cubemap est rendu UNE FOIS puis cache indefiniment. Le cout GPU tombe a zero pour cette light. Seules les pieces avec de l'activite (portes qui s'ouvrent, objets deplaces) re-rendent leurs cubemaps.
+
 
 ### Collisions simplifiees
 
