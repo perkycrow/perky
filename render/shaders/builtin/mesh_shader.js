@@ -126,27 +126,38 @@ float calcCubeShadowSample (mediump samplerCube smap, vec3 lightPos, float far, 
 }
 
 
-float fadedShadow (mediump samplerCube smap, vec3 pos, float far, vec3 normal) {
-    float shadowVal = calcCubeShadowSample(smap, pos, far, normal);
-    float distToEye = length(pos - uCameraPosition);
-    float fade = 1.0 - smoothstep(far * 0.6, far, distToEye);
-    return mix(1.0, shadowVal, fade);
-}
-
-
 float calcPointShadow (vec3 lightPos, vec3 normal) {
     if (uNumCubeShadows < 1) return 1.0;
-    if (length(lightPos - uCubeShadowPos0) < 0.1)
-        return fadedShadow(uCubeShadow0, uCubeShadowPos0, uCubeShadowFar0, normal);
-    if (uNumCubeShadows >= 2 && length(lightPos - uCubeShadowPos1) < 0.1)
-        return fadedShadow(uCubeShadow1, uCubeShadowPos1, uCubeShadowFar1, normal);
-    if (uNumCubeShadows >= 3 && length(lightPos - uCubeShadowPos2) < 0.1)
-        return fadedShadow(uCubeShadow2, uCubeShadowPos2, uCubeShadowFar2, normal);
-    if (uNumCubeShadows >= 4 && length(lightPos - uCubeShadowPos3) < 0.1)
-        return fadedShadow(uCubeShadow3, uCubeShadowPos3, uCubeShadowFar3, normal);
-    if (uNumCubeShadows >= 5 && length(lightPos - uCubeShadowPos4) < 0.1)
-        return fadedShadow(uCubeShadow4, uCubeShadowPos4, uCubeShadowFar4, normal);
-    return 1.0;
+
+    float shadowVal = 1.0;
+    float matchedFar = 1.0;
+    int rank = -1;
+
+    if (length(lightPos - uCubeShadowPos0) < 0.1) {
+        shadowVal = calcCubeShadowSample(uCubeShadow0, uCubeShadowPos0, uCubeShadowFar0, normal);
+        matchedFar = uCubeShadowFar0; rank = 0;
+    } else if (uNumCubeShadows >= 2 && length(lightPos - uCubeShadowPos1) < 0.1) {
+        shadowVal = calcCubeShadowSample(uCubeShadow1, uCubeShadowPos1, uCubeShadowFar1, normal);
+        matchedFar = uCubeShadowFar1; rank = 1;
+    } else if (uNumCubeShadows >= 3 && length(lightPos - uCubeShadowPos2) < 0.1) {
+        shadowVal = calcCubeShadowSample(uCubeShadow2, uCubeShadowPos2, uCubeShadowFar2, normal);
+        matchedFar = uCubeShadowFar2; rank = 2;
+    } else if (uNumCubeShadows >= 4 && length(lightPos - uCubeShadowPos3) < 0.1) {
+        shadowVal = calcCubeShadowSample(uCubeShadow3, uCubeShadowPos3, uCubeShadowFar3, normal);
+        matchedFar = uCubeShadowFar3; rank = 3;
+    } else if (uNumCubeShadows >= 5 && length(lightPos - uCubeShadowPos4) < 0.1) {
+        shadowVal = calcCubeShadowSample(uCubeShadow4, uCubeShadowPos4, uCubeShadowFar4, normal);
+        matchedFar = uCubeShadowFar4; rank = 4;
+    }
+
+    if (rank < 0) return 1.0;
+
+    float distToEye = length(lightPos - uCameraPosition);
+    float fade = rank < uNumCubeShadows - 1
+        ? 1.0
+        : 1.0 - smoothstep(matchedFar * 0.6, matchedFar * 1.5, distToEye);
+
+    return mix(1.0, shadowVal, fade);
 }
 
 
