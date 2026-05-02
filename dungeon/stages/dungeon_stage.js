@@ -66,11 +66,14 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.fogHeightFalloff = 0.05
         this.meshRenderer.fogBaseHeight = 0.0
         this.meshRenderer.fogMaxDistance = 30
-        this.meshRenderer.fogStartDistance = 4
+        this.meshRenderer.fogStartDistance = 3
         this.meshRenderer.fogColor = [0.06, 0.06, 0.08]
         this.meshRenderer.fogScatterAnisotropy = 0.4
         this.meshRenderer.ssaoEnabled = true
         this.meshRenderer.bloomEnabled = true
+        this.meshRenderer.cinematicEnabled = true
+        this.meshRenderer.temperature = -0.3
+        this.meshRenderer.saturation = 0.9
 
         this.scene = new Object3D()
         layer.setContent(this.scene)
@@ -750,7 +753,96 @@ export default class DungeonStage extends Stage {
             bloomBtn.textContent = 'BLOOM: ' + (this.meshRenderer.bloomEnabled ? 'ON' : 'OFF')
         })
         document.body.appendChild(bloomBtn)
+
+        const cineBtn = document.createElement('button')
+        cineBtn.textContent = 'CINE: ON'
+        Object.assign(cineBtn.style, {
+            position: 'fixed',
+            top: '130px',
+            right: '10px',
+            zIndex: '9999',
+            fontFamily: 'monospace',
+            fontSize: '13px',
+            padding: '4px 8px',
+            cursor: 'pointer'
+        })
+        cineBtn.addEventListener('click', () => {
+            this.meshRenderer.cinematicEnabled = !this.meshRenderer.cinematicEnabled
+            cineBtn.textContent = 'CINE: ' + (this.meshRenderer.cinematicEnabled ? 'ON' : 'OFF')
+        })
+        document.body.appendChild(cineBtn)
+
+        this.#createFogPanel()
     }
+
+
+    #createFogPanel () {
+        const panel = document.createElement('div')
+        Object.assign(panel.style, {
+            position: 'fixed',
+            bottom: '10px',
+            right: '10px',
+            zIndex: '9999',
+            fontFamily: 'monospace',
+            fontSize: '12px',
+            color: '#fff',
+            background: 'rgba(0,0,0,0.7)',
+            padding: '8px',
+            borderRadius: '4px'
+        })
+
+        const r = this.meshRenderer
+        const sliders = [
+            ['density', 'fogDensity', 0, 0.5, 0.01],
+            ['height', 'fogHeightFalloff', 0, 1, 0.01],
+            ['start', 'fogStartDistance', 0, 20, 0.5],
+            ['scatter', 'fogScatterAnisotropy', 0, 0.95, 0.05],
+            ['maxDist', 'fogMaxDistance', 5, 80, 1]
+        ]
+
+        for (const [label, prop, min, max, step] of sliders) {
+            const row = document.createElement('div')
+            row.style.marginBottom = '2px'
+            const val = document.createElement('span')
+            val.style.display = 'inline-block'
+            val.style.width = '40px'
+            val.textContent = r[prop]
+            const input = document.createElement('input')
+            Object.assign(input, {type: 'range', min, max, step, value: r[prop]})
+            input.style.width = '100px'
+            input.style.verticalAlign = 'middle'
+            input.addEventListener('input', () => {
+                r[prop] = parseFloat(input.value)
+                val.textContent = r[prop]
+            })
+            row.textContent = label + ' '
+            row.appendChild(input)
+            row.appendChild(val)
+            panel.appendChild(row)
+        }
+
+        const colorRow = document.createElement('div')
+        colorRow.style.marginTop = '4px'
+        const colorInput = document.createElement('input')
+        colorInput.type = 'color'
+        const fc = r.fogColor
+        const toHex = (v) => Math.round(v * 255).toString(16).padStart(2, '0')
+        colorInput.value = '#' + toHex(fc[0]) + toHex(fc[1]) + toHex(fc[2])
+        colorInput.addEventListener('input', () => {
+            const hex = colorInput.value
+            r.fogColor = [
+                parseInt(hex.slice(1, 3), 16) / 255,
+                parseInt(hex.slice(3, 5), 16) / 255,
+                parseInt(hex.slice(5, 7), 16) / 255
+            ]
+        })
+        colorRow.textContent = 'color '
+        colorRow.appendChild(colorInput)
+        panel.appendChild(colorRow)
+
+        document.body.appendChild(panel)
+    }
+
 
 
     #updateDebugOverlay () {

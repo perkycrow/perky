@@ -12,6 +12,7 @@ import {SMAA_EDGE_SHADER_DEF, SMAA_WEIGHT_SHADER_DEF, SMAA_BLEND_SHADER_DEF} fro
 import {VOLUMETRIC_FOG_SHADER_DEF, FOG_BLUR_SHADER_DEF} from '../shaders/builtin/volumetric_fog_shader.js'
 import {SSAO_SHADER_DEF, SSAO_BLUR_SHADER_DEF} from '../shaders/builtin/ssao_shader.js'
 import {BLOOM_EXTRACT_SHADER_DEF, BLOOM_BLUR_SHADER_DEF, BLOOM_COMPOSITE_SHADER_DEF} from '../shaders/builtin/bloom_shader.js'
+import {CINEMATIC_SHADER_DEF} from '../shaders/builtin/cinematic_shader.js'
 import {SMAA_AREA_TEXTURE, SMAA_SEARCH_TEXTURE} from '../smaa_lookup_textures.js'
 import LightDataTexture from '../light_data_texture.js'
 import FullscreenQuad from '../postprocessing/fullscreen_quad.js'
@@ -87,7 +88,16 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #bloomThreshold = 0.8
     #bloomSoftThreshold = 0.5
     #bloomIntensity = 0.3
-    #bloomPasses = 4
+    #bloomPasses = 2
+    #cinematicProgram = null
+    #cinematicEnabled = false
+    #vignetteIntensity = 0.4
+    #vignetteSmoothness = 0.8
+    #saturation = 1.0
+    #temperature = 0.0
+    #brightness = 1.0
+    #contrast = 1.0
+    #grainIntensity = 0.0
     #fogBlurProgram = null
     #fogFBO = null
     #fogTexture = null
@@ -300,6 +310,71 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
+    get cinematicEnabled () {
+        return this.#cinematicEnabled
+    }
+
+    set cinematicEnabled (v) {
+        this.#cinematicEnabled = v
+    }
+
+    get vignetteIntensity () {
+        return this.#vignetteIntensity
+    }
+
+    set vignetteIntensity (v) {
+        this.#vignetteIntensity = v
+    }
+
+    get vignetteSmoothness () {
+        return this.#vignetteSmoothness
+    }
+
+    set vignetteSmoothness (v) {
+        this.#vignetteSmoothness = v
+    }
+
+    get saturation () {
+        return this.#saturation
+    }
+
+    set saturation (v) {
+        this.#saturation = v
+    }
+
+    get temperature () {
+        return this.#temperature
+    }
+
+    set temperature (v) {
+        this.#temperature = v
+    }
+
+    get brightness () {
+        return this.#brightness
+    }
+
+    set brightness (v) {
+        this.#brightness = v
+    }
+
+    get contrast () {
+        return this.#contrast
+    }
+
+    set contrast (v) {
+        this.#contrast = v
+    }
+
+    get grainIntensity () {
+        return this.#grainIntensity
+    }
+
+    set grainIntensity (v) {
+        this.#grainIntensity = v
+    }
+
+
     get bloomEnabled () {
         return this.#bloomEnabled
     }
@@ -454,6 +529,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#bloomExtractProgram = context.shaderRegistry.register('bloomExtract', BLOOM_EXTRACT_SHADER_DEF)
         this.#bloomBlurProgram = context.shaderRegistry.register('bloomBlur', BLOOM_BLUR_SHADER_DEF)
         this.#bloomCompositeProgram = context.shaderRegistry.register('bloomComposite', BLOOM_COMPOSITE_SHADER_DEF)
+        this.#cinematicProgram = context.shaderRegistry.register('cinematic', CINEMATIC_SHADER_DEF)
         this.#smaaEdgeProgram = context.shaderRegistry.register('smaaEdge', SMAA_EDGE_SHADER_DEF)
         this.#smaaWeightProgram = context.shaderRegistry.register('smaaWeight', SMAA_WEIGHT_SHADER_DEF)
         this.#smaaBlendProgram = context.shaderRegistry.register('smaaBlend', SMAA_BLEND_SHADER_DEF)
@@ -853,7 +929,9 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             this.#renderBloomPass(gl, sceneTexture)
         }
 
-        if (sceneTexture !== this.#outputTexture || needsOutputFBO) {
+        if (this.#cinematicEnabled) {
+            this.#renderCinematicPass(gl, sceneTexture)
+        } else if (sceneTexture !== this.#outputTexture || needsOutputFBO) {
             this.#blitToScreen(gl, sceneTexture)
         }
 
@@ -928,6 +1006,32 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#ssaoBlurTexture, 0)
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+    }
+
+
+    #renderCinematicPass (gl, sceneTexture) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+        gl.disable(gl.DEPTH_TEST)
+
+        const program = this.#cinematicProgram
+        gl.useProgram(program.program)
+
+        gl.activeTexture(gl.TEXTURE0)
+        gl.bindTexture(gl.TEXTURE_2D, sceneTexture)
+        gl.uniform1i(program.uniforms.uSceneColor, 0)
+        gl.uniform1f(program.uniforms.uTime, this.#fogTime)
+        gl.uniform1f(program.uniforms.uVignetteIntensity, this.#vignetteIntensity)
+        gl.uniform1f(program.uniforms.uVignetteSmoothness, this.#vignetteSmoothness)
+        gl.uniform1f(program.uniforms.uSaturation, this.#saturation)
+        gl.uniform1f(program.uniforms.uTemperature, this.#temperature)
+        gl.uniform1f(program.uniforms.uBrightness, this.#brightness)
+        gl.uniform1f(program.uniforms.uContrast, this.#contrast)
+        gl.uniform1f(program.uniforms.uGrainIntensity, this.#grainIntensity)
+
+        this.#fullscreenQuad.draw(gl, program)
+
+        gl.enable(gl.DEPTH_TEST)
     }
 
 
