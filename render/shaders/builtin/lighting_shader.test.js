@@ -131,6 +131,10 @@ describe('LIGHTING_FRAGMENT', () => {
         expect(LIGHTING_FRAGMENT).toContain('discard')
     })
 
+    test('writes depth to gl_FragDepth', () => {
+        expect(LIGHTING_FRAGMENT).toContain('gl_FragDepth = depth')
+    })
+
     test('contains Lambertian normalization', () => {
         expect(LIGHTING_FRAGMENT).toContain('/ 3.14159')
     })

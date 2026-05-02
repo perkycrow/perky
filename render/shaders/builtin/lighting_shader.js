@@ -129,6 +129,9 @@ void main() {
 
     if (albedoSample.a < 0.001) discard;
 
+    float depth = texture(uDepth, vTexCoord).r;
+    gl_FragDepth = depth;
+
     vec3 baseColor = albedoSample.rgb;
     vec3 normal = normalize(normalSample.rgb * 2.0 - 1.0);
     float unlit = normalSample.a;
@@ -136,7 +139,6 @@ void main() {
     float specular = materialSample.g;
     float emissive = materialSample.b;
 
-    float depth = texture(uDepth, vTexCoord).r;
     vec3 worldPos = reconstructWorldPosition(vTexCoord, depth);
 
     vec3 lit;

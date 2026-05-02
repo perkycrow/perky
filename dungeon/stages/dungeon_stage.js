@@ -3,6 +3,7 @@ import WebGLMeshRenderer from '../../render/webgl/webgl_mesh_renderer.js'
 import WebGLDecalRenderer from '../../render/webgl/webgl_decal_renderer.js'
 import Camera3D from '../../render/camera_3d.js'
 import CubeShadowMap from '../../render/cube_shadow_map.js'
+import GBuffer from '../../render/g_buffer.js'
 import MeshInstance from '../../render/mesh_instance.js'
 import Material3D from '../../render/material_3d.js'
 import Decal from '../../render/decal.js'
@@ -60,6 +61,7 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.fogFar = 30
         this.meshRenderer.fogColor = [0.01, 0.01, 0.02]
         const gl = this.meshRenderer.context.gl
+        this.meshRenderer.gBuffer = new GBuffer({gl, width: gl.canvas.width, height: gl.canvas.height})
         this.meshRenderer.cubeShadowMaps = Array.from(
             {length: 8},
             () => new CubeShadowMap({gl, resolution: 512})

@@ -274,7 +274,6 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#renderLightingPass(gl, numLights)
 
         if (transparent.length > 0) {
-            this.#gBuffer.blitDepthTo(null)
             this.#setupForwardUniforms(gl, numLights)
             for (const {object, hints} of transparent) {
                 this.#drawForwardItem(gl, object, hints)
@@ -284,6 +283,11 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
 
     #renderGBufferPass (gl, items) {
+        for (let i = 0; i < 4; i++) {
+            gl.activeTexture(gl.TEXTURE0 + i)
+            gl.bindTexture(gl.TEXTURE_2D, null)
+        }
+
         this.#gBuffer.begin()
 
         gl.enable(gl.DEPTH_TEST)
@@ -400,7 +404,8 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null)
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-        gl.disable(gl.DEPTH_TEST)
+        gl.enable(gl.DEPTH_TEST)
+        gl.depthFunc(gl.ALWAYS)
 
         const program = this.#lightingProgram
         gl.useProgram(program.program)
@@ -480,7 +485,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
         this.#fullscreenQuad.draw(gl, program)
 
-        gl.enable(gl.DEPTH_TEST)
+        gl.depthFunc(gl.LEQUAL)
     }
 
 
