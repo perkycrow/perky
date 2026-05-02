@@ -62,10 +62,12 @@ export default class DungeonStage extends Stage {
             () => new CubeShadowMap({gl, resolution: 512})
         )
         this.meshRenderer.volumetricFogEnabled = true
-        this.meshRenderer.fogDensity = 0.08
-        this.meshRenderer.fogHeightFalloff = 0.3
+        this.meshRenderer.fogDensity = 0.15
+        this.meshRenderer.fogHeightFalloff = 0.1
         this.meshRenderer.fogBaseHeight = 0.0
         this.meshRenderer.fogMaxDistance = 30
+        this.meshRenderer.fogColor = [0.15, 0.15, 0.18]
+        this.meshRenderer.fogScatterAnisotropy = 0.6
 
         this.scene = new Object3D()
         layer.setContent(this.scene)

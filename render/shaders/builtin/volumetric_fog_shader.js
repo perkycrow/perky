@@ -98,8 +98,8 @@ void main() {
 
     float stepSize = rayLength / float(uFogSteps);
 
-    float blueNoise = fract(sin(dot(vTexCoord * 1000.0, vec2(12.9898, 78.233))) * 43758.5453);
-    float rayOffset = blueNoise * stepSize;
+    float ign = fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715)) * 52.9829189 + uTime * 7.23);
+    float rayOffset = ign * stepSize;
 
     vec3 fogAccum = vec3(0.0);
     float transmittance = 1.0;
