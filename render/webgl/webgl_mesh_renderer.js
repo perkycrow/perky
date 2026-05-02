@@ -323,7 +323,19 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
         gl.uniform1f(this.#meshProgram.uniforms.uHasVertexColors, object.mesh.hasColors ? 1 : 0)
 
+        const transparent = hints?.material?.opacity < 1
+        if (transparent) {
+            gl.enable(gl.BLEND)
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+            gl.depthMask(false)
+        }
+
         object.mesh.draw()
+
+        if (transparent) {
+            gl.disable(gl.BLEND)
+            gl.depthMask(true)
+        }
 
         if (normalMap) {
             this.context.textureManager.release(normalMap)

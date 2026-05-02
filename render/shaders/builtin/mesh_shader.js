@@ -130,7 +130,7 @@ void main() {
         float hemiFactor = normal.y * 0.5 + 0.5;
         vec3 ambient = mix(uAmbientGround, uAmbientSky, hemiFactor);
         float occlusion = 0.5 + 0.5 * hemiFactor;
-        lit = baseColor * (ambient * occlusion + diffuse * shadow / 3.14159);
+        lit = baseColor * (ambient * occlusion + diffuse * shadow);
 
         if (uSpecular > 0.0 && diffuse > 0.0) {
             vec3 halfDir = normalize(dirLight + viewDir);

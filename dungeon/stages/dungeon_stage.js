@@ -14,7 +14,7 @@ import wiring from '../wiring.js'
 const EYE_HEIGHT = 1.7
 const MOUSE_SENSITIVITY = 0.002
 const PITCH_LIMIT = Math.PI / 2 - 0.05
-const SPAWN = {x: -2, y: 0, z: 0}
+const SPAWN = {x: -4, y: 0, z: 0}
 
 
 export default class DungeonStage extends Stage {
@@ -44,7 +44,7 @@ export default class DungeonStage extends Stage {
             this.camera3d.setAspect(width / height)
         })
 
-        this.meshRenderer.lightDirection = [0.0, 1.0, 0.0]
+        this.meshRenderer.lightDirection = [0.3, 0.9, 0.2]
         this.meshRenderer.ambientSky = [0.12, 0.12, 0.15]
         this.meshRenderer.ambientGround = [0.05, 0.04, 0.04]
         this.meshRenderer.fogNear = 8
@@ -58,10 +58,10 @@ export default class DungeonStage extends Stage {
         this.#setupMouseLook(layer.canvas)
 
         this.colliders = [
-            {minX: -4.05, maxX: -3.95, minZ: -2, maxZ: 2},
+            {minX: -8.05, maxX: -7.95, minZ: -2, maxZ: 2},
             {minX: 3.95, maxX: 4.05, minZ: -2, maxZ: 2},
-            {minX: -4, maxX: 4, minZ: -2.05, maxZ: -1.95},
-            {minX: -4, maxX: 4, minZ: 1.95, maxZ: 2.05},
+            {minX: -8, maxX: 4, minZ: -2.05, maxZ: -1.95},
+            {minX: -8, maxX: 4, minZ: 1.95, maxZ: 2.05},
             {minX: -0.05, maxX: 0.05, minZ: -2, maxZ: -0.6},
             {minX: -0.05, maxX: 0.05, minZ: 0.6, maxZ: 2}
         ]
@@ -76,8 +76,8 @@ export default class DungeonStage extends Stage {
         const assets = await this.#loadAssets()
         const lights = []
 
-        this.#buildRoom(assets, -2, 0, lights)
-        this.#buildRoom(assets, 2, 0, lights)
+        this.#buildBigRoom(assets, lights)
+        this.#buildSmallRoom(assets, lights)
 
         const doorway = this.#placeAsset(assets.doorway, 0, 0, 0, 90)
         const door = this.#findByName(doorway, 'door_4')
@@ -86,31 +86,65 @@ export default class DungeonStage extends Stage {
             door.markDirty()
         }
 
-        this.#buildWall(assets.wall, -4, 0, 90)
-        this.#buildWall(assets.wall, 4, 0, -90)
-
         this.meshRenderer.lights = lights
         this.scene.markDirty()
     }
 
 
-    #buildRoom (assets, cx, cz, lights) {
-        this.#placeAsset(assets.floor, cx, 0, cz, 0)
-        this.#placeAsset(assets.floor, cx, 3, cz, 0)
+    #buildBigRoom (assets, lights) {
+        this.#placeAsset(assets.floor, -6, 0, 0, 0)
+        this.#placeAsset(assets.floor, -2, 0, 0, 0)
+        this.#placeCeiling(assets.floor, -6, 3, 0)
+        this.#placeCeiling(assets.floor, -2, 3, 0)
 
-        this.#buildWall(assets.wall, cx, cz - 2, 0)
-        this.#buildWall(assets.wall, cx, cz + 2, 180)
+        this.#buildWall(assets.wall, -6, -2, 0)
+        this.#buildWall(assets.wall, -2, -2, 0)
+        this.#buildWall(assets.wall, -6, 2, 180)
+        this.#buildWall(assets.wall, -2, 2, 180)
+        this.#buildWall(assets.wall, -8, 0, 90)
 
-        this.#placeAsset(assets.lamp, cx, 3, cz, 0)
+        this.#placeAsset(assets.ceilingLamp, -4, 3, 0, 0)
 
         lights.push(new Light3D({
-            x: cx,
+            x: -4,
             y: 2.7,
-            z: cz,
+            z: 0,
+            color: [1.0, 0.85, 0.6],
+            intensity: 3.5,
+            radius: 12
+        }))
+
+        this.#placeAsset(assets.table, -5, 0, 0, 0)
+        this.#placeAsset(assets.chair, -5.8, 0, 0, 90)
+        this.#placeAsset(assets.chair, -4.2, 0, 0, -90)
+        this.#placeAsset(assets.shelf, -7.6, 0, -1.5, 90)
+        this.#placeAsset(assets.barrel, -7.3, 0, 1.5, 0)
+        this.#placeAsset(assets.box, -7, 0, 1.2, 15)
+    }
+
+
+    #buildSmallRoom (assets, lights) {
+        this.#placeAsset(assets.floor, 2, 0, 0, 0)
+        this.#placeCeiling(assets.floor, 2, 3, 0)
+
+        this.#buildWall(assets.wall, 2, -2, 0)
+        this.#buildWall(assets.wall, 2, 2, 180)
+        this.#buildWall(assets.wall, 4, 0, -90)
+
+        this.#placeAsset(assets.ceilingLamp, 2, 3, 0, 0)
+
+        lights.push(new Light3D({
+            x: 2,
+            y: 2.7,
+            z: 0,
             color: [1.0, 0.85, 0.6],
             intensity: 3.5,
             radius: 10
         }))
+
+        this.#placeAsset(assets.crate, 3.3, 0, -1.5, 0)
+        this.#placeAsset(assets.crate, 3.3, 0.2, -1.5, 25)
+        this.#placeAsset(assets.metalShelf, 3.5, 0, 0.5, -90)
     }
 
 
@@ -119,7 +153,26 @@ export default class DungeonStage extends Stage {
     }
 
 
-    #placeAsset (sceneTemplate, x, y, z, rot) {
+    #placeCeiling (sceneTemplate, x, y, z) {
+        const instance = this.#placeAsset(sceneTemplate, x, y, z, 0)
+        this.#setCastShadow(instance, false)
+        return instance
+    }
+
+
+    #setCastShadow (node, value) {
+        if (node instanceof MeshInstance) {
+            node.castShadow = value
+        }
+        for (const child of node.children) {
+            this.#setCastShadow(child, value)
+        }
+    }
+
+
+
+
+    #placeAsset (sceneTemplate, x, y, z, rot) { // eslint-disable-line max-params -- clean
         const instance = this.#cloneScene(sceneTemplate)
         instance.position.set(x, y, z)
         if (rot) {
@@ -181,28 +234,28 @@ export default class DungeonStage extends Stage {
 
 
     async #loadAssets () {
-        const [wallData, floorData, doorwayData, lampData] = await Promise.all([
-            loadGlb('assets/props/wall.glb'),
-            loadGlb('assets/props/floor.glb'),
-            loadGlb('assets/props/doorway.glb'),
-            loadGlb('assets/props/ceiling_lamp.glb')
-        ])
+        const names = [
+            'wall', 'floor', 'doorway', 'ceiling_lamp',
+            'chair', 'table', 'shelf', 'barrel', 'box', 'crate', 'metal_shelf'
+        ]
+
+        const glbData = await Promise.all(
+            names.map(n => loadGlb('assets/props/' + n + '.glb'))
+        )
 
         const gl = this.meshRenderer.context.gl
 
-        const [wall, floor, doorway, lamp] = await Promise.all([
-            buildGltfScene({...wallData, gl}),
-            buildGltfScene({...floorData, gl}),
-            buildGltfScene({...doorwayData, gl}),
-            buildGltfScene({...lampData, gl})
-        ])
+        const scenes = await Promise.all(
+            glbData.map(data => buildGltfScene({...data, gl}))
+        )
 
-        return {
-            wall: wall.scene,
-            floor: floor.scene,
-            doorway: doorway.scene,
-            lamp: lamp.scene
-        }
+        const assets = {}
+        names.forEach((name, i) => {
+            const key = name.replace(/_([a-z])/g, (_, c) => c.toUpperCase())
+            assets[key] = scenes[i].scene
+        })
+
+        return assets
     }
 
 
@@ -248,6 +301,8 @@ export default class DungeonStage extends Stage {
         this.player.update(deltaTime)
         resolveCollisions(this.player, this.colliders)
 
+
+
         this.camera3d.position.set(
             this.player.position.x,
             this.player.position.y + EYE_HEIGHT,
@@ -256,5 +311,7 @@ export default class DungeonStage extends Stage {
         this.camera3d.rotation.setFromEuler(this.player.pitch, this.player.yaw, 0, 'YXZ')
         this.camera3d.markDirty()
     }
+
+
 
 }
