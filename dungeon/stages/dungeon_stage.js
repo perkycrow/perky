@@ -11,6 +11,7 @@ import RoomLibrary from '../room_library.js'
 import DungeonWorld from '../worlds/dungeon_world.js'
 import PlayerController from '../controllers/player_controller.js'
 import {loadGlb, buildGltfScene} from '../../render/loaders/gltf_loader.js'
+import {resolveCollisions, buildRoomColliders} from '../collision.js'
 import layout from '../layouts/main.json' with {type: 'json'}
 import wiring from '../wiring.js'
 
@@ -84,6 +85,9 @@ export default class DungeonStage extends Stage {
 
         super.onStart()
 
+        this.colliders = buildRoomColliders(layout)
+        this.#buildColliderDebug(gl)
+
         this.#loadDungeon(gl)
     }
 
@@ -124,6 +128,30 @@ export default class DungeonStage extends Stage {
         await this.#loadTestProps(gl)
 
         this.scene.markDirty()
+    }
+
+
+    #buildColliderDebug (gl) {
+        const debugMat = new Material3D({
+            color: [0.2, 1.0, 0.3],
+            opacity: 0.25,
+            unlit: true
+        })
+
+        for (const box of this.colliders) {
+            const w = box.maxX - box.minX
+            const d = box.maxZ - box.minZ
+            const h = 3
+            const cx = (box.minX + box.maxX) / 2
+            const cz = (box.minZ + box.maxZ) / 2
+
+            const geo = Geometry.createBox(w, h, d)
+            const mesh = new Mesh({gl, geometry: geo})
+            const inst = new MeshInstance({mesh, material: debugMat})
+            inst.position.set(cx, h / 2, cz)
+            inst.castShadow = false
+            this.scene.addChild(inst)
+        }
     }
 
 
@@ -189,6 +217,7 @@ export default class DungeonStage extends Stage {
         const dir = this.game.getDirection('move')
         this.player.setMoveInput(dir.y, dir.x)
         this.player.update(deltaTime)
+        resolveCollisions(this.player, this.colliders)
 
         this.camera3d.position.set(
             this.player.position.x,
