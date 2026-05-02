@@ -8,6 +8,7 @@ import {DEPTH_SHADER_DEF} from '../shaders/builtin/depth_shader.js'
 import {CUBE_DEPTH_SHADER_DEF} from '../shaders/builtin/cube_depth_shader.js'
 import {GBUFFER_SHADER_DEF} from '../shaders/builtin/gbuffer_shader.js'
 import {LIGHTING_SHADER_DEF} from '../shaders/builtin/lighting_shader.js'
+import {FXAA_SHADER_DEF} from '../shaders/builtin/fxaa_shader.js'
 import LightDataTexture from '../light_data_texture.js'
 import FullscreenQuad from '../postprocessing/fullscreen_quad.js'
 import Matrix4 from '../../math/matrix4.js'
@@ -24,6 +25,12 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #cubeDepthProgram = null
     #gbufferProgram = null
     #lightingProgram = null
+    #fxaaProgram = null
+    #fxaaEnabled = true
+    #outputFBO = null
+    #outputTexture = null
+    #outputWidth = 0
+    #outputHeight = 0
     #fullscreenQuad = null
     #decalQuadMesh = null
     #decalModelMatrix = new Matrix4()
@@ -191,6 +198,16 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
+    get fxaaEnabled () {
+        return this.#fxaaEnabled
+    }
+
+
+    set fxaaEnabled (value) {
+        this.#fxaaEnabled = value
+    }
+
+
     init (context) {
         super.init(context)
         this.#meshProgram = context.shaderRegistry.register('mesh', MESH_SHADER_DEF)
@@ -198,6 +215,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#cubeDepthProgram = context.shaderRegistry.register('cubeDepth', CUBE_DEPTH_SHADER_DEF)
         this.#gbufferProgram = context.shaderRegistry.register('gbuffer', GBUFFER_SHADER_DEF)
         this.#lightingProgram = context.shaderRegistry.register('lighting', LIGHTING_SHADER_DEF)
+        this.#fxaaProgram = context.shaderRegistry.register('fxaa', FXAA_SHADER_DEF)
         this.#lightDataTexture = new LightDataTexture(context.gl)
         this.#fullscreenQuad = new FullscreenQuad(context.gl)
         this.#decalQuadMesh = createDecalQuad(context.gl)
@@ -471,7 +489,12 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
 
     #renderLightingPass (gl, numLights) {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        if (this.#fxaaEnabled) {
+            this.#ensureOutputFBO(gl, gl.canvas.width, gl.canvas.height)
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this.#outputFBO)
+        } else {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        }
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
         gl.enable(gl.DEPTH_TEST)
@@ -556,6 +579,65 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#fullscreenQuad.draw(gl, program)
 
         gl.depthFunc(gl.LEQUAL)
+
+        if (this.#fxaaEnabled) {
+            this.#renderFxaaPass(gl)
+        }
+    }
+
+
+    #renderFxaaPass (gl) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+        gl.disable(gl.DEPTH_TEST)
+
+        const program = this.#fxaaProgram
+        gl.useProgram(program.program)
+
+        gl.activeTexture(gl.TEXTURE0)
+        gl.bindTexture(gl.TEXTURE_2D, this.#outputTexture)
+        gl.uniform1i(program.uniforms.uTexture, 0)
+        gl.uniform2f(program.uniforms.uInverseResolution, 1 / gl.canvas.width, 1 / gl.canvas.height)
+
+        this.#fullscreenQuad.draw(gl, program)
+
+        gl.enable(gl.DEPTH_TEST)
+    }
+
+
+    #ensureOutputFBO (gl, width, height) {
+        if (this.#outputFBO && this.#outputWidth === width && this.#outputHeight === height) {
+            return
+        }
+
+        if (this.#outputFBO) {
+            gl.deleteFramebuffer(this.#outputFBO)
+            gl.deleteTexture(this.#outputTexture)
+        }
+
+        this.#outputTexture = gl.createTexture()
+        gl.bindTexture(gl.TEXTURE_2D, this.#outputTexture)
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+        const depthRB = gl.createRenderbuffer()
+        gl.bindRenderbuffer(gl.RENDERBUFFER, depthRB)
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, width, height)
+
+        this.#outputFBO = gl.createFramebuffer()
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#outputFBO)
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#outputTexture, 0)
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRB)
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        gl.bindTexture(gl.TEXTURE_2D, null)
+        gl.bindRenderbuffer(gl.RENDERBUFFER, null)
+
+        this.#outputWidth = width
+        this.#outputHeight = height
     }
 
 
@@ -606,11 +688,18 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             this.#decalQuadMesh.dispose()
             this.#decalQuadMesh = null
         }
+        if (this.#outputFBO) {
+            this.context?.gl?.deleteFramebuffer(this.#outputFBO)
+            this.context?.gl?.deleteTexture(this.#outputTexture)
+            this.#outputFBO = null
+            this.#outputTexture = null
+        }
         this.#meshProgram = null
         this.#depthProgram = null
         this.#cubeDepthProgram = null
         this.#gbufferProgram = null
         this.#lightingProgram = null
+        this.#fxaaProgram = null
         this.#camera3d = null
         this.#shadowMap = null
         this.#cubeShadowMaps = []

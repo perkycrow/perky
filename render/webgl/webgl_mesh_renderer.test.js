@@ -155,6 +155,29 @@ function createMockGL () {
         UNSIGNED_SHORT: 0x1403,
         UNSIGNED_BYTE: 0x1401,
         POLYGON_OFFSET_FILL: 0x8037,
+        ALWAYS: 0x0207,
+        RENDERBUFFER: 0x8D41,
+        DEPTH_COMPONENT24: 0x81A6,
+        DEPTH_ATTACHMENT: 0x8D00,
+        RGBA8: 0x8058,
+        RGBA: 0x1908,
+        UNSIGNED_BYTE: 0x1401,
+        createRenderbuffer () {
+            calls.push({fn: 'createRenderbuffer'})
+            return 'mockRB'
+        },
+        bindRenderbuffer (target, rb) {
+            calls.push({fn: 'bindRenderbuffer', args: [target, rb]})
+        },
+        renderbufferStorage (...args) {
+            calls.push({fn: 'renderbufferStorage', args})
+        },
+        framebufferRenderbuffer (...args) {
+            calls.push({fn: 'framebufferRenderbuffer', args})
+        },
+        framebufferTexture2D (...args) {
+            calls.push({fn: 'framebufferTexture2D', args})
+        },
         createVertexArray () {
             calls.push({fn: 'createVertexArray'})
             return 'mockVAO'
