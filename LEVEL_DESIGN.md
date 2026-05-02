@@ -129,6 +129,61 @@ Controle a 3 niveaux :
 Chaque cubemap coute 6 render passes x nombre d'objets dans le radius. En low-poly avec 50 objets et 3 cubemaps = ~900 draw calls supplementaires par frame. Leger pour du low-poly, potentiellement lourd pour des scenes denses -> d'ou l'importance du slider user.
 
 
+### Objets statiques vs dynamiques
+
+Les objets du monde sont classes en deux categories :
+
+- **Statiques** : murs, sols, meubles fixes, decors. Ne bougent jamais apres placement. Peuvent beneficier de lightmaps bakees
+- **Dynamiques** : personnages, objets deplacables, portes, items. Necessitent un eclairage temps reel
+
+#### Baked lightmaps (objets statiques)
+
+Pour les objets statiques, l'eclairage peut etre pre-calcule et stocke dans une texture (lightmap). Avantages :
+- Aucun cout GPU au runtime (juste un sample de texture)
+- Qualite superieure : on peut simuler des bounces de lumiere, de l'AO, des ombres douces
+- Les ombres des objets statiques entre eux sont gratuites
+
+Le bake se fait dans le studio (Light Editor ou outil dedie) :
+1. Placer les lights dans la scene
+2. Lancer le bake : le studio calcule l'eclairage pour chaque texel de chaque surface statique
+3. Generer une lightmap (texture 2D) par room ou par chunk
+4. Au runtime, le shader multiplie la couleur de base par la lightmap : `color *= lightmapSample`
+
+Les lightmaps peuvent coexister avec les cubemap shadows :
+- Les objets statiques utilisent la lightmap pour leur eclairage de base + ombres statiques
+- Les cubemap shadows ne sont utilises que pour les ombres dynamiques (personnages, objets mobiles)
+- Cela reduit le nombre d'objets rendus dans les cubemaps (seuls les dynamiques + les statiques proches)
+
+#### Strategie combinee
+
+| Type d'objet | Eclairage | Ombres recues | Ombres projetees |
+|-------------|-----------|---------------|------------------|
+| Murs/sols statiques | Lightmap bakee | Lightmap bakee | Dans cubemap (castShadow) |
+| Meubles fixes | Lightmap bakee | Lightmap bakee | Dans cubemap (castShadow) |
+| Personnage | Point lights temps reel | Cubemap shadows | Blob shadow ou cubemap |
+| Objet deplacable | Point lights temps reel | Cubemap shadows | Blob shadow |
+| Porte (articulee) | Point lights temps reel | Cubemap shadows | Dans cubemap (castShadow) |
+
+Le bake est optionnel — sans lightmaps, tout fonctionne en temps reel (situation actuelle). Les lightmaps sont une optimisation qui ameliore la qualite ET les performances.
+
+#### Flag static
+
+Deux flags independants :
+- `mesh.static = true/false` — l'objet peut-il bouger au runtime ?
+- `light.static = true/false` — la lumiere peut-elle bouger au runtime ?
+
+Comportement selon les combinaisons :
+
+| | Light statique | Light dynamique |
+|---|---|---|
+| **Mesh statique** | Lightmap bakee (gratuit runtime) | Cubemap shadow temps reel |
+| **Mesh dynamique** | Eclaire par lightmap ambiante + blob shadow | Cubemap shadow temps reel |
+
+Les lights statiques contribuent au bake et n'ont PAS besoin de cubemap shadow au runtime (economie de slots). Seules les lights dynamiques (torche portee, lampe qui bouge) consomment des slots cubemap.
+
+Cela signifie que dans un donjon typique avec 20 lights de plafond (statiques) et 1 torche portee (dynamique), seule la torche a besoin d'un slot cubemap → le budget shadow est quasi nul.
+
+
 ### Collisions simplifiees
 
 Pas de mesh collision — trop lourd. Chaque Prefab definit sa collision shape :
