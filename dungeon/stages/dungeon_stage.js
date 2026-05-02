@@ -379,8 +379,6 @@ export default class DungeonStage extends Stage {
     }
 
 
-
-
     #placeAsset (sceneTemplate, x, y, z, rot) { // eslint-disable-line max-params -- clean
         const instance = this.#cloneScene(sceneTemplate)
         instance.position.set(x, y, z)
@@ -567,8 +565,11 @@ export default class DungeonStage extends Stage {
         const hz = oz + rayZ * bestT + hitNormal.z * 0.01
 
         const decal = new Decal({
-            x: hx, y: hy, z: hz,
-            width: 0.5, height: 0.5,
+            x: hx,
+            y: hy,
+            z: hz,
+            width: 0.5,
+            height: 0.5,
             material: new Material3D({
                 texture: this.shroomTex,
                 color: [0.3, 0.3, 0.3],
@@ -703,7 +704,5 @@ export default class DungeonStage extends Stage {
         ].join('\n')
         this.debugOverlay.style.whiteSpace = 'pre'
     }
-
-
 
 }

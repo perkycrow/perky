@@ -132,7 +132,7 @@ export function disclaimer (content) {
 
 
 const CONTAINER_PRESETS = {
-    interactive: {
+    'interactive': {
         tabIndex: 0,
         style: {
             outline: 'none',
@@ -160,14 +160,14 @@ const CONTAINER_PRESETS = {
             userSelect: 'none'
         }
     },
-    inspector: {
+    'inspector': {
         style: {
             padding: '12px',
             background: '#1a1a1e',
             overflow: 'auto'
         }
     },
-    centered: {
+    'centered': {
         style: {
             display: 'flex',
             alignItems: 'center',

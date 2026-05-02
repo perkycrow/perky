@@ -88,7 +88,7 @@ async function request (lobby, method, path, body) {
     const options = {
         method,
         headers: {
-            Accept: 'application/json',
+            'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
         credentials: 'include'

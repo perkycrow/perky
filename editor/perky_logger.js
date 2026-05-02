@@ -77,9 +77,9 @@ export default class PerkyLogger extends EditorComponent {
     #handleAttributeChange (name, value) {
         const handlers = {
             'max-entries': this.#handleMaxEntries,
-            position: this.#handlePosition,
-            timestamp: this.#handleTimestamp,
-            theme: this.#handleTheme
+            'position': this.#handlePosition,
+            'timestamp': this.#handleTimestamp,
+            'theme': this.#handleTheme
         }
 
         handlers[name]?.call(this, value)

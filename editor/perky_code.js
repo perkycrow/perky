@@ -172,10 +172,10 @@ export default class PerkyCode extends EditorComponent {
 
     #handleAttributeChange (name, value) {
         const handlers = {
-            src: this.#handleSrc,
-            code: this.#handleCode,
-            title: this.#handleTitle,
-            theme: this.#handleTheme,
+            'src': this.#handleSrc,
+            'code': this.#handleCode,
+            'title': this.#handleTitle,
+            'theme': this.#handleTheme,
             'no-header': this.#handleNoHeader
         }
 

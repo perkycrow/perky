@@ -67,7 +67,7 @@ export default class PsdImporter extends EditorComponent {
 
     #buildDOM () {
         this.#overlay = createElement('editor-overlay', {
-            attrs: {fullscreen: '', 'no-close-on-backdrop': ''}
+            attrs: {'fullscreen': '', 'no-close-on-backdrop': ''}
         })
 
         const content = createElement('div', {class: 'importer-content'})

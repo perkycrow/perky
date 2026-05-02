@@ -3,7 +3,7 @@ const SELECTOR_REGEX = /([#.$@])([a-zA-Z0-9_-]+)/g
 const PREFIX_TO_TYPE = {
     '#': 'id',
     '.': 'tag',
-    $: 'name',
+    '$': 'name',
     '@': 'category'
 }
 

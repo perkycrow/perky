@@ -6,7 +6,7 @@ import {success, hint, subHeader, listItem, divider} from '../../../format.js'
 
 
 const RULE_HINTS = {
-    complexity: 'Split into smaller functions or methods. Acceptable in constructors or algorithmic functions',
+    'complexity': 'Split into smaller functions or methods. Acceptable in constructors or algorithmic functions',
     'local/nested-complexity': 'Reduce nesting depth by using early returns, extracting nested conditions',
     'class-methods-use-this': 'Private method (#)? Use a function below the class. Public? Check if it needs to be exposed',
     'no-unused-vars': 'Remove the unused variable'

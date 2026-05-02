@@ -118,9 +118,9 @@ export default {
         }
 
         const visitors = {
-            FunctionDeclaration: enterFunction,
-            FunctionExpression: enterFunction,
-            ArrowFunctionExpression: enterFunction,
+            'FunctionDeclaration': enterFunction,
+            'FunctionExpression': enterFunction,
+            'ArrowFunctionExpression': enterFunction,
             'FunctionDeclaration:exit': exitFunction,
             'FunctionExpression:exit': exitFunction,
             'ArrowFunctionExpression:exit': exitFunction

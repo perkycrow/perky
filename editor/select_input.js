@@ -187,19 +187,19 @@ export default class SelectInput extends EditorComponent {
 
     #handleOpenKeyDown (e) {
         const keyHandlers = {
-            Escape: () => {
+            'Escape': () => {
                 e.preventDefault()
                 this.#close()
             },
-            ArrowDown: () => {
+            'ArrowDown': () => {
                 e.preventDefault()
                 this.#moveFocus(1)
             },
-            ArrowUp: () => {
+            'ArrowUp': () => {
                 e.preventDefault()
                 this.#moveFocus(-1)
             },
-            Enter: () => {
+            'Enter': () => {
                 e.preventDefault()
                 if (this.#focusedIndex >= 0) {
                     this.#selectIndex(this.#focusedIndex)
@@ -211,7 +211,7 @@ export default class SelectInput extends EditorComponent {
                     this.#selectIndex(this.#focusedIndex)
                 }
             },
-            Tab: () => this.#close()
+            'Tab': () => this.#close()
         }
 
         keyHandlers[e.key]?.()

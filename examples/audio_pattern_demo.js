@@ -20,7 +20,7 @@ const presetPatterns = {
         snare: '. . C . . . C .',
         hihat: 'E E E E E E E E'
     },
-    Syncopated: {
+    'Syncopated': {
         kick: 'C . C . . C . .',
         snare: '. . . C . . C .',
         hihat: 'E . E E . E E .'
@@ -30,15 +30,15 @@ const presetPatterns = {
         snare: '. . C . . . C .',
         hihat: 'E E E E E E E E'
     },
-    Breakbeat: {
+    'Breakbeat': {
         kick: 'C . . C . . C .',
         snare: '. . C . . C . C',
         hihat: 'E . E . E . E .'
     },
-    Melody: {
+    'Melody': {
         melody: 'C D E F G A B c'
     },
-    Arpeggio: {
+    'Arpeggio': {
         melody: 'C E G c G E C .'
     }
 }
